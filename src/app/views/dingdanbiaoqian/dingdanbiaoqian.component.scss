@@ -388,8 +388,12 @@ $info-border: solid 1px black;
 
 .流程指令卡 {
   width: 12.2cm;
-  height: 14.5cm;
-  padding: 0.5cm 0.8cm;
+  height: 17.5cm;
+  padding: 1cm 0.8cm;
+  box-sizing: border-box;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
   --label-height: 15px;
   --value-height: 15px;
   --label-width: 70px;
@@ -403,6 +407,7 @@ $info-border: solid 1px black;
 
   .form-inner {
     border: var(--border);
+    flex: 1 1 0;
   }
 
   .row {
