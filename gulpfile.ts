@@ -1,6 +1,5 @@
 import {ObjectOf} from "@lucilor/utils";
 import axios from "axios";
-import child_process from "child_process";
 import FormData from "form-data";
 import fs from "fs";
 import gulp from "gulp";
@@ -24,8 +23,6 @@ const tmpDir = "./.tmp";
 const zipName = "upload.zip";
 const backupName = "ng_cad2";
 
-gulp.task("build", () => child_process.exec("yarn build"));
-
 gulp.task("zip", () => {
   const globs = ["ng-cad2/**/*"];
   return gulp.src(globs, {dot: true, cwd: targetDir, base: targetDir}).pipe(zip(zipName)).pipe(gulp.dest(tmpDir));
@@ -43,4 +40,4 @@ gulp.task("restore", async () => {
   console.log(response.data);
 });
 
-gulp.task("default", gulp.series("build", "zip", "upload"));
+gulp.task("default", gulp.series("zip", "upload"));
