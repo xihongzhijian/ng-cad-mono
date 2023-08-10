@@ -27,4 +27,5 @@ jobs:
           SERVER_TOKEN: ${{ secrets.SERVER_TOKEN }}
         run: |
           yarn install
+          yarn build:packages
           gulp

@@ -9,11 +9,8 @@ commands:
       - node/install-packages:
           pkg-manager: yarn-berry
       - run:
-          name: build @lucilor/utils
-          command: yarn workspace @lucilor/utils run lib
-      - run:
-          name: build @lucilor/cad-viewer
-          command: yarn workspace @lucilor/cad-viewer run lib
+          name: build packages
+          command: yarn build:packages
 executors:
   default:
     docker:

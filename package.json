@@ -4,6 +4,7 @@
   "scripts": {
     "start": "ng serve",
     "build": "ng build --configuration production",
+    "build:packages": "yarn workspaces foreach -pt run lib",
     "test": "ng test",
     "test:ci": "ng test --watch=false --progress=false --browsers=ChromeHeadless",
     "lint": "ng lint --fix",
