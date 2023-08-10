@@ -829,10 +829,10 @@ export class CadData {
   }
 
   moveComponent(curr: CadData, translate: Point, alter: boolean, prev?: CadData) {
-    const map: ObjectOf<any> = {};
-    this.components.connections.forEach((conn) => {
+    const map: Map<string, {x?: string; y?: string}> = new Map();
+    for (const conn of this.components.connections) {
       if (conn.ids.includes(curr.id)) {
-        conn.ids.forEach((id) => {
+        for (const id of conn.ids) {
           if (id === this.id) {
             if (conn.axis === "x") {
               translate.x = 0;
@@ -842,23 +842,25 @@ export class CadData {
             }
           }
           if (id !== curr.id && id !== prev?.id) {
-            if (!map[id]) {
-              map[id] = {};
+            const item = map.get(id);
+            if (item) {
+              item[conn.axis] = conn.space;
+            } else {
+              map.set(id, {[conn.axis]: conn.space});
             }
-            map[id][conn.axis] = conn.space;
           }
-        });
+        }
       }
-    });
+    }
     curr.transform({translate}, alter);
-    for (const id in map) {
+    for (const [id, item] of map.entries()) {
       const next = this.components.data.find((v) => v.id === id);
       if (next) {
         const newTranslate = translate.clone();
-        if (map[id].x === undefined) {
+        if (item.x === undefined) {
           newTranslate.x = 0;
         }
-        if (map[id].y === undefined) {
+        if (item.y === undefined) {
           newTranslate.y = 0;
         }
         this.moveComponent(next, newTranslate, alter, curr);
