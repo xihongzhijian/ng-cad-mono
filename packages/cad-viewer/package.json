@@ -12,9 +12,7 @@
     "lib": "webpack --config webpack.lib.js",
     "dist": "webpack --config webpack.dist.js",
     "build": "webpack --config webpack.lib.js && webpack --config webpack.dist.js",
-    "prepublish": "yarn build",
-    "lint": "eslint . --fix",
-    "format": "prettier --write ."
+    "prepublish": "yarn build"
   },
   "repository": {
     "type": "git",
@@ -33,7 +31,7 @@
     "@trivago/prettier-plugin-sort-imports": "^4.2.0",
     "@types/color": "^3.0.3",
     "@types/events": "^3.0.0",
-    "@types/lodash": "^4.14.196",
+    "@types/lodash": "^4.14.197",
     "@types/uuid": "^9.0.2",
     "@typescript-eslint/eslint-plugin": "^6.3.0",
     "@typescript-eslint/parser": "^6.3.0",
@@ -45,7 +43,7 @@
     "eslint-plugin-deprecation": "^1.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.8",
-    "sass": "^1.64.2",
+    "sass": "^1.65.1",
     "sass-loader": "^13.3.2",
     "style-loader": "^3.3.3",
     "terser-webpack-plugin": "^5.3.9",

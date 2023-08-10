@@ -1,3 +1,18 @@
 {
-  "folders": [{"path": "."}, {"path": "./packages/cad-viewer"}, {"path": "./packages/utils"}]
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "./packages/cad-viewer"
+    },
+    {
+      "path": "./packages/utils"
+    }
+  ],
+  "settings": {
+    "yaml.schemas": {
+      "https://json.schemastore.org/dependabot-2.0.json": "file:///c%3A/Users/91197/Documents/%40lucilor/ng-cad-mono/.github/dependabot.yml"
+    }
+  }
 }

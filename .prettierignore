@@ -47,8 +47,6 @@ testem.log
 .DS_Store
 Thumbs.db
 
-/gulp.config.json
-
 # yarn
 .yarn
 
