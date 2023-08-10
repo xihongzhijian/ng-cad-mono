@@ -1,0 +1,69 @@
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  // padding: 20px 20px 0 20px;
+  // box-sizing: border-box;
+}
+
+.mat-mdc-dialog-actions .mat-mdc-button-base + .mat-mdc-button-base {
+  margin-left: 16px;
+}
+
+.mat-dialog-content {
+  max-height: unset;
+  &.iframe {
+    flex: 1 1 0;
+    overflow: hidden;
+  }
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+}
+
+.iframe-toolbar {
+  display: flex;
+  align-items: center;
+
+  .iframe-title {
+    flex: 1 1 0;
+    text-align: center;
+    margin: 0;
+  }
+}
+
+:host ::ng-deep {
+  json-editor {
+    .jsoneditor,
+    > div,
+    jsoneditor-outer {
+      --json-editor-height: 100%;
+      height: var(--json-editor-height);
+    }
+  }
+
+  .message-list {
+    --title-size: 1em;
+    --title-padding: 0;
+
+    ul {
+      margin-block-start: 0;
+      margin-block-end: 0;
+      padding-inline-start: 20px;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .success {
+      color: green;
+    }
+  }
+}

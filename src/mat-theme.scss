@@ -1,0 +1,162 @@
+@use "@angular/material" as mat;
+
+@include mat.core();
+
+$app-typography: mat.define-rem-typography-config(
+  $font-family: "Roboto, 微软雅黑, sans-serif"
+);
+$primary: mat.define-palette(mat.$indigo-palette, 500); // $deeppurple form color_palette
+$accent: mat.define-palette(mat.$pink-palette, A200, A100, A400); // $blue form color_palette
+$warn: mat.define-palette(mat.$red-palette); // $red form color_palette
+$app-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $primary,
+      accent: $accent,
+      warn: $warn
+    ),
+    typography: $app-typography,
+    density: 0
+  )
+);
+@include mat.all-component-themes($app-theme);
+@include mat.typography-hierarchy($app-typography);
+
+.mat-mdc-form-field {
+  width: 100%;
+  flex: 1 1 0;
+  font-size: 18px;
+
+  .mat-mdc-form-field-icon-prefix,
+  .mat-mdc-form-field-icon-suffix {
+    display: flex;
+
+    .mat-mdc-icon-button {
+      width: inherit;
+      height: inherit;
+      padding: 0;
+
+      .mat-mdc-button-touch-target {
+        display: none;
+      }
+    }
+  }
+
+  .mat-mdc-floating-label {
+    color: blue !important;
+    font-size: 18px;
+  }
+
+  &.empty {
+    .mdc-line-ripple::before {
+      border-bottom-color: red;
+      border-bottom-width: 2px;
+    }
+  }
+
+  .mdc-text-field,
+  .mat-mdc-form-field-hint-wrapper,
+  .mat-mdc-form-field-error-wrapper {
+    padding: 0 5px;
+  }
+}
+
+.mat-mdc-dialog-container {
+  --mdc-dialog-supporting-text-color: black;
+}
+
+.mat-mdc-snack-bar-container {
+  $container-color: mat.get-color-from-palette($primary, 500);
+  --mdc-snackbar-container-color: #{$container-color};
+}
+
+.mat-mdc-button.mdc-button {
+  min-width: unset;
+}
+
+.mat-mdc-dialog-surface .mat-mdc-dialog-actions {
+  justify-content: center;
+
+  > :not(:first-child) {
+    margin-left: 8px;
+  }
+}
+
+.mat-mdc-option .mdc-list-item__primary-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mat-mdc-menu-item {
+  display: flex !important;
+  justify-content: space-between;
+  padding: 0 10px;
+
+  .shortcut {
+    text-align: right;
+    font-size: 0.75rem;
+    color: #868686;
+    margin-left: 10px;
+  }
+}
+
+mat-divider {
+  &.mat-divider {
+    border-color: rgb(0, 0, 0, 0.7);
+  }
+  &.mat-divider-horizontal {
+    margin: var(--mat-divider-margin) 0;
+  }
+  &.mat-divider-vertical {
+    margin: 0 var(--mat-divider-margin);
+  }
+  &.placeholder {
+    border-color: transparent;
+  }
+}
+
+.mat-tree {
+  --node-padding: 0 0 0 20px;
+
+  ul,
+  li {
+    margin-top: 0;
+    margin-bottom: 0;
+    list-style-type: none;
+  }
+
+  .mat-nested-tree-node div[role="group"] {
+    padding: var(--node-padding);
+  }
+
+  div[role="group"] > .mat-tree-node {
+    padding: var(--node-padding);
+  }
+}
+
+.mat-icon {
+  width: var(--mat-icon-size) !important;
+  height: var(--mat-icon-size) !important;
+  font-size: var(--mat-icon-size) !important;
+}
+.mat-mdc-icon-button.mat-mdc-button-base {
+  width: var(--mat-icon-size) !important;
+  height: var(--mat-icon-size) !important;
+  padding: var(--mat-icon-padding) !important;
+}
+.mat-mdc-icon-button .mat-mdc-button-touch-target {
+  width: var(--mat-icon-size) !important;
+  height: var(--mat-icon-size) !important;
+}
+
+.cdk-overlay-container {
+  z-index: var(--top-z-index);
+}
+
+:root {
+  --mat-divider-margin: 5px;
+  --mat-icon-size: 24px;
+  --top-z-index: 99999;
+  --top-top-z-index: calc(var(--top-z-index) + 1);
+}

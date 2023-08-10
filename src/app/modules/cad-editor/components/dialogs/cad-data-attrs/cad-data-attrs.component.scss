@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  width: calc(70vw - 48px);
+  height: calc(70vh - 48px);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+}

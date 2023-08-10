@@ -1,0 +1,48 @@
+<div class="title">
+  <div>订单编号: {{ codes.join(",") }}</div>
+</div>
+<div class="toolbar flex-row">
+  <mat-slide-toggle [(ngModel)]="autoGuige" (change)="onAutoGuigeChange()">自动选择最合适的板材规格</mat-slide-toggle>
+  <div class="links">
+    <button mat-flat-button (click)="openDdbq()">订单标签</button>
+    <button mat-flat-button [disabled]="downloadHistory.length < 1" [matMenuTriggerFor]="downloadHistoryList">下载记录</button>
+  </div>
+  <mat-menu #downloadHistoryList="matMenu">
+    <button mat-menu-item *ngFor="let item of downloadHistory" (click)="downloadDxf(item.name, true)">
+      {{ item.date }}
+    </button>
+  </mat-menu>
+</div>
+
+<ng-scrollbar class="flex-110">
+  <div class="bancai-infos flex-column">
+    <div class="bancai-info flex-column" *ngFor="let info of orderBancaiInfos; let i = index">
+      <mat-divider *ngIf="i > 0"></mat-divider>
+      <div class="flex-row">
+        <div class="title">{{ info.code }}</div>
+        <div class="links">
+          <button mat-flat-button [disabled]="!info.shangxiazouxianUrl" (click)="open(info.shangxiazouxianUrl)">上下走线</button>
+          <button mat-flat-button [disabled]="!info.kailiaokongweipeizhiUrl" (click)="open(info.kailiaokongweipeizhiUrl)">
+            开料孔位配置
+          </button>
+          <button mat-flat-button [disabled]="!info.kailiaocanshuzhiUrl" (click)="open(info.kailiaocanshuzhiUrl)">开料参数</button>
+        </div>
+      </div>
+      <div class="bancai-info-row flex-row" *ngFor="let bancaiInfo of info.bancaiInfos; let j = index">
+        <app-input #bancaiInfoInput class="flex-110" *ngFor="let inputInfo of bancaiInfo.inputInfos" [info]="inputInfo"></app-input>
+        <div>
+          <button mat-raised-button [color]="bancaiInfo.oversized ? 'accent' : 'primary'" (click)="openCadsDialog(i, j)">开料CAD</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-scrollbar>
+<div class="btn-group">
+  <div class="spinner-container">
+    <button mat-raised-button color="primary" (click)="submit()">
+      {{ type }}
+    </button>
+    <app-spinner [id]="submitLoaderId" [inline]="true"></app-spinner>
+  </div>
+</div>
+<app-spinner [id]="loaderId"></app-spinner>

@@ -1,0 +1,113 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  --title-size: 1.2rem;
+}
+
+.menshan-options {
+  border: var(--border);
+
+  .menshan-option {
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    cursor: pointer;
+    &:not(:last-child) {
+      border-bottom: var(--border);
+    }
+    &:hover {
+      background-color: lightgray;
+    }
+    &.active {
+      background-color: lightgray;
+    }
+  }
+}
+
+.mokuai {
+  width: 20%;
+  padding: 5px;
+  box-sizing: border-box;
+  cursor: pointer;
+  position: relative;
+  &.active {
+    background-color: lightgray;
+  }
+
+  .active-sign {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: rgb(224, 46, 42);
+    --icon-size: 48px;
+  }
+
+  .default-sign {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    color: black;
+    &.active {
+      color: rgb(224, 46, 42);
+    }
+    --icon-size: 48px;
+  }
+
+  .mokuai-xiaoguotu {
+    height: 150px;
+  }
+
+  .title {
+    --title-size: 14px;
+    --title-padding: 0;
+  }
+}
+
+.xinghao-info,
+.xinghao-bancai,
+.xinghao-bancai-option {
+  --mdc-typography-body1-font-size: 14px;
+}
+.xinghao-info {
+  font-size: var(--mdc-typography-body1-font-size);
+  > div {
+    padding: 5px 72px 5px 0;
+  }
+}
+
+.mokuai-inputs {
+  flex-wrap: wrap;
+  --mokuai-inputs-space: 2px;
+
+  app-input {
+    width: calc(50% - var(--mokuai-inputs-space));
+    box-sizing: border-box;
+    &:nth-child(odd) {
+      margin-right: calc(var(--mokuai-inputs-space) * 2);
+    }
+  }
+}
+
+.bancaixuanze-item {
+  > :not(:last-child) {
+    margin-right: 5px;
+  }
+
+  .key {
+    flex: 0 0 auto;
+  }
+}
+
+.xiaoguotu {
+  position: relative;
+  transform-origin: left top;
+  z-index: -1;
+
+  > * {
+    z-index: 1;
+  }
+}

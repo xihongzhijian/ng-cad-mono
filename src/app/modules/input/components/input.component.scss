@@ -1,0 +1,15 @@
+:host {
+  &.color {
+    input {
+      transition: 0.3s;
+      text-transform: uppercase;
+    }
+  }
+}
+
+.sub-form-field {
+  > div .mat-mdc-form-field:not(:last-child) {
+    padding-right: 5px;
+    box-sizing: border-box;
+  }
+}

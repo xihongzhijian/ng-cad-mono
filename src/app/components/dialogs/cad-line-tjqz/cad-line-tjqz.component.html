@@ -1,0 +1,13 @@
+<div class="title">条件取值设置</div>
+<div class="btn-group">
+  <div class="spinner-container">
+    <button mat-raised-button color="accent" (click)="submit()">保存</button>
+    <app-spinner [id]="loaderId" [inline]="true"></app-spinner>
+  </div>
+  <button mat-raised-button color="normal" (click)="close()">关闭</button>
+</div>
+<div class="content">
+  <app-table #tableLeft [info]="infoLeft" (cellChange)="onCellChange($event)" (cellClick)="onCellClick($event)"></app-table>
+  <div class="divider"></div>
+  <app-table [info]="infoRight" (cellFocus)="onCellFocusRight($event)"></app-table>
+</div>

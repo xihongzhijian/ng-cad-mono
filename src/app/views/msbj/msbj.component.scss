@@ -1,0 +1,84 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  --rect-area-height: 66.66%;
+  --title-size: 1.2rem;
+}
+
+.rect-container {
+  position: relative;
+  width: 50%;
+
+  .rect-area {
+    height: var(--rect-area-height);
+  }
+
+  .rects {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    .rect {
+      position: absolute;
+      border: 1px solid black;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+      &.is-buju {
+        cursor: pointer;
+      }
+      &.active {
+        border: 2px solid red;
+      }
+    }
+  }
+}
+
+.fenlei-container {
+  display: flex;
+
+  .fenlei-lists > :not(:last-child) {
+    margin-right: 10px;
+  }
+
+  .list {
+    border: 1px solid black;
+    overflow: auto;
+  }
+}
+
+.list-item {
+  background-color: white;
+}
+
+.formulas {
+  flex-wrap: wrap;
+  max-height: 100%;
+  overflow: auto;
+
+  .formula {
+    padding: 10px;
+
+    .divider {
+      margin: 0 5px;
+    }
+  }
+}
+
+.cads {
+  flex-wrap: wrap;
+
+  .cad {
+    width: 180px;
+    box-sizing: border-box;
+    padding: 5px;
+
+    app-image {
+      cursor: pointer;
+    }
+  }
+}

@@ -1,0 +1,11 @@
+<router-outlet></router-outlet>
+<app-spinner></app-spinner>
+<div class="nav" *ngIf="!isProd" cdkDrag>
+  <mat-icon color="primary" [matMenuTriggerFor]="links">apps</mat-icon>
+  <mat-menu #links="matMenu">
+    <button mat-menu-item *ngFor="let routeInfo of routesInfo" [routerLink]="routeInfo.path" [queryParamsHandling]="'merge'">
+      {{ getRouteTitle(routeInfo) }}
+    </button>
+    <app-message-test></app-message-test>
+  </mat-menu>
+</div>

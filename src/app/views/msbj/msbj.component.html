@@ -1,0 +1,41 @@
+<div class="title">门扇布局配置</div>
+<div class="content flex-row flex-110">
+  <div class="rect-container flex-column">
+    <div class="rect-area flex-column">
+      <div class="btn-group">
+        <button mat-raised-button color="primary" (click)="submit()">提交</button>
+        <ng-container *ngIf="!production">
+          <button mat-raised-button color="primary" (click)="generateRects({resetColors: true})">重新生成矩形</button>
+          <!-- <div>颜色范围</div>
+          <div class="flex-row" style="height: 64px; align-items: flex-end">
+            <mat-slider [min]="0" [max]="255" discrete style="width: 300px">
+              <input [(ngModel)]="rgbMin" matSliderStartThumb />
+              <input [(ngModel)]="rgbMax" matSliderEndThumb />
+            </mat-slider>
+          </div> -->
+        </ng-container>
+      </div>
+      <app-msbj-rects [rectInfos]="msbjInfo?.peizhishuju?.['模块节点']" (selectRect)="setCurrRectInfo($event)"></app-msbj-rects>
+    </div>
+    <div class="flex-110" (click)="setCurrRectInfo(null)">
+      <div class="title center">{{ msbjInfo?.name }}</div>
+    </div>
+  </div>
+  <div class="fenlei-container flex-column flex-110" cdkDropListGroup>
+    <app-input [info]="nameInputInfo"></app-input>
+    <div class="daxiaoguanxi flex-column">
+      <div class="btn-group">
+        <div class="title">模块大小关系</div>
+        <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">编辑</button>
+      </div>
+    </div>
+    <ng-scrollbar class="flex-110">
+      <div class="cads flex-row">
+        <div class="cad flex-column" *ngFor="let cad of cads">
+          <div class="title center">{{ cad.data.name }}</div>
+          <app-image class="cad-preview" [src]="cad.img" (click)="openCad(cad.data)"></app-image>
+        </div>
+      </div>
+    </ng-scrollbar>
+  </div>
+</div>

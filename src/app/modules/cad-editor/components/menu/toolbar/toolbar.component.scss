@@ -1,0 +1,15 @@
+.mat-button {
+  padding: 2px 5px;
+  min-width: unset;
+}
+
+.super {
+  vertical-align: super !important;
+  font-size: 0.5em;
+  color: hotpink;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+}

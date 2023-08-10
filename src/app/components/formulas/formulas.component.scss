@@ -1,0 +1,33 @@
+.formulas {
+  .formula {
+    display: flex;
+    flex-direction: row;
+    white-space: nowrap;
+    color: black;
+    padding: 3px 0;
+
+    .formula-key {
+      text-align: right;
+      color: #2186da;
+    }
+
+    .formula-value {
+      color: black;
+    }
+
+    .formula-eq,
+    .formula-neq {
+      margin: 0 0.25em;
+    }
+    .formula-eq::after {
+      content: "=";
+    }
+    .formula-neq::after {
+      content: "≠";
+      color: red;
+    }
+    .formula-neq + .formula-value {
+      color: red;
+    }
+  }
+}

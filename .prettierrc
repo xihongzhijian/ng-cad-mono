@@ -1,0 +1,9 @@
+{
+  "trailingComma": "none",
+  "bracketSpacing": false,
+  "importOrder": ["zone.js/testing", "<THIRD_PARTY_MODULES>", "^[./]"],
+  "importOrderSortSpecifiers": true,
+  "importOrderGroupNamespaceSpecifiers": true,
+  "importOrderCaseInsensitive": true,
+  "importOrderParserPlugins": ["typescript", "decorators-legacy"]
+}

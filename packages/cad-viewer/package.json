@@ -1,0 +1,67 @@
+{
+  "name": "@lucilor/cad-viewer",
+  "version": "3.20.1",
+  "description": "cad-viewer",
+  "main": "lib/index.js",
+  "files": [
+    "/lib",
+    "/dist"
+  ],
+  "scripts": {
+    "start": "webpack --config webpack.dev.js",
+    "lib": "webpack --config webpack.lib.js",
+    "dist": "webpack --config webpack.dist.js",
+    "build": "webpack --config webpack.lib.js && webpack --config webpack.dist.js",
+    "prepublish": "yarn build",
+    "lint": "eslint . --fix",
+    "format": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lucilor/ng-cad-mono.git"
+  },
+  "keywords": [
+    "utils"
+  ],
+  "author": "lucilor <lucilor@me.com>",
+  "license": "LGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Lucilor/ng-cad-mono/issues"
+  },
+  "homepage": "https://github.com/Lucilor/ng-cad-mono#readme",
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.2.0",
+    "@types/color": "^3.0.3",
+    "@types/events": "^3.0.0",
+    "@types/lodash": "^4.14.196",
+    "@types/uuid": "^9.0.2",
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
+    "clean-webpack-plugin": "^4.0.0",
+    "css-loader": "^6.8.1",
+    "csstype": "^3.1.2",
+    "eslint": "^8.46.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-deprecation": "^1.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.8",
+    "sass": "^1.64.2",
+    "sass-loader": "^13.3.2",
+    "style-loader": "^3.3.3",
+    "terser-webpack-plugin": "^5.3.9",
+    "ts-loader": "^9.4.4",
+    "typescript": "~5.1.6",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-merge": "^5.9.0",
+    "webpack-node-externals": "^3.0.0"
+  },
+  "dependencies": {
+    "@lucilor/utils": "workspace:^",
+    "@svgdotjs/svg.js": "3.2.0",
+    "color": "^4.2.3",
+    "events": "^3.3.0",
+    "lodash": "^4.17.21",
+    "uuid": "^9.0.0"
+  }
+}

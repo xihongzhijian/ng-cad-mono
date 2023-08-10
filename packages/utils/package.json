@@ -1,0 +1,62 @@
+{
+  "name": "@lucilor/utils",
+  "version": "1.21.3",
+  "description": "utils",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "start": "webpack --config webpack.dev.js",
+    "lib": "webpack --config webpack.lib.js",
+    "dist": "webpack --config webpack.dist.js",
+    "build": "webpack --config webpack.lib.js && webpack --config webpack.dist.js",
+    "prepublish": "yarn build",
+    "lint": "eslint . --fix",
+    "format": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lucilor/ng-cad-mono.git"
+  },
+  "keywords": [
+    "utils"
+  ],
+  "author": "lucilor <lucilor@me.com>",
+  "license": "LGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Lucilor/ng-cad-mono/issues"
+  },
+  "homepage": "https://github.com/Lucilor/ng-cad-mono#readme",
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.2.0",
+    "@types/events": "^3.0.0",
+    "@types/lodash": "^4.14.196",
+    "@types/md5": "^2.3.2",
+    "@types/node": "^18.17.3",
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
+    "clean-webpack-plugin": "^4.0.0",
+    "eslint": "^8.46.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-deprecation": "^1.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.8",
+    "terser-webpack-plugin": "^5.3.9",
+    "ts-loader": "^9.4.4",
+    "typescript": "~5.1.6",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-merge": "^5.9.0",
+    "webpack-node-externals": "^3.0.0"
+  },
+  "dependencies": {
+    "events": "^3.3.0",
+    "expr-eval": "^2.0.2",
+    "jsencrypt": "^3.3.2",
+    "lodash": "^4.17.21",
+    "md5": "^2.3.0",
+    "pinyin-pro": "^3.16.2"
+  }
+}
