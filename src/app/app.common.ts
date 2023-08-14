@@ -127,7 +127,7 @@ setGlobal("log", log);
 
 export const replaceRemoteHost = (urlStr: string) => {
   const url = new URL(urlStr);
-  if (!environment.production && url.host.startsWith(remoteHost)) {
+  if (!environment.production && remoteHost === url.host) {
     return url.href.replace(remoteHost, window.origin);
   }
   return url.href;
