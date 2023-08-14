@@ -125,11 +125,12 @@ export const timer = new Timer({color: "deeppink"});
 setGlobal("timer", timer);
 setGlobal("log", log);
 
-export const replaceRemoteHost = (url: string) => {
-  if (!environment.production && url.startsWith(remoteHost)) {
-    return url.replace(remoteHost, window.origin);
+export const replaceRemoteHost = (urlStr: string) => {
+  const url = new URL(urlStr);
+  if (!environment.production && url.host.startsWith(remoteHost)) {
+    return url.href.replace(remoteHost, window.origin);
   }
-  return url;
+  return url.href;
 };
 
 export interface XiaodaohangStructure {
