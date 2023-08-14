@@ -14,9 +14,9 @@ export const log = (msg: string, type?: string, styles: Partial<CSSStyleDeclarat
     if (!msg2.includes("%c")) {
       msg2 = "%c" + msg2;
     }
-    console.log(msg2, cssText, ...others);
+    console.log("%s", msg2, cssText, ...others);
   } else {
-    console.log(msg2, ...others);
+    console.log("%s", msg2, ...others);
   }
 };
 
