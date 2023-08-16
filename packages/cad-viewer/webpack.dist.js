@@ -7,7 +7,9 @@ module.exports = merge(common, {
     "cad-viewer": "./src/index.ts"
   },
   devtool: "source-map",
-  externals: ["@lucilor/utils"],
+  externals: {
+    "@lucilor/utils": ["lucilor", "utils"]
+  },
   output: {
     path: path.resolve(__dirname, "dist"),
     libraryTarget: "window",
