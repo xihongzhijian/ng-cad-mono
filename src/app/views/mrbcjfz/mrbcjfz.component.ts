@@ -384,16 +384,16 @@ export class MrbcjfzComponent implements OnInit {
       }
     }
     if (this.bancaiInputComponents) {
-      const errorMsg2: string[] = [];
+      const errorMsg2 = new Set<string>();
       this.bancaiInputComponents.forEach((v) => {
         v.validateValue();
-        const errorMag3 = v.errorMsg;
-        if (errorMag3 && !errorMsg2.includes(errorMag3)) {
-          errorMsg2.push(v.info.label + errorMag3);
+        const errorMsg3 = v.errorMsg;
+        if (errorMsg3) {
+          errorMsg2.add(v.info.label + errorMsg3);
         }
       });
-      if (errorMsg2.length > 0) {
-        errorMsg.push(`板材输入有误：${errorMsg2.join("，")}`);
+      if (errorMsg2.size > 0) {
+        errorMsg.push(`板材输入有误：${Array.from(errorMsg2).join("，")}`);
       }
     }
     if (errorMsg.length) {
@@ -411,6 +411,8 @@ export class MrbcjfzComponent implements OnInit {
       });
       result = response?.code === 0;
     } else {
+      this.spinner.hide(this.spinner.defaultLoaderId);
+      throw new Error("not implemented");
       result = await this.dataService.tableUpdate({table, data});
     }
     this.spinner.hide(this.spinner.defaultLoaderId);

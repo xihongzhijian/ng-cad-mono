@@ -80,10 +80,27 @@ export class MrbcjfzXinghaoInfo {
                 return {required: true};
               }
             }
-            if (val && !/板材|颜色$/.test(val)) {
-              return {pattern: "必须以“板材”或“颜色”结尾"};
+            if (val) {
+              if (!/(板材|颜色)$/.test(val)) {
+                return {pattern: "必须以“板材”或“颜色”结尾"};
+              }
+              for (const key2 in this.默认板材) {
+                if (key2 !== key && this.默认板材[key2].板材分组别名 === val) {
+                  return {pattern: "不能重复"};
+                }
+              }
             }
             return null;
+          },
+          onChange: () => {
+            for (const key2 in this.默认板材) {
+              if (key2 !== key) {
+                const info2 = this.inputInfos[key2].find((v) => v.label === "板材分组别名");
+                if (info2) {
+                  info2.forceValidateNum = (info2.forceValidateNum || 0) + 1;
+                }
+              }
+            }
           }
         },
         {type: "boolean", label: "允许修改", model: {data: value, key: "允许修改"}, styles: {flex: "1 1 9px"}},

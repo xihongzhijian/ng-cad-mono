@@ -24,6 +24,7 @@ export interface InputInfoBase<T = any> {
   class?: string | string[];
   validators?: AbstractControlOptions["validators"];
   initialValidate?: boolean;
+  forceValidateNum?: number; // change this to trigger validation
   name?: string;
   styles?: csstype.Properties;
   hidden?: boolean;

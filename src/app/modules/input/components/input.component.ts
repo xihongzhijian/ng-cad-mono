@@ -173,6 +173,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   valueChange$ = new BehaviorSubject<any>(null);
   filteredOptions$ = new BehaviorSubject<InputComponent["options"]>([]);
 
+  private _validateValueLock = false;
+
   constructor(private message: MessageService, private dialog: MatDialog, private differs: KeyValueDiffers) {
     super();
     this.valueChange$.subscribe((val) => {
@@ -239,15 +241,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   ngDoCheck() {
     const changes = this.infoDiffer.diff(this.info);
     if (changes) {
-      this.infoChanged();
+      this._onInfoChange(changes);
     }
   }
 
-  infoChanged() {
-    this._onInfoChange();
-  }
-
-  private _onInfoChange() {
+  private _onInfoChange(changes: NonNullable<ReturnType<typeof this.infoDiffer.diff>>) {
     const {info} = this;
     if (!info.autocomplete) {
       info.autocomplete = "off";
@@ -299,7 +297,15 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.hidden) {
       this.style.display = "none";
     }
-    if (info.initialValidate) {
+    let validateValue = !!info.initialValidate;
+    changes.forEachItem((item) => {
+      if (item.key === "forceValidateNum") {
+        if (item.currentValue !== item.previousValue) {
+          validateValue = true;
+        }
+      }
+    });
+    if (validateValue) {
       this.validateValue();
     }
     this.valueChange$.next(this.value);
@@ -356,6 +362,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   async onChange(value = this.value, isAutocomplete = false) {
     const info = this.info;
     this.validateValue(value);
+    this._validateValueLock = true;
+    setTimeout(() => {
+      this._validateValueLock = false;
+    }, 100);
     switch (info.type) {
       case "string":
         if (value && info.options && !isAutocomplete) {
@@ -404,7 +414,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return null;
     }
     const control = new FormControl(value, validators);
-    control.updateValueAndValidity();
     this.errors = control.errors;
     return this.errors;
   }
@@ -436,7 +445,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   onBlur() {
-    this.validateValue();
+    if (!this._validateValueLock) {
+      this.validateValue();
+    }
   }
 
   async selectOptions(key?: keyof any, optionKey?: string) {
