@@ -666,6 +666,12 @@ export function getCalcZhankaiText(
     needShangxiaqieInfo = false;
   }
 
+  /**
+   * 目前这个方法是给刨坑工单用的
+   * 刨坑工单不需要显示上下切内容
+   */
+  forceNotDisplayShangxiaqieInfo = true;
+
   let menshanshangqieInZhankai = false;
   let menshansxiaqieInZhankai = false;
 
