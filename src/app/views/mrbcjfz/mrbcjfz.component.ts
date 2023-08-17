@@ -411,8 +411,6 @@ export class MrbcjfzComponent implements OnInit {
       });
       result = response?.code === 0;
     } else {
-      this.spinner.hide(this.spinner.defaultLoaderId);
-      throw new Error("not implemented");
       result = await this.dataService.tableUpdate({table, data});
     }
     this.spinner.hide(this.spinner.defaultLoaderId);
