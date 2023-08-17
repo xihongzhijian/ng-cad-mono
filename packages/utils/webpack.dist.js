@@ -10,9 +10,11 @@ module.exports = merge(common, {
   devtool: "source-map",
   output: {
     path: path.resolve(__dirname, "dist"),
-    libraryTarget: "window",
     globalObject: "this",
-    library: ["lucilor", "utils"]
+    library: {
+      name: ["lucilor", "utils"],
+      type: "window"
+    }
   },
   plugins: [new CleanWebpackPlugin()]
 });

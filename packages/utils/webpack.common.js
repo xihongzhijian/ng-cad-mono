@@ -13,6 +13,6 @@ module.exports = {
     extensions: [".tsx", ".ts", ".js"]
   },
   output: {
-    filename: "[name].js" // 输出文件
+    filename: "[name].js"
   }
 };

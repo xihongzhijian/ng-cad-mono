@@ -13,9 +13,11 @@ module.exports = merge(common, {
   },
   output: {
     path: path.resolve(__dirname, "dist"),
-    libraryTarget: "window",
     globalObject: "this",
-    library: ["lucilor", "cadViewer"]
+    library: {
+      name: ["lucilor", "cadViewer"],
+      type: "window"
+    }
   },
   plugins: [new CleanWebpackPlugin()]
 });
