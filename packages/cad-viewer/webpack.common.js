@@ -21,6 +21,5 @@ module.exports = {
   },
   output: {
     filename: "[name].js" // 输出文件
-  },
-  plugins: [new CleanWebpackPlugin()]
+  }
 };

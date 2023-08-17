@@ -304,13 +304,13 @@ export const drawLeader = (draw: Container, start: Point, end: Point, size: numb
 };
 
 const loadImageEl = async (el: Image, url: string) => {
-  if (el.attr("href") === url) {
+  if (el.attr("href") === url || !url) {
     return;
   }
-  return new Promise<void>((resolve) => {
-    el.load(url, () => {
-      resolve();
-    });
+  return new Promise<void>((resolve, reject) => {
+    el.load(url);
+    el.on("load", () => resolve());
+    el.on("error", reject);
   });
 };
 

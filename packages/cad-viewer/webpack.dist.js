@@ -15,5 +15,6 @@ module.exports = merge(common, {
     libraryTarget: "window",
     globalObject: "this",
     library: ["lucilor", "cadViewer"]
-  }
+  },
+  plugins: [new CleanWebpackPlugin()]
 });

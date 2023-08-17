@@ -12,5 +12,6 @@ module.exports = merge(common, {
     libraryTarget: "window",
     globalObject: "this",
     library: ["lucilor", "utils"]
-  }
+  },
+  plugins: [new CleanWebpackPlugin()]
 });
