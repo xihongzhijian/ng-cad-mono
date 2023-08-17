@@ -32,11 +32,11 @@
     "@types/events": "^3.0.0",
     "@types/lodash": "^4.14.197",
     "@types/md5": "^2.3.2",
-    "@types/node": "^18.17.4",
-    "@typescript-eslint/eslint-plugin": "^6.3.0",
-    "@typescript-eslint/parser": "^6.3.0",
+    "@types/node": "^18.17.5",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "@typescript-eslint/parser": "^6.4.0",
     "clean-webpack-plugin": "^4.0.0",
-    "eslint": "^8.46.0",
+    "eslint": "^8.47.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-deprecation": "^1.5.0",
     "eslint-plugin-prettier": "^4.2.1",
@@ -55,6 +55,6 @@
     "jsencrypt": "^3.3.2",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
-    "pinyin-pro": "^3.16.2"
+    "pinyin-pro": "^3.16.3"
   }
 }
