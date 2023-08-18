@@ -2,7 +2,7 @@
   <div *ngSwitchCase="1" class="step-1 flex-row flex-110">
     <ng-scrollbar class="flex-110" [ngStyle]="{flex: '0 0 ' + typesButtonsWidth}">
       <div class="types-buttons">
-        <ng-container *ngFor="let item of typesInfo | keyvalue : returnZero">
+        <ng-container *ngFor="let item of typesInfo | keyvalue: returnZero">
           <div *ngIf="!typesInfoType1[item.key]?.hidden">
             <button #typesButton mat-raised-button [color]="type1 === item.key ? 'accent' : 'primary'" (click)="setTypesInfo1(item.key)">
               {{ item.key }}
@@ -15,7 +15,7 @@
       <app-input [info]="searchMokuaiInputInfo"></app-input>
       <ng-scrollbar class="flex-110">
         <div class="types-info-items flex-row flex-110" *ngIf="typesInfo[type1]">
-          <ng-container *ngFor="let item of typesInfo[type1] | keyvalue : returnZero">
+          <ng-container *ngFor="let item of typesInfo[type1] | keyvalue: returnZero">
             <div class="types-info-item" *ngIf="!item.value.hidden">
               <div class="images flex-row flex-110">
                 <app-image
@@ -122,7 +122,7 @@
   <div *ngSwitchCase="3" class="step-3 flex-row flex-110">
     <ng-scrollbar class="flex-110" [ngStyle]="{flex: '0 0 ' + typesButtonsWidth}">
       <div class="types-buttons">
-        <div *ngFor="let item of lingsanCadInfos | keyvalue : returnZero">
+        <div *ngFor="let item of lingsanCadInfos | keyvalue: returnZero">
           <ng-container *ngIf="!item.value.hidden">
             <button
               #typesButton

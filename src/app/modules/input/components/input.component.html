@@ -122,7 +122,7 @@
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
-      <div *ngFor="let item of asObject(value) | keyvalue : returnZero">
+      <div *ngFor="let item of asObject(value) | keyvalue: returnZero">
         <mat-form-field style="width: 30%" [ngClass]="{empty: isEmpty(item.key)}">
           <input
             type="text"

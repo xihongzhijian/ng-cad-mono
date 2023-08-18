@@ -35,7 +35,7 @@
     <div style="margin-bottom: 15px">
       <div style="color: darkturquoise; margin-bottom: 10px">成功结果</div>
       <div class="add-empty-msg">
-        <div style="margin-bottom: 5px" *ngFor="let item of testResult.succeed | keyvalue : returnZero">
+        <div style="margin-bottom: 5px" *ngFor="let item of testResult.succeed | keyvalue: returnZero">
           {{ item.key }} = {{ item.value }}
         </div>
       </div>
@@ -43,9 +43,7 @@
     <div>
       <div style="color: red; margin-bottom: 10px">失败结果</div>
       <div class="add-empty-msg">
-        <div style="margin-bottom: 5px" *ngFor="let item of testResult.error | keyvalue : returnZero">
-          {{ item.key }} = {{ item.value }}
-        </div>
+        <div style="margin-bottom: 5px" *ngFor="let item of testResult.error | keyvalue: returnZero">{{ item.key }} = {{ item.value }}</div>
       </div>
     </div>
   </div>

@@ -5,15 +5,21 @@
   border-radius: 25px;
   line-height: 50px;
   font-size: 20px;
-  box-shadow: 0 4px 8px 0px rgb(0 0 0 / 20%), 0 6px 20px 0px rgb(0 0 0 / 19%);
+  box-shadow:
+    0 4px 8px 0px rgb(0 0 0 / 20%),
+    0 6px 20px 0px rgb(0 0 0 / 19%);
   transition: 0.3s;
   cursor: pointer;
   overflow: hidden;
   &:hover {
-    box-shadow: 0 4px 8px 0px rgb(0 0 0 / 36%), 0 6px 20px 6px rgb(0 0 0 / 19%);
+    box-shadow:
+      0 4px 8px 0px rgb(0 0 0 / 36%),
+      0 6px 20px 6px rgb(0 0 0 / 19%);
   }
   &:active {
-    box-shadow: 0 4px 8px 0px rgb(0 0 0 / 20%), 0 6px 20px 0px rgb(0 0 0 / 19%);
+    box-shadow:
+      0 4px 8px 0px rgb(0 0 0 / 20%),
+      0 6px 20px 0px rgb(0 0 0 / 19%);
   }
 
   .progress-bar-msg {
@@ -25,7 +31,9 @@
     text-overflow: ellipsis;
     user-select: none;
     &.click {
-      animation: progress-slide 10s linear infinite, progress-flicker 5s alternate infinite;
+      animation:
+        progress-slide 10s linear infinite,
+        progress-flicker 5s alternate infinite;
     }
   }
 
@@ -89,7 +97,12 @@ $slide-px: 3px;
   53%,
   57%,
   100% {
-    text-shadow: 0 0 4px #ff5fff, 0 0 11px #ff5fff, 0 0 19px #fa71bc, 0 0 40px #fa71bc, 0 0 50px #e969f9;
+    text-shadow:
+      0 0 4px #ff5fff,
+      0 0 11px #ff5fff,
+      0 0 19px #fa71bc,
+      0 0 40px #fa71bc,
+      0 0 50px #e969f9;
   }
   20%,
   24%,

@@ -175,7 +175,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   private _validateValueLock = false;
 
-  constructor(private message: MessageService, private dialog: MatDialog, private differs: KeyValueDiffers) {
+  constructor(
+    private message: MessageService,
+    private dialog: MatDialog,
+    private differs: KeyValueDiffers
+  ) {
     super();
     this.valueChange$.subscribe((val) => {
       const info = this.info;

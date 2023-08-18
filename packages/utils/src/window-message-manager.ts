@@ -2,7 +2,11 @@ import {EventEmitter} from "events";
 import {getTypeOf} from "./misc";
 
 export class WindowMessageManager extends EventEmitter {
-  constructor(public messageType: string, public instance: any, public win?: Window | null) {
+  constructor(
+    public messageType: string,
+    public instance: any,
+    public win?: Window | null
+  ) {
     super();
     window.addEventListener("message", this._onMessage);
   }
