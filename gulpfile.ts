@@ -15,7 +15,7 @@ const postFormData = (url: string, data: ObjectOf<any>, file?: fs.ReadStream) =>
   return axios.post(url, formData, {headers: formData.getHeaders(), maxBodyLength: Infinity});
 };
 
-const token = process.env.SERVER_TOKEN;
+const token = "wefarvwEFqwdWEFfefw!$#^##%!";
 const host = "https://www.let888.cn";
 const targetDir = "./dist";
 
