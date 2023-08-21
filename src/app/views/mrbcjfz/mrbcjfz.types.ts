@@ -82,7 +82,7 @@ export class MrbcjfzXinghaoInfo {
           type: "string",
           label: "板材分组别名",
           model: {data: value, key: "板材分组别名"},
-          styles: {flex: "1 1 20px"},
+          styles: {flex: "20 20 0"},
           validators: (control) => {
             const val = String(control.value);
             if (["p_luomatou", "p_luomazhu", "p_qianhoubankuanshi"].includes(this.table)) {
@@ -114,12 +114,12 @@ export class MrbcjfzXinghaoInfo {
             }
           }
         },
-        {type: "boolean", label: "允许修改", model: {data: value, key: "允许修改"}, styles: {flex: "1 1 9px"}},
+        {type: "boolean", label: "允许修改", model: {data: value, key: "允许修改"}, styles: {flex: "8 8 0"}},
         {
           type: "boolean",
           label: "独立变化",
           model: {data: value, key: "独立变化"},
-          styles: {flex: "1 1 9px"},
+          styles: {flex: "8 8 0"},
           readonly: key === "底框板材"
         },
         {
@@ -127,7 +127,7 @@ export class MrbcjfzXinghaoInfo {
           label: "显示内容",
           options: showItemOptions.slice(),
           value: 显示内容,
-          styles: {flex: "1 1 12px"},
+          styles: {flex: "16 16 0"},
           onChange: (val: string) => {
             switch (val) {
               case "全都显示":
@@ -161,7 +161,7 @@ export class MrbcjfzXinghaoInfo {
           type: "select",
           label: "默认对应板材分组",
           model: {data: value, key: "默认对应板材分组"},
-          styles: {flex: "1 1 40px"},
+          styles: {flex: "40 40 0"},
           options: ["门框板材", "门扇板材"],
           clearable: true
         });
