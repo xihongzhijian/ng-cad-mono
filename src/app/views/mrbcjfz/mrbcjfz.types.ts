@@ -49,14 +49,22 @@ export class MrbcjfzXinghaoInfo {
     for (const key in this.默认板材) {
       this.默认板材[key] = {...getEmptyMrbcjfzInfo(key), ...this.默认板材[key]};
       const value = this.默认板材[key];
-      const showItemOptions = ["全都显示", "只显示颜色", "全不显示"] as const;
+      const showItemOptions = ["全都显示", "只显示颜色", "只显示颜色+结果不显示", "全不显示"] as const;
       let 显示内容: (typeof showItemOptions)[number] | undefined;
+      const isListEqual = (arr1: MrbcjfzInfoShowItem[], arr2: MrbcjfzInfoShowItem[]) => {
+        if (arr1.length !== arr2.length) {
+          return false;
+        }
+        return arr1.every((v) => arr2.includes(v));
+      };
       if (value.不显示) {
         if (value.不显示内容 && value.不显示内容.length > 0) {
           const showItems = difference(mrbcjfzInfoShowItems, value.不显示内容);
           if (showItems.length > 0) {
-            if (showItems.length === 1 && showItems[0] === "颜色") {
+            if (showItems.length === 1 && isListEqual(showItems, ["颜色"])) {
               显示内容 = "只显示颜色";
+            } else if (showItems.length === 2 && isListEqual(showItems, ["颜色", "结果"])) {
+              显示内容 = "只显示颜色+结果不显示";
             } else {
               显示内容 = "全都显示";
             }
@@ -130,6 +138,10 @@ export class MrbcjfzXinghaoInfo {
                 value.不显示 = true;
                 value.不显示内容 = ["材料", "厚度"];
                 break;
+              case "只显示颜色+结果不显示":
+                value.不显示 = true;
+                value.不显示内容 = ["材料", "厚度", "结果"];
+                break;
               case "全不显示":
                 value.不显示 = true;
                 value.不显示内容 = ["颜色", "材料", "厚度"];
@@ -194,7 +206,7 @@ export interface MrbcjfzInfo {
   不显示内容?: MrbcjfzInfoShowItem[];
 }
 
-export const mrbcjfzInfoShowItems = ["颜色", "材料", "厚度"] as const;
+export const mrbcjfzInfoShowItems = ["颜色", "材料", "厚度", "结果"] as const;
 export type MrbcjfzInfoShowItem = (typeof mrbcjfzInfoShowItems)[number];
 
 export const getMrbcjfzInfo = (source: Partial<MrbcjfzInfo> = {}): MrbcjfzInfo => ({
