@@ -144,7 +144,7 @@ export class MrbcjfzXinghaoInfo {
                 break;
               case "全不显示":
                 value.不显示 = true;
-                value.不显示内容 = ["颜色", "材料", "厚度"];
+                delete value.不显示内容;
                 break;
               default:
                 console.error("未知的显示内容选项", val);
