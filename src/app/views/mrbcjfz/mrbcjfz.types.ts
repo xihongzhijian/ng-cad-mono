@@ -61,9 +61,9 @@ export class MrbcjfzXinghaoInfo {
         if (value.不显示内容 && value.不显示内容.length > 0) {
           const showItems = difference(mrbcjfzInfoShowItems, value.不显示内容);
           if (showItems.length > 0) {
-            if (showItems.length === 1 && isListEqual(showItems, ["颜色"])) {
+            if (isListEqual(showItems, ["颜色", "结果"])) {
               显示内容 = "只显示颜色";
-            } else if (showItems.length === 2 && isListEqual(showItems, ["颜色", "结果"])) {
+            } else if (isListEqual(showItems, ["颜色"])) {
               显示内容 = "只显示颜色+结果不显示";
             } else {
               显示内容 = "全都显示";
