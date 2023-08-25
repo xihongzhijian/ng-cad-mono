@@ -2,7 +2,7 @@ import {getTypeOf, keysOf, Matrix, MatrixLike, ObjectOf, Point} from "@lucilor/u
 import {cloneDeep, intersection, uniqWith} from "lodash";
 import {v4} from "uuid";
 import {getArray, getObject, getVectorFromArray, mergeArray, mergeObject, purgeObject, separateArray, separateObject} from "../cad-utils";
-import {CadEntities, getCadEntity} from "./cad-entities";
+import {CadEntities, tryGetCadEntity} from "./cad-entities";
 import {CadCircle, CadDimension, CadEntity, CadLine} from "./cad-entity";
 import {CadDimensionLinear} from "./cad-entity/cad-dimension-linear";
 import {CadLayer} from "./cad-layer";
@@ -209,7 +209,13 @@ export class CadData {
       for (const name in data.blocks) {
         const block = data.blocks[name];
         if (Array.isArray(block) && block.length > 0) {
-          this.blocks[name] = block.map((v) => getCadEntity(v, this.layers));
+          this.blocks[name] = [];
+          for (const v of block) {
+            const entity = tryGetCadEntity(v, this.layers);
+            if (entity) {
+              this.blocks[name].push(entity);
+            }
+          }
         }
       }
     } else {

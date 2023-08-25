@@ -67,6 +67,22 @@ export const getCadEntity = <T extends CadEntity = AnyCadEntity>(
   return entity as T;
 };
 
+export const tryGetCadEntity = (data: any, layers?: CadLayer[], resetId?: boolean, type?: EntityType) => {
+  try {
+    return getCadEntity(data, layers, resetId, type);
+  } catch (error) {
+    console.groupCollapsed("failed to create entity");
+    if (error instanceof Error) {
+      console.warn(error.message);
+    } else {
+      console.warn(error);
+    }
+    console.warn(data);
+    console.groupEnd();
+    return null;
+  }
+};
+
 export type AnyCadEntity = CadLine & CadMtext & CadDimension & CadArc & CadCircle & CadHatch & CadSpline & CadLeader & CadInsert & CadImage;
 export class CadEntities {
   root: CadData | null = null;
@@ -93,28 +109,13 @@ export class CadEntities {
       data = {};
     }
     this.idMap = {};
-    const tryGetCadEntity = (data2: any, type?: EntityType) => {
-      try {
-        return getCadEntity(data2, layers, resetIds, type);
-      } catch (error) {
-        console.groupCollapsed("failed to create entity");
-        if (error instanceof Error) {
-          console.warn(error.message);
-        } else {
-          console.warn(error);
-        }
-        console.warn(data2);
-        console.groupEnd();
-        return null;
-      }
-    };
     entityTypesKey.forEach((key) => {
       const group: CadEntity[] | ObjectOf<any> = data[key];
       const type = entityTypesMap[key];
       if (Array.isArray(group)) {
         group.forEach((e) => {
           if (!(e instanceof CadEntity)) {
-            const e2 = tryGetCadEntity(e, type);
+            const e2 = tryGetCadEntity(e, layers, resetIds, type);
             if (!e2) {
               return;
             }
@@ -126,7 +127,7 @@ export class CadEntities {
         });
       } else if (group && typeof group === "object") {
         Object.values(group).forEach((e) => {
-          const eNew = tryGetCadEntity(e, type);
+          const eNew = tryGetCadEntity(e, layers, resetIds, type);
           if (!eNew) {
             return;
           }
