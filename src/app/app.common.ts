@@ -126,7 +126,12 @@ setGlobal("timer", timer);
 setGlobal("log", log);
 
 export const replaceRemoteHost = (urlStr: string) => {
-  const url = new URL(urlStr);
+  let url: URL;
+  try {
+    url = new URL(urlStr);
+  } catch (error) {
+    return urlStr;
+  }
   const remoteUrl = new URL(remoteHost);
   if (!environment.production && remoteUrl.host === url.host) {
     return url.href.replace(remoteHost, window.origin);
