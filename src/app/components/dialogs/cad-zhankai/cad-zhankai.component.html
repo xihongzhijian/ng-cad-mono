@@ -54,11 +54,11 @@
           <mat-label>数量倍数</mat-label>
           <input matInput type="text" [(ngModel)]="item.shuliangbeishu" name="shuliangbeishu" />
         </mat-form-field>
-        <mat-form-field class="halfwidth">
+        <!-- <mat-form-field class="halfwidth">
           <mat-label>开料</mat-label>
           <input type="text" matInput hidden value=" " />
           <mat-slide-toggle [checked]="item.kailiao" (change)="item.kailiao = $event.checked"></mat-slide-toggle>
-        </mat-form-field>
+        </mat-form-field> -->
         <mat-form-field class="halfwidth">
           <mat-label>开料数量不为1时拆成单个</mat-label>
           <input type="text" matInput hidden value=" " />
