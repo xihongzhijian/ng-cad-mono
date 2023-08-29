@@ -77,6 +77,9 @@ export class MrbcjfzXinghaoInfo {
       } else {
         显示内容 = "全都显示";
       }
+      if (!value.门扇使用限制 || !mrbcjfzMsxzItems.includes(value.门扇使用限制)) {
+        value.门扇使用限制 = "无限制";
+      }
       this.inputInfos[key] = [
         {
           type: "string",
@@ -154,6 +157,13 @@ export class MrbcjfzXinghaoInfo {
               info.styles.opacity = value.不显示 ? "0.5" : "1";
             }
           }
+        },
+        {
+          type: "select",
+          label: "门扇使用限制",
+          options: mrbcjfzMsxzItems.slice(),
+          model: {data: value, key: "门扇使用限制"},
+          styles: {flex: "12 12 0"}
         }
       ];
       if (this.raw.编辑默认对应板材分组) {
@@ -204,10 +214,14 @@ export interface MrbcjfzInfo {
   独立变化?: boolean;
   不显示?: boolean;
   不显示内容?: MrbcjfzInfoShowItem[];
+  门扇使用限制?: MrbcjfzMsxzItem;
 }
 
 export const mrbcjfzInfoShowItems = ["颜色", "材料", "厚度", "结果"] as const;
 export type MrbcjfzInfoShowItem = (typeof mrbcjfzInfoShowItems)[number];
+
+export const mrbcjfzMsxzItems = ["无限制", "子母小扇", "子母大扇", "双开铰扇"] as const;
+export type MrbcjfzMsxzItem = (typeof mrbcjfzMsxzItems)[number];
 
 export const getMrbcjfzInfo = (source: Partial<MrbcjfzInfo> = {}): MrbcjfzInfo => ({
   默认开料板材: "",
@@ -290,8 +304,8 @@ export const filterHuajian = (info: MrbcjfzHuajianInfo) => {
     }
     /**
      * 门扇做法有叫以下名字的话，会影响到上下板花件的判断
-     * 无上下板、有上下板
-     * +压条、加压条、无压条
+     * 无上下板", "有上下板
+     * +压条", "加压条", "无压条
      */
     newName = newName.replace(/无上下板|有上下板|\+压条|加压条|无压条|拉手板/g, "");
     return newName;
