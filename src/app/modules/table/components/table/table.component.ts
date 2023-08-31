@@ -132,7 +132,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     {
       const keys: (keyof TableRenderInfo<T>)[] = ["columns", "noCheckBox"];
       if (intersection(changedKeys, keys).length > 0) {
-        this.columnFields = [...this.info.columns.map((v) => v.field)];
+        this.columnFields = [...this.info.columns.filter((v) => !v.hidden).map((v) => v.field)];
         if (!this.info.noCheckBox) {
           this.columnFields.unshift("select");
         }
@@ -589,5 +589,42 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       return filterFn(event);
     }
     return true;
+  }
+
+  exportExcel(opts?: {filename?: string}) {
+    const data: string[][] = [];
+    if (this.info.title) {
+      data.push([this.info.title]);
+    }
+    const columns = this.info.columns.filter((v) => !v.hidden);
+    data.push(columns.map((v) => v.name));
+    const addRows = (source: any[]) => {
+      for (const item of source) {
+        const row: string[] = [];
+        for (const column of columns) {
+          let value = item[column.field];
+          if (column.type === "link") {
+            value = this.getColumnLinkedValue(column, item);
+          }
+          if (typeof value === "string") {
+            row.push(value);
+          } else if (value instanceof CadData) {
+            row.push(JSON.stringify(value.export()));
+          } else if (value === null || value === undefined) {
+            row.push("");
+          } else if (typeof value === "object") {
+            row.push(JSON.stringify(value));
+          } else {
+            row.push(String(value));
+          }
+        }
+        data.push(row);
+        if (Array.isArray(item.children)) {
+          addRows(item.children);
+        }
+      }
+    };
+    addRows(this.info.data);
+    this.dataService.downloadExcel(data, this.info.title, opts?.filename);
   }
 }

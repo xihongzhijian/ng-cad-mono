@@ -336,4 +336,9 @@ export class CadDataService extends HttpService {
     const response = await this.post<TableRenderData>("ngcad/getTableData", {table});
     return this.getResponseData(response);
   }
+
+  async downloadExcel(data: string[][], title?: string, filename?: string) {
+    const response = await this.post("ngcad/downloadExcel", {data, title, filename}, {responseType: "blob"});
+    return response?.code === 0;
+  }
 }

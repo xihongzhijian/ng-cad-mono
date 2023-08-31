@@ -432,14 +432,6 @@ $info-border: solid 1px black;
   }
 }
 
-:host ::ng-deep {
-  @media print {
-    .no-print {
-      display: none;
-    }
-  }
-}
-
 .mat-mdc-card {
   box-shadow:
     0px 2px 6px -1px rgb(0 0 0 / 20%),

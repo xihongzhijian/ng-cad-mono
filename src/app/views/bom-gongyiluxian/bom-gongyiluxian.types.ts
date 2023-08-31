@@ -9,9 +9,16 @@ export interface DingdanBomData extends TableDataBase {
   suanliaocad?: string | null;
   kailiaocad?: string | null;
   shicadjiegouliao?: number;
+  序号?: number;
+}
+
+export interface DingdanBomDataResponseData {
+  data: DingdanBomData[];
+  printColumns: string[];
+  title: string;
+  tableData: TableRenderData;
 }
 
 export interface DingdanBomCacheData {
-  dataRaw: DingdanBomData[];
-  tableRenderData: TableRenderData | null;
+  dataRaw: DingdanBomDataResponseData | null;
 }

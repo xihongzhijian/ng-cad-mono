@@ -1,22 +1,31 @@
 :host {
   --border: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
 }
 
 .table-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1 1 0;
 
-  .table-title {
-    text-align: center;
-    font-size: 1.2rem;
+  .title {
+    white-space: pre;
   }
 
   .table-body {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
     box-shadow:
       0 5px 5px -3px #0003,
       0 8px 10px 1px #00000024,
       0 3px 14px 2px #0000001f;
+
+    .mat-mdc-table {
+      flex: 1 1 0;
+      overflow: auto;
+    }
 
     .mat-mdc-cell {
       background-color: #f2f2f2;
@@ -75,9 +84,52 @@
       }
     }
 
+    .mat-mdc-cell {
+      .mdc-button {
+        min-width: unset;
+        height: 28px;
+        padding: 0 8px 0 8px;
+
+        ::ng-deep {
+          .mat-mdc-button-touch-target {
+            height: 30px;
+          }
+        }
+      }
+    }
+
     .column-type-cad {
       .cad-preview {
         cursor: pointer;
+      }
+    }
+  }
+}
+@media print {
+  .table-container {
+    .table-toolbar {
+      display: none;
+    }
+
+    .table-body {
+      box-shadow: none;
+
+      .mat-mdc-table {
+        overflow: visible;
+      }
+
+      .mat-mdc-cell {
+        background-color: transparent;
+        &:hover,
+        &.active {
+          background-color: transparent;
+        }
+      }
+
+      .mat-mdc-header-cell,
+      .mat-mdc-cell {
+        flex-grow: 1;
+        flex-shrink: 1;
       }
     }
   }

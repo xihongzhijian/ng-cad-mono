@@ -5,6 +5,9 @@ import {ColumnInfo, TableRenderInfo} from "./table.types";
 export const convertTableRenderData = <T>(data: TableRenderData, info: TableRenderInfo<T>) => {
   const columns: ColumnInfo<T>[] = [];
   const getItem = (column: TableRenderDataColumn): ColumnInfo<T> | null => {
+    if (!column.field) {
+      return null;
+    }
     const base: Omit<ColumnInfo<T>, "type"> = {
       field: column.field as keyof T,
       name: column.title,

@@ -6,14 +6,14 @@ import {session, setGlobal} from "@app/app.common";
 import {environment} from "@env";
 import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {TableInsertParams, TableRenderData} from "@modules/http/services/cad-data.service.types";
+import {TableInsertParams} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {convertTableRenderData, getInputInfosFromTableColumns} from "@modules/table/components/table/table.utils";
-import {mapKeys} from "lodash";
-import {DingdanBomCacheData, DingdanBomData} from "./bom-gongyiluxian.types";
+import {cloneDeep} from "lodash";
+import {DingdanBomCacheData, DingdanBomData, DingdanBomDataResponseData} from "./bom-gongyiluxian.types";
 
 @Component({
   selector: "app-bom-gongyiluxian",
@@ -29,8 +29,7 @@ import {DingdanBomCacheData, DingdanBomData} from "./bom-gongyiluxian.types";
 })
 export class BomGongyiluxianComponent implements OnInit {
   table = "b_dingdanbom";
-  tableRenderData: TableRenderData | null = null;
-  dataRaw: DingdanBomData[] = [];
+  dataRaw: DingdanBomDataResponseData | null = null;
   info: TableRenderInfo<DingdanBomData> = {
     data: [],
     columns: [{type: "string", field: "mingzi", name: "名称"}],
@@ -41,6 +40,14 @@ export class BomGongyiluxianComponent implements OnInit {
   };
   private _cacheKey = "bomGongyiluxianCache";
   environment = environment;
+  private _noCad = session.load("bomGongyiluxianNoCad") ?? false;
+  get noCad() {
+    return this._noCad;
+  }
+  set noCad(value) {
+    this._noCad = value;
+    session.save("bomGongyiluxianNoCad", value);
+  }
 
   @ViewChild("table") tableComponent?: TableComponent<DingdanBomData>;
 
@@ -75,44 +82,28 @@ export class BomGongyiluxianComponent implements OnInit {
       this.clearCache();
     }
     const {table} = this;
-    let dataRaw: DingdanBomData[];
-    let tableRenderData: TableRenderData | null = null;
+    let dataRaw: typeof this.dataRaw;
     if (this.loadCache()) {
       dataRaw = this.dataRaw;
-      tableRenderData = this.tableRenderData;
     } else {
       this.spinner.show(this.spinner.defaultLoaderId);
-      const response = await this.dataService.post<DingdanBomData[]>("ngcad/getDingdanBomData", {table, code});
-      dataRaw = this.dataService.getResponseData(response) || [];
-      tableRenderData = await this.dataService.getTableRenderData(table);
+      const response = await this.dataService.post<DingdanBomDataResponseData>("ngcad/getDingdanBomData", {table, code});
+      dataRaw = this.dataService.getResponseData(response);
       this.spinner.hide(this.spinner.defaultLoaderId);
       this.dataRaw = dataRaw;
-      this.tableRenderData = tableRenderData;
       this.saveCache();
     }
-    const data2: DingdanBomData[] = [];
-    const dataMap = mapKeys(dataRaw, "vid");
-    for (const item of dataRaw) {
-      const fuji = item.fuji;
-      if (fuji === 0) {
-        data2.push(item);
-      } else if (typeof fuji === "number") {
-        const parent = dataMap[fuji];
-        if (parent) {
-          if (!parent.children) {
-            parent.children = [];
-          }
-          parent.children.push(item);
-        }
-      }
+    if (!dataRaw) {
+      return;
     }
-    this.info.data = data2;
-    if (tableRenderData) {
-      convertTableRenderData(tableRenderData, this.info);
+    this.info.data = dataRaw.data;
+    this.info.title = dataRaw.title;
+    if (dataRaw.tableData) {
+      convertTableRenderData(dataRaw.tableData, this.info);
       for (const column of this.info.columns) {
-        if (["suanliaocad", "kailiaocad"].includes(column.field)) {
+        if (["suanliaocad"].includes(column.field)) {
           column.type = "cad";
-          column.hidden = false;
+          column.hidden = this.noCad;
           if (column.type === "cad") {
             column.filterFn = (event) => !!event.item.shicadjiegouliao;
           }
@@ -141,7 +132,6 @@ export class BomGongyiluxianComponent implements OnInit {
     const cachedData = session.load<DingdanBomCacheData>(this._cacheKey);
     if (cachedData) {
       this.dataRaw = cachedData.dataRaw;
-      this.tableRenderData = cachedData.tableRenderData;
       return true;
     }
     return false;
@@ -151,7 +141,7 @@ export class BomGongyiluxianComponent implements OnInit {
     if (environment.production) {
       return;
     }
-    session.save<DingdanBomCacheData>(this._cacheKey, {dataRaw: this.dataRaw, tableRenderData: this.tableRenderData});
+    session.save<DingdanBomCacheData>(this._cacheKey, {dataRaw: this.dataRaw});
   }
 
   clearCache() {
@@ -162,7 +152,7 @@ export class BomGongyiluxianComponent implements OnInit {
     const keys: (keyof DingdanBomData)[] = ["dingdanbianhao", "fuji", "xinghaobianma"];
     const columns = this.info.columns.filter((v) => v.required && !keys.includes(v.field));
     const values = await this.message.form(getInputInfosFromTableColumns(columns));
-    const item = this.dataRaw[0];
+    const item = this.dataRaw?.data[0];
     if (values) {
       for (const key of keys) {
         values[key] = fromItem[key];
@@ -183,5 +173,37 @@ export class BomGongyiluxianComponent implements OnInit {
         this.addItem(event.item);
         break;
     }
+  }
+
+  private _setColumns() {
+    if (!this.dataRaw) {
+      return [];
+    }
+    const columnNames = this.dataRaw.printColumns;
+    const columnsBefore = cloneDeep(this.info.columns);
+    this.info.columns = this.info.columns.map((col) => {
+      col.hidden = !columnNames.includes(col.name);
+      return col;
+    });
+    return columnsBefore;
+  }
+
+  private _restoreColumns(columnsBefore: ReturnType<BomGongyiluxianComponent["_setColumns"]>) {
+    this.info.columns = columnsBefore;
+  }
+
+  async print() {
+    const columnsBefore = this._setColumns();
+    await timeout(0);
+    this.tableComponent?.treeControl.expandAll();
+    await timeout(0);
+    window.print();
+    this._restoreColumns(columnsBefore);
+  }
+
+  async exportExcel() {
+    const columnsBefore = this._setColumns();
+    this.tableComponent?.exportExcel();
+    this._restoreColumns(columnsBefore);
   }
 }

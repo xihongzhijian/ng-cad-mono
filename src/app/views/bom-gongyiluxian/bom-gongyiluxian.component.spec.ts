@@ -1,4 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {RouterTestingModule} from "@angular/router/testing";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
@@ -12,7 +13,7 @@ describe("BomGongyiluxianComponent", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [BomGongyiluxianComponent],
-      imports: [HttpModule, MessageModule, RouterTestingModule, TableModule]
+      imports: [HttpModule, MessageModule, RouterTestingModule, MatSlideToggleModule, TableModule]
     });
     fixture = TestBed.createComponent(BomGongyiluxianComponent);
     component = fixture.componentInstance;

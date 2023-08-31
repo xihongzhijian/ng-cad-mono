@@ -1,13 +1,12 @@
-import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {Injectable, Injector} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {publicKey, timer} from "@app/app.common";
 import {LoginFormData, openLoginFormDialog} from "@components/dialogs/login-form/login-form.component";
 import {environment} from "@env";
-import {ObjectOf, RSA} from "@lucilor/utils";
+import {downloadByBlob, ObjectOf, RSA} from "@lucilor/utils";
 import {MessageService} from "@modules/message/services/message.service";
-import {lastValueFrom} from "rxjs";
+import axios, {AxiosError, AxiosResponse} from "axios";
 import {CustomResponse, HttpOptions, HttpServiceResponseError} from "./http.service.types";
 
 @Injectable({
@@ -17,7 +16,6 @@ export class HttpService {
   loaderId = "master";
   protected dialog: MatDialog;
   protected message: MessageService;
-  protected http: HttpClient;
   protected snackBar: MatSnackBar;
   baseURL = "";
   strict = true;
@@ -29,7 +27,6 @@ export class HttpService {
   constructor(injector: Injector) {
     this.dialog = injector.get(MatDialog);
     this.message = injector.get(MessageService);
-    this.http = injector.get(HttpClient);
     this.snackBar = injector.get(MatSnackBar);
   }
 
@@ -76,8 +73,8 @@ export class HttpService {
       offlineMode = options.offlineMode;
     }
     const getTestData = async (): Promise<CustomResponse<T>> => {
-      const data2 = await lastValueFrom(this.http.get<T>(`${location.origin}/assets/testData/${testData}.json`, options));
-      return {code: 0, msg: "", data: data2};
+      const response = await axios.get<T>(`${location.origin}/assets/testData/${testData}.json`, options);
+      return {code: 0, msg: "", data: response.data};
     };
     if ((offlineMode && !environment.production) || environment.unitTest) {
       if (testData) {
@@ -96,6 +93,7 @@ export class HttpService {
     if (!url.startsWith("http")) {
       url = `${this.baseURL}${url}`;
     }
+    let axiosResponse: AxiosResponse<CustomResponse<T>> | null = null;
     let response: CustomResponse<T> | null = null;
     try {
       if (method === "GET") {
@@ -117,7 +115,7 @@ export class HttpService {
             }
           }
         }
-        response = await lastValueFrom(this.http.get<CustomResponse<T>>(url, options));
+        axiosResponse = await axios.get<CustomResponse<T>>(url, options);
       }
       if (method === "POST") {
         let files: {file: File; key: string}[] = [];
@@ -150,10 +148,21 @@ export class HttpService {
         if (token) {
           formData.append("token", token);
         }
-        response = await lastValueFrom(this.http.post<CustomResponse<T>>(url, formData, options));
+        axiosResponse = await axios.post<CustomResponse<T>>(url, formData, options);
       }
-      if (!response) {
+      if (!axiosResponse) {
         throw new Error("请求错误");
+      }
+      response = axiosResponse.data;
+      if (axiosResponse.status === 200 && axiosResponse.config.responseType === "blob") {
+        const match = axiosResponse.headers["content-disposition"]?.match(/filename=([^;]*);?/);
+        let filename = "";
+        if (match) {
+          filename = decodeURIComponent(match[1]);
+          filename = filename.replace(/"/g, "");
+        }
+        downloadByBlob(response as any as Blob, {filename});
+        return null;
       }
       if (this.strict) {
         const code = response.code;
@@ -191,19 +200,18 @@ export class HttpService {
         return await getTestData();
       }
       let content = "";
-      if (error instanceof HttpErrorResponse) {
-        const {error: err, status, statusText} = error;
-        const text = err?.text;
-        if (typeof text === "string" && text.includes("没有权限")) {
-          await this._waitForLogin();
-          return this.request(url, method, rawData, options);
-        }
-        if (typeof err === "string") {
-          content = err;
-        } else if (typeof text === "string") {
-          content = text;
+      if (error instanceof AxiosError && error.response) {
+        const {data: errData, status, statusText} = error.response;
+        if (typeof errData === "string") {
+          content = errData;
+        } else if (errData instanceof Blob) {
+          content = await errData.text();
         } else {
           content = "未知网络错误";
+        }
+        if (content.includes("没有权限")) {
+          await this._waitForLogin();
+          return this.request(url, method, rawData, options);
         }
         content = `<span>${status} (${statusText})</span><br>${content}`;
       } else if (error instanceof HttpServiceResponseError) {

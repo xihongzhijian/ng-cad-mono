@@ -1,4 +1,4 @@
-import {HttpHeaders, HttpParams} from "@angular/common/http";
+import {AxiosRequestConfig} from "axios";
 import hljs from "highlight.js";
 
 export interface CustomResponse<T> {
@@ -13,21 +13,7 @@ export interface CustomResponse<T> {
 
 export type DataEncrpty = "yes" | "no" | "both";
 
-export interface HttpOptions {
-  headers?:
-    | HttpHeaders
-    | {
-        [header: string]: string | string[];
-      };
-  observe?: "body";
-  params?:
-    | HttpParams
-    | {
-        [param: string]: string | string[];
-      };
-  reportProgress?: boolean;
-  responseType?: "json";
-  withCredentials?: boolean;
+export interface HttpOptions extends AxiosRequestConfig {
   bypassCodes?: number[];
   silent?: boolean;
   encrypt?: DataEncrpty;

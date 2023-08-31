@@ -1,5 +1,4 @@
 import {DragDropModule} from "@angular/cdk/drag-drop";
-import {HttpClientModule} from "@angular/common/http";
 import {Injectable, NgModule} from "@angular/core";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
@@ -185,7 +184,6 @@ const matFormFieldOptions: MatFormFieldDefaultOptions = {
     DirectivesModule,
     DragDropModule,
     FormsModule,
-    HttpClientModule,
     HttpModule,
     ImageModule,
     InfiniteScrollModule,

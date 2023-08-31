@@ -5,3 +5,20 @@
   box-sizing: border-box;
   height: 100%;
 }
+
+@media print {
+  app-table {
+    padding: 40px;
+
+    ::ng-deep {
+      .mat-mdc-row {
+        min-height: 40px;
+
+        &:nth-of-type(25) {
+          break-before: page;
+          margin-top: 40px;
+        }
+      }
+    }
+  }
+}

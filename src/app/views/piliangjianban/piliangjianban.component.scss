@@ -75,8 +75,7 @@
 }
 :host ::ng-deep {
   @media print {
-    .page .mat-expansion-indicator,
-    .no-print {
+    .page .mat-expansion-indicator {
       display: none;
     }
   }

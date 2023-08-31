@@ -1,4 +1,3 @@
-import {HttpClient} from "@angular/common/http";
 import {AfterViewInit, Component, Inject} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -6,9 +5,9 @@ import {getFormControl, getFormGroup} from "@app/app.common";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import axios from "axios";
 import md5 from "md5";
 import {ReCaptchaV3Service} from "ng-recaptcha";
-import {lastValueFrom} from "rxjs";
 import {getOpenDialogFunc} from "../dialog.common";
 
 export interface LoginFormData {
@@ -39,7 +38,6 @@ export class LoginFormComponent implements AfterViewInit {
     public dialogRef: MatDialogRef<LoginFormComponent, boolean>,
     @Inject(MAT_DIALOG_DATA) public data: LoginFormData,
     private recaptcha: ReCaptchaV3Service,
-    private http: HttpClient,
     private message: MessageService,
     private spinner: SpinnerService
   ) {
@@ -72,7 +70,7 @@ export class LoginFormComponent implements AfterViewInit {
     // const token = await lastValueFrom(this.recaptcha.execute("submit"));
     // data.append("recaptcha_token", token);
     this.spinner.show(this.spinner.defaultLoaderId);
-    let response: ObjectOf<any> = await lastValueFrom(this.http.post(`${baseUrl}/login/in`, data));
+    let response: ObjectOf<any> = (await axios.post(`${baseUrl}/login/in`, data)).data;
     this.spinner.hide(this.spinner.defaultLoaderId);
     if (response.status === -1) {
       const phonecode = await this.message.prompt(
@@ -81,7 +79,7 @@ export class LoginFormComponent implements AfterViewInit {
       );
       data.set("phonecode", phonecode || "");
       this.spinner.show(this.spinner.defaultLoaderId);
-      response = await lastValueFrom(this.http.post(`${baseUrl}/login/in`, data));
+      response = (await axios.post(`${baseUrl}/login/in`, data)).data;
       this.spinner.hide(this.spinner.defaultLoaderId);
     }
     if (response.status === 0) {
