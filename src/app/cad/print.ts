@@ -428,7 +428,7 @@ export const configCadDataForPrint = async (
     }
   };
   const configLine = (e: CadLineLike, colorNumber: number) => {
-    if (isZxpj || colorNumber === 0x333333 || e.layer === "1") {
+    if (isZxpj || colorNumber === 0x333333 || e.layer !== "0") {
       e.linewidth = linewidth;
     }
   };
