@@ -381,15 +381,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/core@npm:^16.2.2":
-  version: 16.2.2
-  resolution: "@angular/core@npm:16.2.2"
+"@angular/core@npm:^16.2.3":
+  version: 16.2.3
+  resolution: "@angular/core@npm:16.2.3"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
     rxjs: ^6.5.3 || ^7.4.0
     zone.js: ~0.13.0
-  checksum: 3dd99e4aeafaefed14cf9b20f8a16810c599e40cb16758064cb7b8f882a9ba579600fe532162ec28d30051449b4589addb2c16b68ac1aafb9a9567640a16d7c1
+  checksum: 8a1e11c1dea4e44d762e35dc9190c959e3a5e691b06fe98cd26c672c5cd7ba78a9ae597346eb7bcd3fd24626b8df38b384c121d2ab13156c85f475e7c5a12a59
   languageName: node
   linkType: hard
 
@@ -12466,7 +12466,7 @@ __metadata:
     "@angular/common": ^16.2.2
     "@angular/compiler": ^16.2.2
     "@angular/compiler-cli": ^16.2.2
-    "@angular/core": ^16.2.2
+    "@angular/core": ^16.2.3
     "@angular/forms": ^16.2.2
     "@angular/material": ^16.2.1
     "@angular/platform-browser": ^16.2.2
