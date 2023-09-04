@@ -113,16 +113,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
           }
         }
       }
-      if (模块大小输出) {
-        for (const key in 模块大小输出) {
-          const value = Number(inputResult[key]) > 0 ? inputResult[key] : 模块大小输出[key];
-          模块大小输出[key] = value;
-          if (key in gongshi) {
-            gongshi[key] = value;
-          }
-        }
-        mokuaiVars[门扇] = 模块大小输出;
-      }
+      mokuaiVars[门扇] = 模块大小输出 || {};
       if (Array.isArray(模块节点)) {
         for (const node of 模块节点) {
           const {选中模块, 层名字, 层id} = node;

@@ -17,7 +17,7 @@ import {
   ZixuanpeijianTypesInfoItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {GenerateRectsEndEvent, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {GongshiObj, MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
 import {ObjectOf, Point, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -27,7 +27,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {isMrbcjfzInfoEmpty1, MrbcjfzInfo, MrbcjfzXinghao, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {MsbjData, MsbjInfo, Node2rectData, node2rectDataMsdxKeys} from "@views/msbj/msbj.types";
-import {SuanliaoInput, SuanliaoOutput} from "@views/suanliao/suanliao.types";
+import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {cloneDeep, intersection, isEqual} from "lodash";
 import md5 from "md5";
@@ -64,6 +64,18 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   get activeMorenbancai() {
     return this.activeMokuaiNode?.选中模块?.morenbancai || {};
   }
+  get activeMokuaidaxiaoResult() {
+    if (this.activeMenshanKey) {
+      return this.mokuaidaxiaoResults[this.activeMenshanKey] || {};
+    } else {
+      return {};
+    }
+  }
+  set activeMokuaidaxiaoResult(value) {
+    if (this.activeMenshanKey) {
+      this.mokuaidaxiaoResults[this.activeMenshanKey] = value;
+    }
+  }
   getMokuaiTitle = getMokuaiTitle;
   showMokuais = false;
   mokuaiTemplateType!: {$implicit: ZixuanpeijianMokuaiItem | null; isActive?: boolean};
@@ -75,7 +87,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   materialResult: Formulas = {};
   houtaiUrl = "";
   user: ObjectOf<any> | null = null;
-  mokuaidaxiaoResult: Formulas = {};
+  mokuaidaxiaoResults: ObjectOf<Formulas> = {};
   wmm = new WindowMessageManager("门扇模块", this, window.parent);
   suanliaoLock$ = new BehaviorSubject(false);
   genXiaoguotuLock$ = new BehaviorSubject(false);
@@ -198,7 +210,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (activeMsbjInfo) {
       const md5Prev = md5(JSON.stringify(activeMsbjInfo.模块大小输入 || {}));
       activeMsbjInfo.模块大小输入 = data.inputValues;
-      await this.updateMokuaidaxiaoResult();
       const md5Curr = md5(JSON.stringify(activeMsbjInfo.模块大小输入));
       if (md5Prev !== md5Curr) {
         await this.suanliao();
@@ -286,31 +297,20 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
     }
 
-    await this.updateMokuaidaxiaoResult();
+    await this.updateMokuaidaxiaoResults();
   }
 
-  async justifyGongshiObj(gongshiObj: any, menshanKey: string) {
+  async refreshMokuaidaxiaoResults(menshanKey: string) {
     const msbjInfo = this.data?.menshanbujuInfos[menshanKey];
     if (!msbjInfo) {
       throw new Error("没有门扇布局");
     }
-    const vars = {...this.materialResult, ...msbjInfo.模块大小输出, ...msbjInfo.模块大小输入};
-    this.wmm.postMessage("justifyGongshiObjStart", {gongshiObj, menshanKey, vars});
-    return await this.wmm.waitForMessage<{gongshiObj: GongshiObj; values: Formulas}>("justifyGongshiObjEnd");
+    this.wmm.postMessage("refreshMokuaidaxiaoResultsStart", {menshanKey, msbjInfo});
+    return await this.wmm.waitForMessage<{values: Formulas}>("refreshMokuaidaxiaoResultsEnd");
   }
 
-  async updateMokuaidaxiaoResult(menshanKeys?: string | string[]) {
-    if (!menshanKeys) {
-      if (this.activeMenshanKey) {
-        menshanKeys = [this.activeMenshanKey];
-      } else {
-        return;
-      }
-    }
-    if (typeof menshanKeys === "string") {
-      menshanKeys = [menshanKeys];
-    }
-    for (const menshanKey of menshanKeys) {
+  async updateMokuaidaxiaoResults() {
+    for (const menshanKey of this.menshanKeys) {
       const msbjInfo = this.data?.menshanbujuInfos[menshanKey];
       if (!this.isFromOrder || !msbjInfo) {
         this.updateMokuaiInputInfo();
@@ -324,11 +324,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         if (!gongshiObj.配置) {
           gongshiObj.配置 = {};
         }
-        const {gongshiObj: gongshiObj2, values} = await this.justifyGongshiObj(gongshiObj, menshanKey);
-        if (this.activeMenshanKey === menshanKey) {
-          this.mokuaidaxiaoResult = values;
-        }
-        msbjInfo.选中布局数据.模块大小关系 = gongshiObj2;
+        const {values} = await this.refreshMokuaidaxiaoResults(menshanKey);
+        this.mokuaidaxiaoResults[menshanKey] = values;
       }
     }
     this.updateMokuaiInputInfo();
@@ -451,6 +448,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   updateMokuaiInputInfo() {
     const mokuai = this.activeMokuaiNode?.选中模块;
     this.mokuaiInputInfos = [];
+    const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult;
     if (mokuai) {
       const node = this.activeMokuaiNode;
       const keyMap = {总宽: "totalWidth", 总高: "totalHeight"} as const;
@@ -458,7 +456,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         const name = node.层名字;
         for (const key in keyMap) {
           const key3 = name + key;
-          this.mokuaiInputInfos.push({type: "string", label: key, model: {key: key3, data: () => this.mokuaidaxiaoResult}, readonly: true});
+          this.mokuaiInputInfos.push({
+            type: "string",
+            label: key,
+            model: {key: key3, data: () => mokuaidaxiaoResult},
+            readonly: true
+          });
         }
       }
       const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
@@ -473,7 +476,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         if (!v[1]) {
           v[1] = getValue(this.materialResult, v[0]);
         }
-        v[1] = getValue(this.mokuaidaxiaoResult, v[0]) || v[1];
+        v[1] = getValue(mokuaidaxiaoResult, v[0]) || v[1];
         this.mokuaiInputInfos.push({
           type: "string",
           label: v[0],
@@ -511,7 +514,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                 }
               }
             }
-            await this.updateMokuaidaxiaoResult();
+            if (updateMenshanKeys.size > 0) {
+              await this.updateOrder();
+            }
             await this.suanliao();
           }
         });
@@ -700,7 +705,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.isFromOrder) {
-      this.wmm.postMessage("编辑模块大小", msbjInfo);
+      const menshanKey = this.activeMenshanKey;
+      this.wmm.postMessage("编辑模块大小", {menshanKey, msbjInfo});
     } else {
       let msbj: MsbjInfo | null = null;
       if (this.dataService.token) {
@@ -729,11 +735,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       table: "p_xinghaomorenmenshanbuju",
       filter: {where: {vid: this.id}}
     });
-    let menshanKeys: string[] = [];
     if (records[0]) {
       const data2 = new XhmrmsbjData(records[0], this.menshanKeys, this.step1Data.typesInfo, this.msbjs);
-      menshanKeys = Object.keys(data2.menshanbujuInfos);
-      for (const menshanKey of menshanKeys) {
+      for (const menshanKey of this.menshanKeys) {
         const msbjInfo1 = data.menshanbujuInfos[menshanKey];
         const msbjInfo2 = data2.menshanbujuInfos[menshanKey];
         if (!msbjInfo1 || !msbjInfo2) {
@@ -744,14 +748,10 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         if (选中布局数据1 && 选中布局数据2) {
           选中布局数据1.模块大小关系 = 选中布局数据2.模块大小关系;
         }
-        const 模块大小关系 = 选中布局数据1?.模块大小关系;
-        if (模块大小关系) {
-          await this.justifyGongshiObj(模块大小关系, menshanKey);
-        }
+        await this.refreshMokuaidaxiaoResults(menshanKey);
       }
     }
     await this.suanliao();
-    await this.updateMokuaidaxiaoResult(menshanKeys);
     this.spinner.hide(this.spinner.defaultLoaderId);
     this.message.snack("更新完成");
   }
@@ -774,12 +774,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (this.msbjRectsComponent) {
       this.msbjRectsComponent.rectInfos = this.activeMsbj?.peizhishuju.模块节点 || [];
     }
-    const msbjInfo = this.activeMsbjInfo;
-    if (msbjInfo?.选中布局数据) {
-      this.wmm.postMessage("calcGongshi2Start", msbjInfo);
-      const result = await this.wmm.waitForMessage("calcGongshi2End");
-      this.mokuaidaxiaoResult = result.values;
-    }
+    await this.updateMokuaidaxiaoResults();
     timer.end(timerName, timerName);
     this.spinner.hide(this.spinner.defaultLoaderId);
     this.suanliaoLock$.next(false);
@@ -844,8 +839,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   async getLastSuanliao() {
     this.wmm.postMessage("getLastSuanliaoStart");
-    const data = await this.wmm.waitForMessage<{input: SuanliaoInput; output: SuanliaoOutput} | null>("getLastSuanliaoEnd");
+    const data = await this.wmm.waitForMessage<LastSuanliao | null>("getLastSuanliaoEnd");
     return data;
+  }
+
+  async updateOrder() {
+    this.wmm.postMessage("updateOrderStart", {型号选中门扇布局: this.data?.menshanbujuInfos});
+    await this.wmm.waitForMessage("updateOrderEnd");
   }
 
   async getVarNames() {
@@ -855,11 +855,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   async openMokuais() {
-    const data = await this.getLastSuanliao();
-    if (!data) {
+    const lastSuanliao = await this.getLastSuanliao();
+    if (!lastSuanliao) {
       return;
     }
-    openXhmrmsbjMokuaisDialog(this.dialog, {data: {data}});
+    const mokuaidaxiaoResults = this.mokuaidaxiaoResults;
+    openXhmrmsbjMokuaisDialog(this.dialog, {data: {data: {lastSuanliao, mokuaidaxiaoResults}}});
   }
 
   openHoutaiUrl() {
@@ -872,7 +873,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       模块层ID: {},
       当前扇名字: this.activeMenshanKey || "",
       门扇大小: {},
-      模块大小: this.mokuaidaxiaoResult
+      模块大小: this.activeMokuaidaxiaoResult
     };
     for (const key of node2rectDataMsdxKeys) {
       result.门扇大小[key] = m[key];

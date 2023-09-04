@@ -36,3 +36,8 @@ export interface 根据输入值计算选中配件模块无依赖的公式结果
   成功: ObjectOf<Formulas>;
   失败: ObjectOf<Formulas>;
 }
+
+export interface LastSuanliao {
+  input: SuanliaoInput;
+  output: SuanliaoOutput;
+}
