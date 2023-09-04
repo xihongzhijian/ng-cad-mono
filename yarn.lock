@@ -2791,7 +2791,7 @@ __metadata:
     jsencrypt: ^3.3.2
     lodash: ^4.17.21
     md5: ^2.3.0
-    pinyin-pro: ^3.16.3
+    pinyin-pro: ^3.16.4
     prettier: ^3.0.2
     terser-webpack-plugin: ^5.3.9
     ts-loader: ^9.4.4
@@ -13666,10 +13666,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pinyin-pro@npm:^3.16.3":
-  version: 3.16.3
-  resolution: "pinyin-pro@npm:3.16.3"
-  checksum: 9e750c3ae2d1e49583984a4ef9b22beefc4475a53488cf37bc35be0b8b3de2489a169658f6ede5485784e0d826e56a3cfd856aeedc47b42f458f5dd2f537237c
+"pinyin-pro@npm:^3.16.4":
+  version: 3.16.4
+  resolution: "pinyin-pro@npm:3.16.4"
+  checksum: 93540114ab505d7e0dc09f4ed654a66b4b42b7e30ff61742c580d5a3216e7b01ea679531e31d5ca96c2f277b1119777e376e180b1a2fc3fc89c087077b94045e
   languageName: node
   linkType: hard
 
