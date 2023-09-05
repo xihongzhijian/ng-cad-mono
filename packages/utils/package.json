@@ -32,18 +32,18 @@
     "@types/events": "^3.0.0",
     "@types/lodash": "^4.14.197",
     "@types/md5": "^2.3.2",
-    "@types/node": "^18.17.12",
-    "@typescript-eslint/eslint-plugin": "^6.5.0",
-    "@typescript-eslint/parser": "^6.5.0",
+    "@types/node": "^18.17.14",
+    "@typescript-eslint/eslint-plugin": "^6.6.0",
+    "@typescript-eslint/parser": "^6.6.0",
     "clean-webpack-plugin": "^4.0.0",
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-deprecation": "^1.5.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "prettier": "^3.0.2",
+    "prettier": "^3.0.3",
     "terser-webpack-plugin": "^5.3.9",
     "ts-loader": "^9.4.4",
-    "typescript": "~5.1.6",
+    "typescript": "~5.2.2",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
     "webpack-merge": "^5.9.0",
@@ -55,6 +55,6 @@
     "jsencrypt": "^3.3.2",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
-    "pinyin-pro": "^3.16.3"
+    "pinyin-pro": "^3.16.4"
   }
 }

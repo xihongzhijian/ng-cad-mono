@@ -9,23 +9,26 @@ import {XhmrmsbjMokuaisComponent, XhmrmsbjMokuaisInput} from "./xhmrmsbj-mokuais
 
 const data: XhmrmsbjMokuaisInput = {
   data: {
-    input: {
-      materialResult: {},
-      gongshi: {},
-      inputResult: {},
-      型号选中门扇布局: {},
-      配件模块CAD: {},
-      门扇布局CAD: [],
-      bujuNames: [],
-      varNames: []
+    lastSuanliao: {
+      input: {
+        materialResult: {},
+        gongshi: {},
+        inputResult: {},
+        型号选中门扇布局: {},
+        配件模块CAD: {},
+        门扇布局CAD: [],
+        bujuNames: [],
+        varNames: []
+      },
+      output: {
+        fulfilled: true,
+        materialResult: {},
+        materialResultDiff: {},
+        配件模块CAD: [],
+        门扇布局CAD: []
+      }
     },
-    output: {
-      fulfilled: true,
-      materialResult: {},
-      materialResultDiff: {},
-      配件模块CAD: [],
-      门扇布局CAD: []
-    }
+    mokuaidaxiaoResults: {}
   }
 };
 

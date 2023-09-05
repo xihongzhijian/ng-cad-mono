@@ -30,8 +30,7 @@ jobs:
     steps:
       - build
       - browser-tools/install-chrome
-      - browser-tools/install-chromedriver:
-          chrome-version: 116.0.5845.96 # TODO remove when fixed https://github.com/CircleCI-Public/browser-tools-orb/issues/90
+      - browser-tools/install-chromedriver
       - run:
           name: Unit test
           command: yarn test:ci
@@ -40,4 +39,4 @@ workflows:
   test:
     jobs:
       - lint
-      # - unit-test
+      # - unit-test # TODO uncomment when fixed https://github.com/CircleCI-Public/browser-tools-orb/issues/90
