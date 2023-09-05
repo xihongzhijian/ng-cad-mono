@@ -422,7 +422,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.updateMokuaiInputInfo();
     const mokuaiCurr = mokuaiNode.选中模块;
     if (!mokuaiPrev || !mokuaiCurr || !isMokuaiItemEqual(mokuaiPrev, mokuaiCurr)) {
-      this.suanliao();
+      await this.suanliao();
     }
   }
 

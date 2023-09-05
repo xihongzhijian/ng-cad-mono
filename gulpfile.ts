@@ -33,6 +33,9 @@ gulp.task("upload", async () => {
   const data = {dest: "static", token, toDelete: ["ng-cad2"], backup: backupName};
   const response = await postFormData(url, data, fs.createReadStream(path.join(tmpDir, zipName)));
   console.log(response.data);
+  if (response.data.code !== 0) {
+    throw new Error(response.data.msg);
+  }
 });
 
 gulp.task("restore", async () => {
