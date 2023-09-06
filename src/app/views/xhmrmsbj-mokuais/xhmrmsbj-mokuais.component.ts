@@ -7,7 +7,7 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {getMokuaiTitle, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {FormulaInfo} from "@components/formulas/formulas.component";
 import {CadData, toFixedTrim} from "@lucilor/cad-viewer";
-import {ObjectOf, timeout} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CalcService} from "@services/calc.service";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import csstype from "csstype";
@@ -56,6 +56,9 @@ export class XhmrmsbjMokuaisComponent {
           const cads: CadData[] = [];
           const suanliaogongshi = {...mokuai.suanliaogongshi};
           for (const [k, v] of [...mokuai.gongshishuru, ...mokuai.xuanxiangshuru]) {
+            if (!isTypeOf(v, ["number", "string"])) {
+              continue;
+            }
             if (k in suanliaogongshi) {
               suanliaogongshi[k] = v;
             }
@@ -107,7 +110,7 @@ export class XhmrmsbjMokuaisComponent {
       const values: FormulaInfo["values"] = [];
       if (typeof val === "number") {
         values.push({eq: true, name: toFixedTrim(val, 2)});
-      } else {
+      } else if (typeof val === "string") {
         val = val.trim();
         values.push({eq: true, name: val});
         const val2 = this.calc.calc.replaceVars(val, formulas2);
