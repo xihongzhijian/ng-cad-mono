@@ -10,6 +10,7 @@ import {EntityType} from "../cad-types";
 
 export abstract class CadEntity extends ColoredObject {
   id: string;
+  houtaiId?: string;
   abstract type: EntityType;
   layer: string;
   info: ObjectOf<any>;
@@ -133,6 +134,9 @@ export abstract class CadEntity extends ColoredObject {
       this.id = data.id;
     } else {
       this.id = v4();
+    }
+    if (typeof data.houtaiId === "string") {
+      this.houtaiId = data.houtaiId;
     }
     this.layer = data.layer ?? "0";
     if (typeof data.color === "number") {
@@ -294,6 +298,20 @@ export abstract class CadEntity extends ColoredObject {
     delete info1.id;
     delete info2.id;
     return JSON.stringify(info1) === JSON.stringify(info2);
+  }
+
+  isId(id: string | string[]): boolean {
+    if (Array.isArray(id)) {
+      return id.some((i) => this.isId(i));
+    } else {
+      if (this.houtaiId === id) {
+        return true;
+      }
+      if (this.id === id) {
+        return true;
+      }
+      return false;
+    }
   }
 
   // abstract getBoundingRect(): Rectangle;

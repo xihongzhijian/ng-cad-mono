@@ -19,7 +19,7 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {DEFAULT_TOLERANCE, isBetween, Line, ObjectOf, Point} from "@lucilor/utils";
-import {difference, intersection} from "lodash";
+import {difference} from "lodash";
 
 export const reservedDimNames = ["前板宽", "后板宽", "小前板宽", "小后板宽", "骨架宽", "小骨架宽", "骨架中空宽", "小骨架中空宽"];
 
@@ -291,12 +291,10 @@ export const showIntersections = (data: CadData, config: ObjectOf<string>) => {
         const e1 = sortedEntities[i];
         const e2 = sortedEntities.at(i + 1);
         let matched = false;
-        const id1 = e1.id;
-        const id2 = e2?.id;
         let isStartPoint = false;
         let isEndPoint = false;
         for (const ids of arr) {
-          if (ids.length === 1 && ids[0] === id1) {
+          if (ids.length === 1 && e1.isId(ids[0])) {
             if (i === 0) {
               matched = true;
               isStartPoint = true;
@@ -306,7 +304,7 @@ export const showIntersections = (data: CadData, config: ObjectOf<string>) => {
             }
             break;
           }
-          if (intersection([id1, id2], ids).length === 2) {
+          if (e1.isId(ids) && e2?.isId(ids)) {
             matched = true;
             break;
           }
