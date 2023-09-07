@@ -1010,6 +1010,13 @@ export const calcZxpj = async (
     };
   }
   calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);
+  for (const key1 in mokuaiVars) {
+    for (const key2 in mokuaiVars[key1]) {
+      if (key2 in materialResult) {
+        mokuaiVars[key1][key2] = materialResult[key2];
+      }
+    }
+  }
   return {fulfilled: true, 门扇布局大小: mokuaiVars};
 };
 
