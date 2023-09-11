@@ -131,7 +131,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this.progressBarStatus = "progress";
     this.msg = "正在获取数据";
     this.spinner.show(loaderId);
-    const 导入dxf文件时展开名字不改变 = this.status.getProjectConfigBoolean("导入dxf文件时展开名字不改变");
+    const 导入dxf文件时展开名字不改变 = this.status.projectConfig.getBoolean("导入dxf文件时展开名字不改变");
     const data = await this.dataService.uploadDxf(this._sourceFile);
     if (!data) {
       return finish(true, "error", "读取文件失败");

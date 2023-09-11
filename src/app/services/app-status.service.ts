@@ -13,6 +13,7 @@ import {
   validateCad,
   validateLines
 } from "@app/cad/utils";
+import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
 import {environment} from "@env";
 import {
   CadData,
@@ -34,7 +35,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {clamp, differenceWith} from "lodash";
 import {BehaviorSubject, Subject} from "rxjs";
-import {local, ProjectConfig, timer} from "../app.common";
+import {local, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
 import {CadStatus, CadStatusNormal} from "./cad-status";
 
@@ -75,7 +76,7 @@ export class AppStatusService {
   zhewanLengths$ = new BehaviorSubject<[number, number]>([1, 3]);
   private _isZhewanLengthsFetched = false;
   private _refreshTimeStamp = Number(local.load("refreshTimeStamp") || -1);
-  private _projectConfig: ProjectConfig = {};
+  projectConfig = new ProjectConfig();
 
   constructor(
     private config: AppConfigService,
@@ -145,8 +146,8 @@ export class AppStatusService {
       this.setProject$.next();
 
       {
-        const response = await this.dataService.post<ProjectConfig>("ngcad/getProjectConfig");
-        this._projectConfig = this.dataService.getResponseData(response) || {};
+        const response = await this.dataService.post<ProjectConfigRaw>("ngcad/getProjectConfig");
+        this.projectConfig.setRaw(this.dataService.getResponseData(response) || {});
       }
     }
     return true;
@@ -207,14 +208,14 @@ export class AppStatusService {
       const result = await Promise.all(data2.components.data.map(async (v) => await updateCadPreviewImg(v, mode, !shouldUpdatePreview)));
       return result.flat();
     };
-    const 算料单CAD模板使用图片装配 = this.getProjectConfigBoolean("算料单CAD模板使用图片装配");
+    const 算料单CAD模板使用图片装配 = this.projectConfig.getBoolean("算料单CAD模板使用图片装配");
     const shouldUpdatePreview = collection === "CADmuban" && 算料单CAD模板使用图片装配;
     const prevConfig = this.config.setConfig({hideLineLength: true, hideLineGongshi: true}, {sync: false});
     await cad.reset().render();
     if (data) {
       setCadData(data, this.project, collection);
       if (!environment.production) {
-        showIntersections(data, this._projectConfig);
+        showIntersections(data, this.projectConfig);
       }
       for (const key in replaceMap) {
         this._replaceText(data, key, replaceMap[key]);
@@ -419,21 +420,6 @@ export class AppStatusService {
     }
     const params = {project: this.project, collection, id};
     open("index?" + new URLSearchParams(params).toString());
-  }
-
-  getProjectConfig(): ObjectOf<string>;
-  getProjectConfig(key: string): string;
-  getProjectConfig(key?: string) {
-    if (key) {
-      return this._projectConfig[key] || "";
-    } else {
-      return this._projectConfig;
-    }
-  }
-
-  getProjectConfigBoolean(key: string) {
-    const value = this.getProjectConfig(key);
-    return value === "是";
   }
 
   async updateZhewanLengths() {

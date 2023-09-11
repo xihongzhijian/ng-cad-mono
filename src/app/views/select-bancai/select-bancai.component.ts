@@ -117,7 +117,7 @@ export class SelectBancaiComponent implements OnInit {
         this.updateOrderBancaiInfos();
         this.downloadName = result.downloadName;
         this.showGas = type === "激光喷码开料排版";
-        if (this.status.getProjectConfig("激光开料展开信息") === "大族激光") {
+        if (this.status.projectConfig.getIsEqual("激光开料展开信息", "大族激光")) {
           this.showGas = true;
         }
         if (errMsgs.length > 0) {

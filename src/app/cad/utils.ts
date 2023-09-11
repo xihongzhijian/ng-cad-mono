@@ -1,5 +1,6 @@
 import {remoteHost} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {ProjectConfig} from "@app/utils/project-config";
 import {getCalcZhankaiText} from "@app/utils/zhankai";
 import {environment} from "@env";
 import {
@@ -272,7 +273,7 @@ export const shouldShowIntersection = (data: CadData) => {
   return false;
 };
 
-export const showIntersections = (data: CadData, config: ObjectOf<string>) => {
+export const showIntersections = (data: CadData, projectConfig: ProjectConfig) => {
   if (!shouldShowIntersection(data)) {
     return;
   }
@@ -350,7 +351,7 @@ export const showIntersections = (data: CadData, config: ObjectOf<string>) => {
         if (key === "zhidingweizhipaokeng") {
           line.end.sub(d.clone().multiply(drawing.leader.gap));
           line.start.copy(line.end.clone().sub(d.clone().multiply(drawing.leader.length)));
-          const 指定位置刨坑表示方法 = config.指定位置刨坑表示方法 || "箭头";
+          const 指定位置刨坑表示方法 = projectConfig.get("指定位置刨坑表示方法", "箭头");
           if (指定位置刨坑表示方法 === "箭头") {
             drawLeader = true;
           } else if (指定位置刨坑表示方法 === "箭头+箭头旁文字") {
@@ -368,7 +369,7 @@ export const showIntersections = (data: CadData, config: ObjectOf<string>) => {
         } else if (key === "指定位置不折") {
           line.end.sub(d.clone().multiply(drawing.leader.gap));
           line.start.copy(line.end.clone().sub(d.clone().multiply(drawing.leader.length)));
-          const 指定位置不折表示方法 = config.指定位置不折表示方法 || "箭头";
+          const 指定位置不折表示方法 = projectConfig.get("指定位置不折表示方法", "箭头");
           if (指定位置不折表示方法 === "箭头") {
             drawLeader = true;
           } else if (指定位置不折表示方法 === "箭头+箭头旁文字") {

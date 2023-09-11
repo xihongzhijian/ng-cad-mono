@@ -1,5 +1,6 @@
 import {replaceRemoteHost} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {ProjectConfig} from "@app/utils/project-config";
 import {
   CadCircle,
   CadData,
@@ -23,6 +24,7 @@ import {Properties} from "csstype";
 import JsBarcode from "jsbarcode";
 import {cloneDeep, intersection} from "lodash";
 import {createPdf} from "pdfmake/build/pdfmake";
+import QRCode from "qrcode";
 import {getCadPreview} from "./cad-preview";
 import {
   getCadCalcZhankaiText,
@@ -476,7 +478,7 @@ export const configCadDataForPrint = async (
         data.entities.add(mtext2);
       }
     });
-    showIntersections(data, params.projectConfig || {});
+    showIntersections(data, params.projectConfig);
     await cad.render(data.getAllEntities());
 
     const 宽度标注 = data.entities.dimension.find((e) => e instanceof CadDimensionLinear && e.info.宽度标注);
@@ -601,13 +603,15 @@ const getUnfoldCadViewers = async (
     unfoldCad.entities.add(colLine);
   }
   const materialResult = params.orders?.[i]?.materialResult || {};
-  const projectConfig = params.projectConfig || {};
   const projectName = params.projectName || "";
   const barcodeEl = new Image();
   barcodeEl.id = "tmp-bar-code";
   document.body.appendChild(barcodeEl);
+  const qrcodeEl = document.createElement("canvas");
+  const useQrcode = params.projectConfig.getBoolean("刨坑工单生成新代系统二维码");
   let isBarcodeFailed = false;
   const barcodeSize = [2, 40];
+  const qrcodeWidth = 60;
   await timeout(0);
 
   const addText = async (text: string, insert: [number, number], opts?: {anchor?: [number, number]; fontStyle?: FontStyle}) => {
@@ -629,8 +633,8 @@ const getUnfoldCadViewers = async (
     const bancai = cad.info.bancai || {};
 
     let y = boxRect.bottom + textMargin;
-    const barcodeText = `${code}-${cad.numId}`;
-    if (!isBarcodeFailed) {
+    if (!useQrcode && !isBarcodeFailed) {
+      const barcodeText = `${code}-${cad.numId}`;
       try {
         JsBarcode("#" + barcodeEl.id, barcodeText, {
           displayValue: false,
@@ -665,9 +669,21 @@ const getUnfoldCadViewers = async (
         await unfoldCadViewer.render(img);
         y += img.boundingRect.height + imgPadding[0];
       }
+    } else {
+      const qrcodeText = offsetStrs.join(";");
+      await QRCode.toCanvas(qrcodeEl, qrcodeText, {width: qrcodeWidth, margin: 0});
+      const img = new CadImage();
+      img.objectFit = "contain";
+      img.anchor.set(0.5, 1);
+      img.targetSize = new Point(qrcodeEl.width - imgPadding[1] - imgPadding[3], qrcodeEl.height - imgPadding[0] - imgPadding[2]);
+      img.url = qrcodeEl.toDataURL();
+      img.position.set(boxRect.x, y);
+      unfoldCad.entities.add(img);
+      await unfoldCadViewer.render(img);
+      y += img.boundingRect.height + imgPadding[0];
     }
 
-    const zhankaiText = getCadCalcZhankaiText(cad, calcZhankai, materialResult, bancai, projectConfig, projectName);
+    const zhankaiText = getCadCalcZhankaiText(cad, calcZhankai, materialResult, bancai, params.projectConfig.getRaw(), projectName);
     const texts = [zhankaiText].concat(offsetStrs);
     texts.reverse();
     const textWidth = boxRect.width - textMargin * 2;
@@ -707,10 +723,11 @@ const getUnfoldCadViewers = async (
 
 export interface PrintCadsParamsOrder {
   materialResult?: Formulas;
-  unfold?: {cad: CadData; offsetStrs: [string, string, string]}[];
+  unfold?: {cad: CadData; offsetStrs: string[]}[];
 }
 export interface PrintCadsParams {
   cads: CadData[];
+  projectConfig: ProjectConfig;
   config?: Partial<CadViewerConfig>;
   linewidth?: number;
   dimStyle?: CadDimensionStyle;
@@ -729,7 +746,6 @@ export interface PrintCadsParams {
   orders?: PrintCadsParamsOrder[];
   textMap?: ObjectOf<string>;
   dropDownKeys?: string[];
-  projectConfig?: ObjectOf<any>;
   projectName?: string;
   errors?: string[];
 }
@@ -896,7 +912,7 @@ export const printCads = async (params: PrintCadsParams) => {
                 const insert = cadImageRect.getPoint(0.5, 1);
                 insert.y += (localHeight * scaleY - cadImageRect.height) / 2 - cadImagePadding[0];
                 let code: string;
-                if (params.projectConfig?.算料单效果图显示生产单号 === "是") {
+                if (params.projectConfig.getBoolean("算料单效果图显示生产单号")) {
                   code = String(params.orders?.[i]?.materialResult?.生产单号 ?? "");
                 } else {
                   code = params.codes?.[i] || "";

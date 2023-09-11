@@ -278,7 +278,7 @@ export class DingdanbiaoqianComponent implements OnInit {
           tmpCadViewer = new CadViewer().appendTo(document.body);
           tmpCadViewer.setConfig(previewParams2.config || {});
         }
-        await configCadDataForPrint(tmpCadViewer, data, {cads: []}, {isZxpj: true});
+        await configCadDataForPrint(tmpCadViewer, data, {cads: [], projectConfig: this.status.projectConfig}, {isZxpj: true});
         previewParams2.fixedMtextSize = 28;
         delete previewParams2.maxZoom;
       }

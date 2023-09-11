@@ -59,6 +59,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   mode: "edit" | "print" = "print";
   printParams: Required<PrintCadsParams> = {
     cads: [],
+    projectConfig: this.status.projectConfig,
     codes: [],
     type: "",
     config: {fontStyle: {family: this.fonts[0]}},
@@ -95,7 +96,6 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     orders: [],
     textMap: {},
     dropDownKeys: [],
-    projectConfig: this.status.getProjectConfig(),
     projectName: this.status.project,
     errors: []
   };
@@ -589,7 +589,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
             zhankaiText = new CadMtext({info: {isZhankaiText: true}});
             v.entities.add(zhankaiText);
           }
-          let 展开算料文字大小 = Number(this.status.getProjectConfig("展开算料文字大小"));
+          let 展开算料文字大小 = Number(this.status.projectConfig.get("展开算料文字大小"));
           if (isNaN(展开算料文字大小) || 展开算料文字大小 <= 0) {
             展开算料文字大小 = 40;
           }
@@ -786,7 +786,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   getCalcZhankaiText(cad: CadData, info: ZixuanpeijianInfo) {
     const materialResult = this.materialResult || {};
     const calcZhankai = info.calcZhankai;
-    const 项目配置 = this.status.getProjectConfig();
+    const 项目配置 = this.status.projectConfig.getRaw();
     const 项目名 = this.status.project;
     const text = getCadCalcZhankaiText(cad, calcZhankai, materialResult, info.bancai || {}, 项目配置, 项目名);
     return text;

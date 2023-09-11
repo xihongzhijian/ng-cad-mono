@@ -1,4 +1,5 @@
-import {ProjectConfig, replaceChars} from "@app/app.common";
+import {replaceChars} from "@app/app.common";
+import {ProjectConfig} from "@app/utils/project-config";
 import {
   CadArc,
   CadCircle,

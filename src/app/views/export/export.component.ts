@@ -177,7 +177,7 @@ export class ExportComponent implements OnInit {
       this.exportParams.cads = cads;
       let result: CadData | undefined;
       try {
-        result = await CadPortable.export(this.exportParams, this.status.getProjectConfig());
+        result = await CadPortable.export(this.exportParams, this.status.projectConfig);
       } catch (error) {
         console.error(error);
         finish("error", this.dataService.lastResponse?.msg || "导出失败");

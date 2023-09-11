@@ -408,7 +408,7 @@ export class CadConsoleComponent {
       this.spinner.show(this.spinner.defaultLoaderId, {text: "正在打印..."});
       const cad = this.status.cad;
       const data = this.status.closeCad();
-      const {url, errors} = await printCads({cads: [data], config: cad.getConfig()});
+      const {url, errors} = await printCads({cads: [data], projectConfig: this.status.projectConfig, config: cad.getConfig()});
       this.spinner.hide(this.spinner.defaultLoaderId);
       if (errors.length > 0) {
         console.warn(errors.join("\n"));
