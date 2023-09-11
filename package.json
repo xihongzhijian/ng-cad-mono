@@ -36,7 +36,7 @@
     "@angular/material": "^16.2.2",
     "@angular/platform-browser": "^16.2.3",
     "@angular/platform-browser-dynamic": "^16.2.3",
-    "@angular/router": "^16.2.3",
+    "@angular/router": "^16.2.4",
     "@lucilor/cad-viewer": "workspace:^",
     "@lucilor/utils": "workspace:^",
     "@maaxgr/ang-jsoneditor": "^14.0.0",
