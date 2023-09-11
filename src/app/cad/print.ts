@@ -895,7 +895,13 @@ export const printCads = async (params: PrintCadsParams) => {
                 cadImageRect.transform({scale: imgScale2, origin: cadImageRect.getPoint(0.5, 0.5)});
                 const insert = cadImageRect.getPoint(0.5, 1);
                 insert.y += (localHeight * scaleY - cadImageRect.height) / 2 - cadImagePadding[0];
-                const mtext = new CadMtext({text: params.codes?.[i], insert, anchor: [0.5, 0]});
+                let code: string;
+                if (params.projectConfig?.算料单效果图显示生产单号 === "是") {
+                  code = String(params.orders?.[i]?.materialResult?.生产单号 ?? "");
+                } else {
+                  code = params.codes?.[i] || "";
+                }
+                const mtext = new CadMtext({text: code, insert, anchor: [0.5, 0]});
                 mtext.fontStyle.size = 100;
                 mtext.fontStyle.color = "black";
                 mtext.calcBoundingRect = false;
