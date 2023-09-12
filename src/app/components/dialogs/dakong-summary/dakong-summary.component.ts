@@ -95,14 +95,9 @@ export class DakongSummaryComponent {
           data.push({
             cadId: item.cadId,
             cadName: item.cadName,
-            peizhiId: detail.peizhiId,
             peizhiName: item.cadName,
-            kongId: detail.kongId,
-            kongName: detail.kongName,
-            face: detail.face,
-            count: detail.count,
-            error: detail.error,
-            hidden: false
+            hidden: false,
+            ...detail
           });
         }
       }

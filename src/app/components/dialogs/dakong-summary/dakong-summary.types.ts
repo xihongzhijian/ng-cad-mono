@@ -28,15 +28,9 @@ export interface DakongSummaryTableInfo {
   data: DakongSummaryTableData[];
 }
 
-export interface DakongSummaryTableData {
+export interface DakongSummaryTableData extends DakongSummaryItemDetail {
   cadId: string;
   cadName: string;
-  peizhiId: string;
   peizhiName: string;
-  kongId: string;
-  kongName: string;
-  face: string;
-  count: number;
-  error: string;
   hidden: boolean;
 }
