@@ -1,4 +1,4 @@
-import {ObjectOf} from "packages/utils/lib";
+import {ObjectOf} from "@lucilor/utils";
 
 export class ProjectConfig {
   constructor(private raw: ProjectConfigRaw = {}) {}

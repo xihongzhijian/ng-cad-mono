@@ -3,6 +3,8 @@ import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
 import {getFilepathUrl, replaceRemoteHost, setGlobal} from "@app/app.common";
+import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong-summary.component";
+import {DakongSummary} from "@components/dialogs/dakong-summary/dakong-summary.types";
 import {openSelectBancaiCadsDialog} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
 import {downloadByUrl, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -386,5 +388,15 @@ export class SelectBancaiComponent implements OnInit {
 
   onAutoGuigeChange() {
     this.config.setConfig("kailiaoAutoGuige", this.autoGuige);
+  }
+
+  async getDakongSummary() {
+    const {codes} = this;
+    const response = await this.dataService.post<DakongSummary>("order/order/getDakongSummary", {codes});
+    const data = this.dataService.getResponseData(response);
+    if (!data) {
+      return;
+    }
+    openDakongSummaryDialog(this.dialog, {data: {data}});
   }
 }

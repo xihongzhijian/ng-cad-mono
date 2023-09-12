@@ -1,0 +1,64 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.filter-form {
+  display: flex;
+  align-items: center;
+
+  > :not(:last-child) {
+    margin-right: 10px;
+  }
+}
+
+.dakong-summary {
+  --title-size: 1.2rem;
+
+  .dakong-summary-table {
+    border: var(--border);
+
+    .title {
+      border-bottom: var(--border);
+    }
+
+    .row {
+      &:not(:last-child) {
+        border-bottom: var(--border);
+      }
+      display: flex;
+    }
+
+    .cell {
+      &:not(:last-child) {
+        border-right: var(--border);
+      }
+      padding: 2px;
+      flex: 1 1 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+
+      > * {
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      .link {
+        cursor: pointer;
+        text-decoration: underline;
+      }
+    }
+  }
+}
