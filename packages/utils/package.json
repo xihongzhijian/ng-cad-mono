@@ -30,13 +30,13 @@
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.2.0",
     "@types/events": "^3.0.0",
-    "@types/lodash": "^4.14.197",
+    "@types/lodash": "^4.14.198",
     "@types/md5": "^2.3.2",
-    "@types/node": "^18.17.14",
-    "@typescript-eslint/eslint-plugin": "^6.6.0",
-    "@typescript-eslint/parser": "^6.6.0",
+    "@types/node": "^18.17.15",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
     "clean-webpack-plugin": "^4.0.0",
-    "eslint": "^8.48.0",
+    "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-deprecation": "^1.5.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -55,6 +55,6 @@
     "jsencrypt": "^3.3.2",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
-    "pinyin-pro": "^3.16.4"
+    "pinyin-pro": "^3.16.6"
   }
 }
