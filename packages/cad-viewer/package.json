@@ -33,7 +33,7 @@
     "@types/events": "^3.0.0",
     "@types/lodash": "^4.14.198",
     "@types/uuid": "^9.0.3",
-    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.0",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^6.8.1",
