@@ -496,10 +496,13 @@ export class ImportComponent extends Utils() implements OnInit {
     CadPortable.addLineId(data);
 
     data.name = data.name.replaceAll("-", "_");
-    if (data.name.match(/^\d+/)) {
+    if (/^\d+/.test("name")) {
       data.name = "_" + data.name;
-    } else if (!data.name.match(this._cadNameRegex) && !cad.skipErrorCheck.has("名字")) {
+    } else if (!this._cadNameRegex.test(data.name) && !cad.skipErrorCheck.has("名字")) {
       cad.errors.push("CAD名字只能是：中文、英文字母、数字、下划线");
+    }
+    if (/分体\d?$/.test(data.name) && data.type.includes("算料") && /包边|企料|锁料|铰料/.test(data.name)) {
+      cad.errors.push("算料CAD名字不能包含【包边、企料、锁料、铰料】");
     }
     let 修改包边正面宽规则 = data.info.修改包边正面宽规则;
     if (data.type === "包边正面") {
@@ -510,7 +513,7 @@ export class ImportComponent extends Utils() implements OnInit {
     } else if (修改包边正面宽规则) {
       cad.errors.push("分类不为[包边正面]不能写[修改包边正面宽规则]");
     }
-    if (data.info.锁边自动绑定可搭配铰边 && !data.type.match(/锁企料|扇锁企料/)) {
+    if (data.info.锁边自动绑定可搭配铰边 && !/锁企料|扇锁企料/.test(data.type)) {
       cad.errors.push("分类不为[锁企料]或[扇锁企料]不能有[锁边自动绑定可搭配铰边]");
     }
     if (data.kailiaoshibaokeng && data.zhidingweizhipaokeng.length > 0) {
@@ -541,9 +544,9 @@ export class ImportComponent extends Utils() implements OnInit {
     });
     let infoArray: PeiheInfo[] | undefined;
     const types = CadPortable.getTypes(data);
-    for (const type of types) {
-      if (infoObj[type]) {
-        infoArray = infoObj[type];
+    for (const t of types) {
+      if (infoObj[t]) {
+        infoArray = infoObj[t];
         break;
       }
     }
