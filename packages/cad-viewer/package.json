@@ -32,18 +32,18 @@
     "@types/color": "^3.0.4",
     "@types/events": "^3.0.0",
     "@types/lodash": "^4.14.198",
-    "@types/uuid": "^9.0.3",
-    "@typescript-eslint/eslint-plugin": "^6.7.0",
-    "@typescript-eslint/parser": "^6.7.0",
+    "@types/uuid": "^9.0.4",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^6.8.1",
     "csstype": "^3.1.2",
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-deprecation": "^1.5.0",
+    "eslint-plugin-deprecation": "^2.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "prettier": "^3.0.3",
-    "sass": "^1.66.1",
+    "sass": "^1.67.0",
     "sass-loader": "^13.3.2",
     "style-loader": "^3.3.3",
     "terser-webpack-plugin": "^5.3.9",
@@ -60,6 +60,6 @@
     "color": "^4.2.3",
     "events": "^3.3.0",
     "lodash": "^4.17.21",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.1"
   }
 }
