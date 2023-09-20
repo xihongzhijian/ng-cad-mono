@@ -686,7 +686,7 @@ const getUnfoldCadViewers = async (
     const zhankaiText = getCadCalcZhankaiText(cad, calcZhankai, materialResult, bancai, params.projectConfig.getRaw(), projectName);
     const texts = [zhankaiText].concat(offsetStrs);
     texts.reverse();
-    const textWidth = boxRect.width - textMargin * 2;
+    const textWidth = boxRect.width;
     for (const text of texts) {
       if (!text) {
         continue;
