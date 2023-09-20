@@ -397,6 +397,20 @@ export class SelectBancaiComponent implements OnInit {
     if (!data) {
       return;
     }
-    openDakongSummaryDialog(this.dialog, {data: {data}});
+    const toDelete: string[] = [];
+    for (const code in data) {
+      if (!data[code]) {
+        toDelete.push(code);
+      }
+    }
+    if (toDelete.length > 0) {
+      this.message.alert("以下订单没有孔位开料结果，请先开一次料<br>" + toDelete.join("、"));
+      for (const code of toDelete) {
+        delete data[code];
+      }
+    }
+    if (Object.keys(data).length > 0) {
+      openDakongSummaryDialog(this.dialog, {data: {data}});
+    }
   }
 }
