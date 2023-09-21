@@ -1,6 +1,6 @@
 import {AbstractControlOptions, FormControl, FormControlOptions, FormControlState, FormGroup} from "@angular/forms";
 import {environment} from "@env";
-import {isTypeOf, LocalStorage, log, ObjectOf, SessionStorage, Timer} from "@lucilor/utils";
+import {LocalStorage, log, ObjectOf, SessionStorage, Timer} from "@lucilor/utils";
 
 declare global {
   interface Window {
@@ -9,16 +9,7 @@ declare global {
   }
 }
 export const remoteHost = "https://www.let888.cn" as const;
-
-let remoteFilePath0: string;
-const parent = window.parent as any;
-const platform = parent.platform;
-if (isTypeOf(platform, "object") && isTypeOf(platform.isNWJs, "function") && platform.isNWJs()) {
-  remoteFilePath0 = `${parent.getLocalServerUrl()}`;
-} else {
-  remoteFilePath0 = `${remoteHost}/filepath`;
-}
-export const remoteFilePath = remoteFilePath0;
+export const remoteFilePath = `${remoteHost}/filepath`;
 
 const addJs = (name: string) => {
   const script = document.createElement("script");

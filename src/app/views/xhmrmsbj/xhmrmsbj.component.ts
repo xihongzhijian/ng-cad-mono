@@ -170,7 +170,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   async requestData(data: any) {
-    const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys, 铰扇跟随锁扇, houtaiUrl, id, user} = data;
+    const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys, 铰扇跟随锁扇} = data;
+    const {houtaiUrl, id, user, localServerUrl} = data;
+    if (typeof localServerUrl === "string") {
+      this.urlPrefix = localServerUrl;
+    }
     this.data = new XhmrmsbjData(
       {vid: 1, mingzi: "1", peizhishuju: JSON.stringify(型号选中门扇布局), jiaoshanbujuhesuoshanxiangtong: 铰扇跟随锁扇 ? 1 : 0},
       menshanKeys,
