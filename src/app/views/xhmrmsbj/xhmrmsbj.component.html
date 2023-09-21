@@ -121,7 +121,7 @@
 <ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai let-isActive="isActive">
   <div class="flex-column mokuai" [ngClass]="{active: isActive}">
     <div class="flex-column" (click)="selectMokuai(mokuai)">
-      <app-image class="mokuai-xiaoguotu" [src]="mokuai?.xiaoguotu" [prefix]="step1Data.prefix"></app-image>
+      <app-image class="mokuai-xiaoguotu" [src]="mokuai?.xiaoguotu" [prefix]="urlPrefix"></app-image>
       <div class="flex-row" style="align-items: center">
         <div class="title center flex-110">{{ getMokuaiTitle(mokuai) || "无" }}</div>
         <button mat-icon-button color="accent" *ngIf="!isFromOrder" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>

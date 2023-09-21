@@ -151,7 +151,6 @@ export interface CadItemContext {
 }
 
 export interface Step1Data {
-  prefix: string;
   typesInfo: ZixuanpeijianTypesInfo;
   options: ObjectOf<string[]>;
 }

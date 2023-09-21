@@ -4,7 +4,7 @@ import {Validators} from "@angular/forms";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatMenuTrigger} from "@angular/material/menu";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
-import {imgCadEmpty, session, setGlobal} from "@app/app.common";
+import {imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {setDimensionText} from "@app/cad/utils";
@@ -58,7 +58,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   step$ = new BehaviorSubject<{value: number; refresh: boolean}>({value: 0, refresh: false});
   type1 = "";
   type2 = "";
-  urlPrefix = "";
+  urlPrefix = remoteFilePath;
   typesInfo: ZixuanpeijianTypesInfo2 = {};
   typesInfoType1: ObjectOf<{hidden: boolean}> = {};
   options: ObjectOf<string[]> = {};
@@ -169,12 +169,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       }
     }
     if (step1Data) {
-      this.urlPrefix = step1Data.prefix;
       this.typesInfo = step1Data.typesInfo;
       this.options = step1Data.options;
       updateMokuaiItems(this.result.模块, step1Data.typesInfo);
     } else {
-      this.urlPrefix = "";
       this.typesInfo = {};
       this.options = {};
     }
@@ -1158,7 +1156,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         checkEmpty: this.data?.checkEmpty,
         data: {模块: item.可替换模块},
         可替换模块: false,
-        step1Data: {prefix: this.urlPrefix, typesInfo, options: this.options}
+        step1Data: {typesInfo, options: this.options}
       }
     });
     if (result) {

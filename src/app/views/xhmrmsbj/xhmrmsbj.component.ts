@@ -1,7 +1,7 @@
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
-import {session, setGlobal, timer} from "@app/app.common";
+import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import mokuaidaixiaoData from "@assets/testData/mokuaidaxiao.json";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
@@ -48,13 +48,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   data: XhmrmsbjData | null = null;
   fenleis: TableDataBase[] = [];
   msbjs: MsbjInfo[] = [];
-  step1Data: Step1Data = {prefix: "", options: {}, typesInfo: {}};
+  step1Data: Step1Data = {options: {}, typesInfo: {}};
   mokuais: ZixuanpeijianMokuaiItem[] = [];
   xinghao: MrbcjfzXinghaoInfo | null = null;
   bancaiList: BancaiList[] = [];
   activeMenshanKey: string | null = null;
   activeMsbj: MsbjInfo | null = null;
   activeRectInfo: MsbjRectInfo | null = null;
+  urlPrefix = remoteFilePath;
   get activeMsbjInfo() {
     return this.data?.menshanbujuInfos[this.activeMenshanKey || ""];
   }

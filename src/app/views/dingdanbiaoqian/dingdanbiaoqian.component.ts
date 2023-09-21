@@ -508,7 +508,7 @@ export class DingdanbiaoqianComponent implements OnInit {
       }
     }
     this.mokuais = mokuais;
-    this.urlPrefix = step1Data.prefix;
+    this.urlPrefix = remoteFilePath;
     this.orders = [];
     this.calcResults = [];
     for (const [i, mokuai] of mokuais.entries()) {
