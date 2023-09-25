@@ -40,6 +40,7 @@ export class DakongSummaryComponent {
   }
   cadImgs: ObjectOf<string> = {};
   form = {
+    strictFilter: false,
     filterCad: "",
     filterPeizhi: "",
     filterKong: ""
@@ -140,17 +141,24 @@ export class DakongSummaryComponent {
   }
 
   filterTableData() {
-    const {filterCad, filterPeizhi, filterKong} = this.form;
+    const {strictFilter, filterCad, filterPeizhi, filterKong} = this.form;
+    const filter = (needle: string, haystack: string) => {
+      if (strictFilter) {
+        return !needle || needle === haystack;
+      } else {
+        return queryString(needle, haystack);
+      }
+    };
     for (const info of this.tableInfos) {
       for (const item of info.data) {
         item.hidden = false;
-        if (!queryString(filterCad, item.cadName)) {
+        if (!filter(filterCad, item.cadName)) {
           item.hidden = true;
         }
-        if (!queryString(filterPeizhi, item.peizhiName)) {
+        if (!filter(filterPeizhi, item.peizhiName)) {
           item.hidden = true;
         }
-        if (!queryString(filterKong, item.kongName)) {
+        if (!filter(filterKong, item.kongName)) {
           item.hidden = true;
         }
       }

@@ -2,6 +2,9 @@
 <div class="btn-group">
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
   <mat-slide-toggle [(ngModel)]="showIds">{{ showIds ? "" : "不" }}显示id</mat-slide-toggle>
+  <mat-slide-toggle [(ngModel)]="form.strictFilter" (change)="filterTableData()">
+    {{ form.strictFilter ? "精确" : "模糊" }}搜索
+  </mat-slide-toggle>
 </div>
 <div class="filter-form">
   <div>数据筛选</div>
