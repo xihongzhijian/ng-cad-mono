@@ -684,7 +684,12 @@ const getUnfoldCadViewers = async (
     }
 
     const zhankaiText = getCadCalcZhankaiText(cad, calcZhankai, materialResult, bancai, params.projectConfig.getRaw(), projectName);
-    const texts = [zhankaiText].concat(offsetStrs);
+    const texts0 = [zhankaiText].concat(offsetStrs);
+    const texts: string[] = [];
+    for (const text of texts0) {
+      const texts1 = text.split(/\n{2,}/);
+      texts.push(...texts1);
+    }
     texts.reverse();
     const textWidth = boxRect.width;
     for (const text of texts) {
@@ -697,7 +702,6 @@ const getUnfoldCadViewers = async (
       y += mtext.boundingRect.height + textMargin;
       mtext.calcBoundingRect = false;
     }
-    y -= textMargin;
 
     const imgRect = boxRect.clone();
     imgRect.top -= imgPadding[0];
