@@ -502,17 +502,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/router@npm:^16.2.5":
-  version: 16.2.5
-  resolution: "@angular/router@npm:16.2.5"
+"@angular/router@npm:^16.2.7":
+  version: 16.2.7
+  resolution: "@angular/router@npm:16.2.7"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
-    "@angular/common": 16.2.5
-    "@angular/core": 16.2.5
-    "@angular/platform-browser": 16.2.5
+    "@angular/common": 16.2.7
+    "@angular/core": 16.2.7
+    "@angular/platform-browser": 16.2.7
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 6792cbdbdbdc9f713c328f890fc915bf833767aa3a5c3fc5a4c08dfdd4a8e17ed42a27976d7f3734dbdfa55bad584ac2c9a99680631aaadca56bb567150b18b8
+  checksum: 55ca6eafadb73a3c06a889012f15a509803b682c90fe545a5f2dc68f263a70cfbd9cafcad58afa254bdc1d28720c634b72ae1a20d5ad8ad929b542c061fcc57b
   languageName: node
   linkType: hard
 
@@ -12193,7 +12193,7 @@ __metadata:
     "@angular/material": ^16.2.4
     "@angular/platform-browser": ^16.2.5
     "@angular/platform-browser-dynamic": ^16.2.5
-    "@angular/router": ^16.2.5
+    "@angular/router": ^16.2.7
     "@lucilor/cad-viewer": "workspace:^"
     "@lucilor/utils": "workspace:^"
     "@maaxgr/ang-jsoneditor": ^14.0.0
