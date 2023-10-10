@@ -399,9 +399,10 @@ export const configCadDataForPrint = async (
       e.fontStyle.weight = "bolder";
     }
 
-    if (text.match(/^花件信息/)) {
-      // * 自动换行
-      let wrapedText = text.slice(4);
+    // * 自动换行
+    const wrapedTextMatch = text.match(/^(花件信息|自动换行)/);
+    if (wrapedTextMatch) {
+      let wrapedText = text.slice(wrapedTextMatch[0].length);
       let lines = es.line;
       lines = lines.filter((ee) => ee.isVertical() && isBetween(insert.y, ee.minY, ee.maxY) && ee.start.x - insert.x > 50);
       let dMin = Infinity;
@@ -418,7 +419,7 @@ export const configCadDataForPrint = async (
           .map((v) => getWrapedText(cad, v, e, getWrapedTextOptions(v, dMin)).join("\n"))
           .join("\n");
       } catch (error) {
-        console.warn("花件信息自动换行时出错");
+        console.warn("自动换行时出错");
         console.warn(error);
       }
       e.text = wrapedText;
@@ -634,7 +635,7 @@ const getUnfoldCadViewers = async (
     let y = boxRect.bottom + textMargin;
     if (!useQrcode && !isBarcodeFailed) {
       const barcodeText = `${code}-${cad.numId}`;
-      const barcodeResult = getOrderBarcode(".barcode", {
+      const barcodeResult = getOrderBarcode(barcodeEl, {
         text: `${code}-${cad.numId}`,
         displayValue: false,
         margin: 0,
