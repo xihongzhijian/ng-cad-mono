@@ -1,4 +1,4 @@
-import {replaceRemoteHost} from "@app/app.common";
+import {getOrderBarcode, replaceRemoteHost} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {ProjectConfig} from "@app/utils/project-config";
 import {
@@ -21,7 +21,6 @@ import {
 } from "@lucilor/cad-viewer";
 import {getDPI, getImageDataUrl, isBetween, isNearZero, loadImage, Matrix, ObjectOf, Point, Rectangle, timeout} from "@lucilor/utils";
 import {Properties} from "csstype";
-import JsBarcode from "jsbarcode";
 import {cloneDeep, intersection} from "lodash";
 import {createPdf} from "pdfmake/build/pdfmake";
 import QRCode from "qrcode";
@@ -635,23 +634,16 @@ const getUnfoldCadViewers = async (
     let y = boxRect.bottom + textMargin;
     if (!useQrcode && !isBarcodeFailed) {
       const barcodeText = `${code}-${cad.numId}`;
-      try {
-        JsBarcode("#" + barcodeEl.id, barcodeText, {
-          displayValue: false,
-          margin: 0,
-          width: barcodeSize[0],
-          height: barcodeSize[1]
-        });
-      } catch (error) {
-        let msg = "未知错误";
-        if (typeof error === "string") {
-          if (error.includes("is not a valid input")) {
-            msg = "订单编号不能包含\n中文或特殊字符，请修改订单编号";
-          } else {
-            msg = error;
-          }
-        }
-        console.warn(error);
+      const barcodeResult = getOrderBarcode(".barcode", {
+        text: `${code}-${cad.numId}`,
+        displayValue: false,
+        margin: 0,
+        width: 2,
+        height: 30
+      });
+      if (barcodeResult.error) {
+        const msg = barcodeResult.error;
+        console.warn(msg);
         isBarcodeFailed = true;
         const mtext = await addText("生成条形码出错：" + msg, [boxRect.left, y], {anchor: [0, 1], fontStyle: infoTextFontStyle});
         y += mtext.boundingRect.height + textMargin;

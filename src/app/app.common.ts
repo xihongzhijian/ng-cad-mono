@@ -1,6 +1,7 @@
 import {AbstractControlOptions, FormControl, FormControlOptions, FormControlState, FormGroup} from "@angular/forms";
 import {environment} from "@env";
 import {LocalStorage, log, ObjectOf, SessionStorage, Timer} from "@lucilor/utils";
+import JsBarcode from "jsbarcode";
 
 declare global {
   interface Window {
@@ -154,6 +155,36 @@ export const getFilepathUrl = (url: string, opts?: {prefix?: string; suffix?: st
       strs[strs.length - 1] = `${prefix || ""}${strs[strs.length - 1]}${suffix || ""}`;
     }
     result = `${origin}/filepath/${strs.join("/")}`;
+  }
+  return result;
+};
+
+export const getOrderBarcode = (element: string | HTMLElement, options: JsBarcode.Options & {text?: string}) => {
+  const result = {fulfilled: true, error: null as string | null};
+  let text: string | undefined;
+  if (options.text) {
+    text = options.text;
+    delete options.text;
+  }
+  try {
+    if (text) {
+      JsBarcode(element, text, options);
+    } else {
+      JsBarcode(element).options(options).init();
+    }
+  } catch (error) {
+    if (typeof error === "string") {
+      if (error.includes("is not a valid input")) {
+        result.error = "订单编号不能包含中文或特殊字符，请修改订单编号";
+      } else {
+        result.error = error;
+      }
+    } else if (error instanceof Error) {
+      result.error = error.message;
+    } else {
+      result.error = "未知错误";
+    }
+    result.fulfilled = false;
   }
   return result;
 };

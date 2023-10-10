@@ -106,10 +106,13 @@
             <div class="cad-tags flex-column">
               <div *ngFor="let str of cad.data.info['标签信息']">{{ str }}</div>
             </div>
+            <div *ngIf="config.showBarcode">
+              <svg class="barcode" [attr.jsbarcode-value]="order.code + '-' + cad.data.numId"></svg>
+            </div>
             <div class="cad-image flex-110 flex-column" [ngStyle]="cad.imgStyle">
               <div class="cad-image-inner">
                 <app-image class="img" [src]="cad.img" [bigPicSrc]="cad.imgLarge" (click)="openCad(cad)"></app-image>
-                <div class="排版编号">{{ order.materialResult?.["排版编号"] }}{{ cad.data.numId }}</div>
+                <div class="排版编号" *ngIf="!config.showBarcode">{{ order.materialResult?.["排版编号"] }}{{ cad.data.numId }}</div>
               </div>
             </div>
             <div class="cad-info flex-column">

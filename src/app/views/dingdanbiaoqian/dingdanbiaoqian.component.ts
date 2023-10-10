@@ -2,7 +2,7 @@ import {Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren} from 
 import {MatDialog} from "@angular/material/dialog";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
-import {imgCadEmpty, imgEmpty, imgLoading, remoteFilePath, session, setGlobal} from "@app/app.common";
+import {getOrderBarcode, imgCadEmpty, imgEmpty, imgLoading, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {configCadDataForPrint} from "@app/cad/print";
 import {
@@ -31,7 +31,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
-import JsBarcode from "jsbarcode";
 import {cloneDeep, isEmpty} from "lodash";
 import {DateTime} from "luxon";
 import {DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig} from "./dingdanbiaoqian.types";
@@ -105,7 +104,8 @@ export class DingdanbiaoqianComponent implements OnInit {
   enableCache = !environment.production;
   config = {
     showCadSmallImg: true,
-    showCadLargeImg: false
+    showCadLargeImg: false,
+    showBarcode: false
   };
 
   constructor(
@@ -123,9 +123,12 @@ export class DingdanbiaoqianComponent implements OnInit {
     setTimeout(() => this.getOrders(), 0);
     this._loadConfig();
     setGlobal("ddbq", this);
-    const {type} = this.route.snapshot.queryParams;
+    const {type, showBarcode} = this.route.snapshot.queryParams;
     if (type) {
       this.type = type;
+    }
+    if (showBarcode) {
+      this.config.showBarcode = true;
     }
   }
 
@@ -187,7 +190,7 @@ export class DingdanbiaoqianComponent implements OnInit {
             setShuangxiangLineRects(shuangxiangCads, shuangxiangRects);
           }
 
-          const isLarge = !!data.info.isLarge;
+          const isLarge = this.config.showBarcode || !!data.info.isLarge;
           return {
             houtaiId: cad.houtaiId,
             data,
@@ -229,20 +232,11 @@ export class DingdanbiaoqianComponent implements OnInit {
       });
       document.title = `${this.orders[0].code}_${DateTime.now().toFormat("yyyyMMdd")}`;
       await this.splitOrders();
-      try {
-        JsBarcode(".barcode").options({displayValue: false, margin: 0, width: 2, height: 30}).init();
-      } catch (error) {
-        let msg = "未知错误";
-        if (typeof error === "string") {
-          if (error.includes("is not a valid input")) {
-            msg = "订单编号不能包含中文或特殊字符，请修改订单编号";
-          } else {
-            msg = error;
-          }
-        }
-        console.warn(error);
+      const barcodeResult = getOrderBarcode(".barcode", {displayValue: false, margin: 0, width: 2, height: 30});
+      if (barcodeResult.error) {
+        console.warn(barcodeResult.error);
         this.spinner.hide(this.spinner.defaultLoaderId);
-        this.message.alert("生成条形码出错：" + msg);
+        this.message.alert("生成条形码出错：" + barcodeResult.error);
         if (this.production) {
           this.orders = [];
           return;
@@ -452,6 +446,9 @@ export class DingdanbiaoqianComponent implements OnInit {
         case "合格证":
         case "流程指令卡":
           this.forms.push(...(order.forms || []));
+          break;
+        default:
+          this.message.alert("未知类型：" + type);
           break;
       }
     });

@@ -14,6 +14,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
+import {DdbqType} from "@views/dingdanbiaoqian/dingdanbiaoqian.types";
 import {cloneDeep} from "lodash";
 import {DateTime} from "luxon";
 import {BancaiCadExtend, BancaisInfo, guigePattern, houduPattern, OrderBancaiInfo, SelectBancaiDlHistory} from "./select-bancai.types";
@@ -382,7 +383,9 @@ export class SelectBancaiComponent implements OnInit {
   openDdbq() {
     const url = new URL(location.href);
     url.pathname = url.pathname.slice(0, url.pathname.lastIndexOf("/")) + "/dingdanbiaoqian";
-    url.searchParams.set("type", "标签贴纸");
+    const type: DdbqType = "标签贴纸";
+    url.searchParams.set("type", type);
+    url.searchParams.set("showBarcode", "1");
     this.open(url.href);
   }
 
