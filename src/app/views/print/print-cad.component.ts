@@ -179,7 +179,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
         this.downloadUrl = responseData.url || null;
         this.printParams = {...this.printParams, ...responseData};
         const 指定分类 = queryParams.指定分类 || "算料单";
-        this.printParams.info.title = `${指定分类} ${this.printParams.codes.join("、")}`;
+        this.printParams.info.title = `${this.printParams.codes.join("、")} ${指定分类}`;
         document.title = this.printParams.info.title;
         const {codes, type} = this.printParams;
         if (codes.length === 1) {
