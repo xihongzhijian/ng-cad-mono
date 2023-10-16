@@ -2,6 +2,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {FormsModule} from "@angular/forms";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {SelectBancaiCadsComponent, SelectBancaiCadsInput} from "./select-bancai-cads.component";
 
@@ -45,7 +46,7 @@ describe("SelectBancaiCadsComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [SelectBancaiCadsComponent],
-      imports: [FormsModule, MatCheckboxModule, NgScrollbarModule],
+      imports: [FormsModule, MatCheckboxModule, MatSlideToggleModule, NgScrollbarModule],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

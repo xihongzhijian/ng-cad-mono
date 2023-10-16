@@ -1,3 +1,4 @@
+<mat-slide-toggle *ngIf="!data.editDisabled" [(ngModel)]="noPaiban">激光开料不排版</mat-slide-toggle>
 <ng-scrollbar class="flex-110">
   <div class="order" *ngFor="let order of data.orders; let i = index">
     <mat-divider *ngIf="i > 0"></mat-divider>
@@ -7,7 +8,7 @@
       <div class="cad-group">
         <div class="cad" *ngFor="let cad of group">
           <mat-checkbox [(ngModel)]="cad.checked" [disabled]="!data.editDisabled && cad.disabled">
-            <span [class.disabled]="cad.disabled">{{ cad.name }}({{ cad.num }})</span>
+            <span [class.disabled]="cad.disabled">{{ cad.name }}</span>
             <span *ngIf="cad.oversized" style="color: red">(尺寸超出规格：{{ cad.width }} × {{ cad.height }})</span>
           </mat-checkbox>
         </div>

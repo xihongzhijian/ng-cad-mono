@@ -41,10 +41,8 @@
 <div class="btn-group">
   <div class="spinner-container">
     <div class="btn-group">
-      <button mat-raised-button color="primary" (click)="submit()">
-        {{ type }}
-      </button>
       <button mat-raised-button color="primary" (click)="selectCadsToSubmit()">选择cad开料</button>
+      <button mat-raised-button color="primary" (click)="submit()">{{ type }}</button>
     </div>
     <app-spinner [id]="submitLoaderId" [inline]="true"></app-spinner>
   </div>

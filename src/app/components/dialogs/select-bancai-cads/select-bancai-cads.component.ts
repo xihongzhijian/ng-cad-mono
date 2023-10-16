@@ -10,6 +10,8 @@ import {getOpenDialogFunc} from "../dialog.common";
   styleUrls: ["./select-bancai-cads.component.scss"]
 })
 export class SelectBancaiCadsComponent {
+  noPaiban = false;
+
   constructor(
     public dialogRef: MatDialogRef<SelectBancaiCadsComponent, SelectBancaiCadsOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SelectBancaiCadsInput
@@ -17,6 +19,7 @@ export class SelectBancaiCadsComponent {
     if (!Array.isArray(this.data.orders)) {
       this.data.orders = [];
     }
+    this.noPaiban = !!this.data.noPaiban;
   }
 
   *getAllCads() {
@@ -62,7 +65,7 @@ export class SelectBancaiCadsComponent {
   }
 
   submit() {
-    this.dialogRef.close({isSubmitted: true});
+    this.dialogRef.close({noPaiban: this.noPaiban});
   }
 
   close() {
@@ -123,8 +126,9 @@ export interface SelectBancaiCadsInput {
   submitBtnText?: string;
   submitLimit?: number | {min?: number; max?: number};
   editDisabled?: boolean;
+  noPaiban?: boolean;
 }
 
 export interface SelectBancaiCadsOutput {
-  isSubmitted?: boolean;
+  noPaiban?: boolean;
 }

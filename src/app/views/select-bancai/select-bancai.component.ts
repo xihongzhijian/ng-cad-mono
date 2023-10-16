@@ -307,7 +307,7 @@ export class SelectBancaiComponent implements OnInit {
     const oldGroup: BancaiCadExtend[] = [];
     const newGroup: BancaiCadExtend[] = [];
     for (const cad of cads[0]) {
-      if (result?.isSubmitted) {
+      if (result) {
         if (cad.checked) {
           cad.bancai.guige = null;
           newGroup.push(cad);
@@ -328,7 +328,7 @@ export class SelectBancaiComponent implements OnInit {
     this.updateOrderBancaiInfos();
   }
 
-  async submit(selectCad?: boolean) {
+  async submit(selectCad?: boolean, noPaiban?: boolean) {
     await timeout(0);
     if (this.bancaiInfoInputs) {
       for (const bancaiInfoInput of this.bancaiInfoInputs) {
@@ -368,10 +368,18 @@ export class SelectBancaiComponent implements OnInit {
     this.spinner.show(this.submitLoaderId);
     const api = "order/order/selectBancai";
     const {table, autoGuige, type} = this;
-    const response = await this.dataService.post<string | string[]>(api, {codes, bancaiCadsArr, table, autoGuige, type, skipCads});
-    await this.refreshDownloadHistory();
+    const projectConfigOverride: ObjectOf<string> = {};
+    if (noPaiban) {
+      projectConfigOverride.激光开料结果不用排版 = "是";
+    }
+    let url: string | string[] | null = null;
+    const data: ObjectOf<any> = {codes, bancaiCadsArr, table, autoGuige, type, skipCads, projectConfigOverride};
+    try {
+      const response = await this.dataService.post<string | string[]>(api, data);
+      await this.refreshDownloadHistory();
+      url = this.dataService.getResponseData(response);
+    } catch (error) {}
     this.spinner.hide(this.submitLoaderId);
-    const url = this.dataService.getResponseData(response);
     if (url) {
       if (Array.isArray(url)) {
         this.message.alert(url.map((v) => `<div>${v}</div>`).join(""));
@@ -382,13 +390,13 @@ export class SelectBancaiComponent implements OnInit {
   }
 
   async selectCadsToSubmit() {
-    const data: SelectBancaiCadsInput = {orders: [], submitBtnText: this.type, submitLimit: {min: 1}};
+    const data: SelectBancaiCadsInput = {orders: [], submitBtnText: this.type, submitLimit: {min: 1}, noPaiban: true};
     for (const order of this.orderBancaiInfos) {
       data.orders.push({code: order.code, cads: order.sortedCads});
     }
     const result = await openSelectBancaiCadsDialog(this.dialog, {data});
-    if (result?.isSubmitted) {
-      await this.submit(true);
+    if (result) {
+      await this.submit(true, result.noPaiban);
     }
     for (const order of this.orderBancaiInfos) {
       for (const group of order.sortedCads) {
