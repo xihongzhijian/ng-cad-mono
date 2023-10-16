@@ -40,9 +40,12 @@
 </ng-scrollbar>
 <div class="btn-group">
   <div class="spinner-container">
-    <button mat-raised-button color="primary" (click)="submit()">
-      {{ type }}
-    </button>
+    <div class="btn-group">
+      <button mat-raised-button color="primary" (click)="submit()">
+        {{ type }}
+      </button>
+      <button mat-raised-button color="primary" (click)="selectCadsToSubmit()">选择cad开料</button>
+    </div>
     <app-spinner [id]="submitLoaderId" [inline]="true"></app-spinner>
   </div>
 </div>

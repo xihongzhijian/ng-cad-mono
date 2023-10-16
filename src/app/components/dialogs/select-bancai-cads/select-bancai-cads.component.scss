@@ -9,8 +9,21 @@
   text-decoration: line-through;
 }
 
+.order {
+  display: flex;
+  flex-direction: column;
+  --title-size: 1.5em;
+}
+
 .cads {
-  flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  --title-size: 1.2em;
+
+  .cad-group {
+    display: flex;
+    flex-wrap: wrap;
+  }
 
   .cad {
     width: 25%;

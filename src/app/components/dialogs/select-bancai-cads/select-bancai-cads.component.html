@@ -1,21 +1,33 @@
-<h2 *ngIf="bancai" mat-dialog-title>{{ bancai.mingzi }}({{ bancai.guige?.join(" × ") }})</h2>
 <ng-scrollbar class="flex-110">
-  <div class="flex-row cads">
-    <div class="flex-row cad" *ngFor="let cad of data.cads">
-      <mat-checkbox [(ngModel)]="cad.checked">
-        <span [class.disabled]="cad.disabled">{{ cad.name }}({{ cad.num }})</span>
-        <!-- <span *ngIf="cad.peihe" [class.disabled]="cad.disabled">({{ cad.peihe }})</span> -->
-        <span *ngIf="cad.oversized" style="color: red">(尺寸超出规格：{{ cad.width }} × {{ cad.height }})</span>
-      </mat-checkbox>
+  <div class="order" *ngFor="let order of data.orders; let i = index">
+    <mat-divider *ngIf="i > 0"></mat-divider>
+    <div class="title" *ngIf="order.cads.length > 0">{{ order.code }}</div>
+    <div class="cads" *ngFor="let group of order.cads">
+      <div class="title" *ngIf="group[0]">{{ group[0].bancai.mingzi }}({{ group[0].bancai.guige?.join(" × ") }})</div>
+      <div class="cad-group">
+        <div class="cad" *ngFor="let cad of group">
+          <mat-checkbox [(ngModel)]="cad.checked" [disabled]="!data.editDisabled && cad.disabled">
+            <span [class.disabled]="cad.disabled">{{ cad.name }}({{ cad.num }})</span>
+            <span *ngIf="cad.oversized" style="color: red">(尺寸超出规格：{{ cad.width }} × {{ cad.height }})</span>
+          </mat-checkbox>
+        </div>
+      </div>
     </div>
   </div>
 </ng-scrollbar>
 <div matDialogActions>
-  <button mat-raised-button color="primary" (click)="autoCheck()">自动选择</button>
   <button mat-raised-button color="primary" (click)="selectAll()">全选</button>
   <button mat-raised-button color="primary" (click)="unselectAll()">全不选</button>
-  <button mat-raised-button color="primary" (click)="enable()">设为开料</button>
-  <button mat-raised-button color="primary" (click)="disable()">设为不开料</button>
-  <button mat-raised-button color="primary" (click)="submit()" [disabled]="checkedCads.length < 1">移到新板材</button>
+  <ng-container *ngIf="data.editDisabled">
+    <button mat-raised-button color="primary" (click)="selectOversized()">自动选择</button>
+    <button mat-raised-button color="primary" (click)="enable()">设为开料</button>
+    <button mat-raised-button color="primary" (click)="disable()">设为不开料</button>
+  </ng-container>
+  <ng-container *ngIf="!data.editDisabled">
+    <button mat-raised-button color="primary" (click)="selectReverse()">反选</button>
+  </ng-container>
+  <button mat-raised-button color="primary" (click)="submit()" *ngIf="data.submitBtnText" [disabled]="isSubmitDisabled">
+    {{ data.submitBtnText }}
+  </button>
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
 </div>

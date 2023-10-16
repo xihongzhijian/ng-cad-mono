@@ -1,11 +1,8 @@
 import {Component, Inject} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {BancaiCadExtend} from "@views/select-bancai/select-bancai.types";
+import {isBetween} from "packages/utils/lib";
 import {getOpenDialogFunc} from "../dialog.common";
-
-export interface SelectBancaiCadsData {
-  cads: BancaiCadExtend[];
-}
 
 @Component({
   selector: "app-select-bancai-cads",
@@ -13,52 +10,121 @@ export interface SelectBancaiCadsData {
   styleUrls: ["./select-bancai-cads.component.scss"]
 })
 export class SelectBancaiCadsComponent {
-  get bancai() {
-    return this.data.cads[0]?.bancai;
-  }
-
-  get checkedCads() {
-    return this.data.cads.filter((v) => v.checked);
-  }
-
   constructor(
-    public dialogRef: MatDialogRef<SelectBancaiCadsComponent, string[]>,
-    @Inject(MAT_DIALOG_DATA) public data: SelectBancaiCadsData
+    public dialogRef: MatDialogRef<SelectBancaiCadsComponent, SelectBancaiCadsOutput>,
+    @Inject(MAT_DIALOG_DATA) public data: SelectBancaiCadsInput
   ) {
-    if (!Array.isArray(this.data.cads)) {
-      this.data.cads = [];
+    if (!Array.isArray(this.data.orders)) {
+      this.data.orders = [];
     }
   }
 
+  *getAllCads() {
+    for (const order of this.data.orders) {
+      for (const group of order.cads) {
+        for (const cad of group) {
+          yield cad;
+        }
+      }
+    }
+  }
+
+  get checkedCads() {
+    const checkedCads: BancaiCadExtend[] = [];
+    for (const cad of this.getAllCads()) {
+      if (cad.checked) {
+        checkedCads.push(cad);
+      }
+    }
+    return checkedCads;
+  }
+
+  get isSubmitDisabled() {
+    const {submitLimit} = this.data;
+    let min: number;
+    let max: number;
+    switch (typeof submitLimit) {
+      case "number":
+        min = max = submitLimit;
+        break;
+      case "object":
+        min = submitLimit.min ?? 0;
+        max = submitLimit.max ?? Infinity;
+        break;
+      default:
+        min = 0;
+        max = Infinity;
+        break;
+    }
+    min = isNaN(min) ? 0 : min;
+    max = isNaN(max) ? Infinity : max;
+    return !isBetween(this.checkedCads.length, min, max, true);
+  }
+
   submit() {
-    this.dialogRef.close(this.checkedCads.map((v) => v.id));
+    this.dialogRef.close({isSubmitted: true});
   }
 
   close() {
     this.dialogRef.close();
   }
 
-  autoCheck() {
-    this.data.cads.forEach((cad) => (cad.checked = cad.oversized));
+  setCadChecked(cad: BancaiCadExtend, checked: boolean) {
+    if (!this.data.editDisabled && cad.disabled) {
+      cad.checked = false;
+    } else {
+      cad.checked = checked;
+    }
+  }
+
+  selectOversized() {
+    for (const cad of this.getAllCads()) {
+      this.setCadChecked(cad, cad.oversized);
+    }
   }
 
   selectAll() {
-    this.data.cads.forEach((cad) => (cad.checked = true));
+    for (const cad of this.getAllCads()) {
+      this.setCadChecked(cad, true);
+    }
   }
 
   unselectAll() {
-    this.data.cads.forEach((cad) => (cad.checked = false));
+    for (const cad of this.getAllCads()) {
+      this.setCadChecked(cad, false);
+    }
+  }
+
+  selectReverse() {
+    for (const cad of this.getAllCads()) {
+      this.setCadChecked(cad, !cad.checked);
+    }
   }
 
   disable() {
-    this.data.cads.forEach((cad) => (cad.disabled = cad.checked));
+    for (const cad of this.getAllCads()) {
+      cad.disabled = cad.checked;
+    }
   }
 
   enable() {
-    this.data.cads.forEach((cad) => (cad.disabled = !cad.checked));
+    for (const cad of this.getAllCads()) {
+      cad.disabled = !cad.checked;
+    }
   }
 }
 
-export const openSelectBancaiCadsDialog = getOpenDialogFunc<SelectBancaiCadsComponent, SelectBancaiCadsData, string[]>(
+export const openSelectBancaiCadsDialog = getOpenDialogFunc<SelectBancaiCadsComponent, SelectBancaiCadsInput, SelectBancaiCadsOutput>(
   SelectBancaiCadsComponent
 );
+
+export interface SelectBancaiCadsInput {
+  orders: {code: string; cads: BancaiCadExtend[][]}[];
+  submitBtnText?: string;
+  submitLimit?: number | {min?: number; max?: number};
+  editDisabled?: boolean;
+}
+
+export interface SelectBancaiCadsOutput {
+  isSubmitted?: boolean;
+}

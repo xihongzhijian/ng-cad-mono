@@ -5,7 +5,7 @@ import {ActivatedRoute} from "@angular/router";
 import {getFilepathUrl, replaceRemoteHost, setGlobal} from "@app/app.common";
 import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong-summary.component";
 import {DakongSummary} from "@components/dialogs/dakong-summary/dakong-summary.types";
-import {openSelectBancaiCadsDialog} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
+import {openSelectBancaiCadsDialog, SelectBancaiCadsInput} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
 import {downloadByUrl, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiCad, BancaiList} from "@modules/http/services/cad-data.service.types";
@@ -296,30 +296,39 @@ export class SelectBancaiComponent implements OnInit {
 
   async openCadsDialog(i: number, j: number) {
     const info = this.orderBancaiInfos[i];
-    const cads = info.sortedCads[j];
-    const result = await openSelectBancaiCadsDialog(this.dialog, {data: {cads}});
-    if (result && result.length) {
-      const oldGroup: BancaiCadExtend[] = [];
-      const newGroup: BancaiCadExtend[] = [];
-      cads.forEach((cad) => {
-        if (result.includes(cad.id)) {
+    const cads = [info.sortedCads[j]];
+    const data: SelectBancaiCadsInput = {
+      orders: [{code: info.code, cads}],
+      submitBtnText: "移到新板材",
+      submitLimit: {min: 1},
+      editDisabled: true
+    };
+    const result = await openSelectBancaiCadsDialog(this.dialog, {data});
+    const oldGroup: BancaiCadExtend[] = [];
+    const newGroup: BancaiCadExtend[] = [];
+    for (const cad of cads[0]) {
+      if (result?.isSubmitted) {
+        if (cad.checked) {
           cad.bancai.guige = null;
           newGroup.push(cad);
         } else {
           oldGroup.push(cad);
         }
-      });
-      if (oldGroup.length) {
-        info.sortedCads[j] = oldGroup;
-      } else {
-        info.sortedCads.splice(i, 1);
       }
-      info.sortedCads.push(newGroup);
-      this.updateOrderBancaiInfos();
+      cad.checked = false;
     }
+    if (newGroup.length > 0) {
+      if (oldGroup.length > 0) {
+        info.sortedCads[j] = oldGroup;
+        info.sortedCads.splice(j + 1, 0, newGroup);
+      } else {
+        info.sortedCads[j] = newGroup;
+      }
+    }
+    this.updateOrderBancaiInfos();
   }
 
-  async submit() {
+  async submit(selectCad?: boolean) {
     await timeout(0);
     if (this.bancaiInfoInputs) {
       for (const bancaiInfoInput of this.bancaiInfoInputs) {
@@ -329,28 +338,36 @@ export class SelectBancaiComponent implements OnInit {
         }
       }
     }
-    const skipCads: string[] = [];
+    const skipCads: string[][] = [];
     const bancaiCadsArr: BancaiCad[][] = [];
+    const codes: string[] = [];
     for (const info of this.orderBancaiInfos) {
       const arr1: BancaiCad[] = [];
+      const skipCads1: string[] = [];
+      let hasChecked = false;
       for (const group of info.sortedCads) {
         for (const cad of group) {
-          if (cad.disabled) {
-            skipCads.push(cad.name);
+          if (cad.disabled || (selectCad && !cad.checked)) {
+            skipCads1.push(cad.name);
           } else {
             const clone = {...cad} as Partial<BancaiCadExtend>;
             delete clone.checked;
             delete clone.oversized;
             delete clone.disabled;
             arr1.push(clone as BancaiCad);
+            hasChecked = true;
           }
         }
+      }
+      if (hasChecked) {
+        codes.push(info.code);
+        skipCads.push(skipCads1);
       }
       bancaiCadsArr.push(arr1);
     }
     this.spinner.show(this.submitLoaderId);
     const api = "order/order/selectBancai";
-    const {codes, table, autoGuige, type} = this;
+    const {table, autoGuige, type} = this;
     const response = await this.dataService.post<string | string[]>(api, {codes, bancaiCadsArr, table, autoGuige, type, skipCads});
     await this.refreshDownloadHistory();
     this.spinner.hide(this.submitLoaderId);
@@ -360,6 +377,24 @@ export class SelectBancaiComponent implements OnInit {
         this.message.alert(url.map((v) => `<div>${v}</div>`).join(""));
       } else {
         this.downloadDxf(replaceRemoteHost(url));
+      }
+    }
+  }
+
+  async selectCadsToSubmit() {
+    const data: SelectBancaiCadsInput = {orders: [], submitBtnText: this.type, submitLimit: {min: 1}};
+    for (const order of this.orderBancaiInfos) {
+      data.orders.push({code: order.code, cads: order.sortedCads});
+    }
+    const result = await openSelectBancaiCadsDialog(this.dialog, {data});
+    if (result?.isSubmitted) {
+      await this.submit(true);
+    }
+    for (const order of this.orderBancaiInfos) {
+      for (const group of order.sortedCads) {
+        for (const cad of group) {
+          cad.checked = false;
+        }
       }
     }
   }

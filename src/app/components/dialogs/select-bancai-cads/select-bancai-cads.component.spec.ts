@@ -3,31 +3,38 @@ import {FormsModule} from "@angular/forms";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {SelectBancaiCadsComponent, SelectBancaiCadsData} from "./select-bancai-cads.component";
+import {SelectBancaiCadsComponent, SelectBancaiCadsInput} from "./select-bancai-cads.component";
 
-const data: SelectBancaiCadsData = {
-  cads: [
+const data: SelectBancaiCadsInput = {
+  orders: [
     {
-      id: "cad1",
-      name: "cad1",
-      width: 1000,
-      height: 1000,
-      num: 1,
-      bancai: {mingzi: "baicai1", cailiao: "cailiao1", houdu: "1.2", guige: [2000, 2000]},
-      checked: false,
-      oversized: false,
-      disabled: false
-    },
-    {
-      id: "cad2",
-      name: "cad2",
-      width: 10000,
-      height: 10000,
-      num: 2,
-      bancai: {mingzi: "baicai2", cailiao: "cailiao2", houdu: "0.8", guige: [2000, 2000]},
-      checked: true,
-      oversized: true,
-      disabled: true
+      code: "testCode",
+      cads: [
+        [
+          {
+            id: "cad1",
+            name: "cad1",
+            width: 1000,
+            height: 1000,
+            num: 1,
+            bancai: {mingzi: "baicai1", cailiao: "cailiao1", houdu: "1.2", guige: [2000, 2000]},
+            checked: false,
+            oversized: false,
+            disabled: false
+          },
+          {
+            id: "cad2",
+            name: "cad2",
+            width: 10000,
+            height: 10000,
+            num: 2,
+            bancai: {mingzi: "baicai2", cailiao: "cailiao2", houdu: "0.8", guige: [2000, 2000]},
+            checked: true,
+            oversized: true,
+            disabled: true
+          }
+        ]
+      ]
     }
   ]
 };
