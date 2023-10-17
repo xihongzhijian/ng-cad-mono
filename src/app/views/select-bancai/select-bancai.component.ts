@@ -423,12 +423,17 @@ export class SelectBancaiComponent implements OnInit {
     return 0;
   }
 
-  openDdbq() {
+  openDdbq(showBarcode: boolean, 铝型材: boolean) {
     const url = new URL(location.href);
     url.pathname = url.pathname.slice(0, url.pathname.lastIndexOf("/")) + "/dingdanbiaoqian";
     const type: DdbqType = "标签贴纸";
     url.searchParams.set("type", type);
-    url.searchParams.set("showBarcode", "1");
+    if (showBarcode) {
+      url.searchParams.set("showBarcode", "1");
+    }
+    if (铝型材) {
+      url.searchParams.set("铝型材", "1");
+    }
     this.open(url.href);
   }
 

@@ -171,7 +171,15 @@ export class DingdanbiaoqianComponent implements OnInit {
       const {cadsRowNum, cadsColNum, 开启锁向示意图Size, 配合框Size} = this;
       this.orders = ddbqData.map<Order>((order) => {
         const maxLength = 80;
-        const cads: Order["cads"] = (order.cads || []).map<Order["cads"][0]>((cad) => {
+        let orderCads = order.cads || [];
+        if (params.铝型材) {
+          console.log(orderCads.slice());
+          orderCads = orderCads.filter((cad) => {
+            const {houtaiFenlei2} = cad;
+            return typeof houtaiFenlei2 === "string" && houtaiFenlei2.includes("铝型材");
+          });
+        }
+        const cads = orderCads.map<Order["cads"][0]>((cad) => {
           const img = imgLoading;
           const imgLarge = imgLoading;
           const data = new CadData(cad);
