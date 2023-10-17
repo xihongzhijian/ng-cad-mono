@@ -18,7 +18,7 @@ import {
 import {Debounce} from "@decorators/debounce";
 import {environment} from "@env";
 import {CadData, CadLine, CadMtext, CadViewer} from "@lucilor/cad-viewer";
-import {downloadByUrl, ObjectOf, timeout} from "@lucilor/utils";
+import {downloadByUrl, DownloadOptions, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -314,15 +314,16 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   }
 
   downloadDxf(original: boolean) {
+    const options: DownloadOptions = {filename: document.title + ".dxf"};
     if (original) {
       if (this.downloadUrl !== null) {
-        downloadByUrl(this.downloadUrl);
+        downloadByUrl(this.downloadUrl, options);
       } else {
         this.message.alert("没有提供下载地址");
       }
     } else {
       if (this.cad && this.enableZixuanpeijian) {
-        this.dataService.downloadDxf(this.cad.data);
+        this.dataService.downloadDxf(this.cad.data, options);
       } else {
         this.message.alert("没有提供下载数据");
       }
