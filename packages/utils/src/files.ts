@@ -25,22 +25,37 @@ export type FileSizeUnit = "B" | "KB" | "MB" | "GB" | "TB" | "PB" | "EB" | "ZB" 
 
 const fileSizeArray: FileSizeUnit[] = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 
-export const getFileSize = (raw: number, options: {inputUnit?: FileSizeUnit; outputUnit?: FileSizeUnit; fractionDigits?: number} = {}) => {
+export interface FileSizeOptions {
+  inputUnit?: FileSizeUnit;
+  outputUnit?: FileSizeUnit;
+  fractionDigits?: number;
+  stringGetter?: (size: string, unit: string) => string;
+}
+
+export const getFileSize = (raw: number, options: FileSizeOptions = {}) => {
   const {inputUnit, outputUnit} = options;
   const fractionDigits = options.fractionDigits ?? 2;
+  let stringGetter = options.stringGetter;
+  if (typeof stringGetter !== "function") {
+    stringGetter = (size: string, unit: string) => `${size} ${unit}`;
+  }
+  let size: number;
+  let unit: FileSizeUnit;
   if (outputUnit) {
     const inputIndex = inputUnit ? fileSizeArray.indexOf(inputUnit) : 0;
     const outputIndex = fileSizeArray.indexOf(outputUnit);
-    raw *= Math.pow(1024, inputIndex - outputIndex);
-    return `${raw.toFixed(fractionDigits)}${outputUnit}`;
+    size = raw * Math.pow(1024, inputIndex - outputIndex);
+    unit = outputUnit;
   } else {
     let index = inputUnit ? fileSizeArray.indexOf(inputUnit) : 0;
     while (raw >= 1024 && index < fileSizeArray.length - 1) {
       raw /= 1024;
       index++;
     }
-    return `${raw.toFixed(fractionDigits)}${fileSizeArray[index]}`;
+    size = raw;
+    unit = fileSizeArray[index];
   }
+  return stringGetter(size.toFixed(fractionDigits), unit);
 };
 
 export const selectFiles = (opts?: {multiple?: boolean; accept?: string}) => {
