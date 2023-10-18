@@ -338,30 +338,34 @@ export class SelectBancaiComponent implements OnInit {
         }
       }
     }
-    const skipCads: string[][] = [];
+    const getCadOptions: ObjectOf<any>[] = [];
     const bancaiCadsArr: BancaiCad[][] = [];
     const codes: string[] = [];
     for (const info of this.orderBancaiInfos) {
       const arr1: BancaiCad[] = [];
-      const skipCads1: string[] = [];
-      let hasChecked = false;
+      const namesInclude: string[] = [];
+      const namesExclude: string[] = [];
       for (const group of info.sortedCads) {
         for (const cad of group) {
           if (cad.disabled || (selectCad && !cad.checked)) {
-            skipCads1.push(cad.name);
+            namesExclude.push(cad.name);
           } else {
             const clone = {...cad} as Partial<BancaiCadExtend>;
             delete clone.checked;
             delete clone.oversized;
             delete clone.disabled;
             arr1.push(clone as BancaiCad);
-            hasChecked = true;
+            namesInclude.push(cad.name);
           }
         }
       }
-      if (hasChecked) {
+      if (namesInclude.length > 0) {
         codes.push(info.code);
-        skipCads.push(skipCads1);
+        if (namesInclude.length <= namesExclude.length) {
+          getCadOptions.push({namesInclude});
+        } else {
+          getCadOptions.push({namesExclude});
+        }
       }
       bancaiCadsArr.push(arr1);
     }
@@ -373,7 +377,7 @@ export class SelectBancaiComponent implements OnInit {
       projectConfigOverride.激光开料结果不用排版 = "是";
     }
     let url: string | string[] | null = null;
-    const data: ObjectOf<any> = {codes, bancaiCadsArr, table, autoGuige, type, skipCads, projectConfigOverride};
+    const data: ObjectOf<any> = {codes, bancaiCadsArr, table, autoGuige, type, getCadOptions, projectConfigOverride};
     try {
       const response = await this.dataService.post<string | string[]>(api, data);
       await this.refreshDownloadHistory();
