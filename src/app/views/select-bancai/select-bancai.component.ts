@@ -1,12 +1,12 @@
-import {Component, OnInit, QueryList, ViewChildren} from "@angular/core";
+import {Component, QueryList, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
-import {ActivatedRoute} from "@angular/router";
-import {getFilepathUrl, replaceRemoteHost, setGlobal} from "@app/app.common";
+import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
+import {getFilepathUrl, replaceRemoteHost, session, setGlobal} from "@app/app.common";
 import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong-summary.component";
-import {DakongSummary} from "@components/dialogs/dakong-summary/dakong-summary.types";
 import {openSelectBancaiCadsDialog, SelectBancaiCadsInput} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
-import {downloadByUrl, ObjectOf, timeout} from "@lucilor/utils";
+import {downloadByString, downloadByUrl, getPinyinCompact, ObjectOf, timeout} from "@lucilor/utils";
+import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiCad, BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -17,14 +17,24 @@ import {AppStatusService} from "@services/app-status.service";
 import {DdbqType} from "@views/dingdanbiaoqian/dingdanbiaoqian.types";
 import {cloneDeep} from "lodash";
 import {DateTime} from "luxon";
-import {BancaiCadExtend, BancaisInfo, guigePattern, houduPattern, OrderBancaiInfo, SelectBancaiDlHistory} from "./select-bancai.types";
+import {
+  BancaiCadExtend,
+  BancaisInfo,
+  DakongSummary,
+  guigePattern,
+  houduPattern,
+  OrderBancaiInfo,
+  SelectBancaiDlHistory,
+  XikongData,
+  XikongOptions
+} from "./select-bancai.types";
 
 @Component({
   selector: "app-select-bancai",
   templateUrl: "./select-bancai.component.html",
   styleUrls: ["./select-bancai.component.scss"]
 })
-export class SelectBancaiComponent implements OnInit {
+export class SelectBancaiComponent extends Subscribed() {
   autoGuige = this.config.getConfig("kailiaoAutoGuige");
   orderBancaiInfos: OrderBancaiInfo[] = [];
   bancaiList: ObjectOf<BancaiList> = {};
@@ -44,11 +54,16 @@ export class SelectBancaiComponent implements OnInit {
   downloadHistory: SelectBancaiDlHistory[] = [];
   downloadName = "";
   showGas = false;
+  isShowXikong = false;
+  xikongStrings: string[][] = [];
+  xikongOptions: XikongOptions = session.load("xikongOptions") || {};
+  xikongData: XikongData | null = null;
 
   @ViewChildren("bancaiInfoInput") bancaiInfoInputs?: QueryList<InputComponent>;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private dataService: CadDataService,
     private message: MessageService,
     private dialog: MatDialog,
@@ -56,75 +71,87 @@ export class SelectBancaiComponent implements OnInit {
     private status: AppStatusService,
     private config: AppConfigService
   ) {
+    super();
     setGlobal("selectBancai", this);
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.refresh();
+      }
+    });
   }
 
-  async ngOnInit() {
+  async refresh() {
     const {codes, table, type} = this.route.snapshot.queryParams;
     if (codes && table && type) {
-      this.spinner.show(this.loaderId);
       this.codes = codes.split(",");
       this.table = table;
       document.title = type;
       this.type = type;
-      await this.refreshDownloadHistory();
-      const response = await this.dataService.post<BancaisInfo>("order/order/getBancais", {table, codes: this.codes});
-      const result = this.dataService.getResponseData(response);
-      this.spinner.hide(this.loaderId);
-      if (result) {
-        const bancaiZidingyi = result.bancaiList.find((v) => v.mingzi === "自定义");
-        const errMsgs: string[] = [];
-        this.orderBancaiInfos = [];
-        for (const orderBancai of result.orderBancais) {
-          const {code, bancaiCads, 上下走线, 开料孔位配置, 开料参数} = orderBancai;
-          for (const cad of bancaiCads) {
-            let list = result.bancaiList.find((v) => v.mingzi === cad.bancai.mingzi);
-            if (!list && bancaiZidingyi) {
-              list = cloneDeep(bancaiZidingyi);
-              list.mingzi = cad.bancai.mingzi;
-            }
-            if (list) {
-              this.bancaiList[list.mingzi] = list;
-              if (!cad.bancai.cailiao) {
-                cad.bancai.cailiao = list.cailiaoList[0];
+      if (type === "铝型材铣孔工单") {
+        this.isShowXikong = true;
+        await this.getXikongData(false, true);
+      } else {
+        this.isShowXikong = false;
+        this.spinner.show(this.loaderId);
+        await this.refreshDownloadHistory();
+        const response = await this.dataService.post<BancaisInfo>("order/order/getBancais", {table, codes: this.codes});
+        const result = this.dataService.getResponseData(response);
+        this.spinner.hide(this.loaderId);
+        if (result) {
+          const bancaiZidingyi = result.bancaiList.find((v) => v.mingzi === "自定义");
+          const errMsgs: string[] = [];
+          this.orderBancaiInfos = [];
+          for (const orderBancai of result.orderBancais) {
+            const {code, bancaiCads, 上下走线, 开料孔位配置, 开料参数} = orderBancai;
+            for (const cad of bancaiCads) {
+              let list = result.bancaiList.find((v) => v.mingzi === cad.bancai.mingzi);
+              if (!list && bancaiZidingyi) {
+                list = cloneDeep(bancaiZidingyi);
+                list.mingzi = cad.bancai.mingzi;
               }
-              if (!cad.bancai.houdu) {
-                cad.bancai.houdu = list.houduList[0];
-              }
-              if (!cad.bancai.guige) {
-                if (!list.guigeList[0]) {
-                  this.message.alert(`${cad.bancai.mingzi}, 没有板材规格`);
-                  throw new Error(`${cad.bancai.mingzi}, 没有板材规格`);
+              if (list) {
+                this.bancaiList[list.mingzi] = list;
+                if (!cad.bancai.cailiao) {
+                  cad.bancai.cailiao = list.cailiaoList[0];
                 }
-                cad.bancai.guige = list.guigeList[0].slice();
-              }
-              if (!cad.bancai.gas) {
-                cad.bancai.gas = "Air";
+                if (!cad.bancai.houdu) {
+                  cad.bancai.houdu = list.houduList[0];
+                }
+                if (!cad.bancai.guige) {
+                  if (!list.guigeList[0]) {
+                    this.message.alert(`${cad.bancai.mingzi}, 没有板材规格`);
+                    throw new Error(`${cad.bancai.mingzi}, 没有板材规格`);
+                  }
+                  cad.bancai.guige = list.guigeList[0].slice();
+                }
+                if (!cad.bancai.gas) {
+                  cad.bancai.gas = "Air";
+                }
               }
             }
+            const orderBancaiInfo: OrderBancaiInfo = {
+              code,
+              shangxiazouxianUrl: 上下走线,
+              kailiaokongweipeizhiUrl: 开料孔位配置,
+              kailiaocanshuzhiUrl: 开料参数,
+              sortedCads: [],
+              bancaiInfos: []
+            };
+            this.orderBancaiInfos.push(orderBancaiInfo);
+            this.updateSortedCads(orderBancaiInfo, bancaiCads);
+            for (const error of orderBancai.errors) {
+              errMsgs.push(`订单编号:${error.code}<br>${error.msg}`);
+            }
           }
-          const orderBancaiInfo: OrderBancaiInfo = {
-            code,
-            shangxiazouxianUrl: 上下走线,
-            kailiaokongweipeizhiUrl: 开料孔位配置,
-            kailiaocanshuzhiUrl: 开料参数,
-            sortedCads: [],
-            bancaiInfos: []
-          };
-          this.orderBancaiInfos.push(orderBancaiInfo);
-          this.updateSortedCads(orderBancaiInfo, bancaiCads);
-          for (const error of orderBancai.errors) {
-            errMsgs.push(`订单编号:${error.code}<br>${error.msg}`);
+          this.updateOrderBancaiInfos();
+          this.downloadName = result.downloadName;
+          this.showGas = type === "激光喷码开料排版";
+          if (this.status.projectConfig.getIsEqual("激光开料展开信息", "大族激光")) {
+            this.showGas = true;
           }
-        }
-        this.updateOrderBancaiInfos();
-        this.downloadName = result.downloadName;
-        this.showGas = type === "激光喷码开料排版";
-        if (this.status.projectConfig.getIsEqual("激光开料展开信息", "大族激光")) {
-          this.showGas = true;
-        }
-        if (errMsgs.length > 0) {
-          this.message.alert({title: "开料报错", content: errMsgs.join("<br><br>")});
+          if (errMsgs.length > 0) {
+            this.message.alert({title: "开料报错", content: errMsgs.join("<br><br>")});
+          }
         }
       }
     } else {
@@ -445,6 +472,11 @@ export class SelectBancaiComponent implements OnInit {
     this.config.setConfig("kailiaoAutoGuige", this.autoGuige);
   }
 
+  onXikongOptionsChange() {
+    session.save("xikongOptions", this.xikongOptions);
+    this.getXikongData(false, true);
+  }
+
   async getDakongSummary() {
     const {codes} = this;
     const response = await this.dataService.post<DakongSummary>("order/order/getDakongSummary", {codes});
@@ -459,7 +491,7 @@ export class SelectBancaiComponent implements OnInit {
       }
     }
     if (toDelete.length > 0) {
-      this.message.alert("以下订单没有孔位开料结果，请先开一次料<br>" + toDelete.join("、"));
+      await this.message.alert("以下订单没有孔位开料结果，请先开一次料<br>" + toDelete.join("、"));
       for (const code of toDelete) {
         delete data[code];
       }
@@ -467,5 +499,74 @@ export class SelectBancaiComponent implements OnInit {
     if (Object.keys(data).length > 0) {
       openDakongSummaryDialog(this.dialog, {data: {data}});
     }
+  }
+
+  async getXikongData(download: boolean, useCache = false) {
+    if (!this.xikongData || !useCache) {
+      const {codes} = this;
+      const response = await this.dataService.post<XikongData>("order/order/getXikongData", {codes});
+      this.xikongData = this.dataService.getResponseData(response);
+    }
+    const data = {...this.xikongData};
+    if (!data) {
+      return;
+    }
+    const toDelete: string[] = [];
+    for (const code in data) {
+      if (!data[code]) {
+        toDelete.push(code);
+      }
+    }
+    if (toDelete.length > 0) {
+      const toDeleteStr = toDelete.join("、");
+      if (this.isShowXikong) {
+        const yes = await this.message.confirm(`以下订单没有铣孔数据，请先开一次料<br>${toDeleteStr}<br>是否前往激光开料`);
+        if (yes) {
+          this.gotoKailiao();
+          return;
+        }
+      } else {
+        await this.message.alert("以下订单没有铣孔数据，请先开一次料<br>" + toDeleteStr);
+      }
+      for (const code of toDelete) {
+        delete data[code];
+      }
+    }
+    this.xikongStrings = [];
+    const {showCN} = this.xikongOptions;
+    for (const code in data) {
+      const groupDisplay: string[] = [];
+      const groupDownload: string[] = [];
+      for (const item of data[code] || []) {
+        let rowDisplay = "";
+        let rowDownload = "";
+        for (const [tag, value] of item.content) {
+          let value2: typeof value;
+          let value3: typeof value;
+          if (!showCN && tag === "PPU") {
+            value2 = getPinyinCompact(value).replaceAll("ü", "v");
+          } else {
+            value2 = value;
+          }
+          if (tag === "PPU") {
+            value3 = getPinyinCompact(value).replaceAll("ü", "v");
+          } else {
+            value3 = value;
+          }
+          rowDisplay += `<${tag}>${value2}</${tag}>`;
+          rowDownload += `<${tag}>${value3}</${tag}>`;
+        }
+        groupDisplay.push(rowDisplay);
+        groupDownload.push(rowDownload);
+      }
+      this.xikongStrings.push(groupDisplay);
+      if (download) {
+        downloadByString(groupDownload.join("\n"), {filename: code + ".txt"});
+      }
+    }
+  }
+
+  gotoKailiao() {
+    this.router.navigate([this.route.snapshot.url[0].path], {queryParams: {type: "激光开料排版"}, queryParamsHandling: "merge"});
   }
 }

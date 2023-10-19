@@ -1,3 +1,4 @@
+import {ObjectOf} from "@lucilor/utils";
 import {BancaiCad, BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 
@@ -41,4 +42,32 @@ export interface OrderBancaiInfo {
     oversized: boolean;
     inputInfos: InputInfo[];
   }[];
+}
+
+export type DakongSummary = ObjectOf<DakongSummaryItem[] | null>;
+
+export interface DakongSummaryItem {
+  cadId: string;
+  cadName: string;
+  summary: DakongSummaryItemDetail[];
+}
+
+export interface DakongSummaryItemDetail {
+  peizhiId: string;
+  kongId: string;
+  kongName: string;
+  face: string;
+  count: number;
+  error: string;
+}
+
+export type XikongData = ObjectOf<XikongDataItem[] | null>;
+
+export interface XikongDataItem {
+  content: [string, string][];
+}
+
+export interface XikongOptions {
+  showCN?: boolean;
+  autoWrap?: boolean;
 }

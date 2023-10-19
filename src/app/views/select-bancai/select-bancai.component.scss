@@ -10,6 +10,10 @@
 .toolbar {
   padding: 5px 10px;
   align-items: center;
+
+  > :not(:last-child) {
+    margin-right: 5px;
+  }
 }
 
 .links {
@@ -43,6 +47,25 @@
 
     app-input {
       width: 0;
+    }
+  }
+}
+
+.xingkong-strings {
+  font-size: 1.2em;
+  line-height: 1.2em;
+  white-space: pre;
+  &.wrap {
+    white-space: pre-wrap;
+  }
+
+  .group {
+    padding: 10px;
+  }
+
+  .item {
+    &:not(:last-child) {
+      margin-bottom: 3px;
     }
   }
 }

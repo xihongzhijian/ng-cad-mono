@@ -1,27 +1,10 @@
-import {ObjectOf} from "@lucilor/utils";
+import {DakongSummary, DakongSummaryItemDetail} from "@views/select-bancai/select-bancai.types";
 
 export interface DakongSummaryInput {
   data: DakongSummary;
 }
 
 export type DakongSummaryOutput = void;
-
-export type DakongSummary = ObjectOf<DakongSummaryItem[] | null>;
-
-export interface DakongSummaryItem {
-  cadId: string;
-  cadName: string;
-  summary: DakongSummaryItemDetail[];
-}
-
-export interface DakongSummaryItemDetail {
-  peizhiId: string;
-  kongId: string;
-  kongName: string;
-  face: string;
-  count: number;
-  error: string;
-}
 
 export interface DakongSummaryTableInfo {
   code: string;
