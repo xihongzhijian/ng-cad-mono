@@ -15,7 +15,9 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
 import {CadStatusNormal} from "@services/cad-status";
+import {isEqual} from "lodash";
 import {map, startWith} from "rxjs";
+import {CadLayerInput, openCadLayerDialog} from "../../dialogs/cad-layer/cad-layer.component";
 
 @Component({
   selector: "app-toolbar",
@@ -375,5 +377,23 @@ export class ToolbarComponent extends Subscribed() {
 
   toggleTestMode() {
     this.config.setConfigWith("testMode", (v) => !v);
+  }
+
+  async openCadLayerDialog() {
+    const layersInUse = this.status.cad.data.getLayersInUse();
+    const data: CadLayerInput = {
+      layers: this.status.cad.data.layers,
+      layersInUse
+    };
+    const map1 = new Map<string, boolean>(layersInUse.map((v) => [v.id, v.hidden]));
+    const result = await openCadLayerDialog(this.dialog, {data});
+    if (result) {
+      this.status.cad.data.layers = result.layers;
+      const keys = Array.from(map1.keys());
+      const map2 = new Map<string, boolean>(result.layers.filter((v) => keys.includes(v.id)).map((v) => [v.id, v.hidden]));
+      if (!isEqual(map1, map2)) {
+        this.status.cad.render();
+      }
+    }
   }
 }

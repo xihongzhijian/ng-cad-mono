@@ -20,10 +20,10 @@ import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-opt
 import {ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {MessageService} from "@modules/message/services/message.service";
-import Color2 from "color";
+import Color from "color";
 import csstype from "csstype";
 import {isEmpty, isEqual} from "lodash";
-import {Color} from "ngx-color";
+import {Color as NgxColor} from "ngx-color";
 import {ChromeComponent} from "ngx-color/chrome";
 import {BehaviorSubject} from "rxjs";
 import {InputInfo, InputInfoBase, InputInfoTypeMap, InputInfoWithOptions} from "./input.types";
@@ -128,15 +128,17 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const value = this.value;
     if (typeof value === "string") {
       return value;
+    } else if (value instanceof Color) {
+      return value.hex();
     }
-    return value?.hex || "";
+    return "";
   }
   get colorOptions() {
     const {info} = this;
     if (info.type !== "color" || !info.options) {
       return [];
     }
-    return info.options.map((v) => (typeof v === "string" ? v : new Color2(v).hex()));
+    return info.options.map((v) => (typeof v === "string" ? v : new Color(v).hex()));
   }
 
   displayValue: string | null = null;
@@ -407,9 +409,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  onColorChange(color: Color) {
-    this.value = color;
-    this.onChange(color);
+  onColorChange(ngxColor: NgxColor) {
+    this.value = new Color(ngxColor.hex);
+    this.onChange();
   }
 
   validateValue(value = this.value) {
@@ -546,10 +548,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return [null, undefined, ""].includes(value);
   }
 
-  setColor(color: Color | string | undefined | null) {
+  setColor(color: NgxColor | string | undefined | null) {
     const value = typeof color === "string" ? color : color?.hex;
     try {
-      const c = new Color2(value);
+      const c = new Color(value);
       if (c.isLight()) {
         this.colorBg = "black";
       } else {

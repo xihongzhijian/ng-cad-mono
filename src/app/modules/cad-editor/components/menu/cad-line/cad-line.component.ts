@@ -12,7 +12,6 @@ import {
   CadLine,
   CadLineLike,
   CadViewerConfig,
-  ColoredObject,
   Defaults,
   generateLineTexts,
   lineweight2linewidth,
@@ -26,6 +25,7 @@ import {Subscribed} from "@mixins/subscribed.mixin";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService, CadPoints} from "@services/app-status.service";
 import {CadStatusCutLine, CadStatusDrawLine, CadStatusIntersection, CadStatusMoveLines} from "@services/cad-status";
+import Color from "color";
 import {debounce, uniq} from "lodash";
 import {ColorEvent} from "ngx-color";
 
@@ -94,8 +94,8 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
   set colorText(value) {
     this._colorText = value.toUpperCase();
     try {
-      const c = new ColoredObject(value);
-      if (c.getColor().isLight()) {
+      const c = new Color(value);
+      if (c.isLight()) {
         this.colorBg = "black";
       } else {
         this.colorBg = "white";
@@ -172,7 +172,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
             let split2: CadLine | undefined;
             lines.forEach((line, i) => {
               if (line.curve.contains(point)) {
-                split1 = new CadLine(line.export(), [], true);
+                split1 = new CadLine(line.export(), true);
                 split2 = new CadLine();
                 split2.setColor(line.getColor());
                 split2.zhankaixiaoshuchuli = line.zhankaixiaoshuchuli;

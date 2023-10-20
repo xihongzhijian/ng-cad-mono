@@ -26,6 +26,7 @@ import {CadPointsComponent} from "./components/cad-points/cad-points.component";
 import {CadAssembleFormComponent} from "./components/dialogs/cad-assemble-form/cad-assemble-form.component";
 import {CadDataAttrsComponent} from "./components/dialogs/cad-data-attrs/cad-data-attrs.component";
 import {CadDimensionFormComponent} from "./components/dialogs/cad-dimension-form/cad-dimension-form.component";
+import {CadLayerComponent} from "./components/dialogs/cad-layer/cad-layer.component";
 import {CadAssembleComponent} from "./components/menu/cad-assemble/cad-assemble.component";
 import {CadDimensionComponent} from "./components/menu/cad-dimension/cad-dimension.component";
 import {CadInfoComponent} from "./components/menu/cad-info/cad-info.component";
@@ -45,6 +46,7 @@ import {ToolbarComponent} from "./components/menu/toolbar/toolbar.component";
     CadDimensionFormComponent,
     CadEditorComponent,
     CadInfoComponent,
+    CadLayerComponent,
     CadLayerInputComponent,
     CadLineComponent,
     CadMtextComponent,

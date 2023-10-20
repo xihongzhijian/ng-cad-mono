@@ -1,10 +1,10 @@
 import {keysOf} from "@lucilor/utils";
+import Color from "color";
 import {cloneDeep} from "lodash";
 import {CadDimension, CadEntity, CadHatch, CadLine, CadLineLike, CadMtext} from "./cad-data/cad-entity";
 import {CadDimensionStyle, CadStyle, FontStyle} from "./cad-data/cad-styles";
 import {Defaults} from "./cad-utils";
 import {CadViewerConfig} from "./cad-viewer";
-import {ColoredObject} from "./colored-object";
 
 export class CadStylizer {
   static get(entity: CadEntity, config: CadViewerConfig, params: CadStyle = {}) {
@@ -21,7 +21,7 @@ export class CadStylizer {
     this.mergeDimStyle(result.dimStyle, config.dimStyle);
     this.mergeDimStyle(result.dimStyle, params.dimStyle || {});
     let linewidth: number;
-    let color = new ColoredObject(params.color || entity?.getColor() || 0);
+    let color = new Color(params.color || entity?.getColor() || 0);
     if (params.lineStyle) {
       result.lineStyle = params.lineStyle;
       linewidth = params.lineStyle.width || 1;
@@ -31,7 +31,7 @@ export class CadStylizer {
       linewidth = 1;
     }
     if (entity instanceof CadLineLike && entity.开料不要) {
-      color.setColor(0xff4081);
+      color = new Color(0xff4081);
     }
     result.opacity = entity.opacity;
     if (typeof params.opacity === "number") {
@@ -41,13 +41,13 @@ export class CadStylizer {
     if (validateLines && entity instanceof CadLine) {
       if (entity.info.errors?.length) {
         linewidth *= 10;
-        color.setColor(0xff0000);
+        color = new Color(0xff0000);
       }
     }
     if (reverseSimilarColor) {
       color = this.correctColor(color, config);
     }
-    result.color = color.getColor().hex();
+    result.color = color.hex();
     if (!(entity instanceof CadHatch)) {
       // ? make lines easier to select
       linewidth = Math.max(minLinewidth, linewidth);
@@ -71,21 +71,19 @@ export class CadStylizer {
     return result;
   }
 
-  static correctColor(color: ColoredObject, config: CadViewerConfig, threshold = 5) {
+  static correctColor(color: Color, config: CadViewerConfig, threshold = 5) {
     const {reverseSimilarColor, backgroundColor} = config;
-    const c1 = color.getColor();
     if (reverseSimilarColor) {
-      const c2 = new ColoredObject(backgroundColor).getColor();
-      if (Math.abs(c1.rgbNumber() - c2.rgbNumber()) <= threshold) {
-        return new ColoredObject(c1.negate());
+      const color2 = new Color(backgroundColor);
+      if (Math.abs(color.rgbNumber() - color2.rgbNumber()) <= threshold) {
+        return color.negate();
       }
     }
     return color;
   }
 
-  static getColorStyle(color: ColoredObject, a = 1) {
-    const c = color.getColor();
-    const arr = [c.red(), c.green(), c.blue()].map((v) => v * 255);
+  static getColorStyle(color: Color, a = 1) {
+    const arr = [color.red(), color.green(), color.blue()].map((v) => v * 255);
     if (a > 0 && a < 1) {
       return `rgba(${[...arr, a].join(",")})`;
     } else {

@@ -1,6 +1,5 @@
 import {Matrix, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {getVectorFromArray, purgeObject} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
 
@@ -28,8 +27,8 @@ export class CadHatch extends CadEntity {
     return rect;
   }
 
-  constructor(data: ObjectOf<any> = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: ObjectOf<any> = {}, resetId = false) {
+    super(data, resetId);
     this.bgcolor = Array.isArray(data.bgcolor) ? data.bgcolor : [0, 0, 0];
     this.paths = [];
     if (Array.isArray(data.paths)) {
@@ -76,6 +75,6 @@ export class CadHatch extends CadEntity {
   }
 
   clone(resetId = false): CadHatch {
-    return this._afterClone(new CadHatch(this.export(), [], resetId));
+    return this._afterClone(new CadHatch(this.export(), resetId));
   }
 }

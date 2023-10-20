@@ -129,9 +129,21 @@ export class ExpressionsParser {
   }
 }
 
-export const lineweight2linewidth = (x: number) => Math.max(1, x / 5 - 3);
+export const lineweight2linewidth = (x: number) => {
+  if (x >= 0) {
+    return Math.max(1, x / 5 - 3);
+  } else {
+    return -1;
+  }
+};
 
-export const linewidth2lineweight = (x: number) => x * 5 + 15;
+export const linewidth2lineweight = (x: number) => {
+  if (x >= 0) {
+    return x * 5 + 15;
+  } else {
+    return -1;
+  }
+};
 
 export const toFixedTrim = (num: number, fractionDigits?: number | undefined) => {
   const str = num.toFixed(fractionDigits);

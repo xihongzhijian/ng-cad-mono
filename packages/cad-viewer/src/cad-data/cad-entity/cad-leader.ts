@@ -1,6 +1,5 @@
 import {Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {getVectorsFromArray, purgeObject} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
 
@@ -12,8 +11,8 @@ export class CadLeader extends CadEntity {
     return Rectangle.fromPoints(this.vertices);
   }
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.vertices = getVectorsFromArray(data.vertices) ?? [];
     this.size = data.size ?? 5;
   }
@@ -26,7 +25,7 @@ export class CadLeader extends CadEntity {
   }
 
   clone(resetId = false): CadLeader {
-    return this._afterClone(new CadLeader(this.export(), [], resetId));
+    return this._afterClone(new CadLeader(this.export(), resetId));
   }
 
   protected _transform(matrix: MatrixLike) {

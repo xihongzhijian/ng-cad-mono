@@ -1,7 +1,6 @@
 import {ObjectOf, Point} from "@lucilor/utils";
 import {purgeObject} from "../../cad-utils";
 import {DEFAULT_LENGTH_TEXT_SIZE} from "../cad-entities";
-import {CadLayer} from "../cad-layer";
 import {CadEntity} from "./cad-entity";
 
 export const 变化方式 = [
@@ -78,8 +77,8 @@ export abstract class CadLineLike extends CadEntity {
   刨坑起始线: boolean;
   双向折弯附加值 = "";
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.mingzi = data.mingzi ?? "";
     this.mingzi2 = data.mingzi2 ?? "";
     this.qujian = data.qujian ?? "";

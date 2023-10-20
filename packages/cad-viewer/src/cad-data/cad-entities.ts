@@ -18,18 +18,12 @@ import {
 import {CadDimensionLinear} from "./cad-entity/cad-dimension-linear";
 import {CadImage} from "./cad-entity/cad-image";
 import {CadInsert} from "./cad-entity/cad-insert";
-import {CadLayer} from "./cad-layer";
 import {CadDimensionType} from "./cad-styles";
 import {EntityType, EntityTypeKey, entityTypesKey, entityTypesMap} from "./cad-types";
 
 export const DEFAULT_LENGTH_TEXT_SIZE = 24;
 
-export const getCadEntity = <T extends CadEntity = AnyCadEntity>(
-  data: any = {},
-  layers: CadLayer[] = [],
-  resetId = false,
-  type?: EntityType
-) => {
+export const getCadEntity = <T extends CadEntity = AnyCadEntity>(data: any = {}, resetId = false, type?: EntityType) => {
   let entity: CadEntity | undefined;
   if (type === undefined) {
     type = data.type;
@@ -37,39 +31,39 @@ export const getCadEntity = <T extends CadEntity = AnyCadEntity>(
     throw new Error(`entity type is not match: ${type} !== ${data.type}`);
   }
   if (type === "ARC") {
-    entity = new CadArc(data, layers, resetId);
+    entity = new CadArc(data, resetId);
   } else if (type === "CIRCLE") {
-    entity = new CadCircle(data, layers, resetId);
+    entity = new CadCircle(data, resetId);
   } else if (type === "DIMENSION") {
     const dimType: CadDimensionType = data.dimType;
     if (dimType === "linear" || !dimType) {
-      entity = new CadDimensionLinear(data, layers, resetId);
+      entity = new CadDimensionLinear(data, resetId);
     } else {
       throw new Error(`unsupported dimension type: ${dimType}`);
     }
   } else if (type === "HATCH") {
-    entity = new CadHatch(data, layers, resetId);
+    entity = new CadHatch(data, resetId);
   } else if (type === "LINE") {
-    entity = new CadLine(data, layers, resetId);
+    entity = new CadLine(data, resetId);
   } else if (type === "MTEXT") {
-    entity = new CadMtext(data, layers, resetId);
+    entity = new CadMtext(data, resetId);
   } else if (type === "SPLINE") {
-    entity = new CadSpline(data, layers, resetId);
+    entity = new CadSpline(data, resetId);
   } else if (type === "LEADER") {
-    entity = new CadLeader(data, layers, resetId);
+    entity = new CadLeader(data, resetId);
   } else if (type === "INSERT") {
-    entity = new CadInsert(data, layers, resetId);
+    entity = new CadInsert(data, resetId);
   } else if (type === "IMAGE") {
-    entity = new CadImage(data, layers, resetId);
+    entity = new CadImage(data, resetId);
   } else {
     throw new Error(`unsupported entity type: ${type}`);
   }
   return entity as T;
 };
 
-export const tryGetCadEntity = (data: any, layers?: CadLayer[], resetId?: boolean, type?: EntityType) => {
+export const tryGetCadEntity = (data: any, resetId?: boolean, type?: EntityType) => {
   try {
-    return getCadEntity(data, layers, resetId, type);
+    return getCadEntity(data, resetId, type);
   } catch (error) {
     console.groupCollapsed("failed to create entity");
     if (error instanceof Error) {
@@ -104,7 +98,7 @@ export class CadEntities {
     return result;
   }
 
-  constructor(data: ObjectOf<any> = {}, layers: CadLayer[] = [], resetIds = false) {
+  constructor(data: ObjectOf<any> = {}, resetIds = false) {
     if (getTypeOf(data) !== "object") {
       data = {};
     }
@@ -115,7 +109,7 @@ export class CadEntities {
       if (Array.isArray(group)) {
         group.forEach((e) => {
           if (!(e instanceof CadEntity)) {
-            const e2 = tryGetCadEntity(e, layers, resetIds, type);
+            const e2 = tryGetCadEntity(e, resetIds, type);
             if (!e2) {
               return;
             }
@@ -127,7 +121,7 @@ export class CadEntities {
         });
       } else if (group && typeof group === "object") {
         Object.values(group).forEach((e) => {
-          const eNew = tryGetCadEntity(e, layers, resetIds, type);
+          const eNew = tryGetCadEntity(e, resetIds, type);
           if (!eNew) {
             return;
           }
@@ -200,7 +194,7 @@ export class CadEntities {
   }
 
   clone(resetIds = false) {
-    const result = new CadEntities(this.export(), [], resetIds);
+    const result = new CadEntities(this.export(), resetIds);
     result.root = this.root;
     return result;
   }

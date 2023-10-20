@@ -1,11 +1,12 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {validColors} from "@app/cad/utils";
 import {environment} from "@env";
-import {CadMtext, CadStylizer, ColoredObject} from "@lucilor/cad-viewer";
+import {CadMtext, CadStylizer} from "@lucilor/cad-viewer";
 import {Point} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
+import Color from "color";
 import {debounce} from "lodash";
 
 @Component({
@@ -26,8 +27,8 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
   set colorText(value) {
     this._colorText = value.toUpperCase();
     try {
-      const c = new ColoredObject(value);
-      if (c.getColor().isLight()) {
+      const c = new Color(value);
+      if (c.isLight()) {
         this.colorBg = "black";
       } else {
         this.colorBg = "white";
@@ -87,11 +88,11 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
         type: "color",
         label: "颜色",
         disabled,
-        value: this.getColor(),
-        options: validColors.slice(),
+        value: new Color(this.getColor() || "white"),
+        options: validColors.map((v) => new Color(v)),
         optionsOnly: true,
         onChange: (val) => {
-          this.setColor(val.hex);
+          this.setColor(val.hex());
         }
       },
       {

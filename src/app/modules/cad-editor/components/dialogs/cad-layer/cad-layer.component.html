@@ -1,0 +1,21 @@
+<ng-scrollbar>
+  <div class="forms">
+    <div class="form sub-form-field" *ngFor="let form of forms; let i = index">
+      <div class="row" *ngFor="let row of form">
+        <app-input *ngFor="let info of row" [info]="info"></app-input>
+      </div>
+      <div class="btn-group">
+        <button mat-icon-button color="primary" (click)="addLayer(i)"><mat-icon>add_circle</mat-icon></button>
+        <button mat-icon-button color="primary" (click)="removeLayer(i)"><mat-icon>remove_circle</mat-icon></button>
+      </div>
+    </div>
+  </div>
+</ng-scrollbar>
+
+<div class="btn-group" *ngIf="forms.length < 1">
+  <button mat-raised-button color="primary" (click)="addLayer()">新建图层</button>
+</div>
+<div class="btn-group">
+  <button mat-raised-button color="primary" (click)="submit()">确定</button>
+  <button mat-raised-button color="primary" (click)="cancel()">取消</button>
+</div>

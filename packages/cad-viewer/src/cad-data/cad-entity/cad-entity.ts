@@ -1,11 +1,11 @@
 import {getTypeOf, Matrix, MatrixLike, ObjectOf, Rectangle} from "@lucilor/utils";
 import {G, Matrix as Matrix2, Svg} from "@svgdotjs/svg.js";
+import Color from "color";
 import {cloneDeep} from "lodash";
 import {v4} from "uuid";
 import {Defaults, lineweight2linewidth, linewidth2lineweight, purgeObject} from "../../cad-utils";
 import {ColoredObject} from "../../colored-object";
 import {CadEntities} from "../cad-entities";
-import {CadLayer} from "../cad-layer";
 import {EntityType} from "../cad-types";
 
 export abstract class CadEntity extends ColoredObject {
@@ -110,7 +110,15 @@ export abstract class CadEntity extends ColoredObject {
   }
 
   private _visible = true;
+  private get _layerVisible() {
+    const layers = this.root?.root?.layers;
+    const layer = layers?.find((v) => v.name === this.layer);
+    return !layer?.hidden;
+  }
   get visible() {
+    if (!this._layerVisible) {
+      return false;
+    }
     if (this.el) {
       return this.el.css("display") !== "none";
     } else {
@@ -118,6 +126,9 @@ export abstract class CadEntity extends ColoredObject {
     }
   }
   set visible(value) {
+    if (!this._layerVisible) {
+      value = false;
+    }
     if (this.el) {
       this.el.css("display", value ? "" : "none");
     }
@@ -125,7 +136,7 @@ export abstract class CadEntity extends ColoredObject {
     this.children.forEach((c) => (c.visible = value));
   }
 
-  constructor(data: ObjectOf<any> = {}, layers: CadLayer[] = [], resetId = false) {
+  constructor(data: ObjectOf<any> = {}, resetId = false) {
     super();
     if (getTypeOf(data) !== "object") {
       throw new Error("Invalid data.");
@@ -140,21 +151,14 @@ export abstract class CadEntity extends ColoredObject {
     }
     this.layer = data.layer ?? "0";
     if (typeof data.color === "number") {
-      if (data.color === 256) {
-        const layer = layers.find((l) => l.name === this.layer);
-        if (layer) {
-          this.setColor(layer.getColor());
-        }
-      } else {
-        this.setIndexColor(data.color);
-      }
+      this.setIndexColor(data.color);
     }
     if (typeof data.info === "object" && !Array.isArray(data.info)) {
       this.info = cloneDeep(data.info);
     } else {
       this.info = {};
     }
-    this.children = new CadEntities(data.children, [], resetId);
+    this.children = new CadEntities(data.children, resetId);
     this.children.forEach((c) => (c.parent = this));
     this.selectable = data.selectable ?? true;
     this.selected = data.selected ?? false;
@@ -169,20 +173,28 @@ export abstract class CadEntity extends ColoredObject {
     this._lineweight = -3;
     if (typeof data.lineweight === "number") {
       this._lineweight = data.lineweight;
-      if (data.lineweight >= 0) {
-        this.linewidth = lineweight2linewidth(data.lineweight);
-      } else if (data.lineweight === -1) {
-        const layer = layers.find((l) => l.name === this.layer);
-        if (layer) {
-          this.linewidth = layer.linewidth;
-        }
-      }
+      this.linewidth = lineweight2linewidth(data.lineweight);
     }
     if (typeof data.linetype === "string" && (data.linetype as string).toLowerCase().includes("dash")) {
       this.dashArray = Defaults.DASH_ARRAY;
     } else if (Array.isArray(data.dashArray) && data.dashArray.length > 0) {
       this.dashArray = cloneDeep(data.dashArray);
     }
+  }
+
+  getColor() {
+    let color = super.getColor();
+    if (!color) {
+      const layers = this.root?.root?.layers;
+      const layer = layers?.find((v) => v.name === this.layer);
+      if (layer) {
+        color = layer.getColor();
+      }
+    }
+    if (!color) {
+      color = new Color("white");
+    }
+    return color;
   }
 
   transform(matrix: MatrixLike, alter: boolean, isFromParent?: boolean): CadEntity {

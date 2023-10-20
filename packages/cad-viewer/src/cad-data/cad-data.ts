@@ -201,17 +201,15 @@ export class CadData {
       for (const id in data.layers) {
         this.layers.push(new CadLayer(data.layers[id]));
       }
-    } else {
-      this.layers = [];
     }
-    this.entities = new CadEntities(data.entities || {}, this.layers);
+    this.entities = new CadEntities(data.entities || {});
     if (typeof data.blocks === "object") {
       for (const name in data.blocks) {
         const block = data.blocks[name];
         if (Array.isArray(block) && block.length > 0) {
           this.blocks[name] = [];
           for (const v of block) {
-            const entity = tryGetCadEntity(v, this.layers);
+            const entity = tryGetCadEntity(v);
             if (entity) {
               this.blocks[name].push(entity);
             }
@@ -265,6 +263,7 @@ export class CadData {
       }
     }
     this.updateDimensions();
+    this.updateLayers();
     if (resetIds) {
       this.resetIds();
     }
@@ -897,6 +896,33 @@ export class CadData {
 
   getBoundingRect(recursive = true) {
     return this.getAllEntities().getBoundingRect(recursive);
+  }
+
+  getLayerNamesInUse() {
+    const layers = new Set<string>();
+    this.getAllEntities().forEach((e) => {
+      layers.add(e.layer);
+    });
+    return Array.from(layers);
+  }
+
+  getLayersInUse() {
+    this.updateLayers();
+    const names = this.getLayerNamesInUse();
+    return this.layers.filter((v) => names.includes(v.name));
+  }
+
+  updateLayers() {
+    const layerNames = this.layers.map((v) => v.name);
+    const layerNamesToAdd = new Set<string>();
+    this.getAllEntities().forEach((e) => {
+      if (!layerNames.includes(e.layer)) {
+        layerNamesToAdd.add(e.layer);
+      }
+    });
+    for (const name of layerNamesToAdd) {
+      this.layers.push(new CadLayer({name}));
+    }
   }
 }
 

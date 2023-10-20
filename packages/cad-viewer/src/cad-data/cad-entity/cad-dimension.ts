@@ -2,7 +2,6 @@ import {ObjectOf, Rectangle} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
 import {CadStylizer} from "../../cad-stylizer";
 import {purgeObject} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {CadDimensionStyle} from "../cad-styles";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
@@ -67,8 +66,8 @@ export abstract class CadDimension extends CadEntity {
     return Rectangle.min;
   }
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.dimstyle = data.dimstyle || "";
     this.setStyle(data.style || {});
     if (data.font_size) {

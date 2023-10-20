@@ -36,4 +36,8 @@ export class CadLayer extends ColoredObject {
       hidden: this.hidden
     };
   }
+
+  clone() {
+    return new CadLayer(this.export());
+  }
 }

@@ -2,7 +2,6 @@ import {exportObject, Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@luc
 import {Properties} from "csstype";
 import {isEqual} from "lodash";
 import {getVectorFromArray, purgeObject} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
 
@@ -30,8 +29,8 @@ export class CadImage extends CadEntity {
     return new Rectangle(min, max);
   }
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.url = data.url || "";
     this.position = getVectorFromArray(data.position);
     this.anchor = getVectorFromArray(data.anchor);
@@ -67,7 +66,7 @@ export class CadImage extends CadEntity {
   }
 
   clone(resetId?: boolean): CadImage {
-    return this._afterClone(new CadImage(this.export(), [], resetId));
+    return this._afterClone(new CadImage(this.export(), resetId));
   }
 
   equals(entity: CadImage) {

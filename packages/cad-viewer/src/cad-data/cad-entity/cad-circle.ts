@@ -1,6 +1,5 @@
 import {Angle, Arc, Matrix, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {getVectorFromArray, purgeObject} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {EntityType} from "../cad-types";
 import {CadLineLike} from "./cad-line-like";
 
@@ -30,8 +29,8 @@ export class CadCircle extends CadLineLike {
     return Rectangle.fromPoints([center.clone().sub(radius), center.clone().add(radius)]);
   }
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.type = "CIRCLE";
     this.center = getVectorFromArray(data.center);
     this.radius = data.radius ?? 0;
@@ -49,7 +48,7 @@ export class CadCircle extends CadLineLike {
   }
 
   clone(resetId = false): CadCircle {
-    return this._afterClone(new CadCircle(this.export(), [], resetId));
+    return this._afterClone(new CadCircle(this.export(), resetId));
   }
 
   equals(entity: CadCircle) {

@@ -23,6 +23,9 @@
 
     <button mat-button [matMenuTriggerFor]="edit" [disabled]="!isStatusNormal">编辑</button>
     <mat-menu #edit="matMenu">
+      <ng-container *ngIf="getConfig('testMode')">
+        <button mat-menu-item (click)="openCadLayerDialog()">图层</button>
+      </ng-container>
       <button mat-menu-item [matMenuTriggerFor]="transform">变形</button>
       <button mat-menu-item (click)="clickBtn('g')">装配<span class="shortcut">Ctrl + G</span></button>
       <button mat-menu-item (click)="clickBtn('h')">选取<span class="shortcut">Ctrl + H</span></button>

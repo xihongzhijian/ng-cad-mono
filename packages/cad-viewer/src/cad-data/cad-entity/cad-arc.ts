@@ -1,6 +1,5 @@
 import {Angle, Arc, Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {getVectorFromArray, purgeObject} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {EntityType} from "../cad-types";
 import {CadLineLike} from "./cad-line-like";
 
@@ -36,8 +35,8 @@ export class CadArc extends CadLineLike {
     return Rectangle.min;
   }
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.center = getVectorFromArray(data.center);
     this.radius = data.radius ?? 0;
     this.start_angle = data.start_angle ?? 0;
@@ -70,7 +69,7 @@ export class CadArc extends CadLineLike {
   }
 
   clone(resetId = false): CadArc {
-    return this._afterClone(new CadArc(this.export(), [], resetId));
+    return this._afterClone(new CadArc(this.export(), resetId));
   }
 
   equals(entity: CadArc) {

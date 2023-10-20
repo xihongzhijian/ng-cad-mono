@@ -1,7 +1,6 @@
 import {Matrix, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {cloneDeep, isEqual} from "lodash";
 import {getVectorFromArray, purgeObject} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {FontStyle} from "../cad-styles";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
@@ -30,8 +29,8 @@ export class CadMtext extends CadEntity {
     return rect;
   }
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.insert = getVectorFromArray(data.insert);
     this.text = data.text ?? "";
     this.anchor = getVectorFromArray(data.anchor);
@@ -64,7 +63,7 @@ export class CadMtext extends CadEntity {
   }
 
   clone(resetId = false): CadMtext {
-    return this._afterClone(new CadMtext(this.export(), [], resetId));
+    return this._afterClone(new CadMtext(this.export(), resetId));
   }
 
   equals(entity: CadMtext) {

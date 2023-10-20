@@ -1,6 +1,5 @@
 import {DEFAULT_TOLERANCE, Line, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {getVectorFromArray} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {EntityType} from "../cad-types";
 import {CadLineLike} from "./cad-line-like";
 
@@ -41,8 +40,8 @@ export class CadLine extends CadLineLike {
     return Rectangle.fromPoints([this.start, this.end]);
   }
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.start = getVectorFromArray(data.start);
     this.end = getVectorFromArray(data.end);
     this.kongwei = data.kongwei ?? "";
@@ -79,7 +78,7 @@ export class CadLine extends CadLineLike {
   }
 
   clone(resetId = false): CadLine {
-    return this._afterClone(new CadLine(this.export(), [], resetId));
+    return this._afterClone(new CadLine(this.export(), resetId));
   }
 
   equals(entity: CadLine) {

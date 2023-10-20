@@ -1,6 +1,5 @@
 import {MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {getVectorsFromArray, purgeObject} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
 
@@ -14,8 +13,8 @@ export class CadSpline extends CadEntity {
     return Rectangle.min;
   }
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.fitPoints = getVectorsFromArray(data.fitPoints) ?? [];
     this.controlPoints = getVectorsFromArray(data.controlPoints) ?? [];
     if (typeof data.degree === "number") {
@@ -35,7 +34,7 @@ export class CadSpline extends CadEntity {
   }
 
   clone(resetId = false): CadSpline {
-    return this._afterClone(new CadSpline(this.export(), [], resetId));
+    return this._afterClone(new CadSpline(this.export(), resetId));
   }
 
   protected _transform(matrix: MatrixLike) {

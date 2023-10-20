@@ -1,8 +1,8 @@
 import {AbstractControlOptions} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
 import {ObjectOf} from "@lucilor/utils";
+import Color from "color";
 import csstype from "csstype";
-import {Color, ColorWrap} from "ngx-color";
 
 type Value<T> = T | ((...args: any[]) => T);
 
@@ -92,8 +92,8 @@ export interface InputInfoCoordinate<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoColor<T = any> extends InputInfoBase<T> {
   type: "color";
-  value?: Value<ColorWrap["color"]>;
-  options?: ColorWrap["color"][];
+  value?: Value<Color>;
+  options?: Color[];
   optionsOnly?: boolean;
   onChange?: (val: Color) => void;
 }

@@ -1,6 +1,5 @@
 import {Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {getVectorFromArray} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {EntityType} from "../cad-types";
 import {CadEntity} from "./cad-entity";
 
@@ -24,8 +23,8 @@ export class CadInsert extends CadEntity {
     return Rectangle.min;
   }
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.name = data.name ?? "";
     this.insert = getVectorFromArray(data.insert);
   }
@@ -40,7 +39,7 @@ export class CadInsert extends CadEntity {
   }
 
   clone(resetId = false): CadInsert {
-    return this._afterClone(new CadInsert(this.export(), [], resetId));
+    return this._afterClone(new CadInsert(this.export(), resetId));
   }
 
   protected _transform(matrix: MatrixLike) {

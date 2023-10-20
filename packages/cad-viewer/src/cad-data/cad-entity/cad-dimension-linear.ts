@@ -1,6 +1,5 @@
 import {Matrix, ObjectOf, Point} from "@lucilor/utils";
 import {getVectorsFromArray, purgeObject} from "../../cad-utils";
-import {CadLayer} from "../cad-layer";
 import {CadDimension, CadDimensionEntity} from "./cad-dimension";
 
 export class CadDimensionLinear extends CadDimension {
@@ -13,8 +12,8 @@ export class CadDimensionLinear extends CadDimension {
   cad1: string;
   cad2: string;
 
-  constructor(data: any = {}, layers: CadLayer[] = [], resetId = false) {
-    super(data, layers, resetId);
+  constructor(data: any = {}, resetId = false) {
+    super(data, resetId);
     this.entity1 = {id: "", location: "center"};
     this.entity2 = {id: "", location: "center"};
     (["entity1", "entity2"] as ("entity1" | "entity2")[]).forEach((field) => {
@@ -62,7 +61,7 @@ export class CadDimensionLinear extends CadDimension {
   }
 
   clone(resetId = false): CadDimensionLinear {
-    return this._afterClone(new CadDimensionLinear(this.export(), [], resetId));
+    return this._afterClone(new CadDimensionLinear(this.export(), resetId));
   }
 
   getDistance() {
