@@ -4,16 +4,17 @@
 <div class="toolbar flex-row">
   <ng-container *ngIf="isShowXikong">
     <mat-slide-toggle [(ngModel)]="xikongOptions.showCN" (change)="onXikongOptionsChange()">显示中文</mat-slide-toggle>
+    <mat-slide-toggle [(ngModel)]="xikongOptions.codeFormat" (change)="onXikongOptionsChange()">格式化</mat-slide-toggle>
     <mat-slide-toggle [(ngModel)]="xikongOptions.autoWrap" (change)="onXikongOptionsChange()">自动换行</mat-slide-toggle>
     <div class="links">
       <button mat-flat-button (click)="getXikongData(true)">下载文件</button>
-      <button mat-flat-button (click)="gotoKailiao()">前往激光开料</button>
+      <button mat-flat-button (click)="setType('激光开料排版')">前往激光开料</button>
     </div>
   </ng-container>
   <ng-container *ngIf="!isShowXikong">
     <mat-slide-toggle [(ngModel)]="autoGuige" (change)="onAutoGuigeChange()">自动选择最合适的板材规格</mat-slide-toggle>
     <div class="links">
-      <button mat-flat-button (click)="getXikongData(true)">铝型材cnc铣孔文件</button>
+      <button mat-flat-button [matMenuTriggerFor]="xikongFile">铝型材cnc铣孔文件</button>
       <button mat-flat-button (click)="openDdbq(true, true)">铝型材标签</button>
       <button mat-flat-button (click)="openDdbq(true, false)">订单标签带条码</button>
       <button mat-flat-button [disabled]="downloadHistory.length < 1" [matMenuTriggerFor]="downloadHistoryList">下载记录</button>
@@ -24,13 +25,27 @@
         {{ item.date }}
       </button>
     </mat-menu>
+    <mat-menu #xikongFile="matMenu">
+      <button mat-menu-item (click)="getXikongData(true)">下载</button>
+      <button mat-menu-item (click)="setType('铝型材铣孔工单')">查看</button>
+    </mat-menu>
   </ng-container>
 </div>
 
 <ng-scrollbar class="flex-110" track="all">
-  <div [ngClass]="{'xingkong-strings': true, wrap: xikongOptions.autoWrap}" *ngIf="isShowXikong">
+  <div [ngClass]="{'xingkong-strings': true, formatted: xikongOptions.codeFormat, wrap: xikongOptions.autoWrap}" *ngIf="isShowXikong">
     <div class="group" *ngFor="let group of xikongStrings">
-      <div class="item" *ngFor="let item of group">{{ item }}</div>
+      <div class="item" *ngFor="let item of group">
+        <div class="value-tag" *ngFor="let value of item">
+          <span>&lt;</span>
+          <span class="tag">{{ value[0] }}</span>
+          <span>&gt;</span>
+          <span class="value">{{ value[1] }}</span>
+          <span>&lt;/</span>
+          <span class="tag">{{ value[0] }}</span>
+          <span>&gt;</span>
+        </div>
+      </div>
     </div>
   </div>
 

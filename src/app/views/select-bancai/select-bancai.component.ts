@@ -55,7 +55,7 @@ export class SelectBancaiComponent extends Subscribed() {
   downloadName = "";
   showGas = false;
   isShowXikong = false;
-  xikongStrings: string[][] = [];
+  xikongStrings: [string, string][][][] = [];
   xikongOptions: XikongOptions = session.load("xikongOptions") || {};
   xikongData: XikongData | null = null;
 
@@ -412,6 +412,7 @@ export class SelectBancaiComponent extends Subscribed() {
     } catch (error) {}
     this.spinner.hide(this.submitLoaderId);
     if (url) {
+      this.xikongData = null;
       if (Array.isArray(url)) {
         this.message.alert(url.map((v) => `<div>${v}</div>`).join(""));
       } else {
@@ -522,7 +523,7 @@ export class SelectBancaiComponent extends Subscribed() {
       if (this.isShowXikong) {
         const yes = await this.message.confirm(`以下订单没有铣孔数据，请先开一次料<br>${toDeleteStr}<br>是否前往激光开料`);
         if (yes) {
-          this.gotoKailiao();
+          this.setType("激光开料排版");
           return;
         }
       } else {
@@ -535,10 +536,10 @@ export class SelectBancaiComponent extends Subscribed() {
     this.xikongStrings = [];
     const {showCN} = this.xikongOptions;
     for (const code in data) {
-      const groupDisplay: string[] = [];
+      const groupDisplay: [string, string][][] = [];
       const groupDownload: string[] = [];
       for (const item of data[code] || []) {
-        let rowDisplay = "";
+        const rowDisplay: [string, string][] = [];
         let rowDownload = "";
         for (const [tag, value] of item.content) {
           let value2: typeof value;
@@ -553,7 +554,7 @@ export class SelectBancaiComponent extends Subscribed() {
           } else {
             value3 = value;
           }
-          rowDisplay += `<${tag}>${value2}</${tag}>`;
+          rowDisplay.push([tag, value2]);
           rowDownload += `<${tag}>${value3}</${tag}>`;
         }
         groupDisplay.push(rowDisplay);
@@ -566,7 +567,7 @@ export class SelectBancaiComponent extends Subscribed() {
     }
   }
 
-  gotoKailiao() {
-    this.router.navigate([this.route.snapshot.url[0].path], {queryParams: {type: "激光开料排版"}, queryParamsHandling: "merge"});
+  setType(type: string) {
+    this.router.navigate([this.route.snapshot.url[0].path], {queryParams: {type}, queryParamsHandling: "merge"});
   }
 }

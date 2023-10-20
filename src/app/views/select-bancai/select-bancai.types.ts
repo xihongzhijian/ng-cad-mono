@@ -69,5 +69,6 @@ export interface XikongDataItem {
 
 export interface XikongOptions {
   showCN?: boolean;
+  codeFormat?: boolean;
   autoWrap?: boolean;
 }

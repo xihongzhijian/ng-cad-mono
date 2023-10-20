@@ -55,9 +55,6 @@
   font-size: 1.2em;
   line-height: 1.2em;
   white-space: pre;
-  &.wrap {
-    white-space: pre-wrap;
-  }
 
   .group {
     padding: 10px;
@@ -66,6 +63,31 @@
   .item {
     &:not(:last-child) {
       margin-bottom: 3px;
+    }
+  }
+
+  .value-tag {
+    display: inline;
+  }
+
+  &.wrap {
+    white-space: pre-wrap;
+  }
+  &.formatted {
+    .item {
+      &:not(:last-child) {
+        border-bottom: var(--border);
+        margin-bottom: 5px;
+        padding-bottom: 5px;
+      }
+    }
+
+    .value-tag {
+      display: block;
+
+      .tag {
+        color: blueviolet;
+      }
     }
   }
 }
