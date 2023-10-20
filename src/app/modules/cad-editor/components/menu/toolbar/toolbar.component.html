@@ -43,11 +43,10 @@
     <mat-menu #view="matMenu">
       <button mat-menu-item (click)="setShowGongshi()">设置公式显示</button>
       <button mat-menu-item (click)="setPointSize()">设置选取点大小</button>
+      <button mat-menu-item (click)="toggleTestMode()">{{ getConfig("testMode") ? "关闭" : "开启" }}内测功能</button>
     </mat-menu>
 
-    <!-- <button mat-button (click)="showManual()">帮助<span class="super">NEW!</span></button> -->
-    <button mat-button (click)="showChangelog()">更新日志<span *ngIf="showNew" class="super">NEW!</span></button>
-    <!-- <button mat-button disabled>|</button> -->
+    <button mat-button (click)="showChangelog()">关于<span *ngIf="showNew" class="super">NEW!</span></button>
     <mat-divider vertical></mat-divider>
 
     <button mat-button (click)="toggleShowLineLength()" [disabled]="!isStatusNormal">

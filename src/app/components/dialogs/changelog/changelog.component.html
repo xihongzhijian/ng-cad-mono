@@ -12,7 +12,7 @@
     编辑
   </a>
 </div>
-<ng-scrollbar>
+<ng-scrollbar *ngIf="testMode; else prodMode">
   <div infiniteScroll [scrollWindow]="false" scrollViewport (scrolled)="onYReachEnd()">
     <div>
       <ng-container *ngFor="let v of changelog">
@@ -32,3 +32,6 @@
     </div>
   </div>
 </ng-scrollbar>
+<ng-template #prodMode>
+  <div>上次更新：{{ getTitle(changelog.at(0)?.timeStamp || 0, true) }}</div>
+</ng-template>

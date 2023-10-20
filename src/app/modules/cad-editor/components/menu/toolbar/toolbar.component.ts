@@ -372,4 +372,8 @@ export class ToolbarComponent extends Subscribed() {
     url.pathname = url.pathname.slice(0, url.pathname.lastIndexOf("/")) + "/backup";
     window.open(url.href);
   }
+
+  toggleTestMode() {
+    this.config.setConfigWith("testMode", (v) => !v);
+  }
 }

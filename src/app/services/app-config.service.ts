@@ -15,6 +15,7 @@ export interface AppConfig extends CadViewerConfig {
   pointSize: number;
   cadPointsAnywhere: boolean;
   kailiaoAutoGuige: boolean;
+  testMode: boolean;
 }
 
 export interface AppConfigChange {
@@ -64,7 +65,8 @@ export class AppConfigService {
       subCadsMultiSelect: true,
       pointSize: 20,
       cadPointsAnywhere: false,
-      kailiaoAutoGuige: false
+      kailiaoAutoGuige: false,
+      testMode: false
     };
     this._configKeys = keysOf(defaultConfig);
     const localUserConfig = this._purgeUserConfig(local.load<Partial<AppConfig>>("userConfig") || {});
@@ -160,6 +162,12 @@ export class AppConfigService {
     this.configChange$.next({oldVal: oldVal2, newVal: newVal2, sync, isUserConfig});
     this.config$.next({...oldVal, ...newVal2});
     return oldVal2;
+  }
+
+  setConfigWith<T extends keyof AppConfig>(key: T, getter: (oldVal: AppConfig[T]) => AppConfig[T], options?: AppConfigChangeOptions) {
+    const oldVal = this.config$.value[key];
+    const newVal = getter(oldVal);
+    return this.setConfig(key, newVal, options);
   }
 
   async getUserConfig(key?: string) {

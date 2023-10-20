@@ -122,11 +122,15 @@ export class AppStatusService {
       if (action) {
         this.config.noUser = true;
       } else {
-        const response = await this.dataService.get<boolean>("ngcad/isAdmin", {timeStamp: new Date().getTime()}, {silent: true});
-        if (!response) {
-          this.dataService.offlineMode = true;
+        if (environment.production) {
+          const response = await this.dataService.get<boolean>("ngcad/isAdmin", {timeStamp: new Date().getTime()}, {silent: true});
+          if (!response) {
+            this.dataService.offlineMode = true;
+          }
+          this.isAdmin$.next(this.dataService.getResponseData(response) === true);
+        } else {
+          this.isAdmin$.next(true);
         }
-        this.isAdmin$.next(this.dataService.getResponseData(response) === true);
         await this.config.getUserConfig();
       }
       let changelogTimeStamp = this.changelogTimeStamp$.value;

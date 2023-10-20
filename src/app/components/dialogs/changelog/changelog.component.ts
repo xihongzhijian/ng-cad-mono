@@ -2,6 +2,7 @@ import {ChangeDetectorRef, Component, Input} from "@angular/core";
 import {MatDialogRef} from "@angular/material/dialog";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {Changelog} from "@modules/http/services/cad-data.service.types";
+import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {changelogTypes} from "@views/changelog-admin/changelog-admin.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -26,7 +27,8 @@ export class ChangelogComponent {
     private cd: ChangeDetectorRef,
     public dialogRef: MatDialogRef<ChangelogComponent, void>,
     private dataService: CadDataService,
-    private status: AppStatusService
+    private status: AppStatusService,
+    private config: AppConfigService
   ) {
     this.nextPage();
   }
@@ -48,8 +50,16 @@ export class ChangelogComponent {
     this._nextPageLock = false;
   }
 
-  getTitle(timeStamp: number) {
-    return new Date(timeStamp).toLocaleDateString();
+  get testMode() {
+    return this.config.getConfig("testMode");
+  }
+
+  getTitle(timeStamp: number, getTime = false) {
+    let str = new Date(timeStamp).toLocaleDateString();
+    if (getTime) {
+      str += " " + new Date(timeStamp).toLocaleTimeString();
+    }
+    return str;
   }
 
   getType(key: string) {
