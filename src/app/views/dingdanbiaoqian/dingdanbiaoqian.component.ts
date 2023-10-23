@@ -96,6 +96,7 @@ export class DingdanbiaoqianComponent implements OnInit {
   urlPrefix = "";
   calcResults: CalcZxpjResult[] = [];
   remoteFilePath = remoteFilePath;
+  isLvxingcai = false;
   @ViewChildren("barcode") barcodeEls?: QueryList<ElementRef<HTMLDivElement>>;
   @ViewChild("cadsEl") cadsEl?: ElementRef<HTMLDivElement>;
 
@@ -147,6 +148,7 @@ export class DingdanbiaoqianComponent implements OnInit {
     const url = "order/order/dingdanbiaoqian";
     const params = this.route.snapshot.queryParams;
     const {type, enableCache} = this;
+    this.isLvxingcai = !!params.铝型材;
     if (type === "配件模块") {
       await this.updateMokuais();
       return;

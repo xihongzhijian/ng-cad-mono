@@ -86,7 +86,7 @@ $cads-border: solid 1px grey;
       height: 25px;
       line-height: 25px;
 
-      > :first-child {
+      > .highlight {
         border: $cads-border;
         padding: 0 10px;
         background-color: #e5e5e5;

@@ -117,13 +117,18 @@
             </div>
             <div class="cad-info flex-column">
               <div class="cad-size flex-row" *ngFor="let zhankai of cad.zhankai">
-                <span>{{ zhankai.width }}</span>
-                <span class="sign">×</span>
-                <span>{{ zhankai.height }}</span>
-                <ng-container *ngIf="hasZhankaiNum(zhankai)">
-                  <span class="sign">=</span>
-                  <span>{{ zhankai.num }}</span>
+                <ng-container *ngIf="isLvxingcai; else cadSizeNormal">
+                  <span>长{{ zhankai.height }}mm</span>
                 </ng-container>
+                <ng-template #cadSizeNormal>
+                  <span class="highlight">{{ zhankai.width }}</span>
+                  <span class="sign">×</span>
+                  <span>{{ zhankai.height }}</span>
+                  <ng-container *ngIf="hasZhankaiNum(zhankai)">
+                    <span class="sign">=</span>
+                    <span>{{ zhankai.num }}</span>
+                  </ng-container>
+                </ng-template>
               </div>
             </div>
           </div>
