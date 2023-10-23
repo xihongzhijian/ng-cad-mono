@@ -368,17 +368,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler@npm:^16.2.8":
-  version: 16.2.8
-  resolution: "@angular/compiler@npm:16.2.8"
+"@angular/compiler@npm:^16.2.10":
+  version: 16.2.10
+  resolution: "@angular/compiler@npm:16.2.10"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
-    "@angular/core": 16.2.8
+    "@angular/core": 16.2.10
   peerDependenciesMeta:
     "@angular/core":
       optional: true
-  checksum: ce53154b099ae66282a331961e06c36a15377e06a4f1577bc766a575f3c7b2da508ea00fc6d3e181eaed2e3d41cdd01a844e72255d033cf4a6e5bfd8dbf0ed1a
+  checksum: 8179ea8d577f2b36f9bb2b64f3195f11a3c93b7502c4d9efa923feb5d25ff56de526ba5c364280f7ab055c52f923827b39d8d01b651dd5f76704f9ead6748faf
   languageName: node
   linkType: hard
 
@@ -12248,7 +12248,7 @@ __metadata:
     "@angular/cdk": ^16.2.7
     "@angular/cli": ^16.2.5
     "@angular/common": ^16.2.8
-    "@angular/compiler": ^16.2.8
+    "@angular/compiler": ^16.2.10
     "@angular/compiler-cli": ^16.2.8
     "@angular/core": ^16.2.8
     "@angular/forms": ^16.2.8
