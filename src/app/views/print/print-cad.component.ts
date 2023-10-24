@@ -792,4 +792,13 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     const text = getCadCalcZhankaiText(cad, calcZhankai, materialResult, info.bancai || {}, 项目配置, 项目名);
     return text;
   }
+
+  openCadMuban() {
+    const id = this.printParams.cads[0]?.id;
+    if (!id) {
+      this.message.alert("没有cad模板");
+      return;
+    }
+    this.status.openCadInNewTab(id, "CADmuban");
+  }
 }
