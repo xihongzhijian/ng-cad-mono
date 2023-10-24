@@ -233,7 +233,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     if (this.colorChrome) {
       await timeout(0);
-      this.setColor(this.colorChrome);
+      this.setColor(this.colorChrome.hex);
     }
     this.infoDiffer = this.differs.find(this.info).create();
   }
@@ -548,8 +548,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return [null, undefined, ""].includes(value);
   }
 
-  setColor(color: NgxColor | string | undefined | null) {
-    const value = typeof color === "string" ? color : color?.hex;
+  setColor(color: Color | string | undefined | null) {
+    const value = typeof color === "string" ? color : color?.hex();
     try {
       const c = new Color(value);
       if (c.isLight()) {

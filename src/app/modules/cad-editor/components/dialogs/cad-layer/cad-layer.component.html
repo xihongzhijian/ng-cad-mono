@@ -1,14 +1,20 @@
+<div>
+  <app-input [info]="layerFilterInputInfo"></app-input>
+</div>
+
 <ng-scrollbar>
   <div class="forms">
-    <div class="form sub-form-field" *ngFor="let form of forms; let i = index">
-      <div class="row" *ngFor="let row of form">
-        <app-input *ngFor="let info of row" [info]="info"></app-input>
+    <ng-container *ngFor="let form of forms; let i = index">
+      <div class="form sub-form-field" *ngIf="!form.hidden">
+        <div class="row" *ngFor="let row of form.infos">
+          <app-input *ngFor="let info of row" [info]="info"></app-input>
+        </div>
+        <div class="btn-group">
+          <button mat-icon-button color="primary" (click)="addLayer(i)"><mat-icon>add_circle</mat-icon></button>
+          <button mat-icon-button color="primary" (click)="removeLayer(i)"><mat-icon>remove_circle</mat-icon></button>
+        </div>
       </div>
-      <div class="btn-group">
-        <button mat-icon-button color="primary" (click)="addLayer(i)"><mat-icon>add_circle</mat-icon></button>
-        <button mat-icon-button color="primary" (click)="removeLayer(i)"><mat-icon>remove_circle</mat-icon></button>
-      </div>
-    </div>
+    </ng-container>
   </div>
 </ng-scrollbar>
 

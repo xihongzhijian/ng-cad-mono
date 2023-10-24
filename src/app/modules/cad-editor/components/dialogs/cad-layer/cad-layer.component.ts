@@ -6,6 +6,8 @@ import {CadLayer} from "@lucilor/cad-viewer";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {debounce} from "lodash";
+import {queryString} from "packages/utils/lib";
 
 @Component({
   selector: "app-cad-layer",
@@ -14,7 +16,17 @@ import {MessageService} from "@modules/message/services/message.service";
 })
 export class CadLayerComponent {
   layers: CadLayer[] = [];
-  forms: InputInfo[][][] = [];
+  forms: {infos: InputInfo[][]; hidden: boolean}[] = [];
+  layerFilterString = "";
+  layerFilterInputInfo: InputInfo = {
+    type: "string",
+    label: "搜索图层",
+    model: {data: this, key: "layerFilterString"},
+    onInput: debounce(() => {
+      this.filterLayers();
+    }, 500)
+  };
+
   @ViewChildren(InputComponent)
   inputComponents?: QueryList<InputComponent>;
 
@@ -31,9 +43,24 @@ export class CadLayerComponent {
   updateForms() {
     this.forms = [];
     for (const layer of this.layers) {
-      const form: InputInfo[][] = [
+      const infos: InputInfo[][] = [
         [
-          {label: "名字", type: "string", model: {data: layer, key: "name"}, validators: Validators.required},
+          {
+            label: "名字",
+            type: "string",
+            model: {data: layer, key: "name"},
+            validators: [
+              Validators.required,
+              (control) => {
+                const name = control.value;
+                const layers = this.layers.filter((v) => v.name === name);
+                if (layers.length > 1) {
+                  return {名字重复: "名字重复"};
+                }
+                return null;
+              }
+            ]
+          },
           {
             label: "颜色",
             type: "color",
@@ -46,8 +73,9 @@ export class CadLayerComponent {
           {label: "隐藏", type: "boolean", model: {data: layer, key: "hidden"}}
         ]
       ];
-      this.forms.push(form);
+      this.forms.push({infos, hidden: false});
     }
+    this.filterLayers();
   }
 
   submit() {
@@ -87,6 +115,14 @@ export class CadLayerComponent {
     }
     this.layers.splice(i, 1);
     this.updateForms();
+  }
+
+  filterLayers() {
+    const needle = this.layerFilterString;
+    for (const [i, form] of this.forms.entries()) {
+      const layer = this.layers[i];
+      form.hidden = !queryString(needle, layer.name);
+    }
   }
 }
 
