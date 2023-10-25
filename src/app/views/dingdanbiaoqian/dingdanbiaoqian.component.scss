@@ -264,7 +264,6 @@ $info-border: solid 1px black;
 .form {
   font-family: 宋体;
   flex: 0 0 auto;
-  page-break-after: always;
   background-color: white;
   box-shadow: 1px 1px 10px 1px rgba(0, 0, 0, 0.3);
   --label-width: auto;
@@ -272,6 +271,7 @@ $info-border: solid 1px black;
   --value-height: 17px;
   &:not(:last-child) {
     margin-bottom: var(--form-space);
+    page-break-after: always;
   }
 
   .form-inner {
