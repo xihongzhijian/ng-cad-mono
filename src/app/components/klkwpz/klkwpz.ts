@@ -89,9 +89,10 @@ export class Klkwpz {
       板材打孔范围缩减,
       板材孔位阵列范围,
       不删除超出板材的孔: source.不删除超出板材的孔,
+      孔依附板材边缘: source.孔依附板材边缘,
       删除超出板材的孔X: source.删除超出板材的孔X,
       删除超出板材的孔Y: source.删除超出板材的孔Y,
-      类型: source.类型 || undefined,
+      类型: source.类型,
       增加指定偏移: source.增加指定偏移,
       自增等距阵列: source.自增等距阵列,
       固定行列阵列: source.固定行列阵列
