@@ -47,18 +47,23 @@ export class XhmrmsbjData {
       for (const v of 模块节点) {
         updateMokuaiItems(v.可选模块, typesInfo, true);
         const 选中模块 = v.选中模块;
+        if (选中模块) {
+          const i = v.可选模块.findIndex((v2) => isMokuaiItemEqual(v2, 选中模块));
+          if (i >= 0) {
+            v.可选模块[i] = 选中模块;
+          }
+        }
         this.setSelectedMokuai(v, 选中模块, true);
       }
     }
   }
 
   setSelectedMokuai(node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem | undefined | null, setIsDefault: boolean) {
-    for (let i = 0; i < node.可选模块.length; i++) {
-      let mokuai2 = node.可选模块[i];
+    delete node.选中模块;
+    for (const mokuai2 of node.可选模块) {
       const isEqual = mokuai && isMokuaiItemEqual(mokuai2, mokuai);
       if (isEqual) {
-        node.可选模块[i] = mokuai;
-        mokuai2 = mokuai;
+        node.选中模块 = mokuai2;
       }
       if (setIsDefault) {
         if (isEqual) {
