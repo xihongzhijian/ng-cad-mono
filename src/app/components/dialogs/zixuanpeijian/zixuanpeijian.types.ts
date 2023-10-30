@@ -337,7 +337,7 @@ export const updateMokuaiItems = (items: ZixuanpeijianMokuaiItem[], typesInfo: Z
             }
           }
           for (const v of item.xuanxiangshuru) {
-            if (v[1]) {
+            if (!v[1]) {
               v[1] = xuanxiangshuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
             }
           }

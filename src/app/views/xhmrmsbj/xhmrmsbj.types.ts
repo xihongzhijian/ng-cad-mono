@@ -53,11 +53,12 @@ export class XhmrmsbjData {
   }
 
   setSelectedMokuai(node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem | undefined | null, setIsDefault: boolean) {
-    delete node.选中模块;
-    for (const mokuai2 of node.可选模块) {
+    for (let i = 0; i < node.可选模块.length; i++) {
+      let mokuai2 = node.可选模块[i];
       const isEqual = mokuai && isMokuaiItemEqual(mokuai2, mokuai);
       if (isEqual) {
-        node.选中模块 = mokuai2;
+        node.可选模块[i] = mokuai;
+        mokuai2 = mokuai;
       }
       if (setIsDefault) {
         if (isEqual) {
