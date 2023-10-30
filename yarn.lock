@@ -472,17 +472,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser-dynamic@npm:^16.2.10":
-  version: 16.2.10
-  resolution: "@angular/platform-browser-dynamic@npm:16.2.10"
+"@angular/platform-browser-dynamic@npm:^16.2.11":
+  version: 16.2.11
+  resolution: "@angular/platform-browser-dynamic@npm:16.2.11"
   dependencies:
     tslib: ^2.3.0
   peerDependencies:
-    "@angular/common": 16.2.10
-    "@angular/compiler": 16.2.10
-    "@angular/core": 16.2.10
-    "@angular/platform-browser": 16.2.10
-  checksum: e723a35cf16fd38a8057753e127d6fad75c06d84878decc7a5d41b6aefd091dec390f4d8828580fa43327e2295451b541283c16a9ec9b36ab9eb419d36384fa8
+    "@angular/common": 16.2.11
+    "@angular/compiler": 16.2.11
+    "@angular/core": 16.2.11
+    "@angular/platform-browser": 16.2.11
+  checksum: 101e22a80512c328765dee19c1eb1edfe550c31c9a5ef733401e6498df988638af755e42ba54efed6c54c88315840feb7790a89e30734800cd63c3709036064f
   languageName: node
   linkType: hard
 
@@ -12317,7 +12317,7 @@ __metadata:
     "@angular/forms": ^16.2.10
     "@angular/material": ^16.2.9
     "@angular/platform-browser": ^16.2.10
-    "@angular/platform-browser-dynamic": ^16.2.10
+    "@angular/platform-browser-dynamic": ^16.2.11
     "@angular/router": ^16.2.10
     "@lucilor/cad-viewer": "workspace:^"
     "@lucilor/utils": "workspace:^"
