@@ -124,7 +124,10 @@ export class ImportComponent extends Utils() implements OnInit {
       }
       this._sourceFile = el.files[0];
     } else if (!this._sourceFile) {
-      return false;
+      return finish(false, "hidden");
+    }
+    if (!(await this.message.confirm("是否确定导入？"))) {
+      return finish(false, "hidden");
     }
     this.isImporting = true;
     this.progressBar.start(1);
@@ -155,7 +158,7 @@ export class ImportComponent extends Utils() implements OnInit {
     const hasEmptyCad = cads.length < 1 || cads.some((cad) => cad.data.entities.length < 1);
     if (hasEmptyCad) {
       this.message.alert({title: "dxf识别错误", content: "可能原因：<br>cad使用了绿色线<br>数据为空<br>绿色框不封闭"});
-      return finish(true, "error");
+      return finish(true, "error", "dxf识别错误");
     }
 
     if (isXinghao) {
