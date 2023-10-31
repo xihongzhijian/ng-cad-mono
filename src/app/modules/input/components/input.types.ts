@@ -27,7 +27,6 @@ export interface InputInfoBase<T = any> {
   forceValidateNum?: number; // change this to trigger validation
   name?: string;
   styles?: csstype.Properties;
-  hidden?: boolean;
 }
 
 export interface InputInfoString<T = any> extends InputInfoWithOptions<T, string> {
@@ -133,6 +132,7 @@ export interface InputInfoTypeMap {
 
 export interface InputInfoWithOptions<T = any, K = any> extends InputInfoBase<T> {
   options?: InputInfoOptions<K>;
+  optionValueType?: "string" | "array";
   filterValuesGetter?: (option: InputInfoOption<K>) => string[];
   fixedOptions?: string[];
   optionInputOnly?: boolean;
@@ -140,6 +140,7 @@ export interface InputInfoWithOptions<T = any, K = any> extends InputInfoBase<T>
   isSingleOption?: boolean;
   optionsUseId?: boolean;
   optionField?: string;
+  optionDialog?: boolean;
 }
 
 export type InputInfoOption<T = string> = {value: T; label?: string} | T;

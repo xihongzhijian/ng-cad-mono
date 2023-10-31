@@ -205,7 +205,9 @@ export interface MrbcjfzInfo {
   选中材料: string;
   选中板材厚度: string;
   选中板材分组: string;
-  可选板材: string[];
+  可选板材?: string[];
+  可选材料?: string[];
+  可选厚度?: string[];
   花件: string[];
   CAD: string[];
   企料: string[];
@@ -232,7 +234,6 @@ export const getMrbcjfzInfo = (source: Partial<MrbcjfzInfo> = {}): MrbcjfzInfo =
   选中材料: "",
   选中板材厚度: "",
   选中板材分组: "",
-  可选板材: [],
   花件: [],
   CAD: [],
   企料: [],

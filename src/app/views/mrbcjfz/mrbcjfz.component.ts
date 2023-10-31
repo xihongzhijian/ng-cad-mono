@@ -242,7 +242,9 @@ export class MrbcjfzComponent implements OnInit {
           bancai: info.默认开料板材,
           cailiao: info.默认开料材料,
           houdu: info.默认开料板材厚度,
-          kexuanbancai: info.可选板材
+          bancaiList: info.可选板材,
+          cailiaoList: info.可选材料,
+          houduList: info.可选厚度
         },
         bancaiList: this.bancaiList
       }
@@ -251,7 +253,9 @@ export class MrbcjfzComponent implements OnInit {
       info.默认开料板材 = result.bancai;
       info.默认开料材料 = result.cailiao;
       info.默认开料板材厚度 = result.houdu;
-      info.可选板材 = result.kexuanbancai || [];
+      info.可选板材 = result.bancaiList || [];
+      info.可选材料 = result.cailiaoList || [];
+      info.可选厚度 = result.houduList || [];
     }
   }
 

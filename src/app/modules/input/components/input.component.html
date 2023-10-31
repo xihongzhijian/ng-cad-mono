@@ -44,7 +44,7 @@
         cdkTextareaAutosize
         [cdkAutosizeMinRows]="1"
       ></textarea>
-      <button mat-icon-button matSuffix *ngIf="optionKey" color="primary" (click)="selectOptions(model.key, optionKey)">
+      <button mat-icon-button matSuffix *ngIf="optionKey || optionDialog" color="primary" (click)="selectOptions(model.key, optionKey)">
         <mat-icon>list</mat-icon>
       </button>
       <button mat-icon-button matSuffix *ngIf="info.clearable" color="primary" (click)="clear()">

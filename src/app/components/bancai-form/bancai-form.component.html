@@ -1,1 +1,3 @@
-<app-input *ngFor="let info of inputInfos" [info]="info"></app-input>
+<div class="row" *ngFor="let group of inputInfos">
+  <app-input *ngFor="let info of group" [info]="info"></app-input>
+</div>

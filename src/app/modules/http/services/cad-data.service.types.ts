@@ -47,8 +47,15 @@ export interface GetOptionsParams {
 }
 
 export interface OptionsData {
-  data: {vid: number; name: string; img: string | null; disabled: boolean}[];
+  data: OptionsDataData[];
   count: number;
+}
+
+export interface OptionsDataData {
+  vid: number;
+  name: string;
+  img: string | null;
+  disabled: boolean;
 }
 
 export interface BancaiList {

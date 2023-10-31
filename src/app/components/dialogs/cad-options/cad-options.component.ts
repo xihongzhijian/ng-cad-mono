@@ -3,9 +3,9 @@ import {MatCheckboxChange} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf} from "@lucilor/utils";
+import {ObjectOf, queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {OptionsData, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsParams, OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {lastValueFrom} from "rxjs";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -45,7 +45,7 @@ export class CadOptionsComponent implements AfterViewInit {
 
   async submit() {
     this.spinner.show(this.loaderIds.submitLoaderId);
-    const data = await this.dataService.getOptions({
+    const data = await this.getOptions({
       name: this.data.name,
       data: this.data.data,
       xinghao: this.data.xinghao,
@@ -80,6 +80,22 @@ export class CadOptionsComponent implements AfterViewInit {
     this.getData(event.pageIndex + 1);
   }
 
+  async getOptions(params: GetOptionsParams) {
+    let data: OptionsData;
+    if (Array.isArray(this.data.options)) {
+      const options = this.data.options.filter((v) => {
+        if (params.values && !params.values.includes(v.name)) {
+          return false;
+        }
+        return queryString(this.searchValue, v.name);
+      });
+      data = {data: options, count: options.length};
+    } else {
+      data = await this.dataService.getOptions(params);
+    }
+    return data;
+  }
+
   async getData(page: number) {
     this.spinner.show(this.loaderIds.optionsLoader, {text: "获取CAD数据"});
     this.pageData.forEach(({checked, name}) => {
@@ -87,7 +103,7 @@ export class CadOptionsComponent implements AfterViewInit {
         this.checkedItems.push(name);
       }
     });
-    const data = await this.dataService.getOptions({
+    const data = await this.getOptions({
       name: this.data.name,
       search: this.searchValue,
       page,
@@ -146,6 +162,7 @@ export interface CadOptionsInput {
   xinghao?: string;
   filter?: ObjectOf<any>;
   field?: string;
+  options?: OptionsDataData[];
 }
 
 export type CadOptionsOutput = TableDataBase[];

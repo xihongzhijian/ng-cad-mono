@@ -17,8 +17,9 @@ import {ErrorStateMatcher} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
 import {joinOptions, splitOptions} from "@app/app.common";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
-import {ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
+import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import Color from "color";
 import csstype from "csstype";
@@ -78,7 +79,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (this.info.type === "string") {
       return this.info.optionKey;
     }
-    return null;
+    return undefined;
+  }
+
+  get optionDialog() {
+    if (this.info.type === "string") {
+      return this.info.optionDialog;
+    }
+    return undefined;
   }
 
   get suffixIcons() {
@@ -218,7 +226,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       if (sortOptions) {
         sortArrayByLevenshtein(options, getFilterValues, this.value);
       }
-      this.filteredOptions$.next(options);
+      if (this.optionDialog) {
+        this.filteredOptions$.next([]);
+      } else {
+        this.filteredOptions$.next(options);
+      }
     });
     this.infoDiffer = differs.find(this.info).create();
   }
@@ -300,9 +312,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
     }
     this.style = {...info.styles};
-    if (info.hidden) {
-      this.style.display = "none";
-    }
     let validateValue = !!info.initialValidate;
     changes.forEachItem((item) => {
       if (item.key === "forceValidateNum") {
@@ -458,24 +467,38 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   async selectOptions(key?: keyof any, optionKey?: string) {
     const data = this.model.data;
-    if (!key || !optionKey) {
-      return;
-    }
-    let optionsUseId = false;
-    let isSingleOption = false;
-    let optionInputOnly = false;
-    let optionField: string | undefined;
+    let optionsUseId: InputInfoWithOptions["optionsUseId"] = false;
+    let isSingleOption: InputInfoWithOptions["isSingleOption"] = false;
+    let optionInputOnly: InputInfoWithOptions["optionInputOnly"] = false;
+    let optionField: InputInfoWithOptions["optionField"] = undefined;
+    let optionValueType: InputInfoWithOptions["optionValueType"] = "string";
+    let options: OptionsDataData[] | undefined;
     const info = this.info;
     if (info.type === "string") {
       optionsUseId = !!info.optionsUseId;
       isSingleOption = !!info.isSingleOption;
       optionInputOnly = !!info.optionInputOnly;
       optionField = info.optionField;
+      optionValueType = info.optionValueType || "string";
+      if (Array.isArray(info.options)) {
+        options = (info.options || []).map<OptionsDataData>((v, i) => ({
+          vid: i,
+          name: typeof v === "string" ? v : v.value,
+          img: null,
+          disabled: false
+        }));
+      }
     }
-    const value = (data as any)[key];
-    const isObject = value && typeof value === "object";
-    const checked = splitOptions(isObject ? value[optionKey] : value);
-    const dialogData: CadOptionsInput = {data, name: optionKey, multi: !isSingleOption, field: optionField};
+    const value = key ? data[key] : this.value;
+    const isObject = isTypeOf(value, "object");
+    let checked: string[] = isObject && optionKey ? value[optionKey] : value;
+    if (optionValueType === "string") {
+      checked = splitOptions(isObject && optionKey ? value[optionKey] : value);
+    }
+    if (!Array.isArray(checked)) {
+      checked = [];
+    }
+    const dialogData: CadOptionsInput = {data, name: optionKey || "", multi: !isSingleOption, field: optionField, options};
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));
     } else {
@@ -483,19 +506,27 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     const result = await openCadOptionsDialog(this.dialog, {data: dialogData});
     if (result) {
-      let options: string[];
+      let options2: string[];
       if (optionsUseId) {
-        options = result.map((v) => String(v.vid));
+        options2 = result.map((v) => String(v.vid));
         if (optionInputOnly) {
           this.displayValue = joinOptions(result.map((v) => v.mingzi));
         }
       } else {
-        options = result.map((v) => v.mingzi);
+        options2 = result.map((v) => v.mingzi);
       }
-      if (isObject) {
-        data[key][optionKey] = joinOptions(options);
+      let resultValue: string | string[] = options2;
+      if (optionValueType === "string") {
+        resultValue = joinOptions(options2);
+      }
+      if (key) {
+        if (isObject && optionKey) {
+          data[key][optionKey] = resultValue;
+        } else {
+          data[key] = resultValue;
+        }
       } else {
-        data[key] = joinOptions(options);
+        this.value = resultValue;
       }
       this.validateValue();
     }

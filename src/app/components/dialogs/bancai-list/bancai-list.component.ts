@@ -102,10 +102,12 @@ export class BancaiListComponent {
     }
     if (bancai.mingzi === "自定义") {
       await timeout(0);
-      const zidingyi = await this.message.prompt(
-        {type: "string", label: "自定义板材", value: this.zidingyi, validators: Validators.required},
-        {title: "自定义板材"}
-      );
+      const zidingyi = await this.message.prompt({
+        type: "string",
+        label: "自定义板材",
+        value: this.zidingyi,
+        validators: Validators.required
+      });
       if (zidingyi) {
         this.zidingyi = zidingyi;
       } else {
