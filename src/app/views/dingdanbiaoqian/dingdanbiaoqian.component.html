@@ -104,7 +104,9 @@
         <div #cadsEl class="cads flex-110 flex-row">
           <div class="cad flex-column" *ngFor="let cad of order.cads" [ngStyle]="cad.style">
             <div class="cad-tags flex-column">
-              <div *ngFor="let str of cad.data.info['标签信息']">{{ str }}</div>
+              <div *ngFor="let item of cad.data.info['标签信息']" [ngStyle]="isArray(item) ? item[1] : {}">
+                {{ isArray(item) ? item[0] : item }}
+              </div>
             </div>
             <div *ngIf="config.showBarcode">
               <svg class="barcode" [attr.jsbarcode-value]="cad.data.info.groupId"></svg>

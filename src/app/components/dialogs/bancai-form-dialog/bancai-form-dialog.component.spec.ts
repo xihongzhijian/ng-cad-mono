@@ -7,7 +7,7 @@ import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {BancaiFormDialogComponent, BancaiFormInput} from "./bancai-form-dialog.component";
 
-const data: BancaiFormInput = {data: {bancai: "", cailiao: "", houdu: "", kexuanbancai: []}, bancaiList: bancaifenzuIndexData.bancaiList};
+const data: BancaiFormInput = {data: {bancai: "", cailiao: "", houdu: ""}, bancaiList: bancaifenzuIndexData.bancaiList};
 
 describe("BancaiFormDialogComponent", () => {
   let component: BancaiFormDialogComponent;

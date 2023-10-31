@@ -673,4 +673,8 @@ export class DingdanbiaoqianComponent implements OnInit {
   openCad(cad: Order["cads"][number]) {
     this.status.openCadInNewTab(cad.houtaiId, "cad");
   }
+
+  isArray(v: any) {
+    return Array.isArray(v);
+  }
 }

@@ -455,7 +455,7 @@ export class SelectBancaiComponent extends Subscribed() {
     return 0;
   }
 
-  openDdbq(showBarcode: boolean, 铝型材: boolean) {
+  async openDdbq(showBarcode: boolean, 铝型材: boolean) {
     const url = new URL(location.href);
     url.pathname = url.pathname.slice(0, url.pathname.lastIndexOf("/")) + "/dingdanbiaoqian";
     const type: DdbqType = "标签贴纸";
@@ -464,6 +464,10 @@ export class SelectBancaiComponent extends Subscribed() {
       url.searchParams.set("showBarcode", "1");
     }
     if (铝型材) {
+      const {toDelete} = await this.getXikongData(false, true, true);
+      if (toDelete.length > 0) {
+        return;
+      }
       url.searchParams.set("铝型材", "1");
     }
     this.open(url.href);
@@ -502,17 +506,18 @@ export class SelectBancaiComponent extends Subscribed() {
     }
   }
 
-  async getXikongData(download: boolean, useCache = false) {
+  async getXikongData(download: boolean, useCache = false, checkOnly = false) {
     if (!this.xikongData || !useCache) {
       const {codes} = this;
       const response = await this.dataService.post<XikongData>("order/order/getXikongData", {codes});
       this.xikongData = this.dataService.getResponseData(response);
     }
     const data = {...this.xikongData};
-    if (!data) {
-      return;
-    }
     const toDelete: string[] = [];
+    const result = {toDelete};
+    if (!data) {
+      return result;
+    }
     for (const code in data) {
       if (!data[code]) {
         toDelete.push(code);
@@ -524,7 +529,7 @@ export class SelectBancaiComponent extends Subscribed() {
         const yes = await this.message.confirm(`以下订单没有铣孔数据，请先开一次料<br>${toDeleteStr}<br>是否前往激光开料`);
         if (yes) {
           this.setType("激光开料排版");
-          return;
+          return result;
         }
       } else {
         await this.message.alert("以下订单没有铣孔数据，请先开一次料<br>" + toDeleteStr);
@@ -532,6 +537,9 @@ export class SelectBancaiComponent extends Subscribed() {
       for (const code of toDelete) {
         delete data[code];
       }
+    }
+    if (checkOnly) {
+      return result;
     }
     this.xikongStrings = [];
     const {showCN} = this.xikongOptions;
@@ -541,6 +549,7 @@ export class SelectBancaiComponent extends Subscribed() {
       for (const item of data[code] || []) {
         const rowDisplay: [string, string][] = [];
         let rowDownload = "";
+        let hasPpu = false;
         for (const [tag, value] of item.content) {
           let value2: typeof value;
           let value3: typeof value;
@@ -550,6 +559,7 @@ export class SelectBancaiComponent extends Subscribed() {
             value2 = value;
           }
           if (tag === "PPU") {
+            hasPpu = true;
             value3 = getPinyinCompact(value).replaceAll("ü", "v");
           } else {
             value3 = value;
@@ -557,14 +567,17 @@ export class SelectBancaiComponent extends Subscribed() {
           rowDisplay.push([tag, value2]);
           rowDownload += `<${tag}>${value3}</${tag}>`;
         }
-        groupDisplay.push(rowDisplay);
-        groupDownload.push(rowDownload);
+        if (hasPpu) {
+          groupDisplay.push(rowDisplay);
+          groupDownload.push(rowDownload);
+        }
       }
       this.xikongStrings.push(groupDisplay);
       if (download) {
         downloadByString(groupDownload.join("\n"), {filename: code + ".txt"});
       }
     }
+    return result;
   }
 
   setType(type: string) {
