@@ -272,6 +272,8 @@ export class MrbcjfzComponent implements OnInit {
       "企料",
       "花件",
       "可选板材",
+      "可选材料",
+      "可选厚度",
       "板材分组别名",
       "允许修改",
       "独立变化",
