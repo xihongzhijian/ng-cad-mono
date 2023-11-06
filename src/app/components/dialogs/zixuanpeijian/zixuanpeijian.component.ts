@@ -831,7 +831,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         item.xuanxiangshuru[i][1] = xuanxiangshuru[v[0]];
       }
     }
-    this.result.模块.push(item);
     const formulas = typesItem.suanliaogongshi;
     const vars = this.materialResult || {};
     const result = await this.calc.calcFormulas(formulas, vars);
@@ -858,8 +857,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       if (Number(succeedTrim.总高) > 0) {
         item.totalHeight = toFixed(succeedTrim.总高, this.fractionDigits);
       }
+      this.result.模块.push(item);
+      await this._updateInputInfos();
     }
-    await this._updateInputInfos();
   }
 
   removeMokuaiItem(i: number) {
