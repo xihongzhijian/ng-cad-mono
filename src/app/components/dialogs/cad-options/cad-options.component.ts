@@ -44,16 +44,17 @@ export class CadOptionsComponent implements AfterViewInit {
   }
 
   async submit() {
-    this.spinner.show(this.loaderIds.submitLoaderId);
-    const data = await this.getOptions({
-      name: this.data.name,
-      data: this.data.data,
-      xinghao: this.data.xinghao,
-      includeTingyong: true,
-      values: this.checkedItems,
-      field: this.data.field
-    });
-    this.spinner.hide(this.loaderIds.submitLoaderId);
+    const data = await this.getOptions(
+      {
+        name: this.data.name,
+        data: this.data.data,
+        xinghao: this.data.xinghao,
+        includeTingyong: true,
+        values: this.checkedItems,
+        field: this.data.field
+      },
+      [this.loaderIds.submitLoaderId]
+    );
     this.dialogRef.close(data.data.map((v) => ({vid: v.vid, mingzi: v.name})));
   }
 
@@ -80,7 +81,7 @@ export class CadOptionsComponent implements AfterViewInit {
     this.getData(event.pageIndex + 1);
   }
 
-  async getOptions(params: GetOptionsParams) {
+  async getOptions(params: GetOptionsParams, loader: Parameters<typeof this.spinner.show>) {
     let data: OptionsData;
     if (Array.isArray(this.data.options)) {
       const options = this.data.options.filter((v) => {
@@ -91,29 +92,32 @@ export class CadOptionsComponent implements AfterViewInit {
       });
       data = {data: options, count: options.length};
     } else {
+      this.spinner.show(...loader);
       data = await this.dataService.getOptions(params);
+      this.spinner.hide(loader[0]);
     }
     return data;
   }
 
   async getData(page: number) {
-    this.spinner.show(this.loaderIds.optionsLoader, {text: "获取CAD数据"});
     this.pageData.forEach(({checked, name}) => {
       if (checked && !this.checkedItems.includes(name)) {
         this.checkedItems.push(name);
       }
     });
-    const data = await this.getOptions({
-      name: this.data.name,
-      search: this.searchValue,
-      page,
-      limit: this.paginator?.pageSize,
-      data: this.data.data,
-      xinghao: this.data.xinghao,
-      filter: this.data.filter,
-      field: this.data.field
-    });
-    this.spinner.hide(this.loaderIds.optionsLoader);
+    const data = await this.getOptions(
+      {
+        name: this.data.name,
+        search: this.searchValue,
+        page,
+        limit: this.paginator?.pageSize,
+        data: this.data.data,
+        xinghao: this.data.xinghao,
+        filter: this.data.filter,
+        field: this.data.field
+      },
+      [this.loaderIds.optionsLoader, {text: "获取CAD数据"}]
+    );
     this.length = data.count;
     this.pageData = data.data.map((v) => {
       let checked = this.checkedItems.includes(v.name);

@@ -77,7 +77,7 @@ export class BancaiFormComponent {
           options: checkedItem?.cailiaoList || [],
           isSingleOption: true,
           optionDialog: true,
-          optionValueType: "array"
+          optionValueType: "string"
         },
         {
           type: "string",
@@ -87,7 +87,7 @@ export class BancaiFormComponent {
           options: checkedItem?.houduList || [],
           isSingleOption: true,
           optionDialog: true,
-          optionValueType: "array"
+          optionValueType: "string"
         }
       ],
       [
