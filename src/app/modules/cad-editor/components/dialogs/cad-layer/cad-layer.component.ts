@@ -3,11 +3,11 @@ import {Validators} from "@angular/forms";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadLayer} from "@lucilor/cad-viewer";
+import {queryString} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {debounce} from "lodash";
-import {queryString} from "packages/utils/lib";
 
 @Component({
   selector: "app-cad-layer",

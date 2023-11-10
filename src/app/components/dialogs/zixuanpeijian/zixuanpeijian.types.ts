@@ -331,6 +331,9 @@ export const updateMokuaiItems = (items: ZixuanpeijianMokuaiItem[], typesInfo: Z
             item.totalWidth = getValue("总宽", item.totalWidth);
             item.totalHeight = getValue("总高", item.totalHeight);
           }
+          console.groupCollapsed(item.type2);
+          console.log(gongshishuru, item.gongshishuru);
+          console.groupEnd();
           for (const v of item.gongshishuru) {
             if (!v[1]) {
               v[1] = gongshishuru.find((v2) => v2[0] === v[0])?.[1] || v[1];

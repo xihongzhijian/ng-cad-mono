@@ -45,7 +45,6 @@ export class XhmrmsbjData {
       }
       const 模块节点 = item.模块节点 || [];
       for (const v of 模块节点) {
-        updateMokuaiItems(v.可选模块, typesInfo, true);
         const 选中模块 = v.选中模块;
         if (选中模块) {
           const i = v.可选模块.findIndex((v2) => isMokuaiItemEqual(v2, 选中模块));
@@ -53,6 +52,7 @@ export class XhmrmsbjData {
             v.可选模块[i] = 选中模块;
           }
         }
+        updateMokuaiItems(v.可选模块, typesInfo, true);
         this.setSelectedMokuai(v, 选中模块, true);
       }
     }

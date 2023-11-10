@@ -1,7 +1,7 @@
 import {Component, Inject} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {isBetween} from "@lucilor/utils";
 import {BancaiCadExtend} from "@views/select-bancai/select-bancai.types";
-import {isBetween} from "packages/utils/lib";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
