@@ -6,7 +6,7 @@ import {imgLoading, timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-data-transform";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
-import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
+import {CadData, CadEntities, CadEventCallBack, CadLine} from "@lucilor/cad-viewer";
 import {downloadByString, Matrix, ObjectOf, Point} from "@lucilor/utils";
 import {ContextMenu} from "@mixins/context-menu.mixin";
 import {Subscribed} from "@mixins/subscribed.mixin";
@@ -410,6 +410,34 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
       if (yes) {
         const resData = await this.dataService.uploadDxf(file);
         if (resData) {
+          const lines = resData.entities.line;
+          const groupedLines: CadLine[][] = [];
+          const isLinesDepulicate = (e1: CadLine, e2: CadLine) => {
+            if (e1.start.equals(e2.start) && e1.end.equals(e2.end)) {
+              return true;
+            } else if (e1.start.equals(e2.end) && e1.end.equals(e2.start)) {
+              return true;
+            }
+            return false;
+          };
+          const toRemove: string[] = [];
+          for (const e of lines) {
+            if (groupedLines.length > 0) {
+              const group = groupedLines.find((e2) => e2[0] && isLinesDepulicate(e, e2[0]));
+              if (group) {
+                group.push(e);
+                toRemove.push(e.id);
+              } else {
+                groupedLines.push([e]);
+              }
+            } else {
+              groupedLines.push([e]);
+            }
+          }
+          if (toRemove.length > 0 && (await this.message.confirm("存在重复线，是否自动清理？"))) {
+            resData.entities.line = resData.entities.line.filter((e) => !toRemove.includes(e.id));
+          }
+
           if (mainCad) {
             const data1 = new CadData();
             data1.entities = data.entities;
