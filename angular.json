@@ -89,7 +89,7 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "ng-cad2:build",
+            "buildTarget": "ng-cad2:build",
             "ssl": true,
             "sslCert": "ssl/localhost.crt",
             "sslKey": "ssl/localhost.key",
@@ -99,18 +99,18 @@
         "serve-e2e": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "ng-cad2:build"
+            "buildTarget": "ng-cad2:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "ng-cad2:build:production"
+              "buildTarget": "ng-cad2:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ng-cad2:build"
+            "buildTarget": "ng-cad2:build"
           }
         },
         "test": {
