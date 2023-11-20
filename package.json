@@ -44,7 +44,7 @@
     "color": "^4.2.3",
     "csstype": "^3.1.2",
     "highlight.js": "^11.9.0",
-    "jsbarcode": "^3.11.5",
+    "jsbarcode": "^3.11.6",
     "jsoneditor": "^9.10.4",
     "lodash": "^4.17.21",
     "luxon": "^3.4.4",
