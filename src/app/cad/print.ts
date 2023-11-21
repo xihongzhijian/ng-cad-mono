@@ -19,7 +19,19 @@ import {
   FontStyle,
   setLinesLength
 } from "@lucilor/cad-viewer";
-import {getDPI, getImageDataUrl, isBetween, isNearZero, loadImage, Matrix, ObjectOf, Point, Rectangle, timeout} from "@lucilor/utils";
+import {
+  getDPI,
+  getImageDataUrl,
+  isBetween,
+  isNearZero,
+  isTypeOf,
+  loadImage,
+  Matrix,
+  ObjectOf,
+  Point,
+  Rectangle,
+  timeout
+} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {cloneDeep, intersection} from "lodash";
 import {createPdf} from "pdfmake/build/pdfmake";
@@ -49,14 +61,6 @@ const findDesignPicsRectLines = (data: CadData, keyword: string, findLocator: bo
       hLines.push(e);
     }
   });
-  if (vLines.length < 1) {
-    throw new Error("模板没有垂直线");
-  }
-  if (hLines.length < 1) {
-    throw new Error("模板没有水平线");
-  }
-  vLines.sort((a, b) => a.start.x - b.start.x);
-  hLines.sort((a, b) => a.start.y - b.start.y);
   const result = {
     locator: null as CadMtext | null,
     rect,
@@ -65,13 +69,26 @@ const findDesignPicsRectLines = (data: CadData, keyword: string, findLocator: bo
       right: null as CadLine | null,
       bottom: null as CadLine | null,
       left: null as CadLine | null
-    }
+    },
+    errors: [] as string[]
   };
+  if (vLines.length < 1) {
+    result.errors.push("模板没有垂直线");
+  }
+  if (hLines.length < 1) {
+    result.errors.push("模板没有水平线");
+  }
+  if (result.errors.length > 0) {
+    return result;
+  }
+  vLines.sort((a, b) => a.start.x - b.start.x);
+  hLines.sort((a, b) => a.start.y - b.start.y);
 
   if (findLocator) {
     const locator = data.entities.mtext.find((e) => e.text === `#${keyword}#`);
     if (!locator) {
-      throw new Error(`没有找到${keyword}标识`);
+      result.errors.push("没有找到标识");
+      return result;
     }
     const {
       left: locatorLeft,
@@ -124,7 +141,8 @@ const findDesignPicsRectLines = (data: CadData, keyword: string, findLocator: bo
     result.lines.bottom = bottomLines.at(-1) || null;
     result.lines.left = leftLines.at(-1) || null;
     if (!result.lines.top || !result.lines.right || !result.lines.bottom || !result.lines.left) {
-      throw new Error(`${keyword}没有足够的线`, {});
+      result.errors.push("没有足够的线");
+      return result;
     }
     rect.left = result.lines.left.minX;
     rect.right = result.lines.right.maxX;
@@ -138,7 +156,8 @@ const findDesignPicsRectLines = (data: CadData, keyword: string, findLocator: bo
     const vLinesDx = vLines2[vLines2.length - 1].start.x - vLines2[0].start.x;
     const hLines2 = hLines.filter((e) => isNearZero(e.length - vLinesDx, 1)).reverse();
     if (hLines2.length < 1) {
-      throw new Error("模板没有合适的线");
+      result.errors.push("模板没有合适的线");
+      return result;
     }
     for (let i = 0; i < hLines2.length - 1; i++) {
       const l1 = hLines2[i];
@@ -718,10 +737,109 @@ const getUnfoldCadViewers = async (
   return [unfoldCadImg];
 };
 
+const getBomTableImgs = async (bomTable: BomTable, config: CadViewerConfig, size: [number, number]) => {
+  const viewer = new CadViewer(new CadData(), config);
+  const rowSpace = 5;
+  const pointer: [number, number] = [0, size[1]];
+  const title = new CadMtext({insert: pointer, anchor: [0, 0]});
+  title.text = bomTable.title;
+  title.fontStyle.size = 20;
+  await viewer.add(title);
+  pointer[1] -= title.boundingRect.height + rowSpace;
+
+  const imgs: string[] = [];
+  const nextPage = async (finished?: boolean) => {
+    const baseLine = new CadLine({start: [0, 0], end: size});
+    baseLine.visible = false;
+    baseLine.calcBoundingRectForce = true;
+    await viewer.add(baseLine);
+    viewer.center();
+    imgs.push(await viewer.toDataURL());
+    if (finished) {
+      viewer.destroy();
+    } else {
+      viewer.reset(new CadData());
+      pointer[0] = 0;
+      pointer[1] = size[1];
+    }
+  };
+
+  const colWidths: number[] = [];
+  for (const col of bomTable.cols) {
+    colWidths.push(col.width || 0);
+  }
+  const sum = colWidths.reduce((a, b) => a + b, 0);
+  const zeros = colWidths.filter((v) => v === 0).length;
+  const otherWidth = (size[0] - sum) / zeros;
+  for (const [i, w] of colWidths.entries()) {
+    if (w === 0) {
+      colWidths[i] = otherWidth;
+    }
+  }
+  const getText = (value: any) => {
+    if (isTypeOf(value, ["null", "undefined"])) {
+      return "";
+    } else if (isTypeOf(value, "string")) {
+      return value;
+    } else {
+      return String(value);
+    }
+  };
+  const addRow = async (addDivider: boolean, rowData?: ObjectOf<any>) => {
+    let maxTextHeight = 0;
+    let emptyNext = false;
+    for (const [i, col] of bomTable.cols.entries()) {
+      const mtext = new CadMtext({insert: pointer, anchor: [0, 0]});
+      if (emptyNext) {
+        mtext.text = "";
+      } else if (rowData) {
+        if (col.link) {
+          mtext.text = getText(col.link[rowData[col.field]]);
+        } else {
+          mtext.text = getText(rowData[col.field]);
+        }
+      } else {
+        mtext.text = col.label || col.field;
+      }
+      mtext.fontStyle.size = 12;
+      await viewer.add(mtext);
+      const rect = mtext.boundingRect;
+      emptyNext = rect.width > colWidths[i];
+      maxTextHeight = Math.max(maxTextHeight, rect.height);
+      pointer[0] += colWidths[i];
+    }
+    if (pointer[1] < 0) {
+      await nextPage();
+    } else if (addDivider) {
+      const y = pointer[1] + rowSpace / 2;
+      const divider = new CadLine({start: [0, y], end: [size[0], y]});
+      divider.setColor("gray");
+      await viewer.add(divider);
+    }
+    pointer[0] = 0;
+    pointer[1] -= maxTextHeight + rowSpace;
+  };
+  await addRow(false);
+  for (const rowData of bomTable.data) {
+    await addRow(true, rowData);
+  }
+
+  await nextPage(true);
+  return imgs;
+};
+
 export interface PrintCadsParamsOrder {
   materialResult?: Formulas;
   unfold?: {cad: CadData; offsetStrs: string[]}[];
+  bomTable?: BomTable;
 }
+
+export interface BomTable {
+  title: string;
+  data: ObjectOf<any>[];
+  cols: {field: string; label?: string; width?: number; link?: ObjectOf<string>}[];
+}
+
 export interface PrintCadsParams {
   cads: CadData[];
   projectConfig: ProjectConfig;
@@ -836,22 +954,13 @@ export const printCads = async (params: PrintCadsParams) => {
           currUrls = urls[0];
           isOwn = false;
         }
-        let result: ReturnType<typeof findDesignPicsRectLines> | undefined;
-        try {
-          result = findDesignPicsRectLines(data, keyword, showSmall);
-        } catch (error) {
-          if (error instanceof Error) {
-            console.warn(error.message);
-          } else {
-            console.warn(error);
-          }
-        }
-        if (result?.locator) {
+        const result = findDesignPicsRectLines(data, keyword, showSmall);
+        if (result.locator) {
           result.locator.visible = false;
           cad.render(result.locator);
         }
         if (Array.isArray(currUrls) && currUrls.length > 0) {
-          for (const e of Object.values(result?.lines || {})) {
+          for (const e of Object.values(result.lines)) {
             if (e) {
               e.visible = true;
               cad.render(e);
@@ -876,7 +985,7 @@ export const printCads = async (params: PrintCadsParams) => {
               })
             );
           };
-          if (result && showSmall) {
+          if (result.errors.length < 1 && showSmall) {
             const cadImages = await drawDesignPics(data, keyword, currUrls.length, true, result.rect, styles);
             if (cadImages) {
               await setImageUrl(cadImages);
@@ -925,7 +1034,7 @@ export const printCads = async (params: PrintCadsParams) => {
               });
             }
           }
-        } else if (result && result.rect.width > 0 && result.rect.height > 0) {
+        } else if (result.errors.length < 1 && result.rect.width > 0 && result.rect.height > 0) {
           const ids: string[] = [];
           for (const e of Object.values(result.lines)) {
             if (e) {
@@ -949,11 +1058,20 @@ export const printCads = async (params: PrintCadsParams) => {
       content2.push({image: img2, width: localWidth, height: localHeight});
     }
 
-    const unfold = params.orders?.[i]?.unfold;
+    const cadConfig = cad.getConfig();
+    const unfold = params.orders?.[i]?.unfold && false;
     if (unfold) {
-      const unfoldImgs = await getUnfoldCadViewers(params, cad.getConfig(), [localWidth, localHeight], i, unfold);
+      const unfoldImgs = await getUnfoldCadViewers(params, cadConfig, [localWidth, localHeight], i, unfold);
       for (const unfoldImg of unfoldImgs) {
         content2.push({image: unfoldImg, width: localWidth, height: localHeight});
+      }
+    }
+
+    const bomTable = params.orders?.[i]?.bomTable;
+    if (bomTable) {
+      const imgs = await getBomTableImgs(bomTable, cadConfig, [localWidth, localHeight]);
+      for (const image of imgs) {
+        content2.push({image, width: localWidth, height: localHeight});
       }
     }
   }

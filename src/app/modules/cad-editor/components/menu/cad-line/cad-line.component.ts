@@ -215,7 +215,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
             entity.start.copy(worldPoints[0]);
             entity.end.copy(worldPoints[1]);
             cad.data.entities.add(entity);
-            cad.remove(oldEntity).render(entity);
+            await cad.remove(oldEntity);
             entity.selected = false;
             this.lineDrawing = null;
             this.drawLine();

@@ -720,7 +720,7 @@ export class CadViewer extends EventEmitter {
     return this.unselect(this.data.getAllEntities());
   }
 
-  remove(entities?: CadEntities | CadEntity | CadEntity[]): this {
+  async remove(entities?: CadEntities | CadEntity | CadEntity[]): Promise<this> {
     if (!entities) {
       return this;
     } else if (entities instanceof CadEntity) {
@@ -748,19 +748,19 @@ export class CadViewer extends EventEmitter {
       });
       this.data.separate(data);
       this.emit("entitiesremove", entities);
-      this.render();
+      await this.render();
     }
     return this;
   }
 
-  add(entities?: CadEntities | CadEntity | CadEntity[]): this {
+  async add(entities?: CadEntities | CadEntity | CadEntity[]): Promise<this> {
     if (!entities) {
       return this;
     } else if (entities instanceof CadEntity) {
       return this.add(new CadEntities().add(entities));
     }
     entities.forEach((e) => this.data.entities.add(e));
-    this.render(entities);
+    await this.render(entities);
     if (entities instanceof CadEntities) {
       this.emit("entitiesadd", entities);
     } else {
