@@ -1091,6 +1091,8 @@ export const printCads = async (params: PrintCadsParams) => {
         title: "打印CAD",
         author: "Lucilor",
         subject: "Lucilor",
+        creator: "Lucilor",
+        producer: "Lucilor",
         creationDate: now,
         modDate: now,
         keywords: "cad print",
