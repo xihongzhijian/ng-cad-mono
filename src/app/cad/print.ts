@@ -1059,7 +1059,7 @@ export const printCads = async (params: PrintCadsParams) => {
     }
 
     const cadConfig = cad.getConfig();
-    const unfold = params.orders?.[i]?.unfold && false;
+    const unfold = params.orders?.[i]?.unfold;
     if (unfold) {
       const unfoldImgs = await getUnfoldCadViewers(params, cadConfig, [localWidth, localHeight], i, unfold);
       for (const unfoldImg of unfoldImgs) {
