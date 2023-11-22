@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
 
     steps:
       - uses: actions/checkout@v3
@@ -24,6 +24,7 @@ jobs:
         env:
           SERVER_TOKEN: ${{ secrets.SERVER_TOKEN }}
         run: |
+          corepack enable
           yarn install
           yarn build:packages
           yarn build
