@@ -417,6 +417,9 @@ export const configCadDataForPrint = async (
     if ((e.fontStyle.size || -1) < 24) {
       e.fontStyle.weight = "bolder";
     }
+    if ([" ×  = 1", "=1"].includes(e.text)) {
+      e.visible = false;
+    }
 
     // * 自动换行
     const wrapedTextMatch = text.match(/^(花件信息|自动换行)/);
