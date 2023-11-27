@@ -4309,10 +4309,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/grecaptcha@npm:^3.0.3":
-  version: 3.0.4
-  resolution: "@types/grecaptcha@npm:3.0.4"
-  checksum: 2614957ae87f3b4a27dec9469dc3ed73db20207c99c4701a5cb19c8b17ff9b7f385964760f5873d8f3a30789464f0afb2024631aa8b932ca8ead2f5e1f63c57d
+"@types/grecaptcha@npm:^3.0.7":
+  version: 3.0.7
+  resolution: "@types/grecaptcha@npm:3.0.7"
+  checksum: 5de9364cf73b6156a5ec8235c1a63eb71b749b108caa0c4866a9d4234127af0ca05cff11b50deee1fa5017bf5bc3e69836d851359b78883f211e6fb63ccd8119
   languageName: node
   linkType: hard
 
@@ -12710,7 +12710,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     luxon: "npm:^3.4.4"
     md5: "npm:^2.3.0"
-    ng-recaptcha: "npm:^12.0.2"
+    ng-recaptcha: "npm:^13.2.1"
     ngx-color: "npm:^9.0.0"
     ngx-infinite-scroll: "npm:^17.0.0"
     ngx-quill: "npm:^24.0.2"
@@ -12731,15 +12731,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"ng-recaptcha@npm:^12.0.2":
-  version: 12.0.2
-  resolution: "ng-recaptcha@npm:12.0.2"
+"ng-recaptcha@npm:^13.2.1":
+  version: 13.2.1
+  resolution: "ng-recaptcha@npm:13.2.1"
   dependencies:
-    "@types/grecaptcha": "npm:^3.0.3"
+    "@types/grecaptcha": "npm:^3.0.7"
     tslib: "npm:^2.2.0"
   peerDependencies:
-    "@angular/core": ^16.0.0
-  checksum: cd9cae4d00c460f745fc4b73efdde97e0e7acb3f6cb25f5f1e34018a01582d98c271ffa51408912c3d1be2cca591d13d55d9e69b762647074f6b5b09a0f862e3
+    "@angular/core": ^17.0.0
+  checksum: ac29bdb1ef832408a1da9333e905d59e8345f11b1639459ee043c8120ee4bab28d5efadaf56d04a7e9484a622a4b76ffba2c6fe8e12ab89d291bd29fa9fc0f47
   languageName: node
   linkType: hard
 
