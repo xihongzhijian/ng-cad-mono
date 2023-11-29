@@ -1,8 +1,8 @@
 import {Injectable, Injector} from "@angular/core";
 import {getFilepathUrl} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
-import {CadData} from "@lucilor/cad-viewer";
-import {dataURLtoBlob, downloadByUrl, DownloadOptions, ObjectOf} from "@lucilor/utils";
+import {CadData, CadMtextInfo} from "@lucilor/cad-viewer";
+import {dataURLtoBlob, downloadByUrl, DownloadOptions, isTypeOf, ObjectOf} from "@lucilor/utils";
 import {
   BancaiCad,
   BancaiList,
@@ -83,8 +83,44 @@ export class CadDataService extends HttpService {
     return result;
   }
 
-  async setCad(params: SetCadParams, options?: HttpOptions): Promise<CadData | null> {
-    const cadData = params.cadData instanceof CadData ? params.cadData.export() : params.cadData;
+  exportCadData(data: CadData, hideLineLength: boolean) {
+    const exportData = data.export();
+    const count = data.entities.line.length + data.entities.arc.length;
+    for (const type of ["line", "arc"]) {
+      const entities = exportData.entities?.[type];
+      if (!isTypeOf(entities, "object")) {
+        continue;
+      }
+      for (const id in entities) {
+        const e = entities[id];
+        const mtexts = e.children?.mtext;
+        if (mtexts) {
+          for (const mtextId of Object.keys(mtexts)) {
+            const mtext = mtexts[mtextId];
+            const {isLengthText, isGongshiText, isBianhuazhiText} = (mtext.info || {}) as CadMtextInfo;
+            if (isGongshiText || isBianhuazhiText) {
+              delete mtexts[mtextId];
+            } else if (isLengthText) {
+              if (count > 30 && (hideLineLength || e.hideLength)) {
+                delete mtexts[mtextId];
+              } else {
+                const keys = ["type", "info", "insert", "lineweight"];
+                for (const key of Object.keys(mtext)) {
+                  if (!keys.includes(key)) {
+                    delete mtext[key];
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return exportData;
+  }
+
+  async setCad(params: SetCadParams, hideLineLength: boolean, options?: HttpOptions): Promise<CadData | null> {
+    const cadData = this.exportCadData(params.cadData, hideLineLength);
     const data = {...params, cadData};
     const response = await this.post<any>("peijian/cad/setCad", data, options);
     if (response && response.data) {
@@ -97,7 +133,7 @@ export class CadDataService extends HttpService {
             entities.image = entities.image.filter((e) => !e.info.convertCadToImage);
           });
         }
-        return await this.setCad({...params, restore}, options);
+        return await this.setCad({...params, restore}, hideLineLength, options);
       } else {
         this.cadImgCache.remove(resData.id);
         return new CadData(resData);

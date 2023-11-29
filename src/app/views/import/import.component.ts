@@ -245,6 +245,7 @@ export class ImportComponent extends Utils() implements OnInit {
           force: true,
           importConfig: {pruneLines}
         },
+        true,
         {silent: true}
       );
       this.msg = `正在导入dxf数据(${i + 1}/${totalCad})`;

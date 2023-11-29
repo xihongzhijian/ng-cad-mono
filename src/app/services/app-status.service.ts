@@ -29,7 +29,7 @@ import {
   PointsMap,
   setLinesLength
 } from "@lucilor/cad-viewer";
-import {ObjectOf, timeout} from "@lucilor/utils";
+import {FileSizeOptions, getFileSize, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
@@ -293,8 +293,9 @@ export class AppStatusService {
     if (!loaderId) {
       loaderId = spinner.defaultLoaderId;
     }
+    const {hideLineLength} = this.config.getConfig();
     spinner.show(loaderId, {text: `正在保存CAD: ${data.name}`});
-    resData = await dataService.setCad({collection, cadData: data, force: true});
+    resData = await dataService.setCad({collection, cadData: data, force: true}, hideLineLength);
     if (resData) {
       this.saveCadEnd$.next();
       await this.openCad({
@@ -436,6 +437,38 @@ export class AppStatusService {
       this.zhewanLengths$.next(data);
       this._isZhewanLengthsFetched = true;
     }
+  }
+
+  exportSelected() {
+    const {hideLineLength} = this.config.getConfig();
+    const entities = this.cad.selected();
+    const data = new CadData();
+    data.entities = entities;
+    return this.dataService.exportCadData(data, hideLineLength).entities;
+  }
+
+  exportCadData() {
+    const {hideLineLength} = this.config.getConfig();
+    return this.dataService.exportCadData(this.cad.data, hideLineLength);
+  }
+
+  getItemSize(item: any, options?: FileSizeOptions) {
+    if (isTypeOf(item, "undefined")) {
+      return getFileSize(0, options);
+    }
+    if (isTypeOf(item, "string")) {
+      return getFileSize(item.length, options);
+    }
+    const num = JSON.stringify(item).length;
+    return getFileSize(num, options);
+  }
+
+  getCadSize(options?: FileSizeOptions) {
+    return this.getItemSize(this.exportCadData(), options);
+  }
+
+  getSelectedSize(options?: FileSizeOptions) {
+    return this.getItemSize(this.exportSelected(), options);
   }
 }
 

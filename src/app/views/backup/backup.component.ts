@@ -137,7 +137,7 @@ export class BackupComponent implements AfterViewInit {
       return;
     }
     this.spinner.show(this.loaderId, {text: "正在恢复备份"});
-    await this.dataService.setCad({collection: "cad", cadData: this.data[i].data, force: true});
+    await this.dataService.setCad({collection: "cad", cadData: this.data[i].data, force: true}, true);
     this.spinner.hide(this.loaderId);
   }
 
