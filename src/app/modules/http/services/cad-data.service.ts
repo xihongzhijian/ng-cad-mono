@@ -104,7 +104,7 @@ export class CadDataService extends HttpService {
               if (count > 30 && (hideLineLength || e.hideLength)) {
                 delete mtexts[mtextId];
               } else {
-                const keys = ["type", "info", "insert", "lineweight"];
+                const keys = ["type", "info", "insert", "lineweight", "anchor"];
                 for (const key of Object.keys(mtext)) {
                   if (!keys.includes(key)) {
                     delete mtext[key];
