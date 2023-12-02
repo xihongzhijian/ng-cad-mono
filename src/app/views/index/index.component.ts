@@ -1,6 +1,5 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
-import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {log} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -72,11 +71,9 @@ export class IndexComponent implements OnInit {
       {name: "data", desc: "CAD数据", attrs: {get: () => cad.data}},
       {name: "dataEx", desc: "CAD的导出数据", attrs: {get: () => cad.data.export()}},
       {name: "selected", desc: "当前选中的所有实体", attrs: {get: () => cad.selected()}},
-      {name: "selected0", desc: "当前选中的第一个实体", attrs: {get: () => cad.selected().toArray()[0]}}
+      {name: "selected0", desc: "当前选中的第一个实体", attrs: {get: () => cad.selected().toArray()[0]}},
+      {name: "status", desc: "状态管理实例", attrs: {value: this.status}}
     ];
-    if (!environment.production) {
-      globalVars.push({name: "status", desc: "状态管理实例", attrs: {value: this.status}});
-    }
     console.groupCollapsed("全局变量");
     const maxLen = globalVars.reduce((prev, curr) => Math.max(prev, curr.name.length), 0);
     globalVars.forEach((v) => {
