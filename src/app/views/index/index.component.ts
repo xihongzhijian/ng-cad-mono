@@ -69,9 +69,23 @@ export class IndexComponent implements OnInit {
       {name: "getConfig", desc: "获取当前配置", attrs: {get: () => this.config.getConfig.bind(this.config)}},
       {name: "setConfig", desc: "设置当前配置", attrs: {get: () => this.config.setConfig.bind(this.config)}},
       {name: "data", desc: "CAD数据", attrs: {get: () => cad.data}},
-      {name: "dataEx", desc: "CAD的导出数据", attrs: {get: () => cad.data.export()}},
+      {name: "dataEx", desc: "CAD的导出数据", attrs: {get: () => this.status.exportCadData()}},
       {name: "selected", desc: "当前选中的所有实体", attrs: {get: () => cad.selected()}},
+      {name: "selectedEx", desc: "当前选中的所有实体的导出数据", attrs: {get: () => this.status.exportSelected()}},
       {name: "selected0", desc: "当前选中的第一个实体", attrs: {get: () => cad.selected().toArray()[0]}},
+      {
+        name: "selected0Ex",
+        desc: "当前选中的第一个实体的导出数据",
+        attrs: {
+          get: () => {
+            const entities = this.status.exportSelected();
+            if (entities) {
+              return Object.values(Object.values(entities)[0] as any)[0];
+            }
+            return entities;
+          }
+        }
+      },
       {name: "status", desc: "状态管理实例", attrs: {value: this.status}}
     ];
     console.groupCollapsed("全局变量");
