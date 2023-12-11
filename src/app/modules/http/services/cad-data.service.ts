@@ -1,5 +1,4 @@
 import {Injectable, Injector} from "@angular/core";
-import {getFilepathUrl} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {CadData, CadMtextInfo} from "@lucilor/cad-viewer";
 import {dataURLtoBlob, downloadByUrl, DownloadOptions, isTypeOf, ObjectOf} from "@lucilor/utils";
@@ -204,7 +203,7 @@ export class CadDataService extends HttpService {
     return null;
   }
 
-  async getOptions(params: GetOptionsParams): Promise<OptionsData> {
+  async getOptions(params: GetOptionsParams): Promise<OptionsData | null> {
     const postData: ObjectOf<any> = {...params};
     if (params.data instanceof CadData) {
       delete postData.data;
@@ -215,17 +214,16 @@ export class CadDataService extends HttpService {
       postData.tiaojian = exportData.conditions;
     }
     const response = await this.post<any>("ngcad/getOptions", postData);
-    if (response && response.data) {
-      const field = params.field || "mingzi";
+    const result = this.getResponseDataAndCount(response);
+    if (result) {
       return {
-        data: (response.data as any[]).map((v: any) => {
-          const img = getFilepathUrl(v.xiaotu) || null;
-          return {vid: v.vid, name: v[field], img, disabled: !!v.tingyong};
+        data: (result.data as any[]).map((v: any) => {
+          return {vid: v.vid, name: v.mingzi, img: v.xiaotu, disabled: !!v.tingyong};
         }),
-        count: response.count || 0
+        count: result.count || 0
       };
     }
-    return {data: [], count: 0};
+    return null;
   }
 
   async removeBackup(name: string, time: number) {

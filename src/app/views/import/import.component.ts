@@ -466,7 +466,7 @@ export class ImportComponent extends Utils() implements OnInit {
       }
       if (this._optionsCache[optionKey] === undefined) {
         const optionInfo = await this.dataService.getOptions({name: optionKey});
-        this._optionsCache[optionKey] = optionInfo.data.map((v) => v.name);
+        this._optionsCache[optionKey] = (optionInfo?.data || []).map((v) => v.name);
       }
       const optionsNotExist = difference(optionValues, this._optionsCache[optionKey], ["所有", "不选", "不选无"]);
       if (optionsNotExist.length > 0) {

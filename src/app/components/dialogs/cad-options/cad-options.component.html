@@ -1,12 +1,10 @@
-<form>
-  <mat-form-field>
-    <mat-label>搜索选项</mat-label>
-    <input name="search" matInput type="search" (keydown)="searchKeydown($event)" [(ngModel)]="searchInput" />
-    <button mat-icon-button class="search-button" matSuffix (click)="search()">
-      <mat-icon>search</mat-icon>
-    </button>
-  </mat-form-field>
-</form>
+<div class="btn-group">
+  <app-input class="flex-110" [info]="searchInputInfo"></app-input>
+  <ng-container *ngIf="data.multi">
+    <button mat-raised-button color="primary" (click)="selectAll()">当前页全选</button>
+    <button mat-raised-button color="primary" (click)="selectReverse()">当前页反选</button>
+  </ng-container>
+</div>
 
 <ng-scrollbar class="content">
   <app-spinner [id]="loaderIds.optionsLoader"></app-spinner>
@@ -16,7 +14,7 @@
         {{ item.name }}
       </mat-checkbox>
       <br />
-      <app-image *ngIf="item.img" [src]="item.img" (click)="onCheckboxChange(item)"></app-image>
+      <app-image *ngIf="item.img" [src]="item.img" [prefix]="filePathUrl" (click)="onCheckboxChange(item)"></app-image>
     </div>
   </div>
 </ng-scrollbar>

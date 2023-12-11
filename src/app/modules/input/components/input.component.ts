@@ -498,7 +498,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (!Array.isArray(checked)) {
       checked = [];
     }
-    const dialogData: CadOptionsInput = {data, name: optionKey || "", multi: !isSingleOption, field: optionField, options};
+    const fields = optionField ? [optionField] : [];
+    const dialogData: CadOptionsInput = {data, name: optionKey || "", multi: !isSingleOption, fields, options};
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));
     } else {

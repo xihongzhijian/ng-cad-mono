@@ -249,4 +249,13 @@ export class HttpService {
     }
     return null;
   }
+
+  getResponseDataAndCount<T>(response: CustomResponse<T> | null, ignoreCode?: boolean) {
+    if (response && (ignoreCode || response.code === 0)) {
+      const data = response.data || null;
+      const count = response.count || 0;
+      return {data, count};
+    }
+    return null;
+  }
 }

@@ -2,10 +2,12 @@ import {AfterViewInit, Component, Inject, ViewChild} from "@angular/core";
 import {MatCheckboxChange} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatPaginator, PageEvent} from "@angular/material/paginator";
+import {filePathUrl} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsParams, OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {InputInfo} from "@modules/input/components/input.types";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {lastValueFrom} from "rxjs";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -16,14 +18,24 @@ import {getOpenDialogFunc} from "../dialog.common";
   styleUrls: ["./cad-options.component.scss"]
 })
 export class CadOptionsComponent implements AfterViewInit {
-  pageData: (OptionsData["data"][0] & {checked: boolean})[] = [];
-  searchInput = "";
+  pageData: (OptionsData["data"][number] & {checked: boolean})[] = [];
   searchValue = "";
   length = 100;
   pageSizeOptions = [50, 100, 200, 500];
   pageSize = 50;
-  checkedItems: string[] = [];
+  checkedIdsCurr = new Set<number>();
+  checkedIdsOthers = new Set<number>();
   loaderIds = {optionsLoader: "cadOptions", submitLoaderId: "cadOptionsSubmit"};
+  searchInputInfo: InputInfo<this> = {
+    label: "搜索",
+    type: "string",
+    autoFocus: true,
+    model: {data: this, key: "searchValue"},
+    onChange: () => {
+      this.search();
+    }
+  };
+  filePathUrl = filePathUrl;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
   constructor(
     public dialogRef: MatDialogRef<CadOptionsComponent, CadOptionsOutput>,
@@ -32,7 +44,6 @@ export class CadOptionsComponent implements AfterViewInit {
     private spinner: SpinnerService
   ) {
     this.data.multi = this.data.multi !== false;
-    this.checkedItems = this.data.checkedItems?.slice() || [];
   }
 
   async ngAfterViewInit() {
@@ -50,11 +61,14 @@ export class CadOptionsComponent implements AfterViewInit {
         data: this.data.data,
         xinghao: this.data.xinghao,
         includeTingyong: true,
-        values: this.checkedItems,
-        field: this.data.field
+        values: Array.from(this.checkedIdsCurr).concat(Array.from(this.checkedIdsOthers)) as any,
+        fields: ["vid"]
       },
       [this.loaderIds.submitLoaderId]
     );
+    if (!data) {
+      return;
+    }
     this.dialogRef.close(data.data.map((v) => ({vid: v.vid, mingzi: v.name})));
   }
 
@@ -72,7 +86,6 @@ export class CadOptionsComponent implements AfterViewInit {
     if (!this.paginator) {
       return;
     }
-    this.searchValue = this.searchInput;
     this.paginator.pageIndex = 0;
     this.getData(this.paginator.pageIndex + 1);
   }
@@ -82,7 +95,7 @@ export class CadOptionsComponent implements AfterViewInit {
   }
 
   async getOptions(params: GetOptionsParams, loader: Parameters<typeof this.spinner.show>) {
-    let data: OptionsData;
+    let data: OptionsData | null;
     if (Array.isArray(this.data.options)) {
       const options = this.data.options.filter((v) => {
         if (params.values && !params.values.includes(v.name)) {
@@ -100,12 +113,14 @@ export class CadOptionsComponent implements AfterViewInit {
   }
 
   async getData(page: number) {
-    this.pageData.forEach(({checked, name}) => {
-      if (checked && !this.checkedItems.includes(name)) {
-        this.checkedItems.push(name);
+    const {checkedIdsCurr, checkedIdsOthers, pageData} = this;
+    checkedIdsCurr.clear();
+    for (const {vid, checked} of pageData) {
+      if (checked) {
+        checkedIdsOthers.add(vid);
       }
-    });
-    const data = await this.getOptions(
+    }
+    const data = (await this.getOptions(
       {
         name: this.data.name,
         search: this.searchValue,
@@ -114,23 +129,30 @@ export class CadOptionsComponent implements AfterViewInit {
         data: this.data.data,
         xinghao: this.data.xinghao,
         filter: this.data.filter,
-        field: this.data.field
+        fields: this.data.fields
       },
       [this.loaderIds.optionsLoader, {text: "获取CAD数据"}]
-    );
+    )) || {data: [], count: 0};
     this.length = data.count;
     this.pageData = data.data.map((v) => {
-      let checked = this.checkedItems.includes(v.name);
-      if (this.data.checkedVids && this.data.checkedVids.includes(v.vid)) {
+      let checked = false;
+      if (this.data.checkedItems?.includes(v.name)) {
         checked = true;
+      } else if (this.data.checkedVids?.includes(v.vid)) {
+        checked = true;
+      }
+      if (checked) {
+        checkedIdsCurr.add(v.vid);
+        checkedIdsOthers.delete(v.vid);
       }
       return {...v, checked};
     });
     return data;
   }
 
-  onCheckboxChange(item: CadOptionsComponent["pageData"][0], event?: MatCheckboxChange) {
-    if (!this.data.multi) {
+  onCheckboxChange(item: CadOptionsComponent["pageData"][number], event?: MatCheckboxChange) {
+    const {multi} = this.data;
+    if (!multi) {
       this.pageData.forEach((v) => (v.checked = false));
     }
     if (event) {
@@ -138,16 +160,28 @@ export class CadOptionsComponent implements AfterViewInit {
     } else {
       item.checked = !item.checked;
     }
-    const index = this.checkedItems.findIndex((v) => v === item.name);
-    if (item.checked && index < 0) {
-      if (this.data.multi) {
-        this.checkedItems.push(item.name);
-      } else {
-        this.checkedItems = [item.name];
+    const {checkedIdsCurr} = this;
+    if (item.checked) {
+      if (!multi) {
+        checkedIdsCurr.clear();
+      }
+      checkedIdsCurr.add(item.vid);
+    } else {
+      checkedIdsCurr.delete(item.vid);
+    }
+  }
+
+  selectAll() {
+    for (const item of this.pageData) {
+      if (!item.checked) {
+        this.onCheckboxChange(item);
       }
     }
-    if (!item.checked && index >= 0) {
-      this.checkedItems.splice(index, 1);
+  }
+
+  selectReverse() {
+    for (const item of this.pageData) {
+      this.onCheckboxChange(item);
     }
   }
 }
@@ -165,7 +199,7 @@ export interface CadOptionsInput {
   multi?: boolean;
   xinghao?: string;
   filter?: ObjectOf<any>;
-  field?: string;
+  fields?: string[];
   options?: OptionsDataData[];
 }
 
