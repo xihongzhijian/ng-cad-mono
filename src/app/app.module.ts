@@ -89,7 +89,7 @@ import {SuanliaoComponent} from "@views/suanliao/suanliao.component";
 import {XhmrmsbjMokuaisComponent} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
 import {XinghaoOverviewComponent} from "@views/xinghao-overview/xinghao-overview.component";
-import {RECAPTCHA_BASE_URL, RECAPTCHA_V3_SITE_KEY, RecaptchaV3Module} from "ng-recaptcha";
+import {RECAPTCHA_LOADER_OPTIONS, RECAPTCHA_V3_SITE_KEY, RecaptchaLoaderOptions, RecaptchaV3Module} from "ng-recaptcha";
 import {ColorChromeModule} from "ngx-color/chrome";
 import {ColorCircleModule} from "ngx-color/circle";
 import {InfiniteScrollModule} from "ngx-infinite-scroll";
@@ -252,7 +252,16 @@ const matFormFieldOptions: MatFormFieldDefaultOptions = {
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: matFormFieldOptions},
     {provide: MAT_DATE_LOCALE, useValue: "zh-CN"},
     {provide: RECAPTCHA_V3_SITE_KEY, useValue: "6Leil-0ZAAAAACnzpTud2QN5OuhJ10UyJJrUq70m"},
-    {provide: RECAPTCHA_BASE_URL, useValue: "https://recaptcha.net/recaptcha/api.js"}
+    {
+      provide: RECAPTCHA_LOADER_OPTIONS,
+      useValue: {
+        onBeforeLoad: () => {
+          return {
+            url: new URL("https://www.recaptcha.net/recaptcha/api.js")
+          };
+        }
+      } as RecaptchaLoaderOptions
+    }
   ],
   bootstrap: [AppComponent]
 })
