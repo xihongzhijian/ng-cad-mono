@@ -231,6 +231,9 @@ export class KlkwpzComponent implements AfterViewInit {
       } else {
         lineNames = [];
       }
+      if (!lineNames.includes("展开平板顶点定位")) {
+        lineNames.push("展开平板顶点定位");
+      }
       arr.push(
         {
           type: "group",
