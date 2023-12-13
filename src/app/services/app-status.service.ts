@@ -283,13 +283,14 @@ export class AppStatusService {
     const collection = this.collection$.value;
     let resData: CadData | null = null;
     let errMsg = this.validate(true)?.errors || [];
-    const blockError = "不能包含块实体";
+    const blockError = "不能包含块";
     if (errMsg.includes(blockError)) {
       const button = await message.button({content: blockError, buttons: ["删除块实体"]});
       if (button !== "删除块实体") {
         return null;
       }
       this.cad.data.blocks = {};
+      this.cad.data.entities.insert = [];
       errMsg = errMsg.filter((v) => v !== blockError);
     }
     if (errMsg.length > 0) {

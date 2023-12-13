@@ -148,8 +148,8 @@ export const validateCad = (data: CadData, noInfo?: boolean, tolerance = DEFAULT
       result.errors.push(`${intersectionKeysTranslate[key]}存在无效数据`);
     }
   }
-  if (!isEmpty(data.blocks)) {
-    result.errors.push("不能包含块实体");
+  if (!isEmpty(data.blocks) || data.entities.insert.length > 0) {
+    result.errors.push("不能包含块");
   }
   const linesResult = validateLines(data, noInfo, tolerance);
   for (const key in result) {
