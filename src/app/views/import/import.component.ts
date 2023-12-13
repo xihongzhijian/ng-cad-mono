@@ -11,7 +11,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
-import {difference} from "lodash";
+import {difference, isEmpty} from "lodash";
 import md5 from "md5";
 
 export type ImportComponentConfigName = "requireLineId" | "pruneLines" | "addUniqCode" | "dryRun";
@@ -486,6 +486,10 @@ export class ImportComponent extends Utils() implements OnInit {
     if (Array.isArray(data.info.errors)) {
       cad.errors = cad.errors.concat(data.info.errors);
       delete data.info.errors;
+    }
+
+    if (!isEmpty(data.blocks)) {
+      cad.errors.push("不能包含块实体");
     }
 
     const uniqCode = data.info.唯一码;

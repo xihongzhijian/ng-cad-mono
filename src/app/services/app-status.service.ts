@@ -282,7 +282,16 @@ export class AppStatusService {
     const {dataService, message, spinner} = this;
     const collection = this.collection$.value;
     let resData: CadData | null = null;
-    const errMsg = this.validate(true)?.errors || [];
+    let errMsg = this.validate(true)?.errors || [];
+    const blockError = "不能包含块实体";
+    if (errMsg.includes(blockError)) {
+      const button = await message.button({content: blockError, buttons: ["删除块实体"]});
+      if (button !== "删除块实体") {
+        return null;
+      }
+      this.cad.data.blocks = {};
+      errMsg = errMsg.filter((v) => v !== blockError);
+    }
     if (errMsg.length > 0) {
       const yes = await message.confirm("当前打开的CAD存在错误，是否继续保存？<br>" + errMsg.join("<br>"));
       if (!yes) {

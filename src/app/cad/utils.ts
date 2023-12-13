@@ -20,7 +20,7 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {DEFAULT_TOLERANCE, isBetween, Line, ObjectOf, Point} from "@lucilor/utils";
-import {difference} from "lodash";
+import {difference, isEmpty} from "lodash";
 
 export const reservedDimNames = ["前板宽", "后板宽", "小前板宽", "小后板宽", "骨架宽", "小骨架宽", "骨架中空宽", "小骨架中空宽"];
 
@@ -49,7 +49,12 @@ export const LINE_LIMIT = [0.01, 0.1] as const;
 export const validColors = ["#ffffff", "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#00ffff"] as const;
 export const validateLines = (data: CadData, noInfo?: boolean, tolerance = DEFAULT_TOLERANCE) => {
   const result: ValidateResult = {errors: [], errorLines: []};
-  if (isShiyitu(data) || data.type === "企料算料") {
+  data.entities.forEach((e) => {
+    if (e instanceof CadLineLike) {
+      delete e.info.errors;
+    }
+  });
+  if (isShiyitu(data) || ["企料算料", "孔"].includes(data.type)) {
     return result;
   }
   const lines = sortLines(data, tolerance);
@@ -74,6 +79,7 @@ export const validateLines = (data: CadData, noInfo?: boolean, tolerance = DEFAU
     let 刨坑起始线位置错误 = false;
     for (const [i, e] of v.entries()) {
       const {start, end} = e;
+      e.info.errors = [];
       const dx = Math.abs(start.x - end.x);
       const dy = Math.abs(start.y - end.y);
       if (e.刨坑起始线) {
@@ -141,6 +147,9 @@ export const validateCad = (data: CadData, noInfo?: boolean, tolerance = DEFAULT
     if (difference(idsToFind, idsAll).length > 0) {
       result.errors.push(`${intersectionKeysTranslate[key]}存在无效数据`);
     }
+  }
+  if (!isEmpty(data.blocks)) {
+    result.errors.push("不能包含块实体");
   }
   const linesResult = validateLines(data, noInfo, tolerance);
   for (const key in result) {
