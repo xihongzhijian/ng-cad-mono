@@ -598,6 +598,9 @@ export class ImportComponent extends Utils() implements OnInit {
         if (reservedDimNames.includes(e.mingzi)) {
           cad.errors.push(`标注名字不能是: ${e.mingzi}`);
         }
+        if (e.defPoints) {
+          cad.errors.push(`标注[${e.mingzi}]没有标到直线上`);
+        }
         if (isShiyitu(data)) {
           if (e.mingzi.includes("=")) {
             cad.errors.push("示意图标注不能有=号");

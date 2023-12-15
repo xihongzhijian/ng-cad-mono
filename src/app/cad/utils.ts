@@ -43,7 +43,7 @@ export interface ValidateResult {
 
 export const getCadTypes = (data: CadData) => [...data.type.split("*"), ...data.type2.split("*")].filter(Boolean);
 
-export const isShiyitu = (data: CadData) => getCadTypes(data).some((type) => /示意图|截面图/.test(type));
+export const isShiyitu = (data: CadData) => getCadTypes(data).some((type) => /示意图|截面图|铝型材|装配图/.test(type));
 
 export const LINE_LIMIT = [0.01, 0.1] as const;
 export const validColors = ["#ffffff", "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#00ffff"] as const;

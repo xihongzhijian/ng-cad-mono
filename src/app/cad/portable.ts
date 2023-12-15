@@ -435,17 +435,29 @@ export class CadPortable {
         data.info.isEmpty = true;
         return;
       }
-      data.entities.dimension.forEach((e) => {
-        if (e instanceof CadDimensionLinear) {
-          e.cad1 = data.name;
-          e.cad2 = data.name;
-        }
-      });
       if (toRemove >= 0) {
         data.entities.mtext.splice(toRemove, 1);
       }
 
-      data.info.vars = {};
+      const vars: ObjectOf<string> = {};
+      data.info.vars = vars;
+      const isShiyituCad = isShiyitu(data);
+      data.entities.forEach((e) => {
+        if (e instanceof CadDimensionLinear) {
+          e.cad1 = data.name;
+          e.cad2 = data.name;
+        }
+        if (e instanceof CadLineLike) {
+          const varName = e.info.varName;
+          if (varName) {
+            vars[varName] = e.id;
+          }
+          delete e.info.varName;
+          if (isShiyituCad) {
+            e.hideLength = true;
+          }
+        }
+      });
       for (const e of [...data.entities.line, ...data.entities.arc]) {
         const varName = e.info.varName;
         if (varName) {

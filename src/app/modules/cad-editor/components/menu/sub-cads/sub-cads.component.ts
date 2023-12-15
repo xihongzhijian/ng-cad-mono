@@ -5,8 +5,9 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {imgLoading, timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-data-transform";
 import {getCadPreview} from "@app/cad/cad-preview";
+import {isShiyitu} from "@app/cad/utils";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
-import {CadData, CadEntities, CadEventCallBack, CadLine} from "@lucilor/cad-viewer";
+import {CadData, CadDimensionLinear, CadEntities, CadEventCallBack, CadLine, CadLineLike} from "@lucilor/cad-viewer";
 import {downloadByString, Matrix, ObjectOf, Point} from "@lucilor/utils";
 import {ContextMenu} from "@mixins/context-menu.mixin";
 import {Subscribed} from "@mixins/subscribed.mixin";
@@ -436,6 +437,23 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
           }
           if (toRemove.length > 0 && (await this.message.confirm("存在重复线，是否自动清理？"))) {
             resData.entities.line = resData.entities.line.filter((e) => !toRemove.includes(e.id));
+          }
+          const isShiyituCad = isShiyitu(resData);
+          toRemove.length = 0;
+          resData.entities.forEach((e) => {
+            if (e instanceof CadDimensionLinear) {
+              if (e.defPoints) {
+                toRemove.push(e.id);
+              }
+            }
+            if (e instanceof CadLineLike) {
+              if (isShiyituCad) {
+                e.hideLength = true;
+              }
+            }
+          });
+          if (toRemove.length > 0 && (await this.message.confirm("存在错误标注，是否自动清理？"))) {
+            resData.entities.dimension = resData.entities.dimension.filter((e) => !toRemove.includes(e.id));
           }
 
           if (mainCad) {
