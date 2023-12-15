@@ -438,12 +438,12 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
           if (toRemove.length > 0 && (await this.message.confirm("存在重复线，是否自动清理？"))) {
             resData.entities.line = resData.entities.line.filter((e) => !toRemove.includes(e.id));
           }
-          const isShiyituCad = isShiyitu(resData);
-          toRemove.length = 0;
+          const isShiyituCad = isShiyitu(data);
+          const toRemoveDims: CadDimensionLinear[] = [];
           resData.entities.forEach((e) => {
             if (e instanceof CadDimensionLinear) {
               if (e.defPoints) {
-                toRemove.push(e.id);
+                toRemoveDims.push(e);
               }
             }
             if (e instanceof CadLineLike) {
@@ -452,8 +452,11 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
               }
             }
           });
-          if (toRemove.length > 0 && (await this.message.confirm("存在错误标注，是否自动清理？"))) {
-            resData.entities.dimension = resData.entities.dimension.filter((e) => !toRemove.includes(e.id));
+          if (toRemoveDims.length > 0) {
+            const namesStr = toRemoveDims.map((e) => e.mingzi).join("，");
+            if (await this.message.confirm(`以下标注没有标到直线上，是否自动清理？<br>${namesStr}`)) {
+              resData.entities.dimension = resData.entities.dimension.filter((e) => toRemoveDims.find((v) => v.id !== e.id));
+            }
           }
 
           if (mainCad) {
