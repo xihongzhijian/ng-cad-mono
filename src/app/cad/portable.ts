@@ -408,7 +408,7 @@ export class CadPortable {
               data.info[key] = value;
             } else {
               if (globalOptions[key]) {
-                cad.errors.push(`多余的选项[${key}]`);
+                cad.errors.push(`多余的选项【${key}】`);
               } else {
                 const optionValues = this.splitOptionValue(value);
                 data.options[key] = this.joinOptionValue(optionValues);

@@ -454,7 +454,7 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
           });
           if (toRemoveDims.length > 0) {
             const namesStr = toRemoveDims.map((e) => e.mingzi).join("，");
-            if (await this.message.confirm(`以下标注没有标到直线上，是否自动清理？<br>${namesStr}`)) {
+            if (await this.message.confirm(`以下标注没有标到直线端点，是否自动清理？<br>${namesStr}`)) {
               resData.entities.dimension = resData.entities.dimension.filter((e) => toRemoveDims.find((v) => v.id !== e.id));
             }
           }

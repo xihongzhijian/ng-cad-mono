@@ -462,7 +462,7 @@ export class ImportComponent extends Utils() implements OnInit {
         }
       });
       if (duplicateValues.length > 0) {
-        errors.push(`选项[${optionKey}]重复: ${duplicateValues.join(", ")}`);
+        errors.push(`选项【${optionKey}】重复: ${duplicateValues.join(", ")}`);
       }
       if (this._optionsCache[optionKey] === undefined) {
         const optionInfo = await this.dataService.getOptions({name: optionKey});
@@ -470,7 +470,7 @@ export class ImportComponent extends Utils() implements OnInit {
       }
       const optionsNotExist = difference(optionValues, this._optionsCache[optionKey], ["所有", "不选", "不选无"]);
       if (optionsNotExist.length > 0) {
-        errors.push(`选项[${optionKey}]不存在或已停用: ${optionsNotExist.join(", ")}`);
+        errors.push(`选项【${optionKey}】不存在或已停用: ${optionsNotExist.join(", ")}`);
       }
     }
     return errors;
@@ -519,13 +519,13 @@ export class ImportComponent extends Utils() implements OnInit {
         cad.errors = cad.errors.concat(window.parseBaobianzhengmianRules(修改包边正面宽规则, data.info.vars).errors);
       }
     } else if (修改包边正面宽规则) {
-      cad.errors.push("分类不为[包边正面]不能写[修改包边正面宽规则]");
+      cad.errors.push("分类不为【包边正面】不能写【修改包边正面宽规则】");
     }
     if (data.info.锁边自动绑定可搭配铰边 && !/锁企料|扇锁企料/.test(data.type)) {
-      cad.errors.push("分类不为[锁企料]或[扇锁企料]不能有[锁边自动绑定可搭配铰边]");
+      cad.errors.push("分类不为【锁企料】或【扇锁企料】不能有【锁边自动绑定可搭配铰边】");
     }
     if (data.kailiaoshibaokeng && data.zhidingweizhipaokeng.length > 0) {
-      cad.errors.push("不能同时设置[全部刨坑]和[指定位置刨坑]");
+      cad.errors.push("不能同时设置【全部刨坑】和【指定位置刨坑】");
     }
     const entities = data.getAllEntities();
     if (requireLineId) {
@@ -588,7 +588,7 @@ export class ImportComponent extends Utils() implements OnInit {
       const optionKeys = ["型号", "产品分类"];
       optionKeys.forEach((key) => {
         if (!data.options[key]) {
-          cad.errors.push(`缺少选项: ${key}`);
+          cad.errors.push(`缺少选项: 【${key}】`);
         }
       });
     }
@@ -596,10 +596,10 @@ export class ImportComponent extends Utils() implements OnInit {
     data.entities.dimension.forEach((e) => {
       if (e instanceof CadDimensionLinear) {
         if (reservedDimNames.includes(e.mingzi)) {
-          cad.errors.push(`标注名字不能是: ${e.mingzi}`);
+          cad.errors.push(`标注名字不能是【${e.mingzi}】`);
         }
         if (e.defPoints) {
-          cad.errors.push(`标注[${e.mingzi}]没有标到直线上`);
+          cad.errors.push(`标注【${e.mingzi}】没有标到直线端点`);
         }
         if (isShiyitu(data)) {
           if (e.mingzi.includes("=")) {
@@ -615,7 +615,7 @@ export class ImportComponent extends Utils() implements OnInit {
             const id1 = e.entity1.id;
             const id2 = e.entity2.id;
             if (!(id1 && id2)) {
-              cad.errors.push(`公式标注[=${e.mingzi}]识别错误, 必须标到两个端点`);
+              cad.errors.push(`公式标注【=${e.mingzi}】识别错误, 必须标到两个端点`);
             }
           }
         }
