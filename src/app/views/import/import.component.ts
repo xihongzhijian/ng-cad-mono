@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {setGlobal} from "@app/app.common";
 import {CadInfo, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
-import {isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
+import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
 import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
 import {environment} from "@env";
 import {CadData, CadDimensionLinear, CadLayer, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
@@ -324,7 +324,8 @@ export class ImportComponent extends Utils() implements OnInit {
     const uniqCodesCount: ObjectOf<number> = {};
     const {requireLineId, addUniqCode} = this._getImportConfigValues(isXinghao);
     for (const v of cads) {
-      let uniqCode = v.data.info.唯一码;
+      const data = v.data;
+      let uniqCode = data.info.唯一码;
       if (!uniqCode) {
         if (addUniqCode) {
           if (isXinghao) {
@@ -351,6 +352,9 @@ export class ImportComponent extends Utils() implements OnInit {
       } else {
         uniqCodesCount[uniqCode]++;
       }
+
+      const {entities} = filterCadEntitiesToSave(data);
+      data.entities = entities;
     }
 
     this.cads = cads;

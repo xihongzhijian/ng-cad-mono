@@ -7,6 +7,7 @@ import {
   CadCircle,
   CadData,
   CadDimension,
+  CadDimensionLinear,
   CadLeader,
   CadLine,
   CadLineLike,
@@ -19,7 +20,7 @@ import {
   intersectionKeysTranslate,
   sortLines
 } from "@lucilor/cad-viewer";
-import {DEFAULT_TOLERANCE, isBetween, Line, ObjectOf, Point} from "@lucilor/utils";
+import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, Line, ObjectOf, Point} from "@lucilor/utils";
 import {difference, isEmpty} from "lodash";
 
 export const reservedDimNames = ["前板宽", "后板宽", "小前板宽", "小后板宽", "骨架宽", "小骨架宽", "骨架中空宽", "小骨架中空宽"];
@@ -44,6 +45,48 @@ export interface ValidateResult {
 export const getCadTypes = (data: CadData) => [...data.type.split("*"), ...data.type2.split("*")].filter(Boolean);
 
 export const isShiyitu = (data: CadData) => getCadTypes(data).some((type) => /示意图|截面图|铝型材|装配图/.test(type));
+
+export const getCadMinLineLength = (data: CadData) => {
+  const isShiyituCad = isShiyitu(data);
+  const types = getCadTypes(data);
+  if (isShiyituCad) {
+    if (types.includes("铝型材")) {
+      return 1.9;
+    } else {
+      return 3;
+    }
+  }
+  return 0;
+};
+
+export const filterCadEntitiesToSave = (data: CadData) => {
+  const dimRefLines: string[] = [];
+  for (const e of data.entities.dimension) {
+    if (e instanceof CadDimensionLinear) {
+      if (e.entity1.id) {
+        dimRefLines.push(e.entity1.id);
+      }
+      if (e.entity2.id) {
+        dimRefLines.push(e.entity2.id);
+      }
+    }
+  }
+  const minLineLength = getCadMinLineLength(data);
+  const entities = data.entities.filter((e) => {
+    if (e instanceof CadLineLike) {
+      if (minLineLength <= 0 || dimRefLines.includes(e.id)) {
+        return true;
+      }
+      const length = e.length;
+      if (isEqualTo(length, 2)) {
+        return true;
+      }
+      return isGreaterThan(length, minLineLength);
+    }
+    return true;
+  });
+  return {dimRefLines, minLineLength, entities};
+};
 
 export const LINE_LIMIT = [0.01, 0.1] as const;
 export const validColors = ["#ffffff", "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#00ffff"] as const;

@@ -4,6 +4,7 @@ import {setCadData, unsetCadData} from "@app/cad/cad-data-transform";
 import {getCadPreview, updateCadPreviewImg} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {
+  filterCadEntitiesToSave,
   getCadTotalLength,
   prepareCadViewer,
   removeIntersections,
@@ -275,12 +276,28 @@ export class AppStatusService {
     return data2;
   }
 
-  async saveCad(loaderId?: string) {
+  async saveCad(loaderId?: string): Promise<CadData | null> {
     this.saveCadStart$.next();
     this.saveCadLocked$.next(true);
     await timeout(100); // 等待input事件触发
     const {dataService, message, spinner} = this;
     const collection = this.collection$.value;
+
+    let data = this.cad.data;
+    const {entities, minLineLength} = filterCadEntitiesToSave(data);
+    const toDeleteCount = data.entities.length - entities.length;
+    if (toDeleteCount > 0) {
+      const btn = await this.message.button({
+        content: `需要${toDeleteCount}条删除线长小于${minLineLength}的线`,
+        buttons: ["删除"],
+        btnTexts: {cancel: "取消保存"}
+      });
+      if (btn !== "删除") {
+        return null;
+      }
+      data.entities = entities;
+    }
+
     let resData: CadData | null = null;
     let errMsg = this.validate(true)?.errors || [];
     const blockError = "不能包含块";
@@ -289,8 +306,8 @@ export class AppStatusService {
       if (button !== "删除块实体") {
         return null;
       }
-      this.cad.data.blocks = {};
-      this.cad.data.entities.insert = [];
+      data.blocks = {};
+      data.entities.insert = [];
       errMsg = errMsg.filter((v) => v !== blockError);
     }
     if (errMsg.length > 0) {
@@ -299,7 +316,7 @@ export class AppStatusService {
         return null;
       }
     }
-    const data = this.closeCad();
+    data = this.closeCad();
     if (!loaderId) {
       loaderId = spinner.defaultLoaderId;
     }

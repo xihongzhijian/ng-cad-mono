@@ -163,7 +163,7 @@ export class MessageComponent implements OnInit {
     } else if (type === "editor") {
       this.dialogRef.close(this.data.content);
     } else if (type === "button" && button) {
-      this.dialogRef.close(typeof button === "string" ? button : button.label);
+      this.dialogRef.close(typeof button === "string" ? button : button.value);
     } else if (type === "json" && this.jsonEditor) {
       const editor = this.jsonEditor;
       try {
