@@ -188,8 +188,7 @@ export class Calc {
    * @returns
    */
   public static calcExpressDirect(expression: string) {
-    // eslint-disable-next-line no-eval
-    return eval(expression);
+    return window.eval(expression);
   }
 
   /**
