@@ -41,7 +41,7 @@ export interface GetOptionsParams {
   data?: CadData;
   xinghao?: string;
   includeTingyong?: boolean;
-  values?: string[];
+  values?: any[];
   filter?: ObjectOf<any>;
   fields?: string[];
 }

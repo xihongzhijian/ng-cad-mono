@@ -97,8 +97,9 @@ export class CadOptionsComponent implements AfterViewInit {
   async getOptions(params: GetOptionsParams, loader: Parameters<typeof this.spinner.show>) {
     let data: OptionsData | null;
     if (Array.isArray(this.data.options)) {
+      const field = (params.fields?.[0] || "name") as keyof OptionsDataData;
       const options = this.data.options.filter((v) => {
-        if (params.values && !params.values.includes(v.name)) {
+        if (params.values && !params.values.includes(v[field])) {
           return false;
         }
         return queryString(this.searchValue, v.name);
