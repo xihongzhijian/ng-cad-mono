@@ -182,8 +182,8 @@ export class CadDataService extends HttpService {
     return false;
   }
 
-  async uploadDxf(dxf: File) {
-    const response = await this.post<any>("peijian/cad/uploadDxf", {dxf});
+  async uploadDxf(dxf: File, skipLineContent?: boolean, httpOptions?: HttpOptions) {
+    const response = await this.post<any>("peijian/cad/uploadDxf", {dxf, skipLineContent}, httpOptions);
     if (response) {
       return new CadData(response.data);
     }
@@ -203,7 +203,7 @@ export class CadDataService extends HttpService {
     return null;
   }
 
-  async getOptions(params: GetOptionsParams): Promise<OptionsData | null> {
+  async getOptions(params: GetOptionsParams, httpOptions?: HttpOptions): Promise<OptionsData | null> {
     const postData: ObjectOf<any> = {...params};
     if (params.data instanceof CadData) {
       delete postData.data;
@@ -213,7 +213,7 @@ export class CadDataService extends HttpService {
       postData.xuanxiang = exportData.options;
       postData.tiaojian = exportData.conditions;
     }
-    const response = await this.post<any>("ngcad/getOptions", postData);
+    const response = await this.post<any>("ngcad/getOptions", postData, httpOptions);
     const result = this.getResponseDataAndCount(response);
     if (result) {
       return {

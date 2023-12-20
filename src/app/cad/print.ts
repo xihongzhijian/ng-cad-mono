@@ -99,10 +99,10 @@ const findDesignPicsRectLines = (data: CadData, keyword: string, findLocator: bo
       height: locatorHeight
     } = locator.boundingRect;
     result.locator = locator;
-    let leftLines: CadLine[] = [];
-    let rightLines: CadLine[] = [];
-    let topLines: CadLine[] = [];
-    let bottomLines: CadLine[] = [];
+    const leftLines: CadLine[] = [];
+    const rightLines: CadLine[] = [];
+    const topLines: CadLine[] = [];
+    const bottomLines: CadLine[] = [];
     vLines.forEach((e) => {
       if (e.length < locatorHeight) {
         return;
@@ -132,14 +132,14 @@ const findDesignPicsRectLines = (data: CadData, keyword: string, findLocator: bo
       }
     });
     const instersects = (e: CadLine, es: CadLine[]) => es.some((e2) => e.curve.intersects(e2.curve));
-    leftLines = leftLines.filter((e) => instersects(e, topLines) || instersects(e, bottomLines));
-    rightLines = rightLines.filter((e) => instersects(e, topLines) || instersects(e, bottomLines));
-    topLines = topLines.filter((e) => instersects(e, leftLines) || instersects(e, rightLines));
-    bottomLines = bottomLines.filter((e) => instersects(e, leftLines) || instersects(e, rightLines));
-    result.lines.top = topLines.at(0) || null;
-    result.lines.right = rightLines.at(0) || null;
-    result.lines.bottom = bottomLines.at(-1) || null;
-    result.lines.left = leftLines.at(-1) || null;
+    const leftLines2 = leftLines.filter((e) => instersects(e, topLines) || instersects(e, bottomLines));
+    const rightLines2 = rightLines.filter((e) => instersects(e, topLines) || instersects(e, bottomLines));
+    const topLines2 = topLines.filter((e) => instersects(e, leftLines) || instersects(e, rightLines));
+    const bottomLines2 = bottomLines.filter((e) => instersects(e, leftLines) || instersects(e, rightLines));
+    result.lines.top = topLines2.at(0) || null;
+    result.lines.right = rightLines2.at(0) || null;
+    result.lines.bottom = bottomLines2.at(-1) || null;
+    result.lines.left = leftLines2.at(-1) || null;
     if (!result.lines.top || !result.lines.right || !result.lines.bottom || !result.lines.left) {
       result.errors.push("没有足够的线");
       return result;

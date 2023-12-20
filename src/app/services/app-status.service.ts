@@ -288,7 +288,7 @@ export class AppStatusService {
     const toDeleteCount = data.entities.length - entities.length;
     if (toDeleteCount > 0) {
       const btn = await this.message.button({
-        content: `需要${toDeleteCount}条删除线长小于${minLineLength}的线`,
+        content: `需要删除${toDeleteCount}条线长小于${minLineLength}的线`,
         buttons: ["删除"],
         btnTexts: {cancel: "取消保存"}
       });

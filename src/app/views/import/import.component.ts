@@ -1,13 +1,14 @@
 import {Component, OnInit} from "@angular/core";
-import {setGlobal} from "@app/app.common";
+import {setGlobal, timer} from "@app/app.common";
 import {CadInfo, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
 import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
 import {environment} from "@env";
 import {CadData, CadDimensionLinear, CadLayer, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
-import {downloadByString, ObjectOf, ProgressBar} from "@lucilor/utils";
+import {downloadByString, ObjectOf, ProgressBar, timeout} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {HttpOptions} from "@modules/http/services/http.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -49,9 +50,9 @@ export class ImportComponent extends Utils() implements OnInit {
   progressBar = new ProgressBar(0);
   progressBarStatus: ProgressBarStatus = "hidden";
   importConfigNormal: ImportComponentConfig = {
-    requireLineId: {label: "上传线必须全部带ID", value: null},
-    pruneLines: {label: "后台线在上传数据中没有时删除", value: null},
-    addUniqCode: {label: "没有唯一码生成新CAD数据", value: false},
+    requireLineId: {label: "上传线必须全部带ID", value: false},
+    pruneLines: {label: "后台线在上传数据中没有时删除", value: true},
+    addUniqCode: {label: "没有唯一码生成新CAD数据", value: true},
     dryRun: {label: "仅检查数据，不导入", value: false}
   };
   importConfigSuanliao: ImportComponentConfig = {
@@ -104,6 +105,7 @@ export class ImportComponent extends Utils() implements OnInit {
 
   async importDxf(event: Event | null, isXinghao: boolean, loaderId: string): Promise<boolean> {
     let el: HTMLInputElement | undefined;
+    timer.start("导入总用时");
     const finish = (hasLoader: boolean, progressBarStatus: ProgressBarStatus, msg?: string) => {
       if (hasLoader) {
         this.spinner.hide(loaderId);
@@ -115,6 +117,7 @@ export class ImportComponent extends Utils() implements OnInit {
         el.value = "";
       }
       this.isImporting = false;
+      timer.end("导入总用时", "导入总用时");
       return progressBarStatus === "success";
     };
     if (event) {
@@ -132,13 +135,16 @@ export class ImportComponent extends Utils() implements OnInit {
     this.isImporting = true;
     this.progressBar.start(1);
     this.progressBarStatus = "progress";
-    this.msg = "正在获取数据";
+    this.msg = "正在读取dxf";
+    timer.start("读取dxf");
     this.spinner.show(loaderId);
     const 导入dxf文件时展开名字不改变 = this.status.projectConfig.getBoolean("导入dxf文件时展开名字不改变");
-    const data = await this.dataService.uploadDxf(this._sourceFile);
+    const httpOptions: HttpOptions = {silent: true};
+    const data = await this.dataService.uploadDxf(this._sourceFile, false, httpOptions);
     if (!data) {
       return finish(true, "error", "读取文件失败");
     }
+    timer.end("读取dxf", "读取dxf");
     this.sourceCad = data;
     const removedDimensions = data.info.removedDimensions;
     let errorMsgLayer = data.layers.find((v) => v.name === this._errorMsgLayer);
@@ -153,7 +159,11 @@ export class ImportComponent extends Utils() implements OnInit {
       }
     });
     const maxLineLength = isXinghao ? this.maxLineLength : 0;
+    this.msg = "正在解析dxf";
+    timer.start("解析dxf");
+    await timeout(100);
     const {cads, slgses, sourceCadMap, xinghaoInfo} = CadPortable.import({sourceCad: data, maxLineLength, 导入dxf文件时展开名字不改变});
+    timer.end("解析dxf", "解析dxf");
 
     const hasEmptyCad = cads.length < 1 || cads.some((cad) => cad.data.entities.length < 1);
     if (hasEmptyCad) {
@@ -192,20 +202,15 @@ export class ImportComponent extends Utils() implements OnInit {
     this._sourceCadMap = sourceCadMap;
     const totalCad = cads.length;
     const totalSlgs = slgses.length;
-    let totalSteps = (totalCad + totalSlgs) * 2;
-    if (isXinghao) {
-      totalSteps++;
-      if (xinghaoInfo) {
-        totalSteps++;
-      }
-    }
-    this.progressBar.start(totalSteps);
-    this.msg = "正在检查数据";
-    await this.parseCads(cads, slgses, isXinghao, xinghaoInfo);
+    this.msg = "正在检查cad";
+    timer.start("检查cad");
+    await this.parseCads(cads, slgses, isXinghao, httpOptions, xinghaoInfo);
+    timer.end("检查cad", "检查cad");
     if (this.hasError) {
       return finish(true, "error", "数据有误");
     }
 
+    timer.start("上传cad");
     const {pruneLines, dryRun} = this._getImportConfigValues(isXinghao);
     if (dryRun) {
       return finish(true, "success", `检查结束`);
@@ -237,6 +242,7 @@ export class ImportComponent extends Utils() implements OnInit {
         await this.dataService.removeCads("material", toDelete.material, {silent: true});
       }
     }
+    this.progressBar.start(totalCad);
     for (let i = 0; i < totalCad; i++) {
       const result = await this.dataService.setCad(
         {
@@ -246,7 +252,7 @@ export class ImportComponent extends Utils() implements OnInit {
           importConfig: {pruneLines}
         },
         true,
-        {silent: true}
+        httpOptions
       );
       this.msg = `正在导入dxf数据(${i + 1}/${totalCad})`;
       if (!result) {
@@ -255,8 +261,9 @@ export class ImportComponent extends Utils() implements OnInit {
       }
       this.progressBar.forward();
     }
+    this.progressBar.start(totalSlgs);
     for (let i = 0; i < totalSlgs; i++) {
-      const response = await this.dataService.post("ngcad/updateSuanliaogonshi", {data: this.slgses[i].data}, {silent: true});
+      const response = await this.dataService.post("ngcad/updateSuanliaogonshi", {data: this.slgses[i].data}, httpOptions);
       this.msg = `正在导入算料公式(${i + 1}/${totalSlgs})`;
       if (!this.dataService.getResponseData(response)) {
         skipped++;
@@ -264,7 +271,9 @@ export class ImportComponent extends Utils() implements OnInit {
       }
       this.progressBar.forward();
     }
+    timer.start("上传cad", "上传cad");
 
+    this.progressBar.start(1);
     this.msg = `正在保存dxf文件`;
     if (isXinghao) {
       const xinghao = this.cads[0].data.options.型号;
@@ -317,7 +326,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this._peiheCadCache = {};
   }
 
-  async parseCads(cads: CadInfo[], slgses: SlgsInfo[], isXinghao: boolean, xinghaoInfo?: XinghaoInfo) {
+  async parseCads(cads: CadInfo[], slgses: SlgsInfo[], isXinghao: boolean, httpOptions: HttpOptions, xinghaoInfo?: XinghaoInfo) {
     this.cadsParsed = false;
     this.hasError = false;
     this._clearCache();
@@ -331,9 +340,13 @@ export class ImportComponent extends Utils() implements OnInit {
           if (isXinghao) {
             v.data.info.唯一码 = CadPortable.getUniqCode(v.data);
           } else {
-            const response = await this.dataService.post<string>("ngcad/generateUniqCode", {
-              uniqCode: CadPortable.getUniqCode(v.data)
-            });
+            const response = await this.dataService.post<string>(
+              "ngcad/generateUniqCode",
+              {
+                uniqCode: CadPortable.getUniqCode(v.data)
+              },
+              httpOptions
+            );
             const 唯一码 = this.dataService.getResponseData(response);
             if (唯一码) {
               v.data.info.唯一码 = 唯一码;
@@ -399,16 +412,21 @@ export class ImportComponent extends Utils() implements OnInit {
 
     const totalCad = cads.length;
     const totalSlgs = slgses.length;
+    this.progressBar.start(totalCad);
     for (let i = 0; i < totalCad; i++) {
       this.msg = `正在检查dxf数据(${i + 1}/${totalCad})`;
       this.progressBar.forward();
-      await this._validateCad(cads[i], uniqCodesCount, requireLineId);
+      await timeout(200);
+      await this._validateCad(cads[i], uniqCodesCount, requireLineId, httpOptions);
     }
+    this.progressBar.start(totalSlgs);
     for (let i = 0; i < totalSlgs; i++) {
       this.msg = `正在检查算料公式数据(${i + 1}/${totalSlgs})`;
       this.progressBar.forward();
-      await this._validateSlgs(slgses[i]);
+      await timeout(100);
+      await this._validateSlgs(slgses[i], httpOptions);
     }
+    this.progressBar.start(1);
 
     const data = this.cads.map((v) => {
       const json = v.data.export();
@@ -452,7 +470,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this.cadsParsed = true;
   }
 
-  private async _validateOptions(options: ObjectOf<string>) {
+  private async _validateOptions(options: ObjectOf<string>, httpOptions: HttpOptions) {
     const errors: string[] = [];
     for (const optionKey in options) {
       const optionValues = CadPortable.splitOptionValue(options[optionKey]);
@@ -469,7 +487,7 @@ export class ImportComponent extends Utils() implements OnInit {
         errors.push(`选项【${optionKey}】重复: ${duplicateValues.join(", ")}`);
       }
       if (this._optionsCache[optionKey] === undefined) {
-        const optionInfo = await this.dataService.getOptions({name: optionKey});
+        const optionInfo = await this.dataService.getOptions({name: optionKey}, httpOptions);
         this._optionsCache[optionKey] = (optionInfo?.data || []).map((v) => v.name);
       }
       const optionsNotExist = difference(optionValues, this._optionsCache[optionKey], ["所有", "不选", "不选无"]);
@@ -480,7 +498,7 @@ export class ImportComponent extends Utils() implements OnInit {
     return errors;
   }
 
-  private async _validateCad(cad: CadInfo, uniqCodesCount: ObjectOf<number>, requireLineId: boolean) {
+  private async _validateCad(cad: CadInfo, uniqCodesCount: ObjectOf<number>, requireLineId: boolean, httpOptions: HttpOptions) {
     if (cad.data.info.isEmpty) {
       cad.errors = cad.data.info.errors;
       return;
@@ -539,8 +557,8 @@ export class ImportComponent extends Utils() implements OnInit {
       }
     }
     cad.errors = cad.errors.concat(validateLines(data).errors);
-    cad.errors = cad.errors.concat(await this._validateOptions(data.options));
-    cad.errors = cad.errors.concat(await this._validateOptions(data.对应计算条数的配件));
+    cad.errors = cad.errors.concat(await this._validateOptions(data.options, httpOptions));
+    cad.errors = cad.errors.concat(await this._validateOptions(data.对应计算条数的配件, httpOptions));
 
     const infoObj: ObjectOf<PeiheInfo[]> = {
       锁企料: [
@@ -646,13 +664,13 @@ export class ImportComponent extends Utils() implements OnInit {
     }
   }
 
-  private async _validateSlgs(slgs: SlgsInfo) {
+  private async _validateSlgs(slgs: SlgsInfo, httpOptions: HttpOptions) {
     const data = slgs.data;
-    slgs.errors = slgs.errors.concat(await this._validateOptions(data.选项));
+    slgs.errors = slgs.errors.concat(await this._validateOptions(data.选项, httpOptions));
     if (Object.keys(data.公式).length > 0) {
       const strict = this.dataService.strict;
       this.dataService.strict = false;
-      const response = await this.dataService.post("ngcad/validateFormulas", {formulas: data.公式}, {silent: true});
+      const response = await this.dataService.post("ngcad/validateFormulas", {formulas: data.公式}, httpOptions);
       this.dataService.strict = strict;
       if (response?.code !== 0) {
         const msg = response?.msg || "验证算料公式时出错";
