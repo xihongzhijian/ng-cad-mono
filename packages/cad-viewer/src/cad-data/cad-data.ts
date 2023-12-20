@@ -758,7 +758,8 @@ export class CadData {
       const tmpData = new CadData();
       tmpData.entities = c2.entities;
       const rect = tmpData.getBoundingRect();
-      if (!isFinite(l1.slope)) {
+      const slope = l1.getSlope(accuracy);
+      if (!isFinite(slope)) {
         const d = (l2.start.x - l1.start.x) * spParent;
         translate.x = l1.start.x + d - l3.start.x;
         if (op === "+") {
@@ -768,7 +769,7 @@ export class CadData {
           translate.x -= rect.width * spChildren;
         }
         axis = "x";
-      } else if (l1.slope === 0) {
+      } else if (slope === 0) {
         const d = (l2.start.y - l1.start.y) * spParent;
         translate.y = l1.start.y + d - l3.start.y;
         if (op === "+") {

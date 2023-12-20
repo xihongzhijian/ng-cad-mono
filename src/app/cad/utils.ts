@@ -51,9 +51,9 @@ export const getCadMinLineLength = (data: CadData) => {
   const types = getCadTypes(data);
   if (isShiyituCad) {
     if (types.includes("铝型材")) {
-      return 1.9;
+      return 0.5;
     } else if (types.includes("胶条示意图")) {
-      return 1;
+      return 0.5;
     } else {
       return 3;
     }

@@ -1,6 +1,6 @@
 import {Angle} from "./angle";
 import {MatrixLike} from "./matrix";
-import {DEFAULT_TOLERANCE, isBetween, isNearZero} from "./numbers";
+import {approachZero, DEFAULT_TOLERANCE, isBetween, isEqualTo, isNearZero} from "./numbers";
 import {Point} from "./point";
 
 export class Line {
@@ -53,23 +53,23 @@ export class Line {
     return this.getPoint(0.5);
   }
 
-  get slope() {
-    const {x: x1, y: y1} = this.start;
-    const {x: x2, y: y2} = this.end;
-    if (x1 === x2) {
-      return Infinity;
-    }
-    return (y1 - y2) / (x1 - x2);
-  }
-
   get theta() {
     const {x: x1, y: y1} = this.start;
     const {x: x2, y: y2} = this.end;
     return new Angle(Math.atan2(y2 - y1, x2 - x1), "rad");
   }
 
-  get expression() {
-    const slope = this.slope;
+  getSlope(tolerance = DEFAULT_TOLERANCE) {
+    const {x: x1, y: y1} = this.start;
+    const {x: x2, y: y2} = this.end;
+    if (isEqualTo(x1, x2, tolerance)) {
+      return Infinity;
+    }
+    return approachZero((y1 - y2) / (x1 - x2), tolerance);
+  }
+
+  getExpression(tolerance = DEFAULT_TOLERANCE) {
+    const slope = this.getSlope(tolerance);
     const result = {a: 0, b: 0, c: 0};
     if (isFinite(slope)) {
       result.a = slope;
@@ -98,8 +98,8 @@ export class Line {
   }
 
   isParallelWith(line: Line, tolerance = DEFAULT_TOLERANCE) {
-    const slope1 = line.slope;
-    const slope2 = this.slope;
+    const slope1 = line.getSlope(tolerance);
+    const slope2 = this.getSlope(tolerance);
     if (!isFinite(slope1) && !isFinite(slope2)) {
       return true;
     }
@@ -117,11 +117,11 @@ export class Line {
       if (!this.isParallelWith(line, tolerance)) {
         return NaN;
       }
-      const exp1 = this.expression;
-      const exp2 = line.expression;
+      const exp1 = this.getExpression(tolerance);
+      const exp2 = line.getExpression(tolerance);
       return Math.abs(exp1.c - exp2.c) / Math.sqrt(exp1.a ** 2 + exp1.b ** 2);
     } else {
-      const {a, b, c} = this.expression;
+      const {a, b, c} = this.getExpression(tolerance);
       return Math.abs((a * line.x + b * line.y + c) / Math.sqrt(a ** 2 + b ** 2));
     }
   }
@@ -131,8 +131,8 @@ export class Line {
     if (this.isParallelWith(line, tolerance)) {
       return intersection;
     }
-    const exp1 = this.expression;
-    const exp2 = line.expression;
+    const exp1 = this.getExpression(tolerance);
+    const exp2 = line.getExpression(tolerance);
     if (exp1 && exp2) {
       intersection = solveLinearEqXY(exp1.a, exp1.b, -exp1.c, exp2.a, exp2.b, -exp2.c);
     }

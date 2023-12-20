@@ -136,6 +136,7 @@ const findDesignPicsRectLines = (data: CadData, keyword: string, findLocator: bo
     const rightLines2 = rightLines.filter((e) => instersects(e, topLines) || instersects(e, bottomLines));
     const topLines2 = topLines.filter((e) => instersects(e, leftLines) || instersects(e, rightLines));
     const bottomLines2 = bottomLines.filter((e) => instersects(e, leftLines) || instersects(e, rightLines));
+    console.log({leftLines, rightLines, topLines, bottomLines, leftLines2, rightLines2, topLines2, bottomLines2});
     result.lines.top = topLines2.at(0) || null;
     result.lines.right = rightLines2.at(0) || null;
     result.lines.bottom = bottomLines2.at(-1) || null;

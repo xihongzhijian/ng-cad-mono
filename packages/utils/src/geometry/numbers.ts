@@ -9,14 +9,20 @@ export const isGreaterThan = (n1: number, n2: number, tolerance = DEFAULT_TOLERA
 
 export const isLessThan = (n1: number, n2: number, tolerance = DEFAULT_TOLERANCE) => !isEqualTo(n1, n2, tolerance) && n1 < n2;
 
-export const approachZero = (n: number) => {
-  if (isNearZero(n)) {
+export const approachZero = (n: number, tolerance = DEFAULT_TOLERANCE) => {
+  if (isNearZero(n, tolerance)) {
     return 0;
   }
   return n;
 };
 
 export const isBetween = (n: number, min: number, max: number, eq = true, tolerance = DEFAULT_TOLERANCE) => {
+  if (isEqualTo(min, max, tolerance)) {
+    return isEqualTo(n, min, tolerance);
+  }
+  if (min > max) {
+    [min, max] = [max, min];
+  }
   if (eq && (isEqualTo(n, min, tolerance) || isEqualTo(n, max, tolerance))) {
     return true;
   }

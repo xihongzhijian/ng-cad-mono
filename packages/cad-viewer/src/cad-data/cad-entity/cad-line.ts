@@ -27,8 +27,8 @@ export class CadLine extends CadLineLike {
   get length() {
     return this.curve.length;
   }
-  get slope() {
-    return this.curve.slope;
+  getSlope(tolerance = DEFAULT_TOLERANCE) {
+    return this.curve.getSlope(tolerance);
   }
   get theta() {
     return this.curve.theta;
