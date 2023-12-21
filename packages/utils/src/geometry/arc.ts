@@ -67,33 +67,17 @@ export class Arc {
     this.endAngle.rad = new Line(this.center, value).theta.rad;
   }
   get totalAngle() {
-    const {startAngle, endAngle, clockwise} = this;
+    const {startAngle, endAngle} = this;
     let start = startAngle.rad;
     let end = endAngle.rad;
-    // if (clockwise) {
-    //     if (start > end) {
-    //         return new Angle(start - end, "deg");
-    //     } else {
-    //         return new Angle(360 - (end - start), "deg");
-    //     }
-    // } else {
-    //     if (start > end) {
-    //         return new Angle(360 - (start - end), "deg");
-    //     } else {
-    //         return new Angle(end - start, "deg");
-    //     }
-    // }
-    if (clockwise) {
-      while (end > start) {
-        end -= Math.PI * 2;
-      }
-      return new Angle(start - end, "rad");
-    } else {
-      while (start > end) {
-        start -= Math.PI * 2;
-      }
-      return new Angle(end - start, "rad");
+    if (start > end) {
+      [start, end] = [end, start];
     }
+    const t = Math.PI * 2;
+    while (end > start + t) {
+      end -= t;
+    }
+    return new Angle(end - start, "rad");
   }
   get length() {
     return this.radius * this.totalAngle.rad;
