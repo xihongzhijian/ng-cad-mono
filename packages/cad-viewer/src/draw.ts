@@ -68,17 +68,17 @@ export const drawArc = (
   style?: LineStyle,
   i = 0
 ) => {
-  const l0 = Math.PI * 2 * radius;
   const arc = new Arc(new Point(center.x, center.y), radius, new Angle(startAngle, "deg"), new Angle(endAngle, "deg"), clockwise);
-  if (arc.totalAngle.deg === 360) {
+  const totalAngle = arc.totalAngle.deg;
+  if (totalAngle === 360) {
     return drawCircle(draw, center, radius, style, i);
   }
-  const isLargeArc = arc.length / l0 > 0.5 ? 1 : 0;
+  const isLargeArc = totalAngle > 180 ? 1 : 0;
   const {x: x0, y: y0} = arc.startPoint;
   const {x: x1, y: y1} = arc.endPoint;
   const path: PathArrayAlias = [
     ["M", x0, y0],
-    ["A", radius, radius, endAngle - startAngle, isLargeArc, clockwise ? 0 : 1, x1, y1]
+    ["A", radius, radius, 0, isLargeArc, clockwise ? 0 : 1, x1, y1]
   ];
   let el = draw.children()[i] as Path;
   if (el instanceof Path) {
