@@ -34,7 +34,6 @@
     "useDefineForClassFields": false
   },
   "include": ["src", "./gulpfile.ts"],
-  "exclude": ["node_modules"],
   "angularCompilerOptions": {
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,

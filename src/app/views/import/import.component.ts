@@ -275,7 +275,7 @@ export class ImportComponent extends Utils() implements OnInit {
       }
       this.progressBar.forward();
     }
-    timer.start("上传cad", "上传cad");
+    timer.end("上传cad", "上传cad");
 
     this.progressBar.start(1);
     this.msg = `正在保存dxf文件`;
