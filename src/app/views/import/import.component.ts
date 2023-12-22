@@ -206,7 +206,7 @@ export class ImportComponent extends Utils() implements OnInit {
     timer.start("检查cad");
     await this.parseCads(cads, slgses, isXinghao, httpOptions, xinghaoInfo);
     timer.end("检查cad", "检查cad");
-    if (this.hasError) {
+    if (this.hasError && isXinghao) {
       return finish(true, "error", "数据有误");
     }
 
@@ -244,6 +244,10 @@ export class ImportComponent extends Utils() implements OnInit {
     }
     this.progressBar.start(totalCad);
     for (let i = 0; i < totalCad; i++) {
+      if (cads[i].errors.length > 0) {
+        skipped++;
+        continue;
+      }
       const result = await this.dataService.setCad(
         {
           collection: "cad",
@@ -283,7 +287,15 @@ export class ImportComponent extends Utils() implements OnInit {
       }
     }
     const total = totalCad + totalSlgs;
-    return finish(true, "success", `导入结束, ${total - skipped}个成功(共${total}个)`);
+    let status: ProgressBarStatus;
+    if (skipped === total) {
+      status = "error";
+    } else if (skipped === 0) {
+      status = "success";
+    } else {
+      status = "warning";
+    }
+    return finish(true, status, `导入结束, ${total - skipped}个成功(共${total}个)`);
   }
 
   private _getCadMd5(cad: CadData) {
