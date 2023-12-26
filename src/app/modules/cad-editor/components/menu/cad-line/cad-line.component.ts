@@ -6,7 +6,6 @@ import {MatSelectChange} from "@angular/material/select";
 import {autoFixLine, validColors} from "@app/cad/utils";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
-  CadArc,
   CadEntities,
   CadEventCallBack,
   CadLine,
@@ -452,11 +451,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     const lines = this.selected;
     if (lines.length === 1) {
       const line = lines[0];
-      if (line instanceof CadLine) {
-        return line.length.toFixed(2);
-      } else if (line instanceof CadArc) {
-        return line.length.toFixed(2);
-      }
+      return line.length.toFixed(2);
     }
     return "";
   }

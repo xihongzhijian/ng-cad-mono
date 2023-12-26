@@ -41,18 +41,17 @@ export class Angle {
     this._value = value;
   }
 
-  constrain() {
+  constrain(circle = false) {
     let limit = 0;
     if (this.unit === "rad") {
       limit = Math.PI * 2;
     } else if (this.unit === "deg") {
       limit = 360;
     }
-    while (this._value < 0) {
-      this._value += limit;
-    }
-    while (this._value > limit) {
-      this._value -= limit;
+    if (circle && this._value !== 0 && this._value % limit === 0) {
+      this._value = limit;
+    } else {
+      this._value = ((this._value % limit) + limit) % limit;
     }
     return this;
   }

@@ -48,8 +48,7 @@
             "extractLicenses": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true,
-            "preserveSymlinks": true
+            "namedChunks": true
           },
           "configurations": {
             "production": {

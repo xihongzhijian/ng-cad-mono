@@ -68,8 +68,8 @@ export class Arc {
   }
   get totalAngle() {
     const {startAngle, endAngle, clockwise} = this;
-    const start = startAngle.constrain().deg;
-    const end = endAngle.constrain().deg;
+    const start = startAngle.deg;
+    const end = endAngle.deg;
     let angle: number;
     const unit = startAngle.unit === endAngle.unit ? startAngle.unit : "rad";
     if (clockwise) {
@@ -77,7 +77,7 @@ export class Arc {
     } else {
       angle = end - start;
     }
-    return new Angle(angle, unit).constrain();
+    return new Angle(angle, unit).constrain(true);
   }
   get length() {
     return this.radius * this.totalAngle.rad;

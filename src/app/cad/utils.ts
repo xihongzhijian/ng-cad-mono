@@ -4,6 +4,7 @@ import {ProjectConfig} from "@app/utils/project-config";
 import {getCalcZhankaiText} from "@app/utils/zhankai";
 import {environment} from "@env";
 import {
+  CadArc,
   CadCircle,
   CadData,
   CadDimension,
@@ -77,7 +78,7 @@ export const filterCadEntitiesToSave = (data: CadData) => {
   }
   const minLineLength = getCadMinLineLength(data);
   const entities = data.entities.filter((e) => {
-    if (e instanceof CadLineLike) {
+    if (e instanceof CadLine || e instanceof CadArc) {
       if (minLineLength <= 0 || dimRefLines.includes(e.id)) {
         return true;
       }
