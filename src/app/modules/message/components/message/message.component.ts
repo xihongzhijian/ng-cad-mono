@@ -1,14 +1,25 @@
-import {Component, ElementRef, HostListener, Inject, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  Inject,
+  OnDestroy,
+  OnInit,
+  QueryList,
+  ViewChild,
+  ViewChildren
+} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {DomSanitizer, SafeHtml, SafeResourceUrl} from "@angular/platform-browser";
 import {Debounce} from "@decorators/debounce";
 import {ObjectOf, timeout} from "@lucilor/utils";
-import {JsonEditorComponent, JsonEditorOptions} from "@maaxgr/ang-jsoneditor";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {clamp, cloneDeep} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
+import {JSONContent, JSONEditor, Mode} from "vanilla-jsoneditor";
 import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./message-types";
 
 @Component({
@@ -16,18 +27,18 @@ import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./m
   templateUrl: "./message.component.html",
   styleUrls: ["./message.component.scss"]
 })
-export class MessageComponent implements OnInit {
+export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   titleHTML: SafeHtml = "";
   subTitleHTML: SafeHtml = "";
   contentHTML: SafeHtml = "";
   iframeSrc: SafeResourceUrl = "";
   page = 0;
-  jsonEditorOptions = new JsonEditorOptions();
   inputsBackup: InputInfo[] = [];
+  jsonEditor: JSONEditor | null = null;
   @ViewChild(QuillEditorComponent) editor?: QuillViewComponent;
   @ViewChild("iframe") iframe?: ElementRef<HTMLIFrameElement>;
   @ViewChildren("formInput") formInputs?: QueryList<InputComponent>;
-  @ViewChild(JsonEditorComponent, {static: false}) jsonEditor?: JsonEditorComponent;
+  @ViewChild("jsonEditorContainer") jsonEditorContainer?: ElementRef<HTMLDivElement>;
 
   private get _editorToolbarHeight() {
     if (this.editor) {
@@ -108,11 +119,6 @@ export class MessageComponent implements OnInit {
       this.setPage(0);
     } else if (data.type === "iframe") {
       this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(data.content);
-    } else if (data.type === "json") {
-      this.jsonEditorOptions = new JsonEditorOptions();
-      this.jsonEditorOptions.modes = ["code", "text", "tree", "view"];
-      this.jsonEditorOptions.mode = "code";
-      Object.assign(this.jsonEditorOptions, data.options);
     }
 
     const id = window.setInterval(() => {
@@ -122,6 +128,24 @@ export class MessageComponent implements OnInit {
     }, 600);
 
     this.inputsBackup = cloneDeep(this.inputs);
+  }
+
+  ngAfterViewInit() {
+    const {jsonEditorContainer, data} = this;
+    if (jsonEditorContainer && data.type === "json") {
+      this.jsonEditor = new JSONEditor({
+        target: jsonEditorContainer.nativeElement,
+        props: {mode: Mode.text, ...data.options}
+      });
+      this.jsonEditor.set({json: data.json});
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.jsonEditor) {
+      this.jsonEditor.destroy();
+      this.jsonEditor = null;
+    }
   }
 
   @HostListener("window:resize")
@@ -166,10 +190,17 @@ export class MessageComponent implements OnInit {
       this.dialogRef.close(typeof button === "string" ? button : button.value);
     } else if (type === "json" && this.jsonEditor) {
       const editor = this.jsonEditor;
-      try {
-        this.dialogRef.close(editor.get());
-      } catch (error) {
+      const errors = editor.validate();
+      if (errors) {
         this.message.error("数据格式错误，请改正后再确定");
+      } else {
+        const result = editor.get();
+        const isJSONContent = (v: any): v is JSONContent => v.json;
+        if (isJSONContent(result)) {
+          this.dialogRef.close(result.json as any);
+        } else {
+          this.dialogRef.close(JSON.parse(result.text));
+        }
       }
     } else {
       this.dialogRef.close(null);

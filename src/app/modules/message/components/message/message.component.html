@@ -18,7 +18,7 @@
     <iframe #iframe [src]="iframeSrc" frameborder="0"></iframe>
   </ng-container>
   <ng-container *ngSwitchCase="'json'">
-    <json-editor [options]="jsonEditorOptions" [data]="cast('json', data).json"></json-editor>
+    <div #jsonEditorContainer></div>
   </ng-container>
   <ng-container *ngSwitchDefault="">
     <div [innerHTML]="contentHTML"></div>

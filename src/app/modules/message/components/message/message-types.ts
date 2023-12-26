@@ -1,6 +1,6 @@
 import {ObjectOf} from "@lucilor/utils";
-import {JsonEditorOptions} from "@maaxgr/ang-jsoneditor";
 import {InputInfo} from "@modules/input/components/input.types";
+import {JSONEditorPropsOptional} from "vanilla-jsoneditor";
 
 export interface BaseMessageData {
   title?: string;
@@ -68,7 +68,7 @@ export interface JsonMessageData extends BaseMessageData, FormBaseMessageData {
   type: "json";
   json: any;
   defaultJson?: any;
-  options?: Partial<JsonEditorOptions>;
+  options?: Partial<JSONEditorPropsOptional>;
 }
 
 export type MessageData =

@@ -54,7 +54,6 @@ import {KlcsComponent} from "@components/klcs/klcs.component";
 import {KlkwpzComponent} from "@components/klkwpz/klkwpz.component";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {ProgressBarComponent} from "@components/progress-bar/progress-bar.component";
-import {AngJsoneditorModule} from "@maaxgr/ang-jsoneditor";
 import {CadConsoleModule} from "@modules/cad-console/cad-console.module";
 import {CadEditorModule} from "@modules/cad-editor/cad-editor.module";
 import {DirectivesModule} from "@modules/directives/directives.module";
@@ -175,7 +174,6 @@ const matFormFieldOptions: MatFormFieldDefaultOptions = {
     ZixuanpeijianComponent
   ],
   imports: [
-    AngJsoneditorModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     BrowserModule,

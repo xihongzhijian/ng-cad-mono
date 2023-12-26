@@ -1,13 +1,14 @@
-import {AfterViewInit, Component, Input, OnInit, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from "@angular/core";
 import {setGlobal} from "@app/app.common";
 import {CadData, CadLine} from "@lucilor/cad-viewer";
 import {exportObject, importObject, timeout} from "@lucilor/utils";
-import {JsonEditorComponent, JsonEditorOptions} from "@maaxgr/ang-jsoneditor";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
+import {MessageData} from "@modules/message/components/message/message-types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {cloneDeep, isObject, uniq} from "lodash";
+import {JSONContent, JSONEditor, TextContent} from "vanilla-jsoneditor";
 
 @Component({
   selector: "app-klcs",
@@ -27,14 +28,12 @@ export class KlcsComponent implements OnInit, AfterViewInit {
   @Input() cadId?: string;
   inputInfos: InputInfo[] = [];
   inputInfos2: InputInfo[][] = [];
-  options: JsonEditorOptions = {
-    mode: "code",
-    modes: ["code", "form", "text", "tree", "view", "preview"]
-  } as Partial<JsonEditorOptions> as JsonEditorOptions;
-  @ViewChild(JsonEditorComponent) jsonEditor?: JsonEditorComponent;
+  jsonEditor: JSONEditor | null = null;
+  @ViewChild("jsonEditorContainer") jsonEditorContainer?: ElementRef<HTMLDivElement>;
   useJsonEditor = false;
   cadData?: CadData;
   cadMubanData?: CadData;
+  messageData: MessageData = {type: "json", json: null};
 
   constructor(
     private dataService: CadDataService,
@@ -215,7 +214,41 @@ export class KlcsComponent implements OnInit, AfterViewInit {
       });
     } else {
       this.useJsonEditor = true;
-      this.inputInfos2 = [];
+      this.inputInfos2 = [
+        [
+          {
+            type: "string",
+            label: "",
+            readonly: true,
+            value: JSON.stringify(data.参数),
+            suffixIcons: [
+              {
+                name: "edit",
+                onClick: async () => {
+                  const result = await this.message.json(data.参数);
+                  if (result) {
+                    data.参数 = result;
+                    this.updateData();
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      ];
+    }
+    if (this.useJsonEditor) {
+      if (!this.jsonEditor) {
+        if (this.jsonEditorContainer) {
+          this.jsonEditor = new JSONEditor({target: this.jsonEditorContainer.nativeElement});
+        }
+      }
+      if (this.jsonEditor) {
+        this.jsonEditor.set({text: JSON.stringify(data.参数)});
+      }
+    } else if (this.jsonEditor) {
+      this.jsonEditor.destroy();
+      this.jsonEditor = null;
     }
   }
 
@@ -241,11 +274,17 @@ export class KlcsComponent implements OnInit, AfterViewInit {
     const {jsonEditor} = this;
     let data = this.data;
     if (jsonEditor) {
-      if (!jsonEditor.isValidJson()) {
+      const errors = jsonEditor.validate();
+      if (errors) {
         this.message.error("JSON格式错误");
         return null;
       }
-      data.参数 = jsonEditor.get();
+      const result: JSONContent & TextContent = jsonEditor.get() as any;
+      if (result.json) {
+        data.参数 = result.json;
+      } else {
+        data.参数 = JSON.parse(result.text);
+      }
     } else {
       let valid = true;
       for (const v of data.参数 as QiezhongkongItem[]) {

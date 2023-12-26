@@ -9,7 +9,6 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MAT_SNACK_BAR_DEFAULT_OPTIONS, MatSnackBarModule} from "@angular/material/snack-bar";
-import {AngJsoneditorModule} from "@maaxgr/ang-jsoneditor";
 import {InputModule} from "@modules/input/input.module";
 import hljs from "highlight.js";
 import {QuillModule} from "ngx-quill";
@@ -22,7 +21,6 @@ import {MessageComponent} from "./components/message/message.component";
   exports: [MessageComponent, MessageTestComponent],
   imports: [
     A11yModule,
-    AngJsoneditorModule,
     CommonModule,
     FormsModule,
     InputModule,
