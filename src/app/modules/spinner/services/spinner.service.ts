@@ -5,6 +5,7 @@ import {BehaviorSubject} from "rxjs";
 
 export interface SpinnerConfig {
   text?: string;
+  background?: boolean;
 }
 
 @Injectable({
@@ -14,40 +15,40 @@ export class SpinnerService {
   spinnerShow$ = new BehaviorSubject<{id: string; config?: SpinnerConfig}>({id: ""});
   spinnerHide$ = new BehaviorSubject<{id: string}>({id: ""});
   defaultLoaderId = "master";
-  shownSpinners: ObjectOf<SpinnerConfig> = {};
+  shownSpinners: ObjectOf<{config?: SpinnerConfig}[]> = {};
 
   constructor(private loader: NgxUiLoaderService) {
     this.spinnerShow$.subscribe(({id, config}) => {
-      this.shownSpinners[id] = config || {};
+      if (this.shownSpinners[id]) {
+        this.shownSpinners[id].push({config});
+      } else {
+        this.shownSpinners[id] = [{config}];
+      }
+      if (config?.background) {
+        this.loader.startBackgroundLoader(id);
+      } else {
+        this.loader.startLoader(id);
+      }
     });
-    this.spinnerHide$.subscribe(({id}) => delete this.shownSpinners[id]);
+    this.spinnerHide$.subscribe(({id}) => {
+      const showSpinner = this.shownSpinners[id];
+      const {config} = showSpinner.shift() || {};
+      if (showSpinner.length < 1) {
+        if (config?.background) {
+          this.loader.stopBackgroundLoader(id);
+        } else {
+          this.loader.stopLoader(id);
+        }
+        this.loader.stopLoader(id);
+      }
+    });
   }
 
   show(id: string, config?: SpinnerConfig) {
-    this.loader.startLoader(id);
     this.spinnerShow$.next({id, config});
   }
 
   hide(id: string) {
-    this.loader.stopLoader(id);
-    this.spinnerHide$.next({id});
-  }
-
-  showDefault(config?: SpinnerConfig) {
-    this.show(this.defaultLoaderId, config);
-  }
-
-  hideDefault() {
-    this.hide(this.defaultLoaderId);
-  }
-
-  showBackground(id: string, config?: SpinnerConfig) {
-    this.loader.startBackground(id);
-    this.spinnerShow$.next({id, config});
-  }
-
-  hideBackground(id: string) {
-    this.loader.stopBackground(id);
     this.spinnerHide$.next({id});
   }
 }

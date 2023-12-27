@@ -214,7 +214,7 @@ export class CadDataService extends HttpService {
       postData.tiaojian = exportData.conditions;
     }
     const response = await this.post<any>("ngcad/getOptions", postData, httpOptions);
-    const result = this.getResponseDataAndCount(response);
+    const result = this.getDataAndCount(response);
     if (result) {
       return {
         data: (result.data as any[]).map((v: any) => {
@@ -233,12 +233,12 @@ export class CadDataService extends HttpService {
 
   async getSuanliaodan(codes: string[]) {
     const response = await this.post<any[]>("order/order/suanliaodan", {codes});
-    return (this.getResponseData(response) || []).map((v) => new CadData(v));
+    return (this.getData(response) || []).map((v) => new CadData(v));
   }
 
   async removeCads(collection: CadCollection, ids: string[], options?: HttpOptions) {
     const response = await this.post<string[]>("peijian/cad/removeCad", {collection, ids}, options);
-    return this.getResponseData(response);
+    return this.getData(response);
   }
 
   async getBancais(table: string, codes: string[]) {
@@ -251,12 +251,12 @@ export class CadDataService extends HttpService {
       开料孔位配置: string;
       开料参数: string;
     }>("order/order/getBancais", {table, codes});
-    return this.getResponseData(response);
+    return this.getData(response);
   }
 
   async getChangelog(page?: number, pageSize?: number) {
     const response = await this.post<Changelog>("ngcad/getChangelog", {page, pageSize});
-    return {changelog: this.getResponseData(response) || [], count: response?.count || 0};
+    return {changelog: this.getData(response) || [], count: response?.count || 0};
   }
 
   async setChangelogItem(changelogItem: Changelog[0], index: number) {
@@ -276,12 +276,12 @@ export class CadDataService extends HttpService {
 
   async queryMongodb<T extends ObjectOf<any>>(params: QueryMongodbParams, options?: HttpOptions) {
     const response = await this.post<T[]>("ngcad/queryMongodb", params, options);
-    return this.getResponseData(response) || [];
+    return this.getData(response) || [];
   }
 
   async queryMySql<T extends TableDataBase>(params: QueryMysqlParams, options?: HttpOptions) {
     const response = await this.post<T[]>("ngcad/queryMysql", params, {testData: params.table, ...options});
-    return this.getResponseData(response) || [];
+    return this.getData(response) || [];
   }
 
   async getCadImg(id: string, useCache = true, options?: HttpOptions) {
@@ -292,7 +292,7 @@ export class CadDataService extends HttpService {
       }
     }
     const response = await this.post<{url: string | null}>("ngcad/getCadImg", {id}, options);
-    return this.getResponseData(response)?.url || null;
+    return this.getData(response)?.url || null;
   }
 
   async setCadImg(id: string, dataURL: string, options?: HttpOptions) {
@@ -303,7 +303,7 @@ export class CadDataService extends HttpService {
 
   async getShortUrl(name: string, data: ObjectOf<any> = {}, options?: HttpOptions) {
     const response = await this.post<string>("ngcad/getShortUrl", {name, data}, options);
-    return this.getResponseData(response);
+    return this.getData(response);
   }
 
   async tableInsert<T extends TableDataBase = TableDataBase>(params: TableInsertParams<T>, options?: HttpOptions) {
@@ -354,7 +354,7 @@ export class CadDataService extends HttpService {
 
   async getRedisData(key: string, isString = true, options?: HttpOptions) {
     const response = await this.post<{value: any}>("ngcad/getRedisData", {key, isString}, options);
-    return this.getResponseData(response)?.value;
+    return this.getData(response)?.value;
   }
 
   async setRedisData(value: any, key?: string, expireTime?: number, options?: HttpOptions) {
@@ -363,12 +363,12 @@ export class CadDataService extends HttpService {
 
   async getBancaiList() {
     const response = await this.post<BancaiListData>("ngcad/getBancaiList");
-    return this.getResponseData(response);
+    return this.getData(response);
   }
 
   async getTableRenderData(table: string) {
     const response = await this.post<TableRenderData>("ngcad/getTableData", {table});
-    return this.getResponseData(response);
+    return this.getData(response);
   }
 
   async downloadExcel(data: string[][], title?: string, filename?: string) {

@@ -4,8 +4,6 @@ import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {KailiaocanshuData, KlcsComponent} from "@components/klcs/klcs.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 @Component({
@@ -22,9 +20,7 @@ export class KailiaocanshuComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private dataService: CadDataService,
-    private spinner: SpinnerService,
-    private message: MessageService
+    private dataService: CadDataService
   ) {}
 
   async ngOnInit() {
@@ -32,10 +28,8 @@ export class KailiaocanshuComponent implements OnInit {
     if (!id) {
       return;
     }
-    this.spinner.show(this.loaderId);
-    const response = await this.dataService.post<KailiaocanshuData>("peijian/kailiaocanshu/get", {id});
-    this.spinner.hide(this.loaderId);
-    const data = this.dataService.getResponseData(response);
+    const response = await this.dataService.post<KailiaocanshuData>("peijian/kailiaocanshu/get", {id}, {spinner: this.loaderId});
+    const data = this.dataService.getData(response);
     if (data) {
       this.data = data;
     }
@@ -46,9 +40,7 @@ export class KailiaocanshuComponent implements OnInit {
     if (this.klcsComponent) {
       const data = await this.klcsComponent.submit();
       if (data) {
-        this.spinner.show(this.loaderId);
-        await this.dataService.post<KailiaocanshuData>("peijian/kailiaocanshu/set", {data});
-        this.spinner.hide(this.loaderId);
+        await this.dataService.post<KailiaocanshuData>("peijian/kailiaocanshu/set", {data}, {spinner: this.loaderId});
       }
     }
   }

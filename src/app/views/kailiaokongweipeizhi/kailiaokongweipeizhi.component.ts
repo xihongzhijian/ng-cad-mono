@@ -7,7 +7,6 @@ import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 @Component({
@@ -26,8 +25,7 @@ export class KailiaokongweipeizhiComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private dataService: CadDataService,
-    private message: MessageService,
-    private spinner: SpinnerService
+    private message: MessageService
   ) {}
 
   ngOnInit() {
@@ -39,7 +37,7 @@ export class KailiaokongweipeizhiComponent implements OnInit {
     if (id) {
       this.id = id;
       const response = await this.dataService.get<ObjectOf<KlkwpzItem[]>>("peijian/kailiaokongweipeizhi/get", {id}, {testData: "klkwpz"});
-      const data = this.dataService.getResponseData(response);
+      const data = this.dataService.getData(response);
       if (data && typeof data === "object" && !Array.isArray(data)) {
         this.data = data;
       }
@@ -53,15 +51,14 @@ export class KailiaokongweipeizhiComponent implements OnInit {
 
   async submit() {
     if (this.klkwpzComponent && this.klkwpzComponent.submit()) {
-      this.spinner.show(this.loaderId);
-      const response = await this.dataService.post("peijian/kailiaokongweipeizhi/set", {
-        id: this.id,
-        data: this.klkwpzComponent.klkwpz.export()
-      });
+      const response = await this.dataService.post(
+        "peijian/kailiaokongweipeizhi/set",
+        {id: this.id, data: this.klkwpzComponent.klkwpz.export()},
+        {spinner: this.loaderId}
+      );
       if (response?.code === 0) {
         this._fetch();
       }
-      this.spinner.hide(this.loaderId);
     }
   }
 }

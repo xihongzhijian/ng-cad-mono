@@ -181,8 +181,8 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     try {
       let responseData = session.load<PrintCadsParams>(this._httpCacheKey);
       if (!responseData) {
-        const response = await this.dataService.post<PrintCadsParams>(action, queryParams, {encrypt: "both"});
-        responseData = this.dataService.getResponseData(response);
+        const response = await this.dataService.post<PrintCadsParams>(action, queryParams, {encrypt: "both", spinner: false});
+        responseData = this.dataService.getData(response);
         if (!this.production) {
           session.save(this._httpCacheKey, responseData);
         }
@@ -209,10 +209,14 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
         document.title = this.printParams.info.title;
         const {codes, type} = this.printParams;
         if (codes.length === 1) {
-          const response2 = await this.dataService.post<ZixuanpeijianOutput>("ngcad/getOrderZixuanpeijian", {
-            code: codes[0],
-            type
-          });
+          const response2 = await this.dataService.post<ZixuanpeijianOutput>(
+            "ngcad/getOrderZixuanpeijian",
+            {
+              code: codes[0],
+              type
+            },
+            {spinner: false}
+          );
           if (response2?.data) {
             const {模块, 零散, 备注, 文本映射} = importZixuanpeijian(response2.data);
             this.zixuanpeijian = {模块, 零散};
@@ -725,11 +729,15 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   }
 
   async getOrderImage() {
-    const response = await this.dataService.post<{prefix: string; data: {zhengmiantu: string}[]}>("order/api/getImage", {
-      code: this.printParams.codes[0],
-      type: this.printParams.type
-    });
-    const responseData = this.dataService.getResponseData(response);
+    const response = await this.dataService.post<{prefix: string; data: {zhengmiantu: string}[]}>(
+      "order/api/getImage",
+      {
+        code: this.printParams.codes[0],
+        type: this.printParams.type
+      },
+      {spinner: false}
+    );
+    const responseData = this.dataService.getData(response);
     if (responseData && responseData.data?.length > 0) {
       const {prefix, data} = responseData;
       this.orderImageUrl = data[0].zhengmiantu ? prefix + data[0].zhengmiantu : "";
@@ -746,13 +754,17 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     const blob = await imageCompression(file, {maxSizeMB: 1, useWebWorker: true});
     file = new File([blob], file.name, {type: file.type});
     target.value = "";
-    const response = await this.dataService.post<{prefix: string; save_path: string}>("order/api/uploadImage", {
-      code: this.printParams.codes[0],
-      type: this.printParams.type,
-      field: "zhengmiantu",
-      file
-    });
-    const data = this.dataService.getResponseData(response);
+    const response = await this.dataService.post<{prefix: string; save_path: string}>(
+      "order/api/uploadImage",
+      {
+        code: this.printParams.codes[0],
+        type: this.printParams.type,
+        field: "zhengmiantu",
+        file
+      },
+      {spinner: false}
+    );
+    const data = this.dataService.getData(response);
     if (data) {
       const {prefix, save_path} = data;
       this.orderImageUrl = prefix + save_path;

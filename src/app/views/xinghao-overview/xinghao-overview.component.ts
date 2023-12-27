@@ -18,7 +18,6 @@ import {NavsData, NavsDataNode, NavsResultItem} from "@components/dialogs/navs-d
 import {downloadByString, ObjectOf, selectFiles, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
 import {XinghaoOverviewData, XinghaoOverviewTableData} from "./xinghao-overview.types";
@@ -50,7 +49,6 @@ export class XinghaoOverviewComponent implements OnInit {
   wmm = new WindowMessageManager("xinghaoOverview", this, window.parent);
 
   constructor(
-    private spinner: SpinnerService,
     private dataService: CadDataService,
     private message: MessageService
   ) {
@@ -58,7 +56,6 @@ export class XinghaoOverviewComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.spinner.show(this.spinner.defaultLoaderId);
     let records = await this.dataService.queryMySql<XinghaoOverviewTableData>({table: this.table, limit: 1});
     if (!records[0]) {
       await this.dataService.tableInsert<XinghaoOverviewTableData>({table: this.table, data: {data: "{}"}});
@@ -71,7 +68,7 @@ export class XinghaoOverviewComponent implements OnInit {
       this.message.error("数据错误");
     }
     const navsResponse = await this.dataService.post<NavsData>("ngcad/getNavs");
-    this.navs = this.dataService.getResponseData(navsResponse) || [];
+    this.navs = this.dataService.getData(navsResponse) || [];
     const printedNavs = new Set<string>();
     const printNav = (item: NavsResultItem) => {
       const {tou, da, xiao} = item;
@@ -106,7 +103,6 @@ export class XinghaoOverviewComponent implements OnInit {
       addXiaodaohang(tou);
     }
     this.data.justify(this.xiaodaohangs);
-    this.spinner.hide(this.spinner.defaultLoaderId);
   }
 
   addNavSection() {
@@ -179,9 +175,7 @@ export class XinghaoOverviewComponent implements OnInit {
 
   async submit() {
     const data = this.data.export();
-    this.spinner.show(this.spinner.defaultLoaderId);
     this.dataService.tableUpdate<XinghaoOverviewTableData>({table: this.table, data: {vid: this.data.id, data}});
-    this.spinner.hide(this.spinner.defaultLoaderId);
   }
 
   async import() {

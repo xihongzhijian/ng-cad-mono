@@ -56,11 +56,9 @@ export class NavsDialogComponent {
     if (this.data?.navs) {
       this.navs = this.data.navs;
     } else {
-      this.spinner.show(this.spinner.defaultLoaderId);
       const navsResponse = await this.dataService.post<NavsData>("ngcad/getNavs");
-      this.navs = this.dataService.getResponseData(navsResponse);
+      this.navs = this.dataService.getData(navsResponse);
       session.save(this._navsKey, this.navs);
-      this.spinner.hide(this.spinner.defaultLoaderId);
     }
     this.dataSource.data = this.navs || [];
     this.treeControl.dataNodes = this.dataSource.data;

@@ -293,7 +293,7 @@ export class ImportComponent extends Utils() implements OnInit {
     for (let i = 0; i < totalSlgs; i++) {
       const response = await this.dataService.post("ngcad/updateSuanliaogonshi", {data: this.slgses[i].data}, httpOptions);
       this.msg = `正在导入算料公式(${i + 1}/${totalSlgs})`;
-      if (!this.dataService.getResponseData(response)) {
+      if (!this.dataService.getData(response)) {
         skipped++;
         this.slgses[i].errors.push(this.dataService.lastResponse?.msg || "保存失败");
       }
@@ -378,12 +378,10 @@ export class ImportComponent extends Utils() implements OnInit {
           } else {
             const response = await this.dataService.post<string>(
               "ngcad/generateUniqCode",
-              {
-                uniqCode: CadPortable.getUniqCode(v.data)
-              },
+              {uniqCode: CadPortable.getUniqCode(v.data)},
               httpOptions
             );
-            const 唯一码 = this.dataService.getResponseData(response);
+            const 唯一码 = this.dataService.getData(response);
             if (唯一码) {
               v.data.info.唯一码 = 唯一码;
             } else {

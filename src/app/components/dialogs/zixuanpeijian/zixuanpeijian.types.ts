@@ -13,6 +13,7 @@ import {CadData, CadMtext, CadViewerConfig, CadZhankai, setLinesLength} from "@l
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
+import {HttpOptions} from "@modules/http/services/http.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
@@ -272,22 +273,27 @@ export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null,
   return arr.join(" - ");
 };
 
-export const getStep1Data = async (dataService: CadDataService, params?: {code: string; type: string} | {mokuaiIds: string[]}) => {
-  const response = await dataService.post<Step1Data>("ngcad/getZixuanpeijianTypesInfo", params);
-  return dataService.getResponseData(response);
+export const getStep1Data = async (
+  dataService: CadDataService,
+  httpOptions: HttpOptions,
+  params?: {code: string; type: string} | {mokuaiIds: string[]}
+) => {
+  const response = await dataService.post<Step1Data>("ngcad/getZixuanpeijianTypesInfo", params, httpOptions);
+  return dataService.getData(response);
 };
 
 export const getZixuanpeijianCads = async (
   dataService: CadDataService,
+  httpOptions: HttpOptions,
   typesInfo: ObjectOf<ObjectOf<1>>,
   materialResult: Formulas = {}
 ) => {
   const response = await dataService.post<{cads: ObjectOf<ObjectOf<any[]>>; bancais: BancaiList[]}>(
     "ngcad/getZixuanpeijianCads",
     {typesInfo},
-    {testData: "zixuanpeijianCads"}
+    {testData: "zixuanpeijianCads", ...httpOptions}
   );
-  const data = dataService.getResponseData(response);
+  const data = dataService.getData(response);
   if (data) {
     const cads: ObjectOf<ObjectOf<CadData[]>> = {};
     const {cads: cadsRaw, bancais} = data;

@@ -178,7 +178,7 @@ export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterV
     this.spinner.show(this.spinner.defaultLoaderId);
     const response = await this.dataService.post<ToBeReplaced[]>("peijian/cad/replaceTextReady", postData);
     this.spinner.hide(this.spinner.defaultLoaderId);
-    const data = this.dataService.getResponseData(response);
+    const data = this.dataService.getData(response);
     if (data) {
       if (data.length < 1) {
         this.message.alert("没有可替换的文本");

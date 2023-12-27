@@ -23,7 +23,6 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {cloneDeep, debounce, uniq, uniqueId} from "lodash";
@@ -166,7 +165,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     public dialogRef: MatDialogRef<ZixuanpeijianComponent, ZixuanpeijianOutput>,
     @Inject(MAT_DIALOG_DATA) public data: ZixuanpeijianInput | null,
     private dataService: CadDataService,
-    private spinner: SpinnerService,
     private message: MessageService,
     private dialog: MatDialog,
     private elRef: ElementRef<HTMLElement>,
@@ -202,9 +200,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     } else {
       const {code, type} = this.data?.order || {};
       if (code && type) {
-        this.spinner.show(this.spinnerId);
-        step1Data = await getStep1Data(this.dataService, {code, type});
-        this.spinner.hide(this.spinnerId);
+        step1Data = await getStep1Data(this.dataService, {spinner: this.spinnerId}, {code, type});
       }
     }
     if (step1Data) {
@@ -231,7 +227,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         typesInfo[type1][type2] = 1;
       }
     });
-    const zxpjCads = await getZixuanpeijianCads(this.dataService, typesInfo, this.materialResult);
+    const zxpjCads = await getZixuanpeijianCads(this.dataService, {spinner: this.spinnerId}, typesInfo, this.materialResult);
     if (zxpjCads) {
       const {cads, bancais} = zxpjCads;
       this.bancaiList = bancais;
@@ -386,7 +382,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   async step3Fetch(updateInputInfos = true) {
     const response = await this.dataService.post<{cads: CadData[]}>("ngcad/getLingsanCads");
-    const responseData = this.dataService.getResponseData(response);
+    const responseData = this.dataService.getData(response);
     if (responseData) {
       this.lingsanCadImgs = {};
       this.lingsanCadInfos = {};
@@ -440,12 +436,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async allFetch() {
-    this.spinner.show(this.spinnerId);
     await Promise.all([this.step1Fetch(), this.step3Fetch()]);
     await this.step2Fetch();
     this._updateInputInfos();
     await timeout(0);
-    this.spinner.hide(this.spinnerId);
   }
 
   private _configCad(data: CadData) {
@@ -931,7 +925,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const collection = "cad";
     let id = data.id;
     const response = await this.dataService.post<{id: string}>("peijian/cad/copyCad", {collection, id, data: {名字: name}});
-    const responseData = this.dataService.getResponseData(response);
+    const responseData = this.dataService.getData(response);
     if (!responseData) {
       return;
     }
@@ -1172,9 +1166,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       this.message.error("当前配件模块数据是旧数据，请刷新数据");
       return;
     }
-    this.spinner.show(this.spinnerId);
-    const url = await this.dataService.getShortUrl("配件模块", {search2: {where_in: {vid: ids}}});
-    this.spinner.hide(this.spinnerId);
+    const url = await this.dataService.getShortUrl("配件模块", {search2: {where_in: {vid: ids}}}, {spinner: this.spinnerId});
     if (url) {
       // this.message.iframe(this.mokuaiUrl);
       open(url, "_blank");

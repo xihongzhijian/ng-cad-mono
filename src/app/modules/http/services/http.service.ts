@@ -98,7 +98,23 @@ export class HttpService {
     }
     let axiosResponse: AxiosResponse<CustomResponse<T>> | null = null;
     let response: CustomResponse<T> | null = null;
-    this.spinner.showBackground(this.loaderId);
+    let loaderId = options?.spinner;
+    if (silent) {
+      loaderId = false;
+    } else {
+      if (loaderId === true || loaderId === undefined) {
+        loaderId = this.spinner.defaultLoaderId;
+      }
+    }
+    if (loaderId) {
+      if (typeof loaderId === "object") {
+        this.spinner.show(loaderId.id || this.spinner.defaultLoaderId, loaderId.config);
+      } else {
+        this.spinner.show(loaderId);
+      }
+    } else {
+      this.spinner.show(this.loaderId, {background: true});
+    }
     try {
       if (method === "GET") {
         if (data) {
@@ -227,7 +243,15 @@ export class HttpService {
       this.error(content, silent, response?.title);
       return response;
     } finally {
-      this.spinner.hideBackground(this.loaderId);
+      if (loaderId) {
+        if (typeof loaderId === "object") {
+          this.spinner.hide(loaderId.id || this.spinner.defaultLoaderId);
+        } else {
+          this.spinner.hide(loaderId);
+        }
+      } else {
+        this.spinner.hide(this.loaderId);
+      }
       this.lastResponse = response;
       if (response) {
         response.duration = timer.getDuration(timerName);
@@ -248,14 +272,14 @@ export class HttpService {
     return await this.request<T>(url, "POST", data, options);
   }
 
-  getResponseData<T>(response: CustomResponse<T> | null, ignoreCode?: boolean) {
+  getData<T>(response: CustomResponse<T> | null, ignoreCode?: boolean) {
     if (response && (ignoreCode || response.code === 0)) {
       return response.data || null;
     }
     return null;
   }
 
-  getResponseDataAndCount<T>(response: CustomResponse<T> | null, ignoreCode?: boolean) {
+  getDataAndCount<T>(response: CustomResponse<T> | null, ignoreCode?: boolean) {
     if (response && (ignoreCode || response.code === 0)) {
       const data = response.data || null;
       const count = response.count || 0;

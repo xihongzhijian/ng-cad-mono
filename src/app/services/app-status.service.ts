@@ -128,7 +128,7 @@ export class AppStatusService {
           if (!response) {
             this.dataService.offlineMode = true;
           }
-          this.isAdmin$.next(this.dataService.getResponseData(response) === true);
+          this.isAdmin$.next(this.dataService.getData(response) === true);
         } else {
           this.isAdmin$.next(true);
         }
@@ -152,7 +152,7 @@ export class AppStatusService {
 
       {
         const response = await this.dataService.post<ProjectConfigRaw>("ngcad/getProjectConfig");
-        this.projectConfig.setRaw(this.dataService.getResponseData(response) || {});
+        this.projectConfig.setRaw(this.dataService.getData(response) || {});
       }
     }
     return true;
@@ -459,7 +459,7 @@ export class AppStatusService {
       return;
     }
     const response = await this.dataService.get<[number, number]>("ngcad/getZhewan");
-    const data = this.dataService.getResponseData(response);
+    const data = this.dataService.getData(response);
     if (data) {
       this.zhewanLengths$.next(data);
       this._isZhewanLengthsFetched = true;

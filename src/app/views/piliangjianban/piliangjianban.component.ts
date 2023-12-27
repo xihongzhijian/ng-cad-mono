@@ -81,9 +81,10 @@ export class PiliangjianbanComponent implements OnInit {
     }
     const url = "order/order/piliangjianban";
     const params = this.route.snapshot.queryParams;
-    this.spinner.show(this.spinner.defaultLoaderId, {text: "获取数据..."});
-    const response = await this.dataService.post<Bancai[]>(url, params);
-    const responseData = this.dataService.getResponseData(response);
+    const response = await this.dataService.post<Bancai[]>(url, params, {
+      spinner: {id: this.spinner.defaultLoaderId, config: {text: "获取数据..."}}
+    });
+    const responseData = this.dataService.getData(response);
     if (responseData) {
       this.spinner.show(this.spinner.defaultLoaderId, {text: "生成预览图..."});
       this.bancais.length = 0;
@@ -134,8 +135,6 @@ export class PiliangjianbanComponent implements OnInit {
       config.width = innerWidth * 0.85;
       config.height = innerHeight * 0.85;
       await Promise.all(dataAll.map(async (v) => (v.imgLarge = await getImg(v.cad))));
-    } else {
-      this.spinner.hide(this.spinner.defaultLoaderId);
     }
   }
 

@@ -14,9 +14,6 @@ export const Subscribed = <T extends Constructor>(base: T = class {} as T) =>
     subscribe<K>(target: Observable<K>, observer: Partial<Observer<K>>): Subscription;
     subscribe<K>(target: Observable<K>, next: (value: K) => void): Subscription;
     subscribe<K>(target: Observable<K>, observer: Partial<Observer<K>> | ((value: K) => void)) {
-      if (typeof observer === "function") {
-        return target.pipe(takeUntil(this.destroyed$)).subscribe(observer);
-      }
       return target.pipe(takeUntil(this.destroyed$)).subscribe(observer);
     }
   };

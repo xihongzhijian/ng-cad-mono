@@ -15,7 +15,6 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
 import {isEmpty, union} from "lodash";
@@ -91,7 +90,6 @@ export class MrbcjfzComponent implements OnInit {
     private route: ActivatedRoute,
     private dataService: CadDataService,
     private dialog: MatDialog,
-    private spinner: SpinnerService,
     private status: AppStatusService,
     private message: MessageService
   ) {
@@ -150,7 +148,7 @@ export class MrbcjfzComponent implements OnInit {
         {table, id},
         {testData: "bancaifenzuIndex"}
       );
-      const data = this.dataService.getResponseData(response);
+      const data = this.dataService.getData(response);
       if (data) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, data.xinghao);
         this.bancaiKeys = data.bancaiKeys;
@@ -429,7 +427,6 @@ export class MrbcjfzComponent implements OnInit {
     }
     const data: TableUpdateParams<MrbcjfzXinghao>["data"] = {vid: xinghao.raw.vid};
     data.morenbancai = JSON.stringify(xinghao.默认板材);
-    this.spinner.show(this.spinner.defaultLoaderId);
     let result = false;
     if (isFromOrder) {
       const response = await this.dataService.post("peijian/api/updateMorenbancaijifenzu", {
@@ -440,7 +437,6 @@ export class MrbcjfzComponent implements OnInit {
     } else {
       result = await this.dataService.tableUpdate({table, data});
     }
-    this.spinner.hide(this.spinner.defaultLoaderId);
     this.dataSubmit.emit(this.xinghao);
     return result;
   }

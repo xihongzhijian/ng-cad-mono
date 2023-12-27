@@ -56,7 +56,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     this.dataService.token = token;
     const menshanbujus = await this.dataService.queryMySql<MsbjData>({table: "p_menshanbuju"});
     this.msbjs = menshanbujus.map((item) => new MsbjInfo(item));
-    this.step1Data = await getStep1Data(this.dataService);
+    this.step1Data = await getStep1Data(this.dataService, {});
     this.wmm.postMessage("suanliaoReady");
   }
 

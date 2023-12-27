@@ -91,10 +91,8 @@ export class BomGongyiluxianComponent implements OnInit {
     if (this.loadCache()) {
       dataRaw = this.dataRaw;
     } else {
-      this.spinner.show(this.spinner.defaultLoaderId);
       const response = await this.dataService.post<DingdanBomDataResponseData>("ngcad/getDingdanBomData", {table, code});
-      dataRaw = this.dataService.getResponseData(response);
-      this.spinner.hide(this.spinner.defaultLoaderId);
+      dataRaw = this.dataService.getData(response);
       this.dataRaw = dataRaw;
       this.saveCache();
     }

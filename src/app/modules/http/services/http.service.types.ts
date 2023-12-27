@@ -1,3 +1,4 @@
+import {SpinnerConfig} from "@modules/spinner/services/spinner.service";
 import {AxiosRequestConfig} from "axios";
 import hljs from "highlight.js";
 
@@ -19,6 +20,7 @@ export interface HttpOptions extends AxiosRequestConfig {
   encrypt?: DataEncrpty;
   testData?: string;
   offlineMode?: boolean;
+  spinner?: string | boolean | {id?: string; config: SpinnerConfig};
 }
 
 export class HttpServiceResponseError extends Error {

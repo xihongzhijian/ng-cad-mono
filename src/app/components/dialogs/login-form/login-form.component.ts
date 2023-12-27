@@ -100,7 +100,7 @@ export class LoginFormComponent implements AfterViewInit {
       this.dialogRef.close(false);
     }
     for (const id in this.shownSpinners) {
-      this.spinner.show(id, this.shownSpinners[id]);
+      this.spinner.show(id, this.shownSpinners[id].at(-1)?.config);
     }
     this.shownSpinners = {};
   }

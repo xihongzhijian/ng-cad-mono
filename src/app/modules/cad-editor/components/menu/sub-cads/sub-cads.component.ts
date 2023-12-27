@@ -315,7 +315,7 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
         flat: true,
         isMuban: true
       });
-      const result = this.dataService.getResponseData(sourceResponse);
+      const result = this.dataService.getData(sourceResponse);
       if (result) {
         sourceData = result.map((v) => new CadData(v));
       }

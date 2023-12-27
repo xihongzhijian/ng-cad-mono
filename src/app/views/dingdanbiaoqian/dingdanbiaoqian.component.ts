@@ -32,6 +32,7 @@ import {environment} from "@env";
 import {CadData, CadLine, CadViewer, CadViewerConfig, Defaults, generateLineTexts, setLinesLength} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {HttpOptions} from "@modules/http/services/http.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -185,8 +186,8 @@ export class DingdanbiaoqianComponent implements OnInit {
     }
     if (!ddbqData) {
       this.spinner.show(this.spinner.defaultLoaderId, {text: "获取数据..."});
-      const response = await this.dataService.post<DdbqData>(url, params);
-      ddbqData = this.dataService.getResponseData(response);
+      const response = await this.dataService.post<DdbqData>(url, params, {spinner: false});
+      ddbqData = this.dataService.getData(response);
       if (enableCache && ddbqData) {
         try {
           session.save(this._httpCacheKey, ddbqData);
@@ -497,7 +498,8 @@ export class DingdanbiaoqianComponent implements OnInit {
     if (mokuaiIds.length <= 0) {
       return;
     }
-    const step1Data = await getStep1Data(this.dataService, {mokuaiIds});
+    const httpOptions: HttpOptions = {spinner: false};
+    const step1Data = await getStep1Data(this.dataService, httpOptions, {mokuaiIds});
     if (!step1Data) {
       return;
     }
@@ -509,7 +511,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         typesInfo2[type1][type2] = 1;
       }
     }
-    const cads = (await getZixuanpeijianCads(this.dataService, typesInfo2))?.cads;
+    const cads = (await getZixuanpeijianCads(this.dataService, httpOptions, typesInfo2))?.cads;
     if (!cads) {
       return;
     }

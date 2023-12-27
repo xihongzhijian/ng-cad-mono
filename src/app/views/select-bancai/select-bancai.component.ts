@@ -16,14 +16,13 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiCad, BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {DdbqType} from "@views/dingdanbiaoqian/dingdanbiaoqian.types";
 import {cloneDeep} from "lodash";
 import {DateTime} from "luxon";
 import {NgScrollbar} from "ngx-scrollbar";
-import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 import {
   BancaiCadExtend,
   BancaisInfo,
@@ -88,7 +87,6 @@ export class SelectBancaiComponent extends Subscribed() {
     private dataService: CadDataService,
     private message: MessageService,
     private dialog: MatDialog,
-    private spinner: SpinnerService,
     private status: AppStatusService,
     private config: AppConfigService
   ) {
@@ -113,11 +111,9 @@ export class SelectBancaiComponent extends Subscribed() {
         await this.getXikongData(false, true);
       } else {
         this.isShowXikong = false;
-        this.spinner.show(this.loaderId);
         await this.refreshDownloadHistory();
         const response = await this.dataService.post<BancaisInfo>("order/order/getBancais", {table, codes: this.codes});
-        const result = this.dataService.getResponseData(response);
-        this.spinner.hide(this.loaderId);
+        const result = this.dataService.getData(response);
         if (result) {
           const bancaiZidingyi = result.bancaiList.find((v) => v.mingzi === "自定义");
           const errMsgs: string[] = [];
@@ -182,7 +178,7 @@ export class SelectBancaiComponent extends Subscribed() {
 
   async refreshDownloadHistory() {
     const response = await this.dataService.post<ObjectOf<any>[]>("order/order/getKailiaoDlHistory", {codes: this.codes});
-    const dlHistory = this.dataService.getResponseData(response);
+    const dlHistory = this.dataService.getData(response);
     if (dlHistory) {
       this.downloadHistory = dlHistory.map<SelectBancaiDlHistory>((v) => ({
         name: v.name,
@@ -417,7 +413,6 @@ export class SelectBancaiComponent extends Subscribed() {
       }
       bancaiCadsArr.push(arr1);
     }
-    this.spinner.show(this.submitLoaderId);
     const api = "order/order/selectBancai";
     const {table, autoGuige, type} = this;
     const projectConfigOverride: ObjectOf<string> = {};
@@ -429,9 +424,8 @@ export class SelectBancaiComponent extends Subscribed() {
     try {
       const response = await this.dataService.post<string | string[]>(api, data);
       await this.refreshDownloadHistory();
-      url = this.dataService.getResponseData(response);
+      url = this.dataService.getData(response);
     } catch (error) {}
-    this.spinner.hide(this.submitLoaderId);
     if (url) {
       this.xikongData = null;
       if (Array.isArray(url)) {
@@ -506,7 +500,7 @@ export class SelectBancaiComponent extends Subscribed() {
   async getDakongSummary() {
     const {codes} = this;
     const response = await this.dataService.post<DakongSummary>("order/order/getDakongSummary", {codes});
-    const data = this.dataService.getResponseData(response);
+    const data = this.dataService.getData(response);
     if (!data) {
       return;
     }
@@ -531,7 +525,7 @@ export class SelectBancaiComponent extends Subscribed() {
     if (!this.xikongData || !useCache) {
       const {codes} = this;
       const response = await this.dataService.post<XikongData>("order/order/getXikongData", {codes});
-      this.xikongData = this.dataService.getResponseData(response);
+      this.xikongData = this.dataService.getData(response);
     }
     const data = {...this.xikongData};
     const toDelete: string[] = [];

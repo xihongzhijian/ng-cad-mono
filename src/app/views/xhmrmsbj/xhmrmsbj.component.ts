@@ -157,7 +157,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    const step1Data = await getStep1Data(this.dataService);
+    const step1Data = await getStep1Data(this.dataService, {});
     this.mokuais = [];
     if (step1Data) {
       this.step1Data = step1Data;
