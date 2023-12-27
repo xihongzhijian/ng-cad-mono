@@ -5,9 +5,7 @@ import {MatExpansionModule} from "@angular/material/expansion";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {imgEmpty} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
-import {DirectivesModule} from "@modules/directives/directives.module";
 import {HttpModule} from "@modules/http/http.module";
-import {ImageModule} from "@modules/image/image.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {DingdanbiaoqianComponent} from "./dingdanbiaoqian.component";
@@ -44,17 +42,15 @@ describe("DingdanbiaoqianComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [DingdanbiaoqianComponent],
       imports: [
-        DirectivesModule,
         FormsModule,
         HttpModule,
-        ImageModule,
         MatCardModule,
         MatExpansionModule,
         MatSlideToggleModule,
         MessageModule,
-        SpinnerModule
+        SpinnerModule,
+        DingdanbiaoqianComponent
       ]
     }).compileComponents();
   });

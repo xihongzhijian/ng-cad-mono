@@ -12,8 +12,7 @@ describe("JiaoweiComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [JiaoweiComponent],
-      imports: [HttpModule, MatButtonModule, MessageModule, NgScrollbarModule, SpinnerModule]
+      imports: [HttpModule, MatButtonModule, MessageModule, NgScrollbarModule, SpinnerModule, JiaoweiComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(JiaoweiComponent);

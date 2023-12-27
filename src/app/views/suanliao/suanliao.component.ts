@@ -33,7 +33,8 @@ import {
 @Component({
   selector: "app-suanliao",
   templateUrl: "./suanliao.component.html",
-  styleUrls: ["./suanliao.component.scss"]
+  styleUrls: ["./suanliao.component.scss"],
+  standalone: true
 })
 export class SuanliaoComponent implements OnInit, OnDestroy {
   msbjs: MsbjInfo[] = [];

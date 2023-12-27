@@ -1,4 +1,6 @@
+import {NgClass, NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
 import {CadData, CadLine} from "@lucilor/cad-viewer";
 import {exportObject, importObject, timeout} from "@lucilor/utils";
@@ -8,12 +10,16 @@ import {MessageData} from "@modules/message/components/message/message-types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {cloneDeep, isObject, uniq} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
 import {JSONContent, JSONEditor, TextContent} from "vanilla-jsoneditor";
+import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
   selector: "app-klcs",
   templateUrl: "./klcs.component.html",
-  styleUrls: ["./klcs.component.scss"]
+  styleUrls: ["./klcs.component.scss"],
+  standalone: true,
+  imports: [NgFor, InputComponent, NgIf, NgClass, NgScrollbar, MatButtonModule]
 })
 export class KlcsComponent implements OnInit, AfterViewInit {
   private _data: KailiaocanshuData = {_id: "", 名字: "", 分类: "", 参数: []};

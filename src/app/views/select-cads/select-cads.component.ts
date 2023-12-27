@@ -8,7 +8,8 @@ import {environment} from "src/environments/environment";
 @Component({
   selector: "app-select-cads",
   templateUrl: "./select-cads.component.html",
-  styleUrls: ["./select-cads.component.scss"]
+  styleUrls: ["./select-cads.component.scss"],
+  standalone: true
 })
 export class SelectCadsComponent implements OnInit {
   private _paramsKey = "selectCadParams";

@@ -12,8 +12,7 @@ describe("AnchorSelectorComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AnchorSelectorComponent],
-      imports: [FormsModule, MatAutocompleteModule, MatInputModule, MatFormFieldModule, BrowserAnimationsModule]
+      imports: [FormsModule, MatAutocompleteModule, MatInputModule, MatFormFieldModule, BrowserAnimationsModule, AnchorSelectorComponent]
     }).compileComponents();
   });
 

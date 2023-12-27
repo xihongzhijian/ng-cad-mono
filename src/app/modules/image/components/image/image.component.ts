@@ -1,5 +1,6 @@
 import {animate, style, transition, trigger} from "@angular/animations";
 import {coerceBooleanProperty} from "@angular/cdk/coercion";
+import {NgClass, NgIf, NgStyle} from "@angular/common";
 import {Component, ElementRef, Input, ViewChild} from "@angular/core";
 import {SafeUrl} from "@angular/platform-browser";
 import {timeout} from "@lucilor/utils";
@@ -24,7 +25,9 @@ const imgLoading = "assets/images/loading.gif";
         animate("0.3s", style({transform: "scale(0)", opacity: 0}))
       ])
     ])
-  ]
+  ],
+  standalone: true,
+  imports: [NgIf, NgStyle, NgClass]
 })
 export class ImageComponent {
   private _src?: string | SafeUrl;

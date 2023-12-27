@@ -1,4 +1,8 @@
+import {NgClass, NgFor, NgStyle} from "@angular/common";
 import {Component, HostListener, OnInit} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
+import {MatExpansionModule} from "@angular/material/expansion";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {imgLoading} from "@app/app.common";
@@ -10,6 +14,7 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
 import {cloneDeep} from "lodash";
+import {ImageComponent} from "../../modules/image/components/image/image.component";
 
 export interface Bancai {
   data: {
@@ -37,7 +42,9 @@ export interface Bancai {
 @Component({
   selector: "app-piliangjianban",
   templateUrl: "./piliangjianban.component.html",
-  styleUrls: ["./piliangjianban.component.scss"]
+  styleUrls: ["./piliangjianban.component.scss"],
+  standalone: true,
+  imports: [MatExpansionModule, NgFor, NgStyle, MatCardModule, ImageComponent, NgClass, MatButtonModule]
 })
 export class PiliangjianbanComponent implements OnInit {
   bancais: Bancai[] = [];

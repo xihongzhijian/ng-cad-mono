@@ -18,7 +18,6 @@ describe("LoginFormComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [LoginFormComponent],
       imports: [
         BrowserAnimationsModule,
         MatFormFieldModule,
@@ -27,7 +26,8 @@ describe("LoginFormComponent", () => {
         MessageModule,
         ReactiveFormsModule,
         RecaptchaV3Module,
-        SpinnerModule
+        SpinnerModule,
+        LoginFormComponent
       ],
       providers: [
         {provide: MatDialogRef, useValue: {}},

@@ -1,5 +1,14 @@
+import {KeyValuePipe, NgClass, NgFor, NgIf, NgStyle, NgSwitch, NgSwitchCase, NgTemplateOutlet} from "@angular/common";
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatSelectModule} from "@angular/material/select";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute} from "@angular/router";
 import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
@@ -31,14 +40,42 @@ import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {cloneDeep, intersection, isEqual} from "lodash";
 import md5 from "md5";
+import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom} from "rxjs";
+import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
+import {ImageComponent} from "../../modules/image/components/image/image.component";
+import {InputComponent} from "../../modules/input/components/input.component";
 import {XhmrmsbjData, XhmrmsbjInfo, XhmrmsbjTableData, XhmrmsbjTabName, xhmrmsbjTabNames} from "./xhmrmsbj.types";
 
 const table = "p_xinghaomorenmenshanbuju";
 @Component({
   selector: "app-xhmrmsbj",
   templateUrl: "./xhmrmsbj.component.html",
-  styleUrls: ["./xhmrmsbj.component.scss"]
+  styleUrls: ["./xhmrmsbj.component.scss"],
+  standalone: true,
+  imports: [
+    NgFor,
+    MatButtonModule,
+    MatDividerModule,
+    NgIf,
+    NgSwitch,
+    NgSwitchCase,
+    MatSlideToggleModule,
+    FormsModule,
+    NgScrollbar,
+    NgClass,
+    MsbjRectsComponent,
+    InputComponent,
+    NgStyle,
+    NgTemplateOutlet,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    TypedTemplateDirective,
+    ImageComponent,
+    MatIconModule,
+    KeyValuePipe
+  ]
 })
 export class XhmrmsbjComponent implements OnInit, OnDestroy {
   table = "";

@@ -14,8 +14,16 @@ describe("ExportComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ExportComponent, ProgressBarComponent],
-      imports: [HttpModule, FormsModule, MatFormFieldModule, MatInputModule, MatRadioModule, MessageModule]
+      imports: [
+        HttpModule,
+        FormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatRadioModule,
+        MessageModule,
+        ExportComponent,
+        ProgressBarComponent
+      ]
     }).compileComponents();
   });
 

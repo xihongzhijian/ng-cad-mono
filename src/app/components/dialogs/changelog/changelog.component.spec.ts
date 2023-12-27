@@ -15,8 +15,16 @@ describe("ChangelogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ChangelogComponent],
-      imports: [HttpModule, InfiniteScrollModule, MatDividerModule, MessageModule, NgScrollbarModule, RouterTestingModule, SpinnerModule],
+      imports: [
+        HttpModule,
+        InfiniteScrollModule,
+        MatDividerModule,
+        MessageModule,
+        NgScrollbarModule,
+        RouterTestingModule,
+        SpinnerModule,
+        ChangelogComponent
+      ],
       providers: [{provide: MatDialogRef, useValue: {}}]
     }).compileComponents();
   });

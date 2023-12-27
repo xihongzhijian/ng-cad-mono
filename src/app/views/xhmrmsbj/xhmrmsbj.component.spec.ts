@@ -5,7 +5,6 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {RouterTestingModule} from "@angular/router/testing";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {DirectivesModule} from "@modules/directives/directives.module";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -17,9 +16,7 @@ describe("XhmrmsbjComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [MsbjRectsComponent, XhmrmsbjComponent],
       imports: [
-        DirectivesModule,
         FormsModule,
         HttpModule,
         MatButtonModule,
@@ -27,7 +24,9 @@ describe("XhmrmsbjComponent", () => {
         MatSlideToggleModule,
         MessageModule,
         NgScrollbarModule,
-        RouterTestingModule
+        RouterTestingModule,
+        MsbjRectsComponent,
+        XhmrmsbjComponent
       ]
     }).compileComponents();
 

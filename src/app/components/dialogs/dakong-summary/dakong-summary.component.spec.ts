@@ -4,8 +4,6 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {HttpModule} from "@modules/http/http.module";
-import {ImageModule} from "@modules/image/image.module";
-import {InputModule} from "@modules/input/input.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {DakongSummaryComponent} from "./dakong-summary.component";
 import {DakongSummaryInput} from "./dakong-summary.types";
@@ -31,8 +29,7 @@ describe("DakongSummaryComponent", () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [DakongSummaryComponent],
-      imports: [FormsModule, HttpModule, ImageModule, InputModule, MatButtonModule, MatSlideToggleModule, NgScrollbarModule],
+      imports: [FormsModule, HttpModule, MatButtonModule, MatSlideToggleModule, NgScrollbarModule, DakongSummaryComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

@@ -1,15 +1,19 @@
 import {Component, OnInit, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {KailiaocanshuData, KlcsComponent} from "@components/klcs/klcs.component";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 @Component({
   selector: "app-kailiaocanshu",
   templateUrl: "./kailiaocanshu.component.html",
-  styleUrls: ["./kailiaocanshu.component.scss"]
+  styleUrls: ["./kailiaocanshu.component.scss"],
+  standalone: true,
+  imports: [MatButtonModule, SpinnerComponent, KlcsComponent]
 })
 export class KailiaocanshuComponent implements OnInit {
   loaderId = "kailiaocanshu";

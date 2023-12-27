@@ -14,8 +14,16 @@ describe("CadAssembleComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadAssembleComponent],
-      imports: [FormsModule, HttpModule, MatFormFieldModule, MatInputModule, MatSelectModule, MessageModule, SpinnerModule]
+      imports: [
+        FormsModule,
+        HttpModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MessageModule,
+        SpinnerModule,
+        CadAssembleComponent
+      ]
     }).compileComponents();
   });
 

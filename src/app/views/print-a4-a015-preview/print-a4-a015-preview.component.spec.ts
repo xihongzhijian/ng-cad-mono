@@ -11,8 +11,7 @@ describe("PrintA4A015PreviewComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [PrintA4A015PreviewComponent],
-      imports: [HttpModule, MessageModule, NgScrollbarModule, SpinnerModule]
+      imports: [HttpModule, MessageModule, NgScrollbarModule, SpinnerModule, PrintA4A015PreviewComponent]
     }).compileComponents();
   });
 

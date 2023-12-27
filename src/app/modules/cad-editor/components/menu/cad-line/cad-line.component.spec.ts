@@ -8,7 +8,6 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectModule} from "@angular/material/select";
-import {CadConsoleModule} from "@modules/cad-console/cad-console.module";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
@@ -22,9 +21,7 @@ describe("CadLineComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadLineComponent, CadLayerInputComponent],
       imports: [
-        CadConsoleModule,
         ColorCircleModule,
         FormsModule,
         HttpModule,
@@ -37,7 +34,9 @@ describe("CadLineComponent", () => {
         MatMenuModule,
         MatSelectModule,
         MessageModule,
-        SpinnerModule
+        SpinnerModule,
+        CadLineComponent,
+        CadLayerInputComponent
       ]
     }).compileComponents();
   });

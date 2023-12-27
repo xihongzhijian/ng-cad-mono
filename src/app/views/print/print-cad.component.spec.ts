@@ -12,8 +12,7 @@ describe("PrintCADComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [PrintCadComponent],
-      imports: [FormsModule, HttpModule, MatIconModule, MatSlideToggleModule, SpinnerModule]
+      imports: [FormsModule, HttpModule, MatIconModule, MatSlideToggleModule, SpinnerModule, PrintCadComponent]
     }).compileComponents();
   });
 

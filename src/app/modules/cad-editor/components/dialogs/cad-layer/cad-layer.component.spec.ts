@@ -3,7 +3,6 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {CadLayer} from "@lucilor/cad-viewer";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {CadLayerComponent, CadLayerInput} from "./cad-layer.component";
@@ -17,8 +16,7 @@ describe("CadLayerComponent", () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [CadLayerComponent],
-      imports: [BrowserAnimationsModule, InputModule, MatIconModule, MessageModule, NgScrollbarModule],
+      imports: [BrowserAnimationsModule, MatIconModule, MessageModule, NgScrollbarModule, CadLayerComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

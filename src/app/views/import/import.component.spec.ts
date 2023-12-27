@@ -17,7 +17,6 @@ describe("ImportComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ImportComponent, ProgressBarComponent],
       imports: [
         FormsModule,
         HttpModule,
@@ -27,7 +26,9 @@ describe("ImportComponent", () => {
         MatInputModule,
         MatRadioModule,
         NgScrollbarModule,
-        SpinnerModule
+        SpinnerModule,
+        ImportComponent,
+        ProgressBarComponent
       ]
     }).compileComponents();
   });

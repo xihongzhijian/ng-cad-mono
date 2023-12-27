@@ -1,5 +1,9 @@
+import {NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault} from "@angular/common";
 import {Component, Inject} from "@angular/core";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {imgCadEmpty, session, setGlobal} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {CadData} from "@lucilor/cad-viewer";
@@ -7,13 +11,31 @@ import {ObjectOf, queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
+import {NgScrollbar} from "ngx-scrollbar";
+import {ImageComponent} from "../../../modules/image/components/image/image.component";
+import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 import {DakongSummaryInput, DakongSummaryOutput, DakongSummaryTableData, DakongSummaryTableInfo} from "./dakong-summary.types";
 
 @Component({
   selector: "app-dakong-summary",
   templateUrl: "./dakong-summary.component.html",
-  styleUrls: ["./dakong-summary.component.scss"]
+  styleUrls: ["./dakong-summary.component.scss"],
+  standalone: true,
+  imports: [
+    MatButtonModule,
+    MatSlideToggleModule,
+    FormsModule,
+    NgFor,
+    InputComponent,
+    NgScrollbar,
+    NgClass,
+    NgIf,
+    NgSwitch,
+    NgSwitchCase,
+    ImageComponent,
+    NgSwitchDefault
+  ]
 })
 export class DakongSummaryComponent {
   tableInfos: DakongSummaryTableInfo[] = [];

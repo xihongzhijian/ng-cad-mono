@@ -1,10 +1,16 @@
 import {Component, Inject} from "@angular/core";
-import {AbstractControl, ValidatorFn} from "@angular/forms";
+import {AbstractControl, FormsModule, ReactiveFormsModule, ValidatorFn} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatOptionModule} from "@angular/material/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatSlideToggleChange} from "@angular/material/slide-toggle";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
+import {MatSelectModule} from "@angular/material/select";
+import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {getFormControl, getFormGroup, TypedFormGroup} from "@app/app.common";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadDimensionLinear, FontStyle} from "@lucilor/cad-viewer";
+import {NgScrollbar} from "ngx-scrollbar";
 
 export interface CadDimensionData {
   data: CadDimensionLinear;
@@ -30,7 +36,19 @@ export interface CadDimensionForm {
 @Component({
   selector: "app-cad-dimension-form",
   templateUrl: "./cad-dimension-form.component.html",
-  styleUrls: ["./cad-dimension-form.component.scss"]
+  styleUrls: ["./cad-dimension-form.component.scss"],
+  standalone: true,
+  imports: [
+    NgScrollbar,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatSlideToggleModule,
+    MatButtonModule
+  ]
 })
 export class CadDimensionFormComponent {
   form: TypedFormGroup<CadDimensionForm>;

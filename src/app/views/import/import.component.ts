@@ -1,4 +1,11 @@
+import {NgFor, NgIf} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
+import {MatRadioModule} from "@angular/material/radio";
 import {setGlobal, timer} from "@app/app.common";
 import {CadInfo, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
@@ -14,6 +21,9 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {difference, isEmpty} from "lodash";
 import md5 from "md5";
+import {NgScrollbar} from "ngx-scrollbar";
+import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
+import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 export type ImportComponentConfigName = "requireLineId" | "pruneLines" | "addUniqCode" | "dryRun";
 export type ImportComponentConfig = Record<ImportComponentConfigName, {label: string; value: boolean | null}>;
@@ -21,7 +31,21 @@ export type ImportComponentConfig = Record<ImportComponentConfigName, {label: st
 @Component({
   selector: "app-import",
   templateUrl: "./import.component.html",
-  styleUrls: ["./import.component.scss"]
+  styleUrls: ["./import.component.scss"],
+  standalone: true,
+  imports: [
+    NgScrollbar,
+    MatCardModule,
+    MatButtonModule,
+    SpinnerComponent,
+    NgFor,
+    MatFormFieldModule,
+    MatInputModule,
+    MatRadioModule,
+    FormsModule,
+    NgIf,
+    ProgressBarComponent
+  ]
 })
 export class ImportComponent extends Utils() implements OnInit {
   private _cadNameRegex = /^(?!\d)[\da-zA-Z\u4e00-\u9fa5_]*$/u;

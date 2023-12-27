@@ -2,7 +2,6 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -14,8 +13,7 @@ describe("CadOptionsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadOptionsComponent],
-      imports: [HttpModule, InputModule, MatPaginatorModule, MessageModule, NgScrollbarModule, SpinnerModule],
+      imports: [HttpModule, MatPaginatorModule, MessageModule, NgScrollbarModule, SpinnerModule, CadOptionsComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: {}}

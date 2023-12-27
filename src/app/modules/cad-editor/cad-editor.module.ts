@@ -15,8 +15,6 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {CadConsoleModule} from "@modules/cad-console/cad-console.module";
-import {InputModule} from "@modules/input/input.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {ColorChromeModule} from "ngx-color/chrome";
 import {ColorCircleModule} from "ngx-color/circle";
@@ -38,31 +36,12 @@ import {SubCadsComponent} from "./components/menu/sub-cads/sub-cads.component";
 import {ToolbarComponent} from "./components/menu/toolbar/toolbar.component";
 
 @NgModule({
-  declarations: [
-    CadAssembleComponent,
-    CadAssembleFormComponent,
-    CadDataAttrsComponent,
-    CadDimensionComponent,
-    CadDimensionFormComponent,
-    CadEditorComponent,
-    CadInfoComponent,
-    CadLayerComponent,
-    CadLayerInputComponent,
-    CadLineComponent,
-    CadMtextComponent,
-    CadPointsComponent,
-    CadSplitComponent,
-    SubCadsComponent,
-    ToolbarComponent
-  ],
   imports: [
-    CadConsoleModule,
     ColorChromeModule,
     ColorCircleModule,
     CommonModule,
     DragDropModule,
     FormsModule,
-    InputModule,
     MatAutocompleteModule,
     MatButtonModule,
     MatCheckboxModule,
@@ -78,7 +57,22 @@ import {ToolbarComponent} from "./components/menu/toolbar/toolbar.component";
     MatTooltipModule,
     NgScrollbarModule,
     ReactiveFormsModule,
-    SpinnerModule
+    SpinnerModule,
+    CadAssembleComponent,
+    CadAssembleFormComponent,
+    CadDataAttrsComponent,
+    CadDimensionComponent,
+    CadDimensionFormComponent,
+    CadEditorComponent,
+    CadInfoComponent,
+    CadLayerComponent,
+    CadLayerInputComponent,
+    CadLineComponent,
+    CadMtextComponent,
+    CadPointsComponent,
+    CadSplitComponent,
+    SubCadsComponent,
+    ToolbarComponent
   ],
   exports: [CadEditorComponent, CadPointsComponent]
 })

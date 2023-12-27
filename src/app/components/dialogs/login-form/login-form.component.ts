@@ -1,6 +1,11 @@
+import {NgIf} from "@angular/common";
 import {AfterViewInit, Component, Inject} from "@angular/core";
-import {Validators} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
 import {getFormControl, getFormGroup} from "@app/app.common";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {MessageService} from "@modules/message/services/message.service";
@@ -24,7 +29,9 @@ export interface LoginResponse {
 @Component({
   selector: "app-login-form",
   templateUrl: "./login-form.component.html",
-  styleUrls: ["./login-form.component.scss"]
+  styleUrls: ["./login-form.component.scss"],
+  standalone: true,
+  imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatIconModule, MatInputModule, NgIf, MatButtonModule]
 })
 export class LoginFormComponent implements AfterViewInit {
   form = getFormGroup({

@@ -38,8 +38,7 @@ describe("XhmrmsbjMokuaisComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [XhmrmsbjMokuaisComponent, FormulasComponent],
-      imports: [MatButtonModule, MatDividerModule, MessageModule, NgScrollbarModule],
+      imports: [MatButtonModule, MatDividerModule, MessageModule, NgScrollbarModule, XhmrmsbjMokuaisComponent, FormulasComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

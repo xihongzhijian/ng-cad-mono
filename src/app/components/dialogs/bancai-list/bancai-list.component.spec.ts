@@ -4,7 +4,6 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {HttpModule} from "@modules/http/http.module";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {BancaiListComponent, BancaiListInput} from "./bancai-list.component";
@@ -24,8 +23,7 @@ describe("BancaiListComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [BancaiListComponent],
-      imports: [HttpModule, InputModule, MatCheckboxModule, MatTooltipModule, MessageModule, NgScrollbarModule],
+      imports: [HttpModule, MatCheckboxModule, MatTooltipModule, MessageModule, NgScrollbarModule, BancaiListComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

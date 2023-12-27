@@ -1,4 +1,5 @@
 import {Component, Inject, OnInit, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadEditorComponent} from "@modules/cad-editor/components/cad-editor/cad-editor.component";
@@ -8,7 +9,9 @@ import {getOpenDialogFunc} from "../dialog.common";
 @Component({
   selector: "app-cad-editor-dialog",
   templateUrl: "./cad-editor-dialog.component.html",
-  styleUrls: ["./cad-editor-dialog.component.scss"]
+  styleUrls: ["./cad-editor-dialog.component.scss"],
+  standalone: true,
+  imports: [MatButtonModule, CadEditorComponent]
 })
 export class CadEditorDialogComponent extends Subscribed() implements OnInit {
   @ViewChild(CadEditorComponent) cadEditor?: CadEditorComponent;

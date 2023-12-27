@@ -1,4 +1,5 @@
 import {Component, Inject, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {KailiaocanshuData, KlcsComponent} from "@components/klcs/klcs.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -6,7 +7,9 @@ import {getOpenDialogFunc} from "../dialog.common";
 @Component({
   selector: "app-klcs-dialog",
   templateUrl: "./klcs-dialog.component.html",
-  styleUrls: ["./klcs-dialog.component.scss"]
+  styleUrls: ["./klcs-dialog.component.scss"],
+  standalone: true,
+  imports: [KlcsComponent, MatButtonModule]
 })
 export class KlcsDialogComponent {
   @ViewChild(KlcsComponent) klcsComponent?: KlcsComponent;

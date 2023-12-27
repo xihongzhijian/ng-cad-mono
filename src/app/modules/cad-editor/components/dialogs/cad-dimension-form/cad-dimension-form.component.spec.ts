@@ -17,7 +17,6 @@ describe("CadDimensionFormComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadDimensionFormComponent],
       imports: [
         BrowserAnimationsModule,
         MatInputModule,
@@ -25,7 +24,8 @@ describe("CadDimensionFormComponent", () => {
         MatSelectModule,
         MatSlideToggleModule,
         NgScrollbarModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        CadDimensionFormComponent
       ],
       providers: [
         {provide: MatDialogRef, useValue: {}},

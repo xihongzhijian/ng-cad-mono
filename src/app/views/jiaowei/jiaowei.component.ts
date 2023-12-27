@@ -1,9 +1,18 @@
+import {KeyValuePipe, NgFor} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatOptionModule} from "@angular/material/core";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
+import {MatSelectModule} from "@angular/material/select";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {NgScrollbar} from "ngx-scrollbar";
 import {Jiaowei, jiaoweiAnchorOptions, JiaoweiTableData} from "./jiaowei";
 
 const table = "p_menjiao" as const;
@@ -11,7 +20,20 @@ const table = "p_menjiao" as const;
 @Component({
   selector: "app-jiaowei",
   templateUrl: "./jiaowei.component.html",
-  styleUrls: ["./jiaowei.component.scss"]
+  styleUrls: ["./jiaowei.component.scss"],
+  standalone: true,
+  imports: [
+    MatButtonModule,
+    NgScrollbar,
+    NgFor,
+    MatCheckboxModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatInputModule,
+    KeyValuePipe
+  ]
 })
 export class JiaoweiComponent implements OnInit {
   jiaowei = new Jiaowei();

@@ -1,6 +1,11 @@
+import {NgIf} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
-import {Validators} from "@angular/forms";
+import {FormsModule, Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
+import {MatRadioModule} from "@angular/material/radio";
 import {session, setGlobal} from "@app/app.common";
 import {CadExportParams, CadPortable, CadSourceParams, ExportType} from "@app/cad/portable";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -12,6 +17,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {DateTime} from "luxon";
+import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
 
 interface ExportCache {
   ids: string[];
@@ -21,7 +27,9 @@ interface ExportCache {
 @Component({
   selector: "app-export",
   templateUrl: "./export.component.html",
-  styleUrls: ["./export.component.scss"]
+  styleUrls: ["./export.component.scss"],
+  standalone: true,
+  imports: [MatFormFieldModule, MatInputModule, MatRadioModule, FormsModule, NgIf, MatButtonModule, ProgressBarComponent]
 })
 export class ExportComponent implements OnInit {
   progressBar = new ProgressBar(0);

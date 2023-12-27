@@ -1,12 +1,14 @@
 import {AfterViewInit, Component, Input, OnInit, ViewChild} from "@angular/core";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
-import {NgxUiLoaderConfig} from "ngx-ui-loader";
+import {NgxUiLoaderConfig, NgxUiLoaderModule} from "ngx-ui-loader";
 
 @Component({
   selector: "app-spinner",
   templateUrl: "./spinner.component.html",
-  styleUrls: ["./spinner.component.scss"]
+  styleUrls: ["./spinner.component.scss"],
+  standalone: true,
+  imports: [NgxUiLoaderModule]
 })
 export class SpinnerComponent extends Subscribed() implements OnInit, AfterViewInit {
   @Input() id = "master";

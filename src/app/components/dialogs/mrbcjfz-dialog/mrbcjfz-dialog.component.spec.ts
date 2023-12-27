@@ -16,8 +16,15 @@ describe("MrbcjfzDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [MrbcjfzComponent, MrbcjfzDialogComponent],
-      imports: [HttpModule, MatDividerModule, MatButtonModule, RouterTestingModule, NgScrollbarModule],
+      imports: [
+        HttpModule,
+        MatDividerModule,
+        MatButtonModule,
+        RouterTestingModule,
+        NgScrollbarModule,
+        MrbcjfzComponent,
+        MrbcjfzDialogComponent
+      ],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

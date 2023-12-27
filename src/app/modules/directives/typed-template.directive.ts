@@ -1,7 +1,8 @@
 import {Directive, Input} from "@angular/core";
 
 @Directive({
-  selector: "[appTypedTemplate]"
+  selector: "[appTypedTemplate]",
+  standalone: true
 })
 export class TypedTemplateDirective<T> {
   @Input() appTypedTemplate!: T;

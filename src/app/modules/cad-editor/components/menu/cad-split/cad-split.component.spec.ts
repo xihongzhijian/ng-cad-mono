@@ -11,8 +11,7 @@ describe("CadSplitComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadSplitComponent],
-      imports: [HttpModule, MessageModule, RouterTestingModule, SpinnerModule]
+      imports: [HttpModule, MessageModule, RouterTestingModule, SpinnerModule, CadSplitComponent]
     }).compileComponents();
   });
 

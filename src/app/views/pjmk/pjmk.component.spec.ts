@@ -12,8 +12,7 @@ describe("PjmkComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [PjmkComponent],
-      imports: [HttpModule, MatButtonModule, MatMenuModule, MessageModule]
+      imports: [HttpModule, MatButtonModule, MatMenuModule, MessageModule, PjmkComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PjmkComponent);

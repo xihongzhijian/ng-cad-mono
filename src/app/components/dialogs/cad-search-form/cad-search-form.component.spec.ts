@@ -18,7 +18,6 @@ describe("CadSearchFormComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadSearchFormComponent],
       imports: [
         FormsModule,
         HttpModule,
@@ -29,7 +28,8 @@ describe("CadSearchFormComponent", () => {
         MatFormFieldModule,
         MatSelectModule,
         MessageModule,
-        NgScrollbarModule
+        NgScrollbarModule,
+        CadSearchFormComponent
       ],
       providers: [
         {provide: MatDialogRef, useValue: {}},

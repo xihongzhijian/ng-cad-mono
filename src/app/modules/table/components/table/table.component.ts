@@ -1,5 +1,6 @@
 import {SelectionModel} from "@angular/cdk/collections";
 import {FlatTreeControl} from "@angular/cdk/tree";
+import {NgClass, NgFor, NgIf, NgStyle, NgSwitch, NgSwitchCase} from "@angular/common";
 import {
   AfterViewInit,
   Component,
@@ -15,11 +16,17 @@ import {
   SimpleChanges,
   ViewChild
 } from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
-import {MatSelectChange} from "@angular/material/select";
-import {MatSlideToggleChange} from "@angular/material/slide-toggle";
-import {MatSort} from "@angular/material/sort";
-import {MatTable, MatTableDataSource} from "@angular/material/table";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatSelectChange, MatSelectModule} from "@angular/material/select";
+import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {MatSort, MatSortModule} from "@angular/material/sort";
+import {MatTable, MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
 import {getFilepathUrl, joinOptions, splitOptions} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
@@ -35,13 +42,34 @@ import csstype from "csstype";
 import {cloneDeep, intersection, isEqual} from "lodash";
 import md5 from "md5";
 import {BehaviorSubject, filter, lastValueFrom, take} from "rxjs";
+import {ImageComponent} from "../../../image/components/image/image.component";
 import {CellEvent, ColumnInfo, ItemGetter, RowButtonEvent, TableButton, TableErrorState, TableRenderInfo} from "./table.types";
 import {getInputInfosFromTableColumns} from "./table.utils";
 
 @Component({
   selector: "app-table",
   templateUrl: "./table.component.html",
-  styleUrls: ["./table.component.scss"]
+  styleUrls: ["./table.component.scss"],
+  standalone: true,
+  imports: [
+    NgIf,
+    MatButtonModule,
+    NgFor,
+    NgClass,
+    NgStyle,
+    MatIconModule,
+    MatTableModule,
+    MatSortModule,
+    MatCheckboxModule,
+    NgSwitch,
+    NgSwitchCase,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSlideToggleModule,
+    MatSelectModule,
+    MatOptionModule,
+    ImageComponent
+  ]
 })
 export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   @Input() info: TableRenderInfo<T> = {data: [], columns: []};

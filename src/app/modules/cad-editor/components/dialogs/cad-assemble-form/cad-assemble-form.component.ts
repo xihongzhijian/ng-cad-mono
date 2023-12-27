@@ -1,12 +1,17 @@
+import {NgFor} from "@angular/common";
 import {Component, Inject} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {InputInfo} from "@modules/input/components/input.types";
+import {InputComponent} from "../../../../input/components/input.component";
 
 @Component({
   selector: "app-cad-assemble-form",
   templateUrl: "./cad-assemble-form.component.html",
-  styleUrls: ["./cad-assemble-form.component.scss"]
+  styleUrls: ["./cad-assemble-form.component.scss"],
+  standalone: true,
+  imports: [NgFor, InputComponent, MatButtonModule]
 })
 export class CadAssembleFormComponent {
   inputInfos: InputInfo[];

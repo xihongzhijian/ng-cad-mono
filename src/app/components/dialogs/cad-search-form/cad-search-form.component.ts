@@ -1,11 +1,20 @@
+import {AsyncPipe, NgFor, NgIf} from "@angular/common";
 import {Component, EventEmitter, OnInit} from "@angular/core";
-import {Validators} from "@angular/forms";
-import {MatDialogRef} from "@angular/material/dialog";
+import {FormsModule, Validators} from "@angular/forms";
+import {MatAutocompleteModule} from "@angular/material/autocomplete";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
+import {MatOptionModule} from "@angular/material/core";
+import {MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {CadSearchData} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {NgScrollbar} from "ngx-scrollbar";
 import {Observable} from "rxjs";
 import {map} from "rxjs/operators";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -13,7 +22,23 @@ import {getOpenDialogFunc} from "../dialog.common";
 @Component({
   selector: "app-cad-search-form",
   templateUrl: "./cad-search-form.component.html",
-  styleUrls: ["./cad-search-form.component.scss"]
+  styleUrls: ["./cad-search-form.component.scss"],
+  standalone: true,
+  imports: [
+    NgScrollbar,
+    NgFor,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
+    FormsModule,
+    MatOptionModule,
+    NgIf,
+    MatIconModule,
+    MatDialogActions,
+    MatButtonModule,
+    AsyncPipe
+  ]
 })
 export class CadSearchFormComponent implements OnInit {
   data: CadSearchData = [];

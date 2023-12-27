@@ -1,3 +1,5 @@
+import {TextFieldModule} from "@angular/cdk/text-field";
+import {AsyncPipe, KeyValuePipe, NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase} from "@angular/common";
 import {
   AfterViewInit,
   Component,
@@ -11,10 +13,17 @@ import {
   SimpleChanges,
   ViewChild
 } from "@angular/core";
-import {FormControl, ValidationErrors} from "@angular/forms";
-import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
-import {ErrorStateMatcher} from "@angular/material/core";
+import {FormControl, FormsModule, ValidationErrors} from "@angular/forms";
+import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
+import {MatButtonModule} from "@angular/material/button";
+import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatMenuModule} from "@angular/material/menu";
+import {MatSelectModule} from "@angular/material/select";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {joinOptions, splitOptions} from "@app/app.common";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
@@ -25,14 +34,42 @@ import Color from "color";
 import csstype from "csstype";
 import {isEmpty, isEqual} from "lodash";
 import {Color as NgxColor} from "ngx-color";
-import {ChromeComponent} from "ngx-color/chrome";
+import {ChromeComponent, ColorChromeModule} from "ngx-color/chrome";
+import {ColorCircleModule} from "ngx-color/circle";
 import {BehaviorSubject} from "rxjs";
+import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
+import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
 import {InputInfo, InputInfoBase, InputInfoTypeMap, InputInfoWithOptions} from "./input.types";
 
 @Component({
   selector: "app-input",
   templateUrl: "./input.component.html",
-  styleUrls: ["./input.component.scss"]
+  styleUrls: ["./input.component.scss"],
+  standalone: true,
+  imports: [
+    NgSwitch,
+    NgSwitchCase,
+    MatFormFieldModule,
+    NgClass,
+    NgIf,
+    MatInputModule,
+    FormsModule,
+    MatAutocompleteModule,
+    TextFieldModule,
+    MatButtonModule,
+    MatIconModule,
+    NgFor,
+    MatOptionModule,
+    MatTooltipModule,
+    MatSelectModule,
+    ClickStopPropagationDirective,
+    MatMenuModule,
+    AnchorSelectorComponent,
+    ColorCircleModule,
+    ColorChromeModule,
+    AsyncPipe,
+    KeyValuePipe
+  ]
 })
 export class InputComponent extends Utils() implements AfterViewInit, OnChanges, DoCheck {
   suffixIconsType!: SuffixIconsType;

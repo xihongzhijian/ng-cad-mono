@@ -21,7 +21,6 @@ describe("SelectCadsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SelectCadsComponent],
       imports: [
         BrowserAnimationsModule,
         FormsModule,
@@ -37,7 +36,8 @@ describe("SelectCadsComponent", () => {
         MessageModule,
         MessageModule,
         NgScrollbarModule,
-        SpinnerModule
+        SpinnerModule,
+        SelectCadsComponent
       ]
     }).compileComponents();
   });

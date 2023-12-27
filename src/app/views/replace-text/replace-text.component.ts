@@ -1,6 +1,15 @@
+import {TextFieldModule} from "@angular/cdk/text-field";
+import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, OnInit} from "@angular/core";
-import {FormControl, FormGroupDirective, NgForm, ValidatorFn, Validators} from "@angular/forms";
-import {ErrorStateMatcher} from "@angular/material/core";
+import {FormControl, FormGroupDirective, FormsModule, NgForm, ReactiveFormsModule, ValidatorFn, Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatSelectModule} from "@angular/material/select";
 import {ActivatedRoute, Router} from "@angular/router";
 import {getFormControl, getFormGroup, setGlobal} from "@app/app.common";
 import {cadCollections} from "@app/cad/collections";
@@ -9,6 +18,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
+import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
 
 interface Replacer {
@@ -27,7 +37,24 @@ interface ToBeReplaced {
 @Component({
   selector: "app-replace-text",
   templateUrl: "./replace-text.component.html",
-  styleUrls: ["./replace-text.component.scss"]
+  styleUrls: ["./replace-text.component.scss"],
+  standalone: true,
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    NgFor,
+    MatOptionModule,
+    MatInputModule,
+    TextFieldModule,
+    NgIf,
+    MatButtonModule,
+    NgScrollbar,
+    MatCardModule,
+    MatCheckboxModule,
+    MatIconModule
+  ]
 })
 export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterViewInit {
   replacers: Replacer[] = [

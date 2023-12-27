@@ -7,11 +7,14 @@ import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
+import {CadEditorComponent} from "../../modules/cad-editor/components/cad-editor/cad-editor.component";
 
 @Component({
   selector: "app-index",
   templateUrl: "./index.component.html",
-  styleUrls: ["./index.component.scss"]
+  styleUrls: ["./index.component.scss"],
+  standalone: true,
+  imports: [CadEditorComponent]
 })
 export class IndexComponent implements OnInit {
   params?: OpenCadOptions;

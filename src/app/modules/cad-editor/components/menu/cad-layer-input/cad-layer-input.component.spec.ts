@@ -11,8 +11,7 @@ describe("CadLayerInputComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadLayerInputComponent],
-      imports: [HttpModule, MatAutocompleteModule, MatFormFieldModule, MatInputModule]
+      imports: [HttpModule, MatAutocompleteModule, MatFormFieldModule, MatInputModule, CadLayerInputComponent]
     }).compileComponents();
   });
 

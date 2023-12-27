@@ -2,7 +2,6 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {defaultQiezhongkongItem, KlcsComponent, QiezhongkongItem} from "@components/klcs/klcs.component";
 import {importObject} from "@lucilor/utils";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -14,8 +13,7 @@ describe("KailiaocanshuComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KailiaocanshuComponent, KlcsComponent],
-      imports: [HttpModule, InputModule, MessageModule, NgScrollbarModule, SpinnerModule]
+      imports: [HttpModule, MessageModule, NgScrollbarModule, SpinnerModule, KailiaocanshuComponent, KlcsComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(KailiaocanshuComponent);

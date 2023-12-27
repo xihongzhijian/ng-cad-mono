@@ -12,8 +12,7 @@ describe("MrbcjfzComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [MrbcjfzComponent],
-      imports: [HttpModule, MatDividerModule, MatButtonModule, RouterTestingModule, NgScrollbarModule]
+      imports: [HttpModule, MatDividerModule, MatButtonModule, RouterTestingModule, NgScrollbarModule, MrbcjfzComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MrbcjfzComponent);

@@ -6,6 +6,7 @@ import {LoginFormData, openLoginFormDialog} from "@components/dialogs/login-form
 import {environment} from "@env";
 import {downloadByBlob, ObjectOf, RSA} from "@lucilor/utils";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import axios, {AxiosError, AxiosResponse} from "axios";
 import {CustomResponse, HttpOptions, HttpServiceResponseError} from "./http.service.types";
 
@@ -17,6 +18,7 @@ export class HttpService {
   protected dialog: MatDialog;
   protected message: MessageService;
   protected snackBar: MatSnackBar;
+  protected spinner: SpinnerService;
   baseURL = "";
   strict = true;
   private _loginPromise: ReturnType<typeof openLoginFormDialog> | null = null;
@@ -28,6 +30,7 @@ export class HttpService {
     this.dialog = injector.get(MatDialog);
     this.message = injector.get(MessageService);
     this.snackBar = injector.get(MatSnackBar);
+    this.spinner = injector.get(SpinnerService);
   }
 
   protected alert(msg: string, silent: boolean) {
@@ -95,6 +98,7 @@ export class HttpService {
     }
     let axiosResponse: AxiosResponse<CustomResponse<T>> | null = null;
     let response: CustomResponse<T> | null = null;
+    this.spinner.showBackground(this.loaderId);
     try {
       if (method === "GET") {
         if (data) {
@@ -223,6 +227,7 @@ export class HttpService {
       this.error(content, silent, response?.title);
       return response;
     } finally {
+      this.spinner.hideBackground(this.loaderId);
       this.lastResponse = response;
       if (response) {
         response.duration = timer.getDuration(timerName);

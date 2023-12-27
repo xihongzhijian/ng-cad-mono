@@ -1,21 +1,27 @@
 import {NestedTreeControl} from "@angular/cdk/tree";
 import {Component, Inject} from "@angular/core";
-import {MatCheckboxChange} from "@angular/material/checkbox";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatTreeNestedDataSource} from "@angular/material/tree";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
+import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MatIconModule} from "@angular/material/icon";
+import {MatTreeModule, MatTreeNestedDataSource} from "@angular/material/tree";
 import {session, setGlobal} from "@app/app.common";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {debounce} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
+import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 import {NavsData, NavsDataNode, NavsDialogInput, NavsDialogOutput, NavsResultItem} from "./navs-dialog.types";
 
 @Component({
   selector: "app-navs-dialog",
   templateUrl: "./navs-dialog.component.html",
-  styleUrls: ["./navs-dialog.component.scss"]
+  styleUrls: ["./navs-dialog.component.scss"],
+  standalone: true,
+  imports: [InputComponent, NgScrollbar, MatTreeModule, MatCheckboxModule, MatButtonModule, MatIconModule, MatDialogActions]
 })
 export class NavsDialogComponent {
   private _navsKey = "navs";

@@ -1,18 +1,26 @@
+import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {session, setGlobal} from "@app/app.common";
 import {queryString, timeout} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {debounce} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
+import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
   selector: "app-bancai-list",
   templateUrl: "./bancai-list.component.html",
-  styleUrls: ["./bancai-list.component.scss"]
+  styleUrls: ["./bancai-list.component.scss"],
+  standalone: true,
+  imports: [InputComponent, NgIf, MatButtonModule, NgScrollbar, NgFor, MatCheckboxModule, MatTooltipModule]
 })
 export class BancaiListComponent {
   filterText = "";

@@ -1,5 +1,7 @@
-import {CdkDragDrop, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
+import {CdkDragDrop, CdkDropListGroup, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
+import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {imgEmpty, setGlobal} from "@app/app.common";
@@ -14,12 +16,17 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
+import {NgScrollbar} from "ngx-scrollbar";
+import {ImageComponent} from "../../modules/image/components/image/image.component";
+import {InputComponent} from "../../modules/input/components/input.component";
 import {MsbjData, MsbjFenlei, MsbjInfo} from "./msbj.types";
 
 @Component({
   selector: "app-msjgbj",
   templateUrl: "./msbj.component.html",
-  styleUrls: ["./msbj.component.scss"]
+  styleUrls: ["./msbj.component.scss"],
+  standalone: true,
+  imports: [MatButtonModule, NgIf, MsbjRectsComponent, CdkDropListGroup, InputComponent, NgScrollbar, NgFor, ImageComponent]
 })
 export class MsbjComponent implements AfterViewInit {
   production = environment.production;

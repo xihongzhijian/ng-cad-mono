@@ -31,7 +31,6 @@ const spinnerTypes: SPINNER[] = [
 const spinnerTypeList = new ListRandom(spinnerTypes);
 
 @NgModule({
-  declarations: [SpinnerComponent],
   imports: [
     CommonModule,
     NgxUiLoaderModule.forRoot({
@@ -40,9 +39,10 @@ const spinnerTypeList = new ListRandom(spinnerTypes);
       pbColor: "#2196f3",
       fgsType: spinnerTypeList.next(),
       bgsType: spinnerTypeList.next(),
-      bgsSize: 40,
+      bgsSize: 30,
       minTime: 100
-    })
+    }),
+    SpinnerComponent
   ],
   exports: [SpinnerComponent]
 })

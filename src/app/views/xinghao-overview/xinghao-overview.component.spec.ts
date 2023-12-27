@@ -10,8 +10,7 @@ describe("XinghaoOverviewComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [XinghaoOverviewComponent],
-      imports: [DragDropModule, HttpModule, MessageModule]
+      imports: [DragDropModule, HttpModule, MessageModule, XinghaoOverviewComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(XinghaoOverviewComponent);

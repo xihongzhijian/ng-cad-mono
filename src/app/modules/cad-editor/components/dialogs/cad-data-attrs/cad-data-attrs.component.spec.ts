@@ -15,8 +15,15 @@ describe("CadDataAttrsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadDataAttrsComponent],
-      imports: [BrowserAnimationsModule, FormsModule, MatFormFieldModule, MatIconModule, MatInputModule, NgScrollbarModule],
+      imports: [
+        BrowserAnimationsModule,
+        FormsModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        NgScrollbarModule,
+        CadDataAttrsComponent
+      ],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

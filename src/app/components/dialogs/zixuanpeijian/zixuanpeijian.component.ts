@@ -1,8 +1,14 @@
-import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
+import {KeyValuePipe, NgClass, NgFor, NgIf, NgStyle, NgSwitch, NgSwitchCase, NgTemplateOutlet} from "@angular/common";
 import {Component, ElementRef, HostListener, Inject, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {MatMenuTrigger} from "@angular/material/menu";
+import {MatButtonModule} from "@angular/material/button";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatIconModule} from "@angular/material/icon";
+import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
@@ -21,7 +27,13 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {cloneDeep, debounce, uniq, uniqueId} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
+import {ClickStopPropagationDirective} from "../../../modules/directives/click-stop-propagation.directive";
+import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
+import {ImageComponent} from "../../../modules/image/components/image/image.component";
+import {InputComponent} from "../../../modules/input/components/input.component";
+import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {openBancaiListDialog} from "../bancai-list/bancai-list.component";
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -51,7 +63,34 @@ import {
 @Component({
   selector: "app-zixuanpeijian",
   templateUrl: "./zixuanpeijian.component.html",
-  styleUrls: ["./zixuanpeijian.component.scss"]
+  styleUrls: ["./zixuanpeijian.component.scss"],
+  standalone: true,
+  imports: [
+    NgSwitch,
+    NgSwitchCase,
+    NgScrollbar,
+    NgStyle,
+    NgFor,
+    NgIf,
+    MatButtonModule,
+    InputComponent,
+    ImageComponent,
+    MatIconModule,
+    MatDividerModule,
+    NgTemplateOutlet,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
+    MatSlideToggleModule,
+    MatTooltipModule,
+    NgClass,
+    TypedTemplateDirective,
+    ClickStopPropagationDirective,
+    MatDialogActions,
+    SpinnerComponent,
+    MatMenuModule,
+    KeyValuePipe
+  ]
 })
 export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   spinnerId = "zixuanpeijian-" + uniqueId();

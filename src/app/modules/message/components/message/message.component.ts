@@ -1,3 +1,5 @@
+import {A11yModule} from "@angular/cdk/a11y";
+import {NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
   Component,
@@ -10,7 +12,10 @@ import {
   ViewChild,
   ViewChildren
 } from "@angular/core";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
+import {MatIconModule} from "@angular/material/icon";
 import {DomSanitizer, SafeHtml, SafeResourceUrl} from "@angular/platform-browser";
 import {Debounce} from "@decorators/debounce";
 import {ObjectOf, timeout} from "@lucilor/utils";
@@ -25,7 +30,26 @@ import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./m
 @Component({
   selector: "app-message",
   templateUrl: "./message.component.html",
-  styleUrls: ["./message.component.scss"]
+  styleUrls: ["./message.component.scss"],
+  standalone: true,
+  imports: [
+    NgSwitch,
+    NgSwitchCase,
+    MatButtonModule,
+    MatIconModule,
+    NgSwitchDefault,
+    NgIf,
+    MatDialogTitle,
+    NgClass,
+    MatDialogContent,
+    QuillEditorComponent,
+    FormsModule,
+    NgFor,
+    InputComponent,
+    A11yModule,
+    MatDialogActions,
+    NgTemplateOutlet
+  ]
 })
 export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   titleHTML: SafeHtml = "";

@@ -1,9 +1,12 @@
+import {NgFor} from "@angular/common";
 import {Component, Inject} from "@angular/core";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatButtonModule} from "@angular/material/button";
+import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
 import {Utils} from "@mixins/utils.mixin";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 export interface BbzhmkgzComponentData {
@@ -14,7 +17,9 @@ export interface BbzhmkgzComponentData {
 @Component({
   selector: "app-bbzhmkgz",
   templateUrl: "./bbzhmkgz.component.html",
-  styleUrls: ["./bbzhmkgz.component.scss"]
+  styleUrls: ["./bbzhmkgz.component.scss"],
+  standalone: true,
+  imports: [InputComponent, NgFor, MatDialogActions, MatButtonModule]
 })
 export class BbzhmkgzComponent extends Utils() {
   inputInfo: InputInfo = {type: "string", textarea: {}, label: ""};

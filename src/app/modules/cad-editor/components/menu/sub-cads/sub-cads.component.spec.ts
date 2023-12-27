@@ -16,7 +16,6 @@ describe("SubCadsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SubCadsComponent],
       imports: [
         HttpModule,
         MatDialogModule,
@@ -26,7 +25,8 @@ describe("SubCadsComponent", () => {
         MatTooltipModule,
         MessageModule,
         NgScrollbarModule,
-        SpinnerModule
+        SpinnerModule,
+        SubCadsComponent
       ]
     }).compileComponents();
   });

@@ -14,8 +14,16 @@ describe("TableComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TableComponent],
-      imports: [HttpModule, MatCheckboxModule, MatFormFieldModule, MatSlideToggleModule, MatTableModule, MessageModule, NgScrollbarModule]
+      imports: [
+        HttpModule,
+        MatCheckboxModule,
+        MatFormFieldModule,
+        MatSlideToggleModule,
+        MatTableModule,
+        MessageModule,
+        NgScrollbarModule,
+        TableComponent
+      ]
     }).compileComponents();
   });
 

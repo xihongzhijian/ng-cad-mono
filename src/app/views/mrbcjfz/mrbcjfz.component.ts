@@ -1,6 +1,10 @@
+import {NgClass, NgFor, NgIf, NgStyle} from "@angular/common";
 import {Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren} from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal, XiaodaohangStructure} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
@@ -15,6 +19,9 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
 import {isEmpty, union} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
+import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
+import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {
   emptyMrbcjfzInfoValues,
   filterCad,
@@ -37,7 +44,21 @@ import {
 @Component({
   selector: "app-mrbcjfz",
   templateUrl: "./mrbcjfz.component.html",
-  styleUrls: ["./mrbcjfz.component.scss"]
+  styleUrls: ["./mrbcjfz.component.scss"],
+  standalone: true,
+  imports: [
+    NgIf,
+    MatButtonModule,
+    NgScrollbar,
+    NgFor,
+    NgClass,
+    NgStyle,
+    InputComponent,
+    ClickStopPropagationDirective,
+    ImageComponent,
+    MatIconModule,
+    MatDividerModule
+  ]
 })
 export class MrbcjfzComponent implements OnInit {
   @Input() id = 0;

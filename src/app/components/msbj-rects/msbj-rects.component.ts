@@ -1,15 +1,19 @@
+import {NgClass, NgFor, NgStyle} from "@angular/common";
 import {Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild} from "@angular/core";
 import {setGlobal} from "@app/app.common";
 import {Debounce} from "@decorators/debounce";
 import {ObjectOf, Rectangle, timeout} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {cloneDeep, random} from "lodash";
+import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
 import {MsbjRectInfo, MsbjRectInfoRaw} from "./msbj-rects.types";
 
 @Component({
   selector: "app-msbj-rects",
   templateUrl: "./msbj-rects.component.html",
-  styleUrls: ["./msbj-rects.component.scss"]
+  styleUrls: ["./msbj-rects.component.scss"],
+  standalone: true,
+  imports: [NgFor, ClickStopPropagationDirective, NgClass, NgStyle]
 })
 export class MsbjRectsComponent {
   rgbMin = 200;

@@ -1,13 +1,32 @@
+import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {isBetween} from "@lucilor/utils";
 import {BancaiCadExtend} from "@views/select-bancai/select-bancai.types";
+import {NgScrollbar} from "ngx-scrollbar";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
   selector: "app-select-bancai-cads",
   templateUrl: "./select-bancai-cads.component.html",
-  styleUrls: ["./select-bancai-cads.component.scss"]
+  styleUrls: ["./select-bancai-cads.component.scss"],
+  standalone: true,
+  imports: [
+    NgIf,
+    MatSlideToggleModule,
+    FormsModule,
+    NgScrollbar,
+    NgFor,
+    MatDividerModule,
+    MatCheckboxModule,
+    MatDialogActions,
+    MatButtonModule
+  ]
 })
 export class SelectBancaiCadsComponent {
   noPaiban = false;

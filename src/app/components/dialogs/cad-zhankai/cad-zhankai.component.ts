@@ -1,8 +1,16 @@
+import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
-import {Validators} from "@angular/forms";
-import {MatCheckboxChange} from "@angular/material/checkbox";
-import {ErrorStateMatcher} from "@angular/material/core";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {FormsModule, Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
+import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
+import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatSelectModule} from "@angular/material/select";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute} from "@angular/router";
 import {joinOptions, splitOptions} from "@app/app.common";
 import {CadData, CadZhankai, FlipType} from "@lucilor/cad-viewer";
@@ -10,6 +18,8 @@ import {Utils} from "@mixins/utils.mixin";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
+import {ReplaceFullCharsDirective} from "../../../modules/directives/replace-full-chars.directive";
 import {openCadListDialog} from "../cad-list/cad-list.component";
 import {openCadOptionsDialog} from "../cad-options/cad-options.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -17,7 +27,25 @@ import {getOpenDialogFunc} from "../dialog.common";
 @Component({
   selector: "app-cad-zhankai",
   templateUrl: "./cad-zhankai.component.html",
-  styleUrls: ["./cad-zhankai.component.scss"]
+  styleUrls: ["./cad-zhankai.component.scss"],
+  standalone: true,
+  imports: [
+    NgScrollbar,
+    NgFor,
+    MatCardModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    NgIf,
+    MatIconModule,
+    MatSlideToggleModule,
+    ReplaceFullCharsDirective,
+    MatSelectModule,
+    MatOptionModule,
+    MatDialogActions
+  ]
 })
 export class CadZhankaiComponent extends Utils() {
   checkedIndices = new Set<number>();

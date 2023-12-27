@@ -1,4 +1,6 @@
+import {NgFor, NgIf} from "@angular/common";
 import {Component, OnDestroy, OnInit} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {setGlobal} from "@app/app.common";
 import {CadConnection, CadData, CadEntity, CadEventCallBack, CadImage, CadLine, generatePointsMap, PointsMap} from "@lucilor/cad-viewer";
@@ -8,12 +10,15 @@ import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService, CadPoints} from "@services/app-status.service";
 import {CadStatus, CadStatusAssemble} from "@services/cad-status";
 import {debounce, difference, differenceBy} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
 import {openCadAssembleFormDialog} from "../../dialogs/cad-assemble-form/cad-assemble-form.component";
 
 @Component({
   selector: "app-cad-assemble",
   templateUrl: "./cad-assemble.component.html",
-  styleUrls: ["./cad-assemble.component.scss"]
+  styleUrls: ["./cad-assemble.component.scss"],
+  standalone: true,
+  imports: [NgIf, MatButtonModule, NgScrollbar, NgFor]
 })
 export class CadAssembleComponent extends Subscribed() implements OnInit, OnDestroy {
   options = {space: "0", position: "absolute"};

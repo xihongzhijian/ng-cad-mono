@@ -13,8 +13,7 @@ describe("CadEditorDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadEditorDialogComponent],
-      imports: [CadEditorModule, HttpModule],
+      imports: [CadEditorModule, HttpModule, CadEditorDialogComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

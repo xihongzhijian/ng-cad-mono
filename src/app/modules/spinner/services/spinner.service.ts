@@ -32,4 +32,22 @@ export class SpinnerService {
     this.loader.stopLoader(id);
     this.spinnerHide$.next({id});
   }
+
+  showDefault(config?: SpinnerConfig) {
+    this.show(this.defaultLoaderId, config);
+  }
+
+  hideDefault() {
+    this.hide(this.defaultLoaderId);
+  }
+
+  showBackground(id: string, config?: SpinnerConfig) {
+    this.loader.startBackground(id);
+    this.spinnerShow$.next({id, config});
+  }
+
+  hideBackground(id: string) {
+    this.loader.stopBackground(id);
+    this.spinnerHide$.next({id});
+  }
 }

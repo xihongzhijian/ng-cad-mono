@@ -1,6 +1,15 @@
-import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragDrop, CdkDragPlaceholder, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
+import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, ViewChild} from "@angular/core";
-import {MatPaginator, PageEvent} from "@angular/material/paginator";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatOptionModule} from "@angular/material/core";
+import {MatExpansionModule} from "@angular/material/expansion";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
+import {MatSelectModule} from "@angular/material/select";
 import {remoteHost} from "@app/app.common";
 import {downloadByString, downloadByUrl, ObjectOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
@@ -10,7 +19,9 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {cloneDeep} from "lodash";
 import {DateTime} from "luxon";
+import {NgScrollbar} from "ngx-scrollbar";
 import {lastValueFrom} from "rxjs";
+import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 export const changelogTypes: ObjectOf<string> = {
   feat: "✨新特性",
@@ -22,7 +33,26 @@ export const changelogTypes: ObjectOf<string> = {
 @Component({
   selector: "app-changelog-admin",
   templateUrl: "./changelog-admin.component.html",
-  styleUrls: ["./changelog-admin.component.scss"]
+  styleUrls: ["./changelog-admin.component.scss"],
+  standalone: true,
+  imports: [
+    NgScrollbar,
+    MatExpansionModule,
+    NgIf,
+    MatButtonModule,
+    MatIconModule,
+    SpinnerComponent,
+    NgFor,
+    CdkDropList,
+    MatFormFieldModule,
+    MatInputModule,
+    CdkDrag,
+    CdkDragPlaceholder,
+    MatSelectModule,
+    FormsModule,
+    MatOptionModule,
+    MatPaginatorModule
+  ]
 })
 export class ChangelogAdminComponent extends Utils() implements AfterViewInit {
   changelogTypeKeys = Object.keys(changelogTypes);

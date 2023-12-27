@@ -5,7 +5,6 @@ import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from "@angular/material/
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {timeout} from "@lucilor/utils";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {QuillModule} from "ngx-quill";
 import {MessageData} from "./message-types";
 import {MessageComponent} from "./message.component";
@@ -25,8 +24,7 @@ describe("MessageComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [MessageComponent],
-      imports: [FormsModule, HttpModule, InputModule, MatButtonModule, MatDialogModule, MatSnackBarModule, QuillModule],
+      imports: [FormsModule, HttpModule, MatButtonModule, MatDialogModule, MatSnackBarModule, QuillModule, MessageComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: {}}

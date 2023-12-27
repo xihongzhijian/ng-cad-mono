@@ -1,7 +1,10 @@
-import {AfterViewInit, Component, Inject, ViewChild} from "@angular/core";
-import {MatCheckboxChange} from "@angular/material/checkbox";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatPaginator, PageEvent} from "@angular/material/paginator";
+import {NgFor, NgIf} from "@angular/common";
+import {AfterViewInit, Component, forwardRef, Inject, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
+import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, queryString} from "@lucilor/utils";
@@ -9,13 +12,31 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsParams, OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {NgScrollbar} from "ngx-scrollbar";
 import {lastValueFrom} from "rxjs";
+import {ImageComponent} from "../../../modules/image/components/image/image.component";
+import {InputComponent} from "../../../modules/input/components/input.component";
+import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
   selector: "app-cad-options",
   templateUrl: "./cad-options.component.html",
-  styleUrls: ["./cad-options.component.scss"]
+  styleUrls: ["./cad-options.component.scss"],
+  standalone: true,
+  imports: [
+    forwardRef(() => InputComponent),
+    NgIf,
+    MatButtonModule,
+    NgScrollbar,
+    SpinnerComponent,
+    NgFor,
+    MatTooltipModule,
+    MatCheckboxModule,
+    ImageComponent,
+    MatPaginatorModule,
+    MatDialogActions
+  ]
 })
 export class CadOptionsComponent implements AfterViewInit {
   pageData: (OptionsData["data"][number] & {checked: boolean})[] = [];

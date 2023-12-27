@@ -1,8 +1,15 @@
+import {AsyncPipe, NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, HostListener, OnDestroy, OnInit} from "@angular/core";
-import {MatCheckboxChange} from "@angular/material/checkbox";
-import {ErrorStateMatcher} from "@angular/material/core";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
+import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
-import {MatSelectChange} from "@angular/material/select";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatMenuModule} from "@angular/material/menu";
+import {MatSelectChange, MatSelectModule} from "@angular/material/select";
 import {autoFixLine, validColors} from "@app/cad/utils";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
@@ -27,13 +34,32 @@ import {CadStatusCutLine, CadStatusDrawLine, CadStatusIntersection, CadStatusMov
 import Color from "color";
 import {debounce, uniq} from "lodash";
 import {ColorEvent} from "ngx-color";
+import {ColorCircleModule} from "ngx-color/circle";
+import {CadLayerInputComponent} from "../cad-layer-input/cad-layer-input.component";
 
 const cadStatusIntersectionInfo = "addWHDashedLines";
 
 @Component({
   selector: "app-cad-line",
   templateUrl: "./cad-line.component.html",
-  styleUrls: ["./cad-line.component.scss"]
+  styleUrls: ["./cad-line.component.scss"],
+  standalone: true,
+  imports: [
+    MatButtonModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    CadLayerInputComponent,
+    MatCheckboxModule,
+    MatMenuModule,
+    ColorCircleModule,
+    MatSelectModule,
+    MatOptionModule,
+    NgIf,
+    NgFor,
+    MatIconModule,
+    AsyncPipe
+  ]
 })
 export class CadLineComponent extends Subscribed() implements OnInit, AfterViewInit, OnDestroy {
   focusedField = "";

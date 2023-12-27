@@ -9,7 +9,8 @@ import {CadStatusSplit} from "@services/cad-status";
 @Component({
   selector: "app-cad-split",
   templateUrl: "./cad-split.component.html",
-  styleUrls: ["./cad-split.component.scss"]
+  styleUrls: ["./cad-split.component.scss"],
+  standalone: true
 })
 export class CadSplitComponent extends Subscribed() implements OnInit {
   private _splitCadLock = false;

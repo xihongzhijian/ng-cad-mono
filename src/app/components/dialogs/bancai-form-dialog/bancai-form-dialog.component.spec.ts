@@ -1,10 +1,8 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import bancaifenzuIndexData from "@assets/testData/bancaifenzuIndex.json";
 import {BancaiFormComponent} from "@components/bancai-form/bancai-form.component";
-import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
-import {MessageModule} from "@modules/message/message.module";
 import {BancaiFormDialogComponent, BancaiFormInput} from "./bancai-form-dialog.component";
 
 const data: BancaiFormInput = {data: {bancai: "", cailiao: "", houdu: ""}, bancaiList: bancaifenzuIndexData.bancaiList};
@@ -15,8 +13,7 @@ describe("BancaiFormDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [BancaiFormComponent, BancaiFormDialogComponent],
-      imports: [HttpModule, InputModule, MessageModule],
+      imports: [BancaiFormComponent, BancaiFormDialogComponent, BrowserAnimationsModule],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

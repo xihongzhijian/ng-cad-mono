@@ -1,6 +1,11 @@
+import {NgClass, NgFor, NgIf} from "@angular/common";
 import {Component, QueryList, ViewChildren} from "@angular/core";
-import {Validators} from "@angular/forms";
+import {FormsModule, Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatMenuModule} from "@angular/material/menu";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {getFilepathUrl, replaceRemoteHost, session, setGlobal} from "@app/app.common";
 import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong-summary.component";
@@ -17,6 +22,8 @@ import {AppStatusService} from "@services/app-status.service";
 import {DdbqType} from "@views/dingdanbiaoqian/dingdanbiaoqian.types";
 import {cloneDeep} from "lodash";
 import {DateTime} from "luxon";
+import {NgScrollbar} from "ngx-scrollbar";
+import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 import {
   BancaiCadExtend,
   BancaisInfo,
@@ -32,7 +39,21 @@ import {
 @Component({
   selector: "app-select-bancai",
   templateUrl: "./select-bancai.component.html",
-  styleUrls: ["./select-bancai.component.scss"]
+  styleUrls: ["./select-bancai.component.scss"],
+  standalone: true,
+  imports: [
+    NgIf,
+    MatSlideToggleModule,
+    FormsModule,
+    MatButtonModule,
+    MatMenuModule,
+    NgFor,
+    NgScrollbar,
+    NgClass,
+    MatDividerModule,
+    InputComponent,
+    SpinnerComponent
+  ]
 })
 export class SelectBancaiComponent extends Subscribed() {
   autoGuige = this.config.getConfig("kailiaoAutoGuige");

@@ -1,6 +1,12 @@
+import {NgFor, NgIf, NgSwitch, NgSwitchCase} from "@angular/common";
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
-import {MatMenuTrigger} from "@angular/material/menu";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {DomSanitizer} from "@angular/platform-browser";
 import {imgLoading, timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-data-transform";
@@ -16,6 +22,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {difference, isEqual} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
 
 interface CadNode {
   data: CadData;
@@ -28,7 +35,21 @@ type ContextMenuCadField = "main" | "component";
 @Component({
   selector: "app-sub-cads",
   templateUrl: "./sub-cads.component.html",
-  styleUrls: ["./sub-cads.component.scss"]
+  styleUrls: ["./sub-cads.component.scss"],
+  standalone: true,
+  imports: [
+    MatSlideToggleModule,
+    NgScrollbar,
+    NgIf,
+    MatTooltipModule,
+    MatDividerModule,
+    NgSwitch,
+    NgSwitchCase,
+    MatButtonModule,
+    NgFor,
+    MatCheckboxModule,
+    MatMenuModule
+  ]
 })
 export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnInit, OnDestroy {
   main: CadNode | null = null;

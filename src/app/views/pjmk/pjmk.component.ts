@@ -1,4 +1,5 @@
 import {Component, OnInit} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
@@ -11,7 +12,9 @@ import {MessageService} from "@modules/message/services/message.service";
 @Component({
   selector: "app-pjmk",
   templateUrl: "./pjmk.component.html",
-  styleUrls: ["./pjmk.component.scss"]
+  styleUrls: ["./pjmk.component.scss"],
+  standalone: true,
+  imports: [MatButtonModule]
 })
 export class PjmkComponent implements OnInit {
   table = "";

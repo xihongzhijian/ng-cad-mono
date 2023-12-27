@@ -4,7 +4,6 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import testData from "@assets/testData/klkwpz.json";
 import {KlkwpzComponent} from "@components/klkwpz/klkwpz.component";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {KlkwpzDialogComponent, KlkwpzDialogData} from "./klkwpz-dialog.component";
@@ -17,8 +16,7 @@ describe("KlkwpzDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KlkwpzDialogComponent, KlkwpzComponent],
-      imports: [HttpModule, InputModule, MatCardModule, MessageModule, NgScrollbarModule],
+      imports: [HttpModule, MatCardModule, MessageModule, NgScrollbarModule, KlkwpzDialogComponent, KlkwpzComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

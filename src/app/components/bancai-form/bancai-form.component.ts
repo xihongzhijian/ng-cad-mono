@@ -1,13 +1,17 @@
+import {NgFor} from "@angular/common";
 import {Component, Input} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {openBancaiListDialog} from "@components/dialogs/bancai-list/bancai-list.component";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
+import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
   selector: "app-bancai-form",
   templateUrl: "./bancai-form.component.html",
-  styleUrls: ["./bancai-form.component.scss"]
+  styleUrls: ["./bancai-form.component.scss"],
+  standalone: true,
+  imports: [NgFor, InputComponent]
 })
 export class BancaiFormComponent {
   private _data: BancaiFormData = {bancai: "", cailiao: "", houdu: ""};

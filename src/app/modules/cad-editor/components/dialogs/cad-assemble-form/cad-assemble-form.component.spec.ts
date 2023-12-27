@@ -1,7 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {CadAssembleFormComponent, CadAssembleFormInput} from "./cad-assemble-form.component";
 
@@ -13,8 +12,7 @@ describe("CadAssembleFormComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadAssembleFormComponent],
-      imports: [HttpModule, InputModule, MessageModule],
+      imports: [HttpModule, MessageModule, CadAssembleFormComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

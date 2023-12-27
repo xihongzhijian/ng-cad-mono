@@ -13,8 +13,7 @@ describe("DrawCadComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [DrawCadComponent],
-      imports: [HttpModule, MessageModule, NgScrollbarModule],
+      imports: [HttpModule, MessageModule, NgScrollbarModule, DrawCadComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

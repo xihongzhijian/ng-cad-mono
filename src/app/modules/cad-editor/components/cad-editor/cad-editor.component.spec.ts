@@ -14,9 +14,7 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {CadConsoleModule} from "@modules/cad-console/cad-console.module";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {ColorChromeModule} from "ngx-color/chrome";
 import {ColorCircleModule} from "ngx-color/circle";
@@ -38,26 +36,13 @@ describe("CadEditorComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [
-        AnchorSelectorComponent,
-        CadDimensionComponent,
-        CadEditorComponent,
-        CadInfoComponent,
-        CadLayerInputComponent,
-        CadLineComponent,
-        CadMtextComponent,
-        CadPointsComponent,
-        SubCadsComponent,
-        ToolbarComponent
-      ],
       imports: [
-        CadConsoleModule,
         ColorChromeModule,
         ColorCircleModule,
         DragDropModule,
         FormsModule,
         HttpModule,
-        InputModule,
+
         MatAutocompleteModule,
         MatButtonModule,
         MatCheckboxModule,
@@ -72,7 +57,17 @@ describe("CadEditorComponent", () => {
         MatTabsModule,
         MatTooltipModule,
         NgScrollbarModule,
-        SpinnerModule
+        SpinnerModule,
+        AnchorSelectorComponent,
+        CadDimensionComponent,
+        CadEditorComponent,
+        CadInfoComponent,
+        CadLayerInputComponent,
+        CadLineComponent,
+        CadMtextComponent,
+        CadPointsComponent,
+        SubCadsComponent,
+        ToolbarComponent
       ]
     }).compileComponents();
 

@@ -4,7 +4,6 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {RouterTestingModule} from "@angular/router/testing";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -16,17 +15,16 @@ describe("SelectBancaiComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SelectBancaiComponent],
       imports: [
         FormsModule,
         HttpModule,
-        InputModule,
         MatMenuModule,
         MatSlideToggleModule,
         MessageModule,
         NgScrollbarModule,
         RouterTestingModule,
-        SpinnerModule
+        SpinnerModule,
+        SelectBancaiComponent
       ]
     }).compileComponents();
   });

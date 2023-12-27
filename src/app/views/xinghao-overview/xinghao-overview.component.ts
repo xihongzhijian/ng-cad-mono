@@ -1,18 +1,46 @@
-import {CdkDragDrop, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+  CdkDropListGroup,
+  moveItemInArray,
+  transferArrayItem
+} from "@angular/cdk/drag-drop";
+import {NgFor, NgIf} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
 import {Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatIconModule} from "@angular/material/icon";
 import {setGlobal} from "@app/app.common";
 import {NavsData, NavsDataNode, NavsResultItem} from "@components/dialogs/navs-dialog/navs-dialog.types";
 import {downloadByString, ObjectOf, selectFiles, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {NgScrollbar} from "ngx-scrollbar";
+import {InputComponent} from "../../modules/input/components/input.component";
 import {XinghaoOverviewData, XinghaoOverviewTableData} from "./xinghao-overview.types";
 
 @Component({
   selector: "app-xinghao-overview",
   templateUrl: "./xinghao-overview.component.html",
-  styleUrls: ["./xinghao-overview.component.scss"]
+  styleUrls: ["./xinghao-overview.component.scss"],
+  standalone: true,
+  imports: [
+    MatButtonModule,
+    CdkDropListGroup,
+    CdkDropList,
+    NgFor,
+    NgIf,
+    MatDividerModule,
+    CdkDrag,
+    CdkDragHandle,
+    MatIconModule,
+    InputComponent,
+    NgScrollbar
+  ]
 })
 export class XinghaoOverviewComponent implements OnInit {
   table = "p_xinghaoshujukuaisupeizhi";

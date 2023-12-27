@@ -3,7 +3,8 @@ import {replaceChars} from "@app/app.common";
 import {ObjectOf, timeout} from "@lucilor/utils";
 
 @Directive({
-  selector: "[appReplaceFullChars]"
+  selector: "[appReplaceFullChars]",
+  standalone: true
 })
 export class ReplaceFullCharsDirective {
   @Input() obj?: ObjectOf<string>;

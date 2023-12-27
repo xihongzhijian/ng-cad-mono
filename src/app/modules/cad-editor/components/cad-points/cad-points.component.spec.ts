@@ -10,8 +10,7 @@ describe("CadPointsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadPointsComponent],
-      imports: [HttpModule, MessageModule, SpinnerModule]
+      imports: [HttpModule, MessageModule, SpinnerModule, CadPointsComponent]
     }).compileComponents();
   });
 

@@ -3,7 +3,6 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatMenuModule} from "@angular/material/menu";
 import {timeout} from "@lucilor/utils";
-import {DirectivesModule} from "@modules/directives/directives.module";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
@@ -19,8 +18,7 @@ describe("ZixuanpeijianComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ZixuanpeijianComponent],
-      imports: [DirectivesModule, HttpModule, MatButtonModule, MatMenuModule, MessageModule, NgScrollbarModule, SpinnerModule],
+      imports: [HttpModule, MatButtonModule, MatMenuModule, MessageModule, NgScrollbarModule, SpinnerModule, ZixuanpeijianComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

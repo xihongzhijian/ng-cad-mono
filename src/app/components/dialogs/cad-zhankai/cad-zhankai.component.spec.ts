@@ -11,7 +11,6 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {RouterTestingModule} from "@angular/router/testing";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
-import {DirectivesModule} from "@modules/directives/directives.module";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
@@ -30,10 +29,8 @@ describe("CadZhankaiComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadZhankaiComponent],
       imports: [
         BrowserAnimationsModule,
-        DirectivesModule,
         FormsModule,
         HttpModule,
         MatCardModule,
@@ -47,7 +44,8 @@ describe("CadZhankaiComponent", () => {
         NgScrollbarModule,
         ReactiveFormsModule,
         RouterTestingModule,
-        SpinnerModule
+        SpinnerModule,
+        CadZhankaiComponent
       ],
       providers: [
         {provide: MatDialogRef, useValue: {}},

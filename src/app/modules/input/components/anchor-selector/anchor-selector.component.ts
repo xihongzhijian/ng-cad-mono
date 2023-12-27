@@ -1,5 +1,8 @@
 import {AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild} from "@angular/core";
-import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
+import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
+import {MatOptionModule} from "@angular/material/core";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
 import {Point} from "@lucilor/utils";
 import {clamp} from "lodash";
 
@@ -10,7 +13,9 @@ export interface AnchorEvent {
 @Component({
   selector: "app-anchor-selector",
   templateUrl: "./anchor-selector.component.html",
-  styleUrls: ["./anchor-selector.component.scss"]
+  styleUrls: ["./anchor-selector.component.scss"],
+  standalone: true,
+  imports: [MatFormFieldModule, MatInputModule, MatAutocompleteModule, MatOptionModule]
 })
 export class AnchorSelectorComponent implements AfterViewInit {
   @Input() x = 0;

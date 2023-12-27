@@ -1,16 +1,21 @@
+import {NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatButtonModule} from "@angular/material/button";
+import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {BancaiFormData} from "@components/bancai-form/bancai-form.component";
 import {environment} from "@env";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {random} from "lodash";
+import {BancaiFormComponent} from "../../bancai-form/bancai-form.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
   selector: "app-bancai-form-dialog",
   templateUrl: "./bancai-form-dialog.component.html",
-  styleUrls: ["./bancai-form-dialog.component.scss"]
+  styleUrls: ["./bancai-form-dialog.component.scss"],
+  standalone: true,
+  imports: [BancaiFormComponent, MatDialogActions, NgIf, MatButtonModule]
 })
 export class BancaiFormDialogComponent {
   prod = environment.production;

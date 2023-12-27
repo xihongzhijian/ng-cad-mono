@@ -1,4 +1,5 @@
 import {Component, OnInit, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {KlkwpzItem, KlkwpzSource} from "@components/klkwpz/klkwpz";
 import {KlkwpzComponent} from "@components/klkwpz/klkwpz.component";
@@ -7,11 +8,14 @@ import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 @Component({
   selector: "app-kailiaokongweipeizhi",
   templateUrl: "./kailiaokongweipeizhi.component.html",
-  styleUrls: ["./kailiaokongweipeizhi.component.scss"]
+  styleUrls: ["./kailiaokongweipeizhi.component.scss"],
+  standalone: true,
+  imports: [MatButtonModule, SpinnerComponent, KlkwpzComponent]
 })
 export class KailiaokongweipeizhiComponent implements OnInit {
   id = "";

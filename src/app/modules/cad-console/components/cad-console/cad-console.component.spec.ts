@@ -10,8 +10,7 @@ describe("CadConsoleComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadConsoleComponent],
-      imports: [HttpModule, MessageModule, SpinnerModule]
+      imports: [HttpModule, MessageModule, SpinnerModule, CadConsoleComponent]
     }).compileComponents();
   });
 

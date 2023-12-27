@@ -1,5 +1,10 @@
+import {NgClass, NgFor, NgIf, NgStyle, NgSwitch, NgSwitchCase, NgSwitchDefault, NgTemplateOutlet} from "@angular/common";
 import {Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {getOrderBarcode, imgCadEmpty, imgEmpty, imgLoading, remoteFilePath, session, setGlobal} from "@app/app.common";
@@ -33,12 +38,33 @@ import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {cloneDeep, isEmpty} from "lodash";
 import {DateTime} from "luxon";
+import {FormulasComponent} from "../../components/formulas/formulas.component";
+import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
+import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig} from "./dingdanbiaoqian.types";
 
 @Component({
   selector: "app-dingdanbiaoqian",
   templateUrl: "./dingdanbiaoqian.component.html",
-  styleUrls: ["./dingdanbiaoqian.component.scss"]
+  styleUrls: ["./dingdanbiaoqian.component.scss"],
+  standalone: true,
+  imports: [
+    NgFor,
+    NgStyle,
+    NgIf,
+    NgClass,
+    ImageComponent,
+    MatDividerModule,
+    MatButtonModule,
+    FormulasComponent,
+    NgTemplateOutlet,
+    TypedTemplateDirective,
+    NgSwitch,
+    NgSwitchCase,
+    NgSwitchDefault,
+    MatSlideToggleModule,
+    FormsModule
+  ]
 })
 export class DingdanbiaoqianComponent implements OnInit {
   orders: Order[] = [];

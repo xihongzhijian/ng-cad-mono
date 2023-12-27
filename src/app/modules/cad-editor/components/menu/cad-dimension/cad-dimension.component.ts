@@ -1,6 +1,12 @@
+import {NgFor} from "@angular/common";
 import {Component, OnDestroy, OnInit} from "@angular/core";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
-import {MatSlideToggleChange} from "@angular/material/slide-toggle";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {reservedDimNames} from "@app/cad/utils";
 import {
   CadData,
@@ -24,7 +30,9 @@ import {openCadDimensionFormDialog} from "../../dialogs/cad-dimension-form/cad-d
 @Component({
   selector: "app-cad-dimension",
   templateUrl: "./cad-dimension.component.html",
-  styleUrls: ["./cad-dimension.component.scss"]
+  styleUrls: ["./cad-dimension.component.scss"],
+  standalone: true,
+  imports: [FormsModule, NgFor, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatSlideToggleModule]
 })
 export class CadDimensionComponent extends Subscribed() implements OnInit, OnDestroy {
   dimNameFocus = -1;

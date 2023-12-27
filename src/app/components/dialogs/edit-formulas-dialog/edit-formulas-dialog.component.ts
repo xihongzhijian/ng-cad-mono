@@ -1,5 +1,6 @@
 import {Component, Inject, ViewChild} from "@angular/core";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatButtonModule} from "@angular/material/button";
+import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {Formulas} from "@app/utils/calc";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -7,7 +8,9 @@ import {getOpenDialogFunc} from "../dialog.common";
 @Component({
   selector: "app-edit-formulas-dialog",
   templateUrl: "./edit-formulas-dialog.component.html",
-  styleUrls: ["./edit-formulas-dialog.component.scss"]
+  styleUrls: ["./edit-formulas-dialog.component.scss"],
+  standalone: true,
+  imports: [FormulasEditorComponent, MatDialogActions, MatButtonModule]
 })
 export class EditFormulasDialogComponent {
   @ViewChild("formulasEditor") formulasEditor?: FormulasEditorComponent;

@@ -1,5 +1,9 @@
+import {AsyncPipe, NgFor} from "@angular/common";
 import {Component, Input} from "@angular/core";
-import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
+import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
+import {MatOptionModule} from "@angular/material/core";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatInputModule} from "@angular/material/input";
 import {CadEntity} from "@lucilor/cad-viewer";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {AppStatusService} from "@services/app-status.service";
@@ -8,7 +12,9 @@ import {BehaviorSubject} from "rxjs";
 @Component({
   selector: "app-cad-layer-input[entities]",
   templateUrl: "./cad-layer-input.component.html",
-  styleUrls: ["./cad-layer-input.component.scss"]
+  styleUrls: ["./cad-layer-input.component.scss"],
+  standalone: true,
+  imports: [MatFormFieldModule, MatInputModule, MatAutocompleteModule, NgFor, MatOptionModule, AsyncPipe]
 })
 export class CadLayerInputComponent extends Subscribed() {
   @Input() entities: CadEntity[] = [];

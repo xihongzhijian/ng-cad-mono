@@ -2,7 +2,6 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MatCardModule} from "@angular/material/card";
 import {KlkwpzComponent} from "@components/klkwpz/klkwpz.component";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -14,8 +13,7 @@ describe("KailiaokongweipeizhiComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KailiaokongweipeizhiComponent, KlkwpzComponent],
-      imports: [HttpModule, InputModule, MatCardModule, MessageModule, NgScrollbarModule, SpinnerModule]
+      imports: [HttpModule, MatCardModule, MessageModule, NgScrollbarModule, SpinnerModule, KailiaokongweipeizhiComponent, KlkwpzComponent]
     }).compileComponents();
   });
 

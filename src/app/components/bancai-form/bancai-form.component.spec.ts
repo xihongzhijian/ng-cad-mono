@@ -1,7 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MatDialogModule} from "@angular/material/dialog";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {BancaiFormComponent} from "./bancai-form.component";
 
@@ -11,8 +10,7 @@ describe("BancaiFormComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [BancaiFormComponent],
-      imports: [HttpModule, InputModule, MatDialogModule, MessageModule]
+      imports: [HttpModule, MatDialogModule, MessageModule, BancaiFormComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(BancaiFormComponent);

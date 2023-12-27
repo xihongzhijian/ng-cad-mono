@@ -1,4 +1,6 @@
+import {NgFor} from "@angular/common";
 import {Component, OnDestroy, OnInit} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {validColors} from "@app/cad/utils";
 import {environment} from "@env";
 import {CadMtext, CadStylizer} from "@lucilor/cad-viewer";
@@ -8,11 +10,14 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
 import Color from "color";
 import {debounce} from "lodash";
+import {InputComponent} from "../../../../input/components/input.component";
 
 @Component({
   selector: "app-cad-mtext",
   templateUrl: "./cad-mtext.component.html",
-  styleUrls: ["./cad-mtext.component.scss"]
+  styleUrls: ["./cad-mtext.component.scss"],
+  standalone: true,
+  imports: [MatButtonModule, NgFor, InputComponent]
 })
 export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy {
   selected: CadMtext[] = [];

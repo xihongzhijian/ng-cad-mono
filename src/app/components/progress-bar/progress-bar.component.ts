@@ -1,3 +1,4 @@
+import {NgClass, NgIf} from "@angular/common";
 import {Component, Input} from "@angular/core";
 import {ListRandom, ProgressBar} from "@lucilor/utils";
 
@@ -6,7 +7,9 @@ export type ProgressBarStatus = "hidden" | "progress" | "success" | "error" | "w
 @Component({
   selector: "app-progress-bar[progressBar]",
   templateUrl: "./progress-bar.component.html",
-  styleUrls: ["./progress-bar.component.scss"]
+  styleUrls: ["./progress-bar.component.scss"],
+  standalone: true,
+  imports: [NgIf, NgClass]
 })
 export class ProgressBarComponent {
   @Input()

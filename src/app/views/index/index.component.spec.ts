@@ -9,8 +9,7 @@ describe("IndexComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [IndexComponent],
-      imports: [CadEditorModule, HttpModule]
+      imports: [CadEditorModule, HttpModule, IndexComponent]
     }).compileComponents();
   });
 

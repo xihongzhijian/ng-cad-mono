@@ -1,4 +1,5 @@
-import {Component, Inject, ViewChild} from "@angular/core";
+import {Component, forwardRef, Inject, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {CadLine} from "@lucilor/cad-viewer";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
@@ -6,6 +7,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, ItemGetter, TableErrorState, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {cloneDeep} from "lodash";
+import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {CadLineTjqzSelectData, openCadLineTjqzSelectDialog} from "../cad-line-tjqz-select/cad-line-tjqz-select.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
@@ -16,7 +18,9 @@ type RawDataRight = RawDataLeft["data"][0];
 @Component({
   selector: "app-cad-line-tjqz",
   templateUrl: "./cad-line-tjqz.component.html",
-  styleUrls: ["./cad-line-tjqz.component.scss"]
+  styleUrls: ["./cad-line-tjqz.component.scss"],
+  standalone: true,
+  imports: [MatButtonModule, SpinnerComponent, forwardRef(() => TableComponent)]
 })
 export class CadLineTjqzComponent {
   infoLeft: TableRenderInfo<RawDataLeft>;

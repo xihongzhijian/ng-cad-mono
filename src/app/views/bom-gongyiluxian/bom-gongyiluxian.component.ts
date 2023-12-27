@@ -1,6 +1,9 @@
 import {animate, state, style, transition, trigger} from "@angular/animations";
+import {NgIf} from "@angular/common";
 import {Component, OnInit, ViewChild} from "@angular/core";
-import {Validators} from "@angular/forms";
+import {FormsModule, Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute, Router} from "@angular/router";
 import {session, setGlobal} from "@app/app.common";
 import {environment} from "@env";
@@ -25,7 +28,9 @@ import {DingdanBomCacheData, DingdanBomData, DingdanBomDataResponseData} from ".
       state("expanded", style({height: "*"})),
       transition("expanded <=> collapsed", animate("225ms cubic-bezier(0.4, 0.0, 0.2, 1)"))
     ])
-  ]
+  ],
+  standalone: true,
+  imports: [MatButtonModule, NgIf, MatSlideToggleModule, FormsModule, TableComponent]
 })
 export class BomGongyiluxianComponent implements OnInit {
   table = "b_dingdanbom";

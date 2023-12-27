@@ -1,6 +1,14 @@
+import {NgClass, NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild} from "@angular/core";
-import {Validators} from "@angular/forms";
+import {FormsModule, Validators} from "@angular/forms";
+import {MatAutocompleteModule} from "@angular/material/autocomplete";
+import {MatButtonModule} from "@angular/material/button";
+import {MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
@@ -33,6 +41,8 @@ import {
 import imageCompression from "browser-image-compression";
 import {intersection} from "lodash";
 import printJS from "print-js";
+import {ImageComponent} from "../../modules/image/components/image/image.component";
+import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 const duration = 400;
 @Component({
@@ -44,6 +54,22 @@ const duration = 400;
     slideOutUpOnLeaveAnimation({anchor: "toolbarLeave", duration}),
     slideInRightOnEnterAnimation({anchor: "toolbarToggleEnter", duration}),
     slideOutRightOnLeaveAnimation({anchor: "toolbarToggleLeave", duration})
+  ],
+  standalone: true,
+  imports: [
+    NgIf,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatAutocompleteModule,
+    NgFor,
+    MatOptionModule,
+    MatSlideToggleModule,
+    ImageComponent,
+    NgClass,
+    SpinnerComponent
   ]
 })
 export class PrintCadComponent implements AfterViewInit, OnDestroy {

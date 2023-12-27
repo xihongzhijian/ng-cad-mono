@@ -1,8 +1,12 @@
 import {animate, state, style, transition, trigger} from "@angular/animations";
-import {CdkDragEnd, CdkDragMove, CdkDragStart} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragEnd, CdkDragMove, CdkDragStart} from "@angular/cdk/drag-drop";
+import {AsyncPipe, NgIf} from "@angular/common";
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, QueryList, ViewChild, ViewChildren} from "@angular/core";
-import {MatMenuTrigger} from "@angular/material/menu";
-import {MatTabChangeEvent, MatTabGroup} from "@angular/material/tabs";
+import {MatButtonModule} from "@angular/material/button";
+import {MatIconModule} from "@angular/material/icon";
+import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
 import {Debounce} from "@decorators/debounce";
 import {CadEventCallBack} from "@lucilor/cad-viewer";
@@ -16,6 +20,16 @@ import {CadStatusAssemble, CadStatusSplit} from "@services/cad-status";
 import {debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, map, startWith, take} from "rxjs";
+import {SpinnerComponent} from "../../../spinner/components/spinner/spinner.component";
+import {CadPointsComponent} from "../cad-points/cad-points.component";
+import {CadAssembleComponent} from "../menu/cad-assemble/cad-assemble.component";
+import {CadDimensionComponent} from "../menu/cad-dimension/cad-dimension.component";
+import {CadInfoComponent} from "../menu/cad-info/cad-info.component";
+import {CadLineComponent} from "../menu/cad-line/cad-line.component";
+import {CadMtextComponent} from "../menu/cad-mtext/cad-mtext.component";
+import {CadSplitComponent} from "../menu/cad-split/cad-split.component";
+import {SubCadsComponent} from "../menu/sub-cads/sub-cads.component";
+import {ToolbarComponent} from "../menu/toolbar/toolbar.component";
 
 @Component({
   selector: "app-cad-editor",
@@ -46,6 +60,29 @@ import {BehaviorSubject, map, startWith, take} from "rxjs";
       transition(":enter", [style({opacity: 0}), animate("0.5s", style({opacity: 1}))]),
       transition(":leave", [style({opacity: 1}), animate("0.5s", style({opacity: 0}))])
     ])
+  ],
+  standalone: true,
+  imports: [
+    MatMenuModule,
+    CadPointsComponent,
+    ToolbarComponent,
+    NgIf,
+    MatButtonModule,
+    MatIconModule,
+    SubCadsComponent,
+    CdkDrag,
+    MatSlideToggleModule,
+    MatTabsModule,
+    NgScrollbar,
+    CadInfoComponent,
+    CadLineComponent,
+    CadMtextComponent,
+    CadDimensionComponent,
+    CadAssembleComponent,
+    CadSplitComponent,
+    SpinnerComponent,
+    CadConsoleComponent,
+    AsyncPipe
   ]
 })
 export class CadEditorComponent extends ContextMenu(Subscribed()) implements AfterViewInit, OnDestroy {

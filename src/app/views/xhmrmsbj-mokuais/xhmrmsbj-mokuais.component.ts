@@ -1,7 +1,10 @@
+import {NgFor, NgIf} from "@angular/common";
 import {ElementRef} from "@angular/core";
 import {ViewChild, ViewChildren} from "@angular/core";
 import {Component, Inject} from "@angular/core";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatButtonModule} from "@angular/material/button";
+import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
 import {Formulas} from "@app/utils/calc";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {getMokuaiTitle, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
@@ -11,11 +14,15 @@ import {isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CalcService} from "@services/calc.service";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import csstype from "csstype";
+import {NgScrollbar} from "ngx-scrollbar";
+import {FormulasComponent} from "../../components/formulas/formulas.component";
 
 @Component({
   selector: "app-xhmrmsbj-mokuais",
   templateUrl: "./xhmrmsbj-mokuais.component.html",
-  styleUrls: ["./xhmrmsbj-mokuais.component.scss"]
+  styleUrls: ["./xhmrmsbj-mokuais.component.scss"],
+  standalone: true,
+  imports: [NgScrollbar, NgFor, FormulasComponent, NgIf, MatDividerModule, MatDialogActions, MatButtonModule]
 })
 export class XhmrmsbjMokuaisComponent {
   @ViewChildren("mkdxFormula", {read: ElementRef}) mkdxFormulaRef?: ElementRef<HTMLDivElement>[];

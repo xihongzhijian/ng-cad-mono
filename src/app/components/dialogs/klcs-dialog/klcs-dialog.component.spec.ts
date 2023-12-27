@@ -3,7 +3,6 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {defaultQiezhongkongItem, KlcsComponent, QiezhongkongItem} from "@components/klcs/klcs.component";
 import {importObject} from "@lucilor/utils";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {KlcsDialogComponent, KlcsDialogInput} from "./klcs-dialog.component";
 
@@ -16,8 +15,7 @@ describe("KlcsDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [KlcsDialogComponent, KlcsComponent],
-      imports: [HttpModule, InputModule, NgScrollbarModule],
+      imports: [HttpModule, NgScrollbarModule, KlcsDialogComponent, KlcsComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

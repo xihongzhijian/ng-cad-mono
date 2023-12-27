@@ -1,5 +1,13 @@
+import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, ViewChild} from "@angular/core";
-import {MatPaginator, PageEvent} from "@angular/material/paginator";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
+import {MatDatepickerModule} from "@angular/material/datepicker";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {imgLoading} from "@app/app.common";
@@ -10,7 +18,9 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
+import {NgScrollbar} from "ngx-scrollbar";
 import {lastValueFrom} from "rxjs";
+import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 export interface BackupCadsSearchParams {
   name: string;
@@ -31,7 +41,22 @@ export interface BackupCadsData {
 @Component({
   selector: "app-backup",
   templateUrl: "./backup.component.html",
-  styleUrls: ["./backup.component.scss"]
+  styleUrls: ["./backup.component.scss"],
+  standalone: true,
+  imports: [
+    FormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    NgIf,
+    MatIconModule,
+    NgScrollbar,
+    NgFor,
+    MatCardModule,
+    MatPaginatorModule,
+    SpinnerComponent
+  ]
 })
 export class BackupComponent implements AfterViewInit {
   data: BackupCadsData[] = [];

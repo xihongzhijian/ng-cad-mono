@@ -7,7 +7,7 @@ describe("MsbjRectsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [MsbjRectsComponent]
+      imports: [MsbjRectsComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MsbjRectsComponent);

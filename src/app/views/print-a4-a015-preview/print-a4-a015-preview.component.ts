@@ -1,10 +1,15 @@
+import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, OnDestroy} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {CadData, CadViewer} from "@lucilor/cad-viewer";
 import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {NgScrollbar} from "ngx-scrollbar";
+import {ImageComponent} from "../../modules/image/components/image/image.component";
+import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
 export type PreviewData = {
   CAD?: any;
@@ -20,7 +25,9 @@ export type PreviewData = {
 @Component({
   selector: "app-print-a4-a015-preview",
   templateUrl: "./print-a4-a015-preview.component.html",
-  styleUrls: ["./print-a4-a015-preview.component.scss"]
+  styleUrls: ["./print-a4-a015-preview.component.scss"],
+  standalone: true,
+  imports: [NgScrollbar, NgFor, NgIf, ImageComponent, MatButtonModule, SpinnerComponent]
 })
 export class PrintA4A015PreviewComponent implements AfterViewInit, OnDestroy {
   data: PreviewData = [];

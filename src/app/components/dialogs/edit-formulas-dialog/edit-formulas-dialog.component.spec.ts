@@ -3,7 +3,6 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {HttpModule} from "@modules/http/http.module";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {EditFormulasDialogComponent, EditFormulasInput} from "./edit-formulas-dialog.component";
@@ -16,8 +15,7 @@ describe("EditFormulasDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [EditFormulasDialogComponent, FormulasEditorComponent],
-      imports: [HttpModule, InputModule, MatIconModule, MessageModule, NgScrollbarModule],
+      imports: [HttpModule, MatIconModule, MessageModule, NgScrollbarModule, EditFormulasDialogComponent, FormulasEditorComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

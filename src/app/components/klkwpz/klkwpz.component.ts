@@ -1,5 +1,8 @@
+import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, Input} from "@angular/core";
 import {Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadData, CadLine} from "@lucilor/cad-viewer";
@@ -9,12 +12,16 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {cloneDeep, uniq} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
+import {InputComponent} from "../../modules/input/components/input.component";
 import {Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
 
 @Component({
   selector: "app-klkwpz",
   templateUrl: "./klkwpz.component.html",
-  styleUrls: ["./klkwpz.component.scss"]
+  styleUrls: ["./klkwpz.component.scss"],
+  standalone: true,
+  imports: [NgScrollbar, NgFor, MatCardModule, MatButtonModule, InputComponent, NgIf]
 })
 export class KlkwpzComponent implements AfterViewInit {
   private _data: KlkwpzSource = {};

@@ -1,5 +1,13 @@
+import {NgFor, NgIf} from "@angular/common";
 import {Component, OnDestroy, OnInit} from "@angular/core";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatSelectModule} from "@angular/material/select";
 import {cadOptions} from "@app/cad/options";
 import {激光开料标记线类型} from "@app/cad/utils";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -24,12 +32,26 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService, CadPoints} from "@services/app-status.service";
 import {CadStatusIntersection, CadStatusSelectBaseline, CadStatusSelectJointpoint} from "@services/cad-status";
 import {isEqual} from "lodash";
+import {InputComponent} from "../../../../input/components/input.component";
 import {openCadDataAttrsDialog} from "../../dialogs/cad-data-attrs/cad-data-attrs.component";
 
 @Component({
   selector: "app-cad-info",
   templateUrl: "./cad-info.component.html",
-  styleUrls: ["./cad-info.component.scss"]
+  styleUrls: ["./cad-info.component.scss"],
+  standalone: true,
+  imports: [
+    FormsModule,
+    NgFor,
+    InputComponent,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    NgIf,
+    MatSelectModule,
+    MatOptionModule
+  ]
 })
 export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnDestroy {
   private _cadPointsLock = false;

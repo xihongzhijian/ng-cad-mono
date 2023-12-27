@@ -10,7 +10,6 @@ import {MatInputModule} from "@angular/material/input";
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {CadData} from "@lucilor/cad-viewer";
 import {HttpModule} from "@modules/http/http.module";
-import {ImageModule} from "@modules/image/image.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -22,11 +21,9 @@ describe("BackupComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [BackupComponent],
       imports: [
         FormsModule,
         HttpModule,
-        ImageModule,
         MatButtonModule,
         MatCardModule,
         MatDatepickerModule,
@@ -37,7 +34,8 @@ describe("BackupComponent", () => {
         MatPaginatorModule,
         MessageModule,
         NgScrollbarModule,
-        SpinnerModule
+        SpinnerModule,
+        BackupComponent
       ]
     }).compileComponents();
   });

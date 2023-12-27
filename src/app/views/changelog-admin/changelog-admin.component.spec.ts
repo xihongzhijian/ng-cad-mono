@@ -20,7 +20,6 @@ describe("ChangelogAdminComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ChangelogAdminComponent],
       imports: [
         DragDropModule,
         HttpModule,
@@ -34,7 +33,8 @@ describe("ChangelogAdminComponent", () => {
         MatSelectModule,
         MessageModule,
         NgScrollbarModule,
-        SpinnerModule
+        SpinnerModule,
+        ChangelogAdminComponent
       ]
     }).compileComponents();
   });

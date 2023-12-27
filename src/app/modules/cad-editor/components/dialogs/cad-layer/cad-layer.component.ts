@@ -1,6 +1,9 @@
+import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject, QueryList, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MatIconModule} from "@angular/material/icon";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadLayer} from "@lucilor/cad-viewer";
 import {queryString} from "@lucilor/utils";
@@ -8,11 +11,14 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {debounce} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
 
 @Component({
   selector: "app-cad-layer",
   templateUrl: "./cad-layer.component.html",
-  styleUrls: ["./cad-layer.component.scss"]
+  styleUrls: ["./cad-layer.component.scss"],
+  standalone: true,
+  imports: [InputComponent, NgScrollbar, NgFor, NgIf, MatButtonModule, MatIconModule]
 })
 export class CadLayerComponent {
   layers: CadLayer[] = [];

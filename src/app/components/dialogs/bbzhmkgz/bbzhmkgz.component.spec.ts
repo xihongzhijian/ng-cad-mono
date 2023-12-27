@@ -1,7 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {InputModule} from "@modules/input/input.module";
 import {MessageModule} from "@modules/message/message.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {BbzhmkgzComponent, BbzhmkgzComponentData} from "./bbzhmkgz.component";
@@ -13,8 +12,7 @@ describe("BbzhmkgzComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [BbzhmkgzComponent],
-      imports: [BrowserAnimationsModule, InputModule, MessageModule, NgScrollbarModule],
+      imports: [BrowserAnimationsModule, MessageModule, NgScrollbarModule, BbzhmkgzComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

@@ -1,16 +1,24 @@
+import {AsyncPipe, NgFor, NgIf} from "@angular/common";
 import {ChangeDetectorRef, Component, Input} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {MatDialogRef} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
+import {RouterLink} from "@angular/router";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {Changelog} from "@modules/http/services/cad-data.service.types";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {changelogTypes} from "@views/changelog-admin/changelog-admin.component";
+import {InfiniteScrollModule} from "ngx-infinite-scroll";
+import {NgScrollbar, ScrollViewport} from "ngx-scrollbar";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
   selector: "app-changelog",
   templateUrl: "./changelog.component.html",
-  styleUrls: ["./changelog.component.scss"]
+  styleUrls: ["./changelog.component.scss"],
+  standalone: true,
+  imports: [MatButtonModule, NgIf, RouterLink, NgScrollbar, InfiniteScrollModule, ScrollViewport, NgFor, MatDividerModule, AsyncPipe]
 })
 export class ChangelogComponent {
   @Input() pageSize = 10;

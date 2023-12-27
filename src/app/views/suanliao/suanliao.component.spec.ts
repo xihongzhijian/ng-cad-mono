@@ -9,8 +9,7 @@ describe("SuanliaoComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SuanliaoComponent],
-      imports: [HttpModule, MessageModule]
+      imports: [HttpModule, MessageModule, SuanliaoComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SuanliaoComponent);

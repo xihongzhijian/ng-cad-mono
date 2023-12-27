@@ -1,8 +1,20 @@
+import {NgFor, NgIf, NgSwitch, NgSwitchCase, NgTemplateOutlet} from "@angular/common";
 import {AfterViewInit, Component, ElementRef, Inject, ViewChild} from "@angular/core";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {MatPaginator, PageEvent} from "@angular/material/paginator";
-import {MatSlideToggleChange} from "@angular/material/slide-toggle";
-import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions} from "@angular/material/tooltip";
+import {FormsModule} from "@angular/forms";
+import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatOptionModule} from "@angular/material/core";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
+import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatIconModule} from "@angular/material/icon";
+import {MatInputModule} from "@angular/material/input";
+import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
+import {MatRadioModule} from "@angular/material/radio";
+import {MatSelectModule} from "@angular/material/select";
+import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {MatTableModule} from "@angular/material/table";
+import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
 import {DomSanitizer} from "@angular/platform-browser";
 import {imgCadEmpty, timer} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
@@ -15,7 +27,10 @@ import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {difference} from "lodash";
+import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
+import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
+import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {openCadSearchFormDialog} from "../cad-search-form/cad-search-form.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
@@ -29,7 +44,33 @@ export const customTooltipOptions: MatTooltipDefaultOptions = {
   selector: "app-cad-list",
   templateUrl: "./cad-list.component.html",
   styleUrls: ["./cad-list.component.scss"],
-  providers: [{provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: customTooltipOptions}]
+  providers: [{provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: customTooltipOptions}],
+  standalone: true,
+  imports: [
+    FormsModule,
+    NgIf,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSlideToggleModule,
+    MatCheckboxModule,
+    NgSwitch,
+    NgSwitchCase,
+    NgScrollbar,
+    MatRadioModule,
+    NgFor,
+    MatTooltipModule,
+    NgTemplateOutlet,
+    MatTableModule,
+    SpinnerComponent,
+    MatDialogActions,
+    MatPaginatorModule,
+    TypedTemplateDirective,
+    MatDividerModule
+  ]
 })
 export class CadListComponent extends Utils() implements AfterViewInit {
   length = 0;

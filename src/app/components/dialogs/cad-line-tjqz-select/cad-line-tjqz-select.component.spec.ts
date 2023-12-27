@@ -10,8 +10,7 @@ describe("CadLineTjqzSelectComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadLineTjqzSelectComponent],
-      imports: [MatFormFieldModule, MessageModule],
+      imports: [MatFormFieldModule, MessageModule, CadLineTjqzSelectComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: {}}

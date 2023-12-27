@@ -1,16 +1,23 @@
-import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
+import {KeyValuePipe, NgFor, NgIf} from "@angular/common";
 import {Component, ElementRef, Input, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
+import {MatIconModule} from "@angular/material/icon";
 import {setGlobal} from "@app/app.common";
 import {CalcResult, Formulas} from "@app/utils/calc";
 import {timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
+import {NgScrollbar} from "ngx-scrollbar";
+import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
   selector: "app-formulas-editor",
   templateUrl: "./formulas-editor.component.html",
-  styleUrls: ["./formulas-editor.component.scss"]
+  styleUrls: ["./formulas-editor.component.scss"],
+  standalone: true,
+  imports: [InputComponent, MatButtonModule, NgScrollbar, CdkDropList, NgFor, CdkDrag, CdkDragHandle, MatIconModule, NgIf, KeyValuePipe]
 })
 export class FormulasEditorComponent {
   private _formulas?: Formulas;

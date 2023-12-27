@@ -1,15 +1,20 @@
+import {NgClass, NgFor} from "@angular/common";
 import {Component, OnInit, ViewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
 import {ObjectOf, Timer} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {CustomResponse} from "@modules/http/services/http.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {NgScrollbar} from "ngx-scrollbar";
+import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
   selector: "app-clean",
   templateUrl: "./clean.component.html",
-  styleUrls: ["./clean.component.scss"]
+  styleUrls: ["./clean.component.scss"],
+  standalone: true,
+  imports: [MatButtonModule, InputComponent, NgScrollbar, NgFor, NgClass]
 })
 export class CleanComponent implements OnInit {
   msgs: Msg[] = [];

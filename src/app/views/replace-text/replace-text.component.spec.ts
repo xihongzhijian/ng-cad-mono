@@ -17,7 +17,6 @@ describe("ReplaceTextComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ReplaceTextComponent],
       imports: [
         MatCardModule,
         MatCheckboxModule,
@@ -28,7 +27,8 @@ describe("ReplaceTextComponent", () => {
         MessageModule,
         NgScrollbarModule,
         ReactiveFormsModule,
-        SpinnerModule
+        SpinnerModule,
+        ReplaceTextComponent
       ]
     }).compileComponents();
   });

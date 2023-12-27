@@ -12,8 +12,7 @@ describe("CadDimensionComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CadDimensionComponent],
-      imports: [HttpModule, MatButtonModule, MatDialogModule, MessageModule, SpinnerModule]
+      imports: [HttpModule, MatButtonModule, MatDialogModule, MessageModule, SpinnerModule, CadDimensionComponent]
     }).compileComponents();
   });
 

@@ -45,8 +45,7 @@ describe("SelectBancaiCadsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SelectBancaiCadsComponent],
-      imports: [FormsModule, MatCheckboxModule, MatSlideToggleModule, NgScrollbarModule],
+      imports: [FormsModule, MatCheckboxModule, MatSlideToggleModule, NgScrollbarModule, SelectBancaiCadsComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}
