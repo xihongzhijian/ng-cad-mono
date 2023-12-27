@@ -25,6 +25,8 @@ export interface TableRenderInfo<T> {
   };
   isTree?: boolean;
   onlineMode?: {tableName: string; refresh: () => Promise<void>};
+  noScroll?: boolean;
+  style?: csstype.Properties;
 }
 
 export interface TableButton {
@@ -43,6 +45,7 @@ export interface ColumnInfoBase<T> {
   required?: boolean;
   sticky?: boolean;
   hidden?: boolean;
+  style?: csstype.Properties;
 }
 
 export interface ColumnInfoNormal<T> extends ColumnInfoBase<T> {

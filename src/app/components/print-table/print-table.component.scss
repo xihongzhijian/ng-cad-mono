@@ -1,0 +1,21 @@
+:host {
+  width: 210mm;
+}
+
+app-table {
+  --border: 1px solid black;
+  border: var(--border);
+  ::ng-deep {
+    .title {
+      text-align: left;
+      font-size: 1.2em;
+    }
+
+    .table-body {
+      box-shadow: none !important;
+    }
+  }
+  &:not(:first-child) {
+    border-top: none;
+  }
+}

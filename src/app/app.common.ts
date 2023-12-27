@@ -149,6 +149,9 @@ export const getFilepathUrl = (url: string, opts?: {prefix?: string; suffix?: st
   if (!url) {
     return "";
   }
+  if (url.startsWith("http")) {
+    return url;
+  }
   const {prefix, suffix} = opts || {};
   let result = `${filePathUrl}/${url}`;
   if (prefix || suffix) {

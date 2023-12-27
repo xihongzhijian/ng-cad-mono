@@ -112,6 +112,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   get toolbarButtons() {
     return this.info.toolbarButtons || {};
   }
+  get haveToolbarButtons() {
+    return Object.keys(this.toolbarButtons).length > 0;
+  }
+  get haveData() {
+    return this.info.data?.length > 0;
+  }
 
   constructor(
     private message: MessageService,
@@ -440,7 +446,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   getCellStyle(column: ColumnInfo<T>) {
-    const style: csstype.Properties = {};
+    const style: csstype.Properties = {...column.style};
     if (column.width) {
       style.flex = `0 0 ${column.width}`;
     }

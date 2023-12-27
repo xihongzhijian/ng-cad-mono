@@ -1,6 +1,6 @@
-<div class="table-container">
+<div class="table-container" [ngClass]="{'no-scroll': info.noScroll, 'no-data': !haveData}">
   <div class="title center" *ngIf="info.title">{{ info.title }}</div>
-  <div class="btn-group table-toolbar">
+  <div class="btn-group table-toolbar" *ngIf="haveToolbarButtons">
     <button mat-raised-button *ngIf="toolbarButtons.add" color="primary" (click)="addItem()">添加</button>
     <button
       mat-raised-button

@@ -1,4 +1,5 @@
 import {Route} from "@angular/router";
+import {PrintTableComponent} from "@components/print-table/print-table.component";
 import {BackupComponent} from "@views/backup/backup.component";
 import {BomGongyiluxianComponent} from "@views/bom-gongyiluxian/bom-gongyiluxian.component";
 import {ChangelogAdminComponent} from "@views/changelog-admin/changelog-admin.component";
@@ -53,5 +54,6 @@ export const routesInfo: (Route & {path: string})[] = [
       const {code} = route.queryParams;
       return code ? `订单 ${code}` : "BOM工艺路线";
     }
-  }
+  },
+  {path: "print-table", component: PrintTableComponent, title: "打印表格"}
 ];

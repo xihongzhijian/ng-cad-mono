@@ -9,7 +9,7 @@ import {CadEditorModule} from "@modules/cad-editor/cad-editor.module";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {RECAPTCHA_LOADER_OPTIONS, RECAPTCHA_V3_SITE_KEY, RecaptchaLoaderOptions} from "ng-recaptcha";
+import {RECAPTCHA_LOADER_OPTIONS, RECAPTCHA_V3_SITE_KEY, RecaptchaLoaderOptions, RecaptchaV3Module} from "ng-recaptcha";
 import {QuillModule} from "ngx-quill";
 import {AppComponent} from "./app/app.component";
 import {AppRoutingModule} from "./app/routing/app-routing.module";
@@ -65,6 +65,7 @@ bootstrapApplication(AppComponent, {
           ]
         }
       }),
+      RecaptchaV3Module,
       SpinnerModule
     ),
     {provide: MatPaginatorIntl, useClass: MyMatPaginatorIntl},
