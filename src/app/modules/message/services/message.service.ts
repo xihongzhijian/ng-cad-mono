@@ -53,6 +53,15 @@ export class MessageService {
     if (typeof data === "string") {
       data = {content: data} as MessageDataParams<T>;
     }
+    if (type === "alert") {
+      const {details} = data as MessageDataParams<AlertMessageData>;
+      if (Array.isArray(details) && details.length > 0) {
+        const el = getListEl(details, data.content);
+        data.content = el;
+      } else if (details) {
+        data.content = `${data.content}<br>${details}`;
+      }
+    }
     return {...data, type} as MessageData as MessageDataMap[K];
   }
 
@@ -60,18 +69,8 @@ export class MessageService {
     await this.open({data: this._getData(data, "alert"), ...others});
   }
 
-  async error(
-    message: string | MessageDataParams<AlertMessageData>,
-    details: string[] | string = [],
-    others: MessageDataParams2<AlertMessageData> = {}
-  ) {
+  async error(message: string | MessageDataParams<AlertMessageData>, others: MessageDataParams2<AlertMessageData> = {}) {
     const data = this._getData(message, "alert");
-    if (Array.isArray(details)) {
-      const el = getListEl(details, data.content);
-      data.content = el;
-    } else {
-      data.content = `${data.content}<br>${details}`;
-    }
     if (!data.title) {
       data.title = `<span style="color:red">错误</span>`;
     }

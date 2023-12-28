@@ -72,9 +72,10 @@ export const getInputInfosFromTableColumns = <T>(
     } else {
       extra2 = extra;
     }
+    const field = column.field as string;
     const base: Omit<InputInfo<T>, "type"> = {
-      name: column.field as string,
-      label: column.name,
+      name: field,
+      label: column.name || field,
       ...extra2
     };
     const type = column.type;

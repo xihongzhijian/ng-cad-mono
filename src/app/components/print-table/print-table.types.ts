@@ -1,3 +1,4 @@
+import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {ObjectOf} from "packages/utils/lib";
 
 export interface TableInfoData {
@@ -7,8 +8,19 @@ export interface TableInfoData {
     value: string;
     width: string[];
   }[][];
-  表数据: ObjectOf<string[][]>;
-  列宽: ObjectOf<ObjectOf<number>>;
+  表数据: TableRenderInfo<ObjectOf<any>>[];
 }
 
 export type TableData = ObjectOf<any>;
+
+export interface XikongDataRaw {
+  加工孔名字: string;
+  加工面: string;
+  X: number | string;
+  Y: number | string;
+  Z: number | string;
+}
+
+export interface XikongData extends XikongDataRaw {
+  序号: number;
+}

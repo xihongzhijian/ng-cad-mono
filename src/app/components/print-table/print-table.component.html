@@ -1,9 +1,14 @@
-<div class="toolbar no-print">
-  <button mat-raised-button color="primary" (click)="print()">打印</button>
-</div>
 <div class="content">
   <div class="title center">{{ title }}</div>
   <div class="table-container flex-column flex-110">
-    <app-table *ngFor="let tableInfo of tableInfos" [info]="tableInfo"></app-table>
+    <app-table *ngFor="let tableInfo of tableInfos" [info]="tableInfo" (rowButtonClick)="onRowButtonClick($event)"></app-table>
+  </div>
+</div>
+<div class="menu toolbar no-print flex-column">
+  <div class="toolbar">
+    <button mat-raised-button color="primary" (click)="print()">打印</button>
+  </div>
+  <div class="flex-110 flex-column">
+    <app-table *ngIf="xikongTableInfo" [info]="xikongTableInfo" [ngStyle]="{width: xikongTableWidth + 'px'}"></app-table>
   </div>
 </div>

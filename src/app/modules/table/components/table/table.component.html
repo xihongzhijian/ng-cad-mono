@@ -27,7 +27,7 @@
       [color]="button.color"
       [ngClass]="button.class"
       [ngStyle]="button.style"
-      (click)="onToolbarBtnClick(button)"
+      (click)="onToolbarBtnClick({button})"
     >
       {{ button.title || button.event }}
     </button>
@@ -61,12 +61,12 @@
         >
           <ng-container *ngIf="info.sortable; else headerNoSort">
             <mat-header-cell *matHeaderCellDef mat-sort-header [ngClass]="getCellClass(column)" [ngStyle]="getCellStyle(column)">
-              {{ column.name }}
+              {{ column.name || column.field }}
             </mat-header-cell>
           </ng-container>
           <ng-template #headerNoSort>
             <mat-header-cell *matHeaderCellDef [ngClass]="getCellClass(column)" [ngStyle]="getCellStyle(column)">
-              {{ column.name }}
+              {{ column.name || column.field }}
             </mat-header-cell>
           </ng-template>
           <mat-cell
@@ -161,14 +161,14 @@
               <ng-container *ngSwitchCase="'button'">
                 <div class="btn-group" *ngIf="isColumnEditable({column, item, colIdx, rowIdx}); else normal">
                   <button
-                    mat-raised-button
+                    mat-stroked-button
                     *ngFor="let button of getColumnButtons(column)"
                     [color]="button.color"
                     [ngClass]="button.class"
                     [ngStyle]="button.style"
                     (click)="onRowButtonClick({button, column, item, colIdx, rowIdx})"
                   >
-                    {{ button.title }}
+                    {{ button.title || button.event }}
                   </button>
                 </div>
                 <ng-template #normal>
@@ -194,7 +194,7 @@
                 </ng-template>
               </ng-container>
               <ng-container *ngSwitchCase="'image'">
-                <div class="flex-column">
+                <div class="flex-column flex-110">
                   <app-image
                     *ngIf="getItemImgSmall(item, column)"
                     [src]="getItemImgSmall(item, column)"

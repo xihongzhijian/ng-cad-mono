@@ -2,8 +2,10 @@
   --border: 1px solid rgba(0, 0, 0, 0.12);
   --mat-table-row-item-outline-color: var(--border);
   --row-min-height: 40px;
+  --row-max-height: unset;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .table-container {
@@ -37,6 +39,7 @@
     mat-header-row,
     mat-footer-row {
       min-height: var(--row-min-height);
+      max-height: var(--row-max-height);
     }
 
     .mat-mdc-header-cell,
@@ -112,6 +115,14 @@
       border-bottom: none;
     }
 
+    .column-type-image {
+      > div {
+        height: 100%;
+        app-image {
+          height: 100%;
+        }
+      }
+    }
     .column-type-cad {
       .cad-preview {
         cursor: pointer;

@@ -302,7 +302,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
       if (mokuaisWithoutBancai.length > 0) {
         const details = mokuaisWithoutBancai.map((v) => getMokuaiTitle(v.mokuai, "", v.layerName));
-        await this.message.error("以下模块未设置默认板材分组", details);
+        await this.message.error({content: "以下模块未设置默认板材分组", details});
         return;
       }
     }
@@ -620,20 +620,20 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     if (duplicates1.length > 0) {
       const list = duplicates1.map(({mokuai, keys}) => `${getMokuaiTitle(mokuai)}: ${keys.join("，")}`);
-      await this.message.error("模块输出变量与型号公式输入重复", list);
+      await this.message.error({content: "模块输出变量与型号公式输入重复", details: list});
       return;
     }
     if (errorXuaozhongMenshanKeys.size > 0) {
-      await this.message.error("布局中存在未选中的模块", Array.from(errorXuaozhongMenshanKeys).join("，"));
+      await this.message.error({content: "布局中存在未选中的模块", details: Array.from(errorXuaozhongMenshanKeys).join("，")});
       return;
     }
     if (errorMorenMenshanKeys.size > 0) {
-      await this.message.error("布局中存在未设置默认模块的模块", Array.from(errorMorenMenshanKeys).join("，"));
+      await this.message.error({content: "布局中存在未设置默认模块的模块", details: Array.from(errorMorenMenshanKeys).join("，")});
       return;
     }
     if (mokuaisWithoutBancai.length > 0) {
       const details = mokuaisWithoutBancai.map((v) => getMokuaiTitle(v.mokuai, v.menshanKey, v.layerName));
-      await this.message.error("以下模块未设置默认板材分组", details);
+      await this.message.error({content: "以下模块未设置默认板材分组", details});
       return;
     }
     const data: TableUpdateParams<MsbjData>["data"] = dataInfo.export();

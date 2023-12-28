@@ -39,7 +39,7 @@ export interface TableButton {
 
 export interface ColumnInfoBase<T> {
   field: keyof T;
-  name: string;
+  name?: string;
   width?: string;
   editable?: boolean;
   required?: boolean;
@@ -101,6 +101,10 @@ export type ColumnInfo<T> =
 export type TableErrorState = {rows: number[]; msg: string}[];
 
 export type TableValidator<T> = (data: MatTableDataSource<T>) => TableErrorState;
+
+export interface ToolbarButtonEvent {
+  button: TableButton;
+}
 
 export interface RowButtonEvent<T> {
   button: TableButton;

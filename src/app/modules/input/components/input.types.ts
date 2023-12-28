@@ -143,6 +143,6 @@ export interface InputInfoWithOptions<T = any, K = any> extends InputInfoBase<T>
   optionDialog?: boolean;
 }
 
-export type InputInfoOption<T = string> = {value: T; label?: string} | T;
+export type InputInfoOption<T = string> = {value: T; label?: string; disabled?: boolean} | T;
 
 export type InputInfoOptions<T = string> = InputInfoOption<T>[];

@@ -24,6 +24,7 @@ export interface FormBaseMessageData {
 
 export interface AlertMessageData extends BaseMessageData, AlertBaseMessageData {
   type: "alert";
+  details?: string | string[];
 }
 
 export interface ConfirmMessageData extends BaseMessageData, ConfirmBaseMessageData {

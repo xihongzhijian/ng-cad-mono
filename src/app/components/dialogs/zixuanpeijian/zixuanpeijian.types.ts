@@ -532,7 +532,7 @@ export const calcZxpj = async (
     if (Object.keys(duplicateXxsr).length > 0) {
       const msg = "以下选项输入与订单数据冲突";
       const details = Object.entries(duplicateXxsr).map(([title, keys]) => `${title}: ${Array.from(keys).join(", ")}`);
-      await message.error(msg, details);
+      await message.error({content: msg, details});
       return {fulfilled: false, error: {message: msg, details}};
     }
   }
@@ -617,7 +617,7 @@ export const calcZxpj = async (
     }
     if (details.length > 0) {
       const msg = "CAD标注重复";
-      await message.error(msg, details);
+      await message.error({content: msg, details});
       await openDrawCadDialog(dialog, {data: {cads, collection: "cad"}});
       return {fulfilled: false, error: {message: msg, details, cads}};
     }
@@ -636,7 +636,7 @@ export const calcZxpj = async (
         })
         .filter(Boolean);
       if (details.length) {
-        await message.error(msg, details);
+        await message.error({content: msg, details});
         return {fulfilled: false, error: {message: msg, details}};
       } else {
         const cads: CadData[] = [];
@@ -646,7 +646,7 @@ export const calcZxpj = async (
             v.item.data.id = v.item.info.houtaiId;
           }
         }
-        await message.error(msg, details);
+        await message.error({content: msg, details});
         await openDrawCadDialog(dialog, {data: {cads, collection: "cad"}});
         return {fulfilled: false, error: {message: msg, details, cads}};
       }
@@ -743,7 +743,7 @@ export const calcZxpj = async (
       }
       if (missingKeys.length > 0) {
         const msg = `${getMokuaiTitle(v.item)}缺少输出变量`;
-        await message.error(msg, missingKeys.join(", "));
+        await message.error({content: msg, details: missingKeys.join(", ")});
         return {fulfilled: false, error: {message: msg, details: missingKeys}};
       }
       //calc.calc.mergeFormulas(materialResult, result1.succeedTrim);
@@ -771,7 +771,7 @@ export const calcZxpj = async (
   }
   if (duplicateScblDetails.length > 0) {
     const msg = `输出变量重复`;
-    await message.error(msg, duplicateScblDetails);
+    await message.error({content: msg, details: duplicateScblDetails});
     return {fulfilled: false, error: {message: msg, details: duplicateScblDetails}};
   }
 

@@ -43,7 +43,7 @@ import {cloneDeep, intersection, isEqual} from "lodash";
 import md5 from "md5";
 import {BehaviorSubject, filter, lastValueFrom, take} from "rxjs";
 import {ImageComponent} from "../../../image/components/image/image.component";
-import {CellEvent, ColumnInfo, ItemGetter, RowButtonEvent, TableButton, TableErrorState, TableRenderInfo} from "./table.types";
+import {CellEvent, ColumnInfo, ItemGetter, RowButtonEvent, TableErrorState, TableRenderInfo, ToolbarButtonEvent} from "./table.types";
 import {getInputInfosFromTableColumns} from "./table.utils";
 
 @Component({
@@ -79,7 +79,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   @Output() cellBlur = new EventEmitter<CellEvent<T>>();
   @Output() cellChange = new EventEmitter<CellEvent<T>>();
   @Output() cellClick = new EventEmitter<CellEvent<T>>();
-  @Output() toolbarButtonClick = new EventEmitter<TableButton>();
+  @Output() toolbarButtonClick = new EventEmitter<ToolbarButtonEvent>();
 
   selection = new SelectionModel<T>(true, []);
   columnFields: (keyof T | "select")[] = [];
@@ -556,8 +556,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     }
   }
 
-  onToolbarBtnClick(button: TableButton) {
-    this.toolbarButtonClick.emit(button);
+  onToolbarBtnClick(event: ToolbarButtonEvent) {
+    this.toolbarButtonClick.emit(event);
   }
 
   toggleEditMode() {
@@ -631,7 +631,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       data.push([this.info.title]);
     }
     const columns = this.info.columns.filter((v) => !v.hidden);
-    data.push(columns.map((v) => v.name));
+    data.push(columns.map((v) => v.name || (v.field as string)));
     const addRows = (source: any[]) => {
       for (const item of source) {
         const row: string[] = [];

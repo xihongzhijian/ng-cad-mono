@@ -1,17 +1,19 @@
 import {CommonModule} from "@angular/common";
 import {Component, HostBinding, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
+import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
+import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
-import {TableData, TableInfoData} from "./print-table.types";
+import {ColumnInfo, RowButtonEvent, TableRenderInfo} from "@modules/table/components/table/table.types";
+import {TableData, TableInfoData, XikongData, XikongDataRaw} from "./print-table.types";
 
 @Component({
   selector: "app-print-table",
   standalone: true,
-  imports: [CommonModule, MatButtonModule, TableComponent],
+  imports: [CommonModule, MatButtonModule, MatDividerModule, TableComponent],
   templateUrl: "./print-table.component.html",
   styleUrl: "./print-table.component.scss"
 })
@@ -19,6 +21,8 @@ export class PrintTableComponent implements OnInit {
   @HostBinding("class.ng-page") isPage = true;
   title = "";
   tableInfos: TableRenderInfo<TableData>[] = [];
+  xikongTableInfo: TableRenderInfo<XikongData> | null = null;
+  xikongTableWidth = 0;
 
   constructor(
     private http: CadDataService,
@@ -30,8 +34,23 @@ export class PrintTableComponent implements OnInit {
     await this.getData();
   }
 
-  print() {
+  async print() {
+    const columnsAll: ColumnInfo<TableData>[][] = [];
+    for (const info of this.tableInfos) {
+      columnsAll.push(info.columns);
+      info.columns = info.columns.map((col) => {
+        if (col.type === "button") {
+          return {...col, hidden: true};
+        } else {
+          return {...col};
+        }
+      });
+    }
+    await timeout(1000);
     window.print();
+    for (let i = 0; i < this.tableInfos.length; i++) {
+      this.tableInfos[i].columns = columnsAll[i];
+    }
   }
 
   async getData() {
@@ -73,30 +92,47 @@ export class PrintTableComponent implements OnInit {
         data: []
       });
     }
-    for (const key in data.表数据) {
-      const value = data.表数据[key];
-      const widths = data.列宽[key];
-      this.tableInfos.push({
-        title: key,
+    for (const info of data.表数据) {
+      this.tableInfos.push({noCheckBox: true, noScroll: true, ...info});
+    }
+  }
+
+  onRowButtonClick({button, column, item}: RowButtonEvent<TableData>) {
+    if (button.event === "查看铣孔信息") {
+      this.xikongTableInfo = null;
+      let xikongData: XikongDataRaw[] | null = null;
+      try {
+        xikongData = JSON.parse(item[column.field]);
+      } catch (e) {
+        const content = `${column.field}=${JSON.stringify(item[column.field])}`;
+        this.message.error({title: "数据格式错误", content});
+      }
+      if (!xikongData) {
+        return;
+      }
+      const xikongColWidths: Record<keyof XikongData, number> = {
+        序号: 30,
+        加工面: 60,
+        加工孔名字: 150,
+        X: 60,
+        Y: 60,
+        Z: 60
+      };
+      this.xikongTableWidth = 10 + Object.values(xikongColWidths).reduce((a, b) => a + b, 0);
+      this.xikongTableInfo = {
         noCheckBox: true,
-        noScroll: true,
-        columns: value[0].map((v) => {
-          let info: ColumnInfo<TableData>;
-          if (v === "型材图") {
-            info = {type: "image", field: v, name: v, style: {flex: `1 1 ${widths[v]}px`}};
-          } else {
-            info = {type: "string", field: v, name: v, style: {flex: `1 1 ${widths[v]}px`}};
-          }
-          return info;
-        }),
-        data: value.slice(1).map((v) => {
-          const obj: TableData = {};
-          for (const [i, k] of value[0].entries()) {
-            obj[k] = v[i];
-          }
-          return obj;
+        columns: [
+          {type: "number", field: "序号", width: `${xikongColWidths.序号}px`},
+          {type: "string", field: "加工面", width: `${xikongColWidths.加工面}px`},
+          {type: "string", field: "加工孔名字", width: `${xikongColWidths.加工孔名字}px`},
+          {type: "string", field: "X", width: `${xikongColWidths.X}px`},
+          {type: "string", field: "Y", width: `${xikongColWidths.Y}px`},
+          {type: "string", field: "Z", width: `${xikongColWidths.Z}px`}
+        ],
+        data: xikongData.map((value, index) => {
+          return {序号: index + 1, ...value};
         })
-      });
+      };
     }
   }
 }

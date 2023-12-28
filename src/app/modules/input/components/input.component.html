@@ -63,6 +63,7 @@
           [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
           [matTooltipShowDelay]="500"
           [matTooltipPosition]="'right'"
+          [disabled]="info.readonly || option.disabled"
         >
           {{ option.label }}
         </mat-option>
@@ -214,7 +215,7 @@
       <mat-hint>{{ hint }}</mat-hint>
       <mat-select [disabled]="info.disabled || false" [(ngModel)]="value" (selectionChange)="onChange()">
         <mat-select-trigger *ngIf="optionText" [innerHtml]="optionText"></mat-select-trigger>
-        <mat-option *ngFor="let option of options" [value]="option.value" [disabled]="info.readonly">
+        <mat-option *ngFor="let option of options" [value]="option.value" [disabled]="info.readonly || option.disabled">
           {{ option.label || option.value }}
         </mat-option>
       </mat-select>
@@ -232,7 +233,7 @@
       <mat-hint>{{ hint }}</mat-hint>
       <mat-select [disabled]="info.disabled || false" [(ngModel)]="value" (selectionChange)="onChange()" multiple>
         <mat-select-trigger *ngIf="optionText" [innerHtml]="optionText"></mat-select-trigger>
-        <mat-option *ngFor="let option of options" [value]="option.value">
+        <mat-option *ngFor="let option of options" [value]="option.value" [disabled]="info.readonly || option.disabled">
           {{ option.label || option.value }}
         </mat-option>
       </mat-select>

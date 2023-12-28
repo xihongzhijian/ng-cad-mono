@@ -4,7 +4,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {publicKey, timer} from "@app/app.common";
 import {LoginFormData, openLoginFormDialog} from "@components/dialogs/login-form/login-form.component";
 import {environment} from "@env";
-import {downloadByBlob, ObjectOf, RSA} from "@lucilor/utils";
+import {downloadByBlob, isTypeOf, ObjectOf, RSA} from "@lucilor/utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import axios, {AxiosError, AxiosResponse} from "axios";
@@ -182,6 +182,12 @@ export class HttpService {
           filename = filename.replace(/"/g, "");
         }
         downloadByBlob(response as any as Blob, {filename});
+        return null;
+      }
+      if (!isTypeOf(response, "object")) {
+        const msg = typeof response === "string" ? response : JSON.stringify(response);
+        this.message.alert(msg, {width: "85%"});
+        response = null;
         return null;
       }
       if (this.strict) {

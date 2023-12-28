@@ -1,23 +1,39 @@
 :host {
   overflow: auto;
   padding: 0;
+  flex-direction: row;
+
+  & > :not(:first-child) {
+    margin-left: 10px;
+  }
 }
 
-.toolbar {
-  position: absolute;
-  left: calc(210mm + 10px);
-  top: 10px;
+.menu {
+  flex: 0 0 auto;
+  height: 100%;
+  box-sizing: border-box;
+  padding-right: 2px;
+
+  .toolbar {
+    width: 100%;
+  }
+
+  app-table {
+    flex: 1 1 0;
+  }
 }
 
 .content {
-  width: 210mm;
+  flex: 0 0 210mm;
   padding: 10px;
+  overflow: auto;
   box-sizing: border-box;
 }
 
 app-table {
   --border: 1px solid black;
   border: var(--border);
+  --row-max-height: 40px;
   ::ng-deep {
     .title {
       text-align: left;

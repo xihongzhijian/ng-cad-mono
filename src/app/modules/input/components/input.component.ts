@@ -138,15 +138,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return hint || "";
   }
 
-  options: {value: string; label: string}[] = [];
-  // get selectedValue() {
-  //     const value = this.value;
-  //     const option = this.options.find((v) => v.value === value || v.label === value);
-  //     if (option) {
-  //         return option.label || option.value;
-  //     }
-  //     return value;
-  // }
+  options: {value: string; label: string; disabled?: boolean}[] = [];
 
   get optionText() {
     const info = this.info;
@@ -317,7 +309,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         if (typeof v === "number") {
           return {value: String(v), label: String(v)};
         }
-        return {label: v.label || String(v.value), value: String(v.value)};
+        return {label: v.label || String(v.value), value: String(v.value), disabled: v.disabled};
       });
     }
     this.displayValue = null;

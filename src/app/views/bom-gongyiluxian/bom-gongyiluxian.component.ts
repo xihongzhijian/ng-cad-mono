@@ -185,7 +185,7 @@ export class BomGongyiluxianComponent implements OnInit {
     const columnNames = this.dataRaw.printColumns;
     const columnsBefore = cloneDeep(this.info.columns);
     this.info.columns = this.info.columns.map((col) => {
-      col.hidden = !columnNames.includes(col.name);
+      col.hidden = !columnNames.includes(col.name || col.field);
       return col;
     });
     return columnsBefore;
