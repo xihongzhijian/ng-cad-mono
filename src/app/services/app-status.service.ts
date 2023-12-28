@@ -119,7 +119,6 @@ export class AppStatusService {
     if (project && project !== this.project) {
       this.project = project;
       this.dataService.baseURL = `${origin}/n/${project}/index/`;
-      this.spinner.show(this.spinner.defaultLoaderId);
       if (action) {
         this.config.noUser = true;
       } else {
@@ -136,10 +135,9 @@ export class AppStatusService {
       }
       let changelogTimeStamp = this.changelogTimeStamp$.value;
       if (changelogTimeStamp < 0) {
-        const {changelog} = await this.dataService.getChangelog(1, 1);
+        const {changelog} = await this.dataService.getChangelog(1, 1, {spinner: false});
         changelogTimeStamp = changelog[0]?.timeStamp || 0;
       }
-      this.spinner.hide(this.spinner.defaultLoaderId);
       if (environment.production && changelogTimeStamp > this._refreshTimeStamp) {
         this.message.snack("版本更新，自动刷新页面");
         local.save("refreshTimeStamp", new Date().getTime());
@@ -151,7 +149,7 @@ export class AppStatusService {
       this.setProject$.next();
 
       {
-        const response = await this.dataService.post<ProjectConfigRaw>("ngcad/getProjectConfig");
+        const response = await this.dataService.post<ProjectConfigRaw>("ngcad/getProjectConfig", {spinner: false});
         this.projectConfig.setRaw(this.dataService.getData(response) || {});
       }
     }

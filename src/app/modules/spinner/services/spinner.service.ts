@@ -33,12 +33,9 @@ export class SpinnerService {
     this.spinnerHide$.subscribe(({id}) => {
       const showSpinner = this.shownSpinners[id];
       const {config} = showSpinner.shift() || {};
-      if (showSpinner.length < 1) {
-        if (config?.background) {
-          this.loader.stopBackgroundLoader(id);
-        } else {
-          this.loader.stopLoader(id);
-        }
+      if (config?.background) {
+        this.loader.stopBackgroundLoader(id);
+      } else {
         this.loader.stopLoader(id);
       }
     });

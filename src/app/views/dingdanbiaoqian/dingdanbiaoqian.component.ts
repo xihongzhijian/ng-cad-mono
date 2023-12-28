@@ -185,8 +185,7 @@ export class DingdanbiaoqianComponent implements OnInit {
       ddbqData = session.load<DdbqData>(this._httpCacheKey);
     }
     if (!ddbqData) {
-      this.spinner.show(this.spinner.defaultLoaderId, {text: "获取数据..."});
-      const response = await this.dataService.post<DdbqData>(url, params, {spinner: false});
+      const response = await this.dataService.post<DdbqData>(url, params, {spinner: {config: {text: "获取数据..."}}});
       ddbqData = this.dataService.getData(response);
       if (enableCache && ddbqData) {
         try {
@@ -265,7 +264,6 @@ export class DingdanbiaoqianComponent implements OnInit {
       const barcodeResult = getOrderBarcode(".barcode", {displayValue: false, margin: 0, width: 2, height: 30});
       if (barcodeResult.error) {
         console.warn(barcodeResult.error);
-        this.spinner.hide(this.spinner.defaultLoaderId);
         this.message.alert("生成条形码出错：" + barcodeResult.error);
         if (this.production) {
           this.orders = [];
@@ -273,8 +271,6 @@ export class DingdanbiaoqianComponent implements OnInit {
         }
       }
       await this.updateImgs(false);
-    } else {
-      this.spinner.hide(this.spinner.defaultLoaderId);
     }
   }
 
