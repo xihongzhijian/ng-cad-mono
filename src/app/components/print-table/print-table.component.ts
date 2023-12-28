@@ -1,5 +1,6 @@
 import {CommonModule} from "@angular/common";
 import {Component, HostBinding, OnInit} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
@@ -10,7 +11,7 @@ import {TableData, TableInfoData} from "./print-table.types";
 @Component({
   selector: "app-print-table",
   standalone: true,
-  imports: [CommonModule, TableComponent],
+  imports: [CommonModule, MatButtonModule, TableComponent],
   templateUrl: "./print-table.component.html",
   styleUrl: "./print-table.component.scss"
 })
@@ -29,6 +30,10 @@ export class PrintTableComponent implements OnInit {
     await this.getData();
   }
 
+  print() {
+    window.print();
+  }
+
   async getData() {
     const {action} = this.route.snapshot.queryParams;
     if (!action) {
@@ -39,7 +44,6 @@ export class PrintTableComponent implements OnInit {
     if (!data) {
       return;
     }
-    console.log(data);
     this.title = data.标题;
     this.tableInfos = [];
     for (const value of data.表头) {
@@ -92,9 +96,7 @@ export class PrintTableComponent implements OnInit {
           }
           return obj;
         })
-        // data: data.表数据[key],
       });
     }
-    console.log(this.tableInfos);
   }
 }

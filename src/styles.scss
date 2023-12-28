@@ -236,7 +236,7 @@ input[type="number"] {
 
 @media print {
   .no-print {
-    display: none;
+    display: none !important;
   }
 }
 

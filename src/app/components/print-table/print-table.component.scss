@@ -1,5 +1,18 @@
 :host {
+  overflow: auto;
+  padding: 0;
+}
+
+.toolbar {
+  position: absolute;
+  left: calc(210mm + 10px);
+  top: 10px;
+}
+
+.content {
   width: 210mm;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 app-table {
@@ -17,5 +30,13 @@ app-table {
   }
   &:not(:first-child) {
     border-top: none;
+  }
+}
+
+@media print {
+  .content {
+    height: 297mm;
+    overflow: hidden;
+    padding: 0 10px;
   }
 }
