@@ -440,8 +440,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     return style;
   }
 
-  getCellClass(column: ColumnInfo<T>) {
+  getCellClass(column: ColumnInfo<T>, rowIdx: number) {
     const classes: string[] = ["column-type-" + column.type];
+    const active = this.info.activeRows?.includes(rowIdx);
+    if (active) {
+      classes.push("active");
+    }
     return classes;
   }
 

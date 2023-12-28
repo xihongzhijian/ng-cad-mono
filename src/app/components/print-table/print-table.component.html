@@ -1,7 +1,7 @@
 <div class="content">
   <div class="title center">{{ title }}</div>
   <div class="table-container flex-column flex-110">
-    <app-table *ngFor="let tableInfo of tableInfos" [info]="tableInfo" (rowButtonClick)="onRowButtonClick($event)"></app-table>
+    <app-table *ngFor="let tableInfo of tableInfos" [info]="tableInfo" (rowButtonClick)="onRowButtonClick(tableInfo, $event)"></app-table>
   </div>
 </div>
 <div class="menu toolbar no-print flex-column">

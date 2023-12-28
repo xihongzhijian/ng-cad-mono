@@ -60,18 +60,18 @@
           [sticky]="column.sticky"
         >
           <ng-container *ngIf="info.sortable; else headerNoSort">
-            <mat-header-cell *matHeaderCellDef mat-sort-header [ngClass]="getCellClass(column)" [ngStyle]="getCellStyle(column)">
+            <mat-header-cell *matHeaderCellDef mat-sort-header [ngClass]="getCellClass(column, -1)" [ngStyle]="getCellStyle(column)">
               {{ column.name || column.field }}
             </mat-header-cell>
           </ng-container>
           <ng-template #headerNoSort>
-            <mat-header-cell *matHeaderCellDef [ngClass]="getCellClass(column)" [ngStyle]="getCellStyle(column)">
+            <mat-header-cell *matHeaderCellDef [ngClass]="getCellClass(column, -1)" [ngStyle]="getCellStyle(column)">
               {{ column.name || column.field }}
             </mat-header-cell>
           </ng-template>
           <mat-cell
             *matCellDef="let item; let rowIdx = index"
-            [ngClass]="getCellClass(column)"
+            [ngClass]="getCellClass(column, rowIdx)"
             [ngStyle]="getCellStyle(column)"
             [class.error]="!isVaild(rowIdx)"
             (click)="onCellClick({column, item, colIdx, rowIdx})"
@@ -230,7 +230,7 @@
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="columnFields; sticky: true"></mat-header-row>
-        <mat-row [class.active]="info.activeRows?.includes(i)" *matRowDef="let row; columns: columnFields; let i = index"></mat-row>
+        <mat-row *matRowDef="let row; columns: columnFields; let i = index"></mat-row>
       </div>
     </mat-table>
   </div>

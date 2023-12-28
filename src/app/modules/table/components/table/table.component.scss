@@ -3,6 +3,8 @@
   --mat-table-row-item-outline-color: var(--border);
   --row-min-height: 40px;
   --row-max-height: unset;
+  --cell-hover-color: #eaeaea;
+  --cell-active-color: #eaeaea;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -52,9 +54,11 @@
       box-sizing: border-box;
       padding: 5px;
       transition: 0.3s;
-      &:hover,
+      &:hover {
+        background-color: var(--cell-hover-color);
+      }
       &.active {
-        background-color: #eaeaea;
+        background-color: var(--cell-active-color);
       }
       &:not(:first-child) {
         border-left: var(--border);

@@ -64,6 +64,7 @@ export class PrintTableComponent implements OnInit {
       return;
     }
     this.title = data.标题;
+    document.title = data.标题;
     this.tableInfos = [];
     for (const value of data.表头) {
       const 表头列: ColumnInfo<TableData>[] = [];
@@ -97,9 +98,14 @@ export class PrintTableComponent implements OnInit {
     }
   }
 
-  onRowButtonClick({button, column, item}: RowButtonEvent<TableData>) {
+  onRowButtonClick(tableInfo: TableRenderInfo<TableData>, event: RowButtonEvent<TableData>) {
+    const {button, column, item, rowIdx} = event;
     if (button.event === "查看铣孔信息") {
       this.xikongTableInfo = null;
+      if (tableInfo.activeRows?.includes(rowIdx)) {
+        tableInfo.activeRows = [];
+        return;
+      }
       let xikongData: XikongDataRaw[] | null = null;
       try {
         xikongData = JSON.parse(item[column.field]);
@@ -133,6 +139,7 @@ export class PrintTableComponent implements OnInit {
           return {序号: index + 1, ...value};
         })
       };
+      tableInfo.activeRows = [rowIdx];
     }
   }
 }
