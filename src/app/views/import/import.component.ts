@@ -153,7 +153,7 @@ export class ImportComponent extends Utils() implements OnInit {
     } else if (!this._sourceFile) {
       return finish(false, "hidden");
     }
-    if (!(await this.message.confirm("是否确定导入？"))) {
+    if (!(await this.message.confirm(`是否确定导入【${this._sourceFile.name}】？`))) {
       return finish(false, "hidden");
     }
     this.isImporting = true;
