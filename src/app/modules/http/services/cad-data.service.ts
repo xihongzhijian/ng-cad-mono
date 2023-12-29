@@ -375,4 +375,16 @@ export class CadDataService extends HttpService {
     const response = await this.post("ngcad/downloadExcel", {data, title, filename}, {responseType: "blob"});
     return response?.code === 0;
   }
+
+  async uploadImage(file: File | FileList, options?: HttpOptions) {
+    if (file instanceof FileList) {
+      file = file[0];
+    }
+    if (!file) {
+      return null;
+    }
+    type UploadImageResult = {url: string; name: string; size: number};
+    const response = await this.post<UploadImageResult>("ngcad/uploadImage", {key: "file", file}, options);
+    return this.getData(response) || null;
+  }
 }

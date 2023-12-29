@@ -1,8 +1,22 @@
+@import "../../../../mat-theme.scss";
+
 :host {
   &.color {
     input {
       transition: 0.3s;
       text-transform: uppercase;
+    }
+  }
+  &.image {
+    app-image {
+      display: block;
+      width: 200px;
+      height: 200px;
+      cursor: pointer;
+      border: 1px dashed transparent;
+      &:hover {
+        border: 1px dashed $accent-color;
+      }
     }
   }
 }

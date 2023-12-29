@@ -111,9 +111,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     private sanitizer: DomSanitizer,
     private message: MessageService,
     @Inject(MAT_DIALOG_DATA) public data: MessageData
-  ) {
-    this.data = cloneDeep(this.data);
-  }
+  ) {}
 
   ngOnInit() {
     const data = this.data;

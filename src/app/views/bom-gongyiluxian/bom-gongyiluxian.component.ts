@@ -158,7 +158,7 @@ export class BomGongyiluxianComponent implements OnInit {
     const item = this.dataRaw?.data[0];
     if (values) {
       for (const key of keys) {
-        values[key] = fromItem[key];
+        (values as any)[key] = fromItem[key];
       }
       const data: TableInsertParams<DingdanBomData> = {
         table: this.table,

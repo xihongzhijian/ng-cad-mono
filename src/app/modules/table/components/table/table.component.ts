@@ -1,6 +1,6 @@
 import {SelectionModel} from "@angular/cdk/collections";
 import {FlatTreeControl} from "@angular/cdk/tree";
-import {NgClass, NgFor, NgIf, NgStyle, NgSwitch, NgSwitchCase} from "@angular/common";
+import {CommonModule} from "@angular/common";
 import {
   AfterViewInit,
   Component,
@@ -52,17 +52,12 @@ import {getInputInfosFromTableColumns} from "./table.utils";
   styleUrls: ["./table.component.scss"],
   standalone: true,
   imports: [
-    NgIf,
+    CommonModule,
     MatButtonModule,
-    NgFor,
-    NgClass,
-    NgStyle,
     MatIconModule,
     MatTableModule,
     MatSortModule,
     MatCheckboxModule,
-    NgSwitch,
-    NgSwitchCase,
     MatFormFieldModule,
     MatInputModule,
     MatSlideToggleModule,
@@ -453,6 +448,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const style: csstype.Properties = {...column.style};
     if (column.width) {
       style.flex = `0 0 ${column.width}`;
+    } else {
+      style.flex = "1 1 0";
     }
     return style;
   }
@@ -664,5 +661,10 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     };
     addRows(this.info.data);
     this.dataService.downloadExcel(data, this.info.title, opts?.filename);
+  }
+
+  valueToString(item: T, column: ColumnInfo<T>) {
+    console.log(item, column);
+    return "123";
   }
 }

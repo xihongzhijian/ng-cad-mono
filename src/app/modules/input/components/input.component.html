@@ -213,7 +213,12 @@
     <mat-form-field [ngClass]="{empty: isEmpty(value)}">
       <mat-label>{{ info.label }}</mat-label>
       <mat-hint>{{ hint }}</mat-hint>
-      <mat-select [disabled]="info.disabled || false" [(ngModel)]="value" (selectionChange)="onChange()">
+      <mat-select
+        [disabled]="info.disabled || false"
+        [errorStateMatcher]="errorStateMatcher"
+        [(ngModel)]="value"
+        (selectionChange)="onChange()"
+      >
         <mat-select-trigger *ngIf="optionText" [innerHtml]="optionText"></mat-select-trigger>
         <mat-option *ngFor="let option of options" [value]="option.value" [disabled]="info.readonly || option.disabled">
           {{ option.label || option.value }}
@@ -225,13 +230,20 @@
       <button mat-icon-button matSuffix color="primary" appClickStop *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
         <mat-icon>{{ icon.name }}</mat-icon>
       </button>
+      <mat-error>{{ errorMsg }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'selectMulti'">
     <mat-form-field [ngClass]="{empty: isEmpty(value)}">
       <mat-label>{{ info.label }}</mat-label>
       <mat-hint>{{ hint }}</mat-hint>
-      <mat-select [disabled]="info.disabled || false" [(ngModel)]="value" (selectionChange)="onChange()" multiple>
+      <mat-select
+        [disabled]="info.disabled || false"
+        [errorStateMatcher]="errorStateMatcher"
+        [(ngModel)]="value"
+        (selectionChange)="onChange()"
+        multiple
+      >
         <mat-select-trigger *ngIf="optionText" [innerHtml]="optionText"></mat-select-trigger>
         <mat-option *ngFor="let option of options" [value]="option.value" [disabled]="info.readonly || option.disabled">
           {{ option.label || option.value }}
@@ -243,6 +255,7 @@
       <button mat-icon-button matSuffix color="primary" appClickStop *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
         <mat-icon>{{ icon.name }}</mat-icon>
       </button>
+      <mat-error>{{ errorMsg }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'coordinate'">
@@ -332,6 +345,31 @@
       <button mat-icon-button matSuffix color="primary" *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
         <mat-icon>{{ icon.name }}</mat-icon>
       </button>
+    </mat-form-field>
+  </ng-container>
+  <ng-container *ngSwitchCase="'file'">
+    <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
+      <mat-label>{{ info.label }}</mat-label>
+      <mat-hint>{{ hint }}</mat-hint>
+      <input matInput readonly />
+      <input #fileInput hidden type="file" [accept]="fileAccept" [multiple]="cast('file', info).multiple" (change)="onInputChange()" />
+      <button mat-icon-button matSuffix color="primary" (click)="selectFile()">
+        <mat-icon>file_open</mat-icon>
+      </button>
+    </mat-form-field>
+  </ng-container>
+  <ng-container *ngSwitchCase="'image'">
+    <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
+      <mat-label>{{ info.label }}</mat-label>
+      <mat-hint>{{ hint }}</mat-hint>
+      <input matInput readonly hidden />
+      <input #fileInput hidden type="file" [accept]="fileAccept" (change)="onInputChange()" />
+      <app-image
+        [src]="value"
+        [bigPicSrc]="cast('image', info).bigPicSrc"
+        [prefix]="cast('image', info).prefix"
+        (click)="selectFile()"
+      ></app-image>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'group'">

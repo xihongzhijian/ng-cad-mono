@@ -21,6 +21,7 @@ export interface TableRenderInfo<T> {
     import?: boolean;
     export?: boolean;
     editModeToggle?: boolean;
+    inlineTitle?: boolean;
     extra?: TableButton[];
   };
   isTree?: boolean;
@@ -88,6 +89,11 @@ export interface ColumnInfoCad<T> extends ColumnInfoBase<T> {
   filterFn?: (event: CellEvent<T>) => boolean;
 }
 
+export interface ColumnInfoToString<T> extends ColumnInfoBase<T> {
+  type: "toString";
+  toString: (value: any) => string;
+}
+
 export type ColumnInfo<T> =
   | ColumnInfoTime<T>
   | ColumnInfoNormal<T>
@@ -96,7 +102,8 @@ export type ColumnInfo<T> =
   | ColumnInfoLink<T>
   | ColumnInfoImage<T>
   | ColumnInfoFile<T>
-  | ColumnInfoCad<T>;
+  | ColumnInfoCad<T>
+  | ColumnInfoToString<T>;
 
 export type TableErrorState = {rows: number[]; msg: string}[];
 

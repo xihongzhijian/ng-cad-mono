@@ -1,4 +1,5 @@
 import {Route} from "@angular/router";
+import {LurushujuIndexComponent} from "@components/lurushuju/lurushuju-index/lurushuju-index.component";
 import {PrintTableComponent} from "@components/print-table/print-table.component";
 import {BackupComponent} from "@views/backup/backup.component";
 import {BomGongyiluxianComponent} from "@views/bom-gongyiluxian/bom-gongyiluxian.component";
@@ -55,5 +56,6 @@ export const routesInfo: (Route & {path: string})[] = [
       return code ? `订单 ${code}` : "BOM工艺路线";
     }
   },
-  {path: "print-table", component: PrintTableComponent, title: "打印表格"}
+  {path: "print-table", component: PrintTableComponent, title: "打印表格"},
+  {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"}
 ];

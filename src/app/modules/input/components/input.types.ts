@@ -4,7 +4,7 @@ import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
 import csstype from "csstype";
 
-type Value<T> = T | ((...args: any[]) => T);
+type Value<T> = T | (() => T) | (() => Promise<T>);
 
 export interface InputInfoBase<T = any> {
   label: string;
@@ -64,18 +64,18 @@ export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
   onChange?: (val: boolean) => void;
 }
 
-export interface InputInfoSelect<T = any> extends InputInfoBase<T> {
+export interface InputInfoSelect<T = any, K = string> extends InputInfoBase<T> {
   type: "select";
   value?: Value<string>;
-  options: InputInfoOptions;
+  options: Value<InputInfoOptions<K>>;
   optionText?: string | ((val: string) => string);
   onChange?: (val: string) => void;
 }
 
-export interface InputInfoSelectMulti<T = any> extends InputInfoBase<T> {
+export interface InputInfoSelectMulti<T = any, K = string> extends InputInfoBase<T> {
   type: "selectMulti";
   value?: Value<string[]>;
-  options: InputInfoOptions;
+  options: Value<InputInfoOptions<K>>;
   optionText?: string | ((val: string[]) => string);
   onChange?: (val: string[]) => void;
 }
@@ -97,6 +97,24 @@ export interface InputInfoColor<T = any> extends InputInfoBase<T> {
   onChange?: (val: Color) => void;
 }
 
+export interface InputInfoFile<T = any> extends InputInfoBase<T> {
+  type: "file";
+  accept?: string;
+  multiple?: boolean;
+  model?: never;
+  onChange?: (val: FileList) => void;
+}
+
+export interface InputInfoImage<T = any> extends InputInfoBase<T> {
+  type: "image";
+  accept?: string;
+  multiple?: boolean;
+  bigPicSrc?: string;
+  prefix?: string;
+  model?: never;
+  onChange?: (val: FileList) => void;
+}
+
 export interface InputInfoGroup<T = any> extends InputInfoBase<T> {
   type: "group";
   infos?: InputInfo<T>[];
@@ -112,26 +130,27 @@ export type InputInfo<T = any> =
   | InputInfoSelectMulti<T>
   | InputInfoCoordinate<T>
   | InputInfoColor<T>
+  | InputInfoFile<T>
+  | InputInfoImage<T>
   | InputInfoGroup<T>;
 
 export interface InputInfoTypeMap {
-  // eslint-disable-next-line id-blacklist
   string: InputInfoString;
-  // eslint-disable-next-line id-blacklist
   number: InputInfoNumber;
   object: InputInfoObject;
   array: InputInfoArray;
-  // eslint-disable-next-line id-blacklist
   boolean: InputInfoBoolean;
   select: InputInfoSelect;
   selectMulti: InputInfoSelectMulti;
   coordinate: InputInfoCoordinate;
   color: InputInfoColor;
+  file: InputInfoFile;
+  image: InputInfoImage;
   group: InputInfoGroup;
 }
 
 export interface InputInfoWithOptions<T = any, K = any> extends InputInfoBase<T> {
-  options?: InputInfoOptions<K>;
+  options?: Value<InputInfoOptions<K>>;
   optionValueType?: "string" | "array";
   filterValuesGetter?: (option: InputInfoOption<K>) => string[];
   fixedOptions?: string[];

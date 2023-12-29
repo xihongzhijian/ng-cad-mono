@@ -1,6 +1,7 @@
 <div class="table-container" [ngClass]="{'no-scroll': info.noScroll, 'no-data': !haveData}">
-  <div class="title center" *ngIf="info.title">{{ info.title }}</div>
+  <div class="title center" *ngIf="info.title && !toolbarButtons.inlineTitle">{{ info.title }}</div>
   <div class="btn-group table-toolbar" *ngIf="haveToolbarButtons">
+    <div class="title" *ngIf="info.title && toolbarButtons.inlineTitle">{{ info.title }}</div>
     <button mat-raised-button *ngIf="toolbarButtons.add" color="primary" (click)="addItem()">添加</button>
     <button
       mat-raised-button
@@ -224,6 +225,9 @@
                     </ng-container>
                   </div>
                 </div>
+              </ng-container>
+              <ng-container *ngSwitchCase="'toString'">
+                {{ valueToString(item, column) }}
               </ng-container>
             </ng-container>
           </mat-cell>

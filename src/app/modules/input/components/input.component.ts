@@ -1,5 +1,5 @@
 import {TextFieldModule} from "@angular/cdk/text-field";
-import {AsyncPipe, KeyValuePipe, NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase} from "@angular/common";
+import {CommonModule} from "@angular/common";
 import {
   AfterViewInit,
   Component,
@@ -29,6 +29,7 @@ import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-opt
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import Color from "color";
 import csstype from "csstype";
@@ -39,7 +40,7 @@ import {ColorCircleModule} from "ngx-color/circle";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
-import {InputInfo, InputInfoBase, InputInfoTypeMap, InputInfoWithOptions} from "./input.types";
+import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoTypeMap, InputInfoWithOptions} from "./input.types";
 
 @Component({
   selector: "app-input",
@@ -47,28 +48,23 @@ import {InputInfo, InputInfoBase, InputInfoTypeMap, InputInfoWithOptions} from "
   styleUrls: ["./input.component.scss"],
   standalone: true,
   imports: [
-    NgSwitch,
-    NgSwitchCase,
-    MatFormFieldModule,
-    NgClass,
-    NgIf,
-    MatInputModule,
-    FormsModule,
-    MatAutocompleteModule,
-    TextFieldModule,
-    MatButtonModule,
-    MatIconModule,
-    NgFor,
-    MatOptionModule,
-    MatTooltipModule,
-    MatSelectModule,
-    ClickStopPropagationDirective,
-    MatMenuModule,
     AnchorSelectorComponent,
-    ColorCircleModule,
+    ClickStopPropagationDirective,
     ColorChromeModule,
-    AsyncPipe,
-    KeyValuePipe
+    ColorCircleModule,
+    CommonModule,
+    FormsModule,
+    ImageComponent,
+    MatAutocompleteModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatMenuModule,
+    MatOptionModule,
+    MatSelectModule,
+    MatTooltipModule,
+    TextFieldModule
   ]
 })
 export class InputComponent extends Utils() implements AfterViewInit, OnChanges, DoCheck {
@@ -77,6 +73,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   infoDiffer: KeyValueDiffer<keyof InputInfo, ValueOf<InputInfo>>;
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
+  @ViewChild("fileInput") fileInput?: ElementRef<HTMLInputElement>;
 
   private _model: NonNullable<Required<InputInfo["model"]>> = {data: {key: ""}, key: "key"};
   get model() {
@@ -178,6 +175,16 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return info.options.map((v) => (typeof v === "string" ? v : new Color(v).hex()));
   }
 
+  get fileAccept() {
+    const {info} = this;
+    if (info.type === "file") {
+      return info.accept;
+    } else if (info.type === "image") {
+      return info.accept || "image/*";
+    }
+    return undefined;
+  }
+
   displayValue: string | null = null;
 
   @HostBinding("class") class: string[] = [];
@@ -229,7 +236,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         if (typeof filterValuesGetter === "function") {
           values = filterValuesGetter(option);
         } else {
-          values = [option.value, option.label];
+          values = [option.label];
+          if (typeof option.value === "string") {
+            values.push(option.value);
+          }
         }
         return values;
       };
@@ -292,7 +302,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  private _onInfoChange(changes: NonNullable<ReturnType<typeof this.infoDiffer.diff>>) {
+  private async _onInfoChange(changes: NonNullable<ReturnType<typeof this.infoDiffer.diff>>) {
     const {info} = this;
     if (!info.autocomplete) {
       info.autocomplete = "off";
@@ -302,14 +312,25 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     const type = info.type;
     if (type === "select" || type === "selectMulti" || type === "string" || type === "number") {
-      this.options = (info.options || []).map((v) => {
+      let options: InputInfoOptions<any> | undefined;
+      if (typeof info.options === "function") {
+        const options2 = info.options();
+        if (options2 instanceof Promise) {
+          options = await options2;
+        } else {
+          options = options2;
+        }
+      } else {
+        options = info.options;
+      }
+      this.options = (options || []).map((v) => {
         if (typeof v === "string") {
           return {value: v, label: v};
         }
         if (typeof v === "number") {
           return {value: String(v), label: String(v)};
         }
-        return {label: v.label || String(v.value), value: String(v.value), disabled: v.disabled};
+        return {label: v.label || String(v.value), value: v.value, disabled: v.disabled};
       });
     }
     this.displayValue = null;
@@ -317,7 +338,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       if (info.optionInputOnly && !info.options) {
         info.readonly = true;
         if (typeof info.displayValue === "function") {
-          this.displayValue = info.displayValue();
+          const displayValue = info.displayValue();
+          if (displayValue instanceof Promise) {
+            this.displayValue = await displayValue;
+          } else {
+            this.displayValue = displayValue;
+          }
         } else if (info.displayValue) {
           this.displayValue = info.displayValue;
         }
@@ -625,6 +651,30 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   returnZero() {
     return 0;
+  }
+
+  selectFile() {
+    const input = this.fileInput?.nativeElement;
+    if (!input) {
+      return;
+    }
+    input.click();
+  }
+
+  onInputChange() {
+    const input = this.fileInput?.nativeElement;
+    if (!input) {
+      return;
+    }
+    const files = input.files;
+    if (!files || !files.length) {
+      return;
+    }
+    const {info} = this;
+    if (info.type === "file" || info.type === "image") {
+      info.onChange?.(files);
+    }
+    input.value = "";
   }
 }
 
