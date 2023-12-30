@@ -80,8 +80,8 @@ export class LurushujuIndexComponent implements OnInit {
       {
         type: "toString",
         field: "可选项",
-        toString(value) {
-          return value.split("*").join("，");
+        toString(item) {
+          return item.可选项.map((v) => v.mingzi).join("*");
         }
       },
       {
@@ -312,8 +312,8 @@ export class LurushujuIndexComponent implements OnInit {
     const menjiaoOptionsAll = this.http.getData(await this.http.post<OptionsAll>("shuju/shuju/getMenjiaoOptions"));
     this.gongyiOptionsAll = gongyiOptionsAll || {};
     this.menjiaoOptionsAll = menjiaoOptionsAll || {};
-    this.updateXuanxiangTableData();
-    this.updateShuruTableData();
+    this.xuanxiangTable.data = [...gongyi.选项数据];
+    this.shuruTable.data = [...gongyi.输入数据];
   }
 
   onSelectedTabChange({index}: MatTabChangeEvent) {
@@ -453,20 +453,6 @@ export class LurushujuIndexComponent implements OnInit {
 
   getBooleanStr(value: boolean) {
     return getBooleanStr(value);
-  }
-
-  updateXuanxiangTableData() {
-    const 选项数据 = this.gongyi?.选项数据 || [];
-    this.xuanxiangTable.data = 选项数据.map((v) => {
-      return {...v};
-    });
-  }
-
-  updateShuruTableData() {
-    const 输入数据 = this.gongyi?.输入数据 || [];
-    this.shuruTable.data = 输入数据.map((v) => {
-      return {...v};
-    });
   }
 
   async submitGongyi(fields: (keyof 工艺做法)[], silent = false) {
@@ -617,7 +603,7 @@ export class LurushujuIndexComponent implements OnInit {
           const item = await this.getXuanxiangItem();
           if (item) {
             this.gongyi.选项数据.push(item);
-            this.updateXuanxiangTableData();
+            this.xuanxiangTable.data = [...this.gongyi.选项数据];
             await this.submitGongyi(["选项数据"]);
           }
         }
@@ -626,27 +612,27 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async onXuanxiangRow(event: RowButtonEvent<XuanxiangTableData>) {
+    if (!this.gongyi) {
+      return;
+    }
     const {button, item, rowIdx} = event;
     switch (button.event) {
       case "编辑":
-        if (this.gongyi) {
+        {
           const item2 = this.gongyi.选项数据[rowIdx];
           const item3 = await this.getXuanxiangItem(item2);
           if (item3) {
             this.gongyi.选项数据[rowIdx] = item3;
-            this.updateXuanxiangTableData();
+            this.xuanxiangTable.data = [...this.gongyi.选项数据];
             await this.submitGongyi(["选项数据"]);
           }
         }
         break;
       case "删除":
         if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          const gongyi = this.gongyi;
-          if (gongyi) {
-            gongyi.选项数据.splice(rowIdx, 1);
-            this.updateXuanxiangTableData();
-            await this.submitGongyi(["选项数据"]);
-          }
+          this.gongyi.选项数据.splice(rowIdx, 1);
+          this.xuanxiangTable.data = [...this.gongyi.选项数据];
+          await this.submitGongyi(["选项数据"]);
         }
         break;
     }
@@ -662,7 +648,7 @@ export class LurushujuIndexComponent implements OnInit {
           const item = await this.getShuruItem();
           if (item) {
             this.gongyi.输入数据.push(item);
-            this.updateShuruTableData();
+            this.shuruTable.data = [...this.gongyi.输入数据];
             await this.submitGongyi(["输入数据"]);
           }
         }
@@ -671,27 +657,27 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async onShuruRow(event: RowButtonEvent<ShuruTableData>) {
+    if (!this.gongyi) {
+      return;
+    }
     const {button, item, rowIdx} = event;
     switch (button.event) {
       case "编辑":
-        if (this.gongyi) {
+        {
           const item2 = this.gongyi.输入数据[rowIdx];
           const item3 = await this.getShuruItem(item2);
           if (item3) {
             this.gongyi.输入数据[rowIdx] = item3;
-            this.updateXuanxiangTableData();
+            this.shuruTable.data = [...this.gongyi.输入数据];
             await this.submitGongyi(["输入数据"]);
           }
         }
         break;
       case "删除":
         if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          const gongyi = this.gongyi;
-          if (gongyi) {
-            gongyi.输入数据.splice(rowIdx, 1);
-            this.updateShuruTableData();
-            await this.submitGongyi(["输入数据"]);
-          }
+          this.gongyi.输入数据.splice(rowIdx, 1);
+          this.shuruTable.data = [...this.gongyi.输入数据];
+          await this.submitGongyi(["输入数据"]);
         }
         break;
     }

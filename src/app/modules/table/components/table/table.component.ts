@@ -664,7 +664,10 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   valueToString(item: T, column: ColumnInfo<T>) {
-    console.log(item, column);
-    return "123";
+    if (column.type === "toString") {
+      return column.toString(item);
+    } else {
+      return "";
+    }
   }
 }

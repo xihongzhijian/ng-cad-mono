@@ -91,7 +91,7 @@ export interface ColumnInfoCad<T> extends ColumnInfoBase<T> {
 
 export interface ColumnInfoToString<T> extends ColumnInfoBase<T> {
   type: "toString";
-  toString: (value: any) => string;
+  toString: (value: T) => string;
 }
 
 export type ColumnInfo<T> =
