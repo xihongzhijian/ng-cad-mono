@@ -18,12 +18,24 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {cloneDeep, debounce, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {getXinghao, updateXinghaoFenleis, Xinghao, XinghaoRaw, 工艺做法, 输入, 选项} from "../xinghao-data";
+import {
+  getXinghao,
+  updateXinghaoFenleis,
+  Xinghao,
+  XinghaoRaw,
+  工艺做法,
+  输入,
+  选项,
+  门缝配置,
+  门缝配置输入,
+  门铰锁边铰边
+} from "../xinghao-data";
 import {
   LurushujuIndexStep,
   LurushujuIndexStepInfo,
   MenjiaoData,
   OptionsAll,
+  OptionsAll2,
   ShuruTableData,
   XinghaoData,
   XuanxiangFormData,
@@ -70,7 +82,7 @@ export class LurushujuIndexComponent implements OnInit {
   };
   xinghaoOptionsAll: OptionsAll = {};
   gongyiOptionsAll: OptionsAll = {};
-  menjiaoOptionsAll: OptionsAll = {};
+  menjiaoOptionsAll: OptionsAll2 = {};
   xinghaoInputInfos: InputInfo<Xinghao>[] = [];
   xuanxiangTable: TableRenderInfo<XuanxiangTableData> = {
     title: "选项数据",
@@ -78,7 +90,7 @@ export class LurushujuIndexComponent implements OnInit {
     columns: [
       {type: "string", field: "名字"},
       {
-        type: "toString",
+        type: "custom",
         field: "可选项",
         toString(item) {
           return item.可选项.map((v) => v.mingzi).join("*");
@@ -116,7 +128,43 @@ export class LurushujuIndexComponent implements OnInit {
     data: [],
     toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
   };
-  menjiaoTable: TableRenderInfo<MenjiaoData> = {columns: [], data: []};
+  menjiaoTable: TableRenderInfo<MenjiaoData> = {
+    noCheckBox: true,
+    columns: [
+      {type: "string", field: "名字", width: "180px"},
+      {type: "string", field: "产品分类", width: "100px"},
+      {type: "string", field: "开启", width: "100px"},
+      {type: "string", field: "门铰", width: "100px"},
+      {type: "string", field: "门扇厚度", width: "80px"},
+      {type: "string", field: "锁边", width: "120px"},
+      {type: "string", field: "铰边", width: "120px"},
+      {
+        type: "custom",
+        field: "门缝配置",
+        width: "250px",
+        toString(value) {
+          const data = value.门缝配置;
+          if (!data) {
+            return "";
+          }
+          const strs = Object.entries(data).map(([k, v]) => `${k}${v}`);
+          return strs.join(", ");
+        }
+      },
+      {
+        type: "button",
+        field: "操作",
+        width: "140px",
+        buttons: [
+          {event: "编辑", color: "primary"},
+          {event: "复制", color: "primary"},
+          {event: "删除", color: "primary"}
+        ]
+      }
+    ],
+    data: [],
+    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
+  };
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
   xinghaoName = "";
@@ -309,11 +357,12 @@ export class LurushujuIndexComponent implements OnInit {
     }
     this.gongyi = gongyi;
     const gongyiOptionsAll = this.http.getData(await this.http.post<OptionsAll>("shuju/shuju/getGongyizuofaOption"));
-    const menjiaoOptionsAll = this.http.getData(await this.http.post<OptionsAll>("shuju/shuju/getMenjiaoOptions"));
+    const menjiaoOptionsAll = this.http.getData(await this.http.post<OptionsAll2>("shuju/shuju/getMenjiaoOptions"));
     this.gongyiOptionsAll = gongyiOptionsAll || {};
     this.menjiaoOptionsAll = menjiaoOptionsAll || {};
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
+    this.menjiaoTable.data = gongyi.门铰锁边铰边;
   }
 
   onSelectedTabChange({index}: MatTabChangeEvent) {
@@ -549,50 +598,6 @@ export class LurushujuIndexComponent implements OnInit {
     return null;
   }
 
-  async getShuruItem(data0?: 输入) {
-    const data: 输入 = {名字: "", 默认值: "", 取值范围: "", 可以修改: true, ...data0};
-    const form: InputInfo<typeof data>[] = [
-      {
-        type: "string",
-        label: "名字",
-        model: {data, key: "名字"},
-        validators: [
-          Validators.required,
-          (control) => {
-            const value = control.value;
-            if ((!data0 || data0.名字 !== value) && this.gongyi?.输入数据.some((v) => v.名字 === value)) {
-              return {名字已存在: true};
-            }
-            return null;
-          }
-        ]
-      },
-      {
-        type: "string",
-        label: "默认值",
-        model: {data, key: "默认值"},
-        validators: Validators.required
-      },
-      {
-        type: "string",
-        label: "取值范围",
-        model: {data, key: "取值范围"},
-        validators: [
-          Validators.required,
-          (control) => {
-            const value = control.value;
-            if (!/^\d+(.\d+)?-\d+(.\d+)?$/.test(value)) {
-              return {取值范围不符合格式: true};
-            }
-            return null;
-          }
-        ]
-      },
-      {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}}
-    ];
-    return await this.message.form(form);
-  }
-
   async onXuanxiangToolbar(event: ToolbarButtonEvent) {
     if (!this.gongyi) {
       return;
@@ -638,6 +643,50 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
+  async getShuruItem(data0?: 输入) {
+    const data: 输入 = {名字: "", 默认值: "", 取值范围: "", 可以修改: true, ...data0};
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "string",
+        label: "名字",
+        model: {data, key: "名字"},
+        validators: [
+          Validators.required,
+          (control) => {
+            const value = control.value;
+            if ((!data0 || data0.名字 !== value) && this.gongyi?.输入数据.some((v) => v.名字 === value)) {
+              return {名字已存在: true};
+            }
+            return null;
+          }
+        ]
+      },
+      {
+        type: "string",
+        label: "默认值",
+        model: {data, key: "默认值"},
+        validators: Validators.required
+      },
+      {
+        type: "string",
+        label: "取值范围",
+        model: {data, key: "取值范围"},
+        validators: [
+          Validators.required,
+          (control) => {
+            const value = control.value;
+            if (!/^\d+(.\d+)?-\d+(.\d+)?$/.test(value)) {
+              return {取值范围不符合格式: true};
+            }
+            return null;
+          }
+        ]
+      },
+      {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}}
+    ];
+    return await this.message.form(form);
+  }
+
   async onShuruToolbar(event: ToolbarButtonEvent) {
     if (!this.gongyi) {
       return;
@@ -678,6 +727,111 @@ export class LurushujuIndexComponent implements OnInit {
           this.gongyi.输入数据.splice(rowIdx, 1);
           this.shuruTable.data = [...this.gongyi.输入数据];
           await this.submitGongyi(["输入数据"]);
+        }
+        break;
+    }
+  }
+
+  async getMenjiaoItem(data0?: 门铰锁边铰边) {
+    const 产品分类 = data0 ? data0.产品分类 : this.fenleiName;
+    const data: 门铰锁边铰边 = {
+      名字: "",
+      产品分类,
+      开启: "",
+      门铰: "",
+      门扇厚度: "",
+      锁边: "",
+      铰边: "",
+      "包边在外+外开": {配合框CAD: {}, 企料CAD: {}},
+      "包边在外+内开": {配合框CAD: {}, 企料CAD: {}},
+      "包边在内+外开": {配合框CAD: {}, 企料CAD: {}},
+      "包边在内+内开": {配合框CAD: {}, 企料CAD: {}},
+      门缝配置: {},
+      关闭碰撞检查: false,
+      双开门扇宽生成方式: "",
+      ...data0
+    };
+    for (const value of 门缝配置输入) {
+      if (typeof value.defaultValue === "number") {
+        data.门缝配置[value.name] = 0;
+      }
+    }
+    const getOptionInputInfo = (key: keyof 门铰锁边铰边, i: number): InputInfo => {
+      const optionsInfo = this.menjiaoOptionsAll[key];
+      if (!optionsInfo) {
+        return {type: "string", label: key};
+      }
+      const options = optionsInfo.options.map<InputInfoOption>((v) => {
+        return {value: v.mingzi};
+      });
+      const disabled = optionsInfo.disabled;
+      const info2: Omit<InputInfo, "type"> = {
+        label: key,
+        model: {data, key},
+        disabled,
+        validators: Validators.required,
+        styles: {width: "calc(50% - 5px)", marginRight: i % 2 === 0 ? "10px" : "0"}
+      };
+      if (optionsInfo.multiple) {
+        return {type: "selectMulti", options, ...info2};
+      } else {
+        return {type: "select", options, ...info2};
+      }
+    };
+    const optionKeys: (keyof 门铰锁边铰边)[] = ["产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"];
+    const form1: InputInfo<typeof data>[] = [
+      {
+        type: "string",
+        label: "名字",
+        model: {data, key: "名字"},
+        readonly: true
+      },
+      {
+        type: "group",
+        label: "选项",
+        styles: {display: "flex", flexWrap: "wrap"},
+        infos: optionKeys.map(getOptionInputInfo)
+      }
+    ];
+    const form2: InputInfo<门缝配置>[] = 门缝配置输入.map<InputInfo<门缝配置>>((key) => {
+      return {
+        type: "number",
+        label: key.name,
+        model: {data: data.门缝配置, key: key.name},
+        validators: Validators.required
+      };
+    });
+    const result = await this.message.form<ObjectOf<any>>([...form1, ...form2]);
+    if (result) {
+      const result2: ObjectOf<any> = {};
+      for (const key in result) {
+        if (门缝配置输入.some((v) => v.name === key)) {
+          if (!result2.门缝配置) {
+            result2.门缝配置 = {};
+          }
+          result2.门缝配置[key] = result[key];
+        } else {
+          result2[key] = result[key];
+        }
+      }
+      return result2 as 门铰锁边铰边;
+    }
+    return null;
+  }
+
+  async onMenjiaoToolbar(event: ToolbarButtonEvent) {
+    if (!this.gongyi) {
+      return;
+    }
+    switch (event.button.event) {
+      case "添加":
+        {
+          const item = await this.getMenjiaoItem();
+          if (item) {
+            this.gongyi.门铰锁边铰边.push(item);
+            this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
+            await this.submitGongyi(["门铰锁边铰边"]);
+          }
         }
         break;
     }

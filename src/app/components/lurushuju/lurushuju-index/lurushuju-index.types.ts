@@ -23,10 +23,11 @@ export interface LurushujuIndexStepInfo extends Record<LurushujuIndexStep, Parti
 }
 
 export type OptionsAll = ObjectOf<TableDataBase[]>;
+export type OptionsAll2 = ObjectOf<{options: TableDataBase[]; disabled?: boolean; multiple?: boolean}>;
 
 export type XuanxiangTableData = 选项 & {操作?: string};
 export type ShuruTableData = 输入 & {操作?: string};
-export type MenjiaoData = Record<keyof 门铰锁边铰边, string>;
+export type MenjiaoData = 门铰锁边铰边 & {操作?: string};
 
 export interface XuanxiangFormData {
   名字: string;

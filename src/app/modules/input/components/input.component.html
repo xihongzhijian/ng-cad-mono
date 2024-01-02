@@ -379,13 +379,13 @@
           <span>{{ info.label }}</span>
           <span *ngIf="hint">({{ hint }})</span>
         </div>
-        <div class="group">
+        <div class="group" [ngStyle]="info.styles">
           <app-input *ngFor="let info2 of cast('group', info).infos" [info]="info2"></app-input>
         </div>
       </div>
     </ng-container>
     <ng-container *ngIf="!info.label">
-      <div class="group">
+      <div class="group" [ngStyle]="info.styles">
         <app-input *ngFor="let info2 of cast('group', info).infos" [info]="info2"></app-input>
       </div>
     </ng-container>

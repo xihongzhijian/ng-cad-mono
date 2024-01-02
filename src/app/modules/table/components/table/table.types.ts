@@ -89,8 +89,8 @@ export interface ColumnInfoCad<T> extends ColumnInfoBase<T> {
   filterFn?: (event: CellEvent<T>) => boolean;
 }
 
-export interface ColumnInfoToString<T> extends ColumnInfoBase<T> {
-  type: "toString";
+export interface ColumnInfoCustom<T> extends ColumnInfoBase<T> {
+  type: "custom";
   toString: (value: T) => string;
 }
 
@@ -103,7 +103,7 @@ export type ColumnInfo<T> =
   | ColumnInfoImage<T>
   | ColumnInfoFile<T>
   | ColumnInfoCad<T>
-  | ColumnInfoToString<T>;
+  | ColumnInfoCustom<T>;
 
 export type TableErrorState = {rows: number[]; msg: string}[];
 

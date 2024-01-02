@@ -173,7 +173,7 @@ export interface 门铰锁边铰边 {
   门缝配置: 门缝配置;
   关闭碰撞检查: boolean;
   双开门扇宽生成方式: string;
-  锁扇铰扇蓝线宽固定差值: number;
+  锁扇铰扇蓝线宽固定差值?: number;
 }
 
 export const menjiaoCadTypes = ["包边在外+外开", "包边在外+内开", "包边在内+外开", "包边在内+内开"] as const;
