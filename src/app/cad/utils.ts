@@ -77,19 +77,25 @@ export const filterCadEntitiesToSave = (data: CadData) => {
     }
   }
   const minLineLength = getCadMinLineLength(data);
-  const entities = data.entities.filter((e) => {
-    if (e instanceof CadLine || e instanceof CadArc) {
-      if (minLineLength <= 0 || dimRefLines.includes(e.id)) {
-        return true;
+  let entities = data.entities;
+  const count = entities.line.length + entities.arc.length;
+  if (count >= 200) {
+    entities = entities.filter((e) => {
+      if (e instanceof CadLine || e instanceof CadArc) {
+        if (minLineLength <= 0 || dimRefLines.includes(e.id)) {
+          return true;
+        }
+        const length = e.length;
+        for (const n of [1, 2, 3]) {
+          if (isEqualTo(length, n)) {
+            return true;
+          }
+        }
+        return isGreaterThan(length, minLineLength);
       }
-      const length = e.length;
-      if (isEqualTo(length, 2)) {
-        return true;
-      }
-      return isGreaterThan(length, minLineLength);
-    }
-    return true;
-  });
+      return true;
+    });
+  }
   return {dimRefLines, minLineLength, entities};
 };
 
