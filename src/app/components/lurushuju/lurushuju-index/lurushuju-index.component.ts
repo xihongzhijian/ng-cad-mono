@@ -2,6 +2,7 @@ import {CommonModule} from "@angular/common";
 import {Component, HostBinding, OnInit} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
@@ -25,7 +26,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import csstype from "csstype";
-import {cloneDeep, debounce, isEqual} from "lodash";
+import {cloneDeep, debounce, isEmpty, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   getGongyi,
@@ -36,6 +37,7 @@ import {
   XinghaoRaw,
   企料组合,
   工艺做法,
+  测试用例,
   输入,
   选项,
   配合框组合,
@@ -64,6 +66,7 @@ import {autoFillMenjiao, getCadSearch, getMenjiaoCadInfos, updateMenjiaoForm} fr
     ImageComponent,
     InputComponent,
     MatButtonModule,
+    MatCardModule,
     MatDividerModule,
     MatIconModule,
     MatTabsModule,
@@ -1043,6 +1046,107 @@ export class LurushujuIndexComponent implements OnInit {
           await this.submitGongyi(["门铰锁边铰边"]);
         }
         break;
+    }
+  }
+
+  getGongshiExtraData() {
+    return {
+      选项: {
+        型号: this.xinghaoName,
+        产品分类: this.fenleiName,
+        工艺做法: this.gongyiName
+      }
+    };
+  }
+
+  async getGongshis() {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    const extraData = this.getGongshiExtraData();
+    const where: ObjectOf<any> = {};
+    for (const key of keysOf(extraData.选项)) {
+      where[`选项.${key}`] = extraData.选项[key];
+    }
+    const fields = ["名字", "条件", "选项", "公式"];
+    const response = await this.http.post<any[]>("ngcad/querymongodb", {collection: "material", where, fields});
+    const gongshis = this.http.getData(response) || [];
+    for (const gongshi of gongshis) {
+      delete gongshi.collection;
+    }
+    gongyi.算料公式 = gongshis;
+    await this.submitGongyi(["算料公式"]);
+  }
+
+  async editGongshis(index?: number) {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    const extraData = this.getGongshiExtraData();
+    const search2: ObjectOf<any> = {};
+    if (typeof index === "number") {
+      search2._id = gongyi.算料公式[index]._id;
+    } else {
+      for (const key of keysOf(extraData.选项)) {
+        search2[`选项.${key}`] = extraData.选项[key];
+      }
+    }
+    const response = await this.http.post<string>("ngcad/getShortUrl", {name: "算料公式", data: {search2, extraData}});
+    if (response?.data) {
+      open(response.data);
+    }
+  }
+
+  getTimeStr(time: number) {
+    return new Date(time).toLocaleString();
+  }
+
+  async getTestCaseItem(data0?: 测试用例) {
+    const data: 测试用例 = {名字: "", 时间: 0, 测试数据: {}, 测试正确: false, ...data0};
+    const form: InputInfo<typeof data>[] = [
+      {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
+      {
+        type: "object",
+        label: "测试数据",
+        model: {data, key: "测试数据"},
+        validators: (control) => {
+          if (isEmpty(control.value)) {
+            return {测试数据不能为空: true};
+          }
+          return null;
+        },
+        keyLabel: "公式名",
+        valueLabel: "公式值",
+        keyValidators: (control) => {
+          const value = control.value;
+          if (!value) {
+            return {公式名不能为空: true};
+          }
+          if (!isNaN(Number(value))) {
+            return {公式名不能为数字: true};
+          }
+          if (value.match(/^[0-9]/)) {
+            return {公式名不能以数字开头: true};
+          }
+          return null;
+        },
+        valueValidators: Validators.required
+      },
+      {type: "boolean", label: "测试正确", model: {data, key: "测试正确"}}
+    ];
+    const result = await this.message.form(form);
+    if (result) {
+      result.时间 = Date.now();
+    }
+    return result;
+  }
+
+  async addTestCase() {
+    const result = await this.getTestCaseItem();
+    if (result) {
+      this.submitGongyi(["测试用例"]);
     }
   }
 }

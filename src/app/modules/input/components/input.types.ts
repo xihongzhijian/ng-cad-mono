@@ -54,11 +54,18 @@ export interface InputInfoNumber<T = any> extends InputInfoWithOptions<T, number
 export interface InputInfoObject<T = any> extends InputInfoBase<T> {
   type: "object";
   value?: Value<ObjectOf<any>>;
+  selectOptions?: boolean;
+  keyLabel?: string;
+  valueLabel?: string;
+  keyValidators?: AbstractControlOptions["validators"];
+  valueValidators?: AbstractControlOptions["validators"];
 }
 
 export interface InputInfoArray<T = any> extends InputInfoBase<T> {
   type: "array";
   value?: Value<any[]>;
+  valueLabel?: string;
+  valueValidators?: AbstractControlOptions["validators"];
 }
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {

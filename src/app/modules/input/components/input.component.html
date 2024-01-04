@@ -6,7 +6,7 @@
       <input
         *ngIf="!castInfo('string')['textarea'] && displayValue === null"
         matInput
-        [errorStateMatcher]="errorStateMatcher"
+        [errorStateMatcher]="getErrorStateMatcher()"
         [readonly]="info.readonly"
         [disabled]="info.disabled || false"
         [autocomplete]="info.autocomplete || ''"
@@ -21,7 +21,7 @@
       <textarea
         *ngIf="castInfo('string')['textarea'] && displayValue === null"
         matInput
-        [errorStateMatcher]="errorStateMatcher"
+        [errorStateMatcher]="getErrorStateMatcher()"
         [cdkTextareaAutosize]="!!castInfo('string')['textarea']?.['autosize']"
         [cdkAutosizeMinRows]="castInfo('string')['textarea']?.['autosize']?.['minRows']"
         [cdkAutosizeMaxRows]="castInfo('string')['textarea']?.['autosize']?.['maxRows']"
@@ -68,7 +68,7 @@
           {{ option.label }}
         </mat-option>
       </mat-autocomplete>
-      <mat-error>{{ errorMsg }}</mat-error>
+      <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'number'">
@@ -77,7 +77,7 @@
       <mat-hint>{{ hint }}</mat-hint>
       <input
         matInput
-        [errorStateMatcher]="errorStateMatcher"
+        [errorStateMatcher]="getErrorStateMatcher()"
         [readonly]="info.readonly"
         [disabled]="info.disabled || false"
         [autocomplete]="info.autocomplete || ''"
@@ -109,43 +109,53 @@
           {{ option.label }}
         </mat-option>
       </mat-autocomplete>
-      <mat-error>{{ errorMsg }}</mat-error>
+      <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'object'">
     <div class="sub-form-field">
-      <div class="label">
-        <span>{{ info.label }}</span>
-        <span *ngIf="info.hint">({{ hint }})</span>
-      </div>
-      <div *ngIf="keysOf(value).length === 0">
+      <div class="label">{{ info.label }}</div>
+      <div *ngIf="keysOf(value)['length'] === 0">
         <button mat-icon-button color="primary" (click)="objectAdd(value, '')">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
       <div *ngFor="let item of asObject(value) | keyvalue: returnZero">
         <mat-form-field style="width: 30%" [ngClass]="{empty: isEmpty(item.key)}">
+          <mat-label>{{ castInfo("object").keyLabel }}</mat-label>
           <input
             type="text"
             matInput
+            [errorStateMatcher]="getErrorStateMatcherKey(item.key)"
             [readonly]="info.readonly"
             [disabled]="info.disabled || false"
             [autocomplete]="info.autocomplete"
             [value]="item.key"
             (change)="changeObjectKey(value, item.key, $event)"
+            (blur)="onBlur()"
           />
+          <mat-error>{{ getErrorMsgKey(item.key) }}</mat-error>
         </mat-form-field>
         <mat-form-field style="width: 70%" [ngClass]="{empty: isEmpty(item.value)}">
+          <mat-label>{{ castInfo("object").valueLabel }}</mat-label>
           <input
             type="text"
             matInput
+            [errorStateMatcher]="getErrorStateMatcherValue(item.key)"
             [readonly]="info.readonly"
             [disabled]="info.disabled || false"
             [autocomplete]="info.autocomplete"
             [(ngModel)]="item.value"
             (change)="value[item.key] = item.value"
+            (blur)="onBlur()"
           />
-          <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key, item.key)">
+          <button
+            mat-icon-button
+            matSuffix
+            color="primary"
+            *ngIf="castInfo('object')['selectOptions']"
+            (click)="selectOptions(model.key, item.key)"
+          >
             <mat-icon>list</mat-icon>
           </button>
           <button mat-icon-button matSuffix color="primary" (click)="objectAdd(value, '', '')">
@@ -157,16 +167,15 @@
           <button mat-icon-button matSuffix color="primary" *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
             <mat-icon>{{ icon.name }}</mat-icon>
           </button>
+          <mat-error>{{ getErrorMsgValue(item.key) }}</mat-error>
         </mat-form-field>
       </div>
+      <ng-template [ngTemplateOutlet]="footer"></ng-template>
     </div>
   </ng-container>
   <ng-container *ngSwitchCase="'array'">
     <div class="sub-form-field">
-      <div class="label">
-        <span>{{ info.label }}</span>
-        <span *ngIf="info.hint">({{ hint }})</span>
-      </div>
+      <div class="label">{{ info.label }}</div>
       <div *ngIf="value.length === 0">
         <button mat-icon-button color="primary" (click)="arrayAdd(value, '')">
           <mat-icon>add_circle</mat-icon>
@@ -176,11 +185,13 @@
         <input
           matInput
           type="text"
+          [errorStateMatcher]="getErrorStateMatcherValue(j.toString())"
           [readonly]="info.readonly"
           [disabled]="info.disabled || false"
           [autocomplete]="info.autocomplete"
           [(ngModel)]="value[j]"
           [ngModelOptions]="{standalone: true}"
+          (blur)="onBlur()"
         />
         <button mat-icon-button matSuffix color="primary" (click)="arrayAdd(value, '', j + 1)">
           <mat-icon>add_circle</mat-icon>
@@ -191,7 +202,9 @@
         <button mat-icon-button matSuffix color="primary" *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
           <mat-icon>{{ icon.name }}</mat-icon>
         </button>
+        <mat-error>{{ getErrorMsgValue(j.toString()) }}</mat-error>
       </mat-form-field>
+      <ng-template [ngTemplateOutlet]="footer"></ng-template>
     </div>
   </ng-container>
   <ng-container *ngSwitchCase="'boolean'">
@@ -215,7 +228,7 @@
       <mat-hint>{{ hint }}</mat-hint>
       <mat-select
         [disabled]="info.disabled || false"
-        [errorStateMatcher]="errorStateMatcher"
+        [errorStateMatcher]="getErrorStateMatcher()"
         [(ngModel)]="value"
         (selectionChange)="onChange()"
       >
@@ -230,7 +243,7 @@
       <button mat-icon-button matSuffix color="primary" appClickStop *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
         <mat-icon>{{ icon.name }}</mat-icon>
       </button>
-      <mat-error>{{ errorMsg }}</mat-error>
+      <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'selectMulti'">
@@ -239,7 +252,7 @@
       <mat-hint>{{ hint }}</mat-hint>
       <mat-select
         [disabled]="info.disabled || false"
-        [errorStateMatcher]="errorStateMatcher"
+        [errorStateMatcher]="getErrorStateMatcher()"
         [(ngModel)]="value"
         (selectionChange)="onChange()"
         multiple
@@ -255,7 +268,7 @@
       <button mat-icon-button matSuffix color="primary" appClickStop *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
         <mat-icon>{{ icon.name }}</mat-icon>
       </button>
-      <mat-error>{{ errorMsg }}</mat-error>
+      <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'coordinate'">
@@ -267,7 +280,7 @@
       <div>
         <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[0])}">
           <mat-label>{{ castInfo("coordinate")["labelX"] || "x" }}</mat-label>
-          <mat-select [(ngModel)]="value[0]" [errorStateMatcher]="errorStateMatcher" (change)="onChange()">
+          <mat-select [(ngModel)]="value[0]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
             <mat-option [value]="0">左</mat-option>
             <mat-option [value]="0.5">中</mat-option>
             <mat-option [value]="1">右</mat-option>
@@ -275,16 +288,16 @@
           <ng-template #anchorX>
             <input matInput type="number" [(ngModel)]="value[0]" (change)="onChange()" />
           </ng-template>
-          <mat-error>{{ errorMsg }}</mat-error>
+          <mat-error>{{ getErrorMsg() }}</mat-error>
         </mat-form-field>
         <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[1])}">
           <mat-label>{{ castInfo("coordinate")["labelY"] || "y" }}</mat-label>
-          <mat-select [(ngModel)]="value[1]" [errorStateMatcher]="errorStateMatcher" (change)="onChange()">
+          <mat-select [(ngModel)]="value[1]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
             <mat-option [value]="1">上</mat-option>
             <mat-option [value]="0.5">中</mat-option>
             <mat-option [value]="0">下</mat-option>
           </mat-select>
-          <mat-error>{{ errorMsg }}</mat-error>
+          <mat-error>{{ getErrorMsg() }}</mat-error>
         </mat-form-field>
       </div>
     </div>
@@ -296,7 +309,7 @@
           matInput
           type="text"
           placeholder="请选择锚点"
-          [errorStateMatcher]="errorStateMatcher"
+          [errorStateMatcher]="getErrorStateMatcher()"
           [value]="anchorStr"
           readonly
           [disabled]="info.disabled || false"
@@ -310,7 +323,7 @@
         <button mat-icon-button matSuffix color="primary" *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
           <mat-icon>{{ icon.name }}</mat-icon>
         </button>
-        <mat-error>{{ errorMsg }}</mat-error>
+        <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
     </ng-template>
   </ng-container>
@@ -323,7 +336,7 @@
         [value]="colorStr"
         [style]="{color: colorStr, backgroundColor: colorBg}"
         [matMenuTriggerFor]="editable ? colorPicker : null"
-        [errorStateMatcher]="errorStateMatcher"
+        [errorStateMatcher]="getErrorStateMatcher()"
         readonly
         [disabled]="info.disabled || false"
       />
@@ -353,26 +366,26 @@
       <button mat-icon-button matSuffix color="primary" *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
         <mat-icon>{{ icon.name }}</mat-icon>
       </button>
-      <mat-error>{{ errorMsg }}</mat-error>
+      <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'file'">
     <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
       <mat-label>{{ info.label }}</mat-label>
       <mat-hint>{{ hint }}</mat-hint>
-      <input matInput readonly [errorStateMatcher]="errorStateMatcher" />
+      <input matInput readonly [errorStateMatcher]="getErrorStateMatcher()" />
       <input #fileInput hidden type="file" [accept]="fileAccept" [multiple]="castInfo('file')['multiple']" (change)="onInputChange()" />
       <button mat-icon-button matSuffix color="primary" (click)="selectFile()">
         <mat-icon>file_open</mat-icon>
       </button>
-      <mat-error>{{ errorMsg }}</mat-error>
+      <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'image'">
     <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
       <mat-label>{{ info.label }}</mat-label>
       <mat-hint>{{ hint }}</mat-hint>
-      <input matInput readonly hidden [errorStateMatcher]="errorStateMatcher" />
+      <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
       <input #fileInput hidden type="file" [accept]="fileAccept" (change)="onInputChange()" />
       <app-image
         [src]="value"
@@ -380,7 +393,7 @@
         [prefix]="castInfo('image')['prefix']"
         (click)="selectFile()"
       ></app-image>
-      <mat-error>{{ errorMsg }}</mat-error>
+      <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'cad'">
@@ -420,7 +433,7 @@
 
 <ng-template #footer>
   <div class="footer">
-    <span class="hint" *ngIf="hint">{{ hint }}</span>
-    <span class="error" *ngIf="errorMsg">{{ errorMsg }}</span>
+    <span class="hint">{{ hint }}</span>
+    <span class="error">{{ getErrorMsg() }}</span>
   </div>
 </ng-template>

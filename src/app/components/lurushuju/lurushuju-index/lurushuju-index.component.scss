@@ -42,10 +42,36 @@
     height: 100%;
   }
 
-  .下单选项输入配置 {
-    flex: 1 1 0;
+  .tab-content {
     height: 100%;
+  }
+
+  .下单选项输入配置 {
     --item-height: 100%;
     --items-per-row: 2;
+  }
+
+  .suanliaogongshis {
+    width: 30%;
+
+    .gongshis {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+
+      .gongshi-card {
+        align-items: flex-start;
+
+        .mat-mdc-card-header {
+          width: 100%;
+          box-sizing: border-box;
+          align-items: center;
+        }
+      }
+    }
+
+    .test-cases {
+      flex: 0 0 30%;
+    }
   }
 }

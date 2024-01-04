@@ -74,7 +74,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     {label: "切内空对应名字", model: this._getcadDataModel("切内空对应名字"), type: "string"},
     {label: "分类", model: this._getcadDataModel("type"), type: "string"},
     {label: "分类2", model: this._getcadDataModel("type2"), type: "string"},
-    {label: "选项", model: this._getcadDataModel("options"), type: "object"},
+    {label: "选项", model: this._getcadDataModel("options"), type: "object", selectOptions: true},
     {label: "条件", model: this._getcadDataModel("conditions"), type: "array"}
   ];
   infoGroup2: InputInfo[] = [
@@ -129,7 +129,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     },
     {label: "自定义属性", type: "string", disabled: true, suffixIcons: [{name: "list", onClick: () => this.editAttributes(this.data)}]},
     // {label: "展开", type: "string", disabled: true, suffixIcons: [{name: "list", onClick: () => this.editZhankai(this.data)}]},
-    {label: "型号花件", model: this._getcadDataModel("xinghaohuajian"), type: "object"},
+    {label: "型号花件", model: this._getcadDataModel("xinghaohuajian"), type: "object", selectOptions: true},
     {label: "必须绑定花件", model: this._getcadDataModel("needsHuajian"), type: "boolean"},
     {label: "可独立板材", model: this._getcadDataModel("kedulibancai"), type: "boolean"},
     {label: "必须选择板材", model: this._getcadDataModel("必须选择板材"), type: "boolean"},
@@ -182,7 +182,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
         {name: "list", onClick: () => this.selectCadmuban()}
       ]
     },
-    {label: "对应计算条数的配件", model: this._getcadDataModel("对应计算条数的配件"), type: "object"},
+    {label: "对应计算条数的配件", model: this._getcadDataModel("对应计算条数的配件"), type: "object", selectOptions: true},
     {
       label: "指定板材分组",
       model: this._getcadDataModel("指定板材分组"),

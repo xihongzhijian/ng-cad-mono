@@ -97,10 +97,18 @@ export interface 花件玻璃信息 {
 export interface 板材分组 {}
 
 export interface 算料公式 {
+  _id: string;
   名字: string;
   选项: ObjectOf<string>;
   条件: string[];
   公式: Formulas;
+}
+
+export interface 测试用例 {
+  名字: string;
+  时间: number;
+  测试数据: Formulas;
+  测试正确: boolean;
 }
 
 export interface 工艺做法 {
@@ -130,12 +138,7 @@ export interface 工艺做法 {
   CAD模板: 后台CAD | null; // 选择后台的CAD模板
   算料公式: 算料公式[];
   测试完成: boolean; // 不可编辑，要求必须有一个测试用例，否则不能算完成
-  测试用例: {
-    名字: string;
-    时间: number;
-    测试数据: Formulas;
-    测试正确: boolean;
-  }[];
+  测试用例: 测试用例[];
   创建时间: number; // 不带小数的时间戳
   最后一次修改时间: number; // 不带小数的时间戳
   修改记录: {

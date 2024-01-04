@@ -200,28 +200,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   @ViewChild("formField", {read: ElementRef}) formField?: ElementRef<HTMLElement>;
   @ViewChild("colorChrome") colorChrome?: ChromeComponent;
   errors: ValidationErrors | null = null;
-  get errorMsg(): string {
-    if (!this.errors) {
-      return "";
-    }
-    for (const key in this.errors) {
-      const value = this.errors[key];
-      let msg = "";
-      if (typeof value === "string") {
-        msg = value;
-      } else {
-        msg = key;
-      }
-      if (msg === "required") {
-        return `${this.info.label}不能为空`;
-      }
-      return msg;
-    }
-    return "";
-  }
-  errorStateMatcher: ErrorStateMatcher = {
-    isErrorState: () => !this.isValid()
-  };
+  errorsKey: ObjectOf<ValidationErrors | null> = {};
+  errorsValue: ObjectOf<ValidationErrors | null> = {};
 
   valueChange$ = new BehaviorSubject<any>(null);
   filteredOptions$ = new BehaviorSubject<InputComponent["options"]>([]);
@@ -309,6 +289,58 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (changes) {
       this._onInfoChange(changes);
     }
+  }
+
+  private _getErrorMsg(errors: ValidationErrors | null, label?: string): string {
+    if (!errors) {
+      return "";
+    }
+    for (const key in errors) {
+      const value = errors[key];
+      let msg = "";
+      if (typeof value === "string") {
+        msg = value;
+      } else {
+        msg = key;
+      }
+      if (label && msg === "required") {
+        return `${label}不能为空`;
+      }
+      return msg;
+    }
+    return "";
+  }
+
+  getErrorMsg() {
+    return this._getErrorMsg(this.errors, this.info.label);
+  }
+
+  getErrorMsgKey(key: string) {
+    if (this.info.type === "object") {
+      return this._getErrorMsg(this.errorsKey[key], this.info.keyLabel);
+    } else {
+      return "";
+    }
+  }
+
+  getErrorMsgValue(key: string) {
+    if (this.info.type === "object" || this.info.type === "array") {
+      return this._getErrorMsg(this.errorsValue[key], this.info.valueLabel);
+    } else {
+      return "";
+    }
+  }
+
+  getErrorStateMatcher(): ErrorStateMatcher {
+    return {isErrorState: () => !this.isValid()};
+  }
+
+  getErrorStateMatcherKey(key: string): ErrorStateMatcher {
+    return {isErrorState: () => !this.isValidKey(key)};
+  }
+
+  getErrorStateMatcherValue(key: string): ErrorStateMatcher {
+    return {isErrorState: () => !this.isValidValue(key)};
   }
 
   private async _onInfoChange(changes: NonNullable<ReturnType<typeof this.infoDiffer.diff>>) {
@@ -496,11 +528,47 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       errors = null;
     }
     this.errors = errors;
-    return errors;
+    if (info.type === "object" && isTypeOf(value, "object")) {
+      const {keyValidators} = info;
+      const errorsKey: ObjectOf<ValidationErrors | null> = {};
+      const errorsValue: ObjectOf<ValidationErrors | null> = {};
+      for (const key in value) {
+        const val = value[key];
+        if (keyValidators) {
+          const control = new FormControl(key, keyValidators);
+          errorsKey[key] = control.errors;
+        }
+        if (info.valueValidators) {
+          const control = new FormControl(val, info.valueValidators);
+          errorsValue[key] = control.errors;
+        }
+      }
+      this.errorsKey = errorsKey;
+      this.errorsValue = errorsValue;
+    } else if (info.type === "array" && Array.isArray(value)) {
+      const {valueValidators} = info;
+      const errorsValue: ObjectOf<ValidationErrors | null> = {};
+      for (const [i, val] of value.entries()) {
+        if (valueValidators) {
+          const control = new FormControl(val, valueValidators);
+          errorsValue[String(i)] = control.errors;
+        }
+      }
+      this.errorsValue = errorsValue;
+    }
+    return {...this.errors, ...this.errorsKey, ...this.errorsValue};
   }
 
   isValid() {
     return isEmpty(this.errors);
+  }
+
+  isValidKey(key: string) {
+    return isEmpty(this.errorsKey[key]);
+  }
+
+  isValidValue(key: string) {
+    return isEmpty(this.errorsValue[key]);
   }
 
   onAutocompleteChange(event: MatAutocompleteSelectedEvent) {
@@ -600,7 +668,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   asObject(val: any): ObjectOf<any> {
-    if (val && typeof val === "object") {
+    if (isTypeOf(val, "object")) {
       return val;
     }
     return {};
