@@ -54,7 +54,7 @@ export const updateMenjiaoForm = (data: 门铰锁边铰边) => {
       data.开启.push(key2);
     }
   }
-  const keys = ["产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"] as const;
+  const keys = ["vid", "产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"] as const;
   const values = keys
     .map((k) => {
       const value = data[k];

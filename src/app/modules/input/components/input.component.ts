@@ -200,6 +200,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   @ViewChild("formField", {read: ElementRef}) formField?: ElementRef<HTMLElement>;
   @ViewChild("colorChrome") colorChrome?: ChromeComponent;
   errors: ValidationErrors | null = null;
+  errors2: ValidationErrors | null = null;
   errorsKey: ObjectOf<ValidationErrors | null> = {};
   errorsValue: ObjectOf<ValidationErrors | null> = {};
 
@@ -390,7 +391,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     this.style = {...info.styles};
     if (info.hidden) {
-      this.style.display = "none";
+      if (info.hideType === "opacity") {
+        this.style.opacity = "0";
+      } else {
+        this.style.display = "none";
+      }
     }
     let validateValue = !!info.initialValidate;
     changes.forEachItem((item) => {
@@ -507,27 +512,31 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const {info, inputs} = this;
     const validators = info.validators;
     let errors: ValidationErrors | null = null;
+    let errors2: ValidationErrors | null = null;
     if (validators) {
       const control = new FormControl(value, validators);
       errors = control.errors;
     }
     if (inputs) {
-      inputs.forEach((input) => {
+      for (const input of inputs.toArray()) {
         input.validateValue();
         if (input.errors && !input.info.hidden) {
-          if (!errors) {
-            errors = {};
+          if (!errors2) {
+            errors2 = {};
           }
-          const errors2 = {...input.errors};
-          delete errors2.required;
-          Object.assign(errors, errors2);
+          const errors3 = {...input.errors};
+          Object.assign(errors2, errors3);
         }
-      });
+      }
     }
     if (isEmpty(errors)) {
       errors = null;
     }
+    if (isEmpty(errors2)) {
+      errors2 = null;
+    }
     this.errors = errors;
+    this.errors2 = errors2;
     if (info.type === "object" && isTypeOf(value, "object")) {
       const {keyValidators} = info;
       const errorsKey: ObjectOf<ValidationErrors | null> = {};
@@ -556,7 +565,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
       this.errorsValue = errorsValue;
     }
-    return {...this.errors, ...this.errorsKey, ...this.errorsValue};
+    return {...this.errors, ...this.errors2, ...this.errorsKey, ...this.errorsValue};
   }
 
   isValid() {

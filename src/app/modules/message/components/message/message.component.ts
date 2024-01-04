@@ -202,6 +202,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       const key = input.info.name || input.info.label;
       values[key] = input.value;
     }
+    console.log(errors);
     return {errors, values};
   }
 

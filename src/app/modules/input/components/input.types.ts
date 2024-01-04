@@ -29,6 +29,7 @@ export interface InputInfoBase<T = any> {
   name?: string;
   styles?: csstype.Properties;
   hidden?: boolean;
+  hideType?: "display" | "opacity";
 }
 
 export interface InputInfoString<T = any> extends InputInfoWithOptions<T, string> {

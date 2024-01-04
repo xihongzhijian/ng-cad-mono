@@ -34,4 +34,10 @@ export class AppComponent {
     }
     return title || path;
   }
+
+  setProject() {
+    const {url, queryParams} = this.route.snapshot;
+    const url2 = this.router.createUrlTree(url, {queryParams: {...queryParams, project: null}});
+    location.href = url2.toString();
+  }
 }

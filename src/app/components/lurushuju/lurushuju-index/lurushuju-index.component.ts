@@ -168,6 +168,9 @@ export class LurushujuIndexComponent implements OnInit {
           return strs.join(", ");
         }
       },
+      {type: "boolean", field: "停用", width: "60px"},
+      {type: "number", field: "排序", width: "60px"},
+      {type: "boolean", field: "默认值", width: "60px"},
       {
         type: "button",
         field: "操作",
@@ -754,6 +757,10 @@ export class LurushujuIndexComponent implements OnInit {
   async getMenjiaoItem(data0?: 门铰锁边铰边) {
     const 产品分类 = data0 ? data0.产品分类 : this.fenleiName;
     const data: 门铰锁边铰边 = {
+      vid: "",
+      停用: false,
+      排序: 0,
+      默认值: false,
       名字: "",
       产品分类,
       开启: [],
@@ -770,6 +777,15 @@ export class LurushujuIndexComponent implements OnInit {
       双开门扇宽生成方式: "",
       ...data0
     };
+    if (!data.vid) {
+      const numVids = this.gongyi?.门铰锁边铰边.map((v) => Number(v.vid)).filter((v) => !isNaN(v)) || [];
+      if (numVids.length > 0) {
+        const numMax = Math.max(...numVids);
+        data.vid = String(numMax + 1);
+      } else {
+        data.vid = "1";
+      }
+    }
     for (const value of 门缝配置输入) {
       if (typeof value.defaultValue === "number") {
         data.门缝配置[value.name] = 0;
@@ -795,6 +811,7 @@ export class LurushujuIndexComponent implements OnInit {
         }
       }
     }
+    updateMenjiaoForm(data);
     const getGroupStyles = (styles?: csstype.Properties): csstype.Properties => {
       return {display: "flex", flexWrap: "wrap", marginBottom: "10px", ...styles};
     };
@@ -878,6 +895,7 @@ export class LurushujuIndexComponent implements OnInit {
           },
           {
             ...getOptionInputInfo("双开门扇宽生成方式", 3, 1),
+            hideType: "opacity",
             onChange: () => {
               if (使用锁扇铰扇蓝线宽固定差值()) {
                 form3[0].infos[2].hidden = false;
@@ -894,7 +912,25 @@ export class LurushujuIndexComponent implements OnInit {
             type: "number",
             label: "锁扇铰扇蓝线宽固定差值",
             model: {data, key: "锁扇铰扇蓝线宽固定差值"},
+            hideType: "opacity",
             styles: getInfoStyles(3, 2)
+          },
+          {type: "boolean", label: "停用", model: {data, key: "停用"}, styles: getInfoStyles(3, 3)},
+          {type: "number", label: "排序", model: {data, key: "排序"}, styles: getInfoStyles(3, 4)},
+          {
+            type: "boolean",
+            label: "默认值",
+            model: {data, key: "默认值"},
+            validators: (control) => {
+              if (control.value) {
+                const items = this.gongyi?.门铰锁边铰边.filter((v) => v.默认值);
+                if (items && items.length > (data0 ? 1 : 0)) {
+                  return {默认值已存在: true};
+                }
+              }
+              return null;
+            },
+            styles: getInfoStyles(3, 5)
           }
         ]
       } as InputInfoGroup<typeof data> & RequiredKeys<InputInfoGroup, "infos">

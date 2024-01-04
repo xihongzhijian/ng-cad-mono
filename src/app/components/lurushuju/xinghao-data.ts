@@ -148,6 +148,11 @@ export interface 工艺做法 {
 }
 
 export interface 门铰锁边铰边 {
+  vid: string;
+  停用: boolean;
+  排序: number;
+  默认值: boolean;
+
   名字: string;
   产品分类: string;
   开启: string[];
