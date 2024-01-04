@@ -1,10 +1,11 @@
 import {AbstractControlOptions} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
+import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.component";
 import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
 import csstype from "csstype";
 
-type Value<T> = T | (() => T) | (() => Promise<T>);
+export type Value<T> = T | (() => T) | (() => Promise<T>);
 
 export interface InputInfoBase<T = any> {
   label: string;
@@ -27,6 +28,7 @@ export interface InputInfoBase<T = any> {
   forceValidateNum?: number; // change this to trigger validation
   name?: string;
   styles?: csstype.Properties;
+  hidden?: boolean;
 }
 
 export interface InputInfoString<T = any> extends InputInfoWithOptions<T, string> {
@@ -115,6 +117,13 @@ export interface InputInfoImage<T = any> extends InputInfoBase<T> {
   onChange?: (val: FileList) => void;
 }
 
+export interface InputInfoCad<T = any> extends InputInfoBase<T> {
+  type: "cad";
+  params: Value<CadListInput>;
+  model?: never;
+  onChange?: (val: CadListOutput) => void;
+}
+
 export interface InputInfoGroup<T = any> extends InputInfoBase<T> {
   type: "group";
   infos?: InputInfo<T>[];
@@ -132,6 +141,7 @@ export type InputInfo<T = any> =
   | InputInfoColor<T>
   | InputInfoFile<T>
   | InputInfoImage<T>
+  | InputInfoCad<T>
   | InputInfoGroup<T>;
 
 export interface InputInfoTypeMap {
@@ -146,6 +156,7 @@ export interface InputInfoTypeMap {
   color: InputInfoColor;
   file: InputInfoFile;
   image: InputInfoImage;
+  cad: InputInfoCad;
   group: InputInfoGroup;
 }
 

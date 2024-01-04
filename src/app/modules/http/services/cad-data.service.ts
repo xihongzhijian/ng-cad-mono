@@ -284,6 +284,13 @@ export class CadDataService extends HttpService {
     return this.getData(response) || [];
   }
 
+  getCadImgUrl(id: string) {
+    if (id) {
+      return this.getUrl("ngcad/cadImg", {id});
+    }
+    return null;
+  }
+
   async getCadImg(id: string, useCache = true, options?: HttpOptions) {
     if (useCache) {
       const url = this.cadImgCache.get(id);

@@ -10,8 +10,10 @@ import {
   KeyValueDiffer,
   KeyValueDiffers,
   OnChanges,
+  QueryList,
   SimpleChanges,
-  ViewChild
+  ViewChild,
+  ViewChildren
 } from "@angular/core";
 import {FormControl, FormsModule, ValidationErrors} from "@angular/forms";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
@@ -25,9 +27,11 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {joinOptions, splitOptions} from "@app/app.common";
+import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
@@ -41,6 +45,7 @@ import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
 import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoTypeMap, InputInfoWithOptions} from "./input.types";
+import {getValue} from "./input.utils";
 
 @Component({
   selector: "app-input",
@@ -74,6 +79,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
   @ViewChild("fileInput") fileInput?: ElementRef<HTMLInputElement>;
+  @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
 
   private _model: NonNullable<Required<InputInfo["model"]>> = {data: {key: ""}, key: "key"};
   get model() {
@@ -224,7 +230,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   constructor(
     private message: MessageService,
     private dialog: MatDialog,
-    private differs: KeyValueDiffers
+    private differs: KeyValueDiffers,
+    private http: CadDataService
   ) {
     super();
     this.valueChange$.subscribe((val) => {
@@ -312,17 +319,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     const type = info.type;
     if (type === "select" || type === "selectMulti" || type === "string" || type === "number") {
-      let options: InputInfoOptions<any> | undefined;
-      if (typeof info.options === "function") {
-        const options2 = info.options();
-        if (options2 instanceof Promise) {
-          options = await options2;
-        } else {
-          options = options2;
-        }
-      } else {
-        options = info.options;
-      }
+      const options = (await getValue(info.options, this.message)) as InputInfoOptions<any> | undefined;
       this.options = (options || []).map((v) => {
         if (typeof v === "string") {
           return {value: v, label: v};
@@ -337,16 +334,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (type === "string") {
       if (info.optionInputOnly && !info.options) {
         info.readonly = true;
-        if (typeof info.displayValue === "function") {
-          const displayValue = info.displayValue();
-          if (displayValue instanceof Promise) {
-            this.displayValue = await displayValue;
-          } else {
-            this.displayValue = displayValue;
-          }
-        } else if (info.displayValue) {
-          this.displayValue = info.displayValue;
-        }
+        this.displayValue = (await getValue(info.displayValue, this.message)) || null;
       }
     }
     this.class = [type];
@@ -367,6 +355,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
     }
     this.style = {...info.styles};
+    if (info.hidden) {
+      this.style.display = "none";
+    }
     let validateValue = !!info.initialValidate;
     changes.forEachItem((item) => {
       if (item.key === "forceValidateNum") {
@@ -479,13 +470,29 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   validateValue(value = this.value) {
-    const validators = this.info.validators;
-    if (!validators) {
-      return null;
+    const {info, inputs} = this;
+    const validators = info.validators;
+    let errors: ValidationErrors | null = null;
+    if (validators) {
+      const control = new FormControl(value, validators);
+      errors = control.errors;
     }
-    const control = new FormControl(value, validators);
-    this.errors = control.errors;
-    return this.errors;
+    if (inputs) {
+      inputs.forEach((input) => {
+        input.validateValue();
+        if (input.errors) {
+          if (!errors) {
+            errors = {};
+          }
+          Object.assign(errors, input.errors);
+        }
+      });
+    }
+    if (isEmpty(errors)) {
+      errors = null;
+    }
+    this.errors = errors;
+    return errors;
   }
 
   isValid() {
@@ -675,6 +682,39 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       info.onChange?.(files);
     }
     input.value = "";
+  }
+
+  getCadImgSrc() {
+    const {info} = this;
+    if (info.type === "cad") {
+      const {value} = this;
+      if (isTypeOf(value, "object")) {
+        let id = "";
+        for (const key of ["id", "_id"]) {
+          if (isTypeOf(value[key], "string") && value[key].length > 0) {
+            id = value[key];
+            break;
+          }
+        }
+        return this.http.getCadImgUrl(id) || "";
+      }
+    }
+    return "";
+  }
+
+  async selectCad() {
+    const {info} = this;
+    if (info.type !== "cad") {
+      return;
+    }
+    const params = await getValue(info.params, this.message);
+    if (!params) {
+      return;
+    }
+    const result = await openCadListDialog(this.dialog, {data: params});
+    if (result) {
+      info.onChange?.(result);
+    }
   }
 }
 

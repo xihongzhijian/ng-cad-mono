@@ -19,6 +19,26 @@
       }
     }
   }
+  &.cad {
+    --cad-preview-width: 200px;
+    --cad-preview-height: 100px;
+    .cad-preview-empty {
+      width: var(--cad-preview-width);
+      height: var(--cad-preview-height);
+      border: 1px dashed gray;
+      border-radius: 10px;
+      background: white;
+      color: gray;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      &:hover {
+        border: 1px dashed $accent-color;
+      }
+    }
+  }
 }
 
 .sub-form-field {

@@ -9,6 +9,7 @@ export interface GetCadParams {
   page?: number;
   limit?: number;
   search?: ObjectOf<any>;
+  standaloneSearch?: boolean;
   qiliao?: boolean;
   options?: CadData["options"];
   optionsMatchType?: "and" | "or";

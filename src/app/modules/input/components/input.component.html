@@ -372,6 +372,14 @@
       ></app-image>
     </mat-form-field>
   </ng-container>
+  <ng-container *ngSwitchCase="'cad'">
+    <app-image class="cad-preview" *ngIf="getCadImgSrc(); else emptyImg" [src]="getCadImgSrc()"></app-image>
+    <ng-template #emptyImg>
+      <div class="cad-preview-empty" (click)="selectCad()">
+        {{ info.label }}
+      </div>
+    </ng-template>
+  </ng-container>
   <ng-container *ngSwitchCase="'group'">
     <ng-container *ngIf="info.label">
       <div class="sub-form-field">

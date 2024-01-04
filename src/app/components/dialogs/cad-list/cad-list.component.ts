@@ -15,9 +15,8 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTableModule} from "@angular/material/table";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
-import {DomSanitizer} from "@angular/platform-browser";
+import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {imgCadEmpty, timer} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf} from "@lucilor/utils";
@@ -76,7 +75,7 @@ export class CadListComponent extends Utils() implements AfterViewInit {
   length = 0;
   pageSizeOptions = [1, 10, 20, 50, 100];
   pageSize = 20;
-  pageData: {data: CadData; img: string; checked: boolean}[] = [];
+  pageData: {data: CadData; img: SafeUrl; checked: boolean}[] = [];
   tableData: any = [];
   displayedColumns = ["select", "mingzi", "wenjian", "create_time", "modify_time"];
   width = 300;
@@ -188,15 +187,17 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     }
     const limit = this.paginator.pageSize;
     let result: Awaited<ReturnType<CadDataService["getCad"]>>;
-    const collection = this.data.collection;
+    const {collection, standaloneSearch} = this.data;
     if (this.data.source) {
       const total = this.data.source.length;
       const cads = this.data.source.slice((page - 1) * limit, page * limit);
       result = {cads, total};
     } else {
       const search = {...this.data.search};
-      search[this.searchField] = this.searchNameInput;
-      const params: GetCadParams = {collection, page, limit, search};
+      if (!standaloneSearch || this.searchNameInput) {
+        search[this.searchField] = this.searchNameInput;
+      }
+      const params: GetCadParams = {collection, page, limit, search, standaloneSearch};
       params.qiliao = this.data.qiliao;
       params.options = options;
       params.optionsMatchType = matchType;
@@ -214,16 +215,12 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     this.pageData.length = 0;
     result.cads.forEach(async (d) => {
       const checked = this.checkedItems.find((v) => v === d.id) ? true : false;
-      const pageData = {data: d, img: imgCadEmpty, checked};
-      this.pageData.push(pageData);
+      const img = this.sanitizer.bypassSecurityTrustUrl(this.dataService.getCadImgUrl(d.id) || imgCadEmpty);
+      this.pageData.push({data: d, img, checked});
     });
     this.syncCheckedItems();
     const timerName = "cad-list-getData";
     timer.start(timerName);
-    for (const data of this.pageData) {
-      const url = await getCadPreview(collection, data.data, {http: this.dataService});
-      data.img = this.sanitizer.bypassSecurityTrustUrl(url) as string;
-    }
     timer.end(timerName, "渲染CAD列表");
     return result;
   }
@@ -355,6 +352,7 @@ export interface CadListInput {
   collection: CadCollection;
   qiliao?: boolean;
   search?: ObjectOf<any>;
+  standaloneSearch?: boolean;
   fixedSearch?: ObjectOf<any>;
   pageSize?: number;
   source?: CadData[];

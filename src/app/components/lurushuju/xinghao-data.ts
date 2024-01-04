@@ -147,7 +147,7 @@ export interface 工艺做法 {
 export interface 门铰锁边铰边 {
   名字: string;
   产品分类: string;
-  开启: string;
+  开启: string[];
   门铰: string;
   门扇厚度: string;
   锁边: string;
@@ -181,9 +181,9 @@ export const menjiaoCadTypes = ["包边在外+外开", "包边在外+内开", "�
 export type 后台CAD = {
   _id: string;
   名字: string;
-  选项: ObjectOf<string>;
-  条件: string[];
-  json: ObjectOf<any>;
+  选项?: ObjectOf<string>;
+  条件?: string[];
+  json?: ObjectOf<any>;
 };
 
 export interface 企料CAD {
@@ -198,29 +198,29 @@ export interface 企料CAD {
   // 中铰料：中铰料
   cad?: 后台CAD;
 
-  企料宽读哪里: "标注" | "CAD正面" | "CAD背面"; // 标注有【正面宽、背面宽、企料宽】
+  企料宽读哪里?: "标注" | "CAD正面" | "CAD背面"; // 标注有【正面宽、背面宽、企料宽】
   // 问题1：怎么读取正面宽，背面宽？1、根据颜色（有特殊结构时怎么处理）；2、新增加表标注（需要改程序、改数据）
 
-  企料宽默认值: number;
-  正面宽默认值: number; // 默认留空从CAD读取
-  背面宽默认值: number; // 默认留空从CAD读取
-  正背面宽同时修改: boolean; // 后台数据，默认没有值，必须设置
-  默认宽规则: 企料默认宽取值规则[]; // 按一条添加生成
+  企料宽默认值?: number;
+  正面宽默认值?: number; // 默认留空从CAD读取
+  背面宽默认值?: number; // 默认留空从CAD读取
+  正背面宽同时修改?: boolean; // 后台数据，默认没有值，必须设置
+  默认宽规则?: 企料默认宽取值规则[]; // 按一条添加生成
 
-  特定企料配置: 特定企料配置; // 暂时不处理
+  特定企料配置?: 特定企料配置; // 暂时不处理
 
   // 锁企料，扇锁企料有这个要求
-  拉手孔中心到锁体面距离最小值: number; // 默认0，没要求；有要求时，需要程序做判断选择的锁体是否合适
+  拉手孔中心到锁体面距离最小值?: number; // 默认0，没要求；有要求时，需要程序做判断选择的锁体是否合适
 
   // 虚拟企料和企料分体
-  是虚拟企料: boolean;
-  企料分体CAD: {正面分体: 后台CAD; 背面分体: 后台CAD}; // 现在分体按照名字对线长
-  是否可以开槽: boolean; // 详细见【金山文档】 企料开槽数据录入教程 https://kdocs.cn/l/cbmU8dXOnCI4
-  需要显示指定位置分体: boolean;
-  需要显示指定位置刨坑: boolean;
+  是虚拟企料?: boolean;
+  企料分体CAD?: {正面分体: 后台CAD; 背面分体: 后台CAD}; // 现在分体按照名字对线长
+  是否可以开槽?: boolean; // 详细见【金山文档】 企料开槽数据录入教程 https://kdocs.cn/l/cbmU8dXOnCI4
+  需要显示指定位置分体?: boolean;
+  需要显示指定位置刨坑?: boolean;
 
   // 自动判断或者根据设置判断企料包边类型，然后得到实际的包边内间隙
-  企料包边类型: string; // // 不允许为空，必须赋值，这样可以减少程序复杂性
+  企料包边类型?: string; // // 不允许为空，必须赋值，这样可以减少程序复杂性
 
   // 算料CAD要求
   // (1) 企料CAD必须指定企料包边类型
@@ -244,7 +244,7 @@ export const 企料排列: ObjectOf<string[]> = {
   六扇平分: ["铰企料", "中锁料", "中铰料", "中锁料", "中铰料", "小锁料", "扇锁企料", "中铰料", "中锁料", "中铰料", "中锁料", "铰企料"]
 };
 
-export const cadMatchRules: ObjectOf<{分类: string[]; 选项: string[]}> = {
+export const cadMatchRules: ObjectOf<{分类: string[]; 选项: (keyof 门铰锁边铰边)[]}> = {
   锁框: {分类: ["锁框"], 选项: ["锁边"]},
   铰框: {分类: ["铰框"], 选项: ["铰边", "门铰"]},
   顶框: {分类: ["顶框"], 选项: ["锁边"]},

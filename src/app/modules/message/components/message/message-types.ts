@@ -19,7 +19,8 @@ export interface ConfirmBaseMessageData {
 }
 
 export interface FormBaseMessageData {
-  btnTexts?: {submit?: string; cancel?: string; reset?: string};
+  resetable?: boolean;
+  btnTexts?: {submit?: string; cancel?: string; reset?: string; autoFill?: string};
 }
 
 export interface AlertMessageData extends BaseMessageData, AlertBaseMessageData {
@@ -37,9 +38,10 @@ export interface ButtonMessageData extends BaseMessageData {
   btnTexts?: {cancel?: string};
 }
 
-export interface FormMessageData extends BaseMessageData, ConfirmBaseMessageData {
+export interface FormMessageData extends BaseMessageData, FormBaseMessageData {
   type: "form";
   inputs: InputInfo[];
+  autoFill?: (inputs: InputInfo[]) => void;
 }
 
 export interface BookPageData {

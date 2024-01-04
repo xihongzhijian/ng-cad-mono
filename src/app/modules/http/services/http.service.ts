@@ -69,6 +69,24 @@ export class HttpService {
     }
   }
 
+  getUrl(path: string, params?: ObjectOf<string>) {
+    if (path.startsWith("http")) {
+      return path;
+    }
+    const url = new URL(this.baseURL);
+    if (path.startsWith("/")) {
+      url.pathname = path;
+    } else {
+      url.pathname += path;
+    }
+    if (params) {
+      for (const key in params) {
+        url.searchParams.set(key, params[key]);
+      }
+    }
+    return url.href;
+  }
+
   async request<T>(url: string, method: "GET" | "POST", data?: ObjectOf<any>, options?: HttpOptions): Promise<CustomResponse<T> | null> {
     const testData = options?.testData;
     let offlineMode = this.offlineMode;
@@ -93,9 +111,7 @@ export class HttpService {
     timer.start(timerName);
     const rawUrl = url;
     const token = this.token;
-    if (!url.startsWith("http")) {
-      url = `${this.baseURL}${url}`;
-    }
+    url = this.getUrl(url);
     let axiosResponse: AxiosResponse<CustomResponse<T>> | null = null;
     let response: CustomResponse<T> | null = null;
     let loaderId = options?.spinner;

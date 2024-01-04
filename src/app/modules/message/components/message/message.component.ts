@@ -12,7 +12,7 @@ import {
   ViewChild,
   ViewChildren
 } from "@angular/core";
-import {FormsModule} from "@angular/forms";
+import {FormsModule, ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
@@ -184,26 +184,34 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
+  async validateForm() {
+    const inputs = this.formInputs?.toArray() || [];
+    const values: ObjectOf<string> = {};
+    let errors: ValidationErrors | null = null;
+    for (const input of inputs) {
+      if (input.onChangeDelay) {
+        await timeout(input.onChangeDelayTime);
+      }
+      const errors2 = input.validateValue();
+      if (errors2) {
+        if (!errors) {
+          errors = {};
+        }
+        Object.assign(errors, errors2);
+      }
+      const key = input.info.name || input.info.label;
+      values[key] = input.value;
+    }
+    return {errors, values};
+  }
+
   async submit(button?: ButtonMessageData["buttons"][number]) {
     const type = this.data.type;
     if (type === "confirm") {
       this.dialogRef.close(true);
     } else if (type === "form") {
-      const values: ObjectOf<string> = {};
-      const inputs = this.formInputs?.toArray() || [];
-      let hasError = false;
-      for (const input of inputs) {
-        if (input.onChangeDelay) {
-          await timeout(input.onChangeDelayTime);
-        }
-        const error = input.validateValue();
-        if (error) {
-          hasError = true;
-        }
-        const key = input.info.name || input.info.label;
-        values[key] = input.value;
-      }
-      if (!hasError) {
+      const {errors, values} = await this.validateForm();
+      if (!errors) {
         this.dialogRef.close(values);
       }
     } else if (type === "editor") {
@@ -247,6 +255,17 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       case "json":
         this.jsonEditor?.set(this.data.defaultJson || null);
+        break;
+      default:
+        break;
+    }
+  }
+
+  autoFill() {
+    switch (this.data.type) {
+      case "form":
+        this.data.autoFill?.(this.data.inputs);
+        this.validateForm();
         break;
       default:
         break;

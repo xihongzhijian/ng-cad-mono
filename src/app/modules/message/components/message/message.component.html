@@ -81,9 +81,12 @@
   </button>
 </ng-template>
 
-<ng-template #resetBtn>
-  <button mat-raised-button color="accent" (click)="reset()">
-    {{ cast("json", data).btnTexts?.reset || "重置" }}
+<ng-template #formBtn>
+  <button mat-raised-button color="accent" (click)="reset()" *ngIf="cast('form', data).resetable">
+    {{ cast("form", data).btnTexts?.reset || "重置" }}
+  </button>
+  <button mat-raised-button color="primary" (click)="autoFill()" *ngIf="cast('form', data).autoFill">
+    {{ cast("form", data).btnTexts?.autoFill || "自动填充" }}
   </button>
 </ng-template>
 
@@ -94,5 +97,5 @@
 
 <ng-template #formBtns>
   <ng-container *ngTemplateOutlet="confirmBtns"></ng-container>
-  <ng-container *ngTemplateOutlet="resetBtn"></ng-container>
+  <ng-container *ngTemplateOutlet="formBtn"></ng-container>
 </ng-template>
