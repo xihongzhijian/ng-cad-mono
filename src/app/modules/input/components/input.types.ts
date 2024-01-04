@@ -120,7 +120,6 @@ export interface InputInfoImage<T = any> extends InputInfoBase<T> {
 export interface InputInfoCad<T = any> extends InputInfoBase<T> {
   type: "cad";
   params: Value<CadListInput>;
-  model?: never;
   onChange?: (val: CadListOutput) => void;
 }
 

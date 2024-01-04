@@ -87,7 +87,7 @@
       </div>
     </mat-tab>
     <mat-tab label="门铰锁边铰边">
-      <app-table [info]="menjiaoTable" (toolbarButtonClick)="onMenjiaoToolbar($event)"></app-table>
+      <app-table [info]="menjiaoTable" (toolbarButtonClick)="onMenjiaoToolbar($event)" (rowButtonClick)="onMenjiaoRow($event)"></app-table>
     </mat-tab>
   </mat-tab-group>
 </ng-container>

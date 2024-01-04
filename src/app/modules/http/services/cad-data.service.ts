@@ -82,6 +82,11 @@ export class CadDataService extends HttpService {
     return result;
   }
 
+  async getCadRaw(params: GetCadParams) {
+    const response = await this.post<ObjectOf<any>[]>("peijian/cad/getCad", {...params, raw: true});
+    return this.getDataAndCount(response);
+  }
+
   exportCadData(data: CadData, hideLineLength: boolean) {
     const exportData = data.export();
     const count = data.entities.line.length + data.entities.arc.length;

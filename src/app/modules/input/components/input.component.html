@@ -4,7 +4,7 @@
       <mat-label>{{ info.label }}</mat-label>
       <mat-hint>{{ hint }}</mat-hint>
       <input
-        *ngIf="!cast('string', info).textarea && displayValue === null"
+        *ngIf="!castInfo('string')['textarea'] && displayValue === null"
         matInput
         [errorStateMatcher]="errorStateMatcher"
         [readonly]="info.readonly"
@@ -19,12 +19,12 @@
         [placeholder]="info.placeholder || ''"
       />
       <textarea
-        *ngIf="cast('string', info).textarea && displayValue === null"
+        *ngIf="castInfo('string')['textarea'] && displayValue === null"
         matInput
         [errorStateMatcher]="errorStateMatcher"
-        [cdkTextareaAutosize]="!!cast('string', info).textarea?.autosize"
-        [cdkAutosizeMinRows]="cast('string', info).textarea?.autosize?.minRows"
-        [cdkAutosizeMaxRows]="cast('string', info).textarea?.autosize?.maxRows"
+        [cdkTextareaAutosize]="!!castInfo('string')['textarea']?.['autosize']"
+        [cdkAutosizeMinRows]="castInfo('string')['textarea']?.['autosize']?.['minRows']"
+        [cdkAutosizeMaxRows]="castInfo('string')['textarea']?.['autosize']?.['maxRows']"
         [readonly]="info.readonly"
         [disabled]="info.disabled || false"
         [autocomplete]="info.autocomplete || ''"
@@ -83,9 +83,9 @@
         [autocomplete]="info.autocomplete || ''"
         [(ngModel)]="value"
         type="number"
-        [step]="cast('number', info).step"
-        [min]="cast('number', info).max ?? null"
-        [max]="cast('number', info).max ?? null"
+        [step]="castInfo('number')['step']"
+        [min]="castInfo('number')['max'] ?? null"
+        [max]="castInfo('number')['max'] ?? null"
         (change)="onChange()"
         (input)="onInput()"
         (blur)="onBlur()"
@@ -259,34 +259,32 @@
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'coordinate'">
-    <div class="sub-form-field" *ngIf="cast('coordinate', info).compact; else coordinate">
+    <div class="sub-form-field" *ngIf="castInfo('coordinate')['compact']; else coordinate">
       <div class="label">
         <span>{{ info.label }}</span>
         <span *ngIf="info.hint">({{ hint }})</span>
       </div>
       <div>
         <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[0])}">
-          <mat-label>{{ cast("coordinate", info).labelX || "x" }}</mat-label>
-          <ng-container>
-            <mat-select [(ngModel)]="value[0]" (change)="onChange()">
-              <mat-option [value]="0">左</mat-option>
-              <mat-option [value]="0.5">中</mat-option>
-              <mat-option [value]="1">右</mat-option>
-            </mat-select>
-          </ng-container>
+          <mat-label>{{ castInfo("coordinate")["labelX"] || "x" }}</mat-label>
+          <mat-select [(ngModel)]="value[0]" [errorStateMatcher]="errorStateMatcher" (change)="onChange()">
+            <mat-option [value]="0">左</mat-option>
+            <mat-option [value]="0.5">中</mat-option>
+            <mat-option [value]="1">右</mat-option>
+          </mat-select>
           <ng-template #anchorX>
             <input matInput type="number" [(ngModel)]="value[0]" (change)="onChange()" />
           </ng-template>
+          <mat-error>{{ errorMsg }}</mat-error>
         </mat-form-field>
         <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[1])}">
-          <mat-label>{{ cast("coordinate", info).labelY || "y" }}</mat-label>
-          <ng-container>
-            <mat-select [(ngModel)]="value[1]" (change)="onChange()">
-              <mat-option [value]="1">上</mat-option>
-              <mat-option [value]="0.5">中</mat-option>
-              <mat-option [value]="0">下</mat-option>
-            </mat-select>
-          </ng-container>
+          <mat-label>{{ castInfo("coordinate")["labelY"] || "y" }}</mat-label>
+          <mat-select [(ngModel)]="value[1]" [errorStateMatcher]="errorStateMatcher" (change)="onChange()">
+            <mat-option [value]="1">上</mat-option>
+            <mat-option [value]="0.5">中</mat-option>
+            <mat-option [value]="0">下</mat-option>
+          </mat-select>
+          <mat-error>{{ errorMsg }}</mat-error>
         </mat-form-field>
       </div>
     </div>
@@ -294,7 +292,15 @@
       <mat-form-field [ngClass]="{empty: isEmpty(value)}">
         <mat-label>{{ info.label }}</mat-label>
         <mat-hint>{{ hint }}</mat-hint>
-        <input matInput type="text" placeholder="请选择锚点" [value]="anchorStr" readonly [disabled]="info.disabled || false" />
+        <input
+          matInput
+          type="text"
+          placeholder="请选择锚点"
+          [errorStateMatcher]="errorStateMatcher"
+          [value]="anchorStr"
+          readonly
+          [disabled]="info.disabled || false"
+        />
         <button mat-icon-button matSuffix color="primary" [matMenuTriggerFor]="editable ? anchor : null">
           <mat-icon>list</mat-icon>
         </button>
@@ -304,6 +310,7 @@
         <button mat-icon-button matSuffix color="primary" *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
           <mat-icon>{{ icon.name }}</mat-icon>
         </button>
+        <mat-error>{{ errorMsg }}</mat-error>
       </mat-form-field>
     </ng-template>
   </ng-container>
@@ -316,12 +323,13 @@
         [value]="colorStr"
         [style]="{color: colorStr, backgroundColor: colorBg}"
         [matMenuTriggerFor]="editable ? colorPicker : null"
+        [errorStateMatcher]="errorStateMatcher"
         readonly
         [disabled]="info.disabled || false"
       />
       <mat-menu #colorPicker="matMenu">
         <color-circle
-          *ngIf="cast('color', info).options"
+          *ngIf="castInfo('color')['options']"
           [width]="202"
           [circleSpacing]="10"
           [color]="colorStr"
@@ -330,7 +338,7 @@
           appClickStop
         ></color-circle>
         <color-chrome
-          *ngIf="!cast('color', info).optionsOnly"
+          *ngIf="!castInfo('color')['optionsOnly']"
           #colorChrome
           [color]="colorStr"
           (onChangeComplete)="onColorChange($event.color)"
@@ -345,57 +353,74 @@
       <button mat-icon-button matSuffix color="primary" *ngFor="let icon of suffixIcons" (click)="icon.onClick()">
         <mat-icon>{{ icon.name }}</mat-icon>
       </button>
+      <mat-error>{{ errorMsg }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'file'">
     <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
       <mat-label>{{ info.label }}</mat-label>
       <mat-hint>{{ hint }}</mat-hint>
-      <input matInput readonly />
-      <input #fileInput hidden type="file" [accept]="fileAccept" [multiple]="cast('file', info).multiple" (change)="onInputChange()" />
+      <input matInput readonly [errorStateMatcher]="errorStateMatcher" />
+      <input #fileInput hidden type="file" [accept]="fileAccept" [multiple]="castInfo('file')['multiple']" (change)="onInputChange()" />
       <button mat-icon-button matSuffix color="primary" (click)="selectFile()">
         <mat-icon>file_open</mat-icon>
       </button>
+      <mat-error>{{ errorMsg }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'image'">
     <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
       <mat-label>{{ info.label }}</mat-label>
       <mat-hint>{{ hint }}</mat-hint>
-      <input matInput readonly hidden />
+      <input matInput readonly hidden [errorStateMatcher]="errorStateMatcher" />
       <input #fileInput hidden type="file" [accept]="fileAccept" (change)="onInputChange()" />
       <app-image
         [src]="value"
-        [bigPicSrc]="cast('image', info).bigPicSrc"
-        [prefix]="cast('image', info).prefix"
+        [bigPicSrc]="castInfo('image')['bigPicSrc']"
+        [prefix]="castInfo('image')['prefix']"
         (click)="selectFile()"
       ></app-image>
+      <mat-error>{{ errorMsg }}</mat-error>
     </mat-form-field>
   </ng-container>
   <ng-container *ngSwitchCase="'cad'">
-    <app-image class="cad-preview" *ngIf="getCadImgSrc(); else emptyImg" [src]="getCadImgSrc()"></app-image>
+    <div class="flex-row">
+      <button mat-icon-button color="accent" *ngIf="getCadId()" (click)="clearCad()"><mat-icon>close</mat-icon></button>
+      <div class="cad-name flex-110">{{ getCadName() || " " }}</div>
+      <button mat-icon-button color="primary" *ngIf="getCadId()" (click)="openCad()"><mat-icon>open_in_new</mat-icon></button>
+    </div>
+    <app-image class="cad-preview" *ngIf="getCadImgSrc(); else emptyImg" [src]="getCadImgSrc()" (click)="selectCad()"></app-image>
     <ng-template #emptyImg>
       <div class="cad-preview-empty" (click)="selectCad()">
         {{ info.label }}
       </div>
     </ng-template>
+    <ng-template [ngTemplateOutlet]="footer"></ng-template>
   </ng-container>
   <ng-container *ngSwitchCase="'group'">
     <ng-container *ngIf="info.label">
       <div class="sub-form-field">
         <div class="label">
           <span>{{ info.label }}</span>
-          <span *ngIf="hint">({{ hint }})</span>
         </div>
         <div class="group" [ngStyle]="info.styles">
-          <app-input *ngFor="let info2 of cast('group', info).infos" [info]="info2"></app-input>
+          <app-input *ngFor="let info2 of castInfo('group')['infos']" [info]="info2"></app-input>
         </div>
+        <ng-template [ngTemplateOutlet]="footer"></ng-template>
       </div>
     </ng-container>
     <ng-container *ngIf="!info.label">
       <div class="group" [ngStyle]="info.styles">
-        <app-input *ngFor="let info2 of cast('group', info).infos" [info]="info2"></app-input>
+        <app-input *ngFor="let info2 of castInfo('group')['infos']" [info]="info2"></app-input>
       </div>
+      <ng-template [ngTemplateOutlet]="footer"></ng-template>
     </ng-container>
   </ng-container>
 </ng-container>
+
+<ng-template #footer>
+  <div class="footer">
+    <span class="hint" *ngIf="hint">{{ hint }}</span>
+    <span class="error" *ngIf="errorMsg">{{ errorMsg }}</span>
+  </div>
+</ng-template>

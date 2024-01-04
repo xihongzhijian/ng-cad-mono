@@ -54,7 +54,7 @@ import {
   XuanxiangFormData,
   XuanxiangTableData
 } from "./lurushuju-index.types";
-import {autoFillMenjiao, getCadSearch, updateMenjiaoForm} from "./lurushuju-index.utils";
+import {autoFillMenjiao, getCadSearch, getMenjiaoCadInfos, updateMenjiaoForm} from "./lurushuju-index.utils";
 
 @Component({
   selector: "app-lurushuju-index",
@@ -923,10 +923,12 @@ export class LurushujuIndexComponent implements OnInit {
                 return {
                   type: "cad",
                   label: key3,
+                  model: {data: data[key1][key2][key3], key: "cad"},
                   params: () => ({
                     selectMode: "single",
                     collection: "cad",
                     standaloneSearch: true,
+                    raw: true,
                     search: getCadSearch(data, key1, key2, key3)
                   }),
                   styles: {margin: "0 5px"}
@@ -935,12 +937,49 @@ export class LurushujuIndexComponent implements OnInit {
               styles: getGroupStyles(styles)
             };
           });
-          return {type: "group", label: key1, infos, styles: getGroupStyles()};
+          return {
+            type: "group",
+            label: key1,
+            infos,
+            styles: getGroupStyles({width: "100%"}),
+            validators: () => {
+              const menjiaoCadInfos = getMenjiaoCadInfos(data);
+              const value = data[key1];
+              if (menjiaoCadInfos[key1].isEmpty) {
+                const type = key1.split("+")[0];
+                if (type === "包边在内") {
+                  return null;
+                } else {
+                  for (const key11 of menjiaoCadTypes) {
+                    if (key11 === key1 || !key11.startsWith(type)) {
+                      continue;
+                    }
+                    if (!menjiaoCadInfos[key11].isEmpty) {
+                      return null;
+                    }
+                  }
+                }
+              }
+              const missingValues = [];
+              for (const key2 of keysOf(value)) {
+                for (const key3 in value[key2]) {
+                  if (!value[key2][key3].cad) {
+                    missingValues.push(key3);
+                  }
+                }
+              }
+              if (missingValues.length > 0) {
+                const error = "请选择" + missingValues.join("、");
+                return {[error]: true};
+              } else {
+                return null;
+              }
+            }
+          };
         }),
         styles: getGroupStyles({flexDirection: "column"})
       }
     ];
-    console.log(data);
     const result = await this.message.form<ObjectOf<any>>(
       {
         inputs: [...form1, ...form2, ...form3, ...form4],
@@ -949,20 +988,7 @@ export class LurushujuIndexComponent implements OnInit {
       {width: "100%", height: "100%"}
     );
     if (result) {
-      console.log(result);
-      return null;
-      // const result2: ObjectOf<any> = {};
-      // for (const key in result) {
-      //   if (门缝配置输入.some((v) => v.name === key)) {
-      //     if (!result2.门缝配置) {
-      //       result2.门缝配置 = {};
-      //     }
-      //     result2.门缝配置[key] = result[key];
-      //   } else {
-      //     result2[key] = result[key];
-      //   }
-      // }
-      // return result2 as 门铰锁边铰边;
+      return data;
     }
     return null;
   }
@@ -980,6 +1006,41 @@ export class LurushujuIndexComponent implements OnInit {
             this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
             await this.submitGongyi(["门铰锁边铰边"]);
           }
+        }
+        break;
+    }
+  }
+
+  async onMenjiaoRow(event: RowButtonEvent<门铰锁边铰边>) {
+    if (!this.gongyi) {
+      return;
+    }
+    const {button, item, rowIdx} = event;
+    switch (button.event) {
+      case "编辑":
+        {
+          const item2 = this.gongyi.门铰锁边铰边[rowIdx];
+          const item3 = await this.getMenjiaoItem(item2);
+          if (item3) {
+            this.gongyi.门铰锁边铰边[rowIdx] = item3;
+            this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
+            await this.submitGongyi(["门铰锁边铰边"]);
+          }
+        }
+        break;
+      case "复制":
+        if (await this.message.confirm(`确定复制【${item.名字}】吗？`)) {
+          const item2 = cloneDeep(item);
+          this.gongyi.门铰锁边铰边.push(item2);
+          this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
+          await this.submitGongyi(["门铰锁边铰边"]);
+        }
+        break;
+      case "删除":
+        if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
+          this.gongyi.门铰锁边铰边.splice(rowIdx, 1);
+          this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
+          await this.submitGongyi(["门铰锁边铰边"]);
         }
         break;
     }

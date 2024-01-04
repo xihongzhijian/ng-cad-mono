@@ -16,7 +16,7 @@ import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slid
 import {MatTableModule} from "@angular/material/table";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
-import {imgCadEmpty, timer} from "@app/app.common";
+import {imgCadEmpty} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf} from "@lucilor/utils";
@@ -24,7 +24,6 @@ import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
@@ -98,9 +97,8 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     public dialogRef: MatDialogRef<CadListComponent, CadListOutput>,
     @Inject(MAT_DIALOG_DATA) public data: CadListInput,
     private sanitizer: DomSanitizer,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private dialog: MatDialog,
-    private spinner: SpinnerService,
     private message: MessageService
   ) {
     super();
@@ -207,21 +205,16 @@ export class CadListComponent extends Utils() implements AfterViewInit {
       if (this.data.fixedSearch) {
         params.search = {...params.search, ...this.data.fixedSearch};
       }
-      this.spinner.show(this.loaderId);
-      result = await this.dataService.getCad(params);
-      this.spinner.hide(this.loaderId);
+      result = await this.http.getCad(params);
     }
     this.length = result.total;
     this.pageData.length = 0;
     result.cads.forEach(async (d) => {
       const checked = this.checkedItems.find((v) => v === d.id) ? true : false;
-      const img = this.sanitizer.bypassSecurityTrustUrl(this.dataService.getCadImgUrl(d.id) || imgCadEmpty);
+      const img = this.sanitizer.bypassSecurityTrustUrl(this.http.getCadImgUrl(d.id) || imgCadEmpty);
       this.pageData.push({data: d, img, checked});
     });
     this.syncCheckedItems();
-    const timerName = "cad-list-getData";
-    timer.start(timerName);
-    timer.end(timerName, "渲染CAD列表");
     return result;
   }
 
@@ -321,10 +314,14 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     }
     const ids = this.checkedItems;
     if (ids.length > 0) {
-      this.spinner.show(this.loaderIdSubmit);
-      const result = await this.dataService.getCad({ids, collection: this.data.collection});
-      this.spinner.hide(this.loaderIdSubmit);
-      this.dialogRef.close(result.cads);
+      if (this.data.raw) {
+        const result = await this.http.getCadRaw({ids, collection: this.data.collection});
+        // todo: fix typing
+        this.dialogRef.close((result?.data || []) as any);
+      } else {
+        const result = await this.http.getCad({ids, collection: this.data.collection});
+        this.dialogRef.close(result.cads);
+      }
     } else {
       this.dialogRef.close([]);
     }
@@ -356,6 +353,7 @@ export interface CadListInput {
   fixedSearch?: ObjectOf<any>;
   pageSize?: number;
   source?: CadData[];
+  raw?: boolean;
 }
 
 export type CadListOutput = CadData[];
