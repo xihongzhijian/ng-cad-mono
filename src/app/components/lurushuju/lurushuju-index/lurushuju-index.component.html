@@ -13,13 +13,14 @@
       <div class="name title">工艺做法：{{ gongyiName }}</div>
     </ng-container>
   </div>
+  <button mat-raised-button color="primary" *ngIf="!production" (click)="refresh()">refresh</button>
   <button mat-raised-button color="primary" (click)="back()">返回</button>
 </div>
 <ng-container [ngSwitch]="step">
   <ng-scrollbar class="step-1" *ngSwitchCase="1">
     <div class="items">
       <ng-container *ngFor="let xinghao of xinghaos">
-        <div *ngIf="!xinghao.hidden" class="item" (click)="editXinghao(xinghao)">
+        <div *ngIf="!xinghao.hidden" class="item link" (click)="editXinghao(xinghao)">
           <app-image [src]="xinghao.tupian" fit="contain"></app-image>
           <div class="name" [matTooltip]="xinghao.mingzi">{{ xinghao.mingzi }}</div>
         </div>
@@ -39,7 +40,7 @@
               <div class="name">{{ fenlei }}</div>
             </div>
             <div class="工艺做法 items">
-              <div class="item" *ngFor="let gongyi of xinghao['产品分类'][fenlei]">
+              <div class="item link" *ngFor="let gongyi of xinghao['产品分类'][fenlei]">
                 <div class="name" (click)="editGongyi2(fenlei, gongyi['名字'])">{{ gongyi["名字"] }}</div>
                 <div class="toolbar center">
                   <button mat-button color="primary" (click)="editGongyi(fenlei, gongyi['名字'])">编辑</button>

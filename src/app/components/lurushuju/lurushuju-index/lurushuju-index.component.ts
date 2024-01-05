@@ -278,6 +278,10 @@ export class LurushujuIndexComponent implements OnInit {
     this.setStep(2, {xinghaoName: xinghao.mingzi});
   }
 
+  refresh() {
+    window.location.reload();
+  }
+
   back() {
     switch (this.step) {
       case 1:
