@@ -12,7 +12,7 @@ import {
   ViewChild,
   ViewChildren
 } from "@angular/core";
-import {FormsModule} from "@angular/forms";
+import {FormsModule, ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
@@ -22,7 +22,7 @@ import {ObjectOf, timeout} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {clamp, cloneDeep} from "lodash";
+import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
 import {JSONContent, JSONEditor, Mode} from "vanilla-jsoneditor";
 import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./message-types";
@@ -111,9 +111,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     private sanitizer: DomSanitizer,
     private message: MessageService,
     @Inject(MAT_DIALOG_DATA) public data: MessageData
-  ) {
-    this.data = cloneDeep(this.data);
-  }
+  ) {}
 
   ngOnInit() {
     const data = this.data;
@@ -186,26 +184,34 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
+  async validateForm() {
+    const inputs = this.formInputs?.toArray() || [];
+    const values: ObjectOf<string> = {};
+    let errors: ValidationErrors | null = null;
+    for (const input of inputs) {
+      if (input.onChangeDelay) {
+        await timeout(input.onChangeDelayTime);
+      }
+      const errors2 = input.validateValue();
+      if (errors2) {
+        if (!errors) {
+          errors = {};
+        }
+        Object.assign(errors, errors2);
+      }
+      const key = input.info.name || input.info.label;
+      values[key] = input.value;
+    }
+    return {errors, values};
+  }
+
   async submit(button?: ButtonMessageData["buttons"][number]) {
     const type = this.data.type;
     if (type === "confirm") {
       this.dialogRef.close(true);
     } else if (type === "form") {
-      const values: ObjectOf<string> = {};
-      const inputs = this.formInputs?.toArray() || [];
-      let hasError = false;
-      for (const input of inputs) {
-        if (input.onChangeDelay) {
-          await timeout(input.onChangeDelayTime);
-        }
-        const error = input.validateValue();
-        if (error) {
-          hasError = true;
-        }
-        const key = input.info.name || input.info.label;
-        values[key] = input.value;
-      }
-      if (!hasError) {
+      const {errors, values} = await this.validateForm();
+      if (isEmpty(errors)) {
         this.dialogRef.close(values);
       }
     } else if (type === "editor") {
@@ -249,6 +255,17 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       case "json":
         this.jsonEditor?.set(this.data.defaultJson || null);
+        break;
+      default:
+        break;
+    }
+  }
+
+  autoFill() {
+    switch (this.data.type) {
+      case "form":
+        this.data.autoFill?.(this.data.inputs);
+        this.validateForm();
         break;
       default:
         break;

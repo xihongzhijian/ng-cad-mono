@@ -104,7 +104,7 @@ export class ToolbarComponent extends Subscribed() {
     private config: AppConfigService,
     private status: AppStatusService,
     private dialog: MatDialog,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private spinner: SpinnerService
   ) {
     super();
@@ -349,14 +349,12 @@ export class ToolbarComponent extends Subscribed() {
   async copyCad() {
     const collection = this.status.collection$.getValue();
     const loaderId = this.spinner.defaultLoaderId;
-    this.spinner.show(loaderId);
-    const response = await this.dataService.post<string[]>("ngcad/copyCads", {collection, vids: [this.status.cad.data.id]});
-    this.spinner.hide(loaderId);
+    const response = await this.http.post<string[]>("ngcad/copyCads", {collection, vids: [this.status.cad.data.id]}, {spinner: loaderId});
     if (response?.code === 0) {
       const yes = await this.message.confirm({title: response.msg, content: "是否跳转至新的CAD？"});
       if (yes) {
+        const cads2 = await this.http.getCad({ids: response.data, collection}, {spinner: loaderId});
         this.spinner.show(loaderId);
-        const cads2 = await this.dataService.getCad({ids: response.data, collection});
         await this.status.openCad({data: cads2.cads[0], center: true});
         this.spinner.hide(loaderId);
       }
@@ -368,7 +366,7 @@ export class ToolbarComponent extends Subscribed() {
     if (await this.message.confirm(`确定要删除吗？`)) {
       const collection = this.status.collection$.getValue();
       const ids = [data.id];
-      const deletedIds = await this.dataService.removeCads(collection, ids);
+      const deletedIds = await this.http.removeCads(collection, ids);
       if (deletedIds) {
         document.body.innerHTML = "<h1>已删除</h1>";
       }

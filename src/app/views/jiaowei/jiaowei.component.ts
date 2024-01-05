@@ -40,7 +40,7 @@ export class JiaoweiComponent implements OnInit {
   jiaoweiAnchorOptions = jiaoweiAnchorOptions;
 
   constructor(
-    private dataService: CadDataService,
+    private http: CadDataService,
     private router: ActivatedRoute,
     private message: MessageService
   ) {}
@@ -48,7 +48,7 @@ export class JiaoweiComponent implements OnInit {
   async ngOnInit() {
     setGlobal("jiaowei", this);
     const {id} = this.router.snapshot.queryParams;
-    const data = await this.dataService.queryMySql<JiaoweiTableData>({table, filter: {where: {vid: id}}});
+    const data = await this.http.queryMySql<JiaoweiTableData>({table, filter: {where: {vid: id}}});
     try {
       this.jiaowei.import(JSON.parse(data[0].jiaowei || ""));
     } catch (error) {
@@ -66,6 +66,6 @@ export class JiaoweiComponent implements OnInit {
     const {id} = this.router.snapshot.queryParams;
     const data: TableUpdateParams<JiaoweiTableData>["data"] = {vid: id};
     data.jiaowei = JSON.stringify(this.jiaowei.export());
-    this.dataService.tableUpdate({table, data});
+    this.http.tableUpdate({table, data});
   }
 }

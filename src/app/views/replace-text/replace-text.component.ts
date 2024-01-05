@@ -16,7 +16,6 @@ import {cadCollections} from "@app/cad/collections";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
@@ -90,8 +89,7 @@ export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterV
 
   constructor(
     private message: MessageService,
-    private dataService: CadDataService,
-    private spinner: SpinnerService,
+    private http: CadDataService,
     private route: ActivatedRoute,
     private status: AppStatusService,
     private router: Router
@@ -175,10 +173,7 @@ export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterV
       replaceTo,
       regex: replacer.regex(replaceFrom || "").toString()
     };
-    this.spinner.show(this.spinner.defaultLoaderId);
-    const response = await this.dataService.post<ToBeReplaced[]>("peijian/cad/replaceTextReady", postData);
-    this.spinner.hide(this.spinner.defaultLoaderId);
-    const data = this.dataService.getData(response);
+    const data = await this.http.getData<ToBeReplaced[]>("peijian/cad/replaceTextReady", postData);
     if (data) {
       if (data.length < 1) {
         this.message.alert("没有可替换的文本");
@@ -214,9 +209,7 @@ export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterV
       regex: replacer.regex(replaceFrom || "").toString(),
       ids: this.toBeReplacedList.filter((v) => v.checked).map((v) => v.id)
     };
-    this.spinner.show(this.spinner.defaultLoaderId);
-    const response = await this.dataService.post<ToBeReplaced[]>("peijian/cad/replaceText", postData);
-    this.spinner.hide(this.spinner.defaultLoaderId);
+    const response = await this.http.post<ToBeReplaced[]>("peijian/cad/replaceText", postData);
     if (response?.code === 0) {
       this.toBeReplacedList.length = 0;
       this.step.next(1);

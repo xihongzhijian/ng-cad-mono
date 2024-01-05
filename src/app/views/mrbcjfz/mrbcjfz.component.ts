@@ -88,7 +88,7 @@ export class MrbcjfzComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private dialog: MatDialog,
     private status: AppStatusService,
     private message: MessageService
@@ -99,7 +99,6 @@ export class MrbcjfzComponent implements OnInit {
   async ngOnInit() {
     let {id, table} = this;
     const params = this.route.snapshot.queryParams;
-    const token = params.token;
     if (!id || !table) {
       id = params.id ? Number(params.id) : 0;
       table = params.table || "";
@@ -113,12 +112,9 @@ export class MrbcjfzComponent implements OnInit {
     } else {
       await timeout(0);
     }
-    if (token) {
-      this.dataService.token = token;
-    }
     if (this.isFromOrder) {
       const data = await this.getData();
-      const xinghaosRaw = await this.dataService.queryMySql({table: "p_xinghao", filter: {where: {mingzi: data.xinghao}}});
+      const xinghaosRaw = await this.http.queryMySql({table: "p_xinghao", filter: {where: {mingzi: data.xinghao}}});
       if (xinghaosRaw[0]) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, xinghaosRaw[0]);
       } else {
@@ -135,7 +131,7 @@ export class MrbcjfzComponent implements OnInit {
       }
       this.bancaiKeys = Object.keys(this.xinghao.默认板材);
       this.xiaodaohangStructure = {mingzi: "型号"};
-      const bancaiListData = await this.dataService.getBancaiList();
+      const bancaiListData = await this.http.getBancaiList();
       if (bancaiListData) {
         this.bancaiList = bancaiListData.bancais;
         this.bancaiKeys = bancaiListData.bancaiKeys;
@@ -143,12 +139,11 @@ export class MrbcjfzComponent implements OnInit {
         this.bancaiKeysRequired = bancaiListData.bancaiKeysRequired;
       }
     } else {
-      const response = await this.dataService.post<MrbcjfzResponseData>(
+      const data = await this.http.getData<MrbcjfzResponseData>(
         "peijian/xinghao/bancaifenzuIndex",
         {table, id},
         {testData: "bancaifenzuIndex"}
       );
-      const data = this.dataService.getData(response);
       if (data) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, data.xinghao);
         this.bancaiKeys = data.bancaiKeys;
@@ -161,7 +156,7 @@ export class MrbcjfzComponent implements OnInit {
           const cadData = new CadData(v);
           const item: MrbcjfzCadInfo = {data: cadData, img: "", id: cadData.id};
           (async () => {
-            item.img = await getCadPreview("cad", item.data, {http: this.dataService});
+            item.img = await getCadPreview("cad", item.data, {http: this.http});
           })();
           if (filterCad(item)) {
             this.cads.push(item);
@@ -429,13 +424,13 @@ export class MrbcjfzComponent implements OnInit {
     data.morenbancai = JSON.stringify(xinghao.默认板材);
     let result = false;
     if (isFromOrder) {
-      const response = await this.dataService.post("peijian/api/updateMorenbancaijifenzu", {
+      const response = await this.http.post("peijian/api/updateMorenbancaijifenzu", {
         name: xinghao.raw.mingzi,
         morenbancai: xinghao.默认板材
       });
       result = response?.code === 0;
     } else {
-      result = await this.dataService.tableUpdate({table, data});
+      result = await this.http.tableUpdate({table, data});
     }
     this.dataSubmit.emit(this.xinghao);
     return result;

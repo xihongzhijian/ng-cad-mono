@@ -9,6 +9,7 @@ export interface GetCadParams {
   page?: number;
   limit?: number;
   search?: ObjectOf<any>;
+  standaloneSearch?: boolean;
   qiliao?: boolean;
   options?: CadData["options"];
   optionsMatchType?: "and" | "or";
@@ -157,3 +158,11 @@ export interface TableRenderDataColumn {
   guanLian?: string;
   inputOnAdd?: number;
 }
+
+export type 后台CAD = {
+  _id: string;
+  名字: string;
+  选项?: ObjectOf<string>;
+  条件?: string[];
+  json?: ObjectOf<any>;
+};

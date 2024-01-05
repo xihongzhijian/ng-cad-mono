@@ -22,7 +22,7 @@ export class IndexComponent implements OnInit {
   constructor(
     private config: AppConfigService,
     private status: AppStatusService,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private route: ActivatedRoute,
     private message: MessageService
   ) {}
@@ -59,7 +59,7 @@ export class IndexComponent implements OnInit {
           getParams.ids = ids.split(",");
         }
         getParams.collection = collection;
-        const result = await this.dataService.getCad(getParams);
+        const result = await this.http.getCad(getParams);
         if (result.cads.length > 0) {
           this.params = {data: result.cads[0], collection, center: true};
         }

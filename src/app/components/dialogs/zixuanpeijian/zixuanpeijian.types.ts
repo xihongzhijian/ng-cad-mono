@@ -274,26 +274,24 @@ export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null,
 };
 
 export const getStep1Data = async (
-  dataService: CadDataService,
+  http: CadDataService,
   httpOptions: HttpOptions,
   params?: {code: string; type: string} | {mokuaiIds: string[]}
 ) => {
-  const response = await dataService.post<Step1Data>("ngcad/getZixuanpeijianTypesInfo", params, httpOptions);
-  return dataService.getData(response);
+  return await http.getData<Step1Data>("ngcad/getZixuanpeijianTypesInfo", params, httpOptions);
 };
 
 export const getZixuanpeijianCads = async (
-  dataService: CadDataService,
+  http: CadDataService,
   httpOptions: HttpOptions,
   typesInfo: ObjectOf<ObjectOf<1>>,
   materialResult: Formulas = {}
 ) => {
-  const response = await dataService.post<{cads: ObjectOf<ObjectOf<any[]>>; bancais: BancaiList[]}>(
+  const data = await http.getData<{cads: ObjectOf<ObjectOf<any[]>>; bancais: BancaiList[]}>(
     "ngcad/getZixuanpeijianCads",
     {typesInfo},
     {testData: "zixuanpeijianCads", ...httpOptions}
   );
-  const data = dataService.getData(response);
   if (data) {
     const cads: ObjectOf<ObjectOf<CadData[]>> = {};
     const {cads: cadsRaw, bancais} = data;

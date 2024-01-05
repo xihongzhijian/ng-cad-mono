@@ -84,7 +84,7 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
     private status: AppStatusService,
     private dialog: MatDialog,
     private message: MessageService,
-    private dataService: CadDataService
+    private http: CadDataService
   ) {
     super();
   }
@@ -172,7 +172,7 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
     const node: CadNode = {data, img: imgLoading, checked: false};
     const collection = this.status.collection$.value;
     setTimeout(async () => {
-      const img = await getCadPreview(collection, node.data, {http: this.dataService});
+      const img = await getCadPreview(collection, node.data, {http: this.http});
       node.img = this.sanitizer.bypassSecurityTrustUrl(img) as string;
     }, 0);
     return node;
@@ -305,17 +305,16 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
         this.message.error(`${type}缺少选项：${optionsDiff.join("，")}`);
         return;
       }
-      const result = await this.dataService.getCad({collection: "cad", options: optionValues, optionsMatchType: "or"});
+      const result = await this.http.getCad({collection: "cad", options: optionValues, optionsMatchType: "or"});
       sourceData = result.cads;
       break;
     }
     if (!sourceData) {
-      const sourceResponse = await this.dataService.post<any[]>("ngcad/getMenshanbujuCads", {
+      const result = await this.http.getData<any[]>("ngcad/getMenshanbujuCads", {
         xinghao: data.options.型号,
         flat: true,
         isMuban: true
       });
-      const result = this.dataService.getData(sourceResponse);
       if (result) {
         sourceData = result.map((v) => new CadData(v));
       }
@@ -385,7 +384,7 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
       return;
     }
     const data = this.status.closeCad(this.contextMenuCad.data);
-    this.dataService.downloadDxf(data);
+    this.http.downloadDxf(data);
   }
 
   uploadDxf(append: boolean, mainCad: boolean) {
@@ -413,7 +412,7 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
     const mainCad = input.hasAttribute("main-cad");
     const data = this.contextMenuCad.data;
     if (append) {
-      const resData = await this.dataService.uploadDxf(file);
+      const resData = await this.http.uploadDxf(file);
       if (resData) {
         const rect1 = data.getBoundingRect();
         const rect2 = resData.entities.getBoundingRect();
@@ -430,7 +429,7 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
       const content = `确定要上传<span style="color:red">${file.name}</span>并替换<span style="color:red">${data.name}</span>的数据吗？`;
       const yes = await this.message.confirm(content);
       if (yes) {
-        const resData = await this.dataService.uploadDxf(file);
+        const resData = await this.http.uploadDxf(file);
         if (resData) {
           const lines = resData.entities.line;
           const groupedLines: CadLine[][] = [];
@@ -572,7 +571,7 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
     const data = this.contextMenuCad.data;
     const cads = await openCadListDialog(this.dialog, {data: {selectMode: "single", options: data.options, collection: "cad"}});
     if (cads && cads[0]) {
-      this.dataService.replaceData(data, cads[0].id, this.status.collection$.value);
+      this.http.replaceData(data, cads[0].id, this.status.collection$.value);
     }
   }
 }

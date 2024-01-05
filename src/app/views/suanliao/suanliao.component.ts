@@ -1,6 +1,5 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
-import {ActivatedRoute} from "@angular/router";
 import {setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {openDrawCadDialog} from "@components/dialogs/draw-cad/draw-cad.component";
@@ -45,18 +44,15 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private message: MessageService,
     private calc: CalcService,
-    private dataService: CadDataService,
-    private route: ActivatedRoute
+    private http: CadDataService
   ) {
     setGlobal("suanliao", this);
   }
 
   async ngOnInit() {
-    const {token} = this.route.snapshot.queryParams;
-    this.dataService.token = token;
-    const menshanbujus = await this.dataService.queryMySql<MsbjData>({table: "p_menshanbuju"});
+    const menshanbujus = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
     this.msbjs = menshanbujus.map((item) => new MsbjInfo(item));
-    this.step1Data = await getStep1Data(this.dataService, {});
+    this.step1Data = await getStep1Data(this.http, {});
     this.wmm.postMessage("suanliaoReady");
   }
 

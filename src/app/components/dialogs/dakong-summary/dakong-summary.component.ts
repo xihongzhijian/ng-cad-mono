@@ -73,7 +73,7 @@ export class DakongSummaryComponent {
     public dialogRef: MatDialogRef<DakongSummaryComponent, DakongSummaryOutput>,
     @Inject(MAT_DIALOG_DATA) public data: DakongSummaryInput,
     private status: AppStatusService,
-    private dataService: CadDataService
+    private http: CadDataService
   ) {
     setGlobal("dakongSummary", this);
     this.updateTableInfo();
@@ -147,7 +147,7 @@ export class DakongSummaryComponent {
   }
 
   async openKongpeizhi(item: DakongSummaryTableData) {
-    const url = await this.dataService.getShortUrl("开料孔位配置", {search: {vid: item.peizhiId}});
+    const url = await this.http.getShortUrl("开料孔位配置", {search: {vid: item.peizhiId}});
     if (url) {
       open(url, "_blank");
     }
@@ -158,7 +158,7 @@ export class DakongSummaryComponent {
       const data = new CadData();
       data.id = id;
       this.cadImgs[id] = imgCadEmpty;
-      this.cadImgs[id] = await getCadPreview("cad", data, {http: this.dataService, useCache: true});
+      this.cadImgs[id] = await getCadPreview("cad", data, {http: this.http, useCache: true});
     }
   }
 

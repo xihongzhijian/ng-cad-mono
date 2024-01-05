@@ -60,7 +60,7 @@ export class BomGongyiluxianComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private message: MessageService,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private spinner: SpinnerService
   ) {
     setGlobal("bomGongyiluxian", this);
@@ -91,8 +91,7 @@ export class BomGongyiluxianComponent implements OnInit {
     if (this.loadCache()) {
       dataRaw = this.dataRaw;
     } else {
-      const response = await this.dataService.post<DingdanBomDataResponseData>("ngcad/getDingdanBomData", {table, code});
-      dataRaw = this.dataService.getData(response);
+      dataRaw = await this.http.getData<DingdanBomDataResponseData>("ngcad/getDingdanBomData", {table, code});
       this.dataRaw = dataRaw;
       this.saveCache();
     }
@@ -158,13 +157,13 @@ export class BomGongyiluxianComponent implements OnInit {
     const item = this.dataRaw?.data[0];
     if (values) {
       for (const key of keys) {
-        values[key] = fromItem[key];
+        (values as any)[key] = fromItem[key];
       }
       const data: TableInsertParams<DingdanBomData> = {
         table: this.table,
         data: values
       };
-      await this.dataService.tableInsert(data);
+      await this.http.tableInsert(data);
       this.refresh(true);
     }
     return item;

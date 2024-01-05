@@ -59,7 +59,7 @@ export class PiliangjianbanComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private status: AppStatusService,
     private sanitizer: DomSanitizer,
     private spinner: SpinnerService
@@ -81,10 +81,9 @@ export class PiliangjianbanComponent implements OnInit {
     }
     const url = "order/order/piliangjianban";
     const params = this.route.snapshot.queryParams;
-    const response = await this.dataService.post<Bancai[]>(url, params, {
+    const responseData = await this.http.getData<Bancai[]>(url, params, {
       spinner: {id: this.spinner.defaultLoaderId, config: {text: "获取数据..."}}
     });
-    const responseData = this.dataService.getData(response);
     if (responseData) {
       this.spinner.show(this.spinner.defaultLoaderId, {text: "生成预览图..."});
       this.bancais.length = 0;

@@ -138,7 +138,7 @@ export class DingdanbiaoqianComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private status: AppStatusService,
     private sanitizer: DomSanitizer,
     private spinner: SpinnerService,
@@ -185,8 +185,7 @@ export class DingdanbiaoqianComponent implements OnInit {
       ddbqData = session.load<DdbqData>(this._httpCacheKey);
     }
     if (!ddbqData) {
-      const response = await this.dataService.post<DdbqData>(url, params, {spinner: {config: {text: "获取数据..."}}});
-      ddbqData = this.dataService.getData(response);
+      ddbqData = await this.http.getData<DdbqData>(url, params, {spinner: {config: {text: "获取数据..."}}});
       if (enableCache && ddbqData) {
         try {
           session.save(this._httpCacheKey, ddbqData);
@@ -495,7 +494,7 @@ export class DingdanbiaoqianComponent implements OnInit {
       return;
     }
     const httpOptions: HttpOptions = {spinner: false};
-    const step1Data = await getStep1Data(this.dataService, httpOptions, {mokuaiIds});
+    const step1Data = await getStep1Data(this.http, httpOptions, {mokuaiIds});
     if (!step1Data) {
       return;
     }
@@ -507,7 +506,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         typesInfo2[type1][type2] = 1;
       }
     }
-    const cads = (await getZixuanpeijianCads(this.dataService, httpOptions, typesInfo2))?.cads;
+    const cads = (await getZixuanpeijianCads(this.http, httpOptions, typesInfo2))?.cads;
     if (!cads) {
       return;
     }
@@ -673,7 +672,7 @@ export class DingdanbiaoqianComponent implements OnInit {
     if (result) {
       this.spinner.show(this.spinner.defaultLoaderId);
       const gongshiData = Object.entries(result).map(([k, v]) => [k, v]);
-      const response = await this.dataService.post("peijian/Houtaisuanliao/edit_gongshi", {
+      const response = await this.http.post("peijian/Houtaisuanliao/edit_gongshi", {
         xiaodaohang: "配件模块",
         xiang: "ceshishuju",
         id: mokuai.id,

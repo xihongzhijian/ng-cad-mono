@@ -1,8 +1,54 @@
+@import "../../../../mat-theme.scss";
+
 :host {
   &.color {
     input {
       transition: 0.3s;
       text-transform: uppercase;
+    }
+  }
+  &.image {
+    app-image {
+      display: block;
+      width: 200px;
+      height: 200px;
+      cursor: pointer;
+      border: 1px dashed transparent;
+      &:hover {
+        border: 1px dashed $accent-color;
+      }
+    }
+  }
+  &.cad {
+    --cad-preview-width: 200px;
+    --cad-preview-height: 100px;
+    app-image,
+    .cad-preview-empty {
+      width: var(--cad-preview-width);
+      height: var(--cad-preview-height);
+      cursor: pointer;
+      border: 1px dashed gray;
+      &:hover {
+        border: 1px dashed $accent-color;
+      }
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    app-image {
+      display: block;
+    }
+    .cad-preview-empty {
+      background: white;
+      color: gray;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cad-name {
+      text-align: center;
+      white-space: pre-wrap;
     }
   }
 }
@@ -11,5 +57,18 @@
   > div .mat-mdc-form-field:not(:last-child) {
     padding-right: 5px;
     box-sizing: border-box;
+  }
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8em;
+
+  .hint {
+    color: var(--mdc-dialog-supporting-text-color);
+  }
+  .error {
+    color: var(--mat-form-field-error-text-color);
   }
 }

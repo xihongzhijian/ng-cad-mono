@@ -14,7 +14,6 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableDataBase, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbar} from "ngx-scrollbar";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
@@ -45,9 +44,8 @@ export class MsbjComponent implements AfterViewInit {
 
   constructor(
     private route: ActivatedRoute,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService,
-    private spinner: SpinnerService,
     private sanitizer: DomSanitizer,
     private status: AppStatusService
   ) {
@@ -59,12 +57,10 @@ export class MsbjComponent implements AfterViewInit {
     this.table = table || "";
     this.id = id || "";
     this.dataField = field === "peizhishuju" ? field : "menshanbujumorenfenlei";
-    this.spinner.show(this.spinner.defaultLoaderId);
-
-    const msbjData = await this.dataService.queryMySql<MsbjData>({table, filter: {where: {vid: this.id}}});
+    const msbjData = await this.http.queryMySql<MsbjData>({table, filter: {where: {vid: this.id}}});
     if (msbjData[0]) {
       this.msbjInfo = new MsbjInfo(msbjData[0]);
-      const getCadResult = await this.dataService.getCad({collection: "cad", search: {"选项.门扇布局": msbjData[0].mingzi}});
+      const getCadResult = await this.http.getCad({collection: "cad", search: {"选项.门扇布局": msbjData[0].mingzi}});
       this.cads = getCadResult.cads.map((data) => {
         const item: MsbjComponent["cads"][number] = {data, img: imgEmpty};
         getCadPreview("cad", data).then((img) => (item.img = this.sanitizer.bypassSecurityTrustUrl(img)));
@@ -73,7 +69,6 @@ export class MsbjComponent implements AfterViewInit {
     } else {
       this.msbjInfo = null;
     }
-    this.spinner.hide(this.spinner.defaultLoaderId);
   }
 
   generateRects(opts: GenerateRectsOpts) {
@@ -114,9 +109,7 @@ export class MsbjComponent implements AfterViewInit {
     const rectInfos = this.msbjRects?.rectInfosRelative.map((v) => v.raw);
     msbjInfo.peizhishuju.模块节点 = rectInfos || [];
     data[this.dataField] = JSON.stringify(msbjInfo.peizhishuju);
-    this.spinner.show(this.spinner.defaultLoaderId);
-    await this.dataService.tableUpdate({table, data});
-    this.spinner.hide(this.spinner.defaultLoaderId);
+    await this.http.tableUpdate({table, data});
   }
 
   async editMokuaidaxiao() {

@@ -9,9 +9,8 @@ export const projectGuard: CanActivateFn = async (route: ActivatedRouteSnapshot)
   const router = inject(Router);
   const status = inject(AppStatusService);
   if (!project) {
-    const url = route.children[0]?.url.toString() || "/";
     const projectInput = await message.prompt({type: "string", label: "项目缩写"}, {disableCancel: true});
-    return router.createUrlTree([url], {
+    return router.createUrlTree(route.url, {
       queryParams: {project: projectInput, ...route.queryParams},
       queryParamsHandling: "merge"
     });

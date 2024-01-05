@@ -1,0 +1,93 @@
+:host {
+  --title-size: 1.2em;
+  --cad-preview-width: 200px;
+  --cad-preview-height: 100px;
+}
+
+.step-1 {
+  .items {
+    --items-per-row: 6;
+    --item-height: 300px;
+  }
+}
+
+.step-2 {
+  .产品分类.item {
+    flex-direction: row;
+    align-items: flex-start;
+    cursor: unset;
+
+    .header {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .工艺做法 {
+    flex: 1 1 0;
+    --items-per-row: 5;
+    --item-height: 300px;
+  }
+}
+
+.step-3 {
+  flex: 1 1 0;
+  ::ng-deep {
+    .mat-mdc-tab-body-wrapper {
+      flex: 1 1 0;
+    }
+  }
+
+  app-table {
+    --border: 1px solid black;
+    margin-top: 0;
+    height: 100%;
+  }
+
+  .tab-content {
+    height: 100%;
+  }
+
+  .下单选项输入配置 {
+    --item-height: 100%;
+    --items-per-row: 2;
+  }
+
+  .suanliaogongshis {
+    width: 30%;
+
+    .gongshis {
+      .gongshi-card {
+        align-items: flex-start;
+
+        .mat-mdc-card-header {
+          width: 100%;
+          box-sizing: border-box;
+          align-items: center;
+        }
+      }
+    }
+
+    .test-cases {
+      flex: 0 0 30%;
+    }
+  }
+
+  .suanliaocads {
+    flex: 1 1 0;
+
+    .cad-group {
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--mat-divider-color);
+      }
+
+      > .name {
+        text-align: left;
+      }
+    }
+
+    .cads {
+      width: 100%;
+    }
+  }
+}

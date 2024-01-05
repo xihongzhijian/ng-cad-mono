@@ -193,3 +193,7 @@ export const getOrderBarcode = (element: string | HTMLElement, options: JsBarcod
   }
   return result;
 };
+
+export const getBooleanStr = (value: boolean) => {
+  return value ? "是" : "否";
+};

@@ -1,5 +1,5 @@
 import {TextFieldModule} from "@angular/cdk/text-field";
-import {AsyncPipe, KeyValuePipe, NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase} from "@angular/common";
+import {CommonModule} from "@angular/common";
 import {
   AfterViewInit,
   Component,
@@ -10,8 +10,10 @@ import {
   KeyValueDiffer,
   KeyValueDiffers,
   OnChanges,
+  QueryList,
   SimpleChanges,
-  ViewChild
+  ViewChild,
+  ViewChildren
 } from "@angular/core";
 import {FormControl, FormsModule, ValidationErrors} from "@angular/forms";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
@@ -24,12 +26,17 @@ import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {SafeUrl} from "@angular/platform-browser";
 import {joinOptions, splitOptions} from "@app/app.common";
+import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import Color from "color";
 import csstype from "csstype";
 import {isEmpty, isEqual} from "lodash";
@@ -39,7 +46,8 @@ import {ColorCircleModule} from "ngx-color/circle";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
-import {InputInfo, InputInfoBase, InputInfoTypeMap, InputInfoWithOptions} from "./input.types";
+import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoTypeMap, InputInfoWithOptions} from "./input.types";
+import {getValue} from "./input.utils";
 
 @Component({
   selector: "app-input",
@@ -47,28 +55,23 @@ import {InputInfo, InputInfoBase, InputInfoTypeMap, InputInfoWithOptions} from "
   styleUrls: ["./input.component.scss"],
   standalone: true,
   imports: [
-    NgSwitch,
-    NgSwitchCase,
-    MatFormFieldModule,
-    NgClass,
-    NgIf,
-    MatInputModule,
-    FormsModule,
-    MatAutocompleteModule,
-    TextFieldModule,
-    MatButtonModule,
-    MatIconModule,
-    NgFor,
-    MatOptionModule,
-    MatTooltipModule,
-    MatSelectModule,
-    ClickStopPropagationDirective,
-    MatMenuModule,
     AnchorSelectorComponent,
-    ColorCircleModule,
+    ClickStopPropagationDirective,
     ColorChromeModule,
-    AsyncPipe,
-    KeyValuePipe
+    ColorCircleModule,
+    CommonModule,
+    FormsModule,
+    ImageComponent,
+    MatAutocompleteModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatMenuModule,
+    MatOptionModule,
+    MatSelectModule,
+    MatTooltipModule,
+    TextFieldModule
   ]
 })
 export class InputComponent extends Utils() implements AfterViewInit, OnChanges, DoCheck {
@@ -77,6 +80,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   infoDiffer: KeyValueDiffer<keyof InputInfo, ValueOf<InputInfo>>;
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
+  cadImg: SafeUrl | null = null;
+  @ViewChild("fileInput") fileInput?: ElementRef<HTMLInputElement>;
+  @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
 
   private _model: NonNullable<Required<InputInfo["model"]>> = {data: {key: ""}, key: "key"};
   get model() {
@@ -178,6 +184,16 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return info.options.map((v) => (typeof v === "string" ? v : new Color(v).hex()));
   }
 
+  get fileAccept() {
+    const {info} = this;
+    if (info.type === "file") {
+      return info.accept;
+    } else if (info.type === "image") {
+      return info.accept || "image/*";
+    }
+    return undefined;
+  }
+
   displayValue: string | null = null;
 
   @HostBinding("class") class: string[] = [];
@@ -186,28 +202,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   @ViewChild("formField", {read: ElementRef}) formField?: ElementRef<HTMLElement>;
   @ViewChild("colorChrome") colorChrome?: ChromeComponent;
   errors: ValidationErrors | null = null;
-  get errorMsg(): string {
-    if (!this.errors) {
-      return "";
-    }
-    for (const key in this.errors) {
-      const value = this.errors[key];
-      let msg = "";
-      if (typeof value === "string") {
-        msg = value;
-      } else {
-        msg = key;
-      }
-      if (msg === "required") {
-        return `${this.info.label}不能为空`;
-      }
-      return msg;
-    }
-    return "";
-  }
-  errorStateMatcher: ErrorStateMatcher = {
-    isErrorState: () => !this.isValid()
-  };
+  errors2: ValidationErrors | null = null;
+  errorsKey: ObjectOf<ValidationErrors | null> = {};
+  errorsValue: ObjectOf<ValidationErrors | null> = {};
 
   valueChange$ = new BehaviorSubject<any>(null);
   filteredOptions$ = new BehaviorSubject<InputComponent["options"]>([]);
@@ -217,7 +214,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   constructor(
     private message: MessageService,
     private dialog: MatDialog,
-    private differs: KeyValueDiffers
+    private differs: KeyValueDiffers,
+    private http: CadDataService,
+    private status: AppStatusService
   ) {
     super();
     this.valueChange$.subscribe((val) => {
@@ -229,7 +228,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         if (typeof filterValuesGetter === "function") {
           values = filterValuesGetter(option);
         } else {
-          values = [option.value, option.label];
+          values = [option.label];
+          if (typeof option.value === "string") {
+            values.push(option.value);
+          }
         }
         return values;
       };
@@ -292,7 +294,59 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  private _onInfoChange(changes: NonNullable<ReturnType<typeof this.infoDiffer.diff>>) {
+  private _getErrorMsg(errors: ValidationErrors | null, label?: string): string {
+    if (!errors) {
+      return "";
+    }
+    for (const key in errors) {
+      const value = errors[key];
+      let msg = "";
+      if (typeof value === "string") {
+        msg = value;
+      } else {
+        msg = key;
+      }
+      if (label && msg === "required") {
+        return `${label}不能为空`;
+      }
+      return msg;
+    }
+    return "";
+  }
+
+  getErrorMsg() {
+    return this._getErrorMsg(this.errors, this.info.label);
+  }
+
+  getErrorMsgKey(key: string) {
+    if (this.info.type === "object") {
+      return this._getErrorMsg(this.errorsKey[key], this.info.keyLabel);
+    } else {
+      return "";
+    }
+  }
+
+  getErrorMsgValue(key: string) {
+    if (this.info.type === "object" || this.info.type === "array") {
+      return this._getErrorMsg(this.errorsValue[key], this.info.valueLabel);
+    } else {
+      return "";
+    }
+  }
+
+  getErrorStateMatcher(): ErrorStateMatcher {
+    return {isErrorState: () => !this.isValid()};
+  }
+
+  getErrorStateMatcherKey(key: string): ErrorStateMatcher {
+    return {isErrorState: () => !this.isValidKey(key)};
+  }
+
+  getErrorStateMatcherValue(key: string): ErrorStateMatcher {
+    return {isErrorState: () => !this.isValidValue(key)};
+  }
+
+  private async _onInfoChange(changes: NonNullable<ReturnType<typeof this.infoDiffer.diff>>) {
     const {info} = this;
     if (!info.autocomplete) {
       info.autocomplete = "off";
@@ -302,25 +356,24 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     const type = info.type;
     if (type === "select" || type === "selectMulti" || type === "string" || type === "number") {
-      this.options = (info.options || []).map((v) => {
+      const options = (await getValue(info.options, this.message)) as InputInfoOptions<any> | undefined;
+      this.options = (options || []).map((v) => {
         if (typeof v === "string") {
           return {value: v, label: v};
         }
         if (typeof v === "number") {
           return {value: String(v), label: String(v)};
         }
-        return {label: v.label || String(v.value), value: String(v.value), disabled: v.disabled};
+        return {label: v.label || String(v.value), value: v.value, disabled: v.disabled};
       });
+    } else if (type === "cad") {
+      this.updateCadImg();
     }
     this.displayValue = null;
     if (type === "string") {
       if (info.optionInputOnly && !info.options) {
         info.readonly = true;
-        if (typeof info.displayValue === "function") {
-          this.displayValue = info.displayValue();
-        } else if (info.displayValue) {
-          this.displayValue = info.displayValue;
-        }
+        this.displayValue = (await getValue(info.displayValue, this.message)) || null;
       }
     }
     this.class = [type];
@@ -341,6 +394,13 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
     }
     this.style = {...info.styles};
+    if (info.hidden) {
+      if (info.hideType === "opacity") {
+        this.style.opacity = "0";
+      } else {
+        this.style.display = "none";
+      }
+    }
     let validateValue = !!info.initialValidate;
     changes.forEachItem((item) => {
       if (item.key === "forceValidateNum") {
@@ -453,17 +513,75 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   validateValue(value = this.value) {
-    const validators = this.info.validators;
-    if (!validators) {
-      return null;
+    const {info, inputs} = this;
+    const validators = info.validators;
+    let errors: ValidationErrors | null = null;
+    let errors2: ValidationErrors | null = null;
+    if (validators) {
+      const control = new FormControl(value, validators);
+      errors = control.errors;
     }
-    const control = new FormControl(value, validators);
-    this.errors = control.errors;
-    return this.errors;
+    if (inputs) {
+      for (const input of inputs.toArray()) {
+        input.validateValue();
+        if (input.errors && !input.info.hidden) {
+          if (!errors2) {
+            errors2 = {};
+          }
+          const errors3 = {...input.errors};
+          Object.assign(errors2, errors3);
+        }
+      }
+    }
+    if (isEmpty(errors)) {
+      errors = null;
+    }
+    if (isEmpty(errors2)) {
+      errors2 = null;
+    }
+    this.errors = errors;
+    this.errors2 = errors2;
+    if (info.type === "object" && isTypeOf(value, "object")) {
+      const {keyValidators} = info;
+      const errorsKey: ObjectOf<ValidationErrors | null> = {};
+      const errorsValue: ObjectOf<ValidationErrors | null> = {};
+      for (const key in value) {
+        const val = value[key];
+        if (keyValidators) {
+          const control = new FormControl(key, keyValidators);
+          errorsKey[key] = control.errors;
+        }
+        if (info.valueValidators) {
+          const control = new FormControl(val, info.valueValidators);
+          errorsValue[key] = control.errors;
+        }
+      }
+      this.errorsKey = errorsKey;
+      this.errorsValue = errorsValue;
+    } else if (info.type === "array" && Array.isArray(value)) {
+      const {valueValidators} = info;
+      const errorsValue: ObjectOf<ValidationErrors | null> = {};
+      for (const [i, val] of value.entries()) {
+        if (valueValidators) {
+          const control = new FormControl(val, valueValidators);
+          errorsValue[String(i)] = control.errors;
+        }
+      }
+      this.errorsValue = errorsValue;
+    }
+    return {...this.errors, ...this.errors2, ...this.errorsKey, ...this.errorsValue};
   }
 
   isValid() {
     return isEmpty(this.errors);
+  }
+
+  isValidKey(key: string) {
+    return isEmpty(this.errorsKey[key]);
+  }
+
+  isValidValue(key: string) {
+    return isEmpty(this.errorsValue[key]);
   }
 
   onAutocompleteChange(event: MatAutocompleteSelectedEvent) {
@@ -563,14 +681,15 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   asObject(val: any): ObjectOf<any> {
-    if (val && typeof val === "object") {
+    if (isTypeOf(val, "object")) {
       return val;
     }
     return {};
   }
 
-  cast<T extends InputInfo["type"]>(_: T, data: InputInfo) {
-    return data as InputInfoTypeMap[T];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  castInfo<T extends InputInfo["type"]>(_: T) {
+    return this.info as InputInfoTypeMap[T];
   }
 
   getAnchorValue(axis: "x" | "y") {
@@ -625,6 +744,122 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   returnZero() {
     return 0;
+  }
+
+  selectFile() {
+    const input = this.fileInput?.nativeElement;
+    if (!input) {
+      return;
+    }
+    input.click();
+  }
+
+  onInputChange() {
+    const input = this.fileInput?.nativeElement;
+    if (!input) {
+      return;
+    }
+    const files = input.files;
+    if (!files || !files.length) {
+      return;
+    }
+    const {info} = this;
+    if (info.type === "file" || info.type === "image") {
+      info.onChange?.(files);
+    }
+    input.value = "";
+  }
+
+  getCadName() {
+    const {info} = this;
+    if (info.type === "cad") {
+      if (info.showName) {
+        const {value} = this;
+        if (isTypeOf(value, "object")) {
+          let name = "";
+          for (const key of ["name", "名字"]) {
+            if (isTypeOf(value[key], "string") && value[key].length > 0) {
+              name = value[key];
+              break;
+            }
+          }
+          return name || "";
+        }
+      } else {
+        return info.label;
+      }
+    }
+    return "";
+  }
+
+  getCadId() {
+    const {info} = this;
+    if (info.type === "cad") {
+      const {value} = this;
+      if (isTypeOf(value, "object")) {
+        let id = "";
+        for (const key of ["id", "_id"]) {
+          if (isTypeOf(value[key], "string") && value[key].length > 0) {
+            id = value[key];
+            break;
+          }
+        }
+        return id || "";
+      }
+    }
+    return "";
+  }
+
+  updateCadImg() {
+    const id = this.getCadId();
+    if (id) {
+      this.cadImg = this.http.getCadImgUrl(id);
+    } else {
+      this.cadImg = "";
+    }
+  }
+
+  async selectCad() {
+    const {info} = this;
+    if (info.type !== "cad") {
+      return;
+    }
+    const params = await getValue(info.params, this.message);
+    if (!params) {
+      return;
+    }
+    const result = await openCadListDialog(this.dialog, {data: params});
+    if (result) {
+      if (params.selectMode === "multiple") {
+        this.value = result;
+      } else {
+        this.value = result[0] || null;
+      }
+      info.onChange?.(result);
+      this.updateCadImg();
+    }
+  }
+
+  async clearCad() {
+    const {info} = this;
+    if (info.type !== "cad") {
+      return;
+    }
+    const params = await getValue(info.params, this.message);
+    if (params?.selectMode === "multiple") {
+      this.value = [];
+    } else {
+      this.value = null;
+    }
+    info.onChange?.([]);
+    this.updateCadImg();
+  }
+
+  openCad() {
+    const id = this.getCadId();
+    if (id) {
+      this.status.openCadInNewTab(id, this.value?.collection || "cad");
+    }
   }
 }
 

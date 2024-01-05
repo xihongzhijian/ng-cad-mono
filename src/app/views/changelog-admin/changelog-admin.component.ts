@@ -71,7 +71,7 @@ export class ChangelogAdminComponent extends Utils() implements AfterViewInit {
   }
 
   constructor(
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService,
     private spinner: SpinnerService
   ) {
@@ -92,9 +92,7 @@ export class ChangelogAdminComponent extends Utils() implements AfterViewInit {
       this.changelog = cloneDeep(this.changelogRaw.slice(offset, offset + this.pageSize));
       this.length = this.changelogRaw.length;
     } else {
-      this.spinner.show(this.loaderId);
-      const {changelog, count} = await this.dataService.getChangelog(page, this.pageSize);
-      this.spinner.hide(this.loaderId);
+      const {changelog, count} = await this.http.getChangelog(page, this.pageSize, {spinner: this.loaderId});
       this.changelog = changelog.filter((v) => v && typeof v === "object");
       this.length = count;
     }
@@ -166,9 +164,7 @@ export class ChangelogAdminComponent extends Utils() implements AfterViewInit {
       this.changelogRaw[index] = this.changelog[i];
     } else {
       const loaderId = `${this.loaderId}Set${i}`;
-      this.spinner.show(loaderId);
-      await this.dataService.setChangelogItem(this.changelog[i], index);
-      this.spinner.hide(loaderId);
+      await this.http.setChangelogItem(this.changelog[i], index, {spinner: loaderId});
     }
   }
 
@@ -179,10 +175,8 @@ export class ChangelogAdminComponent extends Utils() implements AfterViewInit {
       await this.getChangelog();
     } else {
       const loaderId = `${this.loaderId}Add${i}`;
-      this.spinner.show(loaderId);
-      await this.dataService.addChangelogItem(newChangelog, i);
+      await this.http.addChangelogItem(newChangelog, i, {spinner: loaderId});
       await this.getChangelog();
-      this.spinner.hide(loaderId);
     }
   }
 
@@ -193,9 +187,7 @@ export class ChangelogAdminComponent extends Utils() implements AfterViewInit {
       await this.getChangelog();
     } else {
       const loaderId = `${this.loaderId}Remove${i}`;
-      this.spinner.show(loaderId);
-      await this.dataService.removeChangelogItem(index);
-      this.spinner.hide(loaderId);
+      await this.http.removeChangelogItem(index, {spinner: loaderId});
       await this.getChangelog();
     }
   }

@@ -81,13 +81,13 @@ export class MessageService {
     return !!(await this.open({data: this._getData(data, "confirm"), ...others}));
   }
 
-  async form(data: InputInfo[] | MessageDataParams<FormMessageData>, others: MessageDataParams2<FormMessageData> = {}) {
+  async form<T>(data: InputInfo<T>[] | MessageDataParams<FormMessageData>, others: MessageDataParams2<FormMessageData> = {}) {
     if (Array.isArray(data)) {
       data = {inputs: data};
     }
     const result = await this.open({data: this._getData(data, "form"), ...others});
     if (result && typeof result === "object") {
-      return result;
+      return result as T;
     }
     return null;
   }

@@ -20,7 +20,7 @@ export class KailiaocanshuComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private dataService: CadDataService
+    private http: CadDataService
   ) {}
 
   async ngOnInit() {
@@ -28,8 +28,7 @@ export class KailiaocanshuComponent implements OnInit {
     if (!id) {
       return;
     }
-    const response = await this.dataService.post<KailiaocanshuData>("peijian/kailiaocanshu/get", {id}, {spinner: this.loaderId});
-    const data = this.dataService.getData(response);
+    const data = await this.http.getData<KailiaocanshuData>("peijian/kailiaocanshu/get", {id}, {spinner: this.loaderId});
     if (data) {
       this.data = data;
     }
@@ -40,7 +39,7 @@ export class KailiaocanshuComponent implements OnInit {
     if (this.klcsComponent) {
       const data = await this.klcsComponent.submit();
       if (data) {
-        await this.dataService.post<KailiaocanshuData>("peijian/kailiaocanshu/set", {data}, {spinner: this.loaderId});
+        await this.http.post<KailiaocanshuData>("peijian/kailiaocanshu/set", {data}, {spinner: this.loaderId});
       }
     }
   }

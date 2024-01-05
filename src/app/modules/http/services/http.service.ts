@@ -69,6 +69,24 @@ export class HttpService {
     }
   }
 
+  getUrl(path: string, params?: ObjectOf<string>) {
+    if (path.startsWith("http")) {
+      return path;
+    }
+    const url = new URL(this.baseURL);
+    if (path.startsWith("/")) {
+      url.pathname = path;
+    } else {
+      url.pathname += path;
+    }
+    if (params) {
+      for (const key in params) {
+        url.searchParams.set(key, params[key]);
+      }
+    }
+    return url.href;
+  }
+
   async request<T>(url: string, method: "GET" | "POST", data?: ObjectOf<any>, options?: HttpOptions): Promise<CustomResponse<T> | null> {
     const testData = options?.testData;
     let offlineMode = this.offlineMode;
@@ -93,9 +111,7 @@ export class HttpService {
     timer.start(timerName);
     const rawUrl = url;
     const token = this.token;
-    if (!url.startsWith("http")) {
-      url = `${this.baseURL}${url}`;
-    }
+    url = this.getUrl(url);
     let axiosResponse: AxiosResponse<CustomResponse<T>> | null = null;
     let response: CustomResponse<T> | null = null;
     let loaderId = options?.spinner;
@@ -278,18 +294,23 @@ export class HttpService {
     return await this.request<T>(url, "POST", data, options);
   }
 
-  getData<T>(response: CustomResponse<T> | null, ignoreCode?: boolean) {
-    if (response && (ignoreCode || response.code === 0)) {
-      return response.data || null;
+  async getData<T>(url: string, data?: ObjectOf<any>, options?: HttpOptions) {
+    const response = await this.post<T>(url, data, options);
+    let data2: T | undefined | null = response?.data;
+    if (data2 === undefined) {
+      data2 = null;
     }
-    return null;
+    return data2;
   }
 
-  getDataAndCount<T>(response: CustomResponse<T> | null, ignoreCode?: boolean) {
-    if (response && (ignoreCode || response.code === 0)) {
-      const data = response.data || null;
-      const count = response.count || 0;
-      return {data, count};
+  async getDataAndCount<T>(url: string, data?: ObjectOf<any>, options?: HttpOptions) {
+    const response = await this.post<T>(url, data, options);
+    let data2: T | undefined | null = response?.data;
+    if (data2 === undefined) {
+      data2 = null;
+    }
+    if (response) {
+      return {data: data2, count: response.count || 0};
     }
     return null;
   }

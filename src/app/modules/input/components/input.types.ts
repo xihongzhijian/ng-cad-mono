@@ -1,10 +1,11 @@
 import {AbstractControlOptions} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
+import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.component";
 import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
 import csstype from "csstype";
 
-type Value<T> = T | ((...args: any[]) => T);
+export type Value<T> = T | (() => T) | (() => Promise<T>);
 
 export interface InputInfoBase<T = any> {
   label: string;
@@ -27,6 +28,8 @@ export interface InputInfoBase<T = any> {
   forceValidateNum?: number; // change this to trigger validation
   name?: string;
   styles?: csstype.Properties;
+  hidden?: boolean;
+  hideType?: "display" | "opacity";
 }
 
 export interface InputInfoString<T = any> extends InputInfoWithOptions<T, string> {
@@ -52,11 +55,18 @@ export interface InputInfoNumber<T = any> extends InputInfoWithOptions<T, number
 export interface InputInfoObject<T = any> extends InputInfoBase<T> {
   type: "object";
   value?: Value<ObjectOf<any>>;
+  selectOptions?: boolean;
+  keyLabel?: string;
+  valueLabel?: string;
+  keyValidators?: AbstractControlOptions["validators"];
+  valueValidators?: AbstractControlOptions["validators"];
 }
 
 export interface InputInfoArray<T = any> extends InputInfoBase<T> {
   type: "array";
   value?: Value<any[]>;
+  valueLabel?: string;
+  valueValidators?: AbstractControlOptions["validators"];
 }
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
@@ -64,18 +74,18 @@ export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
   onChange?: (val: boolean) => void;
 }
 
-export interface InputInfoSelect<T = any> extends InputInfoBase<T> {
+export interface InputInfoSelect<T = any, K = string> extends InputInfoBase<T> {
   type: "select";
   value?: Value<string>;
-  options: InputInfoOptions;
+  options: Value<InputInfoOptions<K>>;
   optionText?: string | ((val: string) => string);
   onChange?: (val: string) => void;
 }
 
-export interface InputInfoSelectMulti<T = any> extends InputInfoBase<T> {
+export interface InputInfoSelectMulti<T = any, K = string> extends InputInfoBase<T> {
   type: "selectMulti";
   value?: Value<string[]>;
-  options: InputInfoOptions;
+  options: Value<InputInfoOptions<K>>;
   optionText?: string | ((val: string[]) => string);
   onChange?: (val: string[]) => void;
 }
@@ -97,6 +107,32 @@ export interface InputInfoColor<T = any> extends InputInfoBase<T> {
   onChange?: (val: Color) => void;
 }
 
+export interface InputInfoFile<T = any> extends InputInfoBase<T> {
+  type: "file";
+  accept?: string;
+  multiple?: boolean;
+  model?: never;
+  onChange?: (val: FileList) => void;
+}
+
+export interface InputInfoImage<T = any> extends InputInfoBase<T> {
+  type: "image";
+  accept?: string;
+  multiple?: boolean;
+  bigPicSrc?: string;
+  prefix?: string;
+  model?: never;
+  onChange?: (val: FileList) => void;
+}
+
+export interface InputInfoCad<T = any> extends InputInfoBase<T> {
+  type: "cad";
+  params: Value<CadListInput>;
+  openable?: boolean;
+  showName?: boolean;
+  onChange?: (val: CadListOutput) => void;
+}
+
 export interface InputInfoGroup<T = any> extends InputInfoBase<T> {
   type: "group";
   infos?: InputInfo<T>[];
@@ -112,26 +148,29 @@ export type InputInfo<T = any> =
   | InputInfoSelectMulti<T>
   | InputInfoCoordinate<T>
   | InputInfoColor<T>
+  | InputInfoFile<T>
+  | InputInfoImage<T>
+  | InputInfoCad<T>
   | InputInfoGroup<T>;
 
 export interface InputInfoTypeMap {
-  // eslint-disable-next-line id-blacklist
   string: InputInfoString;
-  // eslint-disable-next-line id-blacklist
   number: InputInfoNumber;
   object: InputInfoObject;
   array: InputInfoArray;
-  // eslint-disable-next-line id-blacklist
   boolean: InputInfoBoolean;
   select: InputInfoSelect;
   selectMulti: InputInfoSelectMulti;
   coordinate: InputInfoCoordinate;
   color: InputInfoColor;
+  file: InputInfoFile;
+  image: InputInfoImage;
+  cad: InputInfoCad;
   group: InputInfoGroup;
 }
 
 export interface InputInfoWithOptions<T = any, K = any> extends InputInfoBase<T> {
-  options?: InputInfoOptions<K>;
+  options?: Value<InputInfoOptions<K>>;
   optionValueType?: "string" | "array";
   filterValuesGetter?: (option: InputInfoOption<K>) => string[];
   fixedOptions?: string[];

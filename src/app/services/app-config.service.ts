@@ -37,7 +37,7 @@ export class AppConfigService {
   private _configKeys: (keyof AppConfig)[];
   noUser = false;
 
-  constructor(private dataService: CadDataService) {
+  constructor(private http: CadDataService) {
     const defaultConfig: AppConfig = {
       width: innerWidth,
       height: innerHeight,
@@ -174,8 +174,7 @@ export class AppConfigService {
     if (this.noUser) {
       return {};
     }
-    const response = await this.dataService.post<Partial<AppConfig>>("ngcad/getUserConfig", {key}, {spinner: false});
-    const config = this.dataService.getData(response);
+    const config = await this.http.getData<Partial<AppConfig>>("ngcad/getUserConfig", {key}, {spinner: false});
     if (config) {
       this._userConfig = this._purgeUserConfig(config);
       if (Object.keys(this._userConfig).length) {
@@ -192,7 +191,7 @@ export class AppConfigService {
     }
     config = this._purgeUserConfig(config);
     if (Object.keys(config).length) {
-      const response = await this.dataService.post("ngcad/setUserConfig", {config: this._purgeUserConfig(config)}, {spinner: false});
+      const response = await this.http.post("ngcad/setUserConfig", {config: this._purgeUserConfig(config)}, {spinner: false});
       local.save("userConfig", {...(local.load<Partial<AppConfig>>("userConfig") || {}), ...config});
       return !!(response && response.code === 0);
     }

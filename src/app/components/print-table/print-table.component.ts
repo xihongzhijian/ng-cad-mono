@@ -59,7 +59,7 @@ export class PrintTableComponent implements OnInit {
       this.message.error("缺少参数: action");
       return;
     }
-    const data = this.http.getData<TableInfoData>(await this.http.post(action));
+    const data = await this.http.getData<TableInfoData>(action);
     if (!data) {
       return;
     }
