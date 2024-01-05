@@ -195,6 +195,7 @@ export class LurushujuIndexComponent implements OnInit {
   };
   bancaifenzuInfo: BancaifenzuInfo | null = null;
   shiyituInputInfos: InputInfo[] = [];
+  xiaoguotuInputInfos: InputInfo[] = [];
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
   xinghaoName = "";
@@ -428,6 +429,21 @@ export class LurushujuIndexComponent implements OnInit {
         model: {data: gongyi.示意图CAD, key},
         onChange: () => {
           this.submitGongyi(["示意图CAD"]);
+        }
+      });
+    }
+    this.xiaoguotuInputInfos = [];
+    const optionsRaw = await this.http.queryMySql({table: "p_menshan", fields: ["vid", "mingzi"]});
+    const options: InputInfoOptions = optionsRaw.map((v) => v.mingzi);
+    const xiaoguotuKeys: (keyof 工艺做法)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
+    for (const key of xiaoguotuKeys) {
+      this.xiaoguotuInputInfos.push({
+        type: "select",
+        label: key,
+        options,
+        model: {data: gongyi, key},
+        onChange: () => {
+          this.submitGongyi([key]);
         }
       });
     }
