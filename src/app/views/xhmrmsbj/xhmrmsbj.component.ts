@@ -179,9 +179,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     } else if (token) {
       this.isFromOrder = true;
     }
-    if (token) {
-      this.http.token = token;
-    }
     this.fenleis = await this.http.queryMySql<TableDataBase>({table: "p_gongnengfenlei", fields: ["vid", "mingzi"]});
     const menshanbujus = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
     this.msbjs = menshanbujus.map((item) => new MsbjInfo(item, this.getNode2rectData()));

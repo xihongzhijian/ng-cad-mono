@@ -226,7 +226,7 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async getXinghaos() {
-    const xinghaos = await this.http.getData<TableDataBase[]>("shuju/shuju/getXinghaos");
+    const xinghaos = await this.http.getData<TableDataBase[]>("shuju/api/getXinghaos");
     if (xinghaos) {
       this.filterXinghaos(xinghaos);
       this.xinghaos = xinghaos;
@@ -241,9 +241,9 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async getXinghao() {
-    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/shuju/getXinghao", {名字: this.xinghaoName});
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/getXinghao", {名字: this.xinghaoName});
     const xinghao = getXinghao(xinghaoRaw);
-    const optionsAll = await this.http.getData<OptionsAll>("shuju/shuju/getXinghaoOption");
+    const optionsAll = await this.http.getData<OptionsAll>("shuju/api/getXinghaoOption");
     this.xinghaoOptionsAll = optionsAll || {};
     this.xinghao = xinghao;
   }
@@ -267,7 +267,7 @@ export class LurushujuIndexComponent implements OnInit {
     if (!名字) {
       return;
     }
-    const xinghao = await this.http.getData<XinghaoData>("shuju/shuju/insertXinghao", {名字});
+    const xinghao = await this.http.getData<XinghaoData>("shuju/api/insertXinghao", {名字});
     if (xinghao) {
       this.editXinghao(xinghao);
     }
@@ -395,8 +395,8 @@ export class LurushujuIndexComponent implements OnInit {
     }
     gongyi = getGongyi(gongyi);
     this.gongyi = gongyi;
-    const gongyiOptionsAll = await this.http.getData<OptionsAll>("shuju/shuju/getGongyizuofaOption");
-    const menjiaoOptionsAll = await this.http.getData<OptionsAll2>("shuju/shuju/getMenjiaoOptions");
+    const gongyiOptionsAll = await this.http.getData<OptionsAll>("shuju/api/getGongyizuofaOption");
+    const menjiaoOptionsAll = await this.http.getData<OptionsAll2>("shuju/api/getMenjiaoOptions");
     this.gongyiOptionsAll = gongyiOptionsAll || {};
     this.menjiaoOptionsAll = menjiaoOptionsAll || {};
     this.xuanxiangTable.data = [...gongyi.选项数据];
@@ -455,7 +455,7 @@ export class LurushujuIndexComponent implements OnInit {
 
   async setXinghao(data: Partial<Xinghao>, silent?: boolean) {
     const name = this.xinghao?.名字;
-    await this.http.post("shuju/shuju/setXinghao", {名字: name, data, silent}, {spinner: false});
+    await this.http.post("shuju/api/setXinghao", {名字: name, data, silent}, {spinner: false});
   }
 
   async updateXinghao(产品分类?: Xinghao["产品分类"]) {
@@ -497,7 +497,7 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const 型号 = this.xinghao.名字;
-    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/shuju/addGongyi", {名字, 型号, 产品分类});
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/addGongyi", {名字, 型号, 产品分类});
     await this.updateXinghao(xinghaoRaw?.产品分类);
   }
 
@@ -506,7 +506,7 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const 型号 = this.xinghao.名字;
-    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/shuju/removeGongyi", {名字, 型号, 产品分类});
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/removeGongyi", {名字, 型号, 产品分类});
     await this.updateXinghao(xinghaoRaw?.产品分类);
   }
 
@@ -534,7 +534,7 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const 型号 = this.xinghao.名字;
-    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/shuju/copyGongyi", {名字, 复制名字, 型号, 产品分类});
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/copyGongyi", {名字, 复制名字, 型号, 产品分类});
     await this.updateXinghao(xinghaoRaw?.产品分类);
   }
 
@@ -569,7 +569,7 @@ export class LurushujuIndexComponent implements OnInit {
     if (result) {
       Object.assign(data0, result);
       const 型号 = this.xinghao.名字;
-      await this.http.post("shuju/shuju/editGongyi", {名字, 型号, 产品分类, data: result});
+      await this.http.post("shuju/api/editGongyi", {名字, 型号, 产品分类, data: result});
     }
   }
 
@@ -597,7 +597,7 @@ export class LurushujuIndexComponent implements OnInit {
     for (const field of fields) {
       data[field] = this.gongyi[field] as any;
     }
-    await this.http.post("shuju/shuju/editGongyi", {名字, 型号, 产品分类, data}, {silent});
+    await this.http.post("shuju/api/editGongyi", {名字, 型号, 产品分类, data}, {silent});
   }
 
   async getXuanxiangItem(data0?: 选项) {

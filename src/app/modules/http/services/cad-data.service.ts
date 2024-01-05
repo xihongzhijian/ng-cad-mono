@@ -1,5 +1,6 @@
 import {Injectable, Injector} from "@angular/core";
 import {DomSanitizer} from "@angular/platform-browser";
+import {ActivatedRoute} from "@angular/router";
 import {imgCadEmpty} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {CadData, CadMtextInfo} from "@lucilor/cad-viewer";
@@ -35,10 +36,18 @@ import {CustomResponse, HttpOptions} from "./http.service.types";
 export class CadDataService extends HttpService {
   public cadImgCache = new CadImgCache();
   private domSanitizer: DomSanitizer;
+  private route: ActivatedRoute;
 
   constructor(injector: Injector) {
     super(injector);
     this.domSanitizer = injector.get(DomSanitizer);
+    this.route = injector.get(ActivatedRoute);
+    this.route.queryParams.subscribe((params) => {
+      const {token} = params;
+      if (token) {
+        this.token = token;
+      }
+    });
   }
 
   private async _resolveMissingCads(response: CustomResponse<any>) {

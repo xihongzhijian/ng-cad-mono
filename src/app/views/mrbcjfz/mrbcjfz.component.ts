@@ -99,7 +99,6 @@ export class MrbcjfzComponent implements OnInit {
   async ngOnInit() {
     let {id, table} = this;
     const params = this.route.snapshot.queryParams;
-    const token = params.token;
     if (!id || !table) {
       id = params.id ? Number(params.id) : 0;
       table = params.table || "";
@@ -112,9 +111,6 @@ export class MrbcjfzComponent implements OnInit {
       }
     } else {
       await timeout(0);
-    }
-    if (token) {
-      this.http.token = token;
     }
     if (this.isFromOrder) {
       const data = await this.getData();
