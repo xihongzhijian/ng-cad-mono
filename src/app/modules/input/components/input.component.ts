@@ -26,7 +26,8 @@ import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
+import {SafeUrl} from "@angular/platform-browser";
+import {joinOptions, splitOptions} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
@@ -79,6 +80,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   infoDiffer: KeyValueDiffer<keyof InputInfo, ValueOf<InputInfo>>;
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
+  cadImg: SafeUrl | null = null;
   @ViewChild("fileInput") fileInput?: ElementRef<HTMLInputElement>;
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
 
@@ -364,6 +366,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         }
         return {label: v.label || String(v.value), value: v.value, disabled: v.disabled};
       });
+    } else if (type === "cad") {
+      this.updateCadImg();
     }
     this.displayValue = null;
     if (type === "string") {
@@ -769,16 +773,20 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   getCadName() {
     const {info} = this;
     if (info.type === "cad") {
-      const {value} = this;
-      if (isTypeOf(value, "object")) {
-        let name = "";
-        for (const key of ["name", "名字"]) {
-          if (isTypeOf(value[key], "string") && value[key].length > 0) {
-            name = value[key];
-            break;
+      if (info.showName) {
+        const {value} = this;
+        if (isTypeOf(value, "object")) {
+          let name = "";
+          for (const key of ["name", "名字"]) {
+            if (isTypeOf(value[key], "string") && value[key].length > 0) {
+              name = value[key];
+              break;
+            }
           }
+          return name || "";
         }
-        return name || "";
+      } else {
+        return info.label;
       }
     }
     return "";
@@ -802,12 +810,13 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return "";
   }
 
-  getCadImgSrc() {
+  updateCadImg() {
     const id = this.getCadId();
     if (id) {
-      return this.http.getCadImgUrl(id) || imgCadEmpty;
+      this.cadImg = this.http.getCadImgUrl(id);
+    } else {
+      this.cadImg = "";
     }
-    return "";
   }
 
   async selectCad() {
@@ -827,6 +836,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         this.value = result[0] || null;
       }
       info.onChange?.(result);
+      this.updateCadImg();
     }
   }
 
@@ -842,6 +852,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.value = null;
     }
     info.onChange?.([]);
+    this.updateCadImg();
   }
 
   openCad() {

@@ -166,11 +166,6 @@ img.cad-preview,
 app-image.cad-preview {
   width: var(--cad-preview-width, auto);
   height: var(--cad-preview-height, auto);
-  &.error {
-    img {
-      object-fit: cover;
-    }
-  }
 }
 
 /* Remove Input Arrows/Spinners */

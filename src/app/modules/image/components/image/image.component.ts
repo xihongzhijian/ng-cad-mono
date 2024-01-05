@@ -115,7 +115,7 @@ export class ImageComponent {
     this.loading = false;
     this._src2 = this.emptySrc;
     if (!this.class.includes("error")) {
-      this.class.push("error");
+      this.class = [...this.class, "error"];
     }
   }
 

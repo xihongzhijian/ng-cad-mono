@@ -1,4 +1,4 @@
-import {NgFor, NgIf, NgSwitch, NgSwitchCase, NgTemplateOutlet} from "@angular/common";
+import {CommonModule} from "@angular/common";
 import {AfterViewInit, Component, ElementRef, Inject, ViewChild} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -16,12 +16,14 @@ import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slid
 import {MatTableModule} from "@angular/material/table";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
+import {imgCadEmpty} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams} from "@modules/http/services/cad-data.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -44,29 +46,26 @@ export const customTooltipOptions: MatTooltipDefaultOptions = {
   providers: [{provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: customTooltipOptions}],
   standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
-    NgIf,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatInputModule,
+    ImageComponent,
     MatButtonModule,
-    MatIconModule,
-    MatSlideToggleModule,
     MatCheckboxModule,
-    NgSwitch,
-    NgSwitchCase,
-    NgScrollbar,
-    MatRadioModule,
-    NgFor,
-    MatTooltipModule,
-    NgTemplateOutlet,
-    MatTableModule,
-    SpinnerComponent,
     MatDialogActions,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatOptionModule,
     MatPaginatorModule,
-    TypedTemplateDirective,
-    MatDividerModule
+    MatRadioModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+    MatTableModule,
+    MatTooltipModule,
+    NgScrollbar,
+    SpinnerComponent,
+    TypedTemplateDirective
   ]
 })
 export class CadListComponent extends Utils() implements AfterViewInit {
@@ -89,6 +88,7 @@ export class CadListComponent extends Utils() implements AfterViewInit {
   loaderId = "cadList";
   loaderIdSubmit = "cadListSubmit";
   cadDataType!: CadData;
+  imgCadEmpty = imgCadEmpty;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
   @ViewChild("singleSelectNone", {read: ElementRef}) singleSelectNone?: ElementRef<HTMLSpanElement>;
 

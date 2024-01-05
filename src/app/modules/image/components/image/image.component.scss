@@ -1,3 +1,11 @@
+:host {
+  &.error {
+    img {
+      object-fit: cover;
+    }
+  }
+}
+
 img {
   max-width: 100%;
   max-height: 100%;

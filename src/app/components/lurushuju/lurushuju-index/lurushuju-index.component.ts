@@ -10,6 +10,7 @@ import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
 import {filePathUrl, getBooleanStr, getFilepathUrl, session, setGlobal} from "@app/app.common";
+import {CadListInput} from "@components/dialogs/cad-list/cad-list.component";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
@@ -193,6 +194,7 @@ export class LurushujuIndexComponent implements OnInit {
     toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
   };
   bancaifenzuInfo: BancaifenzuInfo | null = null;
+  shiyituInputInfos: InputInfo[] = [];
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
   xinghaoName = "";
@@ -408,6 +410,26 @@ export class LurushujuIndexComponent implements OnInit {
         const id = cad._id;
         this.cadImgs[id] = this.http.getCadImgUrl(id);
       }
+    }
+    this.shiyituInputInfos = [];
+    for (const key in gongyi.示意图CAD) {
+      const params: CadListInput = {selectMode: "single", collection: "cad", raw: true};
+      const search: ObjectOf<any> = {};
+      if (key.includes("装配示意图")) {
+        search.分类 = "装配示意图";
+      } else {
+        search.分类 = "算料单示意图";
+      }
+      params.search = search;
+      this.shiyituInputInfos.push({
+        type: "cad",
+        label: key,
+        params,
+        model: {data: gongyi.示意图CAD, key},
+        onChange: () => {
+          this.submitGongyi(["示意图CAD"]);
+        }
+      });
     }
   }
 
@@ -987,6 +1009,7 @@ export class LurushujuIndexComponent implements OnInit {
                   type: "cad",
                   label: key3,
                   model: {data: data[key1][key2][key3], key: "cad"},
+                  clearable: true,
                   params: () => ({
                     selectMode: "single",
                     collection: "cad",

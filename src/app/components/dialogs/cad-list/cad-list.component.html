@@ -45,9 +45,7 @@
         <mat-radio-button [value]="i" [matTooltip]="item.data.name" (click)="checkedIndex.next(i)">
           {{ item.data.name }}
         </mat-radio-button>
-        <div class="cad-preview-container">
-          <img class="cad-preview" [src]="item.img" (click)="checkedIndex.next(i)" />
-        </div>
+        <app-image class="cad-preview" [src]="item.img" [emptySrc]="imgCadEmpty" (click)="checkedIndex.next(i)"></app-image>
         <ng-container *ngTemplateOutlet="details; context: {$implicit: item.data}"></ng-container>
       </div>
     </mat-radio-group>

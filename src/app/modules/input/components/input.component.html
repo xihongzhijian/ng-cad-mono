@@ -400,15 +400,15 @@
   </ng-container>
   <ng-container *ngSwitchCase="'cad'">
     <div class="flex-row">
-      <button mat-icon-button color="accent" *ngIf="getCadId()" (click)="clearCad()"><mat-icon>close</mat-icon></button>
+      <button mat-icon-button color="accent" *ngIf="getCadId() && info.clearable" (click)="clearCad()"><mat-icon>close</mat-icon></button>
       <div class="cad-name flex-110">{{ getCadName() || " " }}</div>
-      <button mat-icon-button color="primary" *ngIf="getCadId()" (click)="openCad()"><mat-icon>open_in_new</mat-icon></button>
+      <button mat-icon-button color="primary" *ngIf="getCadId() && castInfo('cad')['openable']" (click)="openCad()">
+        <mat-icon>open_in_new</mat-icon>
+      </button>
     </div>
-    <app-image class="cad-preview" *ngIf="getCadImgSrc(); else emptyImg" [src]="getCadImgSrc()" (click)="selectCad()"></app-image>
+    <app-image class="cad-preview" *ngIf="cadImg; else emptyImg" [src]="cadImg" (click)="selectCad()"></app-image>
     <ng-template #emptyImg>
-      <div class="cad-preview-empty" (click)="selectCad()">
-        {{ info.label }}
-      </div>
+      <div class="cad-preview-empty" (click)="selectCad()">未选择</div>
     </ng-template>
     <ng-template [ngTemplateOutlet]="footer"></ng-template>
   </ng-container>
