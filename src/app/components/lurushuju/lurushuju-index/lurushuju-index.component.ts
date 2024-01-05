@@ -15,7 +15,7 @@ import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanp
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf, queryString, RequiredKeys} from "@lucilor/utils";
+import {keysOf, ObjectOf, queryString, RequiredKeys, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -203,6 +203,7 @@ export class LurushujuIndexComponent implements OnInit {
   gongyiName = "";
   production = environment.production;
   cadImgs: ObjectOf<SafeUrl> = {};
+  wmm = new WindowMessageManager("录入数据", this, window.parent);
 
   constructor(
     private http: CadDataService,
@@ -280,6 +281,7 @@ export class LurushujuIndexComponent implements OnInit {
   back() {
     switch (this.step) {
       case 1:
+        this.wmm.postMessage("back");
         break;
       case 2:
         this.setStep(1, {});
@@ -402,7 +404,7 @@ export class LurushujuIndexComponent implements OnInit {
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
     this.menjiaoTable.data = gongyi.门铰锁边铰边;
-    this.bancaifenzuInfo = await this.http.getData<BancaifenzuInfo>("peijian/xinghao/getBancaifenzuInfo");
+    this.bancaifenzuInfo = await this.http.getData<BancaifenzuInfo>("shuju/api/getBancaifenzuInfo");
     updateSuanliaoCads(gongyi, this.bancaifenzuInfo?.bancaiKeys || []);
     this.cadImgs = {};
     for (const key in gongyi.算料CAD) {

@@ -24,6 +24,7 @@ export class WindowMessageManager extends EventEmitter {
       return;
     }
     this.emit(data.action, data.data);
+    console.log(data, instance);
     const fn = instance[data.action];
     if (typeof fn === "function") {
       try {
