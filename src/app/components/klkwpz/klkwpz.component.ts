@@ -10,7 +10,6 @@ import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {cloneDeep, uniq} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
@@ -43,27 +42,24 @@ export class KlkwpzComponent implements AfterViewInit {
   constructor(
     private message: MessageService,
     private dialog: MatDialog,
-    private dataService: CadDataService,
-    private spinner: SpinnerService
+    private http: CadDataService
   ) {}
 
   async ngAfterViewInit() {
     const id = this.cadId;
     if (id) {
       await timeout(0);
-      this.spinner.show(this.spinner.defaultLoaderId);
-      const result = await this.dataService.getCad({collection: "cad", id});
+      const result = await this.http.getCad({collection: "cad", id});
       if (result.cads.length > 0) {
         this.cadData = result.cads[0];
         const mubanId = this.cadData.zhankai?.[0].kailiaomuban;
         if (mubanId) {
-          const result2 = await this.dataService.getCad({collection: "kailiaocadmuban", id: mubanId});
+          const result2 = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId});
           if (result2.cads.length > 0) {
             this.cadMubanData = result2.cads[0];
           }
         }
       }
-      this.spinner.hide(this.spinner.defaultLoaderId);
     }
   }
 

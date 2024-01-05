@@ -294,18 +294,23 @@ export class HttpService {
     return await this.request<T>(url, "POST", data, options);
   }
 
-  getData<T>(response: CustomResponse<T> | null, ignoreCode?: boolean) {
-    if (response && (ignoreCode || response.code === 0)) {
-      return response.data || null;
+  async getData<T>(url: string, data?: ObjectOf<any>, options?: HttpOptions) {
+    const response = await this.post<T>(url, data, options);
+    let data2: T | undefined | null = response?.data;
+    if (data2 === undefined) {
+      data2 = null;
     }
-    return null;
+    return data2;
   }
 
-  getDataAndCount<T>(response: CustomResponse<T> | null, ignoreCode?: boolean) {
-    if (response && (ignoreCode || response.code === 0)) {
-      const data = response.data || null;
-      const count = response.count || 0;
-      return {data, count};
+  async getDataAndCount<T>(url: string, data?: ObjectOf<any>, options?: HttpOptions) {
+    const response = await this.post<T>(url, data, options);
+    let data2: T | undefined | null = response?.data;
+    if (data2 === undefined) {
+      data2 = null;
+    }
+    if (response) {
+      return {data: data2, count: response.count || 0};
     }
     return null;
   }

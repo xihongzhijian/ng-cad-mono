@@ -49,17 +49,17 @@ export class XinghaoOverviewComponent implements OnInit {
   wmm = new WindowMessageManager("xinghaoOverview", this, window.parent);
 
   constructor(
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService
   ) {
     setGlobal("xinghaoOverview", this);
   }
 
   async ngOnInit() {
-    let records = await this.dataService.queryMySql<XinghaoOverviewTableData>({table: this.table, limit: 1});
+    let records = await this.http.queryMySql<XinghaoOverviewTableData>({table: this.table, limit: 1});
     if (!records[0]) {
-      await this.dataService.tableInsert<XinghaoOverviewTableData>({table: this.table, data: {data: "{}"}});
-      records = await this.dataService.queryMySql<XinghaoOverviewTableData>({table: this.table, limit: 1});
+      await this.http.tableInsert<XinghaoOverviewTableData>({table: this.table, data: {data: "{}"}});
+      records = await this.http.queryMySql<XinghaoOverviewTableData>({table: this.table, limit: 1});
     }
     if (records[0]) {
       this.data.id = records[0].vid;
@@ -67,8 +67,7 @@ export class XinghaoOverviewComponent implements OnInit {
     } else {
       this.message.error("数据错误");
     }
-    const navsResponse = await this.dataService.post<NavsData>("ngcad/getNavs");
-    this.navs = this.dataService.getData(navsResponse) || [];
+    this.navs = (await this.http.getData<NavsData>("ngcad/getNavs")) || [];
     const printedNavs = new Set<string>();
     const printNav = (item: NavsResultItem) => {
       const {tou, da, xiao} = item;
@@ -175,7 +174,7 @@ export class XinghaoOverviewComponent implements OnInit {
 
   async submit() {
     const data = this.data.export();
-    this.dataService.tableUpdate<XinghaoOverviewTableData>({table: this.table, data: {vid: this.data.id, data}});
+    this.http.tableUpdate<XinghaoOverviewTableData>({table: this.table, data: {vid: this.data.id, data}});
   }
 
   async import() {

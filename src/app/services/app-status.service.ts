@@ -83,7 +83,7 @@ export class AppStatusService {
     private config: AppConfigService,
     private route: ActivatedRoute,
     private router: Router,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService,
     private spinner: SpinnerService
   ) {
@@ -118,24 +118,20 @@ export class AppStatusService {
     const {project, action} = queryParams;
     if (project && project !== this.project) {
       this.project = project;
-      this.dataService.baseURL = `${origin}/n/${project}/index/`;
+      this.http.baseURL = `${origin}/n/${project}/index/`;
       if (action) {
         this.config.noUser = true;
       } else {
-        if (environment.production) {
-          const response = await this.dataService.get<boolean>("ngcad/isAdmin", {timeStamp: new Date().getTime()}, {silent: true});
-          if (!response) {
-            this.dataService.offlineMode = true;
-          }
-          this.isAdmin$.next(this.dataService.getData(response) === true);
-        } else {
-          this.isAdmin$.next(true);
+        const response = await this.http.get<boolean>("ngcad/isAdmin", {timeStamp: new Date().getTime()}, {silent: true});
+        if (!response) {
+          this.http.offlineMode = true;
         }
+        this.isAdmin$.next(response?.data === true);
         await this.config.getUserConfig();
       }
       let changelogTimeStamp = this.changelogTimeStamp$.value;
       if (changelogTimeStamp < 0) {
-        const {changelog} = await this.dataService.getChangelog(1, 1, {spinner: false});
+        const {changelog} = await this.http.getChangelog(1, 1, {spinner: false});
         changelogTimeStamp = changelog[0]?.timeStamp || 0;
       }
       if (environment.production && changelogTimeStamp > this._refreshTimeStamp) {
@@ -149,8 +145,8 @@ export class AppStatusService {
       this.setProject$.next();
 
       {
-        const response = await this.dataService.post<ProjectConfigRaw>("ngcad/getProjectConfig", {spinner: false});
-        this.projectConfig.setRaw(this.dataService.getData(response) || {});
+        const data = await this.http.getData<ProjectConfigRaw>("ngcad/getProjectConfig", {spinner: false});
+        this.projectConfig.setRaw(data || {});
       }
     }
     return true;
@@ -278,7 +274,7 @@ export class AppStatusService {
     this.saveCadStart$.next();
     this.saveCadLocked$.next(true);
     await timeout(100); // 等待input事件触发
-    const {dataService, message, spinner} = this;
+    const {http, message, spinner} = this;
     const collection = this.collection$.value;
 
     let data = this.cad.data;
@@ -320,7 +316,7 @@ export class AppStatusService {
     }
     const {hideLineLength} = this.config.getConfig();
     spinner.show(loaderId, {text: `正在保存CAD: ${data.name}`});
-    resData = await dataService.setCad({collection, cadData: data, force: true}, hideLineLength);
+    resData = await http.setCad({collection, cadData: data, force: true}, hideLineLength);
     if (resData) {
       this.saveCadEnd$.next();
       await this.openCad({
@@ -328,7 +324,7 @@ export class AppStatusService {
         collection,
         beforeOpen: async (data2) => {
           const url = await getCadPreview(collection, data2);
-          await dataService.setCadImg(data2.id, url, {silent: true});
+          await http.setCadImg(data2.id, url, {silent: true});
         }
       });
       this.saveCadLocked$.next(false);
@@ -456,8 +452,7 @@ export class AppStatusService {
     if (this._isZhewanLengthsFetched) {
       return;
     }
-    const response = await this.dataService.get<[number, number]>("ngcad/getZhewan");
-    const data = this.dataService.getData(response);
+    const data = await this.http.getData<[number, number]>("ngcad/getZhewan");
     if (data) {
       this.zhewanLengths$.next(data);
       this._isZhewanLengthsFetched = true;
@@ -469,12 +464,12 @@ export class AppStatusService {
     const entities = this.cad.selected();
     const data = new CadData();
     data.entities = entities;
-    return this.dataService.exportCadData(data, hideLineLength).entities;
+    return this.http.exportCadData(data, hideLineLength).entities;
   }
 
   exportCadData() {
     const {hideLineLength} = this.config.getConfig();
-    return this.dataService.exportCadData(this.cad.data, hideLineLength);
+    return this.http.exportCadData(this.cad.data, hideLineLength);
   }
 
   getItemSize(item: any, options?: FileSizeOptions) {

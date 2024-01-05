@@ -84,7 +84,7 @@ export class SelectBancaiComponent extends Subscribed() {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService,
     private dialog: MatDialog,
     private status: AppStatusService,
@@ -112,8 +112,7 @@ export class SelectBancaiComponent extends Subscribed() {
       } else {
         this.isShowXikong = false;
         await this.refreshDownloadHistory();
-        const response = await this.dataService.post<BancaisInfo>("order/order/getBancais", {table, codes: this.codes});
-        const result = this.dataService.getData(response);
+        const result = await this.http.getData<BancaisInfo>("order/order/getBancais", {table, codes: this.codes});
         if (result) {
           const bancaiZidingyi = result.bancaiList.find((v) => v.mingzi === "自定义");
           const errMsgs: string[] = [];
@@ -177,8 +176,7 @@ export class SelectBancaiComponent extends Subscribed() {
   }
 
   async refreshDownloadHistory() {
-    const response = await this.dataService.post<ObjectOf<any>[]>("order/order/getKailiaoDlHistory", {codes: this.codes});
-    const dlHistory = this.dataService.getData(response);
+    const dlHistory = await this.http.getData<ObjectOf<any>[]>("order/order/getKailiaoDlHistory", {codes: this.codes});
     if (dlHistory) {
       this.downloadHistory = dlHistory.map<SelectBancaiDlHistory>((v) => ({
         name: v.name,
@@ -422,9 +420,8 @@ export class SelectBancaiComponent extends Subscribed() {
     let url: string | string[] | null = null;
     const data: ObjectOf<any> = {codes, bancaiCadsArr, table, autoGuige, type, getCadOptions, projectConfigOverride};
     try {
-      const response = await this.dataService.post<string | string[]>(api, data);
+      url = await this.http.getData<string | string[]>(api, data);
       await this.refreshDownloadHistory();
-      url = this.dataService.getData(response);
     } catch (error) {}
     if (url) {
       this.xikongData = null;
@@ -499,8 +496,7 @@ export class SelectBancaiComponent extends Subscribed() {
 
   async getDakongSummary() {
     const {codes} = this;
-    const response = await this.dataService.post<DakongSummary>("order/order/getDakongSummary", {codes});
-    const data = this.dataService.getData(response);
+    const data = await this.http.getData<DakongSummary>("order/order/getDakongSummary", {codes});
     if (!data) {
       return;
     }
@@ -524,8 +520,7 @@ export class SelectBancaiComponent extends Subscribed() {
   async getXikongData(download: boolean, useCache = false, checkOnly = false) {
     if (!this.xikongData || !useCache) {
       const {codes} = this;
-      const response = await this.dataService.post<XikongData>("order/order/getXikongData", {codes});
-      this.xikongData = this.dataService.getData(response);
+      this.xikongData = await this.http.getData<XikongData>("order/order/getXikongData", {codes});
     }
     const data = {...this.xikongData};
     const toDelete: string[] = [];

@@ -3,11 +3,13 @@ import {Component, HostBinding, OnInit} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
+import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, getBooleanStr, getFilepathUrl, session, setGlobal} from "@app/app.common";
+import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {environment} from "@env";
 import {keysOf, ObjectOf, queryString, RequiredKeys} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -46,6 +48,7 @@ import {
   门铰锁边铰边
 } from "../xinghao-data";
 import {
+  BancaifenzuInfo,
   LurushujuIndexStep,
   LurushujuIndexStepInfo,
   MenjiaoData,
@@ -185,6 +188,7 @@ export class LurushujuIndexComponent implements OnInit {
     data: [],
     toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
   };
+  bancaifenzuInfo: BancaifenzuInfo | null = null;
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
   xinghaoName = "";
@@ -194,7 +198,8 @@ export class LurushujuIndexComponent implements OnInit {
 
   constructor(
     private http: CadDataService,
-    private message: MessageService
+    private message: MessageService,
+    private dialog: MatDialog
   ) {
     setGlobal("lrsj", this, true);
   }
@@ -209,7 +214,7 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async getXinghaos() {
-    const xinghaos = this.http.getData(await this.http.post<TableDataBase[]>("shuju/shuju/getXinghaos"));
+    const xinghaos = await this.http.getData<TableDataBase[]>("shuju/shuju/getXinghaos");
     if (xinghaos) {
       this.filterXinghaos(xinghaos);
       this.xinghaos = xinghaos;
@@ -224,9 +229,9 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async getXinghao() {
-    const xinghaoRaw = this.http.getData(await this.http.post<XinghaoRaw>("shuju/shuju/getXinghao", {名字: this.xinghaoName}));
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/shuju/getXinghao", {名字: this.xinghaoName});
     const xinghao = getXinghao(xinghaoRaw);
-    const optionsAll = this.http.getData(await this.http.post<OptionsAll>("shuju/shuju/getXinghaoOption"));
+    const optionsAll = await this.http.getData<OptionsAll>("shuju/shuju/getXinghaoOption");
     this.xinghaoOptionsAll = optionsAll || {};
     this.xinghao = xinghao;
   }
@@ -250,7 +255,7 @@ export class LurushujuIndexComponent implements OnInit {
     if (!名字) {
       return;
     }
-    const xinghao = this.http.getData(await this.http.post<XinghaoData>("shuju/shuju/insertXinghao", {名字}));
+    const xinghao = await this.http.getData<XinghaoData>("shuju/shuju/insertXinghao", {名字});
     if (xinghao) {
       this.editXinghao(xinghao);
     }
@@ -378,13 +383,14 @@ export class LurushujuIndexComponent implements OnInit {
     }
     gongyi = getGongyi(gongyi);
     this.gongyi = gongyi;
-    const gongyiOptionsAll = this.http.getData(await this.http.post<OptionsAll>("shuju/shuju/getGongyizuofaOption"));
-    const menjiaoOptionsAll = this.http.getData(await this.http.post<OptionsAll2>("shuju/shuju/getMenjiaoOptions"));
+    const gongyiOptionsAll = await this.http.getData<OptionsAll>("shuju/shuju/getGongyizuofaOption");
+    const menjiaoOptionsAll = await this.http.getData<OptionsAll2>("shuju/shuju/getMenjiaoOptions");
     this.gongyiOptionsAll = gongyiOptionsAll || {};
     this.menjiaoOptionsAll = menjiaoOptionsAll || {};
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
     this.menjiaoTable.data = gongyi.门铰锁边铰边;
+    // this.bancaifenzuInfo = this.http;
   }
 
   onSelectedTabChange({index}: MatTabChangeEvent) {
@@ -435,7 +441,7 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const 型号 = this.xinghao.名字;
-    const xinghaoRaw = this.http.getData(await this.http.post<XinghaoRaw>("shuju/shuju/addGongyi", {名字, 型号, 产品分类}));
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/shuju/addGongyi", {名字, 型号, 产品分类});
     await this.updateXinghao(xinghaoRaw?.产品分类);
   }
 
@@ -444,7 +450,7 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const 型号 = this.xinghao.名字;
-    const xinghaoRaw = this.http.getData(await this.http.post<XinghaoRaw>("shuju/shuju/removeGongyi", {名字, 型号, 产品分类}));
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/shuju/removeGongyi", {名字, 型号, 产品分类});
     await this.updateXinghao(xinghaoRaw?.产品分类);
   }
 
@@ -472,7 +478,7 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const 型号 = this.xinghao.名字;
-    const xinghaoRaw = this.http.getData(await this.http.post<XinghaoRaw>("shuju/shuju/copyGongyi", {名字, 复制名字, 型号, 产品分类}));
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/shuju/copyGongyi", {名字, 复制名字, 型号, 产品分类});
     await this.updateXinghao(xinghaoRaw?.产品分类);
   }
 
@@ -1106,8 +1112,7 @@ export class LurushujuIndexComponent implements OnInit {
       where[`选项.${key}`] = extraData.选项[key];
     }
     const fields = ["名字", "条件", "选项", "公式"];
-    const response = await this.http.post<any[]>("ngcad/querymongodb", {collection: "material", where, fields});
-    const gongshis = this.http.getData(response) || [];
+    const gongshis = (await this.http.getData<any[]>("ngcad/querymongodb", {collection: "material", where, fields})) || [];
     for (const gongshi of gongshis) {
       delete gongshi.collection;
     }
@@ -1184,5 +1189,15 @@ export class LurushujuIndexComponent implements OnInit {
     if (result) {
       this.submitGongyi(["测试用例"]);
     }
+  }
+
+  async selectSuanliaoCads() {
+    const result = await openZixuanpeijianDialog(this.dialog, {data: {step: 3, stepFixed: true}});
+    if (!result) {
+      return;
+    }
+    const ids = result.零散.map((v) => v.info.houtaiId);
+    const cads = await this.http.getCadRaw({ids, collection: "cad"});
+    console.log(cads);
   }
 }

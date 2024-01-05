@@ -48,13 +48,13 @@ export class CadSearchFormComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<CadSearchFormComponent, CadData["options"]>,
-    private dataservice: CadDataService,
+    private http: CadDataService,
     private message: MessageService
   ) {}
 
   async ngOnInit() {
     await timeout(0);
-    this.data = await this.dataservice.getCadSearchForm();
+    this.data = await this.http.getCadSearchForm();
     this.data.push(this.additional);
     this.data.forEach((group) => {
       group.items.forEach(({label, options}) => {
@@ -85,7 +85,7 @@ export class CadSearchFormComponent implements OnInit {
     if (isExist) {
       this.message.alert("选项已存在");
     } else {
-      const item = await this.dataservice.getCadSearchOptions(name);
+      const item = await this.http.getCadSearchOptions(name);
       if (item) {
         this.additional.items.push(item);
         this.form[item.label] = "";

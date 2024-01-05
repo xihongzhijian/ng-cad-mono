@@ -148,7 +148,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private dialog: MatDialog,
     private spinner: SpinnerService,
     private message: MessageService
@@ -157,7 +157,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    const step1Data = await getStep1Data(this.dataService, {});
+    const step1Data = await getStep1Data(this.http, {});
     this.mokuais = [];
     if (step1Data) {
       this.step1Data = step1Data;
@@ -174,21 +174,21 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.table = table;
       this.id = id;
       this.isFromOrder = false;
-      const records = await this.dataService.queryMySql<XhmrmsbjTableData>({table, filter: {where: {vid: id}}});
+      const records = await this.http.queryMySql<XhmrmsbjTableData>({table, filter: {where: {vid: id}}});
       this.tableData = records?.[0] || null;
     } else if (token) {
       this.isFromOrder = true;
     }
     if (token) {
-      this.dataService.token = token;
+      this.http.token = token;
     }
-    this.fenleis = await this.dataService.queryMySql<TableDataBase>({table: "p_gongnengfenlei", fields: ["vid", "mingzi"]});
-    const menshanbujus = await this.dataService.queryMySql<MsbjData>({table: "p_menshanbuju"});
+    this.fenleis = await this.http.queryMySql<TableDataBase>({table: "p_gongnengfenlei", fields: ["vid", "mingzi"]});
+    const menshanbujus = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
     this.msbjs = menshanbujus.map((item) => new MsbjInfo(item, this.getNode2rectData()));
-    this.bancaiList = (await this.dataService.getBancaiList())?.bancais || [];
+    this.bancaiList = (await this.http.getBancaiList())?.bancais || [];
     if (!this.isFromOrder) {
       this.data = this.tableData ? new XhmrmsbjData(this.tableData, this.menshanKeys, this.step1Data.typesInfo, this.msbjs) : null;
-      const xinghaos = await this.dataService.queryMySql<MrbcjfzXinghao>({
+      const xinghaos = await this.http.queryMySql<MrbcjfzXinghao>({
         table: "p_xinghao",
         filter: {where: {vid: this.tableData?.xinghao}}
       });
@@ -639,7 +639,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const data: TableUpdateParams<MsbjData>["data"] = dataInfo.export();
     delete data.mingzi;
     this.spinner.show(this.spinner.defaultLoaderId);
-    await this.dataService.tableUpdate({table, data});
+    await this.http.tableUpdate({table, data});
     this.spinner.hide(this.spinner.defaultLoaderId);
   }
 
@@ -751,8 +751,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.wmm.postMessage("编辑模块大小", {menshanKey, msbjInfo});
     } else {
       let msbj: MsbjInfo | null = null;
-      if (this.dataService.token) {
-        const msbjs = await this.dataService.queryMySql({table: "p_menshanbuju", filter: {where: {vid: 选中布局数据.vid}}});
+      if (this.http.token) {
+        const msbjs = await this.http.queryMySql({table: "p_menshanbuju", filter: {where: {vid: 选中布局数据.vid}}});
         if (msbjs[0]) {
           msbj = new MsbjInfo(msbjs[0], this.getNode2rectData());
         }
@@ -773,7 +773,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     this.spinner.show(this.spinner.defaultLoaderId, {text: "获取模块大小配置"});
-    const records = await this.dataService.queryMySql<XhmrmsbjTableData>({
+    const records = await this.http.queryMySql<XhmrmsbjTableData>({
       table: "p_xinghaomorenmenshanbuju",
       filter: {where: {vid: this.id}}
     });

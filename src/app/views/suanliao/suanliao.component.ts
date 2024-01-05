@@ -45,7 +45,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private message: MessageService,
     private calc: CalcService,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private route: ActivatedRoute
   ) {
     setGlobal("suanliao", this);
@@ -53,10 +53,10 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     const {token} = this.route.snapshot.queryParams;
-    this.dataService.token = token;
-    const menshanbujus = await this.dataService.queryMySql<MsbjData>({table: "p_menshanbuju"});
+    this.http.token = token;
+    const menshanbujus = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
     this.msbjs = menshanbujus.map((item) => new MsbjInfo(item));
-    this.step1Data = await getStep1Data(this.dataService, {});
+    this.step1Data = await getStep1Data(this.http, {});
     this.wmm.postMessage("suanliaoReady");
   }
 

@@ -9,7 +9,6 @@ import {session, setGlobal} from "@app/app.common";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../../modules/input/components/input.component";
@@ -44,8 +43,7 @@ export class NavsDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<NavsDialogComponent, NavsDialogOutput>,
     @Inject(MAT_DIALOG_DATA) public data: NavsDialogInput,
-    private spinner: SpinnerService,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService
   ) {
     setGlobal("navsDialog", this);
@@ -56,8 +54,7 @@ export class NavsDialogComponent {
     if (this.data?.navs) {
       this.navs = this.data.navs;
     } else {
-      const navsResponse = await this.dataService.post<NavsData>("ngcad/getNavs");
-      this.navs = this.dataService.getData(navsResponse);
+      this.navs = await this.http.getData<NavsData>("ngcad/getNavs");
       session.save(this._navsKey, this.navs);
     }
     this.dataSource.data = this.navs || [];

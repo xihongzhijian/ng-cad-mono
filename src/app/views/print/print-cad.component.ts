@@ -155,7 +155,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private sanitizer: DomSanitizer,
     private message: MessageService,
     private spinner: SpinnerService,
@@ -181,8 +181,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     try {
       let responseData = session.load<PrintCadsParams>(this._httpCacheKey);
       if (!responseData) {
-        const response = await this.dataService.post<PrintCadsParams>(action, queryParams, {encrypt: "both", spinner: false});
-        responseData = this.dataService.getData(response);
+        responseData = await this.http.getData<PrintCadsParams>(action, queryParams, {encrypt: "both", spinner: false});
         if (!this.production) {
           session.save(this._httpCacheKey, responseData);
         }
@@ -209,7 +208,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
         document.title = this.printParams.info.title;
         const {codes, type} = this.printParams;
         if (codes.length === 1) {
-          const response2 = await this.dataService.post<ZixuanpeijianOutput>(
+          const response2 = await this.http.post<ZixuanpeijianOutput>(
             "ngcad/getOrderZixuanpeijian",
             {
               code: codes[0],
@@ -320,7 +319,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     let data: CadData | null = null;
     if (file.name.endsWith(".dxf")) {
       this.spinner.show(this.loaderId, {text: "正在上传文件..."});
-      data = await this.dataService.uploadDxf(file);
+      data = await this.http.uploadDxf(file);
     } else {
       data = await new Promise((resolve) => {
         const reader = new FileReader();
@@ -353,7 +352,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       }
     } else {
       if (this.cad && this.enableZixuanpeijian) {
-        this.dataService.downloadDxf(this.cad.data, options);
+        this.http.downloadDxf(this.cad.data, options);
       } else {
         this.message.alert("没有提供下载数据");
       }
@@ -721,7 +720,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     for (const key of this.shuchubianliangKeys) {
       输出变量[key] = key in materialResult ? String(materialResult[key]) : "";
     }
-    await this.dataService.post<void>("ngcad/setOrderZixuanpeijian", {
+    await this.http.post<void>("ngcad/setOrderZixuanpeijian", {
       code: codes[0],
       type,
       data: exportZixuanpeijian({模块, 零散, 备注, 文本映射, 输出变量})
@@ -729,7 +728,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   }
 
   async getOrderImage() {
-    const response = await this.dataService.post<{prefix: string; data: {zhengmiantu: string}[]}>(
+    const responseData = await this.http.getData<{prefix: string; data: {zhengmiantu: string}[]}>(
       "order/api/getImage",
       {
         code: this.printParams.codes[0],
@@ -737,7 +736,6 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       },
       {spinner: false}
     );
-    const responseData = this.dataService.getData(response);
     if (responseData && responseData.data?.length > 0) {
       const {prefix, data} = responseData;
       this.orderImageUrl = data[0].zhengmiantu ? prefix + data[0].zhengmiantu : "";
@@ -754,7 +752,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     const blob = await imageCompression(file, {maxSizeMB: 1, useWebWorker: true});
     file = new File([blob], file.name, {type: file.type});
     target.value = "";
-    const response = await this.dataService.post<{prefix: string; save_path: string}>(
+    const data = await this.http.getData<{prefix: string; save_path: string}>(
       "order/api/uploadImage",
       {
         code: this.printParams.codes[0],
@@ -764,7 +762,6 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       },
       {spinner: false}
     );
-    const data = this.dataService.getData(response);
     if (data) {
       const {prefix, save_path} = data;
       this.orderImageUrl = prefix + save_path;

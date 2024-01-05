@@ -15,8 +15,7 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTableModule} from "@angular/material/table";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
-import {imgCadEmpty} from "@app/app.common";
+import {SafeUrl} from "@angular/platform-browser";
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf} from "@lucilor/utils";
@@ -96,7 +95,6 @@ export class CadListComponent extends Utils() implements AfterViewInit {
   constructor(
     public dialogRef: MatDialogRef<CadListComponent, CadListOutput>,
     @Inject(MAT_DIALOG_DATA) public data: CadListInput,
-    private sanitizer: DomSanitizer,
     private http: CadDataService,
     private dialog: MatDialog,
     private message: MessageService
@@ -211,7 +209,7 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     this.pageData.length = 0;
     result.cads.forEach(async (d) => {
       const checked = this.checkedItems.find((v) => v === d.id) ? true : false;
-      const img = this.sanitizer.bypassSecurityTrustUrl(this.http.getCadImgUrl(d.id) || imgCadEmpty);
+      const img = this.http.getCadImgUrl(d.id);
       this.pageData.push({data: d, img, checked});
     });
     this.syncCheckedItems();

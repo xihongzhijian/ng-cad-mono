@@ -22,7 +22,7 @@ import {ObjectOf, timeout} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {clamp, cloneDeep} from "lodash";
+import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
 import {JSONContent, JSONEditor, Mode} from "vanilla-jsoneditor";
 import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./message-types";
@@ -202,7 +202,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       const key = input.info.name || input.info.label;
       values[key] = input.value;
     }
-    console.log(errors);
     return {errors, values};
   }
 
@@ -212,7 +211,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.dialogRef.close(true);
     } else if (type === "form") {
       const {errors, values} = await this.validateForm();
-      if (!errors) {
+      if (isEmpty(errors)) {
         this.dialogRef.close(values);
       }
     } else if (type === "editor") {

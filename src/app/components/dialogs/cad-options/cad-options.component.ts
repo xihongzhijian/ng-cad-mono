@@ -61,7 +61,7 @@ export class CadOptionsComponent implements AfterViewInit {
   constructor(
     public dialogRef: MatDialogRef<CadOptionsComponent, CadOptionsOutput>,
     @Inject(MAT_DIALOG_DATA) public data: CadOptionsInput,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private spinner: SpinnerService
   ) {
     this.data.multi = this.data.multi !== false;
@@ -128,7 +128,7 @@ export class CadOptionsComponent implements AfterViewInit {
       data = {data: options, count: options.length};
     } else {
       this.spinner.show(...loader);
-      data = await this.dataService.getOptions(params);
+      data = await this.http.getOptions(params);
       this.spinner.hide(loader[0]);
     }
     return data;

@@ -94,26 +94,13 @@
 
       .btn-group {
         justify-content: center;
-
-        .mdc-button {
-          padding: 5px 10px;
-          min-width: unset;
-          height: auto;
-        }
       }
     }
     .mat-mdc-cell {
       background-color: #f2f2f2;
       .mdc-button {
         min-width: unset;
-        height: 28px;
-        padding: 0 8px 0 8px;
-
-        ::ng-deep {
-          .mat-mdc-button-touch-target {
-            height: 30px;
-          }
-        }
+        padding: 0 5px;
       }
     }
     .mat-mdc-header-cell {

@@ -34,7 +34,7 @@ export class ChangelogComponent {
   constructor(
     private cd: ChangeDetectorRef,
     public dialogRef: MatDialogRef<ChangelogComponent, void>,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private status: AppStatusService,
     private config: AppConfigService
   ) {
@@ -49,7 +49,7 @@ export class ChangelogComponent {
     this._nextPageLock = true;
     const page = this.currentPage + 1;
     this.loading = true;
-    const {changelog, count} = await this.dataService.getChangelog(page, pageSize);
+    const {changelog, count} = await this.http.getChangelog(page, pageSize);
     this.loading = false;
     this.changelog = this.changelog.concat(changelog);
     this.maxPage = Math.ceil((count || 0) / pageSize);

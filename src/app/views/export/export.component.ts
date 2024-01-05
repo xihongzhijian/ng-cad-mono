@@ -41,7 +41,7 @@ export class ExportComponent implements OnInit {
 
   constructor(
     private dialog: MatDialog,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService,
     private status: AppStatusService
   ) {
@@ -63,7 +63,7 @@ export class ExportComponent implements OnInit {
   }
 
   private async _queryIds(where: ObjectOf<any>) {
-    return (await this.dataService.queryMongodb<{_id: string}>({collection: "cad", fields: ["_id"], where})).map((v) => v._id);
+    return (await this.http.queryMongodb<{_id: string}>({collection: "cad", fields: ["_id"], where})).map((v) => v._id);
   }
 
   async exportCads(type: ExportType) {
@@ -124,7 +124,7 @@ export class ExportComponent implements OnInit {
           finish("hidden");
           return;
         }
-        const response = await this.dataService.post<any>("ngcad/getImportDxf", {
+        const response = await this.http.post<any>("ngcad/getImportDxf", {
           xinghao
         });
         if (response && response.code === 0 && response.data) {
@@ -137,13 +137,13 @@ export class ExportComponent implements OnInit {
             return;
           }
           const importResult = CadPortable.import({sourceCad});
-          const slgses: CadSourceParams["slgses"] = await this.dataService.queryMongodb({
+          const slgses: CadSourceParams["slgses"] = await this.http.queryMongodb({
             collection: "material",
             where: {"选项.型号": xinghao}
           });
           this.exportParams.sourceParams = {sourceCad, importResult, xinghaoInfo, slgses};
         } else {
-          finish("error", this.dataService.lastResponse?.msg || "读取文件失败");
+          finish("error", this.http.lastResponse?.msg || "读取文件失败");
           return;
         }
         ids = await this._queryIds({$where: `this.选项&&this.选项.型号&&this.选项.型号.split(";").indexOf("${xinghao}")>-1`});
@@ -178,7 +178,7 @@ export class ExportComponent implements OnInit {
         } else {
           this.msg = `正在导出数据((${i + 1}~${end})/${total})`;
         }
-        const data = await this.dataService.queryMongodb({collection: "cad", where: {_id: {$in: currIds}}, genUnqiCode: true});
+        const data = await this.http.queryMongodb({collection: "cad", where: {_id: {$in: currIds}}, genUnqiCode: true});
         data.forEach((v) => cads.push(new CadData(v.json)));
         this.progressBar.forward(end - i);
       }
@@ -188,12 +188,12 @@ export class ExportComponent implements OnInit {
         result = await CadPortable.export(this.exportParams, this.status.projectConfig);
       } catch (error) {
         console.error(error);
-        finish("error", this.dataService.lastResponse?.msg || "导出失败");
+        finish("error", this.http.lastResponse?.msg || "导出失败");
         return;
       }
       this.msg = "正在下载dxf文件";
       filename += `@${DateTime.now().toFormat("yyyy-MM-dd")}.dxf`;
-      const downloadResult = await this.dataService.downloadDxf(result, {filename});
+      const downloadResult = await this.http.downloadDxf(result, {filename});
       if (downloadResult) {
         finish("success", "导出成功");
       } else {

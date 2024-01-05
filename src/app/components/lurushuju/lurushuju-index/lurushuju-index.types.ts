@@ -34,3 +34,10 @@ export interface XuanxiangFormData {
   可选项: {vid: number; mingzi: string}[];
   默认值: string;
 }
+
+export interface BancaifenzuInfo {
+  bancaiKeys: string[];
+  bancaiKeysNonClear: string[];
+  bancaiKeysRequired: string[];
+  qiliaoNames: string[];
+}

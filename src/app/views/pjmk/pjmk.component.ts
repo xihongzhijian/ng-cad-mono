@@ -25,7 +25,7 @@ export class PjmkComponent implements OnInit {
 
   constructor(
     private dialog: MatDialog,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private route: ActivatedRoute,
     private message: MessageService
   ) {}
@@ -50,7 +50,7 @@ export class PjmkComponent implements OnInit {
       this.message.error("缺少参数: table");
       return;
     }
-    const records = await this.dataService.queryMySql<{peijianmokuai: string} & TableDataBase>({
+    const records = await this.http.queryMySql<{peijianmokuai: string} & TableDataBase>({
       table,
       filter: {where: {vid: id}},
       fields: ["mingzi", "peijianmokuai"]
@@ -61,8 +61,8 @@ export class PjmkComponent implements OnInit {
         this.data = importZixuanpeijian(JSON.parse(records[0].peijianmokuai));
       } catch (error) {}
     }
-    const structResponse = await this.dataService.post<any>("jichu/jichu/getXiaodaohangStructure", {id: table});
-    this.tableName = this.dataService.getData(structResponse)?.mingzi || "";
+    const structResponse = await this.http.getData<any>("jichu/jichu/getXiaodaohangStructure", {id: table});
+    this.tableName = structResponse?.mingzi || "";
     document.title = `${this.tableName}配件模块 - ${this.name}`;
   }
 
@@ -86,6 +86,6 @@ export class PjmkComponent implements OnInit {
 
   async submit() {
     const {table, id, data} = this;
-    await this.dataService.post<void>("ngcad/setTableZixuanpeijian", {table, id, data: exportZixuanpeijian(data)});
+    await this.http.post<void>("ngcad/setTableZixuanpeijian", {table, id, data: exportZixuanpeijian(data)});
   }
 }

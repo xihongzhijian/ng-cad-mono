@@ -9,9 +9,8 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+import {SafeUrl} from "@angular/platform-browser";
 import {imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {setDimensionText} from "@app/cad/utils";
 import {toFixed} from "@app/utils/func";
@@ -164,13 +163,12 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<ZixuanpeijianComponent, ZixuanpeijianOutput>,
     @Inject(MAT_DIALOG_DATA) public data: ZixuanpeijianInput | null,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService,
     private dialog: MatDialog,
     private elRef: ElementRef<HTMLElement>,
     private calc: CalcService,
-    private status: AppStatusService,
-    private domSanitizer: DomSanitizer
+    private status: AppStatusService
   ) {
     super();
   }
@@ -200,7 +198,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     } else {
       const {code, type} = this.data?.order || {};
       if (code && type) {
-        step1Data = await getStep1Data(this.dataService, {spinner: this.spinnerId}, {code, type});
+        step1Data = await getStep1Data(this.http, {spinner: this.spinnerId}, {code, type});
       }
     }
     if (step1Data) {
@@ -227,7 +225,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         typesInfo[type1][type2] = 1;
       }
     });
-    const zxpjCads = await getZixuanpeijianCads(this.dataService, {spinner: this.spinnerId}, typesInfo, this.materialResult);
+    const zxpjCads = await getZixuanpeijianCads(this.http, {spinner: this.spinnerId}, typesInfo, this.materialResult);
     if (zxpjCads) {
       const {cads, bancais} = zxpjCads;
       this.bancaiList = bancais;
@@ -381,15 +379,16 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async step3Fetch(updateInputInfos = true) {
-    const response = await this.dataService.post<{cads: CadData[]}>("ngcad/getLingsanCads");
-    const responseData = this.dataService.getData(response);
+    const responseData = await this.http.getData<{cads: CadData[]}>("ngcad/getLingsanCads");
     if (responseData) {
       this.lingsanCadImgs = {};
       this.lingsanCadInfos = {};
       this.lingsanCads = {};
       for (const v of responseData.cads) {
         const data = new CadData(v);
-        const item: ZixuanpeijianlingsanCadItem = {data, img: imgCadEmpty, hidden: false};
+        const img = this.http.getCadImgUrl(data.id);
+        this.lingsanCadImgs[data.id] = img;
+        const item: ZixuanpeijianlingsanCadItem = {data, img, hidden: false};
         const type = item.data.type2;
         if (!this.lingsanCadInfos[type]) {
           this.lingsanCadInfos[type] = {hidden: false};
@@ -413,13 +412,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         } else {
           toRemove.push(i);
         }
-        getCadPreview("cad", item.data, {http: this.dataService}).then((img) => {
-          const img2 = this.domSanitizer.bypassSecurityTrustUrl(img);
-          this.lingsanCadImgs[item.info.houtaiId] = img2;
-          if (found) {
-            found.img = img2;
-          }
-        });
       }
       if (toRemove.length > 0) {
         this.result.零散 = this.result.零散.filter((_, i) => !toRemove.includes(i));
@@ -924,8 +916,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
     const collection = "cad";
     let id = data.id;
-    const response = await this.dataService.post<{id: string}>("peijian/cad/copyCad", {collection, id, data: {名字: name}});
-    const responseData = this.dataService.getData(response);
+    const responseData = await this.http.getData<{id: string}>("peijian/cad/copyCad", {collection, id, data: {名字: name}});
     if (!responseData) {
       return;
     }
@@ -970,7 +961,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (isMuban) {
       collection = "kailiaocadmuban";
       const id = this.getMubanId(item.data);
-      const {cads} = await this.dataService.getCad({collection, id});
+      const {cads} = await this.http.getCad({collection, id});
       if (cads.length > 0) {
         data = cads[0];
       } else {
@@ -982,7 +973,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         data = item.data;
       } else {
         const id = item.info.houtaiId;
-        const {cads} = await this.dataService.getCad({collection, id});
+        const {cads} = await this.http.getCad({collection, id});
         if (cads.length > 0) {
           data = cads[0];
         } else {
@@ -1040,16 +1031,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   setlingsanCadType(type: string) {
-    for (const type2 in this.lingsanCads) {
-      for (const item of this.lingsanCads[type2]) {
-        if (!item.hidden && item.img === imgCadEmpty) {
-          getCadPreview("cad", item.data, {http: this.dataService}).then((img) => {
-            item.img = this.domSanitizer.bypassSecurityTrustUrl(img);
-            this.lingsanCadImgs[item.data.id] = item.img;
-          });
-        }
-      }
-    }
     this.lingsanCadType = type;
   }
 
@@ -1166,7 +1147,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       this.message.error("当前配件模块数据是旧数据，请刷新数据");
       return;
     }
-    const url = await this.dataService.getShortUrl("配件模块", {search2: {where_in: {vid: ids}}}, {spinner: this.spinnerId});
+    const url = await this.http.getShortUrl("配件模块", {search2: {where_in: {vid: ids}}}, {spinner: this.spinnerId});
     if (url) {
       // this.message.iframe(this.mokuaiUrl);
       open(url, "_blank");

@@ -118,7 +118,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     private message: MessageService,
     private differs: KeyValueDiffers,
     private dialog: MatDialog,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private status: AppStatusService
   ) {
     this.editing = {colIdx: -1, rowIdx: -1, value: ""};
@@ -205,7 +205,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       const values = await this.message.form(infos);
       if (values) {
         const {tableName, refresh} = onlineMode;
-        const insertResult = await this.dataService.tableInsert({table: tableName, data: values});
+        const insertResult = await this.http.tableInsert({table: tableName, data: values});
         if (insertResult) {
           await refresh();
         }
@@ -246,7 +246,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         return;
       } else if (await this.message.confirm(`确定删除选中的${vids.length}条数据？`)) {
         const {tableName, refresh} = onlineMode;
-        const deleteResult = await this.dataService.tableDelete({table: tableName, vids});
+        const deleteResult = await this.http.tableDelete({table: tableName, vids});
         if (deleteResult) {
           await refresh();
         }
@@ -300,7 +300,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       this.validate();
       const item2 = item as TableDataBase;
       if (onlineMode && this.errorState.length < 1) {
-        this.dataService.tableUpdate({table: onlineMode.tableName, data: {vid: item2.vid, [field]: valueAfter}});
+        this.http.tableUpdate({table: onlineMode.tableName, data: {vid: item2.vid, [field]: valueAfter}});
       }
       this.cellChange.emit({column, item, colIdx, rowIdx});
     }
@@ -516,7 +516,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (!file) {
       return;
     }
-    await this.dataService.tableUploadFile({table: onlineMode.tableName, vid, field, file});
+    await this.http.tableUploadFile({table: onlineMode.tableName, vid, field, file});
   }
 
   async deleteFile(colIdx: number, rowIdx: number, item: T) {
@@ -527,7 +527,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const column = this.info.columns[colIdx];
     const vid = Number((item as any).vid);
     const field = column.field as any;
-    await this.dataService.tableDeleteFile({table: onlineMode.tableName, vid, field});
+    await this.http.tableDeleteFile({table: onlineMode.tableName, vid, field});
   }
 
   async generateItemCadImg(id: string, item: T, column: ColumnInfo<T>) {
@@ -604,7 +604,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (!file) {
       return;
     }
-    const data = await this.dataService.uploadDxf(file);
+    const data = await this.http.uploadDxf(file);
     if (data) {
       this.setCellValue(JSON.stringify(data.export()), colIdx, rowIdx, item);
     }
@@ -660,7 +660,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       }
     };
     addRows(this.info.data);
-    this.dataService.downloadExcel(data, this.info.title, opts?.filename);
+    this.http.downloadExcel(data, this.info.title, opts?.filename);
   }
 
   valueToString(item: T, column: ColumnInfo<T>) {

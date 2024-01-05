@@ -24,7 +24,7 @@ export class KailiaokongweipeizhiComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService
   ) {}
 
@@ -36,8 +36,7 @@ export class KailiaokongweipeizhiComponent implements OnInit {
     const id = this.route.snapshot.queryParams.id;
     if (id) {
       this.id = id;
-      const response = await this.dataService.get<ObjectOf<KlkwpzItem[]>>("peijian/kailiaokongweipeizhi/get", {id}, {testData: "klkwpz"});
-      const data = this.dataService.getData(response);
+      const data = await this.http.getData<ObjectOf<KlkwpzItem[]>>("peijian/kailiaokongweipeizhi/get", {id}, {testData: "klkwpz"});
       if (data && typeof data === "object" && !Array.isArray(data)) {
         this.data = data;
       }
@@ -51,7 +50,7 @@ export class KailiaokongweipeizhiComponent implements OnInit {
 
   async submit() {
     if (this.klkwpzComponent && this.klkwpzComponent.submit()) {
-      const response = await this.dataService.post(
+      const response = await this.http.post(
         "peijian/kailiaokongweipeizhi/set",
         {id: this.id, data: this.klkwpzComponent.klkwpz.export()},
         {spinner: this.loaderId}

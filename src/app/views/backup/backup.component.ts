@@ -72,7 +72,7 @@ export class BackupComponent implements AfterViewInit {
 
   constructor(
     private message: MessageService,
-    private dataService: CadDataService,
+    private http: CadDataService,
     private sanitizer: DomSanitizer,
     private route: ActivatedRoute,
     private spinner: SpinnerService,
@@ -82,7 +82,7 @@ export class BackupComponent implements AfterViewInit {
       const {id, collection} = this.route.snapshot.queryParams;
       if (id && collection) {
         this.spinner.show(this.loaderId, {text: "正在获取数据"});
-        const cads = (await this.dataService.getCad({id, collection})).cads;
+        const cads = (await this.http.getCad({id, collection})).cads;
         this.spinner.hide(this.loaderId);
         if (cads.length > 0) {
           const cad = cads[0];
@@ -99,7 +99,7 @@ export class BackupComponent implements AfterViewInit {
   }
 
   async getBackupCads(search: BackupCadsSearchParams) {
-    const response = await this.dataService.post("peijian/cad/getBackupCads", search);
+    const response = await this.http.post("peijian/cad/getBackupCads", search);
     if (response) {
       const result = response.data as {time: number; data: CadData}[];
       result.forEach((v) => {
@@ -124,12 +124,12 @@ export class BackupComponent implements AfterViewInit {
 
   async getData() {
     this.searchParams.time = this.searchTime.getTime();
-    const response = await this.dataService.post<BackupCadsResult>("peijian/cad/getBackupCads", this.searchParams, {
+    const result = await this.http.getDataAndCount<BackupCadsResult>("peijian/cad/getBackupCads", this.searchParams, {
       spinner: {id: this.loaderId, config: {text: "正在获取数据"}}
     });
-    const data = this.dataService.getData(response);
-    if (data) {
-      this.cadsCount = response?.count || 0;
+    if (result?.data) {
+      const data = result.data;
+      this.cadsCount = result.count;
       this.data.length = 0;
       this.minTime.setTime(data.minTime);
       this.maxTime.setTime(data.maxTime);
@@ -150,7 +150,7 @@ export class BackupComponent implements AfterViewInit {
       const collection = this.status.collection$.value;
       await Promise.all(
         this.data.map(async (v) => {
-          const url = await getCadPreview(collection, v.data, {http: this.dataService});
+          const url = await getCadPreview(collection, v.data, {http: this.http});
           v.img = this.sanitizer.bypassSecurityTrustUrl(url);
         })
       );
@@ -162,14 +162,14 @@ export class BackupComponent implements AfterViewInit {
       return;
     }
     this.spinner.show(this.loaderId, {text: "正在恢复备份"});
-    await this.dataService.setCad({collection: "cad", cadData: this.data[i].data, force: true}, true);
+    await this.http.setCad({collection: "cad", cadData: this.data[i].data, force: true}, true);
     this.spinner.hide(this.loaderId);
   }
 
   async remove(i: number) {
     if (await this.message.confirm("删除后无法恢复, 是否继续?")) {
       this.spinner.show(this.loaderId, {text: "正在删除备份"});
-      const result = await this.dataService.removeBackup(this.data[i].data.name, this.data[i].time);
+      const result = await this.http.removeBackup(this.data[i].data.name, this.data[i].time);
       this.spinner.hide(this.loaderId);
       if (result) {
         this.getData();

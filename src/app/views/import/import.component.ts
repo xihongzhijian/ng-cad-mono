@@ -89,7 +89,7 @@ export class ImportComponent extends Utils() implements OnInit {
   导入dxf文件时展开名字不改变 = false;
 
   constructor(
-    private dataService: CadDataService,
+    private http: CadDataService,
     private message: MessageService,
     private spinner: SpinnerService,
     private status: AppStatusService
@@ -164,7 +164,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this.spinner.show(loaderId);
     const 导入dxf文件时展开名字不改变 = this.status.projectConfig.getBoolean("导入dxf文件时展开名字不改变");
     const httpOptions: HttpOptions = {silent: true};
-    const data = await this.dataService.uploadDxf(this._sourceFile, false, httpOptions);
+    const data = await this.http.uploadDxf(this._sourceFile, false, httpOptions);
     if (!data) {
       return finish(true, "error", "读取文件失败");
     }
@@ -207,7 +207,7 @@ export class ImportComponent extends Utils() implements OnInit {
         return finish(true, "error", "型号不一致");
       }
       const xinghao = xinghaos[0];
-      const isXinghaoDoneRes = await this.dataService.post<boolean>("ngcad/isXinghaoDone", {xinghao});
+      const isXinghaoDoneRes = await this.http.post<boolean>("ngcad/isXinghaoDone", {xinghao});
       if (isXinghaoDoneRes?.data === true) {
         this.message.alert("型号已经检查完成，不允许导入。如果需要导入，请先设置型号进度为否。");
         return finish(true, "error", "型号已经检查完成");
@@ -243,11 +243,11 @@ export class ImportComponent extends Utils() implements OnInit {
     if (isXinghao) {
       const xinghao = cads[0].data.options.型号;
       const uniqCodes = cads.map((v) => v.data.info.唯一码);
-      const oldCadsRaw = await this.dataService.queryMongodb({
+      const oldCadsRaw = await this.http.queryMongodb({
         collection: "cad",
         where: {"选项.型号": xinghao, 分类: "算料", 名字: {$regex: "^((?!分体|上下包边).)*$"}}
       });
-      const oldSlgsRaw = await this.dataService.queryMongodb({collection: "material", where: {"选项.型号": xinghao}});
+      const oldSlgsRaw = await this.http.queryMongodb({collection: "material", where: {"选项.型号": xinghao}});
       const toDelete = {cad: [] as string[], material: [] as string[]};
       oldCadsRaw.forEach((v) => {
         if (!uniqCodes.includes(v.json?.info?.唯一码)) {
@@ -263,7 +263,7 @@ export class ImportComponent extends Utils() implements OnInit {
       // }
       if (toDelete.material.length > 0) {
         this.msg = "正在删除旧的算料公式";
-        await this.dataService.removeCads("material", toDelete.material, {silent: true});
+        await this.http.removeCads("material", toDelete.material, {silent: true});
       }
     }
     this.progressBar.start(totalCad);
@@ -272,7 +272,7 @@ export class ImportComponent extends Utils() implements OnInit {
         skipped++;
         continue;
       }
-      const result = await this.dataService.setCad(
+      const result = await this.http.setCad(
         {
           collection: "cad",
           cadData: cads[i].data,
@@ -285,17 +285,17 @@ export class ImportComponent extends Utils() implements OnInit {
       this.msg = `正在导入dxf数据(${i + 1}/${totalCad})`;
       if (!result) {
         skipped++;
-        this.cads[i].errors.push(this.dataService.lastResponse?.msg || "保存失败");
+        this.cads[i].errors.push(this.http.lastResponse?.msg || "保存失败");
       }
       this.progressBar.forward();
     }
     this.progressBar.start(totalSlgs);
     for (let i = 0; i < totalSlgs; i++) {
-      const response = await this.dataService.post("ngcad/updateSuanliaogonshi", {data: this.slgses[i].data}, httpOptions);
+      const responseData = await this.http.getData("ngcad/updateSuanliaogonshi", {data: this.slgses[i].data}, httpOptions);
       this.msg = `正在导入算料公式(${i + 1}/${totalSlgs})`;
-      if (!this.dataService.getData(response)) {
+      if (!responseData) {
         skipped++;
-        this.slgses[i].errors.push(this.dataService.lastResponse?.msg || "保存失败");
+        this.slgses[i].errors.push(this.http.lastResponse?.msg || "保存失败");
       }
       this.progressBar.forward();
     }
@@ -305,9 +305,9 @@ export class ImportComponent extends Utils() implements OnInit {
     this.msg = `正在保存dxf文件`;
     if (isXinghao) {
       const xinghao = this.cads[0].data.options.型号;
-      const result = await this.dataService.post<boolean>("ngcad/setImportDxf", {file: this._sourceFile, xinghao});
+      const result = await this.http.post<boolean>("ngcad/setImportDxf", {file: this._sourceFile, xinghao});
       if (!result) {
-        return finish(true, "error", this.dataService.lastResponse?.msg || "保存失败");
+        return finish(true, "error", this.http.lastResponse?.msg || "保存失败");
       }
     }
     const total = totalCad + totalSlgs;
@@ -376,12 +376,11 @@ export class ImportComponent extends Utils() implements OnInit {
           if (isXinghao) {
             v.data.info.唯一码 = CadPortable.getUniqCode(v.data);
           } else {
-            const response = await this.dataService.post<string>(
+            const 唯一码 = await this.http.getData<string>(
               "ngcad/generateUniqCode",
               {uniqCode: CadPortable.getUniqCode(v.data)},
               httpOptions
             );
-            const 唯一码 = this.dataService.getData(response);
             if (唯一码) {
               v.data.info.唯一码 = 唯一码;
             } else {
@@ -521,7 +520,7 @@ export class ImportComponent extends Utils() implements OnInit {
         errors.push(`选项【${optionKey}】重复: ${duplicateValues.join(", ")}`);
       }
       if (this._optionsCache[optionKey] === undefined) {
-        const optionInfo = await this.dataService.getOptions({name: optionKey}, httpOptions);
+        const optionInfo = await this.http.getOptions({name: optionKey}, httpOptions);
         this._optionsCache[optionKey] = (optionInfo?.data || []).map((v) => v.name);
       }
       const optionsNotExist = difference(optionValues, this._optionsCache[optionKey], ["所有", "不选", "不选无"]);
@@ -702,10 +701,10 @@ export class ImportComponent extends Utils() implements OnInit {
     const data = slgs.data;
     slgs.errors = slgs.errors.concat(await this._validateOptions(data.选项, httpOptions));
     if (Object.keys(data.公式).length > 0) {
-      const strict = this.dataService.strict;
-      this.dataService.strict = false;
-      const response = await this.dataService.post("ngcad/validateFormulas", {formulas: data.公式}, httpOptions);
-      this.dataService.strict = strict;
+      const strict = this.http.strict;
+      this.http.strict = false;
+      const response = await this.http.post("ngcad/validateFormulas", {formulas: data.公式}, httpOptions);
+      this.http.strict = strict;
       if (response?.code !== 0) {
         const msg = response?.msg || "验证算料公式时出错";
         slgs.errors.push(msg);
@@ -764,7 +763,7 @@ export class ImportComponent extends Utils() implements OnInit {
       return;
     }
     this.spinner.show(this.loaderIds.downloadSourceCad);
-    await this.dataService.downloadDxf(this.sourceCad);
+    await this.http.downloadDxf(this.sourceCad);
     this.spinner.hide(this.loaderIds.downloadSourceCad);
   }
 

@@ -26,7 +26,7 @@ export class CleanComponent implements OnInit {
 
   private _scrollToBottomTimer = -1;
 
-  constructor(private dataService: CadDataService) {}
+  constructor(private http: CadDataService) {}
 
   ngOnInit() {
     setGlobal("clean", this);
@@ -102,7 +102,7 @@ export class CleanComponent implements OnInit {
   async step1() {
     this.pushMsgDivider();
     this.pushMsg("info", "开始清理任务");
-    const response = await this.dataService.post<void>("clean/clean/runCleanStep1", {}, {silent: true});
+    const response = await this.http.post<void>("clean/clean/runCleanStep1", {}, {silent: true});
     const success = this.pushResponseMsg(response, "步骤1完成", "步骤1失败");
     if (success) {
       this.step2();
@@ -114,7 +114,7 @@ export class CleanComponent implements OnInit {
   async step2() {
     this.pushMsgDivider();
     this.pushMsg("info", "获取需要获取资源文件的项目");
-    const response = await this.dataService.post<string[]>("clean/clean/runCleanStep2", {}, {silent: true});
+    const response = await this.http.post<string[]>("clean/clean/runCleanStep2", {}, {silent: true});
     let projects: string[];
     if (response?.code === 0) {
       projects = response.data || [];
@@ -126,7 +126,7 @@ export class CleanComponent implements OnInit {
           this.msgs.splice(progressIndex, 1);
         }
         progressIndex = this.pushMsgProgress(`项目${project}获取资源文件`, i + 1, total);
-        const response2 = await this.dataService.post<string[]>("clean/clean/runCleanStep2", {project}, {silent: true});
+        const response2 = await this.http.post<string[]>("clean/clean/runCleanStep2", {project}, {silent: true});
         this.pushResponseMsg(response2, `项目${project}获取资源文件成功`, `项目${project}获取资源文件失败`);
         if (response2?.code !== 0) {
           this.end();
@@ -142,7 +142,7 @@ export class CleanComponent implements OnInit {
 
   async step3() {
     this.pushMsgDivider();
-    const response = await this.dataService.post("clean/clean/runCleanStep3", {}, {silent: true});
+    const response = await this.http.post("clean/clean/runCleanStep3", {}, {silent: true});
     const success = this.pushResponseMsg(response, "步骤3完成", "步骤3失败");
     if (success) {
       this.step4();
@@ -161,7 +161,7 @@ export class CleanComponent implements OnInit {
       return;
     }
     do {
-      const response = await this.dataService.post<{success: ObjectOf<any>[]; error: ObjectOf<any> & {error: string}[]}>(
+      const response = await this.http.post<{success: ObjectOf<any>[]; error: ObjectOf<any> & {error: string}[]}>(
         "clean/clean/runCleanStep4",
         {limit: this.deleteLimit, initial},
         {silent: true}
@@ -193,20 +193,20 @@ export class CleanComponent implements OnInit {
   }
 
   async finfishClean() {
-    const response = await this.dataService.post<void>("clean/clean/finishedClean", {}, {silent: true});
+    const response = await this.http.post<void>("clean/clean/finishedClean", {}, {silent: true});
     this.end(response);
   }
 
   async createClean() {
     this.pushMsgDivider();
     this.pushMsg("info", "创建清理任务");
-    const response = await this.dataService.post<void>("clean/clean/createClean", {}, {silent: true});
+    const response = await this.http.post<void>("clean/clean/createClean", {}, {silent: true});
     this.pushResponseMsg(response, "创建清理任务成功", "创建清理任务失败");
   }
 
   async resetClean() {
     this.pushMsgDivider();
-    const response = await this.dataService.post<void>("clean/clean/resetNotFinishedClean", {}, {silent: true});
+    const response = await this.http.post<void>("clean/clean/resetNotFinishedClean", {}, {silent: true});
     this.pushResponseMsg(response, "重置清理任务成功", "重置清理任务失败");
   }
 

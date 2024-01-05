@@ -89,5 +89,9 @@
     & > *:not(:last-child) {
       margin-right: 10px;
     }
+
+    .mat-mdc-button {
+      padding: 0;
+    }
   }
 }
