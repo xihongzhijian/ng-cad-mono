@@ -158,3 +158,11 @@ export interface TableRenderDataColumn {
   guanLian?: string;
   inputOnAdd?: number;
 }
+
+export type 后台CAD = {
+  _id: string;
+  名字: string;
+  选项?: ObjectOf<string>;
+  条件?: string[];
+  json?: ObjectOf<any>;
+};

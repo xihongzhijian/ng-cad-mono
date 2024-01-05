@@ -22,7 +22,8 @@ import {
   TableInsertParams,
   TableRenderData,
   TableUpdateParams,
-  TableUploadFile
+  TableUploadFile,
+  后台CAD
 } from "./cad-data.service.types";
 import {CadImgCache} from "./cad-img-cache";
 import {HttpService} from "./http.service";
@@ -87,7 +88,7 @@ export class CadDataService extends HttpService {
   }
 
   async getCadRaw(params: GetCadParams) {
-    return await this.getDataAndCount<ObjectOf<any>[]>("peijian/cad/getCad", {...params, raw: true});
+    return await this.getDataAndCount<后台CAD[]>("peijian/cad/getCad", {...params, raw: true});
   }
 
   exportCadData(data: CadData, hideLineLength: boolean) {

@@ -1,7 +1,7 @@
 import {animate, style, transition, trigger} from "@angular/animations";
 import {coerceBooleanProperty} from "@angular/cdk/coercion";
-import {NgClass, NgIf, NgStyle} from "@angular/common";
-import {Component, ElementRef, Input, ViewChild} from "@angular/core";
+import {CommonModule} from "@angular/common";
+import {Component, ElementRef, HostBinding, Input, ViewChild} from "@angular/core";
 import {SafeUrl} from "@angular/platform-browser";
 import {timeout} from "@lucilor/utils";
 
@@ -27,7 +27,7 @@ const imgLoading = "assets/images/loading.gif";
     ])
   ],
   standalone: true,
-  imports: [NgIf, NgStyle, NgClass]
+  imports: [CommonModule]
 })
 export class ImageComponent {
   private _src?: string | SafeUrl;
@@ -41,8 +41,7 @@ export class ImageComponent {
       this.loading = true;
       this._src2 = "";
     } else {
-      this.loading = false;
-      this._src2 = imgEmpty;
+      this.onError();
     }
   }
   private _src2 = "";
@@ -78,11 +77,12 @@ export class ImageComponent {
     this._control = coerceBooleanProperty(value);
   }
   loading = true;
-  loadingSrc = imgLoading;
-  emptySrc = imgEmpty;
+  @Input() loadingSrc = imgLoading;
+  @Input() emptySrc = imgEmpty;
   bigPicVisible = false;
   bigPicClass = ["big-pic"];
   @ViewChild("bigPicDiv", {read: ElementRef}) bigPicDiv?: ElementRef<HTMLDivElement>;
+  @HostBinding("class") class: string[] = [];
 
   constructor(private elRef: ElementRef<HTMLElement>) {}
 
@@ -114,6 +114,9 @@ export class ImageComponent {
   onError() {
     this.loading = false;
     this._src2 = this.emptySrc;
+    if (!this.class.includes("error")) {
+      this.class.push("error");
+    }
   }
 
   async showBigPic() {

@@ -8,9 +8,12 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {SafeUrl} from "@angular/platform-browser";
 import {filePathUrl, getBooleanStr, getFilepathUrl, session, setGlobal} from "@app/app.common";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
+import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
+import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, queryString, RequiredKeys} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
@@ -34,6 +37,7 @@ import {
   getGongyi,
   getXinghao,
   menjiaoCadTypes,
+  updateSuanliaoCads,
   updateXinghaoFenleis,
   Xinghao,
   XinghaoRaw,
@@ -195,6 +199,7 @@ export class LurushujuIndexComponent implements OnInit {
   fenleiName = "";
   gongyiName = "";
   production = environment.production;
+  cadImgs: ObjectOf<SafeUrl> = {};
 
   constructor(
     private http: CadDataService,
@@ -211,6 +216,10 @@ export class LurushujuIndexComponent implements OnInit {
     } else {
       this.setStep(1, {});
     }
+  }
+
+  returnZero() {
+    return 0;
   }
 
   async getXinghaos() {
@@ -390,7 +399,16 @@ export class LurushujuIndexComponent implements OnInit {
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
     this.menjiaoTable.data = gongyi.门铰锁边铰边;
-    // this.bancaifenzuInfo = this.http;
+    this.bancaifenzuInfo = await this.http.getData<BancaifenzuInfo>("peijian/xinghao/getBancaifenzuInfo");
+    updateSuanliaoCads(gongyi, this.bancaifenzuInfo?.bancaiKeys || []);
+    this.cadImgs = {};
+    for (const key in gongyi.算料CAD) {
+      const group = gongyi.算料CAD[key];
+      for (const cad of group) {
+        const id = cad._id;
+        this.cadImgs[id] = this.http.getCadImgUrl(id);
+      }
+    }
   }
 
   onSelectedTabChange({index}: MatTabChangeEvent) {
@@ -1134,9 +1152,9 @@ export class LurushujuIndexComponent implements OnInit {
         search2[`选项.${key}`] = extraData.选项[key];
       }
     }
-    const response = await this.http.post<string>("ngcad/getShortUrl", {name: "算料公式", data: {search2, extraData}});
-    if (response?.data) {
-      open(response.data);
+    const url = await this.http.getData<string>("ngcad/getShortUrl", {name: "算料公式", data: {search2, extraData}});
+    if (url) {
+      window.open(url);
     }
   }
 
@@ -1191,13 +1209,42 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  async selectSuanliaoCads() {
-    const result = await openZixuanpeijianDialog(this.dialog, {data: {step: 3, stepFixed: true}});
+  async selectSuanliaoCads(key: string) {
+    const {gongyi} = this;
+    if (!gongyi || !gongyi.算料CAD[key]) {
+      return;
+    }
+    const data: ZixuanpeijianInput = {
+      data: {
+        零散: gongyi.算料CAD[key].map((v) => {
+          return {data: new CadData(), info: {houtaiId: v._id, zhankai: [], calcZhankai: []}};
+        })
+      },
+      step: 3,
+      stepFixed: true
+    };
+    const result = await openZixuanpeijianDialog(this.dialog, {data});
     if (!result) {
       return;
     }
     const ids = result.零散.map((v) => v.info.houtaiId);
-    const cads = await this.http.getCadRaw({ids, collection: "cad"});
-    console.log(cads);
+    if (ids.length > 0) {
+      const result2 = await this.http.getCadRaw({ids, collection: "cad"});
+      if (result2?.data) {
+        gongyi.算料CAD[key] = result2.data;
+        for (const cad of result2.data) {
+          if (!this.cadImgs[cad._id]) {
+            this.cadImgs[cad._id] = this.http.getCadImgUrl(cad._id);
+          }
+        }
+      }
+    } else {
+      gongyi.算料CAD[key] = [];
+    }
+    await this.submitGongyi(["算料CAD"]);
+  }
+
+  suanliao() {
+    this.message.alert("未实现");
   }
 }

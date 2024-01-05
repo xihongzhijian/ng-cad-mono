@@ -106,7 +106,7 @@
                     <button mat-button color="primary" (click)="editGongshis(i)">编辑</button>
                   </mat-card-header>
                   <mat-card-content>
-                    <div class="gongshi-item flex-row" *ngFor="let item of gongshi['公式'] | keyvalue">
+                    <div class="gongshi-item flex-row" *ngFor="let item of gongshi['公式'] | keyvalue: returnZero">
                       <span>{{ item.key }}</span>
                       <span>=</span>
                       <span>{{ item.value }}</span>
@@ -136,12 +136,26 @@
             </ng-scrollbar>
           </div>
         </div>
+        <mat-divider vertical></mat-divider>
         <div class="suanliaocads flex-column">
           <div class="toolbar">
             <div class="flex-110"></div>
-            <button mat-raised-button color="primary" (click)="selectSuanliaoCads()">选择CAD</button>
-            <button mat-raised-button color="primary">选择CAD</button>
+            <button mat-raised-button color="primary" (click)="suanliao()">计算</button>
           </div>
+          <ng-scrollbar>
+            <div class="cad-group items item" *ngFor="let item of gongyi?.['算料CAD'] | keyvalue: returnZero">
+              <div class="toolbar">
+                <div class="title">{{ item.key }}</div>
+                <button mat-raised-button color="primary" (click)="selectSuanliaoCads(item.key)">选择CAD</button>
+              </div>
+              <div class="cads items add-empty-msg no-items-per-row">
+                <div class="cad item" *ngFor="let cad of item.value">
+                  <div class="name">{{ cad["名字"] }}</div>
+                  <app-image class="cad-preview" [src]="cadImgs[cad['_id']]"></app-image>
+                </div>
+              </div>
+            </div>
+          </ng-scrollbar>
         </div>
       </div>
     </mat-tab>

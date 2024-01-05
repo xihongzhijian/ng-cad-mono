@@ -1,5 +1,5 @@
+import {ObjectOf} from "@lucilor/utils";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
-import {ObjectOf} from "packages/utils/lib";
 
 export interface TableInfoData {
   标题: string;

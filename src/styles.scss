@@ -39,7 +39,7 @@ body {
 .add-empty-msg:empty::after {
   content: "空空如也";
   color: #888888;
-  font-size: 1rem;
+  font-size: 1em;
 }
 
 .not-allowed {
@@ -163,6 +163,15 @@ img.cad-preview,
   object-fit: contain;
   background-color: black;
 }
+app-image.cad-preview {
+  width: var(--cad-preview-width, auto);
+  height: var(--cad-preview-height, auto);
+  &.error {
+    img {
+      object-fit: cover;
+    }
+  }
+}
 
 /* Remove Input Arrows/Spinners */
 /* Chrome, Safari, Edge, Opera */
@@ -222,6 +231,8 @@ input[type="number"] {
   --title-size: 1.5rem;
   --title-padding: 0.5em;
   --border: 1px solid black;
+  // --cad-preview-width: 300px;
+  // --cad-preview-height: 150px;
 }
 
 .title {

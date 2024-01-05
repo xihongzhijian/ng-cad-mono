@@ -1,5 +1,7 @@
 :host {
   --title-size: 1.2em;
+  --cad-preview-width: 200px;
+  --cad-preview-height: 100px;
 }
 
 .step-1 {
@@ -73,5 +75,19 @@
 
   .suanliaocads {
     flex: 1 1 0;
+
+    .cad-group {
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--mat-divider-color);
+      }
+
+      > .name {
+        text-align: left;
+      }
+    }
+
+    .cads {
+      width: 100%;
+    }
   }
 }

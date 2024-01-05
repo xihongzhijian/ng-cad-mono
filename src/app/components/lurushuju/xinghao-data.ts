@@ -1,5 +1,6 @@
 import {Formulas} from "@app/utils/calc";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
+import {后台CAD} from "@modules/http/services/cad-data.service.types";
 import {uniq} from "lodash";
 
 export const getXinghao = (raw: XinghaoRaw | null | undefined) => {
@@ -44,7 +45,7 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     门铰锁边铰边: [],
     花件玻璃信息: [],
     板材分组: {},
-    算料CAD: [],
+    算料CAD: {},
     示意图CAD: {
       大扇装配示意图: null,
       小扇装配示意图: null,
@@ -59,10 +60,18 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     修改记录: [],
     ...raw
   };
-  if (!isTypeOf(result.算料CAD, "array")) {
-    result.算料CAD = [];
+  if (!isTypeOf(result.算料CAD, "object")) {
+    result.算料CAD = {};
   }
   return result;
+};
+
+export const updateSuanliaoCads = (gongyi: 工艺做法, keys: string[]) => {
+  const cads = gongyi.算料CAD;
+  gongyi.算料CAD = {};
+  for (const key of keys) {
+    gongyi.算料CAD[key] = cads[key] || [];
+  }
 };
 
 export interface XinghaoRaw {
@@ -129,7 +138,7 @@ export interface 工艺做法 {
   门铰锁边铰边: 门铰锁边铰边[];
   花件玻璃信息: 花件玻璃信息[]; // 不要依赖效果图
   板材分组: 板材分组;
-  算料CAD: 后台CAD[];
+  算料CAD: ObjectOf<后台CAD[]>;
   示意图CAD: {
     大扇装配示意图: 后台CAD | null; // 要求分类: 装配示意图
     小扇装配示意图: 后台CAD | null; // 要求分类: 装配示意图
@@ -185,14 +194,6 @@ export interface 门铰锁边铰边 {
 }
 
 export const menjiaoCadTypes = ["包边在外+外开", "包边在外+内开", "包边在内+外开", "包边在内+内开"] as const;
-
-export type 后台CAD = {
-  _id: string;
-  名字: string;
-  选项?: ObjectOf<string>;
-  条件?: string[];
-  json?: ObjectOf<any>;
-};
 
 export interface 企料CAD {
   // 从符合分类企料CAD里面选择，分类对应关系
