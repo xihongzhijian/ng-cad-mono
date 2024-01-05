@@ -1,3 +1,5 @@
+import {SecurityContext} from "@angular/core";
+import {DomSanitizer} from "@angular/platform-browser";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {JSONEditorPropsOptional} from "vanilla-jsoneditor";
@@ -95,11 +97,11 @@ export interface MessageDataMap {
 
 export type MessageOutput = boolean | string | ObjectOf<any> | null | undefined;
 
-export const getListEl = (content: string[], title = "") => {
+export const getListEl = (domSanitizer: DomSanitizer, content: string[], title = "") => {
   const ulEl = document.createElement("ul");
   content.forEach((v) => {
     const liEl = document.createElement("li");
-    liEl.innerHTML = v;
+    liEl.innerHTML = domSanitizer.sanitize(SecurityContext.HTML, v) || "";
     ulEl.appendChild(liEl);
   });
   const titleEl = document.createElement("div");
@@ -112,7 +114,7 @@ export const getListEl = (content: string[], title = "") => {
   return divEl;
 };
 
-export const getListStr = (content: string[], title = "") => {
-  const el = getListEl(content, title);
+export const getListStr = (domSanitizer: DomSanitizer, content: string[], title = "") => {
+  const el = getListEl(domSanitizer, content, title);
   return el.outerHTML;
 };
