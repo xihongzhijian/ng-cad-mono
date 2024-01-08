@@ -1,4 +1,6 @@
-<app-input *ngFor="let info of inputInfos" [info]="info"></app-input>
+@for (info of inputInfos; track info) {
+  <app-input [info]="info"></app-input>
+}
 <div class="btn-group">
   <button mat-raised-button color="primary" (click)="submit()">确定</button>
   <button mat-raised-button color="primary" (click)="cancel()">取消</button>

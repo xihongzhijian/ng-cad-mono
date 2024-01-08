@@ -1,4 +1,3 @@
-import {NgFor} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
@@ -19,7 +18,7 @@ export interface BbzhmkgzComponentData {
   templateUrl: "./bbzhmkgz.component.html",
   styleUrls: ["./bbzhmkgz.component.scss"],
   standalone: true,
-  imports: [InputComponent, NgFor, MatDialogActions, MatButtonModule]
+  imports: [InputComponent, MatDialogActions, MatButtonModule]
 })
 export class BbzhmkgzComponent extends Utils() {
   inputInfo: InputInfo = {type: "string", textarea: {}, label: ""};

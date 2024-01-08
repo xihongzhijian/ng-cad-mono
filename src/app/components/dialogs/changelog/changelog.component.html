@@ -1,37 +1,40 @@
 <div class="btn-group">
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
-  <a
-    mat-raised-button
-    color="primary"
-    (click)="close()"
-    routerLink="/changelog-admin"
-    target="_blank"
-    queryParamsHandling="merge"
-    *ngIf="isAdmin$ | async"
-  >
-    编辑
-  </a>
+  @if (isAdmin$ | async) {
+    <a mat-raised-button color="primary" (click)="close()" routerLink="/changelog-admin" target="_blank" queryParamsHandling="merge">
+      编辑
+    </a>
+  }
 </div>
-<ng-scrollbar *ngIf="testMode; else prodMode">
-  <div infiniteScroll [scrollWindow]="false" scrollViewport (scrolled)="onYReachEnd()">
-    <div>
-      <ng-container *ngFor="let v of changelog">
-        <div class="changelog">
-          <div class="title">{{ getTitle(v.timeStamp) }}</div>
-          <div *ngFor="let w of v.content">
-            <div class="type">{{ getType(w.type) }}</div>
-            <ul class="items">
-              <li class="item" *ngFor="let item of w.items">{{ item }}</li>
-            </ul>
+@if (testMode) {
+  <ng-scrollbar>
+    <div infiniteScroll [scrollWindow]="false" scrollViewport (scrolled)="onYReachEnd()">
+      <div>
+        @for (v of changelog; track v) {
+          <div class="changelog">
+            <div class="title">{{ getTitle(v.timeStamp) }}</div>
+            @for (w of v.content; track w) {
+              <div>
+                <div class="type">{{ getType(w.type) }}</div>
+                <ul class="items">
+                  @for (item of w.items; track item) {
+                    <li class="item">{{ item }}</li>
+                  }
+                </ul>
+              </div>
+            }
           </div>
-        </div>
-        <mat-divider></mat-divider>
-      </ng-container>
-      <div class="footer" *ngIf="loading">正在加载...</div>
-      <div class="footer" *ngIf="currentPage >= maxPage">没有更多了</div>
+          <mat-divider></mat-divider>
+        }
+        @if (loading) {
+          <div class="footer">正在加载...</div>
+        }
+        @if (currentPage >= maxPage) {
+          <div class="footer">没有更多了</div>
+        }
+      </div>
     </div>
-  </div>
-</ng-scrollbar>
-<ng-template #prodMode>
+  </ng-scrollbar>
+} @else {
   <div>上次更新：{{ getTitle(changelog.at(0)?.timeStamp || 0, true) }}</div>
-</ng-template>
+}

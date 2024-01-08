@@ -1,16 +1,20 @@
 <div class="btn-group">
   <app-input [info]="filterInputInfo" style="flex: 1 1 0"></app-input>
-  <button mat-raised-button color="primary" *ngIf="zidingyiIndex >= 0" (click)="selectZidingyi()">自定义</button>
+  @if (zidingyiIndex >= 0) {
+    <button mat-raised-button color="primary" (click)="selectZidingyi()">自定义</button>
+  }
 </div>
 <ng-scrollbar class="content">
   <div class="bancai-list">
-    <ng-container *ngFor="let item of list; let i = index">
-      <div class="bancai" *ngIf="!item.hidden">
-        <mat-checkbox class="name" [matTooltip]="item.bancai.mingzi" [checked]="item.checked" (change)="onCheckboxChange(item)">
-          {{ item.bancai.mingzi }}
-        </mat-checkbox>
-      </div>
-    </ng-container>
+    @for (item of list; track item; let i = $index) {
+      @if (!item.hidden) {
+        <div class="bancai">
+          <mat-checkbox class="name" [matTooltip]="item.bancai.mingzi" [checked]="item.checked" (change)="onCheckboxChange(item)">
+            {{ item.bancai.mingzi }}
+          </mat-checkbox>
+        </div>
+      }
+    }
   </div>
 </ng-scrollbar>
 <div class="btn-group">

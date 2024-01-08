@@ -1,6 +1,6 @@
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {CdkDrag, CdkDragEnd, CdkDragMove, CdkDragStart} from "@angular/cdk/drag-drop";
-import {AsyncPipe, NgIf} from "@angular/common";
+import {AsyncPipe} from "@angular/common";
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, QueryList, ViewChild, ViewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
@@ -66,7 +66,6 @@ import {ToolbarComponent} from "../menu/toolbar/toolbar.component";
     MatMenuModule,
     CadPointsComponent,
     ToolbarComponent,
-    NgIf,
     MatButtonModule,
     MatIconModule,
     SubCadsComponent,

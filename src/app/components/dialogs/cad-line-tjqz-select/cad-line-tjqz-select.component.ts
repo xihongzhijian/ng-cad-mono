@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -20,7 +19,7 @@ export type CadLineTjqzSelectData = {value?: {key: string; value: string}; optio
   templateUrl: "./cad-line-tjqz-select.component.html",
   styleUrls: ["./cad-line-tjqz-select.component.scss"],
   standalone: true,
-  imports: [FormsModule, NgIf, MatFormFieldModule, MatInputModule, NgFor, MatButtonModule, MatIconModule, MatDialogActions]
+  imports: [FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatDialogActions]
 })
 export class CadLineTjqzSelectComponent {
   constructor(

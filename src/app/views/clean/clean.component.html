@@ -7,6 +7,8 @@
 </div>
 <ng-scrollbar style="flex: 1 1 0">
   <div class="msgs">
-    <div class="msg" *ngFor="let msg of msgs" [ngClass]="msg.type">{{ msg.content }}</div>
+    @for (msg of msgs; track msg) {
+      <div class="msg" [ngClass]="msg.type">{{ msg.content }}</div>
+    }
   </div>
 </ng-scrollbar>

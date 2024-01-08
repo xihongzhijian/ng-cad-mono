@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {ElementRef} from "@angular/core";
 import {ViewChild, ViewChildren} from "@angular/core";
 import {Component, Inject} from "@angular/core";
@@ -22,7 +21,7 @@ import {FormulasComponent} from "../../components/formulas/formulas.component";
   templateUrl: "./xhmrmsbj-mokuais.component.html",
   styleUrls: ["./xhmrmsbj-mokuais.component.scss"],
   standalone: true,
-  imports: [NgScrollbar, NgFor, FormulasComponent, NgIf, MatDividerModule, MatDialogActions, MatButtonModule]
+  imports: [NgScrollbar, FormulasComponent, MatDividerModule, MatDialogActions, MatButtonModule]
 })
 export class XhmrmsbjMokuaisComponent {
   @ViewChildren("mkdxFormula", {read: ElementRef}) mkdxFormulaRef?: ElementRef<HTMLDivElement>[];

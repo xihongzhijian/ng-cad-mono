@@ -1,11 +1,6 @@
-<div
-  class="progress-bar"
-  *ngIf="status !== 'hidden'"
-  [ngClass]="status"
-  (pointerdown)="onPointerDown()"
-  (pointerup)="onPointerUp()"
-  (pointerleave)="onPointerUp()"
->
-  <div class="progress-bar-msg" [ngClass]="{click: clickText ? true : false}">{{ clickText || msg }}</div>
-  <div class="progress-bar-layer" [style.width.%]="100 - progressBar.progress"></div>
-</div>
+@if (status !== "hidden") {
+  <div class="progress-bar" [ngClass]="status" (pointerdown)="onPointerDown()" (pointerup)="onPointerUp()" (pointerleave)="onPointerUp()">
+    <div class="progress-bar-msg" [ngClass]="{click: clickText ? true : false}">{{ clickText || msg }}</div>
+    <div class="progress-bar-layer" [style.width.%]="100 - progressBar.progress"></div>
+  </div>
+}

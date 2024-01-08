@@ -1,4 +1,3 @@
-import {NgFor} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -11,7 +10,7 @@ import {InputComponent} from "../../../../input/components/input.component";
   templateUrl: "./cad-assemble-form.component.html",
   styleUrls: ["./cad-assemble-form.component.scss"],
   standalone: true,
-  imports: [NgFor, InputComponent, MatButtonModule]
+  imports: [InputComponent, MatButtonModule]
 })
 export class CadAssembleFormComponent {
   inputInfos: InputInfo[];

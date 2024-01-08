@@ -1,3 +1,7 @@
-<div class="row" *ngFor="let group of inputInfos">
-  <app-input *ngFor="let info of group" [info]="info"></app-input>
-</div>
+@for (group of inputInfos; track group) {
+  <div class="row">
+    @for (info of group; track info) {
+      <app-input [info]="info"></app-input>
+    }
+  </div>
+}

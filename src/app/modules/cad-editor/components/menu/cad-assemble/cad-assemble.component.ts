@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -18,7 +17,7 @@ import {openCadAssembleFormDialog} from "../../dialogs/cad-assemble-form/cad-ass
   templateUrl: "./cad-assemble.component.html",
   styleUrls: ["./cad-assemble.component.scss"],
   standalone: true,
-  imports: [NgIf, MatButtonModule, NgScrollbar, NgFor]
+  imports: [MatButtonModule, NgScrollbar]
 })
 export class CadAssembleComponent extends Subscribed() implements OnInit, OnDestroy {
   options = {space: "0", position: "absolute"};

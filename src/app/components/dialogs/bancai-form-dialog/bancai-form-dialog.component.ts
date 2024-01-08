@@ -1,4 +1,3 @@
-import {NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
@@ -15,7 +14,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./bancai-form-dialog.component.html",
   styleUrls: ["./bancai-form-dialog.component.scss"],
   standalone: true,
-  imports: [BancaiFormComponent, MatDialogActions, NgIf, MatButtonModule]
+  imports: [BancaiFormComponent, MatDialogActions, MatButtonModule]
 })
 export class BancaiFormDialogComponent {
   prod = environment.production;

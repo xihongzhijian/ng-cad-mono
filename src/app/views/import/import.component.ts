@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -38,12 +37,10 @@ export type ImportComponentConfig = Record<ImportComponentConfigName, {label: st
     MatCardModule,
     MatButtonModule,
     SpinnerComponent,
-    NgFor,
     MatFormFieldModule,
     MatInputModule,
     MatRadioModule,
     FormsModule,
-    NgIf,
     ProgressBarComponent
   ]
 })

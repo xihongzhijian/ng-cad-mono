@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, OnDestroy} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
@@ -27,7 +26,7 @@ export type PreviewData = {
   templateUrl: "./print-a4-a015-preview.component.html",
   styleUrls: ["./print-a4-a015-preview.component.scss"],
   standalone: true,
-  imports: [NgScrollbar, NgFor, NgIf, ImageComponent, MatButtonModule, SpinnerComponent]
+  imports: [NgScrollbar, ImageComponent, MatButtonModule, SpinnerComponent]
 })
 export class PrintA4A015PreviewComponent implements AfterViewInit, OnDestroy {
   data: PreviewData = [];

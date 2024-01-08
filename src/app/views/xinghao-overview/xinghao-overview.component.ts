@@ -7,7 +7,6 @@ import {
   moveItemInArray,
   transferArrayItem
 } from "@angular/cdk/drag-drop";
-import {NgFor, NgIf} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -31,8 +30,6 @@ import {XinghaoOverviewData, XinghaoOverviewTableData} from "./xinghao-overview.
     MatButtonModule,
     CdkDropListGroup,
     CdkDropList,
-    NgFor,
-    NgIf,
     MatDividerModule,
     CdkDrag,
     CdkDragHandle,

@@ -2,7 +2,7 @@
   <div>订单编号: {{ codes.join(",") }}</div>
 </div>
 <div class="toolbar flex-row">
-  <ng-container *ngIf="isShowXikong">
+  @if (isShowXikong) {
     <mat-slide-toggle [(ngModel)]="xikongOptions.showCN" (change)="onXikongOptionsChange()">显示中文</mat-slide-toggle>
     <mat-slide-toggle [(ngModel)]="xikongOptions.codeFormat" (change)="onXikongOptionsChange()">格式化</mat-slide-toggle>
     <mat-slide-toggle [(ngModel)]="xikongOptions.autoWrap" (change)="onXikongOptionsChange()">自动换行</mat-slide-toggle>
@@ -10,8 +10,8 @@
       <button mat-flat-button (click)="getXikongData(true)">下载文件</button>
       <button mat-flat-button (click)="setType('激光开料排版')">前往激光开料</button>
     </div>
-  </ng-container>
-  <ng-container *ngIf="!isShowXikong">
+  }
+  @if (!isShowXikong) {
     <mat-slide-toggle [(ngModel)]="autoGuige" (change)="onAutoGuigeChange()">自动选择最合适的板材规格</mat-slide-toggle>
     <div class="links">
       <button mat-flat-button [matMenuTriggerFor]="xikongFile">铝型材cnc铣孔文件</button>
@@ -21,63 +21,87 @@
       <button mat-flat-button (click)="getDakongSummary()">最近一次孔位开料结果</button>
     </div>
     <mat-menu #downloadHistoryList="matMenu">
-      <button mat-menu-item *ngFor="let item of downloadHistory" (click)="downloadDxf(item.name, true)">
-        {{ item.date }}
-      </button>
+      @for (item of downloadHistory; track item) {
+        <button mat-menu-item (click)="downloadDxf(item.name, true)">
+          {{ item.date }}
+        </button>
+      }
     </mat-menu>
     <mat-menu #xikongFile="matMenu">
       <button mat-menu-item (click)="getXikongData(true)">下载</button>
       <button mat-menu-item (click)="setType('铝型材铣孔工单')">查看</button>
     </mat-menu>
-  </ng-container>
+  }
 </div>
 
 <ng-scrollbar class="flex-110" track="all">
-  <div [ngClass]="{'xingkong-strings': true, formatted: xikongOptions.codeFormat, wrap: xikongOptions.autoWrap}" *ngIf="isShowXikong">
-    <div class="group" *ngFor="let group of xikongStrings">
-      <div class="item" *ngFor="let item of group">
-        <div class="value-tag" *ngFor="let value of item">
-          <span>&lt;</span>
-          <span class="tag">{{ value[0] }}</span>
-          <span>&gt;</span>
-          <span class="value">{{ value[1] }}</span>
-          <span>&lt;/</span>
-          <span class="tag">{{ value[0] }}</span>
-          <span>&gt;</span>
+  @if (isShowXikong) {
+    <div [ngClass]="{'xingkong-strings': true, formatted: xikongOptions.codeFormat, wrap: xikongOptions.autoWrap}">
+      @for (group of xikongStrings; track group) {
+        <div class="group">
+          @for (item of group; track item) {
+            <div class="item">
+              @for (value of item; track value) {
+                <div class="value-tag">
+                  <span>&lt;</span>
+                  <span class="tag">{{ value[0] }}</span>
+                  <span>&gt;</span>
+                  <span class="value">{{ value[1] }}</span>
+                  <span>&lt;/</span>
+                  <span class="tag">{{ value[0] }}</span>
+                  <span>&gt;</span>
+                </div>
+              }
+            </div>
+          }
         </div>
-      </div>
+      }
     </div>
-  </div>
+  }
 
-  <div class="bancai-infos flex-column" *ngIf="!isShowXikong">
-    <div class="bancai-info flex-column" *ngFor="let info of orderBancaiInfos; let i = index">
-      <mat-divider *ngIf="i > 0"></mat-divider>
-      <div class="flex-row">
-        <div class="title">{{ info.code }}</div>
-        <div class="links">
-          <button mat-flat-button [disabled]="!info.shangxiazouxianUrl" (click)="open(info.shangxiazouxianUrl)">上下走线</button>
-          <button mat-flat-button [disabled]="!info.kailiaokongweipeizhiUrl" (click)="open(info.kailiaokongweipeizhiUrl)">
-            开料孔位配置
-          </button>
-          <button mat-flat-button [disabled]="!info.kailiaocanshuzhiUrl" (click)="open(info.kailiaocanshuzhiUrl)">开料参数</button>
+  @if (!isShowXikong) {
+    <div class="bancai-infos flex-column">
+      @for (info of orderBancaiInfos; track info; let i = $index) {
+        <div class="bancai-info flex-column">
+          @if (i > 0) {
+            <mat-divider></mat-divider>
+          }
+          <div class="flex-row">
+            <div class="title">{{ info.code }}</div>
+            <div class="links">
+              <button mat-flat-button [disabled]="!info.shangxiazouxianUrl" (click)="open(info.shangxiazouxianUrl)">上下走线</button>
+              <button mat-flat-button [disabled]="!info.kailiaokongweipeizhiUrl" (click)="open(info.kailiaokongweipeizhiUrl)">
+                开料孔位配置
+              </button>
+              <button mat-flat-button [disabled]="!info.kailiaocanshuzhiUrl" (click)="open(info.kailiaocanshuzhiUrl)">开料参数</button>
+            </div>
+          </div>
+          @for (bancaiInfo of info.bancaiInfos; track bancaiInfo; let j = $index) {
+            <div class="bancai-info-row flex-row">
+              @for (inputInfo of bancaiInfo.inputInfos; track inputInfo) {
+                <app-input #bancaiInfoInput class="flex-110" [info]="inputInfo"></app-input>
+              }
+              <div>
+                <button mat-raised-button [color]="bancaiInfo.oversized ? 'accent' : 'primary'" (click)="openCadsDialog(i, j)">
+                  开料CAD
+                </button>
+              </div>
+            </div>
+          }
         </div>
-      </div>
-      <div class="bancai-info-row flex-row" *ngFor="let bancaiInfo of info.bancaiInfos; let j = index">
-        <app-input #bancaiInfoInput class="flex-110" *ngFor="let inputInfo of bancaiInfo.inputInfos" [info]="inputInfo"></app-input>
-        <div>
-          <button mat-raised-button [color]="bancaiInfo.oversized ? 'accent' : 'primary'" (click)="openCadsDialog(i, j)">开料CAD</button>
-        </div>
-      </div>
+      }
     </div>
-  </div>
+  }
 </ng-scrollbar>
-<div class="btn-group" *ngIf="!isShowXikong">
-  <div class="spinner-container">
-    <div class="btn-group">
-      <button mat-raised-button color="primary" (click)="selectCadsToSubmit()">选择cad开料</button>
-      <button mat-raised-button color="primary" (click)="submit()">{{ type }}</button>
+@if (!isShowXikong) {
+  <div class="btn-group">
+    <div class="spinner-container">
+      <div class="btn-group">
+        <button mat-raised-button color="primary" (click)="selectCadsToSubmit()">选择cad开料</button>
+        <button mat-raised-button color="primary" (click)="submit()">{{ type }}</button>
+      </div>
+      <app-spinner [id]="submitLoaderId" [inline]="true"></app-spinner>
     </div>
-    <app-spinner [id]="submitLoaderId" [inline]="true"></app-spinner>
   </div>
-</div>
+}
 <app-spinner [id]="loaderId"></app-spinner>

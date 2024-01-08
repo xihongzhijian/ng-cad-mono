@@ -5,7 +5,9 @@
     <mat-label>账户</mat-label>
     <mat-icon matPrefix>account_circle</mat-icon>
     <input type="text" matInput formControlName="user" autocomplete="off" required />
-    <mat-error *ngIf="form.get('user')?.errors">请输入账户</mat-error>
+    @if (form.get("user")?.errors) {
+      <mat-error>请输入账户</mat-error>
+    }
   </mat-form-field>
   <mat-form-field>
     <mat-label>密码</mat-label>
@@ -14,7 +16,9 @@
     <button mat-icon-button matSuffix (click)="togglePasswordVisible($event)" tabindex="-1">
       <mat-icon>{{ passwordVisible ? "visibility" : "visibility_off" }}</mat-icon>
     </button>
-    <mat-error *ngIf="form.get('password')?.errors">请输入密码</mat-error>
+    @if (form.get("password")?.errors) {
+      <mat-error>请输入密码</mat-error>
+    }
   </mat-form-field>
   <div class="btn-group action">
     <button mat-raised-button color="primary" type="submit" (click)="submit()" tabindex="-1">登录</button>

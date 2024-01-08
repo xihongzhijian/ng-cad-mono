@@ -1,4 +1,3 @@
-import {NgFor} from "@angular/common";
 import {Component, Inject, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -16,7 +15,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./draw-cad.component.html",
   styleUrls: ["./draw-cad.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, NgScrollbar, NgFor, ImageComponent]
+  imports: [MatButtonModule, NgScrollbar, ImageComponent]
 })
 export class DrawCadComponent implements OnInit {
   items: {data: CadData; img: SafeUrl}[] = [];

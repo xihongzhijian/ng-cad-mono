@@ -1,4 +1,4 @@
-import {AsyncPipe, NgFor, NgIf} from "@angular/common";
+import {AsyncPipe} from "@angular/common";
 import {ChangeDetectorRef, Component, Input} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialogRef} from "@angular/material/dialog";
@@ -18,7 +18,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./changelog.component.html",
   styleUrls: ["./changelog.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, NgIf, RouterLink, NgScrollbar, InfiniteScrollModule, ScrollViewport, NgFor, MatDividerModule, AsyncPipe]
+  imports: [MatButtonModule, RouterLink, NgScrollbar, InfiniteScrollModule, ScrollViewport, MatDividerModule, AsyncPipe]
 })
 export class ChangelogComponent {
   @Input() pageSize = 10;

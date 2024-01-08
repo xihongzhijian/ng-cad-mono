@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, forwardRef, Inject, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
@@ -26,11 +25,9 @@ import {getOpenDialogFunc} from "../dialog.common";
   standalone: true,
   imports: [
     forwardRef(() => InputComponent),
-    NgIf,
     MatButtonModule,
     NgScrollbar,
     SpinnerComponent,
-    NgFor,
     MatTooltipModule,
     MatCheckboxModule,
     ImageComponent,

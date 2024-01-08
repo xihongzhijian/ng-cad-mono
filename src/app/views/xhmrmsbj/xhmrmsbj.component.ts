@@ -1,4 +1,4 @@
-import {KeyValuePipe, NgClass, NgFor, NgIf, NgStyle, NgSwitch, NgSwitchCase, NgTemplateOutlet} from "@angular/common";
+import {KeyValuePipe, NgClass, NgStyle, NgTemplateOutlet} from "@angular/common";
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -54,12 +54,8 @@ const table = "p_xinghaomorenmenshanbuju";
   styleUrls: ["./xhmrmsbj.component.scss"],
   standalone: true,
   imports: [
-    NgFor,
     MatButtonModule,
     MatDividerModule,
-    NgIf,
-    NgSwitch,
-    NgSwitchCase,
     MatSlideToggleModule,
     FormsModule,
     NgScrollbar,

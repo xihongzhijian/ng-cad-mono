@@ -1,4 +1,4 @@
-import {AsyncPipe, NgFor, NgIf} from "@angular/common";
+import {AsyncPipe} from "@angular/common";
 import {AfterViewInit, Component, HostListener, OnDestroy, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -55,8 +55,6 @@ const cadStatusIntersectionInfo = "addWHDashedLines";
     ColorCircleModule,
     MatSelectModule,
     MatOptionModule,
-    NgIf,
-    NgFor,
     MatIconModule,
     AsyncPipe
   ]

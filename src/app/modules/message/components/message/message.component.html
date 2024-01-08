@@ -1,72 +1,81 @@
-<ng-container [ngSwitch]="data.type">
-  <div *ngSwitchCase="'iframe'" class="iframe-toolbar">
-    <h2 class="iframe-title" [innerHTML]="titleHTML"></h2>
-    <button mat-icon-button (click)="cancel()">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
-  <ng-container *ngSwitchDefault>
-    <div mat-dialog-title *ngIf="titleHTML" [ngClass]="titleClass" [innerHTML]="titleHTML"></div>
-    <div mat-dialog-title *ngIf="subTitleHTML" class="sub-title" [innerHTML]="subTitleHTML"></div>
-  </ng-container>
-</ng-container>
-<div mat-dialog-content [ngSwitch]="data.type" [ngClass]="data.type">
-  <ng-container *ngSwitchCase="'editor'">
-    <quill-editor [(ngModel)]="data.content" [preserveWhitespace]="true"> </quill-editor>
-  </ng-container>
-  <ng-container *ngSwitchCase="'iframe'">
-    <iframe #iframe [src]="iframeSrc" frameborder="0"></iframe>
-  </ng-container>
-  <ng-container *ngSwitchCase="'json'">
-    <div #jsonEditorContainer></div>
-  </ng-container>
-  <ng-container *ngSwitchDefault="">
-    <div [innerHTML]="contentHTML"></div>
-    <div *ngIf="data.type === 'form'" (keydown)="onKeyDown($event)">
-      <app-input #formInput *ngFor="let info of inputs" [info]="info"></app-input>
+@switch (data.type) {
+  @case ("iframe") {
+    <div class="iframe-toolbar">
+      <h2 class="iframe-title" [innerHTML]="titleHTML"></h2>
+      <button mat-icon-button (click)="cancel()">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
-  </ng-container>
+  }
+  @default {
+    @if (titleHTML) {
+      <div mat-dialog-title [ngClass]="titleClass" [innerHTML]="titleHTML"></div>
+    }
+    @if (subTitleHTML) {
+      <div mat-dialog-title class="sub-title" [innerHTML]="subTitleHTML"></div>
+    }
+  }
+}
+<div mat-dialog-content [ngClass]="data.type">
+  @switch (data.type) {
+    @case ("editor") {
+      <quill-editor [(ngModel)]="data.content" [preserveWhitespace]="true"> </quill-editor>
+    }
+    @case ("iframe") {
+      <iframe #iframe [src]="iframeSrc" frameborder="0"></iframe>
+    }
+    @case ("json") {
+      <div #jsonEditorContainer></div>
+    }
+    @default {
+      <div [innerHTML]="contentHTML"></div>
+      @if (data.type === "form") {
+        <div (keydown)="onKeyDown($event)">
+          @for (info of inputs; track info) {
+            <app-input #formInput [info]="info"></app-input>
+          }
+        </div>
+      }
+    }
+  }
 </div>
-<div
-  class="hidden-if-empty"
-  cdkTrapFocus
-  [cdkTrapFocusAutoCapture]="true"
-  mat-dialog-actions
-  style="justify-content: center"
-  [ngSwitch]="data.type"
->
-  <ng-container *ngSwitchCase="'alert'">
-    <ng-container *ngTemplateOutlet="submitBtn"></ng-container>
-  </ng-container>
-  <ng-container *ngSwitchCase="'confirm'">
-    <ng-container *ngTemplateOutlet="confirmBtns"></ng-container>
-  </ng-container>
-  <ng-container *ngSwitchCase="'form'">
-    <ng-container *ngTemplateOutlet="formBtns"></ng-container>
-  </ng-container>
-  <ng-container *ngSwitchCase="'book'">
-    <button mat-raised-button (click)="setPage(page - 1)" [disabled]="page <= minPage">
-      {{ cast("book", data).btnTexts?.prev || "上一页" }}
-    </button>
-    <button mat-raised-button (click)="setPage(page + 1)" [disabled]="page >= maxPage">
-      {{ cast("book", data).btnTexts?.prev || "下一页" }}
-    </button>
-    <button mat-raised-button (click)="cancel()">
-      {{ cast("book", data).btnTexts?.exit || "退出" }}
-    </button>
-  </ng-container>
-  <ng-container *ngSwitchCase="'editor'">
-    <ng-container *ngTemplateOutlet="confirmBtns"></ng-container>
-  </ng-container>
-  <ng-container *ngSwitchCase="'json'">
-    <ng-container *ngTemplateOutlet="formBtns"></ng-container>
-  </ng-container>
-  <ng-container *ngSwitchCase="'button'">
-    <button mat-raised-button color="primary" *ngFor="let button of cast('button', data).buttons" (click)="submit(button)">
-      {{ getButtonLabel(button) }}
-    </button>
-    <ng-container *ngTemplateOutlet="cancelBtn"></ng-container>
-  </ng-container>
+<div class="hidden-if-empty" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" mat-dialog-actions style="justify-content: center">
+  @switch (data.type) {
+    @case ("alert") {
+      <ng-container *ngTemplateOutlet="submitBtn"></ng-container>
+    }
+    @case ("confirm") {
+      <ng-container *ngTemplateOutlet="confirmBtns"></ng-container>
+    }
+    @case ("form") {
+      <ng-container *ngTemplateOutlet="formBtns"></ng-container>
+    }
+    @case ("book") {
+      <button mat-raised-button (click)="setPage(page - 1)" [disabled]="page <= minPage">
+        {{ cast("book", data).btnTexts?.prev || "上一页" }}
+      </button>
+      <button mat-raised-button (click)="setPage(page + 1)" [disabled]="page >= maxPage">
+        {{ cast("book", data).btnTexts?.prev || "下一页" }}
+      </button>
+      <button mat-raised-button (click)="cancel()">
+        {{ cast("book", data).btnTexts?.exit || "退出" }}
+      </button>
+    }
+    @case ("editor") {
+      <ng-container *ngTemplateOutlet="confirmBtns"></ng-container>
+    }
+    @case ("json") {
+      <ng-container *ngTemplateOutlet="formBtns"></ng-container>
+    }
+    @case ("button") {
+      @for (button of cast("button", data).buttons; track button) {
+        <button mat-raised-button color="primary" (click)="submit(button)">
+          {{ getButtonLabel(button) }}
+        </button>
+      }
+      <ng-container *ngTemplateOutlet="cancelBtn"></ng-container>
+    }
+  }
 </div>
 
 <ng-template #submitBtn>
@@ -76,18 +85,24 @@
 </ng-template>
 
 <ng-template #cancelBtn>
-  <button mat-raised-button (click)="cancel()" *ngIf="!data.disableCancel">
-    {{ cast("confirm", data).btnTexts?.cancel || "取消" }}
-  </button>
+  @if (!data.disableCancel) {
+    <button mat-raised-button (click)="cancel()">
+      {{ cast("confirm", data).btnTexts?.cancel || "取消" }}
+    </button>
+  }
 </ng-template>
 
 <ng-template #formBtn>
-  <button mat-raised-button color="accent" (click)="reset()" *ngIf="cast('form', data).resetable">
-    {{ cast("form", data).btnTexts?.reset || "重置" }}
-  </button>
-  <button mat-raised-button color="primary" (click)="autoFill()" *ngIf="cast('form', data).autoFill">
-    {{ cast("form", data).btnTexts?.autoFill || "自动填充" }}
-  </button>
+  @if (cast("form", data).resetable) {
+    <button mat-raised-button color="accent" (click)="reset()">
+      {{ cast("form", data).btnTexts?.reset || "重置" }}
+    </button>
+  }
+  @if (cast("form", data).autoFill) {
+    <button mat-raised-button color="primary" (click)="autoFill()">
+      {{ cast("form", data).btnTexts?.autoFill || "自动填充" }}
+    </button>
+  }
 </ng-template>
 
 <ng-template #confirmBtns>

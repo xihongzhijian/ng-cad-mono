@@ -1,4 +1,4 @@
-import {NgClass, NgFor, NgStyle} from "@angular/common";
+import {NgClass, NgStyle} from "@angular/common";
 import {Component, HostListener, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -44,7 +44,7 @@ export interface Bancai {
   templateUrl: "./piliangjianban.component.html",
   styleUrls: ["./piliangjianban.component.scss"],
   standalone: true,
-  imports: [MatExpansionModule, NgFor, NgStyle, MatCardModule, ImageComponent, NgClass, MatButtonModule]
+  imports: [MatExpansionModule, NgStyle, MatCardModule, ImageComponent, NgClass, MatButtonModule]
 })
 export class PiliangjianbanComponent implements OnInit {
   bancais: Bancai[] = [];

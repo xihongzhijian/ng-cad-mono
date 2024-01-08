@@ -1,4 +1,4 @@
-import {AsyncPipe, NgIf} from "@angular/common";
+import {AsyncPipe} from "@angular/common";
 import {Component, HostListener} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -28,7 +28,7 @@ import {CadLayerInput, openCadLayerDialog} from "../../dialogs/cad-layer/cad-lay
   templateUrl: "./toolbar.component.html",
   styleUrls: ["./toolbar.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, MatMenuModule, NgIf, MatDividerModule, AsyncPipe]
+  imports: [MatButtonModule, MatMenuModule, MatDividerModule, AsyncPipe]
 })
 export class ToolbarComponent extends Subscribed() {
   openLock = false;

@@ -1,7 +1,9 @@
 <div class="img-container" [class.small-pic]="bigPicSrc" (click)="showBigPic()">
-  <div *ngIf="loading">
-    <img [src]="loadingSrc" />
-  </div>
+  @if (loading) {
+    <div>
+      <img [src]="loadingSrc" />
+    </div>
+  }
   <img
     (wheel)="onWheel($event)"
     (pointerdown)="onPointerDown($event)"
@@ -14,6 +16,10 @@
   />
 </div>
 
-<div #bigPicDiv class="big-pic" [ngClass]="bigPicClass" *ngIf="getBigPicSrc()" style="display: none" (click)="hideBigPic()">
-  <img [src]="getBigPicSrc()" *ngIf="bigPicVisible" @toggle />
-</div>
+@if (getBigPicSrc()) {
+  <div #bigPicDiv class="big-pic" [ngClass]="bigPicClass" style="display: none" (click)="hideBigPic()">
+    @if (bigPicVisible) {
+      <img [src]="getBigPicSrc()" @toggle />
+    }
+  </div>
+}

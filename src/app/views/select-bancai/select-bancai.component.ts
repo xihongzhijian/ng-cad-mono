@@ -1,4 +1,4 @@
-import {NgClass, NgFor, NgIf} from "@angular/common";
+import {NgClass} from "@angular/common";
 import {Component, QueryList, ViewChildren} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -41,12 +41,10 @@ import {
   styleUrls: ["./select-bancai.component.scss"],
   standalone: true,
   imports: [
-    NgIf,
     MatSlideToggleModule,
     FormsModule,
     MatButtonModule,
     MatMenuModule,
-    NgFor,
     NgScrollbar,
     NgClass,
     MatDividerModule,

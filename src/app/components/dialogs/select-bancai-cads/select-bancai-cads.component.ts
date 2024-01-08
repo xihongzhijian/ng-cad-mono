@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -16,17 +15,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./select-bancai-cads.component.html",
   styleUrls: ["./select-bancai-cads.component.scss"],
   standalone: true,
-  imports: [
-    NgIf,
-    MatSlideToggleModule,
-    FormsModule,
-    NgScrollbar,
-    NgFor,
-    MatDividerModule,
-    MatCheckboxModule,
-    MatDialogActions,
-    MatButtonModule
-  ]
+  imports: [MatSlideToggleModule, FormsModule, NgScrollbar, MatDividerModule, MatCheckboxModule, MatDialogActions, MatButtonModule]
 })
 export class SelectBancaiCadsComponent {
   noPaiban = false;

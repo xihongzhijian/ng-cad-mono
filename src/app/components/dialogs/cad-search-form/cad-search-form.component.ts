@@ -1,4 +1,4 @@
-import {AsyncPipe, NgFor, NgIf} from "@angular/common";
+import {AsyncPipe} from "@angular/common";
 import {Component, EventEmitter, OnInit} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
@@ -26,14 +26,12 @@ import {getOpenDialogFunc} from "../dialog.common";
   standalone: true,
   imports: [
     NgScrollbar,
-    NgFor,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,
     FormsModule,
     MatOptionModule,
-    NgIf,
     MatIconModule,
     MatDialogActions,
     MatButtonModule,

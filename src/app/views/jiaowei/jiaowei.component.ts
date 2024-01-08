@@ -1,4 +1,4 @@
-import {KeyValuePipe, NgFor} from "@angular/common";
+import {KeyValuePipe} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -25,7 +25,6 @@ const table = "p_menjiao" as const;
   imports: [
     MatButtonModule,
     NgScrollbar,
-    NgFor,
     MatCheckboxModule,
     FormsModule,
     MatFormFieldModule,

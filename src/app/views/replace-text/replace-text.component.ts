@@ -1,5 +1,4 @@
 import {TextFieldModule} from "@angular/cdk/text-field";
-import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, OnInit} from "@angular/core";
 import {FormControl, FormGroupDirective, FormsModule, NgForm, ReactiveFormsModule, ValidatorFn, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -43,11 +42,9 @@ interface ToBeReplaced {
     ReactiveFormsModule,
     MatFormFieldModule,
     MatSelectModule,
-    NgFor,
     MatOptionModule,
     MatInputModule,
     TextFieldModule,
-    NgIf,
     MatButtonModule,
     NgScrollbar,
     MatCardModule,

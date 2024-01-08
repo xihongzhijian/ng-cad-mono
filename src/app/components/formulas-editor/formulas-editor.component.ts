@@ -1,5 +1,5 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {KeyValuePipe, NgFor, NgIf} from "@angular/common";
+import {KeyValuePipe} from "@angular/common";
 import {Component, ElementRef, Input, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
@@ -17,7 +17,7 @@ import {InputComponent} from "../../modules/input/components/input.component";
   templateUrl: "./formulas-editor.component.html",
   styleUrls: ["./formulas-editor.component.scss"],
   standalone: true,
-  imports: [InputComponent, MatButtonModule, NgScrollbar, CdkDropList, NgFor, CdkDrag, CdkDragHandle, MatIconModule, NgIf, KeyValuePipe]
+  imports: [InputComponent, MatButtonModule, NgScrollbar, CdkDropList, CdkDrag, CdkDragHandle, MatIconModule, KeyValuePipe]
 })
 export class FormulasEditorComponent {
   private _formulas?: Formulas;

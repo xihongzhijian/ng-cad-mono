@@ -1,4 +1,4 @@
-import {NgClass, NgFor} from "@angular/common";
+import {NgClass} from "@angular/common";
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
@@ -14,7 +14,7 @@ import {InputComponent} from "../../modules/input/components/input.component";
   templateUrl: "./clean.component.html",
   styleUrls: ["./clean.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, InputComponent, NgScrollbar, NgFor, NgClass]
+  imports: [MatButtonModule, InputComponent, NgScrollbar, NgClass]
 })
 export class CleanComponent implements OnInit {
   msgs: Msg[] = [];

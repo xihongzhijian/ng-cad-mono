@@ -1,24 +1,56 @@
 <div>
-  <app-input *ngFor="let info of inputInfos" [info]="info"></app-input>
+  @for (info of inputInfos; track info) {
+    <app-input [info]="info"></app-input>
+  }
 </div>
 
-<ng-container *ngIf="useJsonEditor; else qiezhongkong">
-  <div class="qiezhongkong-item" *ngFor="let group of inputInfos2; let i = index">
-    <app-input *ngFor="let info of group" [info]="info" [ngClass]="info.label"></app-input>
-  </div>
-</ng-container>
+@if (useJsonEditor) {
+  @for (group of inputInfos2; track group; let i = $index) {
+    <div class="qiezhongkong-item">
+      @for (info of group; track info) {
+        <app-input [info]="info" [ngClass]="info.label"></app-input>
+      }
+    </div>
+  }
+} @else {
+  <ng-scrollbar style="flex: 1 1 0">
+    <div class="qiezhongkong">
+      @if (inputInfos2.length < 1) {
+        <button mat-raised-button color="primary" (click)="addQiezhongkongItem(0)">新增</button>
+      }
+      @for (group of inputInfos2; track group; let i = $index) {
+        <div class="qiezhongkong-item">
+          <div class="btn-group">
+            <button mat-raised-button color="primary" (click)="addQiezhongkongItem(i)">新增</button>
+            <button mat-raised-button color="primary" (click)="copyQiezhongkongItem(i)">复制</button>
+            <button mat-raised-button color="primary" (click)="removeQiezhongkongItem(i)">删除</button>
+          </div>
+          @for (info of group; track info) {
+            <app-input [info]="info" [ngClass]="info.label"></app-input>
+          }
+        </div>
+      }
+    </div>
+  </ng-scrollbar>
+}
 <ng-template #qiezhongkong>
   <ng-scrollbar style="flex: 1 1 0">
     <div class="qiezhongkong">
-      <button *ngIf="inputInfos2.length < 1" mat-raised-button color="primary" (click)="addQiezhongkongItem(0)">新增</button>
-      <div class="qiezhongkong-item" *ngFor="let group of inputInfos2; let i = index">
-        <div class="btn-group">
-          <button mat-raised-button color="primary" (click)="addQiezhongkongItem(i)">新增</button>
-          <button mat-raised-button color="primary" (click)="copyQiezhongkongItem(i)">复制</button>
-          <button mat-raised-button color="primary" (click)="removeQiezhongkongItem(i)">删除</button>
+      @if (inputInfos2.length < 1) {
+        <button mat-raised-button color="primary" (click)="addQiezhongkongItem(0)">新增</button>
+      }
+      @for (group of inputInfos2; track group; let i = $index) {
+        <div class="qiezhongkong-item">
+          <div class="btn-group">
+            <button mat-raised-button color="primary" (click)="addQiezhongkongItem(i)">新增</button>
+            <button mat-raised-button color="primary" (click)="copyQiezhongkongItem(i)">复制</button>
+            <button mat-raised-button color="primary" (click)="removeQiezhongkongItem(i)">删除</button>
+          </div>
+          @for (info of group; track info) {
+            <app-input [info]="info" [ngClass]="info.label"></app-input>
+          }
         </div>
-        <app-input *ngFor="let info of group" [info]="info" [ngClass]="info.label"></app-input>
-      </div>
+      }
     </div>
   </ng-scrollbar>
 </ng-template>

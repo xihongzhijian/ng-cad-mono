@@ -1,5 +1,4 @@
 import {animate, style, transition, trigger} from "@angular/animations";
-import {NgIf} from "@angular/common";
 import {Component, ElementRef, HostListener, ViewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
@@ -120,7 +119,7 @@ export const cmdNames = commands.map((v) => v.name);
     ])
   ],
   standalone: true,
-  imports: [NgIf]
+  imports: []
 })
 export class CadConsoleComponent {
   content = {correct: "", wrong: "", hint: "", args: ""};

@@ -1,4 +1,4 @@
-import {NgClass, NgFor, NgStyle} from "@angular/common";
+import {NgClass, NgStyle} from "@angular/common";
 import {Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild} from "@angular/core";
 import {setGlobal} from "@app/app.common";
 import {Debounce} from "@decorators/debounce";
@@ -13,7 +13,7 @@ import {MsbjRectInfo, MsbjRectInfoRaw} from "./msbj-rects.types";
   templateUrl: "./msbj-rects.component.html",
   styleUrls: ["./msbj-rects.component.scss"],
   standalone: true,
-  imports: [NgFor, ClickStopPropagationDirective, NgClass, NgStyle]
+  imports: [ClickStopPropagationDirective, NgClass, NgStyle]
 })
 export class MsbjRectsComponent {
   rgbMin = 200;

@@ -1,5 +1,4 @@
 import {CdkDrag, CdkDragDrop, CdkDragPlaceholder, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, ViewChild} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -38,11 +37,9 @@ export const changelogTypes: ObjectOf<string> = {
   imports: [
     NgScrollbar,
     MatExpansionModule,
-    NgIf,
     MatButtonModule,
     MatIconModule,
     SpinnerComponent,
-    NgFor,
     CdkDropList,
     MatFormFieldModule,
     MatInputModule,
@@ -116,10 +113,6 @@ export class ChangelogAdminComponent extends Utils() implements AfterViewInit {
     if (result) {
       this.changelog[i].content[j].items[k] = result;
     }
-  }
-
-  trackByIdx(index: number) {
-    return index;
   }
 
   addChangelog(i: number) {

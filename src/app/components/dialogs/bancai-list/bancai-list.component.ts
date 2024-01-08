@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -20,7 +19,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./bancai-list.component.html",
   styleUrls: ["./bancai-list.component.scss"],
   standalone: true,
-  imports: [InputComponent, NgIf, MatButtonModule, NgScrollbar, NgFor, MatCheckboxModule, MatTooltipModule]
+  imports: [InputComponent, MatButtonModule, NgScrollbar, MatCheckboxModule, MatTooltipModule]
 })
 export class BancaiListComponent {
   filterText = "";

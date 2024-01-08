@@ -3,4 +3,6 @@
   <button mat-raised-button color="primary" (click)="cloneMtexts()">复制文本</button>
 </div>
 
-<app-input *ngFor="let info of inputInfos" [info]="info"></app-input>
+@for (info of inputInfos; track info) {
+  <app-input [info]="info"></app-input>
+}

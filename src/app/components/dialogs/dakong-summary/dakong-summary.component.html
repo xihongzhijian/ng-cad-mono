@@ -8,46 +8,70 @@
 </div>
 <div class="filter-form">
   <div>数据筛选</div>
-  <app-input class="flex-110" *ngFor="let info of formInputInfos" [info]="info"></app-input>
+  @for (info of formInputInfos; track info) {
+    <app-input class="flex-110" [info]="info"></app-input>
+  }
 </div>
 <ng-scrollbar class="flex-110">
-  <div class="dakong-summary" *ngFor="let info of tableInfos">
-    <div class="title">订单编号：{{ info.code }}</div>
-    <div class="dakong-summary-table">
-      <div class="title">CAD开孔情况</div>
-      <div class="row">
-        <div [ngClass]="['cell', col.field]" *ngFor="let col of tableColumns">{{ col.name }}</div>
-      </div>
-      <ng-container *ngFor="let item of info.data">
-        <div class="row" *ngIf="!item.hidden">
-          <div [ngClass]="['cell', col.field]" *ngFor="let col of tableColumns">
-            <ng-container [ngSwitch]="col.field">
-              <span *ngSwitchCase="'count'">
-                <span class="error" *ngIf="item.count < 1">不开孔</span>
-                <span *ngIf="item.count > 0">开孔</span>
-              </span>
-              <span *ngSwitchCase="'cadName'">
-                <span>{{ item.cadName }}</span>
-                <br />
-                <app-image class="cad-preview" [src]="cadImgs[item.cadId]" [bigPicSrc]="cadImgs[item.cadId]" />
-                <span class="link" (click)="openCad(item)">查看</span>
-              </span>
-              <span *ngSwitchCase="'kongName'">
-                <span>{{ item.kongName }}</span>
-                <br />
-                <app-image class="cad-preview" [src]="cadImgs[item.kongId]" [bigPicSrc]="cadImgs[item.kongId]" />
-                <span class="link" (click)="openKongCad(item)">查看</span>
-              </span>
-              <span *ngSwitchCase="'peizhiName'">
-                <span>{{ item.peizhiName }}</span>
-                <br />
-                <span class="link" (click)="openKongpeizhi(item)">查看</span>
-              </span>
-              <span *ngSwitchDefault>{{ item[col.field] }}</span>
-            </ng-container>
-          </div>
+  @for (info of tableInfos; track info) {
+    <div class="dakong-summary">
+      <div class="title">订单编号：{{ info.code }}</div>
+      <div class="dakong-summary-table">
+        <div class="title">CAD开孔情况</div>
+        <div class="row">
+          @for (col of tableColumns; track col) {
+            <div [ngClass]="['cell', col.field]">{{ col.name }}</div>
+          }
         </div>
-      </ng-container>
+        @for (item of info.data; track item) {
+          @if (!item.hidden) {
+            <div class="row">
+              @for (col of tableColumns; track col) {
+                <div [ngClass]="['cell', col.field]">
+                  @switch (col.field) {
+                    @case ("count") {
+                      <span>
+                        @if (item.count < 1) {
+                          <span class="error">不开孔</span>
+                        }
+                        @if (item.count > 0) {
+                          <span>开孔</span>
+                        }
+                      </span>
+                    }
+                    @case ("cadName") {
+                      <span>
+                        <span>{{ item.cadName }}</span>
+                        <br />
+                        <app-image class="cad-preview" [src]="cadImgs[item.cadId]" [bigPicSrc]="cadImgs[item.cadId]" />
+                        <span class="link" (click)="openCad(item)">查看</span>
+                      </span>
+                    }
+                    @case ("kongName") {
+                      <span>
+                        <span>{{ item.kongName }}</span>
+                        <br />
+                        <app-image class="cad-preview" [src]="cadImgs[item.kongId]" [bigPicSrc]="cadImgs[item.kongId]" />
+                        <span class="link" (click)="openKongCad(item)">查看</span>
+                      </span>
+                    }
+                    @case ("peizhiName") {
+                      <span>
+                        <span>{{ item.peizhiName }}</span>
+                        <br />
+                        <span class="link" (click)="openKongpeizhi(item)">查看</span>
+                      </span>
+                    }
+                    @default {
+                      <span>{{ item[col.field] }}</span>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
     </div>
-  </div>
+  }
 </ng-scrollbar>

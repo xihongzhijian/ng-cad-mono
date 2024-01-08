@@ -1,34 +1,52 @@
-<mat-slide-toggle *ngIf="!data.editDisabled" [(ngModel)]="noPaiban">激光开料不排版</mat-slide-toggle>
+@if (!data.editDisabled) {
+  <mat-slide-toggle [(ngModel)]="noPaiban">激光开料不排版</mat-slide-toggle>
+}
 <ng-scrollbar class="flex-110">
-  <div class="order" *ngFor="let order of data.orders; let i = index">
-    <mat-divider *ngIf="i > 0"></mat-divider>
-    <div class="title" *ngIf="order.cads.length > 0">{{ order.code }}</div>
-    <div class="cads" *ngFor="let group of order.cads">
-      <div class="title" *ngIf="group[0]">{{ group[0].bancai.mingzi }}({{ group[0].bancai.guige?.join(" × ") }})</div>
-      <div class="cad-group">
-        <div class="cad" *ngFor="let cad of group">
-          <mat-checkbox [(ngModel)]="cad.checked" [disabled]="!data.editDisabled && cad.disabled">
-            <span [class.disabled]="cad.disabled">{{ cad.name }}</span>
-            <span *ngIf="cad.oversized" style="color: red">(尺寸超出规格：{{ cad.width }} × {{ cad.height }})</span>
-          </mat-checkbox>
+  @for (order of data.orders; track order; let i = $index) {
+    <div class="order">
+      @if (i > 0) {
+        <mat-divider></mat-divider>
+      }
+      @if (order.cads.length > 0) {
+        <div class="title">{{ order.code }}</div>
+      }
+      @for (group of order.cads; track group) {
+        <div class="cads">
+          @if (group[0]) {
+            <div class="title">{{ group[0].bancai.mingzi }}({{ group[0].bancai.guige?.join(" × ") }})</div>
+          }
+          <div class="cad-group">
+            @for (cad of group; track cad) {
+              <div class="cad">
+                <mat-checkbox [(ngModel)]="cad.checked" [disabled]="!data.editDisabled && cad.disabled">
+                  <span [class.disabled]="cad.disabled">{{ cad.name }}</span>
+                  @if (cad.oversized) {
+                    <span style="color: red">(尺寸超出规格：{{ cad.width }} × {{ cad.height }})</span>
+                  }
+                </mat-checkbox>
+              </div>
+            }
+          </div>
         </div>
-      </div>
+      }
     </div>
-  </div>
+  }
 </ng-scrollbar>
 <div matDialogActions>
   <button mat-raised-button color="primary" (click)="selectAll()">全选</button>
   <button mat-raised-button color="primary" (click)="unselectAll()">全不选</button>
-  <ng-container *ngIf="data.editDisabled">
+  @if (data.editDisabled) {
     <button mat-raised-button color="primary" (click)="selectOversized()">自动选择</button>
     <button mat-raised-button color="primary" (click)="enable()">设为开料</button>
     <button mat-raised-button color="primary" (click)="disable()">设为不开料</button>
-  </ng-container>
-  <ng-container *ngIf="!data.editDisabled">
+  }
+  @if (!data.editDisabled) {
     <button mat-raised-button color="primary" (click)="selectReverse()">反选</button>
-  </ng-container>
-  <button mat-raised-button color="primary" (click)="submit()" *ngIf="data.submitBtnText" [disabled]="isSubmitDisabled">
-    {{ data.submitBtnText }}
-  </button>
+  }
+  @if (data.submitBtnText) {
+    <button mat-raised-button color="primary" (click)="submit()" [disabled]="isSubmitDisabled">
+      {{ data.submitBtnText }}
+    </button>
+  }
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
 </div>

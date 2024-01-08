@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -31,14 +30,12 @@ import {getOpenDialogFunc} from "../dialog.common";
   standalone: true,
   imports: [
     NgScrollbar,
-    NgFor,
     MatCardModule,
     MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
-    NgIf,
     MatIconModule,
     MatSlideToggleModule,
     ReplaceFullCharsDirective,

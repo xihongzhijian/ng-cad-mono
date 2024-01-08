@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, ViewChild} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -49,10 +48,8 @@ export interface BackupCadsData {
     MatFormFieldModule,
     MatInputModule,
     MatDatepickerModule,
-    NgIf,
     MatIconModule,
     NgScrollbar,
-    NgFor,
     MatCardModule,
     MatPaginatorModule,
     SpinnerComponent

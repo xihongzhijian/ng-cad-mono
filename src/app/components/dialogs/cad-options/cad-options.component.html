@@ -1,21 +1,25 @@
 <div class="btn-group">
   <app-input class="flex-110" [info]="searchInputInfo"></app-input>
-  <ng-container *ngIf="data.multi">
+  @if (data.multi) {
     <button mat-raised-button color="primary" (click)="selectAll()">当前页全选</button>
     <button mat-raised-button color="primary" (click)="selectReverse()">当前页反选</button>
-  </ng-container>
+  }
 </div>
 
 <ng-scrollbar class="content">
   <app-spinner [id]="loaderIds.optionsLoader"></app-spinner>
   <div class="checkbox-group add-empty-msg">
-    <div class="data-container" *ngFor="let item of pageData; let i = index" [matTooltip]="item.name" [matTooltipPosition]="'above'">
-      <mat-checkbox [checked]="item.checked" (change)="onCheckboxChange(item, $event)" [disabled]="item.disabled && !item.checked">
-        {{ item.name }}
-      </mat-checkbox>
-      <br />
-      <app-image *ngIf="item.img" [src]="item.img" [prefix]="filePathUrl" (click)="onCheckboxChange(item)"></app-image>
-    </div>
+    @for (item of pageData; track item; let i = $index) {
+      <div class="data-container" [matTooltip]="item.name" [matTooltipPosition]="'above'">
+        <mat-checkbox [checked]="item.checked" (change)="onCheckboxChange(item, $event)" [disabled]="item.disabled && !item.checked">
+          {{ item.name }}
+        </mat-checkbox>
+        <br />
+        @if (item.img) {
+          <app-image [src]="item.img" [prefix]="filePathUrl" (click)="onCheckboxChange(item)"></app-image>
+        }
+      </div>
+    }
   </div>
 </ng-scrollbar>
 

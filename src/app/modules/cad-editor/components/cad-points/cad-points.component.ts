@@ -1,4 +1,4 @@
-import {NgFor, NgStyle} from "@angular/common";
+import {NgStyle} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {AppConfigService} from "@services/app-config.service";
@@ -10,7 +10,7 @@ import {Properties} from "csstype";
   templateUrl: "./cad-points.component.html",
   styleUrls: ["./cad-points.component.scss"],
   standalone: true,
-  imports: [NgFor, NgStyle]
+  imports: [NgStyle]
 })
 export class CadPointsComponent extends Subscribed() implements OnInit {
   points: CadPoints = [];

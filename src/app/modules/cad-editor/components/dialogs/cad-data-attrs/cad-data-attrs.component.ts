@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -18,7 +17,7 @@ export type CadDataAttrsComponentData = CadData["attributes"];
   templateUrl: "./cad-data-attrs.component.html",
   styleUrls: ["./cad-data-attrs.component.scss"],
   standalone: true,
-  imports: [NgScrollbar, NgIf, MatButtonModule, MatIconModule, NgFor, MatFormFieldModule, MatInputModule, FormsModule]
+  imports: [NgScrollbar, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, FormsModule]
 })
 export class CadDataAttrsComponent extends Utils() {
   list: {key: string; value: string}[] = [];

@@ -1,5 +1,4 @@
 import {CdkDrag} from "@angular/cdk/drag-drop";
-import {NgFor, NgIf} from "@angular/common";
 import {Component} from "@angular/core";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
@@ -14,7 +13,7 @@ import {routesInfo} from "./routing/routes-info";
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
   standalone: true,
-  imports: [RouterOutlet, SpinnerComponent, NgIf, CdkDrag, MatIconModule, MatMenuModule, NgFor, RouterLink, MessageTestComponent]
+  imports: [RouterOutlet, SpinnerComponent, CdkDrag, MatIconModule, MatMenuModule, RouterLink, MessageTestComponent]
 })
 export class AppComponent {
   title = "ng-cad2";

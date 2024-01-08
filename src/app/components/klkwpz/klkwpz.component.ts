@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {AfterViewInit, Component, Input} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -20,7 +19,7 @@ import {Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
   templateUrl: "./klkwpz.component.html",
   styleUrls: ["./klkwpz.component.scss"],
   standalone: true,
-  imports: [NgScrollbar, NgFor, MatCardModule, MatButtonModule, InputComponent, NgIf]
+  imports: [NgScrollbar, MatCardModule, MatButtonModule, InputComponent]
 })
 export class KlkwpzComponent implements AfterViewInit {
   private _data: KlkwpzSource = {};

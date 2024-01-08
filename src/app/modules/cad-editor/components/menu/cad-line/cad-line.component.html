@@ -133,19 +133,21 @@
       >
     </mat-form-field>
   </div>
-  <div class="form-item" *ngIf="data.type === '包边正面'">
-    <mat-form-field>
-      <mat-label>可改名字</mat-label>
-      <input
-        matInput
-        type="text"
-        [value]="getLineText('kegaimingzi')"
-        (input)="setLineText($event, 'kegaimingzi')"
-        [disabled]="selected.length !== 1"
-        name="lineMingzi"
-      />
-    </mat-form-field>
-  </div>
+  @if (data.type === "包边正面") {
+    <div class="form-item">
+      <mat-form-field>
+        <mat-label>可改名字</mat-label>
+        <input
+          matInput
+          type="text"
+          [value]="getLineText('kegaimingzi')"
+          (input)="setLineText($event, 'kegaimingzi')"
+          [disabled]="selected.length !== 1"
+          name="lineMingzi"
+        />
+      </mat-form-field>
+    </div>
+  }
   <div class="form-item">
     <mat-form-field>
       <mat-label>区间</mat-label>
@@ -226,7 +228,9 @@
       <mat-select name="nextZhewan" [value]="getLineText('nextZhewan')" (selectionChange)="setLineText($event, 'nextZhewan')">
         <mat-option value="自动">自动</mat-option>
         <mat-option value="无">无</mat-option>
-        <mat-option *ngFor="let v of zhewan | async" [value]="v + 'mm'">{{ v }}mm</mat-option>
+        @for (v of zhewan | async; track v) {
+          <mat-option [value]="v + 'mm'">{{ v }}mm</mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </div>
@@ -236,7 +240,9 @@
       <mat-select name="nextZhewan" [value]="getLineText('betweenZhewan')" (selectionChange)="setLineText($event, 'betweenZhewan')">
         <mat-option value="自动">自动</mat-option>
         <mat-option value="无">无</mat-option>
-        <mat-option *ngFor="let v of zhewan | async" [value]="v + 'mm'">{{ v }}mm</mat-option>
+        @for (v of zhewan | async; track v) {
+          <mat-option [value]="v + 'mm'">{{ v }}mm</mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </div>
@@ -275,19 +281,21 @@
       </mat-select>
     </mat-form-field>
   </div>
-  <div class="form-item" *ngIf="getLineText('zhankaifangshi') === '指定长度'">
-    <mat-form-field>
-      <mat-label>指定展开长</mat-label>
-      <input
-        matInput
-        type="text"
-        name="zidingzhankaichang"
-        [value]="getLineText('zidingzhankaichang')"
-        (input)="setLineText($event, 'zidingzhankaichang')"
-        [disabled]="getLineText('zhankaifangshi') !== '指定长度'"
-      />
-    </mat-form-field>
-  </div>
+  @if (getLineText("zhankaifangshi") === "指定长度") {
+    <div class="form-item">
+      <mat-form-field>
+        <mat-label>指定展开长</mat-label>
+        <input
+          matInput
+          type="text"
+          name="zidingzhankaichang"
+          [value]="getLineText('zidingzhankaichang')"
+          (input)="setLineText($event, 'zidingzhankaichang')"
+          [disabled]="getLineText('zhankaifangshi') !== '指定长度'"
+        />
+      </mat-form-field>
+    </div>
+  }
   <div class="form-item">
     <mat-form-field>
       <mat-label>条件取值</mat-label>
@@ -346,23 +354,27 @@
     <mat-form-field>
       <mat-label>变化方式</mat-label>
       <mat-select name="变化方式" [value]="getLineText('变化方式')" (selectionChange)="setLineText($event, '变化方式')">
-        <mat-option *ngFor="let o of bhfs" [value]="o">{{ o }}</mat-option>
+        @for (o of bhfs; track o) {
+          <mat-option [value]="o">{{ o }}</mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </div>
   <div class="form-item">
-    <mat-form-field *ngFor="let i of [0, 1]" style="width: 50%">
-      <mat-label>角度范围</mat-label>
-      <input
-        matInput
-        type="number"
-        min="0"
-        max="360"
-        name="角度范围"
-        [value]="getLineText('角度范围', i)"
-        (input)="setLineText($event, '角度范围', i)"
-      />
-    </mat-form-field>
+    @for (i of [0, 1]; track i) {
+      <mat-form-field style="width: 50%">
+        <mat-label>角度范围</mat-label>
+        <input
+          matInput
+          type="number"
+          min="0"
+          max="360"
+          name="角度范围"
+          [value]="getLineText('角度范围', i)"
+          (input)="setLineText($event, '角度范围', i)"
+        />
+      </mat-form-field>
+    }
   </div>
   <div class="form-item">
     <mat-form-field>
@@ -390,7 +402,9 @@
     <mat-form-field>
       <mat-label>企料位置识别</mat-label>
       <mat-select name="企料位置识别" [value]="getLineText('企料位置识别')" (selectionChange)="setLineText($event, '企料位置识别')">
-        <mat-option *ngFor="let o of qlwzshb" [value]="o">{{ o }}</mat-option>
+        @for (o of qlwzshb; track o) {
+          <mat-option [value]="o">{{ o }}</mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </div>

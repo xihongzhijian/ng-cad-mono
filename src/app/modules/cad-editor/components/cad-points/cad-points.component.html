@@ -1,7 +1,3 @@
-<div
-  *ngFor="let p of points; let i = index"
-  class="point"
-  [class.active]="p.active"
-  [ngStyle]="getStyle(p)"
-  (click)="onPointClick(i)"
-></div>
+@for (p of points; track p; let i = $index) {
+  <div class="point" [class.active]="p.active" [ngStyle]="getStyle(p)" (click)="onPointClick(i)"></div>
+}

@@ -1,4 +1,4 @@
-import {NgClass, NgFor, NgIf, NgStyle} from "@angular/common";
+import {NgClass, NgStyle} from "@angular/common";
 import {Component, EventEmitter, Input, OnInit, Output, QueryList, ViewChildren} from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -46,10 +46,8 @@ import {
   styleUrls: ["./mrbcjfz.component.scss"],
   standalone: true,
   imports: [
-    NgIf,
     MatButtonModule,
     NgScrollbar,
-    NgFor,
     NgClass,
     NgStyle,
     InputComponent,

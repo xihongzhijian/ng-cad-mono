@@ -1,4 +1,3 @@
-import {NgFor} from "@angular/common";
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {validColors} from "@app/cad/utils";
@@ -17,7 +16,7 @@ import {InputComponent} from "../../../../input/components/input.component";
   templateUrl: "./cad-mtext.component.html",
   styleUrls: ["./cad-mtext.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, NgFor, InputComponent]
+  imports: [MatButtonModule, InputComponent]
 })
 export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy {
   selected: CadMtext[] = [];

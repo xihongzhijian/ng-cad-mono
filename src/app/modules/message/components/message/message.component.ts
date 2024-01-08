@@ -1,5 +1,5 @@
 import {A11yModule} from "@angular/cdk/a11y";
-import {NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase, NgSwitchDefault, NgTemplateOutlet} from "@angular/common";
+import {NgClass, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
   Component,
@@ -33,18 +33,13 @@ import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./m
   styleUrls: ["./message.component.scss"],
   standalone: true,
   imports: [
-    NgSwitch,
-    NgSwitchCase,
     MatButtonModule,
     MatIconModule,
-    NgSwitchDefault,
-    NgIf,
     MatDialogTitle,
     NgClass,
     MatDialogContent,
     QuillEditorComponent,
     FormsModule,
-    NgFor,
     InputComponent,
     A11yModule,
     MatDialogActions,

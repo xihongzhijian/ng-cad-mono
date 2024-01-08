@@ -1,4 +1,3 @@
-import {NgFor, NgIf} from "@angular/common";
 import {Component, Inject, QueryList, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -18,7 +17,7 @@ import {NgScrollbar} from "ngx-scrollbar";
   templateUrl: "./cad-layer.component.html",
   styleUrls: ["./cad-layer.component.scss"],
   standalone: true,
-  imports: [InputComponent, NgScrollbar, NgFor, NgIf, MatButtonModule, MatIconModule]
+  imports: [InputComponent, NgScrollbar, MatButtonModule, MatIconModule]
 })
 export class CadLayerComponent {
   layers: CadLayer[] = [];

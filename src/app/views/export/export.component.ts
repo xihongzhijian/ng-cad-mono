@@ -1,4 +1,3 @@
-import {NgIf} from "@angular/common";
 import {Component, OnInit} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -29,7 +28,7 @@ interface ExportCache {
   templateUrl: "./export.component.html",
   styleUrls: ["./export.component.scss"],
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatRadioModule, FormsModule, NgIf, MatButtonModule, ProgressBarComponent]
+  imports: [MatFormFieldModule, MatInputModule, MatRadioModule, FormsModule, MatButtonModule, ProgressBarComponent]
 })
 export class ExportComponent implements OnInit {
   progressBar = new ProgressBar(0);

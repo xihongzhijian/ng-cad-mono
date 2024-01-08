@@ -1,5 +1,4 @@
 import {animate, state, style, transition, trigger} from "@angular/animations";
-import {NgIf} from "@angular/common";
 import {Component, OnInit, ViewChild} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -30,7 +29,7 @@ import {DingdanBomCacheData, DingdanBomData, DingdanBomDataResponseData} from ".
     ])
   ],
   standalone: true,
-  imports: [MatButtonModule, NgIf, MatSlideToggleModule, FormsModule, TableComponent]
+  imports: [MatButtonModule, MatSlideToggleModule, FormsModule, TableComponent]
 })
 export class BomGongyiluxianComponent implements OnInit {
   table = "b_dingdanbom";

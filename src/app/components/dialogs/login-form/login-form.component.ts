@@ -1,4 +1,3 @@
-import {NgIf} from "@angular/common";
 import {AfterViewInit, Component, Inject} from "@angular/core";
 import {FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -31,7 +30,7 @@ export interface LoginResponse {
   templateUrl: "./login-form.component.html",
   styleUrls: ["./login-form.component.scss"],
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatIconModule, MatInputModule, NgIf, MatButtonModule]
+  imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule]
 })
 export class LoginFormComponent implements AfterViewInit {
   form = getFormGroup({

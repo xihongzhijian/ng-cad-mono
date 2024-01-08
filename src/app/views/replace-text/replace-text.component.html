@@ -3,9 +3,11 @@
     <mat-form-field>
       <mat-label>替换类型</mat-label>
       <mat-select formControlName="replacer">
-        <mat-option *ngFor="let r of replacers" [value]="r">
-          {{ r.type }}
-        </mat-option>
+        @for (r of replacers; track r) {
+          <mat-option [value]="r">
+            {{ r.type }}
+          </mat-option>
+        }
       </mat-select>
       <mat-hint>{{ replacerDesc }}</mat-hint>
     </mat-form-field>
@@ -37,11 +39,13 @@
     </mat-form-field>
   </div>
 </div>
-<div class="btn-group" *ngIf="step.value === 1">
-  <button mat-raised-button color="primary" (click)="ready()" [disabled]="form.invalid">提交</button>
-</div>
+@if (step.value === 1) {
+  <div class="btn-group">
+    <button mat-raised-button color="primary" (click)="ready()" [disabled]="form.invalid">提交</button>
+  </div>
+}
 
-<ng-container *ngIf="step.value === 2">
+@if (step.value === 2) {
   <div class="btn-group">
     <button mat-raised-button color="primary" (click)="step.next(1)">取消</button>
     <button mat-raised-button color="primary" (click)="submit()">确认替换</button>
@@ -54,21 +58,25 @@
   </div>
   <ng-scrollbar>
     <div class="to-be-replaced-list">
-      <mat-card *ngFor="let item of toBeReplacedList">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-checkbox [checked]="item.checked" (change)="item.checked = $event.checked"></mat-checkbox>
-            <span>{{ item.name }}</span>
-          </mat-card-title>
-          <mat-card-subtitle>
-            <button color="primary" mat-icon-button (click)="openCad(item.id)"><mat-icon>open_in_new</mat-icon></button>
-          </mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <span class="matched-text">匹配到的文本（{{ item.matchedTexts.length }}个）：</span>
-          <span class="matched-text" *ngFor="let text of item.matchedTexts">{{ text }}</span>
-        </mat-card-content>
-      </mat-card>
+      @for (item of toBeReplacedList; track item) {
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              <mat-checkbox [checked]="item.checked" (change)="item.checked = $event.checked"></mat-checkbox>
+              <span>{{ item.name }}</span>
+            </mat-card-title>
+            <mat-card-subtitle>
+              <button color="primary" mat-icon-button (click)="openCad(item.id)"><mat-icon>open_in_new</mat-icon></button>
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <span class="matched-text">匹配到的文本（{{ item.matchedTexts.length }}个）：</span>
+            @for (text of item.matchedTexts; track text) {
+              <span class="matched-text">{{ text }}</span>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
     </div>
   </ng-scrollbar>
-</ng-container>
+}
