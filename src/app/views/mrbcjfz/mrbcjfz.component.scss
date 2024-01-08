@@ -71,6 +71,8 @@
 
     .title {
       font-size: 15px;
+      display: flex;
+      align-items: center;
       .mat-mdc-icon-button {
         padding: 0;
       }

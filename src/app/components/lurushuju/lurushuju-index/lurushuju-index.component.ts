@@ -17,7 +17,7 @@ import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, queryString, RequiredKeys, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {TableDataBase, 后台CAD} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {
@@ -31,6 +31,8 @@ import {
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
+import {MrbcjfzHuajian, MrbcjfzInputData, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import csstype from "csstype";
 import {cloneDeep, debounce, isEmpty, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -38,7 +40,6 @@ import {
   getGongyi,
   getXinghao,
   menjiaoCadTypes,
-  updateSuanliaoCads,
   updateXinghaoFenleis,
   Xinghao,
   XinghaoRaw,
@@ -70,6 +71,7 @@ import {autoFillMenjiao, getCadSearch, getMenjiaoCadInfos, updateMenjiaoForm} fr
   selector: "app-lurushuju-index",
   standalone: true,
   imports: [
+    MrbcjfzComponent,
     CommonModule,
     ImageComponent,
     InputComponent,
@@ -196,6 +198,9 @@ export class LurushujuIndexComponent implements OnInit {
   bancaifenzuInfo: BancaifenzuInfo | null = null;
   shiyituInputInfos: InputInfo[] = [];
   xiaoguotuInputInfos: InputInfo[] = [];
+  bcfzInputData: MrbcjfzInputData | null = null;
+  huajians: MrbcjfzHuajian[] = [];
+
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
   xinghaoName = "";
@@ -409,14 +414,10 @@ export class LurushujuIndexComponent implements OnInit {
     this.shuruTable.data = [...gongyi.输入数据];
     this.menjiaoTable.data = gongyi.门铰锁边铰边;
     this.bancaifenzuInfo = await this.http.getData<BancaifenzuInfo>("shuju/api/getBancaifenzuInfo");
-    updateSuanliaoCads(gongyi, this.bancaifenzuInfo?.bancaiKeys || []);
     this.cadImgs = {};
-    for (const key in gongyi.算料CAD) {
-      const group = gongyi.算料CAD[key];
-      for (const cad of group) {
-        const id = cad._id;
-        this.cadImgs[id] = this.http.getCadImgUrl(id);
-      }
+    for (const cad of gongyi.算料CAD) {
+      const id = cad._id;
+      this.cadImgs[id] = this.http.getCadImgUrl(id);
     }
     this.shiyituInputInfos = [];
     for (const key in gongyi.示意图CAD) {
@@ -439,8 +440,27 @@ export class LurushujuIndexComponent implements OnInit {
       });
     }
     this.xiaoguotuInputInfos = [];
-    const optionsRaw = await this.http.queryMySql({table: "p_menshan", fields: ["vid", "mingzi"]});
-    const options: InputInfoOptions = optionsRaw.map((v) => v.mingzi);
+    const optionsRaw = await this.http.queryMySql<TableDataBase & {zuchenghuajian?: string}>({
+      table: "p_menshan",
+      fields: ["vid", "mingzi", "zuchenghuajian"]
+    });
+    const options: InputInfoOptions = [];
+    const huajianIds = new Set<string>();
+    for (const optionRaw of optionsRaw) {
+      options.push(optionRaw.mingzi);
+      if (typeof optionRaw.zuchenghuajian === "string") {
+        for (const v of optionRaw.zuchenghuajian.split("*")) {
+          if (v) {
+            huajianIds.add(v);
+          }
+        }
+      }
+    }
+    this.huajians = await this.http.queryMySql<MrbcjfzHuajian>({
+      table: "p_huajian",
+      fields: ["vid", "mingzi", "xiaotu"],
+      filter: {where_in: {vid: Array.from(huajianIds)}}
+    });
     const xiaoguotuKeys: (keyof 工艺做法)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
     for (const key of xiaoguotuKeys) {
       this.xiaoguotuInputInfos.push({
@@ -453,6 +473,7 @@ export class LurushujuIndexComponent implements OnInit {
         }
       });
     }
+    this.updateBcfzInputData();
   }
 
   onSelectedTabChange({index}: MatTabChangeEvent) {
@@ -1254,15 +1275,15 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  async selectSuanliaoCads(key: string) {
+  async selectSuanliaoCads() {
     const {gongyi} = this;
-    if (!gongyi || !gongyi.算料CAD[key]) {
+    if (!gongyi) {
       return;
     }
     const data: ZixuanpeijianInput = {
       data: {
-        零散: gongyi.算料CAD[key].map((v) => {
-          return {data: new CadData(), info: {houtaiId: v._id, zhankai: [], calcZhankai: []}};
+        零散: gongyi.算料CAD.map((v) => {
+          return {data: new CadData(v.json), info: {houtaiId: v._id, zhankai: [], calcZhankai: []}};
         })
       },
       step: 3,
@@ -1274,22 +1295,76 @@ export class LurushujuIndexComponent implements OnInit {
     }
     const ids = result.零散.map((v) => v.info.houtaiId);
     if (ids.length > 0) {
-      const result2 = await this.http.getCadRaw({ids, collection: "cad"});
-      if (result2?.data) {
-        gongyi.算料CAD[key] = result2.data;
-        for (const cad of result2.data) {
-          if (!this.cadImgs[cad._id]) {
-            this.cadImgs[cad._id] = this.http.getCadImgUrl(cad._id);
-          }
+      const result2 = await this.http.queryMongodb<后台CAD>({collection: "cad", where: {_id: {$in: ids}}});
+      for (const cad of result2) {
+        delete cad.json;
+      }
+      const result3: 后台CAD[] = [];
+      for (const v of result.零散) {
+        const cad = cloneDeep(result2.find((v2) => v2._id === v.info.houtaiId));
+        if (!cad) {
+          continue;
+        }
+        cad.json = v.data.export();
+        cad.json.houtaiId = cad._id;
+        result3.push(cad);
+        if (!this.cadImgs[cad._id]) {
+          this.cadImgs[cad._id] = this.http.getCadImgUrl(cad._id);
         }
       }
+      gongyi.算料CAD = result3;
     } else {
-      gongyi.算料CAD[key] = [];
+      gongyi.算料CAD = [];
     }
     await this.submitGongyi(["算料CAD"]);
+    this.updateBcfzInputData();
   }
 
   suanliao() {
     this.message.alert("未实现");
+  }
+
+  updateBcfzInputData() {
+    const {gongyi} = this;
+    if (gongyi) {
+      const morenbancai = cloneDeep(gongyi.板材分组);
+      for (const info of Object.values(morenbancai)) {
+        info.CAD = info.CAD.map((id) => {
+          const cad = gongyi.算料CAD.find((v) => v._id === id);
+          if (cad?.json) {
+            return cad.json.id;
+          } else {
+            return id;
+          }
+        });
+      }
+      this.bcfzInputData = {
+        xinghao: this.xinghaoName,
+        morenbancai: morenbancai,
+        cads: gongyi.算料CAD.map((v) => new CadData(v.json)),
+        huajians: this.huajians
+      };
+    } else {
+      this.bcfzInputData = null;
+    }
+  }
+
+  async onBcfzSubmit(info: MrbcjfzXinghaoInfo) {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    gongyi.板材分组 = cloneDeep(info.默认板材);
+    for (const item of Object.values(gongyi.板材分组)) {
+      item.CAD = item.CAD.map((id) => {
+        const cad = gongyi.算料CAD.find((v) => v.json?.id === id);
+        if (cad) {
+          return cad._id;
+        } else {
+          return id;
+        }
+      });
+    }
+    await this.submitGongyi(["板材分组"]);
   }
 }

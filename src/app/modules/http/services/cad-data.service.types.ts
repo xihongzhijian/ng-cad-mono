@@ -137,6 +137,7 @@ export interface BancaiListData {
   bancaiKeys: string[];
   bancaiKeysNonClear: string[];
   bancaiKeysRequired: string[];
+  qiliaos: string[];
 }
 
 export interface TableRenderData {

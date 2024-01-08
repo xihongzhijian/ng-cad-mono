@@ -895,7 +895,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   addLingsanItem(type: string, i: number) {
     const data0 = this.lingsanCads[type][i].data;
     const data = data0.clone(true);
-    data.name += "M";
     this.result.零散.push({data, info: {houtaiId: data0.id, zhankai: [], calcZhankai: []}});
     this._updateInputInfos();
   }

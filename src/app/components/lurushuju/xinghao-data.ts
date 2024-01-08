@@ -1,6 +1,7 @@
 import {Formulas} from "@app/utils/calc";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {后台CAD} from "@modules/http/services/cad-data.service.types";
+import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {uniq} from "lodash";
 
 export const getXinghao = (raw: XinghaoRaw | null | undefined) => {
@@ -45,7 +46,7 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     门铰锁边铰边: [],
     花件玻璃信息: [],
     板材分组: {},
-    算料CAD: {},
+    算料CAD: [],
     示意图CAD: {
       大扇装配示意图: null,
       小扇装配示意图: null,
@@ -60,18 +61,10 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     修改记录: [],
     ...raw
   };
-  if (!isTypeOf(result.算料CAD, "object")) {
-    result.算料CAD = {};
+  if (!isTypeOf(result.算料CAD, "array")) {
+    result.算料CAD = [];
   }
   return result;
-};
-
-export const updateSuanliaoCads = (gongyi: 工艺做法, keys: string[]) => {
-  const cads = gongyi.算料CAD;
-  gongyi.算料CAD = {};
-  for (const key of keys) {
-    gongyi.算料CAD[key] = cads[key] || [];
-  }
 };
 
 export interface XinghaoRaw {
@@ -102,8 +95,6 @@ export interface 输入 {
 export interface 花件玻璃信息 {
   // 用对象描述，例如固定不可改包框宽包框高，含默认数及允许范围
 }
-
-export interface 板材分组 {}
 
 export interface 算料公式 {
   _id: string;
@@ -137,8 +128,8 @@ export interface 工艺做法 {
   选项数据: 选项[];
   门铰锁边铰边: 门铰锁边铰边[];
   花件玻璃信息: 花件玻璃信息[]; // 不要依赖效果图
-  板材分组: 板材分组;
-  算料CAD: ObjectOf<后台CAD[]>;
+  板材分组: ObjectOf<MrbcjfzInfo>;
+  算料CAD: 后台CAD[];
   示意图CAD: {
     大扇装配示意图: 后台CAD | null; // 要求分类: 装配示意图
     小扇装配示意图: 后台CAD | null; // 要求分类: 装配示意图

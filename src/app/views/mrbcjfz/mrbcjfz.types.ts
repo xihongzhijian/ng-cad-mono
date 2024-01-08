@@ -9,7 +9,7 @@ export interface MrbcjfzResponseData {
   xinghao: MrbcjfzXinghao;
   cads: any[];
   huajians: MrbcjfzHuajian[];
-  qiliaos: TableDataBase[];
+  qiliaos: string[];
   bancaiKeys: string[];
   bancaiKeysNonClear: string[];
   bancaiKeysRequired: string[];
@@ -265,7 +265,7 @@ export interface MrbcjfzHuajianInfo extends MrbcjfzListItem {
 }
 
 export interface MrbcjfzQiliaoInfo extends MrbcjfzListItem {
-  data: TableDataBase;
+  name: string;
 }
 
 export const filterCad = (info: MrbcjfzCadInfo) => {
@@ -350,7 +350,10 @@ export const emptyMrbcjfzInfoValues = (name: string, info: MrbcjfzInfo, keys: (k
   }
 };
 
-export const isMrbcjfzInfoEmpty = (name: string, info: MrbcjfzInfo, keys: (keyof MrbcjfzInfo)[]) => {
+export const isMrbcjfzInfoEmpty = (name: string, info: MrbcjfzInfo | null | undefined, keys: (keyof MrbcjfzInfo)[]) => {
+  if (!info) {
+    return true;
+  }
   const emptyInfo = getEmptyMrbcjfzInfo(name);
   return keys.every((key) => {
     const value = info[key];
@@ -364,3 +367,10 @@ export const isMrbcjfzInfoEmpty = (name: string, info: MrbcjfzInfo, keys: (keyof
 export const isMrbcjfzInfoEmpty1 = (name: string, info: MrbcjfzInfo) => isMrbcjfzInfoEmpty(name, info, ["CAD", "企料", "花件"]);
 export const isMrbcjfzInfoEmpty2 = (name: string, info: MrbcjfzInfo) =>
   isMrbcjfzInfoEmpty(name, info, ["默认开料材料", "默认开料板材", "默认开料板材厚度"]);
+
+export interface MrbcjfzInputData {
+  xinghao: string;
+  morenbancai: ObjectOf<MrbcjfzInfo>;
+  cads?: CadData[];
+  huajians?: MrbcjfzHuajian[];
+}

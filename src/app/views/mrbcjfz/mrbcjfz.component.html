@@ -1,11 +1,11 @@
 <div class="btn-group">
-  @if (!isFromOrder) {
+  @if (inputData || !isFromOrder) {
     <button mat-raised-button color="primary" (click)="submit()">提交</button>
     @if (closeable) {
       <button mat-raised-button color="primary" (click)="close()">关闭</button>
     }
   }
-  @if (xinghao.raw.mingzi) {
+  @if (!inputData && xinghao.raw.mingzi) {
     <div class="title">{{ xiaodaohangStructure?.mingzi }}：{{ xinghao.raw.mingzi }}</div>
   }
 </div>
@@ -25,66 +25,58 @@
               <app-input #bancaiInput [info]="info" appClickStop></app-input>
             }
           </div>
-          <div class="item-list flex-row">
-            @for (item of cads; track item) {
-              @if (xinghao["默认板材"][key].CAD.includes(item.id)) {
-                <div class="item flex-column" (click)="selectListItem(item, 'CAD', key)">
-                  <app-image class="cad-preview" [src]="item.img"></app-image>
-                  <div class="title center">
-                    {{ item.data.name }}
-                    <button mat-icon-button color="primary" appClickStop (click)="openCad(item)"><mat-icon>open_in_new</mat-icon></button>
-                  </div>
+          <div
+            class="item-list flex-row"
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            [cdkDropListData]="xinghao['默认板材'][key].CAD"
+            (cdkDropListDropped)="dropListItem($event, key, 'CAD')"
+          >
+            @for (id of xinghao["默认板材"][key].CAD; track id) {
+              <div class="item flex-column" cdkDrag (click)="selectListItem(cads[id], 'CAD', key)">
+                <app-image class="cad-preview" [src]="cads[id].img"></app-image>
+                <div class="title center">
+                  {{ cads[id].data.name }}
+                  <button mat-icon-button color="primary" appClickStop (click)="openCad(cads[id])"><mat-icon>open_in_new</mat-icon></button>
                 </div>
-              }
+              </div>
             }
           </div>
           <div class="item-list flex-row">
-            @for (item of qiliaos; track item) {
-              @if (xinghao["默认板材"][key]["企料"].includes(item.id)) {
-                <div class="item flex-column" (click)="selectListItem(item, '企料', key)">
-                  <div class="title center">
-                    {{ item.data.mingzi }}
-                  </div>
+            @for (id of xinghao["默认板材"][key]["企料"]; track id) {
+              <div class="item flex-column" (click)="selectListItem(qiliaos[id], '企料', key)">
+                <div class="title center">
+                  {{ qiliaos[id].name }}
                 </div>
-              }
+              </div>
             }
           </div>
           <div class="item-list flex-row">
-            @for (item of huajians; track item) {
-              @if (xinghao["默认板材"][key]["花件"].includes(item.id)) {
-                <div class="item flex-column" (click)="selectListItem(item, '花件', key)">
-                  <app-image [src]="item.data.xiaotu"></app-image>
-                  <div class="title center">{{ item.data.mingzi }}</div>
-                </div>
-              }
+            @for (id of xinghao["默认板材"][key]["花件"]; track id) {
+              <div class="item flex-column" (click)="selectListItem(huajians[id], '花件', key)">
+                <app-image [src]="huajians[id].data.xiaotu"></app-image>
+                <div class="title center">{{ huajians[id].data.mingzi }}</div>
+              </div>
             }
-            <!-- <div class="item flex-column" *ngFor="let item of getXinghaoList(key, '花件')" (click)="selectListItem(item, '花件', key)">
-            <ng-container *ngIf="item.isVirtual; else huajianItem">
-              <app-image [src]="''" (click)="selectListItem(item, '花件', key)"></app-image>
-              <div class="title center">{{ item.id }}</div>
-            </ng-container>
-            <ng-template #huajianItem>
-              <app-image [src]="item.data.xiaotu"></app-image>
-              <div class="title center">{{ item.data.mingzi }}</div>
-            </ng-template>
-          </div> -->
           </div>
         </div>
       }
     </ng-scrollbar>
   </div>
-  @if (!isFromOrder) {
+  @if (inputData || !isFromOrder) {
     <mat-divider vertical></mat-divider>
     <div class="flex-column flex-110">
       <ng-scrollbar class="flex-110">
         <div class="item-list flex-row">
-          @for (item of cads; track item) {
-            @if (!item.selected) {
-              <div class="item flex-column" (click)="selectListItem(item, 'CAD')">
-                <app-image class="cad-preview" [src]="item.img"></app-image>
+          @for (item of cads | keyvalue: returnZero; track item.key) {
+            @if (!item.value.selected) {
+              <div class="item flex-column" (click)="selectListItem(item.value, 'CAD')">
+                <app-image class="cad-preview" [src]="item.value.img"></app-image>
                 <div class="title center">
-                  {{ item.data.name }}
-                  <button mat-icon-button color="primary" appClickStop (click)="openCad(item)"><mat-icon>open_in_new</mat-icon></button>
+                  {{ item.value.data.name }}
+                  <button mat-icon-button color="primary" appClickStop (click)="openCad(item.value)">
+                    <mat-icon>open_in_new</mat-icon>
+                  </button>
                 </div>
               </div>
             }
@@ -94,10 +86,10 @@
       <mat-divider></mat-divider>
       <ng-scrollbar style="height: 105px">
         <div class="item-list flex-row">
-          @for (item of qiliaos; track item) {
-            @if (!item.selected) {
-              <div class="item flex-column" (click)="selectListItem(item, '企料')">
-                <div class="title center">{{ item.data.mingzi }}</div>
+          @for (item of qiliaos | keyvalue: returnZero; track item.key) {
+            @if (!item.value.selected) {
+              <div class="item flex-column" (click)="selectListItem(item.value, '企料')">
+                <div class="title center">{{ item.value.name }}</div>
               </div>
             }
           }
@@ -107,11 +99,11 @@
       <mat-divider></mat-divider>
       <ng-scrollbar class="flex-110">
         <div class="item-list flex-row">
-          @for (item of huajians; track item) {
-            @if (!item.selected) {
-              <div class="item flex-column" (click)="selectListItem(item, '花件')">
-                <app-image [src]="item.data.xiaotu"></app-image>
-                <div class="title center">{{ item.data.mingzi }}</div>
+          @for (item of huajians | keyvalue: returnZero; track item.key) {
+            @if (!item.value.selected) {
+              <div class="item flex-column" (click)="selectListItem(item.value, '花件')">
+                <app-image [src]="item.value.data.xiaotu"></app-image>
+                <div class="title center">{{ item.value.data.mingzi }}</div>
               </div>
             }
           }

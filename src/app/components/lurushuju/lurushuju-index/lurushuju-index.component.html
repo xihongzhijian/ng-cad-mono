@@ -164,25 +164,18 @@
           <div class="suanliaocads flex-column">
             <div class="toolbar">
               <div class="flex-110"></div>
+              <button mat-raised-button color="primary" (click)="selectSuanliaoCads()">选择cad</button>
               <button mat-raised-button color="primary" (click)="suanliao()">计算</button>
             </div>
             <ng-scrollbar>
-              @for (item of gongyi?.["算料CAD"] | keyvalue: returnZero; track item) {
-                <div class="cad-group items item">
-                  <div class="toolbar">
-                    <div class="title">{{ item.key }}</div>
-                    <button mat-raised-button color="primary" (click)="selectSuanliaoCads(item.key)">选择CAD</button>
+              <div class="cads items add-empty-msg no-items-per-row">
+                @for (cad of gongyi?.["算料CAD"]; track $index) {
+                  <div class="cad item">
+                    <div class="name">{{ cad["名字"] }}</div>
+                    <app-image class="cad-preview" [src]="cadImgs[cad['_id']]"></app-image>
                   </div>
-                  <div class="cads items add-empty-msg no-items-per-row">
-                    @for (cad of item.value; track cad) {
-                      <div class="cad item">
-                        <div class="name">{{ cad["名字"] }}</div>
-                        <app-image class="cad-preview" [src]="cadImgs[cad['_id']]"></app-image>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
+                }
+              </div>
             </ng-scrollbar>
           </div>
         </div>
@@ -200,6 +193,11 @@
             <app-input class="item" [info]="info"></app-input>
           }
         </div>
+      </mat-tab>
+      <mat-tab label="板材分组">
+        @if (bcfzInputData) {
+          <app-mrbcjfz [inputData]="bcfzInputData" (dataSubmit)="onBcfzSubmit($event)"></app-mrbcjfz>
+        }
       </mat-tab>
     </mat-tab-group>
   }

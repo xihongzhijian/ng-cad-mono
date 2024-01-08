@@ -76,18 +76,14 @@
   .suanliaocads {
     flex: 1 1 0;
 
-    .cad-group {
-      &:not(:last-child) {
-        border-bottom: 1px solid var(--mat-divider-color);
-      }
-
-      > .name {
-        text-align: left;
-      }
-    }
-
     .cads {
       width: 100%;
     }
   }
+}
+
+app-mrbcjfz {
+  padding: 0;
+  --cad-preview-width: auto;
+  --cad-preview-height: auto;
 }
