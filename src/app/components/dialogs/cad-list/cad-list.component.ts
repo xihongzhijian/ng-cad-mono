@@ -15,16 +15,17 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTableModule} from "@angular/material/table";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
-import {SafeUrl} from "@angular/platform-browser";
-import {imgCadEmpty} from "@app/app.common";
+import {DomSanitizer} from "@angular/platform-browser";
+import {imgCadEmpty, timer} from "@app/app.common";
+import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams} from "@modules/http/services/cad-data.service.types";
-import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
@@ -48,31 +49,30 @@ export const customTooltipOptions: MatTooltipDefaultOptions = {
   imports: [
     CommonModule,
     FormsModule,
-    ImageComponent,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatDialogActions,
-    MatDividerModule,
     MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatOptionModule,
-    MatPaginatorModule,
-    MatRadioModule,
     MatSelectModule,
+    MatOptionModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
     MatSlideToggleModule,
-    MatTableModule,
-    MatTooltipModule,
+    MatCheckboxModule,
     NgScrollbar,
+    MatRadioModule,
+    MatTooltipModule,
+    MatTableModule,
     SpinnerComponent,
-    TypedTemplateDirective
+    MatDialogActions,
+    MatPaginatorModule,
+    TypedTemplateDirective,
+    MatDividerModule
   ]
 })
 export class CadListComponent extends Utils() implements AfterViewInit {
   length = 0;
   pageSizeOptions = [1, 10, 20, 50, 100];
   pageSize = 20;
-  pageData: {data: CadData; img: SafeUrl; checked: boolean}[] = [];
+  pageData: {data: CadData; img: string; checked: boolean}[] = [];
   tableData: any = [];
   displayedColumns = ["select", "mingzi", "wenjian", "create_time", "modify_time"];
   width = 300;
@@ -88,15 +88,16 @@ export class CadListComponent extends Utils() implements AfterViewInit {
   loaderId = "cadList";
   loaderIdSubmit = "cadListSubmit";
   cadDataType!: CadData;
-  imgCadEmpty = imgCadEmpty;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
   @ViewChild("singleSelectNone", {read: ElementRef}) singleSelectNone?: ElementRef<HTMLSpanElement>;
 
   constructor(
     public dialogRef: MatDialogRef<CadListComponent, CadListOutput>,
     @Inject(MAT_DIALOG_DATA) public data: CadListInput,
+    private sanitizer: DomSanitizer,
     private http: CadDataService,
     private dialog: MatDialog,
+    private spinner: SpinnerService,
     private message: MessageService
   ) {
     super();
@@ -183,17 +184,15 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     }
     const limit = this.paginator.pageSize;
     let result: Awaited<ReturnType<CadDataService["getCad"]>>;
-    const {collection, standaloneSearch} = this.data;
+    const collection = this.data.collection;
     if (this.data.source) {
       const total = this.data.source.length;
       const cads = this.data.source.slice((page - 1) * limit, page * limit);
       result = {cads, total};
     } else {
       const search = {...this.data.search};
-      if (!standaloneSearch || this.searchNameInput) {
-        search[this.searchField] = this.searchNameInput;
-      }
-      const params: GetCadParams = {collection, page, limit, search, standaloneSearch};
+      search[this.searchField] = this.searchNameInput;
+      const params: GetCadParams = {collection, page, limit, search};
       params.qiliao = this.data.qiliao;
       params.options = options;
       params.optionsMatchType = matchType;
@@ -209,10 +208,17 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     this.pageData.length = 0;
     result.cads.forEach(async (d) => {
       const checked = this.checkedItems.find((v) => v === d.id) ? true : false;
-      const img = this.http.getCadImgUrl(d.id);
-      this.pageData.push({data: d, img, checked});
+      const pageData = {data: d, img: imgCadEmpty, checked};
+      this.pageData.push(pageData);
     });
     this.syncCheckedItems();
+    const timerName = "cad-list-getData";
+    timer.start(timerName);
+    for (const data of this.pageData) {
+      const url = await getCadPreview(collection, data.data, {http: this.http});
+      data.img = this.sanitizer.bypassSecurityTrustUrl(url) as string;
+    }
+    timer.end(timerName, "渲染CAD列表");
     return result;
   }
 
@@ -312,14 +318,10 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     }
     const ids = this.checkedItems;
     if (ids.length > 0) {
-      if (this.data.raw) {
-        const result = await this.http.getCadRaw({ids, collection: this.data.collection});
-        // todo: fix typing
-        this.dialogRef.close((result?.data || []) as any);
-      } else {
-        const result = await this.http.getCad({ids, collection: this.data.collection});
-        this.dialogRef.close(result.cads);
-      }
+      this.spinner.show(this.loaderIdSubmit);
+      const result = await this.http.getCad({ids, collection: this.data.collection});
+      this.spinner.hide(this.loaderIdSubmit);
+      this.dialogRef.close(result.cads);
     } else {
       this.dialogRef.close([]);
     }
