@@ -8,6 +8,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {ColumnInfo, RowButtonEvent, TableRenderInfo} from "@modules/table/components/table/table.types";
+import csstype from "csstype";
 import {TableData, TableInfoData, XikongData, XikongDataRaw} from "./print-table.types";
 
 @Component({
@@ -66,9 +67,13 @@ export class PrintTableComponent implements OnInit {
     this.title = data.标题;
     document.title = data.标题;
     this.tableInfos = [];
-    for (const value of data.表头) {
+    for (const [i, value] of data.表头.entries()) {
       const 表头列: ColumnInfo<TableData>[] = [];
       let 表头列i = 0;
+      const headerStyle: csstype.Properties = {};
+      if (i < data.表头.length - 1) {
+        headerStyle.borderBottom = "none";
+      }
       for (const value2 of value) {
         if (!value2.value) {
           value2.value = Array(++表头列i).fill(" ").join("");
@@ -77,13 +82,13 @@ export class PrintTableComponent implements OnInit {
           type: "string",
           field: value2.label,
           name: value2.label,
-          style: {flex: `1 1 ${value2.width[1]}`}
+          style: {...headerStyle, flex: `1 1 ${value2.width[1]}`}
         });
         表头列.push({
           type: "string",
           field: value2.value,
           name: value2.value,
-          style: {flex: `1 1 calc(${value2.width[0]} - ${value2.width[1]})`}
+          style: {...headerStyle, flex: `1 1 calc(${value2.width[0]} - ${value2.width[1]})`}
         });
       }
       this.tableInfos.push({
@@ -96,6 +101,7 @@ export class PrintTableComponent implements OnInit {
     for (const info of data.表数据) {
       this.tableInfos.push({noCheckBox: true, noScroll: true, ...info});
     }
+    console.log(this.tableInfos);
   }
 
   onRowButtonClick(tableInfo: TableRenderInfo<TableData>, event: RowButtonEvent<TableData>) {

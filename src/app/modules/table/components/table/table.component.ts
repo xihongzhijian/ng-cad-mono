@@ -448,7 +448,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const style: csstype.Properties = {...column.style};
     if (column.width) {
       style.flex = `0 0 ${column.width}`;
-    } else {
+    } else if (!style.flex) {
       style.flex = "1 1 0";
     }
     return style;
