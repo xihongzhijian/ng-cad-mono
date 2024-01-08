@@ -1,9 +1,10 @@
+import {DomSanitizer} from "@angular/platform-browser";
 import {getListStr} from "@modules/message/components/message/message-types";
 import hljs from "highlight.js";
 import {v4} from "uuid";
 import {Desc} from "./cad-command-types";
 
-export const getContent = (desc: Desc): string => {
+export const getContent = (domSanitizer: DomSanitizer, desc: Desc): string => {
   if (!desc) {
     return "";
   }
@@ -11,9 +12,9 @@ export const getContent = (desc: Desc): string => {
     return desc;
   }
   let content = desc.content;
-  const sub = desc.sub?.map((v) => getContent(v));
+  const sub = desc.sub?.map((v) => getContent(domSanitizer, v));
   if (sub) {
-    content += "<br>" + getListStr(sub);
+    content += "<br>" + getListStr(domSanitizer, sub);
   }
   return content;
 };

@@ -1,6 +1,7 @@
 import {Injectable} from "@angular/core";
 import {MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarConfig} from "@angular/material/snack-bar";
+import {DomSanitizer} from "@angular/platform-browser";
 import {InputInfo} from "@modules/input/components/input.types";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
 import {
@@ -31,7 +32,8 @@ export class MessageService {
   close$ = new BehaviorSubject<MessageOutput>(null);
   constructor(
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private domSanitizer: DomSanitizer
   ) {}
 
   async open(config: MatDialogConfig<MessageData>) {
@@ -56,7 +58,7 @@ export class MessageService {
     if (type === "alert") {
       const {details} = data as MessageDataParams<AlertMessageData>;
       if (Array.isArray(details) && details.length > 0) {
-        const el = getListEl(details, data.content);
+        const el = getListEl(this.domSanitizer, details, data.content);
         data.content = el;
       } else if (details) {
         data.content = `${data.content}<br>${details}`;
