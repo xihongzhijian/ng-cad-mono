@@ -106,7 +106,7 @@ export const getListEl = (domSanitizer: DomSanitizer, content: string[], title =
   });
   const titleEl = document.createElement("div");
   titleEl.classList.add("title");
-  titleEl.innerHTML = title;
+  titleEl.innerHTML = domSanitizer.sanitize(SecurityContext.HTML, title) || "";
   const divEl = document.createElement("div");
   divEl.classList.add("message-list");
   divEl.appendChild(titleEl);
