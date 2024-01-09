@@ -101,51 +101,63 @@ export class PrintTableComponent implements OnInit {
     for (const info of data.表数据) {
       this.tableInfos.push({noCheckBox: true, noScroll: true, ...info});
     }
-    console.log(this.tableInfos);
   }
 
-  onRowButtonClick(tableInfo: TableRenderInfo<TableData>, event: RowButtonEvent<TableData>) {
-    const {button, column, item, rowIdx} = event;
-    if (button.event === "查看铣孔信息") {
-      this.xikongTableInfo = null;
-      if (tableInfo.activeRows?.includes(rowIdx)) {
-        tableInfo.activeRows = [];
-        return;
-      }
-      let xikongData: XikongDataRaw[] | null = null;
-      try {
-        xikongData = JSON.parse(item[column.field]);
-      } catch (e) {
-        const content = `${column.field}=${JSON.stringify(item[column.field])}`;
-        this.message.error({title: "数据格式错误", content});
-      }
-      if (!xikongData) {
-        return;
-      }
-      const xikongColWidths: Record<keyof XikongData, number> = {
-        序号: 30,
-        加工面: 60,
-        加工孔名字: 150,
-        X: 60,
-        Y: 60,
-        Z: 60
-      };
-      this.xikongTableWidth = 10 + Object.values(xikongColWidths).reduce((a, b) => a + b, 0);
-      this.xikongTableInfo = {
-        noCheckBox: true,
-        columns: [
-          {type: "number", field: "序号", width: `${xikongColWidths.序号}px`},
-          {type: "string", field: "加工面", width: `${xikongColWidths.加工面}px`},
-          {type: "string", field: "加工孔名字", width: `${xikongColWidths.加工孔名字}px`},
-          {type: "string", field: "X", width: `${xikongColWidths.X}px`},
-          {type: "string", field: "Y", width: `${xikongColWidths.Y}px`},
-          {type: "string", field: "Z", width: `${xikongColWidths.Z}px`}
-        ],
-        data: xikongData.map((value, index) => {
-          return {序号: index + 1, ...value};
-        })
-      };
-      tableInfo.activeRows = [rowIdx];
+  async onRowButtonClick(tableInfo: TableRenderInfo<TableData>, event: RowButtonEvent<TableData>) {
+    const {button, item, rowIdx} = event;
+    switch (button.event) {
+      case "查看铣孔信息":
+        {
+          this.xikongTableInfo = null;
+          if (tableInfo.activeRows?.includes(rowIdx)) {
+            tableInfo.activeRows = [];
+            return;
+          }
+          let xikongData: XikongDataRaw[] | null = null;
+          const field = "铣孔";
+          try {
+            xikongData = JSON.parse(item[field]);
+          } catch (e) {
+            const content = `${field}=${JSON.stringify(item[field])}`;
+            this.message.error({title: "数据格式错误", content});
+          }
+          if (!xikongData) {
+            return;
+          }
+          const xikongColWidths: Record<keyof XikongData, number> = {
+            序号: 80,
+            加工面: 60,
+            加工孔名字: 200,
+            X: 60,
+            Y: 60,
+            Z: 60
+          };
+          this.xikongTableWidth = 10 + Object.values(xikongColWidths).reduce((a, b) => a + b, 0);
+          this.xikongTableInfo = {
+            noCheckBox: true,
+            columns: [
+              {type: "number", field: "序号", width: `${xikongColWidths.序号}px`},
+              {type: "string", field: "加工面", width: `${xikongColWidths.加工面}px`},
+              {type: "string", field: "加工孔名字", width: `${xikongColWidths.加工孔名字}px`},
+              {type: "string", field: "X", width: `${xikongColWidths.X}px`},
+              {type: "string", field: "Y", width: `${xikongColWidths.Y}px`},
+              {type: "string", field: "Z", width: `${xikongColWidths.Z}px`}
+            ],
+            data: xikongData.map((value, index) => {
+              return {序号: index + 1, ...value};
+            })
+          };
+          tableInfo.activeRows = [rowIdx];
+        }
+        break;
+      case "查看型材信息":
+        {
+          const url = await this.http.getShortUrl("铝型材CNC加工", {search2: {where: {vid: item.vid}}});
+          if (url) {
+            window.open(url);
+          }
+        }
+        break;
     }
   }
 }
