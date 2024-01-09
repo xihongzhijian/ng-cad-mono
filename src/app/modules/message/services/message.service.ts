@@ -68,7 +68,7 @@ export class MessageService {
   }
 
   async alert(data: string | MessageDataParams<AlertMessageData>, others: MessageDataParams2<AlertMessageData> = {}) {
-    await this.open({data: this._getData(data, "alert"), ...others});
+    return await this.open({data: this._getData(data, "alert"), ...others});
   }
 
   async error(message: string | MessageDataParams<AlertMessageData>, others: MessageDataParams2<AlertMessageData> = {}) {
@@ -76,7 +76,7 @@ export class MessageService {
     if (!data.title) {
       data.title = `<span style="color:red">错误</span>`;
     }
-    await this.open({data, width: "80vw", ...others});
+    return await this.open({data, width: "80vw", ...others});
   }
 
   async confirm(data: string | MessageDataParams<ConfirmMessageData>, others: MessageDataParams2<ConfirmMessageData> = {}) {

@@ -395,11 +395,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     this.style = {...info.styles};
     if (info.hidden) {
-      if (info.hideType === "opacity") {
-        this.style.opacity = "0";
-      } else {
-        this.style.display = "none";
-      }
+      this.style.display = "none";
     }
     let validateValue = !!info.initialValidate;
     changes.forEachItem((item) => {

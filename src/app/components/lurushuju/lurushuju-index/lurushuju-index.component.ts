@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {Component, HostBinding, OnInit} from "@angular/core";
+import {Component, HostBinding, OnInit, ViewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -54,7 +54,6 @@ import {
   门铰锁边铰边
 } from "../xinghao-data";
 import {
-  BancaifenzuInfo,
   LurushujuIndexStep,
   LurushujuIndexStepInfo,
   MenjiaoData,
@@ -95,8 +94,16 @@ export class LurushujuIndexComponent implements OnInit {
   gongyi: 工艺做法 | null = null;
   xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
   xinghaoFilterStr = session.load<string>(this.xinghaoFilterStrKey) || "";
-  tabIndexKey = "lurushujuTabIndex";
-  tabIndex = session.load<number>(this.tabIndexKey) || 0;
+  tabs: {name: string; hidden?: boolean}[] = [
+    {name: "下单选项输入配置"},
+    {name: "门铰锁边铰边"},
+    {name: "算料公式CAD配置"},
+    {name: "示意图CAD"},
+    {name: "效果图"},
+    {name: "板材分组"}
+  ];
+  tabNameKey = "lurushujuTabName";
+  tabIndex = 0;
   filterInputInfo: InputInfo<this> = {
     type: "string",
     label: "搜索型号",
@@ -128,7 +135,7 @@ export class LurushujuIndexComponent implements OnInit {
         field: "操作",
         buttons: [
           {event: "编辑", color: "primary"},
-          {event: "删除", color: "primary"}
+          {event: "清空数据", color: "primary"}
         ]
       }
     ],
@@ -195,11 +202,11 @@ export class LurushujuIndexComponent implements OnInit {
     data: [],
     toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
   };
-  bancaifenzuInfo: BancaifenzuInfo | null = null;
   shiyituInputInfos: InputInfo[] = [];
   xiaoguotuInputInfos: InputInfo[] = [];
   bcfzInputData: MrbcjfzInputData | null = null;
   huajians: MrbcjfzHuajian[] = [];
+  parentInfo = {isZhijianUser: false};
 
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
@@ -209,6 +216,7 @@ export class LurushujuIndexComponent implements OnInit {
   production = environment.production;
   cadImgs: ObjectOf<SafeUrl> = {};
   wmm = new WindowMessageManager("录入数据", this, window.parent);
+  @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
 
   constructor(
     private http: CadDataService,
@@ -220,15 +228,28 @@ export class LurushujuIndexComponent implements OnInit {
 
   async ngOnInit() {
     const stepData = session.load<[LurushujuIndexStep, LurushujuIndexStepInfo[LurushujuIndexStep]]>(this.stepDataKey);
+    await this.updateParentInfo();
     if (stepData) {
-      this.setStep(...stepData);
+      await this.setStep(...stepData);
     } else {
-      this.setStep(1, {});
+      await this.setStep(1, {});
     }
   }
 
   returnZero() {
     return 0;
+  }
+
+  async updateParentInfo() {
+    this.wmm.postMessage("getParentInfoStart");
+    this.parentInfo = await this.wmm.waitForMessage("getParentInfoEnd");
+    if (!this.parentInfo.isZhijianUser) {
+      for (const tab of this.tabs) {
+        if (tab.name === "效果图") {
+          tab.hidden = true;
+        }
+      }
+    }
   }
 
   async getXinghaos() {
@@ -287,7 +308,7 @@ export class LurushujuIndexComponent implements OnInit {
     window.location.reload();
   }
 
-  back() {
+  async back() {
     switch (this.step) {
       case 1:
         this.wmm.postMessage("back");
@@ -296,7 +317,15 @@ export class LurushujuIndexComponent implements OnInit {
         this.setStep(1, {});
         break;
       case 3:
-        this.setStep(2, {xinghaoName: this.xinghaoName});
+        {
+          const errorMsg = this.mrbcjfz?.checkSubmit() || [];
+          if (errorMsg.length > 0) {
+            await this.message.error(errorMsg.join("\n"));
+            this.tabIndex;
+          } else if (await this.message.confirm("确定返回吗？")) {
+            this.setStep(2, {xinghaoName: this.xinghaoName});
+          }
+        }
         break;
     }
   }
@@ -393,6 +422,8 @@ export class LurushujuIndexComponent implements OnInit {
     if (this.step !== 3) {
       return;
     }
+    const tabName = session.load<string>(this.tabNameKey);
+    this.openTab(tabName || "");
     if (!this.xinghao) {
       await this.getXinghao();
     }
@@ -413,7 +444,6 @@ export class LurushujuIndexComponent implements OnInit {
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
     this.menjiaoTable.data = gongyi.门铰锁边铰边;
-    this.bancaifenzuInfo = await this.http.getData<BancaifenzuInfo>("shuju/api/getBancaifenzuInfo");
     this.cadImgs = {};
     for (const cad of gongyi.算料CAD) {
       const id = cad._id;
@@ -476,8 +506,20 @@ export class LurushujuIndexComponent implements OnInit {
     this.updateBcfzInputData();
   }
 
+  openTab(name: string) {
+    const tabIndex = this.tabs.filter((v) => !v.hidden).findIndex((v) => v.name === name);
+    if (tabIndex >= 0) {
+      this.tabIndex = tabIndex;
+    } else if (name) {
+      this.message.error("未找到对应的标签页：" + name);
+    }
+  }
+
   onSelectedTabChange({index}: MatTabChangeEvent) {
-    session.save(this.tabIndexKey, index);
+    const tabName = this.tabs.filter((v) => !v.hidden)[index]?.name;
+    if (tabName) {
+      session.save(this.tabNameKey, tabName);
+    }
   }
 
   async setXinghao(data: Partial<Xinghao>, silent?: boolean) {
@@ -574,7 +616,7 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const data = cloneDeep(data0);
-    const form: InputInfo<工艺做法>[] = [
+    const form: InputInfo<Partial<工艺做法>>[] = [
       {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
       {
         type: "image",
@@ -590,13 +632,23 @@ export class LurushujuIndexComponent implements OnInit {
         }
       },
       {type: "boolean", label: "停用", model: {data, key: "停用"}},
-      {type: "boolean", label: "录入完成", model: {data, key: "录入完成"}}
+      {type: "boolean", label: "录入完成", model: {data, key: "录入完成"}},
+      {type: "boolean", label: "默认值", model: {data, key: "默认值"}}
     ];
     const result = await this.message.form(form);
     if (result) {
       Object.assign(data0, result);
+      const updateDatas: ObjectOf<typeof result> = {[名字]: result};
+      if (result.默认值) {
+        for (const gongyi of this.xinghao.产品分类[产品分类]) {
+          if (gongyi.名字 !== 名字) {
+            gongyi.默认值 = false;
+            updateDatas[gongyi.名字] = {默认值: false};
+          }
+        }
+      }
       const 型号 = this.xinghao.名字;
-      await this.http.post("shuju/api/editGongyi", {名字, 型号, 产品分类, data: result});
+      await this.http.post("shuju/api/editGongyi", {型号, 产品分类, updateDatas});
     }
   }
 
@@ -624,7 +676,7 @@ export class LurushujuIndexComponent implements OnInit {
     for (const field of fields) {
       data[field] = this.gongyi[field] as any;
     }
-    await this.http.post("shuju/api/editGongyi", {名字, 型号, 产品分类, data}, {silent});
+    await this.http.post("shuju/api/editGongyi", {型号, 产品分类, updateDatas: {[名字]: data}}, {silent});
   }
 
   async getXuanxiangItem(data0?: 选项) {
@@ -744,9 +796,10 @@ export class LurushujuIndexComponent implements OnInit {
           }
         }
         break;
-      case "删除":
-        if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          this.gongyi.选项数据.splice(rowIdx, 1);
+      case "清空数据":
+        if (await this.message.confirm(`确定清空【${item.名字}】的数据吗？`)) {
+          const item2 = this.gongyi.选项数据[rowIdx];
+          item2.可选项 = [];
           this.xuanxiangTable.data = [...this.gongyi.选项数据];
           await this.submitGongyi(["选项数据"]);
         }
@@ -904,13 +957,12 @@ export class LurushujuIndexComponent implements OnInit {
     const getGroupStyles = (styles?: csstype.Properties): csstype.Properties => {
       return {display: "flex", flexWrap: "wrap", marginBottom: "10px", ...styles};
     };
-    const getInfoStyles = (n: number, i: number): csstype.Properties => {
+    const getInfoStyles = (n: number): csstype.Properties => {
       const percent = 100 / n;
-      const space = 10;
-      const widthDiff = ((n - 1) * space) / n;
-      return {width: `calc(${percent}% - ${widthDiff}px)`, marginRight: (i + 1) % n === 0 ? "0" : `${space}px`};
+      const margin = 5;
+      return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`};
     };
-    const getOptionInputInfo = (key: keyof 门铰锁边铰边, n: number, i: number): InputInfoSelect | InputInfoSelectMulti => {
+    const getOptionInputInfo = (key: keyof 门铰锁边铰边, n: number): InputInfoSelect | InputInfoSelectMulti => {
       const optionsInfo = this.menjiaoOptionsAll[key];
       if (!optionsInfo) {
         return {type: "select", label: key, options: []};
@@ -924,7 +976,7 @@ export class LurushujuIndexComponent implements OnInit {
         model: {data, key},
         disabled,
         validators: Validators.required,
-        styles: getInfoStyles(n, i)
+        styles: getInfoStyles(n)
       };
       const onChange = () => {
         updateMenjiaoForm(data);
@@ -935,13 +987,13 @@ export class LurushujuIndexComponent implements OnInit {
         return {type: "select", options, onChange, ...info2};
       }
     };
-    const getMenfengInputInfo = (value: (typeof 门缝配置输入)[number], i: number): InputInfo => {
+    const getMenfengInputInfo = (value: (typeof 门缝配置输入)[number]): InputInfo => {
       return {
         type: "number",
         label: value.name,
         model: {data: data.门缝配置, key: value.name},
         validators: Validators.required,
-        styles: getInfoStyles(4, i)
+        styles: getInfoStyles(4)
       };
     };
     const optionKeys: (keyof 门铰锁边铰边)[] = ["产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"];
@@ -958,7 +1010,7 @@ export class LurushujuIndexComponent implements OnInit {
         type: "group",
         label: "选项",
         styles: getGroupStyles(),
-        infos: optionKeys.map((v, i) => getOptionInputInfo(v, 2, i))
+        infos: optionKeys.map((v) => getOptionInputInfo(v, 2))
       }
     ];
     const form2: InputInfo<门缝配置>[] = [
@@ -979,12 +1031,11 @@ export class LurushujuIndexComponent implements OnInit {
             type: "boolean",
             label: "关闭碰撞检查",
             model: {data, key: "关闭碰撞检查"},
-            styles: getInfoStyles(3, 0),
+            styles: getInfoStyles(3),
             validators: Validators.required
           },
           {
-            ...getOptionInputInfo("双开门扇宽生成方式", 3, 1),
-            hideType: "opacity",
+            ...getOptionInputInfo("双开门扇宽生成方式", 3),
             onChange: () => {
               if (使用锁扇铰扇蓝线宽固定差值()) {
                 form3[0].infos[2].hidden = false;
@@ -996,30 +1047,20 @@ export class LurushujuIndexComponent implements OnInit {
                 delete data.锁扇铰扇蓝线宽固定差值;
               }
             }
-          } as InputInfoSelect,
+          },
           {
             type: "number",
             label: "锁扇铰扇蓝线宽固定差值",
             model: {data, key: "锁扇铰扇蓝线宽固定差值"},
-            hideType: "opacity",
-            styles: getInfoStyles(3, 2)
+            styles: getInfoStyles(3)
           },
-          {type: "boolean", label: "停用", model: {data, key: "停用"}, styles: getInfoStyles(3, 3)},
-          {type: "number", label: "排序", model: {data, key: "排序"}, styles: getInfoStyles(3, 4)},
+          {type: "boolean", label: "停用", model: {data, key: "停用"}, styles: getInfoStyles(3)},
+          {type: "number", label: "排序", model: {data, key: "排序"}, styles: getInfoStyles(3)},
           {
             type: "boolean",
             label: "默认值",
             model: {data, key: "默认值"},
-            validators: (control) => {
-              if (control.value) {
-                const items = this.gongyi?.门铰锁边铰边.filter((v) => v.默认值);
-                if (items && items.length > (data0 ? 1 : 0)) {
-                  return {默认值已存在: true};
-                }
-              }
-              return null;
-            },
-            styles: getInfoStyles(3, 5)
+            styles: getInfoStyles(3)
           }
         ]
       } as InputInfoGroup<typeof data> & RequiredKeys<InputInfoGroup, "infos">
@@ -1131,6 +1172,11 @@ export class LurushujuIndexComponent implements OnInit {
         {
           const item = await this.getMenjiaoItem();
           if (item) {
+            if (item.默认值) {
+              for (const item2 of this.gongyi.门铰锁边铰边) {
+                item2.默认值 = false;
+              }
+            }
             this.gongyi.门铰锁边铰边.push(item);
             this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
             await this.submitGongyi(["门铰锁边铰边"]);
@@ -1151,6 +1197,13 @@ export class LurushujuIndexComponent implements OnInit {
           const item2 = this.gongyi.门铰锁边铰边[rowIdx];
           const item3 = await this.getMenjiaoItem(item2);
           if (item3) {
+            if (item3.默认值) {
+              for (const [i, item4] of this.gongyi.门铰锁边铰边.entries()) {
+                if (i !== rowIdx) {
+                  item4.默认值 = false;
+                }
+              }
+            }
             this.gongyi.门铰锁边铰边[rowIdx] = item3;
             this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
             await this.submitGongyi(["门铰锁边铰边"]);

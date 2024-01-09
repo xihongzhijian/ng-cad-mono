@@ -59,6 +59,7 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     创建时间: 0,
     最后一次修改时间: 0,
     修改记录: [],
+    默认值: false,
     ...raw
   };
   if (!isTypeOf(result.算料CAD, "array")) {
@@ -123,6 +124,7 @@ export interface 工艺做法 {
   铰扇正面: string;
   铰扇背面: string;
   录入完成: boolean;
+  默认值: boolean;
   停用: boolean;
   输入数据: 输入[];
   选项数据: 选项[];

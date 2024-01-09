@@ -160,7 +160,7 @@
               [disabled]="info.disabled || false"
               [autocomplete]="info.autocomplete"
               [(ngModel)]="item.value"
-              (change)="value[item.key] = item.value"
+              (change)="changeObjectValue(value, item.key, item.value)"
               (blur)="onBlur()"
             />
             @if (castInfo("object")["selectOptions"]) {
@@ -480,7 +480,7 @@
     @if (cadImg) {
       <app-image class="cad-preview" [src]="cadImg" (click)="selectCad()"></app-image>
     } @else {
-      <div class="cad-preview-empty" (click)="selectCad()">未选择</div>
+      <div class="cad-preview-empty" (click)="selectCad()">{{ info.placeholder }}</div>
     }
     <ng-template [ngTemplateOutlet]="footer"></ng-template>
   }

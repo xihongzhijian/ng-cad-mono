@@ -60,6 +60,10 @@ export const Utils = <T extends Constructor>(base: T = class {} as T) =>
       obj[newKey] = tmp;
     }
 
+    changeObjectValue<K>(obj: ObjectOf<K>, key: string, value: K) {
+      obj[key] = value;
+    }
+
     setNumberValue<K extends ObjectOf<any>>(obj: K, key: keyof K, event: Event) {
       const value = (event.target as HTMLInputElement).value;
       obj[key] = Number(value) as any;

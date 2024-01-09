@@ -66,6 +66,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   @Input() table = "";
   @Input() closeable = false;
   @Input() inputData: MrbcjfzInputData | null = null;
+  @Input() fubanNumber = 9;
   @Output() dataSubmit = new EventEmitter<MrbcjfzXinghaoInfo>();
   @Output() dataClose = new EventEmitter<void>();
   xinghao: MrbcjfzXinghaoInfo = new MrbcjfzXinghaoInfo(this.table, {vid: 0, mingzi: ""});
@@ -140,20 +141,18 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       }
       this.xinghao.默认板材 = data.morenbancai;
       this.xiaodaohangStructure = {mingzi: "型号"};
-      const bancaiListData = await this.http.getBancaiList();
+      const bancaiListData = await this.http.getBancaiList(this.fubanNumber);
       if (bancaiListData) {
         this.bancaiList = bancaiListData.bancais;
         this.bancaiKeys = bancaiListData.bancaiKeys;
         this.bancaiKeysNonClear = bancaiListData.bancaiKeysNonClear;
         this.bancaiKeysRequired = bancaiListData.bancaiKeysRequired;
-        this.qiliaos = {};
-        for (const qiliao of bancaiListData.qiliaos) {
-          this.qiliaos[qiliao] = {id: qiliao, name: qiliao};
-        }
       }
       const cads = data.cads || [];
       const cadIds1 = cads.map((v) => v.id);
       const cadIds2: string[] = [];
+      const qiliaoIds: string[] = [];
+      const huajianIds: string[] = [];
       for (const key of this.bancaiKeys) {
         if (!this.xinghao.默认板材[key]) {
           this.xinghao.默认板材[key] = getEmptyMrbcjfzInfo(key);
@@ -161,6 +160,8 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         const info = this.xinghao.默认板材[key];
         info.CAD = info.CAD.filter((v) => cadIds1.includes(v));
         cadIds2.push(...info.CAD);
+        qiliaoIds.push(...info.企料);
+        huajianIds.push(...info.花件);
       }
       this.cads = {};
       for (const cad of cads) {
@@ -171,10 +172,16 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         info.selected = cadIds2.includes(cad.id);
         this.cads[cad.id] = info;
       }
+
+      this.qiliaos = {};
+      for (const qiliao of bancaiListData?.qiliaos || []) {
+        this.qiliaos[qiliao] = {id: qiliao, name: qiliao, selected: qiliaoIds.includes(qiliao)};
+      }
+
       this.huajians = {};
       for (const huajian of data.huajians || []) {
         const vid = String(huajian.vid);
-        this.huajians[vid] = {id: vid, data: huajian};
+        this.huajians[vid] = {id: vid, data: huajian, selected: huajianIds.includes(vid)};
       }
     } else {
       const data = await this.http.getData<MrbcjfzResponseData>(
@@ -415,10 +422,10 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     this.updateListItems(key);
   }
 
-  async submit() {
-    const {xinghao, table, isFromOrder} = this;
+  checkSubmit() {
+    const {xinghao, isFromOrder, inputData} = this;
     if (!xinghao) {
-      return;
+      return [];
     }
     const errorMsg: string[] = [];
     const errorBancaiKeys: string[] = [];
@@ -433,7 +440,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     if (errorBancaiKeys.length) {
       errorMsg.push(`板材信息不完整：${errorBancaiKeys.join("，")}`);
     }
-    if (!isFromOrder) {
+    if (inputData || !isFromOrder) {
       if (Object.values(this.cads).some((v) => !v.selected)) {
         errorMsg.push("有CAD未选择");
       }
@@ -454,11 +461,20 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         errorMsg.push(`板材输入有误：${Array.from(errorMsg2).join("，")}`);
       }
     }
-    if (errorMsg.length) {
-      this.message.error(errorMsg.join("<br>"));
-      return;
-    }
+    return errorMsg;
+  }
+
+  async submit() {
+    const {xinghao, table, isFromOrder} = this;
     let result = false;
+    if (!xinghao) {
+      return result;
+    }
+    const errorMsg = this.checkSubmit();
+    if (errorMsg.length) {
+      await this.message.error(errorMsg.join("<br>"));
+      return result;
+    }
     if (this.inputData) {
       result = true;
     } else {
