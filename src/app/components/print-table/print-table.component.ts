@@ -3,7 +3,7 @@ import {Component, HostBinding, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
-import {timeout} from "@lucilor/utils";
+import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
@@ -24,6 +24,7 @@ export class PrintTableComponent implements OnInit {
   tableInfos: TableRenderInfo<TableData>[] = [];
   xikongTableInfo: TableRenderInfo<XikongData> | null = null;
   xikongTableWidth = 0;
+  xikongColWidths: ObjectOf<number> = {};
 
   constructor(
     private http: CadDataService,
@@ -101,6 +102,7 @@ export class PrintTableComponent implements OnInit {
     for (const info of data.表数据) {
       this.tableInfos.push({noCheckBox: true, noScroll: true, ...info});
     }
+    this.xikongColWidths = data.铣孔信息列宽;
   }
 
   async onRowButtonClick(tableInfo: TableRenderInfo<TableData>, event: RowButtonEvent<TableData>) {
@@ -124,14 +126,7 @@ export class PrintTableComponent implements OnInit {
           if (!xikongData) {
             return;
           }
-          const xikongColWidths: Record<keyof XikongData, number> = {
-            序号: 80,
-            加工面: 60,
-            加工孔名字: 200,
-            X: 60,
-            Y: 60,
-            Z: 60
-          };
+          const xikongColWidths = this.xikongColWidths;
           this.xikongTableWidth = 10 + Object.values(xikongColWidths).reduce((a, b) => a + b, 0);
           this.xikongTableInfo = {
             noCheckBox: true,

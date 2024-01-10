@@ -9,6 +9,7 @@ export interface TableInfoData {
     width: string[];
   }[][];
   表数据: TableRenderInfo<ObjectOf<any>>[];
+  铣孔信息列宽: ObjectOf<number>;
 }
 
 export type TableData = ObjectOf<any>;
