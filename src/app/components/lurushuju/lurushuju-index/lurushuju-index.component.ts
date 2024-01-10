@@ -6,11 +6,11 @@ import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
-import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
+import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
 import {filePathUrl, getBooleanStr, getFilepathUrl, session, setGlobal} from "@app/app.common";
-import {CadListInput} from "@components/dialogs/cad-list/cad-list.component";
+import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
@@ -204,7 +204,7 @@ export class LurushujuIndexComponent implements OnInit {
   };
   shiyituInputInfos: InputInfo[] = [];
   xiaoguotuInputInfos: InputInfo[] = [];
-  bcfzInputData: MrbcjfzInputData | null = null;
+  bcfzInputData: MrbcjfzInputData = {xinghao: "", morenbancai: {}};
   huajians: MrbcjfzHuajian[] = [];
   parentInfo = {isZhijianUser: false};
 
@@ -217,6 +217,7 @@ export class LurushujuIndexComponent implements OnInit {
   cadImgs: ObjectOf<SafeUrl> = {};
   wmm = new WindowMessageManager("录入数据", this, window.parent);
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
+  @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
 
   constructor(
     private http: CadDataService,
@@ -317,14 +318,8 @@ export class LurushujuIndexComponent implements OnInit {
         this.setStep(1, {});
         break;
       case 3:
-        {
-          const errorMsg = this.mrbcjfz?.checkSubmit() || [];
-          if (errorMsg.length > 0) {
-            await this.message.error(errorMsg.join("\n"));
-            this.tabIndex;
-          } else if (await this.message.confirm("确定返回吗？")) {
-            this.setStep(2, {xinghaoName: this.xinghaoName});
-          }
+        if ((await this.checkBcfz()) && (await this.message.confirm("确定返回吗？"))) {
+          this.setStep(2, {xinghaoName: this.xinghaoName});
         }
         break;
     }
@@ -469,6 +464,15 @@ export class LurushujuIndexComponent implements OnInit {
         }
       });
     }
+
+    const xiaoguotuKeys: (keyof 工艺做法)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
+    const xiaoguotuValues = new Set<string>();
+    for (const key of xiaoguotuKeys) {
+      const value = gongyi[key];
+      if (typeof value === "string" && value) {
+        xiaoguotuValues.add(value);
+      }
+    }
     this.xiaoguotuInputInfos = [];
     const optionsRaw = await this.http.queryMySql<TableDataBase & {zuchenghuajian?: string}>({
       table: "p_menshan",
@@ -478,7 +482,7 @@ export class LurushujuIndexComponent implements OnInit {
     const huajianIds = new Set<string>();
     for (const optionRaw of optionsRaw) {
       options.push(optionRaw.mingzi);
-      if (typeof optionRaw.zuchenghuajian === "string") {
+      if (xiaoguotuValues.has(optionRaw.mingzi) && typeof optionRaw.zuchenghuajian === "string") {
         for (const v of optionRaw.zuchenghuajian.split("*")) {
           if (v) {
             huajianIds.add(v);
@@ -486,12 +490,15 @@ export class LurushujuIndexComponent implements OnInit {
         }
       }
     }
-    this.huajians = await this.http.queryMySql<MrbcjfzHuajian>({
-      table: "p_huajian",
-      fields: ["vid", "mingzi", "xiaotu"],
-      filter: {where_in: {vid: Array.from(huajianIds)}}
-    });
-    const xiaoguotuKeys: (keyof 工艺做法)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
+    if (huajianIds.size > 0) {
+      this.huajians = await this.http.queryMySql<MrbcjfzHuajian>({
+        table: "p_huajian",
+        fields: ["vid", "mingzi", "xiaotu"],
+        filter: {where_in: {vid: Array.from(huajianIds)}}
+      });
+    } else {
+      this.huajians = [];
+    }
     for (const key of xiaoguotuKeys) {
       this.xiaoguotuInputInfos.push({
         type: "select",
@@ -499,6 +506,7 @@ export class LurushujuIndexComponent implements OnInit {
         options,
         model: {data: gongyi, key},
         onChange: () => {
+          this.updateBcfzInputData();
           this.submitGongyi([key]);
         }
       });
@@ -507,7 +515,11 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   openTab(name: string) {
-    const tabIndex = this.tabs.filter((v) => !v.hidden).findIndex((v) => v.name === name);
+    const tabs = this.tabGroup?._tabs.toArray();
+    if (!tabs) {
+      return;
+    }
+    const tabIndex = tabs.findIndex((v) => v.textLabel === name);
     if (tabIndex >= 0) {
       this.tabIndex = tabIndex;
     } else if (name) {
@@ -515,10 +527,35 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  onSelectedTabChange({index}: MatTabChangeEvent) {
-    const tabName = this.tabs.filter((v) => !v.hidden)[index]?.name;
+  async checkBcfz() {
+    const {mrbcjfz, gongyi} = this;
+    if (mrbcjfz && gongyi) {
+      const errorMsg = mrbcjfz.checkSubmit() || [];
+      if (errorMsg.length > 0) {
+        this.openTab("板材分组");
+        await this.message.error(errorMsg.join("\n"));
+        return false;
+      }
+      if (!isEqual(mrbcjfz.xinghao.默认板材, gongyi.板材分组)) {
+        const yes = await this.message.confirm("板材分组已修改，是否提交？");
+        if (yes) {
+          mrbcjfz.submit();
+        }
+      }
+    }
+    return true;
+  }
+
+  onSelectedTabChange({index, tab}: MatTabChangeEvent) {
+    const tabName = tab.textLabel;
     if (tabName) {
       session.save(this.tabNameKey, tabName);
+    }
+    if (typeof tab.origin === "number") {
+      const tabPrev = this.tabGroup?._tabs.get(index - tab.origin);
+      if (tabPrev?.textLabel === "板材分组") {
+        this.checkBcfz();
+      }
     }
   }
 
@@ -1398,7 +1435,7 @@ export class LurushujuIndexComponent implements OnInit {
         huajians: this.huajians
       };
     } else {
-      this.bcfzInputData = null;
+      this.bcfzInputData = {xinghao: this.xinghaoName, morenbancai: {}};
     }
   }
 

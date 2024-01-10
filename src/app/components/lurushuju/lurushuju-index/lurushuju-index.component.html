@@ -84,8 +84,8 @@
     </div>
   }
   @case (3) {
-    <mat-tab-group class="step-3" mat-stretch-tabs="false" [selectedIndex]="tabIndex" (selectedTabChange)="onSelectedTabChange($event)">
-      @for (tab of tabs; track $index) {
+    <mat-tab-group class="step-3" mat-stretch-tabs="false" [(selectedIndex)]="tabIndex" (selectedTabChange)="onSelectedTabChange($event)">
+      @for (tab of tabs; track tab.name) {
         @if (!tab.hidden) {
           <mat-tab [label]="tab.name">
             @switch (tab.name) {

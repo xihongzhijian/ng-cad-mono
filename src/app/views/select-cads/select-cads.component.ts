@@ -1,7 +1,8 @@
 import {Component, OnInit} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {session} from "@app/app.common";
-import {CadListInput, openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
+import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
+import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {environment} from "src/environments/environment";
 

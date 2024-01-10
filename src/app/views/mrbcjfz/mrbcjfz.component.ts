@@ -132,6 +132,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       await timeout(0);
     }
     if (this.isFromOrder) {
+      this.bancaiKeys = [];
       const data = await this.getData();
       const xinghaosRaw = await this.http.queryMySql({table: "p_xinghao", filter: {where: {mingzi: data.xinghao}}});
       if (xinghaosRaw[0]) {
@@ -151,17 +152,21 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       const cads = data.cads || [];
       const cadIds1 = cads.map((v) => v.id);
       const cadIds2: string[] = [];
-      const qiliaoIds: string[] = [];
-      const huajianIds: string[] = [];
+      const qiliaoIds1 = bancaiListData?.qiliaos || [];
+      const qiliaoIds2: string[] = [];
+      const huajianIds1 = (data.huajians || []).map((v) => String(v.vid));
+      const huajianIds2: string[] = [];
       for (const key of this.bancaiKeys) {
-        if (!this.xinghao.默认板材[key]) {
-          this.xinghao.默认板材[key] = getEmptyMrbcjfzInfo(key);
+        if (!data.morenbancai[key]) {
+          data.morenbancai[key] = getEmptyMrbcjfzInfo(key);
         }
-        const info = this.xinghao.默认板材[key];
+        const info = data.morenbancai[key];
         info.CAD = info.CAD.filter((v) => cadIds1.includes(v));
         cadIds2.push(...info.CAD);
-        qiliaoIds.push(...info.企料);
-        huajianIds.push(...info.花件);
+        info.企料 = info.企料.filter((v) => qiliaoIds1.includes(v));
+        qiliaoIds2.push(...info.企料);
+        info.花件 = info.花件.filter((v) => huajianIds1.includes(v));
+        huajianIds2.push(...info.花件);
       }
       this.cads = {};
       for (const cad of cads) {
@@ -175,13 +180,13 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
 
       this.qiliaos = {};
       for (const qiliao of bancaiListData?.qiliaos || []) {
-        this.qiliaos[qiliao] = {id: qiliao, name: qiliao, selected: qiliaoIds.includes(qiliao)};
+        this.qiliaos[qiliao] = {id: qiliao, name: qiliao, selected: qiliaoIds2.includes(qiliao)};
       }
 
       this.huajians = {};
       for (const huajian of data.huajians || []) {
         const vid = String(huajian.vid);
-        this.huajians[vid] = {id: vid, data: huajian, selected: huajianIds.includes(vid)};
+        this.huajians[vid] = {id: vid, data: huajian, selected: huajianIds2.includes(vid)};
       }
     } else {
       const data = await this.http.getData<MrbcjfzResponseData>(

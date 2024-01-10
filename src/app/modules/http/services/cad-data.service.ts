@@ -72,7 +72,7 @@ export class CadDataService extends HttpService {
   }
 
   async getCad(params: GetCadParams, options?: HttpOptions): Promise<{cads: CadData[]; total: number}> {
-    const response = await this.post<any>("peijian/cad/getCad", params, {bypassCodes: [10], ...options});
+    const response = await this.post<any>("ngcad/getCad", params, {bypassCodes: [10], ...options});
     const result: {cads: CadData[]; total: number} = {cads: [], total: 0};
     if (response && response.data) {
       if (response.code === 10) {

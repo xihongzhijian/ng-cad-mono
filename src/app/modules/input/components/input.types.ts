@@ -1,6 +1,6 @@
 import {AbstractControlOptions} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
-import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.component";
+import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
 import csstype from "csstype";

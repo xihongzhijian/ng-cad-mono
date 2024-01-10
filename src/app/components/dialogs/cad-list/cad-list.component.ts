@@ -18,9 +18,8 @@ import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule}
 import {DomSanitizer} from "@angular/platform-browser";
 import {imgCadEmpty, timer} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
-import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
-import {isBetween, isNumber, ObjectOf} from "@lucilor/utils";
+import {isBetween, isNumber} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams} from "@modules/http/services/cad-data.service.types";
@@ -33,6 +32,7 @@ import {TypedTemplateDirective} from "../../../modules/directives/typed-template
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {openCadSearchFormDialog} from "../cad-search-form/cad-search-form.component";
 import {getOpenDialogFunc} from "../dialog.common";
+import {CadListInput, CadListOutput, selectModes} from "./cad-list.types";
 
 export const customTooltipOptions: MatTooltipDefaultOptions = {
   showDelay: 500,
@@ -184,14 +184,16 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     }
     const limit = this.paginator.pageSize;
     let result: Awaited<ReturnType<CadDataService["getCad"]>>;
-    const collection = this.data.collection;
+    const {collection, standaloneSearch} = this.data;
     if (this.data.source) {
       const total = this.data.source.length;
       const cads = this.data.source.slice((page - 1) * limit, page * limit);
       result = {cads, total};
     } else {
       const search = {...this.data.search};
-      search[this.searchField] = this.searchNameInput;
+      if (!standaloneSearch || this.searchNameInput) {
+        search[this.searchField] = this.searchNameInput;
+      }
       const params: GetCadParams = {collection, page, limit, search};
       params.qiliao = this.data.qiliao;
       params.options = options;
@@ -336,27 +338,6 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     this.search();
   }
 }
-
-export const selectModes = ["single", "multiple"] as const;
-
-export type SelectMode = (typeof selectModes)[number];
-
-export interface CadListInput {
-  selectMode: SelectMode;
-  checkedItems?: string[];
-  checkedItemsLimit?: number | number[];
-  options?: CadData["options"];
-  collection: CadCollection;
-  qiliao?: boolean;
-  search?: ObjectOf<any>;
-  standaloneSearch?: boolean;
-  fixedSearch?: ObjectOf<any>;
-  pageSize?: number;
-  source?: CadData[];
-  raw?: boolean;
-}
-
-export type CadListOutput = CadData[];
 
 export const openCadListDialog = getOpenDialogFunc<CadListComponent, CadListInput, CadListOutput>(CadListComponent, {
   width: "85%",
