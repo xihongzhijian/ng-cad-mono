@@ -14,6 +14,7 @@ import {
   GetCadParams,
   GetOptionsParams,
   OptionsData,
+  OptionsDataData,
   QueryMongodbParams,
   QueryMysqlParams,
   SetCadParams,
@@ -221,7 +222,7 @@ export class CadDataService extends HttpService {
     return null;
   }
 
-  async getOptions(params: GetOptionsParams, httpOptions?: HttpOptions): Promise<OptionsData | null> {
+  async getOptions(params: GetOptionsParams, httpOptions?: HttpOptions) {
     const postData: ObjectOf<any> = {...params};
     if (params.data instanceof CadData) {
       delete postData.data;
@@ -231,16 +232,11 @@ export class CadDataService extends HttpService {
       postData.xuanxiang = exportData.options;
       postData.tiaojian = exportData.conditions;
     }
-    const result = await this.getDataAndCount<any>("ngcad/getOptions", postData, httpOptions);
-    if (result) {
-      return {
-        data: (result.data as any[]).map((v: any) => {
-          return {vid: v.vid, name: v.mingzi, img: v.xiaotu, disabled: !!v.tingyong};
-        }),
-        count: result.count || 0
-      };
+    const result = await this.getDataAndCount<OptionsDataData[]>("ngcad/getOptions", postData, httpOptions);
+    if (result && !Array.isArray(result.data)) {
+      result.data = [];
     }
-    return null;
+    return result as OptionsData | null;
   }
 
   async removeBackup(name: string, time: number) {

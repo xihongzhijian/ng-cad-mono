@@ -161,9 +161,10 @@ export class KlcsComponent implements OnInit, AfterViewInit {
                 showEmpty: true
               },
               {
-                type: "selectMulti",
+                type: "select",
                 label: "切哪里",
                 options: allDirections.slice(),
+                multiple: true,
                 optionText: (val) => val.join(""),
                 value: allDirections.filter((vv) => v.外框?.显示.includes(vv)),
                 onChange: (value: string[]) => {
@@ -196,9 +197,10 @@ export class KlcsComponent implements OnInit, AfterViewInit {
                 showEmpty: true
               },
               {
-                type: "selectMulti",
+                type: "select",
                 label: "切哪里",
                 options: allDirections.slice(),
+                multiple: true,
                 optionText: (val) => val.join(""),
                 value: allDirections.filter((vv) => v.内框?.显示.includes(vv)),
                 onChange: (val: string[]) => {

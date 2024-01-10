@@ -3,46 +3,46 @@
     <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
       <mat-label>{{ info.label }}</mat-label>
       <mat-hint>{{ hint }}</mat-hint>
-      @if (!castInfo("string")["textarea"] && displayValue === null) {
-        <input
-          matInput
-          [errorStateMatcher]="getErrorStateMatcher()"
-          [readonly]="info.readonly"
-          [disabled]="info.disabled || false"
-          [autocomplete]="info.autocomplete || ''"
-          [(ngModel)]="value"
-          type="text"
-          (change)="onChange()"
-          (input)="onInput()"
-          (blur)="onBlur()"
-          [matAutocomplete]="auto"
-          [placeholder]="info.placeholder || ''"
-        />
-      }
-      @if (castInfo("string")["textarea"] && displayValue === null) {
-        <textarea
-          matInput
-          [errorStateMatcher]="getErrorStateMatcher()"
-          [cdkTextareaAutosize]="!!castInfo('string')['textarea']?.['autosize']"
-          [cdkAutosizeMinRows]="castInfo('string')['textarea']?.['autosize']?.['minRows']"
-          [cdkAutosizeMaxRows]="castInfo('string')['textarea']?.['autosize']?.['maxRows']"
-          [readonly]="info.readonly"
-          [disabled]="info.disabled || false"
-          [autocomplete]="info.autocomplete || ''"
-          [(ngModel)]="value"
-          type="text"
-          (change)="onChange()"
-          (input)="onInput()"
-          (blur)="onBlur()"
-          [matAutocomplete]="auto"
-          [placeholder]="info.placeholder || ''"
-        ></textarea>
-      }
       @if (displayValue !== null) {
         <textarea matInput readonly [value]="displayValue" cdkTextareaAutosize [cdkAutosizeMinRows]="1"></textarea>
+      } @else {
+        @if (castInfo("string")["textarea"]) {
+          <textarea
+            matInput
+            [errorStateMatcher]="getErrorStateMatcher()"
+            [cdkTextareaAutosize]="!!castInfo('string')['textarea']?.['autosize']"
+            [cdkAutosizeMinRows]="castInfo('string')['textarea']?.['autosize']?.['minRows']"
+            [cdkAutosizeMaxRows]="castInfo('string')['textarea']?.['autosize']?.['maxRows']"
+            [readonly]="info.readonly"
+            [disabled]="info.disabled || false"
+            [autocomplete]="info.autocomplete || ''"
+            [(ngModel)]="value"
+            type="text"
+            (change)="onChange()"
+            (input)="onInput()"
+            (blur)="onBlur()"
+            [matAutocomplete]="auto"
+            [placeholder]="info.placeholder || ''"
+          ></textarea>
+        } @else {
+          <input
+            matInput
+            [errorStateMatcher]="getErrorStateMatcher()"
+            [readonly]="info.readonly"
+            [disabled]="info.disabled || false"
+            [autocomplete]="info.autocomplete || ''"
+            [(ngModel)]="value"
+            type="text"
+            (change)="onChange()"
+            (input)="onInput()"
+            (blur)="onBlur()"
+            [matAutocomplete]="auto"
+            [placeholder]="info.placeholder || ''"
+          />
+        }
       }
-      @if (optionKey || optionDialog) {
-        <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key, optionKey)">
+      @if (castInfo("string")["optionsDialog"]) {
+        <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key)">
           <mat-icon>list</mat-icon>
         </button>
       }
@@ -145,7 +145,7 @@
               [disabled]="info.disabled || false"
               [autocomplete]="info.autocomplete"
               [value]="item.key"
-              (change)="changeObjectKey(value, item.key, $event)"
+              (change)="changeObjectKey2(value, item.key, $event)"
               (blur)="onBlur()"
             />
             <mat-error>{{ getErrorMsgKey(item.key) }}</mat-error>
@@ -160,7 +160,7 @@
               [disabled]="info.disabled || false"
               [autocomplete]="info.autocomplete"
               [(ngModel)]="item.value"
-              (change)="changeObjectValue(value, item.key, item.value)"
+              (change)="changeObjectValue2(value, item.key, item.value)"
               (blur)="onBlur()"
             />
             @if (castInfo("object")["selectOptions"]) {
@@ -247,54 +247,42 @@
     <mat-form-field [ngClass]="{empty: isEmpty(value)}">
       <mat-label>{{ info.label }}</mat-label>
       <mat-hint>{{ hint }}</mat-hint>
-      <mat-select
-        [disabled]="info.disabled || false"
-        [errorStateMatcher]="getErrorStateMatcher()"
-        [(ngModel)]="value"
-        (selectionChange)="onChange()"
-      >
-        @if (optionText) {
-          <mat-select-trigger [innerHtml]="optionText"></mat-select-trigger>
-        }
-        @for (option of options; track option) {
-          <mat-option [value]="option.value" [disabled]="info.readonly || option.disabled">
-            {{ option.label || option.value }}
-          </mat-option>
-        }
-      </mat-select>
-      @if (info.clearable) {
-        <button appClickStop mat-icon-button matSuffix color="primary" (click)="clear()">
-          <mat-icon>close</mat-icon>
+      @if (castInfo("select")["optionsDialog"]) {
+        <input
+          matInput
+          [errorStateMatcher]="getErrorStateMatcher()"
+          readonly
+          [disabled]="info.disabled"
+          [value]="displayValue || value"
+          type="text"
+          (change)="onChange()"
+          (input)="onInput()"
+          (blur)="onBlur()"
+          [placeholder]="info.placeholder || ''"
+        />
+      } @else {
+        <mat-select
+          [disabled]="info.disabled || false"
+          [errorStateMatcher]="getErrorStateMatcher()"
+          [(ngModel)]="value"
+          [multiple]="castInfo('select')['multiple']"
+          (selectionChange)="onChange()"
+        >
+          @if (optionText) {
+            <mat-select-trigger [innerHtml]="optionText"></mat-select-trigger>
+          }
+          @for (option of options; track option) {
+            <mat-option [value]="option.value" [disabled]="info.readonly || option.disabled">
+              {{ option.label || option.value }}
+            </mat-option>
+          }
+        </mat-select>
+      }
+      @if (castInfo("select")["optionsDialog"] && !info.readonly && !info.disabled) {
+        <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key)">
+          <mat-icon>list</mat-icon>
         </button>
       }
-      @for (icon of suffixIcons; track icon) {
-        <button mat-icon-button matSuffix color="primary" appClickStop (click)="icon.onClick()">
-          <mat-icon>{{ icon.name }}</mat-icon>
-        </button>
-      }
-      <mat-error>{{ getErrorMsg() }}</mat-error>
-    </mat-form-field>
-  }
-  @case ("selectMulti") {
-    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
-      <mat-label>{{ info.label }}</mat-label>
-      <mat-hint>{{ hint }}</mat-hint>
-      <mat-select
-        [disabled]="info.disabled || false"
-        [errorStateMatcher]="getErrorStateMatcher()"
-        [(ngModel)]="value"
-        (selectionChange)="onChange()"
-        multiple
-      >
-        @if (optionText) {
-          <mat-select-trigger [innerHtml]="optionText"></mat-select-trigger>
-        }
-        @for (option of options; track option) {
-          <mat-option [value]="option.value" [disabled]="info.readonly || option.disabled">
-            {{ option.label || option.value }}
-          </mat-option>
-        }
-      </mat-select>
       @if (info.clearable) {
         <button appClickStop mat-icon-button matSuffix color="primary" (click)="clear()">
           <mat-icon>close</mat-icon>

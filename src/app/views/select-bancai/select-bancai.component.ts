@@ -326,7 +326,7 @@ export class SelectBancaiComponent extends Subscribed() {
             type: "select",
             value: bancai.gas || "",
             options: gasOptions,
-            onChange: (value) => onChange("gas", value)
+            onChange: (value: string) => onChange("gas", value)
           });
         }
         info.bancaiInfos.push(bancaiInfo);

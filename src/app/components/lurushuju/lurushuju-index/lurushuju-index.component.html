@@ -67,7 +67,7 @@
                       </app-image>
                       <div class="text">停用：{{ getBooleanStr(gongyi["停用"]) }}</div>
                       <div class="text">录入完成：{{ getBooleanStr(gongyi["录入完成"]) }}</div>
-                      <div class="text">录入完成：{{ getBooleanStr(gongyi["默认值"]) }}</div>
+                      <div class="text">默认值：{{ getBooleanStr(gongyi["默认值"]) }}</div>
                     </div>
                   }
                   <div class="item border" (click)="addGongyi(fenlei)">
@@ -147,17 +147,19 @@
                       <div class="toolbar">
                         <div>测试数据</div>
                         <button mat-raised-button color="primary" (click)="addTestCase()">添加</button>
+                        <button mat-raised-button color="primary" (click)="importTestCase()">导入</button>
+                        <button mat-raised-button color="primary" (click)="exportTestCase()">导出</button>
                       </div>
                       <ng-scrollbar>
                         <div class="items">
-                          @for (testCase of gongyi?.["测试用例"]; track testCase) {
+                          @for (testCase of gongyi?.["测试用例"]; track i; let i = $index) {
                             <mat-card class="test-case-card item">
                               <div class="toolbar">
                                 <div class="text short">{{ testCase["名字"] }}</div>
                                 <div class="text long" [matTooltip]="getTimeStr(testCase['时间'])">{{ getTimeStr(testCase["时间"]) }}</div>
-                                <button mat-button color="primary">编辑</button>
-                                <button mat-button color="primary">复制</button>
-                                <button mat-button color="primary">删除</button>
+                                <button mat-button color="primary" (click)="editTestCase(i)">编辑</button>
+                                <button mat-button color="primary" (click)="copyTestCase(i)">复制</button>
+                                <button mat-button color="primary" (click)="removeTestCase(i)">删除</button>
                               </div>
                             </mat-card>
                           }

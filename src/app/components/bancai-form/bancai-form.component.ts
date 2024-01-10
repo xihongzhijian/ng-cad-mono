@@ -78,9 +78,8 @@ export class BancaiFormComponent {
           model: {key: "cailiao", data: this.data},
           readonly: true,
           options: checkedItem?.cailiaoList || [],
-          isSingleOption: true,
-          optionDialog: true,
-          optionValueType: "string"
+          optionValueType: "string",
+          optionsDialog: {}
         },
         {
           type: "string",
@@ -88,9 +87,8 @@ export class BancaiFormComponent {
           model: {key: "houdu", data: this.data},
           readonly: true,
           options: checkedItem?.houduList || [],
-          isSingleOption: true,
-          optionDialog: true,
-          optionValueType: "string"
+          optionValueType: "string",
+          optionsDialog: {}
         }
       ],
       [
@@ -123,8 +121,8 @@ export class BancaiFormComponent {
           model: {key: "cailiaoList", data: this.data},
           readonly: true,
           options: checkedItem?.cailiaoList || [],
-          optionDialog: true,
-          optionValueType: "array"
+          optionValueType: "array",
+          optionsDialog: {multiple: true}
         },
         {
           type: "string",
@@ -132,8 +130,8 @@ export class BancaiFormComponent {
           model: {key: "houduList", data: this.data},
           readonly: true,
           options: checkedItem?.houduList || [],
-          optionDialog: true,
-          optionValueType: "array"
+          optionValueType: "array",
+          optionsDialog: {multiple: true}
         }
       ]
     ];

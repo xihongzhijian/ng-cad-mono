@@ -46,7 +46,7 @@ import {ColorCircleModule} from "ngx-color/circle";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
-import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoTypeMap, InputInfoWithOptions} from "./input.types";
+import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoString, InputInfoTypeMap} from "./input.types";
 import {getValue} from "./input.utils";
 
 @Component({
@@ -118,18 +118,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return !this.info.readonly && !this.info.disabled;
   }
 
-  get optionKey() {
-    if (this.info.type === "string") {
-      return this.info.optionKey;
+  get optionsDialog() {
+    switch (this.info.type) {
+      case "string":
+      case "select":
+        return this.info.optionsDialog;
+      default:
+        return undefined;
     }
-    return undefined;
-  }
-
-  get optionDialog() {
-    if (this.info.type === "string") {
-      return this.info.optionDialog;
-    }
-    return undefined;
   }
 
   get suffixIcons() {
@@ -144,11 +140,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return hint || "";
   }
 
-  options: {value: string; label: string; disabled?: boolean}[] = [];
+  options: {value: string; label: string; disabled?: boolean; img?: string}[] = [];
 
   get optionText() {
     const info = this.info;
-    if (info.type === "select" || info.type === "selectMulti") {
+    if (info.type === "select") {
       if (typeof info.optionText === "function") {
         return info.optionText(this.value);
       }
@@ -221,7 +217,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     super();
     this.valueChange$.subscribe((val) => {
       const info = this.info;
-      const {fixedOptions, filterValuesGetter, optionsDisplayLimit} = info as InputInfoWithOptions;
+      const {filterValuesGetter} = info;
       let sortOptions: boolean;
       const getFilterValues = (option: (typeof this.options)[number]) => {
         let values: string[] = [];
@@ -235,6 +231,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         }
         return values;
       };
+      let fixedOptions: string[] | undefined;
+      let optionsDisplayLimit: number | undefined;
+      if (info.type === "string") {
+        fixedOptions = info.fixedOptions;
+        optionsDisplayLimit = info.optionsDisplayLimit;
+      }
       let options: typeof this.options;
       if (val) {
         options = this.options.filter((option) => {
@@ -257,7 +259,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       if (sortOptions) {
         sortArrayByLevenshtein(options, getFilterValues, this.value);
       }
-      if (this.optionDialog) {
+      if (this.optionsDialog) {
         this.filteredOptions$.next([]);
       } else {
         this.filteredOptions$.next(options);
@@ -354,24 +356,26 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if ("value" in info) {
       this.value = info.value;
     }
+    let options: InputInfoOptions | undefined | null;
     const type = info.type;
-    if (type === "select" || type === "selectMulti" || type === "string" || type === "number") {
-      const options = (await getValue(info.options, this.message)) as InputInfoOptions<any> | undefined;
-      this.options = (options || []).map((v) => {
+    if (type === "select" || type === "string") {
+      options = await getValue(info.options, this.message);
+      this.options = (options || []).map<(typeof this.options)[number]>((v) => {
         if (typeof v === "string") {
           return {value: v, label: v};
         }
         if (typeof v === "number") {
           return {value: String(v), label: String(v)};
         }
-        return {label: v.label || String(v.value), value: v.value, disabled: v.disabled};
+        return {label: v.label || String(v.value), value: v.value, disabled: v.disabled, img: v.img};
       });
     } else if (type === "cad") {
       this.updateCadImg();
     }
     this.displayValue = null;
     if (type === "string") {
-      if (info.optionInputOnly && !info.options) {
+      const {optionInputOnly} = info;
+      if (optionInputOnly && !options) {
         info.readonly = true;
         this.displayValue = (await getValue(info.displayValue, this.message)) || null;
       }
@@ -468,16 +472,19 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }, 100);
     switch (info.type) {
       case "string":
-        if (value && info.options && !isAutocomplete) {
-          const timeoutId = window.setTimeout(() => {
-            if (info.optionInputOnly && !this.options.find((v) => v.value === value)) {
-              this.value = "";
-            }
-            this.onChange(value, true);
-          }, this.onChangeDelayTime);
-          this.onChangeDelay = {timeoutId};
-        } else {
-          info.onChange?.(value);
+        {
+          const {options, optionInputOnly} = info;
+          if (value && options && !isAutocomplete) {
+            const timeoutId = window.setTimeout(() => {
+              if (optionInputOnly && !this.options.find((v) => v.value === value)) {
+                this.value = "";
+              }
+              this.onChange(value, true);
+            }, this.onChangeDelayTime);
+            this.onChangeDelay = {timeoutId};
+          } else {
+            info.onChange?.(value);
+          }
         }
         break;
       case "number":
@@ -487,9 +494,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         info.onChange?.(value);
         break;
       case "select":
-        info.onChange?.(value);
-        break;
-      case "selectMulti":
         info.onChange?.(value);
         break;
       case "coordinate":
@@ -545,11 +549,15 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         const val = value[key];
         if (keyValidators) {
           const control = new FormControl(key, keyValidators);
-          errorsKey[key] = control.errors;
+          if (!isEmpty(control.errors)) {
+            errorsKey[key] = control.errors;
+          }
         }
         if (info.valueValidators) {
           const control = new FormControl(val, info.valueValidators);
-          errorsValue[key] = control.errors;
+          if (!isEmpty(control.errors)) {
+            errorsValue[key] = control.errors;
+          }
         }
       }
       this.errorsKey = errorsKey;
@@ -560,7 +568,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       for (const [i, val] of value.entries()) {
         if (valueValidators) {
           const control = new FormControl(val, valueValidators);
-          errorsValue[String(i)] = control.errors;
+          if (!isEmpty(control.errors)) {
+            errorsValue[String(i)] = control.errors;
+          }
         }
       }
       this.errorsValue = errorsValue;
@@ -610,27 +620,20 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   async selectOptions(key?: keyof any, optionKey?: string) {
     const data = this.model.data;
-    let optionsUseId: InputInfoWithOptions["optionsUseId"] = false;
-    let isSingleOption: InputInfoWithOptions["isSingleOption"] = false;
-    let optionInputOnly: InputInfoWithOptions["optionInputOnly"] = false;
-    let optionField: InputInfoWithOptions["optionField"] = undefined;
-    let optionValueType: InputInfoWithOptions["optionValueType"] = "string";
-    let options: OptionsDataData[] | undefined;
-    const info = this.info;
+    const optionsDialog = this.optionsDialog;
+    if (!optionsDialog) {
+      return;
+    }
+    const {info} = this;
+    const {optionField, multiple, optionsUseId} = optionsDialog;
+    if (optionsDialog.optionKey) {
+      optionKey = optionsDialog.optionKey;
+    }
+    let optionValueType: InputInfoString["optionValueType"];
+    let optionInputOnly: InputInfoString["optionInputOnly"];
     if (info.type === "string") {
-      optionsUseId = !!info.optionsUseId;
-      isSingleOption = !!info.isSingleOption;
       optionInputOnly = !!info.optionInputOnly;
-      optionField = info.optionField;
       optionValueType = info.optionValueType || "string";
-      if (Array.isArray(info.options)) {
-        options = (info.options || []).map<OptionsDataData>((v, i) => ({
-          vid: i,
-          name: typeof v === "string" ? v : v.value,
-          img: null,
-          disabled: false
-        }));
-      }
     }
     const value = key ? data[key] : this.value;
     const isObject = isTypeOf(value, "object");
@@ -642,7 +645,18 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       checked = [];
     }
     const fields = optionField ? [optionField] : [];
-    const dialogData: CadOptionsInput = {data, name: optionKey || "", multi: !isSingleOption, fields, options};
+    const dialogData: CadOptionsInput = {
+      data,
+      name: optionKey || "",
+      multi: multiple,
+      fields,
+      options: this.options.map<OptionsDataData>((v, i) => ({
+        vid: i,
+        name: typeof v === "string" ? v : v.value,
+        img: v.img || "",
+        disabled: false
+      }))
+    };
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));
     } else {
@@ -653,11 +667,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       let options2: string[];
       if (optionsUseId) {
         options2 = result.map((v) => String(v.vid));
-        if (optionInputOnly) {
-          this.displayValue = joinOptions(result.map((v) => v.mingzi));
-        }
       } else {
         options2 = result.map((v) => v.mingzi);
+      }
+      if (optionInputOnly || info.type === "select") {
+        this.displayValue = joinOptions(result.map((v) => v.mingzi));
       }
       let resultValue: string | string[] = options2;
       if (optionValueType === "string") {
@@ -856,6 +870,20 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (id) {
       this.status.openCadInNewTab(id, this.value?.collection || "cad");
     }
+  }
+
+  changeObjectKey2(obj: ObjectOf<any>, oldKey: string, newKey: string | Event) {
+    this.changeObjectKey(obj, oldKey, newKey);
+    setTimeout(() => {
+      this.validateValue();
+    }, 0);
+  }
+
+  changeObjectValue2(obj: ObjectOf<any>, key: string, value: any) {
+    this.changeObjectValue(obj, key, value);
+    setTimeout(() => {
+      this.validateValue();
+    }, 0);
   }
 }
 

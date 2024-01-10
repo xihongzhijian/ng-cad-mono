@@ -55,7 +55,7 @@ export interface OptionsData {
 export interface OptionsDataData {
   vid: number;
   name: string;
-  img: string | null;
+  img: string;
   disabled: boolean;
 }
 

@@ -15,19 +15,12 @@ import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanp
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf, queryString, RequiredKeys, WindowMessageManager} from "@lucilor/utils";
+import {downloadByString, keysOf, ObjectOf, queryString, RequiredKeys, selectFiles, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableDataBase, 后台CAD} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
-import {
-  InputInfo,
-  InputInfoGroup,
-  InputInfoOption,
-  InputInfoOptions,
-  InputInfoSelect,
-  InputInfoSelectMulti
-} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoGroup, InputInfoOption, InputInfoOptions, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
@@ -205,6 +198,8 @@ export class LurushujuIndexComponent implements OnInit {
   shiyituInputInfos: InputInfo[] = [];
   xiaoguotuInputInfos: InputInfo[] = [];
   bcfzInputData: MrbcjfzInputData = {xinghao: "", morenbancai: {}};
+  xiaoguotuKeys: (keyof 工艺做法)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
+  menshans: (TableDataBase & {zuchenghuajian?: string})[] = [];
   huajians: MrbcjfzHuajian[] = [];
   parentInfo = {isZhijianUser: false};
 
@@ -359,10 +354,10 @@ export class LurushujuIndexComponent implements OnInit {
       if (!options) {
         return [];
       }
-      return options.map(({mingzi}) => {
-        const option: InputInfoOption = {value: mingzi};
+      return options.map(({name}) => {
+        const option: InputInfoOption = {value: name};
         if (key === "产品分类") {
-          option.disabled = this.defaultFenleis.includes(mingzi);
+          option.disabled = this.defaultFenleis.includes(name);
         }
         return option;
       });
@@ -377,20 +372,23 @@ export class LurushujuIndexComponent implements OnInit {
           label: "所属门窗",
           model: {data: xinghao, key: "所属门窗"},
           options: getOptions("门窗"),
+          multiple: false,
           onChange: (val) => onChange({所属门窗: val})
         },
         {
-          type: "selectMulti",
+          type: "select",
           label: "所属工艺",
           model: {data: xinghao, key: "所属工艺"},
           options: getOptions("工艺"),
+          multiple: true,
           onChange: (val) => onChange({所属工艺: val})
         },
         {
-          type: "selectMulti",
+          type: "select",
           label: "产品分类",
           model: {data: xinghao, key: "显示产品分类"},
           options: getOptions("产品分类"),
+          multiple: true,
           onChange: (val) => {
             const data: Partial<Xinghao> = {显示产品分类: val};
             let updateFenlei = false;
@@ -445,7 +443,8 @@ export class LurushujuIndexComponent implements OnInit {
       this.cadImgs[id] = this.http.getCadImgUrl(id);
     }
     this.shiyituInputInfos = [];
-    for (const key in gongyi.示意图CAD) {
+    const shiyituKeys: (keyof 工艺做法["示意图CAD"])[] = ["算料单示意图"];
+    for (const key of shiyituKeys) {
       const params: CadListInput = {selectMode: "single", collection: "cad", raw: true};
       const search: ObjectOf<any> = {};
       if (key.includes("装配示意图")) {
@@ -465,61 +464,37 @@ export class LurushujuIndexComponent implements OnInit {
       });
     }
 
-    const xiaoguotuKeys: (keyof 工艺做法)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
-    const xiaoguotuValues = new Set<string>();
-    for (const key of xiaoguotuKeys) {
-      const value = gongyi[key];
-      if (typeof value === "string" && value) {
-        xiaoguotuValues.add(value);
-      }
-    }
     this.xiaoguotuInputInfos = [];
-    const optionsRaw = await this.http.queryMySql<TableDataBase & {zuchenghuajian?: string}>({
+    this.menshans = await this.http.queryMySql<(typeof this.menshans)[number]>({
       table: "p_menshan",
       fields: ["vid", "mingzi", "zuchenghuajian"]
     });
-    const options: InputInfoOptions = [];
-    const huajianIds = new Set<string>();
-    for (const optionRaw of optionsRaw) {
-      options.push(optionRaw.mingzi);
-      if (xiaoguotuValues.has(optionRaw.mingzi) && typeof optionRaw.zuchenghuajian === "string") {
-        for (const v of optionRaw.zuchenghuajian.split("*")) {
-          if (v) {
-            huajianIds.add(v);
-          }
-        }
-      }
-    }
-    if (huajianIds.size > 0) {
-      this.huajians = await this.http.queryMySql<MrbcjfzHuajian>({
-        table: "p_huajian",
-        fields: ["vid", "mingzi", "xiaotu"],
-        filter: {where_in: {vid: Array.from(huajianIds)}}
-      });
-    } else {
-      this.huajians = [];
-    }
-    for (const key of xiaoguotuKeys) {
+    const options: InputInfoOptions = this.menshans.map((v) => v.mingzi);
+    for (const key of this.xiaoguotuKeys) {
       this.xiaoguotuInputInfos.push({
         type: "select",
         label: key,
         options,
         model: {data: gongyi, key},
-        onChange: () => {
+        onChange: async () => {
+          await this.updateHuajians();
           this.updateBcfzInputData();
           this.submitGongyi([key]);
         }
       });
     }
+    this.updateHuajians();
     this.updateBcfzInputData();
   }
 
   openTab(name: string) {
     const tabs = this.tabGroup?._tabs.toArray();
-    if (!tabs) {
-      return;
+    let tabIndex: number;
+    if (tabs) {
+      tabIndex = tabs.findIndex((v) => v.textLabel === name);
+    } else {
+      tabIndex = this.tabs.filter((v) => !v.hidden).findIndex((v) => v.name === name);
     }
-    const tabIndex = tabs.findIndex((v) => v.textLabel === name);
     if (tabIndex >= 0) {
       this.tabIndex = tabIndex;
     } else if (name) {
@@ -572,7 +547,7 @@ export class LurushujuIndexComponent implements OnInit {
       this.xinghao.产品分类 = 产品分类;
     }
     const fenleisBefore = cloneDeep(this.xinghao.产品分类);
-    const allFenleis = this.xinghaoOptionsAll.产品分类.map((v) => v.mingzi);
+    const allFenleis = this.xinghaoOptionsAll.产品分类.map((v) => v.name);
     updateXinghaoFenleis(this.xinghao, allFenleis, this.defaultFenleis);
     const fenleisAfter = this.xinghao.产品分类;
     if (!isEqual(fenleisBefore, fenleisAfter)) {
@@ -721,7 +696,7 @@ export class LurushujuIndexComponent implements OnInit {
     const get可选项Options = (): InputInfoOptions<any> => {
       type K = InputInfoOption<XuanxiangFormData["可选项"][number]>;
       return (this.gongyiOptionsAll[data.名字] || []).map<K>((v) => {
-        return {label: v.mingzi, value: v};
+        return {label: v.name, value: {vid: v.vid, mingzi: v.name}};
       });
     };
     const get默认值Options = (): InputInfoOptions<string> => {
@@ -746,7 +721,7 @@ export class LurushujuIndexComponent implements OnInit {
         validators: Validators.required,
         onChange: () => {
           type K = InputInfoOption<XuanxiangFormData["可选项"][number]>;
-          const info = form[1] as unknown as InputInfoSelectMulti<any, K>;
+          const info = form[1] as unknown as InputInfoSelect<any, K>;
           info.options = get可选项Options();
           if (Array.isArray(info.value)) {
             info.value.length = 0;
@@ -754,10 +729,11 @@ export class LurushujuIndexComponent implements OnInit {
         }
       },
       {
-        type: "selectMulti",
+        type: "select",
         label: "可选项",
         model: {data, key: "可选项"},
         options: 可选项Options,
+        multiple: true,
         validators: Validators.required,
         onChange: () => {
           const info = form[2] as InputInfoSelect;
@@ -999,30 +975,29 @@ export class LurushujuIndexComponent implements OnInit {
       const margin = 5;
       return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`};
     };
-    const getOptionInputInfo = (key: keyof 门铰锁边铰边, n: number): InputInfoSelect | InputInfoSelectMulti => {
+    const getOptionInputInfo = (key: keyof 门铰锁边铰边, n: number): InputInfoSelect => {
       const optionsInfo = this.menjiaoOptionsAll[key];
       if (!optionsInfo) {
         return {type: "select", label: key, options: []};
       }
       const options = optionsInfo.options.map<InputInfoOption>((v) => {
-        return {value: v.mingzi};
+        return {value: v.name, img: v.img};
       });
       const disabled = optionsInfo.disabled;
-      const info2: Omit<InputInfo, "type"> = {
+      return {
+        type: "select",
         label: key,
         model: {data, key},
+        options,
         disabled,
+        multiple: optionsInfo.multiple,
+        optionsDialog: {},
         validators: Validators.required,
+        onChange: () => {
+          updateMenjiaoForm(data);
+        },
         styles: getInfoStyles(n)
       };
-      const onChange = () => {
-        updateMenjiaoForm(data);
-      };
-      if (optionsInfo.multiple) {
-        return {type: "selectMulti", options, onChange, ...info2};
-      } else {
-        return {type: "select", options, onChange, ...info2};
-      }
     };
     const getMenfengInputInfo = (value: (typeof 门缝配置输入)[number]): InputInfo => {
       return {
@@ -1359,10 +1334,78 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async addTestCase() {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
     const result = await this.getTestCaseItem();
     if (result) {
-      this.submitGongyi(["测试用例"]);
+      gongyi.测试用例.push(result);
+      await this.submitGongyi(["测试用例"]);
     }
+  }
+
+  async editTestCase(index: number) {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    const result = await this.getTestCaseItem(gongyi.测试用例[index]);
+    if (result) {
+      gongyi.测试用例[index] = result;
+      await this.submitGongyi(["测试用例"]);
+    }
+  }
+
+  async copyTestCase(index: number) {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    gongyi.测试用例.push(cloneDeep(gongyi.测试用例[index]));
+    await this.submitGongyi(["测试用例"]);
+  }
+
+  async removeTestCase(index: number) {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    gongyi.测试用例.splice(index, 1);
+    await this.submitGongyi(["测试用例"]);
+  }
+
+  async importTestCase() {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    if (!(await this.message.confirm("导入测试用例会覆盖原有测试用例，确定导入吗？"))) {
+      return;
+    }
+    const files = await selectFiles({accept: ".json"});
+    const file = files?.[0];
+    if (!file) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const json = reader.result as string;
+      const data = JSON.parse(json);
+      if (Array.isArray(data)) {
+        gongyi.测试用例 = data;
+        this.submitGongyi(["测试用例"]);
+      }
+    });
+    reader.readAsText(file);
+  }
+
+  exportTestCase() {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    downloadByString(JSON.stringify(gongyi.测试用例), {filename: "测试用例.json"});
   }
 
   async selectSuanliaoCads() {
@@ -1412,6 +1455,39 @@ export class LurushujuIndexComponent implements OnInit {
 
   suanliao() {
     this.message.alert("未实现");
+  }
+
+  async updateHuajians() {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    const xiaoguotuValues = new Set<string>();
+    for (const key of this.xiaoguotuKeys) {
+      const value = gongyi[key];
+      if (typeof value === "string" && value) {
+        xiaoguotuValues.add(value);
+      }
+    }
+    const huajianIds = new Set<string>();
+    for (const optionRaw of this.menshans) {
+      if (xiaoguotuValues.has(optionRaw.mingzi) && typeof optionRaw.zuchenghuajian === "string") {
+        for (const v of optionRaw.zuchenghuajian.split("*")) {
+          if (v) {
+            huajianIds.add(v);
+          }
+        }
+      }
+    }
+    if (huajianIds.size > 0) {
+      this.huajians = await this.http.queryMySql<MrbcjfzHuajian>({
+        table: "p_huajian",
+        fields: ["vid", "mingzi", "xiaotu"],
+        filter: {where_in: {vid: Array.from(huajianIds)}}
+      });
+    } else {
+      this.huajians = [];
+    }
   }
 
   updateBcfzInputData() {

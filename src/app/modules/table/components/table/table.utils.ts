@@ -88,10 +88,12 @@ export const getInputInfosFromTableColumns = <T>(
         return {
           ...base,
           type: "string",
-          optionKey: column.linkedTable,
           optionInputOnly: true,
-          isSingleOption: !column.multiSelect,
-          optionsUseId: true
+          optionsDialog: {
+            optionKey: column.linkedTable,
+            multiple: column.multiSelect,
+            optionsUseId: true
+          }
         };
       default:
         console.warn("Unknown type: ", type);

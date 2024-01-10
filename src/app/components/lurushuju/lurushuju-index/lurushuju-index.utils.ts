@@ -13,7 +13,7 @@ export const autoFillMenjiao = (data: 门铰锁边铰边, menjiaoOptionsAll: Opt
       const result = [];
       for (const option of options) {
         if (Math.random() > 0.5) {
-          result.push(option.mingzi);
+          result.push(option.name);
         }
       }
       if (result.length < 1) {
@@ -21,7 +21,7 @@ export const autoFillMenjiao = (data: 门铰锁边铰边, menjiaoOptionsAll: Opt
       }
       (data as any)[key] = result;
     } else {
-      (data as any)[key] = options[random(0, options.length - 1)].mingzi;
+      (data as any)[key] = options[random(0, options.length - 1)].name;
     }
   };
   for (const key1 in data) {

@@ -146,7 +146,7 @@ export class KlkwpzComponent implements AfterViewInit {
               return "允许左右超出";
             }
           })(),
-          onChange: (val) => {
+          onChange: (val: string) => {
             if (val === "允许左右超出") {
               delete item.不删除超出板材的孔;
               delete item.删除超出板材的孔X;

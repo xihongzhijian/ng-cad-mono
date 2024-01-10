@@ -1,5 +1,5 @@
 import {ObjectOf} from "@lucilor/utils";
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {输入, 选项, 门铰锁边铰边} from "../xinghao-data";
 import {LurushujuIndexComponent} from "./lurushuju-index.component";
 
@@ -22,8 +22,8 @@ export interface LurushujuIndexStepInfo extends Record<LurushujuIndexStep, Parti
   };
 }
 
-export type OptionsAll = ObjectOf<TableDataBase[]>;
-export type OptionsAll2 = ObjectOf<{options: TableDataBase[]; disabled?: boolean; multiple?: boolean}>;
+export type OptionsAll = ObjectOf<OptionsDataData[]>;
+export type OptionsAll2 = ObjectOf<{options: OptionsDataData[]; disabled?: boolean; multiple?: boolean}>;
 
 export type XuanxiangTableData = 选项 & {操作?: string};
 export type ShuruTableData = 输入 & {操作?: string};

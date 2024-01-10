@@ -99,17 +99,30 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       type: "select",
       options: cadOptions.kailiaopaibanfangshi.values.slice()
     },
-    {label: "默认开料板材", model: this._getcadDataModel("morenkailiaobancai"), type: "string", optionKey: "板材"},
-    {label: "默认开料材料", model: this._getcadDataModel("默认开料材料"), type: "string", optionKey: "材料"},
+    {
+      label: "默认开料板材",
+      model: this._getcadDataModel("morenkailiaobancai"),
+      type: "string",
+      optionsDialog: {optionKey: "板材", multiple: true}
+    },
+    {
+      label: "默认开料材料",
+      model: this._getcadDataModel("默认开料材料"),
+      type: "string",
+      optionsDialog: {optionKey: "材料", multiple: true}
+    },
     {
       label: "默认开料板材厚度",
       model: this._getcadDataModel("默认开料板材厚度"),
       type: "string",
-      optionKey: "板材厚度",
-      optionField: "kailiaohoudu",
-      isSingleOption: true
+      optionsDialog: {optionKey: "板材厚度", optionField: "kailiaohoudu"}
     },
-    {label: "固定开料板材", model: this._getcadDataModel("gudingkailiaobancai"), type: "string", optionKey: "板材"},
+    {
+      label: "固定开料板材",
+      model: this._getcadDataModel("gudingkailiaobancai"),
+      type: "string",
+      optionsDialog: {optionKey: "板材", multiple: true}
+    },
     {
       label: "算料处理",
       model: this._getcadDataModel("suanliaochuli"),

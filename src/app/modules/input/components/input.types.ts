@@ -29,19 +29,25 @@ export interface InputInfoBase<T = any> {
   name?: string;
   styles?: csstype.Properties;
   hidden?: boolean;
+  filterValuesGetter?: (option: InputInfoOption<T>) => string[];
 }
 
-export interface InputInfoString<T = any> extends InputInfoWithOptions<T, string> {
+export interface InputInfoString<T = any, K = string> extends InputInfoBase<T> {
   type: "string";
   value?: Value<string>;
   displayValue?: Value<string>;
-  optionKey?: string;
   textarea?: {autosize?: {minRows?: number; maxRows?: number}};
   onInput?: (val: string) => void;
   onChange?: (val: string) => void;
+  options?: Value<InputInfoOptions<K>>;
+  optionValueType?: "string" | "array";
+  fixedOptions?: string[];
+  optionInputOnly?: boolean;
+  optionsDisplayLimit?: number;
+  optionsDialog?: OptionsDialog;
 }
 
-export interface InputInfoNumber<T = any> extends InputInfoWithOptions<T, number> {
+export interface InputInfoNumber<T = any> extends InputInfoBase<T> {
   type: "number";
   value?: Value<number>;
   step?: number;
@@ -73,21 +79,24 @@ export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
   onChange?: (val: boolean) => void;
 }
 
-export interface InputInfoSelect<T = any, K = string> extends InputInfoBase<T> {
+export interface InputInfoSelectBase<T = any, K = string> extends InputInfoBase<T> {
   type: "select";
+  options?: Value<InputInfoOptions<K>>;
+  optionsDialog?: OptionsDialog;
+}
+export interface InputInfoSelectSingle<T = any, K = string> extends InputInfoSelectBase<T, K> {
   value?: Value<string>;
-  options: Value<InputInfoOptions<K>>;
   optionText?: string | ((val: string) => string);
+  multiple?: false;
   onChange?: (val: string) => void;
 }
-
-export interface InputInfoSelectMulti<T = any, K = string> extends InputInfoBase<T> {
-  type: "selectMulti";
+export interface InputInfoSelectMultiple<T = any, K = string> extends InputInfoSelectBase<T, K> {
   value?: Value<string[]>;
-  options: Value<InputInfoOptions<K>>;
   optionText?: string | ((val: string[]) => string);
+  multiple: true;
   onChange?: (val: string[]) => void;
 }
+export type InputInfoSelect<T = any, K = string> = InputInfoSelectSingle<T, K> | InputInfoSelectMultiple<T, K>;
 
 export interface InputInfoCoordinate<T = any> extends InputInfoBase<T> {
   type: "coordinate";
@@ -144,7 +153,6 @@ export type InputInfo<T = any> =
   | InputInfoArray<T>
   | InputInfoBoolean<T>
   | InputInfoSelect<T>
-  | InputInfoSelectMulti<T>
   | InputInfoCoordinate<T>
   | InputInfoColor<T>
   | InputInfoFile<T>
@@ -159,7 +167,6 @@ export interface InputInfoTypeMap {
   array: InputInfoArray;
   boolean: InputInfoBoolean;
   select: InputInfoSelect;
-  selectMulti: InputInfoSelectMulti;
   coordinate: InputInfoCoordinate;
   color: InputInfoColor;
   file: InputInfoFile;
@@ -168,19 +175,13 @@ export interface InputInfoTypeMap {
   group: InputInfoGroup;
 }
 
-export interface InputInfoWithOptions<T = any, K = any> extends InputInfoBase<T> {
-  options?: Value<InputInfoOptions<K>>;
-  optionValueType?: "string" | "array";
-  filterValuesGetter?: (option: InputInfoOption<K>) => string[];
-  fixedOptions?: string[];
-  optionInputOnly?: boolean;
-  optionsDisplayLimit?: number;
-  isSingleOption?: boolean;
-  optionsUseId?: boolean;
-  optionField?: string;
-  optionDialog?: boolean;
-}
-
-export type InputInfoOption<T = string> = {value: T; label?: string; disabled?: boolean} | T;
+export type InputInfoOption<T = string> = {value: T; label?: string; disabled?: boolean; img?: string} | T;
 
 export type InputInfoOptions<T = string> = InputInfoOption<T>[];
+
+export interface OptionsDialog {
+  optionKey?: string;
+  multiple?: boolean;
+  optionsUseId?: boolean;
+  optionField?: string;
+}
