@@ -10,7 +10,6 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {ActivatedRoute} from "@angular/router";
 import {joinOptions, splitOptions} from "@app/app.common";
 import {CadData, CadZhankai, FlipType} from "@lucilor/cad-viewer";
 import {Utils} from "@mixins/utils.mixin";
@@ -78,7 +77,6 @@ export class CadZhankaiComponent extends Utils() {
   constructor(
     public dialogRef: MatDialogRef<CadZhankaiComponent, CadZhankai[]>,
     @Inject(MAT_DIALOG_DATA) public data: CadData["zhankai"],
-    private route: ActivatedRoute,
     private dialog: MatDialog,
     private message: MessageService,
     private status: AppStatusService
@@ -153,7 +151,7 @@ export class CadZhankaiComponent extends Utils() {
   async selectOptions(obj: any, field: string) {
     const name = (this.keysMap as any)[field];
     const checkedItems = splitOptions(obj[field]);
-    const result = await openCadOptionsDialog(this.dialog, {data: {name, checkedItems}});
+    const result = await openCadOptionsDialog(this.dialog, {data: {name, checkedItems, multi: true}});
     if (Array.isArray(result)) {
       obj[field] = joinOptions(result);
     }

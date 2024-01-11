@@ -374,8 +374,7 @@ export class LurushujuIndexComponent implements OnInit {
     this.shiyituInputInfos = [];
     const shiyituKeys: (keyof 工艺做法["示意图CAD"])[] = ["算料单示意图"];
     for (const key of shiyituKeys) {
-      const value = gongyi.示意图CAD[key];
-      const params: CadListInput = {selectMode: Array.isArray(value) ? "multiple" : "single", collection: "cad", raw: true};
+      const params: CadListInput = {selectMode: key === "算料单示意图" ? "multiple" : "single", collection: "cad", raw: true};
       const search: ObjectOf<any> = {};
       if (key.includes("装配示意图")) {
         search.分类 = "装配示意图";

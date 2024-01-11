@@ -34,7 +34,7 @@ export class CadLineTjqzSelectComponent {
   async onListClick(item: CadLineTjqzSelectData["options"][0]) {
     const name = item.key;
     const checkedItems = splitOptions(item.value);
-    const result = await openCadOptionsDialog(this.dialog, {data: {data: new CadData(), name, checkedItems}});
+    const result = await openCadOptionsDialog(this.dialog, {data: {data: new CadData(), name, checkedItems, multi: true}});
     if (result) {
       item.value = joinOptions(result.options, "*");
     }

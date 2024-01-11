@@ -29,6 +29,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
 import {joinOptions, splitOptions} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
+import {CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
@@ -40,7 +41,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import Color from "color";
 import csstype from "csstype";
-import {isArray, isEmpty, isEqual} from "lodash";
+import {isEmpty, isEqual} from "lodash";
 import {Color as NgxColor} from "ngx-color";
 import {ChromeComponent, ColorChromeModule} from "ngx-color/chrome";
 import {ColorCircleModule} from "ngx-color/circle";
@@ -189,6 +190,15 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return info.accept || "image/*";
     }
     return undefined;
+  }
+
+  get isCadMultiple() {
+    const {info} = this;
+    if (info.type === "cad") {
+      const params = getValue(info.params, this.message);
+      return params?.selectMode === "multiple";
+    }
+    return false;
   }
 
   displayValue: string | null = null;
@@ -804,6 +814,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
           }
           return name || "";
         }
+      } else {
+        if (this.isCadMultiple) {
+          return "";
+        } else {
+          return info.label;
+        }
       }
     }
     return "";
@@ -828,17 +844,25 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.type !== "cad") {
       return;
     }
-    const {value} = this;
-    const getInfo = (val: any): (typeof this.cadInfos)[number] => {
+    let {value} = this;
+    const getInfo = (val: any): (typeof this.cadInfos)[number] | null => {
       const id = this.getCadId(val);
+      if (!id) {
+        return null;
+      }
       const name = this.getCadName(val);
       const img = this.http.getCadImgUrl(this.getCadId(val));
       return {id, name, img};
     };
-    if (isArray(value)) {
-      this.cadInfos = value.map(getInfo);
-    } else {
-      this.cadInfos = [getInfo(value)];
+    this.cadInfos = [];
+    if (!Array.isArray(value)) {
+      value = [value];
+    }
+    for (const val of value) {
+      const cadInfo = getInfo(val);
+      if (cadInfo) {
+        this.cadInfos.push(cadInfo);
+      }
     }
   }
 
@@ -854,7 +878,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     params.checkedItems = this.cadInfos.map((v) => v.id);
     const result = await openCadListDialog(this.dialog, {data: params});
     if (result) {
-      if (params.selectMode === "multiple") {
+      if (this.isCadMultiple) {
         this.value = result;
       } else {
         this.value = result[0] || null;
@@ -864,18 +888,25 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  async clearCad() {
+  async clearCad(i: number) {
     const {info} = this;
     if (info.type !== "cad") {
       return;
     }
-    const params = getValue(info.params, this.message);
-    if (params?.selectMode === "multiple") {
-      this.value = [];
+    const {value, isCadMultiple} = this;
+    let result: CadListOutput;
+    if (isCadMultiple) {
+      if (Array.isArray(value)) {
+        value.splice(i, 1);
+        result = value;
+      } else {
+        this.value = result = [];
+      }
     } else {
       this.value = null;
+      result = [];
     }
-    info.onChange?.([]);
+    info.onChange?.(result);
     this.updateCadInfos();
   }
 

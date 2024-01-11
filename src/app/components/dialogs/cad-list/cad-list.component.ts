@@ -24,7 +24,6 @@ import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
@@ -49,23 +48,23 @@ export const customTooltipOptions: MatTooltipDefaultOptions = {
   imports: [
     CommonModule,
     FormsModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatInputModule,
     MatButtonModule,
-    MatIconModule,
-    MatSlideToggleModule,
     MatCheckboxModule,
-    NgScrollbar,
-    MatRadioModule,
-    MatTooltipModule,
-    MatTableModule,
-    SpinnerComponent,
     MatDialogActions,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatOptionModule,
     MatPaginatorModule,
-    TypedTemplateDirective,
-    MatDividerModule
+    MatRadioModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+    MatTableModule,
+    MatTooltipModule,
+    NgScrollbar,
+    SpinnerComponent,
+    TypedTemplateDirective
   ]
 })
 export class CadListComponent extends Utils() implements AfterViewInit {
@@ -97,7 +96,6 @@ export class CadListComponent extends Utils() implements AfterViewInit {
     private sanitizer: DomSanitizer,
     private http: CadDataService,
     private dialog: MatDialog,
-    private spinner: SpinnerService,
     private message: MessageService
   ) {
     super();

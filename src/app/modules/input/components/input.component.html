@@ -492,13 +492,15 @@
   @case ("cad") {
     @if (cadInfos.length > 0) {
       <div class="flex-column">
-        <div class="label">{{ info.label }}</div>
+        @if (isCadMultiple || castInfo("cad")["showName"]) {
+          <div class="label">{{ info.label }}</div>
+        }
         <div class="flex-row">
-          @for (cadInfo of cadInfos; track $index) {
+          @for (cadInfo of cadInfos; track i; let i = $index) {
             <div class="flex-column">
               <div class="flex-row">
                 @if (info.clearable) {
-                  <button mat-icon-button color="accent" (click)="clearCad()"><mat-icon>close</mat-icon></button>
+                  <button mat-icon-button color="accent" (click)="clearCad(i)"><mat-icon>close</mat-icon></button>
                 }
                 <div class="cad-name flex-110">{{ cadInfo.name }}</div>
                 @if (castInfo("cad")["openable"]) {
@@ -513,6 +515,7 @@
         </div>
       </div>
     } @else {
+      <div class="label">{{ info.label }}</div>
       <div class="cad-preview-empty" (click)="selectCad()">{{ info.placeholder }}</div>
     }
     <ng-template [ngTemplateOutlet]="footer"></ng-template>

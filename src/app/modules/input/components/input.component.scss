@@ -32,12 +32,9 @@
       width: var(--cad-preview-width);
       height: var(--cad-preview-height);
       cursor: pointer;
-      border: var(--border);
-      &:hover {
-        border: 1px dashed $accent-color;
-      }
       border-radius: 10px;
       overflow: hidden;
+      margin: 5px;
     }
     app-image {
       display: block;

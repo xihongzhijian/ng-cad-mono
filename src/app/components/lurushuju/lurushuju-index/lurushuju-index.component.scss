@@ -12,7 +12,7 @@
 }
 
 .step-2 {
-  .产品分类.item {
+  .产品分类 {
     flex-direction: row;
     align-items: flex-start;
     cursor: unset;
@@ -20,6 +20,18 @@
     .header {
       display: flex;
       flex-direction: column;
+      height: 100%;
+
+      .title {
+        width: 142px;
+        font-size: 28px;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+        white-space: normal;
+      }
     }
   }
 
