@@ -122,7 +122,8 @@ export class BancaiFormComponent {
           readonly: true,
           options: checkedItem?.cailiaoList || [],
           optionValueType: "array",
-          optionsDialog: {multiple: true}
+          optionMultiple: true,
+          optionsDialog: {}
         },
         {
           type: "string",
@@ -131,7 +132,8 @@ export class BancaiFormComponent {
           readonly: true,
           options: checkedItem?.houduList || [],
           optionValueType: "array",
-          optionsDialog: {multiple: true}
+          optionMultiple: true,
+          optionsDialog: {}
         }
       ]
     ];

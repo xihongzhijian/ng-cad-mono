@@ -158,10 +158,11 @@ export interface 门铰锁边铰边 {
   名字: string;
   产品分类: string;
   开启: string[];
-  门铰: string;
-  门扇厚度: string;
+  门铰: string[];
+  门扇厚度: string[];
   锁边: string;
   铰边: string;
+  选项默认值: ObjectOf<string>;
 
   "包边在外+外开": {
     配合框CAD: ObjectOf<配合框CAD>;

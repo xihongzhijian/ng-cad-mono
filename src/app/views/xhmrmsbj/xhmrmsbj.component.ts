@@ -380,8 +380,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const result = await openCadOptionsDialog(this.dialog, {
       data: {name: "p_menshanbuju", filter: {guanlianCN: {menshanweizhi}}, checkedVids, multi: false}
     });
-    if (result?.[0]) {
-      const msbj = this.msbjs.find((v) => v.vid === result[0].vid);
+    if (result?.options[0]) {
+      const msbj = this.msbjs.find((v) => v.vid === result.options[0].vid);
       if (msbj) {
         infos[menshanweizhi].选中布局 = msbj.vid;
         infos[menshanweizhi].选中布局数据 = {

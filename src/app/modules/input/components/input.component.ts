@@ -626,15 +626,19 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return;
     }
     const {info} = this;
-    const {optionField, multiple, optionsUseId} = optionsDialog;
+    const {optionField, optionsUseId, useDefaultValue, onChange} = optionsDialog;
     if (optionsDialog.optionKey) {
       optionKey = optionsDialog.optionKey;
     }
     let optionValueType: InputInfoString["optionValueType"];
     let optionInputOnly: InputInfoString["optionInputOnly"];
+    let multiple: boolean | undefined;
     if (info.type === "string") {
       optionInputOnly = !!info.optionInputOnly;
       optionValueType = info.optionValueType || "string";
+      multiple = info.optionMultiple;
+    } else if (info.type === "select") {
+      multiple = info.multiple;
     }
     const value = key ? data[key] : this.value;
     const isObject = isTypeOf(value, "object");
@@ -650,6 +654,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       data,
       name: optionKey || "",
       multi: multiple,
+      useDefaultValue,
       fields,
       options: this.options.map<OptionsDataData>((v, i) => ({
         vid: i,
@@ -665,14 +670,15 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     const result = await openCadOptionsDialog(this.dialog, {data: dialogData});
     if (result) {
+      const options = result.options;
       let options2: string[];
       if (optionsUseId) {
-        options2 = result.map((v) => String(v.vid));
+        options2 = options.map((v) => String(v.vid));
       } else {
-        options2 = result.map((v) => v.mingzi);
+        options2 = options.map((v) => v.mingzi);
       }
       if (optionInputOnly || info.type === "select") {
-        this.displayValue = joinOptions(result.map((v) => v.mingzi));
+        this.displayValue = joinOptions(options.map((v) => v.mingzi));
       }
       let resultValue: string | string[] = options2;
       if (optionValueType === "string") {
@@ -686,6 +692,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         }
       } else {
         this.value = resultValue;
+      }
+      if (typeof onChange === "function") {
+        onChange(result);
       }
       this.validateValue();
     }
@@ -801,6 +810,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   getCadId(value: any) {
+    if (!isTypeOf(value, "object")) {
+      return "";
+    }
     let id = "";
     for (const key of ["id", "_id"]) {
       if (isTypeOf(value[key], "string") && value[key].length > 0) {

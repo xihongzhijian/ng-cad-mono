@@ -8,15 +8,20 @@
 
 <ng-scrollbar class="content">
   <app-spinner [id]="loaderIds.optionsLoader"></app-spinner>
-  <div class="checkbox-group add-empty-msg">
-    @for (item of pageData; track item; let i = $index) {
-      <div class="data-container" [matTooltip]="item.name" [matTooltipPosition]="'above'">
-        <mat-checkbox [checked]="item.checked" (change)="onCheckboxChange(item, $event)" [disabled]="item.disabled && !item.checked">
-          {{ item.name }}
-        </mat-checkbox>
-        <br />
+  <div class="options items add-empty-msg">
+    @for (item of pageData; track i; let i = $index) {
+      <div class="option item" (click)="onCheckboxChange(item)">
+        <div class="toolbar">
+          <mat-checkbox [checked]="item.checked" [disabled]="item.disabled && !item.checked"> </mat-checkbox>
+          <div class="text long" [matTooltip]="item.name" [matTooltipPosition]="'above'">{{ item.name }}</div>
+          @if (data.useDefaultValue) {
+            <button mat-button [color]="defaultValue === item.name ? 'accent' : 'primary'" appClickStop (click)="setDefaultValue(item)">
+              默认值
+            </button>
+          }
+        </div>
         @if (item.img) {
-          <app-image [src]="item.img" [prefix]="filePathUrl" (click)="onCheckboxChange(item)"></app-image>
+          <app-image [src]="item.img" [prefix]="filePathUrl"></app-image>
         }
       </div>
     }

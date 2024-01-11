@@ -852,10 +852,11 @@ export class LurushujuIndexComponent implements OnInit {
       名字: "",
       产品分类,
       开启: [],
-      门铰: "",
-      门扇厚度: "",
+      门铰: [],
+      门扇厚度: [],
       锁边: "",
       铰边: "",
+      选项默认值: {},
       "包边在外+外开": {配合框CAD: {}, 企料CAD: {}},
       "包边在外+内开": {配合框CAD: {}, 企料CAD: {}},
       "包边在内+外开": {配合框CAD: {}, 企料CAD: {}},
@@ -916,15 +917,22 @@ export class LurushujuIndexComponent implements OnInit {
       const options = optionsInfo.options.map<InputInfoOption>((v) => {
         return {value: v.name, img: v.img};
       });
-      const disabled = optionsInfo.disabled;
+      const {disabled, multiple} = optionsInfo;
       return {
         type: "select",
         label: key,
         model: {data, key},
         options,
         disabled,
-        multiple: optionsInfo.multiple,
-        optionsDialog: {},
+        multiple,
+        optionsDialog: {
+          useDefaultValue: multiple,
+          onChange(val) {
+            if (multiple) {
+              data.选项默认值[key] = val.defaultValue || "";
+            }
+          }
+        },
         validators: Validators.required,
         onChange: () => {
           updateMenjiaoForm(data);

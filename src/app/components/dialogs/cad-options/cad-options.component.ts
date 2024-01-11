@@ -1,12 +1,13 @@
-import {AfterViewInit, Component, forwardRef, Inject, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, forwardRef, HostBinding, Inject, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
-import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, queryString} from "@lucilor/utils";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsParams, OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -24,6 +25,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   styleUrls: ["./cad-options.component.scss"],
   standalone: true,
   imports: [
+    ClickStopPropagationDirective,
     forwardRef(() => InputComponent),
     MatButtonModule,
     NgScrollbar,
@@ -36,14 +38,15 @@ import {getOpenDialogFunc} from "../dialog.common";
   ]
 })
 export class CadOptionsComponent implements AfterViewInit {
+  @HostBinding("class") class = ["ng-page"];
   pageData: (OptionsData["data"][number] & {checked: boolean})[] = [];
-  searchValue = "";
   length = 100;
   pageSizeOptions = [50, 100, 200, 500];
   pageSize = 50;
   checkedIdsCurr = new Set<number>();
   checkedIdsOthers = new Set<number>();
   loaderIds = {optionsLoader: "cadOptions", submitLoaderId: "cadOptionsSubmit"};
+  searchValue = "";
   searchInputInfo: InputInfo<this> = {
     label: "搜索",
     type: "string",
@@ -53,6 +56,7 @@ export class CadOptionsComponent implements AfterViewInit {
       this.search();
     }
   };
+  defaultValue = "";
   filePathUrl = filePathUrl;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
   constructor(
@@ -60,9 +64,7 @@ export class CadOptionsComponent implements AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public data: CadOptionsInput,
     private http: CadDataService,
     private spinner: SpinnerService
-  ) {
-    this.data.multi = this.data.multi !== false;
-  }
+  ) {}
 
   async ngAfterViewInit() {
     if (!this.paginator) {
@@ -87,7 +89,13 @@ export class CadOptionsComponent implements AfterViewInit {
     if (!data) {
       return;
     }
-    this.dialogRef.close(data.data.map((v) => ({vid: v.vid, mingzi: v.name})));
+    const result: CadOptionsOutput = {
+      options: data.data.map((v) => ({vid: v.vid, mingzi: v.name}))
+    };
+    if (this.data.useDefaultValue) {
+      result.defaultValue = this.defaultValue;
+    }
+    this.dialogRef.close(result);
   }
 
   close() {
@@ -169,16 +177,12 @@ export class CadOptionsComponent implements AfterViewInit {
     return data;
   }
 
-  onCheckboxChange(item: CadOptionsComponent["pageData"][number], event?: MatCheckboxChange) {
+  onCheckboxChange(item: CadOptionsComponent["pageData"][number]) {
     const {multi} = this.data;
-    if (!multi) {
+    if (!item.checked && !multi) {
       this.pageData.forEach((v) => (v.checked = false));
     }
-    if (event) {
-      item.checked = event.checked;
-    } else {
-      item.checked = !item.checked;
-    }
+    item.checked = !item.checked;
     const {checkedIdsCurr} = this;
     if (item.checked) {
       if (!multi) {
@@ -203,6 +207,17 @@ export class CadOptionsComponent implements AfterViewInit {
       this.onCheckboxChange(item);
     }
   }
+
+  setDefaultValue(item: CadOptionsComponent["pageData"][number]) {
+    if (!item.checked) {
+      this.onCheckboxChange(item);
+    }
+    if (this.defaultValue === item.name) {
+      this.defaultValue = "";
+    } else {
+      this.defaultValue = item.name;
+    }
+  }
 }
 
 export const openCadOptionsDialog = getOpenDialogFunc<CadOptionsComponent, CadOptionsInput, CadOptionsOutput>(CadOptionsComponent, {
@@ -220,6 +235,10 @@ export interface CadOptionsInput {
   filter?: ObjectOf<any>;
   fields?: string[];
   options?: OptionsDataData[];
+  useDefaultValue?: boolean;
 }
 
-export type CadOptionsOutput = TableDataBase[];
+export interface CadOptionsOutput {
+  options: TableDataBase[];
+  defaultValue?: string;
+}

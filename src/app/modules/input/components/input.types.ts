@@ -2,6 +2,7 @@ import {AbstractControlOptions} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
 import {Formulas} from "@app/utils/calc";
 import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
+import {CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.component";
 import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
 import csstype from "csstype";
@@ -45,6 +46,7 @@ export interface InputInfoString<T = any, K = string> extends InputInfoBase<T> {
   fixedOptions?: string[];
   optionInputOnly?: boolean;
   optionsDisplayLimit?: number;
+  optionMultiple?: boolean;
   optionsDialog?: OptionsDialog;
 }
 
@@ -190,7 +192,8 @@ export type InputInfoOptions<T = string> = InputInfoOption<T>[];
 
 export interface OptionsDialog {
   optionKey?: string;
-  multiple?: boolean;
   optionsUseId?: boolean;
   optionField?: string;
+  useDefaultValue?: boolean;
+  onChange?: (val: CadOptionsOutput) => void;
 }

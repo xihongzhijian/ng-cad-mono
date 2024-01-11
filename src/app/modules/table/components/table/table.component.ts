@@ -576,7 +576,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const data: CadOptionsInput = {name: linkedTable, checkedVids, multi: multiSelect};
     const result = await openCadOptionsDialog(this.dialog, {data});
     if (result) {
-      const value = joinOptions(result.map((v) => String(v.vid)));
+      const value = joinOptions(result.options.map((v) => String(v.vid)));
       this.setCellValue(value, colIdx, rowIdx, item);
     }
   }
