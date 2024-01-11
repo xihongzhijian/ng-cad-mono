@@ -9,7 +9,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
-import {filePathUrl, getBooleanStr, getFilepathUrl, session, setGlobal} from "@app/app.common";
+import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, session, setGlobal} from "@app/app.common";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
@@ -524,10 +524,10 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const names = this.xinghao.产品分类[产品分类].map((gongyi) => gongyi.名字);
-    const 复制名字 = await this.message.prompt({
+    let 复制名字 = await this.message.prompt({
       type: "string",
       label: "复制工艺做法",
-      placeholder: "若留空则自动生成名字",
+      hint: "若留空则自动生成名字",
       validators: (control) => {
         const value = control.value;
         if (names.includes(value)) {
@@ -541,6 +541,9 @@ export class LurushujuIndexComponent implements OnInit {
     });
     if (复制名字 === null) {
       return;
+    }
+    if (!复制名字) {
+      复制名字 = getCopyName(names, 名字);
     }
     const 型号 = this.xinghao.名字;
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/copyGongyi", {名字, 复制名字, 型号, 产品分类});
@@ -1237,7 +1240,8 @@ export class LurushujuIndexComponent implements OnInit {
     }
     const item = cloneDeep(gongyi.算料公式[index]);
     item._id = v4();
-    item.名字 += "_复制";
+    const names = gongyi.算料公式.map((v) => v.名字);
+    item.名字 = getCopyName(names, item.名字);
     gongyi.算料公式.push(item);
     this.submitGongyi(["算料公式"]);
   }
@@ -1352,7 +1356,8 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const item = cloneDeep(gongyi.测试用例[index]);
-    item.名字 += "_复制";
+    const names = gongyi.测试用例.map((v) => v.名字);
+    item.名字 = getCopyName(names, item.名字);
     item.时间 = Date.now();
     gongyi.测试用例.push(item);
     await this.submitGongyi(["测试用例"]);

@@ -133,6 +133,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return this.info.suffixIcons || [];
   }
 
+  get hint() {
+    const hint = this.info.hint;
+    if (typeof hint === "function") {
+      return hint();
+    }
+    return hint || "";
+  }
+
   options: {value: string; label: string; disabled?: boolean; img?: string}[] = [];
 
   get optionText() {
