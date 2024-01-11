@@ -318,12 +318,16 @@ export class CadListComponent extends Utils() implements AfterViewInit {
       this.message.error(checkLimitResult.message);
       return;
     }
-    const ids = this.checkedItems;
+    const {checkedItems: ids, data} = this;
+    const {collection, raw} = data;
     if (ids.length > 0) {
-      this.spinner.show(this.loaderIdSubmit);
-      const result = await this.http.getCad({ids, collection: this.data.collection});
-      this.spinner.hide(this.loaderIdSubmit);
-      this.dialogRef.close(result.cads);
+      if (raw) {
+        const result = await this.http.getCadRaw({ids, collection});
+        this.dialogRef.close((result?.data || []) as any);
+      } else {
+        const result = await this.http.getCad({ids, collection});
+        this.dialogRef.close(result.cads);
+      }
     } else {
       this.dialogRef.close([]);
     }

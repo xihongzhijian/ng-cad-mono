@@ -42,8 +42,8 @@
     <mat-radio-group class="radio-group add-empty-msg" [value]="checkedIndex.value">
       <mat-radio-button [value]="-1" style="display: none"><span #singleSelectNone></span></mat-radio-button>
       <div class="data-container" *ngFor="let item of pageData; let i = index">
-        <mat-radio-button [value]="i" [matTooltip]="item.data.name" (click)="checkedIndex.next(i)">
-          {{ item.data.name }}
+        <mat-radio-button [value]="i" (click)="checkedIndex.next(i)">
+          <div [matTooltip]="item.data.name" (click)="checkedIndex.next(i)">{{ item.data.name }}</div>
         </mat-radio-button>
         <div class="cad-preview-container">
           <img class="cad-preview" [src]="item.img" (click)="checkedIndex.next(i)" />
@@ -56,8 +56,8 @@
   <ng-scrollbar *ngSwitchCase="'multiple'">
     <div class="checkbox-group add-empty-msg">
       <div class="data-container" *ngFor="let item of pageData; let i = index">
-        <mat-checkbox [(ngModel)]="item.checked" [matTooltip]="item.data.name">
-          {{ item.data.name }}
+        <mat-checkbox [(ngModel)]="item.checked">
+          <div [matTooltip]="item.data.name">{{ item.data.name }}</div>
         </mat-checkbox>
         <div class="cad-preview-container">
           <img class="cad-preview" [src]="item.img" (click)="item.checked = !item.checked" />

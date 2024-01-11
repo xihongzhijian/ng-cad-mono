@@ -34,7 +34,7 @@ export class CadImgCache {
     const cache = this._loadCache();
     const time = new Date().getTime();
     for (const key2 in cache) {
-      if (time - cache[key2].time < this.cacheDuration) {
+      if (time - cache[key2].time > this.cacheDuration) {
         delete cache[key2];
       }
     }

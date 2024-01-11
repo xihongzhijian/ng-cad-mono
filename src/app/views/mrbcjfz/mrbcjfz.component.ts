@@ -69,6 +69,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   @Input() fubanNumber = 9;
   @Output() dataSubmit = new EventEmitter<MrbcjfzXinghaoInfo>();
   @Output() dataClose = new EventEmitter<void>();
+  @Output() refreshEnd = new EventEmitter<void>();
   xinghao: MrbcjfzXinghaoInfo = new MrbcjfzXinghaoInfo(this.table, {vid: 0, mingzi: ""});
   cads: ObjectOf<MrbcjfzCadInfo> = {};
   huajians: ObjectOf<MrbcjfzHuajianInfo> = {};
@@ -286,6 +287,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       }
     }
     this._refreshLock = false;
+    this.refreshEnd.emit();
   }
 
   updateXinghao() {

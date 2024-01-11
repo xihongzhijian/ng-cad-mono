@@ -40,7 +40,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import Color from "color";
 import csstype from "csstype";
-import {isEmpty, isEqual} from "lodash";
+import {isArray, isEmpty, isEqual} from "lodash";
 import {Color as NgxColor} from "ngx-color";
 import {ChromeComponent, ColorChromeModule} from "ngx-color/chrome";
 import {ColorCircleModule} from "ngx-color/circle";
@@ -81,7 +81,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   infoDiffer: KeyValueDiffer<keyof InputInfo, ValueOf<InputInfo>>;
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
-  cadImg: SafeUrl | null = null;
+  cadInfos: {id: string; name: string; img: SafeUrl}[] = [];
   @ViewChild("fileInput") fileInput?: ElementRef<HTMLInputElement>;
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
 
@@ -355,12 +355,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       info.autocomplete = "off";
     }
     if ("value" in info) {
-      this.value = await getValue(info.value, this.message);
+      this.value = getValue(info.value, this.message);
     }
     let options: InputInfoOptions | undefined | null;
     const type = info.type;
     if (type === "select" || type === "string") {
-      options = await getValue(info.options, this.message);
+      options = getValue(info.options, this.message);
       this.options = (options || []).map<(typeof this.options)[number]>((v) => {
         if (typeof v === "string") {
           return {value: v, label: v};
@@ -371,14 +371,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         return {label: v.label || String(v.value), value: v.value, disabled: v.disabled, img: v.img};
       });
     } else if (type === "cad") {
-      this.updateCadImg();
+      this.updateCadInfos();
     }
     this.displayValue = null;
     if (type === "string") {
       const {optionInputOnly} = info;
       if (optionInputOnly && !options) {
         info.readonly = true;
-        this.displayValue = (await getValue(info.displayValue, this.message)) || null;
+        this.displayValue = getValue(info.displayValue, this.message) || null;
       }
     }
     this.class = [type];
@@ -781,52 +781,52 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     input.value = "";
   }
 
-  getCadName() {
+  getCadName(val: any) {
     const {info} = this;
     if (info.type === "cad") {
       if (info.showName) {
-        const {value} = this;
-        if (isTypeOf(value, "object")) {
+        if (isTypeOf(val, "object")) {
           let name = "";
           for (const key of ["name", "名字"]) {
-            if (isTypeOf(value[key], "string") && value[key].length > 0) {
-              name = value[key];
+            if (isTypeOf(val[key], "string") && val[key].length > 0) {
+              name = val[key];
               break;
             }
           }
           return name || "";
         }
-      } else {
-        return info.label;
       }
     }
     return "";
   }
 
-  getCadId() {
+  getCadId(value: any) {
+    let id = "";
+    for (const key of ["id", "_id"]) {
+      if (isTypeOf(value[key], "string") && value[key].length > 0) {
+        id = value[key];
+        break;
+      }
+    }
+    return id || "";
+  }
+
+  updateCadInfos() {
     const {info} = this;
-    if (info.type === "cad") {
-      const {value} = this;
-      if (isTypeOf(value, "object")) {
-        let id = "";
-        for (const key of ["id", "_id"]) {
-          if (isTypeOf(value[key], "string") && value[key].length > 0) {
-            id = value[key];
-            break;
-          }
-        }
-        return id || "";
-      }
+    if (info.type !== "cad") {
+      return;
     }
-    return "";
-  }
-
-  updateCadImg() {
-    const id = this.getCadId();
-    if (id) {
-      this.cadImg = this.http.getCadImgUrl(id);
+    const {value} = this;
+    const getInfo = (val: any): (typeof this.cadInfos)[number] => {
+      const id = this.getCadId(val);
+      const name = this.getCadName(val);
+      const img = this.http.getCadImgUrl(this.getCadId(val));
+      return {id, name, img};
+    };
+    if (isArray(value)) {
+      this.cadInfos = value.map(getInfo);
     } else {
-      this.cadImg = "";
+      this.cadInfos = [getInfo(value)];
     }
   }
 
@@ -835,10 +835,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.type !== "cad") {
       return;
     }
-    const params = await getValue(info.params, this.message);
+    const params = getValue(info.params, this.message);
     if (!params) {
       return;
     }
+    params.checkedItems = this.cadInfos.map((v) => v.id);
     const result = await openCadListDialog(this.dialog, {data: params});
     if (result) {
       if (params.selectMode === "multiple") {
@@ -847,7 +848,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         this.value = result[0] || null;
       }
       info.onChange?.(result);
-      this.updateCadImg();
+      this.updateCadInfos();
     }
   }
 
@@ -856,21 +857,18 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.type !== "cad") {
       return;
     }
-    const params = await getValue(info.params, this.message);
+    const params = getValue(info.params, this.message);
     if (params?.selectMode === "multiple") {
       this.value = [];
     } else {
       this.value = null;
     }
     info.onChange?.([]);
-    this.updateCadImg();
+    this.updateCadInfos();
   }
 
-  openCad() {
-    const id = this.getCadId();
-    if (id) {
-      this.status.openCadInNewTab(id, this.value?.collection || "cad");
-    }
+  openCad(id: string) {
+    this.status.openCadInNewTab(id, this.value?.collection || "cad");
   }
 
   changeObjectKey2(obj: ObjectOf<any>, oldKey: string, newKey: string | Event) {

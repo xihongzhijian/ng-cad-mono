@@ -6,7 +6,7 @@ import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
 import csstype from "csstype";
 
-export type Value<T> = T | (() => T) | (() => Promise<T>);
+export type Value<T> = T | (() => T);
 
 export interface InputInfoBase<T = any> {
   label: string;
@@ -82,7 +82,7 @@ export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoSelectBase<T = any, K = string> extends InputInfoBase<T> {
   type: "select";
-  options?: Value<InputInfoOptions<K>>;
+  options: Value<InputInfoOptions<K>>;
   optionsDialog?: OptionsDialog;
 }
 export interface InputInfoSelectSingle<T = any, K = string> extends InputInfoSelectBase<T, K> {

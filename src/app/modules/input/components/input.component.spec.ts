@@ -14,7 +14,7 @@ describe("InputComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormsModule, HttpModule, InputComponent, MatFormFieldModule, MatInputModule, MatSelectModule, MessageModule, InputComponent]
+      imports: [FormsModule, HttpModule, InputComponent, MatFormFieldModule, MatInputModule, MatSelectModule, MessageModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(InputComponent);

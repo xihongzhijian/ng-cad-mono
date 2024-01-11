@@ -98,7 +98,7 @@ export class CadDataService extends HttpService {
   }
 
   async getCadRaw(params: GetCadParams) {
-    return await this.getDataAndCount<后台CAD[]>("peijian/cad/getCad", {...params, raw: true});
+    return await this.getDataAndCount<后台CAD[]>("ngcad/getCad", {...params, raw: true});
   }
 
   exportCadData(data: CadData, hideLineLength: boolean) {
@@ -311,7 +311,11 @@ export class CadDataService extends HttpService {
       }
     }
     const result = await this.getData<{url: string | null}>("ngcad/getCadImg", {id}, options);
-    return result?.url || null;
+    const url = result?.url || null;
+    if (url) {
+      this.cadImgCache.set(id, url);
+    }
+    return url;
   }
 
   async setCadImg(id: string, dataURL: string, options?: HttpOptions) {

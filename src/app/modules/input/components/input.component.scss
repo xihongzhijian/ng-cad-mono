@@ -22,12 +22,17 @@
   &.cad {
     --cad-preview-width: 200px;
     --cad-preview-height: 100px;
+    --border: 1px dashed gray;
+    border: var(--border);
+    padding: 5px;
+    border-radius: 10px;
+
     app-image,
     .cad-preview-empty {
       width: var(--cad-preview-width);
       height: var(--cad-preview-height);
       cursor: pointer;
-      border: 1px dashed gray;
+      border: var(--border);
       &:hover {
         border: 1px dashed $accent-color;
       }
@@ -44,6 +49,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    .label {
+      text-align: center;
     }
 
     .cad-name {

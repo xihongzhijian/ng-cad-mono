@@ -490,19 +490,28 @@
     </mat-form-field>
   }
   @case ("cad") {
-    <div class="flex-row">
-      @if (getCadId() && info.clearable) {
-        <button mat-icon-button color="accent" (click)="clearCad()"><mat-icon>close</mat-icon></button>
-      }
-      <div class="cad-name flex-110">{{ getCadName() || " " }}</div>
-      @if (getCadId() && castInfo("cad")["openable"]) {
-        <button mat-icon-button color="primary" (click)="openCad()">
-          <mat-icon>open_in_new</mat-icon>
-        </button>
-      }
-    </div>
-    @if (cadImg) {
-      <app-image class="cad-preview" [src]="cadImg" (click)="selectCad()"></app-image>
+    @if (cadInfos.length > 0) {
+      <div class="flex-column">
+        <div class="label">{{ info.label }}</div>
+        <div class="flex-row">
+          @for (cadInfo of cadInfos; track $index) {
+            <div class="flex-column">
+              <div class="flex-row">
+                @if (info.clearable) {
+                  <button mat-icon-button color="accent" (click)="clearCad()"><mat-icon>close</mat-icon></button>
+                }
+                <div class="cad-name flex-110">{{ cadInfo.name }}</div>
+                @if (castInfo("cad")["openable"]) {
+                  <button mat-icon-button color="primary" (click)="openCad(cadInfo.id)">
+                    <mat-icon>open_in_new</mat-icon>
+                  </button>
+                }
+              </div>
+              <app-image class="cad-preview" [src]="cadInfo.img" (click)="selectCad()"></app-image>
+            </div>
+          }
+        </div>
+      </div>
     } @else {
       <div class="cad-preview-empty" (click)="selectCad()">{{ info.placeholder }}</div>
     }

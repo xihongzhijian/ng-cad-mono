@@ -374,7 +374,8 @@ export class LurushujuIndexComponent implements OnInit {
     this.shiyituInputInfos = [];
     const shiyituKeys: (keyof 工艺做法["示意图CAD"])[] = ["算料单示意图"];
     for (const key of shiyituKeys) {
-      const params: CadListInput = {selectMode: "single", collection: "cad", raw: true};
+      const value = gongyi.示意图CAD[key];
+      const params: CadListInput = {selectMode: Array.isArray(value) ? "multiple" : "single", collection: "cad", raw: true};
       const search: ObjectOf<any> = {};
       if (key.includes("装配示意图")) {
         search.分类 = "装配示意图";
@@ -412,7 +413,7 @@ export class LurushujuIndexComponent implements OnInit {
         }
       });
     }
-    this.updateHuajians();
+    await this.updateHuajians();
     this.updateBcfzInputData();
   }
 
@@ -440,7 +441,8 @@ export class LurushujuIndexComponent implements OnInit {
         await this.message.error(errorMsg.join("\n"));
         return false;
       }
-      if (!isEqual(mrbcjfz.xinghao.默认板材, gongyi.板材分组)) {
+      const 板材分组 = this.getBcfzSubmitData(mrbcjfz.xinghao);
+      if (!isEqual(板材分组, gongyi.板材分组)) {
         const yes = await this.message.confirm("板材分组已修改，是否提交？");
         if (yes) {
           mrbcjfz.submit();
@@ -1519,13 +1521,13 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  async onBcfzSubmit(info: MrbcjfzXinghaoInfo) {
+  getBcfzSubmitData(info: MrbcjfzXinghaoInfo) {
     const {gongyi} = this;
     if (!gongyi) {
-      return;
+      return null;
     }
-    gongyi.板材分组 = cloneDeep(info.默认板材);
-    for (const item of Object.values(gongyi.板材分组)) {
+    const 板材分组 = cloneDeep(info.默认板材);
+    for (const item of Object.values(板材分组)) {
       item.CAD = item.CAD.map((id) => {
         const cad = gongyi.算料CAD.find((v) => v.json?.id === id);
         if (cad) {
@@ -1535,6 +1537,33 @@ export class LurushujuIndexComponent implements OnInit {
         }
       });
     }
-    await this.submitGongyi(["板材分组"]);
+    return 板材分组;
+  }
+
+  async onBcfzSubmit(info: MrbcjfzXinghaoInfo) {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    const 板材分组 = this.getBcfzSubmitData(info);
+    if (板材分组 && !isEqual(板材分组, gongyi.板材分组)) {
+      gongyi.板材分组 = 板材分组;
+      await this.submitGongyi(["板材分组"]);
+    }
+  }
+
+  async onBcfzRefreshEnd() {
+    const {gongyi, mrbcjfz} = this;
+    if (!gongyi || !mrbcjfz || !mrbcjfz.inputData) {
+      return;
+    }
+    if (this.xinghaoName !== mrbcjfz.inputData.xinghao) {
+      return;
+    }
+    const 板材分组 = this.getBcfzSubmitData(mrbcjfz.xinghao);
+    if (板材分组 && !isEqual(板材分组, gongyi.板材分组)) {
+      gongyi.板材分组 = 板材分组;
+      await this.submitGongyi(["板材分组"]);
+    }
   }
 }

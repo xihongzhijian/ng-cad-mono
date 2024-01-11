@@ -53,7 +53,7 @@ export class FormulasEditorComponent {
   };
   testResult: CalcResult | null = null;
   @ViewChild("testResultEl", {read: ElementRef}) testResultEl?: ElementRef<HTMLDivElement>;
-  @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
+  @ViewChildren(forwardRef(() => InputComponent)) inputs?: QueryList<InputComponent>;
 
   constructor(
     private message: MessageService,
