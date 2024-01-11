@@ -1,5 +1,6 @@
 import {AbstractControlOptions} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
+import {Formulas} from "@app/utils/calc";
 import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
@@ -141,6 +142,12 @@ export interface InputInfoCad<T = any> extends InputInfoBase<T> {
   onChange?: (val: CadListOutput) => void;
 }
 
+export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
+  type: "formulas";
+  value?: Value<Formulas>;
+  onChange?: (val: Formulas) => void;
+}
+
 export interface InputInfoGroup<T = any> extends InputInfoBase<T> {
   type: "group";
   infos?: InputInfo<T>[];
@@ -158,6 +165,7 @@ export type InputInfo<T = any> =
   | InputInfoFile<T>
   | InputInfoImage<T>
   | InputInfoCad<T>
+  | InputInfoFormulas<T>
   | InputInfoGroup<T>;
 
 export interface InputInfoTypeMap {
@@ -172,6 +180,7 @@ export interface InputInfoTypeMap {
   file: InputInfoFile;
   image: InputInfoImage;
   cad: InputInfoCad;
+  formulas: InputInfoFormulas;
   group: InputInfoGroup;
 }
 

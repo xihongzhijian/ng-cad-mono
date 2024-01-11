@@ -21,7 +21,14 @@ export class EditFormulasDialogComponent {
   ) {}
 
   submit() {
-    this.dialogRef.close(this.formulasEditor?.getFormulas());
+    if (!this.formulasEditor) {
+      return;
+    }
+    const result = this.formulasEditor.submitFormulas();
+    if (!result) {
+      return;
+    }
+    this.dialogRef.close(result);
   }
 
   cancel() {

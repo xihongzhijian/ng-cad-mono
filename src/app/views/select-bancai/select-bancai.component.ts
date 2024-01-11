@@ -254,7 +254,6 @@ export class SelectBancaiComponent extends Subscribed() {
       for (const [i, group] of info.sortedCads.entries()) {
         const bancai = cloneDeep(group[0].bancai);
         const onChange = (key: keyof BancaiCad["bancai"], value: string) => {
-          console.log(key, value);
           if (key === "guige") {
             const match = value.match(guigePattern);
             if (match) {

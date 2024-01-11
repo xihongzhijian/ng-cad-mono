@@ -2,17 +2,18 @@
   <app-input [info]="formulasInputInfo"></app-input>
   <div class="btn-group" style="margin-top: -10px">
     <button mat-raised-button color="primary" (click)="addFormulas()">批量添加</button>
-    <button mat-raised-button color="primary" (click)="test(getFormulas(parseTextarea()))">测试</button>
+    <button mat-raised-button color="primary" (click)="test(submitFormulas(parseTextarea()))">测试</button>
   </div>
 </div>
 
-<ng-scrollbar>
-  <div class="formulas-content">
-    <div class="formulas-list" cdkDropList (cdkDropListDropped)="dropFormula($event)">
-      <div class="btn-group">
-        <div>公式</div>
-        <button mat-raised-button color="primary" (click)="test(getFormulas())">测试</button>
-      </div>
+<div class="flex-column flex-110">
+  <div class="btn-group">
+    <div>公式</div>
+    <button mat-raised-button color="primary" (click)="addFormula()">添加</button>
+    <button mat-raised-button color="primary" (click)="test(submitFormulas())">测试</button>
+  </div>
+  <ng-scrollbar>
+    <div class="formulas-list" cdkDropList [cdkDropListData]="formulaList" (cdkDropListDropped)="dropFormula($event)">
       @for (formula of formulaList; track formula; let i = $index) {
         <div class="formula" cdkDrag cdkDragLockAxis="y">
           <div class="drag-placeholder" cdkDragHandle></div>
@@ -29,8 +30,8 @@
         </div>
       }
     </div>
-  </div>
-</ng-scrollbar>
+  </ng-scrollbar>
+</div>
 
 @if (testResult) {
   <div #testResultEl style="display: none">

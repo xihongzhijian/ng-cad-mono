@@ -151,6 +151,7 @@ mat-divider {
 }
 
 .cdk-drag-preview {
+  z-index: var(--top-top-z-index) !important;
   box-sizing: border-box;
   border-radius: 4px;
   box-shadow:

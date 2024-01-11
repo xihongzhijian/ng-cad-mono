@@ -23,12 +23,13 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoGroup, InputInfoOption, InputInfoOptions, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzHuajian, MrbcjfzInputData, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import csstype from "csstype";
 import {cloneDeep, debounce, isEmpty, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {v4} from "uuid";
 import {
   getGongyi,
   getXinghao,
@@ -39,6 +40,7 @@ import {
   企料组合,
   工艺做法,
   测试用例,
+  算料公式,
   输入,
   选项,
   配合框组合,
@@ -49,7 +51,6 @@ import {
 import {
   LurushujuIndexStep,
   LurushujuIndexStepInfo,
-  MenjiaoData,
   OptionsAll,
   OptionsAll2,
   ShuruTableData,
@@ -57,7 +58,15 @@ import {
   XuanxiangFormData,
   XuanxiangTableData
 } from "./lurushuju-index.types";
-import {autoFillMenjiao, getCadSearch, getMenjiaoCadInfos, updateMenjiaoForm} from "./lurushuju-index.utils";
+import {
+  autoFillMenjiao,
+  getCadSearch,
+  getMenjiaoCadInfos,
+  getMenjiaoTable,
+  getShuruTable,
+  getXuanxiangTable,
+  updateMenjiaoForm
+} from "./lurushuju-index.utils";
 
 @Component({
   selector: "app-lurushuju-index",
@@ -97,6 +106,7 @@ export class LurushujuIndexComponent implements OnInit {
   ];
   tabNameKey = "lurushujuTabName";
   tabIndex = 0;
+  tabIndexPrev = -1;
   filterInputInfo: InputInfo<this> = {
     type: "string",
     label: "搜索型号",
@@ -111,90 +121,9 @@ export class LurushujuIndexComponent implements OnInit {
   gongyiOptionsAll: OptionsAll = {};
   menjiaoOptionsAll: OptionsAll2 = {};
   xinghaoInputInfos: InputInfo<Xinghao>[] = [];
-  xuanxiangTable: TableRenderInfo<XuanxiangTableData> = {
-    title: "选项数据",
-    noCheckBox: true,
-    columns: [
-      {type: "string", field: "名字"},
-      {
-        type: "custom",
-        field: "可选项",
-        toString(item) {
-          return item.可选项.map((v) => v.mingzi).join("*");
-        }
-      },
-      {
-        type: "button",
-        field: "操作",
-        buttons: [
-          {event: "编辑", color: "primary"},
-          {event: "清空数据", color: "primary"}
-        ]
-      }
-    ],
-    data: [],
-    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
-  };
-  shuruTable: TableRenderInfo<ShuruTableData> = {
-    title: "输入数据",
-    noCheckBox: true,
-    columns: [
-      {type: "string", field: "名字"},
-      {type: "string", field: "默认值"},
-      {type: "string", field: "取值范围"},
-      {type: "boolean", field: "可以修改"},
-      {
-        type: "button",
-        field: "操作",
-        buttons: [
-          {event: "编辑", color: "primary"},
-          {event: "删除", color: "primary"}
-        ]
-      }
-    ],
-    data: [],
-    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
-  };
-  menjiaoTable: TableRenderInfo<MenjiaoData> = {
-    noCheckBox: true,
-    columns: [
-      {type: "string", field: "名字", width: "180px"},
-      {type: "string", field: "产品分类", width: "100px"},
-      {type: "string", field: "开启", width: "100px"},
-      {type: "string", field: "门铰", width: "100px"},
-      {type: "string", field: "门扇厚度", width: "80px"},
-      {type: "string", field: "锁边", width: "120px"},
-      {type: "string", field: "铰边", width: "120px"},
-      {
-        type: "custom",
-        field: "门缝配置",
-        width: "250px",
-        toString(value) {
-          const data = value.门缝配置;
-          if (!data) {
-            return "";
-          }
-          const strs = Object.entries(data).map(([k, v]) => `${k}${v}`);
-          return strs.join(", ");
-        }
-      },
-      {type: "boolean", field: "停用", width: "60px"},
-      {type: "number", field: "排序", width: "60px"},
-      {type: "boolean", field: "默认值", width: "60px"},
-      {
-        type: "button",
-        field: "操作",
-        width: "190px",
-        buttons: [
-          {event: "编辑", color: "primary"},
-          {event: "复制", color: "primary"},
-          {event: "删除", color: "primary"}
-        ]
-      }
-    ],
-    data: [],
-    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
-  };
+  xuanxiangTable = getXuanxiangTable();
+  shuruTable = getShuruTable();
+  menjiaoTable = getMenjiaoTable();
   shiyituInputInfos: InputInfo[] = [];
   xiaoguotuInputInfos: InputInfo[] = [];
   bcfzInputData: MrbcjfzInputData = {xinghao: "", morenbancai: {}};
@@ -526,12 +455,11 @@ export class LurushujuIndexComponent implements OnInit {
     if (tabName) {
       session.save(this.tabNameKey, tabName);
     }
-    if (typeof tab.origin === "number") {
-      const tabPrev = this.tabGroup?._tabs.get(index - tab.origin);
-      if (tabPrev?.textLabel === "板材分组") {
-        this.checkBcfz();
-      }
+    const tabPrev = this.tabGroup?._tabs.get(this.tabIndexPrev);
+    if (tabPrev?.textLabel === "板材分组") {
+      this.checkBcfz();
     }
+    this.tabIndexPrev = index;
   }
 
   async setXinghao(data: Partial<Xinghao>, silent?: boolean) {
@@ -1250,43 +1178,117 @@ export class LurushujuIndexComponent implements OnInit {
     };
   }
 
-  async getGongshis() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
+  async getGongshiItem(data0?: 算料公式) {
+    let data: 算料公式;
+    if (data0) {
+      data = cloneDeep(data0);
+    } else {
+      data = {_id: v4(), 名字: "", 条件: [], 选项: {}, 公式: {}};
     }
-    const extraData = this.getGongshiExtraData();
-    const where: ObjectOf<any> = {};
-    for (const key of keysOf(extraData.选项)) {
-      where[`选项.${key}`] = extraData.选项[key];
-    }
-    const fields = ["名字", "条件", "选项", "公式"];
-    const gongshis = (await this.http.getData<any[]>("ngcad/querymongodb", {collection: "material", where, fields})) || [];
-    for (const gongshi of gongshis) {
-      delete gongshi.collection;
-    }
-    gongyi.算料公式 = gongshis;
-    await this.submitGongyi(["算料公式"]);
+    const form: InputInfo<Partial<算料公式>>[] = [
+      {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
+      {
+        type: "formulas",
+        label: "公式",
+        model: {data, key: "公式"},
+        validators: () => {
+          if (isEmpty(data.公式)) {
+            return {公式不能为空: true};
+          }
+          return null;
+        }
+      }
+    ];
+    const result = await this.message.form(form);
+    return result ? data : null;
   }
 
-  async editGongshis(index?: number) {
+  async addGongshi() {
     const {gongyi} = this;
     if (!gongyi) {
       return;
     }
-    const extraData = this.getGongshiExtraData();
-    const search2: ObjectOf<any> = {};
-    if (typeof index === "number") {
-      search2._id = gongyi.算料公式[index]._id;
-    } else {
-      for (const key of keysOf(extraData.选项)) {
-        search2[`选项.${key}`] = extraData.选项[key];
+    const item = await this.getGongshiItem();
+    if (item) {
+      gongyi.算料公式.push(item);
+      await this.submitGongyi(["算料公式"]);
+    }
+  }
+
+  async editGongshi(index: number) {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    const item = await this.getGongshiItem(gongyi.算料公式[index]);
+    if (item) {
+      gongyi.算料公式[index] = item;
+      await this.submitGongyi(["算料公式"]);
+    }
+  }
+
+  async copyGongshi(index: number) {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    if (!(await this.message.confirm(`确定复制【${gongyi.算料公式[index].名字}】吗？`))) {
+      return;
+    }
+    const item = cloneDeep(gongyi.算料公式[index]);
+    item._id = v4();
+    item.名字 += "_复制";
+    gongyi.算料公式.push(item);
+    this.submitGongyi(["算料公式"]);
+  }
+
+  async removeGongshi(index: number) {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    if (!(await this.message.confirm(`确定删除【${gongyi.算料公式[index].名字}】吗？`))) {
+      return;
+    }
+    gongyi.算料公式.splice(index, 1);
+    this.submitGongyi(["算料公式"]);
+  }
+
+  async importGonshis() {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
+    }
+    if (!(await this.message.confirm("导入算料公式会覆盖原有数据，确定导入吗？"))) {
+      return;
+    }
+    const files = await selectFiles({accept: ".json"});
+    const file = files?.[0];
+    if (!file) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      let data: any;
+      try {
+        data = JSON.parse(reader.result as string);
+      } catch (e) {}
+      if (Array.isArray(data)) {
+        gongyi.算料公式 = data;
+        this.submitGongyi(["算料公式"]);
+      } else {
+        this.message.error("算料公式数据有误");
       }
+    });
+    reader.readAsText(file);
+  }
+
+  exportGongshis() {
+    const {gongyi} = this;
+    if (!gongyi) {
+      return;
     }
-    const url = await this.http.getData<string>("ngcad/getShortUrl", {name: "算料公式", data: {search2, extraData}});
-    if (url) {
-      window.open(url);
-    }
+    downloadByString(JSON.stringify(gongyi.算料公式), {filename: "算料公式.json"});
   }
 
   getTimeStr(time: number) {
@@ -1298,7 +1300,7 @@ export class LurushujuIndexComponent implements OnInit {
     const form: InputInfo<typeof data>[] = [
       {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
       {
-        type: "object",
+        type: "formulas",
         label: "测试数据",
         model: {data, key: "测试数据"},
         validators: (control) => {
@@ -1306,23 +1308,7 @@ export class LurushujuIndexComponent implements OnInit {
             return {测试数据不能为空: true};
           }
           return null;
-        },
-        keyLabel: "公式名",
-        valueLabel: "公式值",
-        keyValidators: (control) => {
-          const value = control.value;
-          if (!value) {
-            return {公式名不能为空: true};
-          }
-          if (!isNaN(Number(value))) {
-            return {公式名不能为数字: true};
-          }
-          if (value.match(/^[0-9]/)) {
-            return {公式名不能以数字开头: true};
-          }
-          return null;
-        },
-        valueValidators: Validators.required
+        }
       },
       {type: "boolean", label: "测试正确", model: {data, key: "测试正确"}}
     ];
@@ -1362,7 +1348,13 @@ export class LurushujuIndexComponent implements OnInit {
     if (!gongyi) {
       return;
     }
-    gongyi.测试用例.push(cloneDeep(gongyi.测试用例[index]));
+    if (!(await this.message.confirm(`确定复制【${gongyi.测试用例[index].名字}】吗？`))) {
+      return;
+    }
+    const item = cloneDeep(gongyi.测试用例[index]);
+    item.名字 += "_复制";
+    item.时间 = Date.now();
+    gongyi.测试用例.push(item);
     await this.submitGongyi(["测试用例"]);
   }
 
@@ -1371,16 +1363,19 @@ export class LurushujuIndexComponent implements OnInit {
     if (!gongyi) {
       return;
     }
+    if (!(await this.message.confirm(`确定删除【${gongyi.测试用例[index].名字}】吗？`))) {
+      return;
+    }
     gongyi.测试用例.splice(index, 1);
     await this.submitGongyi(["测试用例"]);
   }
 
-  async importTestCase() {
+  async importTestCases() {
     const {gongyi} = this;
     if (!gongyi) {
       return;
     }
-    if (!(await this.message.confirm("导入测试用例会覆盖原有测试用例，确定导入吗？"))) {
+    if (!(await this.message.confirm("导入测试用例会覆盖原有数据，确定导入吗？"))) {
       return;
     }
     const files = await selectFiles({accept: ".json"});
@@ -1390,17 +1385,21 @@ export class LurushujuIndexComponent implements OnInit {
     }
     const reader = new FileReader();
     reader.addEventListener("load", () => {
-      const json = reader.result as string;
-      const data = JSON.parse(json);
+      let data: any;
+      try {
+        data = JSON.parse(reader.result as string);
+      } catch (e) {}
       if (Array.isArray(data)) {
         gongyi.测试用例 = data;
         this.submitGongyi(["测试用例"]);
+      } else {
+        this.message.error("测试用例数据有误");
       }
     });
     reader.readAsText(file);
   }
 
-  exportTestCase() {
+  exportTestCases() {
     const {gongyi} = this;
     if (!gongyi) {
       return;

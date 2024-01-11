@@ -30,6 +30,7 @@ import {SafeUrl} from "@angular/platform-browser";
 import {joinOptions, splitOptions} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
+import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -130,14 +131,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   get suffixIcons() {
     return this.info.suffixIcons || [];
-  }
-
-  get hint() {
-    const hint = this.info.hint;
-    if (typeof hint === "function") {
-      return hint();
-    }
-    return hint || "";
   }
 
   options: {value: string; label: string; disabled?: boolean; img?: string}[] = [];
@@ -354,7 +347,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       info.autocomplete = "off";
     }
     if ("value" in info) {
-      this.value = info.value;
+      this.value = await getValue(info.value, this.message);
     }
     let options: InputInfoOptions | undefined | null;
     const type = info.type;
@@ -884,6 +877,36 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     setTimeout(() => {
       this.validateValue();
     }, 0);
+  }
+
+  getFormulasStr() {
+    const {info} = this;
+    if (info.type !== "formulas") {
+      return "";
+    }
+    const {value} = this;
+    if (!isTypeOf(value, "object")) {
+      return "";
+    }
+    return Object.entries(value)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(";");
+  }
+
+  async editFormulas() {
+    const {info} = this;
+    if (info.type !== "formulas") {
+      return;
+    }
+    let {value} = this;
+    if (!isTypeOf(value, "object")) {
+      value = {};
+    }
+    const result = await openEditFormulasDialog(this.dialog, {data: {formulas: value}});
+    if (result) {
+      this.value = result;
+      info.onChange?.(result);
+    }
   }
 }
 

@@ -1,8 +1,12 @@
 @switch (info.type) {
   @case ("string") {
-    <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
-      <mat-label>{{ info.label }}</mat-label>
-      <mat-hint>{{ hint }}</mat-hint>
+    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+      @if (info.label) {
+        <mat-label>{{ info.label }}</mat-label>
+      }
+      @if (info.hint) {
+        <mat-hint>{{ hint }}</mat-hint>
+      }
       @if (displayValue !== null) {
         <textarea matInput readonly [value]="displayValue" cdkTextareaAutosize [cdkAutosizeMinRows]="1"></textarea>
       } @else {
@@ -79,8 +83,12 @@
   }
   @case ("number") {
     <mat-form-field [ngClass]="{empty: isEmpty(value)}">
-      <mat-label>{{ info.label }}</mat-label>
-      <mat-hint>{{ hint }}</mat-hint>
+      @if (info.label) {
+        <mat-label>{{ info.label }}</mat-label>
+      }
+      @if (info.hint) {
+        <mat-hint>{{ hint }}</mat-hint>
+      }
       <input
         matInput
         [errorStateMatcher]="getErrorStateMatcher()"
@@ -228,8 +236,12 @@
   }
   @case ("boolean") {
     <mat-form-field [ngClass]="{empty: isEmpty(value)}">
-      <mat-label>{{ info.label }}</mat-label>
-      <mat-hint>{{ hint }}</mat-hint>
+      @if (info.label) {
+        <mat-label>{{ info.label }}</mat-label>
+      }
+      @if (info.hint) {
+        <mat-hint>{{ hint }}</mat-hint>
+      }
       <mat-select
         [errorStateMatcher]="getErrorStateMatcher()"
         [disabled]="info.disabled || false"
@@ -245,8 +257,12 @@
   }
   @case ("select") {
     <mat-form-field [ngClass]="{empty: isEmpty(value)}">
-      <mat-label>{{ info.label }}</mat-label>
-      <mat-hint>{{ hint }}</mat-hint>
+      @if (info.label) {
+        <mat-label>{{ info.label }}</mat-label>
+      }
+      @if (info.hint) {
+        <mat-hint>{{ hint }}</mat-hint>
+      }
       @if (castInfo("select")["optionsDialog"]) {
         <input
           matInput
@@ -331,8 +347,12 @@
       </div>
     } @else {
       <mat-form-field [ngClass]="{empty: isEmpty(value)}">
-        <mat-label>{{ info.label }}</mat-label>
-        <mat-hint>{{ hint }}</mat-hint>
+        @if (info.label) {
+          <mat-label>{{ info.label }}</mat-label>
+        }
+        @if (info.hint) {
+          <mat-hint>{{ hint }}</mat-hint>
+        }
         <input
           matInput
           type="text"
@@ -358,8 +378,12 @@
     }
     <ng-template #coordinate>
       <mat-form-field [ngClass]="{empty: isEmpty(value)}">
-        <mat-label>{{ info.label }}</mat-label>
-        <mat-hint>{{ hint }}</mat-hint>
+        @if (info.label) {
+          <mat-label>{{ info.label }}</mat-label>
+        }
+        @if (info.hint) {
+          <mat-hint>{{ hint }}</mat-hint>
+        }
         <input
           matInput
           type="text"
@@ -386,8 +410,12 @@
   }
   @case ("color") {
     <mat-form-field [ngClass]="{empty: isEmpty(value)}">
-      <mat-label>{{ info.label }}</mat-label>
-      <mat-hint>{{ hint }}</mat-hint>
+      @if (info.label) {
+        <mat-label>{{ info.label }}</mat-label>
+      }
+      @if (info.hint) {
+        <mat-hint>{{ hint }}</mat-hint>
+      }
       <input
         matInput
         [value]="colorStr"
@@ -427,9 +455,13 @@
     </mat-form-field>
   }
   @case ("file") {
-    <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
-      <mat-label>{{ info.label }}</mat-label>
-      <mat-hint>{{ hint }}</mat-hint>
+    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+      @if (info.label) {
+        <mat-label>{{ info.label }}</mat-label>
+      }
+      @if (info.hint) {
+        <mat-hint>{{ hint }}</mat-hint>
+      }
       <input matInput readonly [errorStateMatcher]="getErrorStateMatcher()" />
       <input #fileInput hidden type="file" [accept]="fileAccept" [multiple]="castInfo('file')['multiple']" (change)="onInputChange()" />
       <button mat-icon-button matSuffix color="primary" (click)="selectFile()">
@@ -439,9 +471,13 @@
     </mat-form-field>
   }
   @case ("image") {
-    <mat-form-field #formField [ngClass]="{empty: isEmpty(value)}">
-      <mat-label>{{ info.label }}</mat-label>
-      <mat-hint>{{ hint }}</mat-hint>
+    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+      @if (info.label) {
+        <mat-label>{{ info.label }}</mat-label>
+      }
+      @if (info.hint) {
+        <mat-hint>{{ hint }}</mat-hint>
+      }
       <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
       <input #fileInput hidden type="file" [accept]="fileAccept" (change)="onInputChange()" />
       <app-image
@@ -472,6 +508,34 @@
     }
     <ng-template [ngTemplateOutlet]="footer"></ng-template>
   }
+  @case ("formulas") {
+    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+      @if (info.label) {
+        <mat-label>{{ info.label }}</mat-label>
+      }
+      @if (info.hint) {
+        <mat-hint>{{ hint }}</mat-hint>
+      }
+      <input
+        matInput
+        [errorStateMatcher]="getErrorStateMatcher()"
+        readonly
+        [disabled]="info.disabled || false"
+        [autocomplete]="info.autocomplete || ''"
+        [value]="getFormulasStr()"
+        type="text"
+        (change)="onChange()"
+        (input)="onInput()"
+        (blur)="onBlur()"
+        [placeholder]="info.placeholder || ''"
+      />
+      @if (!info.readonly && !info.disabled) {
+        <button mat-icon-button matSuffix color="primary" (click)="editFormulas()">
+          <mat-icon>edit</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  }
   @case ("group") {
     @if (info.label) {
       <div class="sub-form-field">
@@ -485,8 +549,7 @@
         </div>
         <ng-template [ngTemplateOutlet]="footer"></ng-template>
       </div>
-    }
-    @if (!info.label) {
+    } @else {
       <div class="group" [ngStyle]="info.styles">
         @for (info2 of castInfo("group")["infos"]; track info2) {
           <app-input [info]="info2"></app-input>
@@ -499,7 +562,9 @@
 
 <ng-template #footer>
   <div class="footer">
-    <span class="hint">{{ hint }}</span>
+    @if (info.hint) {
+      <span class="hint">{{ hint }}</span>
+    }
     <span class="error">{{ getErrorMsg() }}</span>
   </div>
 </ng-template>

@@ -118,8 +118,7 @@
                     <div class="gongshis flex-column flex-110">
                       <div class="toolbar">
                         <div>算料公式</div>
-                        <button mat-raised-button color="primary" (click)="editGongshis()">编辑</button>
-                        <button mat-raised-button color="primary" (click)="getGongshis()">刷新</button>
+                        <button mat-raised-button color="primary" (click)="addGongshi()">添加</button>
                       </div>
                       <ng-scrollbar>
                         <div class="items">
@@ -127,7 +126,9 @@
                             <mat-card class="gongshi-card item">
                               <mat-card-header>
                                 <div class="flex-110">{{ gongshi["名字"] }}</div>
-                                <button mat-button color="primary" (click)="editGongshis(i)">编辑</button>
+                                <button mat-button color="primary" (click)="editGongshi(i)">编辑</button>
+                                <button mat-button color="primary" (click)="copyGongshi(i)">复制</button>
+                                <button mat-button color="primary" (click)="removeGongshi(i)">删除</button>
                               </mat-card-header>
                               <mat-card-content>
                                 @for (item of gongshi["公式"] | keyvalue: returnZero; track item) {
@@ -147,8 +148,8 @@
                       <div class="toolbar">
                         <div>测试数据</div>
                         <button mat-raised-button color="primary" (click)="addTestCase()">添加</button>
-                        <button mat-raised-button color="primary" (click)="importTestCase()">导入</button>
-                        <button mat-raised-button color="primary" (click)="exportTestCase()">导出</button>
+                        <button mat-raised-button color="primary" (click)="importTestCases()">导入</button>
+                        <button mat-raised-button color="primary" (click)="exportTestCases()">导出</button>
                       </div>
                       <ng-scrollbar>
                         <div class="items">

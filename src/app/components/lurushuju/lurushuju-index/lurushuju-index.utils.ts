@@ -1,7 +1,8 @@
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
+import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {random} from "lodash";
 import {cadMatchRules, menjiaoCadTypes, 门缝配置输入, 门铰锁边铰边} from "../xinghao-data";
-import {OptionsAll2} from "./lurushuju-index.types";
+import {MenjiaoData, OptionsAll2, ShuruTableData, XuanxiangTableData} from "./lurushuju-index.types";
 
 export const autoFillMenjiao = (data: 门铰锁边铰边, menjiaoOptionsAll: OptionsAll2) => {
   const setOption = (key: string) => {
@@ -172,4 +173,97 @@ export const getCadSearch = (data: 门铰锁边铰边, key1: string, key2: strin
     `;
   const search: ObjectOf<any> = {$where: filter};
   return search;
+};
+
+export const getXuanxiangTable = (): TableRenderInfo<XuanxiangTableData> => {
+  return {
+    title: "选项数据",
+    noCheckBox: true,
+    columns: [
+      {type: "string", field: "名字"},
+      {
+        type: "custom",
+        field: "可选项",
+        toString(item) {
+          return item.可选项.map((v) => v.mingzi).join("*");
+        }
+      },
+      {
+        type: "button",
+        field: "操作",
+        buttons: [
+          {event: "编辑", color: "primary"},
+          {event: "清空数据", color: "primary"}
+        ]
+      }
+    ],
+    data: [],
+    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
+  };
+};
+
+export const getShuruTable = (): TableRenderInfo<ShuruTableData> => {
+  return {
+    title: "输入数据",
+    noCheckBox: true,
+    columns: [
+      {type: "string", field: "名字"},
+      {type: "string", field: "默认值"},
+      {type: "string", field: "取值范围"},
+      {type: "boolean", field: "可以修改"},
+      {
+        type: "button",
+        field: "操作",
+        buttons: [
+          {event: "编辑", color: "primary"},
+          {event: "删除", color: "primary"}
+        ]
+      }
+    ],
+    data: [],
+    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
+  };
+};
+
+export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
+  return {
+    noCheckBox: true,
+    columns: [
+      {type: "string", field: "名字", width: "180px"},
+      {type: "string", field: "产品分类", width: "100px"},
+      {type: "string", field: "开启", width: "100px"},
+      {type: "string", field: "门铰", width: "100px"},
+      {type: "string", field: "门扇厚度", width: "80px"},
+      {type: "string", field: "锁边", width: "120px"},
+      {type: "string", field: "铰边", width: "120px"},
+      {
+        type: "custom",
+        field: "门缝配置",
+        width: "250px",
+        toString(value) {
+          const data = value.门缝配置;
+          if (!data) {
+            return "";
+          }
+          const strs = Object.entries(data).map(([k, v]) => `${k}${v}`);
+          return strs.join(", ");
+        }
+      },
+      {type: "boolean", field: "停用", width: "60px"},
+      {type: "number", field: "排序", width: "60px"},
+      {type: "boolean", field: "默认值", width: "60px"},
+      {
+        type: "button",
+        field: "操作",
+        width: "190px",
+        buttons: [
+          {event: "编辑", color: "primary"},
+          {event: "复制", color: "primary"},
+          {event: "删除", color: "primary"}
+        ]
+      }
+    ],
+    data: [],
+    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
+  };
 };
