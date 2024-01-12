@@ -171,7 +171,7 @@
               (change)="changeObjectValue2(value, item.key, item.value)"
               (blur)="onBlur()"
             />
-            @if (castInfo("object")["selectOptions"]) {
+            @if (optionsDialog) {
               <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key, item.key)">
                 <mat-icon>list</mat-icon>
               </button>

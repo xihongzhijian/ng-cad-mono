@@ -60,10 +60,12 @@ export interface InputInfoNumber<T = any> extends InputInfoBase<T> {
   onChange?: (val: number) => void;
 }
 
-export interface InputInfoObject<T = any> extends InputInfoBase<T> {
+export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   type: "object";
   value?: Value<ObjectOf<any>>;
-  selectOptions?: boolean;
+  options?: Value<InputInfoOptions<K>>;
+  optionsDialog?: OptionsDialog;
+  optionMultiple?: boolean;
   keyLabel?: string;
   valueLabel?: string;
   keyValidators?: AbstractControlOptions["validators"];

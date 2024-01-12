@@ -124,6 +124,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     switch (this.info.type) {
       case "string":
       case "select":
+      case "object":
         return this.info.optionsDialog;
       default:
         return undefined;
@@ -643,12 +644,18 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     let optionValueType: InputInfoString["optionValueType"];
     let optionInputOnly: InputInfoString["optionInputOnly"];
     let multiple: boolean | undefined;
+    let hasOptions = false;
     if (info.type === "string") {
       optionInputOnly = !!info.optionInputOnly;
       optionValueType = info.optionValueType || "string";
       multiple = info.optionMultiple;
+      hasOptions = !!info.options;
     } else if (info.type === "select") {
       multiple = info.multiple;
+      hasOptions = !!info.options;
+    } else if (info.type === "object") {
+      multiple = info.optionMultiple;
+      hasOptions = !!info.options;
     }
     const value = key ? data[key] : this.value;
     const isObject = isTypeOf(value, "object");
@@ -666,12 +673,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       multi: multiple,
       defaultValue,
       fields,
-      options: this.options.map<OptionsDataData>((v, i) => ({
-        vid: i,
-        name: typeof v === "string" ? v : v.value,
-        img: v.img || "",
-        disabled: false
-      }))
+      options: hasOptions
+        ? this.options.map<OptionsDataData>((v, i) => ({
+            vid: i,
+            name: typeof v === "string" ? v : v.value,
+            img: v.img || "",
+            disabled: false
+          }))
+        : undefined
     };
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));
