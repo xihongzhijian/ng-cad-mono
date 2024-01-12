@@ -152,8 +152,8 @@ export class CadZhankaiComponent extends Utils() {
     const name = (this.keysMap as any)[field];
     const checkedItems = splitOptions(obj[field]);
     const result = await openCadOptionsDialog(this.dialog, {data: {name, checkedItems, multi: true}});
-    if (Array.isArray(result)) {
-      obj[field] = joinOptions(result);
+    if (result?.options) {
+      obj[field] = joinOptions(result?.options);
     }
   }
 

@@ -1156,7 +1156,6 @@ export class LurushujuIndexComponent implements OnInit {
                 }
               }
             }
-            console.log(item3);
             this.gongyi.门铰锁边铰边[rowIdx] = item3;
             this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
             await this.submitGongyi(["门铰锁边铰边"]);
