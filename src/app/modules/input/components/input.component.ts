@@ -636,7 +636,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return;
     }
     const {info} = this;
-    const {optionField, optionsUseId, useDefaultValue, onChange} = optionsDialog;
+    const {optionField, optionsUseId, defaultValue, onChange} = optionsDialog;
     if (optionsDialog.optionKey) {
       optionKey = optionsDialog.optionKey;
     }
@@ -664,7 +664,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       data,
       name: optionKey || "",
       multi: multiple,
-      useDefaultValue,
+      defaultValue,
       fields,
       options: this.options.map<OptionsDataData>((v, i) => ({
         vid: i,

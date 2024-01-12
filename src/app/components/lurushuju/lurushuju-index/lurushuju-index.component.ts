@@ -925,7 +925,7 @@ export class LurushujuIndexComponent implements OnInit {
         disabled,
         multiple,
         optionsDialog: {
-          useDefaultValue: multiple,
+          defaultValue: data.选项默认值[key] || "",
           onChange(val) {
             if (multiple) {
               data.选项默认值[key] = val.defaultValue || "";
@@ -1156,6 +1156,7 @@ export class LurushujuIndexComponent implements OnInit {
                 }
               }
             }
+            console.log(item3);
             this.gongyi.门铰锁边铰边[rowIdx] = item3;
             this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
             await this.submitGongyi(["门铰锁边铰边"]);

@@ -56,7 +56,7 @@ export class CadOptionsComponent implements AfterViewInit {
       this.search();
     }
   };
-  defaultValue = "";
+  defaultValue: string | null = null;
   filePathUrl = filePathUrl;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
   constructor(
@@ -64,7 +64,11 @@ export class CadOptionsComponent implements AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public data: CadOptionsInput,
     private http: CadDataService,
     private spinner: SpinnerService
-  ) {}
+  ) {
+    if (typeof data.defaultValue === "string") {
+      this.defaultValue = data.defaultValue;
+    }
+  }
 
   async ngAfterViewInit() {
     if (!this.paginator) {
@@ -92,7 +96,7 @@ export class CadOptionsComponent implements AfterViewInit {
     const result: CadOptionsOutput = {
       options: data.data.map((v) => ({vid: v.vid, mingzi: v.name}))
     };
-    if (this.data.useDefaultValue) {
+    if (typeof this.defaultValue === "string") {
       result.defaultValue = this.defaultValue;
     }
     this.dialogRef.close(result);
@@ -235,7 +239,7 @@ export interface CadOptionsInput {
   filter?: ObjectOf<any>;
   fields?: string[];
   options?: OptionsDataData[];
-  useDefaultValue?: boolean;
+  defaultValue?: string;
 }
 
 export interface CadOptionsOutput {

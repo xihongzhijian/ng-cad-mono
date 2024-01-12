@@ -194,6 +194,6 @@ export interface OptionsDialog {
   optionKey?: string;
   optionsUseId?: boolean;
   optionField?: string;
-  useDefaultValue?: boolean;
+  defaultValue?: string;
   onChange?: (val: CadOptionsOutput) => void;
 }

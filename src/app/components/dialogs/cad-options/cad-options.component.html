@@ -14,7 +14,7 @@
         <div class="toolbar">
           <mat-checkbox [checked]="item.checked" [disabled]="item.disabled && !item.checked"> </mat-checkbox>
           <div class="text long" [matTooltip]="item.name" [matTooltipPosition]="'above'">{{ item.name }}</div>
-          @if (data.useDefaultValue) {
+          @if (defaultValue !== null) {
             <button mat-button [color]="defaultValue === item.name ? 'accent' : 'primary'" appClickStop (click)="setDefaultValue(item)">
               默认值
             </button>
