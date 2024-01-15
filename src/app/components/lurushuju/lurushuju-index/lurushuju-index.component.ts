@@ -345,8 +345,10 @@ export class LurushujuIndexComponent implements OnInit {
     if (this.step !== 3) {
       return;
     }
-    const tabName = session.load<string>(this.tabNameKey);
-    this.openTab(tabName || "");
+    if (!this.production) {
+      const tabName = session.load<string>(this.tabNameKey);
+      this.openTab(tabName || "");
+    }
     if (!this.xinghao) {
       await this.getXinghao();
     }
@@ -452,10 +454,6 @@ export class LurushujuIndexComponent implements OnInit {
     const tabName = tab.textLabel;
     if (tabName) {
       session.save(this.tabNameKey, tabName);
-    }
-    const tabPrev = this.tabGroup?._tabs.get(this.tabIndexPrev);
-    if (tabPrev?.textLabel === "板材分组") {
-      this.checkBcfz();
     }
     this.tabIndexPrev = index;
   }

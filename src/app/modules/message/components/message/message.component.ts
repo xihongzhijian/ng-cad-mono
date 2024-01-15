@@ -208,6 +208,8 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       const {errors, values} = await this.validateForm();
       if (isEmpty(errors)) {
         this.dialogRef.close(values);
+      } else {
+        this.message.error("输入有误");
       }
     } else if (type === "editor") {
       this.dialogRef.close(this.data.content);
