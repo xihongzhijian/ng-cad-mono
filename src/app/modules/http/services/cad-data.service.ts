@@ -13,6 +13,7 @@ import {
   Changelog,
   GetCadParams,
   GetOptionsParams,
+  HoutaiCad,
   OptionsData,
   OptionsDataData,
   QueryMongodbParams,
@@ -24,8 +25,7 @@ import {
   TableInsertParams,
   TableRenderData,
   TableUpdateParams,
-  TableUploadFile,
-  后台CAD
+  TableUploadFile
 } from "./cad-data.service.types";
 import {CadImgCache} from "./cad-img-cache";
 import {HttpService} from "./http.service";
@@ -98,7 +98,7 @@ export class CadDataService extends HttpService {
   }
 
   async getCadRaw(params: GetCadParams) {
-    return await this.getDataAndCount<后台CAD[]>("ngcad/getCad", {...params, raw: true});
+    return await this.getDataAndCount<HoutaiCad[]>("ngcad/getCad", {...params, raw: true});
   }
 
   exportCadData(data: CadData, hideLineLength: boolean) {
@@ -303,8 +303,8 @@ export class CadDataService extends HttpService {
     return this.domSanitizer.bypassSecurityTrustUrl(url);
   }
 
-  async getCadImg(id: string, useCache = true, options?: HttpOptions) {
-    if (useCache) {
+  async getCadImg(id: string, noCache = false, options?: HttpOptions) {
+    if (!noCache) {
       const url = this.cadImgCache.get(id);
       if (url) {
         return url;

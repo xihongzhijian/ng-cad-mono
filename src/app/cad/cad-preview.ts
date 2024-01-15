@@ -76,13 +76,13 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
 
 export interface CadPreviewParams extends CadPreviewRawParams {
   http?: CadDataService;
-  useCache?: boolean;
+  noCache?: boolean;
 }
 export const getCadPreview = async (collection: CadCollection, data: CadData, params: CadPreviewParams = {}) => {
-  const {http, useCache} = params;
+  const {http, noCache} = params;
   let url: string | null;
   if (http) {
-    url = await http.getCadImg(data.id, useCache, {silent: true});
+    url = await http.getCadImg(data.id, noCache, {silent: true});
     if (url) {
       if (!environment.production) {
         url = url.replace(remoteHost, origin);

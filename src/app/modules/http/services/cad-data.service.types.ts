@@ -160,10 +160,26 @@ export interface TableRenderDataColumn {
   inputOnAdd?: number;
 }
 
-export type 后台CAD = {
+export type HoutaiCad = {
   _id: string;
   名字: string;
-  选项?: ObjectOf<string>;
-  条件?: string[];
+  分类: string;
+  分类2: string;
+  选项: ObjectOf<string>;
+  条件: string[];
+  显示名字: string;
   json?: ObjectOf<any>;
+};
+
+export const getHoutaiCad = (data: CadData): HoutaiCad => {
+  return {
+    _id: data.id,
+    名字: data.name,
+    分类: data.type,
+    分类2: data.type2,
+    选项: data.options,
+    条件: data.conditions,
+    显示名字: data.xianshimingzi,
+    json: data.export()
+  };
 };

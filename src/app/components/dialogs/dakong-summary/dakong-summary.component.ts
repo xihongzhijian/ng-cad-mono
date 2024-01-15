@@ -145,7 +145,7 @@ export class DakongSummaryComponent {
       const data = new CadData();
       data.id = id;
       this.cadImgs[id] = imgCadEmpty;
-      this.cadImgs[id] = await getCadPreview("cad", data, {http: this.http, useCache: true});
+      this.cadImgs[id] = await getCadPreview("cad", data, {http: this.http});
     }
   }
 

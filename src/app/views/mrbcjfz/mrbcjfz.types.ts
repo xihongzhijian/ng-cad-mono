@@ -373,4 +373,5 @@ export interface MrbcjfzInputData {
   morenbancai: ObjectOf<MrbcjfzInfo>;
   cads?: CadData[];
   huajians?: MrbcjfzHuajian[];
+  isLocal?: boolean;
 }

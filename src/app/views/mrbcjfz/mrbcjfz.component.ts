@@ -8,7 +8,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute} from "@angular/router";
 import {imgCadEmpty, setGlobal, XiaodaohangStructure} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
+import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout, WindowMessageManager} from "@lucilor/utils";
@@ -172,7 +172,11 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       this.cads = {};
       for (const cad of cads) {
         const info: MrbcjfzCadInfo = {id: cad.id, data: cad, img: imgCadEmpty};
-        getCadPreview("cad", cad, {http: this.http}).then((img) => {
+        const options: CadPreviewParams = {};
+        if (!this.inputData?.isLocal) {
+          options.http = this.http;
+        }
+        getCadPreview("cad", cad, options).then((img) => {
           info.img = img;
         });
         info.selected = cadIds2.includes(cad.id);

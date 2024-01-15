@@ -8,8 +8,9 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {SafeUrl} from "@angular/platform-browser";
-import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, session, setGlobal} from "@app/app.common";
+import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, imgCadEmpty, session, setGlobal} from "@app/app.common";
+import {getCadPreview} from "@app/cad/cad-preview";
+import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
@@ -17,7 +18,7 @@ import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {downloadByString, keysOf, ObjectOf, queryString, RequiredKeys, selectFiles, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {TableDataBase, 后台CAD} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad, HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoGroup, InputInfoOption, InputInfoOptions, InputInfoSelect} from "@modules/input/components/input.types";
@@ -138,7 +139,7 @@ export class LurushujuIndexComponent implements OnInit {
   fenleiName = "";
   gongyiName = "";
   production = environment.production;
-  cadImgs: ObjectOf<SafeUrl> = {};
+  cadImgs: ObjectOf<string> = {};
   wmm = new WindowMessageManager("录入数据", this, window.parent);
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
@@ -368,8 +369,11 @@ export class LurushujuIndexComponent implements OnInit {
     this.menjiaoTable.data = gongyi.门铰锁边铰边;
     this.cadImgs = {};
     for (const cad of gongyi.算料CAD) {
-      const id = cad._id;
-      this.cadImgs[id] = this.http.getCadImgUrl(id);
+      const id = cad.json?.id;
+      this.cadImgs[id] = imgCadEmpty;
+      getCadPreview("cad", new CadData(cad.json)).then((url) => {
+        this.cadImgs[id] = url;
+      });
     }
     this.shiyituInputInfos = [];
     const shiyituKeys: (keyof 工艺做法["示意图CAD"])[] = ["算料单示意图"];
@@ -1441,21 +1445,21 @@ export class LurushujuIndexComponent implements OnInit {
     }
     const ids = result.零散.map((v) => v.info.houtaiId);
     if (ids.length > 0) {
-      const result2 = await this.http.queryMongodb<后台CAD>({collection: "cad", where: {_id: {$in: ids}}});
+      const result2 = await this.http.queryMongodb<HoutaiCad>({collection: "cad", where: {_id: {$in: ids}}});
       for (const cad of result2) {
         delete cad.json;
       }
-      const result3: 后台CAD[] = [];
+      const result3: HoutaiCad[] = [];
       for (const v of result.零散) {
         const cad = cloneDeep(result2.find((v2) => v2._id === v.info.houtaiId));
         if (!cad) {
           continue;
         }
         cad.json = v.data.export();
-        cad.json.houtaiId = cad._id;
         result3.push(cad);
-        if (!this.cadImgs[cad._id]) {
-          this.cadImgs[cad._id] = this.http.getCadImgUrl(cad._id);
+        const id = v.data.id;
+        if (!this.cadImgs[id] || this.cadImgs[id] === imgCadEmpty) {
+          this.cadImgs[id] = await getCadPreview("cad", new CadData(cad.json));
         }
       }
       gongyi.算料CAD = result3;
@@ -1507,21 +1511,12 @@ export class LurushujuIndexComponent implements OnInit {
     const {gongyi} = this;
     if (gongyi) {
       const morenbancai = cloneDeep(gongyi.板材分组);
-      for (const info of Object.values(morenbancai)) {
-        info.CAD = info.CAD.map((id) => {
-          const cad = gongyi.算料CAD.find((v) => v._id === id);
-          if (cad?.json) {
-            return cad.json.id;
-          } else {
-            return id;
-          }
-        });
-      }
       this.bcfzInputData = {
         xinghao: this.xinghaoName,
         morenbancai: morenbancai,
         cads: gongyi.算料CAD.map((v) => new CadData(v.json)),
-        huajians: this.huajians
+        huajians: this.huajians,
+        isLocal: true
       };
     } else {
       this.bcfzInputData = {xinghao: this.xinghaoName, morenbancai: {}};
@@ -1533,18 +1528,7 @@ export class LurushujuIndexComponent implements OnInit {
     if (!gongyi) {
       return null;
     }
-    const 板材分组 = cloneDeep(info.默认板材);
-    for (const item of Object.values(板材分组)) {
-      item.CAD = item.CAD.map((id) => {
-        const cad = gongyi.算料CAD.find((v) => v.json?.id === id);
-        if (cad) {
-          return cad._id;
-        } else {
-          return id;
-        }
-      });
-    }
-    return 板材分组;
+    return cloneDeep(info.默认板材);
   }
 
   async onBcfzSubmit(info: MrbcjfzXinghaoInfo) {
@@ -1572,5 +1556,62 @@ export class LurushujuIndexComponent implements OnInit {
       gongyi.板材分组 = 板材分组;
       await this.submitGongyi(["板材分组"]);
     }
+  }
+
+  async editSuanliaoCad(i: number) {
+    const cad = this.gongyi?.算料CAD[i];
+    if (!cad) {
+      return;
+    }
+    const cadData = new CadData(cad.json);
+    const data: CadEditorInput = {
+      data: cadData,
+      center: true,
+      isLocal: true
+    };
+    const result = await openCadEditorDialog(this.dialog, {data});
+    if (result?.isSaved) {
+      Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
+      getCadPreview("cad", cadData).then((img) => {
+        this.cadImgs[cadData.id] = img;
+      });
+      await this.submitGongyi(["算料CAD"]);
+      this.updateBcfzInputData();
+    }
+  }
+
+  async copySuanliaoCad(i: number) {
+    const 算料CAD = this.gongyi?.算料CAD;
+    if (!算料CAD) {
+      return;
+    }
+    if (!(await this.message.confirm(`确定复制${算料CAD[i].名字}吗？`))) {
+      return;
+    }
+    const cad = cloneDeep(算料CAD[i]);
+    cad._id = v4();
+    if (cad.json) {
+      cad.json.id = v4();
+    }
+    算料CAD.splice(i, 0, cad);
+    getCadPreview("cad", new CadData(cad.json)).then((img) => {
+      this.cadImgs[cad.json?.id] = img;
+    });
+    await this.submitGongyi(["算料CAD"]);
+    this.updateBcfzInputData();
+  }
+
+  async removeSuanliaoCad(i: number) {
+    const 算料CAD = this.gongyi?.算料CAD;
+    if (!算料CAD) {
+      return;
+    }
+    if (!(await this.message.confirm(`确定删除${算料CAD[i].名字}吗？`))) {
+      return;
+    }
+    delete this.cadImgs[算料CAD[i].json?.id];
+    算料CAD.splice(i, 1);
+    await this.submitGongyi(["算料CAD"]);
+    this.updateBcfzInputData();
   }
 }

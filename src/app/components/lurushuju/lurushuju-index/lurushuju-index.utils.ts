@@ -1,4 +1,6 @@
+import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {random} from "lodash";
 import {cadMatchRules, menjiaoCadTypes, 门缝配置输入, 门铰锁边铰边} from "../xinghao-data";
@@ -32,7 +34,7 @@ export const autoFillMenjiao = (data: 门铰锁边铰边, menjiaoOptionsAll: Opt
       for (const key2 of keysOf(data[key1])) {
         for (const key3 of keysOf(data[key1][key2])) {
           if (!data[key1][key2][key3].cad) {
-            data[key1][key2][key3].cad = {_id: "1", 名字: key3};
+            data[key1][key2][key3].cad = getHoutaiCad(new CadData({name: key3}));
           }
         }
       }

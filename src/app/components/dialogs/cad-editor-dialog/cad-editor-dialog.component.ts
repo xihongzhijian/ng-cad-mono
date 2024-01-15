@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit, ViewChild} from "@angular/core";
+import {Component, forwardRef, Inject, OnInit, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Subscribed} from "@mixins/subscribed.mixin";
@@ -11,10 +11,10 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./cad-editor-dialog.component.html",
   styleUrls: ["./cad-editor-dialog.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, CadEditorComponent]
+  imports: [MatButtonModule, forwardRef(() => CadEditorComponent)]
 })
 export class CadEditorDialogComponent extends Subscribed() implements OnInit {
-  @ViewChild(CadEditorComponent) cadEditor?: CadEditorComponent;
+  @ViewChild(forwardRef(() => CadEditorComponent)) cadEditor?: CadEditorComponent;
   isSaved = false;
   canClose = true;
   cadEditorParams: OpenCadOptions = {};
@@ -64,8 +64,8 @@ export class CadEditorDialogComponent extends Subscribed() implements OnInit {
 }
 
 export const openCadEditorDialog = getOpenDialogFunc<CadEditorDialogComponent, CadEditorInput, CadEditorOutput>(CadEditorDialogComponent, {
-  width: "90%",
-  height: "90%",
+  width: "100%",
+  height: "100%",
   disableClose: true
 });
 

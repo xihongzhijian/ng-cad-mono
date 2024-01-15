@@ -1,6 +1,6 @@
 import {Formulas} from "@app/utils/calc";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
-import {后台CAD} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {uniq} from "lodash";
 
@@ -131,13 +131,13 @@ export interface 工艺做法 {
   门铰锁边铰边: 门铰锁边铰边[];
   花件玻璃信息: 花件玻璃信息[]; // 不要依赖效果图
   板材分组: ObjectOf<MrbcjfzInfo>;
-  算料CAD: 后台CAD[];
+  算料CAD: HoutaiCad[];
   示意图CAD: {
-    大扇装配示意图: 后台CAD | null; // 要求分类: 装配示意图
-    小扇装配示意图: 后台CAD | null; // 要求分类: 装配示意图
-    算料单示意图: 后台CAD[]; // 要求分类: 算料单示意图
+    大扇装配示意图: HoutaiCad | null; // 要求分类: 装配示意图
+    小扇装配示意图: HoutaiCad | null; // 要求分类: 装配示意图
+    算料单示意图: HoutaiCad[]; // 要求分类: 算料单示意图
   };
-  CAD模板: 后台CAD | null; // 选择后台的CAD模板
+  CAD模板: HoutaiCad | null; // 选择后台的CAD模板
   算料公式: 算料公式[];
   测试完成: boolean; // 不可编辑，要求必须有一个测试用例，否则不能算完成
   测试用例: 测试用例[];
@@ -199,7 +199,7 @@ export interface 企料CAD {
   // 小扇小锁料：小锁料、小扇小锁料
   // 中锁料：中锁料
   // 中铰料：中铰料
-  cad?: 后台CAD;
+  cad?: HoutaiCad;
 
   企料宽读哪里?: "标注" | "CAD正面" | "CAD背面"; // 标注有【正面宽、背面宽、企料宽】
   // 问题1：怎么读取正面宽，背面宽？1、根据颜色（有特殊结构时怎么处理）；2、新增加表标注（需要改程序、改数据）
@@ -217,7 +217,7 @@ export interface 企料CAD {
 
   // 虚拟企料和企料分体
   是虚拟企料?: boolean;
-  企料分体CAD?: {正面分体: 后台CAD; 背面分体: 后台CAD}; // 现在分体按照名字对线长
+  企料分体CAD?: {正面分体: HoutaiCad; 背面分体: HoutaiCad}; // 现在分体按照名字对线长
   是否可以开槽?: boolean; // 详细见【金山文档】 企料开槽数据录入教程 https://kdocs.cn/l/cbmU8dXOnCI4
   需要显示指定位置分体?: boolean;
   需要显示指定位置刨坑?: boolean;
@@ -232,7 +232,7 @@ export interface 企料CAD {
 }
 
 export interface 配合框CAD {
-  cad?: 后台CAD;
+  cad?: HoutaiCad;
 }
 
 export const 配合框组合: string[] = ["锁框", "铰框", "顶框"];
@@ -288,8 +288,8 @@ export interface 企料默认宽取值规则 {
 }
 
 export interface 特定企料配置 {
-  前板CAD: 后台CAD; // 特定企料用
-  后板CAD: 后台CAD; // 特定企料用
+  前板CAD: HoutaiCad; // 特定企料用
+  后板CAD: HoutaiCad; // 特定企料用
   前板做平: boolean; // 特定企料用
   后板做平: boolean; // 特定企料用
   前企料结构: 选项; // 例如：薄压边、厚压边、正常
