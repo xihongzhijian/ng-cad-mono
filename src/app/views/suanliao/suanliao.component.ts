@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openDrawCadDialog} from "@components/dialogs/draw-cad/draw-cad.component";
 import {
   calcCadItemZhankai,
@@ -201,8 +202,16 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  async drawCads(data: {cads: any[]}) {
+  async drawCadsStart(data: {cads: any[]}) {
     await openDrawCadDialog(this.dialog, {data: {cads: data.cads.map((v) => new CadData(v)), collection: "cad"}});
+    return {action: "drawCadsEnd", data: null};
+  }
+
+  async openCadEditorStart(data: {options: CadEditorInput}) {
+    const cadData = new CadData(data.options.data);
+    data.options.data = cadData;
+    const result = await openCadEditorDialog(this.dialog, {data: data.options});
+    return {action: "openCadEditorEnd", data: {...result, data: cadData.export()}};
   }
 
   updateMokuaiItemsStart(data: any) {
