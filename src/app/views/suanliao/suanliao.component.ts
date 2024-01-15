@@ -5,16 +5,18 @@ import {Formulas} from "@app/utils/calc";
 import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openDrawCadDialog} from "@components/dialogs/draw-cad/draw-cad.component";
 import {
-  calcCadItemZhankai,
-  calcZxpj,
-  CalcZxpjOptions,
-  getStep1Data,
   Step1Data,
-  updateMokuaiItems,
   ZixuanpeijianCadItem,
   ZixuanpeijianInfo,
   ZixuanpeijianMokuaiItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {
+  calcCadItemZhankai,
+  calcZxpj,
+  CalcZxpjOptions,
+  getStep1Data,
+  updateMokuaiItems
+} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";

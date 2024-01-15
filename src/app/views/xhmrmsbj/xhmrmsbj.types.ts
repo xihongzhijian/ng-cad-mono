@@ -1,10 +1,6 @@
 import {Formulas} from "@app/utils/calc";
-import {
-  isMokuaiItemEqual,
-  updateMokuaiItems,
-  ZixuanpeijianMokuaiItem,
-  ZixuanpeijianTypesInfo
-} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {MsbjPeizhishuju} from "@components/msbj-rects/msbj-rects.types";
 import {ObjectOf} from "@lucilor/utils";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";

@@ -19,15 +19,8 @@ import {
 } from "@app/cad/utils";
 import {Formulas} from "@app/utils/calc";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
-import {
-  calcZxpj,
-  CalcZxpjResult,
-  getMokuaiTitle,
-  getStep1Data,
-  getZixuanpeijianCads,
-  ZixuanpeijianCadItem,
-  ZixuanpeijianMokuaiItem
-} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {CalcZxpjResult, ZixuanpeijianCadItem, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {calcZxpj, getMokuaiTitle, getStep1Data, getZixuanpeijianCads} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {environment} from "@env";
 import {CadData, CadLine, CadViewer, CadViewerConfig, Defaults, generateLineTexts, setLinesLength} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";

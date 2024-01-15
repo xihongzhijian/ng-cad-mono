@@ -8,7 +8,7 @@ import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {ZixuanpeijianComponent} from "./zixuanpeijian.component";
-import {getTestData} from "./zixuanpeijian.types";
+import {getTestData} from "./zixuanpeijian.utils";
 
 const data = getTestData();
 

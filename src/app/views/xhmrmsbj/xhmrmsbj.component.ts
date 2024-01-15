@@ -16,15 +16,13 @@ import mokuaidaixiaoData from "@assets/testData/mokuaidaxiao.json";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
+import {Step1Data, ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfoItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {
   getFromulasFromString,
   getMokuaiTitle,
   getStep1Data,
-  isMokuaiItemEqual,
-  Step1Data,
-  ZixuanpeijianMokuaiItem,
-  ZixuanpeijianTypesInfoItem
-} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+  isMokuaiItemEqual
+} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {GenerateRectsEndEvent, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";

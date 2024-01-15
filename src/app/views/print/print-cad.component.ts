@@ -16,13 +16,8 @@ import {configCadDataForPrint, printCads, PrintCadsParams} from "@app/cad/print"
 import {getCadCalcZhankaiText} from "@app/cad/utils";
 import {toFixed} from "@app/utils/func";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
-import {
-  exportZixuanpeijian,
-  importZixuanpeijian,
-  ZixuanpeijianCadItem,
-  ZixuanpeijianInfo,
-  ZixuanpeijianOutput
-} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {ZixuanpeijianCadItem, ZixuanpeijianInfo, ZixuanpeijianOutput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {exportZixuanpeijian, importZixuanpeijian} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {Debounce} from "@decorators/debounce";
 import {environment} from "@env";
 import {CadData, CadLine, CadMtext, CadViewer} from "@lucilor/cad-viewer";

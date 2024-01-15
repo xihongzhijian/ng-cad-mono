@@ -6,7 +6,8 @@ import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material
 import {MatDividerModule} from "@angular/material/divider";
 import {Formulas} from "@app/utils/calc";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
-import {getMokuaiTitle, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {getMokuaiTitle} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulaInfo} from "@components/formulas/formulas.component";
 import {CadData, toFixedTrim} from "@lucilor/cad-viewer";
 import {isTypeOf, ObjectOf, timeout} from "@lucilor/utils";

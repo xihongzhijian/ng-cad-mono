@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {Component, HostBinding, OnInit, ViewChild} from "@angular/core";
+import {Component, ElementRef, HostBinding, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -8,15 +8,14 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, imgCadEmpty, session, setGlobal} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
+import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, session, setGlobal} from "@app/app.common";
 import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
-import {CadData} from "@lucilor/cad-viewer";
-import {downloadByString, keysOf, ObjectOf, queryString, RequiredKeys, selectFiles, WindowMessageManager} from "@lucilor/utils";
+import {CadData, CadLineLike, CadMtext, CadViewer} from "@lucilor/cad-viewer";
+import {downloadByString, keysOf, ObjectOf, queryString, RequiredKeys, selectFiles, timeout, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -139,10 +138,11 @@ export class LurushujuIndexComponent implements OnInit {
   fenleiName = "";
   gongyiName = "";
   production = environment.production;
-  cadImgs: ObjectOf<string> = {};
   wmm = new WindowMessageManager("录入数据", this, window.parent);
+  suanliaoCadViewers: CadViewer[] = [];
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
+  @ViewChildren("suanliaoCadEl") suanliaoCadEls?: QueryList<ElementRef<HTMLDivElement>>;
 
   constructor(
     private http: CadDataService,
@@ -367,14 +367,6 @@ export class LurushujuIndexComponent implements OnInit {
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
     this.menjiaoTable.data = gongyi.门铰锁边铰边;
-    this.cadImgs = {};
-    for (const cad of gongyi.算料CAD) {
-      const id = cad.json?.id;
-      this.cadImgs[id] = imgCadEmpty;
-      getCadPreview("cad", new CadData(cad.json)).then((url) => {
-        this.cadImgs[id] = url;
-      });
-    }
     this.shiyituInputInfos = [];
     const shiyituKeys: (keyof 工艺做法["示意图CAD"])[] = ["算料单示意图"];
     for (const key of shiyituKeys) {
@@ -416,6 +408,7 @@ export class LurushujuIndexComponent implements OnInit {
         }
       });
     }
+    await this.updateSuanliaoCads();
     await this.updateHuajians();
     this.updateBcfzInputData();
   }
@@ -1437,7 +1430,8 @@ export class LurushujuIndexComponent implements OnInit {
         })
       },
       step: 3,
-      stepFixed: true
+      stepFixed: true,
+      noValidateCads: true
     };
     const result = await openZixuanpeijianDialog(this.dialog, {data});
     if (!result) {
@@ -1445,28 +1439,25 @@ export class LurushujuIndexComponent implements OnInit {
     }
     const ids = result.零散.map((v) => v.info.houtaiId);
     if (ids.length > 0) {
-      const result2 = await this.http.queryMongodb<HoutaiCad>({collection: "cad", where: {_id: {$in: ids}}});
-      for (const cad of result2) {
-        delete cad.json;
-      }
+      const result2 = await this.http.queryMongodb<HoutaiCad>({collection: "cad", fields: {json: false}, where: {_id: {$in: ids}}});
       const result3: HoutaiCad[] = [];
       for (const v of result.零散) {
         const cad = cloneDeep(result2.find((v2) => v2._id === v.info.houtaiId));
-        if (!cad) {
-          continue;
-        }
-        cad.json = v.data.export();
-        result3.push(cad);
-        const id = v.data.id;
-        if (!this.cadImgs[id] || this.cadImgs[id] === imgCadEmpty) {
-          this.cadImgs[id] = await getCadPreview("cad", new CadData(cad.json));
+        if (cad) {
+          cad.json = v.data.export();
+          result3.push(cad);
+        } else {
+          const cad2 = gongyi.算料CAD.find((v2) => v2.json.id === v.data.id);
+          if (cad2) {
+            result3.push(cad2);
+          }
         }
       }
       gongyi.算料CAD = result3;
     } else {
       gongyi.算料CAD = [];
     }
-    await this.submitGongyi(["算料CAD"]);
+    await this.updateSuanliaoCads(true);
     this.updateBcfzInputData();
   }
 
@@ -1504,6 +1495,64 @@ export class LurushujuIndexComponent implements OnInit {
       });
     } else {
       this.huajians = [];
+    }
+  }
+
+  async updateSuanliaoCads(submit?: boolean) {
+    await timeout(0);
+    const {suanliaoCadEls, suanliaoCadViewers} = this;
+    for (const viewer of suanliaoCadViewers) {
+      viewer.destroy();
+    }
+    suanliaoCadViewers.length = 0;
+    if (suanliaoCadEls) {
+      suanliaoCadEls.forEach((el, i) => {
+        const cadContainer = el.nativeElement.querySelector<HTMLDivElement>(".cad-container");
+        if (!cadContainer) {
+          return;
+        }
+        cadContainer.innerHTML = "";
+        const cad = this.gongyi?.算料CAD[i];
+        if (!cad) {
+          return;
+        }
+        const cadViewer = new CadViewer(new CadData(cad?.json), {
+          width: 300,
+          height: 150,
+          backgroundColor: "black",
+          enableZoom: false,
+          dragAxis: "",
+          selectMode: "single",
+          entityDraggable: false,
+          lineGongshi: 12
+        });
+        cadViewer.dom.removeAllListeners?.("wheel");
+        cadViewer.on("entitydblclick", async (_, entity) => {
+          if (entity instanceof CadMtext && entity.parent) {
+            entity = entity.parent;
+          }
+          if (!(entity instanceof CadLineLike)) {
+            return;
+          }
+          const form: InputInfo<typeof entity>[] = [
+            {type: "string", label: "名字", model: {data: entity, key: "mingzi"}},
+            {type: "string", label: "公式", model: {data: entity, key: "gongshi"}}
+          ];
+          const result = await this.message.form(form);
+          if (result) {
+            cad.json = cadViewer.data.export();
+            await this.updateSuanliaoCads(true);
+          }
+        });
+        cadViewer.appendTo(cadContainer);
+        setTimeout(() => {
+          cadViewer.center();
+        }, 0);
+        suanliaoCadViewers.push(cadViewer);
+      });
+    }
+    if (submit) {
+      await this.submitGongyi(["算料CAD"]);
     }
   }
 
@@ -1572,10 +1621,7 @@ export class LurushujuIndexComponent implements OnInit {
     const result = await openCadEditorDialog(this.dialog, {data});
     if (result?.isSaved) {
       Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
-      getCadPreview("cad", cadData).then((img) => {
-        this.cadImgs[cadData.id] = img;
-      });
-      await this.submitGongyi(["算料CAD"]);
+      await this.updateSuanliaoCads(true);
       this.updateBcfzInputData();
     }
   }
@@ -1590,14 +1636,9 @@ export class LurushujuIndexComponent implements OnInit {
     }
     const cad = cloneDeep(算料CAD[i]);
     cad._id = v4();
-    if (cad.json) {
-      cad.json.id = v4();
-    }
+    cad.json.id = v4();
     算料CAD.splice(i, 0, cad);
-    getCadPreview("cad", new CadData(cad.json)).then((img) => {
-      this.cadImgs[cad.json?.id] = img;
-    });
-    await this.submitGongyi(["算料CAD"]);
+    await this.updateSuanliaoCads(true);
     this.updateBcfzInputData();
   }
 
@@ -1609,9 +1650,8 @@ export class LurushujuIndexComponent implements OnInit {
     if (!(await this.message.confirm(`确定删除${算料CAD[i].名字}吗？`))) {
       return;
     }
-    delete this.cadImgs[算料CAD[i].json?.id];
     算料CAD.splice(i, 1);
-    await this.submitGongyi(["算料CAD"]);
+    await this.updateSuanliaoCads(true);
     this.updateBcfzInputData();
   }
 }

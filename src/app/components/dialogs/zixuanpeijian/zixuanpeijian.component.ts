@@ -11,6 +11,7 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
 import {imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
+import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {setDimensionText} from "@app/cad/utils";
 import {toFixed} from "@app/utils/func";
@@ -40,15 +41,8 @@ import {openKlkwpzDialog} from "../klkwpz-dialog/klkwpz-dialog.component";
 import {
   CadItemContext,
   CadItemInputInfo,
-  calcZxpj,
-  getDefaultZhankai,
-  getMokuaiTitle,
-  getStep1Data,
-  getZixuanpeijianCads,
-  importZixuanpeijian,
   MokuaiInputInfos,
   Step1Data,
-  updateMokuaiItems,
   ZixuanpeijianCadItem,
   ZixuanpeijianInfo,
   ZixuanpeijianInput,
@@ -57,6 +51,15 @@ import {
   ZixuanpeijianOutput,
   ZixuanpeijianTypesInfo2
 } from "./zixuanpeijian.types";
+import {
+  calcZxpj,
+  getDefaultZhankai,
+  getMokuaiTitle,
+  getStep1Data,
+  getZixuanpeijianCads,
+  importZixuanpeijian,
+  updateMokuaiItems
+} from "./zixuanpeijian.utils";
 
 @Component({
   selector: "app-zixuanpeijian",
@@ -384,6 +387,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       this.lingsanCadImgs = {};
       this.lingsanCadInfos = {};
       this.lingsanCads = {};
+      const {noValidateCads} = this.data || {};
       for (const v of responseData.cads) {
         const data = new CadData(v);
         const img = this.http.getCadImgUrl(data.id);
@@ -410,7 +414,13 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         if (found) {
           item.data = found.data.clone(true);
         } else {
-          toRemove.push(i);
+          if (noValidateCads) {
+            getCadPreview("cad", item.data).then((img) => {
+              this.lingsanCadImgs[item.data.id] = img;
+            });
+          } else {
+            toRemove.push(i);
+          }
         }
       }
       if (toRemove.length > 0) {

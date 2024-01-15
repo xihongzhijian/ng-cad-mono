@@ -84,7 +84,7 @@ export type Changelog = {
 export interface QueryMongodbParams {
   collection: CadCollection;
   where?: ObjectOf<any>;
-  fields?: string[];
+  fields?: string[] | ObjectOf<any>;
   limit?: number;
   skip?: number;
   genUnqiCode?: boolean;
@@ -168,7 +168,7 @@ export type HoutaiCad = {
   选项: ObjectOf<string>;
   条件: string[];
   显示名字: string;
-  json?: ObjectOf<any>;
+  json: ObjectOf<any>;
 };
 
 export const getHoutaiCad = (data: CadData): HoutaiCad => {
