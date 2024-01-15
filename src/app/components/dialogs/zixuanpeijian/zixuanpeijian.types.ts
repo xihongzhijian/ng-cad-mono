@@ -248,7 +248,10 @@ export const exportZixuanpeijian = (source: ZixuanpeijianData) => {
   return result;
 };
 
-export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null, 门扇名字?: string, 层名字?: string) => {
+export const getMokuaiTitle = (
+  item: ZixuanpeijianMokuaiItem | undefined | null,
+  opts?: {门扇名字?: string; 层名字?: string; type1As?: string}
+) => {
   if (!item) {
     return "";
   }
@@ -257,6 +260,8 @@ export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null,
     return "";
   }
   const arr: string[] = [];
+  let {门扇名字, 层名字} = opts || {};
+  const {type1As} = opts || {};
   if (!门扇名字) {
     门扇名字 = info?.门扇名字;
   }
@@ -269,7 +274,7 @@ export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null,
   if (typeof 层名字 === "string" && 层名字) {
     arr.push(层名字);
   }
-  arr.push(`${type1}【${type2}】`);
+  arr.push(`${type1As || type1}【${type2}】`);
   return arr.join(" - ");
 };
 

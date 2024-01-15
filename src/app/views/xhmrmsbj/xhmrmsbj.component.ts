@@ -110,7 +110,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.mokuaidaxiaoResults[this.activeMenshanKey] = value;
     }
   }
-  getMokuaiTitle = getMokuaiTitle;
   showMokuais = false;
   mokuaiTemplateType!: {$implicit: ZixuanpeijianMokuaiItem | null; isActive?: boolean};
   tabNames = xhmrmsbjTabNames;
@@ -294,7 +293,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         }
       }
       if (mokuaisWithoutBancai.length > 0) {
-        const details = mokuaisWithoutBancai.map((v) => getMokuaiTitle(v.mokuai, "", v.layerName));
+        const details = mokuaisWithoutBancai.map((v) => getMokuaiTitle(v.mokuai, {层名字: v.layerName}));
         await this.message.error({content: "以下模块未设置默认板材分组", details});
         return;
       }
@@ -625,15 +624,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     if (mokuaisWithoutBancai.length > 0) {
-      const details = mokuaisWithoutBancai.map((v) => getMokuaiTitle(v.mokuai, v.menshanKey, v.layerName));
+      const details = mokuaisWithoutBancai.map((v) => getMokuaiTitle(v.mokuai, {门扇名字: v.menshanKey, 层名字: v.layerName}));
       await this.message.error({content: "以下模块未设置默认板材分组", details});
       return;
     }
     const data: TableUpdateParams<MsbjData>["data"] = dataInfo.export();
     delete data.mingzi;
-    this.spinner.show(this.spinner.defaultLoaderId);
     await this.http.tableUpdate({table, data});
-    this.spinner.hide(this.spinner.defaultLoaderId);
   }
 
   async openMrbcjfzDialog() {
@@ -766,10 +763,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     this.spinner.show(this.spinner.defaultLoaderId, {text: "获取模块大小配置"});
-    const records = await this.http.queryMySql<XhmrmsbjTableData>({
-      table: "p_xinghaomorenmenshanbuju",
-      filter: {where: {vid: this.id}}
-    });
+    const records = await this.http.queryMySql<XhmrmsbjTableData>(
+      {
+        table: "p_xinghaomorenmenshanbuju",
+        filter: {where: {vid: this.id}}
+      },
+      {spinner: false}
+    );
     if (records[0]) {
       const data2 = new XhmrmsbjData(records[0], this.menshanKeys, this.step1Data.typesInfo, this.msbjs);
       for (const menshanKey of this.menshanKeys) {
@@ -919,5 +919,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
     }
     return result;
+  }
+
+  getMokuaiTitle2(mokuai: ZixuanpeijianMokuaiItem | null) {
+    return getMokuaiTitle(mokuai, {type1As: "模块名字"}) || "无";
   }
 }

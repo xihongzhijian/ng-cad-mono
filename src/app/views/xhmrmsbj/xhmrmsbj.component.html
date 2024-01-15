@@ -153,7 +153,7 @@
     <div class="flex-column" (click)="selectMokuai(mokuai)">
       <app-image class="mokuai-xiaoguotu" [src]="mokuai?.xiaoguotu" [prefix]="urlPrefix"></app-image>
       <div class="flex-row" style="align-items: center">
-        <div class="title center flex-110">{{ getMokuaiTitle(mokuai) || "无" }}</div>
+        <div class="title center flex-110">{{ getMokuaiTitle2(mokuai) }}</div>
         @if (!isFromOrder) {
           <button mat-icon-button color="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
         }
