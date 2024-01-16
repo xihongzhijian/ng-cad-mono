@@ -145,6 +145,8 @@ export class LurushujuIndexComponent implements OnInit {
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
 
+  private _isStepFetched: ObjectOf<boolean> = {};
+
   constructor(
     private http: CadDataService,
     private message: MessageService,
@@ -197,8 +199,6 @@ export class LurushujuIndexComponent implements OnInit {
   async getXinghao() {
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/getXinghao", {名字: this.xinghaoName});
     const xinghao = getXinghao(xinghaoRaw);
-    const optionsAll = await this.http.getData<OptionsAll>("shuju/api/getXinghaoOption");
-    this.xinghaoOptionsAll = optionsAll || {};
     this.xinghao = xinghao;
   }
 
@@ -267,18 +267,34 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async setStep1() {
-    if (this.step !== 1) {
+    const step = 1;
+    if (this.step !== step) {
       return;
     }
-    await this.getXinghaos();
+    if (!this._isStepFetched[step]) {
+      await this.getXinghaos();
+      this._isStepFetched[step] = true;
+    }
   }
 
   async setStep2() {
-    if (this.step !== 2) {
+    const step = 2;
+    if (this.step !== step) {
       this.xinghaoInputInfos = [];
       return;
     }
-    await this.getXinghao();
+    this.xinghaoInputInfos = [];
+    if (!this.xinghao) {
+      await this.getXinghao();
+    }
+    if (!this.xinghao) {
+      return;
+    }
+    if (!this._isStepFetched[step]) {
+      const optionsAll = await this.http.getData<OptionsAll>("shuju/api/getXinghaoOption");
+      this.xinghaoOptionsAll = optionsAll || {};
+      this._isStepFetched[step] = true;
+    }
     const {xinghao, xinghaoOptionsAll} = this;
     const getOptions = (key: string) => {
       const options = xinghaoOptionsAll?.[key];
@@ -296,54 +312,51 @@ export class LurushujuIndexComponent implements OnInit {
     const onChange = debounce(async (data: Partial<Xinghao>) => {
       await this.setXinghao(data);
     }, 500);
-    if (xinghao) {
-      this.xinghaoInputInfos = [
-        {
-          type: "select",
-          label: "所属门窗",
-          model: {data: xinghao, key: "所属门窗"},
-          options: getOptions("门窗"),
-          multiple: false,
-          onChange: (val) => onChange({所属门窗: val})
-        },
-        {
-          type: "select",
-          label: "所属工艺",
-          model: {data: xinghao, key: "所属工艺"},
-          options: getOptions("工艺"),
-          multiple: true,
-          onChange: (val) => onChange({所属工艺: val})
-        },
-        {
-          type: "select",
-          label: "产品分类",
-          model: {data: xinghao, key: "显示产品分类"},
-          options: getOptions("产品分类"),
-          multiple: true,
-          onChange: (val) => {
-            const data: Partial<Xinghao> = {显示产品分类: val};
-            let updateFenlei = false;
-            for (const name of val) {
-              if (this.xinghao && !Array.isArray(this.xinghao.产品分类[name])) {
-                this.xinghao.产品分类[name] = [];
-                updateFenlei = true;
-              }
+    this.xinghaoInputInfos = [
+      {
+        type: "select",
+        label: "所属门窗",
+        model: {data: xinghao, key: "所属门窗"},
+        options: getOptions("门窗"),
+        multiple: false,
+        onChange: (val) => onChange({所属门窗: val})
+      },
+      {
+        type: "select",
+        label: "所属工艺",
+        model: {data: xinghao, key: "所属工艺"},
+        options: getOptions("工艺"),
+        multiple: true,
+        onChange: (val) => onChange({所属工艺: val})
+      },
+      {
+        type: "select",
+        label: "产品分类",
+        model: {data: xinghao, key: "显示产品分类"},
+        options: getOptions("产品分类"),
+        multiple: true,
+        onChange: (val) => {
+          const data: Partial<Xinghao> = {显示产品分类: val};
+          let updateFenlei = false;
+          for (const name of val) {
+            if (this.xinghao && !Array.isArray(this.xinghao.产品分类[name])) {
+              this.xinghao.产品分类[name] = [];
+              updateFenlei = true;
             }
-            if (updateFenlei) {
-              data.产品分类 = this.xinghao?.产品分类;
-            }
-            onChange(data);
           }
+          if (updateFenlei) {
+            data.产品分类 = this.xinghao?.产品分类;
+          }
+          onChange(data);
         }
-      ];
-    } else {
-      this.xinghaoInputInfos = [];
-    }
+      }
+    ];
     await this.updateXinghao(xinghao?.产品分类);
   }
 
   async setStep3() {
-    if (this.step !== 3) {
+    const step = 3;
+    if (this.step !== step) {
       return;
     }
     if (!this.production) {
@@ -356,6 +369,17 @@ export class LurushujuIndexComponent implements OnInit {
     if (!this.xinghao) {
       return;
     }
+    if (!this._isStepFetched[step]) {
+      const gongyiOptionsAll = await this.http.getData<OptionsAll>("shuju/api/getGongyizuofaOption");
+      const menjiaoOptionsAll = await this.http.getData<OptionsAll2>("shuju/api/getMenjiaoOptions");
+      this.gongyiOptionsAll = gongyiOptionsAll || {};
+      this.menjiaoOptionsAll = menjiaoOptionsAll || {};
+      this.menshans = await this.http.queryMySql<(typeof this.menshans)[number]>({
+        table: "p_menshan",
+        fields: ["vid", "mingzi", "zuchenghuajian"]
+      });
+      this._isStepFetched[step] = true;
+    }
     let gongyi = this.xinghao.产品分类[this.fenleiName].find((v) => v.名字 === this.gongyiName);
     if (!gongyi) {
       this.gongyi = null;
@@ -363,10 +387,6 @@ export class LurushujuIndexComponent implements OnInit {
     }
     gongyi = getGongyi(gongyi);
     this.gongyi = gongyi;
-    const gongyiOptionsAll = await this.http.getData<OptionsAll>("shuju/api/getGongyizuofaOption");
-    const menjiaoOptionsAll = await this.http.getData<OptionsAll2>("shuju/api/getMenjiaoOptions");
-    this.gongyiOptionsAll = gongyiOptionsAll || {};
-    this.menjiaoOptionsAll = menjiaoOptionsAll || {};
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
     this.menjiaoTable.data = gongyi.门铰锁边铰边;
@@ -393,10 +413,6 @@ export class LurushujuIndexComponent implements OnInit {
     }
 
     this.xiaoguotuInputInfos = [];
-    this.menshans = await this.http.queryMySql<(typeof this.menshans)[number]>({
-      table: "p_menshan",
-      fields: ["vid", "mingzi", "zuchenghuajian"]
-    });
     const options: InputInfoOptions = this.menshans.map((v) => v.mingzi);
     for (const key of this.xiaoguotuKeys) {
       this.xiaoguotuInputInfos.push({
@@ -606,7 +622,7 @@ export class LurushujuIndexComponent implements OnInit {
     return getBooleanStr(value);
   }
 
-  async submitGongyi(fields: (keyof 工艺做法)[], silent = false) {
+  async submitGongyi(fields: (keyof 工艺做法)[]) {
     const {xinghaoName: 型号, fenleiName: 产品分类, gongyiName: 名字} = this;
     const data: Partial<工艺做法> = {};
     if (!this.gongyi || !Array.isArray(fields) || fields.length === 0) {
@@ -615,7 +631,7 @@ export class LurushujuIndexComponent implements OnInit {
     for (const field of fields) {
       data[field] = this.gongyi[field] as any;
     }
-    await this.http.post("shuju/api/editGongyi", {型号, 产品分类, updateDatas: {[名字]: data}}, {silent});
+    await this.http.post("shuju/api/editGongyi", {型号, 产品分类, updateDatas: {[名字]: data}}, {spinner: false});
   }
 
   async getXuanxiangItem(data0?: 选项) {

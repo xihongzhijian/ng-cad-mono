@@ -16,6 +16,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
 import {isEmpty, union} from "lodash";
@@ -58,7 +59,8 @@ import {
     MatButtonModule,
     MatDividerModule,
     MatIconModule,
-    NgScrollbar
+    NgScrollbar,
+    SpinnerComponent
   ]
 })
 export class MrbcjfzComponent implements OnInit, OnChanges {
@@ -83,6 +85,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   isFromOrder = false;
   private _refreshLock = false;
   wmm = new WindowMessageManager("默认板材及分组", this, window.parent);
+  loaderId = "mrbcjfz-loader";
   get activeBancai() {
     if (!this.activeBancaiKey) {
       return null;
@@ -135,7 +138,10 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     if (this.isFromOrder) {
       this.bancaiKeys = [];
       const data = await this.getData();
-      const xinghaosRaw = await this.http.queryMySql({table: "p_xinghao", filter: {where: {mingzi: data.xinghao}}});
+      const xinghaosRaw = await this.http.queryMySql(
+        {table: "p_xinghao", filter: {where: {mingzi: data.xinghao}}},
+        {spinner: this.loaderId}
+      );
       if (xinghaosRaw[0]) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, xinghaosRaw[0]);
       } else {
@@ -143,7 +149,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       }
       this.xinghao.默认板材 = data.morenbancai;
       this.xiaodaohangStructure = {mingzi: "型号"};
-      const bancaiListData = await this.http.getBancaiList(this.fubanNumber);
+      const bancaiListData = await this.http.getBancaiList(this.fubanNumber, {spinner: this.loaderId});
       if (bancaiListData) {
         this.bancaiList = bancaiListData.bancais;
         this.bancaiKeys = bancaiListData.bancaiKeys;
@@ -197,7 +203,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       const data = await this.http.getData<MrbcjfzResponseData>(
         "peijian/xinghao/bancaifenzuIndex",
         {table, id},
-        {testData: "bancaifenzuIndex"}
+        {spinner: this.loaderId, testData: "bancaifenzuIndex"}
       );
       if (data) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, data.xinghao);
@@ -492,13 +498,17 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       const data: TableUpdateParams<MrbcjfzXinghao>["data"] = {vid: xinghao.raw.vid};
       data.morenbancai = JSON.stringify(xinghao.默认板材);
       if (isFromOrder) {
-        const response = await this.http.post("peijian/api/updateMorenbancaijifenzu", {
-          name: xinghao.raw.mingzi,
-          morenbancai: xinghao.默认板材
-        });
+        const response = await this.http.post(
+          "peijian/api/updateMorenbancaijifenzu",
+          {
+            name: xinghao.raw.mingzi,
+            morenbancai: xinghao.默认板材
+          },
+          {spinner: this.loaderId}
+        );
         result = response?.code === 0;
       } else {
-        result = await this.http.tableUpdate({table, data});
+        result = await this.http.tableUpdate({table, data}, {spinner: this.loaderId});
       }
     }
     this.dataSubmit.emit(this.xinghao);

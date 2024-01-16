@@ -9,7 +9,13 @@
     @for (item of list; track item; let i = $index) {
       @if (!item.hidden) {
         <div class="bancai">
-          <mat-checkbox class="name" [matTooltip]="item.bancai.mingzi" [checked]="item.checked" (change)="onCheckboxChange(item)">
+          <mat-checkbox
+            class="name"
+            [matTooltip]="item.bancai.mingzi"
+            [matTooltipShowDelay]="500"
+            [checked]="item.checked"
+            (change)="onCheckboxChange(item)"
+          >
             {{ item.bancai.mingzi }}
           </mat-checkbox>
         </div>

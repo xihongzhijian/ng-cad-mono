@@ -64,8 +64,8 @@ export class BancaiFormComponent {
                 const result = await openBancaiListDialog(this.dialog, {
                   data: {list: this.bancaiList, checkedItems: checkedItem ? [checkedItem] : undefined}
                 });
-                if (result?.[0]) {
-                  this.data.bancai = result[0].mingzi;
+                if (result) {
+                  this.data.bancai = result[0]?.mingzi;
                   this.update();
                 }
               }
@@ -107,7 +107,7 @@ export class BancaiFormComponent {
                   checkedItems.push({mingzi: "全部", cailiaoList: [], guigeList: [], houduList: []});
                 }
                 const result = await openBancaiListDialog(this.dialog, {data: {list: this.bancaiList, checkedItems, multi: true}});
-                if (result?.[0]) {
+                if (result) {
                   this.data.bancaiList = result.map((v) => v.mingzi);
                   this.update();
                 }
