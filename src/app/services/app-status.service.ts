@@ -60,7 +60,7 @@ export class AppStatusService {
   cadStatus = new CadStatusNormal();
   cadStatusEnter$ = new BehaviorSubject<CadStatus>(new CadStatusNormal());
   cadStatusExit$ = new BehaviorSubject<CadStatus>(new CadStatusNormal());
-  cad = new CadViewer(setCadData(new CadData({name: "新建CAD", info: {isLocal: true}}), this.project, "cad"));
+  cad = new CadViewer(setCadData(new CadData({name: "新建CAD", info: {isLocal: true}}), this.project, "cad", this.config.getConfig()));
   components = {
     selected$: new BehaviorSubject<CadData[]>([]),
     mode$: new BehaviorSubject<"single" | "multiple">("single"),
@@ -212,7 +212,7 @@ export class AppStatusService {
     const prevConfig = this.config.setConfig({hideLineLength: true, hideLineGongshi: true}, {sync: false});
     await cad.reset().render();
     if (data) {
-      setCadData(data, this.project, collection);
+      setCadData(data, this.project, collection, this.config.getConfig());
       if (!environment.production) {
         showIntersections(data, this.projectConfig);
       }

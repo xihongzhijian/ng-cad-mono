@@ -1,10 +1,11 @@
 import {CadBaseLine, CadData, CadJointPoint} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
+import {AppConfig} from "@services/app-config.service";
 import {CadCollection} from "./collections";
 import {cadOptions} from "./options";
 import {isShiyitu} from "./utils";
 
-export const setCadData = (data: CadData, project: string, collection: CadCollection) => {
+export const setCadData = (data: CadData, project: string, collection: CadCollection, config: AppConfig) => {
   if (data.baseLines.length < 1) {
     data.baseLines.push(new CadBaseLine());
   }
@@ -19,11 +20,6 @@ export const setCadData = (data: CadData, project: string, collection: CadCollec
   } else {
     delete data.info.skipSuanliaodanZoom;
   }
-  data.entities.forEach((e) => {
-    if (e.layer === "分页线") {
-      e.calcBoundingRect = false;
-    }
-  });
 
   data.info.激光开料是否翻转 = !!data.info.激光开料是否翻转;
   if (!Array.isArray(data.info.激光开料标记线)) {
@@ -44,6 +40,22 @@ export const setCadData = (data: CadData, project: string, collection: CadCollec
       dataAny[key] = cadOptions[key2].defaultValue;
     }
   }
+
+  if (!config.testMode) {
+    const layerInfos: ObjectOf<any> = {};
+    for (const layer of data.layers) {
+      layerInfos[layer.name] = {hidden: layer.hidden};
+      layer.hidden = false;
+    }
+    data.info._layerInfos = layerInfos;
+  }
+
+  data.entities.forEach((e) => {
+    if (e.layer === "分页线") {
+      e.calcBoundingRect = false;
+    }
+    e.visible = true;
+  });
   return data;
 };
 
@@ -53,5 +65,16 @@ export const unsetCadData = (data: CadData) => {
   }
   if (data.info.激光开料标记线 && data.info.激光开料标记线.length < 1) {
     delete data.info.激光开料标记线;
+  }
+
+  if (data.info._layerInfos) {
+    const layerInfos = data.info._layerInfos;
+    delete data.info._layerInfos;
+    for (const layer of data.layers) {
+      const info = layerInfos[layer.name];
+      if (info) {
+        layer.hidden = info.hidden;
+      }
+    }
   }
 };

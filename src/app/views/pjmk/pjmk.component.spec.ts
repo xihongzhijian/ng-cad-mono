@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MatButtonModule} from "@angular/material/button";
 import {MatMenuModule} from "@angular/material/menu";
-import {getTestData, importZixuanpeijian} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {getTestData, importZixuanpeijian} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
 import {PjmkComponent} from "./pjmk.component";
