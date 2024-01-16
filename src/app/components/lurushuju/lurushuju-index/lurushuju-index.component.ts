@@ -852,6 +852,16 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
+  getMenjiaoId() {
+    const numVids = this.gongyi?.门铰锁边铰边.map((v) => Number(v.vid)).filter((v) => !isNaN(v)) || [];
+    if (numVids.length > 0) {
+      const numMax = Math.max(...numVids);
+      return String(numMax + 1);
+    } else {
+      return "1";
+    }
+  }
+
   async getMenjiaoItem(data0?: 门铰锁边铰边) {
     const 产品分类 = data0 ? data0.产品分类 : this.fenleiName;
     const data: 门铰锁边铰边 = {
@@ -860,6 +870,7 @@ export class LurushujuIndexComponent implements OnInit {
       排序: 0,
       默认值: false,
       名字: "",
+      名字2: "",
       产品分类,
       开启: [],
       门铰: [],
@@ -877,13 +888,7 @@ export class LurushujuIndexComponent implements OnInit {
       ...data0
     };
     if (!data.vid) {
-      const numVids = this.gongyi?.门铰锁边铰边.map((v) => Number(v.vid)).filter((v) => !isNaN(v)) || [];
-      if (numVids.length > 0) {
-        const numMax = Math.max(...numVids);
-        data.vid = String(numMax + 1);
-      } else {
-        data.vid = "1";
-      }
+      data.vid = this.getMenjiaoId();
     }
     for (const value of 门缝配置输入) {
       if (typeof value.defaultValue === "number") {
@@ -967,7 +972,8 @@ export class LurushujuIndexComponent implements OnInit {
         type: "string",
         label: "名字",
         model: {data, key: "名字"},
-        readonly: true
+        validators: Validators.required,
+        placeholder: "下单时显示，请使用有意义的名字"
       },
       {
         type: "group",
@@ -1176,6 +1182,10 @@ export class LurushujuIndexComponent implements OnInit {
       case "复制":
         if (await this.message.confirm(`确定复制【${item.名字}】吗？`)) {
           const item2 = cloneDeep(item);
+          item2.vid = this.getMenjiaoId();
+          const names = this.gongyi.门铰锁边铰边.map((v) => v.名字);
+          item2.名字 = getCopyName(names, item2.名字);
+          updateMenjiaoForm(item2);
           this.gongyi.门铰锁边铰边.push(item2);
           this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
           await this.submitGongyi(["门铰锁边铰边"]);

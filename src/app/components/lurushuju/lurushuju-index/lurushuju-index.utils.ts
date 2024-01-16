@@ -68,7 +68,7 @@ export const updateMenjiaoForm = (data: 门铰锁边铰边) => {
       }
     })
     .filter(Boolean);
-  data.名字 = values.join("_");
+  data.名字2 = values.join("_");
 };
 
 export const getMenjiaoCadInfos = (data: 门铰锁边铰边) => {

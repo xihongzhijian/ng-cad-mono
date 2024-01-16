@@ -156,6 +156,7 @@ export interface 门铰锁边铰边 {
   默认值: boolean;
 
   名字: string;
+  名字2: string;
   产品分类: string;
   开启: string[];
   门铰: string[];
