@@ -1,0 +1,52 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px;
+  width: var(--item-width);
+
+  :not(:last-child) {
+    margin-bottom: 5px;
+  }
+  > .btn-group {
+    margin: 0;
+  }
+}
+
+.name {
+  font-size: 18px;
+}
+
+.cad-container {
+  justify-content: center;
+  align-items: center;
+}
+
+.zhankais {
+  width: 100%;
+  display: flex;
+  align-items: center;
+
+  .zhankai {
+    width: 100%;
+    align-items: center;
+
+    app-input {
+      width: 0;
+      &.width {
+        flex: 3 3 0;
+      }
+      &.height {
+        flex: 3 3 0;
+      }
+      &.num {
+        flex: 2 2 0;
+      }
+    }
+
+    .symbol {
+      font-size: 24px;
+      margin: 0 2px;
+    }
+  }
+}

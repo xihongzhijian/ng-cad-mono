@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {Component, ElementRef, HostBinding, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {Component, HostBinding, OnInit, ViewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -14,8 +14,8 @@ import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
-import {CadData, CadLineLike, CadMtext, CadViewer} from "@lucilor/cad-viewer";
-import {downloadByString, keysOf, ObjectOf, queryString, RequiredKeys, selectFiles, timeout, WindowMessageManager} from "@lucilor/utils";
+import {CadData, CadViewer} from "@lucilor/cad-viewer";
+import {downloadByString, keysOf, ObjectOf, queryString, RequiredKeys, selectFiles, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -30,6 +30,7 @@ import csstype from "csstype";
 import {cloneDeep, debounce, isEmpty, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
+import {CadItemComponent} from "../cad-item/cad-item.component";
 import {
   getGongyi,
   getXinghao,
@@ -72,7 +73,7 @@ import {
   selector: "app-lurushuju-index",
   standalone: true,
   imports: [
-    MrbcjfzComponent,
+    CadItemComponent,
     CommonModule,
     ImageComponent,
     InputComponent,
@@ -82,6 +83,7 @@ import {
     MatIconModule,
     MatTabsModule,
     MatTooltipModule,
+    MrbcjfzComponent,
     NgScrollbarModule,
     TableComponent
   ],
@@ -142,7 +144,6 @@ export class LurushujuIndexComponent implements OnInit {
   suanliaoCadViewers: CadViewer[] = [];
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
-  @ViewChildren("suanliaoCadEl") suanliaoCadEls?: QueryList<ElementRef<HTMLDivElement>>;
 
   constructor(
     private http: CadDataService,
@@ -410,7 +411,6 @@ export class LurushujuIndexComponent implements OnInit {
         }
       });
     }
-    await this.updateSuanliaoCads();
     await this.updateHuajians();
     this.updateBcfzInputData();
   }
@@ -1455,7 +1455,7 @@ export class LurushujuIndexComponent implements OnInit {
     } else {
       gongyi.算料CAD = [];
     }
-    await this.updateSuanliaoCads(true);
+    await this.submitGongyi(["算料CAD"]);
     this.updateBcfzInputData();
   }
 
@@ -1493,64 +1493,6 @@ export class LurushujuIndexComponent implements OnInit {
       });
     } else {
       this.huajians = [];
-    }
-  }
-
-  async updateSuanliaoCads(submit?: boolean) {
-    await timeout(0);
-    const {suanliaoCadEls, suanliaoCadViewers} = this;
-    for (const viewer of suanliaoCadViewers) {
-      viewer.destroy();
-    }
-    suanliaoCadViewers.length = 0;
-    if (suanliaoCadEls) {
-      suanliaoCadEls.forEach((el, i) => {
-        const cadContainer = el.nativeElement.querySelector<HTMLDivElement>(".cad-container");
-        if (!cadContainer) {
-          return;
-        }
-        cadContainer.innerHTML = "";
-        const cad = this.gongyi?.算料CAD[i];
-        if (!cad) {
-          return;
-        }
-        const cadViewer = new CadViewer(new CadData(cad?.json), {
-          width: 300,
-          height: 150,
-          backgroundColor: "black",
-          enableZoom: false,
-          dragAxis: "",
-          selectMode: "single",
-          entityDraggable: false,
-          lineGongshi: 12
-        });
-        cadViewer.dom.removeAllListeners?.("wheel");
-        cadViewer.on("entitydblclick", async (_, entity) => {
-          if (entity instanceof CadMtext && entity.parent) {
-            entity = entity.parent;
-          }
-          if (!(entity instanceof CadLineLike)) {
-            return;
-          }
-          const form: InputInfo<typeof entity>[] = [
-            {type: "string", label: "名字", model: {data: entity, key: "mingzi"}},
-            {type: "string", label: "公式", model: {data: entity, key: "gongshi"}}
-          ];
-          const result = await this.message.form(form);
-          if (result) {
-            cad.json = cadViewer.data.export();
-            await this.updateSuanliaoCads(true);
-          }
-        });
-        cadViewer.appendTo(cadContainer);
-        setTimeout(() => {
-          cadViewer.center();
-        }, 0);
-        suanliaoCadViewers.push(cadViewer);
-      });
-    }
-    if (submit) {
-      await this.submitGongyi(["算料CAD"]);
     }
   }
 
@@ -1619,7 +1561,7 @@ export class LurushujuIndexComponent implements OnInit {
     const result = await openCadEditorDialog(this.dialog, {data});
     if (result?.isSaved) {
       Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
-      await this.updateSuanliaoCads(true);
+      await this.submitGongyi(["算料CAD"]);
       this.updateBcfzInputData();
     }
   }
@@ -1636,7 +1578,7 @@ export class LurushujuIndexComponent implements OnInit {
     cad._id = v4();
     cad.json.id = v4();
     算料CAD.splice(i, 0, cad);
-    await this.updateSuanliaoCads(true);
+    await this.submitGongyi(["算料CAD"]);
     this.updateBcfzInputData();
   }
 
@@ -1649,7 +1591,7 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     算料CAD.splice(i, 1);
-    await this.updateSuanliaoCads(true);
+    await this.submitGongyi(["算料CAD"]);
     this.updateBcfzInputData();
   }
 }

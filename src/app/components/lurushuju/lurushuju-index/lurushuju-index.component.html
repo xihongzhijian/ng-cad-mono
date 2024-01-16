@@ -176,18 +176,15 @@
                       <button mat-raised-button color="primary" (click)="suanliao()">计算</button>
                     </div>
                     <ng-scrollbar>
-                      <div class="cads items add-empty-msg no-items-per-row">
+                      <div class="cads flex-row">
                         @for (cad of gongyi?.["算料CAD"]; track i; let i = $index) {
-                          <div #suanliaoCadEl class="cad item">
-                            <div class="name">{{ cad["名字"] }}</div>
-                            <!-- <app-image class="cad-preview" [src]="cadImgs[cad['json']?.['id']]"></app-image> -->
-                            <div class="cad-container"></div>
-                            <div class="toolbar">
-                              <button mat-button color="primary" (click)="editSuanliaoCad(i)">编辑</button>
-                              <button mat-button color="primary" (click)="copySuanliaoCad(i)">复制</button>
-                              <button mat-button color="primary" (click)="removeSuanliaoCad(i)">删除</button>
-                            </div>
-                          </div>
+                          <app-cad-item
+                            [cad]="cad"
+                            (editCad)="editSuanliaoCad(i)"
+                            (copyCad)="copySuanliaoCad(i)"
+                            (removeCad)="removeSuanliaoCad(i)"
+                            (cadFormSubmitted)="submitGongyi(['算料CAD'])"
+                          ></app-cad-item>
                         }
                       </div>
                     </ng-scrollbar>

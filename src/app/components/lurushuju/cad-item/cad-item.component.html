@@ -1,0 +1,24 @@
+<div class="name">{{ cad["名字"] }}</div>
+<div #cadContainer class="cad-container flex-row"></div>
+<div class="btn-group">
+  <button mat-button color="primary" (click)="edit()">编辑</button>
+  <button mat-button color="primary" (click)="copy()">复制</button>
+  <button mat-button color="primary" (click)="remove()">删除</button>
+</div>
+<div class="zhankais flex-column">
+  @for (item of zhankaiInputs; track i; let i = $index) {
+    <div class="zhankai flex-row">
+      <button mat-icon-button color="primary" (click)="addZhankai(i)">
+        <mat-icon>add_circle</mat-icon>
+      </button>
+      <button [disabled]="i === 0" mat-icon-button color="primary" (click)="removeZhankai(i)">
+        <mat-icon>remove_circle</mat-icon>
+      </button>
+      <app-input class="width" [info]="item.width"></app-input>
+      <div class="symbol">×</div>
+      <app-input class="height" [info]="item.height"></app-input>
+      <div class="symbol">=</div>
+      <app-input class="num" [info]="item.num"></app-input>
+    </div>
+  }
+</div>
