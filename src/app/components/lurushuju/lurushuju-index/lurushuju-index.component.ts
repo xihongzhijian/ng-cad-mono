@@ -916,13 +916,13 @@ export class LurushujuIndexComponent implements OnInit {
       }
     }
     updateMenjiaoForm(data);
-    const getGroupStyles = (styles?: csstype.Properties): csstype.Properties => {
-      return {display: "flex", flexWrap: "wrap", marginBottom: "10px", ...styles};
+    const getGroupStyle = (style?: csstype.Properties): csstype.Properties => {
+      return {display: "flex", flexWrap: "wrap", marginBottom: "10px", ...style};
     };
-    const getInfoStyles = (n: number): csstype.Properties => {
+    const getInfoStyle = (n: number, style?: csstype.Properties): csstype.Properties => {
       const percent = 100 / n;
       const margin = 5;
-      return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`};
+      return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`, ...style};
     };
     const getOptionInputInfo = (key: keyof 门铰锁边铰边, n: number): InputInfoSelect => {
       const optionsInfo = this.menjiaoOptionsAll[key];
@@ -933,27 +933,31 @@ export class LurushujuIndexComponent implements OnInit {
         return {value: v.name, img: v.img};
       });
       const {disabled, multiple} = optionsInfo;
-      return {
+      const info: InputInfoSelect = {
         type: "select",
         label: key,
         model: {data, key},
         options,
         disabled,
         multiple,
-        optionsDialog: {
+        validators: Validators.required,
+        onChange: () => {
+          updateMenjiaoForm(data);
+        },
+        style: getInfoStyle(n)
+      };
+      const dialogKeys: (keyof 门铰锁边铰边)[] = ["锁边", "铰边"];
+      if (dialogKeys.includes(key)) {
+        info.optionsDialog = {
           defaultValue: data.选项默认值[key] || "",
           onChange(val) {
             if (multiple) {
               data.选项默认值[key] = val.defaultValue || "";
             }
           }
-        },
-        validators: Validators.required,
-        onChange: () => {
-          updateMenjiaoForm(data);
-        },
-        styles: getInfoStyles(n)
-      };
+        };
+      }
+      return info;
     };
     const getMenfengInputInfo = (value: (typeof 门缝配置输入)[number]): InputInfo => {
       return {
@@ -961,12 +965,37 @@ export class LurushujuIndexComponent implements OnInit {
         label: value.name,
         model: {data: data.门缝配置, key: value.name},
         validators: Validators.required,
-        styles: getInfoStyles(4)
+        style: getInfoStyle(4)
       };
     };
     const optionKeys: (keyof 门铰锁边铰边)[] = ["产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"];
     const 使用双开门扇宽生成方式 = () => this.fenleiName === "双开";
     const 使用锁扇铰扇蓝线宽固定差值 = () => data.双开门扇宽生成方式 === "按锁扇铰扇蓝线宽固定差值等生成";
+    const form1Group2: InputInfo[] = [];
+    const form1Group: InputInfo[] = [
+      {
+        type: "group",
+        label: "",
+        style: getInfoStyle(2),
+        groupStyle: getGroupStyle({flexDirection: "column", height: "100%"}),
+        infos: [
+          {
+            type: "group",
+            label: "选项",
+            infos: optionKeys.map((v) => getOptionInputInfo(v, 2)),
+            style: {flex: "1 1 0"},
+            groupStyle: getGroupStyle()
+          }
+        ]
+      },
+      {
+        type: "group",
+        label: "",
+        infos: form1Group2,
+        style: getInfoStyle(2),
+        groupStyle: getGroupStyle({flexDirection: "column", marginBottom: "0"})
+      }
+    ];
     const form1: InputInfo<typeof data>[] = [
       {
         type: "string",
@@ -977,34 +1006,34 @@ export class LurushujuIndexComponent implements OnInit {
       },
       {
         type: "group",
-        label: "选项",
-        styles: getGroupStyles(),
-        infos: optionKeys.map((v) => getOptionInputInfo(v, 2))
+        label: "",
+        infos: form1Group,
+        groupStyle: getGroupStyle()
       }
     ];
     const form2: InputInfo<门缝配置>[] = [
       {
         type: "group",
         label: "门缝配置",
-        styles: getGroupStyles(),
-        infos: 门缝配置输入.map(getMenfengInputInfo)
+        infos: 门缝配置输入.map(getMenfengInputInfo),
+        style: {marginBottom: "5px"},
+        groupStyle: getGroupStyle({marginBottom: "0"})
       }
     ];
     const form3 = [
       {
         type: "group",
         label: "其他",
-        styles: getGroupStyles(),
         infos: [
           {
             type: "boolean",
             label: "关闭碰撞检查",
             model: {data, key: "关闭碰撞检查"},
-            styles: getInfoStyles(3),
+            style: getInfoStyle(4),
             validators: Validators.required
           },
           {
-            ...getOptionInputInfo("双开门扇宽生成方式", 3),
+            ...getOptionInputInfo("双开门扇宽生成方式", 4),
             onChange: () => {
               if (使用锁扇铰扇蓝线宽固定差值()) {
                 form3[0].infos[2].hidden = false;
@@ -1021,17 +1050,18 @@ export class LurushujuIndexComponent implements OnInit {
             type: "number",
             label: "锁扇铰扇蓝线宽固定差值",
             model: {data, key: "锁扇铰扇蓝线宽固定差值"},
-            styles: getInfoStyles(3)
+            style: getInfoStyle(4)
           },
-          {type: "boolean", label: "停用", model: {data, key: "停用"}, styles: getInfoStyles(3)},
-          {type: "number", label: "排序", model: {data, key: "排序"}, styles: getInfoStyles(3)},
+          {type: "boolean", label: "停用", model: {data, key: "停用"}, style: getInfoStyle(4)},
+          {type: "number", label: "排序", model: {data, key: "排序"}, style: getInfoStyle(4)},
           {
             type: "boolean",
             label: "默认值",
             model: {data, key: "默认值"},
-            styles: getInfoStyles(3)
+            style: getInfoStyle(4)
           }
-        ]
+        ],
+        groupStyle: getGroupStyle({marginBottom: "0"})
       } as InputInfoGroup<typeof data> & RequiredKeys<InputInfoGroup, "infos">
     ] as const;
     if (!使用双开门扇宽生成方式()) {
@@ -1043,6 +1073,7 @@ export class LurushujuIndexComponent implements OnInit {
       form3[0].infos[2].hidden = true;
       delete data.锁扇铰扇蓝线宽固定差值;
     }
+    form1Group2.push(...form2, ...form3);
     const form4: InputInfo[] = [
       {
         type: "group",
@@ -1050,9 +1081,9 @@ export class LurushujuIndexComponent implements OnInit {
         infos: menjiaoCadTypes.map((key1) => {
           const keys1 = keysOf(data[key1]);
           const infos = keys1.map<InputInfo>((key2, i) => {
-            const styles: csstype.Properties = {};
+            const groupStyle: csstype.Properties = {};
             if (i === keys1.length - 1) {
-              styles.marginBottom = "0";
+              groupStyle.marginBottom = "0";
             }
             return {
               type: "group",
@@ -1070,17 +1101,16 @@ export class LurushujuIndexComponent implements OnInit {
                     raw: true,
                     search: getCadSearch(data, key1, key2, key3)
                   }),
-                  styles: {margin: "0 5px"}
+                  style: {margin: "0 5px"}
                 };
               }),
-              styles: getGroupStyles(styles)
+              groupStyle: getGroupStyle(groupStyle)
             };
           });
           return {
             type: "group",
             label: key1,
             infos,
-            styles: getGroupStyles({width: "100%"}),
             validators: () => {
               const menjiaoCadInfos = getMenjiaoCadInfos(data);
               const value = data[key1];
@@ -1113,15 +1143,17 @@ export class LurushujuIndexComponent implements OnInit {
               } else {
                 return null;
               }
-            }
+            },
+            style: {margin: "5px"},
+            groupStyle: getGroupStyle()
           };
         }),
-        styles: getGroupStyles({flexDirection: "column"})
+        groupStyle: getGroupStyle({flexDirection: "column"})
       }
     ];
     const result = await this.message.form<ObjectOf<any>>(
       {
-        inputs: [...form1, ...form2, ...form3, ...form4],
+        inputs: [...form1, ...form4],
         autoFill: this.production ? undefined : () => autoFillMenjiao(data, this.menjiaoOptionsAll)
       },
       {width: "100%", height: "100%"}

@@ -509,7 +509,7 @@
                   </button>
                 }
               </div>
-              <app-image class="cad-preview" [src]="cadInfo.img" (click)="selectCad()"></app-image>
+              <app-image class="cad-preview" [src]="cadInfo.img" [emptySrc]="imgCadEmpty" (click)="selectCad()"></app-image>
             </div>
           }
         </div>
@@ -554,7 +554,7 @@
         <div class="label">
           <span>{{ info.label }}</span>
         </div>
-        <div class="group" [ngStyle]="info.styles">
+        <div class="group" [ngStyle]="castInfo('group')['groupStyle']">
           @for (info2 of castInfo("group")["infos"]; track info2) {
             <app-input [info]="info2"></app-input>
           }
@@ -562,7 +562,7 @@
         <ng-template [ngTemplateOutlet]="footer"></ng-template>
       </div>
     } @else {
-      <div class="group" [ngStyle]="info.styles">
+      <div class="group" [ngStyle]="castInfo('group')['groupStyle']">
         @for (info2 of castInfo("group")["infos"]; track info2) {
           <app-input [info]="info2"></app-input>
         }

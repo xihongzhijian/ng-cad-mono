@@ -85,7 +85,7 @@ export class MrbcjfzXinghaoInfo {
           type: "string",
           label: "板材分组别名",
           model: {data: value, key: "板材分组别名"},
-          styles: {flex: "20 20 0"},
+          style: {flex: "20 20 0"},
           validators: (control) => {
             const val = String(control.value);
             if (["p_luomatou", "p_luomazhu", "p_qianhoubankuanshi"].includes(this.table)) {
@@ -117,12 +117,12 @@ export class MrbcjfzXinghaoInfo {
             }
           }
         },
-        {type: "boolean", label: "允许修改", model: {data: value, key: "允许修改"}, styles: {flex: "8 8 0"}},
+        {type: "boolean", label: "允许修改", model: {data: value, key: "允许修改"}, style: {flex: "8 8 0"}},
         {
           type: "boolean",
           label: "独立变化",
           model: {data: value, key: "独立变化"},
-          styles: {flex: "8 8 0"},
+          style: {flex: "8 8 0"},
           readonly: key === "底框板材"
         },
         {
@@ -130,7 +130,7 @@ export class MrbcjfzXinghaoInfo {
           label: "显示内容",
           options: showItemOptions.slice(),
           value: 显示内容,
-          styles: {flex: "16 16 0"},
+          style: {flex: "16 16 0"},
           onChange: (val: string) => {
             switch (val) {
               case "全都显示":
@@ -153,8 +153,8 @@ export class MrbcjfzXinghaoInfo {
                 console.error("未知的显示内容选项", val);
             }
             const info = this.inputInfos[key].find((v) => v.label === "显示内容");
-            if (info && info.styles) {
-              info.styles.opacity = value.不显示 ? "0.5" : "1";
+            if (info && info.style) {
+              info.style.opacity = value.不显示 ? "0.5" : "1";
             }
           }
         },
@@ -163,7 +163,7 @@ export class MrbcjfzXinghaoInfo {
           label: "门扇使用限制",
           options: mrbcjfzMsxzItems.slice(),
           model: {data: value, key: "门扇使用限制"},
-          styles: {flex: "12 12 0"}
+          style: {flex: "12 12 0"}
         }
       ];
       if (this.raw.编辑默认对应板材分组) {
@@ -171,7 +171,7 @@ export class MrbcjfzXinghaoInfo {
           type: "select",
           label: "默认对应板材分组",
           model: {data: value, key: "默认对应板材分组"},
-          styles: {flex: "40 40 0"},
+          style: {flex: "40 40 0"},
           options: ["门框板材", "门扇板材"],
           clearable: true
         });

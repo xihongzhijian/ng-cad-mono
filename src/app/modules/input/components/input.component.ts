@@ -27,7 +27,7 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
-import {joinOptions, splitOptions} from "@app/app.common";
+import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
@@ -213,6 +213,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   errors2: ValidationErrors | null = null;
   errorsKey: ObjectOf<ValidationErrors | null> = {};
   errorsValue: ObjectOf<ValidationErrors | null> = {};
+  imgCadEmpty = imgCadEmpty;
 
   valueChange$ = new BehaviorSubject<any>(null);
   filteredOptions$ = new BehaviorSubject<InputComponent["options"]>([]);
@@ -409,7 +410,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         this.class.push(info.class);
       }
     }
-    this.style = {...info.styles};
+    this.style = {...info.style};
     if (info.hidden) {
       this.style.display = "none";
     }

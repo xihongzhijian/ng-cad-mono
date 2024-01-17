@@ -24,12 +24,12 @@ export interface InputInfoBase<T = any> {
   showEmpty?: boolean;
   autoFocus?: boolean;
   placeholder?: string;
-  class?: string | string[];
   validators?: AbstractControlOptions["validators"];
   initialValidate?: boolean;
   forceValidateNum?: number; // change this to trigger validation
   name?: string;
-  styles?: csstype.Properties;
+  class?: string | string[];
+  style?: csstype.Properties;
   hidden?: boolean;
   filterValuesGetter?: (option: InputInfoOption<T>) => string[];
 }
@@ -155,6 +155,7 @@ export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
 export interface InputInfoGroup<T = any> extends InputInfoBase<T> {
   type: "group";
   infos?: InputInfo<T>[];
+  groupStyle?: csstype.Properties;
 }
 
 export type InputInfo<T = any> =

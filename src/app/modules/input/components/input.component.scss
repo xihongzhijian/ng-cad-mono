@@ -60,6 +60,8 @@
 }
 
 .sub-form-field {
+  height: 100%;
+
   > div .mat-mdc-form-field:not(:last-child) {
     padding-right: 5px;
     box-sizing: border-box;

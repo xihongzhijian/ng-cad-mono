@@ -45,6 +45,7 @@ export const autoFillMenjiao = (data: 门铰锁边铰边, menjiaoOptionsAll: Opt
   for (const item of 门缝配置输入) {
     data.门缝配置[item.name] = isTypeOf(item.defaultValue, "number") ? (item.defaultValue as number) : 1;
   }
+  data.名字 = "autoFill";
   updateMenjiaoForm(data);
 };
 
