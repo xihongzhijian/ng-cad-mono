@@ -163,6 +163,7 @@ export class LurushujuIndexComponent implements OnInit {
     } else {
       await this.setStep(1, {});
     }
+    // console.log(await this.http.getData("shuju/api/getMenjiaos", {}, {spinner: false}));
   }
 
   returnZero() {
@@ -228,7 +229,32 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   editXinghao(xinghao: XinghaoData) {
+    this.xinghao = null;
     this.setStep(2, {xinghaoName: xinghao.mingzi});
+  }
+
+  async copyXinghao(xinghao: XinghaoData) {
+    const from = xinghao.mingzi;
+    if (!(await this.message.confirm(`确定复制选中${from}吗？`))) {
+      return;
+    }
+    const names = this.xinghaos.map((v) => v.mingzi);
+    const to = getCopyName(names, from);
+    const success = await this.http.getData<boolean>("shuju/api/copyXinghao", {from, to}, {spinner: false});
+    if (success) {
+      await this.getXinghaos();
+    }
+  }
+
+  async removeXinghao(xinghao: XinghaoData) {
+    const name = xinghao.mingzi;
+    if (!(await this.message.confirm(`确定复制选中${name}吗？`))) {
+      return;
+    }
+    const success = await this.http.getData<boolean>("shuju/api/removeXinghao", {name});
+    if (success) {
+      await this.getXinghaos();
+    }
   }
 
   refresh() {

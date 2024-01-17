@@ -33,9 +33,6 @@
     &.active {
       --border: 1px solid #409eff;
     }
-    &.link {
-      cursor: pointer;
-    }
 
     app-image:not(.cad-preview) {
       width: 100%;
@@ -95,5 +92,9 @@
     .mat-mdc-button {
       padding: 0;
     }
+  }
+
+  .link {
+    cursor: pointer;
   }
 }

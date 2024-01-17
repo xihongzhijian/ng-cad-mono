@@ -2,6 +2,7 @@ import {enableProdMode, importProvidersFrom, Injectable} from "@angular/core";
 import {MAT_DATE_LOCALE} from "@angular/material/core";
 import {MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldDefaultOptions} from "@angular/material/form-field";
 import {MatPaginatorIntl} from "@angular/material/paginator";
+import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions} from "@angular/material/tooltip";
 import {bootstrapApplication} from "@angular/platform-browser";
 import {provideAnimations} from "@angular/platform-browser/animations";
 import {environment} from "@env";
@@ -30,6 +31,11 @@ class MyMatPaginatorIntl extends MatPaginatorIntl {
 const matFormFieldOptions: MatFormFieldDefaultOptions = {
   appearance: "fill",
   floatLabel: "always"
+};
+const matTooltipOptions: MatTooltipDefaultOptions = {
+  showDelay: 500,
+  hideDelay: 0,
+  touchendHideDelay: 0
 };
 
 if (environment.production) {
@@ -71,6 +77,7 @@ bootstrapApplication(AppComponent, {
     {provide: MatPaginatorIntl, useClass: MyMatPaginatorIntl},
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: matFormFieldOptions},
     {provide: MAT_DATE_LOCALE, useValue: "zh-CN"},
+    {provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipOptions},
     {provide: RECAPTCHA_V3_SITE_KEY, useValue: "6Leil-0ZAAAAACnzpTud2QN5OuhJ10UyJJrUq70m"},
     {
       provide: RECAPTCHA_LOADER_OPTIONS,

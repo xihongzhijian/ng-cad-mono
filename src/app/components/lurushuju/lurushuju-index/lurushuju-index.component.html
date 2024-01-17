@@ -26,9 +26,13 @@
       <div class="items">
         @for (xinghao of xinghaos; track xinghao) {
           @if (!xinghao.hidden) {
-            <div class="item link" (click)="editXinghao(xinghao)">
-              <app-image [src]="xinghao.tupian" fit="contain"></app-image>
+            <div class="item">
               <div class="name" [matTooltip]="xinghao.mingzi">{{ xinghao.mingzi }}</div>
+              <div class="toolbar center">
+                <button mat-button color="primary" (click)="copyXinghao(xinghao)">复制</button>
+                <button mat-button color="primary" (click)="removeXinghao(xinghao)">删除</button>
+              </div>
+              <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="editXinghao(xinghao)"></app-image>
             </div>
           }
         }

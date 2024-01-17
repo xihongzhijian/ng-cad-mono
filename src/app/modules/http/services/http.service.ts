@@ -286,9 +286,20 @@ export class HttpService {
     return await this.request<T>(url, "POST", data, options);
   }
 
+  isSuccessfulResponse(response: CustomResponse<any> | null, options?: HttpOptions): response is CustomResponse<any> {
+    if (!response) {
+      return false;
+    }
+    const bypassCodes = options?.bypassCodes ?? [];
+    return response.code === 0 || bypassCodes.includes(response.code);
+  }
+
   async getData<T>(url: string, data?: ObjectOf<any>, options?: HttpOptions) {
     const response = await this.post<T>(url, data, options);
-    let data2: T | undefined | null = response?.data;
+    if (!this.isSuccessfulResponse(response, options)) {
+      return null;
+    }
+    let data2: T | undefined | null = response.data;
     if (data2 === undefined) {
       data2 = null;
     }
@@ -297,13 +308,13 @@ export class HttpService {
 
   async getDataAndCount<T>(url: string, data?: ObjectOf<any>, options?: HttpOptions) {
     const response = await this.post<T>(url, data, options);
-    let data2: T | undefined | null = response?.data;
+    if (!this.isSuccessfulResponse(response, options)) {
+      return null;
+    }
+    let data2: T | undefined | null = response.data;
     if (data2 === undefined) {
       data2 = null;
     }
-    if (response) {
-      return {data: data2, count: response.count || 0};
-    }
-    return null;
+    return {data: data2, count: response.count || 0};
   }
 }
