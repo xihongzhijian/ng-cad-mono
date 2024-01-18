@@ -57,13 +57,20 @@ export class SelectGongyiDialogComponent implements OnInit {
   }
 
   updateInputInfos() {
-    const {xinghaos, xinghaoOptions: options, menjiaoOptions} = this.data || {};
+    const {xinghaos, xinghaoOptions: options, menjiaoOptions, fenlei} = this.data || {};
     const data = this.searchForm;
     const xinghaoOptions = (xinghaos || []).map<InputInfoOption>(({mingzi, tupian}) => ({value: mingzi, img: tupian}));
     this.inputInfos = [
       {type: "select", label: "型号", clearable: true, model: {key: "型号", data}, options: xinghaoOptions, optionsDialog: {}},
       {type: "select", label: "工艺", clearable: true, model: {key: "工艺", data}, options: getOptions(options, "工艺")},
-      {type: "select", label: "产品分类", clearable: true, model: {key: "产品分类", data}, options: getOptions(options, "产品分类")}
+      {
+        type: "select",
+        label: "产品分类",
+        clearable: true,
+        model: {key: "产品分类", data},
+        options: getOptions(options, "产品分类"),
+        hidden: !!fenlei
+      }
     ];
     if (menjiaoOptions) {
       const data2 = this.searchFormMenjiao;
@@ -76,7 +83,7 @@ export class SelectGongyiDialogComponent implements OnInit {
         });
       };
       this.inputInfosMenjiao = [
-        {type: "string", label: "名字", clearable: true, model: {key: "名字", data: data2}, options: xinghaoOptions, optionsDialog: {}},
+        {type: "string", label: "名字", clearable: true, model: {key: "名字", data: data2}},
         getOptionInputInfo2("开启"),
         getOptionInputInfo2("门铰"),
         getOptionInputInfo2("门扇厚度")
@@ -87,12 +94,15 @@ export class SelectGongyiDialogComponent implements OnInit {
   }
 
   async search() {
-    const {excludeXinghaos, excludeGongyis, key, menjiaoOptions} = this.data || {};
+    const {excludeXinghaos, excludeGongyis, key, menjiaoOptions, fenlei} = this.data || {};
     const keys = ["名字", "图片"];
     if (key && !keys.includes(key)) {
       keys.push(key);
     }
     const params: ObjectOf<any> = {...this.searchForm, compact: {keys}, excludeXinghaos, excludeGongyis};
+    if (fenlei) {
+      params.产品分类 = fenlei;
+    }
     const items = await this.http.getData<SelectGongyiItemData[]>("shuju/api/getGongyis", params);
     this.items = [];
     for (const item of items || []) {

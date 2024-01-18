@@ -9,6 +9,7 @@ export interface SelectGongyiInput {
   excludeGongyis?: string[];
   key?: keyof 工艺做法;
   multiple?: boolean;
+  fenlei?: string;
 }
 
 export interface SelectGongyiOutput {

@@ -148,7 +148,7 @@ export class LurushujuIndexComponent implements OnInit {
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
 
-  private _isStepFetched: ObjectOf<boolean> = {};
+  private _isDataFetched: ObjectOf<boolean> = {};
 
   constructor(
     private http: CadDataService,
@@ -295,11 +295,38 @@ export class LurushujuIndexComponent implements OnInit {
     await this.setStep3();
   }
 
-  async getXinghaosIfNotFetched() {
-    if (!this._isStepFetched.xinghaos) {
-      await this.getXinghaos();
-      this._isStepFetched.xinghaos = true;
+  async getDataIfNotFetched(key: string, fn: () => Promise<any>) {
+    if (!this._isDataFetched[key]) {
+      await fn();
+      this._isDataFetched[key] = true;
     }
+  }
+
+  async getXinghaosIfNotFetched() {
+    await this.getDataIfNotFetched("xinghaos", async () => {
+      await this.getXinghaos();
+    });
+  }
+
+  async getXinghaoOptionsAllIfNotFetched() {
+    await this.getDataIfNotFetched("xinghaoOptionsAll", async () => {
+      const optionsAll = await this.http.getData<OptionsAll>("shuju/api/getXinghaoOption");
+      this.xinghaoOptionsAll = optionsAll || {};
+    });
+  }
+
+  async getGongyiOptionsAllIfNotFetched() {
+    await this.getDataIfNotFetched("gongyiOptionsAll", async () => {
+      const optionsAll = await this.http.getData<OptionsAll>("shuju/api/getGongyizuofaOption");
+      this.gongyiOptionsAll = optionsAll || {};
+    });
+  }
+
+  async getMenjiaoOptionsAllIfNotFetched() {
+    await this.getDataIfNotFetched("menjiaoOptionsAll", async () => {
+      const optionsAll = await this.http.getData<OptionsAll2>("shuju/api/getMenjiaoOptions");
+      this.menjiaoOptionsAll = optionsAll || {};
+    });
   }
 
   async setStep1() {
@@ -323,12 +350,7 @@ export class LurushujuIndexComponent implements OnInit {
     if (!this.xinghao) {
       return;
     }
-    await this.getXinghaosIfNotFetched();
-    if (!this._isStepFetched[step]) {
-      const optionsAll = await this.http.getData<OptionsAll>("shuju/api/getXinghaoOption");
-      this.xinghaoOptionsAll = optionsAll || {};
-      this._isStepFetched[step] = true;
-    }
+    await Promise.all([this.getXinghaosIfNotFetched(), this.getXinghaoOptionsAllIfNotFetched()]);
     const {xinghao, xinghaoOptionsAll} = this;
     const getOptions2 = (key: string) => {
       return getOptions(xinghaoOptionsAll, key, (option) => {
@@ -394,21 +416,19 @@ export class LurushujuIndexComponent implements OnInit {
     if (!this.xinghao) {
       await this.getXinghao();
     }
-    await this.getXinghaosIfNotFetched();
     if (!this.xinghao) {
       return;
     }
-    if (!this._isStepFetched[step]) {
-      const gongyiOptionsAll = await this.http.getData<OptionsAll>("shuju/api/getGongyizuofaOption");
-      const menjiaoOptionsAll = await this.http.getData<OptionsAll2>("shuju/api/getMenjiaoOptions");
-      this.gongyiOptionsAll = gongyiOptionsAll || {};
-      this.menjiaoOptionsAll = menjiaoOptionsAll || {};
-      this.menshans = await this.http.queryMySql<(typeof this.menshans)[number]>({
-        table: "p_menshan",
-        fields: ["vid", "mingzi", "zuchenghuajian"]
-      });
-      this._isStepFetched[step] = true;
-    }
+    await Promise.all([
+      this.getXinghaosIfNotFetched(),
+      this.getXinghaoOptionsAllIfNotFetched(),
+      this.getGongyiOptionsAllIfNotFetched(),
+      this.getMenjiaoOptionsAllIfNotFetched()
+    ]);
+    this.menshans = await this.http.queryMySql<(typeof this.menshans)[number]>({
+      table: "p_menshan",
+      fields: ["vid", "mingzi", "zuchenghuajian"]
+    });
     let gongyi = this.xinghao.产品分类[this.fenleiName].find((v) => v.名字 === this.gongyiName);
     if (!gongyi) {
       this.gongyi = null;
@@ -1119,7 +1139,7 @@ export class LurushujuIndexComponent implements OnInit {
     const form4: InputInfo[] = [
       {
         type: "group",
-        label: " ",
+        label: "",
         infos: menjiaoCadTypes.map((key1) => {
           const keys1 = keysOf(data[key1]);
           const infos = keys1.map<InputInfo>((key2, i) => {
@@ -1237,7 +1257,8 @@ export class LurushujuIndexComponent implements OnInit {
               excludeXinghaos: [this.xinghaoName],
               excludeGongyis: [gongyi.名字],
               key: "门铰锁边铰边",
-              multiple: true
+              multiple: true,
+              fenlei: this.fenleiName
             }
           });
           if (result && result.items.length > 0) {
@@ -1589,7 +1610,8 @@ export class LurushujuIndexComponent implements OnInit {
         xinghaoOptions: this.xinghaoOptionsAll,
         excludeXinghaos: [this.xinghaoName],
         excludeGongyis: [gongyi.名字],
-        key: "算料CAD"
+        key: "算料CAD",
+        fenlei: this.fenleiName
       }
     });
     const item = result?.items[0];
