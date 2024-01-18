@@ -12,6 +12,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsParams, OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {lastValueFrom} from "rxjs";
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
@@ -52,13 +53,22 @@ export class CadOptionsComponent implements AfterViewInit {
     type: "string",
     autoFocus: true,
     model: {data: this, key: "searchValue"},
+    onInput: debounce(() => {
+      if (!this.showPaginator) {
+        this.search();
+      }
+    }, 500),
     onChange: () => {
-      this.search();
+      if (this.showPaginator) {
+        this.search();
+      }
     }
   };
   defaultValue: string | null = null;
   filePathUrl = filePathUrl;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
+  showPaginator = true;
+
   constructor(
     public dialogRef: MatDialogRef<CadOptionsComponent, CadOptionsOutput>,
     @Inject(MAT_DIALOG_DATA) public data: CadOptionsInput,
@@ -113,11 +123,12 @@ export class CadOptionsComponent implements AfterViewInit {
   }
 
   search() {
-    if (!this.paginator) {
-      return;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+      this.getData(this.paginator.pageIndex + 1);
+    } else {
+      this.getData();
     }
-    this.paginator.pageIndex = 0;
-    this.getData(this.paginator.pageIndex + 1);
   }
 
   changePage(event: PageEvent) {
@@ -135,15 +146,17 @@ export class CadOptionsComponent implements AfterViewInit {
         return queryString(this.searchValue, v.name);
       });
       data = {data: options, count: options.length};
+      this.showPaginator = false;
     } else {
       this.spinner.show(...loader);
       data = await this.http.getOptions(params);
       this.spinner.hide(loader[0]);
+      this.showPaginator = true;
     }
     return data;
   }
 
-  async getData(page: number) {
+  async getData(page?: number) {
     const {checkedIdsCurr, checkedIdsOthers, pageData} = this;
     checkedIdsCurr.clear();
     for (const {vid, checked} of pageData) {

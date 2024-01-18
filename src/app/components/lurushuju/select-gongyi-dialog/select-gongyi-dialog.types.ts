@@ -1,8 +1,14 @@
-import {OptionsAll} from "../lurushuju-index/lurushuju-index.types";
+import {OptionsAll, OptionsAll2, XinghaoData} from "../lurushuju-index/lurushuju-index.types";
+import {工艺做法} from "../xinghao-data";
 
 export interface SelectGongyiInput {
-  options: OptionsAll;
+  xinghaos: XinghaoData[];
+  xinghaoOptions: OptionsAll;
+  menjiaoOptions?: OptionsAll2;
   excludeXinghaos?: string[];
+  excludeGongyis?: string[];
+  key?: keyof 工艺做法;
+  multiple?: boolean;
 }
 
 export interface SelectGongyiOutput {
@@ -12,11 +18,15 @@ export interface SelectGongyiOutput {
 export interface SelectGongyiItem {
   selected?: boolean;
   data: SelectGongyiItemData;
+  info?: string[];
 }
 
 export interface SelectGongyiItemData {
   型号: string;
   产品分类: string;
   名字: string;
-  图片: string;
+  工艺做法?: string;
+  图片?: string;
+  data?: any;
+  [key: string]: any;
 }

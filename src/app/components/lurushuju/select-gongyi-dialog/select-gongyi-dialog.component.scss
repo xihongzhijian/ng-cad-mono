@@ -1,4 +1,10 @@
 .items {
   --items-per-row: 5;
-  --item-height: 300px;
+  --item-image-height: 250px;
+}
+
+.search-form {
+  app-input {
+    width: 0;
+  }
 }

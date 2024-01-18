@@ -653,7 +653,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       hasOptions = !!info.options;
     } else if (info.type === "select") {
       multiple = info.multiple;
-      hasOptions = !!info.options;
+      hasOptions = info.options.length > 0;
     } else if (info.type === "object") {
       multiple = info.optionMultiple;
       hasOptions = !!info.options;
@@ -703,6 +703,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       let resultValue: string | string[] = options2;
       if (optionValueType === "string") {
         resultValue = joinOptions(options2);
+      } else if (!multiple) {
+        resultValue = options2[0] || "";
       }
       if (key) {
         if (isObject && optionKey) {

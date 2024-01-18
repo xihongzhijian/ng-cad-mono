@@ -90,11 +90,9 @@ export class ImageComponent {
     const {prefix, _src, _src2} = this;
     if (_src2) {
       return _src2;
-    } else if (prefix && _src) {
-      if (!prefix.endsWith("/") && typeof _src === "string" && !_src.startsWith("/")) {
-        return prefix + "/" + _src;
-      }
-      return prefix + _src;
+    } else if (prefix && _src && !/^(\/)|(http)/.test(String(_src))) {
+      const prefix2 = prefix.endsWith("/") ? prefix : prefix + "/";
+      return prefix2 + _src;
     }
     return _src;
   }

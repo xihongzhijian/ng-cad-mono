@@ -1,8 +1,17 @@
 <div class="flex-110 flex-column">
-  <div class="toolbar">
-    @for (info of inputInfos; track $index) {
-      <app-input class="flex-110" [info]="info"></app-input>
-    }
+  <div class="toolbar search-form">
+    <div class="flex-column flex-110">
+      <div class="toolbar">
+        @for (info of inputInfos; track $index) {
+          <app-input class="flex-110" [info]="info"></app-input>
+        }
+      </div>
+      <div class="toolbar">
+        @for (info of inputInfosMenjiao; track $index) {
+          <app-input class="flex-110" [info]="info"></app-input>
+        }
+      </div>
+    </div>
     <button mat-raised-button color="primary" (click)="search()">搜索</button>
   </div>
   <ng-scrollbar>
@@ -11,11 +20,24 @@
         <div class="item link" (click)="clickItem(i)">
           <div class="toolbar">
             <mat-checkbox [checked]="item.selected"></mat-checkbox>
-            <div class="text long center">{{ item.data["名字"] }}</div>
+            <div class="text long center" [matTooltip]="item.data['名字']">{{ item.data["名字"] }}</div>
           </div>
           <div class="text">型号：{{ item.data["型号"] }}</div>
           <div class="text">产品分类：{{ item.data["产品分类"] }}</div>
-          <app-image [src]="getFilepathUrl(item.data['图片'])"> </app-image>
+          @if (item.data["工艺做法"]) {
+            <div class="text">工艺做法：{{ item.data["工艺做法"] }}</div>
+          }
+          @for (str of item.info; track $index) {
+            <div class="text">{{ str }}</div>
+          }
+          @if (data?.menjiaoOptions) {
+            @for (key of displayMenjiaoKeys; track $index) {
+              <div class="text">{{ key }}：{{ item.data.data[key] }}</div>
+            }
+          }
+          @if (item.data["图片"]) {
+            <app-image [src]="getFilepathUrl(item.data['图片'])"> </app-image>
+          }
         </div>
       }
     </div>

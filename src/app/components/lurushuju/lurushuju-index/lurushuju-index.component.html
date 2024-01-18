@@ -75,7 +75,7 @@
                       <div class="text">默认值：{{ getBooleanStr(gongyi["默认值"]) }}</div>
                     </div>
                   }
-                  <div class="item border" (click)="addGongyi(fenlei)">
+                  <div class="item border link" (click)="addGongyi(fenlei)">
                     <div class="toolbar center flex-110">
                       <button mat-icon-button color="primary"><mat-icon>add</mat-icon></button>
                     </div>
@@ -177,6 +177,7 @@
                   <div class="suanliaocads flex-column">
                     <div class="toolbar">
                       <div class="flex-110"></div>
+                      <button mat-raised-button color="primary" (click)="copySuanliaoCads()">从其它做法复制</button>
                       <button mat-raised-button color="primary" (click)="selectSuanliaoCads()">选择cad</button>
                       <button mat-raised-button color="primary" (click)="suanliao()">计算</button>
                     </div>

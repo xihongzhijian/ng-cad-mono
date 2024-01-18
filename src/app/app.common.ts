@@ -145,7 +145,7 @@ export interface XiaodaohangStructure {
 
 export const filePathUrl = `${origin}/filepath`;
 
-export const getFilepathUrl = (url: string, opts?: {prefix?: string; suffix?: string}) => {
+export const getFilepathUrl = (url: string | undefined | null, opts?: {prefix?: string; suffix?: string}) => {
   if (!url) {
     return "";
   }

@@ -1,23 +1,30 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {HttpModule} from "@modules/http/http.module";
+import {SelectGongyiDialogComponent} from "./select-gongyi-dialog.component";
+import {SelectGongyiInput} from "./select-gongyi-dialog.types";
 
-import { SelectGongyiDialogComponent } from './select-gongyi-dialog.component';
+const data: SelectGongyiInput = {xinghaos: [{vid: 1, mingzi: "test"}], xinghaoOptions: {}};
 
-describe('SelectGongyiDialogComponent', () => {
+describe("SelectGongyiDialogComponent", () => {
   let component: SelectGongyiDialogComponent;
   let fixture: ComponentFixture<SelectGongyiDialogComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SelectGongyiDialogComponent]
-    })
-    .compileComponents();
-    
+      imports: [HttpModule, SelectGongyiDialogComponent],
+      providers: [
+        {provide: MatDialogRef, useValue: {}},
+        {provide: MAT_DIALOG_DATA, useValue: data}
+      ]
+    }).compileComponents();
+
     fixture = TestBed.createComponent(SelectGongyiDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

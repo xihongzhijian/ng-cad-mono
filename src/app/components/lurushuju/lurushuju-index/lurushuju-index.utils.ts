@@ -1,7 +1,7 @@
 import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
-import {InputInfoOptionBase} from "@modules/input/components/input.types";
+import {InputInfoOptionBase, InputInfoSelect} from "@modules/input/components/input.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {random} from "lodash";
 import {cadMatchRules, menjiaoCadTypes, 门缝配置输入, 门铰锁边铰边} from "../xinghao-data";
@@ -268,11 +268,17 @@ export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
       }
     ],
     data: [],
-    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
+    toolbarButtons: {
+      extra: [
+        {event: "添加", color: "primary"},
+        {event: "从其它做法选择", color: "primary"}
+      ],
+      inlineTitle: true
+    }
   };
 };
 
-export const getOptions = (optionsAll: OptionsAll, key: string, setter?: (option: InputInfoOptionBase) => void) => {
+export const getOptions = (optionsAll: OptionsAll | undefined | null, key: string, setter?: (option: InputInfoOptionBase) => void) => {
   const options = optionsAll?.[key];
   if (!options) {
     return [];
@@ -284,4 +290,30 @@ export const getOptions = (optionsAll: OptionsAll, key: string, setter?: (option
     }
     return option;
   });
+};
+
+export const getOptionInputInfo = (
+  optionsAll: OptionsAll2 | undefined | null,
+  key: keyof 门铰锁边铰边,
+  setter?: (info: InputInfoSelect) => void
+): InputInfoSelect => {
+  const optionsInfo = optionsAll?.[key];
+  if (!optionsInfo) {
+    return {type: "select", label: key, options: []};
+  }
+  const options = optionsInfo.options.map<InputInfoOptionBase>((v) => {
+    return {value: v.name, img: v.img};
+  });
+  const {disabled, multiple} = optionsInfo;
+  const info: InputInfoSelect = {
+    type: "select",
+    label: key,
+    options,
+    disabled,
+    multiple
+  };
+  if (typeof setter === "function") {
+    setter(info);
+  }
+  return info;
 };

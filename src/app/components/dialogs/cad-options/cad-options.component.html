@@ -20,22 +20,22 @@
             </button>
           }
         </div>
-        @if (item.img) {
-          <app-image [src]="item.img" [prefix]="filePathUrl"></app-image>
-        }
+        <app-image [src]="item.img" [prefix]="filePathUrl"></app-image>
       </div>
     }
   </div>
 </ng-scrollbar>
 
-<mat-paginator
-  #paginator
-  [length]="length"
-  [pageSize]="pageSize"
-  [pageSizeOptions]="pageSizeOptions"
-  showFirstLastButtons
-  (page)="changePage($event)"
-></mat-paginator>
+@if (showPaginator) {
+  <mat-paginator
+    #paginator
+    [length]="length"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    showFirstLastButtons
+    (page)="changePage($event)"
+  ></mat-paginator>
+}
 
 <div matDialogActions>
   <div class="spinner-container">

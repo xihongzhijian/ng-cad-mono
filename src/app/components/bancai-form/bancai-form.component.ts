@@ -73,22 +73,16 @@ export class BancaiFormComponent {
           ]
         },
         {
-          type: "string",
+          type: "select",
           label: "材料",
           model: {key: "cailiao", data: this.data},
-          readonly: true,
-          options: checkedItem?.cailiaoList || [],
-          optionValueType: "string",
-          optionsDialog: {}
+          options: checkedItem?.cailiaoList || []
         },
         {
-          type: "string",
+          type: "select",
           label: "厚度",
           model: {key: "houdu", data: this.data},
-          readonly: true,
-          options: checkedItem?.houduList || [],
-          optionValueType: "string",
-          optionsDialog: {}
+          options: checkedItem?.houduList || []
         }
       ],
       [
@@ -116,24 +110,18 @@ export class BancaiFormComponent {
           ]
         },
         {
-          type: "string",
+          type: "select",
           label: "可选材料",
           model: {key: "cailiaoList", data: this.data},
-          readonly: true,
           options: checkedItem?.cailiaoList || [],
-          optionValueType: "array",
-          optionMultiple: true,
-          optionsDialog: {}
+          multiple: true
         },
         {
-          type: "string",
+          type: "select",
           label: "可选厚度",
           model: {key: "houduList", data: this.data},
-          readonly: true,
           options: checkedItem?.houduList || [],
-          optionValueType: "array",
-          optionMultiple: true,
-          optionsDialog: {}
+          multiple: true
         }
       ]
     ];
