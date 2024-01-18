@@ -15,7 +15,7 @@
     <button mat-raised-button color="primary" (click)="search()">搜索</button>
   </div>
   <ng-scrollbar>
-    <div class="items">
+    <div class="items no-items-per-row">
       @for (item of items; track i; let i = $index) {
         <div class="item link" (click)="clickItem(i)">
           <div class="toolbar">

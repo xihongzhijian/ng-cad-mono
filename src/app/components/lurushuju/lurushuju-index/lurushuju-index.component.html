@@ -23,7 +23,7 @@
 @switch (step) {
   @case (1) {
     <ng-scrollbar class="step-1">
-      <div class="items">
+      <div class="items no-items-per-row">
         @for (xinghao of xinghaos; track xinghao) {
           @if (!xinghao.hidden) {
             <div class="item">
@@ -60,7 +60,7 @@
                 <div class="header">
                   <div class="name title">{{ fenlei }}</div>
                 </div>
-                <div class="工艺做法 items">
+                <div class="工艺做法 items no-items-per-row">
                   @for (gongyi of xinghao["产品分类"][fenlei]; track gongyi) {
                     <div class="item link">
                       <div class="name" (click)="editGongyi2(fenlei, gongyi['名字'])">{{ gongyi["名字"] }}</div>

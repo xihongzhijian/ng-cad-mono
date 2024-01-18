@@ -6,8 +6,8 @@
 
 .step-1 {
   .items {
-    --items-per-row: 6;
-    --item-height: 300px;
+    --item-width: 200px;
+    --item-height: 320px;
   }
 }
 
@@ -37,8 +37,8 @@
 
   .工艺做法 {
     flex: 1 1 0;
-    --items-per-row: 5;
-    --item-height: 300px;
+    --item-width: 200px;
+    --item-height: 320px;
   }
 }
 
