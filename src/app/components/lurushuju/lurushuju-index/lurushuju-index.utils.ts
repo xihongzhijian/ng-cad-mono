@@ -1,10 +1,11 @@
 import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {InputInfoOptionBase} from "@modules/input/components/input.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {random} from "lodash";
 import {cadMatchRules, menjiaoCadTypes, 门缝配置输入, 门铰锁边铰边} from "../xinghao-data";
-import {MenjiaoData, OptionsAll2, ShuruTableData, XuanxiangTableData} from "./lurushuju-index.types";
+import {MenjiaoData, OptionsAll, OptionsAll2, ShuruTableData, XuanxiangTableData} from "./lurushuju-index.types";
 
 export const autoFillMenjiao = (data: 门铰锁边铰边, menjiaoOptionsAll: OptionsAll2) => {
   const setOption = (key: string) => {
@@ -269,4 +270,18 @@ export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
     data: [],
     toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
   };
+};
+
+export const getOptions = (optionsAll: OptionsAll, key: string, setter?: (option: InputInfoOptionBase) => void) => {
+  const options = optionsAll?.[key];
+  if (!options) {
+    return [];
+  }
+  return options.map(({name}) => {
+    const option: InputInfoOptionBase = {value: name};
+    if (typeof setter === "function") {
+      setter(option);
+    }
+    return option;
+  });
 };

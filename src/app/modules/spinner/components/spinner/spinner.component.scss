@@ -1,5 +1,19 @@
-::ng-deep {
+:host ::ng-deep {
   .spinner-container {
     position: relative;
+  }
+
+  ngx-ui-loader {
+    .ngx-background-spinner {
+      z-index: var(--top-z-index) !important;
+    }
+
+    .ngx-overlay {
+      z-index: var(--top-z-index1) !important;
+    }
+
+    .ngx-progress-bar {
+      z-index: var(--top-z-index2) !important;
+    }
   }
 }

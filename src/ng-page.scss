@@ -6,6 +6,9 @@
   padding: 10px;
   box-sizing: border-box;
   overflow: hidden;
+  &.mat-mdc-dialog-component-host {
+    display: flex;
+  }
 
   .items {
     display: flex;
@@ -74,7 +77,9 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-
+      &.center {
+        text-align: center;
+      }
       &.short {
         width: auto;
         flex: 0 0 auto;
@@ -91,6 +96,15 @@
 
     .mat-mdc-button {
       padding: 0;
+    }
+
+    --mdc-checkbox-state-layer-size: 30px;
+    .mat-mdc-checkbox-touch-target {
+      width: 36px;
+      height: 36px;
+    }
+    .mat-mdc-checkbox {
+      margin: 0;
     }
   }
 

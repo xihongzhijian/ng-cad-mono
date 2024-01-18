@@ -46,6 +46,9 @@
           <app-input class="flex-110" [info]="info"></app-input>
         }
       </div>
+      <div class="toolbar">
+        <button mat-raised-button color="primary" (click)="copyGongyi2()">从其它型号复制</button>
+      </div>
       <ng-scrollbar>
         @if (xinghao) {
           <div class="items">
@@ -66,9 +69,7 @@
                         <button mat-button color="primary" (click)="copyGongyi(fenlei, gongyi['名字'])">复制</button>
                         <button mat-button color="primary" (click)="removeGongyi(fenlei, gongyi['名字'])">删除</button>
                       </div>
-                      <app-image [src]="getGongyiImageUrl(gongyi['图片'])" fit="contain" (click)="editGongyi2(fenlei, gongyi['名字'])">
-                        <div slot="error" class="image-error" (click)="editGongyi2(fenlei, gongyi['名字'])"></div>
-                      </app-image>
+                      <app-image [src]="getFilepathUrl(gongyi['图片'])" (click)="editGongyi2(fenlei, gongyi['名字'])"> </app-image>
                       <div class="text">停用：{{ getBooleanStr(gongyi["停用"]) }}</div>
                       <div class="text">录入完成：{{ getBooleanStr(gongyi["录入完成"]) }}</div>
                       <div class="text">默认值：{{ getBooleanStr(gongyi["默认值"]) }}</div>

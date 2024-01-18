@@ -199,6 +199,9 @@ export const getBooleanStr = (value: boolean) => {
 };
 
 export const getCopyName = (names: string[], name: string) => {
+  if (!names.includes(name)) {
+    return name;
+  }
   let i = 0;
   const getSuffix = () => "_复制" + (i === 0 ? "" : i.toString());
   while (names.includes(name + getSuffix())) {

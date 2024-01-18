@@ -226,6 +226,9 @@ input[type="number"] {
   --title-size: 1.5rem;
   --title-padding: 0.5em;
   --border: 1px solid black;
+  --top-z-index: 99999;
+  --top-z-index1: calc(var(--top-z-index) + 1);
+  --top-z-index2: calc(var(--top-z-index1) + 1);
   // --cad-preview-width: 300px;
   // --cad-preview-height: 150px;
 }

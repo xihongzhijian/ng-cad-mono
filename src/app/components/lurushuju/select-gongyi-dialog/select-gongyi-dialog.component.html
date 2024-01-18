@@ -1,0 +1,27 @@
+<div class="flex-110 flex-column">
+  <div class="toolbar">
+    @for (info of inputInfos; track $index) {
+      <app-input class="flex-110" [info]="info"></app-input>
+    }
+    <button mat-raised-button color="primary" (click)="search()">搜索</button>
+  </div>
+  <ng-scrollbar>
+    <div class="items">
+      @for (item of items; track i; let i = $index) {
+        <div class="item link" (click)="clickItem(i)">
+          <div class="toolbar">
+            <mat-checkbox [checked]="item.selected"></mat-checkbox>
+            <div class="text long center">{{ item.data["名字"] }}</div>
+          </div>
+          <div class="text">型号：{{ item.data["型号"] }}</div>
+          <div class="text">产品分类：{{ item.data["产品分类"] }}</div>
+          <app-image [src]="getFilepathUrl(item.data['图片'])"> </app-image>
+        </div>
+      }
+    </div>
+  </ng-scrollbar>
+</div>
+<div class="toolbar center">
+  <button mat-raised-button color="primary" (click)="submit()">确定</button>
+  <button mat-raised-button color="primary" (click)="cancel()">取消</button>
+</div>

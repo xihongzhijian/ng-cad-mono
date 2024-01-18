@@ -151,7 +151,7 @@ mat-divider {
 }
 
 .cdk-drag-preview {
-  z-index: var(--top-top-z-index) !important;
+  z-index: var(--top-z-index1) !important;
   box-sizing: border-box;
   border-radius: 4px;
   box-shadow:
@@ -175,9 +175,6 @@ mat-divider {
 :root {
   --mat-divider-margin: 5px;
   --mat-icon-size: 24px;
-  --top-z-index: 99999;
-  --top-top-z-index: calc(var(--top-z-index) + 1);
-
   --mat-form-field-container-text-size: 1.125rem;
   --mdc-filled-text-field-label-text-color: #{$primary-color};
   --mdc-filled-text-field-focus-label-text-color: #{$primary-color};

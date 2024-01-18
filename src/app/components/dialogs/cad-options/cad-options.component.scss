@@ -10,13 +10,9 @@
 .options {
   --items-per-row: 5;
   --item-height: 200px;
-  --mdc-checkbox-state-layer-size: 30px;
 
   .option {
     cursor: pointer;
-    .mat-mdc-checkbox {
-      margin: 0;
-    }
     .text {
       text-align: center;
     }

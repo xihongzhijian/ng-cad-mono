@@ -31,6 +31,7 @@ import {cloneDeep, debounce, isEmpty, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
 import {CadItemComponent} from "../cad-item/cad-item.component";
+import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {
   getGongyi,
   getXinghao,
@@ -64,6 +65,7 @@ import {
   getCadSearch,
   getMenjiaoCadInfos,
   getMenjiaoTable,
+  getOptions,
   getShuruTable,
   getXuanxiangTable,
   updateMenjiaoForm
@@ -225,6 +227,7 @@ export class LurushujuIndexComponent implements OnInit {
     const xinghao = await this.http.getData<XinghaoData>("shuju/api/insertXinghao", {名字});
     if (xinghao) {
       this.editXinghao(xinghao);
+      this.getXinghaos();
     }
   }
 
@@ -322,17 +325,11 @@ export class LurushujuIndexComponent implements OnInit {
       this._isStepFetched[step] = true;
     }
     const {xinghao, xinghaoOptionsAll} = this;
-    const getOptions = (key: string) => {
-      const options = xinghaoOptionsAll?.[key];
-      if (!options) {
-        return [];
-      }
-      return options.map(({name}) => {
-        const option: InputInfoOption = {value: name};
+    const getOptions2 = (key: string) => {
+      return getOptions(xinghaoOptionsAll, key, (option) => {
         if (key === "产品分类") {
-          option.disabled = this.defaultFenleis.includes(name);
+          option.disabled = this.defaultFenleis.includes(option.value);
         }
-        return option;
       });
     };
     const onChange = debounce(async (data: Partial<Xinghao>) => {
@@ -343,7 +340,7 @@ export class LurushujuIndexComponent implements OnInit {
         type: "select",
         label: "所属门窗",
         model: {data: xinghao, key: "所属门窗"},
-        options: getOptions("门窗"),
+        options: getOptions2("门窗"),
         multiple: false,
         onChange: (val) => onChange({所属门窗: val})
       },
@@ -351,7 +348,7 @@ export class LurushujuIndexComponent implements OnInit {
         type: "select",
         label: "所属工艺",
         model: {data: xinghao, key: "所属工艺"},
-        options: getOptions("工艺"),
+        options: getOptions2("工艺"),
         multiple: true,
         onChange: (val) => onChange({所属工艺: val})
       },
@@ -359,7 +356,7 @@ export class LurushujuIndexComponent implements OnInit {
         type: "select",
         label: "产品分类",
         model: {data: xinghao, key: "显示产品分类"},
-        options: getOptions("产品分类"),
+        options: getOptions2("产品分类"),
         multiple: true,
         onChange: (val) => {
           const data: Partial<Xinghao> = {显示产品分类: val};
@@ -637,10 +634,33 @@ export class LurushujuIndexComponent implements OnInit {
     this.setStep(3, {xinghaoName: this.xinghaoName, fenleiName, gongyiName});
   }
 
-  getGongyiImageUrl(url: string) {
-    if (!url) {
-      return "";
+  async copyGongyi2() {
+    const {xinghao} = this;
+    if (!xinghao) {
+      return;
     }
+    const result = await openSelectGongyiDialog(this.dialog, {
+      data: {options: this.xinghaoOptionsAll, excludeXinghaos: [xinghao.名字]}
+    });
+    if (result) {
+      const item = result.items[0];
+      if (!item) {
+        return;
+      }
+      const gongyiNames = xinghao.产品分类[item.产品分类].map((v) => v.名字);
+      const 型号 = item.型号;
+      const 名字 = item.名字;
+      const 型号2 = xinghao.名字;
+      const 复制名字 = getCopyName(gongyiNames, item.名字);
+      const 产品分类 = item.产品分类;
+      const success = await this.http.getData<boolean>("shuju/api/copyGongyi", {名字, 复制名字, 型号, 型号2, 产品分类});
+      if (success) {
+        await this.getXinghao();
+      }
+    }
+  }
+
+  getFilepathUrl(url: string) {
     return getFilepathUrl(url);
   }
 
@@ -1257,16 +1277,6 @@ export class LurushujuIndexComponent implements OnInit {
         }
         break;
     }
-  }
-
-  getGongshiExtraData() {
-    return {
-      选项: {
-        型号: this.xinghaoName,
-        产品分类: this.fenleiName,
-        工艺做法: this.gongyiName
-      }
-    };
   }
 
   async getGongshiItem(data0?: 算料公式) {

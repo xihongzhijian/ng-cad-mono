@@ -189,7 +189,9 @@ export interface InputInfoTypeMap {
   group: InputInfoGroup;
 }
 
-export type InputInfoOption<T = string> = {value: T; label?: string; disabled?: boolean; img?: string} | T;
+export type InputInfoOptionBase<T = string> = {value: T; label?: string; disabled?: boolean; img?: string};
+
+export type InputInfoOption<T = string> = InputInfoOptionBase<T> | T;
 
 export type InputInfoOptions<T = string> = InputInfoOption<T>[];
 
