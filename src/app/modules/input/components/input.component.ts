@@ -38,11 +38,9 @@ import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/e
 import {CadData, CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
-import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
-import {AppStatusService} from "@services/app-status.service";
 import Color from "color";
 import csstype from "csstype";
 import {isEmpty, isEqual} from "lodash";
@@ -211,7 +209,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   @HostBinding("class") class: string[] = [];
   @HostBinding("style") style: csstype.Properties = {};
 
-  @ViewChild("formField", {read: ElementRef}) formField?: ElementRef<HTMLElement>;
   @ViewChild("colorChrome") colorChrome?: ChromeComponent;
   @ViewChildren("cadContainer") cadContainers?: QueryList<ElementRef<HTMLElement>>;
   cadViewers: CadViewer[] = [];
@@ -231,8 +228,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     private message: MessageService,
     private dialog: MatDialog,
     private differs: KeyValueDiffers,
-    private http: CadDataService,
-    private status: AppStatusService
+    private elRef: ElementRef<HTMLElement>
   ) {
     super();
     this.valueChange$.subscribe((val) => {
@@ -291,7 +287,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   async ngAfterViewInit() {
     if (this.info.autoFocus) {
       await timeout(100);
-      const el = this.formField?.nativeElement.querySelector("input, textarea");
+      const el = this.elRef?.nativeElement.querySelector("input, textarea");
       if (el instanceof HTMLElement) {
         el.focus();
       }

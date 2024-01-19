@@ -27,15 +27,16 @@
     @case ("json") {
       <div #jsonEditorContainer></div>
     }
+    @case ("form") {
+      <div [innerHTML]="contentHTML"></div>
+      <div (keydown)="onKeyDown($event)">
+        @for (info of inputs; track info) {
+          <app-input #formInput [info]="info"></app-input>
+        }
+      </div>
+    }
     @default {
       <div [innerHTML]="contentHTML"></div>
-      @if (data.type === "form") {
-        <div (keydown)="onKeyDown($event)">
-          @for (info of inputs; track info) {
-            <app-input #formInput [info]="info"></app-input>
-          }
-        </div>
-      }
     }
   }
 </div>
