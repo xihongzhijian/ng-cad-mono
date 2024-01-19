@@ -14,7 +14,7 @@ import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
-import {CadData, CadViewer} from "@lucilor/cad-viewer";
+import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
 import {downloadByString, keysOf, ObjectOf, queryString, RequiredKeys, selectFiles, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
@@ -136,6 +136,7 @@ export class LurushujuIndexComponent implements OnInit {
   menshans: (TableDataBase & {zuchenghuajian?: string})[] = [];
   huajians: MrbcjfzHuajian[] = [];
   parentInfo = {isZhijianUser: false, isLurushujuEnter: false};
+  cadViewerConfig: Partial<CadViewerConfig> = {width: 200, height: 100};
 
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
@@ -144,7 +145,6 @@ export class LurushujuIndexComponent implements OnInit {
   gongyiName = "";
   production = environment.production;
   wmm = new WindowMessageManager("录入数据", this, window.parent);
-  suanliaoCadViewers: CadViewer[] = [];
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
 
@@ -455,6 +455,7 @@ export class LurushujuIndexComponent implements OnInit {
         label: key,
         params,
         model: {data: gongyi.示意图CAD, key},
+        config: this.cadViewerConfig,
         onChange: () => {
           this.submitGongyi(["示意图CAD"]);
         }
@@ -1156,6 +1157,8 @@ export class LurushujuIndexComponent implements OnInit {
                   label: key3,
                   model: {data: data[key1][key2][key3], key: "cad"},
                   clearable: true,
+                  openable: true,
+                  config: this.cadViewerConfig,
                   params: () => ({
                     selectMode: "single",
                     collection: "cad",

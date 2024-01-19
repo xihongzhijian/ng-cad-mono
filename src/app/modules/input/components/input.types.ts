@@ -3,6 +3,7 @@ import {FloatLabelType} from "@angular/material/form-field";
 import {Formulas} from "@app/utils/calc";
 import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.component";
+import {CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
 import csstype from "csstype";
@@ -143,6 +144,8 @@ export interface InputInfoCad<T = any> extends InputInfoBase<T> {
   params: Value<CadListInput>;
   openable?: boolean;
   showName?: boolean;
+  config?: Partial<CadViewerConfig>;
+  showCadViewer?: {onInit?: (cadViewer: CadViewer) => void};
   onChange?: (val: CadListOutput) => void;
 }
 
@@ -172,22 +175,6 @@ export type InputInfo<T = any> =
   | InputInfoCad<T>
   | InputInfoFormulas<T>
   | InputInfoGroup<T>;
-
-export interface InputInfoTypeMap {
-  string: InputInfoString;
-  number: InputInfoNumber;
-  object: InputInfoObject;
-  array: InputInfoArray;
-  boolean: InputInfoBoolean;
-  select: InputInfoSelect;
-  coordinate: InputInfoCoordinate;
-  color: InputInfoColor;
-  file: InputInfoFile;
-  image: InputInfoImage;
-  cad: InputInfoCad;
-  formulas: InputInfoFormulas;
-  group: InputInfoGroup;
-}
 
 export type InputInfoOptionBase<T = string> = {value: T; label?: string; disabled?: boolean; img?: string};
 

@@ -10,13 +10,13 @@
       @if (displayValue !== null) {
         <textarea matInput readonly [value]="displayValue" cdkTextareaAutosize [cdkAutosizeMinRows]="1"></textarea>
       } @else {
-        @if (castInfo("string")["textarea"]) {
+        @if (info.textarea) {
           <textarea
             matInput
             [errorStateMatcher]="getErrorStateMatcher()"
-            [cdkTextareaAutosize]="!!castInfo('string')['textarea']?.['autosize']"
-            [cdkAutosizeMinRows]="castInfo('string')['textarea']?.['autosize']?.['minRows']"
-            [cdkAutosizeMaxRows]="castInfo('string')['textarea']?.['autosize']?.['maxRows']"
+            [cdkTextareaAutosize]="!!info.textarea.autosize"
+            [cdkAutosizeMinRows]="info.textarea.autosize?.minRows"
+            [cdkAutosizeMaxRows]="info.textarea.autosize?.maxRows"
             [readonly]="info.readonly"
             [disabled]="info.disabled || false"
             [autocomplete]="info.autocomplete || ''"
@@ -45,7 +45,7 @@
           />
         }
       }
-      @if (castInfo("string")["optionsDialog"]) {
+      @if (info.optionsDialog) {
         <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key)">
           <mat-icon>list</mat-icon>
         </button>
@@ -96,9 +96,9 @@
         [autocomplete]="info.autocomplete || ''"
         [(ngModel)]="value"
         type="number"
-        [step]="castInfo('number')['step']"
-        [min]="castInfo('number')['max'] ?? null"
-        [max]="castInfo('number')['max'] ?? null"
+        [step]="info.step"
+        [min]="info.min ?? null"
+        [max]="info.max ?? null"
         (change)="onChange()"
         (input)="onInput()"
         (blur)="onBlur()"
@@ -142,7 +142,7 @@
       @for (item of asObject(value) | keyvalue: returnZero; track item) {
         <div>
           <mat-form-field style="width: 30%" [ngClass]="{empty: isEmpty(item.key)}">
-            <mat-label>{{ castInfo("object").keyLabel }}</mat-label>
+            <mat-label>{{ info.keyLabel }}</mat-label>
             <input
               type="text"
               matInput
@@ -157,7 +157,7 @@
             <mat-error>{{ getErrorMsgKey(item.key) }}</mat-error>
           </mat-form-field>
           <mat-form-field style="width: 70%" [ngClass]="{empty: isEmpty(item.value)}">
-            <mat-label>{{ castInfo("object").valueLabel }}</mat-label>
+            <mat-label>{{ info.valueLabel }}</mat-label>
             <input
               type="text"
               matInput
@@ -261,7 +261,7 @@
       @if (info.hint) {
         <mat-hint>{{ hint }}</mat-hint>
       }
-      @if (castInfo("select")["optionsDialog"]) {
+      @if (info.optionsDialog) {
         <input
           matInput
           [errorStateMatcher]="getErrorStateMatcher()"
@@ -279,7 +279,7 @@
           [disabled]="info.disabled || false"
           [errorStateMatcher]="getErrorStateMatcher()"
           [(ngModel)]="value"
-          [multiple]="castInfo('select')['multiple']"
+          [multiple]="info.multiple"
           (selectionChange)="onChange()"
         >
           @if (optionText) {
@@ -292,7 +292,7 @@
           }
         </mat-select>
       }
-      @if (castInfo("select")["optionsDialog"] && !info.readonly && !info.disabled) {
+      @if (info.optionsDialog && !info.readonly && !info.disabled) {
         <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key)">
           <mat-icon>list</mat-icon>
         </button>
@@ -311,7 +311,7 @@
     </mat-form-field>
   }
   @case ("coordinate") {
-    @if (castInfo("coordinate")["compact"]) {
+    @if (info.compact) {
       <div class="sub-form-field">
         <div class="label">
           <span>{{ info.label }}</span>
@@ -321,7 +321,7 @@
         </div>
         <div>
           <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[0])}">
-            <mat-label>{{ castInfo("coordinate")["labelX"] || "x" }}</mat-label>
+            <mat-label>{{ info.labelX || "x" }}</mat-label>
             <mat-select [(ngModel)]="value[0]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
               <mat-option [value]="0">左</mat-option>
               <mat-option [value]="0.5">中</mat-option>
@@ -333,7 +333,7 @@
             <mat-error>{{ getErrorMsg() }}</mat-error>
           </mat-form-field>
           <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[1])}">
-            <mat-label>{{ castInfo("coordinate")["labelY"] || "y" }}</mat-label>
+            <mat-label>{{ info.labelY || "y" }}</mat-label>
             <mat-select [(ngModel)]="value[1]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
               <mat-option [value]="1">上</mat-option>
               <mat-option [value]="0.5">中</mat-option>
@@ -424,7 +424,7 @@
         [disabled]="info.disabled || false"
       />
       <mat-menu #colorPicker="matMenu">
-        @if (castInfo("color")["options"]) {
+        @if (info.options) {
           <color-circle
             [width]="202"
             [circleSpacing]="10"
@@ -434,7 +434,7 @@
             appClickStop
           ></color-circle>
         }
-        @if (!castInfo("color")["optionsOnly"]) {
+        @if (!info.optionsOnly) {
           <color-chrome #colorChrome [color]="colorStr" (onChangeComplete)="onColorChange($event.color)" appClickStop> </color-chrome>
         }
       </mat-menu>
@@ -461,7 +461,7 @@
         <mat-hint>{{ hint }}</mat-hint>
       }
       <input matInput readonly [errorStateMatcher]="getErrorStateMatcher()" />
-      <input #fileInput hidden type="file" [accept]="fileAccept" [multiple]="castInfo('file')['multiple']" (change)="onInputChange()" />
+      <input #fileInput hidden type="file" [accept]="fileAccept" [multiple]="info.multiple" (change)="onInputChange()" />
       <button mat-icon-button matSuffix color="primary" (click)="selectFile()">
         <mat-icon>file_open</mat-icon>
       </button>
@@ -478,36 +478,33 @@
       }
       <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
       <input #fileInput hidden type="file" [accept]="fileAccept" (change)="onInputChange()" />
-      <app-image
-        [src]="value"
-        [bigPicSrc]="castInfo('image')['bigPicSrc']"
-        [prefix]="castInfo('image')['prefix']"
-        (click)="selectFile()"
-      ></app-image>
+      <app-image [src]="value" [bigPicSrc]="info.bigPicSrc" [prefix]="info.prefix" (click)="selectFile()"></app-image>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
   @case ("cad") {
     @if (cadInfos.length > 0) {
       <div class="flex-column">
-        @if (isCadMultiple || castInfo("cad")["showName"]) {
+        @if (isCadMultiple || info.showName) {
           <div class="label">{{ info.label }}</div>
         }
         <div class="flex-row">
           @for (cadInfo of cadInfos; track i; let i = $index) {
             <div class="flex-column">
-              <div class="flex-row">
+              <div class="flex-row" style="align-items: center">
                 @if (info.clearable) {
                   <button mat-icon-button color="accent" (click)="clearCad(i)"><mat-icon>close</mat-icon></button>
                 }
-                <div class="cad-name flex-110">{{ cadInfo.name }}</div>
-                @if (castInfo("cad")["openable"]) {
-                  <button mat-icon-button color="primary" (click)="openCad(cadInfo.id)">
-                    <mat-icon>open_in_new</mat-icon>
-                  </button>
+                @if (info.openable) {
+                  <button mat-button color="primary" (click)="editCad(i)">编辑</button>
                 }
+                <div class="cad-name flex-110">{{ cadInfo.name }}</div>
               </div>
-              <app-image class="cad-preview" [src]="cadInfo.img" [emptySrc]="imgCadEmpty" (click)="selectCad()"></app-image>
+              @if (info.showCadViewer) {
+                <div #cadContainer class="cad-container"></div>
+              } @else {
+                <app-image class="cad-preview" [src]="cadInfo.img" [emptySrc]="imgCadEmpty" (click)="selectCad()"></app-image>
+              }
             </div>
           }
         </div>
@@ -552,16 +549,16 @@
         <div class="label">
           <span>{{ info.label }}</span>
         </div>
-        <div class="group" [ngStyle]="castInfo('group')['groupStyle']">
-          @for (info2 of castInfo("group")["infos"]; track info2) {
+        <div class="group" [ngStyle]="info.groupStyle">
+          @for (info2 of info.infos; track info2) {
             <app-input [info]="info2"></app-input>
           }
         </div>
         <ng-template [ngTemplateOutlet]="footer"></ng-template>
       </div>
     } @else {
-      <div class="group" [ngStyle]="castInfo('group')['groupStyle']">
-        @for (info2 of castInfo("group")["infos"]; track info2) {
+      <div class="group" [ngStyle]="info.groupStyle">
+        @for (info2 of info.infos; track info2) {
           <app-input [info]="info2"></app-input>
         }
       </div>

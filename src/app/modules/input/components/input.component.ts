@@ -10,6 +10,7 @@ import {
   KeyValueDiffer,
   KeyValueDiffers,
   OnChanges,
+  OnDestroy,
   QueryList,
   SimpleChanges,
   ViewChild,
@@ -28,14 +29,17 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
 import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
+import {getCadPreview} from "@app/cad/cad-preview";
+import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
+import {CadData, CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -48,7 +52,7 @@ import {ColorCircleModule} from "ngx-color/circle";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
-import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoString, InputInfoTypeMap} from "./input.types";
+import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoString} from "./input.types";
 import {getValue} from "./input.utils";
 
 @Component({
@@ -76,13 +80,13 @@ import {getValue} from "./input.utils";
     TextFieldModule
   ]
 })
-export class InputComponent extends Utils() implements AfterViewInit, OnChanges, DoCheck {
+export class InputComponent extends Utils() implements AfterViewInit, OnChanges, DoCheck, OnDestroy {
   suffixIconsType!: SuffixIconsType;
   @Input() info: InputInfo = {type: "string", label: ""};
   infoDiffer: KeyValueDiffer<keyof InputInfo, ValueOf<InputInfo>>;
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
-  cadInfos: {id: string; name: string; img: SafeUrl}[] = [];
+  cadInfos: {id: string; name: string; img: SafeUrl; val: any}[] = [];
   @ViewChild("fileInput") fileInput?: ElementRef<HTMLInputElement>;
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
 
@@ -209,6 +213,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   @ViewChild("formField", {read: ElementRef}) formField?: ElementRef<HTMLElement>;
   @ViewChild("colorChrome") colorChrome?: ChromeComponent;
+  @ViewChildren("cadContainer") cadContainers?: QueryList<ElementRef<HTMLElement>>;
+  cadViewers: CadViewer[] = [];
+
   errors: ValidationErrors | null = null;
   errors2: ValidationErrors | null = null;
   errorsKey: ObjectOf<ValidationErrors | null> = {};
@@ -306,6 +313,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const changes = this.infoDiffer.diff(this.info);
     if (changes) {
       this._onInfoChange(changes);
+    }
+  }
+
+  ngOnDestroy(): void {
+    for (const cadViewer of this.cadViewers) {
+      cadViewer.destroy();
     }
   }
 
@@ -413,6 +426,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     this.style = {...info.style};
     if (info.hidden) {
       this.style.display = "none";
+    }
+    if (info.type === "cad") {
+      const {width, height} = info.config || {};
+      (this.style as any)["--cad-preview-width"] = width && width > 0 ? `${width}px` : "200px";
+      (this.style as any)["--cad-preview-height"] = height && height > 0 ? `${height}px` : "100px";
     }
     let validateValue = !!info.initialValidate;
     changes.forEachItem((item) => {
@@ -729,11 +747,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return {};
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  castInfo<T extends InputInfo["type"]>(_: T) {
-    return this.info as InputInfoTypeMap[T];
-  }
-
   getAnchorValue(axis: "x" | "y") {
     if (axis === "x") {
       const value = this.value[0];
@@ -851,31 +864,79 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return id || "";
   }
 
+  getCadData(val: any) {
+    if (!isTypeOf(val, "object")) {
+      return new CadData();
+    }
+    if (val.json) {
+      return new CadData(val.json);
+    } else {
+      return new CadData(val);
+    }
+  }
+
+  getCadsValue() {
+    let {value} = this;
+    if (!Array.isArray(value)) {
+      if (isTypeOf(value, "object")) {
+        value = [value];
+      } else {
+        value = [];
+      }
+    }
+    return value as any[];
+  }
+
   updateCadInfos() {
-    const {info} = this;
+    let {info} = this;
     if (info.type !== "cad") {
       return;
     }
-    let {value} = this;
-    const getInfo = (val: any): (typeof this.cadInfos)[number] | null => {
+    const params = getValue(info.params, this.message);
+    const getInfo = (val: any): (typeof this.cadInfos)[number] => {
+      const infoItem: (typeof this.cadInfos)[number] = {id: "", name: "", img: imgCadEmpty, val};
       const id = this.getCadId(val);
       if (!id) {
-        return null;
+        infoItem.val = null;
+        return infoItem;
       }
-      const name = this.getCadName(val);
-      const img = this.http.getCadImgUrl(this.getCadId(val));
-      return {id, name, img};
+      infoItem.name = this.getCadName(val);
+      getCadPreview(params?.collection || "cad", this.getCadData(val)).then((img) => {
+        infoItem.img = img;
+      });
+      return infoItem;
     };
     this.cadInfos = [];
-    if (!Array.isArray(value)) {
-      value = [value];
+
+    for (const val of this.getCadsValue()) {
+      this.cadInfos.push(getInfo(val));
     }
-    for (const val of value) {
-      const cadInfo = getInfo(val);
-      if (cadInfo) {
-        this.cadInfos.push(cadInfo);
+    setTimeout(async () => {
+      const cadViewers = this.cadViewers;
+      for (const cadViewer of cadViewers) {
+        cadViewer.destroy();
       }
-    }
+      cadViewers.length = 0;
+      info = this.info;
+      if (info.type === "cad" && info.showCadViewer) {
+        const cadContainers = this.cadContainers?.toArray() || [];
+        for (const [i, cadInfo] of this.cadInfos.entries()) {
+          const cadContainer = cadContainers[i];
+          if (!cadContainer) {
+            break;
+          }
+          const {val} = cadInfo;
+          const cadData = this.getCadData(val);
+          const config: Partial<CadViewerConfig> = {backgroundColor: "black", ...info?.config};
+          const cadViewer = new CadViewer(cadData, config);
+          cadViewer.appendTo(cadContainer.nativeElement);
+          cadViewers.push(cadViewer);
+          info.showCadViewer.onInit?.(cadViewer);
+          await cadViewer.render();
+          cadViewer.center();
+        }
+      }
+    }, 0);
   }
 
   async selectCad() {
@@ -905,6 +966,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.type !== "cad") {
       return;
     }
+    if (!(await this.message.confirm("确定要清除吗？"))) {
+      return;
+    }
     const {value, isCadMultiple} = this;
     let result: CadListOutput;
     if (isCadMultiple) {
@@ -922,8 +986,29 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     this.updateCadInfos();
   }
 
-  openCad(id: string) {
-    this.status.openCadInNewTab(id, this.value?.collection || "cad");
+  async editCad(i: number) {
+    const {info} = this;
+    if (info.type !== "cad") {
+      return;
+    }
+    const value = this.getCadsValue();
+    const cadDatas = value.map((v) => this.getCadData(v));
+    const cadData = cadDatas[i];
+    const result = await openCadEditorDialog(this.dialog, {data: {data: cadData, isLocal: true, center: true}});
+    if (result?.isSaved) {
+      if (value[i]?.json) {
+        value[i] = {...getHoutaiCad(cadData), _id: value[i]._id};
+      } else {
+        value[i] = cadData.export();
+      }
+      if (this.isCadMultiple) {
+        this.value = [...value];
+      } else {
+        this.value = value[i];
+      }
+      info.onChange?.(cadDatas);
+      this.updateCadInfos();
+    }
   }
 
   changeObjectKey2(obj: ObjectOf<any>, oldKey: string, newKey: string | Event) {
