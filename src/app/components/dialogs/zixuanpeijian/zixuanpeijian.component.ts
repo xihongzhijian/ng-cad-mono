@@ -95,7 +95,7 @@ import {
 })
 export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   spinnerId = "zixuanpeijian-" + uniqueId();
-  step$ = new BehaviorSubject<{value: number; refresh: boolean}>({value: 0, refresh: false});
+  step$ = new BehaviorSubject<{value: number; refresh: boolean; noCache?: boolean}>({value: 0, refresh: false});
   type1 = "";
   type2 = "";
   urlPrefix = remoteFilePath;
@@ -381,8 +381,14 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this._step2Fetched = true;
   }
 
-  async step3Fetch(updateInputInfos = true) {
-    const responseData = await this.http.getData<{cads: CadData[]}>("ngcad/getLingsanCads");
+  async step3Fetch(noUpdateInputInfos = false, noCache = false) {
+    let responseData: {cads: CadData[]} | null = null;
+    if (noCache || !(window as any)._lingsanCadsCache) {
+      responseData = await this.http.getData<{cads: CadData[]}>("ngcad/getLingsanCads");
+      (window as any)._lingsanCadsCache = responseData;
+    } else {
+      responseData = (window as any)._lingsanCadsCache;
+    }
     if (responseData) {
       this.lingsanCadImgs = {};
       this.lingsanCadInfos = {};
@@ -393,7 +399,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         const img = this.http.getCadImgUrl(data.id);
         this.lingsanCadImgs[data.id] = img;
         const item: ZixuanpeijianlingsanCadItem = {data, img, hidden: false};
-        const type = item.data.type2;
+        const type = item.data.type;
         if (!this.lingsanCadInfos[type]) {
           this.lingsanCadInfos[type] = {hidden: false};
         }
@@ -427,18 +433,36 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         this.result.零散 = this.result.零散.filter((_, i) => !toRemove.includes(i));
       }
     }
-    if (updateInputInfos) {
+    if (noUpdateInputInfos) {
       this._updateInputInfos();
     }
     this._step3Fetched = true;
   }
 
-  async step3Refresh() {
+  step3Refresh() {
     this.step$.next({value: 3, refresh: true});
   }
 
+  async step3Add() {
+    const data = {分类: "", 名字: ""};
+    const name = await this.message.form<typeof data>([
+      {type: "string", label: "CAD名字", model: {key: "名字", data}, validators: Validators.required},
+      {type: "string", label: "CAD分类", model: {key: "分类", data}, validators: Validators.required}
+    ]);
+    if (!name) {
+      return;
+    }
+    const response = await this.http.post("ngcad/mongodbTableInsert", {
+      collection: "cad",
+      data
+    });
+    if (response?.code === 0) {
+      this.step3Refresh();
+    }
+  }
+
   async allFetch() {
-    await Promise.all([this.step1Fetch(), this.step3Fetch()]);
+    await Promise.all([this.step1Fetch(), this.step3Fetch(true)]);
     await this.step2Fetch();
     this._updateInputInfos();
     await timeout(0);
@@ -538,7 +562,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       }
     } else if (value === 3) {
       if (refresh || !this._step3Fetched) {
-        await this.step3Fetch();
+        await this.step3Fetch(false, true);
         isRefreshed = true;
       }
       if (isRefreshed || !this.lingsanCadType) {
@@ -930,12 +954,32 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       return;
     }
     id = responseData.id;
-    await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
-    this.step3Fetch();
+    const result = await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
+    if (result?.isSaved) {
+      this.step3Refresh();
+    }
   }
 
-  openLingsanCad(type: string, i: number) {
+  async openLingsanCad(type: string, i: number) {
     this.status.openCadInNewTab(this.lingsanCads[type][i].data.id, "cad");
+    await timeout(100);
+    if (await this.message.confirm("是否修改了CAD？")) {
+      this.step3Refresh();
+    }
+  }
+
+  async deleteLingsanCad(type: string, i: number) {
+    const item = this.lingsanCads[type][i];
+    if (!(await this.message.confirm(`是否确定删除【${item.data.name}】？`))) {
+      return;
+    }
+    const response = await this.http.post("ngcad/mongodbTableDelete", {
+      collection: "cad",
+      vids: [item.data.id]
+    });
+    if (response?.code === 0) {
+      this.step3Refresh();
+    }
   }
 
   getZhankaiArr(type: CadItemContext["type"], i: number, j: number) {

@@ -349,7 +349,11 @@ export class ToolbarComponent extends Subscribed() {
   async copyCad() {
     const collection = this.status.collection$.getValue();
     const loaderId = this.spinner.defaultLoaderId;
-    const response = await this.http.post<string[]>("ngcad/copyCads", {collection, vids: [this.status.cad.data.id]}, {spinner: loaderId});
+    const response = await this.http.post<string[]>(
+      "ngcad/mongodbTableCopy",
+      {collection, vids: [this.status.cad.data.id]},
+      {spinner: loaderId}
+    );
     if (response?.code === 0) {
       const yes = await this.message.confirm({title: response.msg, content: "是否跳转至新的CAD？"});
       if (yes) {

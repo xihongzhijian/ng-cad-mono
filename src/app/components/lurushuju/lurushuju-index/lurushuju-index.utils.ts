@@ -117,6 +117,9 @@ export const getCadSearch = (data: 门铰锁边铰边, key1: string, key2: strin
   const [包边方向, 开启] = key1.split("+");
   const filter = `
     function fn() {
+      if (!this.选项) {
+        return false;
+      }
       var 分类 = ${JSON.stringify(分类)};
       var 选项 = ${JSON.stringify(选项)};
       var form = ${JSON.stringify(formValues)};

@@ -139,23 +139,20 @@
     <div class="flex-column flex-110">
       <div class="btn-group">
         <app-input [info]="lingsanCadsSearchInput" style="padding: 0 10px; flex: 1 1 0"></app-input>
-        <button mat-raised-button color="primary" (click)="step3Refresh()">刷新cad</button>
+        <button mat-raised-button color="primary" (click)="step3Refresh()">刷新</button>
+        <button mat-raised-button color="primary" (click)="step3Add()">添加</button>
       </div>
       <ng-scrollbar class="flex-110">
         <div class="lingsan-cads">
           <ng-container *ngFor="let item of lingsanCads[lingsanCadType]; let i = index">
             <div class="lingsan-cad" *ngIf="!item.hidden">
-              <img class="cad-preview" [src]="item.img" />
+              <img class="cad-preview" [src]="item.img" (click)="addLingsanItem(lingsanCadType, i)" />
+              <div class="flex-row">
+                <button mat-button color="primary" (click)="copyLingsanCad(lingsanCadType, i)">复制</button>
+                <button mat-button color="primary" (click)="openLingsanCad(lingsanCadType, i)">编辑</button>
+                <button mat-button color="primary" (click)="deleteLingsanCad(lingsanCadType, i)">删除</button>
+              </div>
               <div class="title flex-row flex-110">
-                <button mat-icon-button color="primary" (click)="addLingsanItem(lingsanCadType, i)">
-                  <mat-icon>add_circle</mat-icon>
-                </button>
-                <button mat-icon-button color="primary" (click)="copyLingsanCad(lingsanCadType, i)">
-                  <mat-icon>content_copy</mat-icon>
-                </button>
-                <button mat-icon-button color="primary" (click)="openLingsanCad(lingsanCadType, i)">
-                  <mat-icon>open_in_new</mat-icon>
-                </button>
                 <div class="name text-ellipsis" [matTooltip]="item.data.name" matTooltipPosition="above">
                   {{ item.data.name }}
                 </div>
