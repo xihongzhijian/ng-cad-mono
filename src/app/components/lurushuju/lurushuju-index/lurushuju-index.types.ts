@@ -4,6 +4,8 @@ import {输入, 选项, 门铰锁边铰边} from "../xinghao-data";
 import {LurushujuIndexComponent} from "./lurushuju-index.component";
 
 export interface XinghaoData extends TableDataBase {
+  paixu?: number;
+  tingyong?: number;
   tupian?: string;
   hidden?: boolean;
 }

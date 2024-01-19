@@ -226,14 +226,43 @@ export class LurushujuIndexComponent implements OnInit {
     }
     const xinghao = await this.http.getData<XinghaoData>("shuju/api/insertXinghao", {名字});
     if (xinghao) {
-      this.editXinghao(xinghao);
+      this.enterXinghao(xinghao);
       this.getXinghaos();
     }
   }
 
-  editXinghao(xinghao: XinghaoData) {
+  enterXinghao(xinghao: XinghaoData) {
     this.xinghao = null;
     this.setStep(2, {xinghaoName: xinghao.mingzi});
+  }
+
+  async editXinghao(xinghao: XinghaoData) {
+    const data = cloneDeep(xinghao);
+    const form: InputInfo<Partial<XinghaoData>>[] = [
+      {type: "string", label: "名字", model: {data, key: "mingzi"}, validators: Validators.required},
+      {
+        type: "image",
+        label: "图片",
+        value: data.tupian,
+        prefix: filePathUrl,
+        onChange: async (val) => {
+          const result = await this.http.uploadImage(val);
+          if (result?.url) {
+            form[1].value = result.url;
+            data.tupian = result.url;
+          }
+        }
+      },
+      {type: "number", label: "排序", model: {data, key: "paixu"}},
+      {type: "boolean", label: "停用", model: {data, key: "tingyong"}}
+    ];
+    const result = await this.message.form(form);
+    if (result) {
+      const response = await this.http.post("shuju/api/editXinghao", {data: {...xinghao, ...data}});
+      if (response?.code === 0) {
+        await this.getXinghaos();
+      }
+    }
   }
 
   async copyXinghao(xinghao: XinghaoData) {
