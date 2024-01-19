@@ -1,4 +1,4 @@
-import {Component, Inject} from "@angular/core";
+import {Component, forwardRef, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
@@ -18,7 +18,7 @@ export interface BbzhmkgzComponentData {
   templateUrl: "./bbzhmkgz.component.html",
   styleUrls: ["./bbzhmkgz.component.scss"],
   standalone: true,
-  imports: [InputComponent, MatDialogActions, MatButtonModule]
+  imports: [forwardRef(() => InputComponent), MatDialogActions, MatButtonModule]
 })
 export class BbzhmkgzComponent extends Utils() {
   inputInfo: InputInfo = {type: "string", textarea: {}, label: ""};

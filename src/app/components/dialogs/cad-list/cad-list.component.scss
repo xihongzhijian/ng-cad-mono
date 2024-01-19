@@ -1,85 +1,25 @@
-:host {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  box-sizing: border-box;
-
-  > :not(.contnet) {
-    flex: 0 0 0;
-  }
-
-  > .content {
-    flex: 1 1 0;
-    height: 0;
-    position: relative;
-  }
-}
-
 mat-paginator,
-.data-container {
+.cads {
   line-height: 1.5rem;
   font-size: 1rem;
 }
 
-.radio-group,
-.checkbox-group {
-  display: flex;
-  flex-wrap: wrap;
+.cads {
+  --items-per-row: 5;
 }
 
-.data-container {
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-  width: 20%;
-  box-sizing: border-box;
-
-  img {
-    cursor: pointer;
-  }
-
-  .details {
-    .title {
-      --title-size: 1.2rem;
-      --title-padding: 0 0 5px 0;
-      color: #0378d5;
-    }
-
-    .item {
-      height: 18px;
-      line-height: 18px;
-      overflow: hidden;
-      word-break: break-all;
-    }
-  }
-}
-
-.mat-dialog-actions {
-  margin-bottom: 0;
-  box-sizing: border-box;
-  min-height: unset;
-
-  .btn-group {
-    flex: 1 1 0;
-    justify-content: center;
-  }
-}
-
-.search-input {
-  display: flex;
-  align-items: center;
-
-  > *:not(:last-child) {
-    margin-right: 5px;
-  }
-}
-
-table {
+.details {
   width: 100%;
+
+  .title {
+    --title-size: 1.2rem;
+    --title-padding: 0 0 5px 0;
+    color: #0378d5;
+  }
 }
 
-.cad-preview {
-  cursor: pointer;
+::ng-deep {
+  .ng-scroll-content {
+    width: 100%;
+  }
 }

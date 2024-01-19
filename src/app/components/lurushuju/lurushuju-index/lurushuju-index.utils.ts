@@ -1,3 +1,4 @@
+import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -176,7 +177,8 @@ export const getCadSearch = (data: 门铰锁边铰边, key1: string, key2: strin
     }
     `;
   const search: ObjectOf<any> = {$where: filter};
-  return search;
+  const addCadData: CadListInput["addCadData"] = {分类: key3, 选项: {开启}};
+  return {search, addCadData};
 };
 
 export const getXuanxiangTable = (): TableRenderInfo<XuanxiangTableData> => {

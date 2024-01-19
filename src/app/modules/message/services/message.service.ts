@@ -87,6 +87,9 @@ export class MessageService {
     if (Array.isArray(data)) {
       data = {inputs: data};
     }
+    if (data.inputs.length > 0) {
+      data.inputs[0].autoFocus = true;
+    }
     const result = await this.open({data: this._getData(data, "form"), ...others});
     if (result && typeof result === "object") {
       return result as T;

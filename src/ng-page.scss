@@ -43,9 +43,9 @@
       flex: 1 1 0;
     }
 
-    .name {
+    .name,
+    .text.long {
       width: 100%;
-      text-align: center;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -53,6 +53,10 @@
 
     .text {
       width: 100%;
+    }
+
+    .name {
+      text-align: center;
     }
 
     .toolbar {
@@ -110,5 +114,14 @@
 
   .link {
     cursor: pointer;
+  }
+
+  .mat-divider {
+    &.mat-divider-horizontal {
+      width: 100%;
+    }
+    &.mat-divider-vertical {
+      height: 100%;
+    }
   }
 }

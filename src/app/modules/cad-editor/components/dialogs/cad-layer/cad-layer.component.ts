@@ -1,4 +1,4 @@
-import {Component, Inject, QueryList, ViewChildren} from "@angular/core";
+import {Component, forwardRef, Inject, QueryList, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -17,7 +17,7 @@ import {NgScrollbar} from "ngx-scrollbar";
   templateUrl: "./cad-layer.component.html",
   styleUrls: ["./cad-layer.component.scss"],
   standalone: true,
-  imports: [InputComponent, NgScrollbar, MatButtonModule, MatIconModule]
+  imports: [forwardRef(() => InputComponent), NgScrollbar, MatButtonModule, MatIconModule]
 })
 export class CadLayerComponent {
   layers: CadLayer[] = [];
@@ -32,7 +32,7 @@ export class CadLayerComponent {
     }, 500)
   };
 
-  @ViewChildren(InputComponent)
+  @ViewChildren(forwardRef(() => InputComponent))
   inputComponents?: QueryList<InputComponent>;
 
   constructor(

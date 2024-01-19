@@ -1152,6 +1152,7 @@ export class LurushujuIndexComponent implements OnInit {
               type: "group",
               label: "",
               infos: Object.keys(data[key1][key2]).map<InputInfo>((key3) => {
+                const {search, addCadData} = getCadSearch(data, key1, key2, key3);
                 return {
                   type: "cad",
                   label: key3,
@@ -1164,7 +1165,8 @@ export class LurushujuIndexComponent implements OnInit {
                     collection: "cad",
                     standaloneSearch: true,
                     raw: true,
-                    search: getCadSearch(data, key1, key2, key3)
+                    search,
+                    addCadData
                   }),
                   style: {margin: "0 5px"}
                 };

@@ -1,4 +1,4 @@
-import {Component, Inject} from "@angular/core";
+import {Component, forwardRef, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -10,7 +10,7 @@ import {InputComponent} from "../../../../input/components/input.component";
   templateUrl: "./cad-assemble-form.component.html",
   styleUrls: ["./cad-assemble-form.component.scss"],
   standalone: true,
-  imports: [InputComponent, MatButtonModule]
+  imports: [forwardRef(() => InputComponent), MatButtonModule]
 })
 export class CadAssembleFormComponent {
   inputInfos: InputInfo[];
