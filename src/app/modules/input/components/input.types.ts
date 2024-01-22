@@ -2,7 +2,7 @@ import {AbstractControlOptions} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
 import {Formulas} from "@app/utils/calc";
 import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
-import {CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.component";
+import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.component";
 import {CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
@@ -102,7 +102,7 @@ export interface InputInfoSelectMultiple<T = any, K = string> extends InputInfoS
   multiple: true;
   onChange?: (val: string[]) => void;
 }
-export type InputInfoSelect<T = any, K = string> = InputInfoSelectSingle<T, K> | InputInfoSelectMultiple<T, K>;
+export type InputInfoSelect<T = any, K = any> = InputInfoSelectSingle<T, K> | InputInfoSelectMultiple<T, K>;
 
 export interface InputInfoCoordinate<T = any> extends InputInfoBase<T> {
   type: "coordinate";
@@ -176,16 +176,15 @@ export type InputInfo<T = any> =
   | InputInfoFormulas<T>
   | InputInfoGroup<T>;
 
-export type InputInfoOptionBase<T = string> = {value: T; label?: string; disabled?: boolean; img?: string};
+export type InputInfoOption<T = any> = {value: T; label?: string; disabled?: boolean; img?: string};
 
-export type InputInfoOption<T = string> = InputInfoOptionBase<T> | T;
-
-export type InputInfoOptions<T = string> = InputInfoOption<T>[];
+export type InputInfoOptions<T = any> = (InputInfoOption<T> | string)[];
 
 export interface OptionsDialog {
   optionKey?: string;
   optionsUseId?: boolean;
   optionField?: string;
-  defaultValue?: string;
+  defaultValue?: CadOptionsInput["defaultValue"];
+  openInNewTab?: CadOptionsInput["openInNewTab"];
   onChange?: (val: CadOptionsOutput) => void;
 }

@@ -57,7 +57,6 @@ import {
   OptionsAll2,
   ShuruTableData,
   XinghaoData,
-  XuanxiangFormData,
   XuanxiangTableData
 } from "./lurushuju-index.types";
 import {
@@ -398,7 +397,8 @@ export class LurushujuIndexComponent implements OnInit {
         model: {data: xinghao, key: "所属门窗"},
         options: getOptions2("门窗"),
         multiple: false,
-        onChange: (val) => onChange({所属门窗: val})
+        onChange: (val) => onChange({所属门窗: val}),
+        style: {width: "150px"}
       },
       {
         type: "select",
@@ -406,7 +406,8 @@ export class LurushujuIndexComponent implements OnInit {
         model: {data: xinghao, key: "所属工艺"},
         options: getOptions2("工艺"),
         multiple: true,
-        onChange: (val) => onChange({所属工艺: val})
+        onChange: (val) => onChange({所属工艺: val}),
+        style: {width: "200px"}
       },
       {
         type: "select",
@@ -427,7 +428,8 @@ export class LurushujuIndexComponent implements OnInit {
             data.产品分类 = this.xinghao?.产品分类;
           }
           onChange(data);
-        }
+        },
+        style: {width: "200px"}
       }
     ];
     await this.updateXinghao(xinghao?.产品分类);
@@ -485,6 +487,8 @@ export class LurushujuIndexComponent implements OnInit {
         params,
         model: {data: gongyi.示意图CAD, key},
         config: this.cadViewerConfig,
+        clearable: true,
+        openable: true,
         onChange: () => {
           this.submitGongyi(["示意图CAD"]);
         }
@@ -741,23 +745,7 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async getXuanxiangItem(data0?: 选项) {
-    const data: XuanxiangFormData = {名字: data0?.名字 || "", 可选项: [], 默认值: ""};
-    const get可选项Options = (): InputInfoOptions<any> => {
-      type K = InputInfoOption<XuanxiangFormData["可选项"][number]>;
-      return (this.gongyiOptionsAll[data.名字] || []).map<K>((v) => {
-        return {label: v.name, value: {vid: v.vid, mingzi: v.name}};
-      });
-    };
-    const get默认值Options = (): InputInfoOptions<string> => {
-      return data.可选项.map<InputInfoOption>((v) => {
-        return {value: v.mingzi};
-      });
-    };
-    const 可选项Options = get可选项Options();
-    if (data0) {
-      data.可选项 = 可选项Options.filter((v) => data0.可选项.some((v2) => v2.vid === v.value.vid)).map((v) => v.value);
-      data.默认值 = data0.可选项.find((v) => v.morenzhi)?.mingzi || "";
-    }
+    const data: 选项 = {名字: "", 可选项: [], ...data0};
     const names = this.xuanxiangTable.data.map((v) => v.名字);
     const form: InputInfo<typeof data>[] = [
       {
@@ -769,58 +757,35 @@ export class LurushujuIndexComponent implements OnInit {
         }),
         validators: Validators.required,
         onChange: () => {
-          type K = InputInfoOption<XuanxiangFormData["可选项"][number]>;
-          const info = form[1] as unknown as InputInfoSelect<any, K>;
-          info.options = get可选项Options();
-          if (Array.isArray(info.value)) {
-            info.value.length = 0;
+          if (Array.isArray(form[1].value)) {
+            form[1].value.length = 0;
           }
         }
       },
       {
         type: "select",
         label: "可选项",
-        model: {data, key: "可选项"},
-        options: 可选项Options,
+        value: data.可选项.map((v) => v.mingzi),
+        options: [],
         multiple: true,
         validators: Validators.required,
-        onChange: () => {
-          const info = form[2] as InputInfoSelect;
-          const options = get默认值Options();
-          info.options = options;
-          if (
-            !options.some((v) => {
-              const value = typeof v === "string" ? v : v.value;
-              return data.默认值 === value;
-            })
-          ) {
-            info.value = "";
+        optionsDialog: {
+          optionKey: data.名字,
+          openInNewTab: true,
+          defaultValue: {value: data.可选项.find((v) => v.morenzhi)?.mingzi, required: true},
+          onChange: (val) => {
+            data.可选项 = val.options.map((v) => {
+              const item: 选项["可选项"][number] = {...v};
+              if (item.mingzi === val.defaultValue) {
+                item.morenzhi = true;
+              }
+              return item;
+            });
           }
         }
-      },
-      {
-        type: "select",
-        label: "默认值",
-        model: {data, key: "默认值"},
-        options: get默认值Options(),
-        validators: Validators.required
       }
     ];
-    const result = await this.message.form(form);
-    if (result) {
-      const item: 选项 = {
-        名字: data.名字,
-        可选项: data.可选项.map((v) => {
-          const v2: 选项["可选项"][number] = {...v};
-          if (v2.mingzi === data.默认值) {
-            v2.morenzhi = true;
-          }
-          return v2;
-        })
-      };
-      return item;
-    }
-    return null;
+    return await this.message.form(form);
   }
 
   async onXuanxiangToolbar(event: ToolbarButtonEvent) {
@@ -1041,7 +1006,7 @@ export class LurushujuIndexComponent implements OnInit {
         const dialogKeys: (keyof 门铰锁边铰边)[] = ["锁边", "铰边"];
         if (dialogKeys.includes(key)) {
           info.optionsDialog = {
-            defaultValue: data.选项默认值[key] || "",
+            defaultValue: {value: data.选项默认值[key] || ""},
             onChange(val) {
               if (info.multiple) {
                 data.选项默认值[key] = val.defaultValue || "";

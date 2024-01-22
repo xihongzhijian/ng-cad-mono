@@ -145,7 +145,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return hint || "";
   }
 
-  options: {value: string; label: string; disabled?: boolean; img?: string}[] = [];
+  options: {value: any; label: string; disabled?: boolean; img?: string}[] = [];
 
   get optionText() {
     const info = this.info;
@@ -652,7 +652,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return;
     }
     const {info} = this;
-    const {optionField, optionsUseId, defaultValue, onChange} = optionsDialog;
+    const {optionField, optionsUseId, defaultValue, openInNewTab, onChange} = optionsDialog;
     if (optionsDialog.optionKey) {
       optionKey = optionsDialog.optionKey;
     }
@@ -660,42 +660,71 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     let optionInputOnly: InputInfoString["optionInputOnly"];
     let multiple: boolean | undefined;
     let hasOptions = false;
-    if (info.type === "string") {
-      optionInputOnly = !!info.optionInputOnly;
-      optionValueType = info.optionValueType || "string";
+    if (info.type === "string" || info.type === "object") {
+      if (info.type === "string") {
+        optionInputOnly = !!info.optionInputOnly;
+        optionValueType = info.optionValueType || "string";
+      }
       multiple = info.optionMultiple;
       hasOptions = !!info.options;
     } else if (info.type === "select") {
       multiple = info.multiple;
-      hasOptions = info.options.length > 0;
-    } else if (info.type === "object") {
-      multiple = info.optionMultiple;
-      hasOptions = !!info.options;
+      hasOptions = !optionKey;
     }
-    const value = key ? data[key] : this.value;
-    const isObject = isTypeOf(value, "object");
-    let checked: string[] = isObject && optionKey ? value[optionKey] : value;
-    if (optionValueType === "string") {
-      checked = splitOptions(isObject && optionKey ? value[optionKey] : value);
+
+    let checked: string[];
+    if (info.type === "select") {
+      checked = this.value;
+    } else {
+      const value = key ? data[key] : this.value;
+      const isObject = isTypeOf(value, "object");
+      checked = isObject && optionKey ? value[optionKey] : value;
+      if (optionValueType === "string") {
+        checked = splitOptions(isObject && optionKey ? value[optionKey] : value);
+      }
     }
     if (!Array.isArray(checked)) {
       checked = [];
     }
+
     const fields = optionField ? [optionField] : [];
+    let options: OptionsDataData[] | undefined;
+    if (hasOptions) {
+      options = this.options.map<OptionsDataData>((v, i) => {
+        let vid = i;
+        let name = "";
+        if (typeof v === "string") {
+          name = v;
+        } else {
+          const optoinValue = v.value;
+          if (typeof optoinValue === "string") {
+            name = optoinValue;
+          } else if (isTypeOf(optoinValue, "object")) {
+            for (const valKey of ["id", "vid"]) {
+              if (isTypeOf(optoinValue[valKey], "number")) {
+                vid = optoinValue[valKey];
+                break;
+              }
+            }
+            for (const valKey of ["name", "mingzi"]) {
+              if (isTypeOf(optoinValue[valKey], "string")) {
+                name = optoinValue[valKey];
+                break;
+              }
+            }
+          }
+        }
+        return {vid, name, img: v.img || "", disabled: false};
+      });
+    }
     const dialogData: CadOptionsInput = {
       data,
       name: optionKey || "",
       multi: multiple,
       defaultValue,
       fields,
-      options: hasOptions
-        ? this.options.map<OptionsDataData>((v, i) => ({
-            vid: i,
-            name: typeof v === "string" ? v : v.value,
-            img: v.img || "",
-            disabled: false
-          }))
-        : undefined
+      options,
+      openInNewTab
     };
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));
@@ -704,15 +733,15 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     const result = await openCadOptionsDialog(this.dialog, {data: dialogData});
     if (result) {
-      const options = result.options;
+      const options1 = result.options;
       let options2: string[];
       if (optionsUseId) {
-        options2 = options.map((v) => String(v.vid));
+        options2 = options1.map((v) => String(v.vid));
       } else {
-        options2 = options.map((v) => v.mingzi);
+        options2 = options1.map((v) => v.mingzi);
       }
       if (optionInputOnly || info.type === "select") {
-        this.displayValue = joinOptions(options.map((v) => v.mingzi));
+        this.displayValue = joinOptions(options1.map((v) => v.mingzi));
       }
       let resultValue: string | string[] = options2;
       if (optionValueType === "string") {
@@ -720,14 +749,16 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       } else if (!multiple) {
         resultValue = options2[0] || "";
       }
-      if (key) {
+      if (info.type === "select") {
+        this.value = resultValue;
+      } else if (key) {
+        const value = key ? data[key] : this.value;
+        const isObject = isTypeOf(value, "object");
         if (isObject && optionKey) {
           data[key][optionKey] = resultValue;
         } else {
           data[key] = resultValue;
         }
-      } else {
-        this.value = resultValue;
       }
       if (typeof onChange === "function") {
         onChange(result);

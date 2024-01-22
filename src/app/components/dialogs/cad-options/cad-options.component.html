@@ -4,6 +4,13 @@
     <button mat-raised-button color="primary" (click)="selectAll()">当前页全选</button>
     <button mat-raised-button color="primary" (click)="selectReverse()">当前页反选</button>
   }
+  <button mat-raised-button color="primary" (click)="search(true)">刷新</button>
+  @if (data.openInNewTab) {
+    <button mat-raised-button color="primary" (click)="editInNewTab()">
+      <mat-icon>open_in_new</mat-icon>
+      <span>后台编辑</span>
+    </button>
+  }
 </div>
 
 <ng-scrollbar class="content">
@@ -14,8 +21,13 @@
         <div class="toolbar">
           <mat-checkbox [checked]="item.checked" [disabled]="item.disabled && !item.checked"> </mat-checkbox>
           <div class="text long" [matTooltip]="item.name" [matTooltipPosition]="'above'">{{ item.name }}</div>
-          @if (defaultValue !== null) {
-            <button mat-button [color]="defaultValue === item.name ? 'accent' : 'primary'" appClickStop (click)="setDefaultValue(item)">
+          @if (data.defaultValue) {
+            <button
+              mat-button
+              [color]="data.defaultValue.value === item.name ? 'accent' : 'primary'"
+              appClickStop
+              (click)="setDefaultValue(item)"
+            >
               默认值
             </button>
           }

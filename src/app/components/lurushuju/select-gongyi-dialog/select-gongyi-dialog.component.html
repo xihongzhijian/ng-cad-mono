@@ -6,11 +6,13 @@
           <app-input class="flex-110" [info]="info"></app-input>
         }
       </div>
-      <div class="toolbar">
-        @for (info of inputInfosMenjiao; track $index) {
-          <app-input class="flex-110" [info]="info"></app-input>
-        }
-      </div>
+      @if (inputInfosMenjiao.length > 0) {
+        <div class="toolbar">
+          @for (info of inputInfosMenjiao; track $index) {
+            <app-input class="flex-110" [info]="info"></app-input>
+          }
+        </div>
+      }
     </div>
     <button mat-raised-button color="primary" (click)="search()">搜索</button>
   </div>

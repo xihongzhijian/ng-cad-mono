@@ -2,7 +2,7 @@ import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
-import {InputInfoOptionBase, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {random} from "lodash";
 import {cadMatchRules, menjiaoCadTypes, 门缝配置输入, 门铰锁边铰边} from "../xinghao-data";
@@ -283,13 +283,13 @@ export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
   };
 };
 
-export const getOptions = (optionsAll: OptionsAll | undefined | null, key: string, setter?: (option: InputInfoOptionBase) => void) => {
+export const getOptions = (optionsAll: OptionsAll | undefined | null, key: string, setter?: (option: InputInfoOption) => void) => {
   const options = optionsAll?.[key];
   if (!options) {
     return [];
   }
   return options.map(({name}) => {
-    const option: InputInfoOptionBase = {value: name};
+    const option: InputInfoOption = {value: name};
     if (typeof setter === "function") {
       setter(option);
     }
@@ -306,7 +306,7 @@ export const getOptionInputInfo = (
   if (!optionsInfo) {
     return {type: "select", label: key, options: []};
   }
-  const options = optionsInfo.options.map<InputInfoOptionBase>((v) => {
+  const options = optionsInfo.options.map<InputInfoOption>((v) => {
     return {value: v.name, img: v.img};
   });
   const {disabled, multiple} = optionsInfo;

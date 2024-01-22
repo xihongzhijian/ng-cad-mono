@@ -44,10 +44,8 @@
     <div class="step-2 flex-column flex-110">
       <div class="toolbar">
         @for (info of xinghaoInputInfos; track info) {
-          <app-input class="flex-110" [info]="info"></app-input>
+          <app-input [info]="info"></app-input>
         }
-      </div>
-      <div class="toolbar">
         <button mat-raised-button color="primary" (click)="copyGongyi2()">从其它型号复制</button>
       </div>
       <ng-scrollbar>

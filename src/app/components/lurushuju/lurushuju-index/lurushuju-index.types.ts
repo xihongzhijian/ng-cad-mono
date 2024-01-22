@@ -30,9 +30,3 @@ export type OptionsAll2 = ObjectOf<{options: OptionsDataData[]; disabled?: boole
 export type XuanxiangTableData = 选项 & {操作?: string};
 export type ShuruTableData = 输入 & {操作?: string};
 export type MenjiaoData = 门铰锁边铰边 & {操作?: string};
-
-export interface XuanxiangFormData {
-  名字: string;
-  可选项: {vid: number; mingzi: string}[];
-  默认值: string;
-}

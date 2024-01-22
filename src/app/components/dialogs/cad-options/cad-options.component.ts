@@ -2,15 +2,17 @@ import {AfterViewInit, Component, forwardRef, HostBinding, Inject, ViewChild} fr
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MatIconModule} from "@angular/material/icon";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf, queryString} from "@lucilor/utils";
+import {ObjectOf, queryString, timeout} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsParams, OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
+import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -28,14 +30,15 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [
     ClickStopPropagationDirective,
     forwardRef(() => InputComponent),
-    MatButtonModule,
-    NgScrollbar,
-    SpinnerComponent,
-    MatTooltipModule,
-    MatCheckboxModule,
     ImageComponent,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatDialogActions,
+    MatIconModule,
     MatPaginatorModule,
-    MatDialogActions
+    MatTooltipModule,
+    NgScrollbar,
+    SpinnerComponent
   ]
 })
 export class CadOptionsComponent implements AfterViewInit {
@@ -64,7 +67,6 @@ export class CadOptionsComponent implements AfterViewInit {
       }
     }
   };
-  defaultValue: string | null = null;
   filePathUrl = filePathUrl;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
   showPaginator = true;
@@ -73,12 +75,9 @@ export class CadOptionsComponent implements AfterViewInit {
     public dialogRef: MatDialogRef<CadOptionsComponent, CadOptionsOutput>,
     @Inject(MAT_DIALOG_DATA) public data: CadOptionsInput,
     private http: CadDataService,
-    private spinner: SpinnerService
-  ) {
-    if (typeof data.defaultValue === "string") {
-      this.defaultValue = data.defaultValue;
-    }
-  }
+    private spinner: SpinnerService,
+    private message: MessageService
+  ) {}
 
   async ngAfterViewInit() {
     if (!this.paginator) {
@@ -106,8 +105,13 @@ export class CadOptionsComponent implements AfterViewInit {
     const result: CadOptionsOutput = {
       options: data.data.map((v) => ({vid: v.vid, mingzi: v.name}))
     };
-    if (typeof this.defaultValue === "string") {
-      result.defaultValue = this.defaultValue;
+    if (this.data.defaultValue) {
+      const {value, required} = this.data.defaultValue;
+      if (required && !value) {
+        this.message.error("请选择默认值");
+        return;
+      }
+      result.defaultValue = value;
     }
     this.dialogRef.close(result);
   }
@@ -122,9 +126,11 @@ export class CadOptionsComponent implements AfterViewInit {
     }
   }
 
-  search() {
+  search(stayOnPage = false) {
     if (this.paginator) {
-      this.paginator.pageIndex = 0;
+      if (!stayOnPage) {
+        this.paginator.pageIndex = 0;
+      }
       this.getData(this.paginator.pageIndex + 1);
     } else {
       this.getData();
@@ -229,10 +235,29 @@ export class CadOptionsComponent implements AfterViewInit {
     if (!item.checked) {
       this.onCheckboxChange(item);
     }
-    if (this.defaultValue === item.name) {
-      this.defaultValue = "";
+    const {defaultValue} = this.data;
+    if (!defaultValue) {
+      return;
+    }
+    if (defaultValue.value === item.name) {
+      defaultValue.value = "";
     } else {
-      this.defaultValue = item.name;
+      defaultValue.value = item.name;
+    }
+  }
+
+  async editInNewTab() {
+    const {openInNewTab, name} = this.data;
+    if (!openInNewTab) {
+      return;
+    }
+    const url = await this.http.getShortUrl(name);
+    if (url) {
+      window.open(url);
+    }
+    await timeout(100);
+    if (await this.message.confirm("是否修改了数据？")) {
+      this.search(true);
     }
   }
 }
@@ -252,7 +277,8 @@ export interface CadOptionsInput {
   filter?: ObjectOf<any>;
   fields?: string[];
   options?: OptionsDataData[];
-  defaultValue?: string;
+  defaultValue?: {value?: string; required?: boolean};
+  openInNewTab?: boolean;
 }
 
 export interface CadOptionsOutput {
