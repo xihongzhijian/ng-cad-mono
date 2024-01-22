@@ -403,7 +403,7 @@ export class KlkwpzComponent implements AfterViewInit {
     if (info.model) {
       const {data, key} = info.model;
       if (data && key) {
-        return !data[key];
+        return [undefined, null, ""].includes(data[key]);
       }
     }
     return false;
