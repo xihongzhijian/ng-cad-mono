@@ -474,7 +474,13 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   copy() {
     const copy = async (str: string) => {
-      await navigator.clipboard.writeText(str);
+      try {
+        await navigator.clipboard.writeText(str);
+      } catch (error) {
+        console.error(error);
+        await this.message.snack("复制失败");
+        return;
+      }
       await this.message.snack(`${this.info.label}已复制`);
     };
     const value = this.value;
@@ -646,13 +652,16 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   async selectOptions(key?: keyof any, optionKey?: string) {
-    const data = this.model.data;
+    const {info} = this;
+    if (info.readonly || info.disabled) {
+      return;
+    }
     const optionsDialog = this.optionsDialog;
     if (!optionsDialog) {
       return;
     }
-    const {info} = this;
-    const {optionField, optionsUseId, defaultValue, openInNewTab, onChange} = optionsDialog;
+    const data = this.model.data;
+    const {optionField, optionsUseId, defaultValue, onChange} = optionsDialog;
     if (optionsDialog.optionKey) {
       optionKey = optionsDialog.optionKey;
     }
@@ -724,7 +733,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       defaultValue,
       fields,
       options,
-      openInNewTab
+      openInNewTab: optionsDialog.openInNewTab,
+      noImage: optionsDialog.noImage
     };
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));
@@ -961,6 +971,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
           info.showCadViewer.onInit?.(cadViewer);
           await cadViewer.render();
           cadViewer.center();
+          console.log(cadViewer);
         }
       }
     }, 0);

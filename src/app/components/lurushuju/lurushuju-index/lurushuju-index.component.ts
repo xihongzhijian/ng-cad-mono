@@ -101,12 +101,12 @@ export class LurushujuIndexComponent implements OnInit {
   xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
   xinghaoFilterStr = session.load<string>(this.xinghaoFilterStrKey) || "";
   tabs: {name: string; hidden?: boolean}[] = [
-    {name: "下单选项输入配置"},
     {name: "门铰锁边铰边"},
-    {name: "算料公式CAD配置"},
+    {name: "板材分组"},
     {name: "示意图CAD"},
     {name: "效果图"},
-    {name: "板材分组"}
+    {name: "下单选项输入配置"},
+    {name: "算料公式CAD配置"}
   ];
   tabNameKey = "lurushujuTabName";
   tabIndex = 0;
@@ -135,7 +135,7 @@ export class LurushujuIndexComponent implements OnInit {
   menshans: (TableDataBase & {zuchenghuajian?: string})[] = [];
   huajians: MrbcjfzHuajian[] = [];
   parentInfo = {isZhijianUser: false, isLurushujuEnter: false};
-  cadViewerConfig: Partial<CadViewerConfig> = {width: 200, height: 100};
+  cadViewerConfig: Partial<CadViewerConfig> = {width: 200, height: 100, lineGongshi: 20};
 
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
@@ -1006,6 +1006,7 @@ export class LurushujuIndexComponent implements OnInit {
         const dialogKeys: (keyof 门铰锁边铰边)[] = ["锁边", "铰边"];
         if (dialogKeys.includes(key)) {
           info.optionsDialog = {
+            noImage: true,
             defaultValue: {value: data.选项默认值[key] || ""},
             onChange(val) {
               if (info.multiple) {
@@ -1694,18 +1695,18 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async onBcfzRefreshEnd() {
-    const {gongyi, mrbcjfz} = this;
-    if (!gongyi || !mrbcjfz || !mrbcjfz.inputData) {
-      return;
-    }
-    if (this.xinghaoName !== mrbcjfz.inputData.xinghao) {
-      return;
-    }
-    const 板材分组 = this.getBcfzSubmitData(mrbcjfz.xinghao);
-    if (板材分组 && !isEqual(板材分组, gongyi.板材分组)) {
-      gongyi.板材分组 = 板材分组;
-      await this.submitGongyi(["板材分组"]);
-    }
+    // const {gongyi, mrbcjfz} = this;
+    // if (!gongyi || !mrbcjfz || !mrbcjfz.inputData) {
+    //   return;
+    // }
+    // if (this.xinghaoName !== mrbcjfz.inputData.xinghao) {
+    //   return;
+    // }
+    // const 板材分组 = this.getBcfzSubmitData(mrbcjfz.xinghao);
+    // if (板材分组 && !isEqual(板材分组, gongyi.板材分组)) {
+    //   gongyi.板材分组 = 板材分组;
+    //   await this.submitGongyi(["板材分组"]);
+    // }
   }
 
   async editSuanliaoCad(i: number) {

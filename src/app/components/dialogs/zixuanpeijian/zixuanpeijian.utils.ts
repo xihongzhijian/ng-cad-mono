@@ -79,7 +79,9 @@ export const importZixuanpeijian = (source: ZixuanpeijianData = {}) => {
     }
   }
   for (const item of result.零散) {
-    item.data = new CadData(item.data);
+    if (!(item.data instanceof CadData)) {
+      item.data = new CadData(item.data);
+    }
     if (item.displayedData) {
       item.displayedData = new CadData(item.displayedData);
     }

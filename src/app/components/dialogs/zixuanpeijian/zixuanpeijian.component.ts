@@ -411,10 +411,12 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       const toRemove: number[] = [];
       for (const [i, item] of this.result.零散.entries()) {
         let found: ZixuanpeijianlingsanCadItem | undefined;
-        for (const type in this.lingsanCads) {
-          found = this.lingsanCads[type].find((v) => v.data.id === item.info.houtaiId);
-          if (found) {
-            break;
+        if (!noValidateCads) {
+          for (const type in this.lingsanCads) {
+            found = this.lingsanCads[type].find((v) => v.data.id === item.info.houtaiId);
+            if (found) {
+              break;
+            }
           }
         }
         if (found) {
@@ -543,7 +545,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
   }
 
-  private async _onStep({value, refresh}: ZixuanpeijianComponent["step$"]["value"]) {
+  private async _onStep({value, refresh, noCache}: ZixuanpeijianComponent["step$"]["value"]) {
     let isRefreshed = false;
     if (value === 1) {
       if (refresh || !this._step1Fetched) {
@@ -562,7 +564,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       }
     } else if (value === 3) {
       if (refresh || !this._step3Fetched) {
-        await this.step3Fetch(false, true);
+        await this.step3Fetch(false, noCache);
         isRefreshed = true;
       }
       if (isRefreshed || !this.lingsanCadType) {
@@ -979,6 +981,16 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     });
     if (response?.code === 0) {
       this.step3Refresh();
+    }
+  }
+
+  async generateLingsanCadImg(type: string, i: number) {
+    const item = this.lingsanCads[type][i];
+    const img = await getCadPreview("cad", item.data);
+    if (img) {
+      item.img = img;
+      this.lingsanCadImgs[item.data.id] = img;
+      await this.http.setCadImg(item.data.id, img);
     }
   }
 

@@ -279,6 +279,7 @@ export interface CadOptionsInput {
   options?: OptionsDataData[];
   defaultValue?: {value?: string; required?: boolean};
   openInNewTab?: boolean;
+  noImage?: boolean;
 }
 
 export interface CadOptionsOutput {

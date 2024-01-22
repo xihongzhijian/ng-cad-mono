@@ -12,7 +12,8 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
-import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai} from "@lucilor/cad-viewer";
+import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -40,7 +41,10 @@ export class CadItemComponent implements OnChanges, OnDestroy {
 
   zhankaiInputs: {width: InputInfo; height: InputInfo; num: InputInfo}[] = [];
 
-  constructor(private message: MessageService) {}
+  constructor(
+    private message: MessageService,
+    private http: CadDataService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.cad) {
@@ -73,7 +77,9 @@ export class CadItemComponent implements OnChanges, OnDestroy {
       containerEl.innerHTML = "";
       const width = this.itemWidth;
       const height = (width / 300) * 150;
-      const cadViewer = new CadViewer(new CadData(cad?.json), {
+      const data = new CadData(cad?.json);
+      generateLineTexts(data);
+      const cadViewer = new CadViewer(data, {
         width,
         height,
         backgroundColor: "black",
@@ -81,7 +87,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
         dragAxis: "",
         selectMode: "single",
         entityDraggable: false,
-        lineGongshi: 12
+        lineGongshi: 24
       });
       cadViewer.dom.removeAllListeners?.("wheel");
       cadViewer.on("entitydblclick", async (_, entity) => {
@@ -97,7 +103,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
         ];
         const result = await this.message.form(form);
         if (result) {
-          cad.json = cadViewer.data.export();
+          cad.json = this.http.exportCadData(data, true);
           this.cadFormSubmitted.emit();
           this.updateCad();
         }

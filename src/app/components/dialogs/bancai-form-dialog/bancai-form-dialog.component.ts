@@ -86,5 +86,5 @@ export type BancaiFormOutput = BancaiFormData;
 
 export const openBancaiFormDialog = getOpenDialogFunc<BancaiFormDialogComponent, BancaiFormInput, BancaiFormOutput>(
   BancaiFormDialogComponent,
-  {width: "85%"}
+  {width: "100%", maxWidth: "800px"}
 );

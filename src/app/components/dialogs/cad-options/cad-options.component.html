@@ -32,7 +32,9 @@
             </button>
           }
         </div>
-        <app-image [src]="item.img" [prefix]="filePathUrl"></app-image>
+        @if (!data.noImage) {
+          <app-image [src]="item.img" [prefix]="filePathUrl"></app-image>
+        }
       </div>
     }
   </div>

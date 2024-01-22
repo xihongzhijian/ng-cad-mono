@@ -151,6 +151,7 @@
                 <button mat-button color="primary" (click)="copyLingsanCad(lingsanCadType, i)">复制</button>
                 <button mat-button color="primary" (click)="openLingsanCad(lingsanCadType, i)">编辑</button>
                 <button mat-button color="primary" (click)="deleteLingsanCad(lingsanCadType, i)">删除</button>
+                <button mat-button color="primary" (click)="generateLingsanCadImg(lingsanCadType, i)">生成图片</button>
               </div>
               <div class="title flex-row flex-110">
                 <div class="name text-ellipsis" [matTooltip]="item.data.name" matTooltipPosition="above">
@@ -166,12 +167,26 @@
     <ng-scrollbar class="flex-110">
       <div class="lingsan-cads">
         <div class="lingsan-cad" *ngFor="let item of result['零散']; let i = index">
-          <img class="cad-preview" [src]="lingsanCadImgs[item.info.houtaiId] || lingsanCadImgs[item.data.id]" />
+          @if (data?.noValidateCads) {
+            <app-image
+              class="cad-preview"
+              [src]="lingsanCadImgs[item.data.id] || lingsanCadImgs[item.info.houtaiId]"
+              [emptySrc]="imgCadEmpty"
+            ></app-image>
+          } @else {
+            <app-image
+              class="cad-preview"
+              [src]="lingsanCadImgs[item.info.houtaiId] || lingsanCadImgs[item.data.id]"
+              [emptySrc]="imgCadEmpty"
+            ></app-image>
+          }
           <div class="title flex-row flex-110">
             <button mat-icon-button color="primary" (click)="removeLingsanItem(i)">
               <mat-icon>remove_circle</mat-icon>
             </button>
-            <div class="name">{{ item.data.name }}</div>
+            <div class="name text-ellipsis" [matTooltip]="item.data.name" matTooltipPosition="above">
+              {{ item.data.name }}
+            </div>
           </div>
         </div>
       </div>

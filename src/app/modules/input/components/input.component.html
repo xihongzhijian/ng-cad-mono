@@ -272,6 +272,7 @@
           (change)="onChange()"
           (input)="onInput()"
           (blur)="onBlur()"
+          (click)="selectOptions(model.key)"
           [placeholder]="info.placeholder || ''"
         />
       } @else {
@@ -293,8 +294,19 @@
         </mat-select>
       }
       @if (info.optionsDialog && !info.readonly && !info.disabled) {
-        <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key)">
-          <mat-icon>list</mat-icon>
+        <ng-container matSuffix>
+          <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key)">
+            <mat-icon>list</mat-icon>
+          </button>
+          @if (info.copyable !== false) {
+            <button mat-icon-button color="primary" (click)="copy()">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          }
+        </ng-container>
+      } @else if (info.copyable) {
+        <button mat-icon-button matSuffix color="primary" (click)="copy()">
+          <mat-icon>content_copy</mat-icon>
         </button>
       }
       @if (info.clearable) {

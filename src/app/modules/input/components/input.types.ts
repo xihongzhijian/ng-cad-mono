@@ -186,5 +186,6 @@ export interface OptionsDialog {
   optionField?: string;
   defaultValue?: CadOptionsInput["defaultValue"];
   openInNewTab?: CadOptionsInput["openInNewTab"];
+  noImage?: CadOptionsInput["noImage"];
   onChange?: (val: CadOptionsOutput) => void;
 }
