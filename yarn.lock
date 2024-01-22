@@ -2332,9 +2332,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/autocomplete@npm:^6.11.1":
-  version: 6.11.1
-  resolution: "@codemirror/autocomplete@npm:6.11.1"
+"@codemirror/autocomplete@npm:^6.12.0":
+  version: 6.12.0
+  resolution: "@codemirror/autocomplete@npm:6.12.0"
   dependencies:
     "@codemirror/language": "npm:^6.0.0"
     "@codemirror/state": "npm:^6.0.0"
@@ -2345,7 +2345,7 @@ __metadata:
     "@codemirror/state": ^6.0.0
     "@codemirror/view": ^6.0.0
     "@lezer/common": ^1.0.0
-  checksum: 65676724b4e744ff503de86dddc1aaabf87e9f7f6a001431a4035ccaa99d1f334a4f79f5fd51606aeb66e75134ef23b8bb204cead820703e7441c78188284b14
+  checksum: 9f627f27e25b83816f3b60fe45285d0c976b6bdc0a4b01e7fc1ab90a536113dc5b6a1adfbe403963b97bdb84343a464e58b1614e8d522a4e937949ec81e227f3
   languageName: node
   linkType: hard
 
@@ -6197,21 +6197,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axobject-query@npm:4.0.0":
+"axobject-query@npm:4.0.0, axobject-query@npm:^4.0.0":
   version: 4.0.0
   resolution: "axobject-query@npm:4.0.0"
   dependencies:
     dequal: "npm:^2.0.3"
   checksum: 4d756b5c2ff099f1c7f99e55a5de9b2066cb2a13a3170185ff34bfec2d7bcab81eb820a4e7340d35c251341b61ebee6e705b7ce64db78224df1df5a4d68448fe
-  languageName: node
-  linkType: hard
-
-"axobject-query@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "axobject-query@npm:3.2.1"
-  dependencies:
-    dequal: "npm:^2.0.3"
-  checksum: f7debc2012e456139b57d888c223f6d3cb4b61eb104164a85e3d346273dd6ef0bc9a04b6660ca9407704a14a8e05fa6b6eb9d55f44f348c7210de7ffb350c3a7
   languageName: node
   linkType: hard
 
@@ -10608,10 +10599,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immutable-json-patch@npm:6.0.0":
-  version: 6.0.0
-  resolution: "immutable-json-patch@npm:6.0.0"
-  checksum: 85caa287423f345bb7e3966f146d18333dbe76fe8d13f16a9adbb14d9b53d501372cab011fdccc6688a672efc342b255a33e8df65037c69fb200b5a584bbcf0f
+"immutable-json-patch@npm:6.0.1":
+  version: 6.0.1
+  resolution: "immutable-json-patch@npm:6.0.1"
+  checksum: 9f01fc64611e1d31490a2ed74d4fea13538daa09a627e754dcfbb328d425c43ff433815f3ef2f3fa34a24a316655590f0301cdd226fa70ea965acd3ae14b9cdc
   languageName: node
   linkType: hard
 
@@ -12895,7 +12886,7 @@ __metadata:
     tslib: "npm:^2.6.2"
     typescript: "npm:~5.3.3"
     uuid: "npm:^9.0.1"
-    vanilla-jsoneditor: "npm:^0.21.2"
+    vanilla-jsoneditor: "npm:^0.21.3"
     zone.js: "npm:~0.14.3"
   languageName: unknown
   linkType: soft
@@ -15301,7 +15292,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.69.7, sass@npm:^1.69.7":
+"sass@npm:1.69.7":
   version: 1.69.7
   resolution: "sass@npm:1.69.7"
   dependencies:
@@ -16285,16 +16276,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"svelte@npm:^4.2.8":
-  version: 4.2.8
-  resolution: "svelte@npm:4.2.8"
+"svelte@npm:^4.2.9":
+  version: 4.2.9
+  resolution: "svelte@npm:4.2.9"
   dependencies:
     "@ampproject/remapping": "npm:^2.2.1"
     "@jridgewell/sourcemap-codec": "npm:^1.4.15"
     "@jridgewell/trace-mapping": "npm:^0.3.18"
+    "@types/estree": "npm:^1.0.1"
     acorn: "npm:^8.9.0"
     aria-query: "npm:^5.3.0"
-    axobject-query: "npm:^3.2.1"
+    axobject-query: "npm:^4.0.0"
     code-red: "npm:^1.0.3"
     css-tree: "npm:^2.3.1"
     estree-walker: "npm:^3.0.3"
@@ -16302,7 +16294,7 @@ __metadata:
     locate-character: "npm:^3.0.0"
     magic-string: "npm:^0.30.4"
     periscopic: "npm:^3.1.0"
-  checksum: 13673a6211cc38224398f4bda8e0ba93edfb1338aa4f28f614a31ac31b152479038761cfc57f1668554f5ab70effcd8023dcf549d75e7b2a7ae703d213b7e9da
+  checksum: 534d3cdd3ee0c7c5139e17493c45f15426676b5d32da2c9430268ef94504ac908ea541283b3025aaf56a17382badc2464e95927d3dd094588d894ea350302bfa
   languageName: node
   linkType: hard
 
@@ -17213,11 +17205,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vanilla-jsoneditor@npm:^0.21.2":
-  version: 0.21.2
-  resolution: "vanilla-jsoneditor@npm:0.21.2"
+"vanilla-jsoneditor@npm:^0.21.3":
+  version: 0.21.3
+  resolution: "vanilla-jsoneditor@npm:0.21.3"
   dependencies:
-    "@codemirror/autocomplete": "npm:^6.11.1"
+    "@codemirror/autocomplete": "npm:^6.12.0"
     "@codemirror/commands": "npm:^6.3.3"
     "@codemirror/lang-json": "npm:^6.0.1"
     "@codemirror/language": "npm:^6.10.0"
@@ -17232,17 +17224,17 @@ __metadata:
     ajv: "npm:^8.12.0"
     codemirror-wrapped-line-indent: "npm:^1.0.0"
     diff-sequences: "npm:^29.6.3"
-    immutable-json-patch: "npm:6.0.0"
+    immutable-json-patch: "npm:6.0.1"
     jmespath: "npm:^0.16.0"
     json-source-map: "npm:^0.6.1"
     jsonrepair: "npm:^3.5.1"
     lodash-es: "npm:^4.17.21"
     memoize-one: "npm:^6.0.0"
     natural-compare-lite: "npm:^1.4.0"
-    sass: "npm:^1.69.7"
-    svelte: "npm:^4.2.8"
+    sass: "npm:^1.70.0"
+    svelte: "npm:^4.2.9"
     vanilla-picker: "npm:^2.12.2"
-  checksum: 068a44d989f07edc6bedad9bc5c7f81a2206984e8b94189ad862c125a31ad94ba9024557655354faf641705d831ac1e1ed8cd0c81d76edefeb7564bf56de6a43
+  checksum: 196f83a6a6f0f1c29fd35f2a96775bf410bbbaa71e8cb3d534a49546a9835904536d016442eb82089a3f51adda0061e3474f52c6b5ed914e0bd0d3c09857ecc0
   languageName: node
   linkType: hard
 
