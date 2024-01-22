@@ -1,3 +1,11 @@
+@if (varNames && varNames.names && varNames.names.length > 0) {
+  <div class="toolbar">
+    @for (name of varNames.names; track $index) {
+      <button mat-button color="primary" [style]="{width: varNames.width + 'px'}" (click)="clickVarName(name)">{{ name }}</button>
+    }
+  </div>
+}
+
 <div class="formulas-input">
   <app-input [info]="formulasInputInfo"></app-input>
   <div class="btn-group" style="margin-top: -10px">

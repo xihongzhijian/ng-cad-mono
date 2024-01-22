@@ -41,10 +41,10 @@ export class FormulasEditorComponent {
     this.updateFormulas(value);
   }
   @Input() vars?: Formulas;
+  @Input() formulasText = "";
+  @Input() varNames?: {names?: string[]; width?: number};
   formulaList: [string, string][] = [];
   formulaListInputInfos: InputInfo[][] = [];
-  @Input()
-  formulasText = "";
   formulasInputInfo: InputInfo = {
     type: "string",
     label: "",
@@ -197,5 +197,9 @@ export class FormulasEditorComponent {
 
   returnZero() {
     return 0;
+  }
+
+  clickVarName(name: string) {
+    this.formulasText += name;
   }
 }

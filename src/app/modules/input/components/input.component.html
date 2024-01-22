@@ -541,18 +541,20 @@
         readonly
         [disabled]="info.disabled || false"
         [autocomplete]="info.autocomplete || ''"
-        [value]="getFormulasStr()"
+        [(ngModel)]="formulasStr"
         type="text"
-        (change)="onChange()"
-        (input)="onInput()"
-        (blur)="onBlur()"
         [placeholder]="info.placeholder || ''"
+        (click)="editFormulas()"
       />
       @if (!info.readonly && !info.disabled) {
         <button mat-icon-button matSuffix color="primary" (click)="editFormulas()">
           <mat-icon>edit</mat-icon>
         </button>
       }
+      <button mat-icon-button matSuffix color="primary" (click)="copy()">
+        <mat-icon>content_copy</mat-icon>
+      </button>
+      <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
   @case ("group") {

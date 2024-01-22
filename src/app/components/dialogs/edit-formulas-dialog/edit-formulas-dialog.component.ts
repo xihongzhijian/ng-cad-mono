@@ -43,7 +43,8 @@ export const openEditFormulasDialog = getOpenDialogFunc<EditFormulasDialogCompon
 
 export interface EditFormulasInput {
   formulas?: Formulas;
-  formulasText?: string;
+  formulasText?: FormulasEditorComponent["formulasText"];
+  varNames?: FormulasEditorComponent["varNames"];
 }
 
 export type EditFormulasOutput = Formulas;

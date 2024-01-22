@@ -821,6 +821,8 @@ export const calcZxpj = async (
           默认展开宽: !!nameEquals(cadZhankai.zhankaikuan, [
             "ceil(总长)+0",
             "ceil(总长)+0+(总使用差值)",
+            "ceil(总长)-0",
+            "ceil(总长)-0+(总使用差值)",
             "总长+(总使用差值)",
             "总长+0+(总使用差值)"
           ])

@@ -13,6 +13,7 @@ import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-edito
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {environment} from "@env";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
 import {downloadByString, keysOf, ObjectOf, queryString, RequiredKeys, selectFiles, WindowMessageManager} from "@lucilor/utils";
@@ -136,6 +137,7 @@ export class LurushujuIndexComponent implements OnInit {
   huajians: MrbcjfzHuajian[] = [];
   parentInfo = {isZhijianUser: false, isLurushujuEnter: false};
   cadViewerConfig: Partial<CadViewerConfig> = {width: 200, height: 100, lineGongshi: 20};
+  varNames: FormulasEditorComponent["vars"];
 
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
@@ -357,6 +359,13 @@ export class LurushujuIndexComponent implements OnInit {
     });
   }
 
+  async geVarNamesAllIfNotFetched() {
+    await this.getDataIfNotFetched("systemVarNames", async () => {
+      const varNames = await this.http.getData<typeof this.varNames>("shuju/api/getVarNames");
+      this.varNames = varNames || undefined;
+    });
+  }
+
   async setStep1() {
     const step = 1;
     if (this.step !== step) {
@@ -454,7 +463,8 @@ export class LurushujuIndexComponent implements OnInit {
       this.getXinghaosIfNotFetched(),
       this.getXinghaoOptionsAllIfNotFetched(),
       this.getGongyiOptionsAllIfNotFetched(),
-      this.getMenjiaoOptionsAllIfNotFetched()
+      this.getMenjiaoOptionsAllIfNotFetched(),
+      this.geVarNamesAllIfNotFetched()
     ]);
     this.menshans = await this.http.queryMySql<(typeof this.menshans)[number]>({
       table: "p_menshan",
@@ -1338,6 +1348,7 @@ export class LurushujuIndexComponent implements OnInit {
         type: "formulas",
         label: "公式",
         model: {data, key: "公式"},
+        varNames: this.varNames,
         validators: () => {
           if (isEmpty(data.公式)) {
             return {公式不能为空: true};

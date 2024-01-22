@@ -3,6 +3,7 @@ import {FloatLabelType} from "@angular/material/form-field";
 import {Formulas} from "@app/utils/calc";
 import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.component";
+import {EditFormulasInput} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import Color from "color";
@@ -152,6 +153,8 @@ export interface InputInfoCad<T = any> extends InputInfoBase<T> {
 export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
   type: "formulas";
   value?: Value<Formulas>;
+  formulasText?: EditFormulasInput["formulasText"];
+  varNames?: EditFormulasInput["varNames"];
   onChange?: (val: Formulas) => void;
 }
 

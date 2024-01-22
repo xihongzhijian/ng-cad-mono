@@ -1057,7 +1057,7 @@ export class CadZhankai {
     if (getTypeOf(data) !== "object") {
       data = {};
     }
-    this.zhankaikuan = data.zhankaikuan ?? "ceil(总长)+0";
+    this.zhankaikuan = data.zhankaikuan ?? "ceil(总长)-0";
     this.zhankaigao = data.zhankaigao ?? "";
     this.shuliang = data.shuliang ?? "1";
     this.shuliangbeishu = data.shuliangbeishu ?? "1";

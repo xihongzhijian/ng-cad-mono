@@ -115,6 +115,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const type = this.info.type;
     if (type === "color") {
       this.setColor(val);
+    } else if (type === "formulas") {
+      this.updateFormulasStr();
     }
   }
 
@@ -205,6 +207,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   displayValue: string | null = null;
+  formulasStr = "";
 
   @HostBinding("class") class: string[] = [];
   @HostBinding("style") style: csstype.Properties = {};
@@ -393,6 +396,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       });
     } else if (type === "cad") {
       this.updateCadInfos();
+    } else if (type === "formulas") {
+      this.updateFormulasStr();
     }
     this.displayValue = null;
     if (type === "string") {
@@ -483,16 +488,21 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
       await this.message.snack(`${this.info.label}已复制`);
     };
-    const value = this.value;
-    switch (typeof value) {
-      case "string":
-        copy(value);
-        break;
-      case "number":
-        copy(String(value));
-        break;
-      default:
-        copy(JSON.stringify(value));
+    const {info} = this;
+    if (info.type === "formulas") {
+      copy(this.formulasStr);
+    } else {
+      const value = this.value;
+      switch (typeof value) {
+        case "string":
+          copy(value);
+          break;
+        case "number":
+          copy(String(value));
+          break;
+        default:
+          copy(JSON.stringify(value));
+      }
     }
   }
 
@@ -1063,30 +1073,32 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }, 0);
   }
 
-  getFormulasStr() {
+  updateFormulasStr() {
     const {info} = this;
     if (info.type !== "formulas") {
-      return "";
+      return;
     }
     const {value} = this;
     if (!isTypeOf(value, "object")) {
-      return "";
+      return;
     }
-    return Object.entries(value)
+    this.formulasStr = Object.entries(value)
       .map(([k, v]) => `${k}=${v}`)
       .join(";");
   }
 
   async editFormulas() {
     const {info} = this;
-    if (info.type !== "formulas") {
+    const {readonly, disabled} = info;
+    if (info.type !== "formulas" || readonly || disabled) {
       return;
     }
     let {value} = this;
+    const {formulasText, varNames} = info;
     if (!isTypeOf(value, "object")) {
       value = {};
     }
-    const result = await openEditFormulasDialog(this.dialog, {data: {formulas: value}});
+    const result = await openEditFormulasDialog(this.dialog, {data: {formulas: value, formulasText, varNames}});
     if (result) {
       this.value = result;
       info.onChange?.(result);
