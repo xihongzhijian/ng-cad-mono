@@ -1,13 +1,12 @@
-import {ObjectOf} from "@lucilor/utils";
 import axios from "axios";
-import del from "del";
+import {deleteAsync} from "del";
 import FormData from "form-data";
 import fs from "fs";
 import gulp from "gulp";
 import zip from "gulp-zip";
 import path from "path";
 
-const postFormData = (url: string, data: ObjectOf<any>, file?: fs.ReadStream) => {
+const postFormData = (url, data, file) => {
   const formData = new FormData();
   formData.append("data", JSON.stringify(data));
   if (file) {
@@ -29,7 +28,7 @@ gulp.task("zipBefore", () => {
 });
 
 gulp.task("zipAfter", () => {
-  return del(path.join(tmpDir, project));
+  return deleteAsync(path.join(tmpDir, project));
 });
 
 gulp.task("zipFiles", () => {

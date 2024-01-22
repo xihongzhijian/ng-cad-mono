@@ -45,6 +45,18 @@
     {
       "files": ["*.component.ts"],
       "extends": ["plugin:@angular-eslint/template/process-inline-templates"]
+    },
+    {
+      "files": ["*.mjs"],
+      "parser": "babel-eslint",
+      "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+      "parserOptions": {
+        "sourceType": "module",
+        "allowImportExportEverywhere": true
+      },
+      "rules": {
+        "deprecation/deprecation": "warn"
+      }
     }
   ]
 }

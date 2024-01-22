@@ -33,7 +33,7 @@
     "resolveJsonModule": true,
     "useDefineForClassFields": false
   },
-  "include": ["src", "./gulpfile.ts"],
+  "include": ["src"],
   "angularCompilerOptions": {
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
