@@ -1070,7 +1070,7 @@ export class LurushujuIndexComponent implements OnInit {
         label: "名字",
         model: {data, key: "名字"},
         validators: Validators.required,
-        placeholder: "下单时显示，请使用有意义的名字"
+        placeholder: "下单显示，请输入有意义的名字"
       },
       {
         type: "group",
@@ -1703,21 +1703,6 @@ export class LurushujuIndexComponent implements OnInit {
       gongyi.板材分组 = 板材分组;
       await this.submitGongyi(["板材分组"]);
     }
-  }
-
-  async onBcfzRefreshEnd() {
-    // const {gongyi, mrbcjfz} = this;
-    // if (!gongyi || !mrbcjfz || !mrbcjfz.inputData) {
-    //   return;
-    // }
-    // if (this.xinghaoName !== mrbcjfz.inputData.xinghao) {
-    //   return;
-    // }
-    // const 板材分组 = this.getBcfzSubmitData(mrbcjfz.xinghao);
-    // if (板材分组 && !isEqual(板材分组, gongyi.板材分组)) {
-    //   gongyi.板材分组 = 板材分组;
-    //   await this.submitGongyi(["板材分组"]);
-    // }
   }
 
   async editSuanliaoCad(i: number) {

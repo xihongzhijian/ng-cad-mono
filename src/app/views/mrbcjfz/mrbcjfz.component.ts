@@ -21,6 +21,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
 import {isEmpty, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
+import {BehaviorSubject, first, lastValueFrom} from "rxjs";
 import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {
@@ -71,7 +72,6 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   @Input() fubanNumber = 9;
   @Output() dataSubmit = new EventEmitter<MrbcjfzXinghaoInfo>();
   @Output() dataClose = new EventEmitter<void>();
-  @Output() refreshEnd = new EventEmitter<void>();
   xinghao: MrbcjfzXinghaoInfo = new MrbcjfzXinghaoInfo(this.table, {vid: 0, mingzi: ""});
   cads: ObjectOf<MrbcjfzCadInfo> = {};
   huajians: ObjectOf<MrbcjfzHuajianInfo> = {};
@@ -83,7 +83,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   activeBancaiKey: string | null = null;
   xiaodaohangStructure: XiaodaohangStructure | null = null;
   isFromOrder = false;
-  private _refreshLock = false;
+  private _refreshLock$ = new BehaviorSubject<boolean>(false);
   wmm = new WindowMessageManager("默认板材及分组", this, window.parent);
   loaderId = "mrbcjfz-loader";
   get activeBancai() {
@@ -116,10 +116,10 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   }
 
   async refresh() {
-    if (this._refreshLock) {
-      return;
+    if (this._refreshLock$.value) {
+      await lastValueFrom(this._refreshLock$.pipe(first((v) => !v)));
     }
-    this._refreshLock = true;
+    this._refreshLock$.next(true);
     let {id, table} = this;
     const params = this.route.snapshot.queryParams;
     if (!id || !table) {
@@ -291,13 +291,12 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
             btnTexts: {cancel: "稍后提交"}
           });
           if (result === "立刻提交") {
-            this.submit();
+            await this.submit();
           }
         }
       }
     }
-    this._refreshLock = false;
-    this.refreshEnd.emit();
+    this._refreshLock$.next(false);
   }
 
   updateXinghao() {

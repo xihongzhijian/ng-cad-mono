@@ -211,12 +211,7 @@
                 </div>
               }
               @case ("板材分组") {
-                <app-mrbcjfz
-                  [inputData]="bcfzInputData"
-                  [fubanNumber]="6"
-                  (dataSubmit)="onBcfzSubmit($event)"
-                  (refreshEnd)="onBcfzRefreshEnd()"
-                ></app-mrbcjfz>
+                <app-mrbcjfz [inputData]="bcfzInputData" [fubanNumber]="6" (dataSubmit)="onBcfzSubmit($event)"></app-mrbcjfz>
               }
             }
           </mat-tab>
