@@ -73,7 +73,7 @@ export class FormulasEditorComponent {
   }
 
   parseTextarea() {
-    const formulas = this.formulasText
+    const formulas = replaceChars(this.formulasText)
       .split(/;|\n/)
       .filter((v) => v)
       .map<(typeof this.formulaList)[number]>((v) => {
