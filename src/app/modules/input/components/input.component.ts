@@ -30,6 +30,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
 import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
+import {exportCadData} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
@@ -947,6 +948,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         infoItem.val = null;
         return infoItem;
       }
+      infoItem.id = id;
       infoItem.name = this.getCadName(val);
       getCadPreview(params?.collection || "cad", this.getCadData(val)).then((img) => {
         infoItem.img = img;
@@ -981,7 +983,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
           info.showCadViewer.onInit?.(cadViewer);
           await cadViewer.render();
           cadViewer.center();
-          console.log(cadViewer);
         }
       }
     }, 0);
@@ -1047,7 +1048,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       if (value[i]?.json) {
         value[i] = {...getHoutaiCad(cadData), _id: value[i]._id};
       } else {
-        value[i] = cadData.export();
+        value[i] = exportCadData(cadData, true);
       }
       if (this.isCadMultiple) {
         this.value = [...value];

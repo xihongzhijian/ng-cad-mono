@@ -8,6 +8,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
 import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, session, setGlobal} from "@app/app.common";
 import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
@@ -138,6 +139,7 @@ export class LurushujuIndexComponent implements OnInit {
   parentInfo = {isZhijianUser: false, isLurushujuEnter: false};
   cadViewerConfig: Partial<CadViewerConfig> = {width: 200, height: 100, lineGongshi: 20};
   varNames: FormulasEditorComponent["vars"];
+  kwpzUrl: SafeResourceUrl | null = null;
 
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
@@ -154,7 +156,8 @@ export class LurushujuIndexComponent implements OnInit {
   constructor(
     private http: CadDataService,
     private message: MessageService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private domSanitizer: DomSanitizer
   ) {
     setGlobal("lrsj", this, true);
   }
@@ -751,7 +754,13 @@ export class LurushujuIndexComponent implements OnInit {
     for (const field of fields) {
       data[field] = this.gongyi[field] as any;
     }
-    await this.http.post("shuju/api/editGongyi", {型号, 产品分类, updateDatas: {[名字]: data}}, {spinner: false});
+    const response = await this.http.post("shuju/api/editGongyi", {型号, 产品分类, updateDatas: {[名字]: data}}, {spinner: false});
+    if (response?.code === 0 && this.xinghao) {
+      const item = this.xinghao.产品分类[产品分类].find((v) => v.名字 === 名字);
+      if (item) {
+        Object.assign(item, data);
+      }
+    }
   }
 
   async getXuanxiangItem(data0?: 选项) {

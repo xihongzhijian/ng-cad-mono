@@ -4,6 +4,7 @@ import {setCadData, unsetCadData} from "@app/cad/cad-data-transform";
 import {getCadPreview, updateCadPreviewImg} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {
+  exportCadData,
   filterCadEntitiesToSave,
   getCadTotalLength,
   prepareCadViewer,
@@ -464,12 +465,12 @@ export class AppStatusService {
     const entities = this.cad.selected();
     const data = new CadData();
     data.entities = entities;
-    return this.http.exportCadData(data, hideLineLength).entities;
+    return exportCadData(data, hideLineLength).entities;
   }
 
   exportCadData() {
     const {hideLineLength} = this.config.getConfig();
-    return this.http.exportCadData(this.cad.data, hideLineLength);
+    return exportCadData(this.cad.data, hideLineLength);
   }
 
   getItemSize(item: any, options?: FileSizeOptions) {

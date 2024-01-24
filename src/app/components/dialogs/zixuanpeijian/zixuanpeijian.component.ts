@@ -442,7 +442,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   step3Refresh() {
-    this.step$.next({value: 3, refresh: true});
+    this.step$.next({value: 3, refresh: true, noCache: true});
   }
 
   async step3Add() {

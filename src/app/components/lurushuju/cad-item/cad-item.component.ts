@@ -12,8 +12,8 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
+import {exportCadData} from "@app/cad/utils";
 import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
-import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -41,10 +41,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
 
   zhankaiInputs: {width: InputInfo; height: InputInfo; num: InputInfo}[] = [];
 
-  constructor(
-    private message: MessageService,
-    private http: CadDataService
-  ) {}
+  constructor(private message: MessageService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.cad) {
@@ -103,7 +100,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
         ];
         const result = await this.message.form(form);
         if (result) {
-          cad.json = this.http.exportCadData(data, true);
+          cad.json = exportCadData(data, true);
           this.cadFormSubmitted.emit();
           this.updateCad();
         }
@@ -134,7 +131,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
       this.zhankaiInputs.push({
         width: {type: "string", label: "宽", model: {data: zhankai, key: "zhankaikuan"}, onChange},
         height: {type: "string", label: "高", model: {data: zhankai, key: "zhankaigao"}, onChange},
-        num: {type: "string", label: "数量", model: {data: zhankai, key: "num"}, onChange}
+        num: {type: "string", label: "数量", model: {data: zhankai, key: "shuliang"}, onChange}
       });
     }
   }

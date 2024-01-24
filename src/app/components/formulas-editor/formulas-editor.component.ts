@@ -73,10 +73,11 @@ export class FormulasEditorComponent {
   }
 
   parseTextarea() {
-    const formulas = replaceChars(this.formulasText)
-      .split(/;|\n/)
+    const formulas = this.formulasText
+      .split(/；|;|\n/)
       .filter((v) => v)
       .map<(typeof this.formulaList)[number]>((v) => {
+        v = replaceChars(v);
         const index1 = v.indexOf("=");
         const index2 = v.indexOf(":");
         let index = -1;
@@ -199,7 +200,13 @@ export class FormulasEditorComponent {
     return 0;
   }
 
-  clickVarName(name: string) {
+  async clickVarName(name: string) {
     this.formulasText += name;
+    try {
+      await navigator.clipboard.writeText(name);
+      await this.message.snack("已复制");
+    } catch (error) {
+      await this.message.snack("复制失败");
+    }
   }
 }

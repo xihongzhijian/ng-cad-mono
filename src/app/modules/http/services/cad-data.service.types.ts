@@ -1,4 +1,5 @@
 import {CadCollection} from "@app/cad/collections";
+import {exportCadData} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 
@@ -180,6 +181,6 @@ export const getHoutaiCad = (data: CadData): HoutaiCad => {
     选项: data.options,
     条件: data.conditions,
     显示名字: data.xianshimingzi,
-    json: data.export()
+    json: exportCadData(data, true)
   };
 };

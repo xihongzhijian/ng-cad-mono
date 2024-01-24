@@ -13,6 +13,7 @@ import {
   CadLine,
   CadLineLike,
   CadMtext,
+  CadMtextInfo,
   CadViewer,
   findAllAdjacentLines,
   generatePointsMap,
@@ -21,7 +22,7 @@ import {
   intersectionKeysTranslate,
   sortLines
 } from "@lucilor/cad-viewer";
-import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, Line, ObjectOf, Point} from "@lucilor/utils";
+import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, ObjectOf, Point} from "@lucilor/utils";
 import {difference, isEmpty} from "lodash";
 
 export const reservedDimNames = ["前板宽", "后板宽", "小前板宽", "小后板宽", "骨架宽", "小骨架宽", "骨架中空宽", "小骨架中空宽"];
@@ -563,4 +564,40 @@ export const getCadCalcZhankaiText = (
 
   const text = getCalcZhankaiText(CAD来源, calcZhankai, materialResult, 板材, 板材厚度, 材料, 项目配置, 项目名, CAD属性);
   return text;
+};
+
+export const exportCadData = (data: CadData, hideLineLength: boolean) => {
+  const exportData = data.export();
+  const count = data.entities.line.length + data.entities.arc.length;
+  for (const type of ["line", "arc"]) {
+    const entities = exportData.entities?.[type];
+    if (!isTypeOf(entities, "object")) {
+      continue;
+    }
+    for (const id in entities) {
+      const e = entities[id];
+      const mtexts = e.children?.mtext;
+      if (mtexts) {
+        for (const mtextId of Object.keys(mtexts)) {
+          const mtext = mtexts[mtextId];
+          const {isLengthText, isGongshiText, isBianhuazhiText} = (mtext.info || {}) as CadMtextInfo;
+          if (isGongshiText || isBianhuazhiText) {
+            delete mtexts[mtextId];
+          } else if (isLengthText) {
+            if (count > 30 && (hideLineLength || e.hideLength)) {
+              delete mtexts[mtextId];
+            } else {
+              const keys = ["type", "info", "insert", "lineweight", "anchor"];
+              for (const key of Object.keys(mtext)) {
+                if (!keys.includes(key)) {
+                  delete mtext[key];
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return exportData;
 };
