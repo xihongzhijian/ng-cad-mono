@@ -5,10 +5,10 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {random} from "lodash";
-import {cadMatchRules, menjiaoCadTypes, 门缝配置输入, 门铰锁边铰边, 门铰锁边铰边2Keys} from "../xinghao-data";
+import {cadMatchRules, menjiaoCadTypes, 算料数据, 算料数据2Keys, 门缝配置输入} from "../xinghao-data";
 import {MenjiaoData, OptionsAll, OptionsAll2, ShuruTableData, XuanxiangTableData} from "./lurushuju-index.types";
 
-export const autoFillMenjiao = (data: 门铰锁边铰边, menjiaoOptionsAll: OptionsAll2) => {
+export const autoFillMenjiao = (data: 算料数据, menjiaoOptionsAll: OptionsAll2) => {
   const setOption = (key: string) => {
     const {options, multiple, disabled} = menjiaoOptionsAll[key];
     if (disabled || !options || options.length < 1) {
@@ -33,7 +33,7 @@ export const autoFillMenjiao = (data: 门铰锁边铰边, menjiaoOptionsAll: Opt
     if (key1 in menjiaoOptionsAll) {
       setOption(key1);
     } else if (key1 === menjiaoCadTypes[0]) {
-      for (const key2 of 门铰锁边铰边2Keys) {
+      for (const key2 of 算料数据2Keys) {
         for (const key3 of keysOf(data[key1][key2])) {
           if (!data[key1][key2][key3].cad) {
             data[key1][key2][key3].cad = getHoutaiCad(new CadData({name: key3}));
@@ -51,7 +51,7 @@ export const autoFillMenjiao = (data: 门铰锁边铰边, menjiaoOptionsAll: Opt
   updateMenjiaoForm(data);
 };
 
-export const updateMenjiaoForm = (data: 门铰锁边铰边) => {
+export const updateMenjiaoForm = (data: 算料数据) => {
   data.开启 = [];
   const menjiaoCadInfos = getMenjiaoCadInfos(data);
   for (const key1 in menjiaoCadInfos) {
@@ -74,14 +74,14 @@ export const updateMenjiaoForm = (data: 门铰锁边铰边) => {
   data.名字2 = values.join("_");
 };
 
-export const getMenjiaoCadInfos = (data: 门铰锁边铰边) => {
+export const getMenjiaoCadInfos = (data: 算料数据) => {
   const menjiaoCadInfos: ObjectOf<{isEmpty: boolean; isFull: boolean}> = {};
   for (const key1 of menjiaoCadTypes) {
     if (!data[key1]) {
       continue;
     }
     menjiaoCadInfos[key1] = {isEmpty: true, isFull: true};
-    for (const key2 of 门铰锁边铰边2Keys) {
+    for (const key2 of 算料数据2Keys) {
       for (const key3 in data[key1][key2]) {
         if (data[key1][key2][key3].cad) {
           menjiaoCadInfos[key1].isEmpty = false;
@@ -94,7 +94,7 @@ export const getMenjiaoCadInfos = (data: 门铰锁边铰边) => {
   return menjiaoCadInfos;
 };
 
-export const getCadSearch = (data: 门铰锁边铰边, key1: string, key2: string, key3: string) => {
+export const getCadSearch = (data: 算料数据, key1: string, key2: string, key3: string) => {
   const missingValues = [];
   const rule = cadMatchRules[key3];
   if (!rule) {
@@ -299,7 +299,7 @@ export const getOptions = (optionsAll: OptionsAll | undefined | null, key: strin
 
 export const getOptionInputInfo = (
   optionsAll: OptionsAll2 | undefined | null,
-  key: keyof 门铰锁边铰边,
+  key: keyof 算料数据,
   setter?: (info: InputInfoSelect) => void
 ): InputInfoSelect => {
   const optionsInfo = optionsAll?.[key];

@@ -37,7 +37,7 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     停用: false,
     输入数据: [],
     选项数据: [],
-    门铰锁边铰边: [],
+    算料数据: [],
     花件玻璃信息: [],
     CAD模板: null,
     创建时间: 0,
@@ -49,8 +49,8 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
   return result;
 };
 
-export const get门铰锁边铰边2 = (raw?: 门铰锁边铰边2 | null) => {
-  const result: 门铰锁边铰边2 = {
+export const get算料数据2 = (raw?: 算料数据2 | null) => {
+  const result: 算料数据2 = {
     配合框CAD: {},
     企料CAD: {},
     算料CAD: [],
@@ -128,7 +128,7 @@ export interface 工艺做法 {
   停用: boolean;
   输入数据: 输入[];
   选项数据: 选项[];
-  门铰锁边铰边: 门铰锁边铰边[];
+  算料数据: 算料数据[];
   花件玻璃信息: 花件玻璃信息[]; // 不要依赖效果图
   CAD模板: HoutaiCad | null; // 选择后台的CAD模板
   创建时间: number; // 不带小数的时间戳
@@ -139,7 +139,7 @@ export interface 工艺做法 {
   }[];
 }
 
-export interface 门铰锁边铰边2 {
+export interface 算料数据2 {
   配合框CAD: ObjectOf<配合框CAD>;
   企料CAD: ObjectOf<企料CAD>;
   算料CAD: HoutaiCad[];
@@ -160,10 +160,10 @@ export interface 门铰锁边铰边2 {
   铰扇背面: string;
 }
 
-export const 门铰锁边铰边2Keys = ["配合框CAD", "企料CAD"] as const;
-export const xiaoguotuKeys: (keyof 门铰锁边铰边2)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
+export const 算料数据2Keys = ["配合框CAD", "企料CAD"] as const;
+export const xiaoguotuKeys: (keyof 算料数据2)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
 
-export interface 门铰锁边铰边 {
+export interface 算料数据 {
   vid: string;
   停用: boolean;
   排序: number;
@@ -179,10 +179,10 @@ export interface 门铰锁边铰边 {
   铰边: string;
   选项默认值: ObjectOf<string>;
 
-  "包边在外+外开": 门铰锁边铰边2;
-  "包边在外+内开": 门铰锁边铰边2;
-  "包边在内+外开": 门铰锁边铰边2;
-  "包边在内+内开": 门铰锁边铰边2;
+  "包边在外+外开": 算料数据2;
+  "包边在外+内开": 算料数据2;
+  "包边在内+外开": 算料数据2;
+  "包边在内+内开": 算料数据2;
 
   门缝配置: 门缝配置;
   关闭碰撞检查: boolean;
@@ -250,7 +250,7 @@ export const 企料排列: ObjectOf<string[]> = {
   六扇平分: ["铰企料", "中锁料", "中铰料", "中锁料", "中铰料", "小锁料", "扇锁企料", "中铰料", "中锁料", "中铰料", "中锁料", "铰企料"]
 };
 
-export const cadMatchRules: ObjectOf<{分类: string[]; 选项: (keyof 门铰锁边铰边)[]}> = {
+export const cadMatchRules: ObjectOf<{分类: string[]; 选项: (keyof 算料数据)[]}> = {
   锁框: {分类: ["锁框"], 选项: []},
   铰框: {分类: ["铰框"], 选项: []},
   顶框: {分类: ["顶框"], 选项: []},

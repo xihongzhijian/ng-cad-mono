@@ -13,7 +13,7 @@ import {InputInfo, InputInfoOption} from "@modules/input/components/input.types"
 import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {getOptionInputInfo, getOptions} from "../lurushuju-index/lurushuju-index.utils";
-import {门铰锁边铰边} from "../xinghao-data";
+import {算料数据} from "../xinghao-data";
 import {SelectGongyiInput, SelectGongyiItem, SelectGongyiItemData, SelectGongyiOutput} from "./select-gongyi-dialog.types";
 
 @Component({
@@ -27,7 +27,7 @@ export class SelectGongyiDialogComponent implements OnInit {
   @HostBinding("class") class = "ng-page";
   searchForm = {型号: "", 工艺: "", 产品分类: ""};
   searchFormMenjiao = {名字: "", 开启: "", 门铰: "", 门扇厚度: ""};
-  displayMenjiaoKeys: (keyof 门铰锁边铰边)[] = ["开启", "门铰", "门扇厚度"];
+  displayMenjiaoKeys: (keyof 算料数据)[] = ["开启", "门铰", "门扇厚度"];
   inputInfos: InputInfo<typeof this.searchForm>[] = [];
   inputInfosMenjiao: InputInfo<typeof this.searchFormMenjiao>[] = [];
   items: SelectGongyiItem[] = [];

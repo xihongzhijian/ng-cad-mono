@@ -32,7 +32,7 @@ import {SuanliaoDataInput} from "../suanliao-data-dialog/suanliao-data-dialog.ty
 import {
   getGongyi,
   getXinghao,
-  get门铰锁边铰边2,
+  get算料数据2,
   menjiaoCadTypes,
   updateXinghaoFenleis,
   xiaoguotuKeys,
@@ -40,14 +40,14 @@ import {
   XinghaoRaw,
   企料组合,
   工艺做法,
+  算料数据,
+  算料数据2,
+  算料数据2Keys,
   输入,
   选项,
   配合框组合,
   门缝配置,
-  门缝配置输入,
-  门铰锁边铰边,
-  门铰锁边铰边2,
-  门铰锁边铰边2Keys
+  门缝配置输入
 } from "../xinghao-data";
 import {
   LurushujuIndexStep,
@@ -96,7 +96,7 @@ export class LurushujuIndexComponent implements OnInit {
   gongyi: 工艺做法 | null = null;
   xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
   xinghaoFilterStr = session.load<string>(this.xinghaoFilterStrKey) || "";
-  tabs: {name: string; hidden?: boolean}[] = [{name: "门铰锁边铰边"}, {name: "下单选项输入配置"}];
+  tabs: {name: string; hidden?: boolean}[] = [{name: "算料数据"}, {name: "下单选项输入配置"}];
   tabNameKey = "lurushujuTabName";
   tabIndex = 0;
   tabIndexPrev = -1;
@@ -461,7 +461,7 @@ export class LurushujuIndexComponent implements OnInit {
     this.gongyi = gongyi;
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
-    this.menjiaoTable.data = gongyi.门铰锁边铰边;
+    this.menjiaoTable.data = gongyi.算料数据;
 
     await this.updateHuajians();
   }
@@ -882,7 +882,7 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   getMenjiaoId() {
-    const numVids = this.gongyi?.门铰锁边铰边.map((v) => Number(v.vid)).filter((v) => !isNaN(v)) || [];
+    const numVids = this.gongyi?.算料数据.map((v) => Number(v.vid)).filter((v) => !isNaN(v)) || [];
     if (numVids.length > 0) {
       const numMax = Math.max(...numVids);
       return String(numMax + 1);
@@ -891,9 +891,9 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  async getMenjiaoItem(data0?: 门铰锁边铰边) {
+  async getMenjiaoItem(data0?: 算料数据) {
     const 产品分类 = data0 ? data0.产品分类 : this.fenleiName;
-    const data: 门铰锁边铰边 = {
+    const data: 算料数据 = {
       vid: "",
       停用: false,
       排序: 0,
@@ -907,10 +907,10 @@ export class LurushujuIndexComponent implements OnInit {
       锁边: "",
       铰边: "",
       选项默认值: {},
-      "包边在外+外开": get门铰锁边铰边2(),
-      "包边在外+内开": get门铰锁边铰边2(),
-      "包边在内+外开": get门铰锁边铰边2(),
-      "包边在内+内开": get门铰锁边铰边2(),
+      "包边在外+外开": get算料数据2(),
+      "包边在外+内开": get算料数据2(),
+      "包边在内+外开": get算料数据2(),
+      "包边在内+内开": get算料数据2(),
       门缝配置: {},
       关闭碰撞检查: false,
       双开门扇宽生成方式: "",
@@ -926,9 +926,9 @@ export class LurushujuIndexComponent implements OnInit {
     }
     for (const key1 of menjiaoCadTypes) {
       if (!data[key1]) {
-        data[key1] = get门铰锁边铰边2();
+        data[key1] = get算料数据2();
       }
-      for (const key2 of 门铰锁边铰边2Keys) {
+      for (const key2 of 算料数据2Keys) {
         if (!data[key1][key2]) {
           data[key1][key2] = {};
         }
@@ -953,7 +953,7 @@ export class LurushujuIndexComponent implements OnInit {
       const margin = 5;
       return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`, ...style};
     };
-    const getOptionInputInfo2 = (key: keyof 门铰锁边铰边, n: number): InputInfoSelect => {
+    const getOptionInputInfo2 = (key: keyof 算料数据, n: number): InputInfoSelect => {
       return getOptionInputInfo(this.menjiaoOptionsAll, key, (info) => {
         info.model = {data, key};
         info.validators = Validators.required;
@@ -961,7 +961,7 @@ export class LurushujuIndexComponent implements OnInit {
           updateMenjiaoForm(data);
         };
         info.style = getInfoStyle(n);
-        const dialogKeys: (keyof 门铰锁边铰边)[] = ["锁边", "铰边"];
+        const dialogKeys: (keyof 算料数据)[] = ["锁边", "铰边"];
         if (dialogKeys.includes(key)) {
           info.optionsDialog = {
             noImage: true,
@@ -984,7 +984,7 @@ export class LurushujuIndexComponent implements OnInit {
         style: getInfoStyle(4)
       };
     };
-    const optionKeys: (keyof 门铰锁边铰边)[] = ["产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"];
+    const optionKeys: (keyof 算料数据)[] = ["产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"];
     const 使用双开门扇宽生成方式 = () => this.fenleiName === "双开";
     const 使用锁扇铰扇蓝线宽固定差值 = () => data.双开门扇宽生成方式 === "按锁扇铰扇蓝线宽固定差值等生成";
     const form1Group2: InputInfo[] = [];
@@ -1095,9 +1095,9 @@ export class LurushujuIndexComponent implements OnInit {
         type: "group",
         label: "",
         infos: menjiaoCadTypes.map<InputInfo>((key1) => {
-          const infos = 门铰锁边铰边2Keys.map<InputInfo>((key2, i) => {
+          const infos = 算料数据2Keys.map<InputInfo>((key2, i) => {
             const groupStyle: csstype.Properties = {};
-            if (i === 门铰锁边铰边2Keys.length - 1) {
+            if (i === 算料数据2Keys.length - 1) {
               groupStyle.marginBottom = "0";
             }
             return {
@@ -1127,7 +1127,7 @@ export class LurushujuIndexComponent implements OnInit {
             };
           });
 
-          const shiyituKeys: (keyof 门铰锁边铰边2["示意图CAD"])[] = ["算料单示意图"];
+          const shiyituKeys: (keyof 算料数据2["示意图CAD"])[] = ["算料单示意图"];
           infos.push({
             type: "group",
             label: "",
@@ -1257,7 +1257,7 @@ export class LurushujuIndexComponent implements OnInit {
                 }
               }
               const missingValues = [];
-              for (const key2 of 门铰锁边铰边2Keys) {
+              for (const key2 of 算料数据2Keys) {
                 for (const key3 in value[key2]) {
                   if (!value[key2][key3].cad) {
                     missingValues.push(key3);
@@ -1302,13 +1302,13 @@ export class LurushujuIndexComponent implements OnInit {
           const item = await this.getMenjiaoItem();
           if (item) {
             if (item.默认值) {
-              for (const item2 of gongyi.门铰锁边铰边) {
+              for (const item2 of gongyi.算料数据) {
                 item2.默认值 = false;
               }
             }
-            gongyi.门铰锁边铰边.push(item);
-            this.menjiaoTable.data = [...gongyi.门铰锁边铰边];
-            await this.submitGongyi(["门铰锁边铰边"]);
+            gongyi.算料数据.push(item);
+            this.menjiaoTable.data = [...gongyi.算料数据];
+            await this.submitGongyi(["算料数据"]);
           }
         }
         break;
@@ -1321,30 +1321,30 @@ export class LurushujuIndexComponent implements OnInit {
               menjiaoOptions: this.menjiaoOptionsAll,
               excludeXinghaos: [this.xinghaoName],
               excludeGongyis: [gongyi.名字],
-              key: "门铰锁边铰边",
+              key: "算料数据",
               multiple: true,
               fenlei: this.fenleiName
             }
           });
           if (result && result.items.length > 0) {
-            const names = gongyi.门铰锁边铰边.map((v) => v.名字);
+            const names = gongyi.算料数据.map((v) => v.名字);
             for (const item of result.items) {
-              const item2 = item.data as 门铰锁边铰边;
+              const item2 = item.data as 算料数据;
               item2.vid = this.getMenjiaoId();
               item2.名字 = getCopyName(names, item2.名字);
               updateMenjiaoForm(item2);
-              gongyi.门铰锁边铰边.push(item2);
+              gongyi.算料数据.push(item2);
               names.push(item2.名字);
             }
-            this.menjiaoTable.data = [...gongyi.门铰锁边铰边];
-            await this.submitGongyi(["门铰锁边铰边"]);
+            this.menjiaoTable.data = [...gongyi.算料数据];
+            await this.submitGongyi(["算料数据"]);
           }
         }
         break;
     }
   }
 
-  async onMenjiaoRow(event: RowButtonEvent<门铰锁边铰边>) {
+  async onMenjiaoRow(event: RowButtonEvent<算料数据>) {
     if (!this.gongyi) {
       return;
     }
@@ -1352,19 +1352,19 @@ export class LurushujuIndexComponent implements OnInit {
     switch (button.event) {
       case "编辑":
         {
-          const item2 = this.gongyi.门铰锁边铰边[rowIdx];
+          const item2 = this.gongyi.算料数据[rowIdx];
           const item3 = await this.getMenjiaoItem(item2);
           if (item3) {
             if (item3.默认值) {
-              for (const [i, item4] of this.gongyi.门铰锁边铰边.entries()) {
+              for (const [i, item4] of this.gongyi.算料数据.entries()) {
                 if (i !== rowIdx) {
                   item4.默认值 = false;
                 }
               }
             }
-            this.gongyi.门铰锁边铰边[rowIdx] = item3;
-            this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
-            await this.submitGongyi(["门铰锁边铰边"]);
+            this.gongyi.算料数据[rowIdx] = item3;
+            this.menjiaoTable.data = [...this.gongyi.算料数据];
+            await this.submitGongyi(["算料数据"]);
           }
         }
         break;
@@ -1372,19 +1372,19 @@ export class LurushujuIndexComponent implements OnInit {
         if (await this.message.confirm(`确定复制【${item.名字}】吗？`)) {
           const item2 = cloneDeep(item);
           item2.vid = this.getMenjiaoId();
-          const names = this.gongyi.门铰锁边铰边.map((v) => v.名字);
+          const names = this.gongyi.算料数据.map((v) => v.名字);
           item2.名字 = getCopyName(names, item2.名字);
           updateMenjiaoForm(item2);
-          this.gongyi.门铰锁边铰边.push(item2);
-          this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
-          await this.submitGongyi(["门铰锁边铰边"]);
+          this.gongyi.算料数据.push(item2);
+          this.menjiaoTable.data = [...this.gongyi.算料数据];
+          await this.submitGongyi(["算料数据"]);
         }
         break;
       case "删除":
         if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          this.gongyi.门铰锁边铰边.splice(rowIdx, 1);
-          this.menjiaoTable.data = [...this.gongyi.门铰锁边铰边];
-          await this.submitGongyi(["门铰锁边铰边"]);
+          this.gongyi.算料数据.splice(rowIdx, 1);
+          this.menjiaoTable.data = [...this.gongyi.算料数据];
+          await this.submitGongyi(["算料数据"]);
         }
         break;
     }
@@ -1417,7 +1417,7 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  filterHuajians(data: 门铰锁边铰边2) {
+  filterHuajians(data: 算料数据2) {
     const xiaoguotuValues = new Set<string>();
     for (const key of xiaoguotuKeys) {
       const value = data[key];
