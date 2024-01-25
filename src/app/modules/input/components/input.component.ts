@@ -279,7 +279,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         options = options.slice(0, optionsDisplayLimit);
       }
       if (sortOptions) {
-        sortArrayByLevenshtein(options, getFilterValues, this.value);
+        const value = this.value;
+        if (typeof value === "string") {
+          sortArrayByLevenshtein(options, getFilterValues, value);
+        }
       }
       if (this.optionsDialog) {
         this.filteredOptions$.next([]);

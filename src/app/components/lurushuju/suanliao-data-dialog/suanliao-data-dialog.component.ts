@@ -11,11 +11,13 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {CadData} from "@lucilor/cad-viewer";
-import {downloadByString, selectFiles} from "@lucilor/utils";
+import {downloadByString, isTypeOf, selectFiles, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {TableComponent} from "@modules/table/components/table/table.component";
+import {TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {cloneDeep, isEmpty} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
@@ -27,14 +29,66 @@ import {SuanliaoDataInput, SuanliaoDataOutput} from "./suanliao-data-dialog.type
 @Component({
   selector: "app-suanliao-data-dialog",
   standalone: true,
-  imports: [CadItemComponent, KeyValuePipe, MatButtonModule, MatCardModule, MatDividerModule, MatTooltipModule, NgScrollbarModule],
+  imports: [
+    CadItemComponent,
+    KeyValuePipe,
+    MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
+    MatTooltipModule,
+    NgScrollbarModule,
+    TableComponent
+  ],
   templateUrl: "./suanliao-data-dialog.component.html",
   styleUrl: "./suanliao-data-dialog.component.scss"
 })
 export class SuanliaoDataDialogComponent {
   @HostBinding("class") class = "ng-page";
-  suanliaoData: SuanliaoDataInput["data"];
   @Output() cadFormSubmitted = new EventEmitter<void>();
+
+  suanliaoData: SuanliaoDataInput["data"];
+  klkwpzTable: TableRenderInfo<any> = {
+    data: [],
+    columns: [
+      {type: "string", field: "名字", width: "100px"},
+      {
+        type: "custom",
+        field: "选项",
+        style: {whiteSpace: "pre", textAlign: "left"},
+        width: "200px",
+        toString: (value) => {
+          const options = value.选项;
+          if (!isTypeOf(options, "object")) {
+            return "";
+          }
+          return Object.entries(options)
+            .map(([k, v]) => `${k}:${v}`)
+            .join("\n");
+        }
+      },
+      {
+        type: "custom",
+        field: "孔位配置",
+        style: {whiteSpace: "pre", textAlign: "left"},
+        toString: (value) => {
+          const kwpz = value.孔位配置;
+          if (!kwpz) {
+            return "";
+          }
+          return JSON.stringify(kwpz);
+        }
+      }
+    ],
+    title: "开料孔位配置",
+    noCheckBox: true,
+    toolbarButtons: {
+      extra: [
+        {event: "编辑", color: "primary"},
+        {event: "刷新", color: "primary"}
+      ],
+      inlineTitle: true
+    }
+  };
 
   constructor(
     private message: MessageService,
@@ -44,9 +98,10 @@ export class SuanliaoDataDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoDataInput
   ) {
     if (!this.data) {
-      this.data = {data: {算料公式: [], 测试用例: [], 算料CAD: []}, varNames: {names: [], width: 0}};
+      this.data = {data: {算料公式: [], 测试用例: [], 算料CAD: []}, varNames: {names: [], width: 0}, klkwpzParams: {}};
     }
     this.suanliaoData = cloneDeep(this.data.data);
+    this.updateKlkwpzTable();
   }
 
   returnZero() {
@@ -298,6 +353,35 @@ export class SuanliaoDataDialogComponent {
 
   cancel() {
     this.dialogRef.close();
+  }
+
+  async updateKlkwpzTable() {
+    this.klkwpzTable.data = await this.http.queryMongodb({
+      collection: "kailiaokongweipeizhi",
+      where: this.data.klkwpzParams,
+      fields: this.klkwpzTable.columns.map((v) => v.field)
+    });
+  }
+
+  async onKlkwpzToolbar(event: ToolbarButtonEvent) {
+    switch (event.button.event) {
+      case "编辑":
+        {
+          const {klkwpzParams} = this.data;
+          const url = await this.http.getShortUrl("开料孔位配置", {search2: klkwpzParams, extraData: klkwpzParams});
+          if (url) {
+            window.open(url);
+            await timeout(100);
+            if (await this.message.confirm("是否修改了数据？")) {
+              this.updateKlkwpzTable();
+            }
+          }
+        }
+        break;
+      case "刷新":
+        this.updateKlkwpzTable();
+        break;
+    }
   }
 }
 

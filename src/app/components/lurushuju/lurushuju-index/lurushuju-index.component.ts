@@ -1222,10 +1222,12 @@ export class LurushujuIndexComponent implements OnInit {
                     测试用例: data[key1].测试用例,
                     算料CAD: data[key1].算料CAD
                   };
+                  const [包边方向, 开启] = key1.split("+");
                   const result = await openSuanliaoDataDialog(this.dialog, {
                     data: {
                       data: suanliaoData,
                       varNames: this.varNames,
+                      klkwpzParams: {选项: {型号: this.xinghaoName, 工艺做法: this.gongyiName, 包边方向, 开启}},
                       copySuanliaoCadsInput: {
                         xinghaos: this.xinghaos,
                         xinghaoOptions: this.xinghaoOptionsAll,

@@ -33,7 +33,7 @@ export interface TableRenderInfo<T> {
 export interface TableButton {
   event: string;
   title?: string;
-  color?: string;
+  color?: "" | "primary" | "accent" | "warn";
   class?: string | string[];
   style?: csstype.Properties;
 }

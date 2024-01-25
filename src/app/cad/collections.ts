@@ -8,7 +8,8 @@ export const cadCollections = [
   "material",
   "zixuanpeijian",
   "luomatoucad",
-  "kailiaocanshu"
+  "kailiaocanshu",
+  "kailiaokongweipeizhi"
 ] as const;
 
 export type CadCollection = (typeof cadCollections)[number];
