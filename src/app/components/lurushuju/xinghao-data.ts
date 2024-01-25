@@ -33,38 +33,44 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     tableId: -1,
     名字: "",
     图片: "",
-    锁扇正面: "",
-    锁扇背面: "",
-    小扇正面: "",
-    小扇背面: "",
-    铰扇正面: "",
-    铰扇背面: "",
     录入完成: false,
     停用: false,
     输入数据: [],
     选项数据: [],
     门铰锁边铰边: [],
     花件玻璃信息: [],
-    板材分组: {},
-    算料CAD: [],
-    示意图CAD: {
-      大扇装配示意图: null,
-      小扇装配示意图: null,
-      算料单示意图: []
-    },
     CAD模板: null,
-    算料公式: [],
-    测试完成: false,
-    测试用例: [],
     创建时间: 0,
     最后一次修改时间: 0,
     修改记录: [],
     默认值: false,
     ...raw
   };
-  if (!isTypeOf(result.算料CAD, "array")) {
-    result.算料CAD = [];
-  }
+  return result;
+};
+
+export const get门铰锁边铰边2 = (raw?: 门铰锁边铰边2 | null) => {
+  const result: 门铰锁边铰边2 = {
+    配合框CAD: {},
+    企料CAD: {},
+    算料CAD: [],
+    算料公式: [],
+    测试完成: false,
+    测试用例: [],
+    板材分组: {},
+    示意图CAD: {
+      大扇装配示意图: null,
+      小扇装配示意图: null,
+      算料单示意图: []
+    },
+    锁扇正面: "",
+    锁扇背面: "",
+    小扇正面: "",
+    小扇背面: "",
+    铰扇正面: "",
+    铰扇背面: "",
+    ...raw
+  };
   return result;
 };
 
@@ -117,12 +123,6 @@ export interface 工艺做法 {
   tableId: number;
   名字: string; // '做法1',
   图片: string;
-  锁扇正面: string;
-  锁扇背面: string;
-  小扇正面: string;
-  小扇背面: string;
-  铰扇正面: string;
-  铰扇背面: string;
   录入完成: boolean;
   默认值: boolean;
   停用: boolean;
@@ -130,17 +130,7 @@ export interface 工艺做法 {
   选项数据: 选项[];
   门铰锁边铰边: 门铰锁边铰边[];
   花件玻璃信息: 花件玻璃信息[]; // 不要依赖效果图
-  板材分组: ObjectOf<MrbcjfzInfo>;
-  算料CAD: HoutaiCad[];
-  示意图CAD: {
-    大扇装配示意图: HoutaiCad | null; // 要求分类: 装配示意图
-    小扇装配示意图: HoutaiCad | null; // 要求分类: 装配示意图
-    算料单示意图: HoutaiCad[]; // 要求分类: 算料单示意图
-  };
   CAD模板: HoutaiCad | null; // 选择后台的CAD模板
-  算料公式: 算料公式[];
-  测试完成: boolean; // 不可编辑，要求必须有一个测试用例，否则不能算完成
-  测试用例: 测试用例[];
   创建时间: number; // 不带小数的时间戳
   最后一次修改时间: number; // 不带小数的时间戳
   修改记录: {
@@ -148,6 +138,30 @@ export interface 工艺做法 {
     修改时间: number; // 不带小数的时间戳
   }[];
 }
+
+export interface 门铰锁边铰边2 {
+  配合框CAD: ObjectOf<配合框CAD>;
+  企料CAD: ObjectOf<企料CAD>;
+  算料CAD: HoutaiCad[];
+  算料公式: 算料公式[];
+  测试完成: boolean; // 不可编辑，要求必须有一个测试用例，否则不能算完成
+  测试用例: 测试用例[];
+  板材分组: ObjectOf<MrbcjfzInfo>;
+  示意图CAD: {
+    大扇装配示意图: HoutaiCad | null; // 要求分类: 装配示意图
+    小扇装配示意图: HoutaiCad | null; // 要求分类: 装配示意图
+    算料单示意图: HoutaiCad[]; // 要求分类: 算料单示意图
+  };
+  锁扇正面: string;
+  锁扇背面: string;
+  小扇正面: string;
+  小扇背面: string;
+  铰扇正面: string;
+  铰扇背面: string;
+}
+
+export const 门铰锁边铰边2Keys = ["配合框CAD", "企料CAD"] as const;
+export const xiaoguotuKeys: (keyof 门铰锁边铰边2)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
 
 export interface 门铰锁边铰边 {
   vid: string;
@@ -165,22 +179,10 @@ export interface 门铰锁边铰边 {
   铰边: string;
   选项默认值: ObjectOf<string>;
 
-  "包边在外+外开": {
-    配合框CAD: ObjectOf<配合框CAD>;
-    企料CAD: ObjectOf<企料CAD>;
-  };
-  "包边在外+内开": {
-    配合框CAD: ObjectOf<配合框CAD>;
-    企料CAD: ObjectOf<企料CAD>;
-  };
-  "包边在内+外开": {
-    配合框CAD: ObjectOf<配合框CAD>;
-    企料CAD: ObjectOf<企料CAD>;
-  };
-  "包边在内+内开": {
-    配合框CAD: ObjectOf<配合框CAD>;
-    企料CAD: ObjectOf<企料CAD>;
-  };
+  "包边在外+外开": 门铰锁边铰边2;
+  "包边在外+内开": 门铰锁边铰边2;
+  "包边在内+外开": 门铰锁边铰边2;
+  "包边在内+内开": 门铰锁边铰边2;
 
   门缝配置: 门缝配置;
   关闭碰撞检查: boolean;

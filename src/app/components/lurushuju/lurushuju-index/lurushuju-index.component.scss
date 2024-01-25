@@ -64,35 +64,6 @@
     --item-height: 100%;
     --items-per-row: 2;
   }
-
-  .suanliaogongshis {
-    width: 30%;
-
-    .gongshis {
-      .gongshi-card {
-        align-items: flex-start;
-
-        .mat-mdc-card-header {
-          width: 100%;
-          box-sizing: border-box;
-          align-items: center;
-        }
-      }
-    }
-
-    .test-cases {
-      flex: 0 0 30%;
-    }
-  }
-
-  .suanliaocads {
-    flex: 1 1 0;
-
-    .cads {
-      width: 100%;
-      flex-wrap: wrap;
-    }
-  }
 }
 
 app-mrbcjfz {

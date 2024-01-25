@@ -80,13 +80,12 @@ export class CadItemComponent implements OnChanges, OnDestroy {
         width,
         height,
         backgroundColor: "black",
-        enableZoom: false,
-        dragAxis: "",
+        enableZoom: true,
+        dragAxis: "xy",
         selectMode: "single",
         entityDraggable: false,
         lineGongshi: 24
       });
-      cadViewer.dom.removeAllListeners?.("wheel");
       cadViewer.on("entitydblclick", async (_, entity) => {
         if (entity instanceof CadMtext && entity.parent) {
           entity = entity.parent;
@@ -154,5 +153,9 @@ export class CadItemComponent implements OnChanges, OnDestroy {
     zhankai.splice(i, 1);
     this.updateCad();
     this.cadFormSubmitted.emit();
+  }
+
+  center() {
+    this.cadViewer?.center();
   }
 }

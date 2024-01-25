@@ -1,7 +1,7 @@
 import {XiaodaohangStructure} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
-import {BancaiList, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {BancaiList, BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {difference, isEqual} from "lodash";
 
@@ -374,4 +374,5 @@ export interface MrbcjfzInputData {
   cads?: CadData[];
   huajians?: MrbcjfzHuajian[];
   isLocal?: boolean;
+  bancaiList?: BancaiListData;
 }

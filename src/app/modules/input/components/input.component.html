@@ -557,6 +557,11 @@
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
+  @case ("button") {
+    @for (button of info.buttons; track $index) {
+      <button mat-raised-button [color]="button.color" (click)="button.onClick?.()">{{ button.name }}</button>
+    }
+  }
   @case ("group") {
     @if (info.label) {
       <div class="sub-form-field">

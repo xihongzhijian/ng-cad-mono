@@ -1,0 +1,82 @@
+<div class="toolbar">
+  <button mat-raised-button color="primary" (click)="submit()">提交</button>
+  <button mat-raised-button color="primary" (click)="cancel()">关闭</button>
+</div>
+<div class="flex-110 flex-row">
+  <div class="suanliaogongshis flex-column">
+    <div class="gongshis flex-column flex-110">
+      <div class="toolbar">
+        <div>算料公式</div>
+        <button mat-raised-button color="primary" (click)="addGongshi()">添加</button>
+      </div>
+      <ng-scrollbar>
+        <div class="items">
+          @for (gongshi of suanliaoData["算料公式"]; track gongshi; let i = $index) {
+            <mat-card class="gongshi-card item">
+              <mat-card-header>
+                <div class="flex-110">{{ gongshi["名字"] }}</div>
+                <button mat-button color="primary" (click)="editGongshi(i)">编辑</button>
+                <button mat-button color="primary" (click)="copyGongshi(i)">复制</button>
+                <button mat-button color="primary" (click)="removeGongshi(i)">删除</button>
+              </mat-card-header>
+              <mat-card-content>
+                @for (item of gongshi["公式"] | keyvalue: returnZero; track item) {
+                  <div class="gongshi-item flex-row">
+                    <span>{{ item.key }}</span>
+                    <span>=</span>
+                    <span>{{ item.value }}</span>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      </ng-scrollbar>
+    </div>
+    <div class="test-cases flex-column">
+      <div class="toolbar">
+        <div>测试数据</div>
+        <button mat-raised-button color="primary" (click)="addTestCase()">添加</button>
+        <button mat-raised-button color="primary" (click)="importTestCases()">导入</button>
+        <button mat-raised-button color="primary" (click)="exportTestCases()">导出</button>
+      </div>
+      <ng-scrollbar>
+        <div class="items">
+          @for (testCase of suanliaoData["测试用例"]; track i; let i = $index) {
+            <mat-card class="test-case-card item">
+              <div class="toolbar">
+                <div class="text short">{{ testCase["名字"] }}</div>
+                <div class="text long" [matTooltip]="getTimeStr(testCase['时间'])">{{ getTimeStr(testCase["时间"]) }}</div>
+                <button mat-button color="primary" (click)="editTestCase(i)">编辑</button>
+                <button mat-button color="primary" (click)="copyTestCase(i)">复制</button>
+                <button mat-button color="primary" (click)="removeTestCase(i)">删除</button>
+              </div>
+            </mat-card>
+          }
+        </div>
+      </ng-scrollbar>
+    </div>
+  </div>
+  <mat-divider vertical></mat-divider>
+  <div class="suanliaocads flex-column">
+    <div class="toolbar">
+      <div class="flex-110"></div>
+      <button mat-raised-button color="primary" (click)="copySuanliaoCads()">从其它做法复制</button>
+      <button mat-raised-button color="primary" (click)="selectSuanliaoCads()">从配件库选择</button>
+      <button mat-raised-button color="primary" (click)="suanliao()">计算</button>
+    </div>
+    <ng-scrollbar>
+      <div class="cads flex-row">
+        @for (cad of suanliaoData["算料CAD"]; track i; let i = $index) {
+          <app-cad-item
+            [cad]="cad"
+            (editCad)="editSuanliaoCad(i)"
+            (copyCad)="copySuanliaoCad(i)"
+            (removeCad)="removeSuanliaoCad(i)"
+            (cadFormSubmitted)="cadFormSubmitted.emit($event)"
+          ></app-cad-item>
+        }
+      </div>
+    </ng-scrollbar>
+  </div>
+</div>

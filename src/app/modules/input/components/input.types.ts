@@ -33,13 +33,13 @@ export interface InputInfoBase<T = any> {
   class?: string | string[];
   style?: csstype.Properties;
   hidden?: boolean;
+  displayValue?: Value<string>;
   filterValuesGetter?: (option: InputInfoOption<T>) => string[];
 }
 
 export interface InputInfoString<T = any, K = string> extends InputInfoBase<T> {
   type: "string";
   value?: Value<string>;
-  displayValue?: Value<string>;
   textarea?: {autosize?: {minRows?: number; maxRows?: number}};
   onInput?: (val: string) => void;
   onChange?: (val: string) => void;
@@ -158,6 +158,16 @@ export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
   onChange?: (val: Formulas) => void;
 }
 
+export interface InputInfoButtonInfo {
+  name: string;
+  color?: "" | "primary" | "accent" | "warn";
+  onClick?: () => void;
+}
+export interface InputInfoButton<T = any> extends InputInfoBase<T> {
+  type: "button";
+  buttons: InputInfoButtonInfo[];
+}
+
 export interface InputInfoGroup<T = any> extends InputInfoBase<T> {
   type: "group";
   infos?: InputInfo<T>[];
@@ -177,6 +187,7 @@ export type InputInfo<T = any> =
   | InputInfoImage<T>
   | InputInfoCad<T>
   | InputInfoFormulas<T>
+  | InputInfoButton<T>
   | InputInfoGroup<T>;
 
 export type InputInfoOption<T = any> = {value: T; label?: string; disabled?: boolean; img?: string};

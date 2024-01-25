@@ -83,6 +83,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   suffixIconsType!: SuffixIconsType;
   @Input() info: InputInfo = {type: "string", label: ""};
   infoDiffer: KeyValueDiffer<keyof InputInfo, ValueOf<InputInfo>>;
+  modelDataDiffer: KeyValueDiffer<keyof InputInfo["model"], ValueOf<InputInfo["model"]>>;
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
   cadInfos: {id: string; name: string; img: SafeUrl; val: any}[] = [];
@@ -119,6 +120,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     } else if (type === "formulas") {
       this.updateFormulasStr();
     }
+    this.updateDisplayValue();
   }
 
   get editable() {
@@ -286,6 +288,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
     });
     this.infoDiffer = differs.find(this.info).create();
+    this.modelDataDiffer = differs.find(this.model.data).create();
   }
 
   async ngAfterViewInit() {
@@ -306,13 +309,18 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   ngOnChanges(changes: SimpleChanges) {
     if (changes.info) {
       this.infoDiffer = this.differs.find(this.info).create();
+      this.modelDataDiffer = this.differs.find(this.model.data).create();
     }
   }
 
   ngDoCheck() {
-    const changes = this.infoDiffer.diff(this.info);
-    if (changes) {
-      this._onInfoChange(changes);
+    const infoChanges = this.infoDiffer.diff(this.info);
+    if (infoChanges) {
+      this._onInfoChange(infoChanges);
+    }
+    const modelDataChanges = this.modelDataDiffer.diff(this.model.data);
+    if (modelDataChanges) {
+      this.updateDisplayValue();
     }
   }
 
@@ -399,14 +407,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.updateCadInfos();
     } else if (type === "formulas") {
       this.updateFormulasStr();
-    }
-    this.displayValue = null;
-    if (type === "string") {
-      const {optionInputOnly} = info;
-      if (optionInputOnly && !options) {
-        info.readonly = true;
-        this.displayValue = getValue(info.displayValue, this.message) || null;
-      }
     }
     this.class = [type];
     if (typeof info.label === "string" && info.label && !info.label.includes(" ")) {
@@ -677,12 +677,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       optionKey = optionsDialog.optionKey;
     }
     let optionValueType: InputInfoString["optionValueType"];
-    let optionInputOnly: InputInfoString["optionInputOnly"];
     let multiple: boolean | undefined;
     let hasOptions = false;
     if (info.type === "string" || info.type === "object") {
       if (info.type === "string") {
-        optionInputOnly = !!info.optionInputOnly;
         optionValueType = info.optionValueType || "string";
       }
       multiple = info.optionMultiple;
@@ -760,9 +758,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         options2 = options1.map((v) => String(v.vid));
       } else {
         options2 = options1.map((v) => v.mingzi);
-      }
-      if (optionInputOnly || info.type === "select") {
-        this.displayValue = joinOptions(options1.map((v) => v.mingzi));
       }
       let resultValue: string | string[] = options2;
       if (optionValueType === "string") {
@@ -1103,6 +1098,20 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (result) {
       this.value = result;
       info.onChange?.(result);
+    }
+  }
+
+  updateDisplayValue() {
+    const {info} = this;
+    const displayValue = getValue(info.displayValue, this.message) || null;
+    this.displayValue = null;
+    if (displayValue) {
+      this.displayValue = displayValue;
+    } else if (this.optionsDialog) {
+      const {value} = this;
+      if (Array.isArray(value)) {
+        this.displayValue = joinOptions(value);
+      }
     }
   }
 }

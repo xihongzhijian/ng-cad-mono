@@ -1,5 +1,4 @@
 import {OptionsAll, OptionsAll2, XinghaoData} from "../lurushuju-index/lurushuju-index.types";
-import {工艺做法} from "../xinghao-data";
 
 export interface SelectGongyiInput {
   xinghaos: XinghaoData[];
@@ -7,7 +6,7 @@ export interface SelectGongyiInput {
   menjiaoOptions?: OptionsAll2;
   excludeXinghaos?: string[];
   excludeGongyis?: string[];
-  key?: keyof 工艺做法;
+  key?: string;
   multiple?: boolean;
   fenlei?: string;
 }

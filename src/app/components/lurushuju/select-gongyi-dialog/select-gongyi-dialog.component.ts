@@ -61,8 +61,28 @@ export class SelectGongyiDialogComponent implements OnInit {
     const data = this.searchForm;
     const xinghaoOptions = (xinghaos || []).map<InputInfoOption>(({mingzi, tupian}) => ({value: mingzi, img: tupian}));
     this.inputInfos = [
-      {type: "select", label: "型号", clearable: true, model: {key: "型号", data}, options: xinghaoOptions, optionsDialog: {}},
-      {type: "select", label: "工艺", clearable: true, model: {key: "工艺", data}, options: getOptions(options, "工艺")},
+      {
+        type: "select",
+        label: "型号",
+        clearable: true,
+        model: {key: "型号", data},
+        options: xinghaoOptions,
+        optionsDialog: {
+          onChange: () => {
+            this.searchForm.工艺 = "";
+          }
+        }
+      },
+      {
+        type: "select",
+        label: "工艺",
+        clearable: true,
+        model: {key: "工艺", data},
+        options: getOptions(options, "工艺"),
+        onChange: () => {
+          this.searchForm.型号 = "";
+        }
+      },
       {
         type: "select",
         label: "产品分类",

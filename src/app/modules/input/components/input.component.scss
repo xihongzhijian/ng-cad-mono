@@ -55,6 +55,13 @@
       white-space: pre-wrap;
     }
   }
+  &.button {
+    display: flex;
+    flex-wrap: wrap;
+    > * {
+      margin: 2px;
+    }
+  }
 }
 
 .sub-form-field {

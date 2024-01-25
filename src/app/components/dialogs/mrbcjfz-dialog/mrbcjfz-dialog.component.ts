@@ -1,6 +1,6 @@
 import {Component, Inject} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.types";
+import {MrbcjfzInputData, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {MrbcjfzComponent} from "../../../views/mrbcjfz/mrbcjfz.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
@@ -33,11 +33,12 @@ export class MrbcjfzDialogComponent {
 export interface MrbcjfzDialogInput {
   id: number;
   table: string;
+  inputData?: MrbcjfzInputData;
 }
 
 export type MrbcjfzDialogOutput = MrbcjfzXinghaoInfo;
 
 export const openMrbcjfzDialog = getOpenDialogFunc<MrbcjfzDialogComponent, MrbcjfzDialogInput, MrbcjfzDialogOutput>(
   MrbcjfzDialogComponent,
-  {width: "85%", height: "85%"}
+  {width: "100%", height: "100%"}
 );

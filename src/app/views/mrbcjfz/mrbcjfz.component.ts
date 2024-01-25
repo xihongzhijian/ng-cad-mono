@@ -13,7 +13,7 @@ import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/banca
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {BancaiList, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
+import {BancaiList, BancaiListData, TableDataBase, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
@@ -68,8 +68,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   @Input() id = 0;
   @Input() table = "";
   @Input() closeable = false;
-  @Input() inputData: MrbcjfzInputData | null = null;
-  @Input() fubanNumber = 9;
+  @Input() inputData?: MrbcjfzInputData;
   @Output() dataSubmit = new EventEmitter<MrbcjfzXinghaoInfo>();
   @Output() dataClose = new EventEmitter<void>();
   xinghao: MrbcjfzXinghaoInfo = new MrbcjfzXinghaoInfo(this.table, {vid: 0, mingzi: ""});
@@ -121,35 +120,47 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     }
     this._refreshLock$.next(true);
     let {id, table} = this;
-    const params = this.route.snapshot.queryParams;
-    if (!id || !table) {
-      id = params.id ? Number(params.id) : 0;
-      table = params.table || "";
-      this.id = id;
-      this.table = table;
-      if (this.id && this.table) {
-        this.isFromOrder = false;
-      } else {
-        this.isFromOrder = true;
-      }
+    if (this.inputData) {
+      this.isFromOrder = true;
     } else {
-      await timeout(0);
+      const params = this.route.snapshot.queryParams;
+      if (!id || !table) {
+        id = params.id ? Number(params.id) : 0;
+        table = params.table || "";
+        this.id = id;
+        this.table = table;
+        if (this.id && this.table) {
+          this.isFromOrder = false;
+        } else {
+          this.isFromOrder = true;
+        }
+      } else {
+        await timeout(0);
+      }
     }
     if (this.isFromOrder) {
+      let data = this.inputData;
       this.bancaiKeys = [];
-      const data = await this.getData();
-      const xinghaosRaw = await this.http.queryMySql(
-        {table: "p_xinghao", filter: {where: {mingzi: data.xinghao}}},
-        {spinner: this.loaderId}
-      );
+      let xinghaosRaw: TableDataBase[] | null;
+      if (data) {
+        xinghaosRaw = [];
+      } else {
+        data = await this.getData();
+        xinghaosRaw = await this.http.queryMySql({table: "p_xinghao", filter: {where: {mingzi: data.xinghao}}}, {spinner: this.loaderId});
+      }
       if (xinghaosRaw[0]) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, xinghaosRaw[0]);
       } else {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, {vid: 0, mingzi: data.xinghao});
       }
+      let bancaiListData: BancaiListData | null;
+      if (data.bancaiList) {
+        bancaiListData = data.bancaiList;
+      } else {
+        bancaiListData = await this.http.getBancaiList(9, {spinner: this.loaderId});
+      }
       this.xinghao.默认板材 = data.morenbancai;
       this.xiaodaohangStructure = {mingzi: "型号"};
-      const bancaiListData = await this.http.getBancaiList(this.fubanNumber, {spinner: this.loaderId});
       if (bancaiListData) {
         this.bancaiList = bancaiListData.bancais;
         this.bancaiKeys = bancaiListData.bancaiKeys;
@@ -523,9 +534,6 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   }
 
   async getData() {
-    if (this.inputData) {
-      return this.inputData;
-    }
     this.wmm.postMessage("getDataStart");
     return await this.wmm.waitForMessage<MrbcjfzInputData>("getDataEnd");
   }

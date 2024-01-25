@@ -1,25 +1,20 @@
-import {CommonModule} from "@angular/common";
 import {Component, HostBinding, OnInit, ViewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
 import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, session, setGlobal} from "@app/app.common";
-import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
-import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
-import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {environment} from "@env";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
-import {downloadByString, keysOf, ObjectOf, queryString, RequiredKeys, selectFiles, WindowMessageManager} from "@lucilor/utils";
+import {ObjectOf, queryString, RequiredKeys, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {getHoutaiCad, HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoGroup, InputInfoOption, InputInfoOptions, InputInfoSelect} from "@modules/input/components/input.types";
@@ -27,30 +22,32 @@ import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
-import {MrbcjfzHuajian, MrbcjfzInputData, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.types";
+import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
 import csstype from "csstype";
-import {cloneDeep, debounce, isEmpty, isEqual} from "lodash";
+import {cloneDeep, debounce, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {v4} from "uuid";
-import {CadItemComponent} from "../cad-item/cad-item.component";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
+import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dialog.component";
+import {SuanliaoDataInput} from "../suanliao-data-dialog/suanliao-data-dialog.type";
 import {
   getGongyi,
   getXinghao,
+  get门铰锁边铰边2,
   menjiaoCadTypes,
   updateXinghaoFenleis,
+  xiaoguotuKeys,
   Xinghao,
   XinghaoRaw,
   企料组合,
   工艺做法,
-  测试用例,
-  算料公式,
   输入,
   选项,
   配合框组合,
   门缝配置,
   门缝配置输入,
-  门铰锁边铰边
+  门铰锁边铰边,
+  门铰锁边铰边2,
+  门铰锁边铰边2Keys
 } from "../xinghao-data";
 import {
   LurushujuIndexStep,
@@ -77,12 +74,9 @@ import {
   selector: "app-lurushuju-index",
   standalone: true,
   imports: [
-    CadItemComponent,
-    CommonModule,
     ImageComponent,
     InputComponent,
     MatButtonModule,
-    MatCardModule,
     MatDividerModule,
     MatIconModule,
     MatTabsModule,
@@ -102,14 +96,7 @@ export class LurushujuIndexComponent implements OnInit {
   gongyi: 工艺做法 | null = null;
   xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
   xinghaoFilterStr = session.load<string>(this.xinghaoFilterStrKey) || "";
-  tabs: {name: string; hidden?: boolean}[] = [
-    {name: "门铰锁边铰边"},
-    {name: "板材分组"},
-    {name: "示意图CAD"},
-    {name: "效果图"},
-    {name: "下单选项输入配置"},
-    {name: "算料公式CAD配置"}
-  ];
+  tabs: {name: string; hidden?: boolean}[] = [{name: "门铰锁边铰边"}, {name: "下单选项输入配置"}];
   tabNameKey = "lurushujuTabName";
   tabIndex = 0;
   tabIndexPrev = -1;
@@ -130,16 +117,12 @@ export class LurushujuIndexComponent implements OnInit {
   xuanxiangTable = getXuanxiangTable();
   shuruTable = getShuruTable();
   menjiaoTable = getMenjiaoTable();
-  shiyituInputInfos: InputInfo[] = [];
-  xiaoguotuInputInfos: InputInfo[] = [];
-  bcfzInputData: MrbcjfzInputData = {xinghao: "", morenbancai: {}};
-  xiaoguotuKeys: (keyof 工艺做法)[] = ["锁扇正面", "锁扇背面", "小扇正面", "小扇背面", "铰扇正面", "铰扇背面"];
   menshans: (TableDataBase & {zuchenghuajian?: string})[] = [];
   huajians: MrbcjfzHuajian[] = [];
   parentInfo = {isZhijianUser: false, isLurushujuEnter: false};
   cadViewerConfig: Partial<CadViewerConfig> = {width: 200, height: 100, lineGongshi: 20};
   varNames: FormulasEditorComponent["vars"];
-  kwpzUrl: SafeResourceUrl | null = null;
+  bancaiList?: BancaiListData;
 
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
@@ -156,8 +139,7 @@ export class LurushujuIndexComponent implements OnInit {
   constructor(
     private http: CadDataService,
     private message: MessageService,
-    private dialog: MatDialog,
-    private domSanitizer: DomSanitizer
+    private dialog: MatDialog
   ) {
     setGlobal("lrsj", this, true);
   }
@@ -172,20 +154,9 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  returnZero() {
-    return 0;
-  }
-
   async updateParentInfo() {
     this.wmm.postMessage("getParentInfoStart");
     this.parentInfo = await this.wmm.waitForMessage("getParentInfoEnd");
-    if (!this.parentInfo.isZhijianUser) {
-      for (const tab of this.tabs) {
-        if (tab.name === "效果图") {
-          tab.hidden = true;
-        }
-      }
-    }
   }
 
   async getXinghaos() {
@@ -363,9 +334,16 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async geVarNamesAllIfNotFetched() {
-    await this.getDataIfNotFetched("systemVarNames", async () => {
+    await this.getDataIfNotFetched("varNames", async () => {
       const varNames = await this.http.getData<typeof this.varNames>("shuju/api/getVarNames");
       this.varNames = varNames || undefined;
+    });
+  }
+
+  async getBancaiListIfNotFetched() {
+    await this.getDataIfNotFetched("bancaiList", async () => {
+      const bancaiList = await this.http.getBancaiList(6);
+      this.bancaiList = bancaiList || undefined;
     });
   }
 
@@ -467,7 +445,8 @@ export class LurushujuIndexComponent implements OnInit {
       this.getXinghaoOptionsAllIfNotFetched(),
       this.getGongyiOptionsAllIfNotFetched(),
       this.getMenjiaoOptionsAllIfNotFetched(),
-      this.geVarNamesAllIfNotFetched()
+      this.geVarNamesAllIfNotFetched(),
+      this.getBancaiListIfNotFetched()
     ]);
     this.menshans = await this.http.queryMySql<(typeof this.menshans)[number]>({
       table: "p_menshan",
@@ -483,48 +462,8 @@ export class LurushujuIndexComponent implements OnInit {
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
     this.menjiaoTable.data = gongyi.门铰锁边铰边;
-    this.shiyituInputInfos = [];
-    const shiyituKeys: (keyof 工艺做法["示意图CAD"])[] = ["算料单示意图"];
-    for (const key of shiyituKeys) {
-      const params: CadListInput = {selectMode: key === "算料单示意图" ? "multiple" : "single", collection: "cad", raw: true};
-      const search: ObjectOf<any> = {};
-      if (key.includes("装配示意图")) {
-        search.分类 = "装配示意图";
-      } else {
-        search.分类 = "算料单示意图";
-      }
-      params.search = search;
-      this.shiyituInputInfos.push({
-        type: "cad",
-        label: key,
-        params,
-        model: {data: gongyi.示意图CAD, key},
-        config: this.cadViewerConfig,
-        clearable: true,
-        openable: true,
-        onChange: () => {
-          this.submitGongyi(["示意图CAD"]);
-        }
-      });
-    }
 
-    this.xiaoguotuInputInfos = [];
-    const options: InputInfoOptions = this.menshans.map((v) => v.mingzi);
-    for (const key of this.xiaoguotuKeys) {
-      this.xiaoguotuInputInfos.push({
-        type: "select",
-        label: key,
-        options,
-        model: {data: gongyi, key},
-        onChange: async () => {
-          await this.updateHuajians();
-          this.updateBcfzInputData();
-          this.submitGongyi([key]);
-        }
-      });
-    }
     await this.updateHuajians();
-    this.updateBcfzInputData();
   }
 
   openTab(name: string) {
@@ -543,22 +482,22 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async checkBcfz() {
-    const {mrbcjfz, gongyi} = this;
-    if (mrbcjfz && gongyi) {
-      const errorMsg = mrbcjfz.checkSubmit() || [];
-      if (errorMsg.length > 0) {
-        this.openTab("板材分组");
-        await this.message.error(errorMsg.join("\n"));
-        return false;
-      }
-      const 板材分组 = this.getBcfzSubmitData(mrbcjfz.xinghao);
-      if (!isEqual(板材分组, gongyi.板材分组)) {
-        const yes = await this.message.confirm("板材分组已修改，是否提交？");
-        if (yes) {
-          mrbcjfz.submit();
-        }
-      }
-    }
+    // const {mrbcjfz, gongyi} = this;
+    // if (mrbcjfz && gongyi) {
+    //   const errorMsg = mrbcjfz.checkSubmit() || [];
+    //   if (errorMsg.length > 0) {
+    //     this.openTab("板材分组");
+    //     await this.message.error(errorMsg.join("\n"));
+    //     return false;
+    //   }
+    //   const 板材分组 = this.getBcfzSubmitData(mrbcjfz.xinghao);
+    //   if (!isEqual(板材分组, gongyi.板材分组)) {
+    //     const yes = await this.message.confirm("板材分组已修改，是否提交？");
+    //     if (yes) {
+    //       mrbcjfz.submit();
+    //     }
+    //   }
+    // }
     return true;
   }
 
@@ -968,10 +907,10 @@ export class LurushujuIndexComponent implements OnInit {
       锁边: "",
       铰边: "",
       选项默认值: {},
-      "包边在外+外开": {配合框CAD: {}, 企料CAD: {}},
-      "包边在外+内开": {配合框CAD: {}, 企料CAD: {}},
-      "包边在内+外开": {配合框CAD: {}, 企料CAD: {}},
-      "包边在内+内开": {配合框CAD: {}, 企料CAD: {}},
+      "包边在外+外开": get门铰锁边铰边2(),
+      "包边在外+内开": get门铰锁边铰边2(),
+      "包边在内+外开": get门铰锁边铰边2(),
+      "包边在内+内开": get门铰锁边铰边2(),
       门缝配置: {},
       关闭碰撞检查: false,
       双开门扇宽生成方式: "",
@@ -987,9 +926,9 @@ export class LurushujuIndexComponent implements OnInit {
     }
     for (const key1 of menjiaoCadTypes) {
       if (!data[key1]) {
-        data[key1] = {配合框CAD: {}, 企料CAD: {}};
+        data[key1] = get门铰锁边铰边2();
       }
-      for (const key2 of keysOf(data[key1])) {
+      for (const key2 of 门铰锁边铰边2Keys) {
         if (!data[key1][key2]) {
           data[key1][key2] = {};
         }
@@ -1155,11 +1094,10 @@ export class LurushujuIndexComponent implements OnInit {
       {
         type: "group",
         label: "",
-        infos: menjiaoCadTypes.map((key1) => {
-          const keys1 = keysOf(data[key1]);
-          const infos = keys1.map<InputInfo>((key2, i) => {
+        infos: menjiaoCadTypes.map<InputInfo>((key1) => {
+          const infos = 门铰锁边铰边2Keys.map<InputInfo>((key2, i) => {
             const groupStyle: csstype.Properties = {};
-            if (i === keys1.length - 1) {
+            if (i === 门铰锁边铰边2Keys.length - 1) {
               groupStyle.marginBottom = "0";
             }
             return {
@@ -1185,8 +1123,116 @@ export class LurushujuIndexComponent implements OnInit {
                   style: {margin: "0 5px"}
                 };
               }),
-              groupStyle: getGroupStyle(groupStyle)
+              groupStyle: getGroupStyle({...groupStyle, margin: "2px 0"})
             };
+          });
+
+          const shiyituKeys: (keyof 门铰锁边铰边2["示意图CAD"])[] = ["算料单示意图"];
+          infos.push({
+            type: "group",
+            label: "",
+            infos: shiyituKeys.map<InputInfo>((key) => {
+              const params: CadListInput = {selectMode: key === "算料单示意图" ? "multiple" : "single", collection: "cad", raw: true};
+              const search: ObjectOf<any> = {};
+              if (key.includes("装配示意图")) {
+                search.分类 = "装配示意图";
+              } else {
+                search.分类 = "算料单示意图";
+              }
+              params.search = search;
+              return {
+                type: "cad",
+                label: key,
+                params,
+                model: {data: data[key1].示意图CAD, key},
+                config: this.cadViewerConfig,
+                clearable: true,
+                openable: true,
+                style: {margin: "2px 0"}
+              };
+            }),
+            groupStyle: getGroupStyle()
+          });
+
+          if (this.parentInfo.isZhijianUser) {
+            const options: InputInfoOptions = this.menshans.map((v) => v.mingzi);
+            infos.push({
+              type: "group",
+              label: "",
+              infos: xiaoguotuKeys.map<InputInfo>((key) => {
+                return {
+                  type: "select",
+                  label: key,
+                  options,
+                  clearable: true,
+                  model: {data: data[key1], key},
+                  style: getInfoStyle(6)
+                };
+              }),
+              groupStyle: getGroupStyle()
+            });
+          }
+
+          infos.push({
+            type: "button",
+            label: "",
+            class: "toolbar",
+            buttons: [
+              {
+                name: "板材分组",
+                color: "primary",
+                onClick: async () => {
+                  const morenbancai = cloneDeep(data[key1].板材分组);
+                  const cads = data[key1].算料CAD.map((v) => new CadData(v.json));
+                  const huajians = this.filterHuajians(data[key1]);
+                  const result = await openMrbcjfzDialog(this.dialog, {
+                    data: {
+                      id: -1,
+                      table: "",
+                      inputData: {
+                        xinghao: this.xinghaoName,
+                        morenbancai,
+                        cads,
+                        huajians,
+                        bancaiList: this.bancaiList,
+                        isLocal: true
+                      }
+                    }
+                  });
+                  if (result) {
+                    data[key1].板材分组 = result.默认板材;
+                  }
+                }
+              },
+              {
+                name: "算料公式CAD配置",
+                color: "primary",
+                onClick: async () => {
+                  const suanliaoData: SuanliaoDataInput["data"] = {
+                    算料公式: data[key1].算料公式,
+                    测试用例: data[key1].测试用例,
+                    算料CAD: data[key1].算料CAD
+                  };
+                  const result = await openSuanliaoDataDialog(this.dialog, {
+                    data: {
+                      data: suanliaoData,
+                      varNames: this.varNames,
+                      copySuanliaoCadsInput: {
+                        xinghaos: this.xinghaos,
+                        xinghaoOptions: this.xinghaoOptionsAll,
+                        excludeXinghaos: [this.xinghaoName],
+                        excludeGongyis: this.gongyi?.名字 ? [this.gongyi.名字] : [],
+                        key: "算料CAD",
+                        fenlei: this.fenleiName
+                      }
+                    }
+                  });
+                  if (result) {
+                    Object.assign(data[key1], result.data);
+                  }
+                }
+              }
+            ]
           });
           return {
             type: "group",
@@ -1211,7 +1257,7 @@ export class LurushujuIndexComponent implements OnInit {
                 }
               }
               const missingValues = [];
-              for (const key2 of keysOf(value)) {
+              for (const key2 of 门铰锁边铰边2Keys) {
                 for (const key3 in value[key2]) {
                   if (!value[key2][key3].cad) {
                     missingValues.push(key3);
@@ -1226,7 +1272,7 @@ export class LurushujuIndexComponent implements OnInit {
               }
             },
             style: {margin: "5px"},
-            groupStyle: getGroupStyle()
+            groupStyle: getGroupStyle({flexDirection: "column"})
           };
         }),
         groupStyle: getGroupStyle({flexDirection: "column"})
@@ -1344,329 +1390,22 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  async getGongshiItem(data0?: 算料公式) {
-    let data: 算料公式;
-    if (data0) {
-      data = cloneDeep(data0);
-    } else {
-      data = {_id: v4(), 名字: "", 条件: [], 选项: {}, 公式: {}};
-    }
-    const form: InputInfo<Partial<算料公式>>[] = [
-      {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
-      {
-        type: "formulas",
-        label: "公式",
-        model: {data, key: "公式"},
-        varNames: this.varNames,
-        validators: () => {
-          if (isEmpty(data.公式)) {
-            return {公式不能为空: true};
-          }
-          return null;
-        }
-      }
-    ];
-    const result = await this.message.form(form);
-    return result ? data : null;
-  }
-
-  async addGongshi() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    const item = await this.getGongshiItem();
-    if (item) {
-      gongyi.算料公式.push(item);
-      await this.submitGongyi(["算料公式"]);
-    }
-  }
-
-  async editGongshi(index: number) {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    const item = await this.getGongshiItem(gongyi.算料公式[index]);
-    if (item) {
-      gongyi.算料公式[index] = item;
-      await this.submitGongyi(["算料公式"]);
-    }
-  }
-
-  async copyGongshi(index: number) {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定复制【${gongyi.算料公式[index].名字}】吗？`))) {
-      return;
-    }
-    const item = cloneDeep(gongyi.算料公式[index]);
-    item._id = v4();
-    const names = gongyi.算料公式.map((v) => v.名字);
-    item.名字 = getCopyName(names, item.名字);
-    gongyi.算料公式.push(item);
-    this.submitGongyi(["算料公式"]);
-  }
-
-  async removeGongshi(index: number) {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定删除【${gongyi.算料公式[index].名字}】吗？`))) {
-      return;
-    }
-    gongyi.算料公式.splice(index, 1);
-    this.submitGongyi(["算料公式"]);
-  }
-
-  async importGonshis() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    if (!(await this.message.confirm("导入算料公式会覆盖原有数据，确定导入吗？"))) {
-      return;
-    }
-    const files = await selectFiles({accept: ".json"});
-    const file = files?.[0];
-    if (!file) {
-      return;
-    }
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      let data: any;
-      try {
-        data = JSON.parse(reader.result as string);
-      } catch (e) {}
-      if (Array.isArray(data)) {
-        gongyi.算料公式 = data;
-        this.submitGongyi(["算料公式"]);
-      } else {
-        this.message.error("算料公式数据有误");
-      }
-    });
-    reader.readAsText(file);
-  }
-
-  exportGongshis() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    downloadByString(JSON.stringify(gongyi.算料公式), {filename: "算料公式.json"});
-  }
-
-  getTimeStr(time: number) {
-    return new Date(time).toLocaleString();
-  }
-
-  async getTestCaseItem(data0?: 测试用例) {
-    const data: 测试用例 = {名字: "", 时间: 0, 测试数据: {}, 测试正确: false, ...data0};
-    const form: InputInfo<typeof data>[] = [
-      {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
-      {
-        type: "formulas",
-        label: "测试数据",
-        model: {data, key: "测试数据"},
-        validators: (control) => {
-          if (isEmpty(control.value)) {
-            return {测试数据不能为空: true};
-          }
-          return null;
-        }
-      },
-      {type: "boolean", label: "测试正确", model: {data, key: "测试正确"}}
-    ];
-    const result = await this.message.form(form);
-    if (result) {
-      result.时间 = Date.now();
-    }
-    return result;
-  }
-
-  async addTestCase() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    const result = await this.getTestCaseItem();
-    if (result) {
-      gongyi.测试用例.push(result);
-      await this.submitGongyi(["测试用例"]);
-    }
-  }
-
-  async editTestCase(index: number) {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    const result = await this.getTestCaseItem(gongyi.测试用例[index]);
-    if (result) {
-      gongyi.测试用例[index] = result;
-      await this.submitGongyi(["测试用例"]);
-    }
-  }
-
-  async copyTestCase(index: number) {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定复制【${gongyi.测试用例[index].名字}】吗？`))) {
-      return;
-    }
-    const item = cloneDeep(gongyi.测试用例[index]);
-    const names = gongyi.测试用例.map((v) => v.名字);
-    item.名字 = getCopyName(names, item.名字);
-    item.时间 = Date.now();
-    gongyi.测试用例.push(item);
-    await this.submitGongyi(["测试用例"]);
-  }
-
-  async removeTestCase(index: number) {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定删除【${gongyi.测试用例[index].名字}】吗？`))) {
-      return;
-    }
-    gongyi.测试用例.splice(index, 1);
-    await this.submitGongyi(["测试用例"]);
-  }
-
-  async importTestCases() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    if (!(await this.message.confirm("导入测试用例会覆盖原有数据，确定导入吗？"))) {
-      return;
-    }
-    const files = await selectFiles({accept: ".json"});
-    const file = files?.[0];
-    if (!file) {
-      return;
-    }
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      let data: any;
-      try {
-        data = JSON.parse(reader.result as string);
-      } catch (e) {}
-      if (Array.isArray(data)) {
-        gongyi.测试用例 = data;
-        this.submitGongyi(["测试用例"]);
-      } else {
-        this.message.error("测试用例数据有误");
-      }
-    });
-    reader.readAsText(file);
-  }
-
-  exportTestCases() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    downloadByString(JSON.stringify(gongyi.测试用例), {filename: "测试用例.json"});
-  }
-
-  async selectSuanliaoCads() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    const data: ZixuanpeijianInput = {
-      data: {
-        零散: gongyi.算料CAD.map((v) => {
-          return {data: new CadData(v.json), info: {houtaiId: v._id, zhankai: [], calcZhankai: []}};
-        })
-      },
-      step: 3,
-      stepFixed: true,
-      noValidateCads: true
-    };
-    const result = await openZixuanpeijianDialog(this.dialog, {data});
-    if (!result) {
-      return;
-    }
-    const ids = result.零散.map((v) => v.info.houtaiId);
-    if (ids.length > 0) {
-      const result2 = await this.http.queryMongodb<HoutaiCad>({collection: "cad", fields: {json: false}, where: {_id: {$in: ids}}});
-      const result3: HoutaiCad[] = [];
-      for (const v of result.零散) {
-        const cad = cloneDeep(result2.find((v2) => v2._id === v.info.houtaiId));
-        if (cad) {
-          cad.json = v.data.export();
-          result3.push(cad);
-        } else {
-          const cad2 = gongyi.算料CAD.find((v2) => v2.json.id === v.data.id);
-          if (cad2) {
-            result3.push(cad2);
+  getHuajianIds(menshans: typeof this.menshans) {
+    const huajianIds = new Set<number>();
+    for (const optionRaw of menshans) {
+      if (typeof optionRaw.zuchenghuajian === "string") {
+        for (const v of optionRaw.zuchenghuajian.split("*")) {
+          if (v) {
+            huajianIds.add(Number(v));
           }
         }
       }
-      gongyi.算料CAD = result3;
-    } else {
-      gongyi.算料CAD = [];
     }
-    await this.submitGongyi(["算料CAD"]);
-    this.updateBcfzInputData();
-  }
-
-  async copySuanliaoCads() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    const result = await openSelectGongyiDialog(this.dialog, {
-      data: {
-        xinghaos: this.xinghaos,
-        xinghaoOptions: this.xinghaoOptionsAll,
-        excludeXinghaos: [this.xinghaoName],
-        excludeGongyis: [gongyi.名字],
-        key: "算料CAD",
-        fenlei: this.fenleiName
-      }
-    });
-    const item = result?.items[0];
-    if (item && (await this.message.confirm("复制算料CAD会覆盖原有数据，确定复制吗？"))) {
-      gongyi.算料CAD = item.算料CAD;
-      await this.submitGongyi(["算料CAD"]);
-    }
-  }
-
-  suanliao() {
-    this.message.alert("未实现");
+    return huajianIds;
   }
 
   async updateHuajians() {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    const xiaoguotuValues = new Set<string>();
-    for (const key of this.xiaoguotuKeys) {
-      const value = gongyi[key];
-      if (typeof value === "string" && value) {
-        xiaoguotuValues.add(value);
-      }
-    }
-    const huajianIds = new Set<string>();
-    for (const optionRaw of this.menshans) {
-      if (xiaoguotuValues.has(optionRaw.mingzi) && typeof optionRaw.zuchenghuajian === "string") {
-        for (const v of optionRaw.zuchenghuajian.split("*")) {
-          if (v) {
-            huajianIds.add(v);
-          }
-        }
-      }
-    }
+    const huajianIds = this.getHuajianIds(this.menshans);
     if (huajianIds.size > 0) {
       this.huajians = await this.http.queryMySql<MrbcjfzHuajian>({
         table: "p_huajian",
@@ -1678,87 +1417,16 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  updateBcfzInputData() {
-    const {gongyi} = this;
-    if (gongyi) {
-      const morenbancai = cloneDeep(gongyi.板材分组);
-      this.bcfzInputData = {
-        xinghao: this.xinghaoName,
-        morenbancai: morenbancai,
-        cads: gongyi.算料CAD.map((v) => new CadData(v.json)),
-        huajians: this.huajians,
-        isLocal: true
-      };
-    } else {
-      this.bcfzInputData = {xinghao: this.xinghaoName, morenbancai: {}};
+  filterHuajians(data: 门铰锁边铰边2) {
+    const xiaoguotuValues = new Set<string>();
+    for (const key of xiaoguotuKeys) {
+      const value = data[key];
+      if (typeof value === "string" && value) {
+        xiaoguotuValues.add(value);
+      }
     }
-  }
-
-  getBcfzSubmitData(info: MrbcjfzXinghaoInfo) {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return null;
-    }
-    return cloneDeep(info.默认板材);
-  }
-
-  async onBcfzSubmit(info: MrbcjfzXinghaoInfo) {
-    const {gongyi} = this;
-    if (!gongyi) {
-      return;
-    }
-    const 板材分组 = this.getBcfzSubmitData(info);
-    if (板材分组 && !isEqual(板材分组, gongyi.板材分组)) {
-      gongyi.板材分组 = 板材分组;
-      await this.submitGongyi(["板材分组"]);
-    }
-  }
-
-  async editSuanliaoCad(i: number) {
-    const cad = this.gongyi?.算料CAD[i];
-    if (!cad) {
-      return;
-    }
-    const cadData = new CadData(cad.json);
-    const data: CadEditorInput = {
-      data: cadData,
-      center: true,
-      isLocal: true
-    };
-    const result = await openCadEditorDialog(this.dialog, {data});
-    if (result?.isSaved) {
-      Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
-      await this.submitGongyi(["算料CAD"]);
-      this.updateBcfzInputData();
-    }
-  }
-
-  async copySuanliaoCad(i: number) {
-    const 算料CAD = this.gongyi?.算料CAD;
-    if (!算料CAD) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定复制${算料CAD[i].名字}吗？`))) {
-      return;
-    }
-    const cad = cloneDeep(算料CAD[i]);
-    cad._id = v4();
-    cad.json.id = v4();
-    算料CAD.splice(i, 0, cad);
-    await this.submitGongyi(["算料CAD"]);
-    this.updateBcfzInputData();
-  }
-
-  async removeSuanliaoCad(i: number) {
-    const 算料CAD = this.gongyi?.算料CAD;
-    if (!算料CAD) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定删除${算料CAD[i].名字}吗？`))) {
-      return;
-    }
-    算料CAD.splice(i, 1);
-    await this.submitGongyi(["算料CAD"]);
-    this.updateBcfzInputData();
+    const menshans = this.menshans.filter((v) => xiaoguotuValues.has(v.mingzi));
+    const huajianIds = this.getHuajianIds(menshans);
+    return this.huajians.filter((v) => huajianIds.has(v.vid));
   }
 }

@@ -1,20 +1,20 @@
 <div class="flex-110 flex-column">
   <div class="toolbar search-form">
-    <div class="flex-column flex-110">
+    <div class="flex-column">
       <div class="toolbar">
         @for (info of inputInfos; track $index) {
-          <app-input class="flex-110" [info]="info"></app-input>
+          <app-input [info]="info"></app-input>
         }
+        <button mat-raised-button color="primary" (click)="search()">搜索</button>
       </div>
       @if (inputInfosMenjiao.length > 0) {
         <div class="toolbar">
           @for (info of inputInfosMenjiao; track $index) {
-            <app-input class="flex-110" [info]="info"></app-input>
+            <app-input [info]="info"></app-input>
           }
         </div>
       }
     </div>
-    <button mat-raised-button color="primary" (click)="search()">搜索</button>
   </div>
   <ng-scrollbar>
     <div class="items no-items-per-row">
