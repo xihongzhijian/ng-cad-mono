@@ -74,8 +74,8 @@ export class CadDataService extends HttpService {
   }
 
   async getCad(params: GetCadParams, options?: HttpOptions): Promise<{cads: CadData[]; total: number}> {
-    const response = await this.post<any>("ngcad/getCad", params, {bypassCodes: [10], ...options});
     const result: {cads: CadData[]; total: number} = {cads: [], total: 0};
+    const response = await this.post<any>("ngcad/getCad", params, {bypassCodes: [10], ...options});
     if (response && response.data) {
       if (response.code === 10) {
         const data = new CadData(response.data.cad);
@@ -105,7 +105,7 @@ export class CadDataService extends HttpService {
   async setCad(params: SetCadParams, hideLineLength: boolean, options?: HttpOptions): Promise<CadData | null> {
     const cadData = exportCadData(params.cadData, hideLineLength);
     const data = {...params, cadData};
-    const response = await this.post<any>("peijian/cad/setCad", data, options);
+    const response = await this.post<any>("ngcad/setCad", data, options);
     if (response && response.data) {
       const resData = response.data;
       const restore = await this._resolveMissingCads(response);
@@ -167,7 +167,7 @@ export class CadDataService extends HttpService {
   }
 
   async uploadDxf(dxf: File, skipLineContent?: boolean, httpOptions?: HttpOptions) {
-    const response = await this.post<any>("peijian/cad/uploadDxf", {dxf, skipLineContent}, httpOptions);
+    const response = await this.post<any>("ngcad/uploadDxf", {dxf, skipLineContent}, httpOptions);
     if (response) {
       return new CadData(response.data);
     }
@@ -369,5 +369,16 @@ export class CadDataService extends HttpService {
     }
     type UploadImageResult = {url: string; name: string; size: number};
     return await this.getData<UploadImageResult>("ngcad/uploadImage", {key: "file", file}, options);
+  }
+
+  async mongodbDelete(collection: CadCollection, ids: string | string[]) {
+    if (!Array.isArray(ids)) {
+      ids = [ids];
+    }
+    const response = await this.post("ngcad/mongodbTableDelete", {collection, vids: ids});
+    if (response?.code === 0) {
+      return true;
+    }
+    return false;
   }
 }

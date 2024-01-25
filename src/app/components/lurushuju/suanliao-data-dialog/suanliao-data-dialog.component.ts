@@ -7,14 +7,13 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getCopyName} from "@app/app.common";
-import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, isEmpty} from "lodash";
@@ -287,48 +286,6 @@ export class SuanliaoDataDialogComponent {
     if (item && (await this.message.confirm("复制算料CAD会覆盖原有数据，确定复制吗？"))) {
       data.算料CAD = item.算料CAD;
     }
-  }
-
-  async editSuanliaoCad(i: number) {
-    const cad = this.suanliaoData.算料CAD[i];
-    if (!cad) {
-      return;
-    }
-    const cadData = new CadData(cad.json);
-    const data: CadEditorInput = {
-      data: cadData,
-      center: true,
-      isLocal: true
-    };
-    const result = await openCadEditorDialog(this.dialog, {data});
-    if (result?.isSaved) {
-      Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
-    }
-  }
-
-  async copySuanliaoCad(i: number) {
-    const 算料CAD = this.suanliaoData.算料CAD;
-    if (!算料CAD) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定复制${算料CAD[i].名字}吗？`))) {
-      return;
-    }
-    const cad = cloneDeep(算料CAD[i]);
-    cad._id = v4();
-    cad.json.id = v4();
-    算料CAD.splice(i, 0, cad);
-  }
-
-  async removeSuanliaoCad(i: number) {
-    const 算料CAD = this.suanliaoData.算料CAD;
-    if (!算料CAD) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定删除${算料CAD[i].名字}吗？`))) {
-      return;
-    }
-    算料CAD.splice(i, 1);
   }
 
   suanliao() {

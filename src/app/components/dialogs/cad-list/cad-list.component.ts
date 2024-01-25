@@ -368,11 +368,7 @@ export class CadListComponent implements AfterViewInit {
     if (!(await this.message.confirm(`是否确定删除【${item.data.name}】？`))) {
       return;
     }
-    const response = await this.http.post("ngcad/mongodbTableDelete", {
-      collection: this.data.collection,
-      vids: [item.data.id]
-    });
-    if (response?.code === 0) {
+    if (await this.http.mongodbDelete(this.data.collection, item.data.id)) {
       this.search();
     }
   }

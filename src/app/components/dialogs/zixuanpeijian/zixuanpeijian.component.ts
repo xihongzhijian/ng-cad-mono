@@ -975,11 +975,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (!(await this.message.confirm(`是否确定删除【${item.data.name}】？`))) {
       return;
     }
-    const response = await this.http.post("ngcad/mongodbTableDelete", {
-      collection: "cad",
-      vids: [item.data.id]
-    });
-    if (response?.code === 0) {
+    if (await this.http.mongodbDelete("cad", item.data.id)) {
       this.step3Refresh();
     }
   }

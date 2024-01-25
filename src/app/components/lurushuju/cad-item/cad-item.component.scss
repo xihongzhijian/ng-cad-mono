@@ -5,7 +5,7 @@
   padding: 5px;
   width: var(--item-width);
 
-  :not(:last-child) {
+  > :not(:last-child) {
     margin-bottom: 5px;
   }
   > .btn-group {
@@ -17,9 +17,28 @@
   font-size: 18px;
 }
 
-.cad-container {
-  justify-content: center;
-  align-items: center;
+.cads {
+  display: flex;
+
+  .cad {
+    margin: 0;
+    padding: 0;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+  }
+
+  .cad-container {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .empty-cad {
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .zhankais {
@@ -54,5 +73,14 @@
       font-size: 24px;
       margin: 0 2px;
     }
+  }
+}
+
+.muban-inputs {
+  width: 100%;
+
+  app-input {
+    width: 0;
+    flex: 1 1 0;
   }
 }
