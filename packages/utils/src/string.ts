@@ -79,7 +79,6 @@ export const sortArrayByLevenshtein = <T>(array: T[], valuesGetter: (item: T) =>
   const cache: ObjectOf<number> = {};
   const getLevenshtein = (option: T) => {
     const values = valuesGetter(option);
-    console.log(values);
     for (const val of values.slice()) {
       values.push(getPinyinCompact(val, toneType));
     }

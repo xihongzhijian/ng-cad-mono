@@ -4,7 +4,7 @@ import {HttpModule} from "@modules/http/http.module";
 import {SuanliaoDataDialogComponent} from "./suanliao-data-dialog.component";
 import {SuanliaoDataInput} from "./suanliao-data-dialog.type";
 
-const data: SuanliaoDataInput = {data: {算料公式: [], 测试用例: [], 算料CAD: []}, varNames: {names: ["1"], width: 0}};
+const data: SuanliaoDataInput = {data: {算料公式: [], 测试用例: [], 算料CAD: []}, varNames: {names: ["1"], width: 0}, klkwpzParams: {}};
 
 describe("SuanliaoDataDialogComponent", () => {
   let component: SuanliaoDataDialogComponent;
