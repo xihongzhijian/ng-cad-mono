@@ -1017,7 +1017,16 @@ export class LurushujuIndexComponent implements OnInit {
         type: "string",
         label: "名字",
         model: {data, key: "名字"},
-        validators: Validators.required,
+        validators: [
+          Validators.required,
+          (control) => {
+            const value = control.value;
+            if (value === "无") {
+              return {名字不能为无: true};
+            }
+            return null;
+          }
+        ],
         placeholder: "下单显示，请输入有意义的名字"
       },
       {

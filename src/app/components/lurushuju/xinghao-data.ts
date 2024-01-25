@@ -38,7 +38,6 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     输入数据: [],
     选项数据: [],
     算料数据: [],
-    花件玻璃信息: [],
     CAD模板: null,
     创建时间: 0,
     最后一次修改时间: 0,
@@ -69,6 +68,7 @@ export const get算料数据2 = (raw?: 算料数据2 | null) => {
     小扇背面: "",
     铰扇正面: "",
     铰扇背面: "",
+    花件玻璃信息: [],
     ...raw
   };
   return result;
@@ -129,7 +129,6 @@ export interface 工艺做法 {
   输入数据: 输入[];
   选项数据: 选项[];
   算料数据: 算料数据[];
-  花件玻璃信息: 花件玻璃信息[]; // 不要依赖效果图
   CAD模板: HoutaiCad | null; // 选择后台的CAD模板
   创建时间: number; // 不带小数的时间戳
   最后一次修改时间: number; // 不带小数的时间戳
@@ -158,6 +157,7 @@ export interface 算料数据2 {
   小扇背面: string;
   铰扇正面: string;
   铰扇背面: string;
+  花件玻璃信息: 花件玻璃信息[]; // 不要依赖效果图
 }
 
 export const 算料数据2Keys = ["配合框CAD", "企料CAD"] as const;

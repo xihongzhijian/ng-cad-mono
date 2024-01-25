@@ -290,7 +290,7 @@ export class SuanliaoDataDialogComponent {
   }
 
   async editSuanliaoCad(i: number) {
-    const cad = this.data.data.算料CAD[i];
+    const cad = this.suanliaoData.算料CAD[i];
     if (!cad) {
       return;
     }
@@ -307,7 +307,7 @@ export class SuanliaoDataDialogComponent {
   }
 
   async copySuanliaoCad(i: number) {
-    const 算料CAD = this.data.data.算料CAD;
+    const 算料CAD = this.suanliaoData.算料CAD;
     if (!算料CAD) {
       return;
     }
@@ -321,7 +321,7 @@ export class SuanliaoDataDialogComponent {
   }
 
   async removeSuanliaoCad(i: number) {
-    const 算料CAD = this.data.data.算料CAD;
+    const 算料CAD = this.suanliaoData.算料CAD;
     if (!算料CAD) {
       return;
     }

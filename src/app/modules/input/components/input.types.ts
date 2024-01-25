@@ -66,6 +66,7 @@ export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   type: "object";
   value?: Value<ObjectOf<any>>;
   options?: Value<InputInfoOptions<K>>;
+  optionValueType?: "string" | "array";
   optionsDialog?: OptionsDialog;
   optionMultiple?: boolean;
   keyLabel?: string;

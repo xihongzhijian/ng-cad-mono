@@ -680,9 +680,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     let multiple: boolean | undefined;
     let hasOptions = false;
     if (info.type === "string" || info.type === "object") {
-      if (info.type === "string") {
-        optionValueType = info.optionValueType || "string";
-      }
+      optionValueType = info.optionValueType || "string";
       multiple = info.optionMultiple;
       hasOptions = !!info.options;
     } else if (info.type === "select") {
