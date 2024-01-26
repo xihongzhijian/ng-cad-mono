@@ -21,6 +21,7 @@ export interface CadListInput {
   source?: CadData[];
   raw?: boolean;
   addCadData?: Omit<Partial<HoutaiCad>, "_id">;
+  hideCadInfo?: boolean;
 }
 
 export type CadListOutput = CadData[];

@@ -972,6 +972,9 @@ export class LurushujuIndexComponent implements OnInit {
           info.optionsDialog = {
             noImage: true,
             defaultValue: {value: data.选项默认值[key] || ""},
+            optionKey: key,
+            useLocalOptions: true,
+            openInNewTab: true,
             onChange(val) {
               if (info.multiple) {
                 data.选项默认值[key] = val.defaultValue || "";
@@ -1115,10 +1118,24 @@ export class LurushujuIndexComponent implements OnInit {
             if (i === 算料数据2Keys.length - 1) {
               groupStyle.marginBottom = "0";
             }
+            const keys3 = Object.keys(data[key1][key2]);
+            keys3.sort((a, b) => {
+              const i1 = 配合框组合.indexOf(a);
+              const i2 = 配合框组合.indexOf(b);
+              if (i1 >= 0 && i2 >= 0) {
+                return i1 - i2;
+              }
+              const i3 = 企料组合[产品分类]?.indexOf(a);
+              const i4 = 企料组合[产品分类]?.indexOf(b);
+              if (i3 >= 0 && i4 >= 0) {
+                return i3 - i4;
+              }
+              return 0;
+            });
             return {
               type: "group",
               label: "",
-              infos: Object.keys(data[key1][key2]).map<InputInfo>((key3) => {
+              infos: keys3.map<InputInfo>((key3) => {
                 const {search, addCadData} = getCadSearch(data, key1, key2, key3);
                 return {
                   type: "cad",
@@ -1133,7 +1150,8 @@ export class LurushujuIndexComponent implements OnInit {
                     standaloneSearch: true,
                     raw: true,
                     search,
-                    addCadData
+                    addCadData,
+                    hideCadInfo: true
                   }),
                   style: {margin: "0 5px"}
                 };
@@ -1147,7 +1165,12 @@ export class LurushujuIndexComponent implements OnInit {
             type: "group",
             label: "",
             infos: shiyituKeys.map<InputInfo>((key) => {
-              const params: CadListInput = {selectMode: key === "算料单示意图" ? "multiple" : "single", collection: "cad", raw: true};
+              const params: CadListInput = {
+                selectMode: key === "算料单示意图" ? "multiple" : "single",
+                collection: "cad",
+                raw: true,
+                hideCadInfo: true
+              };
               const search: ObjectOf<any> = {};
               if (key.includes("装配示意图")) {
                 search.分类 = "装配示意图";
@@ -1334,6 +1357,7 @@ export class LurushujuIndexComponent implements OnInit {
     ];
     const result = await this.message.form<ObjectOf<any>>(
       {
+        disableCancel: this.production,
         inputs: [...form1, ...form4],
         autoFill: this.production ? undefined : () => autoFillMenjiao(data, this.menjiaoOptionsAll)
       },

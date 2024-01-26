@@ -221,6 +221,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
       ];
       const result = await this.message.form(form);
       if (result) {
+        await cadViewer.render();
         afterDblClickForm();
       }
     });

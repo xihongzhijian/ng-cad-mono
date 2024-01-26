@@ -675,7 +675,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return;
     }
     const data = this.model.data;
-    const {optionField, optionsUseId, defaultValue, onChange} = optionsDialog;
+    const {optionField, optionsUseId, defaultValue, onChange, useLocalOptions} = optionsDialog;
     if (optionsDialog.optionKey) {
       optionKey = optionsDialog.optionKey;
     }
@@ -688,7 +688,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       hasOptions = !!info.options;
     } else if (info.type === "select") {
       multiple = info.multiple;
-      hasOptions = !optionKey;
+      hasOptions = !optionKey || !!useLocalOptions;
     }
 
     let checked: string[];

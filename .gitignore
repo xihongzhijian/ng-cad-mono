@@ -54,3 +54,5 @@ Thumbs.db
 !.yarn/sdks
 !.yarn/versions
 !.yarn/patches
+
+/upload.ps1

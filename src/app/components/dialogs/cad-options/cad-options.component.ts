@@ -97,7 +97,8 @@ export class CadOptionsComponent implements AfterViewInit {
         values: Array.from(this.checkedIdsCurr).concat(Array.from(this.checkedIdsOthers)) as any,
         fields: ["vid"]
       },
-      [this.loaderIds.submitLoaderId]
+      [this.loaderIds.submitLoaderId],
+      false
     );
     if (!data) {
       return;
@@ -126,14 +127,14 @@ export class CadOptionsComponent implements AfterViewInit {
     }
   }
 
-  search(stayOnPage = false) {
+  search(stayOnPage = false, refreshLocalOptions = false) {
     if (this.paginator) {
       if (!stayOnPage) {
         this.paginator.pageIndex = 0;
       }
-      this.getData(this.paginator.pageIndex + 1);
+      this.getData(this.paginator.pageIndex + 1, refreshLocalOptions);
     } else {
-      this.getData();
+      this.getData(undefined, refreshLocalOptions);
     }
   }
 
@@ -141,17 +142,27 @@ export class CadOptionsComponent implements AfterViewInit {
     this.getData(event.pageIndex + 1);
   }
 
-  async getOptions(params: GetOptionsParams, loader: Parameters<typeof this.spinner.show>) {
+  async getOptions(params: GetOptionsParams, loader: Parameters<typeof this.spinner.show>, refreshLocalOptions: boolean) {
     let data: OptionsData | null;
-    if (Array.isArray(this.data.options)) {
+    const {options} = this.data;
+    if (Array.isArray(options)) {
+      if (refreshLocalOptions) {
+        this.spinner.show(...loader);
+        data = await this.http.getOptions({...params, page: 1, limit: Infinity});
+        if (data) {
+          options.length = 0;
+          options.push(...data.data);
+        }
+        this.spinner.hide(loader[0]);
+      }
       const field = (params.fields?.[0] || "name") as keyof OptionsDataData;
-      const options = this.data.options.filter((v) => {
+      const options2 = options.filter((v) => {
         if (params.values && !params.values.includes(v[field])) {
           return false;
         }
         return queryString(this.searchValue, v.name);
       });
-      data = {data: options, count: options.length};
+      data = {data: options2, count: options2.length};
       this.showPaginator = false;
     } else {
       this.spinner.show(...loader);
@@ -162,7 +173,7 @@ export class CadOptionsComponent implements AfterViewInit {
     return data;
   }
 
-  async getData(page?: number) {
+  async getData(page?: number, refreshLocalOptions = false) {
     const {checkedIdsCurr, checkedIdsOthers, pageData} = this;
     checkedIdsCurr.clear();
     for (const {vid, checked} of pageData) {
@@ -181,7 +192,8 @@ export class CadOptionsComponent implements AfterViewInit {
         filter: this.data.filter,
         fields: this.data.fields
       },
-      [this.loaderIds.optionsLoader, {text: "获取CAD数据"}]
+      [this.loaderIds.optionsLoader, {text: "获取CAD数据"}],
+      refreshLocalOptions
     )) || {data: [], count: 0};
     this.length = data.count;
     this.pageData = data.data.map((v) => {
@@ -256,7 +268,7 @@ export class CadOptionsComponent implements AfterViewInit {
       window.open(url);
     }
     if (await this.message.newTabConfirm("是否修改了数据？")) {
-      this.search(true);
+      this.search(true, true);
     }
   }
 }
@@ -277,8 +289,9 @@ export interface CadOptionsInput {
   fields?: string[];
   options?: OptionsDataData[];
   defaultValue?: {value?: string; required?: boolean};
-  openInNewTab?: boolean;
   noImage?: boolean;
+  openInNewTab?: boolean;
+  useLocalOptions?: boolean;
 }
 
 export interface CadOptionsOutput {

@@ -74,7 +74,7 @@ export class CadListComponent implements AfterViewInit {
   displayedColumns = ["select", "mingzi", "wenjian", "create_time", "modify_time"];
   width = 300;
   height = 150;
-  searchField = "选项";
+  searchField = "名字";
   searchNameInput = "";
   checkedIndexForce = false;
   checkedItems: string[] = [];

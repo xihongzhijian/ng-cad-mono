@@ -55,17 +55,19 @@
             <button mat-button color="primary" (click)="copyCad(i)">复制</button>
             <button mat-button color="primary" (click)="deleteCad(i)">删除</button>
           </div>
-          <div class="details flex-column">
-            <div class="title">选项</div>
-            @for (item2 of item.data.options | keyvalue: returnZero; track $index) {
-              <div class="text long" [matTooltip]="item2.key + ': ' + item2.value">{{ item2.key }}: {{ item2.value }}</div>
-            }
-            <mat-divider></mat-divider>
-            <div class="title">条件</div>
-            @for (c of item.data.conditions; track $index) {
-              <div class="text long" [matTooltip]="c">{{ c }}</div>
-            }
-          </div>
+          @if (!data.hideCadInfo) {
+            <div class="details flex-column">
+              <div class="title">选项</div>
+              @for (item2 of item.data.options | keyvalue: returnZero; track $index) {
+                <div class="text long" [matTooltip]="item2.key + ': ' + item2.value">{{ item2.key }}: {{ item2.value }}</div>
+              }
+              <mat-divider></mat-divider>
+              <div class="title">条件</div>
+              @for (c of item.data.conditions; track $index) {
+                <div class="text long" [matTooltip]="c">{{ c }}</div>
+              }
+            </div>
+          }
         </div>
       }
     </div>

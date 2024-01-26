@@ -108,7 +108,9 @@
 
 <ng-template #confirmBtns>
   <ng-container *ngTemplateOutlet="submitBtn"></ng-container>
-  <ng-container *ngTemplateOutlet="cancelBtn"></ng-container>
+  @if (!data.disableCancel) {
+    <ng-container *ngTemplateOutlet="cancelBtn"></ng-container>
+  }
 </ng-template>
 
 <ng-template #formBtns>
