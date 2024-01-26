@@ -47,6 +47,7 @@ export interface ColumnInfoBase<T> {
   sticky?: boolean;
   hidden?: boolean;
   style?: csstype.Properties;
+  getString?: (value: T) => string;
 }
 
 export interface ColumnInfoNormal<T> extends ColumnInfoBase<T> {
@@ -65,6 +66,7 @@ export interface ColumnInfoSelect<T> extends ColumnInfoBase<T> {
 export interface ColumnInfoButton<T> extends ColumnInfoBase<T> {
   type: "button";
   buttons: TableButton[];
+  showValue?: boolean;
 }
 
 export interface ColumnInfoLink<T> extends ColumnInfoBase<T> {
@@ -89,11 +91,6 @@ export interface ColumnInfoCad<T> extends ColumnInfoBase<T> {
   filterFn?: (event: CellEvent<T>) => boolean;
 }
 
-export interface ColumnInfoCustom<T> extends ColumnInfoBase<T> {
-  type: "custom";
-  toString: (value: T) => string;
-}
-
 export type ColumnInfo<T> =
   | ColumnInfoTime<T>
   | ColumnInfoNormal<T>
@@ -102,8 +99,7 @@ export type ColumnInfo<T> =
   | ColumnInfoLink<T>
   | ColumnInfoImage<T>
   | ColumnInfoFile<T>
-  | ColumnInfoCad<T>
-  | ColumnInfoCustom<T>;
+  | ColumnInfoCad<T>;
 
 export type TableErrorState = {rows: number[]; msg: string}[];
 

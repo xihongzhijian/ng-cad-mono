@@ -1,11 +1,10 @@
 import {SelectionModel} from "@angular/cdk/collections";
 import {FlatTreeControl} from "@angular/cdk/tree";
-import {CommonModule} from "@angular/common";
+import {NgClass, NgStyle} from "@angular/common";
 import {
   AfterViewInit,
   Component,
   DoCheck,
-  ElementRef,
   EventEmitter,
   Input,
   KeyValueChanges,
@@ -52,7 +51,6 @@ import {getInputInfosFromTableColumns} from "./table.utils";
   styleUrls: ["./table.component.scss"],
   standalone: true,
   imports: [
-    CommonModule,
     MatButtonModule,
     MatIconModule,
     MatTableModule,
@@ -63,6 +61,8 @@ import {getInputInfosFromTableColumns} from "./table.utils";
     MatSlideToggleModule,
     MatSelectModule,
     MatOptionModule,
+    NgClass,
+    NgStyle,
     ImageComponent
   ]
 })
@@ -80,7 +80,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   columnFields: (keyof T | "select")[] = [];
   @ViewChild(MatTable) table?: MatTable<T>;
   @ViewChild(MatSort) sort?: MatSort;
-  @ViewChild("input", {read: ElementRef}) input?: ElementRef<HTMLInputElement>;
   errorState: TableErrorState = [];
   private infoDiffer: KeyValueDiffer<string, any>;
   treeControl = new FlatTreeControl<any>(
@@ -126,9 +125,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   ngAfterViewInit() {
-    if (this.input) {
-      this.input.nativeElement.onchange = this.onInputChange.bind(this);
-    }
     if (this.dataSource instanceof MatTableDataSource) {
       this.dataSource.sort = this.sort || null;
     }
@@ -336,15 +332,9 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     downloadByString(JSON.stringify(selected), {filename: (this.info.title ?? "table") + ".json"});
   }
 
-  import() {
-    this.input?.nativeElement.click();
-  }
-
-  async onInputChange() {
-    if (!this.input) {
-      return;
-    }
-    const file = this.input.nativeElement.files?.[0];
+  async import() {
+    const files = await selectFiles({accept: ".json"});
+    const file = files?.[0];
     if (!file) {
       this.message.alert("没有选择文件");
       return;
@@ -355,8 +345,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       data = JSON.parse(text);
     } catch (error) {
       this.message.alert("读取文件失败");
-    } finally {
-      this.input.nativeElement.value = "";
     }
     if (Array.isArray(data)) {
       if (typeof this.info.dataTransformer === "function") {
@@ -375,9 +363,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   isColumnEditable(event: CellEvent<T>, forgetEditMode = false) {
     const {type, editable} = event.column;
-    if (type === "button") {
-      return true;
-    }
     if (type === "cad" && !this.getIsTypeCadEnabled(event)) {
       return false;
     }
@@ -396,15 +381,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       return column.buttons;
     }
     return [];
-  }
-
-  getColumnLinkedValue(column: ColumnInfo<T>, item: T) {
-    const {type, field} = column;
-    if (type === "link") {
-      const vals = splitOptions(item[field] as string);
-      return joinOptions(vals.map((v) => column.links[v]));
-    }
-    return item[field] as string;
   }
 
   validate() {
@@ -639,7 +615,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         for (const column of columns) {
           let value = item[column.field];
           if (column.type === "link") {
-            value = this.getColumnLinkedValue(column, item);
+            value = this.getValueString(item, column);
           }
           if (typeof value === "string") {
             row.push(value);
@@ -663,11 +639,25 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     this.http.downloadExcel(data, this.info.title, opts?.filename);
   }
 
-  valueToString(item: T, column: ColumnInfo<T>) {
-    if (column.type === "custom") {
-      return column.toString(item);
-    } else {
-      return "";
+  getValueString(item: T, column: ColumnInfo<T>) {
+    const {getString} = column;
+    if (typeof getString === "function") {
+      return getString(item);
+    }
+    const value = item[column.field];
+
+    switch (column.type) {
+      case "boolean":
+        return value ? "是" : "否";
+      case "link":
+        if (typeof value === "string") {
+          const vals = splitOptions(value);
+          return joinOptions(vals.map((v) => column.links[v]));
+        } else {
+          return String(value);
+        }
+      default:
+        return String(value);
     }
   }
 }

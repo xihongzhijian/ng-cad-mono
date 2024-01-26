@@ -146,12 +146,17 @@
         <div class="lingsan-cads">
           <ng-container *ngFor="let item of lingsanCads[lingsanCadType]; let i = index">
             <div class="lingsan-cad" *ngIf="!item.hidden">
-              <img class="cad-preview" [src]="item.img" (click)="addLingsanItem(lingsanCadType, i)" />
+              <app-image
+                class="cad-preview"
+                [src]="item.img"
+                [emptySrc]="imgCadEmpty"
+                (click)="addLingsanItem(lingsanCadType, i)"
+                (imgError)="onCadImgError(item)"
+              />
               <div class="flex-row">
                 <button mat-button color="primary" (click)="copyLingsanCad(lingsanCadType, i)">复制</button>
                 <button mat-button color="primary" (click)="openLingsanCad(lingsanCadType, i)">编辑</button>
                 <button mat-button color="primary" (click)="deleteLingsanCad(lingsanCadType, i)">删除</button>
-                <button mat-button color="primary" (click)="generateLingsanCadImg(lingsanCadType, i)">生成图片</button>
               </div>
               <div class="title flex-row flex-110">
                 <div class="name text-ellipsis" [matTooltip]="item.data.name" matTooltipPosition="above">

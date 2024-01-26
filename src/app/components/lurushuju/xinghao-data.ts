@@ -238,7 +238,7 @@ export interface 配合框CAD {
   cad?: HoutaiCad;
 }
 
-export const 配合框组合: string[] = ["锁框", "铰框", "顶框"];
+export const 配合框组合: string[] = ["铰框", "锁框", "顶框"];
 
 export const 企料排列: ObjectOf<string[]> = {
   单门: ["铰企料", "锁企料"],

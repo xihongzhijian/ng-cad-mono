@@ -27,7 +27,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {cloneDeep, debounce, uniq, uniqueId} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, first, lastValueFrom} from "rxjs";
 import {ClickStopPropagationDirective} from "../../../modules/directives/click-stop-propagation.directive";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
@@ -446,12 +446,13 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async step3Add() {
-    const data = {分类: "", 名字: ""};
-    const name = await this.message.form<typeof data>([
+    const data = {名字: "", 分类: "", 分类2: ""};
+    const result = await this.message.form<typeof data>([
       {type: "string", label: "CAD名字", model: {key: "名字", data}, validators: Validators.required},
-      {type: "string", label: "CAD分类", model: {key: "分类", data}, validators: Validators.required}
+      {type: "string", label: "CAD分类", model: {key: "分类", data}, validators: Validators.required},
+      {type: "string", label: "CAD分类2", model: {key: "分类2", data}}
     ]);
-    if (!name) {
+    if (!result) {
       return;
     }
     const response = await this.http.post("ngcad/mongodbTableInsert", {
@@ -964,8 +965,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   async openLingsanCad(type: string, i: number) {
     this.status.openCadInNewTab(this.lingsanCads[type][i].data.id, "cad");
-    await timeout(100);
-    if (await this.message.confirm("是否修改了CAD？")) {
+    if (await this.message.newTabConfirm("是否修改了CAD？")) {
       this.step3Refresh();
     }
   }
@@ -977,16 +977,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
     if (await this.http.mongodbDelete("cad", item.data.id)) {
       this.step3Refresh();
-    }
-  }
-
-  async generateLingsanCadImg(type: string, i: number) {
-    const item = this.lingsanCads[type][i];
-    const img = await getCadPreview("cad", item.data);
-    if (img) {
-      item.img = img;
-      this.lingsanCadImgs[item.data.id] = img;
-      await this.http.setCadImg(item.data.id, img);
     }
   }
 
@@ -1235,6 +1225,18 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (result) {
       item.可替换模块 = result.模块;
     }
+  }
+
+  private _onCadImgErrorLock$ = new BehaviorSubject(false);
+  async onCadImgError(item: ZixuanpeijianlingsanCadItem) {
+    if (this._onCadImgErrorLock$.value) {
+      await lastValueFrom(this._onCadImgErrorLock$.pipe(first((v) => !v)));
+    }
+    this._onCadImgErrorLock = true;
+    const img = await getCadPreview("cad", item.data, {http: this.http});
+    item.img = img;
+    this.lingsanCadImgs[item.data.id] = img;
+    this._onCadImgErrorLock = false;
   }
 }
 

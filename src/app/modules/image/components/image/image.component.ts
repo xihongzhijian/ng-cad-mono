@@ -1,7 +1,7 @@
 import {animate, style, transition, trigger} from "@angular/animations";
 import {coerceBooleanProperty} from "@angular/cdk/coercion";
 import {CommonModule} from "@angular/common";
-import {Component, ElementRef, HostBinding, Input, ViewChild} from "@angular/core";
+import {Component, ElementRef, EventEmitter, HostBinding, Input, Output, ViewChild} from "@angular/core";
 import {SafeUrl} from "@angular/platform-browser";
 import {timeout} from "@lucilor/utils";
 
@@ -79,6 +79,8 @@ export class ImageComponent {
   loading = true;
   @Input() loadingSrc = imgLoading;
   @Input() emptySrc = imgEmpty;
+  @Output() imgLoad = new EventEmitter();
+  @Output() imgError = new EventEmitter();
   bigPicVisible = false;
   bigPicClass = ["big-pic"];
   @ViewChild("bigPicDiv", {read: ElementRef}) bigPicDiv?: ElementRef<HTMLDivElement>;
@@ -107,6 +109,7 @@ export class ImageComponent {
 
   onLoad() {
     this.loading = false;
+    this.imgLoad.emit();
   }
 
   onError() {
@@ -115,6 +118,7 @@ export class ImageComponent {
     if (!this.class.includes("error")) {
       this.class = [...this.class, "error"];
     }
+    this.imgError.emit();
   }
 
   async showBigPic() {

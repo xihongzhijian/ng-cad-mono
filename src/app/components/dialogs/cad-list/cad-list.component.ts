@@ -17,7 +17,7 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {imgCadEmpty, timer} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {CadData} from "@lucilor/cad-viewer";
-import {isBetween, isNumber, timeout} from "@lucilor/utils";
+import {isBetween, isNumber} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -343,8 +343,7 @@ export class CadListComponent implements AfterViewInit {
   async editCad(i: number) {
     const item = this.pageData[i];
     this.status.openCadInNewTab(item.data.id, this.data.collection);
-    await timeout(100);
-    if (await this.message.confirm("是否修改了CAD？")) {
+    if (await this.message.newTabConfirm("是否修改了CAD？")) {
       this.search();
     }
   }

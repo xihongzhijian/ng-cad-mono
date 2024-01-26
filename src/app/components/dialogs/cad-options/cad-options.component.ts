@@ -7,7 +7,7 @@ import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/pag
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf, queryString, timeout} from "@lucilor/utils";
+import {ObjectOf, queryString} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsParams, OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
@@ -255,8 +255,7 @@ export class CadOptionsComponent implements AfterViewInit {
     if (url) {
       window.open(url);
     }
-    await timeout(100);
-    if (await this.message.confirm("是否修改了数据？")) {
+    if (await this.message.newTabConfirm("是否修改了数据？")) {
       this.search(true);
     }
   }

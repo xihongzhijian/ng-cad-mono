@@ -213,6 +213,7 @@ export class LurushujuIndexComponent implements OnInit {
 
   async editXinghao(xinghao: XinghaoData) {
     const data = cloneDeep(xinghao);
+    const mingziOld = data.mingzi;
     const form: InputInfo<Partial<XinghaoData>>[] = [
       {type: "string", label: "名字", model: {data, key: "mingzi"}, validators: Validators.required},
       {
@@ -233,7 +234,7 @@ export class LurushujuIndexComponent implements OnInit {
     ];
     const result = await this.message.form(form);
     if (result) {
-      const response = await this.http.post("shuju/api/editXinghao", {data: {...xinghao, ...data}});
+      const response = await this.http.post("shuju/api/editXinghao", {mingziOld, data: {...xinghao, ...data}});
       if (response?.code === 0) {
         await this.getXinghaos();
       }
@@ -715,8 +716,12 @@ export class LurushujuIndexComponent implements OnInit {
         }),
         validators: Validators.required,
         onChange: () => {
-          if (Array.isArray(form[1].value)) {
-            form[1].value.length = 0;
+          const info = form[1] as InputInfoSelect;
+          if (Array.isArray(info.value)) {
+            info.value.length = 0;
+          }
+          if (info.optionsDialog) {
+            info.optionsDialog.optionKey = data.名字;
           }
         }
       },
@@ -893,29 +898,30 @@ export class LurushujuIndexComponent implements OnInit {
 
   async getMenjiaoItem(data0?: 算料数据) {
     const 产品分类 = data0 ? data0.产品分类 : this.fenleiName;
-    const data: 算料数据 = {
-      vid: "",
-      停用: false,
-      排序: 0,
-      默认值: false,
-      名字: "",
-      名字2: "",
-      产品分类,
-      开启: [],
-      门铰: [],
-      门扇厚度: [],
-      锁边: "",
-      铰边: "",
-      选项默认值: {},
-      "包边在外+外开": get算料数据2(),
-      "包边在外+内开": get算料数据2(),
-      "包边在内+外开": get算料数据2(),
-      "包边在内+内开": get算料数据2(),
-      门缝配置: {},
-      关闭碰撞检查: false,
-      双开门扇宽生成方式: "",
-      ...data0
-    };
+    const data: 算料数据 = data0
+      ? cloneDeep(data0)
+      : {
+          vid: "",
+          停用: false,
+          排序: 0,
+          默认值: false,
+          名字: "",
+          名字2: "",
+          产品分类,
+          开启: [],
+          门铰: [],
+          门扇厚度: [],
+          锁边: "",
+          铰边: "",
+          选项默认值: {},
+          "包边在外+外开": get算料数据2(),
+          "包边在外+内开": get算料数据2(),
+          "包边在内+外开": get算料数据2(),
+          "包边在内+内开": get算料数据2(),
+          门缝配置: {},
+          关闭碰撞检查: false,
+          双开门扇宽生成方式: ""
+        };
     if (!data.vid) {
       data.vid = this.getMenjiaoId();
     }
@@ -1182,6 +1188,8 @@ export class LurushujuIndexComponent implements OnInit {
             });
           }
 
+          const [包边方向, 开启] = key1.split("+");
+          const klkwpzParams = {选项: {型号: this.xinghaoName, 工艺做法: this.gongyiName, 包边方向, 开启}};
           infos.push({
             type: "button",
             label: "",
@@ -1222,12 +1230,11 @@ export class LurushujuIndexComponent implements OnInit {
                     测试用例: data[key1].测试用例,
                     算料CAD: data[key1].算料CAD
                   };
-                  const [包边方向, 开启] = key1.split("+");
                   const result = await openSuanliaoDataDialog(this.dialog, {
                     data: {
                       data: suanliaoData,
                       varNames: this.varNames,
-                      klkwpzParams: {选项: {型号: this.xinghaoName, 工艺做法: this.gongyiName, 包边方向, 开启}},
+                      klkwpzParams,
                       copySuanliaoCadsInput: {
                         xinghaos: this.xinghaos,
                         xinghaoOptions: this.xinghaoOptionsAll,
@@ -1240,6 +1247,34 @@ export class LurushujuIndexComponent implements OnInit {
                   });
                   if (result) {
                     Object.assign(data[key1], result.data);
+                  }
+                }
+              },
+              {
+                name: "复制",
+                color: "primary",
+                onClick: async () => {
+                  const result: (typeof menjiaoCadTypes)[number] | "" | null = await this.message.prompt({
+                    type: "select",
+                    label: "从哪个复制",
+                    options: menjiaoCadTypes.filter((v) => v !== key1),
+                    validators: Validators.required
+                  });
+                  if (!result) {
+                    return;
+                  }
+                  const data2 = data[result];
+                  data[key1].板材分组 = cloneDeep(data2.板材分组);
+                  data[key1].算料公式 = cloneDeep(data2.算料公式);
+                  data[key1].测试用例 = cloneDeep(data2.测试用例);
+                  data[key1].算料CAD = cloneDeep(data2.算料CAD);
+                  const from = cloneDeep(klkwpzParams);
+                  const [包边方向2, 开启2] = result.split("+");
+                  from.选项.包边方向 = 包边方向2;
+                  from.选项.开启 = 开启2;
+                  const response = await this.http.post("shuju/api/copyKlkwpz", {from, to: klkwpzParams});
+                  if (response?.code === 0) {
+                    this.message.snack("复制成功");
                   }
                 }
               }

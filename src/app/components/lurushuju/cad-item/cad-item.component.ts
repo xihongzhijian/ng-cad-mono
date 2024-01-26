@@ -27,6 +27,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
   cadHeight = 0;
   @Input() list: HoutaiCad[] = [];
   @Input() index: number = -1;
+  @Input() buttons: {name: string; onClick: (component: CadItemComponent) => void}[] = [];
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
   @ViewChild("mubanContainer") mubanContainer?: ElementRef<HTMLDivElement>;
@@ -64,7 +65,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
-    status: AppStatusService
+    private status: AppStatusService
   ) {
     this.showMuban = status.projectConfig.getBoolean("新版本做数据可以做激光开料");
   }
@@ -143,14 +144,22 @@ export class CadItemComponent implements OnChanges, OnDestroy {
   }
 
   async editMuban() {
-    const {mubanData} = this;
-    if (!mubanData) {
+    // const {mubanData} = this;
+    // if (!mubanData) {
+    //   return;
+    // }
+    // const result = await openCadEditorDialog(this.dialog, {
+    //   data: {data: mubanData, center: true, collection: "kailiaocadmuban"}
+    // });
+    // if (result?.isSaved) {
+    //   this.initMubanViewer();
+    // }
+    const {mubanId} = this;
+    if (!mubanId) {
       return;
     }
-    const result = await openCadEditorDialog(this.dialog, {
-      data: {data: mubanData, center: true, collection: "kailiaocadmuban"}
-    });
-    if (result?.isSaved) {
+    this.status.openCadInNewTab(mubanId, "kailiaocadmuban");
+    if (await this.message.confirm("是否修改了模板？")) {
       this.initMubanViewer();
     }
   }
@@ -308,9 +317,11 @@ export class CadItemComponent implements OnChanges, OnDestroy {
           type: "select",
           label: "分类",
           model: {data: mubanData, key: "type"},
-          options: ["自动展开+模板", "对回去面+模板", "CAD变化值+模板", "双向自动展开+模板"],
+          options: ["自动展开+模板", "对回去面+模板", "CAD变化值+模板", "双向自动展开+模板"].map((v) => ({
+            label: v.replace("+模板", ""),
+            value: v
+          })),
           onChange: async () => {
-            console.log(mubanData);
             const result = await this.http.setCad({collection: "kailiaocadmuban", cadData: mubanData, force: true}, true, {spinner: false});
             if (result) {
               this.message.snack("已保存");

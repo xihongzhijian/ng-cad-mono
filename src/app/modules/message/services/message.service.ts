@@ -2,6 +2,7 @@ import {Injectable} from "@angular/core";
 import {MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarConfig} from "@angular/material/snack-bar";
 import {DomSanitizer} from "@angular/platform-browser";
+import {timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
 import {
@@ -81,6 +82,11 @@ export class MessageService {
 
   async confirm(data: string | MessageDataParams<ConfirmMessageData>, others: MessageDataParams2<ConfirmMessageData> = {}) {
     return !!(await this.open({data: this._getData(data, "confirm"), ...others}));
+  }
+
+  async newTabConfirm(data: string | MessageDataParams<ConfirmMessageData>, others: MessageDataParams2<ConfirmMessageData> = {}) {
+    await timeout(100);
+    return await this.confirm(data, others);
   }
 
   async form<T>(data: InputInfo<T>[] | MessageDataParams<FormMessageData>, others: MessageDataParams2<FormMessageData> = {}) {

@@ -371,6 +371,22 @@ export class CadDataService extends HttpService {
     return await this.getData<UploadImageResult>("ngcad/uploadImage", {key: "file", file}, options);
   }
 
+  async mongodbInsert(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>) {
+    const response = await this.post("ngcad/mongodbTableInsert", {collection, data, extraData});
+    if (response?.code === 0) {
+      return true;
+    }
+    return false;
+  }
+
+  async mongodbUpdate(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>) {
+    const response = await this.post("ngcad/mongodbTableUpdate", {collection, data, extraData});
+    if (response?.code === 0) {
+      return true;
+    }
+    return false;
+  }
+
   async mongodbDelete(collection: CadCollection, ids: string | string[]) {
     if (!Array.isArray(ids)) {
       ids = [ids];

@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {ActivatedRoute, Params, Router} from "@angular/router";
+import {ActivatedRoute, Params, Router, UrlCreationOptions} from "@angular/router";
 import {setCadData, unsetCadData} from "@app/cad/cad-data-transform";
 import {getCadPreview, updateCadPreviewImg} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
@@ -447,6 +447,15 @@ export class AppStatusService {
     }
     const params = {project: this.project, collection, id};
     open("index?" + new URLSearchParams(params).toString());
+  }
+
+  openInNewTab(commands: any[], navigationExtras?: UrlCreationOptions | undefined) {
+    if (!navigationExtras) {
+      navigationExtras = {};
+    }
+    navigationExtras.queryParams = {...navigationExtras.queryParams, project: this.project};
+    const url = this.router.createUrlTree(commands, navigationExtras);
+    open(url.toString());
   }
 
   async updateZhewanLengths() {

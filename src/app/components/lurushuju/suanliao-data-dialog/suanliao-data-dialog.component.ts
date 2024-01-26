@@ -11,13 +11,14 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {CadData} from "@lucilor/cad-viewer";
-import {downloadByString, isTypeOf, selectFiles, timeout} from "@lucilor/utils";
+import {downloadByString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep, isEmpty} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
@@ -50,33 +51,14 @@ export class SuanliaoDataDialogComponent {
   klkwpzTable: TableRenderInfo<any> = {
     data: [],
     columns: [
-      {type: "string", field: "名字", width: "100px"},
+      {type: "string", field: "名字"},
       {
-        type: "custom",
-        field: "选项",
-        style: {whiteSpace: "pre", textAlign: "left"},
-        width: "200px",
-        toString: (value) => {
-          const options = value.选项;
-          if (!isTypeOf(options, "object")) {
-            return "";
-          }
-          return Object.entries(options)
-            .map(([k, v]) => `${k}:${v}`)
-            .join("\n");
-        }
-      },
-      {
-        type: "custom",
+        type: "button",
         field: "孔位配置",
-        style: {whiteSpace: "pre", textAlign: "left"},
-        toString: (value) => {
-          const kwpz = value.孔位配置;
-          if (!kwpz) {
-            return "";
-          }
-          return JSON.stringify(kwpz);
-        }
+        buttons: [
+          {event: "界面编辑", color: "primary"},
+          {event: "JSON编辑", color: "primary"}
+        ]
       }
     ],
     title: "开料孔位配置",
@@ -89,11 +71,18 @@ export class SuanliaoDataDialogComponent {
       inlineTitle: true
     }
   };
+  cadItemButtons: CadItemComponent["buttons"] = [
+    {
+      name: "添加空孔位配置",
+      onClick: this.addKwpz.bind(this)
+    }
+  ];
 
   constructor(
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
+    private status: AppStatusService,
     public dialogRef: MatDialogRef<SuanliaoDataDialogComponent, SuanliaoDataOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoDataInput
   ) {
@@ -371,8 +360,7 @@ export class SuanliaoDataDialogComponent {
           const url = await this.http.getShortUrl("开料孔位配置", {search2: klkwpzParams, extraData: klkwpzParams});
           if (url) {
             window.open(url);
-            await timeout(100);
-            if (await this.message.confirm("是否修改了数据？")) {
+            if (await this.message.newTabConfirm("是否修改了数据？")) {
               this.updateKlkwpzTable();
             }
           }
@@ -381,6 +369,39 @@ export class SuanliaoDataDialogComponent {
       case "刷新":
         this.updateKlkwpzTable();
         break;
+    }
+  }
+
+  async onKlkwpzRow(event: RowButtonEvent<any>) {
+    const {item, column} = event;
+    switch (event.button.event) {
+      case "界面编辑":
+        this.status.openInNewTab(["kailiaokongweipeizhi"], {queryParams: {id: item._id}});
+        break;
+      case "JSON编辑":
+        if (await this.message.confirm("目前有bug")) {
+          const json = item[column.field];
+          const result = await this.message.json(json);
+          if (result) {
+            const response = await this.http.mongodbUpdate("kailiaokongweipeizhi", {_id: item._id}, {[column.field]: result});
+            if (response) {
+              this.updateKlkwpzTable();
+            }
+          }
+        }
+        break;
+    }
+  }
+
+  async addKwpz(component: CadItemComponent) {
+    const {list, index} = component;
+    const cad = list[index];
+    if (!cad) {
+      return;
+    }
+    const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...this.data.klkwpzParams, 名字: cad.名字});
+    if (response) {
+      this.updateKlkwpzTable();
     }
   }
 }

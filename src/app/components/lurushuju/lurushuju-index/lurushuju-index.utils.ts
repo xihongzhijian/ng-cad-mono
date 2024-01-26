@@ -191,9 +191,9 @@ export const getXuanxiangTable = (): TableRenderInfo<XuanxiangTableData> => {
     columns: [
       {type: "string", field: "名字"},
       {
-        type: "custom",
+        type: "string",
         field: "可选项",
-        toString(item) {
+        getString: (item) => {
           return item.可选项.map((v) => v.mingzi).join("*");
         }
       },
@@ -246,10 +246,10 @@ export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
       {type: "string", field: "锁边", width: "120px"},
       {type: "string", field: "铰边", width: "120px"},
       {
-        type: "custom",
+        type: "string",
         field: "门缝配置",
         width: "250px",
-        toString(value) {
+        getString: (value) => {
           const data = value.门缝配置;
           if (!data) {
             return "";

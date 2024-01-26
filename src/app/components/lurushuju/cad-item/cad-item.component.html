@@ -7,6 +7,9 @@
       <button mat-button color="primary" (click)="editCad()">编辑</button>
       <button mat-button color="primary" (click)="copyCad()">复制</button>
       <button mat-button color="primary" (click)="removeCad()">删除</button>
+      @for (button of buttons; track $index) {
+        <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
+      }
     </div>
     <div class="zhankais flex-column">
       @for (item of zhankaiInputs; track i; let i = $index) {
