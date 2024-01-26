@@ -28,6 +28,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
   @Input() list: HoutaiCad[] = [];
   @Input() index: number = -1;
   @Input() buttons: {name: string; onClick: (component: CadItemComponent) => void}[] = [];
+  @Input() mubanExtraData: Partial<CadData> = {};
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
   @ViewChild("mubanContainer") mubanContainer?: ElementRef<HTMLDivElement>;
@@ -134,7 +135,15 @@ export class CadItemComponent implements OnChanges, OnDestroy {
     if (!cadData) {
       return;
     }
-    const result = await this.http.setCad({collection: "kailiaocadmuban", cadData}, true);
+    const {cad, mubanId, mubanExtraData} = this;
+    if (mubanId) {
+      cadData.id = mubanId;
+    }
+    cadData.name = cad?.名字 || "模板";
+    if (mubanExtraData) {
+      Object.assign(cadData, mubanExtraData);
+    }
+    const result = await this.http.setCad({collection: "kailiaocadmuban", cadData, force: true}, true);
     if (!result) {
       return;
     }

@@ -37,7 +37,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {clamp, differenceWith} from "lodash";
 import {BehaviorSubject, Subject} from "rxjs";
-import {local, timer} from "../app.common";
+import {local, remoteHost, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
 import {CadStatus, CadStatusNormal} from "./cad-status";
 
@@ -455,7 +455,11 @@ export class AppStatusService {
     }
     navigationExtras.queryParams = {...navigationExtras.queryParams, project: this.project};
     const url = this.router.createUrlTree(commands, navigationExtras);
-    open(url.toString());
+    if (environment.production) {
+      open(`${remoteHost}/static/ng-cad2${url.toString()}`);
+    } else {
+      open(url.toString());
+    }
   }
 
   async updateZhewanLengths() {

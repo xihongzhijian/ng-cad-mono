@@ -77,6 +77,7 @@ export class SuanliaoDataDialogComponent {
       onClick: this.addKwpz.bind(this)
     }
   ];
+  mubanExtraData: CadItemComponent["mubanExtraData"] = {};
 
   constructor(
     private message: MessageService,
@@ -91,6 +92,9 @@ export class SuanliaoDataDialogComponent {
     }
     this.suanliaoData = cloneDeep(this.data.data);
     this.updateKlkwpzTable();
+    if (this.data.klkwpzParams?.选项) {
+      this.mubanExtraData.options = this.data.klkwpzParams.选项;
+    }
   }
 
   returnZero() {

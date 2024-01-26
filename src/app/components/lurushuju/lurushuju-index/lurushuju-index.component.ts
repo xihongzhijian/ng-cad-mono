@@ -1189,7 +1189,15 @@ export class LurushujuIndexComponent implements OnInit {
           }
 
           const [包边方向, 开启] = key1.split("+");
-          const klkwpzParams = {选项: {型号: this.xinghaoName, 工艺做法: this.gongyiName, 包边方向, 开启}};
+          const klkwpzParams = {
+            选项: {
+              型号: this.xinghaoName,
+              工艺做法: this.gongyiName,
+              包边方向,
+              开启,
+              门铰锁边铰边: data.名字
+            }
+          };
           infos.push({
             type: "button",
             label: "",
