@@ -837,7 +837,7 @@ export class CadPortable {
   }
 
   static splitOptionValue(str: string | undefined | null) {
-    if (!str) {
+    if (typeof str !== "string") {
       return [];
     }
     return str.replaceAll(" ", "").split(";").filter(Boolean);
