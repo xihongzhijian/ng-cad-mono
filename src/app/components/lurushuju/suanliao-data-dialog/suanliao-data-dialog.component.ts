@@ -33,6 +33,7 @@ export class SuanliaoDataDialogComponent {
 
   suanliaoData: SuanliaoDataInput["data"];
   klkwpzTable: TableRenderInfo<any> = {
+    title: "开料孔位配置",
     data: [],
     columns: [
       {type: "string", field: "名字"},
@@ -45,7 +46,26 @@ export class SuanliaoDataDialogComponent {
         ]
       }
     ],
-    title: "开料孔位配置",
+    noCheckBox: true,
+    toolbarButtons: {
+      extra: [
+        {event: "编辑", color: "primary"},
+        {event: "刷新", color: "primary"}
+      ],
+      inlineTitle: true
+    }
+  };
+  klcsTable: TableRenderInfo<any> = {
+    title: "开料参数",
+    data: [],
+    columns: [
+      {type: "string", field: "名字"},
+      {
+        type: "button",
+        field: "参数",
+        buttons: [{event: "JSON编辑", color: "primary"}]
+      }
+    ],
     noCheckBox: true,
     toolbarButtons: {
       extra: [
@@ -57,8 +77,12 @@ export class SuanliaoDataDialogComponent {
   };
   cadItemButtons: CadItemComponent["buttons"] = [
     {
-      name: "添加空孔位配置",
+      name: "添加孔位配置",
       onClick: this.addKwpz.bind(this)
+    },
+    {
+      name: "添加开料参数",
+      onClick: this.addKlcs.bind(this)
     }
   ];
   mubanExtraData: CadItemComponent["mubanExtraData"] = {};
@@ -73,12 +97,13 @@ export class SuanliaoDataDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoDataInput
   ) {
     if (!this.data) {
-      this.data = {data: {算料公式: [], 测试用例: [], 算料CAD: []}, varNames: {names: [], width: 0}, klkwpzParams: {}};
+      this.data = {data: {算料公式: [], 测试用例: [], 算料CAD: []}, varNames: {names: [], width: 0}, suanliaoDataParams: {}};
     }
     this.suanliaoData = cloneDeep(this.data.data);
     this.updateKlkwpzTable();
-    if (this.data.klkwpzParams?.选项) {
-      this.mubanExtraData.options = this.data.klkwpzParams.选项;
+    this.updateKlcsTable();
+    if (this.data.suanliaoDataParams?.选项) {
+      this.mubanExtraData.options = this.data.suanliaoDataParams.选项;
     }
     this.suanliaogongshiInfo = {
       data: {
@@ -116,7 +141,7 @@ export class SuanliaoDataDialogComponent {
       for (const v of result.零散) {
         const cad = cloneDeep(result2.find((v2) => v2._id === v.info.houtaiId));
         if (cad) {
-          cad.json = v.data.export();
+          cad.json = v.data.clone(true).export();
           result3.push(cad);
         } else {
           const cad2 = data.算料CAD.find((v2) => v2.json.id === v.data.id);
@@ -157,7 +182,7 @@ export class SuanliaoDataDialogComponent {
   async updateKlkwpzTable() {
     this.klkwpzTable.data = await this.http.queryMongodb({
       collection: "kailiaokongweipeizhi",
-      where: this.data.klkwpzParams,
+      where: this.data.suanliaoDataParams,
       fields: this.klkwpzTable.columns.map((v) => v.field)
     });
   }
@@ -166,8 +191,8 @@ export class SuanliaoDataDialogComponent {
     switch (event.button.event) {
       case "编辑":
         {
-          const {klkwpzParams} = this.data;
-          const url = await this.http.getShortUrl("开料孔位配置", {search2: klkwpzParams, extraData: klkwpzParams});
+          const {suanliaoDataParams} = this.data;
+          const url = await this.http.getShortUrl("开料孔位配置", {search2: suanliaoDataParams, extraData: suanliaoDataParams});
           if (url) {
             window.open(url);
             if (await this.message.newTabConfirm("是否修改了数据？")) {
@@ -209,9 +234,67 @@ export class SuanliaoDataDialogComponent {
     if (!cad) {
       return;
     }
-    const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...this.data.klkwpzParams, 名字: cad.名字});
+    const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...this.data.suanliaoDataParams, 名字: cad.名字});
     if (response) {
       this.updateKlkwpzTable();
+    }
+  }
+
+  async addKlcs(component: CadItemComponent) {
+    const {list, index} = component;
+    const cad = list[index];
+    if (!cad) {
+      return;
+    }
+    const response = await this.http.mongodbInsert("kailiaocanshu", {...this.data.suanliaoDataParams, 名字: cad.名字 + "中空参数"});
+    if (response) {
+      this.updateKlcsTable();
+    }
+  }
+
+  async updateKlcsTable() {
+    this.klcsTable.data = await this.http.queryMongodb({
+      collection: "kailiaocanshu",
+      where: this.data.suanliaoDataParams,
+      fields: this.klcsTable.columns.map((v) => v.field)
+    });
+  }
+
+  async onKlcsToolbar(event: ToolbarButtonEvent) {
+    switch (event.button.event) {
+      case "编辑":
+        {
+          const {suanliaoDataParams} = this.data;
+          const url = await this.http.getShortUrl("开料参数", {search2: suanliaoDataParams, extraData: suanliaoDataParams});
+          if (url) {
+            window.open(url);
+            if (await this.message.newTabConfirm("是否修改了数据？")) {
+              this.updateKlcsTable();
+            }
+          }
+        }
+        break;
+      case "刷新":
+        this.updateKlcsTable();
+        break;
+    }
+  }
+
+  async onKlcsRow(event: RowButtonEvent<any>) {
+    const {item, column} = event;
+    switch (event.button.event) {
+      case "JSON编辑":
+        if (await this.message.confirm("目前有bug")) {
+          const json = item[column.field];
+          const result = await this.message.json(json);
+          if (result) {
+            const response = await this.http.mongodbUpdate("kailiaocanshu", {_id: item._id}, {[column.field]: result});
+            if (response) {
+              this.updateKlcsTable();
+            }
+          }
+        }
+        break;
     }
   }
 }

@@ -1,8 +1,9 @@
-import {KeyValuePipe} from "@angular/common";
+import {KeyValue, KeyValuePipe} from "@angular/common";
 import {Component, HostBinding, Input} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
+import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getCopyName} from "@app/app.common";
 import {downloadByString, selectFiles} from "@lucilor/utils";
@@ -17,7 +18,7 @@ import {SuanliaogongshiInfo} from "./suanliaogongshi.types";
 @Component({
   selector: "app-suanliaogongshi",
   standalone: true,
-  imports: [KeyValuePipe, MatButtonModule, MatCardModule, MatTooltipModule, NgScrollbarModule],
+  imports: [KeyValuePipe, MatButtonModule, MatCardModule, MatDividerModule, MatTooltipModule, NgScrollbarModule],
   templateUrl: "./suanliaogongshi.component.html",
   styleUrl: "./suanliaogongshi.component.scss"
 })
@@ -215,5 +216,9 @@ export class SuanliaogongshiComponent {
 
   getTimeStr(time: number) {
     return new Date(time).toLocaleString();
+  }
+
+  getGongshiStr(item: KeyValue<string, string | number>) {
+    return `${item.key} = ${item.value}`;
   }
 }

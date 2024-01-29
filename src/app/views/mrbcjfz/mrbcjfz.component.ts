@@ -160,6 +160,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         bancaiListData = await this.http.getBancaiList(9, {spinner: this.loaderId});
       }
       this.xinghao.默认板材 = data.morenbancai;
+      this.xinghao.update();
       this.xiaodaohangStructure = {mingzi: "型号"};
       if (bancaiListData) {
         this.bancaiList = bancaiListData.bancais;

@@ -12,7 +12,7 @@ import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dial
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {environment} from "@env";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
-import {ObjectOf, queryString, RequiredKeys, WindowMessageManager} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, queryString, RequiredKeys, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -934,17 +934,20 @@ export class LurushujuIndexComponent implements OnInit {
       if (!data[key1]) {
         data[key1] = get算料数据2();
       }
+      if (!isTypeOf(data[key1].板材分组, "object")) {
+        data[key1].板材分组 = {};
+      }
       for (const key2 of 算料数据2Keys) {
         if (!data[key1][key2]) {
           data[key1][key2] = {};
         }
         for (const name of 配合框组合) {
-          if (!data[key1].配合框CAD[name]) {
+          if (!isTypeOf(data[key1].配合框CAD[name], "object")) {
             data[key1].配合框CAD[name] = {};
           }
         }
         for (const name of 企料组合[产品分类] || []) {
-          if (!data[key1].企料CAD[name]) {
+          if (!isTypeOf(data[key1].企料CAD[name], "object")) {
             data[key1].企料CAD[name] = {};
           }
         }
@@ -1212,7 +1215,7 @@ export class LurushujuIndexComponent implements OnInit {
           }
 
           const [包边方向, 开启] = key1.split("+");
-          const klkwpzParams = {
+          const suanliaoDataParams = {
             选项: {
               型号: this.xinghaoName,
               工艺做法: this.gongyiName,
@@ -1265,7 +1268,7 @@ export class LurushujuIndexComponent implements OnInit {
                     data: {
                       data: suanliaoData,
                       varNames: this.varNames,
-                      klkwpzParams,
+                      suanliaoDataParams,
                       copySuanliaoCadsInput: {
                         xinghaos: this.xinghaos,
                         xinghaoOptions: this.xinghaoOptionsAll,
@@ -1299,12 +1302,36 @@ export class LurushujuIndexComponent implements OnInit {
                   data[key1].算料公式 = cloneDeep(data2.算料公式);
                   data[key1].测试用例 = cloneDeep(data2.测试用例);
                   data[key1].算料CAD = cloneDeep(data2.算料CAD);
-                  const from = cloneDeep(klkwpzParams);
+                  const from = cloneDeep(suanliaoDataParams);
                   const [包边方向2, 开启2] = result.split("+");
                   from.选项.包边方向 = 包边方向2;
                   from.选项.开启 = 开启2;
-                  const response = await this.http.post("shuju/api/copyKlkwpz", {from, to: klkwpzParams});
-                  if (response?.code === 0) {
+                  const mubanIds: ObjectOf<{from: string; to: string}> = {};
+                  const toChangeMubanId: any[] = [];
+                  for (const key2 in data2.算料CAD) {
+                    const cadFrom = data2.算料CAD[key2].json;
+                    const cadTo = data[key1].算料CAD[key2].json;
+                    if (!cadFrom || !cadTo) {
+                      return;
+                    }
+                    const mubanIdFrom = cadFrom.zhankai?.[0]?.kailiaomuban;
+                    const mubanIdTo = cadTo.zhankai?.[0]?.kailiaomuban;
+                    const mubanId = mubanIdTo || mubanIdFrom;
+                    if (typeof mubanIdFrom === "string" && mubanIdFrom) {
+                      mubanIds[cadTo.id] = {from: mubanIdFrom, to: mubanId};
+                      toChangeMubanId.push(cadTo);
+                    }
+                  }
+                  const copyResult = await this.http.getData<{mubanIds: typeof mubanIds}>("shuju/api/copySuanliaoData", {
+                    from,
+                    to: suanliaoDataParams,
+                    mubanIds
+                  });
+                  if (copyResult) {
+                    const mubanIds2 = copyResult.mubanIds;
+                    for (const cad of toChangeMubanId) {
+                      cad.zhankai[0].kailiaomuban = mubanIds2[cad.id];
+                    }
                     this.message.snack("复制成功");
                   }
                 }

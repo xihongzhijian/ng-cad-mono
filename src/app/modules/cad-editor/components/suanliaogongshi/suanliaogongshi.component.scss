@@ -1,13 +1,28 @@
+:host {
+  padding: 5px;
+}
+
 .gongshis {
+  ::ng-deep {
+    .ng-scroll-content {
+      width: 100%;
+    }
+  }
+
   .gongshi-card {
     width: 100%;
-    align-items: flex-start;
 
-    .mat-mdc-card-header {
-      width: 100%;
-      box-sizing: border-box;
-      align-items: center;
+    .gongshi-name {
+      font-size: 1.2em;
     }
+  }
+
+  .gongshi-items {
+    width: 100%;
+  }
+
+  .gongshi-item {
+    white-space: pre;
   }
 }
 

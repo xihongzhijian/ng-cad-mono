@@ -13,8 +13,6 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {cloneDeep} from "lodash";
-import {v4} from "uuid";
 
 @Component({
   selector: "app-cad-item",
@@ -114,9 +112,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
     if (!cad || !(await this.message.confirm(`确定复制【${cad.名字}】吗？`))) {
       return;
     }
-    const cad2 = cloneDeep(cad);
-    cad._id = v4();
-    cad.json.id = v4();
+    const cad2 = getHoutaiCad(new CadData(cad.json).clone(true));
     this.list.splice(this.index, 0, cad2);
   }
 

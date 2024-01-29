@@ -24,8 +24,9 @@
           }
         </div>
       </ng-scrollbar>
-      <div class="klkwpz" style="width: 30%">
+      <div class="tables flex-column" style="width: 30%">
         <app-table [info]="klkwpzTable" (toolbarButtonClick)="onKlkwpzToolbar($event)" (rowButtonClick)="onKlkwpzRow($event)"></app-table>
+        <app-table [info]="klcsTable" (toolbarButtonClick)="onKlcsToolbar($event)" (rowButtonClick)="onKlcsRow($event)"></app-table>
       </div>
     </div>
   </div>
