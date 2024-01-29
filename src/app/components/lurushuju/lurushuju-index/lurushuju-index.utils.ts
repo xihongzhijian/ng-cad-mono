@@ -238,6 +238,16 @@ export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
   return {
     noCheckBox: true,
     columns: [
+      {
+        type: "button",
+        field: "操作",
+        width: "190px",
+        buttons: [
+          {event: "编辑", color: "primary"},
+          {event: "复制", color: "primary"},
+          {event: "删除", color: "primary"}
+        ]
+      },
       {type: "string", field: "名字", width: "180px"},
       {type: "string", field: "产品分类", width: "100px"},
       {type: "string", field: "开启", width: "100px"},
@@ -260,17 +270,7 @@ export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
       },
       {type: "boolean", field: "停用", width: "60px"},
       {type: "number", field: "排序", width: "60px"},
-      {type: "boolean", field: "默认值", width: "60px"},
-      {
-        type: "button",
-        field: "操作",
-        width: "190px",
-        buttons: [
-          {event: "编辑", color: "primary"},
-          {event: "复制", color: "primary"},
-          {event: "删除", color: "primary"}
-        ]
-      }
+      {type: "boolean", field: "默认值", width: "60px"}
     ],
     data: [],
     toolbarButtons: {

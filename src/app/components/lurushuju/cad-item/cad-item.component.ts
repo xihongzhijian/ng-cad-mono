@@ -6,6 +6,7 @@ import {exportCadData} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
 import {selectFiles} from "@lucilor/utils";
+import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -29,6 +30,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
   @Input() index: number = -1;
   @Input() buttons: {name: string; onClick: (component: CadItemComponent) => void}[] = [];
   @Input() mubanExtraData: Partial<CadData> = {};
+  @Input() suanliaogongshiInfo?: SuanliaogongshiInfo;
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
   @ViewChild("mubanContainer") mubanContainer?: ElementRef<HTMLDivElement>;
@@ -95,7 +97,12 @@ export class CadItemComponent implements OnChanges, OnDestroy {
     }
     const cadData = new CadData(cad.json);
     const result = await openCadEditorDialog(this.dialog, {
-      data: {data: cadData, center: true, isLocal: true}
+      data: {
+        data: cadData,
+        center: true,
+        isLocal: true,
+        suanliaogongshiInfo: this.suanliaogongshiInfo
+      }
     });
     if (result?.isSaved) {
       Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
@@ -153,22 +160,19 @@ export class CadItemComponent implements OnChanges, OnDestroy {
   }
 
   async editMuban() {
-    // const {mubanData} = this;
-    // if (!mubanData) {
-    //   return;
-    // }
-    // const result = await openCadEditorDialog(this.dialog, {
-    //   data: {data: mubanData, center: true, collection: "kailiaocadmuban"}
-    // });
-    // if (result?.isSaved) {
-    //   this.initMubanViewer();
-    // }
-    const {mubanId} = this;
-    if (!mubanId) {
+    const {mubanData} = this;
+    if (!mubanData) {
       return;
     }
-    this.status.openCadInNewTab(mubanId, "kailiaocadmuban");
-    if (await this.message.confirm("是否修改了模板？")) {
+    const result = await openCadEditorDialog(this.dialog, {
+      data: {
+        data: mubanData,
+        center: true,
+        collection: "kailiaocadmuban",
+        suanliaogongshiInfo: this.suanliaogongshiInfo
+      }
+    });
+    if (result?.isSaved) {
       this.initMubanViewer();
     }
   }

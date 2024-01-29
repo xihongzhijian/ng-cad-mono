@@ -3,7 +3,6 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 10px;
   box-sizing: border-box;
   overflow: hidden;
   &.mat-mdc-dialog-component-host {
@@ -94,7 +93,7 @@
     }
 
     & > *:not(:last-child) {
-      margin-right: 10px;
+      margin-right: 5px;
     }
 
     .mat-mdc-button {

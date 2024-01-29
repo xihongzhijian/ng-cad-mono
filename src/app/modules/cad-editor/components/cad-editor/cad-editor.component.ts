@@ -30,6 +30,7 @@ import {CadMtextComponent} from "../menu/cad-mtext/cad-mtext.component";
 import {CadSplitComponent} from "../menu/cad-split/cad-split.component";
 import {SubCadsComponent} from "../menu/sub-cads/sub-cads.component";
 import {ToolbarComponent} from "../menu/toolbar/toolbar.component";
+import {SuanliaogongshiComponent} from "../suanliaogongshi/suanliaogongshi.component";
 
 @Component({
   selector: "app-cad-editor",
@@ -80,6 +81,7 @@ import {ToolbarComponent} from "../menu/toolbar/toolbar.component";
     MatTabsModule,
     NgScrollbar,
     SpinnerComponent,
+    SuanliaogongshiComponent,
     SubCadsComponent,
     ToolbarComponent
   ]
@@ -136,6 +138,7 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   @ViewChild("cadContainer", {read: ElementRef}) cadContainer!: ElementRef<HTMLElement>;
   @ViewChild(CadConsoleComponent) cadConsoleComponent!: CadConsoleComponent;
   @ViewChild(MatTabGroup) infoTabs!: MatTabGroup;
+  @ViewChild("suanliaogongshi", {read: ElementRef}) suanliaogongshi?: ElementRef<HTMLElement>;
   @ViewChildren(NgScrollbar)
   private _scrollbars!: QueryList<NgScrollbar>;
   private get _scrollbar() {
@@ -259,6 +262,9 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     }
     if (this.showLeftMenu) {
       padding[3] += this.leftMenuWidth$.value;
+    }
+    if (this.suanliaogongshi) {
+      padding[3] += this.suanliaogongshi.nativeElement.clientWidth;
     }
     this.config.setConfig({padding}, {sync: false});
   }

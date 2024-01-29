@@ -1,0 +1,16 @@
+.gongshis {
+  .gongshi-card {
+    width: 100%;
+    align-items: flex-start;
+
+    .mat-mdc-card-header {
+      width: 100%;
+      box-sizing: border-box;
+      align-items: center;
+    }
+  }
+}
+
+.test-cases {
+  flex: 0 0 30%;
+}

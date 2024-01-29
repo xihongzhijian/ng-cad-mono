@@ -25,6 +25,7 @@
         @if ((isCadLocal$ | async) === false) {
           <button mat-raised-button color="accent" (click)="save()">保存</button>
         }
+        <div class="flex-110"></div>
         <button mat-icon-button class="menu-icon left" [class.closed]="!showLeftMenu" (click)="toggleLeftMenu()">
           <mat-icon>
             {{ showLeftMenu ? "navigate_before" : "navigate_next" }}
@@ -107,6 +108,14 @@
         (cdkDragEnded)="onResizeMenuEnd($event, 'rightMenuWidth')"
       ></div>
     </div>
+    @if (params && params.suanliaogongshiInfo) {
+      <app-suanliaogongshi
+        #suanliaogongshi
+        class="menu"
+        [style.left.px]="showLeftMenu ? (leftMenuWidth$ | async) : 30"
+        [info]="params.suanliaogongshiInfo"
+      ></app-suanliaogongshi>
+    }
   </div>
   <div class="menu bottom" [class.accent]="cadStatusStr !== '普通'" [@closeBottom]="showBottomMenu ? 'open' : 'closed'">
     <div class="cad-status">当前状态：{{ cadStatusStr }}</div>

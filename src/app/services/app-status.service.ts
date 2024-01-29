@@ -32,6 +32,7 @@ import {
   setLinesLength
 } from "@lucilor/cad-viewer";
 import {FileSizeOptions, getFileSize, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
+import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
@@ -527,4 +528,5 @@ export interface OpenCadOptions {
   beforeOpen?: (data: CadData) => any;
   isLocal?: boolean;
   isDialog?: boolean;
+  suanliaogongshiInfo?: SuanliaogongshiInfo;
 }

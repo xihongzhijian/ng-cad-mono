@@ -1153,7 +1153,7 @@ export class LurushujuIndexComponent implements OnInit {
                     addCadData,
                     hideCadInfo: true
                   }),
-                  style: {margin: "0 5px"}
+                  style: {margin: "0 2px"}
                 };
               }),
               groupStyle: getGroupStyle({...groupStyle, margin: "2px 0"})
@@ -1186,10 +1186,10 @@ export class LurushujuIndexComponent implements OnInit {
                 config: this.cadViewerConfig,
                 clearable: true,
                 openable: true,
-                style: {margin: "2px 0"}
+                style: {margin: "0 2px"}
               };
             }),
-            groupStyle: getGroupStyle()
+            groupStyle: getGroupStyle({margin: "2px 0"})
           });
 
           if (this.parentInfo.isZhijianUser) {

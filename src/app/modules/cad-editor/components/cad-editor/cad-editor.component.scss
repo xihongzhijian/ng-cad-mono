@@ -37,13 +37,11 @@
     width: 100%;
     border-radius: 0;
     padding: 0 10px;
-    top: 0;
     background-color: #fafafa;
   }
 
   &.bottom {
     width: 100%;
-    bottom: 0;
     height: 20px;
     line-height: 22px;
   }
@@ -59,14 +57,6 @@
       align-items: center;
       justify-content: space-between;
     }
-  }
-
-  &.left {
-    left: 0;
-  }
-
-  &.right {
-    right: 0;
   }
 
   &.accent {
@@ -147,4 +137,10 @@
   padding: 5px;
   border-radius: 8px;
   opacity: 0.8;
+}
+
+app-suanliaogongshi {
+  position: absolute;
+  width: auto;
+  // top: 0;
 }
