@@ -15,7 +15,7 @@
         <div class="cads flex-row">
           @for (cad of suanliaoData["算料CAD"]; track i; let i = $index) {
             <app-cad-item
-              [list]="suanliaoData['算料CAD']"
+              [cad]="cad"
               [index]="i"
               [buttons]="cadItemButtons"
               [mubanExtraData]="mubanExtraData"

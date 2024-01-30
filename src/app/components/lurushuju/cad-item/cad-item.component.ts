@@ -24,7 +24,7 @@ import {AppStatusService} from "@services/app-status.service";
 export class CadItemComponent implements OnChanges, OnDestroy {
   @Input() cadWidth = 360;
   cadHeight = 0;
-  @Input() list: HoutaiCad[] = [];
+  @Input() cad: HoutaiCad = getHoutaiCad();
   @Input() index: number = -1;
   @Input() buttons: {name: string; onClick: (component: CadItemComponent) => void}[] = [];
   @Input() mubanExtraData: Partial<CadData> = {};
@@ -35,9 +35,6 @@ export class CadItemComponent implements OnChanges, OnDestroy {
   cadViewer?: CadViewer;
   mubanViewer?: CadViewer;
   mubanData?: CadData;
-  get cad() {
-    return this.list.at(this.index);
-  }
   get mubanId() {
     return this.cad?.json?.zhankai?.[0]?.kailiaomuban || "";
   }
@@ -72,7 +69,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.list || changes.index) {
+    if (changes.cad || changes.index) {
       setTimeout(() => {
         this.update();
       }, 0);
@@ -106,23 +103,6 @@ export class CadItemComponent implements OnChanges, OnDestroy {
       Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
       this.initCadViewer();
     }
-  }
-
-  async copyCad() {
-    const {cad} = this;
-    if (!cad || !(await this.message.confirm(`确定复制【${cad.名字}】吗？`))) {
-      return;
-    }
-    const cad2 = getHoutaiCad(new CadData(cad.json).clone(true));
-    this.list.splice(this.index, 0, cad2);
-  }
-
-  async removeCad() {
-    const {cad} = this;
-    if (!cad || !(await this.message.confirm(`确定删除【${cad.名字}】吗？`))) {
-      return;
-    }
-    this.list.splice(this.index, 1);
   }
 
   centerMuban() {
@@ -190,6 +170,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
   }
 
   update() {
+    delete this.mubanData;
     this.initCadViewer();
     this.initMubanViewer();
   }
@@ -260,11 +241,12 @@ export class CadItemComponent implements OnChanges, OnDestroy {
       return;
     }
     if (!mubanData && mubanId) {
-      const resultData = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId});
+      const resultData = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId}, {silent: true});
       mubanData = resultData?.cads[0];
       this.mubanData = mubanData;
     }
     if (!mubanData) {
+      this.mubanId = "";
       return;
     }
     const containerEl = mubanContainer.nativeElement;

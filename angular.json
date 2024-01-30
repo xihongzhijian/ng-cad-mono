@@ -32,7 +32,8 @@
             "assets": ["src/favicon.ico", "src/assets"],
             "styles": ["src/styles.scss", "src/mat-theme.scss"],
             "scripts": [],
-            "extractLicenses": false
+            "extractLicenses": false,
+            "optimization": false
           },
           "configurations": {
             "production": {

@@ -7,7 +7,7 @@ import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanp
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
@@ -79,6 +79,14 @@ export class SuanliaoDataDialogComponent {
     }
   };
   cadItemButtons: CadItemComponent["buttons"] = [
+    {
+      name: "复制",
+      onClick: this.copyCad.bind(this)
+    },
+    {
+      name: "删除",
+      onClick: this.removeCad.bind(this)
+    },
     {
       name: "添加孔位配置",
       onClick: this.addKwpz.bind(this)
@@ -280,12 +288,39 @@ export class SuanliaoDataDialogComponent {
     }
   }
 
-  async addKwpz(component: CadItemComponent) {
-    const {list, index} = component;
-    const cad = list[index];
-    if (!cad) {
+  async copyCad(component: CadItemComponent) {
+    const {cad} = component;
+    if (!cad || !(await this.message.confirm(`确定复制【${cad.名字}】吗？`))) {
       return;
     }
+    const {mubanData} = component;
+    const cad2 = getHoutaiCad(new CadData(cad.json).clone(true));
+    if (mubanData) {
+      const cadData = new CadData(mubanData.clone(true));
+      const result = await this.http.setCad({collection: "kailiaocadmuban", cadData, force: true}, true);
+      if (!result) {
+        return;
+      }
+      component.mubanId = result.id;
+      component.mubanData = cadData;
+    }
+    this.suanliaoData.算料CAD.splice(component.index, 0, cad2);
+  }
+
+  async removeCad(component: CadItemComponent) {
+    const {cad} = component;
+    if (!cad || !(await this.message.confirm(`确定删除【${cad.名字}】吗？`))) {
+      return;
+    }
+    const {mubanId} = component;
+    if (mubanId) {
+      await this.http.mongodbDelete("kailiaocadmuban", mubanId);
+    }
+    this.suanliaoData.算料CAD.splice(component.index, 1);
+  }
+
+  async addKwpz(component: CadItemComponent) {
+    const {cad} = component;
     const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...this.data.suanliaoDataParams, 名字: cad.名字});
     if (response) {
       this.updateKlkwpzTable();
@@ -293,11 +328,7 @@ export class SuanliaoDataDialogComponent {
   }
 
   async addKlcs(component: CadItemComponent) {
-    const {list, index} = component;
-    const cad = list[index];
-    if (!cad) {
-      return;
-    }
+    const {cad} = component;
     const response = await this.http.mongodbInsert("kailiaocanshu", {
       ...this.data.suanliaoDataParams,
       名字: cad.名字 + "中空参数",

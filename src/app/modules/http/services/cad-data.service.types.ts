@@ -172,7 +172,7 @@ export type HoutaiCad = {
   json: ObjectOf<any>;
 };
 
-export const getHoutaiCad = (data: CadData): HoutaiCad => {
+export const getHoutaiCad = (data = new CadData()): HoutaiCad => {
   return {
     _id: data.id,
     名字: data.name,
