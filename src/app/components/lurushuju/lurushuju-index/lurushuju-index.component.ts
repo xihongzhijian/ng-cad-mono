@@ -24,7 +24,7 @@ import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/tabl
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
 import csstype from "csstype";
-import {cloneDeep, debounce, isEqual} from "lodash";
+import {cloneDeep, debounce, isEmpty, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dialog.component";
@@ -1368,8 +1368,15 @@ export class LurushujuIndexComponent implements OnInit {
                   }
                 }
               }
+              const errors = [];
               if (missingValues.length > 0) {
-                const error = "请选择" + missingValues.join("、");
+                errors.push("选择" + missingValues.join("、"));
+              }
+              if (isEmpty(value.板材分组)) {
+                errors.push("设置板材分组");
+              }
+              if (errors.length > 0) {
+                const error = `请${errors.join("并")}`;
                 return {[error]: true};
               } else {
                 return null;

@@ -32,6 +32,9 @@ import {
   getMrbcjfzInfo,
   isMrbcjfzInfoEmpty1,
   isMrbcjfzInfoEmpty2,
+  MrbcjfzXinghaoInfo
+} from "./mrbcfz.utils";
+import {
   ListItemKey,
   listItemKeys,
   MrbcjfzCadInfo,
@@ -41,8 +44,7 @@ import {
   MrbcjfzListItem,
   MrbcjfzQiliaoInfo,
   MrbcjfzResponseData,
-  MrbcjfzXinghao,
-  MrbcjfzXinghaoInfo
+  MrbcjfzXinghao
 } from "./mrbcjfz.types";
 
 @Component({

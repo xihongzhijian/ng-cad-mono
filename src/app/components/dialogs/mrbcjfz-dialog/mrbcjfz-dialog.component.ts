@@ -1,6 +1,7 @@
 import {Component, Inject} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MrbcjfzInputData, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.types";
+import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcfz.utils";
+import {MrbcjfzInputData} from "@views/mrbcjfz/mrbcjfz.types";
 import {MrbcjfzComponent} from "../../../views/mrbcjfz/mrbcjfz.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
