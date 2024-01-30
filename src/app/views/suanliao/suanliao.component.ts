@@ -20,6 +20,7 @@ import {
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
 import {MsbjData, MsbjInfo} from "@views/msbj/msbj.types";
@@ -210,10 +211,12 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
   }
 
   async openCadEditorStart(data: {options: CadEditorInput}) {
-    const cadData = new CadData(data.options.data);
+    const cadDataRaw = data.options.data as any;
+    const cadData = new CadData(cadDataRaw.json);
     data.options.data = cadData;
     const result = await openCadEditorDialog(this.dialog, {data: data.options});
-    return {action: "openCadEditorEnd", data: {...result, data: cadData.export()}};
+    const resultData = {...cadDataRaw, ...getHoutaiCad(cadData), _id: cadDataRaw._id};
+    return {action: "openCadEditorEnd", data: {...result, data: resultData}};
   }
 
   updateMokuaiItemsStart(data: any) {
