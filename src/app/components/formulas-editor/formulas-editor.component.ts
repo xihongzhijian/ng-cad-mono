@@ -43,6 +43,8 @@ export class FormulasEditorComponent {
   @Input() vars?: Formulas;
   @Input() formulasText = "";
   @Input() varNames?: {names?: string[]; width?: number};
+  @Input() extraInputInfos?: InputInfo[];
+  @Input() required?: boolean;
   formulaList: [string, string][] = [];
   formulaListInputInfos: InputInfo[][] = [];
   formulasInputInfo: InputInfo = {
@@ -145,17 +147,21 @@ export class FormulasEditorComponent {
   }
 
   submitFormulas(formulaList = this.formulaList) {
-    const inputs = this.inputs;
-    if (!inputs) {
-      return null;
+    const errors: string[] = [];
+    if (formulaList.length < 1) {
+      errors.push("公式不能为空");
     }
     this.justifyFormulas(formulaList);
+    const inputs = this.inputs || [];
     for (const input of inputs) {
-      const errors = input.validateValue();
-      if (!isEmpty(errors)) {
-        this.message.error("输入数据有误");
-        return null;
+      const errors2 = input.validateValue();
+      if (!isEmpty(errors2)) {
+        errors.push("输入数据有误");
       }
+    }
+    if (errors.length) {
+      this.message.error(errors.join("<br>"));
+      return null;
     }
     const result: Formulas = {};
     for (const arr of formulaList) {

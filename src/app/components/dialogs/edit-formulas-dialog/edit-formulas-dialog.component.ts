@@ -1,6 +1,6 @@
-import {Component, Inject, ViewChild} from "@angular/core";
+import {Component, HostBinding, Inject, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
-import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Formulas} from "@app/utils/calc";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -10,9 +10,10 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./edit-formulas-dialog.component.html",
   styleUrls: ["./edit-formulas-dialog.component.scss"],
   standalone: true,
-  imports: [FormulasEditorComponent, MatDialogActions, MatButtonModule]
+  imports: [FormulasEditorComponent, MatButtonModule]
 })
 export class EditFormulasDialogComponent {
+  @HostBinding("class") class = "ng-page";
   @ViewChild("formulasEditor") formulasEditor?: FormulasEditorComponent;
 
   constructor(
@@ -45,6 +46,8 @@ export interface EditFormulasInput {
   formulas?: Formulas;
   formulasText?: FormulasEditorComponent["formulasText"];
   varNames?: FormulasEditorComponent["varNames"];
+  extraInputInfos?: FormulasEditorComponent["extraInputInfos"];
+  required?: boolean;
 }
 
 export type EditFormulasOutput = Formulas;

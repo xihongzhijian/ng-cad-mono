@@ -3,13 +3,14 @@ import {Component, HostBinding, Input} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
+import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getCopyName} from "@app/app.common";
+import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {downloadByString, selectFiles} from "@lucilor/utils";
-import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {cloneDeep, isEmpty} from "lodash";
+import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
 import {测试用例, 算料公式} from "../../../../components/lurushuju/xinghao-data";
@@ -26,7 +27,10 @@ export class SuanliaogongshiComponent {
   @HostBinding("class") class = "ng-page";
   @Input() info: SuanliaogongshiInfo = {data: {算料公式: [], 测试用例: []}};
 
-  constructor(private message: MessageService) {}
+  constructor(
+    private message: MessageService,
+    private dialog: MatDialog
+  ) {}
 
   returnZero() {
     return 0;
@@ -39,23 +43,17 @@ export class SuanliaogongshiComponent {
     } else {
       data = {_id: v4(), 名字: "", 条件: [], 选项: {}, 公式: {}};
     }
-    const form: InputInfo<Partial<算料公式>>[] = [
-      {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
-      {
-        type: "formulas",
-        label: "公式",
-        model: {data, key: "公式"},
-        varNames: this.info.varNames,
-        validators: () => {
-          if (isEmpty(data.公式)) {
-            return {公式不能为空: true};
-          }
-          return null;
-        }
+    const result = await openEditFormulasDialog(this.dialog, {
+      data: {
+        formulas: data.公式,
+        extraInputInfos: [{type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required}]
       }
-    ];
-    const result = await this.message.form(form);
-    return result ? data : null;
+    });
+    if (result) {
+      data.公式 = result;
+      return data;
+    }
+    return null;
   }
 
   async addGongshi() {
@@ -126,26 +124,21 @@ export class SuanliaogongshiComponent {
 
   async getTestCaseItem(data0?: 测试用例) {
     const data: 测试用例 = {名字: "", 时间: 0, 测试数据: {}, 测试正确: false, ...data0};
-    const form: InputInfo<typeof data>[] = [
-      {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
-      {
-        type: "formulas",
-        label: "测试数据",
-        model: {data, key: "测试数据"},
-        validators: (control) => {
-          if (isEmpty(control.value)) {
-            return {测试数据不能为空: true};
-          }
-          return null;
-        }
-      },
-      {type: "boolean", label: "测试正确", model: {data, key: "测试正确"}}
-    ];
-    const result = await this.message.form(form);
+    const result = await openEditFormulasDialog(this.dialog, {
+      data: {
+        formulas: data.测试数据,
+        extraInputInfos: [
+          {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
+          {type: "boolean", label: "测试正确", model: {data, key: "测试正确"}}
+        ]
+      }
+    });
     if (result) {
-      result.时间 = Date.now();
+      data.测试数据 = result;
+      data.时间 = Date.now();
+      return data;
     }
-    return result;
+    return null;
   }
 
   async addTestCase() {

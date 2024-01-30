@@ -154,8 +154,7 @@ export interface InputInfoCad<T = any> extends InputInfoBase<T> {
 export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
   type: "formulas";
   value?: Value<Formulas>;
-  formulasText?: EditFormulasInput["formulasText"];
-  varNames?: EditFormulasInput["varNames"];
+  params?: Value<Omit<EditFormulasInput, "formulas">>;
   onChange?: (val: Formulas) => void;
 }
 

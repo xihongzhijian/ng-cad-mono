@@ -66,7 +66,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
-    private status: AppStatusService
+    status: AppStatusService
   ) {
     this.showMuban = status.projectConfig.getBoolean("新版本做数据可以做激光开料");
   }

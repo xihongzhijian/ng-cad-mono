@@ -4,8 +4,10 @@
   [formulas]="data?.formulas"
   [formulasText]="data?.formulasText || ''"
   [varNames]="data?.varNames"
+  [extraInputInfos]="data?.extraInputInfos"
+  [required]="data?.required"
 ></app-formulas-editor>
-<div matDialogActions>
+<div class="toolbar center">
   <button mat-raised-button color="primary" (click)="submit()">确定</button>
   <button mat-raised-button color="primary" (click)="cancel()">取消</button>
 </div>

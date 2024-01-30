@@ -1091,11 +1091,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return;
     }
     let {value} = this;
-    const {formulasText, varNames} = info;
+    const params = getValue(info.params, this.message);
     if (!isTypeOf(value, "object")) {
       value = {};
     }
-    const result = await openEditFormulasDialog(this.dialog, {data: {formulas: value, formulasText, varNames}});
+    const result = await openEditFormulasDialog(this.dialog, {data: {...params, formulas: value}});
     if (result) {
       this.value = result;
       info.onChange?.(result);

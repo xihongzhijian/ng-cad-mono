@@ -1,3 +1,11 @@
+@if (extraInputInfos) {
+  <div class="toolbar">
+    @for (info of extraInputInfos; track $index) {
+      <app-input #extraInput [info]="info"></app-input>
+    }
+  </div>
+}
+
 @if (varNames && varNames.names && varNames.names.length > 0) {
   <div class="toolbar">
     @for (name of varNames.names; track $index) {
