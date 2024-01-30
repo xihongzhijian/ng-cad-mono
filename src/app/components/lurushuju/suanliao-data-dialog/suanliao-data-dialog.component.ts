@@ -63,7 +63,10 @@ export class SuanliaoDataDialogComponent {
       {
         type: "button",
         field: "参数",
-        buttons: [{event: "JSON编辑", color: "primary"}]
+        buttons: [
+          {event: "界面编辑", color: "primary"},
+          {event: "JSON编辑", color: "primary"}
+        ]
       }
     ],
     noCheckBox: true,
@@ -187,6 +190,14 @@ export class SuanliaoDataDialogComponent {
     });
   }
 
+  async updateKlcsTable() {
+    this.klcsTable.data = await this.http.queryMongodb({
+      collection: "kailiaocanshu",
+      where: this.data.suanliaoDataParams,
+      fields: this.klcsTable.columns.map((v) => v.field)
+    });
+  }
+
   async onKlkwpzToolbar(event: ToolbarButtonEvent) {
     switch (event.button.event) {
       case "编辑":
@@ -207,6 +218,26 @@ export class SuanliaoDataDialogComponent {
     }
   }
 
+  async onKlcsToolbar(event: ToolbarButtonEvent) {
+    switch (event.button.event) {
+      case "编辑":
+        {
+          const {suanliaoDataParams} = this.data;
+          const url = await this.http.getShortUrl("开料参数", {search2: suanliaoDataParams, extraData: suanliaoDataParams});
+          if (url) {
+            window.open(url);
+            if (await this.message.newTabConfirm("是否修改了数据？")) {
+              this.updateKlcsTable();
+            }
+          }
+        }
+        break;
+      case "刷新":
+        this.updateKlcsTable();
+        break;
+    }
+  }
+
   async onKlkwpzRow(event: RowButtonEvent<any>) {
     const {item, column} = event;
     switch (event.button.event) {
@@ -214,13 +245,34 @@ export class SuanliaoDataDialogComponent {
         this.status.openInNewTab(["kailiaokongweipeizhi"], {queryParams: {id: item._id}});
         break;
       case "JSON编辑":
-        if (await this.message.confirm("目前有bug")) {
+        {
           const json = item[column.field];
           const result = await this.message.json(json);
           if (result) {
             const response = await this.http.mongodbUpdate("kailiaokongweipeizhi", {_id: item._id}, {[column.field]: result});
             if (response) {
               this.updateKlkwpzTable();
+            }
+          }
+        }
+        break;
+    }
+  }
+
+  async onKlcsRow(event: RowButtonEvent<any>) {
+    const {item, column} = event;
+    switch (event.button.event) {
+      case "界面编辑":
+        this.status.openInNewTab(["kailiaocanshu"], {queryParams: {id: item._id}});
+        break;
+      case "JSON编辑":
+        {
+          const json = item[column.field];
+          const result = await this.message.json(json);
+          if (result) {
+            const response = await this.http.mongodbUpdate("kailiaocanshu", {_id: item._id}, {[column.field]: result});
+            if (response) {
+              this.updateKlcsTable();
             }
           }
         }
@@ -246,55 +298,13 @@ export class SuanliaoDataDialogComponent {
     if (!cad) {
       return;
     }
-    const response = await this.http.mongodbInsert("kailiaocanshu", {...this.data.suanliaoDataParams, 名字: cad.名字 + "中空参数"});
+    const response = await this.http.mongodbInsert("kailiaocanshu", {
+      ...this.data.suanliaoDataParams,
+      名字: cad.名字 + "中空参数",
+      分类: "切中空"
+    });
     if (response) {
       this.updateKlcsTable();
-    }
-  }
-
-  async updateKlcsTable() {
-    this.klcsTable.data = await this.http.queryMongodb({
-      collection: "kailiaocanshu",
-      where: this.data.suanliaoDataParams,
-      fields: this.klcsTable.columns.map((v) => v.field)
-    });
-  }
-
-  async onKlcsToolbar(event: ToolbarButtonEvent) {
-    switch (event.button.event) {
-      case "编辑":
-        {
-          const {suanliaoDataParams} = this.data;
-          const url = await this.http.getShortUrl("开料参数", {search2: suanliaoDataParams, extraData: suanliaoDataParams});
-          if (url) {
-            window.open(url);
-            if (await this.message.newTabConfirm("是否修改了数据？")) {
-              this.updateKlcsTable();
-            }
-          }
-        }
-        break;
-      case "刷新":
-        this.updateKlcsTable();
-        break;
-    }
-  }
-
-  async onKlcsRow(event: RowButtonEvent<any>) {
-    const {item, column} = event;
-    switch (event.button.event) {
-      case "JSON编辑":
-        if (await this.message.confirm("目前有bug")) {
-          const json = item[column.field];
-          const result = await this.message.json(json);
-          if (result) {
-            const response = await this.http.mongodbUpdate("kailiaocanshu", {_id: item._id}, {[column.field]: result});
-            if (response) {
-              this.updateKlcsTable();
-            }
-          }
-        }
-        break;
     }
   }
 }

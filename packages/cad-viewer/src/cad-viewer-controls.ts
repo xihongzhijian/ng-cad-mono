@@ -152,9 +152,8 @@ function onPointerMove(this: CadViewer, event: PointerEvent) {
           multiSelector.classList.add("multi-selector");
           this.dom.appendChild(multiSelector);
         }
-        const rect = this.dom.getBoundingClientRect();
-        const x = Math.min(from.x, to.x) - rect.left;
-        const y = Math.min(from.y, to.y) - rect.top;
+        const x = Math.min(from.x, to.x);
+        const y = Math.min(from.y, to.y);
         const w = Math.abs(from.x - to.x);
         const h = Math.abs(from.y - to.y);
         multiSelector.style.left = x + "px";

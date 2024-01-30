@@ -104,6 +104,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
     });
     if (result?.isSaved) {
       Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
+      this.initCadViewer();
     }
   }
 

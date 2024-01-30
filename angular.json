@@ -32,24 +32,7 @@
             "assets": ["src/favicon.ico", "src/assets"],
             "styles": ["src/styles.scss", "src/mat-theme.scss"],
             "scripts": [],
-            "allowedCommonJsDependencies": [
-              "@lucilor/cad-viewer",
-              "@lucilor/utils",
-              "color",
-              "jsbarcode",
-              "jsoneditor",
-              "lodash",
-              "md5",
-              "pdfmake/build/pdfmake",
-              "print-js",
-              "qrcode",
-              "quill"
-            ],
-            "extractLicenses": false,
-            "sourceMap": true,
-            "optimization": false,
-            "namedChunks": true,
-            "preserveSymlinks": true
+            "extractLicenses": false
           },
           "configurations": {
             "production": {
