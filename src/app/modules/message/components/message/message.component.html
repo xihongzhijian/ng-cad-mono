@@ -87,7 +87,7 @@
 
 <ng-template #cancelBtn>
   @if (!data.disableCancel) {
-    <button mat-raised-button (click)="cancel()">
+    <button mat-raised-button color="primary" (click)="cancel()">
       {{ cast("confirm", data).btnTexts?.cancel || "取消" }}
     </button>
   }

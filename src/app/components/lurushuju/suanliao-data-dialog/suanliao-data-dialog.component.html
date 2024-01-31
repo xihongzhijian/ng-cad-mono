@@ -16,18 +16,15 @@
           @for (cad of suanliaoData["算料CAD"]; track i; let i = $index) {
             <app-cad-item
               [cad]="cad"
-              [index]="i"
               [buttons]="cadItemButtons"
               [mubanExtraData]="mubanExtraData"
               [suanliaogongshiInfo]="suanliaogongshiInfo"
+              [customInfo]="{index: i}"
             ></app-cad-item>
           }
         </div>
       </ng-scrollbar>
-      <div class="tables flex-column" style="width: 30%">
-        <app-table [info]="klkwpzTable" (toolbarButtonClick)="onKlkwpzToolbar($event)" (rowButtonClick)="onKlkwpzRow($event)"></app-table>
-        <app-table [info]="klcsTable" (toolbarButtonClick)="onKlcsToolbar($event)" (rowButtonClick)="onKlcsRow($event)"></app-table>
-      </div>
+      <app-suanliao-tables style="width: 30%" [suanliaoDataParams]="data.suanliaoDataParams"></app-suanliao-tables>
     </div>
   </div>
 </div>

@@ -9,52 +9,56 @@
         <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
       }
     </div>
-    <div class="zhankais flex-column">
-      @for (item of zhankaiInputs; track i; let i = $index) {
-        <div class="zhankai flex-row">
-          <!-- <button mat-icon-button color="primary" (click)="addZhankai(i)">
-            <mat-icon>add_circle</mat-icon>
-          </button>
-          <button [disabled]="i === 0" mat-icon-button color="primary" (click)="removeZhankai(i)">
-            <mat-icon>remove_circle</mat-icon>
-          </button> -->
-          <app-input class="width" [info]="item.width"></app-input>
-          <div class="symbol">×</div>
-          <app-input class="height" [info]="item.height"></app-input>
-          <div class="symbol">=</div>
-          <app-input class="num" [info]="item.num"></app-input>
-        </div>
-      }
-    </div>
-  </div>
-  <div class="divider" [style]="{height: cadHeight + 'px'}">
-    <mat-icon color="primary">link</mat-icon>
-  </div>
-  <div class="cad item">
-    <div #mubanContainer class="cad-container flex-row"></div>
-    @if (mubanData) {
-      <div class="toolbar">
-        <button mat-button color="primary" (click)="centerMuban()">居中</button>
-        <button mat-button color="primary" (click)="uploadMuban()">上传</button>
-        <button mat-button color="primary" (click)="editMuban()">编辑</button>
-        <button mat-button color="primary" (click)="removeMuban()">删除</button>
-      </div>
-      <div class="muban-inputs flex-column">
-        @for (group of mubanInputs; track $index) {
-          <div class="group toolbar">
-            @for (info of group; track $index) {
-              <app-input [info]="info"></app-input>
-            }
+    @if (!noZhankai) {
+      <div class="zhankais flex-column">
+        @for (item of zhankaiInputs; track i; let i = $index) {
+          <div class="zhankai flex-row">
+            <!-- <button mat-icon-button color="primary" (click)="addZhankai(i)">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+            <button [disabled]="i === 0" mat-icon-button color="primary" (click)="removeZhankai(i)">
+              <mat-icon>remove_circle</mat-icon>
+            </button> -->
+            <app-input class="width" [info]="item.width"></app-input>
+            <div class="symbol">×</div>
+            <app-input class="height" [info]="item.height"></app-input>
+            <div class="symbol">=</div>
+            <app-input class="num" [info]="item.num"></app-input>
           </div>
         }
       </div>
-    } @else {
-      <div class="empty-cad item border link" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}" (click)="uploadMuban()">
-        软件自动开料
-      </div>
-      <div class="toolbar">
-        <button mat-button color="primary" (click)="uploadMuban()">上传</button>
-      </div>
     }
   </div>
+  @if (!noMuban) {
+    <div class="divider" [style]="{height: cadHeight + 'px'}">
+      <mat-icon color="primary">link</mat-icon>
+    </div>
+    <div class="cad item">
+      <div #mubanContainer class="cad-container flex-row"></div>
+      @if (mubanData) {
+        <div class="toolbar">
+          <button mat-button color="primary" (click)="centerMuban()">居中</button>
+          <button mat-button color="primary" (click)="uploadMuban()">上传</button>
+          <button mat-button color="primary" (click)="editMuban()">编辑</button>
+          <button mat-button color="primary" (click)="removeMuban()">删除</button>
+        </div>
+        <div class="muban-inputs flex-column">
+          @for (group of mubanInputs; track $index) {
+            <div class="group toolbar">
+              @for (info of group; track $index) {
+                <app-input [info]="info"></app-input>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-cad item border link" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}" (click)="uploadMuban()">
+          软件自动开料
+        </div>
+        <div class="toolbar">
+          <button mat-button color="primary" (click)="uploadMuban()">上传</button>
+        </div>
+      }
+    </div>
+  }
 </div>

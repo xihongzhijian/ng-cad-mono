@@ -6,8 +6,8 @@ import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {timeout} from "@lucilor/utils";
 import {HttpModule} from "@modules/http/http.module";
 import {QuillModule} from "ngx-quill";
-import {MessageData} from "./message-types";
 import {MessageComponent} from "./message.component";
+import {MessageData} from "./message.types";
 
 const dataArr: MessageData[] = [
   {type: "alert", content: "test"},

@@ -1,18 +1,17 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatButtonModule} from "@angular/material/button";
 import {HttpModule} from "@modules/http/http.module";
-import {CadItemComponent} from "./cad-item.component";
+import {SuanliaoTablesComponent} from "./suanliao-tables.component";
 
-describe("CadItemComponent", () => {
-  let component: CadItemComponent;
-  let fixture: ComponentFixture<CadItemComponent>;
+describe("SuanliaoTablesComponent", () => {
+  let component: SuanliaoTablesComponent;
+  let fixture: ComponentFixture<SuanliaoTablesComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CadItemComponent, HttpModule, MatButtonModule]
+      imports: [HttpModule, SuanliaoTablesComponent]
     }).compileComponents();
 
-    fixture = TestBed.createComponent<CadItemComponent>(CadItemComponent);
+    fixture = TestBed.createComponent(SuanliaoTablesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

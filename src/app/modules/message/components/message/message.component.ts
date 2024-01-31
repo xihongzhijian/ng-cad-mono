@@ -12,20 +12,20 @@ import {
   ViewChild,
   ViewChildren
 } from "@angular/core";
-import {FormsModule, ValidationErrors} from "@angular/forms";
+import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {DomSanitizer, SafeHtml, SafeResourceUrl} from "@angular/platform-browser";
 import {Debounce} from "@decorators/debounce";
-import {ObjectOf, timeout} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
 import {JSONContent, JSONEditor, Mode} from "vanilla-jsoneditor";
-import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./message-types";
+import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./message.types";
+import {validateForm} from "./message.utils";
 
 @Component({
   selector: "app-message",
@@ -179,33 +179,12 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
-  async validateForm() {
-    const inputs = this.formInputs?.toArray() || [];
-    const values: ObjectOf<string> = {};
-    let errors: ValidationErrors | null = null;
-    for (const input of inputs) {
-      if (input.onChangeDelay) {
-        await timeout(input.onChangeDelayTime);
-      }
-      const errors2 = input.validateValue();
-      if (errors2) {
-        if (!errors) {
-          errors = {};
-        }
-        Object.assign(errors, errors2);
-      }
-      const key = input.info.name || input.info.label;
-      values[key] = input.value;
-    }
-    return {errors, values};
-  }
-
   async submit(button?: ButtonMessageData["buttons"][number]) {
     const type = this.data.type;
     if (type === "confirm") {
       this.dialogRef.close(true);
     } else if (type === "form") {
-      const {errors, values} = await this.validateForm();
+      const {errors, values} = await validateForm(this.formInputs?.toArray() || []);
       if (isEmpty(errors)) {
         this.dialogRef.close(values);
       } else {
@@ -262,7 +241,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     switch (this.data.type) {
       case "form":
         this.data.autoFill?.(this.data.inputs);
-        this.validateForm();
+        validateForm(this.formInputs?.toArray() || []);
         break;
       default:
         break;

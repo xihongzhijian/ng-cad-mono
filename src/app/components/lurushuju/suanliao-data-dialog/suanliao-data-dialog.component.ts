@@ -1,4 +1,4 @@
-import {Component, EventEmitter, HostBinding, Inject, Output} from "@angular/core";
+import {Component, EventEmitter, HostBinding, Inject, Output, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -10,20 +10,28 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
-import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {SuanliaogongshiComponent} from "../../../modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "../../../modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadItemComponent} from "../cad-item/cad-item.component";
+import {CadItemButton} from "../cad-item/cad-item.types";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
-import {SuanliaoDataInput, SuanliaoDataOutput} from "./suanliao-data-dialog.type";
+import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
+import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./suanliao-data-dialog.type";
 
 @Component({
   selector: "app-suanliao-data-dialog",
   standalone: true,
-  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, SuanliaogongshiComponent, TableComponent],
+  imports: [
+    CadItemComponent,
+    MatButtonModule,
+    MatDividerModule,
+    NgScrollbarModule,
+    SuanliaogongshiComponent,
+    SuanliaoTablesComponent,
+    TableComponent
+  ],
   templateUrl: "./suanliao-data-dialog.component.html",
   styleUrl: "./suanliao-data-dialog.component.scss"
 })
@@ -32,90 +40,26 @@ export class SuanliaoDataDialogComponent {
   @Output() cadFormSubmitted = new EventEmitter<void>();
 
   suanliaoData: SuanliaoDataInput["data"];
-  klkwpzTable: TableRenderInfo<any> = {
-    title: "开料孔位配置",
-    data: [],
-    columns: [
-      {type: "string", field: "名字"},
-      {
-        type: "button",
-        field: "孔位配置",
-        buttons: [
-          {event: "界面编辑", color: "primary"},
-          {event: "JSON编辑", color: "primary"}
-        ]
-      }
-    ],
-    noCheckBox: true,
-    toolbarButtons: {
-      extra: [
-        {event: "编辑", color: "primary"},
-        {event: "刷新", color: "primary"}
-      ],
-      inlineTitle: true
-    }
-  };
-  klcsTable: TableRenderInfo<any> = {
-    title: "开料参数",
-    data: [],
-    columns: [
-      {type: "string", field: "名字"},
-      {
-        type: "button",
-        field: "参数",
-        buttons: [
-          {event: "界面编辑", color: "primary"},
-          {event: "JSON编辑", color: "primary"}
-        ]
-      }
-    ],
-    noCheckBox: true,
-    toolbarButtons: {
-      extra: [
-        {event: "编辑", color: "primary"},
-        {event: "刷新", color: "primary"}
-      ],
-      inlineTitle: true
-    }
-  };
-  cadItemButtons: CadItemComponent["buttons"] = [
-    {
-      name: "复制",
-      onClick: this.copyCad.bind(this)
-    },
-    {
-      name: "删除",
-      onClick: this.removeCad.bind(this)
-    },
-    {
-      name: "添加孔位配置",
-      onClick: this.addKwpz.bind(this)
-    },
-    {
-      name: "添加开料参数",
-      onClick: this.addKlcs.bind(this)
-    }
+  cadItemButtons: CadItemButton<SuanliaoDataCadItemInfo>[] = [
+    {name: "复制", onClick: this.copyCad.bind(this)},
+    {name: "删除", onClick: this.removeCad.bind(this)},
+    {name: "添加孔位配置", onClick: this.addKwpz.bind(this)},
+    {name: "添加开料参数", onClick: this.addKlcs.bind(this)}
   ];
   mubanExtraData: CadItemComponent["mubanExtraData"] = {};
   suanliaogongshiInfo: SuanliaogongshiInfo;
+
+  @ViewChild(SuanliaoTablesComponent) suanliaoTables?: SuanliaoTablesComponent;
 
   constructor(
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
-    private status: AppStatusService,
     public dialogRef: MatDialogRef<SuanliaoDataDialogComponent, SuanliaoDataOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoDataInput
   ) {
-    if (!this.data) {
-      this.data = {data: {算料公式: [], 测试用例: [], 算料CAD: []}, varNames: {names: [], width: 0}, suanliaoDataParams: {}};
-    }
     this.suanliaoData = cloneDeep(this.data.data);
-    this.updateKlkwpzTable();
-    this.updateKlcsTable();
-    if (this.data.suanliaoDataParams?.选项) {
-      this.mubanExtraData.options = this.data.suanliaoDataParams.选项;
-    }
+    this.mubanExtraData.options = this.data.suanliaoDataParams.选项;
     this.suanliaogongshiInfo = {
       data: {
         算料公式: this.suanliaoData.算料公式,
@@ -190,105 +134,7 @@ export class SuanliaoDataDialogComponent {
     this.dialogRef.close();
   }
 
-  async updateKlkwpzTable() {
-    this.klkwpzTable.data = await this.http.queryMongodb({
-      collection: "kailiaokongweipeizhi",
-      where: this.data.suanliaoDataParams,
-      fields: this.klkwpzTable.columns.map((v) => v.field)
-    });
-  }
-
-  async updateKlcsTable() {
-    this.klcsTable.data = await this.http.queryMongodb({
-      collection: "kailiaocanshu",
-      where: this.data.suanliaoDataParams,
-      fields: this.klcsTable.columns.map((v) => v.field)
-    });
-  }
-
-  async onKlkwpzToolbar(event: ToolbarButtonEvent) {
-    switch (event.button.event) {
-      case "编辑":
-        {
-          const {suanliaoDataParams} = this.data;
-          const url = await this.http.getShortUrl("开料孔位配置", {search2: suanliaoDataParams, extraData: suanliaoDataParams});
-          if (url) {
-            window.open(url);
-            if (await this.message.newTabConfirm("是否修改了数据？")) {
-              this.updateKlkwpzTable();
-            }
-          }
-        }
-        break;
-      case "刷新":
-        this.updateKlkwpzTable();
-        break;
-    }
-  }
-
-  async onKlcsToolbar(event: ToolbarButtonEvent) {
-    switch (event.button.event) {
-      case "编辑":
-        {
-          const {suanliaoDataParams} = this.data;
-          const url = await this.http.getShortUrl("开料参数", {search2: suanliaoDataParams, extraData: suanliaoDataParams});
-          if (url) {
-            window.open(url);
-            if (await this.message.newTabConfirm("是否修改了数据？")) {
-              this.updateKlcsTable();
-            }
-          }
-        }
-        break;
-      case "刷新":
-        this.updateKlcsTable();
-        break;
-    }
-  }
-
-  async onKlkwpzRow(event: RowButtonEvent<any>) {
-    const {item, column} = event;
-    switch (event.button.event) {
-      case "界面编辑":
-        this.status.openInNewTab(["kailiaokongweipeizhi"], {queryParams: {id: item._id}});
-        break;
-      case "JSON编辑":
-        {
-          const json = item[column.field];
-          const result = await this.message.json(json);
-          if (result) {
-            const response = await this.http.mongodbUpdate("kailiaokongweipeizhi", {_id: item._id}, {[column.field]: result});
-            if (response) {
-              this.updateKlkwpzTable();
-            }
-          }
-        }
-        break;
-    }
-  }
-
-  async onKlcsRow(event: RowButtonEvent<any>) {
-    const {item, column} = event;
-    switch (event.button.event) {
-      case "界面编辑":
-        this.status.openInNewTab(["kailiaocanshu"], {queryParams: {id: item._id}});
-        break;
-      case "JSON编辑":
-        {
-          const json = item[column.field];
-          const result = await this.message.json(json);
-          if (result) {
-            const response = await this.http.mongodbUpdate("kailiaocanshu", {_id: item._id}, {[column.field]: result});
-            if (response) {
-              this.updateKlcsTable();
-            }
-          }
-        }
-        break;
-    }
-  }
-
-  async copyCad(component: CadItemComponent) {
+  async copyCad(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
     const {cad} = component;
     if (!cad || !(await this.message.confirm(`确定复制【${cad.名字}】吗？`))) {
       return;
@@ -304,10 +150,10 @@ export class SuanliaoDataDialogComponent {
       component.mubanId = result.id;
       component.mubanData = cadData;
     }
-    this.suanliaoData.算料CAD.splice(component.index, 0, cad2);
+    this.suanliaoData.算料CAD.splice(component.customInfo.index, 0, cad2);
   }
 
-  async removeCad(component: CadItemComponent) {
+  async removeCad(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
     const {cad} = component;
     if (!cad || !(await this.message.confirm(`确定删除【${cad.名字}】吗？`))) {
       return;
@@ -316,18 +162,18 @@ export class SuanliaoDataDialogComponent {
     if (mubanId) {
       await this.http.mongodbDelete("kailiaocadmuban", mubanId);
     }
-    this.suanliaoData.算料CAD.splice(component.index, 1);
+    this.suanliaoData.算料CAD.splice(component.customInfo.index, 1);
   }
 
-  async addKwpz(component: CadItemComponent) {
+  async addKwpz(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
     const {cad} = component;
     const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...this.data.suanliaoDataParams, 名字: cad.名字});
     if (response) {
-      this.updateKlkwpzTable();
+      this.suanliaoTables?.updateKlkwpzTable();
     }
   }
 
-  async addKlcs(component: CadItemComponent) {
+  async addKlcs(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
     const {cad} = component;
     const response = await this.http.mongodbInsert("kailiaocanshu", {
       ...this.data.suanliaoDataParams,
@@ -335,7 +181,7 @@ export class SuanliaoDataDialogComponent {
       分类: "切中空"
     });
     if (response) {
-      this.updateKlcsTable();
+      this.suanliaoTables?.updateKlkwpzTable();
     }
   }
 }

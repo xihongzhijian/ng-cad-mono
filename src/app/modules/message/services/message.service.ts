@@ -5,6 +5,7 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
+import {MessageComponent} from "../components/message/message.component";
 import {
   AlertMessageData,
   BookMessageData,
@@ -12,14 +13,13 @@ import {
   ConfirmMessageData,
   EditorMessageData,
   FormMessageData,
-  getListEl,
   IFrameMessageData,
   JsonMessageData,
   MessageData,
   MessageDataMap,
   MessageOutput
-} from "../components/message/message-types";
-import {MessageComponent} from "../components/message/message.component";
+} from "../components/message/message.types";
+import {getListEl} from "../components/message/message.utils";
 
 export type MessageDataParams<T> = Omit<T, "type">;
 export type MessageDataParams2<T> = Omit<MatDialogConfig<T>, "data">;

@@ -7,7 +7,15 @@ import {SuanliaoDataInput} from "./suanliao-data-dialog.type";
 const data: SuanliaoDataInput = {
   data: {算料公式: [], 测试用例: [], 算料CAD: []},
   varNames: {names: ["1"], width: 0},
-  suanliaoDataParams: {}
+  suanliaoDataParams: {
+    选项: {
+      型号: "1",
+      工艺做法: "2",
+      包边方向: "3",
+      开启: "4",
+      门铰锁边铰边: "5"
+    }
+  }
 };
 
 describe("SuanliaoDataDialogComponent", () => {

@@ -1,5 +1,3 @@
-@import "../../../../mat-theme.scss";
-
 :host {
   &.color {
     input {
@@ -15,7 +13,7 @@
       cursor: pointer;
       border: 1px dashed transparent;
       &:hover {
-        border: 1px dashed $accent-color;
+        border: 1px dashed var(--accent-color);
       }
     }
   }
@@ -82,7 +80,7 @@
 .footer {
   display: flex;
   flex-direction: column;
-  font-size: 0.8em;
+  font-size: var(--mat-form-field-subscript-text-size);
 
   .hint {
     color: var(--mdc-dialog-supporting-text-color);

@@ -173,6 +173,8 @@ mat-divider {
 }
 
 :root {
+  --primary-color: #{$primary-color};
+  --accent-color: #{$accent-color};
   --mat-divider-margin: 5px;
   --mat-icon-size: 24px;
   --mat-form-field-container-text-size: 1.125rem;

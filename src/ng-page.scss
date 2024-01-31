@@ -27,12 +27,12 @@
     align-items: center;
     line-height: normal;
     box-sizing: border-box;
-    --border: 1px dashed #d9d9d9;
+    --border: 1px solid var(--primary-color);
     &:hover {
-      --border: 1px dashed #409eff;
+      --border: 1px solid var(--accent-color);
     }
     &.active {
-      --border: 1px solid #409eff;
+      --border: 1px solid var(--accent-color);
     }
 
     app-image:not(.cad-preview) {
@@ -122,4 +122,9 @@
       height: 100%;
     }
   }
+}
+
+.error-msg {
+  font-size: var(--mat-form-field-subscript-text-size);
+  color: var(--mat-form-field-error-text-color);
 }

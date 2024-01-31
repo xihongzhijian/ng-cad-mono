@@ -13,6 +13,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {CadItemButton} from "./cad-item.types";
 
 @Component({
   selector: "app-cad-item",
@@ -21,14 +22,16 @@ import {AppStatusService} from "@services/app-status.service";
   templateUrl: "./cad-item.component.html",
   styleUrl: "./cad-item.component.scss"
 })
-export class CadItemComponent implements OnChanges, OnDestroy {
+export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   @Input() cadWidth = 360;
   cadHeight = 0;
-  @Input() cad: HoutaiCad = getHoutaiCad();
-  @Input() index: number = -1;
-  @Input() buttons: {name: string; onClick: (component: CadItemComponent) => void}[] = [];
+  @Input({required: true}) cad: HoutaiCad = getHoutaiCad();
+  @Input({required: true}) buttons: CadItemButton<T>[] = [];
+  @Input({required: true}) customInfo: T = undefined as T;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() suanliaogongshiInfo?: SuanliaogongshiInfo;
+  @Input() noMuban?: boolean;
+  @Input() noZhankai?: boolean;
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
   @ViewChild("mubanContainer") mubanContainer?: ElementRef<HTMLDivElement>;
@@ -69,7 +72,7 @@ export class CadItemComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.cad || changes.index) {
+    if (changes.cad) {
       setTimeout(() => {
         this.update();
       }, 0);

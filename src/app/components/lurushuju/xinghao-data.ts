@@ -300,3 +300,13 @@ export interface 特定企料配置 {
   前分体拼接结构: string; // 例如：前封口15，可以绑定CAD,
   后分体拼接结构: string; // 例如：后封口15，可以绑定CAD,
 }
+
+export interface SuanliaoDataParams {
+  选项: {
+    型号: string;
+    工艺做法: string;
+    包边方向: string;
+    开启: string;
+    门铰锁边铰边: string;
+  };
+}

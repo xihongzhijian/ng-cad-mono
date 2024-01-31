@@ -1,5 +1,5 @@
 import {DomSanitizer} from "@angular/platform-browser";
-import {getListStr} from "@modules/message/components/message/message-types";
+import {getListStr} from "@modules/message/components/message/message.utils";
 import hljs from "highlight.js";
 import {v4} from "uuid";
 import {Desc} from "./cad-command-types";

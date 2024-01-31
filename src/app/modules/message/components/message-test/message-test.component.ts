@@ -2,7 +2,7 @@ import {KeyValuePipe} from "@angular/common";
 import {Component} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MessageService} from "@modules/message/services/message.service";
-import {MessageData, MessageDataMap} from "../message/message-types";
+import {MessageData, MessageDataMap} from "../message/message.types";
 
 @Component({
   selector: "app-message-test",

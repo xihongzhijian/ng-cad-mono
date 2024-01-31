@@ -6,7 +6,7 @@ import {CadData, CadLine} from "@lucilor/cad-viewer";
 import {exportObject, importObject, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
-import {MessageData} from "@modules/message/components/message/message-types";
+import {MessageData} from "@modules/message/components/message/message.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, isObject, uniq} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";

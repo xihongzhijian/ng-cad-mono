@@ -7,47 +7,37 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, session, setGlobal} from "@app/app.common";
-import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
-import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {environment} from "@env";
-import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
-import {isTypeOf, ObjectOf, queryString, RequiredKeys, WindowMessageManager} from "@lucilor/utils";
+import {ObjectOf, queryString, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoGroup, InputInfoOption, InputInfoOptions, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
-import csstype from "csstype";
-import {cloneDeep, debounce, isEmpty, isEqual} from "lodash";
+import {cloneDeep, debounce, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {openMenjiaoDialog} from "../menjiao-dialog/menjiao-dialog.component";
+import {MenjiaoInput} from "../menjiao-dialog/menjiao-dialog.types";
+import {updateMenjiaoForm} from "../menjiao-dialog/menjiao-dialog.utils";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
-import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dialog.component";
-import {SuanliaoDataInput} from "../suanliao-data-dialog/suanliao-data-dialog.type";
 import {
   getGongyi,
   getXinghao,
-  get算料数据2,
-  menjiaoCadTypes,
   updateXinghaoFenleis,
   xiaoguotuKeys,
   Xinghao,
   XinghaoRaw,
-  企料组合,
   工艺做法,
   算料数据,
   算料数据2,
-  算料数据2Keys,
   输入,
-  选项,
-  配合框组合,
-  门缝配置,
-  门缝配置输入
+  选项
 } from "../xinghao-data";
 import {
   LurushujuIndexStep,
@@ -58,17 +48,7 @@ import {
   XinghaoData,
   XuanxiangTableData
 } from "./lurushuju-index.types";
-import {
-  autoFillMenjiao,
-  getCadSearch,
-  getMenjiaoCadInfos,
-  getMenjiaoTable,
-  getOptionInputInfo,
-  getOptions,
-  getShuruTable,
-  getXuanxiangTable,
-  updateMenjiaoForm
-} from "./lurushuju-index.utils";
+import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./lurushuju-index.utils";
 
 @Component({
   selector: "app-lurushuju-index",
@@ -120,7 +100,6 @@ export class LurushujuIndexComponent implements OnInit {
   menshans: (TableDataBase & {zuchenghuajian?: string})[] = [];
   huajians: MrbcjfzHuajian[] = [];
   parentInfo = {isZhijianUser: false, isLurushujuEnter: false};
-  cadViewerConfig: Partial<CadViewerConfig> = {width: 200, height: 100, lineGongshi: 20};
   varNames: FormulasEditorComponent["vars"];
   bancaiList?: BancaiListData;
 
@@ -896,511 +875,14 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  async getMenjiaoItem(data0?: 算料数据) {
-    const 产品分类 = data0 ? data0.产品分类 : this.fenleiName;
-    const data: 算料数据 = data0
-      ? cloneDeep(data0)
-      : {
-          vid: "",
-          停用: false,
-          排序: 0,
-          默认值: false,
-          名字: "",
-          名字2: "",
-          产品分类,
-          开启: [],
-          门铰: [],
-          门扇厚度: [],
-          锁边: "",
-          铰边: "",
-          选项默认值: {},
-          "包边在外+外开": get算料数据2(),
-          "包边在外+内开": get算料数据2(),
-          "包边在内+外开": get算料数据2(),
-          "包边在内+内开": get算料数据2(),
-          门缝配置: {},
-          关闭碰撞检查: false,
-          双开门扇宽生成方式: ""
-        };
-    if (!data.vid) {
-      data.vid = this.getMenjiaoId();
-    }
-    for (const value of 门缝配置输入) {
-      if (typeof value.defaultValue === "number") {
-        data.门缝配置[value.name] = 0;
+  async getMenjiaoItem(onSubmit: NonNullable<MenjiaoInput["onSubmit"]>, data0?: 算料数据) {
+    await openMenjiaoDialog(this.dialog, {
+      data: {
+        data: data0,
+        component: this,
+        onSubmit
       }
-    }
-    for (const key1 of menjiaoCadTypes) {
-      if (!data[key1]) {
-        data[key1] = get算料数据2();
-      }
-      if (!isTypeOf(data[key1].板材分组, "object")) {
-        data[key1].板材分组 = {};
-      }
-      for (const key2 of 算料数据2Keys) {
-        if (!data[key1][key2]) {
-          data[key1][key2] = {};
-        }
-        for (const name of 配合框组合) {
-          if (!isTypeOf(data[key1].配合框CAD[name], "object")) {
-            data[key1].配合框CAD[name] = {};
-          }
-        }
-        for (const name of 企料组合[产品分类] || []) {
-          if (!isTypeOf(data[key1].企料CAD[name], "object")) {
-            data[key1].企料CAD[name] = {};
-          }
-        }
-      }
-    }
-    updateMenjiaoForm(data);
-    const getGroupStyle = (style?: csstype.Properties): csstype.Properties => {
-      return {display: "flex", flexWrap: "wrap", marginBottom: "10px", ...style};
-    };
-    const getInfoStyle = (n: number, style?: csstype.Properties): csstype.Properties => {
-      const percent = 100 / n;
-      const margin = 5;
-      return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`, ...style};
-    };
-    const getOptionInputInfo2 = (key: keyof 算料数据, n: number): InputInfoSelect => {
-      return getOptionInputInfo(this.menjiaoOptionsAll, key, (info) => {
-        info.model = {data, key};
-        info.validators = Validators.required;
-        info.onChange = () => {
-          updateMenjiaoForm(data);
-        };
-        info.style = getInfoStyle(n);
-        const dialogKeys: (keyof 算料数据)[] = ["锁边", "铰边"];
-        if (dialogKeys.includes(key)) {
-          info.optionsDialog = {
-            noImage: true,
-            defaultValue: {value: data.选项默认值[key] || ""},
-            optionKey: key,
-            useLocalOptions: true,
-            openInNewTab: true,
-            onChange(val) {
-              if (info.multiple) {
-                data.选项默认值[key] = val.defaultValue || "";
-              }
-            }
-          };
-        }
-      });
-    };
-    const getMenfengInputInfo = (value: (typeof 门缝配置输入)[number]): InputInfo => {
-      return {
-        type: "number",
-        label: value.name,
-        model: {data: data.门缝配置, key: value.name},
-        validators: Validators.required,
-        style: getInfoStyle(4)
-      };
-    };
-    const optionKeys: (keyof 算料数据)[] = ["产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"];
-    const 使用双开门扇宽生成方式 = () => this.fenleiName === "双开";
-    const 使用锁扇铰扇蓝线宽固定差值 = () => data.双开门扇宽生成方式 === "按锁扇铰扇蓝线宽固定差值等生成";
-    const form1Group2: InputInfo[] = [];
-    const form1Group: InputInfo[] = [
-      {
-        type: "group",
-        label: "",
-        style: getInfoStyle(2),
-        groupStyle: getGroupStyle({flexDirection: "column", height: "100%"}),
-        infos: [
-          {
-            type: "group",
-            label: "选项",
-            infos: optionKeys.map((v) => getOptionInputInfo2(v, 2)),
-            style: {flex: "1 1 0"},
-            groupStyle: getGroupStyle()
-          }
-        ]
-      },
-      {
-        type: "group",
-        label: "",
-        infos: form1Group2,
-        style: getInfoStyle(2),
-        groupStyle: getGroupStyle({flexDirection: "column", marginBottom: "0"})
-      }
-    ];
-    const form1: InputInfo<typeof data>[] = [
-      {
-        type: "string",
-        label: "名字",
-        model: {data, key: "名字"},
-        validators: [
-          Validators.required,
-          (control) => {
-            const value = control.value;
-            if (value === "无") {
-              return {名字不能为无: true};
-            }
-            return null;
-          }
-        ],
-        placeholder: "下单显示，请输入有意义的名字"
-      },
-      {
-        type: "group",
-        label: "",
-        infos: form1Group,
-        groupStyle: getGroupStyle()
-      }
-    ];
-    const form2: InputInfo<门缝配置>[] = [
-      {
-        type: "group",
-        label: "门缝配置",
-        infos: 门缝配置输入.map(getMenfengInputInfo),
-        style: {marginBottom: "5px"},
-        groupStyle: getGroupStyle({marginBottom: "0"})
-      }
-    ];
-    const form3 = [
-      {
-        type: "group",
-        label: "其他",
-        infos: [
-          {
-            type: "boolean",
-            label: "关闭碰撞检查",
-            model: {data, key: "关闭碰撞检查"},
-            style: getInfoStyle(4),
-            validators: Validators.required
-          },
-          {
-            ...getOptionInputInfo2("双开门扇宽生成方式", 4),
-            onChange: () => {
-              if (使用锁扇铰扇蓝线宽固定差值()) {
-                form3[0].infos[2].hidden = false;
-                if (!data.锁扇铰扇蓝线宽固定差值) {
-                  data.锁扇铰扇蓝线宽固定差值 = 0;
-                }
-              } else {
-                form3[0].infos[2].hidden = true;
-                delete data.锁扇铰扇蓝线宽固定差值;
-              }
-            }
-          },
-          {
-            type: "number",
-            label: "锁扇铰扇蓝线宽固定差值",
-            model: {data, key: "锁扇铰扇蓝线宽固定差值"},
-            style: getInfoStyle(4)
-          },
-          {type: "boolean", label: "停用", model: {data, key: "停用"}, style: getInfoStyle(4)},
-          {type: "number", label: "排序", model: {data, key: "排序"}, style: getInfoStyle(4)},
-          {
-            type: "boolean",
-            label: "默认值",
-            model: {data, key: "默认值"},
-            style: getInfoStyle(4)
-          }
-        ],
-        groupStyle: getGroupStyle({marginBottom: "0"})
-      } as InputInfoGroup<typeof data> & RequiredKeys<InputInfoGroup, "infos">
-    ] as const;
-    if (!使用双开门扇宽生成方式()) {
-      form3[0].infos[1].hidden = true;
-      data.双开门扇宽生成方式 = "";
-      form3[0].infos[2].hidden = true;
-      delete data.锁扇铰扇蓝线宽固定差值;
-    } else if (!使用锁扇铰扇蓝线宽固定差值()) {
-      form3[0].infos[2].hidden = true;
-      delete data.锁扇铰扇蓝线宽固定差值;
-    }
-    form1Group2.push(...form2, ...form3);
-    const form4: InputInfo[] = [
-      {
-        type: "group",
-        label: "",
-        infos: menjiaoCadTypes.map<InputInfo>((key1) => {
-          const infos = 算料数据2Keys.map<InputInfo>((key2, i) => {
-            const groupStyle: csstype.Properties = {};
-            if (i === 算料数据2Keys.length - 1) {
-              groupStyle.marginBottom = "0";
-            }
-            const keys3 = Object.keys(data[key1][key2]);
-            keys3.sort((a, b) => {
-              const i1 = 配合框组合.indexOf(a);
-              const i2 = 配合框组合.indexOf(b);
-              if (i1 >= 0 && i2 >= 0) {
-                return i1 - i2;
-              }
-              const i3 = 企料组合[产品分类]?.indexOf(a);
-              const i4 = 企料组合[产品分类]?.indexOf(b);
-              if (i3 >= 0 && i4 >= 0) {
-                return i3 - i4;
-              }
-              return 0;
-            });
-            return {
-              type: "group",
-              label: "",
-              infos: keys3.map<InputInfo>((key3) => {
-                const {search, addCadData} = getCadSearch(data, key1, key2, key3);
-                return {
-                  type: "cad",
-                  label: key3,
-                  model: {data: data[key1][key2][key3], key: "cad"},
-                  clearable: true,
-                  openable: true,
-                  config: this.cadViewerConfig,
-                  params: () => ({
-                    selectMode: "single",
-                    collection: "cad",
-                    standaloneSearch: true,
-                    raw: true,
-                    search,
-                    addCadData,
-                    hideCadInfo: true
-                  }),
-                  style: {margin: "0 2px"}
-                };
-              }),
-              groupStyle: getGroupStyle({...groupStyle, margin: "2px 0"})
-            };
-          });
-
-          const shiyituKeys: (keyof 算料数据2["示意图CAD"])[] = ["算料单示意图"];
-          infos.push({
-            type: "group",
-            label: "",
-            infos: shiyituKeys.map<InputInfo>((key) => {
-              const params: CadListInput = {
-                selectMode: key === "算料单示意图" ? "multiple" : "single",
-                collection: "cad",
-                raw: true,
-                hideCadInfo: true
-              };
-              const search: ObjectOf<any> = {};
-              if (key.includes("装配示意图")) {
-                search.分类 = "装配示意图";
-              } else {
-                search.分类 = "算料单示意图";
-              }
-              params.search = search;
-              return {
-                type: "cad",
-                label: key,
-                params,
-                model: {data: data[key1].示意图CAD, key},
-                config: this.cadViewerConfig,
-                clearable: true,
-                openable: true,
-                style: {margin: "0 2px"}
-              };
-            }),
-            groupStyle: getGroupStyle({margin: "2px 0"})
-          });
-
-          if (this.parentInfo.isZhijianUser) {
-            const options: InputInfoOptions = this.menshans.map((v) => v.mingzi);
-            infos.push({
-              type: "group",
-              label: "",
-              infos: xiaoguotuKeys.map<InputInfo>((key) => {
-                return {
-                  type: "select",
-                  label: key,
-                  options,
-                  clearable: true,
-                  model: {data: data[key1], key},
-                  style: getInfoStyle(6)
-                };
-              }),
-              groupStyle: getGroupStyle()
-            });
-          }
-
-          const [包边方向, 开启] = key1.split("+");
-          const suanliaoDataParams = {
-            选项: {
-              型号: this.xinghaoName,
-              工艺做法: this.gongyiName,
-              包边方向,
-              开启,
-              门铰锁边铰边: data.名字
-            }
-          };
-          infos.push({
-            type: "button",
-            label: "",
-            class: "toolbar",
-            buttons: [
-              {
-                name: "板材分组",
-                color: "primary",
-                onClick: async () => {
-                  const morenbancai = cloneDeep(data[key1].板材分组);
-                  const cads = data[key1].算料CAD.map((v) => new CadData(v.json));
-                  const huajians = this.filterHuajians(data[key1]);
-                  const result = await openMrbcjfzDialog(this.dialog, {
-                    data: {
-                      id: -1,
-                      table: "",
-                      inputData: {
-                        xinghao: this.xinghaoName,
-                        morenbancai,
-                        cads,
-                        huajians,
-                        bancaiList: this.bancaiList,
-                        isLocal: true
-                      }
-                    }
-                  });
-                  if (result) {
-                    data[key1].板材分组 = result.默认板材;
-                  }
-                }
-              },
-              {
-                name: "算料公式CAD配置",
-                color: "primary",
-                onClick: async () => {
-                  const suanliaoData: SuanliaoDataInput["data"] = {
-                    算料公式: data[key1].算料公式,
-                    测试用例: data[key1].测试用例,
-                    算料CAD: data[key1].算料CAD
-                  };
-                  const result = await openSuanliaoDataDialog(this.dialog, {
-                    data: {
-                      data: suanliaoData,
-                      varNames: this.varNames,
-                      suanliaoDataParams,
-                      copySuanliaoCadsInput: {
-                        xinghaos: this.xinghaos,
-                        xinghaoOptions: this.xinghaoOptionsAll,
-                        excludeXinghaos: [this.xinghaoName],
-                        excludeGongyis: this.gongyi?.名字 ? [this.gongyi.名字] : [],
-                        key: "算料CAD",
-                        fenlei: this.fenleiName
-                      }
-                    }
-                  });
-                  if (result) {
-                    Object.assign(data[key1], result.data);
-                  }
-                }
-              },
-              {
-                name: "复制",
-                color: "primary",
-                onClick: async () => {
-                  const result: (typeof menjiaoCadTypes)[number] | "" | null = await this.message.prompt({
-                    type: "select",
-                    label: "从哪个复制",
-                    options: menjiaoCadTypes.filter((v) => v !== key1),
-                    validators: Validators.required
-                  });
-                  if (!result) {
-                    return;
-                  }
-                  const data2 = data[result];
-                  data[key1].板材分组 = cloneDeep(data2.板材分组);
-                  data[key1].算料公式 = cloneDeep(data2.算料公式);
-                  data[key1].测试用例 = cloneDeep(data2.测试用例);
-                  data[key1].算料CAD = cloneDeep(data2.算料CAD);
-                  const from = cloneDeep(suanliaoDataParams);
-                  const [包边方向2, 开启2] = result.split("+");
-                  from.选项.包边方向 = 包边方向2;
-                  from.选项.开启 = 开启2;
-                  const mubanIds: ObjectOf<{from: string; to: string}> = {};
-                  const toChangeMubanId: any[] = [];
-                  for (const key2 in data2.算料CAD) {
-                    const cadFrom = data2.算料CAD[key2].json;
-                    const cadTo = data[key1].算料CAD[key2].json;
-                    if (!cadFrom || !cadTo) {
-                      return;
-                    }
-                    const mubanIdFrom = cadFrom.zhankai?.[0]?.kailiaomuban;
-                    const mubanIdTo = cadTo.zhankai?.[0]?.kailiaomuban;
-                    const mubanId = mubanIdTo || mubanIdFrom;
-                    if (typeof mubanIdFrom === "string" && mubanIdFrom) {
-                      mubanIds[cadTo.id] = {from: mubanIdFrom, to: mubanId};
-                      toChangeMubanId.push(cadTo);
-                    }
-                  }
-                  const copyResult = await this.http.getData<{mubanIds: typeof mubanIds}>("shuju/api/copySuanliaoData", {
-                    from,
-                    to: suanliaoDataParams,
-                    mubanIds
-                  });
-                  if (copyResult) {
-                    const mubanIds2 = copyResult.mubanIds;
-                    for (const cad of toChangeMubanId) {
-                      cad.zhankai[0].kailiaomuban = mubanIds2[cad.id];
-                    }
-                    this.message.snack("复制成功");
-                  }
-                }
-              }
-            ]
-          });
-          return {
-            type: "group",
-            label: key1,
-            infos,
-            validators: () => {
-              const menjiaoCadInfos = getMenjiaoCadInfos(data);
-              const value = data[key1];
-              if (menjiaoCadInfos[key1].isEmpty) {
-                const type = key1.split("+")[0];
-                if (type === "包边在内") {
-                  return null;
-                } else {
-                  for (const key11 of menjiaoCadTypes) {
-                    if (key11 === key1 || !key11.startsWith(type)) {
-                      continue;
-                    }
-                    if (!menjiaoCadInfos[key11].isEmpty) {
-                      return null;
-                    }
-                  }
-                }
-              }
-              const missingValues = [];
-              for (const key2 of 算料数据2Keys) {
-                for (const key3 in value[key2]) {
-                  if (!value[key2][key3].cad) {
-                    missingValues.push(key3);
-                  }
-                }
-              }
-              const errors = [];
-              if (missingValues.length > 0) {
-                errors.push("选择" + missingValues.join("、"));
-              }
-              if (isEmpty(value.板材分组)) {
-                errors.push("设置板材分组");
-              }
-              if (errors.length > 0) {
-                const error = `请${errors.join("并")}`;
-                return {[error]: true};
-              } else {
-                return null;
-              }
-            },
-            style: {margin: "5px"},
-            groupStyle: getGroupStyle({flexDirection: "column"})
-          };
-        }),
-        groupStyle: getGroupStyle({flexDirection: "column"})
-      }
-    ];
-    const result = await this.message.form<ObjectOf<any>>(
-      {
-        disableCancel: this.production,
-        inputs: [...form1, ...form4],
-        autoFill: this.production ? undefined : () => autoFillMenjiao(data, this.menjiaoOptionsAll)
-      },
-      {width: "100%", height: "100%"}
-    );
-    if (result) {
-      return data;
-    }
-    return null;
+    });
   }
 
   async onMenjiaoToolbar(event: ToolbarButtonEvent) {
@@ -1411,17 +893,19 @@ export class LurushujuIndexComponent implements OnInit {
     switch (event.button.event) {
       case "添加":
         {
-          const item = await this.getMenjiaoItem();
-          if (item) {
-            if (item.默认值) {
-              for (const item2 of gongyi.算料数据) {
-                item2.默认值 = false;
+          await this.getMenjiaoItem(async (result) => {
+            const item = result.data;
+            if (item) {
+              if (item.默认值) {
+                for (const item2 of gongyi.算料数据) {
+                  item2.默认值 = false;
+                }
               }
+              gongyi.算料数据.push(item);
+              this.menjiaoTable.data = [...gongyi.算料数据];
+              await this.submitGongyi(["算料数据"]);
             }
-            gongyi.算料数据.push(item);
-            this.menjiaoTable.data = [...gongyi.算料数据];
-            await this.submitGongyi(["算料数据"]);
-          }
+          });
         }
         break;
       case "从其它做法选择":
@@ -1465,19 +949,21 @@ export class LurushujuIndexComponent implements OnInit {
       case "编辑":
         {
           const item2 = this.gongyi.算料数据[rowIdx];
-          const item3 = await this.getMenjiaoItem(item2);
-          if (item3) {
-            if (item3.默认值) {
-              for (const [i, item4] of this.gongyi.算料数据.entries()) {
-                if (i !== rowIdx) {
-                  item4.默认值 = false;
+          await this.getMenjiaoItem(async (result) => {
+            const item3 = result.data;
+            if (item3 && this.gongyi) {
+              if (item3.默认值) {
+                for (const [i, item4] of this.gongyi.算料数据.entries()) {
+                  if (i !== rowIdx) {
+                    item4.默认值 = false;
+                  }
                 }
               }
+              this.gongyi.算料数据[rowIdx] = item3;
+              this.menjiaoTable.data = [...this.gongyi.算料数据];
+              await this.submitGongyi(["算料数据"]);
             }
-            this.gongyi.算料数据[rowIdx] = item3;
-            this.menjiaoTable.data = [...this.gongyi.算料数据];
-            await this.submitGongyi(["算料数据"]);
-          }
+          }, item2);
         }
         break;
       case "复制":
