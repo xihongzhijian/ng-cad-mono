@@ -254,6 +254,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     }
     const containerEl = mubanContainer.nativeElement;
     containerEl.innerHTML = "";
+    generateLineTexts(mubanData);
     const cadViewer = this.initCadViewer0(mubanData, containerEl, () => {});
     this.mubanViewer = cadViewer;
     this.updateMubanInputs();

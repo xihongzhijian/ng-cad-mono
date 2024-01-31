@@ -88,6 +88,17 @@ export class CadOptionsComponent implements AfterViewInit {
   }
 
   async submit() {
+    const result: CadOptionsOutput = {
+      options: []
+    };
+    if (this.data.defaultValue) {
+      const {value, required} = this.data.defaultValue;
+      if (required && !value) {
+        this.message.error("请选择默认值");
+        return;
+      }
+      result.defaultValue = value;
+    }
     const data = await this.getOptions(
       {
         name: this.data.name,
@@ -103,17 +114,7 @@ export class CadOptionsComponent implements AfterViewInit {
     if (!data) {
       return;
     }
-    const result: CadOptionsOutput = {
-      options: data.data.map((v) => ({vid: v.vid, mingzi: v.name}))
-    };
-    if (this.data.defaultValue) {
-      const {value, required} = this.data.defaultValue;
-      if (required && !value) {
-        this.message.error("请选择默认值");
-        return;
-      }
-      result.defaultValue = value;
-    }
+    result.options = data.data.map((v) => ({vid: v.vid, mingzi: v.name}));
     this.dialogRef.close(result);
   }
 

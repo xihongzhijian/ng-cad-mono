@@ -727,7 +727,8 @@ export class LurushujuIndexComponent implements OnInit {
         }
       }
     ];
-    return await this.message.form(form);
+    const result = await this.message.form(form);
+    return result ? data : null;
   }
 
   async onXuanxiangToolbar(event: ToolbarButtonEvent) {

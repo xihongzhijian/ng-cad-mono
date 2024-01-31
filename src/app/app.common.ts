@@ -55,7 +55,12 @@ export const splitOptions = (str: string) => {
 export const joinOptions = (options: (string | {mingzi: string})[], separator: ";" | "," | "*" = ";") => {
   const values: string[] = [];
   for (const option of options) {
-    const value = typeof option === "string" ? option : option.mingzi;
+    let value = undefined;
+    if (typeof option === "string") {
+      value = option;
+    } else if (option) {
+      value = option.mingzi || "";
+    }
     if (value && !values.includes(value)) {
       values.push(value);
     }

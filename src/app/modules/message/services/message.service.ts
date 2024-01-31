@@ -86,6 +86,10 @@ export class MessageService {
 
   async newTabConfirm(data: string | MessageDataParams<ConfirmMessageData>, others: MessageDataParams2<ConfirmMessageData> = {}) {
     await timeout(100);
+    if (typeof data === "string") {
+      data = {content: data} as MessageDataParams<ConfirmMessageData>;
+    }
+    data.btnTexts = {submit: "修改了", cancel: "没有修改"};
     return await this.confirm(data, others);
   }
 

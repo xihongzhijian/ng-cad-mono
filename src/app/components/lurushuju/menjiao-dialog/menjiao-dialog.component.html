@@ -8,7 +8,7 @@
       <div class="flex-row">
         <div class="flex-column flex-110" style="width: 0">
           <div class="list">
-            @for (key3 of peiheKeys; track i; let i = $index) {
+            @for (key3 of peiheKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
               <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '配合框CAD', key3}"></ng-container>
             }
           </div>

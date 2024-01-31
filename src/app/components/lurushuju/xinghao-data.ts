@@ -238,8 +238,7 @@ export interface 配合框CAD {
   cad?: HoutaiCad;
 }
 
-export const 配合框组合: string[] = ["铰框", "锁框", "顶框"];
-
+export const 配合框组合: ObjectOf<string[]> = {};
 export const 企料排列: ObjectOf<string[]> = {
   单门: ["铰企料", "锁企料"],
   子母对开: ["小扇铰企料", "小扇小锁料", "扇锁企料", "铰企料"],
@@ -249,6 +248,15 @@ export const 企料排列: ObjectOf<string[]> = {
   四扇平分: ["铰企料", "中锁料", "中铰料", "小锁料", "扇锁企料", "中铰料", "中锁料", "铰企料"],
   六扇平分: ["铰企料", "中锁料", "中铰料", "中锁料", "中铰料", "小锁料", "扇锁企料", "中铰料", "中锁料", "中铰料", "中锁料", "铰企料"]
 };
+export const 企料组合: ObjectOf<string[]> = {};
+for (const key in 企料排列) {
+  if (["单门", "子母连开"].includes(key)) {
+    配合框组合[key] = ["铰框", "锁框", "顶框"];
+  } else {
+    配合框组合[key] = ["铰框", "顶框"];
+  }
+  企料组合[key] = uniq(企料排列[key]);
+}
 
 export const cadMatchRules: ObjectOf<{分类: string[]; 选项: (keyof 算料数据)[]}> = {
   锁框: {分类: ["锁框"], 选项: []},
@@ -265,11 +273,6 @@ export const cadMatchRules: ObjectOf<{分类: string[]; 选项: (keyof 算料数
   中锁料: {分类: ["中锁料"], 选项: []},
   中铰料: {分类: ["中铰料"], 选项: []}
 };
-
-export const 企料组合: ObjectOf<string[]> = {};
-for (const key in 企料排列) {
-  企料组合[key] = uniq(企料排列[key]);
-}
 
 export type 门缝配置 = ObjectOf<number>;
 

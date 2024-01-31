@@ -150,7 +150,7 @@ export class MenjiaoDialogComponent implements OnInit {
         if (!data[key1][key2]) {
           data[key1][key2] = {};
         }
-        for (const name of 配合框组合) {
+        for (const name of 配合框组合[产品分类] || []) {
           if (!isTypeOf(data[key1].配合框CAD[name], "object")) {
             data[key1].配合框CAD[name] = {};
           }
@@ -627,7 +627,7 @@ export class MenjiaoDialogComponent implements OnInit {
       分类: "切中空"
     });
     if (response) {
-      this.suanliaoTables?.updateKlkwpzTable();
+      this.suanliaoTables?.updateKlcsTable();
     }
   }
 }

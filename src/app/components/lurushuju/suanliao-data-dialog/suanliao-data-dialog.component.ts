@@ -141,6 +141,7 @@ export class SuanliaoDataDialogComponent {
     }
     const {mubanData} = component;
     const cad2 = getHoutaiCad(new CadData(cad.json).clone(true));
+    cad2.名字 += "_复制";
     if (mubanData) {
       const cadData = new CadData(mubanData.clone(true));
       const result = await this.http.setCad({collection: "kailiaocadmuban", cadData, force: true}, true);
@@ -150,7 +151,7 @@ export class SuanliaoDataDialogComponent {
       component.mubanId = result.id;
       component.mubanData = cadData;
     }
-    this.suanliaoData.算料CAD.splice(component.customInfo.index, 0, cad2);
+    this.suanliaoData.算料CAD.splice(component.customInfo.index + 1, 0, cad2);
   }
 
   async removeCad(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
@@ -181,7 +182,7 @@ export class SuanliaoDataDialogComponent {
       分类: "切中空"
     });
     if (response) {
-      this.suanliaoTables?.updateKlkwpzTable();
+      this.suanliaoTables?.updateKlcsTable();
     }
   }
 }

@@ -223,6 +223,13 @@ export class HttpService {
         } else if (code === -2) {
           await this._waitForLogin((response.data as any)?.project);
           return this.request(url, method, rawData, options);
+        } else if (code === -20) {
+          try {
+            (parent.window as any).vueFuns.logout();
+          } catch (error) {
+            console.warn(error);
+          }
+          return null;
         } else {
           throw new HttpServiceResponseError(response);
         }

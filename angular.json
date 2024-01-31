@@ -33,6 +33,7 @@
             "styles": ["src/styles.scss", "src/mat-theme.scss"],
             "scripts": [],
             "extractLicenses": false,
+            "sourceMap": true,
             "optimization": false
           },
           "configurations": {
