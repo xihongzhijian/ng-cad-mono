@@ -84,6 +84,7 @@ export class CadListComponent implements AfterViewInit {
   loaderId = "cadList";
   loaderIdSubmit = "cadListSubmit";
   cadDataType!: CadData;
+  imgCadEmpty = imgCadEmpty;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
 
   constructor(
@@ -175,7 +176,8 @@ export class CadListComponent implements AfterViewInit {
     this.pageData.length = 0;
     result.cads.forEach(async (d) => {
       const checked = this.checkedItems.find((v) => v === d.id) ? true : false;
-      const pageData = {data: d, img: imgCadEmpty, checked};
+      const img = this.http.getCadImgUrl(d.id);
+      const pageData = {data: d, img, checked};
       this.pageData.push(pageData);
     });
     this.syncCheckedItems();
@@ -370,6 +372,12 @@ export class CadListComponent implements AfterViewInit {
     if (await this.http.mongodbDelete(this.data.collection, item.data.id)) {
       this.search();
     }
+  }
+
+  async onCadImgError(i: number) {
+    const item = this.pageData[i];
+    const url = await getCadPreview(this.data.collection, item.data, {http: this.http});
+    item.img = url;
   }
 }
 
