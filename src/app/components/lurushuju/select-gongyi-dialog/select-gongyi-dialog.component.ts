@@ -153,17 +153,7 @@ export class SelectGongyiDialogComponent implements OnInit {
           }
         }
       } else {
-        const item2: SelectGongyiItem = {data: item};
-        if (key === "算料CAD") {
-          const 算料CAD = item.算料CAD;
-          const count = Array.isArray(算料CAD) ? 算料CAD.length : 0;
-          if (count > 0) {
-            item2.info = [`算料CAD数量：${count}`];
-            this.items.push(item2);
-          }
-        } else {
-          this.items.push(item2);
-        }
+        this.items.push({data: item});
       }
     }
   }

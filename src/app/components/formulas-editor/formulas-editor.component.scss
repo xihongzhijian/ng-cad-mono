@@ -21,10 +21,25 @@
   }
 
   .key {
-    flex: 1 1 30%;
+    flex: 0 0 200px;
   }
 
   .value {
-    flex: 1 1 70%;
+    flex: 1 1 0;
+  }
+
+  .eq {
+    font-size: 18px;
+    transform: translateY(-11px);
+  }
+}
+
+.var-names {
+  flex-wrap: wrap;
+}
+
+.extra-input-infos {
+  app-input {
+    flex: 1 1 0;
   }
 }

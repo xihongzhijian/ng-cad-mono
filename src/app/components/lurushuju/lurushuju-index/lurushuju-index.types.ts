@@ -8,6 +8,9 @@ export interface XinghaoData extends TableDataBase {
   tingyong?: number;
   tupian?: string;
   hidden?: boolean;
+  menchuang?: string;
+  gongyi?: string;
+  dingdanliucheng?: string;
 }
 
 export type LurushujuIndexStep = 1 | 2 | 3;

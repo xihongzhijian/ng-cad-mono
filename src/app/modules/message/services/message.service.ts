@@ -84,8 +84,11 @@ export class MessageService {
     return !!(await this.open({data: this._getData(data, "confirm"), ...others}));
   }
 
-  async newTabConfirm(data: string | MessageDataParams<ConfirmMessageData>, others: MessageDataParams2<ConfirmMessageData> = {}) {
+  async newTabConfirm(data?: string | MessageDataParams<ConfirmMessageData>, others: MessageDataParams2<ConfirmMessageData> = {}) {
     await timeout(100);
+    if (!data) {
+      data = "是否修改了数据？";
+    }
     if (typeof data === "string") {
       data = {content: data} as MessageDataParams<ConfirmMessageData>;
     }

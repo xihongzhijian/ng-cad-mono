@@ -345,7 +345,7 @@ export class CadListComponent implements AfterViewInit {
   async editCad(i: number) {
     const item = this.pageData[i];
     this.status.openCadInNewTab(item.data.id, this.data.collection);
-    if (await this.message.newTabConfirm("是否修改了CAD？")) {
+    if (await this.message.newTabConfirm()) {
       this.search();
     }
   }

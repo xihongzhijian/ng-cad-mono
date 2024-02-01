@@ -13,6 +13,14 @@
 
   .option {
     cursor: pointer;
+    transition: 0.3s;
+    width: 250px;
+    margin: 5px;
+    --border: 1px solid black;
+    &.checked {
+      background-color: lightgray;
+    }
+
     .text {
       text-align: center;
     }

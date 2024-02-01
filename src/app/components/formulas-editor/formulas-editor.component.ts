@@ -207,7 +207,6 @@ export class FormulasEditorComponent {
   }
 
   async clickVarName(name: string) {
-    this.formulasText += name;
     try {
       await navigator.clipboard.writeText(name);
       await this.message.snack("已复制");

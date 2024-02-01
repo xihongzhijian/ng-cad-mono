@@ -39,6 +39,7 @@ import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/e
 import {CadData, CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
 import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
@@ -234,7 +235,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     private message: MessageService,
     private dialog: MatDialog,
     private differs: KeyValueDiffers,
-    private elRef: ElementRef<HTMLElement>
+    private elRef: ElementRef<HTMLElement>,
+    private http: CadDataService
   ) {
     super();
     this.valueChange$.subscribe((val) => {
@@ -1112,6 +1114,28 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       const {value} = this;
       if (Array.isArray(value)) {
         this.displayValue = joinOptions(value);
+      }
+    }
+  }
+
+  async openInNewTab() {
+    const {info} = this;
+    if (info.type !== "select") {
+      return;
+    }
+    const openInNewTab = info.openInNewTab;
+    if (!openInNewTab) {
+      return;
+    }
+    const {optionKey: name, onOptionsChange} = openInNewTab;
+    const url = await this.http.getShortUrl(name);
+    if (url) {
+      window.open(url);
+    }
+    if (await this.message.newTabConfirm()) {
+      const options = await this.http.getOptions({name, page: 1, limit: Infinity});
+      if (options) {
+        onOptionsChange(options);
       }
     }
   }

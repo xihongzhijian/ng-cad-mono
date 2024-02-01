@@ -31,7 +31,7 @@
                       [noMuban]="true"
                       [noZhankai]="true"
                       [cadWidth]="cadWidth"
-                      (afterEditCad)="afterEditCad()"
+                      (afterEditCad)="afterEditCad(key1)"
                     ></app-cad-item>
                   }
                 </div>
@@ -57,7 +57,11 @@
               <div class="error-msg">{{ key1Infos[key1].error }}</div>
             }
           </div>
-          <app-suanliao-tables style="width: 30%" [suanliaoDataParams]="key1Infos[key1].suanliaoDataParams"></app-suanliao-tables>
+          <app-suanliao-tables
+            [ngClass]="key1"
+            style="width: 30%"
+            [suanliaoDataParams]="key1Infos[key1].suanliaoDataParams"
+          ></app-suanliao-tables>
         </div>
       </div>
     }
@@ -82,11 +86,11 @@
       [noMuban]="true"
       [noZhankai]="true"
       [cadWidth]="cadWidth"
-      (afterEditCad)="afterEditCad()"
+      (afterEditCad)="afterEditCad(key1)"
     ></app-cad-item>
   } @else {
     <div class="empty-cad item link" (click)="addCad({key1, key2, key3})">
-      <div class="name">{{ key3 }}</div>
+      <div class="name">{{ cadNameMap[key3] || key3 }}</div>
       <div class="box border" [ngStyle]="{'width.px': cadWidth, 'height.px': cadHeight}"></div>
     </div>
   }

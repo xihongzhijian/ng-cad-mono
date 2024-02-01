@@ -965,7 +965,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   async openLingsanCad(type: string, i: number) {
     this.status.openCadInNewTab(this.lingsanCads[type][i].data.id, "cad");
-    if (await this.message.newTabConfirm("是否修改了CAD？")) {
+    if (await this.message.newTabConfirm()) {
       this.step3Refresh();
     }
   }

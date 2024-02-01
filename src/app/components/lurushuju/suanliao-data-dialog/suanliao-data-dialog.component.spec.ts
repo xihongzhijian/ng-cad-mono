@@ -15,7 +15,8 @@ const data: SuanliaoDataInput = {
       开启: "4",
       门铰锁边铰边: "5"
     }
-  }
+  },
+  key1: "包边在外+外开"
 };
 
 describe("SuanliaoDataDialogComponent", () => {

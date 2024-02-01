@@ -1,5 +1,5 @@
-import {NgStyle, NgTemplateOutlet} from "@angular/common";
-import {Component, HostBinding, Inject, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {NgClass, NgStyle, NgTemplateOutlet} from "@angular/common";
+import {Component, HostBinding, Inject, OnInit, QueryList, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
@@ -21,7 +21,7 @@ import {cloneDeep, isEmpty} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
-import {getCadSearch, getOptionInputInfo} from "../lurushuju-index/lurushuju-index.utils";
+import {getCadSearch, getOptionInputInfo, getOptions2} from "../lurushuju-index/lurushuju-index.utils";
 import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dialog.component";
 import {SuanliaoDataInput} from "../suanliao-data-dialog/suanliao-data-dialog.type";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
@@ -33,6 +33,7 @@ import {
   SuanliaoDataParams,
   xiaoguotuKeys,
   企料组合,
+  孔位CAD名字对应关系,
   算料数据,
   算料数据2Keys,
   配合框组合,
@@ -49,6 +50,7 @@ import {autoFillMenjiao, getMenjiaoCadInfos, updateMenjiaoForm} from "./menjiao-
     CadItemComponent,
     InputComponent,
     MatButtonModule,
+    NgClass,
     NgScrollbarModule,
     NgStyle,
     NgTemplateOutlet,
@@ -84,10 +86,11 @@ export class MenjiaoDialogComponent implements OnInit {
     suanliaoDataParams: SuanliaoDataParams;
     suanliaogongshiInfo: SuanliaogongshiInfo;
   }> = {};
+  cadNameMap = 孔位CAD名字对应关系;
 
   form: InputInfo[] = [];
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
-  @ViewChild(SuanliaoTablesComponent) suanliaoTables?: SuanliaoTablesComponent;
+  @ViewChildren(SuanliaoTablesComponent) suanliaoTablesList?: QueryList<SuanliaoTablesComponent>;
 
   constructor(
     private message: MessageService,
@@ -163,6 +166,7 @@ export class MenjiaoDialogComponent implements OnInit {
         };
         info.style = getInfoStyle(n);
         const dialogKeys: (keyof 算料数据)[] = ["锁边", "铰边"];
+        const openInNewTabKeys: (keyof 算料数据)[] = ["门铰", "门扇厚度"];
         if (dialogKeys.includes(key)) {
           info.optionsDialog = {
             noImage: true,
@@ -174,6 +178,13 @@ export class MenjiaoDialogComponent implements OnInit {
               if (info.multiple) {
                 data.选项默认值[key] = val.defaultValue || "";
               }
+            }
+          };
+        } else if (openInNewTabKeys.includes(key)) {
+          info.openInNewTab = {
+            optionKey: key,
+            onOptionsChange: (options) => {
+              info.options = getOptions2(options.data);
             }
           };
         }
@@ -381,7 +392,9 @@ export class MenjiaoDialogComponent implements OnInit {
     });
     const cad = result?.[0] as unknown as HoutaiCad | undefined;
     if (cad) {
-      cad.名字 = key3;
+      const name = this.cadNameMap[key3] || key3;
+      cad.名字 = name;
+      cad.json.name = name;
       data[key1][key2][key3].cad = cad;
       updateMenjiaoForm(this.formData);
     }
@@ -453,6 +466,13 @@ export class MenjiaoDialogComponent implements OnInit {
     }
   }
 
+  getSuanliaoTables(key1: MenjiaoCadType) {
+    return this.suanliaoTablesList?.find((v) => {
+      const {包边方向, 开启} = v.suanliaoDataParams.选项;
+      return key1 === `${包边方向}+${开启}`;
+    });
+  }
+
   async editSuanliaoData(key1: MenjiaoCadType) {
     const {component} = this.data;
     if (!component) {
@@ -470,14 +490,8 @@ export class MenjiaoDialogComponent implements OnInit {
         data: suanliaoData,
         varNames: component.varNames,
         suanliaoDataParams: this.key1Infos[key1].suanliaoDataParams,
-        copySuanliaoCadsInput: {
-          xinghaos: component.xinghaos,
-          xinghaoOptions: component.xinghaoOptionsAll,
-          excludeXinghaos: [component.xinghaoName],
-          excludeGongyis: component.gongyi?.名字 ? [component.gongyi.名字] : [],
-          key: "算料CAD",
-          fenlei: component.fenleiName
-        }
+        component,
+        key1
       }
     });
     if (result) {
@@ -491,7 +505,7 @@ export class MenjiaoDialogComponent implements OnInit {
           };
         }
       }
-      this.suanliaoTables?.update();
+      this.getSuanliaoTables(key1)?.update();
     }
   }
 
@@ -611,7 +625,7 @@ export class MenjiaoDialogComponent implements OnInit {
     const suanliaoDataParams = this.key1Infos[key1].suanliaoDataParams;
     const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...suanliaoDataParams, 名字: cad.名字});
     if (response) {
-      this.suanliaoTables?.updateKlkwpzTable();
+      this.getSuanliaoTables(key1)?.updateKlkwpzTable();
     }
   }
 
@@ -625,7 +639,7 @@ export class MenjiaoDialogComponent implements OnInit {
       分类: "切中空"
     });
     if (response) {
-      this.suanliaoTables?.updateKlcsTable();
+      this.getSuanliaoTables(key1)?.updateKlcsTable();
     }
   }
 
@@ -636,8 +650,8 @@ export class MenjiaoDialogComponent implements OnInit {
     };
   }
 
-  afterEditCad() {
-    this.suanliaoTables?.update();
+  afterEditCad(key1: MenjiaoCadType) {
+    this.getSuanliaoTables(key1)?.update();
   }
 }
 

@@ -19,6 +19,7 @@ import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
+import {算料数据} from "../xinghao-data";
 import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./suanliao-data-dialog.type";
 
 @Component({
@@ -117,13 +118,28 @@ export class SuanliaoDataDialogComponent {
   }
 
   async copySuanliaoCads() {
-    const data = this.suanliaoData;
+    const {component, key1} = this.data;
+    if (!component) {
+      return;
+    }
     const result = await openSelectGongyiDialog(this.dialog, {
-      data: this.data.copySuanliaoCadsInput
+      data: {
+        xinghaos: component.xinghaos,
+        xinghaoOptions: component.xinghaoOptionsAll,
+        menjiaoOptions: component.menjiaoOptionsAll,
+        excludeXinghaos: [component.xinghaoName],
+        excludeGongyis: component.gongyi?.名字 ? [component.gongyi.名字] : [],
+        key: "算料数据",
+        fenlei: component.fenleiName
+      }
     });
-    const item = result?.items[0];
-    if (item && (await this.message.confirm("复制算料CAD会覆盖原有数据，确定复制吗？"))) {
-      data.算料CAD = item.算料CAD;
+    const data = result?.items[0]?.data as 算料数据 | undefined;
+    if (data) {
+      if (await this.message.confirm("复制算料CAD会覆盖原有数据，确定复制吗？")) {
+        this.suanliaoData.算料CAD = data[key1].算料CAD;
+      }
+    } else {
+      this.message.alert("数据为空");
     }
   }
 
@@ -145,8 +161,9 @@ export class SuanliaoDataDialogComponent {
       return;
     }
     const {mubanData} = component;
-    const cad2 = getHoutaiCad(new CadData(cad.json).clone(true));
-    cad2.名字 += "_复制";
+    const cadData2 = new CadData(cad.json).clone(true);
+    cadData2.name += "_复制";
+    const cad2 = getHoutaiCad(cadData2);
     if (mubanData) {
       const cadData = new CadData(mubanData.clone(true));
       const result = await this.http.setCad({collection: "kailiaocadmuban", cadData, force: true}, true);

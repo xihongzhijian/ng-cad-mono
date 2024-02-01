@@ -14,7 +14,7 @@
     flex-wrap: wrap;
 
     &:not(.no-items-per-row) > .item {
-      width: calc(100% / var(--items-per-row, 1) - 10px);
+      width: calc(100% / var(--items-per-row, 1) - 4px);
     }
   }
 

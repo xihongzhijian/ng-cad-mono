@@ -1,34 +1,34 @@
-@if (extraInputInfos) {
-  <div class="toolbar">
-    @for (info of extraInputInfos; track $index) {
-      <app-input #extraInput [info]="info"></app-input>
-    }
-  </div>
-}
+<ng-scrollbar>
+  @if (extraInputInfos) {
+    <div class="toolbar extra-input-infos">
+      @for (info of extraInputInfos; track $index) {
+        <app-input #extraInput [info]="info"></app-input>
+      }
+    </div>
+  }
 
-@if (varNames && varNames.names && varNames.names.length > 0) {
-  <div class="toolbar">
-    @for (name of varNames.names; track $index) {
-      <button mat-button color="primary" [style]="{width: varNames.width + 'px'}" (click)="clickVarName(name)">{{ name }}</button>
-    }
-  </div>
-}
+  @if (varNames && varNames.names && varNames.names.length > 0) {
+    <div class="var-names toolbar">
+      @for (name of varNames.names; track $index) {
+        <button mat-button color="primary" [style]="{width: varNames.width + 'px'}" (click)="clickVarName(name)">{{ name }}</button>
+      }
+    </div>
+  }
 
-<div class="formulas-input">
-  <app-input [info]="formulasInputInfo"></app-input>
-  <div class="btn-group" style="margin-top: -10px">
-    <button mat-raised-button color="primary" (click)="addFormulas()">批量添加</button>
-    <button mat-raised-button color="primary" (click)="test(submitFormulas(parseTextarea()))">测试</button>
+  <div class="formulas-input">
+    <app-input [info]="formulasInputInfo"></app-input>
+    <div class="btn-group" style="margin-top: -10px">
+      <button mat-raised-button color="primary" (click)="addFormulas()">批量添加</button>
+      <button mat-raised-button color="primary" (click)="test(submitFormulas(parseTextarea()))">测试</button>
+    </div>
   </div>
-</div>
 
-<div class="flex-column flex-110">
-  <div class="btn-group">
-    <div>公式</div>
-    <button mat-raised-button color="primary" (click)="addFormula()">添加</button>
-    <button mat-raised-button color="primary" (click)="test(submitFormulas())">测试</button>
-  </div>
-  <ng-scrollbar>
+  <div class="flex-column flex-110">
+    <div class="btn-group">
+      <div>公式</div>
+      <button mat-raised-button color="primary" (click)="addFormula()">添加</button>
+      <button mat-raised-button color="primary" (click)="test(submitFormulas())">测试</button>
+    </div>
     <div class="formulas-list" cdkDropList [cdkDropListData]="formulaList" (cdkDropListDropped)="dropFormula($event)">
       @for (formula of formulaList; track formula; let i = $index) {
         <div class="formula" cdkDrag cdkDragLockAxis="y">
@@ -40,14 +40,14 @@
             <mat-icon>remove_circle</mat-icon>
           </button>
           <app-input class="key" [info]="formulaListInputInfos[i][0]"></app-input>
-          <span> = </span>
+          <span class="eq"> = </span>
           <app-input class="value" [info]="formulaListInputInfos[i][1]"></app-input>
           <div class="drag-placeholder" cdkDragHandle></div>
         </div>
       }
     </div>
-  </ng-scrollbar>
-</div>
+  </div>
+</ng-scrollbar>
 
 @if (testResult) {
   <div #testResultEl style="display: none">

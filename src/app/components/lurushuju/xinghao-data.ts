@@ -105,9 +105,10 @@ export const get算料数据2 = (raw?: 算料数据2 | null) => {
 export interface XinghaoRaw {
   名字: string;
   所属门窗?: string;
-  所属工艺?: string[];
+  所属工艺?: string;
   产品分类?: ObjectOf<工艺做法[]>;
   显示产品分类?: string[];
+  订单流程?: string;
 }
 
 export interface Xinghao extends XinghaoRaw {
@@ -343,3 +344,9 @@ export interface SuanliaoDataParams {
     门铰锁边铰边: string;
   };
 }
+
+export const 孔位CAD名字对应关系: ObjectOf<string> = {
+  锁框: "锁包边",
+  铰框: "铰包边",
+  顶框: "顶包边"
+};

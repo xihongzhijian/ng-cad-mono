@@ -8,7 +8,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getCopyName} from "@app/app.common";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
-import {downloadByString, selectFiles} from "@lucilor/utils";
+import {downloadByString, isTypeOf, selectFiles} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
@@ -73,10 +73,18 @@ export class SuanliaogongshiComponent implements OnChanges {
     } else {
       data = {_id: v4(), 名字: "", 条件: [], 选项: {}, 公式: {}};
     }
+    if (!isTypeOf(data.选项, "object")) {
+      data.选项 = {};
+    }
     const result = await openEditFormulasDialog(this.dialog, {
       data: {
         formulas: data.公式,
-        extraInputInfos: [{type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required}]
+        varNames: this.info.varNames,
+        extraInputInfos: [
+          {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
+          {type: "object", label: "选项", model: {data, key: "选项"}, optionsDialog: {}},
+          {type: "array", label: "条件", model: {data, key: "条件"}}
+        ]
       }
     });
     if (result) {

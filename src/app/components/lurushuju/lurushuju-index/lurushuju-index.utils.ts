@@ -1,5 +1,6 @@
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {ObjectOf} from "@lucilor/utils";
+import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {cadMatchRules, 算料数据} from "../xinghao-data";
@@ -208,6 +209,12 @@ export const getOptions = (optionsAll: OptionsAll | undefined | null, key: strin
   });
 };
 
+export const getOptions2 = (options: OptionsDataData[]) => {
+  return options.map<InputInfoOption>((v) => {
+    return {value: v.name, img: v.img};
+  });
+};
+
 export const getOptionInputInfo = (
   optionsAll: OptionsAll2 | undefined | null,
   key: keyof 算料数据,
@@ -217,19 +224,17 @@ export const getOptionInputInfo = (
   if (!optionsInfo) {
     return {type: "select", label: key, options: []};
   }
-  const options = optionsInfo.options.map<InputInfoOption>((v) => {
-    return {value: v.name, img: v.img};
-  });
   const {disabled, multiple} = optionsInfo;
   const info: InputInfoSelect = {
     type: "select",
     label: key,
-    options,
+    options: getOptions2(optionsInfo.options),
     disabled,
     multiple
   };
   if (typeof setter === "function") {
     setter(info);
   }
+
   return info;
 };

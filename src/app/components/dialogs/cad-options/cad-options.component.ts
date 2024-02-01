@@ -268,7 +268,7 @@ export class CadOptionsComponent implements AfterViewInit {
     if (url) {
       window.open(url);
     }
-    if (await this.message.newTabConfirm("是否修改了数据？")) {
+    if (await this.message.newTabConfirm()) {
       this.search(true, true);
     }
   }

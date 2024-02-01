@@ -6,6 +6,7 @@ import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options
 import {EditFormulasInput} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
+import {OptionsData} from "@modules/http/services/cad-data.service.types";
 import Color from "color";
 import csstype from "csstype";
 
@@ -91,6 +92,7 @@ export interface InputInfoSelectBase<T = any, K = string> extends InputInfoBase<
   type: "select";
   options: Value<InputInfoOptions<K>>;
   optionsDialog?: OptionsDialog;
+  openInNewTab?: {optionKey: string; onOptionsChange: (options: OptionsData) => void};
 }
 export interface InputInfoSelectSingle<T = any, K = string> extends InputInfoSelectBase<T, K> {
   value?: Value<string>;

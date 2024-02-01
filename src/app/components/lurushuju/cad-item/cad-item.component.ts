@@ -203,6 +203,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       }
       const form: InputInfo<typeof entity>[] = [
         {type: "string", label: "名字", model: {data: entity, key: "mingzi"}},
+        {type: "string", label: "名字2", model: {data: entity, key: "mingzi2"}},
         {type: "string", label: "公式", model: {data: entity, key: "gongshi"}}
       ];
       const result = await this.message.form(form);

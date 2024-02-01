@@ -293,6 +293,11 @@
           }
         </mat-select>
       }
+      @if (info.openInNewTab) {
+        <button mat-icon-button matSuffix color="primary" appClickStop (click)="openInNewTab()">
+          <mat-icon>open_in_new</mat-icon>
+        </button>
+      }
       @if (info.optionsDialog && !info.readonly && !info.disabled) {
         <ng-container matSuffix>
           <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key)">

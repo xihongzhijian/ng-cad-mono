@@ -1,12 +1,13 @@
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
-import {SelectGongyiInput} from "../select-gongyi-dialog/select-gongyi-dialog.types";
-import {SuanliaoDataParams, 算料数据2} from "../xinghao-data";
+import {LurushujuIndexComponent} from "../lurushuju-index/lurushuju-index.component";
+import {MenjiaoCadType, SuanliaoDataParams, 算料数据2} from "../xinghao-data";
 
 export interface SuanliaoDataInput {
   data: Pick<算料数据2, "算料公式" | "测试用例" | "算料CAD" | "输入数据">;
   varNames: FormulasEditorComponent["varNames"];
   suanliaoDataParams: SuanliaoDataParams;
-  copySuanliaoCadsInput?: SelectGongyiInput;
+  key1: MenjiaoCadType;
+  component?: LurushujuIndexComponent;
 }
 
 export interface SuanliaoDataOutput {
