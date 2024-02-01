@@ -6,14 +6,15 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {CadData} from "@lucilor/cad-viewer";
+import {RequiredKeys} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
+import {OpenCadOptions} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {SuanliaogongshiComponent} from "../../../modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
-import {SuanliaogongshiInfo} from "../../../modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
@@ -47,7 +48,7 @@ export class SuanliaoDataDialogComponent {
     {name: "添加开料参数", onClick: this.addKlcs.bind(this)}
   ];
   mubanExtraData: CadItemComponent["mubanExtraData"] = {};
-  suanliaogongshiInfo: SuanliaogongshiInfo;
+  openCadOptions: RequiredKeys<OpenCadOptions, "suanliaogongshiInfo">;
 
   @ViewChild(SuanliaoTablesComponent) suanliaoTables?: SuanliaoTablesComponent;
 
@@ -60,12 +61,16 @@ export class SuanliaoDataDialogComponent {
   ) {
     this.suanliaoData = cloneDeep(this.data.data);
     this.mubanExtraData.options = this.data.suanliaoDataParams.选项;
-    this.suanliaogongshiInfo = {
-      data: {
-        算料公式: this.suanliaoData.算料公式,
-        测试用例: this.suanliaoData.测试用例
+    this.openCadOptions = {
+      suanliaogongshiInfo: {
+        data: {
+          算料公式: this.suanliaoData.算料公式,
+          测试用例: this.suanliaoData.测试用例,
+          输入数据: this.suanliaoData.输入数据
+        },
+        varNames: this.data.varNames
       },
-      varNames: this.data.varNames
+      suanliaoTablesInfo: {params: this.data.suanliaoDataParams}
     };
   }
 

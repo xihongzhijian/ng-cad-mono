@@ -8,6 +8,7 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
 import {isTypeOf, ObjectOf, RequiredKeys} from "@lucilor/utils";
+import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -25,7 +26,9 @@ import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dial
 import {SuanliaoDataInput} from "../suanliao-data-dialog/suanliao-data-dialog.type";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
 import {
+  get算料数据,
   get算料数据2,
+  MenjiaoCadType,
   menjiaoCadTypes,
   SuanliaoDataParams,
   xiaoguotuKeys,
@@ -59,7 +62,7 @@ export class MenjiaoDialogComponent implements OnInit {
   @HostBinding("class") class = "ng-page";
 
   cadViewerConfig: Partial<CadViewerConfig> = {width: 200, height: 100, lineGongshi: 20};
-  formData = this.getEmptyData();
+  formData = get算料数据();
   menjiaoCadTypes = menjiaoCadTypes;
   peiheKeys = 配合框组合;
   qiliaoKeys = 企料组合;
@@ -74,8 +77,13 @@ export class MenjiaoDialogComponent implements OnInit {
     {name: "选择", onClick: this.selectShiyituCad.bind(this)},
     {name: "删除", onClick: this.removeShiyituCad.bind(this)}
   ];
-  emptyCadTemplateType!: {key1: (typeof menjiaoCadTypes)[number]; key2: "配合框CAD" | "企料CAD"; key3: string};
-  key1Infos: ObjectOf<{xiaoguotuInputs: InputInfo[]; error: string; suanliaoDataParams: SuanliaoDataParams}> = {};
+  emptyCadTemplateType!: {key1: MenjiaoCadType; key2: "配合框CAD" | "企料CAD"; key3: string};
+  key1Infos: ObjectOf<{
+    xiaoguotuInputs: InputInfo[];
+    error: string;
+    suanliaoDataParams: SuanliaoDataParams;
+    suanliaogongshiInfo: SuanliaogongshiInfo;
+  }> = {};
 
   form: InputInfo[] = [];
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
@@ -97,37 +105,12 @@ export class MenjiaoDialogComponent implements OnInit {
     this.update();
   }
 
-  getEmptyData(): 算料数据 {
-    return {
-      vid: "",
-      停用: false,
-      排序: 0,
-      默认值: false,
-      名字: "",
-      名字2: "",
-      产品分类: "",
-      开启: [],
-      门铰: [],
-      门扇厚度: [],
-      锁边: "",
-      铰边: "",
-      选项默认值: {},
-      "包边在外+外开": get算料数据2(),
-      "包边在外+内开": get算料数据2(),
-      "包边在内+外开": get算料数据2(),
-      "包边在内+内开": get算料数据2(),
-      门缝配置: {},
-      关闭碰撞检查: false,
-      双开门扇宽生成方式: ""
-    };
-  }
-
   async update() {
     const {data: data0, component} = this.data;
     if (!component) {
       return;
     }
-    this.formData = data0 ? cloneDeep(data0) : this.getEmptyData();
+    this.formData = data0 ? cloneDeep(data0) : get算料数据();
     const data = this.formData;
     const 产品分类 = data0 ? data0.产品分类 : component.fenleiName;
     data.产品分类 = 产品分类;
@@ -336,6 +319,10 @@ export class MenjiaoDialogComponent implements OnInit {
             开启,
             门铰锁边铰边: data.名字
           }
+        },
+        suanliaogongshiInfo: {
+          data: {算料公式: data[key1].算料公式, 测试用例: data[key1].测试用例, 输入数据: data[key1].输入数据},
+          varNames: component.varNames
         }
       };
       if (component.parentInfo.isZhijianUser) {
@@ -409,7 +396,7 @@ export class MenjiaoDialogComponent implements OnInit {
     updateMenjiaoForm(this.formData);
   }
 
-  async selectShiyituCad(key1: (typeof menjiaoCadTypes)[number] | CadItemComponent<MenjiaoShiyituCadItemInfo>) {
+  async selectShiyituCad(key1: MenjiaoCadType | CadItemComponent<MenjiaoShiyituCadItemInfo>) {
     const data = typeof key1 === "string" ? this.formData[key1].示意图CAD : key1.customInfo.data;
     const checkedItems = data.算料单示意图.map((v) => v.json.id);
     const result = await openCadListDialog(this.dialog, {
@@ -438,7 +425,7 @@ export class MenjiaoDialogComponent implements OnInit {
     updateMenjiaoForm(this.formData);
   }
 
-  async editBcfz(key1: (typeof menjiaoCadTypes)[number]) {
+  async editBcfz(key1: MenjiaoCadType) {
     const {component} = this.data;
     if (!component) {
       return;
@@ -466,7 +453,7 @@ export class MenjiaoDialogComponent implements OnInit {
     }
   }
 
-  async editSuanliaoData(key1: (typeof menjiaoCadTypes)[number]) {
+  async editSuanliaoData(key1: MenjiaoCadType) {
     const {component} = this.data;
     if (!component) {
       return;
@@ -475,7 +462,8 @@ export class MenjiaoDialogComponent implements OnInit {
     const suanliaoData: SuanliaoDataInput["data"] = {
       算料公式: data[key1].算料公式,
       测试用例: data[key1].测试用例,
-      算料CAD: data[key1].算料CAD
+      算料CAD: data[key1].算料CAD,
+      输入数据: data[key1].输入数据
     };
     const result = await openSuanliaoDataDialog(this.dialog, {
       data: {
@@ -494,17 +482,27 @@ export class MenjiaoDialogComponent implements OnInit {
     });
     if (result) {
       Object.assign(data[key1], result.data);
+      for (const key1 of menjiaoCadTypes) {
+        if (this.key1Infos[key1]) {
+          this.key1Infos[key1].suanliaogongshiInfo.data = {
+            算料公式: data[key1].算料公式,
+            测试用例: data[key1].测试用例,
+            输入数据: data[key1].输入数据
+          };
+        }
+      }
+      this.suanliaoTables?.update();
     }
   }
 
-  async copy(key1: (typeof menjiaoCadTypes)[number]) {
+  async copy(key1: MenjiaoCadType) {
     const {component} = this.data;
     if (!component) {
       return;
     }
     const data = this.formData;
     const suanliaoDataParams = this.key1Infos[key1].suanliaoDataParams;
-    const result: (typeof menjiaoCadTypes)[number] | "" | null = await this.message.prompt({
+    const result: MenjiaoCadType | "" | null = await this.message.prompt({
       type: "select",
       label: "从哪个复制",
       options: menjiaoCadTypes.filter((v) => v !== key1),
@@ -629,6 +627,17 @@ export class MenjiaoDialogComponent implements OnInit {
     if (response) {
       this.suanliaoTables?.updateKlcsTable();
     }
+  }
+
+  getOpenCadOptions(key1: MenjiaoCadType): CadItemComponent["openCadOptions"] {
+    return {
+      suanliaogongshiInfo: this.key1Infos[key1].suanliaogongshiInfo,
+      suanliaoTablesInfo: {params: this.key1Infos[key1].suanliaoDataParams}
+    };
+  }
+
+  afterEditCad() {
+    this.suanliaoTables?.update();
   }
 }
 

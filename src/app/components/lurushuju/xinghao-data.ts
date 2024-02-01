@@ -37,13 +37,40 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     停用: false,
     输入数据: [],
     选项数据: [],
-    算料数据: [],
     CAD模板: null,
     创建时间: 0,
     最后一次修改时间: 0,
     修改记录: [],
     默认值: false,
-    ...raw
+    ...raw,
+    算料数据: (raw?.算料数据 || []).map(get算料数据)
+  };
+  return result;
+};
+
+export const get算料数据 = (raw?: 算料数据 | null) => {
+  const result: 算料数据 = {
+    vid: "",
+    停用: false,
+    排序: 0,
+    默认值: false,
+    名字: "",
+    名字2: "",
+    产品分类: "",
+    开启: [],
+    门铰: [],
+    门扇厚度: [],
+    锁边: "",
+    铰边: "",
+    选项默认值: {},
+    门缝配置: {},
+    关闭碰撞检查: false,
+    双开门扇宽生成方式: "",
+    ...raw,
+    "包边在外+外开": get算料数据2(raw?.["包边在外+外开"]),
+    "包边在外+内开": get算料数据2(raw?.["包边在外+内开"]),
+    "包边在内+外开": get算料数据2(raw?.["包边在内+外开"]),
+    "包边在内+内开": get算料数据2(raw?.["包边在内+内开"])
   };
   return result;
 };
@@ -69,6 +96,7 @@ export const get算料数据2 = (raw?: 算料数据2 | null) => {
     铰扇正面: "",
     铰扇背面: "",
     花件玻璃信息: [],
+    输入数据: [],
     ...raw
   };
   return result;
@@ -157,7 +185,8 @@ export interface 算料数据2 {
   小扇背面: string;
   铰扇正面: string;
   铰扇背面: string;
-  花件玻璃信息: 花件玻璃信息[]; // 不要依赖效果图
+  花件玻璃信息: 花件玻璃信息[];
+  输入数据: 输入[];
 }
 
 export const 算料数据2Keys = ["配合框CAD", "企料CAD"] as const;
@@ -191,6 +220,7 @@ export interface 算料数据 {
 }
 
 export const menjiaoCadTypes = ["包边在外+外开", "包边在外+内开", "包边在内+外开", "包边在内+内开"] as const;
+export type MenjiaoCadType = (typeof menjiaoCadTypes)[number];
 
 export interface 企料CAD {
   // 从符合分类企料CAD里面选择，分类对应关系

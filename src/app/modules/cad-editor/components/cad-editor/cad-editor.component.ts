@@ -8,6 +8,7 @@ import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
+import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
 import {CadEventCallBack} from "@lucilor/cad-viewer";
 import {ContextMenu} from "@mixins/context-menu.mixin";
@@ -82,6 +83,7 @@ import {SuanliaogongshiComponent} from "../suanliaogongshi/suanliaogongshi.compo
     NgScrollbar,
     SpinnerComponent,
     SuanliaogongshiComponent,
+    SuanliaoTablesComponent,
     SubCadsComponent,
     ToolbarComponent
   ]
@@ -101,6 +103,8 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   showRightMenu = true;
   showBottomMenu = true;
   showLeftMenu = true;
+  showSuanliaogongshi = true;
+  showSuanliaoTables = true;
   showAllMenu = true;
   tabIndex = 0;
   cadLength$ = this.status.cadTotalLength$.pipe(
@@ -139,6 +143,7 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   @ViewChild(CadConsoleComponent) cadConsoleComponent!: CadConsoleComponent;
   @ViewChild(MatTabGroup) infoTabs!: MatTabGroup;
   @ViewChild("suanliaogongshi", {read: ElementRef}) suanliaogongshi?: ElementRef<HTMLElement>;
+  @ViewChild("suanliaoTables", {read: ElementRef}) suanliaoTables?: ElementRef<HTMLElement>;
   @ViewChildren(NgScrollbar)
   private _scrollbars!: QueryList<NgScrollbar>;
   private get _scrollbar() {
@@ -263,8 +268,11 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     if (this.showLeftMenu) {
       padding[3] += this.leftMenuWidth$.value;
     }
-    if (this.suanliaogongshi) {
+    if (this.suanliaogongshi && this.showSuanliaogongshi) {
       padding[3] += this.suanliaogongshi.nativeElement.clientWidth;
+    }
+    if (this.suanliaoTables && this.showSuanliaoTables) {
+      padding[3] += this.suanliaoTables.nativeElement.clientWidth;
     }
     this.config.setConfig({padding}, {sync: false});
   }
@@ -308,12 +316,24 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     this._setCadPadding();
   }
 
+  toggleSuanliaogongshi(show?: boolean) {
+    this.showSuanliaogongshi = show ?? !this.showSuanliaogongshi;
+    this._setCadPadding();
+  }
+
+  toggleSuanliaoTables(show?: boolean) {
+    this.showSuanliaoTables = show ?? !this.showSuanliaoTables;
+    this._setCadPadding();
+  }
+
   toggleAllMenu(show?: boolean) {
     this.showAllMenu = show ?? !this.showAllMenu;
     this.toggleTopMenu(this.showAllMenu);
     this.toggleRightMenu(this.showAllMenu);
     this.toggleBottomMenu(this.showAllMenu);
     this.toggleLeftMenu(this.showAllMenu);
+    this.toggleSuanliaogongshi(this.showAllMenu);
+    this.toggleSuanliaoTables();
   }
 
   async save() {
@@ -375,6 +395,32 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
       this.isDraggingRight = false;
     }
     this._setCadPadding();
+  }
+
+  getSuanliaogongshiLeft() {
+    if (!this._isViewInited) {
+      return 0;
+    }
+    if (this.showLeftMenu) {
+      return this.leftMenuWidth$.value;
+    }
+    return 30;
+  }
+
+  getSuanliaoTablesLeft() {
+    if (!this._isViewInited) {
+      return 0;
+    }
+    let left = 0;
+    if (this.suanliaogongshi) {
+      left += this.suanliaogongshi.nativeElement.clientWidth;
+    }
+    if (this.showLeftMenu) {
+      left += this.leftMenuWidth$.value;
+    } else {
+      left += 30;
+    }
+    return left;
   }
 }
 

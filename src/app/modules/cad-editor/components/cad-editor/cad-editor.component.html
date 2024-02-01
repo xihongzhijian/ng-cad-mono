@@ -109,12 +109,24 @@
       ></div>
     </div>
     @if (params && params.suanliaogongshiInfo) {
-      <app-suanliaogongshi
-        #suanliaogongshi
-        class="menu"
-        [style.left.px]="showLeftMenu ? (leftMenuWidth$ | async) : 30"
-        [info]="params.suanliaogongshiInfo"
-      ></app-suanliaogongshi>
+      <div #suanliaogongshi class="suanliaogongshi menu" [class.mini]="!showSuanliaogongshi" [style.left.px]="getSuanliaogongshiLeft()">
+        <div class="btn-group">
+          <button mat-raised-button color="primary" (click)="toggleSuanliaogongshi()">
+            {{ showSuanliaogongshi ? "隐藏" : "显示" }}
+          </button>
+        </div>
+        <app-suanliaogongshi [info]="params.suanliaogongshiInfo"></app-suanliaogongshi>
+      </div>
+    }
+    @if (params && params.suanliaoTablesInfo) {
+      <div #suanliaoTables class="suanliao-tables menu" [class.mini]="!showSuanliaoTables" [style.left.px]="getSuanliaoTablesLeft()">
+        <div class="btn-group">
+          <button mat-raised-button color="primary" (click)="toggleSuanliaoTables()">
+            {{ showSuanliaoTables ? "隐藏" : "显示" }}
+          </button>
+        </div>
+        <app-suanliao-tables [suanliaoDataParams]="params.suanliaoTablesInfo.params"></app-suanliao-tables>
+      </div>
     }
   </div>
   <div class="menu bottom" [class.accent]="cadStatusStr !== '普通'" [@closeBottom]="showBottomMenu ? 'open' : 'closed'">

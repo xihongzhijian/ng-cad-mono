@@ -59,6 +59,26 @@
     }
   }
 
+  &.suanliaogongshi,
+  &.suanliao-tables {
+    position: absolute;
+    width: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .btn-group + * {
+      flex: 1 1 0;
+    }
+
+    &.mini {
+      height: auto;
+      .btn-group + * {
+        display: none;
+      }
+    }
+  }
+
   &.accent {
     background-color: #ffcefc;
   }
@@ -107,9 +127,6 @@
 .menu-icon {
   background-color: white;
   transition: 0.3s;
-  width: 30px;
-  height: 30px;
-  padding: 4px;
   &.left {
     float: right;
     &.closed {
@@ -137,10 +154,4 @@
   padding: 5px;
   border-radius: 8px;
   opacity: 0.8;
-}
-
-app-suanliaogongshi {
-  position: absolute;
-  width: auto;
-  // top: 0;
 }

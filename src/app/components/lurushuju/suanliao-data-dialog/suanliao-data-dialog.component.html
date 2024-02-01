@@ -1,5 +1,5 @@
 <div class="flex-110 flex-row">
-  <app-suanliaogongshi class="suanliaogongshis" [info]="suanliaogongshiInfo"></app-suanliaogongshi>
+  <app-suanliaogongshi class="suanliaogongshis" [info]="openCadOptions.suanliaogongshiInfo"></app-suanliaogongshi>
   <mat-divider vertical></mat-divider>
   <div class="suanliaocads flex-column">
     <div class="toolbar">
@@ -18,7 +18,7 @@
               [cad]="cad"
               [buttons]="cadItemButtons"
               [mubanExtraData]="mubanExtraData"
-              [suanliaogongshiInfo]="suanliaogongshiInfo"
+              [openCadOptions]="openCadOptions"
               [customInfo]="{index: i}"
             ></app-cad-item>
           }

@@ -1,5 +1,5 @@
 import {LurushujuIndexComponent} from "../lurushuju-index/lurushuju-index.component";
-import {menjiaoCadTypes, 企料CAD, 算料数据, 算料数据2, 配合框CAD} from "../xinghao-data";
+import {MenjiaoCadType, 企料CAD, 算料数据, 算料数据2, 配合框CAD} from "../xinghao-data";
 
 export interface MenjiaoInput {
   data?: 算料数据;
@@ -13,7 +13,7 @@ export interface MenjiaoOutput {
 
 export interface MenjiaoCadItemInfo {
   data: 配合框CAD | 企料CAD;
-  key1: (typeof menjiaoCadTypes)[number];
+  key1: MenjiaoCadType;
 }
 
 export interface MenjiaoShiyituCadItemInfo {

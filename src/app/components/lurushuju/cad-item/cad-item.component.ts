@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild} from "@angular/core";
+import {Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
@@ -6,13 +6,12 @@ import {exportCadData} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
 import {selectFiles} from "@lucilor/utils";
-import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {AppStatusService} from "@services/app-status.service";
+import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
 import {CadItemButton} from "./cad-item.types";
 
 @Component({
@@ -29,9 +28,10 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input({required: true}) customInfo: T = undefined as T;
   @Input() mubanExtraData: Partial<CadData> = {};
-  @Input() suanliaogongshiInfo?: SuanliaogongshiInfo;
+  @Input() openCadOptions?: OpenCadOptions;
   @Input() noMuban?: boolean;
   @Input() noZhankai?: boolean;
+  @Output() afterEditCad = new EventEmitter<void>();
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
   @ViewChild("mubanContainer") mubanContainer?: ElementRef<HTMLDivElement>;
@@ -99,12 +99,13 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
         data: cadData,
         center: true,
         isLocal: true,
-        suanliaogongshiInfo: this.suanliaogongshiInfo
+        ...this.openCadOptions
       }
     });
     if (result?.isSaved) {
       Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
       this.initCadViewer();
+      this.afterEditCad.emit();
     }
   }
 
@@ -149,7 +150,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
         data: mubanData,
         center: true,
         collection: "kailiaocadmuban",
-        suanliaogongshiInfo: this.suanliaogongshiInfo
+        ...this.openCadOptions
       }
     });
     if (result?.isSaved) {

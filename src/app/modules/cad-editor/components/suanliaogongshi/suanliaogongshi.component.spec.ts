@@ -1,4 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {HttpModule} from "@modules/http/http.module";
 import {SuanliaogongshiComponent} from "./suanliaogongshi.component";
 
 describe("SuanliaogongshiComponent", () => {
@@ -7,7 +8,7 @@ describe("SuanliaogongshiComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SuanliaogongshiComponent]
+      imports: [HttpModule, SuanliaogongshiComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SuanliaogongshiComponent);

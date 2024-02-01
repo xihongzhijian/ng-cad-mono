@@ -26,6 +26,14 @@
     </div>
   </ng-scrollbar>
 </div>
+<div class="shurushuju flex-column">
+  <app-table
+    class="flex-110"
+    [info]="shuruTable"
+    (toolbarButtonClick)="onShuruToolbar($event)"
+    (rowButtonClick)="onShuruRow($event)"
+  ></app-table>
+</div>
 <div class="test-cases flex-column">
   <div class="toolbar">
     <div>测试数据</div>

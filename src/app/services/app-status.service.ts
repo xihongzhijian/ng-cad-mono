@@ -16,6 +16,7 @@ import {
   validateLines
 } from "@app/cad/utils";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
+import {SuanliaoDataParams} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {
   CadData,
@@ -529,4 +530,5 @@ export interface OpenCadOptions {
   isLocal?: boolean;
   isDialog?: boolean;
   suanliaogongshiInfo?: SuanliaogongshiInfo;
+  suanliaoTablesInfo?: {params: SuanliaoDataParams};
 }
