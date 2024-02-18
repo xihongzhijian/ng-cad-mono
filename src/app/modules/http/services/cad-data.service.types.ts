@@ -16,6 +16,7 @@ export interface GetCadParams {
   optionsMatchType?: "and" | "or";
   sync?: boolean;
   restore?: boolean;
+  fields?: string[] | ObjectOf<boolean>;
 }
 
 export interface SetCadParams {

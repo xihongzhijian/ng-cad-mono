@@ -1,9 +1,10 @@
+import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {random} from "lodash";
 import {OptionsAll2} from "../lurushuju-index/lurushuju-index.types";
-import {menjiaoCadTypes, 算料数据, 算料数据2Keys, 门缝配置输入} from "../xinghao-data";
+import {cadMatchRules, MenjiaoCadType, menjiaoCadTypes, 算料数据, 算料数据2Keys, 门缝配置输入} from "../xinghao-data";
 
 export const autoFillMenjiao = (data: 算料数据, menjiaoOptionsAll: OptionsAll2) => {
   const setOption = (key: string) => {
@@ -89,4 +90,119 @@ export const getMenjiaoCadInfos = (data: 算料数据) => {
     }
   }
   return menjiaoCadInfos;
+};
+
+const matchOptionFn = `
+function (value1, value2, falseIfEmpty) {
+  if (value2 === undefined || value2 === null || value2 === "") {
+    return !falseIfEmpty;
+  }
+  if (value2 === "所有") {
+    return true;
+  }
+  if (typeof value2 === "string") {
+    value2 = value2.split(";");
+  }
+  if (!Array.isArray(value1)) {
+    value1 = [value1];
+  }
+  for (var i = 0; i < value1.length; i++) {
+    var v = value1[i];
+    if (value2.indexOf(v) >= 0) {
+      return true;
+    }
+  }
+  return false;
+}`;
+
+export const getCadSearch = (data: 算料数据, key1: MenjiaoCadType, key2: string, key3: string) => {
+  const missingValues = [];
+  const rule = cadMatchRules[key3];
+  if (!rule) {
+    throw new Error("没有对应的cad匹配规则");
+  }
+  const {分类, 选项} = rule;
+  for (const name of 选项) {
+    if (!data[name]) {
+      missingValues.push(name);
+    }
+  }
+  if (missingValues.length > 0) {
+    throw new Error("请先选择" + missingValues.join("、"));
+  }
+  const formValues: ObjectOf<any> = {};
+  for (const name of 选项) {
+    const value = data[name];
+    formValues[name] = value;
+  }
+  const [包边方向, 开启] = key1.split("+");
+  const filter = `
+    function fn() {
+      if (!this.选项) {
+        return false;
+      }
+      var 分类 = ${JSON.stringify(分类)};
+      var 选项 = ${JSON.stringify(选项)};
+      var form = ${JSON.stringify(formValues)};
+      var 包边方向1 = ${JSON.stringify(包边方向)};
+      var 开启1 = ${JSON.stringify(开启)};
+      var 包边方向2 = this.选项.包边方向;
+      var 开启2 = this.选项.开启;
+      var matchOption = ${matchOptionFn};
+      var check = function () {
+        if (包边方向1 === "包边在外") {
+          return matchOption(包边方向1, 包边方向2) && matchOption(开启1, 开启2, true);
+        } else if (包边方向1 === "包边在内") {
+          if (matchOption("包边在内", 包边方向2, true) && matchOption(开启1, 开启2, true)) {
+            return true;
+          }
+          if (开启1 === "外开") {
+            return matchOption("包边在外", 包边方向2) && matchOption("内开", 开启2, true);
+          } else if (开启1 === "内开") {
+            return matchOption("包边在外", 包边方向2) && matchOption("外开", 开启2, true);
+          }
+        }
+      }
+      if (!check()) {
+        return false;
+      }
+      if (分类.indexOf(this.分类) < 0) {
+        return false;
+      }
+      for (var i = 0; i < 选项.length; i++) {
+        var name = 选项[i];
+        var value1 = form[name];
+        var value2 = this.选项[name];
+        if (!matchOption(value1, value2)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    `;
+  const search: CadListInput["search"] = {$where: filter};
+  const addCadData: CadListInput["addCadData"] = {分类: key3, 选项: {开启}};
+  return {search, addCadData};
+};
+
+export const getShiyituCadSearch = (data: 算料数据, key1: MenjiaoCadType) => {
+  const 开启 = key1.split("+")[1];
+  const 产品分类 = data.产品分类;
+  const 分类 = "算料单示意图";
+  const filter = `
+    function fn() {
+      if (!this.选项) {
+        return false;
+      }
+      var 产品分类1 = ${JSON.stringify(产品分类)};
+      var 产品分类2 = this.选项.产品分类;
+      var 开启1 = ${JSON.stringify(开启)};
+      var 开启2 = this.选项.开启;
+      var matchOption = ${matchOptionFn};
+      return matchOption(产品分类1, 产品分类2) && matchOption(开启1, 开启2);
+    }
+    `;
+  const search: CadListInput["search"] = {$where: filter, 分类, 名字: {$ne: "开启锁向示意图"}};
+  const addCadData: CadListInput["addCadData"] = {分类, 选项: {产品分类, 开启}};
+  return {search, addCadData};
 };

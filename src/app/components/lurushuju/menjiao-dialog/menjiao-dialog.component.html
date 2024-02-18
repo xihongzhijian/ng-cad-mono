@@ -26,7 +26,7 @@
                     <app-cad-item
                       [cad]="item"
                       [buttons]="shiyituCadItemButtons"
-                      [customInfo]="{data: formData[key1]['示意图CAD'], index: $index}"
+                      [customInfo]="{key1, index: $index}"
                       [openCadOptions]="getOpenCadOptions(key1)"
                       [noMuban]="true"
                       [noZhankai]="true"
@@ -70,8 +70,9 @@
 <div class="toolbar center">
   <button mat-raised-button color="primary" (click)="submit(false)">提交</button>
   <button mat-raised-button color="primary" (click)="submit(true)">提交并关闭</button>
+  <button mat-raised-button color="primary" (click)="cancel(true)">不提交关闭</button>
   @if (!data.component?.production) {
-    <button mat-raised-button color="primary" (click)="cancel()">cancel</button>
+    <button mat-raised-button color="primary" (click)="cancel(false)">cancel</button>
     <button mat-raised-button color="primary" (click)="autoFill()">autoFill</button>
   }
 </div>

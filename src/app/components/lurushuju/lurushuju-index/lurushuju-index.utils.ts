@@ -1,100 +1,9 @@
-import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {ObjectOf} from "@lucilor/utils";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
-import {cadMatchRules, 算料数据} from "../xinghao-data";
+import {算料数据} from "../xinghao-data";
 import {MenjiaoData, OptionsAll, OptionsAll2, ShuruTableData, XuanxiangTableData} from "./lurushuju-index.types";
-
-export const getCadSearch = (data: 算料数据, key1: string, key2: string, key3: string) => {
-  const missingValues = [];
-  const rule = cadMatchRules[key3];
-  if (!rule) {
-    throw new Error("没有对应的cad匹配规则");
-  }
-  const {分类, 选项} = rule;
-  for (const name of 选项) {
-    if (!data[name]) {
-      missingValues.push(name);
-    }
-  }
-  if (missingValues.length > 0) {
-    throw new Error("请先选择" + missingValues.join("、"));
-  }
-  const formValues: ObjectOf<any> = {};
-  for (const name of 选项) {
-    const value = data[name];
-    formValues[name] = value;
-  }
-  const [包边方向, 开启] = key1.split("+");
-  const filter = `
-    function fn() {
-      if (!this.选项) {
-        return false;
-      }
-      var 分类 = ${JSON.stringify(分类)};
-      var 选项 = ${JSON.stringify(选项)};
-      var form = ${JSON.stringify(formValues)};
-      var 包边方向1 = ${JSON.stringify(包边方向)};
-      var 开启1 = ${JSON.stringify(开启)};
-      var 包边方向2 = this.选项.包边方向;
-      var 开启2 = this.选项.开启;
-      var matchOption = function (value1, value2, falseIfEmpty) {
-        if (value2 === undefined || value2 === null || value2 === "") {
-          return !falseIfEmpty;
-        }
-        if (value2 === "所有") {
-          return true;
-        }
-        if (typeof value2 === "string") {
-          value2 = value2.split(";");
-        }
-        if (!Array.isArray(value1)) {
-          value1 = [value1];
-        }
-        for (var i = 0; i < value1.length; i++) {
-          var v = value1[i];
-          if (value2.indexOf(v) >= 0) {
-            return true;
-          }
-        }
-        return false;
-      }
-      var check = function () {
-        if (包边方向1 === "包边在外") {
-          return matchOption(包边方向1, 包边方向2) && matchOption(开启1, 开启2, true);
-        } else if (包边方向1 === "包边在内") {
-          if (matchOption("包边在内", 包边方向2, true) && matchOption(开启1, 开启2, true)) {
-            return true;
-          }
-          if (开启1 === "外开") {
-            return matchOption("包边在外", 包边方向2) && matchOption("内开", 开启2, true);
-          } else if (开启1 === "内开") {
-            return matchOption("包边在外", 包边方向2) && matchOption("外开", 开启2, true);
-          }
-        }
-      }
-      if (!check()) {
-        return false;
-      }
-      if (分类.indexOf(this.分类) < 0) {
-        return false;
-      }
-      for (var i = 0; i < 选项.length; i++) {
-        var name = 选项[i];
-        var value1 = form[name];
-        var value2 = this.选项[name];
-        if (!matchOption(value1, value2)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    `;
-  const search: ObjectOf<any> = {$where: filter};
-  const addCadData: CadListInput["addCadData"] = {分类: key3, 选项: {开启}};
-  return {search, addCadData};
-};
 
 export const getXuanxiangTable = (): TableRenderInfo<XuanxiangTableData> => {
   return {
@@ -166,7 +75,20 @@ export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
           if (!data) {
             return "";
           }
-          const strs = Object.entries(data).map(([k, v]) => `${k}${v}`);
+          const map: ObjectOf<string> = {
+            锁边门缝: "锁边",
+            铰边门缝: "铰边",
+            顶部门缝: "上",
+            底部门缝: "下"
+          };
+          const strs = Object.entries(data)
+            .map(([k, v]) => {
+              if (k.includes("内间隙") && v === 0) {
+                return "";
+              }
+              return `${map[k] || k}${v}`;
+            })
+            .filter((v) => v);
           return strs.join(", ");
         }
       },

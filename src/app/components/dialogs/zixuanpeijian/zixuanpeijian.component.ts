@@ -27,7 +27,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {cloneDeep, debounce, uniq, uniqueId} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {BehaviorSubject, first, lastValueFrom} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../../modules/directives/click-stop-propagation.directive";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
@@ -420,7 +420,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
           }
         }
         if (found) {
-          item.data = found.data.clone(true);
+          item.data = found.data;
         } else {
           if (noValidateCads) {
             getCadPreview("cad", item.data).then((img) => {
@@ -602,6 +602,11 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   async submit() {
     const {value} = this.step$.value;
     const stepFixed = this.data?.stepFixed;
+    const ids = this.result.零散.map((v) => v.info.houtaiId);
+    const cads = (await this.http.getCad({collection: "cad", ids})).cads;
+    for (const item of this.result.零散) {
+      item.data = cads.find((v) => v.id === item.info.houtaiId)?.clone(true) || item.data;
+    }
     if (value === 1) {
       const errors = new Set<string>();
       if (this.data?.checkEmpty) {
@@ -942,25 +947,20 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async copyLingsanCad(type: string, i: number) {
-    const data = this.lingsanCads[type][i].data;
-    const name = await this.message.prompt(
-      {type: "string", label: "零散配件名字", value: data.name + "_复制", validators: Validators.required},
-      {title: "复制零散配件"}
-    );
-    if (!name) {
-      return;
-    }
+    const item = this.lingsanCads[type][i];
     const collection = "cad";
-    let id = data.id;
-    const responseData = await this.http.getData<{id: string}>("peijian/cad/copyCad", {collection, id, data: {名字: name}});
-    if (!responseData) {
+    const ids = await this.http.mongodbCopy(collection, [item.data.id]);
+    if (!ids || !ids[0]) {
       return;
     }
-    id = responseData.id;
-    const result = await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
-    if (result?.isSaved) {
-      this.step3Refresh();
+    if (await this.message.confirm("是否编辑新的CAD？")) {
+      const {cads} = await this.http.getCad({collection, ids});
+      const data = cads[0];
+      if (data) {
+        await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
+      }
     }
+    this.step3Refresh();
   }
 
   async openLingsanCad(type: string, i: number) {
@@ -1227,16 +1227,15 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
   }
 
-  private _onCadImgErrorLock$ = new BehaviorSubject(false);
   async onCadImgError(item: ZixuanpeijianlingsanCadItem) {
-    if (this._onCadImgErrorLock$.value) {
-      await lastValueFrom(this._onCadImgErrorLock$.pipe(first((v) => !v)));
+    const cads = await this.http.getCad({collection: "cad", id: item.data.id});
+    const data = cads.cads[0];
+    if (!data) {
+      return;
     }
-    this._onCadImgErrorLock = true;
-    const img = await getCadPreview("cad", item.data, {http: this.http});
+    const img = await getCadPreview("cad", data, {http: this.http});
     item.img = img;
     this.lingsanCadImgs[item.data.id] = img;
-    this._onCadImgErrorLock = false;
   }
 }
 

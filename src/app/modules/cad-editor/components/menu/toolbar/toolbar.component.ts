@@ -5,6 +5,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
 import {local} from "@app/app.common";
+import {openCadLineInfoForm} from "@app/cad/utils";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
@@ -309,15 +310,12 @@ export class ToolbarComponent extends Subscribed() {
     }
   }
 
-  async editGongshi() {
+  async editLineInfo() {
     const line = await this._checkSelectedOnlyOne();
-    if (line) {
-      const gongshi = await this.message.prompt({value: line.gongshi, type: "string", label: "公式"});
-      if (gongshi !== null) {
-        line.gongshi = gongshi;
-        this.status.cad.render(line);
-      }
+    if (!line) {
+      return;
     }
+    await openCadLineInfoForm(this.message, this.status.cad, line);
   }
 
   async editBbzhmkgz() {
@@ -349,15 +347,11 @@ export class ToolbarComponent extends Subscribed() {
   async copyCad() {
     const collection = this.status.collection$.getValue();
     const loaderId = this.spinner.defaultLoaderId;
-    const response = await this.http.post<string[]>(
-      "ngcad/mongodbTableCopy",
-      {collection, vids: [this.status.cad.data.id]},
-      {spinner: loaderId}
-    );
-    if (response?.code === 0) {
-      const yes = await this.message.confirm({title: response.msg, content: "是否跳转至新的CAD？"});
+    const ids = await this.http.mongodbCopy(collection, [this.status.cad.data.id], {spinner: loaderId});
+    if (ids) {
+      const yes = await this.message.confirm("是否跳转至新的CAD？");
       if (yes) {
-        const cads2 = await this.http.getCad({ids: response.data, collection}, {spinner: loaderId});
+        const cads2 = await this.http.getCad({ids, collection}, {spinner: loaderId});
         this.spinner.show(loaderId);
         await this.status.openCad({data: cads2.cads[0], center: true});
         this.spinner.hide(loaderId);

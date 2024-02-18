@@ -14,7 +14,7 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
 import {DomSanitizer} from "@angular/platform-browser";
-import {imgCadEmpty, timer} from "@app/app.common";
+import {imgCadEmpty} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber} from "@lucilor/utils";
@@ -28,6 +28,7 @@ import {NgScrollbar} from "ngx-scrollbar";
 import {lastValueFrom} from "rxjs";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
+import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
 import {openCadSearchFormDialog} from "../cad-search-form/cad-search-form.component";
 import {getOpenDialogFunc} from "../dialog.common";
 import {CadListInput, CadListOutput, selectModes} from "./cad-list.types";
@@ -158,12 +159,16 @@ export class CadListComponent implements AfterViewInit {
     } else {
       const search = {...this.data.search};
       if (!standaloneSearch || this.searchNameInput) {
-        search[this.searchField] = this.searchNameInput;
+        if (!search[this.searchField] || this.searchNameInput) {
+          search[this.searchField] = this.searchNameInput;
+        }
       }
       const params: GetCadParams = {collection, page, limit, search};
       params.qiliao = this.data.qiliao;
       params.options = options;
       params.optionsMatchType = matchType;
+      const keys: (keyof CadData)[] = ["id", "name", "options", "conditions", "type", "type2"];
+      params.fields = keys.map((v) => `json.${v}`);
       if (this.showCheckedOnly) {
         params.ids = this.checkedItems.slice();
       }
@@ -181,13 +186,6 @@ export class CadListComponent implements AfterViewInit {
       this.pageData.push(pageData);
     });
     this.syncCheckedItems();
-    const timerName = "cad-list-getData";
-    timer.start(timerName);
-    for (const data of this.pageData) {
-      const url = await getCadPreview(collection, data.data, {http: this.http});
-      data.img = this.sanitizer.bypassSecurityTrustUrl(url) as string;
-    }
-    timer.end(timerName, "渲染CAD列表");
     return result;
   }
 
@@ -333,11 +331,16 @@ export class CadListComponent implements AfterViewInit {
     if (!name) {
       return;
     }
-    const response = await this.http.post("ngcad/mongodbTableInsert", {
-      collection: this.data.collection,
-      data: {...this.data.addCadData, 名字: name}
-    });
-    if (response?.code === 0) {
+    const {collection} = this.data;
+    const id = await this.http.mongodbInsert(collection, {...this.data.addCadData, 名字: name});
+    if (id) {
+      if (await this.message.confirm("是否编辑新的CAD？")) {
+        const {cads} = await this.http.getCad({collection, id});
+        const data = cads[0];
+        if (data) {
+          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
+        }
+      }
       this.search();
     }
   }
@@ -355,11 +358,16 @@ export class CadListComponent implements AfterViewInit {
     if (!(await this.message.confirm(`是否确定复制【${item.data.name}】？`))) {
       return;
     }
-    const response = await this.http.post("ngcad/mongodbTableCopy", {
-      collection: this.data.collection,
-      vids: [item.data.id]
-    });
-    if (response?.code === 0) {
+    const {collection} = this.data;
+    const ids = await this.http.mongodbCopy(collection, [item.data.id]);
+    if (ids) {
+      if (await this.message.confirm("是否编辑新的CAD？")) {
+        const {cads} = await this.http.getCad({collection, ids});
+        const data = cads[0];
+        if (data) {
+          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
+        }
+      }
       this.search();
     }
   }
@@ -376,7 +384,13 @@ export class CadListComponent implements AfterViewInit {
 
   async onCadImgError(i: number) {
     const item = this.pageData[i];
-    const url = await getCadPreview(this.data.collection, item.data, {http: this.http});
+    const {collection} = this.data;
+    const cads = await this.http.getCad({id: item.data.id, collection}, {spinner: false});
+    const data = cads.cads[0];
+    if (!data) {
+      return;
+    }
+    const url = await getCadPreview(collection, data, {http: this.http});
     item.img = url;
   }
 }

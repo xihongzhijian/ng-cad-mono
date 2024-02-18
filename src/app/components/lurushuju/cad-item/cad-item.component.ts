@@ -2,7 +2,7 @@ import {Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
-import {exportCadData} from "@app/cad/utils";
+import {exportCadData, openCadLineInfoForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
 import {selectFiles} from "@lucilor/utils";
@@ -187,7 +187,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       width,
       height,
       backgroundColor: "black",
-      enableZoom: true,
+      enableZoom: false,
       dragAxis: "xy",
       selectMode: "single",
       entityDraggable: false,
@@ -201,16 +201,16 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       if (!(entity instanceof CadLineLike)) {
         return;
       }
-      const form: InputInfo<typeof entity>[] = [
-        {type: "string", label: "名字", model: {data: entity, key: "mingzi"}},
-        {type: "string", label: "名字2", model: {data: entity, key: "mingzi2"}},
-        {type: "string", label: "公式", model: {data: entity, key: "gongshi"}}
-      ];
-      const result = await this.message.form(form);
+      const result = await openCadLineInfoForm(this.message, cadViewer, entity);
       if (result) {
-        await cadViewer.render();
         afterDblClickForm();
       }
+    });
+    cadViewer.on("click", () => {
+      cadViewer.setConfig("enableZoom", true);
+    });
+    cadViewer.on("pointerleave", () => {
+      cadViewer.setConfig("enableZoom", false);
     });
     setTimeout(() => {
       cadViewer.center();

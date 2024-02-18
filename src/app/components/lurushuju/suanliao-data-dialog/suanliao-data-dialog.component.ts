@@ -135,9 +135,7 @@ export class SuanliaoDataDialogComponent {
     });
     const data = result?.items[0]?.data as 算料数据 | undefined;
     if (data) {
-      if (await this.message.confirm("复制算料CAD会覆盖原有数据，确定复制吗？")) {
-        this.suanliaoData.算料CAD = data[key1].算料CAD;
-      }
+      this.suanliaoData.算料CAD.push(...data[key1].算料CAD);
     } else {
       this.message.alert("数据为空");
     }

@@ -23,6 +23,8 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, ObjectOf, Point} from "@lucilor/utils";
+import {InputInfo} from "@modules/input/components/input.types";
+import {MessageService} from "@modules/message/services/message.service";
 import {difference, isEmpty} from "lodash";
 
 export const reservedDimNames = ["前板宽", "后板宽", "小前板宽", "小后板宽", "骨架宽", "小骨架宽", "骨架中空宽", "小骨架中空宽"];
@@ -600,4 +602,17 @@ export const exportCadData = (data: CadData, hideLineLength: boolean) => {
     }
   }
   return exportData;
+};
+
+export const openCadLineInfoForm = async (message: MessageService, cad: CadViewer, line: CadLineLike) => {
+  const form: InputInfo<typeof line>[] = [
+    {type: "string", label: "名字", model: {data: line, key: "mingzi"}},
+    {type: "string", label: "名字2", model: {data: line, key: "mingzi2"}},
+    {type: "string", label: "公式", model: {data: line, key: "gongshi"}}
+  ];
+  const result = await message.form(form);
+  if (result) {
+    await cad.render();
+  }
+  return result;
 };

@@ -21,7 +21,7 @@ import {cloneDeep, isEmpty} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
-import {getCadSearch, getOptionInputInfo, getOptions2} from "../lurushuju-index/lurushuju-index.utils";
+import {getOptionInputInfo, getOptions2} from "../lurushuju-index/lurushuju-index.utils";
 import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dialog.component";
 import {SuanliaoDataInput} from "../suanliao-data-dialog/suanliao-data-dialog.type";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
@@ -41,7 +41,7 @@ import {
   门缝配置输入
 } from "../xinghao-data";
 import {MenjiaoCadItemInfo, MenjiaoInput, MenjiaoOutput, MenjiaoShiyituCadItemInfo} from "./menjiao-dialog.types";
-import {autoFillMenjiao, getMenjiaoCadInfos, updateMenjiaoForm} from "./menjiao-dialog.utils";
+import {autoFillMenjiao, getCadSearch, getMenjiaoCadInfos, getShiyituCadSearch, updateMenjiaoForm} from "./menjiao-dialog.utils";
 
 @Component({
   selector: "app-menjiao-dialog",
@@ -364,8 +364,10 @@ export class MenjiaoDialogComponent implements OnInit {
     }
   }
 
-  cancel() {
-    this.dialogRef.close();
+  async cancel(confirm: boolean) {
+    if (!confirm || (await this.message.confirm("确定关闭吗？"))) {
+      this.dialogRef.close();
+    }
   }
 
   autoFill() {
@@ -410,16 +412,25 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async selectShiyituCad(key1: MenjiaoCadType | CadItemComponent<MenjiaoShiyituCadItemInfo>) {
-    const data = typeof key1 === "string" ? this.formData[key1].示意图CAD : key1.customInfo.data;
+    if (typeof key1 !== "string") {
+      key1 = key1.customInfo.key1;
+    }
+    const data = this.formData[key1].示意图CAD;
     const checkedItems = data.算料单示意图.map((v) => v.json.id);
+    const {component} = this.data;
+    if (!component) {
+      return;
+    }
+    const {search, addCadData} = getShiyituCadSearch(this.formData, key1);
     const result = await openCadListDialog(this.dialog, {
       data: {
         selectMode: "multiple",
         collection: "cad",
         raw: true,
         hideCadInfo: true,
-        search: {分类: "算料单示意图"},
-        checkedItems
+        search,
+        checkedItems,
+        addCadData
       }
     });
     if (result) {
@@ -429,7 +440,8 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async removeShiyituCad(component: CadItemComponent<MenjiaoShiyituCadItemInfo>) {
-    const {data, index} = component.customInfo;
+    const {key1, index} = component.customInfo;
+    const data = this.formData[key1].示意图CAD;
     const cad = data.算料单示意图[index];
     if (!cad || !(await this.message.confirm(`确定删除【${cad.名字}】吗？`))) {
       return;

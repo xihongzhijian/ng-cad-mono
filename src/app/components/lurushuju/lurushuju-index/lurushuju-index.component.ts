@@ -192,7 +192,6 @@ export class LurushujuIndexComponent implements OnInit {
   async editXinghao(xinghao: XinghaoData) {
     const data = cloneDeep(xinghao);
     const data2: XinghaoRaw = {名字: data.mingzi, 所属门窗: data.menchuang, 所属工艺: data.gongyi, 订单流程: data.dingdanliucheng};
-    console.log(data2);
     const mingziOld = data.mingzi;
     const form: InputInfo[] = [
       {type: "string", label: "名字", model: {data, key: "mingzi"}, validators: Validators.required},

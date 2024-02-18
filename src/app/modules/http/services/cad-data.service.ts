@@ -368,30 +368,30 @@ export class CadDataService extends HttpService {
     return await this.getData<UploadImageResult>("ngcad/uploadImage", {key: "file", file}, options);
   }
 
-  async mongodbInsert(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>) {
-    const response = await this.post("ngcad/mongodbTableInsert", {collection, data, extraData});
+  async mongodbInsert(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>, options?: HttpOptions) {
+    return await this.getData<string>("ngcad/mongodbTableInsert", {collection, data, extraData}, options);
+  }
+
+  async mongodbUpdate(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>, options?: HttpOptions) {
+    const response = await this.post("ngcad/mongodbTableUpdate", {collection, data, extraData}, options);
     if (response?.code === 0) {
       return true;
     }
     return false;
   }
 
-  async mongodbUpdate(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>) {
-    const response = await this.post("ngcad/mongodbTableUpdate", {collection, data, extraData});
-    if (response?.code === 0) {
-      return true;
-    }
-    return false;
-  }
-
-  async mongodbDelete(collection: CadCollection, ids: string | string[]) {
+  async mongodbDelete(collection: CadCollection, ids: string | string[], options?: HttpOptions) {
     if (!Array.isArray(ids)) {
       ids = [ids];
     }
-    const response = await this.post("ngcad/mongodbTableDelete", {collection, vids: ids});
+    const response = await this.post("ngcad/mongodbTableDelete", {collection, vids: ids}, options);
     if (response?.code === 0) {
       return true;
     }
     return false;
+  }
+
+  async mongodbCopy(collection: CadCollection, ids: string | string[], options?: HttpOptions) {
+    return await this.getData<string[]>("ngcad/mongodbTableCopy", {collection, vids: ids}, options);
   }
 }
