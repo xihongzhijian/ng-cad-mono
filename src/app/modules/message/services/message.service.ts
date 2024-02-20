@@ -142,9 +142,6 @@ export class MessageService {
   }
 
   async json(json: any, data: Omit<MessageDataParams<JsonMessageData>, "json"> = {}, others: MessageDataParams2<JsonMessageData> = {}) {
-    if (!(await this.confirm("目前有bug"))) {
-      return null;
-    }
     const data2 = {...data, content: "", json};
     return (await this.open({data: this._getData(data2, "json"), width: "80vw", height: "80vh", ...others})) as any;
   }

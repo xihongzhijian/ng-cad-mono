@@ -87,8 +87,8 @@
     "@types/qrcode": "^1.5.5",
     "@types/quill": "^2.0.14",
     "@types/uuid": "^9.0.8",
-    "@typescript-eslint/eslint-plugin": "^7.0.1",
-    "@typescript-eslint/parser": "^7.0.1",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
     "angular-animations": "^0.11.0",
     "archiver": "^6.0.1",
     "axios": "^1.6.7",
@@ -113,5 +113,5 @@
     "ts-node": "^10.9.2",
     "typescript": "~5.3.3"
   },
-  "packageManager": "yarn@4.0.2"
+  "packageManager": "yarn@4.1.0"
 }
