@@ -388,7 +388,7 @@ export class CadDataService extends HttpService {
   async mongodbDelete(collection: CadCollection, data: {id: string} | {ids: string[]} | {filter: ObjectOf<any>}, options?: HttpOptions) {
     const params: ObjectOf<any> = {collection};
     if ("id" in data) {
-      params.vid = [data.id];
+      params.vids = [data.id];
     } else if ("ids" in data) {
       params.vids = data.ids;
     } else if ("filter" in data) {

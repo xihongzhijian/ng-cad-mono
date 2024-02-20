@@ -3,6 +3,7 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
+import {CadCollection} from "@app/cad/collections";
 import {exportCadData, openCadLineInfoForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
@@ -198,7 +199,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     this.initMubanViewer();
   }
 
-  initCadViewer0(data: CadData, containerEl: HTMLDivElement, afterDblClickForm: () => void) {
+  initCadViewer0(collection: CadCollection, data: CadData, containerEl: HTMLDivElement, afterDblClickForm: () => void) {
     const width = this.cadWidth;
     const height = (width / 300) * 150;
     this.cadHeight = height;
@@ -220,7 +221,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       if (!(entity instanceof CadLineLike)) {
         return;
       }
-      const result = await openCadLineInfoForm(this.message, cadViewer, entity);
+      const result = await openCadLineInfoForm(collection, this.message, cadViewer, entity);
       if (result) {
         afterDblClickForm();
       }
@@ -247,7 +248,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     containerEl.innerHTML = "";
     const data = new CadData(cad.json);
     generateLineTexts(data);
-    const cadViewer = this.initCadViewer0(data, containerEl, () => {
+    const cadViewer = this.initCadViewer0("cad", data, containerEl, () => {
       cad.json = exportCadData(data, true);
     });
     this.cadViewer = cadViewer;
@@ -276,7 +277,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     const containerEl = mubanContainer.nativeElement;
     containerEl.innerHTML = "";
     generateLineTexts(mubanData);
-    const cadViewer = this.initCadViewer0(mubanData, containerEl, () => {});
+    const cadViewer = this.initCadViewer0("CADmuban", mubanData, containerEl, () => {});
     this.mubanViewer = cadViewer;
     await this.updateMubanInputs();
   }

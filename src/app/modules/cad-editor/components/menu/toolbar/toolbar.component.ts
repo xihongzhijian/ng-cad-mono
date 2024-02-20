@@ -315,7 +315,7 @@ export class ToolbarComponent extends Subscribed() {
     if (!line) {
       return;
     }
-    await openCadLineInfoForm(this.message, this.status.cad, line);
+    await openCadLineInfoForm(this.status.collection$.value, this.message, this.status.cad, line);
   }
 
   async editBbzhmkgz() {

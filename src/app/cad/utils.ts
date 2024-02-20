@@ -27,6 +27,7 @@ import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, 
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {difference, isEmpty} from "lodash";
+import {CadCollection} from "./collections";
 
 export const reservedDimNames = ["前板宽", "后板宽", "小前板宽", "小后板宽", "骨架宽", "小骨架宽", "骨架中空宽", "小骨架中空宽"];
 
@@ -605,16 +606,18 @@ export const exportCadData = (data: CadData, hideLineLength: boolean) => {
   return exportData;
 };
 
-export const openCadLineInfoForm = async (message: MessageService, cad: CadViewer, line: CadLineLike) => {
+export const openCadLineInfoForm = async (collection: CadCollection, message: MessageService, cad: CadViewer, line: CadLineLike) => {
   const lineLength = Number(line.length.toFixed(2));
   const isLine = line instanceof CadLine;
   const form: InputInfo<typeof line>[] = [
     {type: "number", label: "线长", value: lineLength, readonly: !isLine},
     {type: "string", label: "名字", model: {data: line, key: "mingzi"}},
     {type: "string", label: "名字2", model: {data: line, key: "mingzi2"}},
-    {type: "string", label: "公式", model: {data: line, key: "gongshi"}},
-    {type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}}
+    {type: "string", label: "公式", model: {data: line, key: "gongshi"}}
   ];
+  if (collection === "CADmuban") {
+    form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});
+  }
   const result = await message.form(form);
   if (result) {
     if (isLine && result.线长 !== lineLength) {
