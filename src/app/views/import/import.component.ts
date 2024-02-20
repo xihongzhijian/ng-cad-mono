@@ -14,6 +14,7 @@ import {CadData, CadDimensionLinear, CadLayer, CadLineLike, CadMtext} from "@luc
 import {downloadByString, ObjectOf, ProgressBar, timeout} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
@@ -240,7 +241,7 @@ export class ImportComponent extends Utils() implements OnInit {
     if (isXinghao) {
       const xinghao = cads[0].data.options.型号;
       const uniqCodes = cads.map((v) => v.data.info.唯一码);
-      const oldCadsRaw = await this.http.queryMongodb({
+      const oldCadsRaw = await this.http.queryMongodb<HoutaiCad>({
         collection: "cad",
         where: {"选项.型号": xinghao, 分类: "算料", 名字: {$regex: "^((?!分体|上下包边).)*$"}}
       });

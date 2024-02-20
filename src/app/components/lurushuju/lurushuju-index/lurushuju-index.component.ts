@@ -157,6 +157,7 @@ export class LurushujuIndexComponent implements OnInit {
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/getXinghao", {名字: this.xinghaoName});
     const xinghao = getXinghao(xinghaoRaw);
     this.xinghao = xinghao;
+    await this.updateXinghao(xinghaoRaw?.产品分类);
   }
 
   async addXinghao() {
@@ -194,7 +195,7 @@ export class LurushujuIndexComponent implements OnInit {
     const data2: XinghaoRaw = {名字: data.mingzi, 所属门窗: data.menchuang, 所属工艺: data.gongyi, 订单流程: data.dingdanliucheng};
     const mingziOld = data.mingzi;
     const form: InputInfo[] = [
-      {type: "string", label: "名字", model: {data, key: "mingzi"}, validators: Validators.required},
+      {type: "string", label: "名字", model: {data: data, key: "mingzi"}, validators: Validators.required},
       {
         type: "image",
         label: "图片",
@@ -231,10 +232,13 @@ export class LurushujuIndexComponent implements OnInit {
     ];
     const result = await this.message.form(form);
     if (result) {
+      data2.名字 = data.mingzi;
       const response = await this.http.post("shuju/api/editXinghao", {mingziOld, data: {...xinghao, ...data}});
       if (response?.code === 0) {
-        await this.setXinghao(data2, true, data.mingzi);
-        await this.getXinghaos();
+        const response2 = await this.setXinghao(data2, true, mingziOld);
+        if (response2?.code === 0) {
+          await this.getXinghaos();
+        }
       }
     }
   }
@@ -361,13 +365,13 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     this.xinghaoInputInfos = [];
+    await Promise.all([this.getXinghaosIfNotFetched(), this.getXinghaoOptionsAllIfNotFetched()]);
     if (!this.xinghao) {
       await this.getXinghao();
     }
     if (!this.xinghao) {
       return;
     }
-    await Promise.all([this.getXinghaosIfNotFetched(), this.getXinghaoOptionsAllIfNotFetched()]);
     const {xinghao} = this;
     const onChange = debounce(async (data: Partial<Xinghao>) => {
       await this.setXinghao(data);
@@ -434,12 +438,6 @@ export class LurushujuIndexComponent implements OnInit {
       const tabName = session.load<string>(this.tabNameKey);
       this.openTab(tabName || "");
     }
-    if (!this.xinghao) {
-      await this.getXinghao();
-    }
-    if (!this.xinghao) {
-      return;
-    }
     await Promise.all([
       this.getXinghaosIfNotFetched(),
       this.getXinghaoOptionsAllIfNotFetched(),
@@ -448,6 +446,12 @@ export class LurushujuIndexComponent implements OnInit {
       this.geVarNamesAllIfNotFetched(),
       this.getBancaiListIfNotFetched()
     ]);
+    if (!this.xinghao) {
+      await this.getXinghao();
+    }
+    if (!this.xinghao) {
+      return;
+    }
     this.menshans = await this.http.queryMySql<(typeof this.menshans)[number]>({
       table: "p_menshan",
       fields: ["vid", "mingzi", "zuchenghuajian"]
@@ -519,7 +523,7 @@ export class LurushujuIndexComponent implements OnInit {
   }
 
   async setXinghao(data: Partial<Xinghao>, silent?: boolean, name = this.xinghao?.名字) {
-    await this.http.post("shuju/api/setXinghao", {名字: name, data, silent}, {spinner: false});
+    return await this.http.post("shuju/api/setXinghao", {名字: name, data, silent}, {spinner: false});
   }
 
   async updateXinghao(产品分类?: Xinghao["产品分类"]) {
@@ -847,7 +851,7 @@ export class LurushujuIndexComponent implements OnInit {
       },
       {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}}
     ];
-    return await this.message.form(form);
+    return await this.message.form<typeof data>(form);
   }
 
   async onShuruToolbar(event: ToolbarButtonEvent) {
@@ -1056,5 +1060,31 @@ export class LurushujuIndexComponent implements OnInit {
     const menshans = this.menshans.filter((v) => xiaoguotuValues.has(v.mingzi));
     const huajianIds = this.getHuajianIds(menshans);
     return this.huajians.filter((v) => huajianIds.has(v.vid));
+  }
+
+  async purgeXinghaos() {
+    const data = {name: "", regex: true};
+    const result = await this.message.form<typeof data>({
+      title: "清除多余型号数据",
+      inputs: [
+        {
+          type: "string",
+          label: "型号名字",
+          hint: "若留空则清除所有多余数据",
+          model: {data, key: "name"}
+        },
+        {type: "boolean", label: "正则匹配", model: {data, key: "regex"}}
+      ]
+    });
+    if (!result) {
+      return;
+    }
+    const filter: ObjectOf<any> = {};
+    if (data.regex) {
+      filter.名字 = {$regex: data.name};
+    } else {
+      filter.名字 = data.name;
+    }
+    await this.http.post("shuju/api/purgeXinghaos", {filter});
   }
 }

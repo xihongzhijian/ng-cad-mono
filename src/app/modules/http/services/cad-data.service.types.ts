@@ -134,6 +134,11 @@ export interface TableDataBase {
   mingzi: string;
 }
 
+export interface MongodbDataBase {
+  _id: string;
+  名字: string;
+}
+
 export interface BancaiListData {
   bancais: BancaiList[];
   bancaiKeys: string[];
@@ -162,16 +167,14 @@ export interface TableRenderDataColumn {
   inputOnAdd?: number;
 }
 
-export type HoutaiCad = {
-  _id: string;
-  名字: string;
+export interface HoutaiCad extends MongodbDataBase {
   分类: string;
   分类2: string;
   选项: ObjectOf<string>;
   条件: string[];
   显示名字: string;
   json: ObjectOf<any>;
-};
+}
 
 export const getHoutaiCad = (data = new CadData()): HoutaiCad => {
   return {

@@ -16,7 +16,7 @@ import {CadCollection} from "@app/cad/collections";
 import {setDimensionText} from "@app/cad/utils";
 import {toFixed} from "@app/utils/func";
 import {Debounce} from "@decorators/debounce";
-import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, setLinesLength} from "@lucilor/cad-viewer";
+import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai, setLinesLength} from "@lucilor/cad-viewer";
 import {ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {ContextMenu} from "@mixins/context-menu.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -937,6 +937,13 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   addLingsanItem(type: string, i: number) {
     const data0 = this.lingsanCads[type][i].data;
     const data = data0.clone(true);
+    data.zhankai = [new CadZhankai()];
+    data.entities.forEach((e) => {
+      if (e instanceof CadLineLike) {
+        e.gongshi = "";
+        e.guanlianbianhuagongshi = "";
+      }
+    });
     this.result.零散.push({data, info: {houtaiId: data0.id, zhankai: [], calcZhankai: []}});
     this._updateInputInfos();
   }
@@ -975,7 +982,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (!(await this.message.confirm(`是否确定删除【${item.data.name}】？`))) {
       return;
     }
-    if (await this.http.mongodbDelete("cad", item.data.id)) {
+    if (await this.http.mongodbDelete("cad", {id: item.data.id})) {
       this.step3Refresh();
     }
   }

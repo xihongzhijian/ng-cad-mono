@@ -13,6 +13,7 @@ import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, ProgressBar} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {DateTime} from "luxon";
@@ -62,7 +63,7 @@ export class ExportComponent implements OnInit {
   }
 
   private async _queryIds(where: ObjectOf<any>) {
-    return (await this.http.queryMongodb<{_id: string}>({collection: "cad", fields: ["_id"], where})).map((v) => v._id);
+    return (await this.http.queryMongodb({collection: "cad", fields: ["_id"], where})).map((v) => v._id);
   }
 
   async exportCads(type: ExportType) {
@@ -177,7 +178,7 @@ export class ExportComponent implements OnInit {
         } else {
           this.msg = `正在导出数据((${i + 1}~${end})/${total})`;
         }
-        const data = await this.http.queryMongodb({collection: "cad", where: {_id: {$in: currIds}}, genUnqiCode: true});
+        const data = await this.http.queryMongodb<HoutaiCad>({collection: "cad", where: {_id: {$in: currIds}}, genUnqiCode: true});
         data.forEach((v) => cads.push(new CadData(v.json)));
         this.progressBar.forward(end - i);
       }

@@ -294,7 +294,7 @@ export class SuanliaogongshiComponent implements OnChanges {
       },
       {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}}
     ];
-    return await this.message.form(form);
+    return await this.message.form<typeof data>(form);
   }
 
   async onShuruToolbar(event: ToolbarButtonEvent) {

@@ -6,6 +6,7 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {SuanliaoDataParams} from "../xinghao-data";
+import {KlcsData, KlkwpzData} from "./suanliao-tables.types";
 
 @Component({
   selector: "app-suanliao-tables",
@@ -18,7 +19,7 @@ export class SuanliaoTablesComponent implements OnInit {
   @Input({required: true}) suanliaoDataParams!: SuanliaoDataParams;
   klkwpzCollection: CadCollection = "kailiaokongweipeizhi";
   klcsCollection: CadCollection = "kailiaocanshu";
-  klkwpzTable: TableRenderInfo<any> = {
+  klkwpzTable: TableRenderInfo<KlkwpzData> = {
     title: "开料孔位配置",
     data: [],
     columns: [
@@ -42,7 +43,7 @@ export class SuanliaoTablesComponent implements OnInit {
       inlineTitle: true
     }
   };
-  klcsTable: TableRenderInfo<any> = {
+  klcsTable: TableRenderInfo<KlcsData> = {
     title: "开料参数",
     data: [],
     columns: [
@@ -81,26 +82,34 @@ export class SuanliaoTablesComponent implements OnInit {
     await Promise.all([this.updateKlkwpzTable(), this.updateKlcsTable()]);
   }
 
-  async updateKlkwpzTable() {
-    this.klkwpzTable.data = await this.http.queryMongodb(
+  async getKlkwpzData(suanliaoDataParams: SuanliaoDataParams) {
+    return await this.http.queryMongodb<KlkwpzData>(
       {
         collection: this.klkwpzCollection,
-        where: this.suanliaoDataParams,
+        where: suanliaoDataParams,
         fields: this.klkwpzTable.columns.map((v) => v.field)
       },
       {spinner: false}
     );
   }
 
-  async updateKlcsTable() {
-    this.klcsTable.data = await this.http.queryMongodb(
+  async updateKlkwpzTable() {
+    this.klkwpzTable.data = await this.getKlkwpzData(this.suanliaoDataParams);
+  }
+
+  async getKlcsTableData(suanliaoDataParams: SuanliaoDataParams) {
+    return await this.http.queryMongodb<KlcsData>(
       {
         collection: this.klcsCollection,
-        where: this.suanliaoDataParams,
+        where: suanliaoDataParams,
         fields: this.klcsTable.columns.map((v) => v.field)
       },
       {spinner: false}
     );
+  }
+
+  async updateKlcsTable() {
+    this.klcsTable.data = await this.getKlcsTableData(this.suanliaoDataParams);
   }
 
   async onKlkwpzToolbar(event: ToolbarButtonEvent) {
@@ -163,7 +172,7 @@ export class SuanliaoTablesComponent implements OnInit {
         break;
       case "删除":
         if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          const response = await this.http.mongodbDelete(this.klkwpzCollection, item._id);
+          const response = await this.http.mongodbDelete(this.klkwpzCollection, {id: item._id});
           if (response) {
             this.updateKlkwpzTable();
           }
@@ -192,7 +201,7 @@ export class SuanliaoTablesComponent implements OnInit {
         break;
       case "删除":
         if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          const response = await this.http.mongodbDelete(this.klcsCollection, item._id);
+          const response = await this.http.mongodbDelete(this.klcsCollection, {id: item._id});
           if (response) {
             this.updateKlcsTable();
           }

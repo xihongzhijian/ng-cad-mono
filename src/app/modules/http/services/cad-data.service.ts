@@ -14,6 +14,7 @@ import {
   GetCadParams,
   GetOptionsParams,
   HoutaiCad,
+  MongodbDataBase,
   OptionsData,
   OptionsDataData,
   QueryMongodbParams,
@@ -244,7 +245,7 @@ export class CadDataService extends HttpService {
     return await this.getData("ngcad/removeChangelogItem", {index}, options);
   }
 
-  async queryMongodb<T extends ObjectOf<any>>(params: QueryMongodbParams, options?: HttpOptions) {
+  async queryMongodb<T extends MongodbDataBase>(params: QueryMongodbParams, options?: HttpOptions) {
     const data = await this.getData<T[]>("ngcad/queryMongodb", params, options);
     return data || [];
   }
@@ -372,6 +373,10 @@ export class CadDataService extends HttpService {
     return await this.getData<string>("ngcad/mongodbTableInsert", {collection, data, extraData}, options);
   }
 
+  async mongodbInsertMulti(collection: CadCollection, data: ObjectOf<any>[], extraData?: ObjectOf<any>, options?: HttpOptions) {
+    return await this.getData<string[]>("ngcad/mongodbTableInsertMulti", {collection, data, extraData}, options);
+  }
+
   async mongodbUpdate(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>, options?: HttpOptions) {
     const response = await this.post("ngcad/mongodbTableUpdate", {collection, data, extraData}, options);
     if (response?.code === 0) {
@@ -380,11 +385,16 @@ export class CadDataService extends HttpService {
     return false;
   }
 
-  async mongodbDelete(collection: CadCollection, ids: string | string[], options?: HttpOptions) {
-    if (!Array.isArray(ids)) {
-      ids = [ids];
+  async mongodbDelete(collection: CadCollection, data: {id: string} | {ids: string[]} | {filter: ObjectOf<any>}, options?: HttpOptions) {
+    const params: ObjectOf<any> = {collection};
+    if ("id" in data) {
+      params.vid = [data.id];
+    } else if ("ids" in data) {
+      params.vids = data.ids;
+    } else if ("filter" in data) {
+      params.filter = data.filter;
     }
-    const response = await this.post("ngcad/mongodbTableDelete", {collection, vids: ids}, options);
+    const response = await this.post("ngcad/mongodbTableDelete", params, options);
     if (response?.code === 0) {
       return true;
     }

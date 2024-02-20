@@ -52,6 +52,7 @@
               <button mat-raised-button color="primary" (click)="editBcfz(key1)">板材分组</button>
               <button mat-raised-button color="primary" (click)="editSuanliaoData(key1)">算料公式CAD配置</button>
               <button mat-raised-button color="primary" (click)="copy(key1)">复制</button>
+              <button mat-raised-button color="primary" (click)="empty(key1)">清空</button>
             </div>
             @if (key1Infos[key1].error) {
               <div class="error-msg">{{ key1Infos[key1].error }}</div>

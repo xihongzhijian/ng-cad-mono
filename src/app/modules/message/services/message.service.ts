@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarConfig} from "@angular/material/snack-bar";
 import {DomSanitizer} from "@angular/platform-browser";
-import {timeout} from "@lucilor/utils";
+import {ObjectOf, timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
 import {MessageComponent} from "../components/message/message.component";
@@ -96,7 +96,10 @@ export class MessageService {
     return await this.confirm(data, others);
   }
 
-  async form<T>(data: InputInfo<T>[] | MessageDataParams<FormMessageData>, others: MessageDataParams2<FormMessageData> = {}) {
+  async form<T = ObjectOf<any>, K = any>(
+    data: InputInfo<K>[] | MessageDataParams<FormMessageData>,
+    others: MessageDataParams2<FormMessageData> = {}
+  ) {
     if (Array.isArray(data)) {
       data = {inputs: data};
     }

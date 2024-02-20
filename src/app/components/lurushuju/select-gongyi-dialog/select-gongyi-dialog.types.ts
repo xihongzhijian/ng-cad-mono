@@ -22,12 +22,12 @@ export interface SelectGongyiItem {
   info?: string[];
 }
 
-export interface SelectGongyiItemData {
+export interface SelectGongyiItemData<T = any> {
   型号: string;
   产品分类: string;
   名字: string;
   工艺做法?: string;
   图片?: string;
-  data?: any;
+  data?: T;
   [key: string]: any;
 }

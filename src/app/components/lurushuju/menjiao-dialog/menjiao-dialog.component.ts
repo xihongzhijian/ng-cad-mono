@@ -576,6 +576,25 @@ export class MenjiaoDialogComponent implements OnInit {
     }
   }
 
+  async empty(key1: MenjiaoCadType) {
+    const {component} = this.data;
+    if (!component) {
+      return;
+    }
+    const data = this.formData[key1];
+    for (const key2 in data.配合框CAD) {
+      delete data.配合框CAD[key2].cad;
+    }
+    for (const key2 in data.企料CAD) {
+      delete data.企料CAD[key2].cad;
+    }
+    data.算料CAD = [];
+    const suanliaoDataParams = this.key1Infos[key1].suanliaoDataParams;
+    await this.http.mongodbDelete("kailiaokongweipeizhi", {filter: suanliaoDataParams});
+    await this.http.mongodbDelete("kailiaocanshu", {filter: suanliaoDataParams});
+    await this.getSuanliaoTables(key1)?.update();
+  }
+
   async validate() {
     const {inputs, formData: data} = this;
     const {errors: inputErrors} = await validateForm(inputs?.toArray() || []);

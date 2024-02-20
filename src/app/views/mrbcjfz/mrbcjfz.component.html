@@ -33,30 +33,38 @@
             (cdkDropListDropped)="dropListItem($event, key, 'CAD')"
           >
             @for (id of xinghao["默认板材"][key].CAD; track id) {
-              <div class="item flex-column" cdkDrag (click)="selectListItem(cads[id], 'CAD', key)">
-                <app-image class="cad-preview" [src]="cads[id].img"></app-image>
-                <div class="title center">
-                  {{ cads[id].data.name }}
-                  <button mat-icon-button color="primary" appClickStop (click)="openCad(cads[id])"><mat-icon>open_in_new</mat-icon></button>
+              @if (cads[id]) {
+                <div class="item flex-column" cdkDrag (click)="selectListItem(cads[id], 'CAD', key)">
+                  <app-image class="cad-preview" [src]="cads[id].img"></app-image>
+                  <div class="title center">
+                    {{ cads[id].data.name }}
+                    <button mat-icon-button color="primary" appClickStop (click)="openCad(cads[id])">
+                      <mat-icon>open_in_new</mat-icon>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              }
             }
           </div>
           <div class="item-list flex-row">
             @for (id of xinghao["默认板材"][key]["企料"]; track id) {
-              <div class="item flex-column" (click)="selectListItem(qiliaos[id], '企料', key)">
-                <div class="title center">
-                  {{ qiliaos[id].name }}
+              @if (qiliaos[id]) {
+                <div class="item flex-column" (click)="selectListItem(qiliaos[id], '企料', key)">
+                  <div class="title center">
+                    {{ qiliaos[id].name }}
+                  </div>
                 </div>
-              </div>
+              }
             }
           </div>
           <div class="item-list flex-row">
             @for (id of xinghao["默认板材"][key]["花件"]; track id) {
-              <div class="item flex-column" (click)="selectListItem(huajians[id], '花件', key)">
-                <app-image [src]="huajians[id].data.xiaotu"></app-image>
-                <div class="title center">{{ huajians[id].data.mingzi }}</div>
-              </div>
+              @if (huajians[id]) {
+                <div class="item flex-column" (click)="selectListItem(huajians[id], '花件', key)">
+                  <app-image [src]="huajians[id].data.xiaotu"></app-image>
+                  <div class="title center">{{ huajians[id].data.mingzi }}</div>
+                </div>
+              }
             }
           </div>
         </div>

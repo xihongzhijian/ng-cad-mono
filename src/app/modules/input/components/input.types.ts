@@ -59,6 +59,7 @@ export interface InputInfoNumber<T = any> extends InputInfoBase<T> {
   step?: number;
   min?: number;
   max?: number;
+  ndigits?: number;
   onInput?: (val: number) => void;
   onChange?: (val: number) => void;
 }

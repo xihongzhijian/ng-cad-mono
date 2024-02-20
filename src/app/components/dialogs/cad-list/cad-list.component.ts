@@ -377,7 +377,7 @@ export class CadListComponent implements AfterViewInit {
     if (!(await this.message.confirm(`是否确定删除【${item.data.name}】？`))) {
       return;
     }
-    if (await this.http.mongodbDelete(this.data.collection, item.data.id)) {
+    if (await this.http.mongodbDelete(this.data.collection, {id: item.data.id})) {
       this.search();
     }
   }

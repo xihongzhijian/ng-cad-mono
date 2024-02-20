@@ -8,8 +8,9 @@ import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijia
 import {CadData} from "@lucilor/cad-viewer";
 import {RequiredKeys} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {OpenCadOptions} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
@@ -18,8 +19,9 @@ import {SuanliaogongshiComponent} from "../../../modules/cad-editor/components/s
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
+import {SelectGongyiItemData} from "../select-gongyi-dialog/select-gongyi-dialog.types";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
-import {算料数据} from "../xinghao-data";
+import {SuanliaoDataParams, 算料数据} from "../xinghao-data";
 import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./suanliao-data-dialog.type";
 
 @Component({
@@ -57,6 +59,7 @@ export class SuanliaoDataDialogComponent {
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
+    private spinner: SpinnerService,
     public dialogRef: MatDialogRef<SuanliaoDataDialogComponent, SuanliaoDataOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoDataInput
   ) {
@@ -92,28 +95,8 @@ export class SuanliaoDataDialogComponent {
       noValidateCads: true
     };
     const result = await openZixuanpeijianDialog(this.dialog, {data: zxpjData});
-    if (!result) {
-      return;
-    }
-    const ids = result.零散.map((v) => v.info.houtaiId);
-    if (ids.length > 0) {
-      const result2 = await this.http.queryMongodb<HoutaiCad>({collection: "cad", fields: {json: false}, where: {_id: {$in: ids}}});
-      const result3: HoutaiCad[] = [];
-      for (const v of result.零散) {
-        const cad = cloneDeep(result2.find((v2) => v2._id === v.info.houtaiId));
-        if (cad) {
-          cad.json = v.data.clone(true).export();
-          result3.push(cad);
-        } else {
-          const cad2 = data.算料CAD.find((v2) => v2.json.id === v.data.id);
-          if (cad2) {
-            result3.push(cad2);
-          }
-        }
-      }
-      data.算料CAD = result3;
-    } else {
-      data.算料CAD = [];
+    if (result) {
+      data.算料CAD = result.零散.map((v) => getHoutaiCad(v.data));
     }
   }
 
@@ -133,11 +116,41 @@ export class SuanliaoDataDialogComponent {
         fenlei: component.fenleiName
       }
     });
-    const data = result?.items[0]?.data as 算料数据 | undefined;
-    if (data) {
-      this.suanliaoData.算料CAD.push(...data[key1].算料CAD);
-    } else {
-      this.message.alert("数据为空");
+    const data = result?.items[0] as SelectGongyiItemData<算料数据>;
+    if (data && data.工艺做法 && data.data) {
+      const {suanliaoTables} = this;
+      this.suanliaoData.算料CAD.push(...data.data[key1].算料CAD);
+      this.suanliaoData.算料公式.push(...data.data[key1].算料公式);
+      if (suanliaoTables) {
+        const [包边方向, 开启] = key1.split("+");
+        const suanliaoDataParams: SuanliaoDataParams = {
+          选项: {
+            型号: data.型号,
+            工艺做法: data.工艺做法,
+            包边方向,
+            开启,
+            门铰锁边铰边: data.data.名字
+          }
+        };
+        this.spinner.show(this.spinner.defaultLoaderId);
+        const klkwpzData = await suanliaoTables.getKlkwpzData(suanliaoDataParams);
+        const klcsData = await suanliaoTables.getKlcsTableData(suanliaoDataParams);
+        const suanliaoDataParams2 = this.data.suanliaoDataParams;
+        await this.http.mongodbInsertMulti(
+          suanliaoTables.klkwpzCollection,
+          klkwpzData.map((v) => ({名字: v.名字, 孔位配置: v.孔位配置})),
+          suanliaoDataParams2,
+          {silent: true}
+        );
+        await this.http.mongodbInsertMulti(
+          suanliaoTables.klcsCollection,
+          klcsData.map((v) => ({名字: v.名字, 参数: v.参数})),
+          suanliaoDataParams2,
+          {silent: true}
+        );
+        await suanliaoTables.update();
+        this.spinner.hide(this.spinner.defaultLoaderId);
+      }
     }
   }
 
@@ -181,28 +194,36 @@ export class SuanliaoDataDialogComponent {
     }
     const {mubanId} = component;
     if (mubanId) {
-      await this.http.mongodbDelete("kailiaocadmuban", mubanId);
+      await this.http.mongodbDelete("kailiaocadmuban", {id: mubanId});
     }
     this.suanliaoData.算料CAD.splice(component.customInfo.index, 1);
   }
 
   async addKwpz(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
+    const {suanliaoTables} = this;
+    if (!suanliaoTables) {
+      return;
+    }
     const {cad} = component;
-    const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...this.data.suanliaoDataParams, 名字: cad.名字});
-    if (response) {
-      this.suanliaoTables?.updateKlkwpzTable();
+    const id = await this.http.mongodbInsert(suanliaoTables.klkwpzCollection, {...this.data.suanliaoDataParams, 名字: cad.名字});
+    if (id) {
+      suanliaoTables.updateKlkwpzTable();
     }
   }
 
   async addKlcs(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
+    const {suanliaoTables} = this;
+    if (!suanliaoTables) {
+      return;
+    }
     const {cad} = component;
-    const response = await this.http.mongodbInsert("kailiaocanshu", {
+    const response = await this.http.mongodbInsert(suanliaoTables.klcsCollection, {
       ...this.data.suanliaoDataParams,
       名字: cad.名字 + "中空参数",
       分类: "切中空"
     });
     if (response) {
-      this.suanliaoTables?.updateKlcsTable();
+      suanliaoTables.updateKlcsTable();
     }
   }
 }

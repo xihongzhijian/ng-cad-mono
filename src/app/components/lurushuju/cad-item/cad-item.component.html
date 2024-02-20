@@ -1,4 +1,6 @@
-<div class="name">{{ cad["名字"] }}</div>
+<div class="name">
+  <button mat-button (click)="editCadName()">{{ cad["名字"] }}</button>
+</div>
 <div class="cads">
   <div class="cad item">
     <div #cadContainer class="cad-container flex-row"></div>

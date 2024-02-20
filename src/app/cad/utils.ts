@@ -20,6 +20,7 @@ import {
   getLinesDistance,
   intersectionKeys,
   intersectionKeysTranslate,
+  setLinesLength,
   sortLines
 } from "@lucilor/cad-viewer";
 import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, ObjectOf, Point} from "@lucilor/utils";
@@ -605,13 +606,20 @@ export const exportCadData = (data: CadData, hideLineLength: boolean) => {
 };
 
 export const openCadLineInfoForm = async (message: MessageService, cad: CadViewer, line: CadLineLike) => {
+  const lineLength = Number(line.length.toFixed(2));
+  const isLine = line instanceof CadLine;
   const form: InputInfo<typeof line>[] = [
+    {type: "number", label: "线长", value: lineLength, readonly: !isLine},
     {type: "string", label: "名字", model: {data: line, key: "mingzi"}},
     {type: "string", label: "名字2", model: {data: line, key: "mingzi2"}},
-    {type: "string", label: "公式", model: {data: line, key: "gongshi"}}
+    {type: "string", label: "公式", model: {data: line, key: "gongshi"}},
+    {type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}}
   ];
   const result = await message.form(form);
   if (result) {
+    if (isLine && result.线长 !== lineLength) {
+      setLinesLength(cad.data, [line], result.线长);
+    }
     await cad.render();
   }
   return result;

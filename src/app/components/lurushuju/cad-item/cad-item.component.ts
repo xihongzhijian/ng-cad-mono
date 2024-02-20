@@ -1,4 +1,5 @@
 import {Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild} from "@angular/core";
+import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
@@ -109,6 +110,24 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     }
   }
 
+  async editCadName() {
+    const {cad} = this;
+    if (!cad) {
+      return;
+    }
+    const name = await this.message.prompt({
+      type: "string",
+      label: "CAD名字",
+      value: cad.名字,
+      validators: Validators.required
+    });
+    if (!name) {
+      return;
+    }
+    cad.名字 = name;
+    cad.json.name = name;
+  }
+
   centerMuban() {
     this.mubanViewer?.center();
   }
@@ -166,7 +185,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     if (!(await this.message.confirm(`确定删除模板【${mubanData.name}】吗？`))) {
       return;
     }
-    if (await this.http.mongodbDelete("kailiaocadmuban", mubanData.id)) {
+    if (await this.http.mongodbDelete("kailiaocadmuban", {id: mubanData.id})) {
       this.mubanId = "";
       this.mubanData = undefined;
       this.initMubanViewer();
@@ -259,7 +278,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     generateLineTexts(mubanData);
     const cadViewer = this.initCadViewer0(mubanData, containerEl, () => {});
     this.mubanViewer = cadViewer;
-    this.updateMubanInputs();
+    await this.updateMubanInputs();
   }
 
   updateZhankaiInputs() {
@@ -280,7 +299,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     }
   }
 
-  updateMubanInputs() {
+  async updateMubanInputs() {
     this.mubanInputs = [];
     const {cad, mubanData} = this;
     if (!cad || !mubanData) {
@@ -300,6 +319,18 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       zhankai.flip = [{chanpinfenlei: "", fanzhuanfangshi: "", kaiqi: ""}];
     }
     const flip = zhankai.flip[0];
+    const typeOptions = ["模板公式展开", "自动展开+模板", "双向自动展开+模板"] as const;
+    const updateMuban = async (silent?: boolean) => {
+      return await this.http.setCad(
+        {collection: "kailiaocadmuban", cadData: mubanData, force: true},
+        true,
+        silent ? {silent: true} : {spinner: false}
+      );
+    };
+    if (!mubanData.type) {
+      mubanData.type = typeOptions[0];
+      await updateMuban(true);
+    }
     this.mubanInputs = [
       [
         {
@@ -316,12 +347,12 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
           type: "select",
           label: "分类",
           model: {data: mubanData, key: "type"},
-          options: ["自动展开+模板", "对回去面+模板", "CAD变化值+模板", "双向自动展开+模板"].map((v) => ({
+          options: typeOptions.map((v) => ({
             label: v.replace("+模板", ""),
             value: v
           })),
           onChange: async () => {
-            const result = await this.http.setCad({collection: "kailiaocadmuban", cadData: mubanData, force: true}, true, {spinner: false});
+            const result = await updateMuban();
             if (result) {
               this.message.snack("已保存");
             }
