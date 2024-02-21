@@ -28,7 +28,7 @@ import {SuanliaogongshiInfo} from "./suanliaogongshi.types";
 })
 export class SuanliaogongshiComponent implements OnChanges {
   @HostBinding("class") class = "ng-page";
-  @Input() info: SuanliaogongshiInfo = {data: {算料公式: [], 测试用例: [], 输入数据: []}};
+  @Input({required: true}) info: SuanliaogongshiInfo = {data: {算料公式: [], 测试用例: [], 输入数据: []}};
 
   shuruTable: TableRenderInfo<any> = {
     title: "输入数据",
@@ -58,7 +58,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.info) {
-      this.shuruTable.data = [...this.info.data.输入数据];
+      if (this.info.data.输入数据) {
+        this.shuruTable.data = [...this.info.data.输入数据];
+      }
     }
   }
 
@@ -96,6 +98,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async addGongshi() {
     const data = this.info.data;
+    if (!data.算料公式) {
+      return;
+    }
     const item = await this.getGongshiItem();
     if (item) {
       data.算料公式.push(item);
@@ -104,6 +109,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async editGongshi(index: number) {
     const data = this.info.data;
+    if (!data.算料公式) {
+      return;
+    }
     const item = await this.getGongshiItem(data.算料公式[index]);
     if (item) {
       data.算料公式[index] = item;
@@ -112,6 +120,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async copyGongshi(index: number) {
     const data = this.info.data;
+    if (!data.算料公式) {
+      return;
+    }
     if (!(await this.message.confirm(`确定复制【${data.算料公式[index].名字}】吗？`))) {
       return;
     }
@@ -124,6 +135,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async removeGongshi(index: number) {
     const data = this.info.data;
+    if (!data.算料公式) {
+      return;
+    }
     if (!(await this.message.confirm(`确定删除【${data.算料公式[index].名字}】吗？`))) {
       return;
     }
@@ -181,6 +195,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async addTestCase() {
     const data = this.info.data;
+    if (!data.测试用例) {
+      return;
+    }
     const result = await this.getTestCaseItem();
     if (result) {
       data.测试用例.push(result);
@@ -189,6 +206,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async editTestCase(index: number) {
     const data = this.info.data;
+    if (!data.测试用例) {
+      return;
+    }
     const result = await this.getTestCaseItem(data.测试用例[index]);
     if (result) {
       data.测试用例[index] = result;
@@ -197,6 +217,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async copyTestCase(index: number) {
     const data = this.info.data;
+    if (!data.测试用例) {
+      return;
+    }
     if (!(await this.message.confirm(`确定复制【${data.测试用例[index].名字}】吗？`))) {
       return;
     }
@@ -209,6 +232,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async removeTestCase(index: number) {
     const data = this.info.data;
+    if (!data.测试用例) {
+      return;
+    }
     if (!(await this.message.confirm(`确定删除【${data.测试用例[index].名字}】吗？`))) {
       return;
     }
@@ -264,7 +290,7 @@ export class SuanliaogongshiComponent implements OnChanges {
           Validators.required,
           (control) => {
             const value = control.value;
-            if ((!data0 || data0.名字 !== value) && this.info.data.输入数据.some((v) => v.名字 === value)) {
+            if ((!data0 || data0.名字 !== value) && this.info.data.输入数据?.some((v) => v.名字 === value)) {
               return {名字已存在: true};
             }
             return null;
@@ -298,13 +324,17 @@ export class SuanliaogongshiComponent implements OnChanges {
   }
 
   async onShuruToolbar(event: ToolbarButtonEvent) {
+    const data = this.info.data;
+    if (!data.输入数据) {
+      return;
+    }
     switch (event.button.event) {
       case "添加":
         {
           const item = await this.getShuruItem();
           if (item) {
-            this.info.data.输入数据.push(item);
-            this.shuruTable.data = [...this.info.data.输入数据];
+            data.输入数据.push(item);
+            this.shuruTable.data = [...data.输入数据];
           }
         }
         break;
@@ -312,22 +342,26 @@ export class SuanliaogongshiComponent implements OnChanges {
   }
 
   async onShuruRow(event: RowButtonEvent<any>) {
+    const data = this.info.data;
+    if (!data.输入数据) {
+      return;
+    }
     const {button, item, rowIdx} = event;
     switch (button.event) {
       case "编辑":
         {
-          const item2 = this.info.data.输入数据[rowIdx];
+          const item2 = data.输入数据[rowIdx];
           const item3 = await this.getShuruItem(item2);
           if (item3) {
-            this.info.data.输入数据[rowIdx] = item3;
-            this.shuruTable.data = [...this.info.data.输入数据];
+            data.输入数据[rowIdx] = item3;
+            this.shuruTable.data = [...data.输入数据];
           }
         }
         break;
       case "删除":
         if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          this.info.data.输入数据.splice(rowIdx, 1);
-          this.shuruTable.data = [...this.info.data.输入数据];
+          data.输入数据.splice(rowIdx, 1);
+          this.shuruTable.data = [...data.输入数据];
         }
         break;
     }

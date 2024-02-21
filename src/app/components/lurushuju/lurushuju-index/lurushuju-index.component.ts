@@ -24,11 +24,13 @@ import {cloneDeep, debounce, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {openMenjiaoDialog} from "../menjiao-dialog/menjiao-dialog.component";
 import {MenjiaoInput} from "../menjiao-dialog/menjiao-dialog.types";
-import {updateMenjiaoForm} from "../menjiao-dialog/menjiao-dialog.utils";
+import {copySuanliaoData, updateMenjiaoForm} from "../menjiao-dialog/menjiao-dialog.utils";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {
   getGongyi,
   getXinghao,
+  menjiaoCadTypes,
+  SuanliaoDataParams,
   updateXinghaoFenleis,
   xiaoguotuKeys,
   Xinghao,
@@ -926,7 +928,12 @@ export class LurushujuIndexComponent implements OnInit {
                   item2.默认值 = false;
                 }
               }
-              gongyi.算料数据.push(item);
+              const index = gongyi.算料数据.findIndex((v) => v.vid === item.vid);
+              if (index >= 0) {
+                gongyi.算料数据[index] = item;
+              } else {
+                gongyi.算料数据.push(item);
+              }
               this.menjiaoTable.data = [...gongyi.算料数据];
               await this.submitGongyi(["算料数据"]);
             }
@@ -950,12 +957,37 @@ export class LurushujuIndexComponent implements OnInit {
           if (result && result.items.length > 0) {
             const names = gongyi.算料数据.map((v) => v.名字);
             for (const item of result.items) {
-              const item2 = item.data as 算料数据;
-              item2.vid = this.getMenjiaoId();
-              item2.名字 = getCopyName(names, item2.名字);
-              updateMenjiaoForm(item2);
-              gongyi.算料数据.push(item2);
-              names.push(item2.名字);
+              const fromItem = item.data as 算料数据;
+              const toItem = cloneDeep(fromItem);
+              toItem.vid = this.getMenjiaoId();
+              toItem.名字 = getCopyName(names, toItem.名字);
+              updateMenjiaoForm(toItem);
+              gongyi.算料数据.push(toItem);
+              names.push(toItem.名字);
+              for (const key1 of menjiaoCadTypes) {
+                const fromData = fromItem[key1];
+                const toData = toItem[key1];
+                const [包边方向, 开启] = key1.split("+");
+                const fromParams: SuanliaoDataParams = {
+                  选项: {
+                    型号: item.型号,
+                    工艺做法: item.工艺做法 || "",
+                    包边方向,
+                    开启,
+                    门铰锁边铰边: fromItem.名字
+                  }
+                };
+                const toParams: SuanliaoDataParams = {
+                  选项: {
+                    型号: this.xinghaoName,
+                    工艺做法: this.gongyiName,
+                    包边方向,
+                    开启,
+                    门铰锁边铰边: toItem.名字
+                  }
+                };
+                await copySuanliaoData(this.http, fromData, toData, fromParams, toParams);
+              }
             }
             this.menjiaoTable.data = [...gongyi.算料数据];
             await this.submitGongyi(["算料数据"]);

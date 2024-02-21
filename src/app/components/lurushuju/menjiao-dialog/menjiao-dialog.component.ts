@@ -41,7 +41,14 @@ import {
   门缝配置输入
 } from "../xinghao-data";
 import {MenjiaoCadItemInfo, MenjiaoInput, MenjiaoOutput, MenjiaoShiyituCadItemInfo} from "./menjiao-dialog.types";
-import {autoFillMenjiao, getCadSearch, getMenjiaoCadInfos, getShiyituCadSearch, updateMenjiaoForm} from "./menjiao-dialog.utils";
+import {
+  autoFillMenjiao,
+  copySuanliaoData,
+  getCadSearch,
+  getMenjiaoCadInfos,
+  getShiyituCadSearch,
+  updateMenjiaoForm
+} from "./menjiao-dialog.utils";
 
 @Component({
   selector: "app-menjiao-dialog",
@@ -551,33 +558,10 @@ export class MenjiaoDialogComponent implements OnInit {
     const [包边方向2, 开启2] = result.split("+");
     from.选项.包边方向 = 包边方向2;
     from.选项.开启 = 开启2;
-    const mubanIds: ObjectOf<{from: string; to: string}> = {};
-    const toChangeMubanId: any[] = [];
-    for (const key2 in data2.算料CAD) {
-      const cadFrom = data2.算料CAD[key2].json;
-      const cadTo = data[key1].算料CAD[key2].json;
-      if (!cadFrom || !cadTo) {
-        return;
-      }
-      const mubanIdFrom = cadFrom.zhankai?.[0]?.kailiaomuban;
-      const mubanIdTo = cadTo.zhankai?.[0]?.kailiaomuban;
-      const mubanId = mubanIdTo || mubanIdFrom;
-      if (typeof mubanIdFrom === "string" && mubanIdFrom) {
-        mubanIds[cadTo.id] = {from: mubanIdFrom, to: mubanId};
-        toChangeMubanId.push(cadTo);
-      }
-    }
-    const copyResult = await this.http.getData<{mubanIds: typeof mubanIds}>("shuju/api/copySuanliaoData", {
-      from,
-      to: suanliaoDataParams,
-      mubanIds
-    });
+    const copyResult = await copySuanliaoData(this.http, data2, data[key1], from, suanliaoDataParams);
     if (copyResult) {
-      const mubanIds2 = copyResult.mubanIds;
-      for (const cad of toChangeMubanId) {
-        cad.zhankai[0].kailiaomuban = mubanIds2[cad.id];
-      }
       this.message.snack("复制成功");
+      this.getSuanliaoTables(key1)?.update();
     }
   }
 

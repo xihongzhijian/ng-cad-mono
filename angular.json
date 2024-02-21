@@ -3,8 +3,8 @@
   "version": 1,
   "cli": {
     "analytics": false,
-    "packageManager": "yarn",
-    "schematicCollections": ["@cypress/schematic", "@schematics/angular"]
+    "packageManager": "yarn"
+    // "schematicCollections": ["@cypress/schematic", "@schematics/angular"]
   },
   "newProjectRoot": "projects",
   "projects": {

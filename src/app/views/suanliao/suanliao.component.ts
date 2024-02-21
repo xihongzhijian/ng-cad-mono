@@ -19,6 +19,8 @@ import {
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, WindowMessageManager} from "@lucilor/utils";
+import {openSuanliaogongshiDialog} from "@modules/cad-editor/components/dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
+import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -219,7 +221,10 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     return {action: "openCadEditorEnd", data: {...result, data: resultData}};
   }
 
-  async openGongshiEditor() {}
+  async openGongshiStart({info}: {info: SuanliaogongshiInfo}) {
+    const result = await openSuanliaogongshiDialog(this.dialog, {data: {info}});
+    return {action: "openGongshiEnd", data: result};
+  }
 
   updateMokuaiItemsStart(data: any) {
     const result = {action: "updateMokuaiItemsEnd", data: data.items};

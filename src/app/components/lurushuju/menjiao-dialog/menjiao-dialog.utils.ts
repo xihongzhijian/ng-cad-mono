@@ -1,10 +1,20 @@
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {random} from "lodash";
 import {OptionsAll2} from "../lurushuju-index/lurushuju-index.types";
-import {cadMatchRules, MenjiaoCadType, menjiaoCadTypes, 算料数据, 算料数据2Keys, 门缝配置输入} from "../xinghao-data";
+import {
+  cadMatchRules,
+  MenjiaoCadType,
+  menjiaoCadTypes,
+  SuanliaoDataParams,
+  算料数据,
+  算料数据2,
+  算料数据2Keys,
+  门缝配置输入
+} from "../xinghao-data";
 
 export const autoFillMenjiao = (data: 算料数据, menjiaoOptionsAll: OptionsAll2) => {
   const setOption = (key: string) => {
@@ -205,4 +215,42 @@ export const getShiyituCadSearch = (data: 算料数据, key1: MenjiaoCadType) =>
   const search: CadListInput["search"] = {$where: filter, 分类, 名字: {$ne: "开启锁向示意图"}};
   const addCadData: CadListInput["addCadData"] = {分类, 选项: {产品分类, 开启}};
   return {search, addCadData};
+};
+
+export const copySuanliaoData = async (
+  http: CadDataService,
+  fromData: 算料数据2,
+  toData: 算料数据2,
+  fromParams: SuanliaoDataParams,
+  toParams: SuanliaoDataParams
+) => {
+  const mubanIds: ObjectOf<{from: string; to: string}> = {};
+  const toChangeMubanId: any[] = [];
+  for (const key2 in fromData.算料CAD) {
+    const cadFrom = fromData.算料CAD[key2].json;
+    const cadTo = toData.算料CAD[key2].json;
+    if (!cadFrom || !cadTo) {
+      return;
+    }
+    const mubanIdFrom = cadFrom.zhankai?.[0]?.kailiaomuban;
+    const mubanIdTo = cadTo.zhankai?.[0]?.kailiaomuban;
+    const mubanId = mubanIdTo || mubanIdFrom;
+    if (typeof mubanIdFrom === "string" && mubanIdFrom) {
+      mubanIds[cadTo.id] = {from: mubanIdFrom, to: mubanId};
+      toChangeMubanId.push(cadTo);
+    }
+  }
+  const copyResult = await http.getData<{mubanIds: typeof mubanIds}>("shuju/api/copySuanliaoData", {
+    from: fromParams,
+    to: toParams,
+    mubanIds
+  });
+  if (!copyResult) {
+    return false;
+  }
+  const mubanIds2 = copyResult.mubanIds;
+  for (const cad of toChangeMubanId) {
+    cad.zhankai[0].kailiaomuban = mubanIds2[cad.id];
+  }
+  return true;
 };
