@@ -13,7 +13,7 @@ import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
-import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcfz.utils";
+import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
 import {cloneDeep, difference, intersection, isEmpty, isEqual, union} from "lodash";
 import {openDrawCadDialog} from "../draw-cad/draw-cad.component";
 import {

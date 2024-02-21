@@ -219,6 +219,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     return {action: "openCadEditorEnd", data: {...result, data: resultData}};
   }
 
+  async openGongshiEditor() {}
+
   updateMokuaiItemsStart(data: any) {
     const result = {action: "updateMokuaiItemsEnd", data: data.items};
     if (this.step1Data) {

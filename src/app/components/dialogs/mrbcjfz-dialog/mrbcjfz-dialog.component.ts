@@ -1,7 +1,7 @@
-import {Component, Inject} from "@angular/core";
+import {Component, Inject, ViewChild} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcfz.utils";
-import {MrbcjfzInputData} from "@views/mrbcjfz/mrbcjfz.types";
+import {timeout} from "@lucilor/utils";
+import {MrbcjfzDataSubmitEvent, MrbcjfzInputData} from "@views/mrbcjfz/mrbcjfz.types";
 import {MrbcjfzComponent} from "../../../views/mrbcjfz/mrbcjfz.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
@@ -13,6 +13,8 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [MrbcjfzComponent]
 })
 export class MrbcjfzDialogComponent {
+  @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
+
   constructor(
     public dialogRef: MatDialogRef<MrbcjfzDialogComponent, MrbcjfzDialogOutput>,
     @Inject(MAT_DIALOG_DATA) public data: MrbcjfzDialogInput
@@ -22,12 +24,20 @@ export class MrbcjfzDialogComponent {
     }
   }
 
-  submit(xinghao: MrbcjfzXinghaoInfo) {
-    this.dialogRef.close(xinghao);
+  submit(event: MrbcjfzDataSubmitEvent) {
+    this.dialogRef.close(event);
   }
 
   close() {
     this.dialogRef.close();
+  }
+
+  async refreshAfter() {
+    await timeout(0);
+    if (!this.mrbcjfz || !this.data.dryRun) {
+      return;
+    }
+    this.dialogRef.close({data: this.mrbcjfz.xinghao, errors: this.mrbcjfz.checkSubmit()});
   }
 }
 
@@ -35,9 +45,10 @@ export interface MrbcjfzDialogInput {
   id: number;
   table: string;
   inputData?: MrbcjfzInputData;
+  dryRun?: boolean;
 }
 
-export type MrbcjfzDialogOutput = MrbcjfzXinghaoInfo;
+export type MrbcjfzDialogOutput = MrbcjfzDataSubmitEvent;
 
 export const openMrbcjfzDialog = getOpenDialogFunc<MrbcjfzDialogComponent, MrbcjfzDialogInput, MrbcjfzDialogOutput>(
   MrbcjfzDialogComponent,

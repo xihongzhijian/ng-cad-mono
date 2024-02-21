@@ -130,6 +130,7 @@ export interface ZixuanpeijianlingsanCadItem {
   data: CadData;
   img: SafeUrl;
   hidden: boolean;
+  isFetched: boolean;
 }
 
 export interface CadItemContext {

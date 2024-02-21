@@ -3,6 +3,7 @@ import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {BancaiList, BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
+import {MrbcjfzXinghaoInfo} from "./mrbcjfz.utils";
 
 export interface MrbcjfzResponseData {
   xinghao: MrbcjfzXinghao;
@@ -93,4 +94,9 @@ export interface MrbcjfzInputData {
   huajians?: MrbcjfzHuajian[];
   isLocal?: boolean;
   bancaiList?: BancaiListData;
+}
+
+export interface MrbcjfzDataSubmitEvent {
+  data: MrbcjfzXinghaoInfo;
+  errors: string[];
 }

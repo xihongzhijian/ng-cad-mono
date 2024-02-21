@@ -103,8 +103,8 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   showRightMenu = true;
   showBottomMenu = true;
   showLeftMenu = true;
-  showSuanliaogongshi = true;
-  showSuanliaoTables = true;
+  showSuanliaogongshi = false;
+  showSuanliaoTables = false;
   showAllMenu = true;
   tabIndex = 0;
   cadLength$ = this.status.cadTotalLength$.pipe(

@@ -1,6 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {CommonModule} from "@angular/common";
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
+import {Component, EventEmitter, Input, OnChanges, Output, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -25,19 +25,10 @@ import {BehaviorSubject, first, lastValueFrom} from "rxjs";
 import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {
-  emptyMrbcjfzInfoValues,
-  filterCad,
-  filterHuajian,
-  getEmptyMrbcjfzInfo,
-  getMrbcjfzInfo,
-  isMrbcjfzInfoEmpty1,
-  isMrbcjfzInfoEmpty2,
-  MrbcjfzXinghaoInfo
-} from "./mrbcfz.utils";
-import {
   ListItemKey,
   listItemKeys,
   MrbcjfzCadInfo,
+  MrbcjfzDataSubmitEvent,
   MrbcjfzHuajianInfo,
   MrbcjfzInfo,
   MrbcjfzInputData,
@@ -46,6 +37,16 @@ import {
   MrbcjfzResponseData,
   MrbcjfzXinghao
 } from "./mrbcjfz.types";
+import {
+  emptyMrbcjfzInfoValues,
+  filterCad,
+  filterHuajian,
+  getEmptyMrbcjfzInfo,
+  getMrbcjfzInfo,
+  isMrbcjfzInfoEmpty1,
+  isMrbcjfzInfoEmpty2,
+  MrbcjfzXinghaoInfo
+} from "./mrbcjfz.utils";
 
 @Component({
   selector: "app-mrbcjfz",
@@ -66,13 +67,15 @@ import {
     SpinnerComponent
   ]
 })
-export class MrbcjfzComponent implements OnInit, OnChanges {
+export class MrbcjfzComponent implements OnChanges {
   @Input() id = 0;
   @Input() table = "";
   @Input() closeable = false;
   @Input() inputData?: MrbcjfzInputData;
-  @Output() dataSubmit = new EventEmitter<MrbcjfzXinghaoInfo>();
+  @Input() forceSubmit? = false;
+  @Output() dataSubmit = new EventEmitter<MrbcjfzDataSubmitEvent>();
   @Output() dataClose = new EventEmitter<void>();
+  @Output() refreshAfter = new EventEmitter<void>();
   xinghao: MrbcjfzXinghaoInfo = new MrbcjfzXinghaoInfo(this.table, {vid: 0, mingzi: ""});
   cads: ObjectOf<MrbcjfzCadInfo> = {};
   huajians: ObjectOf<MrbcjfzHuajianInfo> = {};
@@ -104,10 +107,6 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     private message: MessageService
   ) {
     setGlobal("mrbcjfz", this);
-  }
-
-  ngOnInit() {
-    this.refresh();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -310,6 +309,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         }
       }
     }
+    this.refreshAfter.emit();
     this._refreshLock$.next(false);
   }
 
@@ -500,9 +500,9 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     if (!xinghao) {
       return result;
     }
-    const errorMsg = this.checkSubmit();
-    if (errorMsg.length) {
-      await this.message.error(errorMsg.join("<br>"));
+    const errors = this.checkSubmit();
+    if (errors.length && !this.forceSubmit) {
+      await this.message.error(errors.join("<br>"));
       return result;
     }
     if (this.inputData) {
@@ -524,7 +524,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         result = await this.http.tableUpdate({table, data}, {spinner: this.loaderId});
       }
     }
-    this.dataSubmit.emit(this.xinghao);
+    this.dataSubmit.emit({data: this.xinghao, errors});
     return result;
   }
 

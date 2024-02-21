@@ -3,6 +3,8 @@
   [table]="data.table"
   [inputData]="data.inputData"
   [closeable]="true"
+  [forceSubmit]="data.dryRun"
   (dataSubmit)="submit($event)"
   (dataClose)="close()"
+  (refreshAfter)="refreshAfter()"
 ></app-mrbcjfz>

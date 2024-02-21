@@ -280,7 +280,7 @@ export class LurushujuIndexComponent implements OnInit {
         this.setStep(1, {});
         break;
       case 3:
-        if ((await this.checkBcfz()) && (await this.message.confirm("确定返回吗？"))) {
+        if (!environment.production || (await this.message.confirm("确定返回吗？"))) {
           this.setStep(2, {xinghaoName: this.xinghaoName});
         }
         break;
@@ -494,26 +494,6 @@ export class LurushujuIndexComponent implements OnInit {
     }
   }
 
-  async checkBcfz() {
-    // const {mrbcjfz, gongyi} = this;
-    // if (mrbcjfz && gongyi) {
-    //   const errorMsg = mrbcjfz.checkSubmit() || [];
-    //   if (errorMsg.length > 0) {
-    //     this.openTab("板材分组");
-    //     await this.message.error(errorMsg.join("\n"));
-    //     return false;
-    //   }
-    //   const 板材分组 = this.getBcfzSubmitData(mrbcjfz.xinghao);
-    //   if (!isEqual(板材分组, gongyi.板材分组)) {
-    //     const yes = await this.message.confirm("板材分组已修改，是否提交？");
-    //     if (yes) {
-    //       mrbcjfz.submit();
-    //     }
-    //   }
-    // }
-    return true;
-  }
-
   onSelectedTabChange({index, tab}: MatTabChangeEvent) {
     const tabName = tab.textLabel;
     if (tabName) {
@@ -666,25 +646,36 @@ export class LurushujuIndexComponent implements OnInit {
     const result = await openSelectGongyiDialog(this.dialog, {
       data: {xinghaos, xinghaoOptions: this.xinghaoOptionsAll, excludeXinghaos: [xinghao.名字], multiple: true}
     });
-    if (result) {
-      let successCount = 0;
-      const 型号2 = xinghao.名字;
-      const gongyiNames: ObjectOf<string[]> = {};
-      for (const item of result.items) {
-        const {型号, 产品分类, 名字} = item;
-        if (!gongyiNames[产品分类]) {
-          gongyiNames[产品分类] = xinghao.产品分类[产品分类].map((v) => v.名字);
-        }
-        const 复制名字 = getCopyName(gongyiNames[产品分类], item.名字);
-        const success = await this.http.getData<boolean>("shuju/api/copyGongyi", {名字, 复制名字, 型号, 型号2, 产品分类});
-        if (success) {
-          gongyiNames[产品分类].push(复制名字);
-          successCount++;
-        }
+    if (!result) {
+      return;
+    }
+    const targetFenlei = await this.message.prompt<string>({
+      type: "select",
+      label: "复制到哪个分类",
+      options: xinghao.显示产品分类,
+      hint: "若留空则复制到对应分类"
+    });
+    if (targetFenlei === null) {
+      return;
+    }
+    let successCount = 0;
+    const 型号2 = xinghao.名字;
+    const gongyiNames: ObjectOf<string[]> = {};
+    for (const item of result.items) {
+      const {型号, 产品分类, 名字} = item;
+      const 产品分类2 = targetFenlei || 产品分类;
+      if (!gongyiNames[产品分类2]) {
+        gongyiNames[产品分类2] = xinghao.产品分类[产品分类2].map((v) => v.名字);
       }
-      if (successCount > 0) {
-        await this.getXinghao();
+      const 复制名字 = getCopyName(gongyiNames[产品分类2], item.名字);
+      const success = await this.http.getData<boolean>("shuju/api/copyGongyi", {名字, 复制名字, 型号, 型号2, 产品分类, 产品分类2});
+      if (success) {
+        gongyiNames[产品分类2].push(复制名字);
+        successCount++;
       }
+    }
+    if (successCount > 0) {
+      await this.getXinghao();
     }
   }
 

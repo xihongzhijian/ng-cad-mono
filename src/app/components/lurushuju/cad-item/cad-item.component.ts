@@ -283,13 +283,17 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   }
 
   updateZhankaiInputs() {
-    const zhankais = this.cad?.json?.zhankai;
-    this.zhankaiInputs = [];
-    if (!Array.isArray(zhankais)) {
+    const json = this.cad?.json;
+    if (!json) {
       return;
     }
+    if (!Array.isArray(json.zhankai)) {
+      json.zhankai = [];
+    }
+    const zhankais = json.zhankai;
+    this.zhankaiInputs = [];
     if (zhankais.length < 1) {
-      zhankais.push(new CadZhankai().export());
+      zhankais.push(new CadZhankai({name: json.name}).export());
     }
     for (const zhankai of zhankais) {
       this.zhankaiInputs.push({

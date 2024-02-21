@@ -5,7 +5,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
-import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
+import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
 import {isTypeOf, ObjectOf, RequiredKeys} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
@@ -450,31 +450,36 @@ export class MenjiaoDialogComponent implements OnInit {
     updateMenjiaoForm(this.formData);
   }
 
-  async editBcfz(key1: MenjiaoCadType) {
+  getMrbcjfzDialogInput(key1: MenjiaoCadType): MrbcjfzDialogInput {
     const {component} = this.data;
     if (!component) {
-      return;
+      return {id: -1, table: ""};
     }
     const data = this.formData;
     const morenbancai = cloneDeep(data[key1].板材分组);
     const cads = data[key1].算料CAD.map((v) => new CadData(v.json));
     const huajians = component.filterHuajians(data[key1]);
-    const result = await openMrbcjfzDialog(this.dialog, {
-      data: {
-        id: -1,
-        table: "",
-        inputData: {
-          xinghao: component.xinghaoName,
-          morenbancai,
-          cads,
-          huajians,
-          bancaiList: component.bancaiList,
-          isLocal: true
-        }
+    return {
+      id: -1,
+      table: "",
+      inputData: {
+        xinghao: component.xinghaoName,
+        morenbancai,
+        cads,
+        huajians,
+        bancaiList: component.bancaiList,
+        isLocal: true
       }
+    };
+  }
+
+  async editBcfz(key1: MenjiaoCadType) {
+    const result = await openMrbcjfzDialog(this.dialog, {
+      data: this.getMrbcjfzDialogInput(key1)
     });
     if (result) {
-      data[key1].板材分组 = result.默认板材;
+      this.formData[key1].板材分组 = result.data.默认板材;
+      await this.validate();
     }
   }
 
@@ -577,6 +582,9 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async empty(key1: MenjiaoCadType) {
+    if (!(await this.message.confirm("确定清空吗？"))) {
+      return;
+    }
     const {component} = this.data;
     if (!component) {
       return;
@@ -589,6 +597,12 @@ export class MenjiaoDialogComponent implements OnInit {
       delete data.企料CAD[key2].cad;
     }
     data.算料CAD = [];
+    data.算料公式 = [];
+    data.测试用例 = [];
+    data.输入数据 = [];
+    for (const item of Object.values(data.板材分组)) {
+      item.CAD = [];
+    }
     const suanliaoDataParams = this.key1Infos[key1].suanliaoDataParams;
     await this.http.mongodbDelete("kailiaokongweipeizhi", {filter: suanliaoDataParams});
     await this.http.mongodbDelete("kailiaocanshu", {filter: suanliaoDataParams});
@@ -599,47 +613,55 @@ export class MenjiaoDialogComponent implements OnInit {
     const {inputs, formData: data} = this;
     const {errors: inputErrors} = await validateForm(inputs?.toArray() || []);
 
-    const key1Errors = menjiaoCadTypes.map((key1) => {
-      const menjiaoCadInfos = getMenjiaoCadInfos(data);
-      const value = data[key1];
-      if (menjiaoCadInfos[key1].isEmpty) {
-        const type = key1.split("+")[0];
-        if (type === "包边在内") {
-          return null;
+    const key1Errors = await Promise.all(
+      menjiaoCadTypes.map(async (key1) => {
+        const menjiaoCadInfos = getMenjiaoCadInfos(data);
+        const value = data[key1];
+        if (menjiaoCadInfos[key1].isEmpty) {
+          const type = key1.split("+")[0];
+          if (type === "包边在内") {
+            return null;
+          } else {
+            for (const key11 of menjiaoCadTypes) {
+              if (key11 === key1 || !key11.startsWith(type)) {
+                continue;
+              }
+              if (!menjiaoCadInfos[key11].isEmpty) {
+                return null;
+              }
+            }
+          }
+        }
+        const missingValues = [];
+        for (const key2 of 算料数据2Keys) {
+          for (const key3 in value[key2]) {
+            if (!value[key2][key3].cad) {
+              missingValues.push(key3);
+            }
+          }
+        }
+        const errors = [];
+        if (missingValues.length > 0) {
+          errors.push("选择" + missingValues.join("、"));
+        }
+        const mrbcjfzResult = await openMrbcjfzDialog(this.dialog, {
+          width: "0",
+          height: "0",
+          data: {...this.getMrbcjfzDialogInput(key1), dryRun: true}
+        });
+        if (mrbcjfzResult && mrbcjfzResult.errors.length > 0) {
+          errors.push("检查板材分组");
+        }
+        if (errors.length > 0) {
+          const error = `请${errors.join("并")}`;
+          this.key1Infos[key1].error = error;
+          return {[error]: true};
         } else {
-          for (const key11 of menjiaoCadTypes) {
-            if (key11 === key1 || !key11.startsWith(type)) {
-              continue;
-            }
-            if (!menjiaoCadInfos[key11].isEmpty) {
-              return null;
-            }
-          }
+          this.key1Infos[key1].error = "";
+          return null;
         }
-      }
-      const missingValues = [];
-      for (const key2 of 算料数据2Keys) {
-        for (const key3 in value[key2]) {
-          if (!value[key2][key3].cad) {
-            missingValues.push(key3);
-          }
-        }
-      }
-      const errors = [];
-      if (missingValues.length > 0) {
-        errors.push("选择" + missingValues.join("、"));
-      }
-      if (isEmpty(value.板材分组)) {
-        errors.push("设置板材分组");
-      }
-      if (errors.length > 0) {
-        const error = `请${errors.join("并")}`;
-        this.key1Infos[key1].error = error;
-        return {[error]: true};
-      } else {
-        return null;
-      }
-    });
+      })
+    );
 
     if (!isEmpty(inputErrors)) {
       return false;

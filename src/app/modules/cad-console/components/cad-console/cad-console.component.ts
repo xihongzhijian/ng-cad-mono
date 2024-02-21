@@ -154,7 +154,7 @@ export class CadConsoleComponent {
     },
     async fillet(radiusArg: string) {
       const cad = this.status.cad;
-      let radius = Number(radiusArg) || 0;
+      let radius: number | null = Number(radiusArg) || 0;
       const lines = cad.selected().line;
       if (lines.length !== 2) {
         this.message.alert("请先选择且只选择两条线段");
@@ -226,7 +226,11 @@ export class CadConsoleComponent {
         startAngle = endAngle - 180;
       } else {
         if (radius === undefined) {
-          radius = await this.message.prompt({type: "number", label: "圆角半径", validators: [Validators.required, Validators.min(0)]});
+          radius = await this.message.prompt<number>({
+            type: "number",
+            label: "圆角半径",
+            validators: [Validators.required, Validators.min(0)]
+          });
           if (radius === null) {
             return;
           }

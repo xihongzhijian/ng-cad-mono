@@ -135,9 +135,9 @@ export class ToolbarComponent extends Subscribed() {
   }
 
   async rotate(clockwise?: boolean) {
-    let angle = 0;
+    let angle: number | null = 0;
     if (clockwise === undefined) {
-      angle = await this.message.prompt({type: "number", label: "输入角度"});
+      angle = await this.message.prompt<number>({type: "number", label: "输入角度"});
       if (angle === null) {
         return;
       }

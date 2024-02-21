@@ -302,7 +302,6 @@ export class SuanliaogongshiComponent implements OnChanges {
       case "添加":
         {
           const item = await this.getShuruItem();
-          console.log(item);
           if (item) {
             this.info.data.输入数据.push(item);
             this.shuruTable.data = [...this.info.data.输入数据];

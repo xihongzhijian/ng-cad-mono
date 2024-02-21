@@ -113,14 +113,14 @@ export class MessageService {
     return null;
   }
 
-  async prompt(
+  async prompt<T = any>(
     info: InputInfo,
     data?: Omit<MessageDataParams<FormMessageData>, "inputs">,
     others: MessageDataParams2<FormMessageData> = {}
   ) {
     const result = await this.form({inputs: [info], ...data}, others);
     if (result && typeof result === "object") {
-      return Object.values(result)[0];
+      return Object.values(result)[0] as T;
     }
     return null;
   }

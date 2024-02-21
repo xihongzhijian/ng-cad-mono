@@ -398,7 +398,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         const data = new CadData(v);
         const img = this.http.getCadImgUrl(data.id);
         this.lingsanCadImgs[data.id] = img;
-        const item: ZixuanpeijianlingsanCadItem = {data, img, hidden: false};
+        const item: ZixuanpeijianlingsanCadItem = {data, img, hidden: false, isFetched: false};
         const type = item.data.type;
         if (!this.lingsanCadInfos[type]) {
           this.lingsanCadInfos[type] = {hidden: false};
@@ -602,11 +602,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   async submit() {
     const {value} = this.step$.value;
     const stepFixed = this.data?.stepFixed;
-    const ids = this.result.零散.map((v) => v.info.houtaiId);
-    const cads = (await this.http.getCad({collection: "cad", ids})).cads;
-    for (const item of this.result.零散) {
-      item.data = cads.find((v) => v.id === item.info.houtaiId)?.clone(true) || item.data;
-    }
     if (value === 1) {
       const errors = new Set<string>();
       if (this.data?.checkEmpty) {
@@ -934,17 +929,24 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this._updateInputInfos();
   }
 
-  addLingsanItem(type: string, i: number) {
-    const data0 = this.lingsanCads[type][i].data;
-    const data = data0.clone(true);
-    data.zhankai = [new CadZhankai()];
+  async addLingsanItem(type: string, i: number) {
+    const item = this.lingsanCads[type][i];
+    if (!item.isFetched) {
+      const data0 = (await this.http.getCad({collection: "cad", id: item.data.id})).cads[0];
+      item.isFetched = true;
+      if (data0) {
+        item.data = data0;
+      }
+    }
+    const data = item.data.clone(true);
+    data.zhankai = [new CadZhankai({name: data.name})];
     data.entities.forEach((e) => {
       if (e instanceof CadLineLike) {
         e.gongshi = "";
         e.guanlianbianhuagongshi = "";
       }
     });
-    this.result.零散.push({data, info: {houtaiId: data0.id, zhankai: [], calcZhankai: []}});
+    this.result.零散.push({data, info: {houtaiId: item.data.id, zhankai: [], calcZhankai: []}});
     this._updateInputInfos();
   }
 

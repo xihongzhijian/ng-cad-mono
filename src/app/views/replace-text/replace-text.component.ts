@@ -112,12 +112,13 @@ export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterV
     if (collection) {
       this.collection = collection;
     } else {
-      this.collection = await this.message.prompt({
-        type: "select",
-        options: cadCollections.slice(),
-        label: "collection",
-        validators: Validators.required
-      });
+      this.collection =
+        (await this.message.prompt({
+          type: "select",
+          options: cadCollections.slice(),
+          label: "collection",
+          validators: Validators.required
+        })) || "";
       this.router.navigate([], {queryParams: {collection: this.collection}, queryParamsHandling: "merge"});
     }
   }

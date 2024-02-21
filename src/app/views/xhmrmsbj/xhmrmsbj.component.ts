@@ -32,8 +32,8 @@ import {BancaiList, TableDataBase, TableUpdateParams} from "@modules/http/servic
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
-import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcfz.utils";
 import {MrbcjfzInfo, MrbcjfzXinghao} from "@views/mrbcjfz/mrbcjfz.types";
+import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MsbjData, MsbjInfo, Node2rectData, node2rectDataMsdxKeys} from "@views/msbj/msbj.types";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
@@ -638,7 +638,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const result = await openMrbcjfzDialog(this.dialog, {data: {id: this.xinghao.raw.vid, table: "p_xinghao"}});
     if (result) {
-      this.xinghao = result;
+      this.xinghao = result.data;
     }
   }
 
