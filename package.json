@@ -9,7 +9,9 @@
     "test:ci": "ng test --watch=false --progress=false --browsers=ChromeHeadless",
     "lint": "ng lint --fix",
     "format": "prettier --write .",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run --browser chrome"
   },
   "main": "index.js",
   "repository": {
@@ -72,6 +74,7 @@
     "@angular-eslint/template-parser": "^17.2.1",
     "@angular/cli": "^17.2.0",
     "@angular/compiler-cli": "^17.2.1",
+    "@cypress/schematic": "2.5.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/archiver": "^6.0.2",
     "@types/color": "^3.0.6",
@@ -92,6 +95,7 @@
     "angular-animations": "^0.11.0",
     "archiver": "^6.0.1",
     "axios": "^1.6.7",
+    "cypress": "latest",
     "del": "^7.1.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
@@ -109,7 +113,6 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "^2.1.0",
     "prettier": "^3.2.5",
-    "protractor": "~7.0.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.3.3"
   },

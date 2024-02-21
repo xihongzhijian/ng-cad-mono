@@ -1,7 +1,8 @@
 version: 2.1
 orbs:
-  node: circleci/node@5.2.0
-  browser-tools: circleci/browser-tools@1.4.7
+  node: circleci/node@5
+  browser-tools: circleci/browser-tools@1
+  cypress: cypress-io/cypress@3
 commands:
   build:
     steps:
@@ -35,9 +36,19 @@ jobs:
       - run:
           name: Unit test
           command: yarn test:ci
+  e2e:
+    executor: default
+    steps:
+      - build
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
+      - cypress/run-tests:
+          start-command: yarn start
+          cypress-command: yarn dlx wait-on https://localhost:4200 && yarn cypress:run
 
 workflows:
   test:
     jobs:
       - lint
       - unit-test
+      - e2e

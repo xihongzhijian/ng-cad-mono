@@ -55,4 +55,9 @@ Thumbs.db
 !.yarn/versions
 !.yarn/patches
 
+# cypress
+cypress/downloads
+cypress/screenshots
+cypress/videos
+
 /upload.ps1
