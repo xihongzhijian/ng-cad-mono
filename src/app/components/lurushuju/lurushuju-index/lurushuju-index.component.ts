@@ -237,7 +237,7 @@ export class LurushujuIndexComponent implements OnInit {
       data2.名字 = data.mingzi;
       const response = await this.http.post("shuju/api/editXinghao", {mingziOld, data: {...xinghao, ...data}});
       if (response?.code === 0) {
-        const response2 = await this.setXinghao(data2, true, mingziOld);
+        const response2 = await this.setXinghao(data2, true, data2.名字);
         if (response2?.code === 0) {
           await this.getXinghaos();
         }

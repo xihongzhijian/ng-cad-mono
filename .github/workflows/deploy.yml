@@ -1,11 +1,11 @@
-name: NodeJS with Gulp
+name: Deploy to server
 
 on:
   push:
     branches: ["master"]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     strategy:
@@ -28,4 +28,4 @@ jobs:
           yarn install
           yarn build:packages
           yarn build
-          gulp
+          yarn ts-node ./upload.ts

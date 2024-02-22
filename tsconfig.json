@@ -33,7 +33,7 @@
     "resolveJsonModule": true,
     "useDefineForClassFields": false
   },
-  "include": ["src", "/packages/cad-viewer/lib"],
+  "include": ["src", "upload.ts"],
   "angularCompilerOptions": {
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,

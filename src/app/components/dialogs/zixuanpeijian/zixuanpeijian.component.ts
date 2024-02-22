@@ -942,6 +942,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     data.zhankai = [new CadZhankai({name: data.name})];
     data.entities.forEach((e) => {
       if (e instanceof CadLineLike) {
+        e.mingzi = "";
         e.gongshi = "";
         e.guanlianbianhuagongshi = "";
       }
