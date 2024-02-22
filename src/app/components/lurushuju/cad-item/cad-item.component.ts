@@ -14,7 +14,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
-import {CadItemButton} from "./cad-item.types";
+import {CadItemButton, typeOptions} from "./cad-item.types";
 
 @Component({
   selector: "app-cad-item",
@@ -148,6 +148,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       cadData.id = mubanId;
     }
     cadData.name = cad?.名字 || "模板";
+    cadData.type = typeOptions[0];
     if (mubanExtraData) {
       Object.assign(cadData, mubanExtraData);
     }
@@ -156,7 +157,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       return;
     }
     this.mubanId = result.id;
-    this.mubanData = cadData;
+    this.mubanData = result;
     this.initMubanViewer();
   }
 
@@ -324,7 +325,6 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       zhankai.flip = [{chanpinfenlei: "", fanzhuanfangshi: "", kaiqi: ""}];
     }
     const flip = zhankai.flip[0];
-    const typeOptions = ["模板公式展开", "自动展开+模板", "双向自动展开+模板"] as const;
     const updateMuban = async (silent?: boolean) => {
       return await this.http.setCad(
         {collection: "kailiaocadmuban", cadData: mubanData, force: true},

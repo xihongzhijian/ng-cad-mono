@@ -646,7 +646,7 @@ export class LurushujuIndexComponent implements OnInit {
       return;
     }
     const result = await openSelectGongyiDialog(this.dialog, {
-      data: {xinghaos, xinghaoOptions: this.xinghaoOptionsAll, excludeXinghaos: [xinghao.名字], multiple: true}
+      data: {xinghaos, xinghaoOptions: this.xinghaoOptionsAll, multiple: true}
     });
     if (!result) {
       return;
@@ -1001,7 +1001,7 @@ export class LurushujuIndexComponent implements OnInit {
     if (!this.gongyi) {
       return;
     }
-    const {button, item, rowIdx} = event;
+    const {button, item: fromItem, rowIdx} = event;
     switch (button.event) {
       case "编辑":
         {
@@ -1024,19 +1024,43 @@ export class LurushujuIndexComponent implements OnInit {
         }
         break;
       case "复制":
-        if (await this.message.confirm(`确定复制【${item.名字}】吗？`)) {
-          const item2 = cloneDeep(item);
-          item2.vid = this.getMenjiaoId();
+        if (await this.message.confirm(`确定复制【${fromItem.名字}】吗？`)) {
+          const toItem = cloneDeep(fromItem);
+          toItem.vid = this.getMenjiaoId();
           const names = this.gongyi.算料数据.map((v) => v.名字);
-          item2.名字 = getCopyName(names, item2.名字);
-          updateMenjiaoForm(item2);
-          this.gongyi.算料数据.push(item2);
+          toItem.名字 = getCopyName(names, toItem.名字);
+          updateMenjiaoForm(toItem);
+          for (const key1 of menjiaoCadTypes) {
+            const fromData = fromItem[key1];
+            const toData = toItem[key1];
+            const [包边方向, 开启] = key1.split("+");
+            const fromParams: SuanliaoDataParams = {
+              选项: {
+                型号: this.xinghaoName,
+                工艺做法: this.gongyiName,
+                包边方向,
+                开启,
+                门铰锁边铰边: fromItem.名字
+              }
+            };
+            const toParams: SuanliaoDataParams = {
+              选项: {
+                型号: this.xinghaoName,
+                工艺做法: this.gongyiName,
+                包边方向,
+                开启,
+                门铰锁边铰边: toItem.名字
+              }
+            };
+            await copySuanliaoData(this.http, fromData, toData, fromParams, toParams);
+          }
+          this.gongyi.算料数据.push(toItem);
           this.menjiaoTable.data = [...this.gongyi.算料数据];
           await this.submitGongyi(["算料数据"]);
         }
         break;
       case "删除":
-        if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
+        if (await this.message.confirm(`确定删除【${fromItem.名字}】吗？`)) {
           this.gongyi.算料数据.splice(rowIdx, 1);
           this.menjiaoTable.data = [...this.gongyi.算料数据];
           await this.submitGongyi(["算料数据"]);

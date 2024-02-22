@@ -224,7 +224,7 @@ export const copySuanliaoData = async (
   fromParams: SuanliaoDataParams,
   toParams: SuanliaoDataParams
 ) => {
-  const mubanIds: ObjectOf<{from: string; to: string}> = {};
+  const mubanIds: ObjectOf<string> = {};
   const toChangeMubanId: any[] = [];
   for (const key2 in fromData.算料CAD) {
     const cadFrom = fromData.算料CAD[key2].json;
@@ -233,10 +233,8 @@ export const copySuanliaoData = async (
       return;
     }
     const mubanIdFrom = cadFrom.zhankai?.[0]?.kailiaomuban;
-    const mubanIdTo = cadTo.zhankai?.[0]?.kailiaomuban;
-    const mubanId = mubanIdTo || mubanIdFrom;
     if (typeof mubanIdFrom === "string" && mubanIdFrom) {
-      mubanIds[cadTo.id] = {from: mubanIdFrom, to: mubanId};
+      mubanIds[cadTo.id] = mubanIdFrom;
       toChangeMubanId.push(cadTo);
     }
   }

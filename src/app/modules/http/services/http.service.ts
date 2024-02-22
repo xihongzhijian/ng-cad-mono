@@ -241,6 +241,7 @@ export class HttpService {
         return await getTestData();
       }
       let content = "";
+      let errorData: any;
       if (error instanceof AxiosError && error.response) {
         const {data: errData, status, statusText} = error.response;
         if (typeof errData === "string") {
@@ -256,11 +257,15 @@ export class HttpService {
         }
         content = `<span>${status} (${statusText})</span><br>${content}`;
       } else if (error instanceof HttpServiceResponseError) {
+        errorData = error.response.data;
         content = error.details || error.message;
       } else if (error instanceof Error) {
         content = error.message;
       }
       console.error(error);
+      if (errorData) {
+        console.error(errorData);
+      }
       this.error(content, silent, response?.title);
       return response;
     } finally {
