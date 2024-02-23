@@ -386,7 +386,7 @@ export class LurushujuIndexComponent implements OnInit {
         options: this.getOptions("门窗"),
         multiple: false,
         onChange: (val) => onChange({所属门窗: val}),
-        style: {width: "150px"}
+        style: {width: "150px", flexShrink: 1}
       },
       {
         type: "select",
@@ -395,7 +395,7 @@ export class LurushujuIndexComponent implements OnInit {
         options: this.getOptions("工艺"),
         multiple: false,
         onChange: (val) => onChange({所属工艺: val}),
-        style: {width: "200px"}
+        style: {width: "200px", flexShrink: 1}
       },
       {
         type: "select",
@@ -417,7 +417,7 @@ export class LurushujuIndexComponent implements OnInit {
           }
           onChange(data);
         },
-        style: {width: "200px"}
+        style: {width: "200px", flexShrink: 1}
       },
       {
         type: "select",
@@ -425,7 +425,8 @@ export class LurushujuIndexComponent implements OnInit {
         model: {data: xinghao, key: "订单流程"},
         options: this.getOptions("订单流程"),
         multiple: false,
-        onChange: (val) => onChange({订单流程: val})
+        onChange: (val) => onChange({订单流程: val}),
+        style: {width: "200px", flexShrink: 1}
       }
     ];
     await this.updateXinghao(xinghao?.产品分类);
@@ -1133,5 +1134,21 @@ export class LurushujuIndexComponent implements OnInit {
       filter.名字 = data.name;
     }
     await this.http.post("shuju/api/purgeXinghaos", {filter});
+  }
+
+  async xinghaoTongyongGongshi() {
+    const where = {分类: "型号通用公式"};
+    const url = await this.http.getShortUrl("算料公式", {search2: where, extraData: where});
+    if (url) {
+      window.open(url);
+    }
+  }
+
+  async xinghaoZhuanyongGongshi() {
+    const where = {分类: "型号专用公式", 选项: {型号: this.xinghaoName}};
+    const url = await this.http.getShortUrl("算料公式", {search2: where, extraData: where});
+    if (url) {
+      window.open(url);
+    }
   }
 }

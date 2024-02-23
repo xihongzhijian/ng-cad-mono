@@ -69,7 +69,6 @@
 
   .toolbar {
     display: flex;
-    padding: 5px;
     align-items: center;
     &.center {
       justify-content: center;
@@ -92,12 +91,12 @@
       }
     }
 
-    & > *:not(:last-child) {
-      margin-right: 5px;
+    > * {
+      margin: 2.5px;
     }
 
-    .mat-mdc-button {
-      padding: 0;
+    .mdc-button {
+      flex: 0 0 auto;
     }
 
     --mdc-checkbox-state-layer-size: 30px;

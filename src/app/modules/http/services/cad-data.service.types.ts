@@ -188,3 +188,9 @@ export const getHoutaiCad = (data = new CadData()): HoutaiCad => {
     json: exportCadData(data, true)
   };
 };
+
+export interface GetShortUrlParams {
+  search?: ObjectOf<any>;
+  search2?: ObjectOf<any>;
+  extraData?: ObjectOf<any>;
+}

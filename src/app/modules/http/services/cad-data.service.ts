@@ -13,6 +13,7 @@ import {
   Changelog,
   GetCadParams,
   GetOptionsParams,
+  GetShortUrlParams,
   HoutaiCad,
   MongodbDataBase,
   OptionsData,
@@ -287,7 +288,7 @@ export class CadDataService extends HttpService {
     await this.post("ngcad/setCadImg", {id, file}, options);
   }
 
-  async getShortUrl(name: string, data: ObjectOf<any> = {}, options?: HttpOptions) {
+  async getShortUrl(name: string, data?: GetShortUrlParams, options?: HttpOptions) {
     return await this.getData<string>("ngcad/getShortUrl", {name, data}, options);
   }
 
