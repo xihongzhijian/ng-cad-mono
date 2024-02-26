@@ -23,15 +23,17 @@
         <button mat-raised-button [color]="info.editMode ? 'accent' : 'primary'" (click)="toggleEditMode()">编辑</button>
       }
       @for (button of toolbarButtons.extra; track $index) {
-        <button
-          mat-raised-button
-          [color]="button.color"
-          [ngClass]="button.class"
-          [ngStyle]="button.style"
-          (click)="onToolbarBtnClick({button})"
-        >
-          {{ button.title || button.event }}
-        </button>
+        @if (!button.hidden) {
+          <button
+            mat-raised-button
+            [color]="button.color"
+            [ngClass]="button.class"
+            [ngStyle]="button.style"
+            (click)="onToolbarBtnClick({button})"
+          >
+            {{ button.title || button.event }}
+          </button>
+        }
       }
     </div>
   }
@@ -173,15 +175,17 @@
                   }
                   <div class="btn-group">
                     @for (button of getColumnButtons(column); track $index) {
-                      <button
-                        mat-stroked-button
-                        [color]="button.color"
-                        [ngClass]="button.class"
-                        [ngStyle]="button.style"
-                        (click)="onRowButtonClick({button, column, item, colIdx, rowIdx})"
-                      >
-                        {{ button.title || button.event }}
-                      </button>
+                      @if (!button.hidden) {
+                        <button
+                          mat-stroked-button
+                          [color]="button.color"
+                          [ngClass]="button.class"
+                          [ngStyle]="button.style"
+                          (click)="onRowButtonClick({button, column, item, colIdx, rowIdx})"
+                        >
+                          {{ button.title || button.event }}
+                        </button>
+                      }
                     }
                   </div>
                 }

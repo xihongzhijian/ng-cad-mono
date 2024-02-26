@@ -22,8 +22,15 @@
       background-color: lightgray;
     }
 
-    .text {
-      text-align: center;
+    .option-name {
+      > .toolbar {
+        width: auto;
+        max-width: 100%;
+
+        > .text {
+          width: auto;
+        }
+      }
     }
   }
 }

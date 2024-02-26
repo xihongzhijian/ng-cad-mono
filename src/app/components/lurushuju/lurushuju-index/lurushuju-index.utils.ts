@@ -70,7 +70,7 @@ export const getMenjiaoTable = () => {
   const reuslt: TableRenderInfo<MenjiaoData> = {
     noCheckBox: true,
     columns: [
-      {type: "string", field: "名字", width: "180px"},
+      {type: "string", field: "名字", width: "180px", name: "门铰锁边铰边"},
       {type: "string", field: "产品分类", width: "100px"},
       {type: "string", field: "开启", width: "100px"},
       {type: "string", field: "门铰", width: "100px"},
@@ -111,7 +111,7 @@ export const getMenjiaoTable = () => {
     toolbarButtons: {
       extra: [
         {event: "添加", color: "primary"},
-        {event: "从其它做法选择", color: "primary"}
+        {event: "从其它做法选择", title: "从其它做法选择门铰锁边铰边", color: "primary"}
       ],
       inlineTitle: true
     }

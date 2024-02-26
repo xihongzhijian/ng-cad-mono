@@ -36,6 +36,7 @@ export interface TableButton {
   color?: "" | "primary" | "accent" | "warn";
   class?: string | string[];
   style?: csstype.Properties;
+  hidden?: boolean;
 }
 
 export interface ColumnInfoBase<T> {

@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
 import {CadCollection} from "@app/cad/collections";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
@@ -15,8 +15,9 @@ import {KlcsData, KlkwpzData} from "./suanliao-tables.types";
   templateUrl: "./suanliao-tables.component.html",
   styleUrl: "./suanliao-tables.component.scss"
 })
-export class SuanliaoTablesComponent implements OnInit {
+export class SuanliaoTablesComponent implements OnInit, OnChanges {
   @Input({required: true}) suanliaoDataParams!: SuanliaoDataParams;
+  @Input() editJson = false;
   klkwpzCollection: CadCollection = "kailiaokongweipeizhi";
   klcsCollection: CadCollection = "kailiaocanshu";
   klkwpzTable: TableRenderInfo<KlkwpzData> = {
@@ -68,14 +69,45 @@ export class SuanliaoTablesComponent implements OnInit {
     }
   };
 
+  private _isInited = false;
+
   constructor(
     private http: CadDataService,
     private message: MessageService,
     private status: AppStatusService
   ) {}
 
-  ngOnInit(): void {
-    this.update();
+  ngOnInit() {
+    if (!this._isInited) {
+      this._isInited = true;
+      this.update();
+    }
+    this.updateTableInfo();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.suanliaoDataParams) {
+      this._isInited = true;
+      this.update();
+    } else if (changes.editJson) {
+      this.updateTableInfo();
+    }
+  }
+
+  updateTableInfo() {
+    const update = (info: TableRenderInfo<any>) => {
+      for (const column of info.columns) {
+        if (column.type === "button") {
+          for (const button of column.buttons) {
+            if (button.event === "JSON编辑") {
+              button.hidden = !this.editJson;
+            }
+          }
+        }
+      }
+    };
+    update(this.klkwpzTable);
+    update(this.klcsTable);
   }
 
   async update() {

@@ -4,9 +4,10 @@
       @case (1) {
         <button mat-raised-button color="primary" (click)="addXinghao()">新建型号</button>
         <app-input style="width: 200px" [info]="filterInputInfo"></app-input>
-        <button mat-raised-button color="primary" (click)="xinghaoTongyongGongshi()">型号通用公式</button>
+        <button mat-raised-button color="primary" (click)="xinghaoTongyongGongshi()">所有型号通用公式</button>
       }
       @case (2) {
+        <div class="name title">工艺做法</div>
         <div class="name title">型号：{{ xinghaoName }}</div>
       }
       @case (3) {
@@ -50,7 +51,7 @@
         @for (info of xinghaoInputInfos; track info) {
           <app-input [info]="info"></app-input>
         }
-        <button mat-raised-button color="primary" (click)="copyGongyi2()">从其它型号复制</button>
+        <button mat-raised-button color="primary" (click)="copyGongyi2()">从其它型号复制工艺做法</button>
         <button mat-raised-button color="primary" (click)="xinghaoZhuanyongGongshi()">型号专用公式</button>
       </div>
       <ng-scrollbar>

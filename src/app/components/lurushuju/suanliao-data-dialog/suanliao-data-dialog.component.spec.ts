@@ -6,7 +6,7 @@ import {SuanliaoDataInput} from "./suanliao-data-dialog.type";
 
 const data: SuanliaoDataInput = {
   data: {算料公式: [], 测试用例: [], 算料CAD: [], 输入数据: []},
-  varNames: {names: ["1"], width: 0},
+  varNames: {names: {test: ["1"]}, width: 0},
   suanliaoDataParams: {
     选项: {
       型号: "1",
