@@ -1,6 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {CommonModule} from "@angular/common";
-import {Component, EventEmitter, Input, OnChanges, Output, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -67,7 +67,7 @@ import {
     SpinnerComponent
   ]
 })
-export class MrbcjfzComponent implements OnChanges {
+export class MrbcjfzComponent implements OnInit, OnChanges {
   @Input() id = 0;
   @Input() table = "";
   @Input() closeable = false;
@@ -87,6 +87,7 @@ export class MrbcjfzComponent implements OnChanges {
   activeBancaiKey: string | null = null;
   xiaodaohangStructure: XiaodaohangStructure | null = null;
   isFromOrder = false;
+  private _isInited = false;
   private _refreshLock$ = new BehaviorSubject<boolean>(false);
   wmm = new WindowMessageManager("默认板材及分组", this, window.parent);
   loaderId = "mrbcjfz-loader";
@@ -109,8 +110,16 @@ export class MrbcjfzComponent implements OnChanges {
     setGlobal("mrbcjfz", this);
   }
 
+  ngOnInit() {
+    if (!this._isInited) {
+      this._isInited = true;
+      this.refresh();
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes.inputData) {
+      this._isInited = true;
       this.refresh();
     }
   }

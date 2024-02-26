@@ -1,51 +1,69 @@
 <ng-scrollbar>
-  @if (extraInputInfos) {
-    <div class="toolbar extra-input-infos">
-      @for (info of extraInputInfos; track $index) {
-        <app-input #extraInput [info]="info"></app-input>
-      }
-    </div>
-  }
-
-  @if (varNames && varNames.names && varNames.names.length > 0) {
-    <div class="var-names toolbar">
-      @for (name of varNames.names; track $index) {
-        <button mat-button color="primary" [style]="{width: varNames.width + 'px'}" (click)="clickVarName(name)">{{ name }}</button>
-      }
-    </div>
-  }
-
-  <div class="formulas-input">
-    <app-input [info]="formulasInputInfo"></app-input>
-    <div class="btn-group" style="margin-top: -10px">
-      <button mat-raised-button color="primary" (click)="addFormulas()">批量添加</button>
-      <button mat-raised-button color="primary" (click)="test(submitFormulas(parseTextarea()))">测试</button>
-    </div>
-  </div>
-
-  <div class="flex-column flex-110">
-    <div class="btn-group">
-      <div>公式</div>
-      <button mat-raised-button color="primary" (click)="addFormula()">添加</button>
-      <button mat-raised-button color="primary" (click)="test(submitFormulas())">测试</button>
-    </div>
-    <div class="formulas-list" cdkDropList [cdkDropListData]="formulaList" (cdkDropListDropped)="dropFormula($event)">
-      @for (formula of formulaList; track formula; let i = $index) {
-        <div class="formula" cdkDrag cdkDragLockAxis="y">
-          <div class="drag-placeholder" cdkDragHandle></div>
-          <button mat-icon-button color="primary" (click)="addFormula(i + 1)">
-            <mat-icon>add_circle</mat-icon>
-          </button>
-          <button mat-icon-button color="primary" (click)="removeFormula(i)">
-            <mat-icon>remove_circle</mat-icon>
-          </button>
-          <app-input class="key" [info]="formulaListInputInfos[i][0]"></app-input>
-          <span class="eq"> = </span>
-          <app-input class="value" [info]="formulaListInputInfos[i][1]"></app-input>
-          <div class="drag-placeholder" cdkDragHandle></div>
+  <div class="content flex-row">
+    <div class="flex-110">
+      @if (extraInputInfos) {
+        <div class="toolbar extra-input-infos">
+          @for (info of extraInputInfos; track $index) {
+            <app-input #extraInput [info]="info"></app-input>
+          }
         </div>
       }
+
+      <div class="formulas-input">
+        <app-input [info]="formulasInputInfo"></app-input>
+        <div class="btn-group" style="margin-top: -10px">
+          <button mat-raised-button color="primary" (click)="addFormulas()">批量添加</button>
+          <button mat-raised-button color="primary" (click)="test(submitFormulas(parseTextarea()))">测试</button>
+        </div>
+      </div>
+
+      <div class="flex-column flex-110">
+        <div class="btn-group">
+          <div>公式</div>
+          <button mat-raised-button color="primary" (click)="addFormula()">添加</button>
+          <button mat-raised-button color="primary" (click)="test(submitFormulas())">测试</button>
+        </div>
+        <div class="formulas-list" cdkDropList [cdkDropListData]="formulaList" (cdkDropListDropped)="dropFormula($event)">
+          @for (formula of formulaList; track formula; let i = $index) {
+            <div class="formula" cdkDrag cdkDragLockAxis="y">
+              <div class="drag-placeholder" cdkDragHandle></div>
+              <button mat-icon-button color="primary" (click)="addFormula(i + 1)">
+                <mat-icon>add_circle</mat-icon>
+              </button>
+              <button mat-icon-button color="primary" (click)="removeFormula(i)">
+                <mat-icon>remove_circle</mat-icon>
+              </button>
+              <app-input class="key" [info]="formulaListInputInfos[i][0]"></app-input>
+              <span class="eq"> = </span>
+              <app-input class="value" [info]="formulaListInputInfos[i][1]"></app-input>
+              <div class="drag-placeholder" cdkDragHandle></div>
+            </div>
+          }
+        </div>
+      </div>
     </div>
+
+    @if (varNames) {
+      <div class="var-names-groups flex-column" [style.--var-width.px]="varNames.width">
+        <div class="toolbar">
+          <div class="title">系统变量</div>
+          <button mat-raised-button color="primary" (click)="openDoc()">
+            帮助文档
+            <mat-icon>open_in_new</mat-icon>
+          </button>
+        </div>
+        @for (item of varNames.names | keyvalue: returnZero; track item.key) {
+          <div class="var-names-group flex-column">
+            <div class="name">{{ item.key }}</div>
+            <div class="var-names toolbar">
+              @for (name of item.value; track $index) {
+                <button mat-button color="primary" (click)="clickVarName(name)">{{ name }}</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
   </div>
 </ng-scrollbar>
 

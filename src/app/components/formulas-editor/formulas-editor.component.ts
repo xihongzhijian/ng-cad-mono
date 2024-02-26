@@ -6,7 +6,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {replaceChars, setGlobal} from "@app/app.common";
 import {CalcResult, Formulas} from "@app/utils/calc";
-import {timeout} from "@lucilor/utils";
+import {ObjectOf, timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
@@ -42,7 +42,7 @@ export class FormulasEditorComponent {
   }
   @Input() vars?: Formulas;
   @Input() formulasText = "";
-  @Input() varNames?: {names?: string[]; width?: number};
+  @Input() varNames?: {names?: ObjectOf<string[]>; width?: number};
   @Input() extraInputInfos?: InputInfo[];
   @Input() required?: boolean;
   formulaList: [string, string][] = [];
@@ -65,6 +65,7 @@ export class FormulasEditorComponent {
   }
 
   updateFormulas(formulas?: Formulas) {
+    console.log(this.varNames);
     if (formulas) {
       this.formulaList = Object.entries(formulas).map(([k, v]) => [k, String(v)]);
     }
@@ -213,5 +214,9 @@ export class FormulasEditorComponent {
     } catch (error) {
       await this.message.snack("复制失败");
     }
+  }
+
+  openDoc() {
+    window.open("https://www.kdocs.cn/l/ckbuWeJhOajS");
   }
 }
