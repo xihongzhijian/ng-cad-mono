@@ -1,0 +1,30 @@
+<div class="toolbar">
+  <button mat-raised-button color="primary" (click)="submit()">提交并关闭</button>
+</div>
+
+<div class="test-cases flex-column">
+  <div class="toolbar compact">
+    <div class="title">测试数据</div>
+    <button mat-raised-button color="primary" (click)="addTestCase()">添加</button>
+    <button mat-raised-button color="primary" (click)="importTestCases()">导入</button>
+    <button mat-raised-button color="primary" (click)="exportTestCases()">导出</button>
+  </div>
+  <ng-scrollbar>
+    <div class="items">
+      @for (testCase of info.data["测试用例"]; track i; let i = $index) {
+        @if (i > 0) {
+          <mat-divider></mat-divider>
+        }
+        <div class="test-case-card item">
+          <div class="toolbar compact">
+            <div class="text short">{{ testCase["名字"] }}</div>
+            <div class="text long" [matTooltip]="getTimeStr(testCase['时间'])">{{ getTimeStr(testCase["时间"]) }}</div>
+            <button mat-button color="primary" (click)="editTestCase(i)">编辑</button>
+            <button mat-button color="primary" (click)="copyTestCase(i)">复制</button>
+            <button mat-button color="primary" (click)="removeTestCase(i)">删除</button>
+          </div>
+        </div>
+      }
+    </div>
+  </ng-scrollbar>
+</div>

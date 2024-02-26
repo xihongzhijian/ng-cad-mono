@@ -107,6 +107,12 @@
     .mat-mdc-checkbox {
       margin: 0;
     }
+
+    &.compact {
+      .mdc-button {
+        padding: 0;
+      }
+    }
   }
 
   .link {

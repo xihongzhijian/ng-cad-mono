@@ -7,8 +7,7 @@
         <button mat-raised-button color="primary" (click)="xinghaoTongyongGongshi()">所有型号通用公式</button>
       }
       @case (2) {
-        <div class="name title">工艺做法</div>
-        <div class="name title">型号：{{ xinghaoName }}</div>
+        <div class="name title">型号【{{ xinghaoName }}】的工艺做法</div>
       }
       @case (3) {
         <div class="name title">型号：{{ xinghaoName }}</div>
@@ -16,6 +15,12 @@
         <div class="name title">工艺做法：{{ gongyiName }}</div>
       }
     }
+    <button mat-button (click)="showChangelog()">
+      关于
+      @if (isChangelogNew) {
+        <span class="super">NEW!</span>
+      }
+    </button>
   </div>
   <div class="toolbar flex-110" style="justify-content: center">
     @if (!production) {

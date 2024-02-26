@@ -6,7 +6,7 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {CadData} from "@lucilor/cad-viewer";
-import {RequiredKeys} from "@lucilor/utils";
+import {ObjectOf, RequiredKeys} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -21,6 +21,7 @@ import {CadItemButton} from "../cad-item/cad-item.types";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {SelectGongyiItemData} from "../select-gongyi-dialog/select-gongyi-dialog.types";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
+import {openSuanliaoTestDialog} from "../suanliao-test-dialog/suanliao-test-dialog.component";
 import {SuanliaoDataParams, 算料数据} from "../xinghao-data";
 import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./suanliao-data-dialog.type";
 
@@ -154,8 +155,11 @@ export class SuanliaoDataDialogComponent {
     }
   }
 
-  suanliao() {
-    this.message.alert("未实现");
+  async suanliaoTest() {
+    const result = await openSuanliaoTestDialog(this.dialog, {data: {data: {测试用例: this.suanliaoData.测试用例}}});
+    if (result) {
+      this.suanliaoData.测试用例 = result.data.测试用例 || [];
+    }
   }
 
   submit() {
@@ -189,12 +193,19 @@ export class SuanliaoDataDialogComponent {
 
   async removeCad(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
     const {cad} = component;
-    if (!cad || !(await this.message.confirm(`确定删除【${cad.名字}】吗？`))) {
+    if (!cad || !(await this.message.confirm(`删除【${cad.名字}】将同时删除对应的孔位配置、开料参数、开料模板，确定删除吗？`))) {
       return;
     }
     const {mubanId} = component;
     if (mubanId) {
       await this.http.mongodbDelete("kailiaocadmuban", {id: mubanId});
+    }
+    const names = this.suanliaoData.算料CAD.filter((v) => v.名字 === cad.名字);
+    if (names.length < 2) {
+      const params: ObjectOf<any> = this.data.suanliaoDataParams;
+      await this.http.mongodbDelete("kailiaokongweipeizhi", {filter: {...params, 名字: cad.名字}});
+      await this.http.mongodbDelete("kailiaocanshu", {filter: {...params, 名字: cad.名字 + "中空参数"}});
+      this.suanliaoTables?.update();
     }
     this.suanliaoData.算料CAD.splice(component.customInfo.index, 1);
   }

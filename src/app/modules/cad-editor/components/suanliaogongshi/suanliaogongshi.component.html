@@ -11,15 +11,28 @@
             <mat-divider></mat-divider>
           }
           <div class="gongshi-card item">
-            <div class="toolbar">
+            <div class="toolbar compact">
               <div class="gongshi-name text long">{{ gongshi["名字"] }}</div>
-              <button mat-button color="primary" (click)="editGongshi(i)">编辑</button>
+              @if (gongshiInfo[i].formulas) {
+                <button mat-button color="primary" (click)="editGongshiEnd(i, null, true)">关闭编辑</button>
+              } @else {
+                <button mat-button color="primary" (click)="editGongshiStart(i)">直接编辑</button>
+              }
+              <button mat-button color="primary" (click)="editGongshi(i)">弹窗编辑</button>
               <button mat-button color="primary" (click)="copyGongshi(i)">复制</button>
               <button mat-button color="primary" (click)="removeGongshi(i)">删除</button>
             </div>
             <div class="gongshi-items">
-              @for (item of gongshi["公式"] | keyvalue: returnZero; track item.key) {
-                <div class="gongshi-item text-ellipsis" [matTooltip]="getGongshiStr(item)">{{ getGongshiStr(item) }}</div>
+              @if (gongshiInfo[i].formulas) {
+                <app-formulas-editor
+                  [formulas]="gongshiInfo[i].formulas"
+                  [compact]="true"
+                  (formulasChange)="editGongshiEnd(i, $event)"
+                ></app-formulas-editor>
+              } @else {
+                @for (item of gongshi["公式"] | keyvalue: returnZero; track item.key) {
+                  <div class="gongshi-item text-ellipsis" [matTooltip]="getGongshiStr(item)">{{ getGongshiStr(item) }}</div>
+                }
               }
             </div>
           </div>
@@ -36,33 +49,5 @@
       (toolbarButtonClick)="onShuruToolbar($event)"
       (rowButtonClick)="onShuruRow($event)"
     ></app-table>
-  </div>
-}
-@if (info.data["测试用例"]) {
-  <div class="test-cases flex-column">
-    <div class="toolbar">
-      <div class="title">测试数据</div>
-      <button mat-raised-button color="primary" (click)="addTestCase()">添加</button>
-      <button mat-raised-button color="primary" (click)="importTestCases()">导入</button>
-      <button mat-raised-button color="primary" (click)="exportTestCases()">导出</button>
-    </div>
-    <ng-scrollbar>
-      <div class="items">
-        @for (testCase of info.data["测试用例"]; track i; let i = $index) {
-          @if (i > 0) {
-            <mat-divider></mat-divider>
-          }
-          <div class="test-case-card item">
-            <div class="toolbar">
-              <div class="text short">{{ testCase["名字"] }}</div>
-              <div class="text long" [matTooltip]="getTimeStr(testCase['时间'])">{{ getTimeStr(testCase["时间"]) }}</div>
-              <button mat-button color="primary" (click)="editTestCase(i)">编辑</button>
-              <button mat-button color="primary" (click)="copyTestCase(i)">复制</button>
-              <button mat-button color="primary" (click)="removeTestCase(i)">删除</button>
-            </div>
-          </div>
-        }
-      </div>
-    </ng-scrollbar>
   </div>
 }

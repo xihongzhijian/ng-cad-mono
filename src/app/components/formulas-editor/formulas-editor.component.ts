@@ -1,6 +1,18 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {KeyValuePipe} from "@angular/common";
-import {Component, ElementRef, forwardRef, Input, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  forwardRef,
+  Input,
+  OnChanges,
+  Output,
+  QueryList,
+  SimpleChanges,
+  ViewChild,
+  ViewChildren
+} from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
@@ -30,28 +42,23 @@ import {InputComponent} from "../../modules/input/components/input.component";
     KeyValuePipe
   ]
 })
-export class FormulasEditorComponent {
-  private _formulas?: Formulas;
-  @Input()
-  get formulas() {
-    return this._formulas;
-  }
-  set formulas(value) {
-    this._formulas = value;
-    this.updateFormulas(value);
-  }
+export class FormulasEditorComponent implements OnChanges {
+  @Input() formulas?: Formulas;
   @Input() vars?: Formulas;
   @Input() formulasText = "";
   @Input() varNames?: {names?: ObjectOf<string[]>; width?: number};
   @Input() extraInputInfos?: InputInfo[];
   @Input() required?: boolean;
+  @Input() compact?: boolean;
+  @Output() formulasChange = new EventEmitter<Formulas | null>();
   formulaList: [string, string][] = [];
   formulaListInputInfos: InputInfo[][] = [];
   formulasInputInfo: InputInfo = {
     type: "string",
     label: "",
     textarea: {autosize: {minRows: 5}},
-    model: {key: "formulasText", data: this}
+    model: {key: "formulasText", data: this},
+    onChange: () => this.onFormulasTextChange()
   };
   testResult: CalcResult | null = null;
   @ViewChild("testResultEl", {read: ElementRef}) testResultEl?: ElementRef<HTMLDivElement>;
@@ -64,8 +71,13 @@ export class FormulasEditorComponent {
     setGlobal("formulasEditor", this);
   }
 
-  updateFormulas(formulas?: Formulas) {
-    console.log(this.varNames);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.formulas) {
+      this.updateFormulas(this.formulas);
+    }
+  }
+
+  updateFormulas(formulas?: Formulas, lock = false) {
     if (formulas) {
       this.formulaList = Object.entries(formulas).map(([k, v]) => [k, String(v)]);
     }
@@ -73,9 +85,12 @@ export class FormulasEditorComponent {
       {type: "string", label: "", model: {key: "0", data: arr}, validators: () => this.validateVarName(arr[0])},
       {type: "string", label: "", textarea: {autosize: {minRows: 1, maxRows: 5}}, model: {key: "1", data: arr}}
     ]);
+    if (!lock && this.compact) {
+      this.formulasText = this.stringifyFormulas();
+    }
   }
 
-  parseTextarea() {
+  parseFormulas() {
     const formulas = this.formulasText
       .split(/；|;|\n/)
       .filter((v) => v)
@@ -98,26 +113,32 @@ export class FormulasEditorComponent {
       })
       .filter((v) => v);
     this.justifyFormulas(formulas);
-    return formulas;
-  }
 
-  addFormulas() {
     const errorMsgs: string[] = [];
-    let isAdded = false;
-    for (const arr of this.parseTextarea()) {
-      const errors = this.validateVarName(arr[0], [...this.formulaList, arr]);
+    const formulas2: typeof formulas = [];
+    for (const arr of formulas) {
+      const errors = this.validateVarName(arr[0]);
       if (isEmpty(errors)) {
-        this.formulaList.push([arr[0], arr[1]]);
-        isAdded = true;
+        formulas2.push(arr);
       } else {
         errorMsgs.push(`公式 ${arr[0]} = ${arr[1]} 有错：${Object.keys(errors).join(", ")}`);
       }
     }
-    if (isAdded) {
-      this.updateFormulas();
-    }
     if (errorMsgs.length) {
-      this.message.error(errorMsgs.join("\n"));
+      this.message.error(errorMsgs.join("<br>"));
+    }
+    return formulas2;
+  }
+
+  stringifyFormulas() {
+    return this.formulaList.map((v) => `${v[0]} = ${v[1]}`).join("\n");
+  }
+
+  addFormulas() {
+    const formulas = this.parseFormulas();
+    if (formulas.length > 0) {
+      this.formulaList.push(...formulas);
+      this.updateFormulas();
     }
   }
 
@@ -147,12 +168,18 @@ export class FormulasEditorComponent {
     }
   }
 
-  submitFormulas(formulaList = this.formulaList) {
+  submitFormulas(formulaList = this.formulaList, silent?: boolean) {
     const errors: string[] = [];
-    if (formulaList.length < 1) {
+    if (this.required && formulaList.length < 1) {
       errors.push("公式不能为空");
     }
     this.justifyFormulas(formulaList);
+    for (const arr of formulaList) {
+      const errors2 = this.validateVarName(arr[0]);
+      if (!isEmpty(errors2)) {
+        errors.push(`公式 ${arr[0]} = ${arr[1]} 有错：${Object.keys(errors2).join(", ")}`);
+      }
+    }
     const inputs = this.inputs || [];
     for (const input of inputs) {
       const errors2 = input.validateValue();
@@ -161,7 +188,9 @@ export class FormulasEditorComponent {
       }
     }
     if (errors.length) {
-      this.message.error(errors.join("<br>"));
+      if (!silent) {
+        this.message.error(errors.join("<br>"));
+      }
       return null;
     }
     const result: Formulas = {};
@@ -218,5 +247,17 @@ export class FormulasEditorComponent {
 
   openDoc() {
     window.open("https://www.kdocs.cn/l/ckbuWeJhOajS");
+  }
+
+  onFormulasTextChange() {
+    if (!this.compact) {
+      return;
+    }
+    const formulas = this.parseFormulas();
+    if (formulas.length > 0) {
+      this.formulaList = formulas;
+      this.updateFormulas(undefined, true);
+    }
+    this.formulasChange.emit(this.submitFormulas(this.formulaList, true));
   }
 }

@@ -29,7 +29,7 @@
     }
     @case ("form") {
       <div [innerHTML]="contentHTML"></div>
-      <div (keydown)="onKeyDown($event)">
+      <div (keyup)="onKeyUp($event)">
         @for (info of inputs; track info) {
           <app-input #formInput [info]="info"></app-input>
         }

@@ -6,10 +6,12 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, session, setGlobal} from "@app/app.common";
+import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, local, session, setGlobal} from "@app/app.common";
+import {openChangelogDialog} from "@components/dialogs/changelog/changelog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {environment} from "@env";
 import {ObjectOf, queryString, WindowMessageManager} from "@lucilor/utils";
+import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -18,6 +20,7 @@ import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/compon
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
 import {cloneDeep, debounce, isEqual} from "lodash";
@@ -70,7 +73,7 @@ import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./l
   templateUrl: "./lurushuju-index.component.html",
   styleUrl: "./lurushuju-index.component.scss"
 })
-export class LurushujuIndexComponent implements OnInit {
+export class LurushujuIndexComponent extends Subscribed() implements OnInit {
   @HostBinding("class.ng-page") isPage = true;
   defaultFenleis = ["单门", "子母对开", "双开"];
   xinghaos: XinghaoData[] = [];
@@ -112,6 +115,7 @@ export class LurushujuIndexComponent implements OnInit {
   gongyiName = "";
   production = environment.production;
   wmm = new WindowMessageManager("录入数据", this, window.parent);
+  isChangelogNew = false;
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
 
@@ -120,9 +124,14 @@ export class LurushujuIndexComponent implements OnInit {
   constructor(
     private http: CadDataService,
     private message: MessageService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private status: AppStatusService
   ) {
+    super();
     setGlobal("lrsj", this, true);
+    this.subscribe(this.status.changelogTimeStamp$, (changelogTimeStamp) => {
+      this.isChangelogNew = changelogTimeStamp > Number(local.load("changelogTimeStamp") || 0);
+    });
   }
 
   async ngOnInit() {
@@ -188,11 +197,12 @@ export class LurushujuIndexComponent implements OnInit {
     const mingziOld = data.mingzi;
     const names = this.xinghaos.map((xinghao) => xinghao.mingzi);
     let refreshOptions = false;
-    const getOptionInput = (key1: string, key2: string, required = false) => {
+    const getOptionInput = (key1: string, key2: string) => {
       const info: InputInfoSelect = {
         type: "select",
         label: key1,
         model: {data: data2, key: key2},
+        validators: Validators.required,
         options: this.getOptions(key1),
         optionsDialog: {
           optionKey: key1,
@@ -203,9 +213,6 @@ export class LurushujuIndexComponent implements OnInit {
           }
         }
       };
-      if (required) {
-        info.validators = Validators.required;
-      }
       return info;
     };
     const form: InputInfo[] = [
@@ -241,7 +248,7 @@ export class LurushujuIndexComponent implements OnInit {
       },
       getOptionInput("门窗", "所属门窗"),
       getOptionInput("工艺", "所属工艺"),
-      getOptionInput("订单流程", "订单流程", true),
+      getOptionInput("订单流程", "订单流程"),
       {type: "number", label: "排序", model: {data, key: "paixu"}},
       {type: "boolean", label: "停用", model: {data, key: "tingyong"}}
     ];
@@ -1180,5 +1187,11 @@ export class LurushujuIndexComponent implements OnInit {
     if (url) {
       window.open(url);
     }
+  }
+
+  showChangelog() {
+    openChangelogDialog(this.dialog, {hasBackdrop: true});
+    local.save("changelogTimeStamp", new Date().getTime());
+    this.isChangelogNew = false;
   }
 }

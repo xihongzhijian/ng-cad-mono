@@ -1114,6 +1114,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       const {value} = this;
       if (Array.isArray(value)) {
         this.displayValue = joinOptions(value);
+      } else if (typeof value === "string") {
+        this.displayValue = value;
       }
     }
   }

@@ -4,7 +4,7 @@
 <div class="cads">
   <div class="cad item">
     <div #cadContainer class="cad-container flex-row"></div>
-    <div class="toolbar">
+    <div class="toolbar compact">
       <button mat-button color="primary" (click)="centerCad()">居中</button>
       <button mat-button color="primary" (click)="editCad()">编辑</button>
       @for (button of buttons; track $index) {
@@ -38,7 +38,7 @@
     <div class="cad item">
       <div #mubanContainer class="cad-container flex-row"></div>
       @if (mubanData) {
-        <div class="toolbar">
+        <div class="toolbar compact">
           <button mat-button color="primary" (click)="centerMuban()">居中</button>
           <button mat-button color="primary" (click)="uploadMuban()">上传</button>
           <button mat-button color="primary" (click)="editMuban()">编辑</button>
@@ -57,7 +57,7 @@
         <div class="empty-cad item border link" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}" (click)="uploadMuban()">
           软件自动开料
         </div>
-        <div class="toolbar">
+        <div class="toolbar compact">
           <button mat-button color="primary" (click)="uploadMuban()">上传</button>
         </div>
       }

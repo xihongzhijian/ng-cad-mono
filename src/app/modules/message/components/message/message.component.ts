@@ -274,7 +274,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     return typeof button === "string" ? button : button.label;
   }
 
-  onKeyDown(event: KeyboardEvent) {
+  onKeyUp(event: KeyboardEvent) {
     if (event.key === "Enter" && event.target instanceof HTMLInputElement) {
       this.formInputs?.forEach((v) => v.validateValue());
       this.submit();

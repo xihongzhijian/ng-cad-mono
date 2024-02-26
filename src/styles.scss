@@ -229,6 +229,12 @@ input[type="number"] {
   border-bottom: var(--border);
 }
 
+.super {
+  vertical-align: super !important;
+  font-size: 0.5em;
+  color: var(--accent-color);
+}
+
 :root {
   --title-size: 1.5rem;
   --title-padding: 0.5em;

@@ -1,5 +1,5 @@
 import {KeyValue, KeyValuePipe} from "@angular/common";
-import {Component, HostBinding, Input, OnChanges, SimpleChanges} from "@angular/core";
+import {Component, HostBinding, Input, OnChanges, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -7,7 +7,9 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getCopyName} from "@app/app.common";
+import {Formulas} from "@app/utils/calc";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
+import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {downloadByString, isTypeOf, selectFiles} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -16,19 +18,30 @@ import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/tabl
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
-import {测试用例, 算料公式, 输入} from "../../../../components/lurushuju/xinghao-data";
+import {算料公式, 输入} from "../../../../components/lurushuju/xinghao-data";
 import {SuanliaogongshiInfo} from "./suanliaogongshi.types";
 
 @Component({
   selector: "app-suanliaogongshi",
   standalone: true,
-  imports: [KeyValuePipe, MatButtonModule, MatCardModule, MatDividerModule, MatTooltipModule, NgScrollbarModule, TableComponent],
+  imports: [
+    FormulasEditorComponent,
+    KeyValuePipe,
+    MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
+    MatTooltipModule,
+    NgScrollbarModule,
+    TableComponent
+  ],
   templateUrl: "./suanliaogongshi.component.html",
   styleUrl: "./suanliaogongshi.component.scss"
 })
 export class SuanliaogongshiComponent implements OnChanges {
   @HostBinding("class") class = "ng-page";
-  @Input({required: true}) info: SuanliaogongshiInfo = {data: {算料公式: [], 测试用例: [], 输入数据: []}};
+  @Input({required: true}) info: SuanliaogongshiInfo = {data: {算料公式: [], 输入数据: []}};
+  gongshiInfo: {formulas?: Formulas}[] = [];
+  @ViewChildren("gongshiEditor") gongshiEditors?: QueryList<FormulasEditorComponent>;
 
   shuruTable: TableRenderInfo<any> = {
     title: "输入数据",
@@ -58,6 +71,10 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.info) {
+      this.gongshiInfo = [];
+      if (this.info.data.算料公式) {
+        this.gongshiInfo = this.info.data.算料公式.map(() => ({}));
+      }
       if (this.info.data.输入数据) {
         this.shuruTable.data = [...this.info.data.输入数据];
       }
@@ -144,6 +161,21 @@ export class SuanliaogongshiComponent implements OnChanges {
     data.算料公式.splice(index, 1);
   }
 
+  editGongshiStart(index: number) {
+    const info = this.gongshiInfo[index];
+    info.formulas = cloneDeep(this.info.data.算料公式?.[index].公式);
+  }
+
+  editGongshiEnd(index: number, formulas: Formulas | null, close = false) {
+    const info = this.gongshiInfo[index];
+    if (formulas && this.info.data.算料公式) {
+      this.info.data.算料公式[index].公式 = formulas;
+    }
+    if (close) {
+      delete info.formulas;
+    }
+  }
+
   async importGonshis() {
     const data = this.info.data;
     if (!(await this.message.confirm("导入算料公式会覆盖原有数据，确定导入吗？"))) {
@@ -172,107 +204,6 @@ export class SuanliaogongshiComponent implements OnChanges {
   exportGongshis() {
     const data = this.info.data;
     downloadByString(JSON.stringify(data.算料公式), {filename: "算料公式.json"});
-  }
-
-  async getTestCaseItem(data0?: 测试用例) {
-    const data: 测试用例 = {名字: "", 时间: 0, 测试数据: {}, 测试正确: false, ...data0};
-    const result = await openEditFormulasDialog(this.dialog, {
-      data: {
-        formulas: data.测试数据,
-        extraInputInfos: [
-          {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
-          {type: "boolean", label: "测试正确", model: {data, key: "测试正确"}}
-        ]
-      }
-    });
-    if (result) {
-      data.测试数据 = result;
-      data.时间 = Date.now();
-      return data;
-    }
-    return null;
-  }
-
-  async addTestCase() {
-    const data = this.info.data;
-    if (!data.测试用例) {
-      return;
-    }
-    const result = await this.getTestCaseItem();
-    if (result) {
-      data.测试用例.push(result);
-    }
-  }
-
-  async editTestCase(index: number) {
-    const data = this.info.data;
-    if (!data.测试用例) {
-      return;
-    }
-    const result = await this.getTestCaseItem(data.测试用例[index]);
-    if (result) {
-      data.测试用例[index] = result;
-    }
-  }
-
-  async copyTestCase(index: number) {
-    const data = this.info.data;
-    if (!data.测试用例) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定复制【${data.测试用例[index].名字}】吗？`))) {
-      return;
-    }
-    const item = cloneDeep(data.测试用例[index]);
-    const names = data.测试用例.map((v) => v.名字);
-    item.名字 = getCopyName(names, item.名字);
-    item.时间 = Date.now();
-    data.测试用例.push(item);
-  }
-
-  async removeTestCase(index: number) {
-    const data = this.info.data;
-    if (!data.测试用例) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定删除【${data.测试用例[index].名字}】吗？`))) {
-      return;
-    }
-    data.测试用例.splice(index, 1);
-  }
-
-  async importTestCases() {
-    const data = this.info.data;
-    if (!(await this.message.confirm("导入测试用例会覆盖原有数据，确定导入吗？"))) {
-      return;
-    }
-    const files = await selectFiles({accept: ".json"});
-    const file = files?.[0];
-    if (!file) {
-      return;
-    }
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      let data2: any;
-      try {
-        data2 = JSON.parse(reader.result as string);
-      } catch (e) {}
-      if (Array.isArray(data2)) {
-        data.测试用例 = data2;
-      } else {
-        this.message.error("测试用例数据有误");
-      }
-    });
-    reader.readAsText(file);
-  }
-
-  exportTestCases() {
-    const data = this.info.data;
-    downloadByString(JSON.stringify(data.测试用例), {filename: "测试用例.json"});
-  }
-
-  getTimeStr(time: number) {
-    return new Date(time).toLocaleString();
   }
 
   getGongshiStr(item: KeyValue<string, string | number>) {

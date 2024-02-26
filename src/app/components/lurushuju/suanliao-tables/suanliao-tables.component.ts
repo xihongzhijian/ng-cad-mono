@@ -17,7 +17,6 @@ import {KlcsData, KlkwpzData} from "./suanliao-tables.types";
 })
 export class SuanliaoTablesComponent implements OnInit, OnChanges {
   @Input({required: true}) suanliaoDataParams!: SuanliaoDataParams;
-  @Input() editJson = false;
   klkwpzCollection: CadCollection = "kailiaokongweipeizhi";
   klcsCollection: CadCollection = "kailiaocanshu";
   klkwpzTable: TableRenderInfo<KlkwpzData> = {
@@ -30,7 +29,7 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
         field: "孔位配置",
         buttons: [
           {event: "界面编辑", color: "primary"},
-          {event: "JSON编辑", color: "primary"},
+          {event: "JSON编辑", color: "primary", hidden: true},
           {event: "删除", color: "primary"}
         ]
       }
@@ -54,7 +53,7 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
         field: "参数",
         buttons: [
           {event: "界面编辑", color: "primary"},
-          {event: "JSON编辑", color: "primary"},
+          {event: "JSON编辑", color: "primary", hidden: true},
           {event: "删除", color: "primary"}
         ]
       }
@@ -82,32 +81,13 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
       this._isInited = true;
       this.update();
     }
-    this.updateTableInfo();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.suanliaoDataParams) {
       this._isInited = true;
       this.update();
-    } else if (changes.editJson) {
-      this.updateTableInfo();
     }
-  }
-
-  updateTableInfo() {
-    const update = (info: TableRenderInfo<any>) => {
-      for (const column of info.columns) {
-        if (column.type === "button") {
-          for (const button of column.buttons) {
-            if (button.event === "JSON编辑") {
-              button.hidden = !this.editJson;
-            }
-          }
-        }
-      }
-    };
-    update(this.klkwpzTable);
-    update(this.klcsTable);
   }
 
   async update() {

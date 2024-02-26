@@ -266,8 +266,8 @@
           matInput
           [errorStateMatcher]="getErrorStateMatcher()"
           readonly
-          [disabled]="info.disabled"
-          [value]="displayValue || value"
+          [disabled]="!!info.disabled"
+          [(ngModel)]="displayValue"
           type="text"
           (change)="onChange()"
           (input)="onInput()"
