@@ -72,3 +72,14 @@ app-mrbcjfz {
   --cad-preview-width: auto;
   --cad-preview-height: auto;
 }
+
+.floating-menu {
+  position: fixed;
+  cursor: pointer;
+  z-index: var(--top-z-index1);
+
+  .mat-icon {
+    width: 30px;
+    height: 30px;
+  }
+}

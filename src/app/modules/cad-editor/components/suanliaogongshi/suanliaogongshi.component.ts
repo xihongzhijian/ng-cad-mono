@@ -121,6 +121,7 @@ export class SuanliaogongshiComponent implements OnChanges {
     const item = await this.getGongshiItem();
     if (item) {
       data.算料公式.push(item);
+      this.gongshiInfo.push({});
     }
   }
 
@@ -148,6 +149,7 @@ export class SuanliaogongshiComponent implements OnChanges {
     const names = data.算料公式.map((v) => v.名字);
     item.名字 = getCopyName(names, item.名字);
     data.算料公式.push(item);
+    this.gongshiInfo.push({});
   }
 
   async removeGongshi(index: number) {
@@ -159,6 +161,7 @@ export class SuanliaogongshiComponent implements OnChanges {
       return;
     }
     data.算料公式.splice(index, 1);
+    this.gongshiInfo.splice(index, 1);
   }
 
   editGongshiStart(index: number) {

@@ -4,6 +4,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {CadCollection} from "@app/cad/collections";
+import {cadOptions} from "@app/cad/options";
 import {exportCadData, openCadLineInfoForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
@@ -60,6 +61,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     cad.json.zhankai[0].kailiaomuban = value;
   }
 
+  cadInputs: InputInfo[][] = [];
   zhankaiInputs: {width: InputInfo; height: InputInfo; num: InputInfo}[] = [];
   mubanInputs: InputInfo[][] = [];
   showMuban: boolean;
@@ -253,6 +255,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       cad.json = exportCadData(data, true);
     });
     this.cadViewer = cadViewer;
+    this.updateCadInputs();
     this.updateZhankaiInputs();
   }
 
@@ -281,6 +284,29 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     const cadViewer = this.initCadViewer0("CADmuban", mubanData, containerEl, () => {});
     this.mubanViewer = cadViewer;
     await this.updateMubanInputs();
+  }
+
+  updateCadInputs() {
+    const json = this.cad?.json;
+    if (!json) {
+      return;
+    }
+    this.cadInputs = [
+      [
+        {
+          type: "select",
+          label: "算料处理",
+          model: {data: json, key: "suanliaochuli"},
+          options: cadOptions.suanliaochuli.values.slice()
+        },
+        {
+          type: "select",
+          label: "算料单显示",
+          model: {data: json, key: "suanliaodanxianshi"},
+          options: cadOptions.suanliaodanxianshi.values.slice()
+        }
+      ]
+    ];
   }
 
   updateZhankaiInputs() {

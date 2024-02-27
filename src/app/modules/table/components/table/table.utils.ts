@@ -108,3 +108,22 @@ export const getInputInfosFromTableColumns = <T>(
   }
   return result;
 };
+
+export const getArrayString = (value: any, separator = ", ") => {
+  if (Array.isArray(value)) {
+    return value.join(separator);
+  } else {
+    return value;
+  }
+};
+
+export const getObjectString = (value: any, separator = ", ") => {
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+  const strs: string[] = [];
+  for (const key in value) {
+    strs.push(`${key}: ${value[key]}`);
+  }
+  return strs.join(separator);
+};

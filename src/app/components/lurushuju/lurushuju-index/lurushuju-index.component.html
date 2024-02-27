@@ -134,3 +134,14 @@
     </mat-tab-group>
   }
 }
+
+<div #menu class="floating-menu" cdkDrag (cdkDragStarted)="onMenuDragStart()" (cdkDragEnded)="onMenuDragEnd()">
+  <button mat-icon-button color="primary" [matMenuTriggerFor]="links" [disabled]="isMenuDisabled">
+    <mat-icon>apps</mat-icon>
+  </button>
+  <mat-menu #links="matMenu">
+    @for (btn of btns; track $index) {
+      <button mat-menu-item (click)="btn.onClick()">{{ btn.name }}</button>
+    }
+  </mat-menu>
+</div>

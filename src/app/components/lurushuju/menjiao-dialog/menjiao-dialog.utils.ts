@@ -10,6 +10,7 @@ import {
   MenjiaoCadType,
   menjiaoCadTypes,
   SuanliaoDataParams,
+  孔位CAD名字对应关系,
   算料数据,
   算料数据2,
   算料数据2Keys,
@@ -44,7 +45,8 @@ export const autoFillMenjiao = (data: 算料数据, menjiaoOptionsAll: OptionsAl
       for (const key2 of 算料数据2Keys) {
         for (const key3 of keysOf(data[key1][key2])) {
           if (!data[key1][key2][key3].cad) {
-            data[key1][key2][key3].cad = getHoutaiCad(new CadData({name: key3}));
+            const name = 孔位CAD名字对应关系[key3] || key3;
+            data[key1][key2][key3].cad = getHoutaiCad(new CadData({name}));
           }
         }
       }

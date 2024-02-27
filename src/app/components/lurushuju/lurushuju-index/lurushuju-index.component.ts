@@ -1,9 +1,11 @@
-import {Component, HostBinding, OnInit, ViewChild} from "@angular/core";
+import {CdkDrag} from "@angular/cdk/drag-drop";
+import {AfterViewInit, Component, ElementRef, HostBinding, OnInit, ViewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
+import {MatMenuModule} from "@angular/material/menu";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, local, session, setGlobal} from "@app/app.common";
@@ -59,11 +61,13 @@ import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./l
   selector: "app-lurushuju-index",
   standalone: true,
   imports: [
+    CdkDrag,
     ImageComponent,
     InputComponent,
     MatButtonModule,
     MatDividerModule,
     MatIconModule,
+    MatMenuModule,
     MatTabsModule,
     MatTooltipModule,
     MrbcjfzComponent,
@@ -73,7 +77,7 @@ import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./l
   templateUrl: "./lurushuju-index.component.html",
   styleUrl: "./lurushuju-index.component.scss"
 })
-export class LurushujuIndexComponent extends Subscribed() implements OnInit {
+export class LurushujuIndexComponent extends Subscribed() implements OnInit, AfterViewInit {
   @HostBinding("class.ng-page") isPage = true;
   defaultFenleis = ["单门", "子母对开", "双开"];
   xinghaos: XinghaoData[] = [];
@@ -104,20 +108,29 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit {
   menjiaoTable = getMenjiaoTable();
   menshans: (TableDataBase & {zuchenghuajian?: string})[] = [];
   huajians: MrbcjfzHuajian[] = [];
-  parentInfo = {isZhijianUser: false, isLurushujuEnter: false};
+  parentInfo = {isZhijianUser: false, isLurushujuEnter: false, project: ""};
   varNames: FormulasEditorComponent["vars"];
   bancaiList?: BancaiListData;
+  btns: {name: string; onClick: () => void}[] = [
+    {name: "返回至登录", onClick: this.backToLogin.bind(this)},
+    {name: "返回至型号", onClick: this.backToXinghao.bind(this)},
+    {name: "复制当前信息", onClick: this.copyInfo.bind(this)}
+  ];
+  menuPoitonKey = "lurushujuMenuPosition";
+  isMenuDisabled = false;
 
   stepDataKey = "lurushujuIndexStepData";
   step: LurushujuIndexStep = 1;
   xinghaoName = "";
   fenleiName = "";
   gongyiName = "";
+  menjiaoName = "";
   production = environment.production;
   wmm = new WindowMessageManager("录入数据", this, window.parent);
   isChangelogNew = false;
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
+  @ViewChild("menu") menu?: ElementRef<HTMLDivElement>;
 
   private _isDataFetched: ObjectOf<boolean> = {};
 
@@ -141,6 +154,15 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit {
       await this.setStep(...stepData);
     } else {
       await this.setStep(1, {});
+    }
+  }
+
+  ngAfterViewInit() {
+    if (this.menu) {
+      const [x, y] = local.load<[number, number]>(this.menuPoitonKey) || [0, 0];
+      const el = this.menu.nativeElement;
+      el.style.left = x + "px";
+      el.style.top = y + "px";
     }
   }
 
@@ -941,6 +963,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit {
   }
 
   async getMenjiaoItem(onSubmit: NonNullable<MenjiaoInput["onSubmit"]>, data0?: 算料数据) {
+    this.menjiaoName = data0?.名字 || "新建门铰锁边铰边";
     await openMenjiaoDialog(this.dialog, {
       data: {
         data: data0,
@@ -948,6 +971,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit {
         onSubmit
       }
     });
+    this.menjiaoName = "";
   }
 
   async onMenjiaoToolbar(event: ToolbarButtonEvent) {
@@ -1193,5 +1217,51 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit {
     openChangelogDialog(this.dialog, {hasBackdrop: true});
     local.save("changelogTimeStamp", new Date().getTime());
     this.isChangelogNew = false;
+  }
+
+  backToLogin() {
+    this.wmm.postMessage("backToLoginStart");
+  }
+
+  backToXinghao() {
+    this.setStep(1, {});
+  }
+
+  copyInfo() {
+    const info: ObjectOf<string> = {项目: this.parentInfo.project};
+    if (this.xinghaoName) {
+      info.型号 = this.xinghaoName;
+    }
+    if (this.fenleiName) {
+      info.产品分类 = this.fenleiName;
+    }
+    if (this.gongyiName) {
+      info.工艺做法 = this.gongyiName;
+    }
+    if (this.menjiaoName) {
+      info.门铰锁边铰边 = this.menjiaoName;
+    }
+    const text = Object.entries(info)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join("\n");
+    try {
+      navigator.clipboard.writeText(text);
+      this.message.snack("已复制");
+    } catch (e) {
+      console.error(e);
+      this.message.snack("复制失败");
+    }
+  }
+
+  onMenuDragStart() {
+    this.isMenuDisabled = true;
+  }
+
+  onMenuDragEnd() {
+    this.isMenuDisabled = false;
+    if (this.menu) {
+      const {left, top} = this.menu.nativeElement.getBoundingClientRect();
+      local.save(this.menuPoitonKey, [left, top]);
+    }
   }
 }

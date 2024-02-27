@@ -11,6 +11,15 @@
         <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
       }
     </div>
+    <div class="inputs flex-column">
+      @for (group of cadInputs; track $index) {
+        <div class="group toolbar">
+          @for (info of group; track $index) {
+            <app-input [info]="info"></app-input>
+          }
+        </div>
+      }
+    </div>
     @if (!noZhankai) {
       <div class="zhankais flex-column">
         @for (item of zhankaiInputs; track i; let i = $index) {
@@ -44,7 +53,7 @@
           <button mat-button color="primary" (click)="editMuban()">编辑</button>
           <button mat-button color="primary" (click)="removeMuban()">删除</button>
         </div>
-        <div class="muban-inputs flex-column">
+        <div class="inputs flex-column">
           @for (group of mubanInputs; track $index) {
             <div class="group toolbar">
               @for (info of group; track $index) {
