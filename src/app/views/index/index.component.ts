@@ -1,9 +1,10 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
+import {getXinghaoQuery} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {log} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {GetCadParams} from "@modules/http/services/cad-data.service.types";
+import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
@@ -48,20 +49,28 @@ export class IndexComponent implements OnInit {
     } else {
       const {id, ids, collection, errorMessage} = this.route.snapshot.queryParams;
       if (errorMessage) {
-        this.message.alert(errorMessage);
+        await this.message.alert(errorMessage);
       }
-      if ((id || ids) && collection) {
-        const getParams: GetCadParams = {collection, sync: true};
-        if (id) {
-          getParams.id = id;
+      const xinghaoQuery = getXinghaoQuery(this.route);
+      if (xinghaoQuery) {
+        const data = await this.http.getData<HoutaiCad>("shuju/shuju/getOrSetCad", {...xinghaoQuery, id});
+        if (data) {
+          this.params = {data: new CadData(data.json), collection, center: true};
         }
-        if (ids) {
-          getParams.ids = ids.split(",");
-        }
-        getParams.collection = collection;
-        const result = await this.http.getCad(getParams);
-        if (result.cads.length > 0) {
-          this.params = {data: result.cads[0], collection, center: true};
+      } else {
+        if ((id || ids) && collection) {
+          const getParams: GetCadParams = {collection, sync: true};
+          if (id) {
+            getParams.id = id;
+          }
+          if (ids) {
+            getParams.ids = ids.split(",");
+          }
+          getParams.collection = collection;
+          const result = await this.http.getCad(getParams);
+          if (result.cads.length > 0) {
+            this.params = {data: result.cads[0], collection, center: true};
+          }
         }
       }
     }

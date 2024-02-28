@@ -1,3 +1,4 @@
+import {ActivatedRoute} from "@angular/router";
 import {Formulas} from "@app/utils/calc";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -349,4 +350,17 @@ export const 孔位CAD名字对应关系: ObjectOf<string> = {
   锁框: "锁包边",
   铰框: "铰包边",
   顶框: "顶包边"
+};
+
+export const getXinghaoQuery = (route: ActivatedRoute) => {
+  const keys = ["型号", "产品分类", "工艺做法", "门铰锁边铰边", "包边方向", "开启"];
+  const result: ObjectOf<string> = {};
+  for (const key of keys) {
+    const value = route.snapshot.queryParams[key];
+    if (!value) {
+      return null;
+    }
+    result[key] = value;
+  }
+  return result;
 };

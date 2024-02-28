@@ -16,7 +16,7 @@ import {
   validateLines
 } from "@app/cad/utils";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
-import {SuanliaoDataParams} from "@components/lurushuju/xinghao-data";
+import {getXinghaoQuery, SuanliaoDataParams} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {
   CadData,
@@ -35,6 +35,7 @@ import {
 import {FileSizeOptions, getFileSize, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {clamp, differenceWith} from "lodash";
@@ -319,7 +320,14 @@ export class AppStatusService {
     }
     const {hideLineLength} = this.config.getConfig();
     spinner.show(loaderId, {text: `正在保存CAD: ${data.name}`});
-    resData = await http.setCad({collection, cadData: data, force: true}, hideLineLength);
+    const xinghaoQuery = getXinghaoQuery(this.route);
+    if (xinghaoQuery) {
+      const params: ObjectOf<any> = {...xinghaoQuery, id: data.id, data: getHoutaiCad(data)};
+      const resData2 = await this.http.getData<HoutaiCad>("shuju/shuju/getOrSetCad", params);
+      resData = resData2 ? new CadData(resData2.json) : null;
+    } else {
+      resData = await http.setCad({collection, cadData: data, force: true}, hideLineLength);
+    }
     if (resData) {
       this.saveCadEnd$.next();
       await this.openCad({
