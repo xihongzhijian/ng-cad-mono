@@ -7,6 +7,7 @@ import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/tabl
 import {AppStatusService} from "@services/app-status.service";
 import {SuanliaoDataParams} from "../xinghao-data";
 import {KlcsData, KlkwpzData} from "./suanliao-tables.types";
+import {getSuanliaoDataSearch} from "./suanliao-tables.utils";
 
 @Component({
   selector: "app-suanliao-tables",
@@ -27,6 +28,7 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
       {
         type: "button",
         field: "孔位配置",
+        width: "150px",
         buttons: [
           {event: "界面编辑", color: "primary"},
           {event: "JSON编辑", color: "primary", hidden: true},
@@ -51,6 +53,7 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
       {
         type: "button",
         field: "参数",
+        width: "150px",
         buttons: [
           {event: "界面编辑", color: "primary"},
           {event: "JSON编辑", color: "primary", hidden: true},
@@ -98,7 +101,7 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
     return await this.http.queryMongodb<KlkwpzData>(
       {
         collection: this.klkwpzCollection,
-        where: suanliaoDataParams,
+        where: getSuanliaoDataSearch(suanliaoDataParams),
         fields: this.klkwpzTable.columns.map((v) => v.field)
       },
       {spinner: false}
@@ -113,7 +116,7 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
     return await this.http.queryMongodb<KlcsData>(
       {
         collection: this.klcsCollection,
-        where: suanliaoDataParams,
+        where: getSuanliaoDataSearch(suanliaoDataParams),
         fields: this.klcsTable.columns.map((v) => v.field)
       },
       {spinner: false}
@@ -129,7 +132,8 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
       case "编辑":
         {
           const {suanliaoDataParams} = this;
-          const url = await this.http.getShortUrl("开料孔位配置", {search2: suanliaoDataParams, extraData: suanliaoDataParams});
+          const search2 = getSuanliaoDataSearch(suanliaoDataParams);
+          const url = await this.http.getShortUrl("开料孔位配置", {search2, extraData: suanliaoDataParams});
           if (url) {
             window.open(url);
             if (await this.message.newTabConfirm()) {
@@ -149,7 +153,8 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
       case "编辑":
         {
           const {suanliaoDataParams} = this;
-          const url = await this.http.getShortUrl("开料参数", {search2: suanliaoDataParams, extraData: suanliaoDataParams});
+          const search2 = getSuanliaoDataSearch(suanliaoDataParams);
+          const url = await this.http.getShortUrl("开料参数", {search2, extraData: suanliaoDataParams});
           if (url) {
             window.open(url);
             if (await this.message.newTabConfirm()) {

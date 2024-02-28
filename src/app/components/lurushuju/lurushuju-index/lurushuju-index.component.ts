@@ -112,9 +112,11 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   varNames: FormulasEditorComponent["vars"];
   bancaiList?: BancaiListData;
   btns: {name: string; onClick: () => void}[] = [
-    {name: "返回至登录", onClick: this.backToLogin.bind(this)},
     {name: "返回至型号", onClick: this.backToXinghao.bind(this)},
-    {name: "复制当前信息", onClick: this.copyInfo.bind(this)}
+    {name: "返回至主页", onClick: this.backToGuide.bind(this)},
+    {name: "返回至登录", onClick: this.backToLogin.bind(this)},
+    {name: "复制页面信息", onClick: this.copyInfo.bind(this)},
+    {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)}
   ];
   menuPoitonKey = "lurushujuMenuPosition";
   isMenuDisabled = false;
@@ -1219,12 +1221,18 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     this.isChangelogNew = false;
   }
 
-  backToLogin() {
-    this.wmm.postMessage("backToLoginStart");
-  }
-
   backToXinghao() {
     this.setStep(1, {});
+  }
+
+  backToGuide() {
+    this.wmm.postMessage("backToGuideStart");
+  }
+
+  async backToLogin() {
+    session.save(this.xinghaoFilterStrKey, "");
+    await this.setStep(1, {});
+    this.wmm.postMessage("backToLoginStart");
   }
 
   copyInfo() {
@@ -1250,6 +1258,54 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     } catch (e) {
       console.error(e);
       this.message.snack("复制失败");
+    }
+  }
+
+  async pasteInfo(text?: string) {
+    if (!text) {
+      try {
+        text = await navigator.clipboard.readText();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    if (text) {
+      const info = text.split("\n").reduce<ObjectOf<string>>((acc, line) => {
+        const [k, v] = line.split(": ");
+        if (k && typeof v === "string") {
+          acc[k] = v.replace(/\r/g, "");
+        }
+        return acc;
+      }, {});
+      const {项目, 型号, 产品分类, 工艺做法, 门铰锁边铰边} = info;
+      if (this.parentInfo.project !== 项目) {
+        if (await this.message.confirm("项目不一致，是否切换项目？")) {
+          this.backToLogin();
+        }
+        return;
+      }
+      if (型号) {
+        if (产品分类 && 工艺做法) {
+          await this.setStep(3, {xinghaoName: 型号, fenleiName: 产品分类, gongyiName: 工艺做法});
+          if (this.gongyi) {
+            const rowIdx = this.gongyi?.算料数据.findIndex((v) => v.名字 === 门铰锁边铰边);
+            const column = this.menjiaoTable.columns.find((v) => v.field === "操作");
+            if (rowIdx >= 0 && column) {
+              await this.onMenjiaoRow({
+                button: {event: "编辑"},
+                column,
+                item: this.gongyi.算料数据[rowIdx],
+                rowIdx,
+                colIdx: 0
+              });
+            }
+          }
+        } else {
+          await this.setStep(2, {xinghaoName: 型号});
+        }
+      } else {
+        await this.setStep(1, {});
+      }
     }
   }
 

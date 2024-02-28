@@ -152,6 +152,9 @@ export class MenjiaoDialogComponent implements OnInit {
           if (!isTypeOf(data[key1].企料CAD[name], "object")) {
             data[key1].企料CAD[name] = {};
           }
+          if (!isTypeOf(data[key1].企料CAD[name].企料分体CAD, "object")) {
+            data[key1].企料CAD[name].企料分体CAD = {分体1: undefined, 分体2: undefined};
+          }
         }
       }
     }
@@ -404,6 +407,9 @@ export class MenjiaoDialogComponent implements OnInit {
       const name = this.cadNameMap[key3] || key3;
       cad.名字 = name;
       cad.json.name = name;
+      if (!data[key1][key2][key3]) {
+        data[key1][key2][key3] = {};
+      }
       data[key1][key2][key3].cad = cad;
       updateMenjiaoForm(this.formData);
     }

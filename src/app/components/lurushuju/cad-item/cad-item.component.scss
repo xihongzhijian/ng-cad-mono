@@ -83,3 +83,11 @@
     flex: 1 1 0;
   }
 }
+
+.fenti-cads {
+  flex-wrap: wrap;
+
+  .fenti-cad {
+    width: auto;
+  }
+}

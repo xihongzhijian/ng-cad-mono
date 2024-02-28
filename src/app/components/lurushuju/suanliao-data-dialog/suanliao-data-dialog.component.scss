@@ -1,13 +1,8 @@
 .suanliaogongshis {
-  width: 30%;
+  width: 350px;
   --title-size: 1.2em;
 }
 
-.suanliaocads {
-  flex: 1 1 0;
-
-  .cads {
-    width: 100%;
-    flex-wrap: wrap;
-  }
+.cads {
+  flex-wrap: wrap;
 }

@@ -58,20 +58,16 @@
               <div class="error-msg">{{ key1Infos[key1].error }}</div>
             }
           </div>
-          <app-suanliao-tables
-            [ngClass]="key1"
-            style="width: 30%"
-            [suanliaoDataParams]="key1Infos[key1].suanliaoDataParams"
-          ></app-suanliao-tables>
+          <app-suanliao-tables [ngClass]="key1" [suanliaoDataParams]="key1Infos[key1].suanliaoDataParams"></app-suanliao-tables>
         </div>
       </div>
     }
   }
 </ng-scrollbar>
 <div class="toolbar center">
-  <button mat-raised-button color="primary" (click)="submit(false)">提交</button>
-  <button mat-raised-button color="primary" (click)="submit(true)">提交并关闭</button>
-  <button mat-raised-button color="primary" (click)="cancel(true)">不提交关闭</button>
+  <button mat-raised-button color="primary" (click)="submit(false)">保存</button>
+  <button mat-raised-button color="primary" (click)="submit(true)">保存并关闭</button>
+  <button mat-raised-button color="primary" (click)="cancel(true)">不保存关闭</button>
   @if (!data.component?.production) {
     <button mat-raised-button color="primary" (click)="cancel(false)">cancel</button>
     <button mat-raised-button color="primary" (click)="autoFill()">autoFill</button>
@@ -84,6 +80,7 @@
       [cad]="formData[key1][key2][key3].cad!"
       [buttons]="cadItemButtons"
       [customInfo]="{data: formData[key1][key2][key3], key1}"
+      [fentiCads]="key2 === '企料CAD' ? formData[key1][key2][key3]['企料分体CAD'] : undefined"
       [openCadOptions]="getOpenCadOptions(key1)"
       [noMuban]="true"
       [noZhankai]="true"

@@ -1,3 +1,4 @@
+import {KeyValuePipe} from "@angular/common";
 import {Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -7,8 +8,9 @@ import {CadCollection} from "@app/cad/collections";
 import {cadOptions} from "@app/cad/options";
 import {exportCadData, openCadLineInfoForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
+import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
-import {selectFiles} from "@lucilor/utils";
+import {ObjectOf, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -20,7 +22,7 @@ import {CadItemButton, typeOptions} from "./cad-item.types";
 @Component({
   selector: "app-cad-item",
   standalone: true,
-  imports: [InputComponent, MatButtonModule, MatIconModule],
+  imports: [InputComponent, KeyValuePipe, MatButtonModule, MatIconModule],
   templateUrl: "./cad-item.component.html",
   styleUrl: "./cad-item.component.scss"
 })
@@ -30,6 +32,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   @Input({required: true}) cad: HoutaiCad = getHoutaiCad();
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input({required: true}) customInfo: T = undefined as T;
+  @Input() fentiCads?: ObjectOf<HoutaiCad | null | undefined>;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
   @Input() noMuban?: boolean;
@@ -409,5 +412,38 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     }
     zhankai.splice(i, 1);
     this.update();
+  }
+
+  returnZero() {
+    return 0;
+  }
+
+  async selectFentiCad() {
+    const {fentiCads} = this;
+    if (!fentiCads) {
+      return;
+    }
+    const search: ObjectOf<any> = {分类: "企料分体"};
+    const keys = Object.keys(fentiCads);
+    const checkedItems = Object.values(fentiCads)
+      .map((v) => v?._id || "")
+      .filter(Boolean);
+    const result = await openCadListDialog(this.dialog, {
+      data: {
+        selectMode: "multiple",
+        checkedItems,
+        checkedItemsLimit: keys.length,
+        collection: "cad",
+        search,
+        addCadData: search,
+        hideCadInfo: true
+      }
+    });
+    if (!result || !result.length) {
+      return;
+    }
+    for (const [i, key] of keys.entries()) {
+      fentiCads[key] = getHoutaiCad(result[i]);
+    }
   }
 }
