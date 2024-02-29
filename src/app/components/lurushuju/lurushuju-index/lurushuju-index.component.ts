@@ -1278,6 +1278,10 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         return acc;
       }, {});
       const {项目, 型号, 产品分类, 工艺做法, 门铰锁边铰边} = info;
+      if (!项目) {
+        await this.message.snack("请确保复制了正确的信息");
+        return;
+      }
       if (this.parentInfo.project !== 项目) {
         if (await this.message.confirm("项目不一致，是否切换项目？")) {
           this.backToLogin();

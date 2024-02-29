@@ -446,4 +446,17 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       fentiCads[key] = getHoutaiCad(result[i]);
     }
   }
+
+  async clearFentiCads() {
+    const {fentiCads} = this;
+    if (!fentiCads) {
+      return;
+    }
+    if (!(await this.message.confirm("确定清空分体CAD吗？"))) {
+      return;
+    }
+    for (const key in fentiCads) {
+      fentiCads[key] = null;
+    }
+  }
 }

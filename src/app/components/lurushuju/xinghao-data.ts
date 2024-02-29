@@ -252,7 +252,7 @@ export interface 企料CAD {
 
   // 虚拟企料和企料分体
   是虚拟企料?: boolean;
-  企料分体CAD?: {分体1?: HoutaiCad; 分体2?: HoutaiCad}; // 现在分体按照名字对线长
+  企料分体CAD?: {分体1?: HoutaiCad | null; 分体2?: HoutaiCad | null}; // 现在分体按照名字对线长
   是否可以开槽?: boolean; // 详细见【金山文档】 企料开槽数据录入教程 https://kdocs.cn/l/cbmU8dXOnCI4
   需要显示指定位置分体?: boolean;
   需要显示指定位置刨坑?: boolean;
@@ -268,6 +268,7 @@ export interface 企料CAD {
 
 export interface 配合框CAD {
   cad?: HoutaiCad;
+  企料分体CAD?: never;
 }
 
 export const 配合框组合: ObjectOf<string[]> = {};

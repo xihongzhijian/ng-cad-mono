@@ -7,7 +7,7 @@ import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
-import {isTypeOf, ObjectOf, RequiredKeys} from "@lucilor/utils";
+import {isTypeOf, keysOf, ObjectOf, RequiredKeys} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -420,7 +420,12 @@ export class MenjiaoDialogComponent implements OnInit {
     if (!data.cad || !(await this.message.confirm(`确定删除【${data.cad.名字}】吗？`))) {
       return;
     }
-    delete component.customInfo.data.cad;
+    delete data.cad;
+    if (data.企料分体CAD) {
+      for (const key of keysOf(data.企料分体CAD)) {
+        data.企料分体CAD[key] = null;
+      }
+    }
     updateMenjiaoForm(this.formData);
   }
 

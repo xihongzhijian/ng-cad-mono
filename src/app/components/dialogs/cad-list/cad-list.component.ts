@@ -13,11 +13,10 @@ import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/pag
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
-import {DomSanitizer} from "@angular/platform-browser";
 import {imgCadEmpty} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {CadData} from "@lucilor/cad-viewer";
-import {isBetween, isNumber} from "@lucilor/utils";
+import {isBetween, isNumber, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -25,7 +24,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {lastValueFrom} from "rxjs";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
@@ -91,7 +89,6 @@ export class CadListComponent implements AfterViewInit {
   constructor(
     public dialogRef: MatDialogRef<CadListComponent, CadListOutput>,
     @Inject(MAT_DIALOG_DATA) public data: CadListInput,
-    private sanitizer: DomSanitizer,
     private http: CadDataService,
     private dialog: MatDialog,
     private message: MessageService,
@@ -109,15 +106,12 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async ngAfterViewInit() {
-    if (!this.paginator) {
-      return;
-    }
-    await lastValueFrom(this.paginator.initialized);
     if (Array.isArray(this.data.checkedItems)) {
       this.checkedItems = this.data.checkedItems.slice();
     }
     this.data.qiliao = this.data.qiliao === true;
-    this.getData(1);
+    await timeout(0);
+    await this.getData(1);
   }
 
   changePage(event: PageEvent) {

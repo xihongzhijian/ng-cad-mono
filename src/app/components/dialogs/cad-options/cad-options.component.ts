@@ -7,7 +7,7 @@ import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/pag
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf, queryString} from "@lucilor/utils";
+import {ObjectOf, queryString, timeout} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsParams, OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
@@ -16,7 +16,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {lastValueFrom} from "rxjs";
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
 import {InputComponent} from "../../../modules/input/components/input.component";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
@@ -80,11 +79,8 @@ export class CadOptionsComponent implements AfterViewInit {
   ) {}
 
   async ngAfterViewInit() {
-    if (!this.paginator) {
-      return;
-    }
-    await lastValueFrom(this.paginator.initialized);
-    this.getData(1);
+    await timeout(0);
+    await this.getData(1);
   }
 
   async submit() {
