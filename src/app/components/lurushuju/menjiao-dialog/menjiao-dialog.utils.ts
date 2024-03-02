@@ -7,13 +7,18 @@ import {random} from "lodash";
 import {OptionsAll2} from "../lurushuju-index/lurushuju-index.types";
 import {
   cadMatchRules,
+  get算料数据2,
   MenjiaoCadType,
   menjiaoCadTypes,
   SuanliaoDataParams,
+  企料分体CadKeys,
+  企料组合,
+  企料组合共享,
   孔位CAD名字对应关系,
   算料数据,
   算料数据2,
   算料数据2Keys,
+  配合框组合,
   门缝配置输入
 } from "../xinghao-data";
 
@@ -58,10 +63,69 @@ export const autoFillMenjiao = (data: 算料数据, menjiaoOptionsAll: OptionsAl
     data.门缝配置[item.name] = isTypeOf(item.defaultValue, "number") ? (item.defaultValue as number) : 1;
   }
   data.名字 = "autoFill";
-  updateMenjiaoForm(data);
+  updateMenjiaoData(data);
 };
 
-export const updateMenjiaoForm = (data: 算料数据) => {
+export const updateMenjiaoData = (data: 算料数据) => {
+  for (const value of 门缝配置输入) {
+    if (typeof value.defaultValue === "number") {
+      data.门缝配置[value.name] = 0;
+    }
+  }
+  const 产品分类 = data.产品分类;
+  for (const key1 of menjiaoCadTypes) {
+    if (!data[key1]) {
+      data[key1] = get算料数据2();
+    }
+    if (!isTypeOf(data[key1].板材分组, "object")) {
+      data[key1].板材分组 = {};
+    }
+    for (const key2 of 算料数据2Keys) {
+      if (!data[key1][key2]) {
+        data[key1][key2] = {};
+      }
+      for (const name of 配合框组合[产品分类] || []) {
+        if (!isTypeOf(data[key1].配合框CAD[name], "object")) {
+          data[key1].配合框CAD[name] = {};
+        }
+      }
+      for (const name in data[key1].配合框CAD) {
+        if (!(配合框组合[产品分类] || []).includes(name)) {
+          delete data[key1].配合框CAD[name];
+        }
+      }
+      for (const name of 企料组合[产品分类] || []) {
+        if (!isTypeOf(data[key1].企料CAD[name], "object")) {
+          const sharedNames = 企料组合共享.find((v) => v.includes(name));
+          const key1Shared = sharedNames?.filter((v) => v !== name)[0];
+          if (key1Shared && data[key1].企料CAD[key1Shared]) {
+            data[key1].企料CAD[name] = data[key1].企料CAD[key1Shared];
+            const cad = data[key1].企料CAD[name].cad;
+            if (cad) {
+              cad.名字 = name;
+              cad.json.name = name;
+            }
+          } else {
+            data[key1].企料CAD[name] = {};
+          }
+        }
+        const 企料CAD = data[key1].企料CAD[name];
+        if (!企料CAD.企料分体CAD || !isTypeOf(企料CAD.企料分体CAD, "object")) {
+          企料CAD.企料分体CAD = {};
+        }
+        for (const key of 企料分体CadKeys) {
+          if (!(key in 企料CAD.企料分体CAD)) {
+            企料CAD.企料分体CAD[key] = null;
+          }
+        }
+      }
+      for (const name in data[key1].企料CAD) {
+        if (!(企料组合[产品分类] || []).includes(name)) {
+          delete data[key1].企料CAD[name];
+        }
+      }
+    }
+  }
   data.开启 = [];
   const menjiaoCadInfos = getMenjiaoCadInfos(data);
   for (const key1 in menjiaoCadInfos) {

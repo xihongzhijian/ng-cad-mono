@@ -695,7 +695,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
     let checked: string[];
     if (info.type === "select") {
-      checked = this.value;
+      checked = Array.isArray(this.value) ? this.value : [this.value];
     } else {
       const value = key ? data[key] : this.value;
       const isObject = isTypeOf(value, "object");

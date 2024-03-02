@@ -29,7 +29,7 @@ import {cloneDeep, debounce, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {openMenjiaoDialog} from "../menjiao-dialog/menjiao-dialog.component";
 import {MenjiaoInput} from "../menjiao-dialog/menjiao-dialog.types";
-import {copySuanliaoData, updateMenjiaoForm} from "../menjiao-dialog/menjiao-dialog.utils";
+import {copySuanliaoData, updateMenjiaoData} from "../menjiao-dialog/menjiao-dialog.utils";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {
   getGongyi,
@@ -740,6 +740,13 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
     if (successCount > 0) {
       await this.getXinghao();
+      const data = this.xinghao?.产品分类[targetFenlei]?.at(-1);
+      if (data) {
+        for (const menjiaoData of data.算料数据) {
+          updateMenjiaoData(menjiaoData);
+        }
+        await this.submitGongyi(["算料数据"]);
+      }
     }
   }
 
@@ -1025,7 +1032,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
               const toItem = cloneDeep(fromItem);
               toItem.vid = this.getMenjiaoId();
               toItem.名字 = getCopyName(names, toItem.名字);
-              updateMenjiaoForm(toItem);
+              updateMenjiaoData(toItem);
               gongyi.算料数据.push(toItem);
               names.push(toItem.名字);
               for (const key1 of menjiaoCadTypes) {
@@ -1069,22 +1076,22 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     switch (button.event) {
       case "编辑":
         {
-          const item2 = this.gongyi.算料数据[rowIdx];
+          const fromItem = this.gongyi.算料数据[rowIdx];
           await this.getMenjiaoItem(async (result) => {
-            const item3 = result.data;
-            if (item3 && this.gongyi) {
-              if (item3.默认值) {
+            const toItem = result.data;
+            if (toItem && this.gongyi) {
+              if (toItem.默认值) {
                 for (const [i, item4] of this.gongyi.算料数据.entries()) {
                   if (i !== rowIdx) {
                     item4.默认值 = false;
                   }
                 }
               }
-              this.gongyi.算料数据[rowIdx] = item3;
+              this.gongyi.算料数据[rowIdx] = toItem;
               this.menjiaoTable.data = [...this.gongyi.算料数据];
               await this.submitGongyi(["算料数据"]);
             }
-          }, item2);
+          }, fromItem);
         }
         break;
       case "复制":
@@ -1093,7 +1100,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           toItem.vid = this.getMenjiaoId();
           const names = this.gongyi.算料数据.map((v) => v.名字);
           toItem.名字 = getCopyName(names, toItem.名字);
-          updateMenjiaoForm(toItem);
+          updateMenjiaoData(toItem);
           for (const key1 of menjiaoCadTypes) {
             const fromData = fromItem[key1];
             const toData = toItem[key1];

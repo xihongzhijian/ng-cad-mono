@@ -7,7 +7,7 @@ import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
-import {isTypeOf, keysOf, ObjectOf, RequiredKeys} from "@lucilor/utils";
+import {keysOf, ObjectOf, RequiredKeys} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -27,7 +27,6 @@ import {SuanliaoDataInput} from "../suanliao-data-dialog/suanliao-data-dialog.ty
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
 import {
   get算料数据,
-  get算料数据2,
   MenjiaoCadType,
   menjiaoCadTypes,
   SuanliaoDataParams,
@@ -47,7 +46,7 @@ import {
   getCadSearch,
   getMenjiaoCadInfos,
   getShiyituCadSearch,
-  updateMenjiaoForm
+  updateMenjiaoData
 } from "./menjiao-dialog.utils";
 
 @Component({
@@ -124,41 +123,7 @@ export class MenjiaoDialogComponent implements OnInit {
     const data = this.formData;
     const 产品分类 = data0 ? data0.产品分类 : component.fenleiName;
     data.产品分类 = 产品分类;
-    if (!data.vid) {
-      data.vid = component.getMenjiaoId();
-    }
-    for (const value of 门缝配置输入) {
-      if (typeof value.defaultValue === "number") {
-        data.门缝配置[value.name] = 0;
-      }
-    }
-    for (const key1 of menjiaoCadTypes) {
-      if (!data[key1]) {
-        data[key1] = get算料数据2();
-      }
-      if (!isTypeOf(data[key1].板材分组, "object")) {
-        data[key1].板材分组 = {};
-      }
-      for (const key2 of 算料数据2Keys) {
-        if (!data[key1][key2]) {
-          data[key1][key2] = {};
-        }
-        for (const name of 配合框组合[产品分类] || []) {
-          if (!isTypeOf(data[key1].配合框CAD[name], "object")) {
-            data[key1].配合框CAD[name] = {};
-          }
-        }
-        for (const name of 企料组合[产品分类] || []) {
-          if (!isTypeOf(data[key1].企料CAD[name], "object")) {
-            data[key1].企料CAD[name] = {};
-          }
-          if (!isTypeOf(data[key1].企料CAD[name].企料分体CAD, "object")) {
-            data[key1].企料CAD[name].企料分体CAD = {分体1: undefined, 分体2: undefined};
-          }
-        }
-      }
-    }
-    updateMenjiaoForm(data);
+    updateMenjiaoData(data);
     const getGroupStyle = (style?: csstype.Properties): csstype.Properties => {
       return {display: "flex", flexWrap: "wrap", marginBottom: "10px", ...style};
     };
@@ -172,7 +137,7 @@ export class MenjiaoDialogComponent implements OnInit {
         info.model = {data, key};
         info.validators = Validators.required;
         info.onChange = () => {
-          updateMenjiaoForm(data);
+          updateMenjiaoData(data);
         };
         info.style = getInfoStyle(n);
         const dialogKeys: (keyof 算料数据)[] = ["锁边", "铰边"];
@@ -365,9 +330,30 @@ export class MenjiaoDialogComponent implements OnInit {
   async submit(close: boolean) {
     if (await this.validate()) {
       const result: MenjiaoOutput = {data: this.formData};
+      let refreshSuanliaoTables = false;
+      if (this.data.data) {
+        const mingziOld = this.data.data.名字;
+        const mingziNew = this.formData.名字;
+        const {xinghaoName, fenleiName, gongyiName} = this.data.component || {};
+        if (mingziOld && mingziOld !== mingziNew) {
+          const params = {xinghao: xinghaoName, fenlei: fenleiName, gongyi: gongyiName, mingziOld, mingziNew};
+          const result = await this.http.getData("shuju/api/onMenjiaoNameChange", params);
+          if (result) {
+            for (const item of Object.values(this.key1Infos)) {
+              item.suanliaoDataParams.选项.门铰锁边铰边 = mingziNew;
+            }
+            this.data.data.名字 = mingziNew;
+            refreshSuanliaoTables = true;
+          } else {
+            return;
+          }
+        }
+      }
       this.data.onSubmit?.(result);
       if (close) {
         this.dialogRef.close(result);
+      } else if (refreshSuanliaoTables) {
+        this.suanliaoTablesList?.forEach((v) => v.update());
       }
     } else {
       this.message.error("数据有误，请检查");
@@ -411,7 +397,7 @@ export class MenjiaoDialogComponent implements OnInit {
         data[key1][key2][key3] = {};
       }
       data[key1][key2][key3].cad = cad;
-      updateMenjiaoForm(this.formData);
+      updateMenjiaoData(this.formData);
     }
   }
 
@@ -426,7 +412,7 @@ export class MenjiaoDialogComponent implements OnInit {
         data.企料分体CAD[key] = null;
       }
     }
-    updateMenjiaoForm(this.formData);
+    updateMenjiaoData(this.formData);
   }
 
   async selectShiyituCad(key1: MenjiaoCadType | CadItemComponent<MenjiaoShiyituCadItemInfo>) {
@@ -453,7 +439,7 @@ export class MenjiaoDialogComponent implements OnInit {
     });
     if (result) {
       data.算料单示意图 = result as unknown as HoutaiCad[];
-      updateMenjiaoForm(this.formData);
+      updateMenjiaoData(this.formData);
     }
   }
 
@@ -465,7 +451,7 @@ export class MenjiaoDialogComponent implements OnInit {
       return;
     }
     data.算料单示意图.splice(index, 1);
-    updateMenjiaoForm(this.formData);
+    updateMenjiaoData(this.formData);
   }
 
   getMrbcjfzDialogInput(key1: MenjiaoCadType): MrbcjfzDialogInput {

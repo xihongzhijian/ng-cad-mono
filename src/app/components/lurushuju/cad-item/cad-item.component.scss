@@ -14,7 +14,8 @@
 }
 
 .name {
-  font-size: 18px;
+  --mdc-text-button-label-text-size: 18px;
+  --mdc-text-button-container-height: auto;
 }
 
 .cads {

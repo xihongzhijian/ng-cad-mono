@@ -21,14 +21,13 @@
       }
     </div>
     @if (fentiCads) {
-      <div class="fenti-cads toolbar compact">
+      <div class="fenti-cads toolbar">
         @for (item of fentiCads | keyvalue: returnZero; track item.key) {
           <div class="fenti-cad toolbar">
             <div>{{ item.key }}:</div>
             <button mat-button (click)="selectFentiCad()">{{ item.value ? item.value["名字"] : "不做分体" }}</button>
           </div>
         }
-        <button mat-button color="primary" (click)="clearFentiCads()">清空</button>
       </div>
     }
     @if (!noZhankai) {

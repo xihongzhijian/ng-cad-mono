@@ -133,3 +133,15 @@
   font-size: var(--mat-form-field-subscript-text-size);
   color: var(--mat-form-field-error-text-color);
 }
+
+.empty-cad {
+  margin: 5px;
+  font-size: 18px;
+  align-items: flex-start;
+
+  .box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

@@ -223,6 +223,8 @@ export interface 算料数据 {
 
 export const menjiaoCadTypes = ["包边在外+外开", "包边在外+内开", "包边在内+外开", "包边在内+内开"] as const;
 export type MenjiaoCadType = (typeof menjiaoCadTypes)[number];
+export const 企料分体CadKeys = ["分体1", "分体2"] as const;
+export type 企料分体CadKey = (typeof 企料分体CadKeys)[number];
 
 export interface 企料CAD {
   // 从符合分类企料CAD里面选择，分类对应关系
@@ -275,7 +277,7 @@ export const 配合框组合: ObjectOf<string[]> = {};
 export const 企料排列: ObjectOf<string[]> = {
   单门: ["铰企料", "锁企料"],
   子母对开: ["小扇铰企料", "小扇小锁料", "扇锁企料", "铰企料"],
-  双开: ["小扇铰企料", "小扇小锁料", "扇锁企料", "铰企料"],
+  双开: ["铰企料", "小锁料", "扇锁企料", "铰企料"],
   子母连开: ["铰企料", "中锁料", "中铰料", "锁企料"],
   四扇子母: ["铰企料", "中锁料", "中铰料", "小锁料", "扇锁企料", "中铰料", "中锁料", "铰企料"],
   四扇平分: ["铰企料", "中锁料", "中铰料", "小锁料", "扇锁企料", "中铰料", "中锁料", "铰企料"],
@@ -290,6 +292,7 @@ for (const key in 企料排列) {
   }
   企料组合[key] = uniq(企料排列[key]);
 }
+export const 企料组合共享: [string, string][] = [["小锁料", "小扇小锁料"]];
 
 export const cadMatchRules: ObjectOf<{分类: string[]; 选项: (keyof 算料数据)[]}> = {
   锁框: {分类: ["锁框"], 选项: []},

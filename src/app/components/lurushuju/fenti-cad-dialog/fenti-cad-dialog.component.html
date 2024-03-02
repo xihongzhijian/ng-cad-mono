@@ -1,0 +1,26 @@
+<ng-scrollbar>
+  <div class="items no-items-per-row">
+    @for (item of data.data | keyvalue: returnZero; track $index) {
+      @if (item.value) {
+        <app-cad-item
+          [cad]="item.value"
+          [buttons]="cadButtons"
+          [customInfo]="{key: item.key}"
+          [cadWidth]="data.cadSize[0]"
+          [noMuban]="true"
+          [noZhankai]="true"
+        ></app-cad-item>
+      } @else {
+        <div class="empty-cad item link" (click)="selectFentiCad(item.key)">
+          <div class="name">{{ item.key }}</div>
+          <div class="box border" [style.width.px]="data.cadSize[0]" [style.height.px]="data.cadSize[1]"></div>
+        </div>
+      }
+    }
+  </div>
+</ng-scrollbar>
+
+<div class="toolbar center">
+  <button mat-raised-button color="primary" (click)="submit()">保存</button>
+  <button mat-raised-button color="primary" (click)="cancel()">关闭</button>
+</div>

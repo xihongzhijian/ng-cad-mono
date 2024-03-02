@@ -8,15 +8,16 @@ import {CadCollection} from "@app/cad/collections";
 import {cadOptions} from "@app/cad/options";
 import {exportCadData, openCadLineInfoForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
-import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
-import {ObjectOf, selectFiles} from "@lucilor/utils";
+import {selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
+import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
+import {FentiCadData} from "../fenti-cad-dialog/fenti-cad-dialog.types";
 import {CadItemButton, typeOptions} from "./cad-item.types";
 
 @Component({
@@ -31,8 +32,8 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   cadHeight = 0;
   @Input({required: true}) cad: HoutaiCad = getHoutaiCad();
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
-  @Input({required: true}) customInfo: T = undefined as T;
-  @Input() fentiCads?: ObjectOf<HoutaiCad | null | undefined>;
+  @Input({required: true}) customInfo!: T;
+  @Input() fentiCads?: FentiCadData;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
   @Input() noMuban?: boolean;
@@ -423,40 +424,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     if (!fentiCads) {
       return;
     }
-    const search: ObjectOf<any> = {分类: "企料分体"};
-    const keys = Object.keys(fentiCads);
-    const checkedItems = Object.values(fentiCads)
-      .map((v) => v?._id || "")
-      .filter(Boolean);
-    const result = await openCadListDialog(this.dialog, {
-      data: {
-        selectMode: "multiple",
-        checkedItems,
-        checkedItemsLimit: keys.length,
-        collection: "cad",
-        search,
-        addCadData: search,
-        hideCadInfo: true
-      }
-    });
-    if (!result || !result.length) {
-      return;
-    }
-    for (const [i, key] of keys.entries()) {
-      fentiCads[key] = getHoutaiCad(result[i]);
-    }
-  }
-
-  async clearFentiCads() {
-    const {fentiCads} = this;
-    if (!fentiCads) {
-      return;
-    }
-    if (!(await this.message.confirm("确定清空分体CAD吗？"))) {
-      return;
-    }
-    for (const key in fentiCads) {
-      fentiCads[key] = null;
-    }
+    const {cadWidth, cadHeight} = this;
+    await openFentiCadDialog(this.dialog, {data: {data: fentiCads, cadSize: [cadWidth, cadHeight]}});
   }
 }
