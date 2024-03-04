@@ -359,6 +359,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       }
     }
     Object.assign(this, stepInfo2);
+    if (!this.xinghaoName) {
+      this.xinghao = null;
+    }
+    if (!this.gongyiName) {
+      this.gongyi = null;
+    }
     session.save(this.stepDataKey, [step, stepInfo]);
     await this.setStep1();
     await this.setStep2();
@@ -745,7 +751,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         for (const menjiaoData of data.算料数据) {
           updateMenjiaoData(menjiaoData);
         }
-        await this.submitGongyi(["算料数据"]);
+        await this.submitGongyi(["算料数据"], targetFenlei, data.名字);
       }
     }
   }
@@ -758,14 +764,15 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     return getBooleanStr(value);
   }
 
-  async submitGongyi(fields: (keyof 工艺做法)[]) {
-    const {xinghaoName: 型号, fenleiName: 产品分类, gongyiName: 名字} = this;
+  async submitGongyi(fields: (keyof 工艺做法)[], 产品分类 = this.fenleiName, 名字 = this.gongyiName) {
+    const {xinghaoName: 型号} = this;
     const data: Partial<工艺做法> = {};
-    if (!this.gongyi || !Array.isArray(fields) || fields.length === 0) {
+    const gongyi = this.xinghao?.产品分类[产品分类]?.find((v) => v.名字 === 名字);
+    if (!gongyi || !Array.isArray(fields) || fields.length === 0) {
       return;
     }
     for (const field of fields) {
-      data[field] = this.gongyi[field] as any;
+      data[field] = gongyi[field] as any;
     }
     const response = await this.http.post("shuju/api/editGongyi", {型号, 产品分类, updateDatas: {[名字]: data}}, {spinner: false});
     if (response?.code === 0 && this.xinghao) {

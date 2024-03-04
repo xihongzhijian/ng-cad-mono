@@ -1,8 +1,10 @@
 import {CommonModule} from "@angular/common";
-import {Component, HostBinding, OnInit} from "@angular/core";
+import {Component, ElementRef, HostBinding, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
+import {setGlobal} from "@app/app.common";
+import {environment} from "@env";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
@@ -26,22 +28,24 @@ export class PrintTableComponent implements OnInit {
   xikongTableInfo: TableRenderInfo<XikongData> | null = null;
   xikongTableWidth = 0;
   xikongColWidths: ObjectOf<number> = {};
+  表换行索引: NonNullable<TableInfoData["表换行索引"]> = {};
 
   constructor(
     private http: CadDataService,
     private route: ActivatedRoute,
-    private message: MessageService
-  ) {}
+    private message: MessageService,
+    private elRef: ElementRef<HTMLElement>
+  ) {
+    setGlobal("printTable", this);
+  }
 
   async ngOnInit() {
     await this.getData();
   }
 
   async print() {
-    const {tableInfos} = this;
+    const {tableInfos, 表换行索引} = this;
     const columnsAll: ColumnInfo<TableData>[][] = [];
-    const dataAll: (TableData[] | null)[] = [];
-    const tableBreakIndex1 = 21;
     for (const info of tableInfos) {
       columnsAll.push(info.columns);
       info.columns = info.columns.map((col) => {
@@ -51,23 +55,32 @@ export class PrintTableComponent implements OnInit {
           return {...col};
         }
       });
-      if (info.title === "型材" && info.data.length > tableBreakIndex1) {
-        dataAll.push(info.data);
-        const data = [...info.data];
-        data.splice(tableBreakIndex1, 0, {});
-        info.data = data;
-      } else {
-        dataAll.push(null);
-      }
     }
     await timeout(1000);
+    const toRemove: HTMLElement[] = [];
+    for (const info of tableInfos) {
+      const title = info.title || "";
+      const indexs = 表换行索引[title];
+      let j = 0;
+      if (Array.isArray(indexs) && indexs.length > 0) {
+        for (const i of indexs) {
+          const rowEl = this.elRef.nativeElement.querySelector(`app-table.${title} mat-row:nth-child(${i + j + 1})`);
+          if (rowEl instanceof HTMLElement) {
+            const dummyRowEl = document.createElement("div");
+            dummyRowEl.classList.add("page-break");
+            rowEl.after(dummyRowEl);
+            toRemove.push(dummyRowEl);
+            j++;
+          }
+        }
+      }
+    }
     window.print();
     for (let i = 0; i < tableInfos.length; i++) {
       tableInfos[i].columns = columnsAll[i];
-      const data = dataAll[i];
-      if (data) {
-        tableInfos[i].data = data;
-      }
+    }
+    for (const el of toRemove) {
+      el.remove();
     }
   }
 
@@ -83,6 +96,7 @@ export class PrintTableComponent implements OnInit {
     }
     this.title = data.标题;
     document.title = data.标题;
+    this.表换行索引 = data.表换行索引 || {};
     this.tableInfos = [];
     for (const [i, value] of data.表头.entries()) {
       const 表头列: ColumnInfo<TableData>[] = [];
@@ -117,6 +131,11 @@ export class PrintTableComponent implements OnInit {
     }
     for (const info of data.表数据) {
       info.class = info.title;
+      if (!environment.production) {
+        for (const [i, item] of info.data.entries()) {
+          item.序号 = i + 1;
+        }
+      }
       this.tableInfos.push({noCheckBox: true, noScroll: true, ...info});
     }
     this.xikongColWidths = data.铣孔信息列宽;

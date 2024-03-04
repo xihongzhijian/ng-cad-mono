@@ -60,14 +60,13 @@ app-table {
     padding: 30px;
   }
 
-  app-table {
-    &.型材 ::ng-deep {
-      .mat-mdc-row:nth-of-type(22) {
-        break-before: page;
-        opacity: 0;
-        & + .mat-mdc-row {
-          border-top: var(--border);
-        }
+  app-table ::ng-deep {
+    .page-break {
+      break-before: page;
+      opacity: 0;
+      height: 40px;
+      & + .mat-mdc-row {
+        border-top: var(--border);
       }
     }
   }
