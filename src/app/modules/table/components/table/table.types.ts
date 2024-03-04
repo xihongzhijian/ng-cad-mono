@@ -27,6 +27,7 @@ export interface TableRenderInfo<T> {
   isTree?: boolean;
   onlineMode?: {tableName: string; refresh: () => Promise<void>};
   noScroll?: boolean;
+  class?: string | string[];
   style?: csstype.Properties;
 }
 
@@ -128,3 +129,5 @@ export interface CellEvent<T> {
 export type ItemGetter<T> = ((rowIdx: number) => T) | ((rowIdx: number) => Promise<T>);
 
 export type DataTransformer<T> = (type: "import" | "export", data: T[]) => any;
+
+export type InfoKey<T = any> = keyof TableRenderInfo<T>;

@@ -1,4 +1,4 @@
-<div class="table-container" [ngClass]="{'no-scroll': info.noScroll, 'no-data': !haveData}">
+<div class="table-container" [class]="{'no-scroll': info.noScroll, 'no-data': !haveData}">
   @if (info.title && !toolbarButtons.inlineTitle) {
     <div class="title center">{{ info.title }}</div>
   }
@@ -27,8 +27,8 @@
           <button
             mat-raised-button
             [color]="button.color"
-            [ngClass]="button.class"
-            [ngStyle]="button.style"
+            [class]="button.class"
+            [style]="button.style"
             (click)="onToolbarBtnClick({button})"
           >
             {{ button.title || button.event }}
@@ -47,7 +47,7 @@
     <mat-table [dataSource]="dataSource" matSort>
       <div>
         <ng-container matColumnDef="select" sticky>
-          <mat-header-cell *matHeaderCellDef [ngStyle]="getCheckBoxStyle()">
+          <mat-header-cell *matHeaderCellDef [style]="getCheckBoxStyle()">
             <mat-checkbox
               (change)="$event ? masterToggle() : null"
               [checked]="selection.hasValue() && isAllSelected()"
@@ -55,7 +55,7 @@
             >
             </mat-checkbox>
           </mat-header-cell>
-          <mat-cell *matCellDef="let item; let rowIdx = index" [ngStyle]="getCheckBoxStyle()">
+          <mat-cell *matCellDef="let item; let rowIdx = index" [style]="getCheckBoxStyle()">
             <mat-checkbox appClickStop (change)="$event ? selection.toggle(item) : null" [checked]="selection.isSelected(item)">
             </mat-checkbox>
           </mat-cell>
@@ -64,18 +64,18 @@
         @for (column of info.columns; track colIdx; let colIdx = $index) {
           <ng-container [matColumnDef]="toTypeString(column.field)" [sticky]="column.sticky">
             @if (info.sortable) {
-              <mat-header-cell *matHeaderCellDef mat-sort-header [ngClass]="getCellClass(column, -1)" [ngStyle]="getCellStyle(column)">
+              <mat-header-cell *matHeaderCellDef mat-sort-header [class]="getCellClass(column, -1)" [style]="getCellStyle(column)">
                 {{ column.name || column.field }}
               </mat-header-cell>
             } @else {
-              <mat-header-cell *matHeaderCellDef [ngClass]="getCellClass(column, -1)" [ngStyle]="getCellStyle(column)">
+              <mat-header-cell *matHeaderCellDef [class]="getCellClass(column, -1)" [style]="getCellStyle(column)">
                 {{ column.name || column.field }}
               </mat-header-cell>
             }
             <mat-cell
               *matCellDef="let item; let rowIdx = index"
-              [ngClass]="getCellClass(column, rowIdx)"
-              [ngStyle]="getCellStyle(column)"
+              [class]="getCellClass(column, rowIdx)"
+              [style]="getCellStyle(column)"
               [class.error]="!isVaild(rowIdx)"
               (click)="onCellClick({column, item, colIdx, rowIdx})"
             >
@@ -179,8 +179,8 @@
                         <button
                           mat-stroked-button
                           [color]="button.color"
-                          [ngClass]="button.class"
-                          [ngStyle]="button.style"
+                          [class]="button.class"
+                          [style]="button.style"
                           (click)="onRowButtonClick({button, column, item, colIdx, rowIdx})"
                         >
                           {{ button.title || button.event }}

@@ -1,11 +1,11 @@
 import {SelectionModel} from "@angular/cdk/collections";
 import {FlatTreeControl} from "@angular/cdk/tree";
-import {NgClass, NgStyle} from "@angular/common";
 import {
   AfterViewInit,
   Component,
   DoCheck,
   EventEmitter,
+  HostBinding,
   Input,
   KeyValueChanges,
   KeyValueDiffer,
@@ -42,7 +42,16 @@ import {cloneDeep, intersection, isEqual} from "lodash";
 import md5 from "md5";
 import {BehaviorSubject, filter, lastValueFrom, take} from "rxjs";
 import {ImageComponent} from "../../../image/components/image/image.component";
-import {CellEvent, ColumnInfo, ItemGetter, RowButtonEvent, TableErrorState, TableRenderInfo, ToolbarButtonEvent} from "./table.types";
+import {
+  CellEvent,
+  ColumnInfo,
+  InfoKey,
+  ItemGetter,
+  RowButtonEvent,
+  TableErrorState,
+  TableRenderInfo,
+  ToolbarButtonEvent
+} from "./table.types";
 import {getInputInfosFromTableColumns} from "./table.utils";
 
 @Component({
@@ -61,14 +70,13 @@ import {getInputInfosFromTableColumns} from "./table.utils";
     MatSlideToggleModule,
     MatSelectModule,
     MatOptionModule,
-    NgClass,
-    NgStyle,
     ImageComponent
   ]
 })
 export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
-  @Input() info: TableRenderInfo<T> = {data: [], columns: []};
+  @HostBinding("class") class: string | string[] | undefined;
 
+  @Input() info: TableRenderInfo<T> = {data: [], columns: []};
   @Output() rowButtonClick = new EventEmitter<RowButtonEvent<T>>();
   @Output() cellFocus = new EventEmitter<CellEvent<T>>();
   @Output() cellBlur = new EventEmitter<CellEvent<T>>();
@@ -137,14 +145,14 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   ngDoCheck() {
-    const changes = this.infoDiffer.diff(this.info);
+    const changes = this.infoDiffer.diff(this.info) as KeyValueChanges<InfoKey, any>;
     if (changes) {
       this.infoChanged(changes);
     }
   }
 
-  infoChanged(changes: KeyValueChanges<string, any>) {
-    const changedKeys: string[] = [];
+  infoChanged(changes: KeyValueChanges<InfoKey, any>) {
+    const changedKeys: InfoKey[] = [];
     changes.forEachChangedItem((v) => {
       changedKeys.push(v.key);
     });
@@ -154,27 +162,25 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     changes.forEachRemovedItem((v) => {
       changedKeys.push(v.key);
     });
-    {
-      const keys: (keyof TableRenderInfo<T>)[] = ["columns", "noCheckBox"];
-      if (intersection(changedKeys, keys).length > 0) {
-        this.columnFields = [...this.info.columns.filter((v) => !v.hidden).map((v) => v.field)];
-        if (!this.info.noCheckBox) {
-          this.columnFields.unshift("select");
-        }
+
+    if (intersection<InfoKey>(changedKeys, ["columns", "noCheckBox"]).length > 0) {
+      this.columnFields = [...this.info.columns.filter((v) => !v.hidden).map((v) => v.field)];
+      if (!this.info.noCheckBox) {
+        this.columnFields.unshift("select");
       }
     }
-    {
-      const keys: (keyof TableRenderInfo<T>)[] = ["data", "validator", "isTree"];
-      if (intersection(changedKeys, keys).length > 0) {
-        this.cadImgs = {};
-        const data = this.info.data;
-        if (this.info.isTree) {
-          this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener, data);
-        } else {
-          this.dataSource = new MatTableDataSource(data);
-        }
-        this.validate();
+    if (intersection<InfoKey>(changedKeys, ["data", "validator", "isTree"]).length > 0) {
+      this.cadImgs = {};
+      const data = this.info.data;
+      if (this.info.isTree) {
+        this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener, data);
+      } else {
+        this.dataSource = new MatTableDataSource(data);
       }
+      this.validate();
+    }
+    if (intersection<InfoKey>(changedKeys, ["class"]).length > 0) {
+      this.class = this.info.class;
     }
   }
 

@@ -1,4 +1,4 @@
-import {getOrderBarcode, replaceRemoteHost} from "@app/app.common";
+import {getOrderBarcode, getPdfInfo, replaceRemoteHost} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {ProjectConfig} from "@app/utils/project-config";
 import {
@@ -867,25 +867,32 @@ export interface PrintCadsParams {
   projectName?: string;
   errors?: string[];
 }
+
 /**
  * A4: (210 × 297)mm²
  *    =(8.26 × 11.69)in² (1in = 25.4mm)
  * 	  =(794 × 1123)px² (96dpi)
  */
-export const printCads = async (params: PrintCadsParams) => {
-  const cads = params.cads.map((v) => v.clone());
-  const config = params.config || {};
-  const extra = params.extra || {};
+export const getA4PrintInfo = () => {
   let [dpiX, dpiY] = getDPI();
   if (!(dpiX > 0) || !(dpiY > 0)) {
     console.warn("Unable to get screen dpi.Assuming dpi = 96.");
     dpiX = dpiY = 96;
   }
-  const width = (210 / 25.4) * dpiX * 0.75;
-  const height = (297 / 25.4) * dpiY * 0.75;
-  const scaleX = 300 / dpiX / 0.75;
-  const scaleY = 300 / dpiY / 0.75;
+  const factor = 0.75;
+  const width = (210 / 25.4) * dpiX * factor;
+  const height = (297 / 25.4) * dpiY * factor;
+  const scaleX = 300 / dpiX / factor;
+  const scaleY = 300 / dpiY / factor;
   const scale = Math.sqrt(scaleX * scaleY);
+  return {width, height, scaleX, scaleY, scale, factor};
+};
+
+export const printCads = async (params: PrintCadsParams) => {
+  const cads = params.cads.map((v) => v.clone());
+  const config = params.config || {};
+  const extra = params.extra || {};
+  const {width, height, scaleX, scaleY, scale} = getA4PrintInfo();
   const errors: string[] = [];
 
   const config2: Partial<CadViewerConfig> = {
@@ -1087,17 +1094,11 @@ export const printCads = async (params: PrintCadsParams) => {
     }, 0);
   }
 
-  const now = new Date();
   const pdf = createPdf(
     {
       info: {
+        ...getPdfInfo(),
         title: "打印CAD",
-        author: "Lucilor",
-        subject: "Lucilor",
-        creator: "Lucilor",
-        producer: "Lucilor",
-        creationDate: now,
-        modDate: now,
         keywords: "cad print",
         ...params.info
       },

@@ -52,9 +52,23 @@ app-table {
 }
 
 @media print {
+  :host {
+    height: auto;
+  }
+
   .content {
-    height: 297mm;
-    overflow: hidden;
     padding: 30px;
+  }
+
+  app-table {
+    &.型材 ::ng-deep {
+      .mat-mdc-row:nth-of-type(22) {
+        break-before: page;
+        opacity: 0;
+        & + .mat-mdc-row {
+          border-top: var(--border);
+        }
+      }
+    }
   }
 }

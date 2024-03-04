@@ -19,7 +19,8 @@ import {TableData, TableInfoData, XikongData, XikongDataRaw} from "./print-table
   styleUrl: "./print-table.component.scss"
 })
 export class PrintTableComponent implements OnInit {
-  @HostBinding("class.ng-page") isPage = true;
+  @HostBinding("class") class = ["ng-page"];
+
   title = "";
   tableInfos: TableRenderInfo<TableData>[] = [];
   xikongTableInfo: TableRenderInfo<XikongData> | null = null;
@@ -37,8 +38,11 @@ export class PrintTableComponent implements OnInit {
   }
 
   async print() {
+    const {tableInfos} = this;
     const columnsAll: ColumnInfo<TableData>[][] = [];
-    for (const info of this.tableInfos) {
+    const dataAll: (TableData[] | null)[] = [];
+    const tableBreakIndex1 = 21;
+    for (const info of tableInfos) {
       columnsAll.push(info.columns);
       info.columns = info.columns.map((col) => {
         if (col.type === "button") {
@@ -47,11 +51,23 @@ export class PrintTableComponent implements OnInit {
           return {...col};
         }
       });
+      if (info.title === "型材" && info.data.length > tableBreakIndex1) {
+        dataAll.push(info.data);
+        const data = [...info.data];
+        data.splice(tableBreakIndex1, 0, {});
+        info.data = data;
+      } else {
+        dataAll.push(null);
+      }
     }
     await timeout(1000);
     window.print();
-    for (let i = 0; i < this.tableInfos.length; i++) {
-      this.tableInfos[i].columns = columnsAll[i];
+    for (let i = 0; i < tableInfos.length; i++) {
+      tableInfos[i].columns = columnsAll[i];
+      const data = dataAll[i];
+      if (data) {
+        tableInfos[i].data = data;
+      }
     }
   }
 
@@ -100,6 +116,7 @@ export class PrintTableComponent implements OnInit {
       });
     }
     for (const info of data.表数据) {
+      info.class = info.title;
       this.tableInfos.push({noCheckBox: true, noScroll: true, ...info});
     }
     this.xikongColWidths = data.铣孔信息列宽;

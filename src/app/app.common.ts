@@ -2,6 +2,7 @@ import {AbstractControlOptions, FormControl, FormControlOptions, FormControlStat
 import {environment} from "@env";
 import {LocalStorage, log, ObjectOf, SessionStorage, Timer} from "@lucilor/utils";
 import JsBarcode from "jsbarcode";
+import {TDocumentInformation} from "pdfmake/interfaces";
 
 declare global {
   interface Window {
@@ -213,4 +214,18 @@ export const getCopyName = (names: string[], name: string) => {
     i++;
   }
   return name + getSuffix();
+};
+
+export const getPdfInfo = (others?: TDocumentInformation): TDocumentInformation => {
+  const now = new Date();
+  return {
+    title: "noname",
+    author: "Lucilor",
+    subject: "Lucilor",
+    creator: "Lucilor",
+    producer: "Lucilor",
+    creationDate: now,
+    modDate: now,
+    ...others
+  };
 };
