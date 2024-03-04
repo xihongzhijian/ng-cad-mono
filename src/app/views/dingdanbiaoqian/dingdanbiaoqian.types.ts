@@ -70,4 +70,4 @@ export interface FormItem {
   valueStyle?: Properties;
 }
 
-export type DdbqType = "标签贴纸" | "质检标签" | "配件模块" | "合格证" | "流程指令卡";
+export type DdbqType = "标签贴纸" | "质检标签" | "配件模块" | "合格证" | "流程指令卡" | "生产流程单";

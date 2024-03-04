@@ -138,7 +138,9 @@ export class DingdanbiaoqianComponent implements OnInit {
     private message: MessageService,
     private calc: CalcService,
     private dialog: MatDialog
-  ) {}
+  ) {
+    setGlobal("ddbq", this);
+  }
 
   ngOnInit() {
     setTimeout(() => this.getOrders(), 0);
@@ -414,8 +416,11 @@ export class DingdanbiaoqianComponent implements OnInit {
       };
       switch (type) {
         case "标签贴纸":
-        case "配件模块": {
-          order.info = null;
+        case "配件模块":
+        case "生产流程单": {
+          if (type !== "生产流程单") {
+            order.info = null;
+          }
           delete order.开启锁向示意图;
           delete order.配合框;
           let orderCurr: Order | null = null;
