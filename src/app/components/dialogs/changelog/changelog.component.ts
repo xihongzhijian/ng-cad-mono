@@ -50,7 +50,6 @@ export class ChangelogComponent implements OnInit {
         showDetails: false
       };
     });
-    console.log(changelog);
   }
 
   get testMode() {
