@@ -3,7 +3,6 @@ import {LurushujuIndexComponent} from "@components/lurushuju/lurushuju-index/lur
 import {PrintTableComponent} from "@components/print-table/print-table.component";
 import {BackupComponent} from "@views/backup/backup.component";
 import {BomGongyiluxianComponent} from "@views/bom-gongyiluxian/bom-gongyiluxian.component";
-import {ChangelogAdminComponent} from "@views/changelog-admin/changelog-admin.component";
 import {CleanComponent} from "@views/clean/clean.component";
 import {DingdanbiaoqianComponent} from "@views/dingdanbiaoqian/dingdanbiaoqian.component";
 import {ExportComponent} from "@views/export/export.component";
@@ -33,7 +32,6 @@ export const routesInfo: (Route & {path: string})[] = [
   {path: "export", component: ExportComponent, title: "导出CAD"},
   {path: "backup", component: BackupComponent, title: "备份CAD"},
   {path: "select-bancai", component: SelectBancaiComponent, title: "激光开料排版"},
-  {path: "changelog-admin", component: ChangelogAdminComponent, title: "编辑更新日志"},
   {path: "kailiaokongweipeizhi", component: KailiaokongweipeizhiComponent, title: "开料孔位配置"},
   {path: "replace-text", component: ReplaceTextComponent, title: "文本替换"},
   {path: "piliangjianban", component: PiliangjianbanComponent, title: "批量剪板"},

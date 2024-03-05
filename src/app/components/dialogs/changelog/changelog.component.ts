@@ -1,16 +1,14 @@
-import {AsyncPipe} from "@angular/common";
-import {ChangeDetectorRef, Component, Input} from "@angular/core";
+import {Component, HostBinding, Input, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {RouterLink} from "@angular/router";
+import {MatIconModule} from "@angular/material/icon";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {Changelog} from "@modules/http/services/cad-data.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {AppConfigService} from "@services/app-config.service";
-import {AppStatusService} from "@services/app-status.service";
 import {changelogTypes} from "@views/changelog-admin/changelog-admin.component";
 import {InfiniteScrollModule} from "ngx-infinite-scroll";
-import {NgScrollbar, ScrollViewport} from "ngx-scrollbar";
+import {NgScrollbar} from "ngx-scrollbar";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
@@ -18,44 +16,41 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./changelog.component.html",
   styleUrls: ["./changelog.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, RouterLink, NgScrollbar, InfiniteScrollModule, ScrollViewport, MatDividerModule, AsyncPipe]
+  imports: [ImageComponent, InfiniteScrollModule, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbar]
 })
-export class ChangelogComponent {
+export class ChangelogComponent implements OnInit {
+  @HostBinding("class") class = "ng-page";
+
   @Input() pageSize = 10;
-  changelog: Changelog = [];
-  currentPage = 0;
-  maxPage = 1;
-  loading = false;
-  get isAdmin$() {
-    return this.status.isAdmin$;
-  }
-  private _nextPageLock = false;
+  separator = "\n\n";
+  changelog: {author: string; avatar: string; message: string; details: string; time: string; url: string; showDetails: boolean}[] = [];
 
   constructor(
-    private cd: ChangeDetectorRef,
     public dialogRef: MatDialogRef<ChangelogComponent, void>,
     private http: CadDataService,
-    private status: AppStatusService,
     private config: AppConfigService
-  ) {
-    this.nextPage();
+  ) {}
+
+  ngOnInit() {
+    this.getData();
   }
 
-  private async nextPage() {
-    const {pageSize, maxPage} = this;
-    if (this.currentPage >= maxPage || this._nextPageLock) {
-      return;
-    }
-    this._nextPageLock = true;
-    const page = this.currentPage + 1;
-    this.loading = true;
-    const {changelog, count} = await this.http.getChangelog(page, pageSize);
-    this.loading = false;
-    this.changelog = this.changelog.concat(changelog);
-    this.maxPage = Math.ceil((count || 0) / pageSize);
-    this.currentPage++;
-    this.cd.detectChanges();
-    this._nextPageLock = false;
+  private async getData() {
+    const {pageSize} = this;
+    const changelog = await this.http.getChangelog(1, pageSize);
+    this.changelog = changelog.map((item) => {
+      const [message, ...details] = item.commit.message.split(this.separator);
+      return {
+        author: item.commit.author.name,
+        avatar: item.author.avatar_url,
+        message,
+        details: details.join(this.separator),
+        time: this.getTitle(new Date(item.commit.committer.date).getTime(), true),
+        url: item.html_url,
+        showDetails: false
+      };
+    });
+    console.log(changelog);
   }
 
   get testMode() {
@@ -75,11 +70,19 @@ export class ChangelogComponent {
   }
 
   onYReachEnd() {
-    this.nextPage();
+    this.getData();
   }
 
   close() {
     this.dialogRef.close();
+  }
+
+  openCommits() {
+    window.open("https://github.com/Lucilor/ng-cad-mono/commits/master", "_blank");
+  }
+
+  openCommit(item: (typeof this.changelog)[number]) {
+    window.open(item.url, "_blank");
   }
 }
 

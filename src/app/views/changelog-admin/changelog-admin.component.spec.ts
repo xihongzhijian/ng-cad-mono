@@ -42,7 +42,6 @@ describe("ChangelogAdminComponent", () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ChangelogAdminComponent);
     component = fixture.componentInstance;
-    component.changelog = [{timeStamp: new Date().getTime(), content: [{type: "feat", items: ["1", "2"]}]}];
     fixture.detectChanges();
   });
 

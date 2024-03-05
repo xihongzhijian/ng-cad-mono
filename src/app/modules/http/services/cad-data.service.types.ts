@@ -78,10 +78,7 @@ export interface BancaiCad {
   bancai: {mingzi: string; cailiao: string | null; houdu: string | null; guige: number[] | null; gas?: string};
 }
 
-export type Changelog = {
-  timeStamp: number;
-  content: {type: string; items: string[]}[];
-}[];
+export type Changelog = ObjectOf<any>[];
 
 export interface QueryMongodbParams {
   collection: CadCollection;

@@ -1,28 +1,30 @@
 :host {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 10px 20px;
-  box-sizing: border-box;
+  padding: 20px;
 }
 
-.title {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 0.5em;
-}
+.changelog {
+  margin: 10px;
+  --avatar-size: 48px;
 
-.type {
-  font-size: 1.1em;
-}
+  > :not(:last-child) {
+    margin-right: 10px;
+  }
 
-.items {
-  margin-block-start: 0.5em;
-  margin-block-end: 0.5em;
-}
+  .avatar {
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+  }
 
-.footer {
-  text-align: center;
-  color: gray;
+  .text {
+    white-space: pre-wrap;
+
+    .time {
+      font-weight: bold;
+    }
+
+    .message,
+    .details {
+      font-size: 1.2em;
+    }
+  }
 }

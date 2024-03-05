@@ -1,40 +1,31 @@
-<div class="btn-group">
+<div class="toolbar">
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
-  @if (isAdmin$ | async) {
-    <a mat-raised-button color="primary" (click)="close()" routerLink="/changelog-admin" target="_blank" queryParamsHandling="merge">
-      编辑
-    </a>
-  }
+  <button mat-raised-button color="primary" (click)="openCommits()">查看详细<mat-icon>open_in_new</mat-icon></button>
 </div>
-@if (testMode) {
-  <ng-scrollbar>
-    <div infiniteScroll [scrollWindow]="false" scrollViewport (scrolled)="onYReachEnd()">
-      <div>
-        @for (v of changelog; track v) {
-          <div class="changelog">
-            <div class="title">{{ getTitle(v.timeStamp) }}</div>
-            @for (w of v.content; track w) {
-              <div>
-                <div class="type">{{ getType(w.type) }}</div>
-                <ul class="items">
-                  @for (item of w.items; track item) {
-                    <li class="item">{{ item }}</li>
-                  }
-                </ul>
-              </div>
+
+<ng-scrollbar>
+  <div class="flex-column">
+    @for (item of changelog; track $index) {
+      <div class="changelog flex-row">
+        <div class="avatar">
+          <app-image [src]="item.avatar" [bigPicSrc]="item.avatar"></app-image>
+        </div>
+        <div class="text flex-110">
+          <div class="toolbar">
+            <div class="time">{{ item.author }} {{ "@" }} {{ item.time + "\n" }}</div>
+            @if (item.details) {
+              <button mat-icon-button [color]="item.showDetails ? 'accent' : 'primary'" (click)="item.showDetails = !item.showDetails">
+                <mat-icon>more_horiz</mat-icon>
+              </button>
             }
+            <button mat-icon-button color="primary" (click)="openCommit(item)"><mat-icon>open_in_new</mat-icon></button>
           </div>
-          <mat-divider></mat-divider>
-        }
-        @if (loading) {
-          <div class="footer">正在加载...</div>
-        }
-        @if (currentPage >= maxPage) {
-          <div class="footer">没有更多了</div>
-        }
+          <span class="message">{{ item.message }}</span>
+          @if (item.showDetails && item.details) {
+            <span class="details">{{ separator + item.details }}</span>
+          }
+        </div>
       </div>
-    </div>
-  </ng-scrollbar>
-} @else {
-  <div>上次更新：{{ getTitle(changelog.at(0)?.timeStamp || 0, true) }}</div>
-}
+    }
+  </div>
+</ng-scrollbar>

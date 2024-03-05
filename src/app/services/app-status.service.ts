@@ -135,8 +135,8 @@ export class AppStatusService {
       }
       let changelogTimeStamp = this.changelogTimeStamp$.value;
       if (changelogTimeStamp < 0) {
-        const {changelog} = await this.http.getChangelog(1, 1, {spinner: false});
-        changelogTimeStamp = changelog[0]?.timeStamp || 0;
+        const changelog = await this.http.getChangelog(1, 1, {spinner: false});
+        changelogTimeStamp = new Date(changelog[0]?.commit.committer.date).getTime();
       }
       if (environment.production && changelogTimeStamp > this._refreshTimeStamp) {
         this.message.snack("版本更新，自动刷新页面");
