@@ -5,7 +5,6 @@ import {CadCollection} from "@app/cad/collections";
 import {exportCadData} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {dataURLtoBlob, downloadByUrl, DownloadOptions, ObjectOf} from "@lucilor/utils";
-import {Octokit} from "@octokit/core";
 import {
   BancaiCad,
   BancaiList,
@@ -40,7 +39,6 @@ import {CustomResponse, HttpOptions} from "./http.service.types";
 export class CadDataService extends HttpService {
   public cadImgCache = new CadImgCache();
   private route: ActivatedRoute;
-  octokit?: Octokit;
 
   constructor(injector: Injector) {
     super(injector);
@@ -232,32 +230,8 @@ export class CadDataService extends HttpService {
   }
 
   async getChangelog(page?: number, pageSize?: number, options?: HttpOptions) {
-    const {silent, spinner} = options || {};
-    const showSpinner = !silent && spinner !== false;
-    if (showSpinner) {
-      this.spinner.show(this.spinner.defaultLoaderId);
-    }
-    let result: Changelog = [];
-    if (!this.octokit) {
-      const token = await this.getData<string>("ngcad/getGithubToken");
-      if (token) {
-        this.octokit = new Octokit({auth: token});
-      } else {
-        return result;
-      }
-    }
-    try {
-      const response = await this.octokit.request("GET /repos/lucilor/ng-cad-mono/commits", {per_page: pageSize, page: page});
-      if (response.status === 200) {
-        result = response.data;
-      }
-    } catch (error) {
-      console.error(error);
-    }
-    if (showSpinner) {
-      this.spinner.hide(this.spinner.defaultLoaderId);
-    }
-    return result;
+    const result = await this.getData<Changelog>("ngcad/getChangelog", {page, pageSize}, options);
+    return result || [];
   }
 
   async removeChangelogItem(index: number, options?: HttpOptions) {
