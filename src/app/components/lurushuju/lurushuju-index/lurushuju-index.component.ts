@@ -764,10 +764,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     return getBooleanStr(value);
   }
 
-  async submitGongyi(fields: (keyof 工艺做法)[], 产品分类 = this.fenleiName, 名字 = this.gongyiName) {
+  async submitGongyi(fields: (keyof 工艺做法)[], 产品分类?: string, 名字?: string) {
     const {xinghaoName: 型号} = this;
     const data: Partial<工艺做法> = {};
-    const gongyi = this.xinghao?.产品分类[产品分类]?.find((v) => v.名字 === 名字);
+    let gongyi: 工艺做法 | undefined | null;
+    if (产品分类 && 名字) {
+      gongyi = this.xinghao?.产品分类[产品分类]?.find((v) => v.名字 === 名字);
+    } else {
+      gongyi = this.gongyi;
+      产品分类 = this.fenleiName;
+      名字 = this.gongyiName;
+    }
     if (!gongyi || !Array.isArray(fields) || fields.length === 0) {
       return;
     }

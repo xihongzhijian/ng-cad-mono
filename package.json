@@ -62,17 +62,17 @@
     "rxjs": "~7.8.1",
     "tslib": "^2.6.2",
     "uuid": "^9.0.1",
-    "vanilla-jsoneditor": "^0.21.6",
+    "vanilla-jsoneditor": "^0.22.0",
     "zone.js": "~0.14.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^17.2.1",
+    "@angular-devkit/build-angular": "^17.2.2",
     "@angular-eslint/builder": "^17.2.1",
     "@angular-eslint/eslint-plugin": "^17.2.1",
     "@angular-eslint/eslint-plugin-template": "^17.2.1",
     "@angular-eslint/schematics": "^17.2.1",
     "@angular-eslint/template-parser": "^17.2.1",
-    "@angular/cli": "^17.2.1",
+    "@angular/cli": "^17.2.2",
     "@angular/compiler-cli": "^17.2.3",
     "@cypress/schematic": "2.5.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
@@ -82,13 +82,13 @@
     "@types/lodash": "^4.14.202",
     "@types/luxon": "^3.4.2",
     "@types/md5": "^2.3.5",
-    "@types/node": "^20.11.21",
+    "@types/node": "^20.11.24",
     "@types/pdfmake": "^0.2.9",
     "@types/qrcode": "^1.5.5",
     "@types/quill": "^2.0.14",
     "@types/uuid": "^9.0.8",
-    "@typescript-eslint/eslint-plugin": "^7.1.0",
-    "@typescript-eslint/parser": "^7.1.0",
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
     "angular-animations": "^0.11.0",
     "axios": "^1.6.7",
     "compressing": "^1.10.0",
@@ -110,5 +110,5 @@
     "ts-node": "^10.9.2",
     "typescript": "~5.3.3"
   },
-  "packageManager": "yarn@4.1.0"
+  "packageManager": "yarn@4.1.1"
 }
