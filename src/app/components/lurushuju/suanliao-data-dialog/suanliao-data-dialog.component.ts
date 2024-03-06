@@ -1,4 +1,4 @@
-import {Component, EventEmitter, HostBinding, Inject, Output, ViewChild} from "@angular/core";
+import {Component, EventEmitter, HostBinding, Inject, Output, QueryList, ViewChild, ViewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -45,16 +45,12 @@ export class SuanliaoDataDialogComponent {
   @Output() cadFormSubmitted = new EventEmitter<void>();
 
   suanliaoData: SuanliaoDataInput["data"];
-  cadItemButtons: CadItemButton<SuanliaoDataCadItemInfo>[] = [
-    {name: "复制", onClick: this.copyCad.bind(this)},
-    {name: "删除", onClick: this.removeCad.bind(this)},
-    {name: "添加孔位配置", onClick: this.addKwpz.bind(this)},
-    {name: "添加开料参数", onClick: this.addKlcs.bind(this)}
-  ];
+  cadItemButtons: CadItemButton<SuanliaoDataCadItemInfo>[];
   mubanExtraData: CadItemComponent["mubanExtraData"] = {};
   openCadOptions: RequiredKeys<OpenCadOptions, "suanliaogongshiInfo">;
 
   @ViewChild(SuanliaoTablesComponent) suanliaoTables?: SuanliaoTablesComponent;
+  @ViewChildren(CadItemComponent) cadItems?: QueryList<CadItemComponent>;
 
   constructor(
     private message: MessageService,
@@ -77,6 +73,18 @@ export class SuanliaoDataDialogComponent {
       },
       suanliaoTablesInfo: {params: this.data.suanliaoDataParams}
     };
+    this.cadItemButtons = [
+      {name: "复制", onClick: this.copyCad.bind(this)},
+      {name: "删除", onClick: this.removeCad.bind(this)}
+    ];
+    if (this.data.isKailiao) {
+      this.cadItemButtons.push(
+        ...[
+          {name: "添加孔位配置", onClick: this.addKwpz.bind(this)},
+          {name: "添加开料参数", onClick: this.addKlcs.bind(this)}
+        ]
+      );
+    }
   }
 
   returnZero() {
@@ -162,7 +170,16 @@ export class SuanliaoDataDialogComponent {
     }
   }
 
-  submit() {
+  async submit() {
+    const cadItems = this.cadItems?.toArray() || [];
+    const errors: string[] = [];
+    if (!cadItems.every((v) => v.validate())) {
+      errors.push("CAD数据有误");
+    }
+    if (errors.length) {
+      this.message.error(errors.join("<br>"));
+      return;
+    }
     this.dialogRef.close({data: this.suanliaoData});
   }
 

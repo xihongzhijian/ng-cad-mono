@@ -34,6 +34,7 @@ import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dial
 import {
   getGongyi,
   getXinghao,
+  get算料数据,
   menjiaoCadTypes,
   SuanliaoDataParams,
   updateXinghaoFenleis,
@@ -166,6 +167,10 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       el.style.left = x + "px";
       el.style.top = y + "px";
     }
+  }
+
+  get isKailiao() {
+    return this.status.projectConfig.getBoolean("新版本做数据可以做激光开料");
   }
 
   async updateParentInfo() {
@@ -985,13 +990,14 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
   }
 
-  async getMenjiaoItem(onSubmit: NonNullable<MenjiaoInput["onSubmit"]>, data0?: 算料数据) {
+  async getMenjiaoItem(onSubmit: NonNullable<MenjiaoInput["onSubmit"]>, data0: 算料数据) {
     this.menjiaoName = data0?.名字 || "新建门铰锁边铰边";
     await openMenjiaoDialog(this.dialog, {
       data: {
         data: data0,
         component: this,
-        onSubmit
+        onSubmit,
+        isKailiao: this.isKailiao
       }
     });
     this.menjiaoName = "";
@@ -1005,27 +1011,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     switch (event.button.event) {
       case "添加":
         {
-          await this.getMenjiaoItem(async (result) => {
-            const item = result.data;
-            if (item) {
-              if (item.默认值) {
-                for (const item2 of gongyi.算料数据) {
-                  item2.默认值 = false;
-                }
-              }
-              const index = gongyi.算料数据.findIndex((v) => v.vid === item.vid);
-              if (index >= 0) {
-                gongyi.算料数据[index] = item;
-              } else {
-                gongyi.算料数据.push(item);
-              }
-              this.menjiaoTable.data = [...gongyi.算料数据];
-              await this.submitGongyi(["算料数据"]);
-            }
-          });
+          const 名字 = await this.message.prompt({type: "string", label: "新建门铰锁边铰边", validators: Validators.required});
+          if (名字) {
+            const item = get算料数据({名字, 产品分类: this.fenleiName});
+            updateMenjiaoData(item);
+            gongyi.算料数据.push(item);
+            this.menjiaoTable.data = [...gongyi.算料数据];
+            await this.submitGongyi(["算料数据"]);
+          }
         }
         break;
-      case "从其它做法选择":
+      case "从其他做法选择":
         {
           const result = await openSelectGongyiDialog(this.dialog, {
             data: {
@@ -1090,7 +1086,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     switch (button.event) {
       case "编辑":
         {
-          const fromItem = this.gongyi.算料数据[rowIdx];
           await this.getMenjiaoItem(async (result) => {
             const toItem = result.data;
             if (toItem && this.gongyi) {
@@ -1106,6 +1101,30 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
               await this.submitGongyi(["算料数据"]);
             }
           }, fromItem);
+        }
+        break;
+      case "编辑排序":
+        {
+          const data = cloneDeep(fromItem);
+          const result = await this.message.form<ObjectOf<any>, 算料数据>([
+            {type: "boolean", label: "停用", model: {data, key: "停用"}},
+            {type: "number", label: "排序", model: {data, key: "排序"}},
+            {
+              type: "boolean",
+              label: "默认值",
+              model: {data, key: "默认值"}
+            }
+          ]);
+          if (result) {
+            if (result.默认值) {
+              for (const item of this.gongyi.算料数据) {
+                item.默认值 = false;
+              }
+            }
+            Object.assign(fromItem, result);
+            this.menjiaoTable.data = [...this.gongyi.算料数据];
+            await this.submitGongyi(["算料数据"]);
+          }
         }
         break;
       case "复制":

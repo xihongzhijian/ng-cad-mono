@@ -20,8 +20,8 @@
             </div>
             <div class="sub-form-field">
               <div class="label">示意图CAD</div>
-              @if (formData[key1]["示意图CAD"]["算料单示意图"].length > 0) {
-                <div class="list">
+              <div class="list">
+                @if (formData[key1]["示意图CAD"]["算料单示意图"].length > 0) {
                   @for (item of formData[key1]["示意图CAD"]["算料单示意图"]; track $index) {
                     <app-cad-item
                       [cad]="item"
@@ -34,12 +34,12 @@
                       (afterEditCad)="afterEditCad(key1)"
                     ></app-cad-item>
                   }
-                </div>
-              } @else {
-                <div class="empty-cad item link" (click)="selectShiyituCad(key1)">
-                  <div class="box border" [ngStyle]="{'width.px': cadWidth, 'height.px': cadHeight}"></div>
-                </div>
-              }
+                } @else {
+                  <div class="empty-cad item link" (click)="selectShiyituCad(key1)">
+                    <div class="box border" [ngStyle]="{'width.px': cadWidth, 'height.px': cadHeight}"></div>
+                  </div>
+                }
+              </div>
             </div>
             @if (key1Infos[key1].xiaoguotuInputs.length > 0) {
               <div class="flex-row">
@@ -58,7 +58,9 @@
               <div class="error-msg">{{ key1Infos[key1].error }}</div>
             }
           </div>
-          <app-suanliao-tables [ngClass]="key1" [suanliaoDataParams]="key1Infos[key1].suanliaoDataParams"></app-suanliao-tables>
+          @if (data.isKailiao) {
+            <app-suanliao-tables [ngClass]="key1" [suanliaoDataParams]="key1Infos[key1].suanliaoDataParams"></app-suanliao-tables>
+          }
         </div>
       </div>
     }

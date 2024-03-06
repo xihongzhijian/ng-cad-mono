@@ -76,15 +76,8 @@ export class MenjiaoDialogComponent implements OnInit {
   qiliaoKeys = 企料组合;
   cadWidth = 300;
   cadHeight = 150;
-  cadItemButtons: CadItemButton<MenjiaoCadItemInfo>[] = [
-    {name: "删除", onClick: this.removeCad.bind(this)},
-    {name: "添加孔位配置", onClick: this.addKwpz.bind(this)},
-    {name: "添加开料参数", onClick: this.addKlcs.bind(this)}
-  ];
-  shiyituCadItemButtons: CadItemButton<MenjiaoShiyituCadItemInfo>[] = [
-    {name: "选择", onClick: this.selectShiyituCad.bind(this)},
-    {name: "删除", onClick: this.removeShiyituCad.bind(this)}
-  ];
+  cadItemButtons: CadItemButton<MenjiaoCadItemInfo>[];
+  shiyituCadItemButtons: CadItemButton<MenjiaoShiyituCadItemInfo>[];
   emptyCadTemplateType!: {key1: MenjiaoCadType; key2: "配合框CAD" | "企料CAD"; key3: string};
   key1Infos: ObjectOf<{
     xiaoguotuInputs: InputInfo[];
@@ -108,6 +101,19 @@ export class MenjiaoDialogComponent implements OnInit {
     if (!this.data) {
       this.data = {};
     }
+    this.cadItemButtons = [{name: "删除", onClick: this.removeCad.bind(this)}];
+    if (this.data.isKailiao) {
+      this.cadItemButtons.push(
+        ...[
+          {name: "添加孔位配置", onClick: this.addKwpz.bind(this)},
+          {name: "添加开料参数", onClick: this.addKlcs.bind(this)}
+        ]
+      );
+    }
+    this.shiyituCadItemButtons = [
+      {name: "选择", onClick: this.selectShiyituCad.bind(this)},
+      {name: "删除", onClick: this.removeShiyituCad.bind(this)}
+    ];
   }
 
   ngOnInit(): void {
@@ -266,14 +272,6 @@ export class MenjiaoDialogComponent implements OnInit {
             label: "锁扇铰扇蓝线宽固定差值",
             model: {data, key: "锁扇铰扇蓝线宽固定差值"},
             style: getInfoStyle(4)
-          },
-          {type: "boolean", label: "停用", model: {data, key: "停用"}, style: getInfoStyle(4)},
-          {type: "number", label: "排序", model: {data, key: "排序"}, style: getInfoStyle(4)},
-          {
-            type: "boolean",
-            label: "默认值",
-            model: {data, key: "默认值"},
-            style: getInfoStyle(4)
           }
         ],
         groupStyle: getGroupStyle({marginBottom: "0"})
@@ -356,7 +354,7 @@ export class MenjiaoDialogComponent implements OnInit {
         this.suanliaoTablesList?.forEach((v) => v.update());
       }
     } else {
-      this.message.error("数据有误，请检查");
+      this.message.error("无法保存，输入不完整，请补充");
     }
   }
 
@@ -495,7 +493,7 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async editSuanliaoData(key1: MenjiaoCadType) {
-    const {component} = this.data;
+    const {component, isKailiao} = this.data;
     if (!component) {
       return;
     }
@@ -512,7 +510,8 @@ export class MenjiaoDialogComponent implements OnInit {
         varNames: component.varNames,
         suanliaoDataParams: this.key1Infos[key1].suanliaoDataParams,
         component,
-        key1
+        key1,
+        isKailiao
       }
     });
     if (result) {

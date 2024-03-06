@@ -11,6 +11,7 @@ import {Formulas} from "@app/utils/calc";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {downloadByString, isTypeOf, selectFiles} from "@lucilor/utils";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
@@ -66,7 +67,8 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   constructor(
     private message: MessageService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private http: CadDataService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -298,6 +300,14 @@ export class SuanliaogongshiComponent implements OnChanges {
           this.shuruTable.data = [...data.输入数据];
         }
         break;
+    }
+  }
+
+  async viewAll() {
+    const useData = this.info.data.算料公式 || [];
+    const url = await this.http.getShortUrl("算料公式", {useData, noToolbar: true});
+    if (url) {
+      window.open(url);
     }
   }
 }

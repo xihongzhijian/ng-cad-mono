@@ -61,9 +61,10 @@ export const getMenjiaoTable = () => {
   const btnsCol: ColumnInfo<MenjiaoData> = {
     type: "button",
     field: "操作",
-    width: "190px",
+    width: "240px",
     buttons: [
       {event: "编辑", color: "primary"},
+      {event: "编辑排序", color: "primary"},
       {event: "复制", color: "primary"},
       {event: "删除", color: "primary"}
     ]
@@ -112,7 +113,7 @@ export const getMenjiaoTable = () => {
     toolbarButtons: {
       extra: [
         {event: "添加", color: "primary"},
-        {event: "从其它做法选择", title: "从其它做法选择门铰锁边铰边", color: "primary"}
+        {event: "从其他做法选择", title: "从其他做法选择门铰锁边铰边", color: "primary"}
       ],
       inlineTitle: true
     }

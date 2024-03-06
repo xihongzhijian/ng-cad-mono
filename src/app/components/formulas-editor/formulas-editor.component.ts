@@ -181,11 +181,8 @@ export class FormulasEditorComponent implements OnChanges {
       }
     }
     const inputs = this.inputs || [];
-    for (const input of inputs) {
-      const errors2 = input.validateValue();
-      if (!isEmpty(errors2)) {
-        errors.push("输入数据有误");
-      }
+    if (inputs.some((v) => !isEmpty(v.validateValue()))) {
+      errors.push("输入数据有误");
     }
     if (errors.length) {
       if (!silent) {

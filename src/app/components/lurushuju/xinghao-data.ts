@@ -49,7 +49,7 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
   return result;
 };
 
-export const get算料数据 = (raw?: 算料数据 | null) => {
+export const get算料数据 = (raw?: Partial<算料数据> | null) => {
   const result: 算料数据 = {
     vid: "",
     停用: false,
@@ -316,10 +316,7 @@ export const 门缝配置输入: {name: string; defaultValue: number | null}[] =
   {name: "锁边门缝", defaultValue: null},
   {name: "铰边门缝", defaultValue: null},
   {name: "顶部门缝", defaultValue: null},
-  {name: "底部门缝", defaultValue: null},
-  {name: "上下包边内间隙", defaultValue: 0},
-  {name: "锁包边内间隙", defaultValue: 0},
-  {name: "铰包边内间隙", defaultValue: 0}
+  {name: "底部门缝", defaultValue: null}
 ];
 
 export interface 企料默认宽取值规则 {

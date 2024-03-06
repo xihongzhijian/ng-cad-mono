@@ -19,7 +19,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
-import {isEmpty, union} from "lodash";
+import {isEmpty, union, uniqueId} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, first, lastValueFrom} from "rxjs";
 import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
@@ -90,7 +90,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   private _isInited = false;
   private _refreshLock$ = new BehaviorSubject<boolean>(false);
   wmm = new WindowMessageManager("默认板材及分组", this, window.parent);
-  loaderId = "mrbcjfz-loader";
+  loaderId = uniqueId("mrbcjfz-loader-");
   get activeBancai() {
     if (!this.activeBancaiKey) {
       return null;

@@ -1,6 +1,6 @@
 <div class="toolbar">
   <div class="flex-110"></div>
-  <button mat-raised-button color="primary" (click)="copySuanliaoCads()">从其它做法复制</button>
+  <button mat-raised-button color="primary" (click)="copySuanliaoCads()">从其他做法复制</button>
   <button mat-raised-button color="primary" (click)="selectSuanliaoCads()">从配件库选择</button>
   <button mat-raised-button color="primary" (click)="suanliaoTest()">算料测试</button>
   <button mat-raised-button color="primary" (click)="submit()">提交并关闭</button>
@@ -17,10 +17,13 @@
           [mubanExtraData]="mubanExtraData"
           [openCadOptions]="openCadOptions"
           [customInfo]="{index: i}"
+          [noMuban]="!data.isKailiao"
         ></app-cad-item>
       }
     </div>
   </ng-scrollbar>
   <mat-divider vertical></mat-divider>
-  <app-suanliao-tables [suanliaoDataParams]="data.suanliaoDataParams"></app-suanliao-tables>
+  @if (data.isKailiao) {
+    <app-suanliao-tables [suanliaoDataParams]="data.suanliaoDataParams"></app-suanliao-tables>
+  }
 </div>

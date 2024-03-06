@@ -190,4 +190,6 @@ export interface GetShortUrlParams {
   search?: ObjectOf<any>;
   search2?: ObjectOf<any>;
   extraData?: ObjectOf<any>;
+  useData?: ObjectOf<any>[];
+  noToolbar?: boolean;
 }

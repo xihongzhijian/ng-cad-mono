@@ -1,5 +1,17 @@
 import {KeyValuePipe} from "@angular/common";
-import {Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild} from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  QueryList,
+  SimpleChanges,
+  ViewChild,
+  ViewChildren
+} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -16,6 +28,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
+import {isEmpty} from "lodash";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadData} from "../fenti-cad-dialog/fenti-cad-dialog.types";
 import {CadItemButton, typeOptions} from "./cad-item.types";
@@ -42,6 +55,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
   @ViewChild("mubanContainer") mubanContainer?: ElementRef<HTMLDivElement>;
+  @ViewChildren(InputComponent) inputComponents?: QueryList<InputComponent>;
   cadViewer?: CadViewer;
   mubanViewer?: CadViewer;
   mubanData?: CadData;
@@ -328,9 +342,9 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     }
     for (const zhankai of zhankais) {
       this.zhankaiInputs.push({
-        width: {type: "string", label: "宽", model: {data: zhankai, key: "zhankaikuan"}},
-        height: {type: "string", label: "高", model: {data: zhankai, key: "zhankaigao"}},
-        num: {type: "string", label: "数量", model: {data: zhankai, key: "shuliang"}}
+        width: {type: "string", label: "宽", model: {data: zhankai, key: "zhankaikuan"}, validators: Validators.required},
+        height: {type: "string", label: "高", model: {data: zhankai, key: "zhankaigao"}, validators: Validators.required},
+        num: {type: "string", label: "数量", model: {data: zhankai, key: "shuliang"}, validators: Validators.required}
       });
     }
   }
@@ -426,5 +440,14 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     }
     const {cadWidth, cadHeight} = this;
     await openFentiCadDialog(this.dialog, {data: {data: fentiCads, cadSize: [cadWidth, cadHeight]}});
+  }
+
+  validate() {
+    const inputs = this.inputComponents?.toArray() || [];
+    if (inputs.some((v) => !isEmpty(v.validateValue()))) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }

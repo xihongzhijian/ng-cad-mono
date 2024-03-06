@@ -5,6 +5,7 @@ export interface MenjiaoInput {
   data?: 算料数据;
   component?: LurushujuIndexComponent;
   onSubmit?: (result: MenjiaoOutput) => void;
+  isKailiao?: boolean;
 }
 
 export interface MenjiaoOutput {
