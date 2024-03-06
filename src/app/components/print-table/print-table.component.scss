@@ -65,7 +65,7 @@ app-table {
       break-before: page;
       opacity: 0;
       height: 40px;
-      & + .mat-mdc-row {
+      & + * {
         border-top: var(--border);
       }
     }

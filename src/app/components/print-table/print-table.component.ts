@@ -58,13 +58,31 @@ export class PrintTableComponent implements OnInit {
     }
     await timeout(1000);
     const toRemove: HTMLElement[] = [];
+    let titledIndex = -1;
     for (const info of tableInfos) {
-      const title = info.title || "";
+      const title = info.title;
+      if (!title) {
+        continue;
+      }
+      const tableEl = this.elRef.nativeElement.querySelector(`app-table.${title}`);
+      if (!(tableEl instanceof HTMLElement)) {
+        continue;
+      }
+      titledIndex++;
+      if (titledIndex > 0) {
+        const titleEl = tableEl.querySelector(".title");
+        if (titleEl instanceof HTMLElement) {
+          const dummyTitleEl = document.createElement("div");
+          dummyTitleEl.classList.add("page-break");
+          titleEl.before(dummyTitleEl);
+          toRemove.push(dummyTitleEl);
+        }
+      }
       const indexs = 表换行索引[title];
       let j = 0;
       if (Array.isArray(indexs) && indexs.length > 0) {
         for (const i of indexs) {
-          const rowEl = this.elRef.nativeElement.querySelector(`app-table.${title} mat-row:nth-child(${i + j + 1})`);
+          const rowEl = tableEl.querySelector(`app-table.${title} mat-row:nth-child(${i + j + 1})`);
           if (rowEl instanceof HTMLElement) {
             const dummyRowEl = document.createElement("div");
             dummyRowEl.classList.add("page-break");
