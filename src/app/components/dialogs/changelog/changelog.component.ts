@@ -41,7 +41,7 @@ export class ChangelogComponent implements OnInit {
     this.changelog = changelog.map((item) => {
       const [message, ...details] = item.commit.message.split(this.separator);
       return {
-        author: item.commit.author.name,
+        author: item.author.login,
         avatar: item.author.avatar_url,
         message,
         details: details.join(this.separator),
