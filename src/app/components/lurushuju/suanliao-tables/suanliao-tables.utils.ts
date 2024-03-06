@@ -6,7 +6,11 @@ export const getSuanliaoDataSearch = (params: SuanliaoDataParams) => {
   const options = search.选项;
   delete search.选项;
   for (const key in options) {
-    search[`选项.${key}`] = options[key];
+    if (key === "产品分类") {
+      search[`选项.${key}`] = {$in: [options[key], undefined]};
+    } else {
+      search[`选项.${key}`] = options[key];
+    }
   }
   return search;
 };

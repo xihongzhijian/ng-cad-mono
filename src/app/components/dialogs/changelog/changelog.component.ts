@@ -44,11 +44,11 @@ export class ChangelogComponent implements OnInit {
     this.changelog = changelog.map((item) => {
       const [message, ...details] = item.commit.message.split(this.separator);
       return {
-        author: item.committer.login,
-        avatar: item.committer.avatar_url,
+        author: item.author.login,
+        avatar: item.author.avatar_url,
         message,
         details: details.join(this.separator),
-        time: this.getTitle(new Date(item.commit.committer.date).getTime(), true),
+        time: this.getTitle(new Date(item.commit.author.date).getTime(), true),
         url: item.html_url,
         showDetails: false
       };

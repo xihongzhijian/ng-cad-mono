@@ -298,6 +298,7 @@ export class MenjiaoDialogComponent implements OnInit {
         suanliaoDataParams: {
           选项: {
             型号: component.xinghaoName,
+            产品分类: component.fenleiName,
             工艺做法: component.gongyiName,
             包边方向,
             开启,

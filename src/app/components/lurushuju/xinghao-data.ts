@@ -340,6 +340,7 @@ export interface 特定企料配置 {
 export interface SuanliaoDataParams {
   选项: {
     型号: string;
+    产品分类: string;
     工艺做法: string;
     包边方向: string;
     开启: string;

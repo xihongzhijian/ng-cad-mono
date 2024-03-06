@@ -135,6 +135,7 @@ export class SuanliaoDataDialogComponent {
         const suanliaoDataParams: SuanliaoDataParams = {
           选项: {
             型号: data.型号,
+            产品分类: data.产品分类,
             工艺做法: data.工艺做法,
             包边方向,
             开启,

@@ -1047,6 +1047,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
                 const fromParams: SuanliaoDataParams = {
                   选项: {
                     型号: item.型号,
+                    产品分类: item.产品分类,
                     工艺做法: item.工艺做法 || "",
                     包边方向,
                     开启,
@@ -1056,6 +1057,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
                 const toParams: SuanliaoDataParams = {
                   选项: {
                     型号: this.xinghaoName,
+                    产品分类: this.fenleiName,
                     工艺做法: this.gongyiName,
                     包边方向,
                     开启,
@@ -1136,6 +1138,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
             const fromParams: SuanliaoDataParams = {
               选项: {
                 型号: this.xinghaoName,
+                产品分类: this.fenleiName,
                 工艺做法: this.gongyiName,
                 包边方向,
                 开启,
@@ -1145,6 +1148,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
             const toParams: SuanliaoDataParams = {
               选项: {
                 型号: this.xinghaoName,
+                产品分类: this.fenleiName,
                 工艺做法: this.gongyiName,
                 包边方向,
                 开启,
