@@ -5,8 +5,10 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
+import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {AppConfigService} from "@services/app-config.service";
 import {changelogTypes} from "@views/changelog-admin/changelog-admin.component";
+import {uniqueId} from "lodash";
 import {InfiniteScrollModule} from "ngx-infinite-scroll";
 import {NgScrollbar} from "ngx-scrollbar";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -16,7 +18,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./changelog.component.html",
   styleUrls: ["./changelog.component.scss"],
   standalone: true,
-  imports: [ImageComponent, InfiniteScrollModule, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbar]
+  imports: [ImageComponent, InfiniteScrollModule, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbar, SpinnerModule]
 })
 export class ChangelogComponent implements OnInit {
   @HostBinding("class") class = "ng-page";
@@ -24,6 +26,7 @@ export class ChangelogComponent implements OnInit {
   @Input() pageSize = 10;
   separator = "\n\n";
   changelog: {author: string; avatar: string; message: string; details: string; time: string; url: string; showDetails: boolean}[] = [];
+  loaderId = uniqueId("changelog-loader-");
 
   constructor(
     public dialogRef: MatDialogRef<ChangelogComponent, void>,
@@ -37,12 +40,12 @@ export class ChangelogComponent implements OnInit {
 
   private async getData() {
     const {pageSize} = this;
-    const changelog = await this.http.getChangelog(1, pageSize);
+    const changelog = await this.http.getChangelog(1, pageSize, {spinner: this.loaderId});
     this.changelog = changelog.map((item) => {
       const [message, ...details] = item.commit.message.split(this.separator);
       return {
-        author: item.author.login,
-        avatar: item.author.avatar_url,
+        author: item.committer.login,
+        avatar: item.committer.avatar_url,
         message,
         details: details.join(this.separator),
         time: this.getTitle(new Date(item.commit.committer.date).getTime(), true),

@@ -9,11 +9,10 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, local, session, setGlobal} from "@app/app.common";
-import {openChangelogDialog} from "@components/dialogs/changelog/changelog.component";
+import {AboutComponent} from "@components/about/about.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {environment} from "@env";
 import {ObjectOf, queryString, WindowMessageManager} from "@lucilor/utils";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -62,6 +61,7 @@ import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./l
   selector: "app-lurushuju-index",
   standalone: true,
   imports: [
+    AboutComponent,
     CdkDrag,
     ImageComponent,
     InputComponent,
@@ -78,7 +78,7 @@ import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./l
   templateUrl: "./lurushuju-index.component.html",
   styleUrl: "./lurushuju-index.component.scss"
 })
-export class LurushujuIndexComponent extends Subscribed() implements OnInit, AfterViewInit {
+export class LurushujuIndexComponent implements OnInit, AfterViewInit {
   @HostBinding("class.ng-page") isPage = true;
   defaultFenleis = ["单门", "子母对开", "双开"];
   xinghaos: XinghaoData[] = [];
@@ -130,7 +130,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   menjiaoName = "";
   production = environment.production;
   wmm = new WindowMessageManager("录入数据", this, window.parent);
-  isChangelogNew = false;
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
   @ViewChild("menu") menu?: ElementRef<HTMLDivElement>;
@@ -143,11 +142,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     private dialog: MatDialog,
     private status: AppStatusService
   ) {
-    super();
     setGlobal("lrsj", this, true);
-    this.subscribe(this.status.changelogTimeStamp$, (changelogTimeStamp) => {
-      this.isChangelogNew = changelogTimeStamp > Number(local.load("changelogTimeStamp") || 0);
-    });
   }
 
   async ngOnInit() {
@@ -1253,12 +1248,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (url) {
       window.open(url);
     }
-  }
-
-  showChangelog() {
-    openChangelogDialog(this.dialog, {hasBackdrop: true});
-    local.save("changelogTimeStamp", new Date().getTime());
-    this.isChangelogNew = false;
   }
 
   backToXinghao() {

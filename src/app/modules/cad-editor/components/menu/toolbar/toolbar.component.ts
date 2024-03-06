@@ -4,15 +4,13 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
-import {local} from "@app/app.common";
 import {openCadLineInfoForm} from "@app/cad/utils";
+import {AboutComponent} from "@components/about/about.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
-import {openChangelogDialog} from "@components/dialogs/changelog/changelog.component";
 import {CadLine, CadLineLike, CadMtext, DEFAULT_LENGTH_TEXT_SIZE, sortLines} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
@@ -29,9 +27,9 @@ import {CadLayerInput, openCadLayerDialog} from "../../dialogs/cad-layer/cad-lay
   templateUrl: "./toolbar.component.html",
   styleUrls: ["./toolbar.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, MatMenuModule, MatDividerModule, AsyncPipe]
+  imports: [AboutComponent, AsyncPipe, MatButtonModule, MatDividerModule, MatMenuModule]
 })
-export class ToolbarComponent extends Subscribed() {
+export class ToolbarComponent {
   openLock = false;
   keyMap: ObjectOf<() => void> = {
     s: () => this.save(),
@@ -45,7 +43,6 @@ export class ToolbarComponent extends Subscribed() {
     p: () => this.printCad(),
     q: () => this.newCad()
   };
-  showNew = false;
 
   get isStatusNormal() {
     return this.status.cadStatus instanceof CadStatusNormal;
@@ -107,12 +104,7 @@ export class ToolbarComponent extends Subscribed() {
     private dialog: MatDialog,
     private http: CadDataService,
     private spinner: SpinnerService
-  ) {
-    super();
-    this.subscribe(this.status.changelogTimeStamp$, (changelogTimeStamp) => {
-      this.showNew = changelogTimeStamp > Number(local.load("changelogTimeStamp") || 0);
-    });
-  }
+  ) {}
 
   getConfig(key: keyof AppConfig) {
     return this.config.getConfig(key);
@@ -153,12 +145,6 @@ export class ToolbarComponent extends Subscribed() {
 
   showManual() {
     this.console.execute("man");
-  }
-
-  showChangelog() {
-    openChangelogDialog(this.dialog, {hasBackdrop: true});
-    local.save("changelogTimeStamp", new Date().getTime());
-    this.showNew = false;
   }
 
   assembleCads() {

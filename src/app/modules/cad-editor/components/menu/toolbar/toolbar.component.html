@@ -49,12 +49,7 @@
       <button mat-menu-item (click)="toggleTestMode()">{{ getConfig("testMode") ? "关闭" : "开启" }}内测功能</button>
     </mat-menu>
 
-    <button mat-button (click)="showChangelog()">
-      关于
-      @if (showNew) {
-        <span class="super">NEW!</span>
-      }
-    </button>
+    <app-about></app-about>
     <mat-divider vertical></mat-divider>
 
     <button mat-button (click)="toggleShowLineLength()" [disabled]="!isStatusNormal">

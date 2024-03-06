@@ -15,12 +15,7 @@
         <div class="name title">工艺做法：{{ gongyiName }}</div>
       }
     }
-    <button mat-button (click)="showChangelog()">
-      关于
-      @if (isChangelogNew) {
-        <span class="super">NEW!</span>
-      }
-    </button>
+    <app-about></app-about>
   </div>
   <div class="toolbar flex-110" style="justify-content: center">
     @if (!production) {
