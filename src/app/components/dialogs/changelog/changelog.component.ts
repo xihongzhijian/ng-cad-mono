@@ -6,8 +6,6 @@ import {MatIconModule} from "@angular/material/icon";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {AppConfigService} from "@services/app-config.service";
-import {changelogTypes} from "@views/changelog-admin/changelog-admin.component";
 import {uniqueId} from "lodash";
 import {InfiniteScrollModule} from "ngx-infinite-scroll";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -30,8 +28,7 @@ export class ChangelogComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<ChangelogComponent, void>,
-    private http: CadDataService,
-    private config: AppConfigService
+    private http: CadDataService
   ) {}
 
   ngOnInit() {
@@ -55,24 +52,12 @@ export class ChangelogComponent implements OnInit {
     });
   }
 
-  get testMode() {
-    return this.config.getConfig("testMode");
-  }
-
   getTitle(timeStamp: number, getTime = false) {
     let str = new Date(timeStamp).toLocaleDateString();
     if (getTime) {
       str += " " + new Date(timeStamp).toLocaleTimeString();
     }
     return str;
-  }
-
-  getType(key: string) {
-    return changelogTypes[key];
-  }
-
-  onYReachEnd() {
-    this.getData();
   }
 
   close() {
