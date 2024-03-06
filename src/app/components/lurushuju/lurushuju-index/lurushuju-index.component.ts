@@ -668,6 +668,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
       return;
     }
     const data = cloneDeep(data0);
+    const mingziOld = data.名字;
     const form: InputInfo<Partial<工艺做法>>[] = [
       {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
       {
@@ -700,7 +701,14 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
         }
       }
       const 型号 = this.xinghao.名字;
-      await this.http.post("shuju/api/editGongyi", {型号, 产品分类, updateDatas});
+      const success = await this.http.post<boolean>("shuju/api/editGongyi", {型号, 产品分类, updateDatas});
+      if (success) {
+        const mingziNew = data.名字;
+        if (mingziOld !== mingziNew) {
+          const params = {xinghao: this.xinghaoName, fenlei: 产品分类, mingziOld, mingziNew};
+          await this.http.getData("shuju/api/onGongyiNameChange", params);
+        }
+      }
     }
   }
 

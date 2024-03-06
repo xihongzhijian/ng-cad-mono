@@ -1,5 +1,5 @@
 import {SecurityContext} from "@angular/core";
-import {ValidationErrors} from "@angular/forms";
+import {ValidationErrors, Validators} from "@angular/forms";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -28,10 +28,25 @@ export const getListStr = (domSanitizer: DomSanitizer, content: string[], title 
 
 export const validateForm = async (inputs: InputComponent[]) => {
   let errors: ValidationErrors | null = null;
+  let hasValidatorRequired = false;
+  let hasValidatorOther = false;
   const values: ObjectOf<string> = {};
   for (const input of inputs) {
     if (input.onChangeDelay) {
       await timeout(input.onChangeDelayTime);
+    }
+    let validators = input.info.validators;
+    if (validators) {
+      if (!Array.isArray(validators)) {
+        validators = [validators];
+      }
+      for (const validator of validators) {
+        if (validator === Validators.required) {
+          hasValidatorRequired = true;
+        } else {
+          hasValidatorOther = true;
+        }
+      }
     }
     const errors2 = input.validateValue();
     if (errors2) {
@@ -43,5 +58,9 @@ export const validateForm = async (inputs: InputComponent[]) => {
     const key = input.info.name || input.info.label;
     values[key] = input.value;
   }
-  return {errors, values};
+  let errorMsg = "数据有误，请检查";
+  if (hasValidatorRequired && !hasValidatorOther) {
+    errorMsg = "输入不完整，请补充";
+  }
+  return {errors, values, errorMsg};
 };
