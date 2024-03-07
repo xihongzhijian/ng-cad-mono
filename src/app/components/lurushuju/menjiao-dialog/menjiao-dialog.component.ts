@@ -310,7 +310,9 @@ export class MenjiaoDialogComponent implements OnInit {
           varNames: component.varNames
         }
       };
-      if (component.parentInfo.isZhijianUser) {
+      // if (component.parentInfo.isZhijianUser) { // TODO
+      // eslint-disable-next-line no-constant-condition
+      if (true) {
         const options: InputInfoOptions = component.menshans.map((v) => v.mingzi);
         this.key1Infos[key1].xiaoguotuInputs = xiaoguotuKeys.map<InputInfo>((key) => {
           return {
@@ -653,11 +655,19 @@ export class MenjiaoDialogComponent implements OnInit {
     return true;
   }
 
+  getTableCadName(cad: HoutaiCad) {
+    const name = cad.名字;
+    if (["小扇铰企料", "小扇小锁料"].includes(name)) {
+      return name.replace("小扇", "");
+    }
+    return name;
+  }
+
   async addKwpz(component: CadItemComponent<MenjiaoCadItemInfo>) {
     const {cad} = component;
     const {key1} = component.customInfo;
     const suanliaoDataParams = this.key1Infos[key1].suanliaoDataParams;
-    const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...suanliaoDataParams, 名字: cad.名字});
+    const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...suanliaoDataParams, 名字: this.getTableCadName(cad)});
     if (response) {
       this.getSuanliaoTables(key1)?.updateKlkwpzTable();
     }
@@ -669,7 +679,7 @@ export class MenjiaoDialogComponent implements OnInit {
     const suanliaoDataParams = this.key1Infos[key1].suanliaoDataParams;
     const response = await this.http.mongodbInsert("kailiaocanshu", {
       ...suanliaoDataParams,
-      名字: cad.名字 + "中空参数",
+      名字: this.getTableCadName(cad) + "中空参数",
       分类: "切中空"
     });
     if (response) {

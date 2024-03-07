@@ -514,6 +514,12 @@ export class AppStatusService {
   getSelectedSize(options?: FileSizeOptions) {
     return this.getItemSize(this.exportSelected(), options);
   }
+
+  changeProject(project: string) {
+    const {url, queryParams} = this.route.snapshot;
+    const url2 = this.router.createUrlTree(url, {queryParams: {...queryParams, project}, queryParamsHandling: "merge"});
+    location.href = url2.toString();
+  }
 }
 
 export interface Loader {

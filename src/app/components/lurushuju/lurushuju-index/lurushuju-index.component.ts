@@ -12,7 +12,7 @@ import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, local, session,
 import {AboutComponent} from "@components/about/about.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {environment} from "@env";
-import {ObjectOf, queryString, WindowMessageManager} from "@lucilor/utils";
+import {ObjectOf, queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -79,7 +79,7 @@ import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./l
   styleUrl: "./lurushuju-index.component.scss"
 })
 export class LurushujuIndexComponent implements OnInit, AfterViewInit {
-  @HostBinding("class.ng-page") isPage = true;
+  @HostBinding("class") class = ["ng-page"];
   defaultFenleis = ["单门", "子母对开", "双开"];
   xinghaos: XinghaoData[] = [];
   xinghao: Xinghao | null = null;
@@ -109,27 +109,23 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
   menjiaoTable = getMenjiaoTable();
   menshans: (TableDataBase & {zuchenghuajian?: string})[] = [];
   huajians: MrbcjfzHuajian[] = [];
-  parentInfo = {isZhijianUser: false, isLurushujuEnter: false, project: ""};
   varNames: FormulasEditorComponent["vars"];
   bancaiList?: BancaiListData;
   btns: {name: string; onClick: () => void}[] = [
     {name: "返回至型号", onClick: this.backToXinghao.bind(this)},
-    {name: "返回至主页", onClick: this.backToGuide.bind(this)},
-    {name: "返回至登录", onClick: this.backToLogin.bind(this)},
     {name: "复制页面信息", onClick: this.copyInfo.bind(this)},
     {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)}
   ];
   menuPoitonKey = "lurushujuMenuPosition";
   isMenuDisabled = false;
 
-  stepDataKey = "lurushujuIndexStepData";
+  infoKey = "lurushujuInfo";
   step: LurushujuIndexStep = 1;
   xinghaoName = "";
   fenleiName = "";
   gongyiName = "";
   menjiaoName = "";
   production = environment.production;
-  wmm = new WindowMessageManager("录入数据", this, window.parent);
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
   @ViewChild("menu") menu?: ElementRef<HTMLDivElement>;
@@ -146,10 +142,10 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
   }
 
   async ngOnInit() {
-    const stepData = session.load<[LurushujuIndexStep, LurushujuIndexStepInfo[LurushujuIndexStep]]>(this.stepDataKey);
-    await this.updateParentInfo();
-    if (stepData && !this.parentInfo.isLurushujuEnter) {
-      await this.setStep(...stepData);
+    const info = session.load<ReturnType<typeof this.getInfo>>(this.infoKey);
+    if (info) {
+      session.remove(this.infoKey);
+      await this.setInfo(info);
     } else {
       await this.setStep(1, {});
     }
@@ -166,11 +162,6 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
 
   get isKailiao() {
     return this.status.projectConfig.getBoolean("新版本做数据可以做激光开料");
-  }
-
-  async updateParentInfo() {
-    this.wmm.postMessage("getParentInfoStart");
-    this.parentInfo = await this.wmm.waitForMessage("getParentInfoEnd");
   }
 
   async getXinghaos() {
@@ -330,20 +321,15 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
     }
   }
 
-  refresh() {
-    window.location.reload();
-  }
-
   async back() {
     switch (this.step) {
       case 1:
-        this.wmm.postMessage("back");
         break;
       case 2:
         this.setStep(1, {});
         break;
       case 3:
-        if (!environment.production || (await this.message.confirm("确定返回吗？"))) {
+        if (!this.production || (await this.message.confirm("确定返回吗？"))) {
           this.setStep(2, {xinghaoName: this.xinghaoName});
         }
         break;
@@ -365,7 +351,6 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
     if (!this.gongyiName) {
       this.gongyi = null;
     }
-    session.save(this.stepDataKey, [step, stepInfo]);
     await this.setStep1();
     await this.setStep2();
     await this.setStep3();
@@ -1266,18 +1251,8 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
     this.setStep(1, {});
   }
 
-  backToGuide() {
-    this.wmm.postMessage("backToGuideStart");
-  }
-
-  async backToLogin() {
-    session.save(this.xinghaoFilterStrKey, "");
-    await this.setStep(1, {});
-    this.wmm.postMessage("backToLoginStart");
-  }
-
-  copyInfo() {
-    const info: ObjectOf<string> = {项目: this.parentInfo.project};
+  getInfo() {
+    const info: ObjectOf<string> = {项目: this.status.project};
     if (this.xinghaoName) {
       info.型号 = this.xinghaoName;
     }
@@ -1290,6 +1265,44 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
     if (this.menjiaoName) {
       info.门铰锁边铰边 = this.menjiaoName;
     }
+    return info;
+  }
+
+  async setInfo(info: ReturnType<typeof this.getInfo>) {
+    const {项目, 型号, 产品分类, 工艺做法, 门铰锁边铰边} = info;
+    if (!项目) {
+      return;
+    }
+    if (this.status.project !== 项目) {
+      session.save(this.infoKey, info);
+      this.status.changeProject(项目);
+    }
+    if (型号) {
+      if (产品分类 && 工艺做法) {
+        await this.setStep(3, {xinghaoName: 型号, fenleiName: 产品分类, gongyiName: 工艺做法});
+        if (this.gongyi) {
+          const rowIdx = this.gongyi?.算料数据.findIndex((v) => v.名字 === 门铰锁边铰边);
+          const column = this.menjiaoTable.columns.find((v) => v.field === "操作");
+          if (rowIdx >= 0 && column) {
+            await this.onMenjiaoRow({
+              button: {event: "编辑"},
+              column,
+              item: this.gongyi.算料数据[rowIdx],
+              rowIdx,
+              colIdx: 0
+            });
+          }
+        }
+      } else {
+        await this.setStep(2, {xinghaoName: 型号});
+      }
+    } else {
+      await this.setStep(1, {});
+    }
+  }
+
+  copyInfo() {
+    const info = this.getInfo();
     const text = Object.entries(info)
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n");
@@ -1318,39 +1331,11 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
         }
         return acc;
       }, {});
-      const {项目, 型号, 产品分类, 工艺做法, 门铰锁边铰边} = info;
-      if (!项目) {
+      if (!info.项目) {
         await this.message.snack("请确保复制了正确的信息");
         return;
       }
-      if (this.parentInfo.project !== 项目) {
-        if (await this.message.confirm("项目不一致，是否切换项目？")) {
-          this.backToLogin();
-        }
-        return;
-      }
-      if (型号) {
-        if (产品分类 && 工艺做法) {
-          await this.setStep(3, {xinghaoName: 型号, fenleiName: 产品分类, gongyiName: 工艺做法});
-          if (this.gongyi) {
-            const rowIdx = this.gongyi?.算料数据.findIndex((v) => v.名字 === 门铰锁边铰边);
-            const column = this.menjiaoTable.columns.find((v) => v.field === "操作");
-            if (rowIdx >= 0 && column) {
-              await this.onMenjiaoRow({
-                button: {event: "编辑"},
-                column,
-                item: this.gongyi.算料数据[rowIdx],
-                rowIdx,
-                colIdx: 0
-              });
-            }
-          }
-        } else {
-          await this.setStep(2, {xinghaoName: 型号});
-        }
-      } else {
-        await this.setStep(1, {});
-      }
+      await this.setInfo(info);
     }
   }
 

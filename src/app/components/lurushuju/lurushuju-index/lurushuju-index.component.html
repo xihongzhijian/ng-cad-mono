@@ -19,10 +19,11 @@
   </div>
   <div class="toolbar flex-110" style="justify-content: center">
     @if (!production) {
-      <button mat-raised-button color="primary" (click)="refresh()">refresh</button>
       <button mat-raised-button color="primary" (click)="purgeXinghaos()">purgeXinghaos</button>
     }
-    <button mat-raised-button color="primary" (click)="back()">返回</button>
+    @if (step > 1) {
+      <button mat-raised-button color="primary" (click)="back()">返回</button>
+    }
   </div>
 </div>
 
@@ -51,8 +52,8 @@
     <button mat-raised-button color="primary" (click)="copyGongyi2()">从其他型号复制工艺做法</button>
     <button mat-raised-button color="primary" (click)="xinghaoZhuanyongGongshi()">型号专用公式</button>
   </div>
-  <ng-scrollbar #markedScrollbar>
-    @if (xinghao) {
+  @if (xinghao) {
+    <ng-scrollbar>
       <div class="items">
         @for (fenlei of xinghao["显示产品分类"]; track fenlei; let i = $index) {
           @if (i > 0) {
@@ -86,8 +87,8 @@
           </div>
         }
       </div>
-    }
-  </ng-scrollbar>
+    </ng-scrollbar>
+  }
 </div>
 <mat-tab-group
   [class.hidden]="step !== 3"
