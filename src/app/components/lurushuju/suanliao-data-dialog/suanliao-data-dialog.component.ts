@@ -119,8 +119,6 @@ export class SuanliaoDataDialogComponent {
         xinghaos: component.xinghaos,
         xinghaoOptions: component.xinghaoOptionsAll,
         menjiaoOptions: component.menjiaoOptionsAll,
-        excludeXinghaos: [component.xinghaoName],
-        excludeGongyis: component.gongyi?.名字 ? [component.gongyi.名字] : [],
         key: "算料数据",
         fenlei: component.fenleiName
       }
