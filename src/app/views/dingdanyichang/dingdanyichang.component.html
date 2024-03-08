@@ -1,0 +1,7 @@
+<div class="toolbar">
+  <button mat-raised-button color="primary" (click)="close(true)">确定</button>
+  <button mat-raised-button color="primary" (click)="close(false)">取消</button>
+</div>
+@for (info of inputInfos; track $index) {
+  <app-input [info]="info"></app-input>
+}

@@ -5,6 +5,7 @@ import {BackupComponent} from "@views/backup/backup.component";
 import {BomGongyiluxianComponent} from "@views/bom-gongyiluxian/bom-gongyiluxian.component";
 import {CleanComponent} from "@views/clean/clean.component";
 import {DingdanbiaoqianComponent} from "@views/dingdanbiaoqian/dingdanbiaoqian.component";
+import {DingdanyichangComponent} from "@views/dingdanyichang/dingdanyichang.component";
 import {ExportComponent} from "@views/export/export.component";
 import {ImportComponent} from "@views/import/import.component";
 import {IndexComponent} from "@views/index/index.component";
@@ -55,5 +56,6 @@ export const routesInfo: (Route & {path: string})[] = [
     }
   },
   {path: "print-table", component: PrintTableComponent, title: "打印表格"},
-  {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"}
+  {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"},
+  {path: "订单异常", component: DingdanyichangComponent, title: "订单异常"}
 ];

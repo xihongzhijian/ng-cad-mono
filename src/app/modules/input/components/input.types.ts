@@ -205,5 +205,6 @@ export interface OptionsDialog {
   noImage?: CadOptionsInput["noImage"];
   openInNewTab?: CadOptionsInput["openInNewTab"];
   useLocalOptions?: CadOptionsInput["useLocalOptions"];
+  nameField?: CadOptionsInput["nameField"];
   onChange?: (val: CadOptionsOutput) => void;
 }

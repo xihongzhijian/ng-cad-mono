@@ -1076,6 +1076,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
     switch (button.event) {
       case "编辑":
         {
+          fromItem.产品分类 = this.fenleiName;
           await this.getMenjiaoItem(async (result) => {
             const toItem = result.data;
             if (toItem && this.gongyi) {

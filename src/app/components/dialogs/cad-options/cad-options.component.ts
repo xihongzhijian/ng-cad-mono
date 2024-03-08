@@ -102,7 +102,8 @@ export class CadOptionsComponent implements AfterViewInit {
         xinghao: this.data.xinghao,
         includeTingyong: true,
         values: Array.from(this.checkedIdsCurr).concat(Array.from(this.checkedIdsOthers)) as any,
-        fields: ["vid"]
+        fields: ["vid"],
+        nameField: this.data.nameField
       },
       [this.loaderIds.submitLoaderId],
       false
@@ -187,7 +188,8 @@ export class CadOptionsComponent implements AfterViewInit {
         data: this.data.data,
         xinghao: this.data.xinghao,
         filter: this.data.filter,
-        fields: this.data.fields
+        fields: this.data.fields,
+        nameField: this.data.nameField
       },
       [this.loaderIds.optionsLoader, {text: "获取CAD数据"}],
       refreshLocalOptions
@@ -284,6 +286,7 @@ export interface CadOptionsInput {
   xinghao?: string;
   filter?: ObjectOf<any>;
   fields?: string[];
+  nameField?: string;
   options?: OptionsDataData[];
   defaultValue?: {value?: string; required?: boolean};
   noImage?: boolean;

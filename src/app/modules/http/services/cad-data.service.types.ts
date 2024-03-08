@@ -47,6 +47,7 @@ export interface GetOptionsParams {
   values?: any[];
   filter?: ObjectOf<any>;
   fields?: string[];
+  nameField?: string;
 }
 
 export interface OptionsData {
