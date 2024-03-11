@@ -135,7 +135,7 @@ export class CadListComponent implements AfterViewInit {
         toRemove.push(v.data.id);
       }
     });
-    this.checkedItems = difference(this.checkedItems, toRemove);
+    this.checkedItems = difference(this.checkedItems, toRemove, [""]);
     this.checkedInOtherPages = checkedNum < this.checkedItems.length;
   }
 
