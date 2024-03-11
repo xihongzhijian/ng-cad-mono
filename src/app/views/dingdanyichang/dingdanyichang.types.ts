@@ -7,4 +7,5 @@ export interface DingdanyichangData {
   chulishuoming?: string;
   chulitupian?: string;
   keyishendan?: string;
+  baogaoren?: string;
 }

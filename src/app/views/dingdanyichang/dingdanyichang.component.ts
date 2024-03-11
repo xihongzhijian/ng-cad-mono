@@ -10,12 +10,13 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {isEmpty} from "lodash";
+import {NgScrollbarModule} from "ngx-scrollbar";
 import {DingdanyichangData} from "./dingdanyichang.types";
 
 @Component({
   selector: "app-dingdanyichang",
   standalone: true,
-  imports: [InputComponent, MatButtonModule],
+  imports: [InputComponent, MatButtonModule, NgScrollbarModule],
   templateUrl: "./dingdanyichang.component.html",
   styleUrl: "./dingdanyichang.component.scss"
 })
@@ -66,8 +67,8 @@ export class DingdanyichangComponent extends Subscribed() {
         },
         {
           type: "select",
-          label: "异常处理人",
-          model: {data, key: "yichangchuliren"},
+          label: "报告人",
+          model: {data, key: "baogaoren"},
           options: [],
           optionsDialog: {
             optionKey: "所有用户",
@@ -107,6 +108,17 @@ export class DingdanyichangComponent extends Subscribed() {
               data.chulitupian = result.url;
               infos[2].value = result.url;
             }
+          }
+        },
+        {
+          type: "select",
+          label: "异常处理人",
+          model: {data, key: "yichangchuliren"},
+          options: [],
+          optionsDialog: {
+            optionKey: "所有用户",
+            nameField: "xingming",
+            noImage: true
           }
         }
       ];
