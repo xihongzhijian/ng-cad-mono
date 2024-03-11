@@ -287,13 +287,14 @@ export class AppStatusService {
     if (toDeleteCount > 0) {
       const btn = await this.message.button({
         content: `需要删除${toDeleteCount}条线长小于${minLineLength}的线`,
-        buttons: ["删除"],
+        buttons: ["删除", "不删除保存"],
         btnTexts: {cancel: "取消保存"}
       });
-      if (btn !== "删除") {
+      if (btn === "取消保存") {
         return null;
+      } else if (btn === "删除") {
+        data.entities = entities;
       }
-      data.entities = entities;
     }
 
     let resData: CadData | null = null;
