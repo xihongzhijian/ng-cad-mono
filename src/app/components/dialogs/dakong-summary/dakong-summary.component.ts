@@ -99,7 +99,7 @@ export class DakongSummaryComponent {
       const items = this.data.data[code] || [];
       const data: DakongSummaryTableData[] = [];
       for (const item of items) {
-        for (const detail of item.summary) {
+        for (const detail of item.summary || []) {
           this.getCadImg(item.cadId);
           this.getCadImg(detail.kongId);
           data.push({

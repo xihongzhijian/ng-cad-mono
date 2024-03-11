@@ -49,7 +49,7 @@ export type DakongSummary = ObjectOf<DakongSummaryItem[] | null>;
 export interface DakongSummaryItem {
   cadId: string;
   cadName: string;
-  summary: DakongSummaryItemDetail[];
+  summary?: DakongSummaryItemDetail[] | null;
 }
 
 export interface DakongSummaryItemDetail {
