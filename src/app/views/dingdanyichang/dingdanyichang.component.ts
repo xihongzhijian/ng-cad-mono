@@ -23,7 +23,6 @@ import {DingdanyichangData} from "./dingdanyichang.types";
 export class DingdanyichangComponent extends Subscribed() {
   @HostBinding("class") class = "ng-page";
   type = "";
-  code = "";
   inputInfos: InputInfo[] = [];
   wmm = new WindowMessageManager("订单异常", this, window.parent);
   formData: DingdanyichangData | null = null;
@@ -41,16 +40,23 @@ export class DingdanyichangComponent extends Subscribed() {
 
   onQueryParamsChange(params: Params) {
     this.type = params.type || "";
-    this.code = params.code || "";
     this.updateInputInfos();
   }
 
-  updateInputInfos() {
-    const {type, code} = this;
+  async updateInputInfos() {
+    const {type} = this;
+    this.wmm.postMessage("getItemStart");
+    const item = await this.wmm.waitForMessage<DingdanyichangData | undefined>("getItemEnd");
     if (type === "报告异常") {
-      const data: DingdanyichangData = {dingdanbianhao: code, yichangxinxi: "", yichangtupian: "", yichangchuliren: ""};
+      const data: DingdanyichangData = {dingdanbianhao: "", yichangxinxi: "", yichangtupian: "", yichangchuliren: "", ...item};
       const infos: InputInfo<DingdanyichangData>[] = [
-        {type: "string", label: "订单编号", model: {data, key: "dingdanbianhao"}, readonly: !!code, validators: Validators.required},
+        {
+          type: "string",
+          label: "订单编号",
+          model: {data, key: "dingdanbianhao"},
+          readonly: !!data.dingdanbianhao,
+          validators: Validators.required
+        },
         {type: "string", label: "异常信息", model: {data, key: "yichangxinxi"}, textarea: {autosize: {minRows: 3, maxRows: 6}}},
         {
           type: "image",
@@ -80,7 +86,7 @@ export class DingdanyichangComponent extends Subscribed() {
       this.inputInfos = infos;
       this.formData = data;
     } else if (type === "异常处理") {
-      const data: DingdanyichangData = {chulijieguo: "", chulishuoming: "", chulitupian: "", keyishendan: ""};
+      const data: DingdanyichangData = {chulijieguo: "", chulishuoming: "", chulitupian: "", keyishendan: "", ...item};
       const infos: InputInfo<DingdanyichangData>[] = [
         {
           type: "select",
