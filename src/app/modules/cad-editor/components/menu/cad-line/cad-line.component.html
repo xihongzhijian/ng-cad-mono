@@ -361,22 +361,6 @@
     </mat-form-field>
   </div>
   <div class="form-item">
-    @for (i of [0, 1]; track i) {
-      <mat-form-field style="width: 50%">
-        <mat-label>角度范围</mat-label>
-        <input
-          matInput
-          type="number"
-          min="0"
-          max="360"
-          name="角度范围"
-          [value]="getLineText('角度范围', i)"
-          (input)="setLineText($event, '角度范围', i)"
-        />
-      </mat-form-field>
-    }
-  </div>
-  <div class="form-item">
     <mat-form-field>
       <mat-label>可输入修改</mat-label>
       <mat-select name="可输入修改" [value]="getLineText('可输入修改')" (selectionChange)="setLineText($event, '可输入修改')">

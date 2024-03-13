@@ -2,6 +2,10 @@
   padding: 20px;
 }
 
+.time {
+  font-weight: bold;
+}
+
 .changelog {
   margin: 10px;
   --avatar-size: 50px;
@@ -19,10 +23,6 @@
 
   .text {
     white-space: pre-wrap;
-
-    .time {
-      font-weight: bold;
-    }
 
     .message,
     .details {

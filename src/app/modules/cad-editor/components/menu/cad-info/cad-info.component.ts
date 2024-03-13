@@ -196,13 +196,6 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       ]
     },
     {
-      label: "对应计算条数的配件",
-      model: this._getcadDataModel("对应计算条数的配件"),
-      type: "object",
-      optionsDialog: {},
-      optionMultiple: true
-    },
-    {
       label: "指定板材分组",
       model: this._getcadDataModel("指定板材分组"),
       type: "select",

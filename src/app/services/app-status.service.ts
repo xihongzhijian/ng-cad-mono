@@ -77,10 +77,9 @@ export class AppStatusService {
   cadPoints$ = new BehaviorSubject<CadPoints>([]);
   setProject$ = new Subject<void>();
   isAdmin$ = new BehaviorSubject<boolean>(false);
-  changelogTimeStamp$ = new BehaviorSubject<number>(-1);
+  updateTimeStamp$ = new BehaviorSubject<number>(-1);
   zhewanLengths$ = new BehaviorSubject<[number, number]>([1, 3]);
   private _isZhewanLengthsFetched = false;
-  private _refreshTimeStamp = Number(local.load("refreshTimeStamp") || -1);
   projectConfig = new ProjectConfig();
 
   constructor(
@@ -118,6 +117,23 @@ export class AppStatusService {
     source.separate(new CadData({entities: mtexts.export()}));
   }
 
+  get refreshTimeStamp() {
+    return Number(local.load("refreshTimeStamp") || -1);
+  }
+  set refreshTimeStamp(value) {
+    local.save("refreshTimeStamp", value);
+  }
+
+  async getUpdateTimeStamp() {
+    const s = await this.http.getData<string>("ngcad/getUpdateTime", {}, {spinner: false});
+    let n = Number(s);
+    if (typeof n !== "number" || isNaN(n)) {
+      n = 0;
+    }
+    this.updateTimeStamp$.next(n);
+    return n;
+  }
+
   async setProject(queryParams: Params) {
     const {project, action} = queryParams;
     if (project && project !== this.project) {
@@ -133,19 +149,15 @@ export class AppStatusService {
         this.isAdmin$.next(response?.data === true);
         await this.config.getUserConfig();
       }
-      let changelogTimeStamp = this.changelogTimeStamp$.value;
-      if (changelogTimeStamp < 0) {
-        const changelog = await this.http.getChangelog(1, 1, {spinner: false});
-        changelogTimeStamp = new Date(changelog[0]?.commit.committer.date).getTime();
-      }
-      if (environment.production && changelogTimeStamp > this._refreshTimeStamp) {
+      const updateTimeStamp = await this.getUpdateTimeStamp();
+      if (environment.production && updateTimeStamp > this.refreshTimeStamp) {
         this.message.snack("版本更新，自动刷新页面");
-        local.save("refreshTimeStamp", new Date().getTime());
+        this.refreshTimeStamp = new Date().getTime();
         await timeout(1000);
         location.reload();
         return false;
       }
-      this.changelogTimeStamp$.next(changelogTimeStamp);
+      this.updateTimeStamp$.next(updateTimeStamp);
       this.setProject$.next();
 
       {

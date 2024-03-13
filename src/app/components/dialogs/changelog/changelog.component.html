@@ -5,7 +5,10 @@
 
 <ng-scrollbar>
   <div class="flex-column">
-    @for (item of changelog; track $index) {
+    @for (item of changelog; track i; let i = $index) {
+      @if (updateDivideIndex === i) {
+        <ng-template [ngTemplateOutlet]="updateTimeTemp"></ng-template>
+      }
       <div class="changelog flex-row">
         <div class="avatar">
           <app-image [src]="item.avatar" [bigPicSrc]="item.avatar"></app-image>
@@ -27,6 +30,16 @@
         </div>
       </div>
     }
+    @if (updateDivideIndex < 0) {
+      <ng-template [ngTemplateOutlet]="updateTimeTemp"></ng-template>
+    }
   </div>
 </ng-scrollbar>
+
+<ng-template #updateTimeTemp>
+  <mat-divider></mat-divider>
+  <div class="time">更新时间：{{ getTitle(updateTime, true) }}</div>
+  <mat-divider></mat-divider>
+</ng-template>
+
 <app-spinner [id]="loaderId"></app-spinner>

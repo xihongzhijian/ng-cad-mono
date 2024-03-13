@@ -22,7 +22,7 @@ export class AboutComponent extends Subscribed() {
     private dialog: MatDialog
   ) {
     super();
-    this.subscribe(this.status.changelogTimeStamp$, (changelogTimeStamp) => {
+    this.subscribe(this.status.updateTimeStamp$, (changelogTimeStamp) => {
       this.isNew = changelogTimeStamp > Number(local.load("changelogTimeStamp") || 0);
     });
   }
