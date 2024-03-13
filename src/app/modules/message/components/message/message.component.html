@@ -19,7 +19,7 @@
 <div mat-dialog-content [ngClass]="data.type">
   @switch (data.type) {
     @case ("editor") {
-      <quill-editor [(ngModel)]="data.content" [preserveWhitespace]="true"> </quill-editor>
+      <quill-editor [(ngModel)]="data.content"></quill-editor>
     }
     @case ("iframe") {
       <iframe #iframe [src]="iframeSrc" frameborder="0"></iframe>
