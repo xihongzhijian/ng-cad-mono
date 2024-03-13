@@ -63,11 +63,11 @@ export class DingdanyichangComponent extends Subscribed() {
           label: "异常图片",
           prefix: filePathUrl,
           value: data.yichangtupian,
-          onChange: async (val) => {
+          onChange: async (val, info) => {
             const result = await this.http.uploadImage(val);
             if (result) {
               data.yichangtupian = result.url;
-              infos[2].value = result.url;
+              info.value = result.url;
             }
           }
         },
@@ -108,11 +108,11 @@ export class DingdanyichangComponent extends Subscribed() {
           label: "处理图片",
           prefix: filePathUrl,
           value: data.chulitupian,
-          onChange: async (val) => {
+          onChange: async (val, info) => {
             const result = await this.http.uploadImage(val);
             if (result) {
               data.chulitupian = result.url;
-              infos[2].value = result.url;
+              info.value = result.url;
             }
           }
         },

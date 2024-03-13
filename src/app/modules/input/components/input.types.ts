@@ -42,8 +42,8 @@ export interface InputInfoString<T = any, K = string> extends InputInfoBase<T> {
   type: "string";
   value?: Value<string>;
   textarea?: {autosize?: {minRows?: number; maxRows?: number}};
-  onInput?: (val: string) => void;
-  onChange?: (val: string) => void;
+  onInput?: (val: string, info: InputInfoString<T, K>) => void;
+  onChange?: (val: string, info: InputInfoString<T, K>) => void;
   options?: Value<InputInfoOptions<K>>;
   optionValueType?: "string" | "array";
   fixedOptions?: string[];
@@ -60,8 +60,8 @@ export interface InputInfoNumber<T = any> extends InputInfoBase<T> {
   min?: number;
   max?: number;
   ndigits?: number;
-  onInput?: (val: number) => void;
-  onChange?: (val: number) => void;
+  onInput?: (val: number, info: InputInfoNumber<T>) => void;
+  onChange?: (val: number, info: InputInfoNumber<T>) => void;
 }
 
 export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
@@ -86,7 +86,7 @@ export interface InputInfoArray<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
   type: "boolean";
-  onChange?: (val: boolean) => void;
+  onChange?: (val: boolean, info: InputInfoBoolean<T>) => void;
 }
 
 export interface InputInfoSelectBase<T = any, K = string> extends InputInfoBase<T> {
@@ -99,13 +99,13 @@ export interface InputInfoSelectSingle<T = any, K = string> extends InputInfoSel
   value?: Value<string>;
   optionText?: string | ((val: string) => string);
   multiple?: false;
-  onChange?: (val: string) => void;
+  onChange?: (val: string, info: InputInfoSelectSingle<T, K>) => void;
 }
 export interface InputInfoSelectMultiple<T = any, K = string> extends InputInfoSelectBase<T, K> {
   value?: Value<string[]>;
   optionText?: string | ((val: string[]) => string);
   multiple: true;
-  onChange?: (val: string[]) => void;
+  onChange?: (val: string[], info: InputInfoSelectMultiple<T, K>) => void;
 }
 export type InputInfoSelect<T = any, K = any> = InputInfoSelectSingle<T, K> | InputInfoSelectMultiple<T, K>;
 
@@ -115,7 +115,7 @@ export interface InputInfoCoordinate<T = any> extends InputInfoBase<T> {
   compact?: boolean;
   labelX?: string;
   labelY?: string;
-  onChange?: (val: {anchor: [number, number]}) => void;
+  onChange?: (val: {anchor: [number, number]}, info: InputInfoCoordinate<T>) => void;
 }
 
 export interface InputInfoColor<T = any> extends InputInfoBase<T> {
@@ -123,7 +123,7 @@ export interface InputInfoColor<T = any> extends InputInfoBase<T> {
   value?: Value<Color>;
   options?: Color[];
   optionsOnly?: boolean;
-  onChange?: (val: Color) => void;
+  onChange?: (val: Color, info: InputInfoColor<T>) => void;
 }
 
 export interface InputInfoFile<T = any> extends InputInfoBase<T> {
@@ -131,7 +131,7 @@ export interface InputInfoFile<T = any> extends InputInfoBase<T> {
   accept?: string;
   multiple?: boolean;
   model?: never;
-  onChange?: (val: FileList) => void;
+  onChange?: (val: FileList, info: InputInfoFile<T>) => void;
 }
 
 export interface InputInfoImage<T = any> extends InputInfoBase<T> {
@@ -141,7 +141,7 @@ export interface InputInfoImage<T = any> extends InputInfoBase<T> {
   bigPicSrc?: string;
   prefix?: string;
   model?: never;
-  onChange?: (val: FileList) => void;
+  onChange?: (val: File, info: InputInfoImage<T>) => void;
 }
 
 export interface InputInfoCad<T = any> extends InputInfoBase<T> {
@@ -151,14 +151,14 @@ export interface InputInfoCad<T = any> extends InputInfoBase<T> {
   showName?: boolean;
   config?: Partial<CadViewerConfig>;
   showCadViewer?: {onInit?: (cadViewer: CadViewer) => void};
-  onChange?: (val: CadListOutput) => void;
+  onChange?: (val: CadListOutput, info: InputInfoCad<T>) => void;
 }
 
 export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
   type: "formulas";
   value?: Value<Formulas>;
   params?: Value<Omit<EditFormulasInput, "formulas">>;
-  onChange?: (val: Formulas) => void;
+  onChange?: (val: Formulas, info: InputInfoFormulas<T>) => void;
 }
 
 export interface InputInfoButtonInfo {

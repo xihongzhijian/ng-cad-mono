@@ -532,24 +532,28 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
             }, this.onChangeDelayTime);
             this.onChangeDelay = {timeoutId};
           } else {
-            info.onChange?.(value);
+            info.onChange?.(value, info);
           }
         }
         break;
       case "number":
-        info.onChange?.(value);
+        info.onChange?.(value, info);
         break;
       case "boolean":
-        info.onChange?.(value);
+        info.onChange?.(value, info);
         break;
       case "select":
-        info.onChange?.(value);
+        if (info.multiple) {
+          info.onChange?.(value, info);
+        } else {
+          info.onChange?.(value, info);
+        }
         break;
       case "coordinate":
-        info.onChange?.(value);
+        info.onChange?.(value, info);
         break;
       case "color":
-        info.onChange?.(value);
+        info.onChange?.(value, info);
         break;
       default:
         break;
@@ -648,12 +652,13 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   onInput(value = this.value) {
-    switch (this.info.type) {
+    const {info} = this;
+    switch (info.type) {
       case "string":
-        this.info.onInput?.(value);
+        info.onInput?.(value, info);
         break;
       case "number":
-        this.info.onInput?.(value);
+        info.onInput?.(value, info);
         break;
       default:
         break;
@@ -866,8 +871,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return;
     }
     const {info} = this;
-    if (info.type === "file" || info.type === "image") {
-      info.onChange?.(files);
+    if (info.type === "file") {
+      info.onChange?.(files, info);
+    } else if (info.type === "image" && files[0]) {
+      info.onChange?.(files[0], info);
     }
     input.value = "";
   }
@@ -1004,7 +1011,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       } else {
         this.value = result[0] || null;
       }
-      info.onChange?.(result);
+      info.onChange?.(result, info);
       this.updateCadInfos();
     }
   }
@@ -1030,7 +1037,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.value = null;
       result = [];
     }
-    info.onChange?.(result);
+    info.onChange?.(result, info);
     this.updateCadInfos();
   }
 
@@ -1054,7 +1061,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       } else {
         this.value = value[i];
       }
-      info.onChange?.(cadDatas);
+      info.onChange?.(cadDatas, info);
       this.updateCadInfos();
     }
   }
@@ -1101,7 +1108,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const result = await openEditFormulasDialog(this.dialog, {data: {...params, formulas: value}});
     if (result) {
       this.value = result;
-      info.onChange?.(result);
+      info.onChange?.(result, info);
     }
   }
 

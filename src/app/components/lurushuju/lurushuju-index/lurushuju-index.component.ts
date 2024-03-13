@@ -253,10 +253,10 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
         label: "图片",
         value: data.tupian,
         prefix: filePathUrl,
-        onChange: async (val) => {
+        onChange: async (val, info) => {
           const result = await this.http.uploadImage(val);
           if (result?.url) {
-            form[1].value = result.url;
+            info.value = result.url;
             data.tupian = result.url;
           }
         }
@@ -661,10 +661,10 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
         label: "图片",
         value: data.图片,
         prefix: filePathUrl,
-        onChange: async (val) => {
+        onChange: async (val, info) => {
           const result = await this.http.uploadImage(val);
           if (result?.url) {
-            form[1].value = result.url;
+            info.value = result.url;
             data.图片 = result.url;
           }
         }
