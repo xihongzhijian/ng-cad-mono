@@ -324,7 +324,7 @@ export class AppStatusService {
     const xinghaoQuery = getXinghaoQuery(this.route);
     if (xinghaoQuery) {
       const params: ObjectOf<any> = {...xinghaoQuery, id: data.id, data: getHoutaiCad(data)};
-      const resData2 = await this.http.getData<HoutaiCad>("shuju/shuju/getOrSetCad", params);
+      const resData2 = await this.http.getData<HoutaiCad>("shuju/api/getOrSetCad", params);
       resData = resData2 ? new CadData(resData2.json) : null;
     } else {
       resData = await http.setCad({collection, cadData: data, force: true}, hideLineLength);

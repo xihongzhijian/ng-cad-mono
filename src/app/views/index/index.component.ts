@@ -53,7 +53,7 @@ export class IndexComponent implements OnInit {
       }
       const xinghaoQuery = getXinghaoQuery(this.route);
       if (xinghaoQuery) {
-        const data = await this.http.getData<HoutaiCad>("shuju/shuju/getOrSetCad", {...xinghaoQuery, id});
+        const data = await this.http.getData<HoutaiCad>("shuju/api/getOrSetCad", {...xinghaoQuery, id});
         if (data) {
           this.params = {data: new CadData(data.json), collection, center: true};
         }

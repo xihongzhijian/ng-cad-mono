@@ -73,8 +73,8 @@ export class DingdanyichangComponent extends Subscribed() {
         },
         {
           type: "select",
-          label: "报告人",
-          model: {data, key: "baogaoren"},
+          label: "异常处理人",
+          model: {data, key: "yichangchuliren"},
           options: [],
           optionsDialog: {
             optionKey: "所有用户",
