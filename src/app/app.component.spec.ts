@@ -1,12 +1,13 @@
 import {TestBed} from "@angular/core/testing";
-import {RouterTestingModule} from "@angular/router/testing";
+import {RouterModule} from "@angular/router";
 import {MessageModule} from "@modules/message/message.module";
 import {AppComponent} from "./app.component";
+import {routesInfo} from "./routing/routes-info";
 
 describe("AppComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MessageModule, AppComponent, RouterTestingModule]
+      imports: [MessageModule, AppComponent, RouterModule.forRoot(routesInfo)]
     }).compileComponents();
   });
 

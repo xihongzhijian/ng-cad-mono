@@ -3,7 +3,6 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatSliderModule} from "@angular/material/slider";
-import {RouterTestingModule} from "@angular/router/testing";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
@@ -25,7 +24,6 @@ describe("MsbjComponent", () => {
         MatSliderModule,
         MessageModule,
         NgScrollbarModule,
-        RouterTestingModule,
         SpinnerModule,
         MsbjComponent,
         MsbjRectsComponent

@@ -9,7 +9,6 @@ import {MatInputModule} from "@angular/material/input";
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {RouterTestingModule} from "@angular/router/testing";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
@@ -43,7 +42,6 @@ describe("CadZhankaiComponent", () => {
         MessageModule,
         NgScrollbarModule,
         ReactiveFormsModule,
-        RouterTestingModule,
         SpinnerModule,
         CadZhankaiComponent
       ],

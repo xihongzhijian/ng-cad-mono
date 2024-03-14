@@ -3,7 +3,6 @@ import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {RouterTestingModule} from "@angular/router/testing";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
@@ -24,7 +23,6 @@ describe("XhmrmsbjComponent", () => {
         MatSlideToggleModule,
         MessageModule,
         NgScrollbarModule,
-        RouterTestingModule,
         MsbjRectsComponent,
         XhmrmsbjComponent
       ]

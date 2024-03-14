@@ -1,5 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {RouterTestingModule} from "@angular/router/testing";
+import {RouterModule} from "@angular/router";
+import {routesInfo} from "@app/routing/routes-info";
 import {PrintTableComponent} from "./print-table.component";
 
 describe("PrintTableComponent", () => {
@@ -8,7 +9,7 @@ describe("PrintTableComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PrintTableComponent, RouterTestingModule]
+      imports: [PrintTableComponent, RouterModule.forRoot(routesInfo)]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PrintTableComponent);

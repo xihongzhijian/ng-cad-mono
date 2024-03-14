@@ -2,7 +2,6 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {RouterTestingModule} from "@angular/router/testing";
 import {HttpModule} from "@modules/http/http.module";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -16,15 +15,7 @@ describe("MrbcjfzDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpModule,
-        MatDividerModule,
-        MatButtonModule,
-        RouterTestingModule,
-        NgScrollbarModule,
-        MrbcjfzComponent,
-        MrbcjfzDialogComponent
-      ],
+      imports: [HttpModule, MatDividerModule, MatButtonModule, NgScrollbarModule, MrbcjfzComponent, MrbcjfzDialogComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

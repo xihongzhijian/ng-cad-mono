@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {RouterTestingModule} from "@angular/router/testing";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
@@ -11,7 +10,7 @@ describe("CadSplitComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MessageModule, RouterTestingModule, SpinnerModule, CadSplitComponent]
+      imports: [HttpModule, MessageModule, SpinnerModule, CadSplitComponent]
     }).compileComponents();
   });
 
