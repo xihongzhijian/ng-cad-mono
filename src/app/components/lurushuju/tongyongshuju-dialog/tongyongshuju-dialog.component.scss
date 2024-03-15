@@ -2,14 +2,21 @@
   --text-font-size: 17px;
 }
 
+.table-list,
+.active-item,
+.cad-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
 .table-list {
   width: 405px;
-  position: relative;
 }
-
 .active-item {
   width: 300px;
-  position: relative;
+}
+.cad-list {
+  flex: 1 1 0;
 }
 
 .table-item,
@@ -22,11 +29,6 @@
   .name {
     --mdc-text-button-label-text-size: var(--text-font-size);
   }
-}
-
-.cad-list {
-  flex: 1 1 0;
-  position: relative;
 }
 
 .cad-item {

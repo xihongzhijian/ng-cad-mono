@@ -74,7 +74,7 @@ export interface PeiheInfoObj {
 }
 export type PeiheInfo = PeiheInfoObj | string;
 
-export type ExportType = "包边正面" | "框型" | "企料" | "框型和企料" | "指定型号" | "自由选择" | "导出选中" | "企料分体";
+export type ExportType = "包边正面" | "框型" | "企料" | "框型和企料" | "指定型号" | "自由选择" | "导出选中" | "企料分体" | "导出所有";
 
 export interface CadImportParams {
   sourceCad: CadData;

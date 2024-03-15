@@ -151,8 +151,8 @@ export class CadDataService extends HttpService {
     return null;
   }
 
-  async downloadDxf(data: CadData, downloadOptions?: DownloadOptions) {
-    const result = await this.post<any>("peijian/cad/downloadDxf", {cadData: JSON.stringify(data.export())});
+  async downloadDxf(data: CadData, downloadOptions?: DownloadOptions, options?: HttpOptions) {
+    const result = await this.post<any>("peijian/cad/downloadDxf", {cadData: JSON.stringify(data.export())}, options);
     if (result) {
       try {
         downloadByUrl(origin + "/" + result.data.path, downloadOptions);

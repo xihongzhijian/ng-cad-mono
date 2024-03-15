@@ -62,15 +62,25 @@ export class ExportComponent implements OnInit {
     }
   }
 
-  private async _queryIds(where: ObjectOf<any>) {
-    return (await this.http.queryMongodb({collection: "cad", fields: ["_id"], where})).map((v) => v._id);
+  private async _queryIds(where: ObjectOf<any>, limit?: number) {
+    const result: string[][] = [];
+    const data = await this.http.queryMongodb({collection: "cad", fields: ["_id"], where});
+    const idsAll = data.map((v) => v._id);
+    if (typeof limit === "number" && limit > 0) {
+      for (let i = 0; i < idsAll.length; i += limit) {
+        result.push(idsAll.slice(i, i + limit));
+      }
+    } else {
+      result.push(idsAll);
+    }
+    return result;
   }
 
   async exportCads(type: ExportType) {
     this.progressBar.start(1);
     this.progressBarStatus = "progress";
     this.msg = "正在获取数据";
-    let ids: string[];
+    let idsList: Awaited<ReturnType<typeof this._queryIds>>;
     const finish = (progressBarStatus: ProgressBarStatus, msg?: string) => {
       this.progressBar.end();
       this.progressBarStatus = progressBarStatus;
@@ -78,41 +88,41 @@ export class ExportComponent implements OnInit {
     };
     this.exportParams.type = type;
     delete this.exportParams.sourceParams;
-    let filename: string;
+    let filename0: string;
     switch (type) {
       case "包边正面":
-        ids = await this._queryIds({$or: [{分类: "包边正面"}, {分类2: "包边正面"}]});
-        filename = "包边正面";
+        idsList = await this._queryIds({$or: [{分类: "包边正面"}, {分类2: "包边正面"}]});
+        filename0 = "包边正面";
         break;
       case "框型":
-        ids = await this._queryIds({
+        idsList = await this._queryIds({
           $or: [{分类: {$regex: "^中横框|锁框|铰框|顶框|底框$"}}, {分类2: {$regex: "^中横框|锁框|铰框|顶框|底框$"}}]
         });
-        filename = "框型";
+        filename0 = "框型";
         break;
       case "企料":
-        ids = await this._queryIds({
+        idsList = await this._queryIds({
           $or: [
             {分类: {$regex: "^锁企料|扇锁企料|小锁料|中锁料|铰企料|中铰料$"}},
             {分类2: {$regex: "^锁企料|扇锁企料|小锁料|中锁料|铰企料|中铰料$"}}
           ]
         });
-        filename = "企料";
+        filename0 = "企料";
         break;
       case "框型和企料":
-        ids = await this._queryIds({
+        idsList = await this._queryIds({
           $or: [
             {分类: {$regex: "^中横框|锁框|铰框|顶框|底框|锁企料|扇锁企料|小锁料|中锁料|铰企料|中铰料$"}},
             {分类2: {$regex: "^中横框|锁框|铰框|顶框|底框|锁企料|扇锁企料|小锁料|中锁料|铰企料|中铰料$"}}
           ]
         });
-        filename = "框型和企料";
+        filename0 = "框型和企料";
         break;
       case "企料分体":
-        ids = await this._queryIds({
+        idsList = await this._queryIds({
           $or: [{名字: {$regex: "分体1|分体2"}}]
         });
-        filename = "企料分体";
+        filename0 = "企料分体";
         break;
       case "指定型号": {
         const xinghao = await this.message.prompt({
@@ -146,55 +156,98 @@ export class ExportComponent implements OnInit {
           finish("error", this.http.lastResponse?.msg || "读取文件失败");
           return;
         }
-        ids = await this._queryIds({$where: `this.选项&&this.选项.型号&&this.选项.型号.split(";").indexOf("${xinghao}")>-1`});
-        filename = xinghao;
+        idsList = await this._queryIds({$where: `this.选项&&this.选项.型号&&this.选项.型号.split(";").indexOf("${xinghao}")>-1`});
+        filename0 = xinghao;
         break;
       }
       case "自由选择":
-        ids = (
-          (await openCadListDialog(this.dialog, {
-            data: {selectMode: "multiple", collection: "cad", search: {分类: "^.+$"}}
-          })) ?? []
-        ).map((v) => v.id);
-        filename = "自由选择";
+        idsList = [
+          (
+            (await openCadListDialog(this.dialog, {
+              data: {selectMode: "multiple", collection: "cad", search: {分类: "^.+$"}}
+            })) ?? []
+          ).map((v) => v.id)
+        ];
+        filename0 = "自由选择";
         break;
       case "导出选中":
-        ids = this.exportCache?.ids || [];
-        filename = "导出选中";
+        idsList = [this.exportCache?.ids || []];
+        filename0 = "导出选中";
         break;
+      case "导出所有": {
+        const limit = await this.message.prompt({
+          type: "number",
+          label: "每次导出数量",
+          hint: "必须为自然数，若为0则一次性导出全部cad",
+          validators: (control) => {
+            const value = control.value;
+            if (typeof value === "number" && value >= 0 && Math.floor(value) === value) {
+              return null;
+            } else {
+              return {请输入一个自然数: true};
+            }
+          }
+        });
+        if (typeof limit !== "number") {
+          finish("hidden");
+          return;
+        }
+        idsList = await this._queryIds({}, limit);
+        filename0 = "导出所有";
+        break;
+      }
       default:
         return;
     }
-    if (ids.length > 0) {
-      this.progressBar.start(ids.length + 1);
-      const total = ids.length;
+    if (idsList.length > 0) {
+      const total = idsList.reduce((p, c) => p + c.length, 0);
+      this.progressBar.start(total + idsList.length);
       const step = 20;
-      const cads: CadData[] = [];
-      for (let i = 0; i < total; i += step) {
-        const end = Math.min(total, i + step);
-        const currIds = ids.slice(i, end);
-        if (i + 1 === end) {
-          this.msg = `正在导出数据(${end}/${total})`;
-        } else {
-          this.msg = `正在导出数据((${i + 1}~${end})/${total})`;
+      let sum = 0;
+      let success = true;
+      filename0 += `@${DateTime.now().toFormat("yyyy-MM-dd")}`;
+      for (const [i, ids] of idsList.entries()) {
+        const cads: CadData[] = [];
+        for (let j = 0; j < ids.length; j += step) {
+          const end = Math.min(total, sum + j + step);
+          const currIds = ids.slice(j, end);
+          if (j + 1 === end) {
+            this.msg = `正在导出数据(${end}/${total})`;
+          } else {
+            this.msg = `正在导出数据((${j + 1}~${end})/${total})`;
+          }
+          const data = await this.http.queryMongodb<HoutaiCad>(
+            {collection: "cad", where: {_id: {$in: currIds}}, genUnqiCode: true},
+            {spinner: false}
+          );
+          data.forEach((v) => cads.push(new CadData(v.json)));
+          this.progressBar.forward(end - j - sum);
         }
-        const data = await this.http.queryMongodb<HoutaiCad>({collection: "cad", where: {_id: {$in: currIds}}, genUnqiCode: true});
-        data.forEach((v) => cads.push(new CadData(v.json)));
-        this.progressBar.forward(end - i);
+        this.exportParams.cads = cads;
+        let result: CadData | undefined;
+        try {
+          result = await CadPortable.export(this.exportParams, this.status.projectConfig);
+        } catch (error) {
+          console.error(error);
+          finish("error", this.http.lastResponse?.msg || "导出失败");
+          return;
+        }
+        this.msg = "正在下载dxf文件";
+        let filename = filename0;
+        if (idsList.length > 1) {
+          filename += `(${i + 1})`;
+        }
+        filename += ".dxf";
+        const downloadResult = await this.http.downloadDxf(result, {filename}, {spinner: false});
+        if (downloadResult) {
+          sum += ids.length;
+        } else {
+          success = false;
+          break;
+        }
+        this.progressBar.forward(1);
       }
-      this.exportParams.cads = cads;
-      let result: CadData | undefined;
-      try {
-        result = await CadPortable.export(this.exportParams, this.status.projectConfig);
-      } catch (error) {
-        console.error(error);
-        finish("error", this.http.lastResponse?.msg || "导出失败");
-        return;
-      }
-      this.msg = "正在下载dxf文件";
-      filename += `@${DateTime.now().toFormat("yyyy-MM-dd")}.dxf`;
-      const downloadResult = await this.http.downloadDxf(result, {filename});
-      if (downloadResult) {
+      if (success) {
         finish("success", "导出成功");
       } else {
         finish("error", "导出失败");
