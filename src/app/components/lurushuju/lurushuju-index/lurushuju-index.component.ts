@@ -30,6 +30,7 @@ import {openMenjiaoDialog} from "../menjiao-dialog/menjiao-dialog.component";
 import {MenjiaoInput} from "../menjiao-dialog/menjiao-dialog.types";
 import {copySuanliaoData, updateMenjiaoData} from "../menjiao-dialog/menjiao-dialog.utils";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
+import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
 import {
   getGongyi,
   getXinghao,
@@ -1238,6 +1239,10 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
     if (url) {
       window.open(url);
     }
+  }
+
+  async tongyongshuju() {
+    openTongyongshujuDialog(this.dialog, {data: {}});
   }
 
   async xinghaoZhuanyongGongshi() {

@@ -171,7 +171,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       }
       this.xinghao.默认板材 = data.morenbancai;
       this.xinghao.update();
-      this.xiaodaohangStructure = {mingzi: "型号"};
+      this.xiaodaohangStructure = {mingzi: "型号", table: "p_xinghao"};
       if (bancaiListData) {
         this.bancaiList = bancaiListData.bancais;
         this.bancaiKeys = bancaiListData.bancaiKeys;

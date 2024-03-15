@@ -1,0 +1,39 @@
+:host {
+  --text-font-size: 17px;
+}
+
+.table-list {
+  width: 405px;
+  position: relative;
+}
+
+.active-item {
+  width: 300px;
+  position: relative;
+}
+
+.table-item,
+.active-item-item {
+  margin-bottom: 0;
+  &.active {
+    background-color: lightgray;
+  }
+
+  .name {
+    --mdc-text-button-label-text-size: var(--text-font-size);
+  }
+}
+
+.cad-list {
+  flex: 1 1 0;
+  position: relative;
+}
+
+.cad-item {
+  font-size: var(--text-font-size);
+
+  app-image {
+    width: 200px;
+    height: 100px;
+  }
+}

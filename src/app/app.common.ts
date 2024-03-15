@@ -147,6 +147,7 @@ export const replaceRemoteHost = (urlStr: string) => {
 
 export interface XiaodaohangStructure {
   mingzi: string;
+  table: string;
 }
 
 export const filePathUrl = `${origin}/filepath`;

@@ -16,6 +16,10 @@
     &:not(.no-items-per-row) > .item {
       width: calc(100% / var(--items-per-row, 1) - 4px);
     }
+    .no-items-per-row {
+      // placeholder
+      position: relative;
+    }
   }
 
   .item {

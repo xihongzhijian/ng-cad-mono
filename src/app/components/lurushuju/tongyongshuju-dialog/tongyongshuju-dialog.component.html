@@ -1,0 +1,84 @@
+<div class="toolbar">
+  <button mat-raised-button color="primary" (click)="close()">关闭</button>
+</div>
+<div class="flex-110 items no-items-per-row">
+  <div class="table-list">
+    <div class="title center">通用数据分类</div>
+    <app-spinner [id]="tabelListLoader"></app-spinner>
+    <ng-scrollbar>
+      <div class="item">
+        @for (item of tableData; track i; let i = $index) {
+          @if (i > 0) {
+            <mat-divider></mat-divider>
+          }
+          <div class="table-item item-list toolbar" [class]="{active: item.active}">
+            <button mat-button class="text short name" (click)="clickTableListItem(i)">{{ item.mingzi }}</button>
+            <button mat-button class="text long" style="opacity: 0" (click)="clickTableListItem(i)"></button>
+            @if (item.active) {
+              @if (item.xiaodaohang) {
+                <button mat-button color="primary" (click)="editTableListItem(item)">编辑</button>
+              }
+              @if (item.bangzhuwendang) {
+                <button mat-button color="primary" (click)="helpTableListItem(item)">帮助</button>
+              }
+            }
+          </div>
+        }
+      </div>
+    </ng-scrollbar>
+  </div>
+  <mat-divider vertical></mat-divider>
+  <div class="active-item">
+    <div class="title center">可选项</div>
+    <app-spinner [id]="activeItemLoader"></app-spinner>
+    @if (activeItem) {
+      <ng-scrollbar>
+        <div class="item">
+          @for (item of activeItem.data; track i; let i = $index) {
+            @if (i > 0) {
+              <mat-divider></mat-divider>
+            }
+            <div class="active-item-item toolbar" [class]="{active: item.active}">
+              <button mat-button class="text short name" (click)="clickActiveItem(activeItem.index, i)">{{ item.mingzi }}</button>
+              <button mat-button class="text long" style="opacity: 0" (click)="clickActiveItem(activeItem.index, i)">&nbsp;</button>
+            </div>
+          }
+        </div>
+      </ng-scrollbar>
+    }
+  </div>
+  <mat-divider vertical></mat-divider>
+  <div class="cad-list">
+    <div class="title center">CAD数据</div>
+    <app-spinner [id]="cadListLoader"></app-spinner>
+    @if (activeCadList && activeItem && isDataHaveCad(tableData[activeItem.index])) {
+      <div class="toolbar">
+        <button mat-button color="primary" (click)="addCad()">添加</button>
+      </div>
+      <ng-scrollbar>
+        <div class="items no-items-per-row">
+          @for (item of activeCadList.data; track i; let i = $index) {
+            <ng-container *ngTemplateOutlet="cadItem; context: {$implicit: item}"></ng-container>
+          }
+        </div>
+      </ng-scrollbar>
+    }
+  </div>
+</div>
+
+<ng-template #cadItem let-item>
+  <div class="cad-item item">
+    <div class="name center">{{ item["名字"] }}</div>
+    <app-image class="cad-preview" [src]="item.img" (imgError)="getCadPreview(item)"></app-image>
+    <div class="item" style="width: 100%">
+      @for (option of item["选项"] | keyvalue: returnZero; track option.key) {
+        <div class="text long">{{ option.key }}: {{ option.value }}</div>
+      }
+    </div>
+    <div class="toolbar center">
+      <button mat-button color="primary" (click)="editCad(item)">编辑</button>
+      <button mat-button color="primary" (click)="copyCad(item)">复制</button>
+      <button mat-button color="primary" (click)="deleteCad(item)">删除</button>
+    </div>
+  </div>
+</ng-template>

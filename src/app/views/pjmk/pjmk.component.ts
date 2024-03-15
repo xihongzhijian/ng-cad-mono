@@ -62,8 +62,8 @@ export class PjmkComponent implements OnInit {
         this.data = importZixuanpeijian(JSON.parse(records[0].peijianmokuai));
       } catch (error) {}
     }
-    const structResponse = await this.http.getData<any>("jichu/jichu/getXiaodaohangStructure", {id: table});
-    this.tableName = structResponse?.mingzi || "";
+    const struct = await this.http.getXiaodaohangStructure(table);
+    this.tableName = struct?.mingzi || "";
     document.title = `${this.tableName}配件模块 - ${this.name}`;
   }
 

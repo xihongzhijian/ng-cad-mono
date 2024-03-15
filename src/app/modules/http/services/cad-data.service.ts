@@ -1,6 +1,6 @@
 import {Injectable, Injector} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
-import {imgCadEmpty} from "@app/app.common";
+import {imgCadEmpty, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
@@ -396,5 +396,9 @@ export class CadDataService extends HttpService {
 
   async mongodbCopy(collection: CadCollection, ids: string | string[], options?: HttpOptions) {
     return await this.getData<string[]>("ngcad/mongodbTableCopy", {collection, vids: ids}, options);
+  }
+
+  async getXiaodaohangStructure(xiaodaohang: string, options?: HttpOptions) {
+    return await this.getData<XiaodaohangStructure>("ngcad/getXiaodaohangStructure", {xiaodaohang}, options);
   }
 }
