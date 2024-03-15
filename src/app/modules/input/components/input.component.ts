@@ -25,6 +25,7 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
+import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {SafeUrl} from "@angular/platform-browser";
@@ -75,6 +76,7 @@ import {getValue} from "./input.utils";
     MatInputModule,
     MatMenuModule,
     MatOptionModule,
+    MatRadioModule,
     MatSelectModule,
     MatTooltipModule,
     TextFieldModule

@@ -1,10 +1,7 @@
 import {Component, OnInit} from "@angular/core";
-import {FormsModule, Validators} from "@angular/forms";
+import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatInputModule} from "@angular/material/input";
-import {MatRadioModule} from "@angular/material/radio";
 import {session, setGlobal} from "@app/app.common";
 import {CadExportParams, CadPortable, CadSourceParams, ExportType} from "@app/cad/portable";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -14,6 +11,8 @@ import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, ProgressBar} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {DateTime} from "luxon";
@@ -29,7 +28,7 @@ interface ExportCache {
   templateUrl: "./export.component.html",
   styleUrls: ["./export.component.scss"],
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatRadioModule, FormsModule, MatButtonModule, ProgressBarComponent]
+  imports: [InputComponent, MatButtonModule, ProgressBarComponent]
 })
 export class ExportComponent implements OnInit {
   progressBar = new ProgressBar(0);
@@ -37,7 +36,14 @@ export class ExportComponent implements OnInit {
   msg = "";
   exportCache: ExportCache | null = null;
   direct = false;
-  exportParams: CadExportParams = {cads: [], type: "自由选择", exportId: environment.production, exportUniqCode: true};
+  exportParams: CadExportParams = {
+    cads: [],
+    type: "自由选择",
+    exportId: environment.production,
+    exportUniqCode: true,
+    exportOptions: true
+  };
+  inputInfos: InputInfo<CadExportParams>[];
 
   constructor(
     private dialog: MatDialog,
@@ -46,6 +52,12 @@ export class ExportComponent implements OnInit {
     private status: AppStatusService
   ) {
     setGlobal("exporter", this);
+    const data = this.exportParams;
+    this.inputInfos = [
+      {type: "boolean", label: "导出ID", radio: true, model: {data, key: "exportId"}},
+      {type: "boolean", label: "导出唯一码", radio: true, model: {data, key: "exportUniqCode"}},
+      {type: "boolean", label: "导出选项", radio: true, model: {data, key: "exportOptions"}}
+    ];
   }
 
   ngOnInit() {
@@ -208,20 +220,21 @@ export class ExportComponent implements OnInit {
       filename0 += `@${DateTime.now().toFormat("yyyy-MM-dd")}`;
       for (const [i, ids] of idsList.entries()) {
         const cads: CadData[] = [];
-        for (let j = 0; j < ids.length; j += step) {
-          const end = Math.min(total, sum + j + step);
+        const total2 = ids.length;
+        for (let j = 0; j < total2; j += step) {
+          const end = Math.min(total2, j + step);
           const currIds = ids.slice(j, end);
           if (j + 1 === end) {
-            this.msg = `正在导出数据(${end}/${total})`;
+            this.msg = `正在导出数据(${end + sum}/${total})`;
           } else {
-            this.msg = `正在导出数据((${j + 1}~${end})/${total})`;
+            this.msg = `正在导出数据((${j + 1 + sum}~${end + sum})/${total})`;
           }
           const data = await this.http.queryMongodb<HoutaiCad>(
             {collection: "cad", where: {_id: {$in: currIds}}, genUnqiCode: true},
             {spinner: false}
           );
           data.forEach((v) => cads.push(new CadData(v.json)));
-          this.progressBar.forward(end - j - sum);
+          this.progressBar.forward(end - j);
         }
         this.exportParams.cads = cads;
         let result: CadData | undefined;

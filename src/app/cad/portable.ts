@@ -101,6 +101,7 @@ export interface CadExportParams {
   type: ExportType;
   exportId: boolean;
   exportUniqCode: boolean;
+  exportOptions: boolean;
   sourceParams?: CadSourceParams;
 }
 
@@ -481,7 +482,7 @@ export class CadPortable {
     const width = 855;
     const height = 1700;
     const cols = 10;
-    const {type, exportId, exportUniqCode} = params;
+    const {type, exportId, exportUniqCode, exportOptions} = params;
     const {sourceCad, importResult, xinghaoInfo, slgses} = params.sourceParams || {};
     const cads = params.cads.filter((v) => v.entities.length > 0 && Object.keys(v.options).length > 0);
     const emptyData = new CadData();
@@ -611,11 +612,13 @@ export class CadPortable {
             }
           }
         }
-        for (const optionName in cad.options) {
-          if (isXinghao && optionName === "型号") {
-            continue;
+        if (exportOptions) {
+          for (const optionName in cad.options) {
+            if (isXinghao && optionName === "型号") {
+              continue;
+            }
+            texts.push(`${optionName}: ${cad.options[optionName]}`);
           }
-          texts.push(`${optionName}: ${cad.options[optionName]}`);
         }
         const zhankaiStr = cad.zhankai
           .map((v) => {
