@@ -90,7 +90,7 @@
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "angular-animations": "^0.11.0",
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "compressing": "^1.10.0",
     "cypress": "^13.7.0",
     "eslint": "^8.57.0",
