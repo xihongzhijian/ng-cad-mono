@@ -1,6 +1,5 @@
 import {CdkDrag} from "@angular/cdk/drag-drop";
 import {Component} from "@angular/core";
-import {Validators} from "@angular/forms";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
 import {ActivatedRoute, ResolveFn, Router, RouterLink, RouterOutlet} from "@angular/router";
@@ -40,9 +39,26 @@ export class AppComponent {
   }
 
   async changeProject() {
-    const project = await this.message.prompt({type: "string", label: "项目缩写", validators: Validators.required});
-    if (project) {
-      this.status.changeProject(project);
+    const project = this.status.project;
+    const form = await this.message.form([
+      {
+        type: "string",
+        label: "项目缩写",
+        validators: (control) => {
+          const value = control.value;
+          if (!value) {
+            return {required: true};
+          }
+          if (value === project) {
+            return {与当前项目相同: true};
+          }
+          return null;
+        }
+      },
+      {type: "boolean", label: "清除参数", value: false, radio: true}
+    ]);
+    if (form) {
+      this.status.changeProject(form.项目缩写, form.清除参数);
     }
   }
 }

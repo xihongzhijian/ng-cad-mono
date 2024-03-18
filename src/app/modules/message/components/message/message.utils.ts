@@ -1,5 +1,5 @@
 import {SecurityContext} from "@angular/core";
-import {ValidationErrors, Validators} from "@angular/forms";
+import {ValidationErrors} from "@angular/forms";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -35,20 +35,16 @@ export const validateForm = async (inputs: InputComponent[]) => {
     if (input.onChangeDelay) {
       await timeout(input.onChangeDelayTime);
     }
-    let validators = input.info.validators;
-    if (validators) {
-      if (!Array.isArray(validators)) {
-        validators = [validators];
-      }
-      for (const validator of validators) {
-        if (validator === Validators.required) {
+    const errors2 = input.validateValue();
+    for (const key in errors2) {
+      if (errors2[key]) {
+        if (key === "required") {
           hasValidatorRequired = true;
         } else {
           hasValidatorOther = true;
         }
       }
     }
-    const errors2 = input.validateValue();
     if (errors2) {
       if (!errors) {
         errors = {};

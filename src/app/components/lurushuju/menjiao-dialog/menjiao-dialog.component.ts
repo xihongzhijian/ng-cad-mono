@@ -3,6 +3,7 @@ import {Component, HostBinding, Inject, OnInit, QueryList, ViewChildren} from "@
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
@@ -56,6 +57,7 @@ import {
     CadItemComponent,
     InputComponent,
     MatButtonModule,
+    MatTabsModule,
     NgClass,
     NgScrollbarModule,
     NgStyle,
@@ -84,6 +86,7 @@ export class MenjiaoDialogComponent implements OnInit {
     error: string;
     suanliaoDataParams: SuanliaoDataParams;
     suanliaogongshiInfo: SuanliaogongshiInfo;
+    isLoaded: boolean;
   }> = {};
   cadNameMap = 孔位CAD名字对应关系;
 
@@ -116,7 +119,7 @@ export class MenjiaoDialogComponent implements OnInit {
     ];
   }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.update();
   }
 
@@ -308,7 +311,8 @@ export class MenjiaoDialogComponent implements OnInit {
         suanliaogongshiInfo: {
           data: {算料公式: data[key1].算料公式, 测试用例: data[key1].测试用例, 输入数据: data[key1].输入数据},
           varNames: component.varNames
-        }
+        },
+        isLoaded: key1 === "包边在外+外开"
       };
       // if (component.parentInfo.isZhijianUser) { // TODO
       // eslint-disable-next-line no-constant-condition
@@ -696,6 +700,11 @@ export class MenjiaoDialogComponent implements OnInit {
 
   afterEditCad(key1: MenjiaoCadType) {
     this.getSuanliaoTables(key1)?.update();
+  }
+
+  onMenjiaoCadTabChange(event: MatTabChangeEvent) {
+    const key = event.tab.textLabel as MenjiaoCadType;
+    this.key1Infos[key].isLoaded = true;
   }
 }
 

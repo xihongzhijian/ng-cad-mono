@@ -346,6 +346,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
       }
     }
     Object.assign(this, stepInfo2);
+    this.saveInfo();
     if (!this.xinghaoName) {
       this.xinghao = null;
     }
@@ -363,7 +364,6 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
       this._isDataFetched[key] = true;
     }
   }
-
   async getXinghaosIfNotFetched() {
     await this.getDataIfNotFetched("xinghaos", async () => {
       await this.getXinghaos();
@@ -981,6 +981,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
 
   async getMenjiaoItem(onSubmit: NonNullable<MenjiaoInput["onSubmit"]>, data0: 算料数据) {
     this.menjiaoName = data0?.名字 || "新建门铰锁边铰边";
+    this.saveInfo();
     await openMenjiaoDialog(this.dialog, {
       data: {
         data: data0,
@@ -990,6 +991,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
       }
     });
     this.menjiaoName = "";
+    this.saveInfo();
   }
 
   async onMenjiaoToolbar(event: ToolbarButtonEvent) {
@@ -1342,6 +1344,12 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
         return;
       }
       await this.setInfo(info);
+    }
+  }
+
+  saveInfo() {
+    if (!this.production) {
+      session.save(this.infoKey, this.getInfo());
     }
   }
 

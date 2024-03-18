@@ -26,18 +26,15 @@
   </div>
 }
 <div class="toolbar">
-  <mat-slide-toggle [checked]="showCheckedOnly" (change)="toggleShowCheckedOnly($event)">只显示已选</mat-slide-toggle>
-  <mat-checkbox
-    [checked]="allChecked()"
-    [indeterminate]="partiallyChecked()"
-    *ngIf="data.selectMode === 'multiple'"
-    (change)="toggleSelectAll()"
-  >
-    <span>全选</span>
+  <mat-slide-toggle [checked]="showCheckedOnly" (change)="toggleShowCheckedOnly($event)">
+    <span>只显示已选</span>
     @if (checkedInOtherPages) {
-      <span>(其他页已选)</span>
+      <span>（其他页已选）</span>
     }
-  </mat-checkbox>
+  </mat-slide-toggle>
+  @if (data.selectMode === "multiple") {
+    <mat-checkbox [checked]="allChecked()" [indeterminate]="partiallyChecked()" (change)="toggleSelectAll()">全选</mat-checkbox>
+  }
 </div>
 
 <div class="flex-110">

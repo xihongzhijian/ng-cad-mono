@@ -79,7 +79,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     cad.json.zhankai[0].kailiaomuban = value;
   }
 
-  cadInputs: InputInfo[][] = [];
+  cadInputs: InputInfo<CadData>[][] = [];
   zhankaiInputs: {width: InputInfo; height: InputInfo; num: InputInfo}[] = [];
   mubanInputs: InputInfo[][] = [];
   showMuban: boolean;
@@ -305,8 +305,8 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   }
 
   updateCadInputs() {
-    const json = this.cad?.json;
-    if (!json) {
+    const data = this.cad?.json as CadData;
+    if (!data) {
       return;
     }
     this.cadInputs = [
@@ -314,17 +314,20 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
         {
           type: "select",
           label: "算料处理",
-          model: {data: json, key: "suanliaochuli"},
+          model: {data, key: "suanliaochuli"},
           options: cadOptions.suanliaochuli.values.slice()
         },
         {
           type: "select",
           label: "算料单显示",
-          model: {data: json, key: "suanliaodanxianshi"},
+          model: {data, key: "suanliaodanxianshi"},
           options: cadOptions.suanliaodanxianshi.values.slice()
         }
       ]
     ];
+    if (this.noMuban && this.noZhankai) {
+      this.cadInputs.push([{type: "number", label: "对应门扇厚度", model: {data, key: "对应门扇厚度"}}]);
+    }
   }
 
   updateZhankaiInputs() {

@@ -1,4 +1,4 @@
-import {CommonModule} from "@angular/common";
+import {KeyValuePipe} from "@angular/common";
 import {AfterViewInit, Component, HostBinding, Inject, ViewChild} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -44,8 +44,8 @@ export const customTooltipOptions: MatTooltipDefaultOptions = {
   providers: [{provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: customTooltipOptions}],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
+    KeyValuePipe,
     ImageComponent,
     MatButtonModule,
     MatCheckboxModule,
@@ -306,6 +306,7 @@ export class CadListComponent implements AfterViewInit {
       const item = this.pageData[i];
       item.checked = !item.checked;
     } else {
+      this.checkedItems.length = 0;
       for (const [j, item] of this.pageData.entries()) {
         if (i === j) {
           item.checked = !item.checked;
@@ -314,6 +315,7 @@ export class CadListComponent implements AfterViewInit {
         }
       }
     }
+    this.syncCheckedItems();
   }
 
   returnZero() {

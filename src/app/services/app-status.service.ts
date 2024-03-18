@@ -528,9 +528,14 @@ export class AppStatusService {
     return this.getItemSize(this.exportSelected(), options);
   }
 
-  changeProject(project: string) {
-    const {url, queryParams} = this.route.snapshot;
-    const url2 = this.router.createUrlTree(url, {queryParams: {...queryParams, project}, queryParamsHandling: "merge"});
+  changeProject(project: string, clearParams?: boolean) {
+    const {url} = this.route.snapshot;
+    const opts: UrlCreationOptions = {};
+    opts.queryParams = {project};
+    if (!clearParams) {
+      opts.queryParamsHandling = "merge";
+    }
+    const url2 = this.router.createUrlTree(url, opts);
     location.href = url2.toString();
   }
 }
