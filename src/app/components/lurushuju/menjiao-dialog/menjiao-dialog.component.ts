@@ -89,6 +89,7 @@ export class MenjiaoDialogComponent implements OnInit {
     isLoaded: boolean;
   }> = {};
   cadNameMap = 孔位CAD名字对应关系;
+  menjiaoTabGroupIndex = 0;
 
   form: InputInfo[] = [];
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
@@ -703,8 +704,33 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   onMenjiaoCadTabChange(event: MatTabChangeEvent) {
-    const key = event.tab.textLabel as MenjiaoCadType;
-    this.key1Infos[key].isLoaded = true;
+    const label = event.tab.textLabel;
+    for (const key of menjiaoCadTypes) {
+      if (label.startsWith(key)) {
+        this.key1Infos[key].isLoaded = true;
+      }
+    }
+  }
+
+  getMenjiaoCadTabLabel(key1: MenjiaoCadType) {
+    const item = this.formData[key1];
+    const isEmpty = () => {
+      if (item.算料CAD.length > 0) {
+        return false;
+      }
+      if (Object.values(item.企料CAD).some((v) => v.cad)) {
+        return false;
+      }
+      if (Object.values(item.配合框CAD).some((v) => v.cad)) {
+        return false;
+      }
+      return true;
+    };
+    let label = key1;
+    if (!isEmpty()) {
+      label += "（有数据）";
+    }
+    return label;
   }
 }
 

@@ -270,7 +270,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     const data = new CadData(cad.json);
     generateLineTexts(data);
     const cadViewer = this.initCadViewer0("cad", data, containerEl, () => {
-      cad.json = exportCadData(data, true);
+      cad.json.entities = exportCadData(data, true).entities;
     });
     this.cadViewer = cadViewer;
     this.updateCadInputs();

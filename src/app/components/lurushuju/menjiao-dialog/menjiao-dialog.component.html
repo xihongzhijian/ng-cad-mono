@@ -4,8 +4,8 @@
   }
   <mat-tab-group (selectedTabChange)="onMenjiaoCadTabChange($event)">
     @for (key1 of menjiaoCadTypes; track $index) {
-      <mat-tab [label]="key1">
-        @if (key1Infos[key1] && key1Infos[key1].isLoaded) {
+      <mat-tab [label]="getMenjiaoCadTabLabel(key1)">
+        @if (key1Infos[key1]) {
           <div class="sub-form-field">
             <div class="label">{{ key1 }}</div>
             <div class="flex-row">
@@ -60,7 +60,7 @@
                   <div class="error-msg">{{ key1Infos[key1].error }}</div>
                 }
               </div>
-              @if (data.isKailiao) {
+              @if (data.isKailiao && key1Infos[key1].isLoaded) {
                 <app-suanliao-tables [ngClass]="key1" [suanliaoDataParams]="key1Infos[key1].suanliaoDataParams"></app-suanliao-tables>
               }
             </div>
@@ -81,7 +81,7 @@
 </div>
 
 <ng-template #cadItem [appTypedTemplate]="emptyCadTemplateType" let-key1="key1" let-key2="key2" let-key3="key3">
-  @if (formData[key1][key2][key3] && formData[key1][key2][key3].cad) {
+  @if (formData[key1][key2][key3] && formData[key1][key2][key3].cad && key1Infos[key1].isLoaded) {
     <app-cad-item
       [cad]="formData[key1][key2][key3].cad!"
       [buttons]="cadItemButtons"

@@ -10,3 +10,11 @@
     flex-wrap: wrap;
   }
 }
+
+mat-tab-group {
+  ::ng-deep {
+    .mdc-tab--active {
+      --mat-tab-header-label-text-size: 24px;
+    }
+  }
+}
