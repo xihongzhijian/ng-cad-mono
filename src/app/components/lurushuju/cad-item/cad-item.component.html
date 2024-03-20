@@ -20,16 +20,6 @@
         </div>
       }
     </div>
-    @if (fentiCads) {
-      <div class="fenti-cads toolbar">
-        @for (item of fentiCads | keyvalue: returnZero; track item.key) {
-          <div class="fenti-cad toolbar">
-            <div>{{ item.key }}:</div>
-            <button mat-button (click)="selectFentiCad()">{{ item.value ? item.value["名字"] : "不做分体" }}</button>
-          </div>
-        }
-      </div>
-    }
     @if (!noZhankai) {
       <div class="zhankais flex-column">
         @for (item of zhankaiInputs; track i; let i = $index) {
@@ -45,6 +35,16 @@
             <app-input class="height" [info]="item.height"></app-input>
             <div class="symbol">=</div>
             <app-input class="num" [info]="item.num"></app-input>
+          </div>
+        }
+      </div>
+    }
+    @if (fentiCads) {
+      <div class="fenti-cads toolbar">
+        @for (item of fentiCads | keyvalue: returnZero; track item.key) {
+          <div class="fenti-cad toolbar">
+            <div>{{ item.key }}:</div>
+            <button mat-button (click)="selectFentiCad()">{{ item.value ? item.value["名字"] : "不做分体" }}</button>
           </div>
         }
       </div>

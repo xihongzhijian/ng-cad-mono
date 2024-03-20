@@ -193,13 +193,7 @@
     </div>
   }
   @case ("array") {
-    <div
-      class="sub-form-field"
-      cdkDropList
-      [cdkDropListDisabled]="!info.sortable"
-      [cdkDropListData]="value"
-      (cdkDropListDropped)="dropArrayItem($event)"
-    >
+    <div class="sub-form-field">
       <div class="label">{{ info.label }}</div>
       @if (value.length === 0 && !info.readonly) {
         <div>
@@ -209,7 +203,7 @@
         </div>
       }
       @for (c of value; track j; let j = $index) {
-        <mat-form-field cdkDrag [ngClass]="{empty: isEmpty(c)}">
+        <mat-form-field [ngClass]="{empty: isEmpty(c)}">
           <input
             matInput
             type="text"
@@ -222,17 +216,6 @@
             (blur)="onBlur()"
           />
           <ng-container matSuffix>
-            @if (!info.readonly || info.sortable) {
-              <button mat-icon-button cdkDragHandle color="primary">
-                <mat-icon>drag_indicator</mat-icon>
-              </button>
-              <button mat-icon-button color="primary" (click)="moveArrayItem(j, j - 1)">
-                <mat-icon>arrow_upward</mat-icon>
-              </button>
-              <button mat-icon-button color="primary" (click)="moveArrayItem(j, j + 1)">
-                <mat-icon>arrow_downward</mat-icon>
-              </button>
-            }
             @if (!info.readonly) {
               <button mat-icon-button color="primary" (click)="arrayAdd(value, '', j + 1)">
                 <mat-icon>add_circle</mat-icon>
@@ -598,6 +581,21 @@
       }
     </div>
     <ng-template [ngTemplateOutlet]="footer"></ng-template>
+  }
+  @case ("list") {
+    <div class="sub-form-field">
+      <div class="label">{{ info.label }}</div>
+      <mat-list class="list" cdkDropList [cdkDropListData]="value" (cdkDropListDropped)="dropArrayItem($event)">
+        @for (item of value; track i; let i = $index) {
+          <mat-list-item cdkDrag>
+            <div class="list-item">
+              <div cdkDragHandle class="name">{{ item }}</div>
+              <input matInput #input type="number" [value]="i" (change)="moveArrayItem(i, input)" />
+            </div>
+          </mat-list-item>
+        }
+      </mat-list>
+    </div>
   }
   @case ("group") {
     @if (info.label) {

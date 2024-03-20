@@ -24,6 +24,7 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
     hideLineGongshi: true,
     ...params.config
   });
+  cad.dom.style.opacity = "0";
   cad.appendTo(document.body);
   await prepareCadViewer(cad);
   cad.data = data.clone();

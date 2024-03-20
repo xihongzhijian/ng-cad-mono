@@ -82,7 +82,6 @@ export interface InputInfoArray<T = any> extends InputInfoBase<T> {
   value?: Value<any[]>;
   valueLabel?: string;
   valueValidators?: AbstractControlOptions["validators"];
-  sortable?: boolean;
 }
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
@@ -173,6 +172,11 @@ export interface InputInfoButton<T = any> extends InputInfoBase<T> {
   buttons: InputInfoButtonInfo[];
 }
 
+export interface InputInfoList<T = any> extends InputInfoBase<T> {
+  type: "list";
+  value?: Value<string[]>;
+}
+
 export interface InputInfoGroup<T = any> extends InputInfoBase<T> {
   type: "group";
   infos?: InputInfo<T>[];
@@ -193,6 +197,7 @@ export type InputInfo<T = any> =
   | InputInfoCad<T>
   | InputInfoFormulas<T>
   | InputInfoButton<T>
+  | InputInfoList<T>
   | InputInfoGroup<T>;
 
 export type InputInfoOption<T = any> = {value: T; label?: string; disabled?: boolean; img?: string};

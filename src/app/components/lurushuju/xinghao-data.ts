@@ -73,6 +73,11 @@ export const get算料数据 = (raw?: Partial<算料数据> | null) => {
     "包边在内+外开": get算料数据2(raw?.["包边在内+外开"]),
     "包边在内+内开": get算料数据2(raw?.["包边在内+内开"])
   };
+  for (const key of ["选项默认值", "门缝配置"] as const) {
+    if (!isTypeOf(result[key], "object")) {
+      result[key] = {};
+    }
+  }
   return result;
 };
 

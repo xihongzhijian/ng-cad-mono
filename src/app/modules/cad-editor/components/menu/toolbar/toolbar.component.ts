@@ -4,7 +4,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
-import {openCadLineInfoForm} from "@app/cad/utils";
+import {openCadLineForm} from "@app/cad/utils";
 import {AboutComponent} from "@components/about/about.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
@@ -301,7 +301,7 @@ export class ToolbarComponent {
     if (!line) {
       return;
     }
-    await openCadLineInfoForm(this.status.collection$.value, this.message, this.status.cad, line);
+    await openCadLineForm(this.status.collection$.value, this.message, this.status.cad, line);
   }
 
   async editBbzhmkgz() {

@@ -85,16 +85,17 @@
     <app-cad-item
       [cad]="formData[key1][key2][key3].cad!"
       [buttons]="cadItemButtons"
-      [customInfo]="{data: formData[key1][key2][key3], key1}"
+      [customInfo]="{key1, key2, key3}"
       [fentiCads]="key2 === '企料CAD' ? formData[key1][key2][key3]['企料分体CAD'] : undefined"
       [openCadOptions]="getOpenCadOptions(key1)"
       [noMuban]="true"
-      [noZhankai]="true"
+      [noZhankai]="key2 === '配合框CAD'"
+      [showMenshanhoudu]="true"
       [cadWidth]="cadWidth"
       (afterEditCad)="afterEditCad(key1)"
     ></app-cad-item>
   } @else {
-    <div class="empty-cad item link" (click)="addCad({key1, key2, key3})">
+    <div class="empty-cad item link" (click)="selectCad0({key1, key2, key3})">
       <div class="name">{{ cadNameMap[key3] || key3 }}</div>
       <div class="box border" [ngStyle]="{'width.px': cadWidth, 'height.px': cadHeight}"></div>
     </div>

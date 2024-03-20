@@ -18,9 +18,9 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {CadCollection} from "@app/cad/collections";
 import {cadOptions} from "@app/cad/options";
-import {exportCadData, openCadLineInfoForm} from "@app/cad/utils";
+import {exportCadData, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
-import {CadData, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
+import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
 import {selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -51,6 +51,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   @Input() openCadOptions?: OpenCadOptions;
   @Input() noMuban?: boolean;
   @Input() noZhankai?: boolean;
+  @Input() showMenshanhoudu?: boolean;
   @Output() afterEditCad = new EventEmitter<void>();
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
@@ -239,12 +240,16 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       if (entity instanceof CadMtext && entity.parent) {
         entity = entity.parent;
       }
-      if (!(entity instanceof CadLineLike)) {
-        return;
-      }
-      const result = await openCadLineInfoForm(collection, this.message, cadViewer, entity);
-      if (result) {
-        afterDblClickForm();
+      if (entity instanceof CadLineLike) {
+        const result = await openCadLineForm(collection, this.message, cadViewer, entity);
+        if (result) {
+          afterDblClickForm();
+        }
+      } else if (entity instanceof CadDimensionLinear) {
+        const dimension2 = await openCadDimensionForm(collection, this.message, cadViewer, entity);
+        if (dimension2) {
+          afterDblClickForm();
+        }
       }
     });
     cadViewer.on("click", () => {
@@ -325,7 +330,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
         }
       ]
     ];
-    if (this.noMuban && this.noZhankai) {
+    if (this.showMenshanhoudu) {
       this.cadInputs.push([{type: "number", label: "对应门扇厚度", model: {data, key: "对应门扇厚度"}}]);
     }
   }

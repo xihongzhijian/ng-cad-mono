@@ -25,6 +25,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
+import {MatListModule} from "@angular/material/list";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectModule} from "@angular/material/select";
@@ -79,6 +80,7 @@ import {getValue} from "./input.utils";
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    MatListModule,
     MatMenuModule,
     MatOptionModule,
     MatRadioModule,
@@ -1161,11 +1163,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
   }
 
-  moveArrayItem(previousIndex: number, currentIndex: number) {
+  moveArrayItem(previousIndex: number, input: HTMLInputElement) {
+    // TODO
     const {value} = this;
     if (!Array.isArray(value)) {
       return;
     }
+    const currentIndex = Number(input.value);
+    input.value = "";
     moveItemInArray(value, previousIndex, currentIndex);
   }
 }

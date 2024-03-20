@@ -66,6 +66,21 @@
       }
     }
   }
+  &.list {
+    .list-item {
+      cursor: move;
+      display: flex;
+
+      .name {
+        flex: 1 1 0;
+      }
+
+      input {
+        width: 30px;
+        text-align: center;
+      }
+    }
+  }
 }
 
 .sub-form-field {

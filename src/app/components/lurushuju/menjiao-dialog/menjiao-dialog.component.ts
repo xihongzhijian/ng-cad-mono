@@ -105,7 +105,10 @@ export class MenjiaoDialogComponent implements OnInit {
     if (!this.data) {
       this.data = {};
     }
-    this.cadItemButtons = [{name: "删除", onClick: this.removeCad.bind(this)}];
+    this.cadItemButtons = [
+      {name: "删除", onClick: this.removeCad.bind(this)},
+      {name: "选择", onClick: this.selectCad.bind(this)}
+    ];
     if (this.data.isKailiao) {
       this.cadItemButtons.push(
         ...[
@@ -379,7 +382,7 @@ export class MenjiaoDialogComponent implements OnInit {
     autoFillMenjiao(this.formData, this.data.component.menjiaoOptionsAll);
   }
 
-  async addCad(info: typeof this.emptyCadTemplateType) {
+  async selectCad0(info: typeof this.emptyCadTemplateType) {
     const data = this.formData;
     const {key1, key2, key3} = info;
     const {search, addCadData} = getCadSearch(data, key1, key2, key3);
@@ -407,8 +410,13 @@ export class MenjiaoDialogComponent implements OnInit {
     }
   }
 
+  async selectCad(component: CadItemComponent<MenjiaoCadItemInfo>) {
+    await this.selectCad0(component.customInfo);
+  }
+
   async removeCad(component: CadItemComponent<MenjiaoCadItemInfo>) {
-    const data = component.customInfo.data;
+    const {key1, key2, key3} = component.customInfo;
+    const data = this.formData[key1][key2][key3];
     if (!data.cad || !(await this.message.confirm(`确定删除【${data.cad.名字}】吗？`))) {
       return;
     }

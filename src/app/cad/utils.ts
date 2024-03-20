@@ -606,7 +606,7 @@ export const exportCadData = (data: CadData, hideLineLength: boolean) => {
   return exportData;
 };
 
-export const openCadLineInfoForm = async (collection: CadCollection, message: MessageService, cad: CadViewer, line: CadLineLike) => {
+export const openCadLineForm = async (collection: CadCollection, message: MessageService, cad: CadViewer, line: CadLineLike) => {
   const lineLength = Number(line.length.toFixed(2));
   const isLine = line instanceof CadLine;
   const form: InputInfo<typeof line>[] = [
@@ -620,10 +620,33 @@ export const openCadLineInfoForm = async (collection: CadCollection, message: Me
   }
   const result = await message.form(form);
   if (result) {
+    let toChange = [line];
     if (isLine && result.线长 !== lineLength) {
+      toChange = cad.data.entities.line;
       setLinesLength(cad.data, [line], result.线长);
     }
-    await cad.render();
+    await cad.render(toChange);
+  }
+  return result;
+};
+
+export const openCadDimensionForm = async (
+  collection: CadCollection,
+  message: MessageService,
+  cad: CadViewer,
+  dimension: CadDimensionLinear
+) => {
+  const form: InputInfo<typeof dimension>[] = [
+    {type: "string", label: "名字", model: {data: dimension, key: "mingzi"}},
+    {type: "boolean", label: "删除标注", radio: true, value: false}
+  ];
+  const result = await message.form(form);
+  if (result) {
+    if (result.删除标注) {
+      cad.remove(dimension);
+    } else {
+      await cad.render(dimension);
+    }
   }
   return result;
 };

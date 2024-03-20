@@ -1283,8 +1283,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   async sortFenlei() {
     const fenleis = this.lingsanCadInfos.map((v) => v.type);
-    const fenleis2 = await this.message.prompt({type: "array", label: "分类排序", value: fenleis, readonly: true, sortable: true});
-    if (fenleis2) {
+    const fenleis2 = await this.message.prompt({type: "list", label: "分类排序", value: fenleis});
+    if (!isEqual(fenleis, fenleis2)) {
       const success = await this.setLingsanSortedTypes(fenleis2);
       if (success) {
         this.lingsanSortedTypes = fenleis2;
@@ -1294,22 +1294,28 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async setCadsFenlei() {
+    if (this.result.零散.length < 1) {
+      await this.message.error("没有数据");
+      return;
+    }
     const type = await this.message.prompt({
       type: "string",
-      label: "转移到分类",
+      label: "转移到分类（可以输入新的分类）",
       options: this.lingsanCadInfos.map((v) => v.type),
       validators: Validators.required
     });
     let shouldRefresh = false;
-    for (const item of this.result.零散) {
-      if (item.data.type !== type) {
-        const success = await this.http.mongodbUpdate("cad", {_id: item.info.houtaiId, 分类: type});
-        if (success) {
-          shouldRefresh = true;
+    if (type) {
+      for (const item of this.result.零散) {
+        if (item.data.type !== type) {
+          const success = await this.http.mongodbUpdate("cad", {_id: item.info.houtaiId, 分类: type});
+          if (success) {
+            shouldRefresh = true;
+          }
         }
       }
+      this.result.零散 = [];
     }
-    this.result.零散 = [];
     if (shouldRefresh) {
       this.step3Refresh();
     }

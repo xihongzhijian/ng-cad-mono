@@ -1291,6 +1291,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
     if (this.status.project !== 项目) {
       session.save(this.infoKey, info);
       this.status.changeProject(项目);
+      return;
     }
     if (型号) {
       if (产品分类 && 工艺做法) {
