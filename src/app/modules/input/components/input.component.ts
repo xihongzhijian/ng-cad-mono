@@ -1,3 +1,4 @@
+import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, CdkDropListGroup, moveItemInArray} from "@angular/cdk/drag-drop";
 import {TextFieldModule} from "@angular/cdk/text-field";
 import {CommonModule} from "@angular/common";
 import {
@@ -63,6 +64,10 @@ import {getValue} from "./input.utils";
   standalone: true,
   imports: [
     AnchorSelectorComponent,
+    CdkDrag,
+    CdkDragHandle,
+    CdkDropList,
+    CdkDropListGroup,
     ClickStopPropagationDirective,
     ColorChromeModule,
     ColorCircleModule,
@@ -1150,6 +1155,18 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         onOptionsChange(options);
       }
     }
+  }
+
+  dropArrayItem(event: CdkDragDrop<any>) {
+    moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+  }
+
+  moveArrayItem(previousIndex: number, currentIndex: number) {
+    const {value} = this;
+    if (!Array.isArray(value)) {
+      return;
+    }
+    moveItemInArray(value, previousIndex, currentIndex);
   }
 }
 

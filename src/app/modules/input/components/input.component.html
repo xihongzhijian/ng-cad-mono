@@ -193,17 +193,23 @@
     </div>
   }
   @case ("array") {
-    <div class="sub-form-field">
+    <div
+      class="sub-form-field"
+      cdkDropList
+      [cdkDropListDisabled]="!info.sortable"
+      [cdkDropListData]="value"
+      (cdkDropListDropped)="dropArrayItem($event)"
+    >
       <div class="label">{{ info.label }}</div>
-      @if (value.length === 0) {
+      @if (value.length === 0 && !info.readonly) {
         <div>
           <button mat-icon-button color="primary" (click)="arrayAdd(value, '')">
             <mat-icon>add_circle</mat-icon>
           </button>
         </div>
       }
-      @for (c of " ".repeat(value.length).split(""); track c; let j = $index) {
-        <mat-form-field [ngClass]="{empty: isEmpty(value[j])}">
+      @for (c of value; track j; let j = $index) {
+        <mat-form-field cdkDrag [ngClass]="{empty: isEmpty(c)}">
           <input
             matInput
             type="text"
@@ -215,12 +221,27 @@
             [ngModelOptions]="{standalone: true}"
             (blur)="onBlur()"
           />
-          <button mat-icon-button matSuffix color="primary" (click)="arrayAdd(value, '', j + 1)">
-            <mat-icon>add_circle</mat-icon>
-          </button>
-          <button mat-icon-button matSuffix color="primary" (click)="arrayRemove(value, j)">
-            <mat-icon>remove_circle</mat-icon>
-          </button>
+          <ng-container matSuffix>
+            @if (!info.readonly || info.sortable) {
+              <button mat-icon-button cdkDragHandle color="primary">
+                <mat-icon>drag_indicator</mat-icon>
+              </button>
+              <button mat-icon-button color="primary" (click)="moveArrayItem(j, j - 1)">
+                <mat-icon>arrow_upward</mat-icon>
+              </button>
+              <button mat-icon-button color="primary" (click)="moveArrayItem(j, j + 1)">
+                <mat-icon>arrow_downward</mat-icon>
+              </button>
+            }
+            @if (!info.readonly) {
+              <button mat-icon-button color="primary" (click)="arrayAdd(value, '', j + 1)">
+                <mat-icon>add_circle</mat-icon>
+              </button>
+              <button mat-icon-button color="primary" (click)="arrayRemove(value, j)">
+                <mat-icon>remove_circle</mat-icon>
+              </button>
+            }
+          </ng-container>
           @for (icon of suffixIcons; track icon) {
             <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
               <mat-icon>{{ icon.name }}</mat-icon>

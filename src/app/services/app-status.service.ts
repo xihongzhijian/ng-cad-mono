@@ -477,11 +477,11 @@ export class AppStatusService {
       navigationExtras = {};
     }
     navigationExtras.queryParams = {...navigationExtras.queryParams, project: this.project};
-    const url = this.router.createUrlTree(commands, navigationExtras);
+    const url = this.router.createUrlTree(commands, navigationExtras).toString();
     if (environment.production) {
-      open(`${remoteHost}/static/ng-cad2${url.toString()}`);
+      open(`${remoteHost}/static/ng-cad2${url}`);
     } else {
-      open(url.toString());
+      open(url);
     }
   }
 

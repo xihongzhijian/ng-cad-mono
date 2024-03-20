@@ -82,6 +82,7 @@ export interface InputInfoArray<T = any> extends InputInfoBase<T> {
   value?: Value<any[]>;
   valueLabel?: string;
   valueValidators?: AbstractControlOptions["validators"];
+  sortable?: boolean;
 }
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {

@@ -46,7 +46,8 @@ export const getTestData = () => {
     dropDownKeys: ["总宽", "总高"],
     可替换模块: true,
     step1Data: zixuanpeijianTypesInfo,
-    noValidateCads: false
+    noValidateCads: false,
+    readonly: false
   };
   return data;
 };

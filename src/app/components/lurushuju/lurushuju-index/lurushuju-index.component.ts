@@ -10,6 +10,8 @@ import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/t
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, local, session, setGlobal} from "@app/app.common";
 import {AboutComponent} from "@components/about/about.component";
+import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
+import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {environment} from "@env";
 import {ObjectOf, queryString} from "@lucilor/utils";
@@ -1245,6 +1247,11 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
 
   async tongyongshuju() {
     openTongyongshujuDialog(this.dialog, {data: {}});
+  }
+
+  async openZxpj() {
+    const data: ZixuanpeijianInput = {step: 3, stepFixed: true, noValidateCads: true, readonly: true};
+    await openZixuanpeijianDialog(this.dialog, {data});
   }
 
   async xinghaoZhuanyongGongshi() {

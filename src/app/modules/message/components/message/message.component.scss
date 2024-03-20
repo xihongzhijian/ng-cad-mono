@@ -15,8 +15,9 @@
 }
 
 .mat-mdc-dialog-content {
-  max-height: unset;
+  max-height: 90vh;
   &.iframe {
+    max-height: 100vh;
     flex: 1 1 0;
     overflow: hidden;
   }

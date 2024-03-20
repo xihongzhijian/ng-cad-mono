@@ -64,6 +64,7 @@ export interface ZixuanpeijianInput {
   可替换模块?: boolean;
   step1Data?: Step1Data;
   noValidateCads?: boolean;
+  readonly?: boolean;
 }
 
 export type ZixuanpeijianOutput = Required<ZixuanpeijianData>;

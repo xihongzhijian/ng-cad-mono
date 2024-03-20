@@ -1,9 +1,9 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {KeyValuePipe, NgClass, NgFor, NgIf, NgStyle, NgSwitch, NgSwitchCase, NgTemplateOutlet} from "@angular/common";
-import {Component, ElementRef, HostListener, Inject, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
+import {Component, ElementRef, HostBinding, HostListener, Inject, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
@@ -25,9 +25,9 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
-import {cloneDeep, debounce, uniq, uniqueId} from "lodash";
+import {cloneDeep, debounce, isEqual, uniq, uniqueId} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, filter, take} from "rxjs";
 import {ClickStopPropagationDirective} from "../../../modules/directives/click-stop-propagation.directive";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
@@ -67,33 +67,28 @@ import {
   styleUrls: ["./zixuanpeijian.component.scss"],
   standalone: true,
   imports: [
-    NgSwitch,
-    NgSwitchCase,
-    NgScrollbar,
-    NgStyle,
-    NgFor,
-    NgIf,
-    MatButtonModule,
-    InputComponent,
-    ImageComponent,
-    MatIconModule,
-    MatDividerModule,
-    NgTemplateOutlet,
-    CdkDropList,
     CdkDrag,
     CdkDragHandle,
+    CdkDropList,
+    ClickStopPropagationDirective,
+    ImageComponent,
+    InputComponent,
+    KeyValuePipe,
+    MatButtonModule,
+    MatDividerModule,
+    MatIconModule,
+    MatMenuModule,
     MatSlideToggleModule,
     MatTooltipModule,
-    NgClass,
-    TypedTemplateDirective,
-    ClickStopPropagationDirective,
-    MatDialogActions,
+    NgScrollbar,
+    NgTemplateOutlet,
     SpinnerComponent,
-    MatMenuModule,
-    KeyValuePipe
+    TypedTemplateDirective
   ]
 })
 export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
+  @HostBinding("class") class = "ng-page";
+
   spinnerId = "zixuanpeijian-" + uniqueId();
   step$ = new BehaviorSubject<{value: number; refresh: boolean; noCache?: boolean}>({value: 0, refresh: false});
   type1 = "";
@@ -119,8 +114,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   lingsanInputInfos: CadItemInputInfo[] = [];
   dropDownOptions: {label: string; value: string; customClass?: string}[] = [];
   lingsanCads: ObjectOf<ZixuanpeijianlingsanCadItem[]> = {};
-  lingsanCadInfos: ObjectOf<{hidden: boolean}> = {};
+  lingsanCadInfos: Array<{type: string; hidden: boolean}> = [];
   lingsanCadType = "";
+  lingsanSortedTypes: string[] | null | undefined;
   searchLingsanValueKey = "zixuanpeijian-searchLingsanValue";
   searchLingsanValue = session.load(this.searchLingsanValueKey) || "";
   lingsanCadsSearchInput: InputInfo = {
@@ -144,6 +140,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     onInput: debounce(this.filterMokuaiItems.bind(this), 200)
   };
   typesButtonsWidth = "auto";
+  isEditingFenlei$ = new BehaviorSubject<boolean>(false);
 
   get summitBtnText() {
     if (this.data?.stepFixed) {
@@ -391,8 +388,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
     if (responseData) {
       this.lingsanCadImgs = {};
-      this.lingsanCadInfos = {};
+      this.lingsanCadInfos = [];
       this.lingsanCads = {};
+      this.lingsanSortedTypes = await this.http.getData("ngcad/getLingsanSortedTypes");
       const {noValidateCads} = this.data || {};
       for (const v of responseData.cads) {
         const data = new CadData(v);
@@ -400,9 +398,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         this.lingsanCadImgs[data.id] = img;
         const item: ZixuanpeijianlingsanCadItem = {data, img, hidden: false, isFetched: false};
         const type = item.data.type;
-        if (!this.lingsanCadInfos[type]) {
-          this.lingsanCadInfos[type] = {hidden: false};
-        }
         if (!this.lingsanCads[type]) {
           this.lingsanCads[type] = [];
         }
@@ -434,11 +429,33 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       if (toRemove.length > 0) {
         this.result.零散 = this.result.零散.filter((_, i) => !toRemove.includes(i));
       }
+
+      for (const type in this.lingsanCads) {
+        if (!this.lingsanCadInfos.find((v) => v.type === type)) {
+          this.lingsanCadInfos.push({type, hidden: false});
+        }
+      }
+      await this.sortLingsanCadInfos();
+      const sortedTypes = this.lingsanCadInfos.map((v) => v.type);
+      if (!isEqual(sortedTypes, this.lingsanSortedTypes)) {
+        await this.setLingsanSortedTypes(sortedTypes);
+      }
     }
     if (noUpdateInputInfos) {
       this._updateInputInfos();
     }
     this._step3Fetched = true;
+  }
+
+  async sortLingsanCadInfos() {
+    const lingsanSortedTypes = this.lingsanSortedTypes;
+    if (Array.isArray(lingsanSortedTypes)) {
+      this.lingsanCadInfos.sort((a, b) => {
+        const ai = lingsanSortedTypes.indexOf(a.type);
+        const bi = lingsanSortedTypes.indexOf(b.type);
+        return ai - bi;
+      });
+    }
   }
 
   step3Refresh() {
@@ -556,7 +573,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       if (isRefreshed || !this.type1) {
         this.setTypesInfo1(Object.keys(this.typesInfo)[0] || "");
       }
-      await this._updateTypesButtons();
       this.filterMokuaiItems();
     } else if (value === 2) {
       if (refresh || !this._step2Fetched) {
@@ -569,34 +585,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         isRefreshed = true;
       }
       if (isRefreshed || !this.lingsanCadType) {
-        const keys = Object.keys(this.lingsanCadInfos);
-        this.setlingsanCadType(keys[0]);
+        this.setlingsanCadType(this.lingsanCadInfos[0].type);
       }
-      await this._updateTypesButtons();
       this.filterLingsanItems();
     }
-  }
-
-  private async _updateTypesButtons() {
-    this.typesButtonsWidth = "200px";
-    await timeout(0);
-    const {typesButtons} = this;
-    if (!typesButtons) {
-      return;
-    }
-    const els = typesButtons.map((v) => v.nativeElement);
-    for (const el of els) {
-      el.style.width = "auto";
-    }
-    await timeout(0);
-    let maxWidth = 0;
-    for (const el of els) {
-      maxWidth = Math.max(maxWidth, el.getBoundingClientRect().width);
-    }
-    for (const el of els) {
-      el.style.width = "";
-    }
-    this.typesButtonsWidth = maxWidth + "px";
   }
 
   async submit() {
@@ -930,12 +922,22 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async addLingsanItem(type: string, i: number) {
+    const isEditingFenlei = this.isEditingFenlei$.value;
+    if (this.data?.readonly && !isEditingFenlei) {
+      return;
+    }
     const item = this.lingsanCads[type][i];
-    if (!item.isFetched) {
-      const data0 = (await this.http.getCad({collection: "cad", id: item.data.id})).cads[0];
-      item.isFetched = true;
-      if (data0) {
-        item.data = data0;
+    if (isEditingFenlei) {
+      if (this.result.零散.find((v) => v.info.houtaiId === item.data.id)) {
+        return;
+      }
+    } else {
+      if (!item.isFetched) {
+        const data0 = (await this.http.getCad({collection: "cad", id: item.data.id})).cads[0];
+        item.isFetched = true;
+        if (data0) {
+          item.data = data0;
+        }
       }
     }
     const data = item.data.clone(true);
@@ -952,6 +954,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   removeLingsanItem(i: number) {
+    if (this.data?.readonly && !this.isEditingFenlei$.value) {
+      return;
+    }
     this.result.零散.splice(i, 1);
     this._updateInputInfos();
   }
@@ -1078,10 +1083,11 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
           count++;
         }
       }
-      if (type in this.lingsanCadInfos) {
-        this.lingsanCadInfos[type].hidden = count < 1;
+      const info = this.lingsanCadInfos.find((v) => v.type === type);
+      if (info) {
+        info.hidden = count < 1;
       } else {
-        this.lingsanCadInfos[type] = {hidden: count < 1};
+        this.lingsanCadInfos.push({type, hidden: count < 1});
       }
     }
     session.save(this.searchLingsanValueKey, needle);
@@ -1246,6 +1252,71 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const img = await getCadPreview("cad", data, {http: this.http});
     item.img = img;
     this.lingsanCadImgs[item.data.id] = img;
+  }
+
+  async openImportPage() {
+    this.status.openInNewTab(["import"]);
+    if (await this.message.newTabConfirm()) {
+      this.step3Refresh();
+    }
+  }
+
+  editFenlei() {
+    if (this.isEditingFenlei$.value) {
+      this.isEditingFenlei$.next(false);
+    } else {
+      this.isEditingFenlei$.next(true);
+      const items = this.result.零散;
+      this.result.零散 = [];
+      this.isEditingFenlei$
+        .pipe(
+          filter((v) => !v),
+          take(1)
+        )
+        .subscribe((isEditingFenlei) => {
+          if (!isEditingFenlei) {
+            this.result.零散 = items;
+          }
+        });
+    }
+  }
+
+  async sortFenlei() {
+    const fenleis = this.lingsanCadInfos.map((v) => v.type);
+    const fenleis2 = await this.message.prompt({type: "array", label: "分类排序", value: fenleis, readonly: true, sortable: true});
+    if (fenleis2) {
+      const success = await this.setLingsanSortedTypes(fenleis2);
+      if (success) {
+        this.lingsanSortedTypes = fenleis2;
+        await this.sortLingsanCadInfos();
+      }
+    }
+  }
+
+  async setCadsFenlei() {
+    const type = await this.message.prompt({
+      type: "string",
+      label: "转移到分类",
+      options: this.lingsanCadInfos.map((v) => v.type),
+      validators: Validators.required
+    });
+    let shouldRefresh = false;
+    for (const item of this.result.零散) {
+      if (item.data.type !== type) {
+        const success = await this.http.mongodbUpdate("cad", {_id: item.info.houtaiId, 分类: type});
+        if (success) {
+          shouldRefresh = true;
+        }
+      }
+    }
+    this.result.零散 = [];
+    if (shouldRefresh) {
+      this.step3Refresh();
+    }
+  }
+
+  async setLingsanSortedTypes(sortedTypes: typeof this.lingsanSortedTypes) {
+    return await this.http.post("ngcad/setLingsanSortedTypes", {sortedTypes});
   }
 }
 
