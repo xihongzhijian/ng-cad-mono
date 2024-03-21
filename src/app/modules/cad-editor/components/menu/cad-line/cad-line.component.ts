@@ -799,6 +799,9 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     }
     this.WHDashedLines = {line, map};
     this.status.setCadPoints(map);
+    const whLinesBefore = line.children.line.filter((l) => l.宽高虚线);
+    whLinesBefore.forEach((l) => l.remove());
+    line.removeChild(...whLinesBefore);
     line.addChild(...lines);
     this.status.cad.render(lines);
   }
