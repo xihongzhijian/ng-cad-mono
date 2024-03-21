@@ -40,22 +40,26 @@ export class AppComponent {
 
   async changeProject() {
     const project = this.status.project;
-    const form = await this.message.form([
+    const data = {project: "", clear: false};
+    const form = await this.message.form<typeof data>([
       {
         type: "string",
         label: "项目缩写",
+        model: {data, key: "project"},
         validators: (control) => {
           const value = control.value;
-          if (!value) {
-            return {required: true};
-          }
-          if (value === project) {
-            return {与当前项目相同: true};
+          if (!data.clear) {
+            if (!value) {
+              return {required: true};
+            }
+            if (value === project) {
+              return {与当前项目相同: true};
+            }
           }
           return null;
         }
       },
-      {type: "boolean", label: "清除参数", value: false, radio: true}
+      {type: "boolean", label: "清除参数", radio: true, model: {data, key: "clear"}}
     ]);
     if (form) {
       this.status.changeProject(form.项目缩写, form.清除参数);

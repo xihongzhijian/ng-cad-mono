@@ -613,7 +613,8 @@ export const openCadLineForm = async (collection: CadCollection, message: Messag
     {type: "number", label: "线长", value: lineLength, readonly: !isLine},
     {type: "string", label: "名字", model: {data: line, key: "mingzi"}},
     {type: "string", label: "名字2", model: {data: line, key: "mingzi2"}},
-    {type: "string", label: "公式", model: {data: line, key: "gongshi"}}
+    {type: "string", label: "公式", model: {data: line, key: "gongshi"}},
+    {type: "string", label: "显示线长", model: {data: line, key: "显示线长"}}
   ];
   if (collection === "CADmuban") {
     form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});

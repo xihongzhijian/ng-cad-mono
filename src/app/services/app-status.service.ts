@@ -531,6 +531,9 @@ export class AppStatusService {
   changeProject(project: string, clearParams?: boolean) {
     const {url} = this.route.snapshot;
     const opts: UrlCreationOptions = {};
+    if (!project) {
+      project = this.project;
+    }
     opts.queryParams = {project};
     if (!clearParams) {
       opts.queryParamsHandling = "merge";

@@ -96,8 +96,8 @@ export class MessageService {
     return await this.confirm(data, others);
   }
 
-  async form<T = ObjectOf<any>, K = any>(
-    data: InputInfo<K>[] | MessageDataParams<FormMessageData>,
+  async form<T = ObjectOf<any>, K = ObjectOf<any>>(
+    data: InputInfo<T>[] | MessageDataParams<FormMessageData>,
     others: MessageDataParams2<FormMessageData> = {}
   ) {
     if (Array.isArray(data)) {
@@ -108,7 +108,7 @@ export class MessageService {
     }
     const result = await this.open({data: this._getData(data, "form"), ...others});
     if (result && typeof result === "object") {
-      return result as T;
+      return result as K;
     }
     return null;
   }

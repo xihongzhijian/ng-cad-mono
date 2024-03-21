@@ -123,8 +123,9 @@ export class MenjiaoDialogComponent implements OnInit {
     ];
   }
 
-  ngOnInit() {
-    this.update();
+  async ngOnInit() {
+    await this.update();
+    await this.validate();
   }
 
   async update() {
@@ -148,7 +149,9 @@ export class MenjiaoDialogComponent implements OnInit {
     const getOptionInputInfo2 = (key: keyof 算料数据, n: number): InputInfoSelect => {
       return getOptionInputInfo(component.menjiaoOptionsAll, key, (info) => {
         info.model = {data, key};
-        info.validators = Validators.required;
+        if (!info.readonly && !info.disabled) {
+          info.validators = Validators.required;
+        }
         info.onChange = () => {
           updateMenjiaoData(data);
         };

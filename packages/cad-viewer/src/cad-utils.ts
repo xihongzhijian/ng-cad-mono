@@ -147,7 +147,7 @@ export const linewidth2lineweight = (x: number) => {
 
 export const toFixedTrim = (num: number, fractionDigits?: number | undefined) => {
   const str = num.toFixed(fractionDigits);
-  return str.replace(/\.[1-9]*0+/, "");
+  return str.replace(/\.[1-9]*0+$/, "");
 };
 
 const purgeObject2 = (obj: ObjectOf<any>, defaultObj?: ObjectOf<any>) => {

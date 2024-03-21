@@ -923,7 +923,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
       },
       {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}}
     ];
-    return await this.message.form<typeof data>(form);
+    return await this.message.form<typeof data, typeof data>(form);
   }
 
   async onShuruToolbar(event: ToolbarButtonEvent) {
