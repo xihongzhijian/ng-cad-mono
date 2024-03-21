@@ -1283,8 +1283,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   async sortFenlei() {
     const fenleis = this.lingsanCadInfos.map((v) => v.type);
-    const fenleis2 = await this.message.prompt({type: "list", label: "分类排序", value: fenleis});
-    if (!isEqual(fenleis, fenleis2)) {
+    const fenleis2 = await this.message.prompt({type: "list", label: "分类排序", value: [...fenleis]});
+    if (fenleis2 && !isEqual(fenleis, fenleis2)) {
       const success = await this.setLingsanSortedTypes(fenleis2);
       if (success) {
         this.lingsanSortedTypes = fenleis2;

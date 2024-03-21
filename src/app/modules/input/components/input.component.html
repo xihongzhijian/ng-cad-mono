@@ -490,7 +490,6 @@
         <mat-hint>{{ hint }}</mat-hint>
       }
       <input matInput readonly [errorStateMatcher]="getErrorStateMatcher()" />
-      <input #fileInput hidden type="file" [accept]="fileAccept" [multiple]="info.multiple" (change)="onInputChange()" />
       <button mat-icon-button matSuffix color="primary" (click)="selectFile()">
         <mat-icon>file_open</mat-icon>
       </button>
@@ -506,7 +505,6 @@
         <mat-hint>{{ hint }}</mat-hint>
       }
       <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
-      <input #fileInput hidden type="file" [accept]="fileAccept" (change)="onInputChange()" />
       <app-image [src]="value" [bigPicSrc]="info.bigPicSrc" [prefix]="info.prefix" (click)="selectFile()"></app-image>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
@@ -585,16 +583,24 @@
   @case ("list") {
     <div class="sub-form-field">
       <div class="label">{{ info.label }}</div>
-      <mat-list class="list" cdkDropList [cdkDropListData]="value" (cdkDropListDropped)="dropArrayItem($event)">
+      <div class="list" cdkDropList [cdkDropListData]="value" (cdkDropListDropped)="dropArrayItem($event)">
         @for (item of value; track i; let i = $index) {
-          <mat-list-item cdkDrag>
-            <div class="list-item">
-              <div cdkDragHandle class="name">{{ item }}</div>
-              <input matInput #input type="number" [value]="i" (change)="moveArrayItem(i, input)" />
-            </div>
-          </mat-list-item>
+          <mat-divider></mat-divider>
+          <div cdkDrag class="drag-list-item">
+            <div cdkDragHandle class="name">{{ item }}</div>
+            @if (showListInput) {
+              <input
+                matInput
+                #listInput
+                type="number"
+                [value]="i"
+                (change)="moveArrayItem(i, listInput)"
+                (keypress)="onListInputKeyPress($event)"
+              />
+            }
+          </div>
         }
-      </mat-list>
+      </div>
     </div>
   }
   @case ("group") {

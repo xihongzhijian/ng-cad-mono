@@ -22,10 +22,10 @@ import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/mate
 import {MatButtonModule} from "@angular/material/button";
 import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
-import {MatListModule} from "@angular/material/list";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectModule} from "@angular/material/select";
@@ -40,7 +40,7 @@ import {CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {CadData, CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
-import {isTypeOf, ObjectOf, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
@@ -77,10 +77,10 @@ import {getValue} from "./input.utils";
     ImageComponent,
     MatAutocompleteModule,
     MatButtonModule,
+    MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatListModule,
     MatMenuModule,
     MatOptionModule,
     MatRadioModule,
@@ -97,7 +97,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
   cadInfos: {id: string; name: string; img: SafeUrl; val: any}[] = [];
-  @ViewChild("fileInput") fileInput?: ElementRef<HTMLInputElement>;
+  showListInput = true;
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
 
   private _model: NonNullable<Required<InputInfo["model"]>> = {data: {key: ""}, key: "key"};
@@ -862,20 +862,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return 0;
   }
 
-  selectFile() {
-    const input = this.fileInput?.nativeElement;
-    if (!input) {
-      return;
-    }
-    input.click();
-  }
-
-  onInputChange() {
-    const input = this.fileInput?.nativeElement;
-    if (!input) {
-      return;
-    }
-    const files = input.files;
+  async selectFile() {
+    const files = await selectFiles({accept: this.fileAccept});
     if (!files || !files.length) {
       return;
     }
@@ -885,7 +873,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     } else if (info.type === "image" && files[0]) {
       info.onChange?.(files[0], info);
     }
-    input.value = "";
   }
 
   getCadName(val: any) {
@@ -1163,15 +1150,28 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
   }
 
-  moveArrayItem(previousIndex: number, input: HTMLInputElement) {
-    // TODO
+  async moveArrayItem(previousIndex: number, input: HTMLInputElement) {
     const {value} = this;
     if (!Array.isArray(value)) {
       return;
     }
-    const currentIndex = Number(input.value);
-    input.value = "";
+    let currentIndex = Number(input.value);
+    if (isNaN(currentIndex) || currentIndex < 0) {
+      currentIndex = 0;
+    } else if (currentIndex >= value.length) {
+      currentIndex = value.length - 1;
+    }
     moveItemInArray(value, previousIndex, currentIndex);
+
+    this.showListInput = false;
+    await timeout(0);
+    this.showListInput = true;
+  }
+
+  onListInputKeyPress(event: KeyboardEvent) {
+    if (event.key === "Enter") {
+      event.stopPropagation();
+    }
   }
 }
 

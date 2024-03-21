@@ -8,13 +8,15 @@ import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
+import {openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
-import {CadEventCallBack} from "@lucilor/cad-viewer";
+import {CadDimensionLinear, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {ContextMenu} from "@mixins/context-menu.mixin";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadConsoleComponent} from "@modules/cad-console/components/cad-console/cad-console.component";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
+import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
 import {CadStatusAssemble, CadStatusSplit} from "@services/cad-status";
@@ -158,7 +160,8 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   constructor(
     private config: AppConfigService,
     private status: AppStatusService,
-    private cadConsole: CadConsoleService
+    private cadConsole: CadConsoleService,
+    private message: MessageService
   ) {
     super();
   }
@@ -178,6 +181,7 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     cad.appendTo(this.cadContainer.nativeElement);
     cad.on("entitiescopy", this._onEntitiesCopy);
     cad.on("entitiespaste", this._onEntitiesPaste);
+    cad.on("entitydblclick", this._onEntityDblClick);
     this._setCadPadding();
 
     this.subscribe(this.config.configChange$, ({newVal}) => {
@@ -252,6 +256,18 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   private _onEntitiesPaste: CadEventCallBack<"entitiespaste"> = (entities) => {
     entities.forEach((e) => (e.opacity = 1));
     this.status.cad.render(entities);
+  };
+
+  private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (event, entity) => {
+    const collection = this.status.collection$.value;
+    const cad = this.status.cad;
+    if (entity instanceof CadMtext && entity.parent instanceof CadLineLike) {
+      openCadLineForm(collection, this.message, cad, entity.parent);
+    } else if (entity instanceof CadLineLike) {
+      openCadLineForm(collection, this.message, cad, entity);
+    } else if (entity instanceof CadDimensionLinear) {
+      openCadDimensionForm(collection, this.message, cad, entity);
+    }
   };
 
   private _setCadPadding() {

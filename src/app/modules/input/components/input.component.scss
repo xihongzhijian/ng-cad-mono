@@ -67,19 +67,29 @@
     }
   }
   &.list {
-    .list-item {
-      cursor: move;
-      display: flex;
+    display: flex;
+    flex-direction: column;
+  }
+}
 
-      .name {
-        flex: 1 1 0;
-      }
+.drag-list-item {
+  cursor: move;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  font-size: 16px;
 
-      input {
-        width: 30px;
-        text-align: center;
-      }
-    }
+  .name {
+    flex: 1 1 0;
+  }
+
+  input {
+    font-size: 1em;
+    width: 3ch;
+    text-align: center;
+    border: none;
+    border-bottom: var(--border);
+    outline: none;
   }
 }
 
