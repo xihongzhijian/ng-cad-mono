@@ -89,7 +89,7 @@ export class CadOptionsComponent implements AfterViewInit {
     };
     if (this.data.defaultValue) {
       const {value, required} = this.data.defaultValue;
-      if (required && !value) {
+      if (required && !value && this.checkedIdsCurr.size > 1) {
         this.message.error("请选择默认值");
         return;
       }
