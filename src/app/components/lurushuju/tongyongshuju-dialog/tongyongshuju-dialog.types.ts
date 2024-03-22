@@ -1,5 +1,5 @@
+import {ObjectOf} from "@lucilor/utils";
 import {MongodbDataBase, TableDataBase} from "@modules/http/services/cad-data.service.types";
-import {ObjectOf} from "packages/utils/lib";
 
 export interface TongyongshujuInput {}
 

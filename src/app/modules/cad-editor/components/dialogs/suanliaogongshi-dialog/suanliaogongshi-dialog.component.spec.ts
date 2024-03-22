@@ -6,7 +6,7 @@ import {SuanliaogongshiDialogInput} from "./suanliaogongshi-dialog.types";
 
 const data: SuanliaogongshiDialogInput = {
   info: {
-    data: {算料公式: [], 输入数据: [], 测试用例: []}
+    data: {算料公式: [], 输入数据: []}
   }
 };
 describe("SuanliaogongshiDialogComponent", () => {

@@ -5,6 +5,8 @@
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
+  --cad-preview-width: 200px;
+  --cad-preview-height: 100px;
   &.mat-mdc-dialog-component-host {
     display: flex;
   }
@@ -117,6 +119,14 @@
         padding: 0;
       }
     }
+  }
+
+  .success {
+    color: green;
+  }
+
+  .error {
+    color: red;
   }
 
   .link {

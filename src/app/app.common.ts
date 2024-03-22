@@ -47,7 +47,10 @@ export const splitOptions = (str: string) => {
   const regExps = [/[;；]/, /[，,]/, /[*]/];
   for (const regExp of regExps) {
     if (regExp.test(str)) {
-      return str.split(regExp);
+      return str
+        .split(regExp)
+        .filter(Boolean)
+        .map((s) => s.trim());
     }
   }
   return [str];
@@ -62,6 +65,10 @@ export const joinOptions = (options: (string | {mingzi: string})[], separator: "
     } else if (option) {
       value = option.mingzi || "";
     }
+    if (value === undefined || value === null || value === "") {
+      continue;
+    }
+    value = value.trim();
     if (value && !values.includes(value)) {
       values.push(value);
     }

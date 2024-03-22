@@ -3,7 +3,7 @@ import {LurushujuIndexComponent} from "../lurushuju-index/lurushuju-index.compon
 import {MenjiaoCadType, SuanliaoDataParams, 算料数据2} from "../xinghao-data";
 
 export interface SuanliaoDataInput {
-  data: Pick<算料数据2, "算料公式" | "测试用例" | "算料CAD" | "输入数据">;
+  data: 算料数据2;
   varNames: FormulasEditorComponent["varNames"];
   suanliaoDataParams: SuanliaoDataParams;
   key1: MenjiaoCadType;
@@ -12,7 +12,7 @@ export interface SuanliaoDataInput {
 }
 
 export interface SuanliaoDataOutput {
-  data: Pick<算料数据2, "算料公式" | "测试用例" | "算料CAD" | "输入数据">;
+  data: 算料数据2;
 }
 
 export interface SuanliaoDataCadItemInfo {

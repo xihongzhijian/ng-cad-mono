@@ -81,7 +81,7 @@ export const get算料数据 = (raw?: Partial<算料数据> | null) => {
   return result;
 };
 
-export const get算料数据2 = (raw?: 算料数据2 | null) => {
+export const get算料数据2 = (raw?: Partial<算料数据2> | null) => {
   const result: 算料数据2 = {
     配合框CAD: {},
     企料CAD: {},

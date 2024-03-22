@@ -248,10 +248,14 @@ export class CadDataService extends HttpService {
     return data || [];
   }
 
-  getCadImgUrl(id: string) {
+  getCadImgUrl(id: string, noCache = false) {
     let url = "";
     if (id) {
-      url = this.getUrl("ngcad/cadImg", {id, t: Date.now().toString()});
+      const params: ObjectOf<any> = {id};
+      if (noCache) {
+        params.t = Date.now().toString();
+      }
+      url = this.getUrl("ngcad/cadImg", params);
     }
     if (!url) {
       url = imgCadEmpty;

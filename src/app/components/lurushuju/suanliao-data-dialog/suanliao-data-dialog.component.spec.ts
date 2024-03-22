@@ -1,11 +1,12 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {HttpModule} from "@modules/http/http.module";
+import {get算料数据2} from "../xinghao-data";
 import {SuanliaoDataDialogComponent} from "./suanliao-data-dialog.component";
 import {SuanliaoDataInput} from "./suanliao-data-dialog.type";
 
 const data: SuanliaoDataInput = {
-  data: {算料公式: [], 测试用例: [], 算料CAD: [], 输入数据: []},
+  data: get算料数据2(),
   varNames: {names: {test: ["1"]}, width: 0},
   suanliaoDataParams: {
     选项: {

@@ -60,13 +60,13 @@ export class SuanliaoDataDialogComponent {
     public dialogRef: MatDialogRef<SuanliaoDataDialogComponent, SuanliaoDataOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoDataInput
   ) {
+    // TODO: remove cloneDeep
     this.suanliaoData = cloneDeep(this.data.data);
     this.mubanExtraData.options = this.data.suanliaoDataParams.选项;
     this.openCadOptions = {
       suanliaogongshiInfo: {
         data: {
           算料公式: this.suanliaoData.算料公式,
-          测试用例: this.suanliaoData.测试用例,
           输入数据: this.suanliaoData.输入数据
         },
         varNames: this.data.varNames
@@ -163,10 +163,7 @@ export class SuanliaoDataDialogComponent {
   }
 
   async suanliaoTest() {
-    const result = await openSuanliaoTestDialog(this.dialog, {data: {data: {测试用例: this.suanliaoData.测试用例}}});
-    if (result) {
-      this.suanliaoData.测试用例 = result.data.测试用例 || [];
-    }
+    await openSuanliaoTestDialog(this.dialog, {data: {data: this.suanliaoData, varNames: this.data.varNames}});
   }
 
   async submit() {

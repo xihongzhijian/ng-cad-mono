@@ -1,4 +1,4 @@
-import {ObjectOf} from "packages/utils/lib";
+import {ObjectOf} from "@lucilor/utils";
 import {SuanliaoDataParams} from "../xinghao-data";
 
 export const getSuanliaoDataSearch = (params: SuanliaoDataParams) => {

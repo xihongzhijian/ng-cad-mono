@@ -35,8 +35,7 @@
             "scripts": [],
             "extractLicenses": false,
             "sourceMap": true,
-            "optimization": false,
-            "preserveSymlinks": true
+            "optimization": false
           },
           "configurations": {
             "production": {

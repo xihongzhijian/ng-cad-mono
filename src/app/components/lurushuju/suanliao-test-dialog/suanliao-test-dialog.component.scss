@@ -2,6 +2,24 @@
   padding: 10px;
 }
 
+.test-case-card {
+  font-size: 16px;
+  padding: 5px;
+}
+
 .test-cases {
+  width: 25%;
+}
+
+.slgs-list {
+  width: 25%;
+}
+
+.cads {
   flex: 1 1 0;
+}
+
+.gongshi-item {
+  white-space: pre;
+  width: 100%;
 }

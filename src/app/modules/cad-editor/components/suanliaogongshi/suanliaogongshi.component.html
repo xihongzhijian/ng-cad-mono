@@ -5,7 +5,14 @@
       <button mat-raised-button color="primary" (click)="addGongshi()">添加</button>
       <button mat-raised-button color="primary" (click)="viewAll()">查看全部</button>
     </div>
-    <ng-scrollbar class="fixed-width">
+    @if (noScroll) {
+      <ng-container *ngTemplateOutlet="content"></ng-container>
+    } @else {
+      <ng-scrollbar>
+        <ng-container *ngTemplateOutlet="content"></ng-container>
+      </ng-scrollbar>
+    }
+    <ng-template #content>
       <div class="items no-items-per-row">
         @for (gongshi of info.data["算料公式"]; track gongshi; let i = $index) {
           @if (i > 0) {
@@ -14,7 +21,7 @@
           <div class="gongshi-card item">
             <div class="toolbar compact">
               <div class="gongshi-name text long">{{ gongshi["名字"] }}</div>
-              @if (gongshiInfo[i].formulas) {
+              @if (gongshiInfo.at(i)?.formulas) {
                 <button mat-button color="primary" (click)="editGongshiEnd(i, null, true)">关闭编辑</button>
               } @else {
                 <button mat-button color="primary" (click)="editGongshiStart(i)">直接编辑</button>
@@ -24,7 +31,7 @@
               <button mat-button color="primary" (click)="removeGongshi(i)">删除</button>
             </div>
             <div class="gongshi-items">
-              @if (gongshiInfo[i].formulas) {
+              @if (gongshiInfo.at(i)?.formulas) {
                 <app-formulas-editor
                   [formulas]="gongshiInfo[i].formulas"
                   [compact]="true"
@@ -39,7 +46,7 @@
           </div>
         }
       </div>
-    </ng-scrollbar>
+    </ng-template>
   </div>
 }
 @if (info.data["输入数据"]) {

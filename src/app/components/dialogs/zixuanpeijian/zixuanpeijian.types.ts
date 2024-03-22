@@ -1,5 +1,5 @@
 import {SafeUrl} from "@angular/platform-browser";
-import {CalcResult, Formulas} from "@app/utils/calc";
+import {Formulas} from "@app/utils/calc";
 import {KailiaocanshuData} from "@components/klcs/klcs.component";
 import {KlkwpzSource} from "@components/klkwpz/klkwpz";
 import {CadData, CadMtext, CadViewerConfig} from "@lucilor/cad-viewer";
@@ -7,6 +7,7 @@ import {ObjectOf} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
+import {SuanliaoCalcError} from "@views/suanliao/suanliao.types";
 import {XhmrmsbjInfo} from "@views/xhmrmsbj/xhmrmsbj.types";
 
 export interface ZixuanpeijianTypesInfoItem {
@@ -149,13 +150,5 @@ export interface Step1Data {
 export interface CalcZxpjResult {
   fulfilled: boolean;
   门扇布局大小?: ObjectOf<Formulas>;
-  error?: CalcZxpjError;
-}
-
-export interface CalcZxpjError {
-  message: string;
-  details?: string | string[];
-  cads?: CadData[];
-  calc?: {formulas: Formulas; vars: Formulas; result: CalcResult | null};
-  info?: ObjectOf<any>;
+  error?: SuanliaoCalcError;
 }

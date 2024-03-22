@@ -1,6 +1,8 @@
-import {Formulas} from "@app/utils/calc";
+import {CalcResult, Formulas} from "@app/utils/calc";
 import {CalcZxpjResult, ZixuanpeijianCadItem, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
+import {MongodbDataBase} from "@modules/http/services/cad-data.service.types";
 import {XhmrmsbjInfo} from "@views/xhmrmsbj/xhmrmsbj.types";
 
 export interface SuanliaoInput {
@@ -40,4 +42,17 @@ export interface 根据输入值计算选中配件模块无依赖的公式结果
 export interface LastSuanliao {
   input: SuanliaoInput;
   output: SuanliaoOutput;
+}
+
+export interface SuanliaoCalcError {
+  message: string;
+  details?: string | string[];
+  cads?: CadData[];
+  calc?: {formulas: Formulas; vars: Formulas; result: CalcResult | null};
+  info?: ObjectOf<any>;
+}
+
+export interface HoutaiData extends MongodbDataBase {
+  选项?: ObjectOf<any>;
+  条件?: any[];
 }

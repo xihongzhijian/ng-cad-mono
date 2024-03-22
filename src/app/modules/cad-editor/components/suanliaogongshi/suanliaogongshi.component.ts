@@ -1,5 +1,5 @@
-import {KeyValue, KeyValuePipe} from "@angular/common";
-import {Component, HostBinding, Input, OnChanges, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
+import {KeyValue, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
+import {Component, EventEmitter, HostBinding, Input, OnChanges, Output, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -33,14 +33,19 @@ import {SuanliaogongshiInfo} from "./suanliaogongshi.types";
     MatDividerModule,
     MatTooltipModule,
     NgScrollbarModule,
-    TableComponent
+    TableComponent,
+    NgTemplateOutlet
   ],
   templateUrl: "./suanliaogongshi.component.html",
   styleUrl: "./suanliaogongshi.component.scss"
 })
 export class SuanliaogongshiComponent implements OnChanges {
   @HostBinding("class") class = "ng-page";
-  @Input({required: true}) info: SuanliaogongshiInfo = {data: {算料公式: [], 输入数据: []}};
+
+  @Input({required: true}) info: SuanliaogongshiInfo = {data: {}};
+  @Input() noScroll = false;
+  @Output() slgsChange = new EventEmitter<void>();
+
   gongshiInfo: {formulas?: Formulas}[] = [];
   @ViewChildren("gongshiEditor") gongshiEditors?: QueryList<FormulasEditorComponent>;
 
@@ -124,6 +129,7 @@ export class SuanliaogongshiComponent implements OnChanges {
     if (item) {
       data.算料公式.push(item);
       this.gongshiInfo.push({});
+      this.slgsChange.emit();
     }
   }
 
@@ -135,6 +141,7 @@ export class SuanliaogongshiComponent implements OnChanges {
     const item = await this.getGongshiItem(data.算料公式[index]);
     if (item) {
       data.算料公式[index] = item;
+      this.slgsChange.emit();
     }
   }
 
@@ -152,6 +159,7 @@ export class SuanliaogongshiComponent implements OnChanges {
     item.名字 = getCopyName(names, item.名字);
     data.算料公式.push(item);
     this.gongshiInfo.push({});
+    this.slgsChange.emit();
   }
 
   async removeGongshi(index: number) {
@@ -164,6 +172,7 @@ export class SuanliaogongshiComponent implements OnChanges {
     }
     data.算料公式.splice(index, 1);
     this.gongshiInfo.splice(index, 1);
+    this.slgsChange.emit();
   }
 
   editGongshiStart(index: number) {
@@ -175,6 +184,7 @@ export class SuanliaogongshiComponent implements OnChanges {
     const info = this.gongshiInfo[index];
     if (formulas && this.info.data.算料公式) {
       this.info.data.算料公式[index].公式 = formulas;
+      this.slgsChange.emit();
     }
     if (close) {
       delete info.formulas;
@@ -199,6 +209,7 @@ export class SuanliaogongshiComponent implements OnChanges {
       } catch (e) {}
       if (Array.isArray(data2)) {
         data.算料公式 = data2;
+        this.slgsChange.emit();
       } else {
         this.message.error("算料公式数据有误");
       }

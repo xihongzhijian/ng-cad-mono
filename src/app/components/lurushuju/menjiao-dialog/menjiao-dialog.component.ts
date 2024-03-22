@@ -24,7 +24,6 @@ import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
 import {getOptionInputInfo, getOptions2} from "../lurushuju-index/lurushuju-index.utils";
 import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dialog.component";
-import {SuanliaoDataInput} from "../suanliao-data-dialog/suanliao-data-dialog.type";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
 import {
   get算料数据,
@@ -316,7 +315,7 @@ export class MenjiaoDialogComponent implements OnInit {
           }
         },
         suanliaogongshiInfo: {
-          data: {算料公式: data[key1].算料公式, 测试用例: data[key1].测试用例, 输入数据: data[key1].输入数据},
+          data: {算料公式: data[key1].算料公式, 输入数据: data[key1].输入数据},
           varNames: component.varNames
         },
         isLoaded: key1 === "包边在外+外开"
@@ -517,15 +516,9 @@ export class MenjiaoDialogComponent implements OnInit {
       return;
     }
     const data = this.formData;
-    const suanliaoData: SuanliaoDataInput["data"] = {
-      算料公式: data[key1].算料公式,
-      测试用例: data[key1].测试用例,
-      算料CAD: data[key1].算料CAD,
-      输入数据: data[key1].输入数据
-    };
     const result = await openSuanliaoDataDialog(this.dialog, {
       data: {
-        data: suanliaoData,
+        data: data[key1],
         varNames: component.varNames,
         suanliaoDataParams: this.key1Infos[key1].suanliaoDataParams,
         component,
@@ -539,7 +532,6 @@ export class MenjiaoDialogComponent implements OnInit {
         if (this.key1Infos[key1]) {
           this.key1Infos[key1].suanliaogongshiInfo.data = {
             算料公式: data[key1].算料公式,
-            测试用例: data[key1].测试用例,
             输入数据: data[key1].输入数据
           };
         }

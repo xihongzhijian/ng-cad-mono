@@ -528,13 +528,6 @@ export class Calc {
       }
     }
 
-    // 公式计算错误提示
-    // if (errorAlert && !isEmpty(errorTrim)) {
-    //     // throw new Error(JSON.stringify(errorTrim));
-    //     const errorStr = this.getErrorFormusStr(errorTrim, vars);
-    //     singleAlert(errorStr, {area: ["70%", "80%"]}, true, true);
-    // }
-
     const succeed = vars;
     const succeedTrim: Formulas = {};
     for (const key in succeed) {
