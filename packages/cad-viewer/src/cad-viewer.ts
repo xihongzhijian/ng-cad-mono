@@ -448,7 +448,6 @@ export class CadViewer extends EventEmitter {
           let error = null as any;
           let length = parent.length;
           let prefix = "";
-          let suffix = "";
           let ndigits = 2;
           if (parent.显示线长) {
             const calcReuslt = calculate(parent.显示线长, {线长: length});
@@ -463,7 +462,7 @@ export class CadViewer extends EventEmitter {
               error = calcReuslt.error;
               valid = false;
             }
-            suffix = "显示";
+            prefix = "显示";
           } else if (parent instanceof CadArc) {
             ndigits = 0;
             switch (parent.圆弧显示) {
@@ -484,7 +483,7 @@ export class CadViewer extends EventEmitter {
             }
           }
           if (valid) {
-            entity.text = prefix + toFixedTrim(length, ndigits) + suffix;
+            entity.text = prefix + toFixedTrim(length, ndigits);
           } else {
             entity.text = String(error);
           }
