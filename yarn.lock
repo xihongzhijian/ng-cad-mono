@@ -12031,7 +12031,7 @@ __metadata:
     ng-recaptcha: "npm:^13.2.1"
     ngx-color: "npm:^9.0.0"
     ngx-infinite-scroll: "npm:^17.0.0"
-    ngx-quill: "npm:^25.1.1"
+    ngx-quill: "npm:^25.1.2"
     ngx-scrollbar: "npm:^13.0.3"
     ngx-ui-loader: "npm:^13.0.0"
     pdfmake: "npm:^0.2.10"
@@ -12087,16 +12087,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-quill@npm:^25.1.1":
-  version: 25.1.1
-  resolution: "ngx-quill@npm:25.1.1"
+"ngx-quill@npm:^25.1.2":
+  version: 25.1.2
+  resolution: "ngx-quill@npm:25.1.2"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
     "@angular/core": ^17.0.0
-    quill: 2.0.0-rc.2
+    quill: 2.0.0-rc.4
     rxjs: ^7.0.0
-  checksum: 10c0/904ff7ebf4d23501b70f32a6dc8ec0ad371607e5abe199760b28e58d66ab57a67e0f81d539ea60f831be17aa2372f4cc918b38629a1794ee8813941ba196259b
+  checksum: 10c0/afc1bdb70f8abdd2193a7d44c2b24a723df2930789281574d5ffaa9a85df416749366ff34c848c90fec288db375b4ff83514de99fcdb2f851106dc3af7ffe667
   languageName: node
   linkType: hard
 
