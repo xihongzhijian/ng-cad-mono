@@ -1285,7 +1285,10 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   backToXinghao() {
-    this.setStep(1, {});
+    this.dialog.closeAll();
+    setTimeout(() => {
+      this.setStep(1, {});
+    }, 0);
   }
 
   getInfo() {
