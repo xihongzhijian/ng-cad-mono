@@ -129,6 +129,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   fenleiName = "";
   gongyiName = "";
   menjiaoName = "";
+  suanliaoDataName = "";
+  suanliaoTestName = "";
   production = environment.production;
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
@@ -989,7 +991,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
   }
 
-  async getMenjiaoItem(onSubmit: NonNullable<MenjiaoInput["onSubmit"]>, data0: 算料数据) {
+  async getMenjiaoItem(
+    onSubmit: NonNullable<MenjiaoInput["onSubmit"]>,
+    data0: 算料数据,
+    suanliaoDataName?: string,
+    suanliaoTestName?: string
+  ) {
     this.menjiaoName = data0?.名字 || "新建门铰锁边铰边";
     this.saveInfo();
     await openMenjiaoDialog(this.dialog, {
@@ -997,7 +1004,9 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         data: data0,
         component: this,
         onSubmit,
-        isKailiao: this.isKailiao
+        isKailiao: this.isKailiao,
+        suanliaoDataName,
+        suanliaoTestName
       }
     });
     this.menjiaoName = "";
@@ -1081,7 +1090,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
   }
 
-  async onMenjiaoRow(event: RowButtonEvent<算料数据>) {
+  async onMenjiaoRow(event: RowButtonEvent<算料数据>, suanliaoDataName?: string, suanliaoTestName?: string) {
     if (!this.gongyi) {
       return;
     }
@@ -1090,21 +1099,26 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       case "编辑":
         {
           fromItem.产品分类 = this.fenleiName;
-          await this.getMenjiaoItem(async (result) => {
-            const toItem = result.data;
-            if (toItem && this.gongyi) {
-              if (toItem.默认值) {
-                for (const [i, item4] of this.gongyi.算料数据.entries()) {
-                  if (i !== rowIdx) {
-                    item4.默认值 = false;
+          await this.getMenjiaoItem(
+            async (result) => {
+              const toItem = result.data;
+              if (toItem && this.gongyi) {
+                if (toItem.默认值) {
+                  for (const [i, item4] of this.gongyi.算料数据.entries()) {
+                    if (i !== rowIdx) {
+                      item4.默认值 = false;
+                    }
                   }
                 }
+                this.gongyi.算料数据[rowIdx] = toItem;
+                this.menjiaoTable.data = [...this.gongyi.算料数据];
+                await this.submitGongyi(["算料数据"]);
               }
-              this.gongyi.算料数据[rowIdx] = toItem;
-              this.menjiaoTable.data = [...this.gongyi.算料数据];
-              await this.submitGongyi(["算料数据"]);
-            }
-          }, fromItem);
+            },
+            fromItem,
+            suanliaoDataName,
+            suanliaoTestName
+          );
         }
         break;
       case "编辑排序":
@@ -1288,11 +1302,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (this.menjiaoName) {
       info.门铰锁边铰边 = this.menjiaoName;
     }
+    if (this.suanliaoDataName) {
+      info.算料公式 = this.suanliaoDataName;
+    }
+    if (this.suanliaoTestName) {
+      info.算料测试 = "true";
+    }
     return info;
   }
 
   async setInfo(info: ReturnType<typeof this.getInfo>) {
-    const {项目, 型号, 产品分类, 工艺做法, 门铰锁边铰边} = info;
+    const {项目, 型号, 产品分类, 工艺做法, 门铰锁边铰边, 算料公式, 算料测试} = info;
     if (!项目) {
       return;
     }
@@ -1308,13 +1328,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           const rowIdx = this.gongyi?.算料数据.findIndex((v) => v.名字 === 门铰锁边铰边);
           const column = this.menjiaoTable.columns.find((v) => v.field === "操作");
           if (rowIdx >= 0 && column) {
-            await this.onMenjiaoRow({
-              button: {event: "编辑"},
-              column,
-              item: this.gongyi.算料数据[rowIdx],
-              rowIdx,
-              colIdx: 0
-            });
+            await this.onMenjiaoRow(
+              {
+                button: {event: "编辑"},
+                column,
+                item: this.gongyi.算料数据[rowIdx],
+                rowIdx,
+                colIdx: 0
+              },
+              算料公式,
+              算料测试
+            );
           }
         }
       } else {

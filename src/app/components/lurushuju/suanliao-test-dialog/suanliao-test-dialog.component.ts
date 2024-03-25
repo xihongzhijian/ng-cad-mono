@@ -339,6 +339,7 @@ export class SuanliaoTestDialogComponent implements OnInit {
     this.spinner.hide(this.spinner.defaultLoaderId);
     timer.end("测试算料", "测试算料");
     result.fulfilled = !!result.calcResult?.fulfilled && !!result.zxpjResult?.fulfilled;
+    console.log(result);
     return result;
   }
 

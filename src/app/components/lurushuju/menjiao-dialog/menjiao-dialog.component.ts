@@ -125,6 +125,11 @@ export class MenjiaoDialogComponent implements OnInit {
   async ngOnInit() {
     await this.update();
     await this.validate();
+
+    const suanliaoDataName = this.data.suanliaoDataName as MenjiaoCadType;
+    if (menjiaoCadTypes.includes(suanliaoDataName)) {
+      this.editSuanliaoData(suanliaoDataName);
+    }
   }
 
   async update() {
@@ -511,10 +516,12 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async editSuanliaoData(key1: MenjiaoCadType) {
-    const {component, isKailiao} = this.data;
+    const {component, isKailiao, suanliaoTestName} = this.data;
     if (!component) {
       return;
     }
+    component.suanliaoDataName = key1;
+    component.saveInfo();
     const data = this.formData;
     const result = await openSuanliaoDataDialog(this.dialog, {
       data: {
@@ -523,7 +530,8 @@ export class MenjiaoDialogComponent implements OnInit {
         suanliaoDataParams: this.key1Infos[key1].suanliaoDataParams,
         component,
         key1,
-        isKailiao
+        isKailiao,
+        suanliaoTestName
       }
     });
     if (result) {
@@ -538,6 +546,8 @@ export class MenjiaoDialogComponent implements OnInit {
       }
       this.getSuanliaoTables(key1)?.update();
     }
+    component.suanliaoDataName = "";
+    component.saveInfo();
   }
 
   async copy(key1: MenjiaoCadType) {

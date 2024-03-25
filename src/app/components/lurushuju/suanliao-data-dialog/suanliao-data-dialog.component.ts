@@ -1,4 +1,4 @@
-import {Component, EventEmitter, HostBinding, Inject, Output, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {Component, EventEmitter, HostBinding, Inject, OnInit, Output, QueryList, ViewChild, ViewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -40,7 +40,7 @@ import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./
   templateUrl: "./suanliao-data-dialog.component.html",
   styleUrl: "./suanliao-data-dialog.component.scss"
 })
-export class SuanliaoDataDialogComponent {
+export class SuanliaoDataDialogComponent implements OnInit {
   @HostBinding("class") class = "ng-page";
   @Output() cadFormSubmitted = new EventEmitter<void>();
 
@@ -84,6 +84,12 @@ export class SuanliaoDataDialogComponent {
           {name: "添加开料参数", onClick: this.addKlcs.bind(this)}
         ]
       );
+    }
+  }
+
+  ngOnInit() {
+    if (this.data.suanliaoTestName) {
+      this.suanliaoTest();
     }
   }
 
@@ -163,7 +169,15 @@ export class SuanliaoDataDialogComponent {
   }
 
   async suanliaoTest() {
-    await openSuanliaoTestDialog(this.dialog, {data: {data: this.suanliaoData, varNames: this.data.varNames}});
+    const {component, varNames} = this.data;
+    if (!component) {
+      return;
+    }
+    component.suanliaoTestName = "true";
+    component.saveInfo();
+    await openSuanliaoTestDialog(this.dialog, {data: {data: this.suanliaoData, varNames}});
+    component.suanliaoTestName = "";
+    component.saveInfo();
   }
 
   async submit() {

@@ -9,6 +9,7 @@ export interface SuanliaoDataInput {
   key1: MenjiaoCadType;
   component?: LurushujuIndexComponent;
   isKailiao?: boolean;
+  suanliaoTestName?: string;
 }
 
 export interface SuanliaoDataOutput {
