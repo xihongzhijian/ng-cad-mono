@@ -12038,7 +12038,7 @@ __metadata:
     prettier: "npm:^3.2.5"
     print-js: "npm:^1.6.0"
     qrcode: "npm:^1.5.3"
-    quill: "npm:2.0.0-rc.3"
+    quill: "npm:2.0.0-rc.4"
     rxjs: "npm:~7.8.1"
     ts-node: "npm:^10.9.2"
     tslib: "npm:^2.6.2"
@@ -12780,10 +12780,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parchment@npm:3.0.0-beta.0":
-  version: 3.0.0-beta.0
-  resolution: "parchment@npm:3.0.0-beta.0"
-  checksum: 10c0/1aec17d29ceac962161cc9a3e8c6e4afc4859ef75ca7f418b33180b19caa76377d1f97c2c3509d82899a4cb79e4c944cb1a9092fb19117dd50b8cc274ec6d008
+"parchment@npm:3.0.0-rc.0":
+  version: 3.0.0-rc.0
+  resolution: "parchment@npm:3.0.0-rc.0"
+  checksum: 10c0/ea6000c7d8faabe0e09775c02ee74d201e78d476d4f33e0701aa4021ac8aa5cc814df7d79b91eccb3660c8a66b9d180929e3653643df05d34fb64aef78764c97
   languageName: node
   linkType: hard
 
@@ -13405,15 +13405,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"quill@npm:2.0.0-rc.3":
-  version: 2.0.0-rc.3
-  resolution: "quill@npm:2.0.0-rc.3"
+"quill@npm:2.0.0-rc.4":
+  version: 2.0.0-rc.4
+  resolution: "quill@npm:2.0.0-rc.4"
   dependencies:
     eventemitter3: "npm:^5.0.1"
     lodash-es: "npm:^4.17.21"
-    parchment: "npm:3.0.0-beta.0"
+    parchment: "npm:3.0.0-rc.0"
     quill-delta: "npm:^5.1.0"
-  checksum: 10c0/74e149beb07db41e8d80e8d8d1e90a71ea4d96ac39ba4c8f55084b202f58ec22972516b21809df4660d2127510b434f3497c3f7fd1a624e162df743e8d5b67f1
+  checksum: 10c0/1d6f3c32fa3f9ebaafe4ea0eff03e6a41264097af6636add3016eed6b26458dd8e037690ea4d96470a164363b2abd74ecb5e51c900a9ac554dd6532e111aeeac
   languageName: node
   linkType: hard
 
