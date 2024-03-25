@@ -111,7 +111,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
     };
     const result = await openZixuanpeijianDialog(this.dialog, {data: zxpjData});
     if (result) {
-      data.算料CAD = result.零散.map((v) => getHoutaiCad(v.data));
+      data.算料CAD = result.零散.map((v) => getHoutaiCad(v.data, {houtaiId: v.info.houtaiId}));
     }
   }
 
@@ -169,13 +169,13 @@ export class SuanliaoDataDialogComponent implements OnInit {
   }
 
   async suanliaoTest() {
-    const {component, varNames} = this.data;
+    const {component, varNames, suanliaoDataParams} = this.data;
     if (!component) {
       return;
     }
     component.suanliaoTestName = "true";
     component.saveInfo();
-    await openSuanliaoTestDialog(this.dialog, {data: {data: this.suanliaoData, varNames}});
+    await openSuanliaoTestDialog(this.dialog, {data: {data: this.suanliaoData, varNames, suanliaoDataParams}});
     component.suanliaoTestName = "";
     component.saveInfo();
   }

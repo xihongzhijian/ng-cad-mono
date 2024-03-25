@@ -6,29 +6,29 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog
 import {MatDividerModule} from "@angular/material/divider";
 import {getCopyName, timer} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
-import {Calc, CalcResult, Formulas} from "@app/utils/calc";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
-import {CalcZxpjResult, ZixuanpeijianCadItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
-import {calcZxpj} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
-import {CadData, CadZhankai} from "@lucilor/cad-viewer";
+import {CadData} from "@lucilor/cad-viewer";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {CalcService} from "@services/calc.service";
-import {cloneDeep, difference} from "lodash";
+import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {测试用例} from "../xinghao-data";
 import {SuanliaoTestInfo, SuanliaoTestInput, SuanliaoTestOutput} from "./suanliao-test-dialog.types";
-import {filterSlgsList} from "./suanliao-test-dialog.utils";
+import {calcTestCase, getTestCaseInfo} from "./suanliao-test-dialog.utils";
 
 @Component({
   selector: "app-suanliao-test-dialog",
   standalone: true,
-  imports: [ImageComponent, KeyValuePipe, MatButtonModule, MatDividerModule, NgScrollbarModule, SuanliaogongshiComponent],
+  imports: [ImageComponent, InputComponent, KeyValuePipe, MatButtonModule, MatDividerModule, NgScrollbarModule, SuanliaogongshiComponent],
   templateUrl: "./suanliao-test-dialog.component.html",
   styleUrl: "./suanliao-test-dialog.component.scss"
 })
@@ -37,12 +37,14 @@ export class SuanliaoTestDialogComponent implements OnInit {
 
   infos: SuanliaoTestInfo[] = [];
   allSlgsInfo: SuanliaogongshiInfo | null = null;
+  showPrintContent = false;
 
   constructor(
     private dialog: MatDialog,
     private message: MessageService,
     private calc: CalcService,
     private spinner: SpinnerService,
+    private http: CadDataService,
     public dialogRef: MatDialogRef<SuanliaoTestDialogComponent, SuanliaoTestOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoTestInput
   ) {}
@@ -52,57 +54,11 @@ export class SuanliaoTestDialogComponent implements OnInit {
   }
 
   async updateInfo() {
-    const {测试用例, 算料公式} = this.data.data;
+    const {测试用例} = this.data.data;
     this.infos = [];
     for (const testCase of 测试用例) {
-      const cads = cloneDeep(this.data.data.算料CAD);
-      const info: SuanliaoTestInfo = {slgsList: [], errors: [], allVars: [], cads, cadImgs: {}};
+      const info = await getTestCaseInfo(testCase, this.data.data, this.calc);
       this.infos.push(info);
-
-      const isValueEmpty = (v: any) => v === "" || v === null || v === undefined;
-      const testVars = {...testCase.测试数据};
-      for (const [key, value] of Object.entries(testVars)) {
-        if (isValueEmpty(value)) {
-          delete testVars[key];
-        }
-      }
-      const slgsList = await filterSlgsList(算料公式, testVars, this.calc);
-      info.slgsList = slgsList;
-      const formulas: Formulas = {};
-      for (const slgs of slgsList) {
-        for (const [key, value] of Object.entries(slgs.公式)) {
-          if (isValueEmpty(value)) {
-            continue;
-          }
-          if (formulas[key] === undefined) {
-            formulas[key] = value;
-          } else {
-            info.errors.push(`算料公式【${key}】重复`);
-          }
-          if (typeof value === "string") {
-            const vars = Calc.getVars(value);
-            for (const v of vars) {
-              if (!info.allVars.includes(v)) {
-                info.allVars.push(v);
-              }
-            }
-          }
-        }
-      }
-      for (const key in testVars) {
-        if (formulas[key] !== undefined) {
-          info.errors.push(`测试变量【${key}】与算料公式重复`);
-        }
-      }
-      const missingVars = difference(info.allVars, Object.keys(testVars), Object.keys(formulas));
-      if (missingVars.length > 0) {
-        const missingVarsStr = missingVars.map((v) => `【${v}】`).join("");
-        info.errors.push(`缺少变量${missingVarsStr}`);
-        for (const v of missingVars) {
-          testCase.测试数据[v] = "";
-        }
-      }
-
       await this.updateCadImgs(info);
     }
   }
@@ -222,8 +178,10 @@ export class SuanliaoTestDialogComponent implements OnInit {
 
   async calcTestCases() {
     const errors: string[] = [];
+    this.spinner.show(this.spinner.defaultLoaderId, {text: "正在测试所有算料"});
+    timer.start("测试所有算料");
     for (const [i] of this.data.data.测试用例.entries()) {
-      const result = await this.calcTestCase0(i);
+      const result = await this.calcTestCase(i);
       if (result.errors.length > 0) {
         errors.push(...result.errors);
       }
@@ -231,6 +189,8 @@ export class SuanliaoTestDialogComponent implements OnInit {
     if (errors.length > 0) {
       this.message.error(errors.join("<br/>"));
     }
+    this.spinner.hide(this.spinner.defaultLoaderId);
+    timer.end("测试所有算料", "测试所有算料");
   }
 
   printTestCases() {
@@ -265,86 +225,27 @@ export class SuanliaoTestDialogComponent implements OnInit {
     await this.updateInfo();
   }
 
-  async calcTestCase0(i: number) {
+  async calcTestCase(i: number) {
     const testCase = this.data.data.测试用例[i];
     const info = this.infos[i];
-    const result = {
-      fulfilled: false,
-      errors: Array<string>(),
-      calcResult: null as null | CalcResult,
-      cads: null as null | ZixuanpeijianCadItem[],
-      zxpjResult: null as null | CalcZxpjResult
-    };
-    if (!testCase || !info) {
-      return result;
-    }
-    if (info.errors.length > 0) {
-      result.errors.push(`测试用例【${testCase.名字}】存在错误`);
-      return result;
-    }
-
-    const formulas: Formulas = {};
-    for (const slgs of info.slgsList) {
-      for (const [key, value] of Object.entries(slgs.公式)) {
-        formulas[key] = value;
-      }
-    }
-
-    this.spinner.show(this.spinner.defaultLoaderId, {text: "正在测试算料"});
-    timer.start("测试算料");
-    result.calcResult = await this.calc.calcFormulas(formulas, testCase.测试数据);
-    if (result.calcResult) {
-      const calcResult = result.calcResult;
-      const cads = this.data.data.算料CAD.map((v) => {
-        const data = new CadData(v.json);
-        let zhankai = data.zhankai[0];
-        if (!zhankai) {
-          zhankai = new CadZhankai();
-          zhankai.name = data.name;
-        }
-        const numResult = Calc.calcExpress(`(${zhankai.shuliang})*(${zhankai.shuliangbeishu})`, calcResult.succeed);
-        const num = numResult.error ? 1 : numResult.value;
-        return {
-          data,
-          info: {
-            houtaiId: v._id,
-            zhankai: [
-              {
-                width: zhankai.zhankaikuan,
-                height: zhankai.zhankaigao,
-                num,
-                originalWidth: zhankai.zhankaikuan
-              }
-            ],
-            calcZhankai: []
-          }
-        };
-      });
-      result.cads = cads;
-      result.zxpjResult = await calcZxpj(this.dialog, this.message, this.calc, calcResult.succeed, [], cads);
-    }
+    const result = await calcTestCase(testCase, info, this.data.data, this.dialog, this.message, this.calc);
     if (result.cads) {
-      info.cads = result.cads.map((v, i) => {
-        const item = this.data.data.算料CAD[i];
-        const json = item.json;
-        item.json = {};
-        const item2 = cloneDeep(item);
-        item.json = json;
-        item2.json = v.data.export();
-        item2.json.calcZhankai = v.info.calcZhankai;
-        return item2;
-      });
       await this.updateCadImgs(info);
     }
-    this.spinner.hide(this.spinner.defaultLoaderId);
-    timer.end("测试算料", "测试算料");
-    result.fulfilled = !!result.calcResult?.fulfilled && !!result.zxpjResult?.fulfilled;
-    console.log(result);
+    console.log({
+      需要提供的测试值: info.requiredVars,
+      算料结果: result.calcResult?.succeed,
+      算料CAD: info.cads
+    });
     return result;
   }
 
-  async calcTestCase(i: number) {
-    const result = await this.calcTestCase0(i);
+  async calcTestCaseI(i: number) {
+    this.spinner.show(this.spinner.defaultLoaderId, {text: "正在测试算料"});
+    timer.start("测试算料");
+    const result = await this.calcTestCase(i);
+    this.spinner.hide(this.spinner.defaultLoaderId);
+    timer.end("测试算料", "测试算料");
     if (result.errors.length > 0) {
       this.message.error(result.errors.join("<br/>"));
       return;
@@ -355,6 +256,16 @@ export class SuanliaoTestDialogComponent implements OnInit {
   printTestCase(i: number) {
     console.log(i);
     this.message.alert({content: "暂未实现"});
+  }
+
+  getTestCaseInput(i: number) {
+    const testCase = this.data.data.测试用例[i];
+    const info: InputInfo<测试用例> = {
+      type: "boolean",
+      label: "测试通过",
+      model: {data: testCase, key: "测试正确"}
+    };
+    return info;
   }
 }
 

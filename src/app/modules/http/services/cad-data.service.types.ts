@@ -174,8 +174,8 @@ export interface HoutaiCad extends MongodbDataBase {
   json: ObjectOf<any>;
 }
 
-export const getHoutaiCad = (data = new CadData()): HoutaiCad => {
-  return {
+export const getHoutaiCad = (data = new CadData(), info?: {houtaiId?: string}) => {
+  const cad: HoutaiCad = {
     _id: data.id,
     名字: data.name,
     分类: data.type,
@@ -185,6 +185,11 @@ export const getHoutaiCad = (data = new CadData()): HoutaiCad => {
     显示名字: data.xianshimingzi,
     json: exportCadData(data, true)
   };
+  const {houtaiId} = info || {};
+  if (houtaiId) {
+    cad.json.houtaiId = houtaiId;
+  }
+  return cad;
 };
 
 export interface GetShortUrlParams {

@@ -547,6 +547,7 @@ export class MenjiaoDialogComponent implements OnInit {
       this.getSuanliaoTables(key1)?.update();
     }
     component.suanliaoDataName = "";
+    this.data.suanliaoTestName = "";
     component.saveInfo();
   }
 

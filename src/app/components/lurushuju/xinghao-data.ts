@@ -350,6 +350,7 @@ export interface SuanliaoDataParams {
     包边方向: string;
     开启: string;
     门铰锁边铰边: string;
+    测试用例?: string;
   };
 }
 

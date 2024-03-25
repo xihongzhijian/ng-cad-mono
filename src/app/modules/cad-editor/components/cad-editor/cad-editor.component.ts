@@ -229,7 +229,7 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
       this.subscribe(scrollbar.scrolled, this.onScrollChange);
     });
 
-    this.cadConsole.command$.subscribe((command) => {
+    this.subscribe(this.cadConsole.command$, (command) => {
       this.cadConsoleComponent.execute(command);
     });
     setTimeout(() => {

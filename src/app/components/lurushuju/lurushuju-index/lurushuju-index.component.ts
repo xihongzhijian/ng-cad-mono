@@ -1324,6 +1324,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       this.status.changeProject(项目);
       return;
     }
+    this.dialog.closeAll();
     if (型号) {
       if (产品分类 && 工艺做法) {
         await this.setStep(3, {xinghaoName: 型号, fenleiName: 产品分类, gongyiName: 工艺做法});

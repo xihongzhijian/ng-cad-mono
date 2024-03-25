@@ -1,5 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {HttpModule} from "@modules/http/http.module";
 import {get算料数据2} from "../xinghao-data";
 import {SuanliaoTestDialogComponent} from "./suanliao-test-dialog.component";
 import {SuanliaoTestInput} from "./suanliao-test-dialog.types";
@@ -11,7 +12,17 @@ const data: SuanliaoTestInput = {
       {名字: "测试用例2", 时间: 0, 测试数据: {a: 2}, 测试正确: true}
     ]
   }),
-  varNames: {names: {test: ["1"]}, width: 0}
+  varNames: {names: {test: ["1"]}, width: 0},
+  suanliaoDataParams: {
+    选项: {
+      型号: "1",
+      产品分类: "2",
+      工艺做法: "3",
+      包边方向: "4",
+      开启: "5",
+      门铰锁边铰边: "6"
+    }
+  }
 };
 
 describe("SuanliaoTestDialogComponent", () => {
@@ -20,7 +31,7 @@ describe("SuanliaoTestDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SuanliaoTestDialogComponent],
+      imports: [HttpModule, SuanliaoTestDialogComponent],
       providers: [
         {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data}

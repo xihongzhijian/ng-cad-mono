@@ -126,7 +126,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       }
     });
     if (result?.isSaved) {
-      Object.assign(cad, getHoutaiCad(cadData), {_id: cad._id});
+      Object.assign(cad, getHoutaiCad(cadData));
       this.initCadViewer();
       this.afterEditCad.emit();
     }
