@@ -139,7 +139,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     model: {data: this, key: "searchMokuaiValue"},
     onInput: debounce(this.filterMokuaiItems.bind(this), 200)
   };
-  typesButtonsWidth = "auto";
   isEditingFenlei$ = new BehaviorSubject<boolean>(false);
 
   get summitBtnText() {

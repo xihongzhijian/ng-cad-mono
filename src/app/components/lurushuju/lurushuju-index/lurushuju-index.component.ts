@@ -15,6 +15,7 @@ import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijia
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {environment} from "@env";
 import {ObjectOf, queryString} from "@lucilor/utils";
+import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -81,7 +82,7 @@ import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./l
   templateUrl: "./lurushuju-index.component.html",
   styleUrl: "./lurushuju-index.component.scss"
 })
-export class LurushujuIndexComponent implements OnInit, AfterViewInit {
+export class LurushujuIndexComponent extends Subscribed() implements OnInit, AfterViewInit {
   @HostBinding("class") class = ["ng-page"];
   defaultFenleis = ["单门", "子母对开", "双开"];
   xinghaos: XinghaoData[] = [];
@@ -141,10 +142,17 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
     private dialog: MatDialog,
     private status: AppStatusService
   ) {
+    super();
     setGlobal("lrsj", this, true);
   }
 
   async ngOnInit() {
+    this.subscribe(this.status.changeProject$, () => {
+      const info = session.load<ReturnType<typeof this.getInfo>>(this.infoKey);
+      if (info && !info.changeProject) {
+        session.remove(this.infoKey);
+      }
+    });
     const info = session.load<ReturnType<typeof this.getInfo>>(this.infoKey);
     if (info) {
       session.remove(this.infoKey);
@@ -1289,7 +1297,7 @@ export class LurushujuIndexComponent implements OnInit, AfterViewInit {
       return;
     }
     if (this.status.project !== 项目) {
-      session.save(this.infoKey, info);
+      session.save(this.infoKey, {...info, changeProject: true});
       this.status.changeProject(项目);
       return;
     }

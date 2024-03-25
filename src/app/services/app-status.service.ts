@@ -79,6 +79,7 @@ export class AppStatusService {
   isAdmin$ = new BehaviorSubject<boolean>(false);
   updateTimeStamp$ = new BehaviorSubject<number>(-1);
   zhewanLengths$ = new BehaviorSubject<[number, number]>([1, 3]);
+  changeProject$ = new Subject<string>();
   private _isZhewanLengthsFetched = false;
   projectConfig = new ProjectConfig();
 
@@ -534,12 +535,15 @@ export class AppStatusService {
     if (!project) {
       project = this.project;
     }
-    opts.queryParams = {project};
-    if (!clearParams) {
-      opts.queryParamsHandling = "merge";
-    }
-    const url2 = this.router.createUrlTree(url, opts);
-    location.href = url2.toString();
+    this.changeProject$.next(project);
+    setTimeout(() => {
+      opts.queryParams = {project};
+      if (!clearParams) {
+        opts.queryParamsHandling = "merge";
+      }
+      const url2 = this.router.createUrlTree(url, opts);
+      location.href = url2.toString();
+    }, 0);
   }
 }
 
