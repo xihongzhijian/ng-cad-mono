@@ -1,39 +1,18 @@
-<div class="toolbar">
-  <button mat-raised-button color="primary" (click)="submit()">提交并关闭</button>
-</div>
-
-<div class="flex-110 flex-column">
-  <div class="toolbar">
-    <div class="title text long">测试</div>
-    <button mat-raised-button color="primary" (click)="addTestCase()">添加测试</button>
-    <button mat-raised-button color="primary" (click)="importTestCases()">导入测试数据</button>
-    <button mat-raised-button color="primary" (click)="exportTestCases()">导出测试数据</button>
-    <button mat-raised-button color="primary" (click)="calcTestCases()">计算所有</button>
-    <button mat-raised-button color="primary" (click)="printTestCases()">打印所有</button>
-    <button mat-raised-button [color]="allSlgsInfo ? 'accent' : 'primary'" (click)="toggleSlgsAll()">所有算料公式</button>
-  </div>
-  <ng-scrollbar>
-    @if (allSlgsInfo) {
-      <app-suanliaogongshi [info]="allSlgsInfo" [noScroll]="true" (slgsChange)="onSlgsChange()"></app-suanliaogongshi>
-    }
-    <div class="items">
-      @for (testCase of data.data["测试用例"]; track i; let i = $index) {
+@if (printing) {
+  <div class="items">
+    @for (testCase of data.data["测试用例"]; track i; let i = $index) {
+      @if ([undefined, i].includes(printing.teseCaseIndex)) {
         <div class="test-case-card item border">
           <div class="toolbar">
             <div class="text short">{{ testCase["名字"] }}</div>
-            <app-input [info]="getTestCaseInput(i)"></app-input>
+            <div class="text short">测试通过：{{ testCase["测试正确"] ? "是" : "否" }}</div>
             <div class="text long">{{ getTimeStr(testCase["时间"]) }}</div>
-            <button mat-raised-button color="primary" (click)="calcTestCaseI(i)">计算</button>
-            <button mat-raised-button color="primary" (click)="printTestCase(i)">打印</button>
-            <button mat-raised-button color="primary" (click)="copyTestCase(i)">复制</button>
-            <button mat-raised-button color="primary" (click)="removeTestCase(i)">删除</button>
           </div>
           @if (infos[i]) {
             <div class="flex-row" style="width: 100%">
               <div class="test-cases item">
                 <div class="toolbar">
                   <div class="text long">测试数据</div>
-                  <button mat-button color="primary" (click)="editTestCase(i)">编辑</button>
                 </div>
                 @if (infos[i].errors.length > 0) {
                   <div class="flex-column" style="width: 100%">
@@ -67,7 +46,12 @@
                 @for (item of data.data["算料CAD"]; track $index) {
                   <div class="item">
                     <div class="name">{{ item["名字"] }}</div>
-                    <app-image class="cad-preview" [src]="infos[i].cadImgs[item._id]" [bigPicSrc]="infos[i].cadImgs[item._id]"></app-image>
+                    <app-image
+                      class="cad-preview"
+                      [src]="infos[i].cadImgs[item._id]"
+                      [bigPicSrc]="infos[i].cadImgs[item._id]"
+                      (imgEnd)="onCadImgEnd()"
+                    ></app-image>
                   </div>
                 }
               </div>
@@ -75,10 +59,91 @@
           }
         </div>
       }
-    </div>
-  </ng-scrollbar>
-</div>
+    }
+  </div>
+} @else {
+  <div class="toolbar">
+    <button mat-raised-button color="primary" (click)="submit()">提交并关闭</button>
+  </div>
 
-@if (showPrintContent) {
-  <div class="flex-column">1</div>
+  <div class="flex-110 flex-column">
+    <div class="toolbar">
+      <div class="title text long">测试</div>
+      <button mat-raised-button color="primary" (click)="addTestCase()">添加测试</button>
+      <button mat-raised-button color="primary" (click)="importTestCases()">导入测试数据</button>
+      <button mat-raised-button color="primary" (click)="exportTestCases()">导出测试数据</button>
+      <button mat-raised-button color="primary" (click)="calcTestCases()">计算所有</button>
+      <button mat-raised-button color="primary" (click)="printTestCases()">打印所有</button>
+      <button mat-raised-button [color]="allSlgsInfo ? 'accent' : 'primary'" (click)="toggleSlgsAll()">所有算料公式</button>
+    </div>
+    <ng-scrollbar>
+      @if (allSlgsInfo) {
+        <app-suanliaogongshi [info]="allSlgsInfo" [noScroll]="true" (slgsChange)="onSlgsChange()"></app-suanliaogongshi>
+      }
+      <div class="items">
+        @for (testCase of data.data["测试用例"]; track i; let i = $index) {
+          <div class="test-case-card item border">
+            <div class="toolbar">
+              <div class="text short">{{ testCase["名字"] }}</div>
+              <app-input [info]="getTestCaseInput(i)"></app-input>
+              <div class="text long">{{ getTimeStr(testCase["时间"]) }}</div>
+              <button mat-raised-button color="primary" (click)="calcTestCaseI(i)">计算</button>
+              <button mat-raised-button color="primary" (click)="printTestCase(i)">打印</button>
+              <button mat-raised-button color="primary" (click)="copyTestCase(i)">复制</button>
+              <button mat-raised-button color="primary" (click)="removeTestCase(i)">删除</button>
+            </div>
+            @if (infos[i]) {
+              <div class="flex-row" style="width: 100%">
+                <div class="test-cases item">
+                  <div class="toolbar">
+                    <div class="text long">测试数据</div>
+                    <button mat-button color="primary" (click)="editTestCase(i)">编辑</button>
+                  </div>
+                  @if (infos[i].errors.length > 0) {
+                    <div class="flex-column" style="width: 100%">
+                      @for (item of infos[i].errors; track $index) {
+                        <div class="error">{{ item }}</div>
+                      }
+                    </div>
+                  }
+                  <mat-divider></mat-divider>
+                  @for (item of testCase["测试数据"] | keyvalue: returnZero; track $index) {
+                    <div class="gongshi-item text-ellipsis">{{ getGongshiStr(item) }}</div>
+                  }
+                </div>
+                <mat-divider vertical></mat-divider>
+                <div class="slgs-list">
+                  <div class="toolbar">
+                    <div class="text long">算料公式</div>
+                  </div>
+                  @for (slgs of infos[i].slgsList; track $index) {
+                    <mat-divider></mat-divider>
+                    <div class="flex-column">
+                      <div>{{ slgs["名字"] }}</div>
+                      @for (item of slgs["公式"] | keyvalue: returnZero; track $index) {
+                        <div class="gongshi-item text-ellipsis">{{ getGongshiStr(item) }}</div>
+                      }
+                    </div>
+                  }
+                </div>
+                <mat-divider vertical></mat-divider>
+                <div class="cads items no-items-per-row">
+                  @for (item of data.data["算料CAD"]; track $index) {
+                    <div class="item">
+                      <div class="name">{{ item["名字"] }}</div>
+                      <app-image
+                        class="cad-preview"
+                        [src]="infos[i].cadImgs[item._id]"
+                        [bigPicSrc]="infos[i].cadImgs[item._id]"
+                      ></app-image>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </ng-scrollbar>
+  </div>
 }

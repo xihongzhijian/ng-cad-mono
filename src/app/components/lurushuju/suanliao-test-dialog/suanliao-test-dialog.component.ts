@@ -9,7 +9,7 @@ import {getCadPreview} from "@app/cad/cad-preview";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {CadData} from "@lucilor/cad-viewer";
-import {downloadByString, selectFiles} from "@lucilor/utils";
+import {downloadByString, selectFiles, timeout} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -21,6 +21,7 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {CalcService} from "@services/calc.service";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {BehaviorSubject, filter, take} from "rxjs";
 import {测试用例} from "../xinghao-data";
 import {SuanliaoTestInfo, SuanliaoTestInput, SuanliaoTestOutput} from "./suanliao-test-dialog.types";
 import {calcTestCase, getTestCaseInfo} from "./suanliao-test-dialog.utils";
@@ -33,11 +34,12 @@ import {calcTestCase, getTestCaseInfo} from "./suanliao-test-dialog.utils";
   styleUrl: "./suanliao-test-dialog.component.scss"
 })
 export class SuanliaoTestDialogComponent implements OnInit {
-  @HostBinding("class") class = "ng-page";
+  @HostBinding("class") class = ["ng-page"];
 
   infos: SuanliaoTestInfo[] = [];
   allSlgsInfo: SuanliaogongshiInfo | null = null;
-  showPrintContent = false;
+  printing: {teseCaseIndex?: number} | null = null;
+  cadImgsCount$ = new BehaviorSubject<number>(0);
 
   constructor(
     private dialog: MatDialog,
@@ -193,8 +195,10 @@ export class SuanliaoTestDialogComponent implements OnInit {
     timer.end("测试所有算料", "测试所有算料");
   }
 
-  printTestCases() {
-    this.message.alert({content: "暂未实现"});
+  async printTestCases() {
+    await this.printBefore();
+    window.print();
+    await this.printAfter();
   }
 
   getTimeStr(time: number) {
@@ -253,9 +257,10 @@ export class SuanliaoTestDialogComponent implements OnInit {
     return result;
   }
 
-  printTestCase(i: number) {
-    console.log(i);
-    this.message.alert({content: "暂未实现"});
+  async printTestCase(i: number) {
+    await this.printBefore(i);
+    window.print();
+    await this.printAfter();
   }
 
   getTestCaseInput(i: number) {
@@ -266,6 +271,36 @@ export class SuanliaoTestDialogComponent implements OnInit {
       model: {data: testCase, key: "测试正确"}
     };
     return info;
+  }
+
+  async printBefore(teseCaseIndex?: number) {
+    this.printing = {teseCaseIndex};
+    this.class.push("printing");
+    this.cadImgsCount$.next(0);
+    let imgsTotal = this.data.data.算料CAD.length;
+    if (typeof teseCaseIndex !== "number") {
+      imgsTotal *= this.data.data.测试用例.length;
+    }
+    await new Promise<void>((resolve) => {
+      this.cadImgsCount$
+        .pipe(
+          filter((v) => v === imgsTotal),
+          take(1)
+        )
+        .subscribe(() => {
+          resolve();
+        });
+    });
+    await timeout(0);
+  }
+
+  async printAfter() {
+    this.printing = null;
+    this.class = this.class.filter((v) => v !== "printing");
+  }
+
+  onCadImgEnd() {
+    this.cadImgsCount$.next(this.cadImgsCount$.value + 1);
   }
 }
 

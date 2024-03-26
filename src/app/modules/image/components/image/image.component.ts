@@ -81,6 +81,7 @@ export class ImageComponent {
   @Input() emptySrc = imgEmpty;
   @Output() imgLoad = new EventEmitter();
   @Output() imgError = new EventEmitter();
+  @Output() imgEnd = new EventEmitter();
   bigPicVisible = false;
   bigPicClass = ["big-pic"];
   @ViewChild("bigPicDiv", {read: ElementRef}) bigPicDiv?: ElementRef<HTMLDivElement>;
@@ -110,6 +111,7 @@ export class ImageComponent {
   onLoad() {
     this.loading = false;
     this.imgLoad.emit();
+    this.imgEnd.emit();
   }
 
   onError() {
@@ -119,6 +121,7 @@ export class ImageComponent {
       this.class = [...this.class, "error"];
     }
     this.imgError.emit();
+    this.imgEnd.emit();
   }
 
   async showBigPic() {

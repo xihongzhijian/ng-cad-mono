@@ -1,5 +1,11 @@
 :host {
   padding: 10px;
+
+  &.printing {
+    width: 210mm;
+    height: auto;
+    overflow: visible;
+  }
 }
 
 .test-case-card {

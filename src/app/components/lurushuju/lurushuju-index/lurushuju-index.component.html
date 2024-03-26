@@ -132,7 +132,7 @@
   }
 </mat-tab-group>
 
-<div #menu class="floating-menu" cdkDrag (cdkDragStarted)="onMenuDragStart()" (cdkDragEnded)="onMenuDragEnd()">
+<div #menu class="floating-menu no-print" cdkDrag (cdkDragStarted)="onMenuDragStart()" (cdkDragEnded)="onMenuDragEnd()">
   <button mat-icon-button color="primary" [matMenuTriggerFor]="links" [disabled]="isMenuDisabled">
     <mat-icon>apps</mat-icon>
   </button>

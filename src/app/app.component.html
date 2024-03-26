@@ -1,7 +1,7 @@
 <router-outlet></router-outlet>
 <app-spinner></app-spinner>
 @if (!isProd) {
-  <div class="nav" cdkDrag>
+  <div class="no-print" cdkDrag>
     <mat-icon color="primary" [matMenuTriggerFor]="links">apps</mat-icon>
     <mat-menu #links="matMenu">
       <button mat-menu-item (click)="changeProject()">更换项目</button>
