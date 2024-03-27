@@ -3,6 +3,11 @@
 }
 
 .gongshis {
+  ::ng-deep {
+    .ng-scroll-content {
+      width: 100%;
+    }
+  }
   .gongshi-card {
     width: 100%;
 
