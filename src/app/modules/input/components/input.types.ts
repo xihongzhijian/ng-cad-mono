@@ -132,7 +132,7 @@ export interface InputInfoFile<T = any> extends InputInfoBase<T> {
   accept?: string;
   multiple?: boolean;
   model?: never;
-  onChange?: (val: FileList, info: InputInfoFile<T>) => void;
+  onChange?: (val: FileList | null, info: InputInfoFile<T>) => void;
 }
 
 export interface InputInfoImage<T = any> extends InputInfoBase<T> {
@@ -142,7 +142,7 @@ export interface InputInfoImage<T = any> extends InputInfoBase<T> {
   bigPicSrc?: string;
   prefix?: string;
   model?: never;
-  onChange?: (val: File, info: InputInfoImage<T>) => void;
+  onChange?: (val: File | null, info: InputInfoImage<T>) => void;
 }
 
 export interface InputInfoCad<T = any> extends InputInfoBase<T> {

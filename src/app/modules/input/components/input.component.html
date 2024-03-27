@@ -506,6 +506,9 @@
       }
       <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
       <app-image [src]="value" [bigPicSrc]="info.bigPicSrc" [prefix]="info.prefix" (click)="selectFile()"></app-image>
+      @if (info.clearable) {
+        <button mat-button color="primary" (click)="clear()">删除图片</button>
+      }
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
@@ -520,7 +523,7 @@
             <div class="flex-column">
               <div class="flex-row" style="align-items: center">
                 @if (info.clearable) {
-                  <button mat-icon-button color="accent" (click)="clearCad(i)"><mat-icon>close</mat-icon></button>
+                  <button mat-icon-button color="primary" (click)="clearCad(i)"><mat-icon>close</mat-icon></button>
                 }
                 @if (info.openable) {
                   <button mat-button color="primary" (click)="editCad(i)">编辑</button>

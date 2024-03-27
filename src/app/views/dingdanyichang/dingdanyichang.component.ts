@@ -64,10 +64,15 @@ export class DingdanyichangComponent extends Subscribed() {
           prefix: filePathUrl,
           value: data.yichangtupian,
           onChange: async (val, info) => {
-            const result = await this.http.uploadImage(val);
-            if (result) {
-              data.yichangtupian = result.url;
-              info.value = result.url;
+            if (val) {
+              const result = await this.http.uploadImage(val);
+              if (result) {
+                data.yichangtupian = result.url;
+                info.value = result.url;
+              }
+            } else {
+              data.yichangtupian = "";
+              info.value = "";
             }
           }
         },
@@ -109,10 +114,15 @@ export class DingdanyichangComponent extends Subscribed() {
           prefix: filePathUrl,
           value: data.chulitupian,
           onChange: async (val, info) => {
-            const result = await this.http.uploadImage(val);
-            if (result) {
-              data.chulitupian = result.url;
-              info.value = result.url;
+            if (val) {
+              const result = await this.http.uploadImage(val);
+              if (result) {
+                data.chulitupian = result.url;
+                info.value = result.url;
+              }
+            } else {
+              data.chulitupian = "";
+              info.value = "";
             }
           }
         },

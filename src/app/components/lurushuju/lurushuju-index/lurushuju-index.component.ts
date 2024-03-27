@@ -266,11 +266,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         label: "图片",
         value: data.tupian,
         prefix: filePathUrl,
+        clearable: true,
         onChange: async (val, info) => {
-          const result = await this.http.uploadImage(val);
-          if (result?.url) {
-            info.value = result.url;
-            data.tupian = result.url;
+          if (val) {
+            const result = await this.http.uploadImage(val);
+            if (result?.url) {
+              info.value = result.url;
+              data.tupian = result.url;
+            }
+          } else {
+            info.value = "";
+            data.tupian = "";
           }
         }
       },
@@ -674,11 +680,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         label: "图片",
         value: data.图片,
         prefix: filePathUrl,
+        clearable: true,
         onChange: async (val, info) => {
-          const result = await this.http.uploadImage(val);
-          if (result?.url) {
-            info.value = result.url;
-            data.图片 = result.url;
+          if (val) {
+            const result = await this.http.uploadImage(val);
+            if (result?.url) {
+              info.value = result.url;
+              data.图片 = result.url;
+            }
+          } else {
+            info.value = "";
+            data.图片 = "";
           }
         }
       },

@@ -564,6 +564,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       case "color":
         info.onChange?.(value, info);
         break;
+      case "file":
+        info.onChange?.(null, info);
+        break;
+      case "image":
+        info.onChange?.(null, info);
+        break;
       default:
         break;
     }
