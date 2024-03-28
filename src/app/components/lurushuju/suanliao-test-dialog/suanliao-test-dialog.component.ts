@@ -19,9 +19,11 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {CalcService} from "@services/calc.service";
-import {cloneDeep} from "lodash";
+import {cloneDeep, uniqueId} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import printJS from "print-js";
 import {BehaviorSubject, filter, take} from "rxjs";
+import {getSuanliaoDataSearch} from "../suanliao-tables/suanliao-tables.utils";
 import {测试用例} from "../xinghao-data";
 import {SuanliaoTestInfo, SuanliaoTestInput, SuanliaoTestOutput} from "./suanliao-test-dialog.types";
 import {calcTestCase, getTestCaseInfo} from "./suanliao-test-dialog.utils";
@@ -40,6 +42,7 @@ export class SuanliaoTestDialogComponent implements OnInit {
   allSlgsInfo: SuanliaogongshiInfo | null = null;
   printing: {teseCaseIndex?: number} | null = null;
   cadImgsCount$ = new BehaviorSubject<number>(0);
+  printElId = uniqueId("printEl");
 
   constructor(
     private dialog: MatDialog,
@@ -57,16 +60,18 @@ export class SuanliaoTestDialogComponent implements OnInit {
 
   async updateInfo() {
     const {测试用例} = this.data.data;
+    const infosOld = [...this.infos];
     this.infos = [];
-    for (const testCase of 测试用例) {
+    for (const [i, testCase] of 测试用例.entries()) {
+      const infoOld = infosOld[i];
       const info = await getTestCaseInfo(testCase, this.data.data, this.calc);
       this.infos.push(info);
-      await this.updateCadImgs(info);
+      await this.updateCadImgs(info, infoOld?.cadImgs);
     }
   }
 
-  async updateCadImgs(info: SuanliaoTestInfo) {
-    info.cadImgs = {};
+  async updateCadImgs(info: SuanliaoTestInfo, cache?: SuanliaoTestInfo["cadImgs"]) {
+    info.cadImgs = {...cache};
     for (const cad of info.cads) {
       if (info.cadImgs[cad._id]) {
         continue;
@@ -95,6 +100,12 @@ export class SuanliaoTestDialogComponent implements OnInit {
     return null;
   }
 
+  getTestCaseSearch(testCase: 测试用例) {
+    const where = getSuanliaoDataSearch(this.data.suanliaoDataParams);
+    where.名字 = testCase.名字;
+    return where;
+  }
+
   async addTestCase() {
     const data = this.data.data;
     if (!data.测试用例) {
@@ -114,6 +125,13 @@ export class SuanliaoTestDialogComponent implements OnInit {
     }
     const result = await this.getTestCaseItem(data.测试用例[index]);
     if (result) {
+      if (data.测试用例[index].名字 !== result.名字) {
+        const where = this.getTestCaseSearch(data.测试用例[index]);
+        const success = await this.http.updateMongodb({collection: "suanliaoceshishuju", data: {名字: result.名字}, where});
+        if (!success) {
+          return;
+        }
+      }
       data.测试用例[index] = result;
       await this.updateInfo();
     }
@@ -141,6 +159,11 @@ export class SuanliaoTestDialogComponent implements OnInit {
       return;
     }
     if (!(await this.message.confirm(`确定删除【${data.测试用例[index].名字}】吗？`))) {
+      return;
+    }
+    const where = this.getTestCaseSearch(data.测试用例[index]);
+    const success = await this.http.deleteMongodb({collection: "suanliaoceshishuju", where});
+    if (!success) {
       return;
     }
     data.测试用例.splice(index, 1);
@@ -195,12 +218,6 @@ export class SuanliaoTestDialogComponent implements OnInit {
     timer.end("测试所有算料", "测试所有算料");
   }
 
-  async printTestCases() {
-    await this.printBefore();
-    window.print();
-    await this.printAfter();
-  }
-
   getTimeStr(time: number) {
     return new Date(time).toLocaleString();
   }
@@ -236,11 +253,16 @@ export class SuanliaoTestDialogComponent implements OnInit {
     if (result.cads) {
       await this.updateCadImgs(info);
     }
-    console.log({
-      需要提供的测试值: info.requiredVars,
-      算料结果: result.calcResult?.succeed,
-      算料CAD: info.cads
-    });
+    const data = {
+      名字: testCase.名字,
+      数据: {
+        需要提供的测试值: info.requiredVars,
+        算料结果: result.calcResult?.succeed,
+        算料CAD: info.cads
+      }
+    };
+    const where = this.getTestCaseSearch(testCase);
+    await this.http.updateMongodb({collection: "suanliaoceshishuju", data, where, upsert: true});
     return result;
   }
 
@@ -257,25 +279,9 @@ export class SuanliaoTestDialogComponent implements OnInit {
     return result;
   }
 
-  async printTestCase(i: number) {
-    await this.printBefore(i);
-    window.print();
-    await this.printAfter();
-  }
-
-  getTestCaseInput(i: number) {
-    const testCase = this.data.data.测试用例[i];
-    const info: InputInfo<测试用例> = {
-      type: "boolean",
-      label: "测试通过",
-      model: {data: testCase, key: "测试正确"}
-    };
-    return info;
-  }
-
-  async printBefore(teseCaseIndex?: number) {
+  async print(teseCaseIndex?: number) {
     this.printing = {teseCaseIndex};
-    this.class.push("printing");
+    this.class = [...this.class, "printing"];
     this.cadImgsCount$.next(0);
     let imgsTotal = this.data.data.算料CAD.length;
     if (typeof teseCaseIndex !== "number") {
@@ -292,11 +298,20 @@ export class SuanliaoTestDialogComponent implements OnInit {
         });
     });
     await timeout(0);
-  }
 
-  async printAfter() {
+    printJS({printable: this.printElId, type: "html", targetStyles: ["*"]});
     this.printing = null;
     this.class = this.class.filter((v) => v !== "printing");
+  }
+
+  getTestCaseInput(i: number) {
+    const testCase = this.data.data.测试用例[i];
+    const info: InputInfo<测试用例> = {
+      type: "boolean",
+      label: "测试通过",
+      model: {data: testCase, key: "测试正确"}
+    };
+    return info;
   }
 
   onCadImgEnd() {

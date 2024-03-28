@@ -1,5 +1,5 @@
 @if (printing) {
-  <div class="items">
+  <div class="items" [id]="printElId">
     @for (testCase of data.data["测试用例"]; track i; let i = $index) {
       @if ([undefined, i].includes(printing.teseCaseIndex)) {
         <div class="test-case-card item border">
@@ -73,7 +73,7 @@
       <button mat-raised-button color="primary" (click)="importTestCases()">导入测试数据</button>
       <button mat-raised-button color="primary" (click)="exportTestCases()">导出测试数据</button>
       <button mat-raised-button color="primary" (click)="calcTestCases()">计算所有</button>
-      <button mat-raised-button color="primary" (click)="printTestCases()">打印所有</button>
+      <button mat-raised-button color="primary" (click)="print()">打印所有</button>
       <button mat-raised-button [color]="allSlgsInfo ? 'accent' : 'primary'" (click)="toggleSlgsAll()">所有算料公式</button>
     </div>
     <ng-scrollbar>
@@ -88,7 +88,7 @@
               <app-input [info]="getTestCaseInput(i)"></app-input>
               <div class="text long">{{ getTimeStr(testCase["时间"]) }}</div>
               <button mat-raised-button color="primary" (click)="calcTestCaseI(i)">计算</button>
-              <button mat-raised-button color="primary" (click)="printTestCase(i)">打印</button>
+              <button mat-raised-button color="primary" (click)="print(i)">打印</button>
               <button mat-raised-button color="primary" (click)="copyTestCase(i)">复制</button>
               <button mat-raised-button color="primary" (click)="removeTestCase(i)">删除</button>
             </div>

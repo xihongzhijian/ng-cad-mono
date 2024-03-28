@@ -13,7 +13,8 @@ body {
   overflow: hidden;
 }
 @media print {
-  body {
+  body,
+  body * {
     overflow: visible;
   }
 }

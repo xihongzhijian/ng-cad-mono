@@ -12,6 +12,12 @@
   font-size: 16px;
   padding: 5px;
 }
+:host.printing .test-case-card {
+  border: 1px solid black;
+  &:hover {
+    border: 1px solid black;
+  }
+}
 
 .test-cases {
   width: 25%;

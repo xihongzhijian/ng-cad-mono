@@ -99,6 +99,21 @@ export interface QueryMysqlParams {
   token?: string;
 }
 
+export interface UpdateMongodbParams<T extends MongodbDataBase> {
+  collection: CadCollection;
+  data: Omit<Partial<T>, "vid">;
+  where: ObjectOf<any>;
+  upsert?: boolean;
+  multi?: boolean;
+  notFindError?: boolean;
+}
+
+export interface DeleteMongodbParams {
+  collection: CadCollection;
+  where: ObjectOf<any>;
+  limit?: boolean;
+}
+
 export interface TableInsertParams<T extends TableDataBase = TableDataBase> {
   table: string;
   data: Omit<Partial<T>, "vid">;

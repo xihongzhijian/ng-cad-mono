@@ -44,7 +44,7 @@
         @for (item of fentiCads | keyvalue: returnZero; track item.key) {
           <div class="fenti-cad toolbar">
             <div>{{ item.key }}:</div>
-            <button mat-button (click)="selectFentiCad()">{{ item.value ? item.value["名字"] : "不做分体" }}</button>
+            <button mat-raised-button color="primary" (click)="selectFentiCad()">{{ item.value ? item.value["名字"] : "不做分体" }}</button>
           </div>
         }
       </div>

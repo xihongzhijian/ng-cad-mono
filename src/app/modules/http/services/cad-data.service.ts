@@ -11,6 +11,7 @@ import {
   BancaiListData,
   CadSearchData,
   Changelog,
+  DeleteMongodbParams,
   GetCadParams,
   GetOptionsParams,
   GetShortUrlParams,
@@ -27,7 +28,8 @@ import {
   TableInsertParams,
   TableRenderData,
   TableUpdateParams,
-  TableUploadFile
+  TableUploadFile,
+  UpdateMongodbParams
 } from "./cad-data.service.types";
 import {CadImgCache} from "./cad-img-cache";
 import {HttpService} from "./http.service";
@@ -246,6 +248,16 @@ export class CadDataService extends HttpService {
   async queryMySql<T extends TableDataBase>(params: QueryMysqlParams, options?: HttpOptions) {
     const data = await this.getData<T[]>("ngcad/queryMysql", params, {testData: params.table, ...options});
     return data || [];
+  }
+
+  async updateMongodb<T extends MongodbDataBase = any>(params: UpdateMongodbParams<T>, options?: HttpOptions) {
+    const data = await this.getData<boolean>("ngcad/updateMongodb", params, options);
+    return !!data;
+  }
+
+  async deleteMongodb(params: DeleteMongodbParams, options?: HttpOptions) {
+    const data = await this.getData<boolean>("ngcad/deleteMongodb", params, options);
+    return !!data;
   }
 
   getCadImgUrl(id: string, noCache = false) {
