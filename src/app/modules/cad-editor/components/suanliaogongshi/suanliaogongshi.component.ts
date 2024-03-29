@@ -108,7 +108,7 @@ export class SuanliaogongshiComponent implements OnChanges {
         varNames: this.info.varNames,
         extraInputInfos: [
           {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
-          {type: "object", label: "选项", model: {data, key: "选项"}, optionsDialog: {}},
+          {type: "object", label: "选项", model: {data, key: "选项"}, optionsDialog: {}, optionMultiple: true},
           {type: "array", label: "条件", model: {data, key: "条件"}}
         ]
       }

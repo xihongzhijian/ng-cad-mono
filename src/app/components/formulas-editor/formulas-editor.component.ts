@@ -131,7 +131,7 @@ export class FormulasEditorComponent implements OnChanges {
   }
 
   stringifyFormulas() {
-    return this.formulaList.map((v) => `${v[0]} = ${v[1]}`).join("\n");
+    return this.formulaList.map((v) => `${v[0]} = ${v[1]}`).join("\n\n");
   }
 
   addFormulas() {
