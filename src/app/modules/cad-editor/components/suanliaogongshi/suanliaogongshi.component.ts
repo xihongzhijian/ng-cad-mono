@@ -193,7 +193,7 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async importGonshis() {
     const data = this.info.data;
-    if (!(await this.message.confirm("导入算料公式会覆盖原有数据，确定导入吗？"))) {
+    if (!(await this.message.confirm("确定导入吗？"))) {
       return;
     }
     const files = await selectFiles({accept: ".json"});
@@ -208,7 +208,10 @@ export class SuanliaogongshiComponent implements OnChanges {
         data2 = JSON.parse(reader.result as string);
       } catch (e) {}
       if (Array.isArray(data2)) {
-        data.算料公式 = data2;
+        if (!Array.isArray(data.算料公式)) {
+          data.算料公式 = [];
+        }
+        data.算料公式.push(...data2);
         this.slgsChange.emit();
       } else {
         this.message.error("算料公式数据有误");

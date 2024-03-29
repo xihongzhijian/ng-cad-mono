@@ -172,7 +172,7 @@ export class SuanliaoTestDialogComponent implements OnInit {
 
   async importTestCases() {
     const data = this.data.data;
-    if (!(await this.message.confirm("导入测试用例会覆盖原有数据，确定导入吗？"))) {
+    if (!(await this.message.confirm("确定导入吗？"))) {
       return;
     }
     const files = await selectFiles({accept: ".json"});
@@ -187,7 +187,7 @@ export class SuanliaoTestDialogComponent implements OnInit {
         data2 = JSON.parse(reader.result as string);
       } catch (e) {}
       if (Array.isArray(data2)) {
-        data.测试用例 = data2;
+        data.测试用例.push(...data2);
         this.updateInfo();
       } else {
         this.message.error("测试用例数据有误");
