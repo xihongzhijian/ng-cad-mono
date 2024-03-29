@@ -221,7 +221,16 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const data: XinghaoData = xinghao
       ? cloneDeep(xinghao)
       : {vid: 0, mingzi: "", menchuang: "", gongyi: "", dingdanliucheng: "新工艺", tingyong: 0, paixu: -10000, tupian: ""};
-    const data2: XinghaoRaw = {名字: data.mingzi, 所属门窗: data.menchuang, 所属工艺: data.gongyi, 订单流程: data.dingdanliucheng};
+    if (!data.算料单模板) {
+      data.算料单模板 = "自动排版模板";
+    }
+    const data2: XinghaoRaw = {
+      名字: data.mingzi,
+      所属门窗: data.menchuang,
+      所属工艺: data.gongyi,
+      订单流程: data.dingdanliucheng,
+      算料单模板: data.算料单模板
+    };
     const mingziOld = data.mingzi;
     const names = this.xinghaos.map((xinghao) => xinghao.mingzi);
     let refreshOptions = false;
@@ -283,6 +292,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       getOptionInput("门窗", "所属门窗"),
       getOptionInput("工艺", "所属工艺"),
       getOptionInput("订单流程", "订单流程"),
+      {
+        type: "select",
+        label: "算料单模板",
+        model: {data: data2, key: "算料单模板"},
+        options: ["自动排版模板", "手动装配配件模板"]
+      },
       {type: "number", label: "排序", model: {data, key: "paixu"}},
       {type: "boolean", label: "停用", model: {data, key: "tingyong"}}
     ];

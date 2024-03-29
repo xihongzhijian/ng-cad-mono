@@ -174,7 +174,9 @@ mat-divider {
   --accent-color: #{$accent-color};
   --mat-divider-margin: 5px;
   --mat-icon-size: 24px;
-  --mat-form-field-container-text-size: 1.125rem;
+  --mat-form-field-container-text-size: 1rem;
+  --mat-select-trigger-text-size: 1rem;
+  --mat-option-label-text-size: 1rem;
   --mdc-filled-text-field-label-text-color: #{$primary-color};
   --mdc-filled-text-field-focus-label-text-color: #{$primary-color};
   --mdc-filled-text-field-label-text-size: 1.125rem;

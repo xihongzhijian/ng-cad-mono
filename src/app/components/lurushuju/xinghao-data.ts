@@ -115,6 +115,7 @@ export interface XinghaoRaw {
   产品分类?: ObjectOf<工艺做法[]>;
   显示产品分类?: string[];
   订单流程?: string;
+  算料单模板?: string;
 }
 
 export interface Xinghao extends XinghaoRaw {

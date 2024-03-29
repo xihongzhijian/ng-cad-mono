@@ -11,6 +11,7 @@ export interface XinghaoData extends TableDataBase {
   menchuang?: string;
   gongyi?: string;
   dingdanliucheng?: string;
+  算料单模板?: string;
 }
 
 export type LurushujuIndexStep = 1 | 2 | 3;
