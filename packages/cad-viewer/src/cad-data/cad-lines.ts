@@ -1,5 +1,5 @@
 import {DEFAULT_TOLERANCE, Point} from "@lucilor/utils";
-import {CadArc, CadLine, CadLineLike, CadMtext, DEFAULT_LENGTH_TEXT_SIZE} from "..";
+import {CadArc, CadLine, CadLineLike, CadMtext} from "..";
 import {getVectorFromArray} from "../cad-utils";
 import {CadData} from "./cad-data";
 import {CadEntities} from "./cad-entities";
@@ -315,7 +315,6 @@ export const generateLineTexts = (data: CadData, tolerance = DEFAULT_TOLERANCE) 
         } else if (anchor.y === 1) {
           lengthText.info.offset[1] += textOffset;
         }
-        line.lengthTextSize = line.length < 10 ? 22 : DEFAULT_LENGTH_TEXT_SIZE;
       }
       const offset = getVectorFromArray(lengthText.info.offset);
       lengthText.insert.copy(offset.add(outer));

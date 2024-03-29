@@ -59,6 +59,7 @@ export interface DakongSummaryItemDetail {
   face: string;
   count: number;
   error: string;
+  info?: string;
 }
 
 export type XikongData = ObjectOf<XikongDataItem[] | null>;

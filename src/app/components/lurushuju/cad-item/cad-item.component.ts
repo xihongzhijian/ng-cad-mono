@@ -18,9 +18,9 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {CadCollection} from "@app/cad/collections";
 import {cadOptions} from "@app/cad/options";
-import {exportCadData, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
+import {exportCadData, generateLineTexts2, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
-import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadZhankai, generateLineTexts} from "@lucilor/cad-viewer";
+import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadZhankai} from "@lucilor/cad-viewer";
 import {selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -273,7 +273,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     const containerEl = cadContainer.nativeElement;
     containerEl.innerHTML = "";
     const data = new CadData(cad.json);
-    generateLineTexts(data);
+    generateLineTexts2(data);
     const cadViewer = this.initCadViewer0("cad", data, containerEl, () => {
       cad.json.entities = exportCadData(data, true).entities;
     });
@@ -303,7 +303,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     }
     const containerEl = mubanContainer.nativeElement;
     containerEl.innerHTML = "";
-    generateLineTexts(mubanData);
+    generateLineTexts2(mubanData);
     const cadViewer = this.initCadViewer0("CADmuban", mubanData, containerEl, () => {});
     this.mubanViewer = cadViewer;
     await this.updateMubanInputs();

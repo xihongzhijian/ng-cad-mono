@@ -1,8 +1,9 @@
 import {CdkDrag} from "@angular/cdk/drag-drop";
 import {Component} from "@angular/core";
+import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
-import {ActivatedRoute, ResolveFn, Router, RouterLink, RouterOutlet} from "@angular/router";
+import {ActivatedRoute, ResolveFn, Router, RouterOutlet} from "@angular/router";
 import {environment} from "@env";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -15,7 +16,7 @@ import {routesInfo} from "./routing/routes-info";
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
   standalone: true,
-  imports: [RouterOutlet, SpinnerComponent, CdkDrag, MatIconModule, MatMenuModule, RouterLink, MessageTestComponent]
+  imports: [RouterOutlet, SpinnerComponent, CdkDrag, MatIconModule, MatMenuModule, MessageTestComponent]
 })
 export class AppComponent {
   title = "ng-cad2";
@@ -27,7 +28,8 @@ export class AppComponent {
     private router: Router,
     private route: ActivatedRoute,
     private status: AppStatusService,
-    private message: MessageService
+    private message: MessageService,
+    private dialog: MatDialog
   ) {}
 
   getRouteTitle(routeInfo: (typeof routesInfo)[number]) {
@@ -64,5 +66,10 @@ export class AppComponent {
     if (form) {
       this.status.changeProject(form.项目缩写, form.清除参数);
     }
+  }
+
+  navigate(routeInfo: (typeof this.routesInfo)[number]) {
+    this.dialog.closeAll();
+    this.router.navigate([routeInfo.path], {queryParamsHandling: "merge"});
   }
 }

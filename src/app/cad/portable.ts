@@ -13,14 +13,13 @@ import {
   CadMtext,
   CadVersion,
   CadZhankai,
-  generateLineTexts,
   generatePointsMap,
   setLinesLength,
   sortLines
 } from "@lucilor/cad-viewer";
 import {keysOf, Line, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {difference, intersection, isEqual} from "lodash";
-import {isShiyitu, showIntersections} from "./utils";
+import {generateLineTexts2, isShiyitu, showIntersections} from "./utils";
 
 export interface Slgs {
   名字: string;
@@ -471,7 +470,7 @@ export class CadPortable {
         const linesToSet = data.entities.line.filter((e) => e.gongshi && e.length > maxLineLength);
         setLinesLength(data, linesToSet, maxLineLength);
       }
-      generateLineTexts(data);
+      generateLineTexts2(data);
     });
     return {cads, slgses, sourceCadMap, xinghaoInfo};
   }

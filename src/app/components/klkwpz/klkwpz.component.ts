@@ -75,9 +75,9 @@ export class KlkwpzComponent implements AfterViewInit {
     const typesData = {
       type2: (() => {
         if (item.baseX && item.baseY) {
-          return "取横线竖线交点";
+          return "取开料模板横线竖线交点";
         }
-        return "在打孔面上";
+        return "在算料CAD的打孔面上";
       })(),
       type3: (() => {
         if (item.自增等距阵列 || item.固定行列阵列) {
@@ -181,13 +181,13 @@ export class KlkwpzComponent implements AfterViewInit {
     const info0: InputInfo = {
       type: "select",
       label: "打孔起始点",
-      options: ["取横线竖线交点", "在打孔面上"],
+      options: ["取开料模板横线竖线交点", "在算料CAD的打孔面上"],
       model: {data: typesData, key: "type2"},
       showEmpty: true,
       onChange: () => this._updateItemInputs2(data, typesData)
     };
     const type2 = typesData.type2;
-    if (type2 === "取横线竖线交点") {
+    if (type2 === "取开料模板横线竖线交点") {
       delete item.face;
       if (!item.baseX) {
         item.baseX = "";
@@ -221,7 +221,7 @@ export class KlkwpzComponent implements AfterViewInit {
           {type: "string", label: "横线名字", model: {data: item, key: "baseY"}, showEmpty: true, options: lineNamesH}
         ]
       });
-    } else if (type2 === "在打孔面上") {
+    } else if (type2 === "在算料CAD的打孔面上") {
       delete item.baseX;
       delete item.baseY;
       if (!item.face) {

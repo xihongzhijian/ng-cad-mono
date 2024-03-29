@@ -10,7 +10,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectChange, MatSelectModule} from "@angular/material/select";
-import {autoFixLine, validColors} from "@app/cad/utils";
+import {autoFixLine, generateLineTexts2, getLineLengthTextSize, validColors} from "@app/cad/utils";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
   CadEntities,
@@ -19,7 +19,6 @@ import {
   CadLineLike,
   CadViewerConfig,
   Defaults,
-  generateLineTexts,
   lineweight2linewidth,
   linewidth2lineweight,
   PointsMap,
@@ -281,7 +280,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
           map[index].lines.forEach((l) => (l.opacity = 1));
           map.splice(index, 1);
         }
-        generateLineTexts(cad.data);
+        generateLineTexts2(cad.data);
         this.toggleWHDashedLines();
       }
     });
@@ -351,6 +350,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
         await cad.render(entity);
         entity.opacity = 0.6;
         entity.selectable = false;
+        entity.lengthTextSize = getLineLengthTextSize(entity);
       }
     }
     if (shiftKey) {

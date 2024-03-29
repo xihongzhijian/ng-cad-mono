@@ -11,6 +11,7 @@ import {getOrderBarcode, imgCadEmpty, imgEmpty, imgLoading, remoteFilePath, sess
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {configCadDataForPrint} from "@app/cad/print";
 import {
+  generateLineTexts2,
   getShuangxiangLineRects,
   setDimensionText,
   setShuangxiangLineRects,
@@ -22,7 +23,7 @@ import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/e
 import {CalcZxpjResult, ZixuanpeijianCadItem, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {calcZxpj, getMokuaiTitle, getStep1Data, getZixuanpeijianCads} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {environment} from "@env";
-import {CadData, CadLine, CadViewer, CadViewerConfig, Defaults, generateLineTexts, setLinesLength} from "@lucilor/cad-viewer";
+import {CadData, CadLine, CadViewer, CadViewerConfig, Defaults, setLinesLength} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HttpOptions} from "@modules/http/services/http.service.types";
@@ -338,7 +339,7 @@ export class DingdanbiaoqianComponent implements OnInit {
           }
           if (v.data.name === "顶框") {
             v.data.transform({rotate: -Math.PI / 2}, true);
-            generateLineTexts(v.data);
+            generateLineTexts2(v.data);
           }
           v.img = await getImg(v.data, {
             config: {width: 配合框Size[0], height: 配合框Size[1], hideLineLength: false},

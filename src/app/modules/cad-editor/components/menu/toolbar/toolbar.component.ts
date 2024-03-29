@@ -9,7 +9,7 @@ import {AboutComponent} from "@components/about/about.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
-import {CadLine, CadLineLike, CadMtext, DEFAULT_LENGTH_TEXT_SIZE, sortLines} from "@lucilor/cad-viewer";
+import {CadLine, CadMtext, sortLines} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -207,7 +207,6 @@ export class ToolbarComponent {
     }
     cad.traverse((e) => {
       if (e instanceof CadMtext && e.info.isLengthText) {
-        (e.parent as CadLineLike).lengthTextSize = DEFAULT_LENGTH_TEXT_SIZE;
         e.remove();
       }
     }, true);

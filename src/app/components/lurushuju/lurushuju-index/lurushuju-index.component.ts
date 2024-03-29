@@ -1420,4 +1420,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       local.save(this.menuPoitonKey, [left, top]);
     }
   }
+
+  autoTest() {
+    this.message.alert("暂未实现");
+  }
 }

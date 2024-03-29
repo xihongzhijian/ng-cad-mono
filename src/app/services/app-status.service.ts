@@ -6,7 +6,9 @@ import {CadCollection} from "@app/cad/collections";
 import {
   exportCadData,
   filterCadEntitiesToSave,
+  generateLineTexts2,
   getCadTotalLength,
+  getLineLengthTextSize,
   prepareCadViewer,
   removeIntersections,
   showIntersections,
@@ -27,7 +29,6 @@ import {
   CadLineLike,
   CadMtext,
   CadViewer,
-  generateLineTexts,
   generatePointsMap,
   PointsMap,
   setLinesLength
@@ -364,9 +365,9 @@ export class AppStatusService {
       data.entities.line.forEach((e) => {
         e.children.mtext = e.children.mtext.filter((mt) => !mt.info.isLengthText && !mt.info.isGongshiText);
       });
-      data.components.data.forEach((v) => generateLineTexts(v));
+      data.components.data.forEach((v) => generateLineTexts2(v));
     } else {
-      generateLineTexts(data);
+      generateLineTexts2(data);
     }
   }
 
@@ -432,6 +433,9 @@ export class AppStatusService {
 
   setLinesLength(lines: CadLine[], length: number) {
     setLinesLength(this.cad.data, lines, length);
+    for (const line of lines) {
+      line.lengthTextSize = getLineLengthTextSize(line);
+    }
     this.updateCadTotalLength();
   }
 

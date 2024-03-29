@@ -62,6 +62,17 @@
                         <span class="link" (click)="openKongpeizhi(item)">查看</span>
                       </span>
                     }
+                    @case ("error") {
+                      <span>
+                        <span>{{ item[col.field] }}</span>
+                        @if (item.info) {
+                          @if (item[col.field]) {
+                            <span><br /><br /></span>
+                          }
+                          <span>{{ item.info }}</span>
+                        }
+                      </span>
+                    }
                     @default {
                       <span>{{ item[col.field] }}</span>
                     }

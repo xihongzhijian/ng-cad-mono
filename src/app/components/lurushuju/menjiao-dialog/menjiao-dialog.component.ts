@@ -143,7 +143,7 @@ export class MenjiaoDialogComponent implements OnInit {
     data.产品分类 = 产品分类;
     updateMenjiaoData(data);
     const getGroupStyle = (style?: csstype.Properties): csstype.Properties => {
-      return {display: "flex", flexWrap: "wrap", marginBottom: "10px", ...style};
+      return {display: "flex", flexWrap: "wrap", ...style};
     };
     const getInfoStyle = (n: number, style?: csstype.Properties): csstype.Properties => {
       const percent = 100 / n;
@@ -183,6 +183,9 @@ export class MenjiaoDialogComponent implements OnInit {
             }
           };
         }
+        if (key === "锁边") {
+          info.hint = "请使用和实际对应的名字";
+        }
       });
     };
     const getMenfengInputInfo = (value: (typeof 门缝配置输入)[number]): InputInfo => {
@@ -219,7 +222,7 @@ export class MenjiaoDialogComponent implements OnInit {
         label: "",
         infos: form1Group2,
         style: getInfoStyle(2),
-        groupStyle: getGroupStyle({flexDirection: "column", marginBottom: "0"})
+        groupStyle: getGroupStyle({flexDirection: "column"})
       }
     ];
     const form1: InputInfo<typeof data>[] = [
@@ -252,7 +255,7 @@ export class MenjiaoDialogComponent implements OnInit {
         label: "门缝配置",
         infos: 门缝配置输入.map(getMenfengInputInfo),
         style: {marginBottom: "5px"},
-        groupStyle: getGroupStyle({marginBottom: "0"})
+        groupStyle: getGroupStyle()
       }
     ];
     const form3 = [
@@ -288,7 +291,7 @@ export class MenjiaoDialogComponent implements OnInit {
             style: getInfoStyle(4)
           }
         ],
-        groupStyle: getGroupStyle({marginBottom: "0"})
+        groupStyle: getGroupStyle()
       } as InputInfoGroup<typeof data> & RequiredKeys<InputInfoGroup, "infos">
     ] as const;
     if (!使用双开门扇宽生成方式()) {

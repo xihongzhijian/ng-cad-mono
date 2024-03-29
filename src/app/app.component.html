@@ -6,7 +6,7 @@
     <mat-menu #links="matMenu">
       <button mat-menu-item (click)="changeProject()">更换项目</button>
       @for (routeInfo of routesInfo; track routeInfo) {
-        <button mat-menu-item [routerLink]="routeInfo.path" [queryParamsHandling]="'merge'">
+        <button mat-menu-item (click)="navigate(routeInfo)">
           {{ getRouteTitle(routeInfo) }}
         </button>
       }

@@ -48,6 +48,10 @@
         text-overflow: ellipsis;
         overflow: hidden;
       }
+      &.error {
+        white-space: pre-wrap;
+        text-align: left;
+      }
 
       .success {
         color: green;

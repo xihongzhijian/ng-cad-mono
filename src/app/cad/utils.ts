@@ -16,6 +16,7 @@ import {
   CadMtextInfo,
   CadViewer,
   findAllAdjacentLines,
+  generateLineTexts,
   generatePointsMap,
   getLinesDistance,
   intersectionKeys,
@@ -650,4 +651,28 @@ export const openCadDimensionForm = async (
     }
   }
   return result;
+};
+
+export const getLineLengthTextSize = (line: CadLineLike) => {
+  let size: number;
+  const length = line.length;
+  if (length > 54) {
+    size = 35;
+  } else if (length > 30) {
+    size = 30;
+  } else if (length > 20) {
+    size = 24;
+  } else {
+    size = 18;
+  }
+  return size;
+};
+
+export const generateLineTexts2 = (data: CadData) => {
+  generateLineTexts(data);
+  data.entities.forEach((e) => {
+    if (e instanceof CadLineLike) {
+      e.lengthTextSize = getLineLengthTextSize(e);
+    }
+  });
 };
