@@ -222,7 +222,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       ? cloneDeep(xinghao)
       : {vid: 0, mingzi: "", menchuang: "", gongyi: "", dingdanliucheng: "新工艺", tingyong: 0, paixu: -10000, tupian: ""};
     if (!data.算料单模板) {
-      data.算料单模板 = "自动排版模板";
+      data.算料单模板 = this.status.projectConfig.get("新做数据算料单排版默认方案") || "自动排版模板";
     }
     const data2: XinghaoRaw = {
       名字: data.mingzi,
@@ -296,7 +296,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         type: "select",
         label: "算料单模板",
         model: {data: data2, key: "算料单模板"},
-        options: ["自动排版模板", "手动装配配件模板"]
+        options: ["自动排版模板", "手动装配配件模板", "混合模板"]
       },
       {type: "number", label: "排序", model: {data, key: "paixu"}},
       {type: "boolean", label: "停用", model: {data, key: "tingyong"}}

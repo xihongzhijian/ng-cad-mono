@@ -11,13 +11,13 @@
             <div class="flex-row">
               <div class="flex-column flex-110" style="width: 0">
                 <div class="list">
-                  @for (key3 of peiheKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
-                    <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '配合框CAD', key3}"></ng-container>
+                  @for (key3 of qiliaoKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
+                    <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '企料CAD', key3}"></ng-container>
                   }
                 </div>
                 <div class="list">
-                  @for (key3 of qiliaoKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
-                    <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '企料CAD', key3}"></ng-container>
+                  @for (key3 of peiheKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
+                    <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '配合框CAD', key3}"></ng-container>
                   }
                 </div>
                 <div class="sub-form-field">
@@ -85,6 +85,7 @@
     <app-cad-item
       [cad]="formData[key1][key2][key3].cad!"
       [buttons]="cadItemButtons"
+      [buttons2]="cadItemButtons2"
       [customInfo]="{key1, key2, key3}"
       [fentiCads]="key2 === '企料CAD' ? formData[key1][key2][key3]['企料分体CAD'] : undefined"
       [openCadOptions]="getOpenCadOptions(key1)"

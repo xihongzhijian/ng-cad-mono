@@ -5,7 +5,9 @@ mat-paginator,
 }
 
 .cads {
-  --items-per-row: 4;
+  .item {
+    width: 350px;
+  }
 }
 
 .details {

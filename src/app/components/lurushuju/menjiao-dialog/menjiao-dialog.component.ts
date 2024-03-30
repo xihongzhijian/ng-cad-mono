@@ -78,6 +78,7 @@ export class MenjiaoDialogComponent implements OnInit {
   cadWidth = 300;
   cadHeight = 150;
   cadItemButtons: CadItemButton<MenjiaoCadItemInfo>[];
+  cadItemButtons2: CadItemButton<MenjiaoCadItemInfo>[];
   shiyituCadItemButtons: CadItemButton<MenjiaoShiyituCadItemInfo>[];
   emptyCadTemplateType!: {key1: MenjiaoCadType; key2: "配合框CAD" | "企料CAD"; key3: string};
   key1Infos: ObjectOf<{
@@ -104,10 +105,8 @@ export class MenjiaoDialogComponent implements OnInit {
     if (!this.data) {
       this.data = {};
     }
-    this.cadItemButtons = [
-      {name: "删除", onClick: this.removeCad.bind(this)},
-      {name: "选择", onClick: this.selectCad.bind(this)}
-    ];
+    this.cadItemButtons = [{name: "删除", onClick: this.removeCad.bind(this)}];
+    this.cadItemButtons2 = [{name: "选择", onClick: this.selectCad.bind(this)}];
     if (this.data.isKailiao) {
       this.cadItemButtons.push(
         ...[
@@ -160,7 +159,7 @@ export class MenjiaoDialogComponent implements OnInit {
           updateMenjiaoData(data);
         };
         info.style = getInfoStyle(n);
-        const dialogKeys: (keyof 算料数据)[] = ["锁边", "铰边"];
+        const dialogKeys: (keyof 算料数据)[] = [];
         const openInNewTabKeys: (keyof 算料数据)[] = ["门铰", "门扇厚度"];
         if (dialogKeys.includes(key)) {
           info.optionsDialog = {
@@ -197,7 +196,7 @@ export class MenjiaoDialogComponent implements OnInit {
         style: getInfoStyle(4)
       };
     };
-    const optionKeys: (keyof 算料数据)[] = ["产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"];
+    const optionKeys: (keyof 算料数据)[] = ["门铰", "门扇厚度", "锁边", "铰边"];
     const 使用双开门扇宽生成方式 = () => component.fenleiName === "双开";
     const 使用锁扇铰扇蓝线宽固定差值 = () => data.双开门扇宽生成方式 === "按锁扇铰扇蓝线宽固定差值等生成";
     const form1Group2: InputInfo[] = [];

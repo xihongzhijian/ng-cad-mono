@@ -45,6 +45,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   cadHeight = 0;
   @Input({required: true}) cad: HoutaiCad = getHoutaiCad();
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
+  @Input() buttons2: CadItemButton<T>[] = [];
   @Input({required: true}) customInfo!: T;
   @Input() fentiCads?: FentiCadData;
   @Input() mubanExtraData: Partial<CadData> = {};
@@ -318,13 +319,13 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       [
         {
           type: "select",
-          label: "算料处理",
+          label: "算料开料要求",
           model: {data, key: "suanliaochuli"},
           options: cadOptions.suanliaochuli.values.slice()
         },
         {
           type: "select",
-          label: "算料单显示",
+          label: "算料单展开信息显示",
           model: {data, key: "suanliaodanxianshi"},
           options: cadOptions.suanliaodanxianshi.values.slice()
         }

@@ -17,7 +17,7 @@ import {
   ViewChild,
   ViewChildren
 } from "@angular/core";
-import {FormControl, FormsModule, ValidationErrors} from "@angular/forms";
+import {FormControl, FormsModule, ValidationErrors, Validators} from "@angular/forms";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {MatButtonModule} from "@angular/material/button";
 import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
@@ -405,7 +405,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.value = getValue(info.value, this.message);
     }
     let options: InputInfoOptions | undefined | null;
-    const type = info.type;
+    const {type, validators, readonly, disabled} = info;
     if (type === "select" || type === "string") {
       options = getValue(info.options, this.message);
       this.options = (options || []).map<(typeof this.options)[number]>((v) => {
@@ -417,6 +417,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         }
         return {label: v.label || String(v.value), value: v.value, disabled: v.disabled, img: v.img};
       });
+      const isRequired = validators === Validators.required || (Array.isArray(validators) && validators.includes(Validators.required));
+      if (isRequired && !readonly && !disabled) {
+        if (this.options.length === 1) {
+          this.value = this.options[0].value;
+        }
+      }
     } else if (type === "cad") {
       this.updateCadInfos();
     } else if (type === "formulas") {
