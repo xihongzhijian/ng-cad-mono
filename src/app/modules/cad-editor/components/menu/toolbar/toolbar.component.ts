@@ -4,7 +4,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
-import {openCadLineForm} from "@app/cad/utils";
+import {isLengthTextSizeSetKey, openCadLineForm} from "@app/cad/utils";
 import {AboutComponent} from "@components/about/about.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
@@ -208,6 +208,9 @@ export class ToolbarComponent {
     cad.traverse((e) => {
       if (e instanceof CadMtext && e.info.isLengthText) {
         e.remove();
+        if (e.parent) {
+          delete e.parent.info[isLengthTextSizeSetKey];
+        }
       }
     }, true);
     this.status.generateLineTexts();

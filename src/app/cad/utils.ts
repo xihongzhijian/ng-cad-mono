@@ -668,11 +668,14 @@ export const getLineLengthTextSize = (line: CadLineLike) => {
   return size;
 };
 
+export const isLengthTextSizeSetKey = "isLengthTextSizeSet" as const;
 export const generateLineTexts2 = (data: CadData) => {
   generateLineTexts(data);
   data.entities.forEach((e) => {
     if (e instanceof CadLineLike) {
-      e.lengthTextSize = getLineLengthTextSize(e);
+      if (!e.info[isLengthTextSizeSetKey]) {
+        e.lengthTextSize = getLineLengthTextSize(e);
+      }
     }
   });
 };

@@ -10,7 +10,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectChange, MatSelectModule} from "@angular/material/select";
-import {autoFixLine, generateLineTexts2, getLineLengthTextSize, validColors} from "@app/cad/utils";
+import {autoFixLine, generateLineTexts2, getLineLengthTextSize, isLengthTextSizeSetKey, validColors} from "@app/cad/utils";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
   CadEntities,
@@ -627,6 +627,13 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
         ];
         if (keys.includes(field as keyof CadLineLike)) {
           cad.render(e);
+        }
+        if (field === "lengthTextSize") {
+          if (typeof value === "number" && value > 0) {
+            e.info[isLengthTextSizeSetKey] = true;
+          } else {
+            delete e.info[isLengthTextSizeSetKey];
+          }
         }
       });
     }
