@@ -105,7 +105,7 @@ mat-divider {
     margin: 0 var(--mat-divider-margin);
   }
   &.placeholder {
-    border-color: transparent;
+    --mat-divider-color: transparent;
   }
 }
 

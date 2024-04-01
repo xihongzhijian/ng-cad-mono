@@ -23,6 +23,14 @@
     <button mat-raised-button color="primary" (click)="advancedSearch()">高级搜索</button>
     <button mat-raised-button color="primary" (click)="search()">刷新</button>
     <button mat-raised-button color="primary" (click)="addCad()">添加</button>
+    <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
+    <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
+    <mat-divider vertical class="placeholder"></mat-divider>
+    <div class="spinner-container">
+      <button mat-raised-button color="primary" (click)="submit()">确定</button>
+      <app-spinner [id]="loaderIdSubmit" [inline]="true"></app-spinner>
+    </div>
+    <button mat-raised-button color="primary" (click)="close()">取消</button>
   </div>
 }
 <div class="toolbar">
@@ -87,15 +95,6 @@
     [showFirstLastButtons]="true"
     (page)="changePage($event)"
   ></mat-paginator>
-</div>
-<div class="toolbar" style="justify-content: center">
-  <div class="btn-group">
-    <div class="spinner-container">
-      <button mat-raised-button color="primary" (click)="submit()">确定</button>
-      <app-spinner [id]="loaderIdSubmit" [inline]="true"></app-spinner>
-    </div>
-    <button mat-raised-button color="primary" (click)="close()">取消</button>
-  </div>
 </div>
 
 <ng-template #details let-data [appTypedTemplate]="{$implicit: cadDataType}"> </ng-template>

@@ -19,7 +19,7 @@ import {DateTime} from "luxon";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
 
 interface ExportCache {
-  ids: string[];
+  ids?: string[];
   direct?: boolean;
 }
 
@@ -35,7 +35,6 @@ export class ExportComponent implements OnInit {
   progressBarStatus: ProgressBarStatus = "hidden";
   msg = "";
   exportCache: ExportCache | null = null;
-  direct = false;
   exportParams: CadExportParams = {
     cads: [],
     type: "自由选择",
@@ -62,9 +61,8 @@ export class ExportComponent implements OnInit {
 
   ngOnInit() {
     this.exportCache = session.load<ExportCache>("exportParams");
-    this.direct = !!this.exportCache?.direct;
     // session.remove("exportParams");
-    if (this.direct) {
+    if (this.exportCache?.direct) {
       this.exportCads("导出选中");
     } else if (this.exportCache) {
       const ids = this.exportCache.ids;

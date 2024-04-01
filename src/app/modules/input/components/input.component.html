@@ -142,7 +142,9 @@
       @for (item of asObject(value) | keyvalue: returnZero; track item) {
         <div>
           <mat-form-field style="width: 30%" [ngClass]="{empty: isEmpty(item.key)}">
-            <mat-label>{{ info.keyLabel }}</mat-label>
+            @if (info.keyLabel) {
+              <mat-label>{{ info.keyLabel }}</mat-label>
+            }
             <input
               type="text"
               matInput
@@ -157,7 +159,9 @@
             <mat-error>{{ getErrorMsgKey(item.key) }}</mat-error>
           </mat-form-field>
           <mat-form-field style="width: 70%" [ngClass]="{empty: isEmpty(item.value)}">
-            <mat-label>{{ info.valueLabel }}</mat-label>
+            @if (info.valueLabel) {
+              <mat-label>{{ info.valueLabel }}</mat-label>
+            }
             <input
               type="text"
               matInput
@@ -204,6 +208,9 @@
       }
       @for (c of value; track j; let j = $index) {
         <mat-form-field [ngClass]="{empty: isEmpty(c)}">
+          @if (info.valueLabel) {
+            <mat-label>{{ info.valueLabel }}</mat-label>
+          }
           <input
             matInput
             type="text"

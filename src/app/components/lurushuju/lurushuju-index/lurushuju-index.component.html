@@ -20,7 +20,7 @@
     }
     <app-about></app-about>
   </div>
-  <div class="toolbar flex-110" style="justify-content: center">
+  <div class="toolbar right flex-110">
     @if (!production) {
       <button mat-raised-button color="primary" (click)="purgeXinghaos()">purgeXinghaos</button>
     }
@@ -97,6 +97,7 @@
   [class.hidden]="step !== 3"
   class="step-3"
   mat-stretch-tabs="false"
+  animationDuration="0ms"
   [(selectedIndex)]="tabIndex"
   (selectedTabChange)="onSelectedTabChange($event)"
 >

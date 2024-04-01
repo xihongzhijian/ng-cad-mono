@@ -22,7 +22,7 @@ import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {difference} from "lodash";
+import {cloneDeep, difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
@@ -323,12 +323,17 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async addCad() {
-    const name = await this.message.prompt({type: "string", label: "CAD名字", validators: Validators.required});
-    if (!name) {
+    const data = cloneDeep(this.data.addCadData || {});
+    const result = await this.message.form([
+      {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
+      {type: "string", label: "分类", model: {data, key: "分类"}},
+      {type: "object", label: "选项", model: {data, key: "选项"}}
+    ]);
+    if (!result) {
       return;
     }
     const {collection} = this.data;
-    const id = await this.http.mongodbInsert(collection, {...this.data.addCadData, 名字: name});
+    const id = await this.http.mongodbInsert(collection, data);
     if (id) {
       if (await this.message.confirm("是否编辑新的CAD？")) {
         const {cads} = await this.http.getCad({collection, id});
@@ -388,6 +393,17 @@ export class CadListComponent implements AfterViewInit {
     }
     const url = await getCadPreview(collection, data, {http: this.http});
     item.img = url;
+  }
+
+  async openImportPage() {
+    this.status.openInNewTab(["import"]);
+    if (await this.message.newTabConfirm()) {
+      this.search();
+    }
+  }
+
+  openExportPage() {
+    this.status.openInNewTab(["export"]);
   }
 }
 

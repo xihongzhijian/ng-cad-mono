@@ -62,10 +62,6 @@
     }
   </div>
 } @else {
-  <div class="toolbar">
-    <button mat-raised-button color="primary" (click)="submit()">提交并关闭</button>
-  </div>
-
   <div class="flex-110 flex-column">
     <div class="toolbar">
       <div class="title text long">测试</div>
@@ -75,6 +71,8 @@
       <button mat-raised-button color="primary" (click)="calcTestCases()">计算所有</button>
       <button mat-raised-button color="primary" (click)="print()">打印所有</button>
       <button mat-raised-button [color]="allSlgsInfo ? 'accent' : 'primary'" (click)="toggleSlgsAll()">所有算料公式</button>
+      <mat-divider vertical class="placeholder"></mat-divider>
+      <button mat-raised-button color="primary" (click)="submit()">提交并关闭</button>
     </div>
     <ng-scrollbar>
       @if (allSlgsInfo) {

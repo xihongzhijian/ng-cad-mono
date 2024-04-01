@@ -1,11 +1,14 @@
 <div class="flex-110 flex-column">
   <div class="toolbar search-form">
-    <div class="flex-column">
+    <div class="flex-column" style="width: 100%">
       <div class="toolbar">
         @for (info of inputInfos; track $index) {
           <app-input [info]="info"></app-input>
         }
         <button mat-raised-button color="primary" (click)="search()">搜索</button>
+        <div class="flex-110"></div>
+        <button mat-raised-button color="primary" (click)="submit()">确定</button>
+        <button mat-raised-button color="primary" (click)="cancel()">取消</button>
       </div>
       @if (inputInfosMenjiao.length > 0) {
         <div class="toolbar">
@@ -44,8 +47,4 @@
       }
     </div>
   </ng-scrollbar>
-</div>
-<div class="toolbar center">
-  <button mat-raised-button color="primary" (click)="submit()">确定</button>
-  <button mat-raised-button color="primary" (click)="cancel()">取消</button>
 </div>

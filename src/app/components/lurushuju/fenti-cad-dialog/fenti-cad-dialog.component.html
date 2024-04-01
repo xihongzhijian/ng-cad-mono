@@ -1,3 +1,8 @@
+<div class="toolbar right">
+  <button mat-raised-button color="primary" (click)="submit()">保存</button>
+  <button mat-raised-button color="primary" (click)="cancel()">关闭</button>
+</div>
+
 <ng-scrollbar>
   <div class="items no-items-per-row">
     @for (item of data.data | keyvalue: returnZero; track $index) {
@@ -19,8 +24,3 @@
     }
   </div>
 </ng-scrollbar>
-
-<div class="toolbar center">
-  <button mat-raised-button color="primary" (click)="submit()">保存</button>
-  <button mat-raised-button color="primary" (click)="cancel()">关闭</button>
-</div>

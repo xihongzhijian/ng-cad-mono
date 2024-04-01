@@ -5,7 +5,7 @@
     }
   </div>
   <div class="btn-group">
-    @if (!direct) {
+    @if (!exportCache?.direct) {
       <button mat-raised-button color="primary" (click)="exportCads('包边正面')">包边正面</button>
       <button mat-raised-button color="primary" (click)="exportCads('框型和企料')">框型和企料</button>
       <button mat-raised-button color="primary" (click)="exportCads('指定型号')">指定型号</button>
@@ -13,7 +13,7 @@
       <button mat-raised-button color="primary" (click)="exportCads('企料')">企料</button>
       <button mat-raised-button color="primary" (click)="exportCads('框型')">框型</button>
     }
-    @if (exportCache && exportCache.ids.length > 0) {
+    @if (exportCache && exportCache.ids && exportCache.ids.length > 0) {
       <button mat-raised-button color="primary" (click)="exportCads('导出选中')">导出选中</button>
     } @else {
       <button mat-raised-button color="primary" (click)="exportCads('自由选择')">自由选择</button>

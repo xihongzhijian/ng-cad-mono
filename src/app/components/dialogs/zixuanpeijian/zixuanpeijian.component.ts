@@ -1260,6 +1260,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
   }
 
+  openExportPage() {
+    this.status.openInNewTab(["export"]);
+  }
+
   editFenlei() {
     if (this.isEditingFenlei$.value) {
       this.isEditingFenlei$.next(false);

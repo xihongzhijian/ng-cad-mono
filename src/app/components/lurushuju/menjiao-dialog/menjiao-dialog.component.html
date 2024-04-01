@@ -1,3 +1,13 @@
+<div class="toolbar right">
+  <button mat-raised-button color="primary" (click)="submit(false)">保存</button>
+  <button mat-raised-button color="primary" (click)="submit(true)">保存并关闭</button>
+  <button mat-raised-button color="primary" (click)="cancel(true)">不保存关闭</button>
+  @if (!data.component?.production) {
+    <button mat-raised-button color="primary" (click)="cancel(false)">cancel</button>
+    <button mat-raised-button color="primary" (click)="autoFill()">autoFill</button>
+  }
+</div>
+
 <ng-scrollbar class="fixed-width">
   @for (info of form; track $index) {
     <app-input [info]="info"></app-input>
@@ -14,8 +24,6 @@
                   @for (key3 of qiliaoKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
                     <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '企料CAD', key3}"></ng-container>
                   }
-                </div>
-                <div class="list">
                   @for (key3 of peiheKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
                     <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '配合框CAD', key3}"></ng-container>
                   }
@@ -70,15 +78,6 @@
     }
   </mat-tab-group>
 </ng-scrollbar>
-<div class="toolbar center">
-  <button mat-raised-button color="primary" (click)="submit(false)">保存</button>
-  <button mat-raised-button color="primary" (click)="submit(true)">保存并关闭</button>
-  <button mat-raised-button color="primary" (click)="cancel(true)">不保存关闭</button>
-  @if (!data.component?.production) {
-    <button mat-raised-button color="primary" (click)="cancel(false)">cancel</button>
-    <button mat-raised-button color="primary" (click)="autoFill()">autoFill</button>
-  }
-</div>
 
 <ng-template #cadItem [appTypedTemplate]="emptyCadTemplateType" let-key1="key1" let-key2="key2" let-key3="key3">
   @if (formData[key1][key2][key3] && formData[key1][key2][key3].cad && key1Infos[key1].isLoaded) {
