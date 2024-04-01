@@ -53,7 +53,7 @@
     "ngx-color": "^9.0.0",
     "ngx-infinite-scroll": "^17.0.0",
     "ngx-quill": "^25.1.2",
-    "ngx-scrollbar": "^13.0.3",
+    "ngx-scrollbar": "^14.0.0",
     "ngx-ui-loader": "^13.0.0",
     "pdfmake": "^0.2.10",
     "print-js": "^1.6.0",
