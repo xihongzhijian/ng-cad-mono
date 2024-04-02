@@ -6,7 +6,7 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {random} from "lodash";
 import {OptionsAll2} from "../lurushuju-index/lurushuju-index.types";
 import {
-  cadMatchRules,
+  Cad数据要求,
   get算料数据2,
   MenjiaoCadType,
   menjiaoCadTypes,
@@ -191,21 +191,16 @@ function (value1, value2, falseIfEmpty) {
   return false;
 }`;
 
-export const getCadSearch = (data: 算料数据, key1: MenjiaoCadType, key2: string, key3: string) => {
-  const missingValues = [];
-  const rule = cadMatchRules[key3];
-  if (!rule) {
-    throw new Error("没有对应的cad匹配规则");
+export const getCadSearch = (data: 算料数据, shujuyaoqiu: Cad数据要求, key1: MenjiaoCadType, key2: string, key3: string) => {
+  const 分类0 = shujuyaoqiu.导入CAD要求.分类;
+  const 分类: string[] = [];
+  if (分类0) {
+    分类.push(分类0);
   }
-  const {分类, 选项} = rule;
-  for (const name of 选项) {
-    if (!data[name]) {
-      missingValues.push(name);
-    }
+  if (!分类.includes(key3)) {
+    分类.push(key3);
   }
-  if (missingValues.length > 0) {
-    throw new Error("请先选择" + missingValues.join("、"));
-  }
+  const 选项: (keyof 算料数据)[] = [];
   const formValues: ObjectOf<any> = {};
   for (const name of 选项) {
     const value = data[name];
@@ -257,7 +252,7 @@ export const getCadSearch = (data: 算料数据, key1: MenjiaoCadType, key2: str
     }
     `;
   const search: CadListInput["search"] = {$where: filter};
-  const addCadData: CadListInput["addCadData"] = {分类: key3, 选项: {开启}};
+  const addCadData: CadListInput["addCadData"] = {分类: 分类0 || key3, 选项: {开启}};
   return {search, addCadData};
 };
 

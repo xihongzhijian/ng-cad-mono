@@ -41,50 +41,6 @@
   }
 }
 
-.zhankais {
-  width: 100%;
-  display: flex;
-  align-items: center;
-
-  .zhankai {
-    width: 100%;
-    align-items: center;
-
-    app-input {
-      width: 0;
-      &.width {
-        flex: 3 3 0;
-      }
-      &.height {
-        flex: 3 3 0;
-      }
-      &.num {
-        flex: 2 2 0;
-      }
-
-      ::ng-deep {
-        input {
-          font-size: 15px;
-        }
-      }
-    }
-
-    .symbol {
-      font-size: 24px;
-      margin: 0 2px;
-    }
-  }
-}
-
-.inputs {
-  width: 100%;
-
-  app-input {
-    width: 0;
-    flex: 1 1 0;
-  }
-}
-
 .fenti-cads {
   flex-wrap: wrap;
 

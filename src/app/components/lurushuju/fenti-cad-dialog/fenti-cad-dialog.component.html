@@ -11,9 +11,9 @@
           [cad]="item.value"
           [buttons]="cadButtons"
           [customInfo]="{key: item.key}"
+          [shujuyaoqiu]="data['cad数据要求']"
           [cadWidth]="data.cadSize[0]"
           [noMuban]="true"
-          [noZhankai]="true"
         ></app-cad-item>
       } @else {
         <div class="empty-cad item link" (click)="selectFentiCad(item.key)">

@@ -12,16 +12,15 @@ import {
   ViewChild,
   ViewChildren
 } from "@angular/core";
-import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {CadCollection} from "@app/cad/collections";
-import {cadOptions} from "@app/cad/options";
 import {exportCadData, generateLineTexts2, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadZhankai} from "@lucilor/cad-viewer";
-import {selectFiles} from "@lucilor/utils";
+import {keysOf, ObjectOf, selectFiles} from "@lucilor/utils";
+import {cadFields, getCadInfoInputs} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -30,7 +29,8 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
 import {isEmpty} from "lodash";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
-import {FentiCadData} from "../fenti-cad-dialog/fenti-cad-dialog.types";
+import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
+import {Cad数据要求} from "../xinghao-data";
 import {CadItemButton, typeOptions} from "./cad-item.types";
 
 @Component({
@@ -47,12 +47,11 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input() buttons2: CadItemButton<T>[] = [];
   @Input({required: true}) customInfo!: T;
-  @Input() fentiCads?: FentiCadData;
+  @Input({required: true}) shujuyaoqiu: Cad数据要求 | undefined;
+  @Input() fentiDialogInput?: FentiCadDialogInput;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
   @Input() noMuban?: boolean;
-  @Input() noZhankai?: boolean;
-  @Input() showMenshanhoudu?: boolean;
   @Output() afterEditCad = new EventEmitter<void>();
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
@@ -81,8 +80,6 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     cad.json.zhankai[0].kailiaomuban = value;
   }
 
-  cadInputs: InputInfo<CadData>[][] = [];
-  zhankaiInputs: {width: InputInfo; height: InputInfo; num: InputInfo}[] = [];
   mubanInputs: InputInfo[][] = [];
   showMuban: boolean;
 
@@ -90,7 +87,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
-    status: AppStatusService
+    private status: AppStatusService
   ) {
     this.showMuban = status.projectConfig.getBoolean("新版本做数据可以做激光开料");
   }
@@ -133,22 +130,35 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     }
   }
 
-  async editCadName() {
+  async editCadForm() {
     const {cad} = this;
     if (!cad) {
       return;
     }
-    const name = await this.message.prompt({
-      type: "string",
-      label: "CAD名字",
-      value: cad.名字,
-      validators: Validators.required
-    });
-    if (!name) {
-      return;
+    const ignoreKeys = ["entities"];
+    const dataRaw: ObjectOf<any> = {};
+    for (const key in cad.json) {
+      if (!ignoreKeys.includes(key)) {
+        dataRaw[key] = cad.json[key];
+      }
     }
-    cad.名字 = name;
-    cad.json.name = name;
+    const data = new CadData(dataRaw);
+    const form = getCadInfoInputs(this.shujuyaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status);
+    const result = await this.message.form(form);
+    if (result) {
+      const cad2 = getHoutaiCad(data);
+      for (const key of keysOf(cad2)) {
+        if (key === "json") {
+          for (const key2 in cad2.json) {
+            if (!ignoreKeys.includes(key2)) {
+              cad.json[key2] = cad2.json[key2];
+            }
+          }
+        } else {
+          cad[key] = cad2[key] as any;
+        }
+      }
+    }
   }
 
   centerMuban() {
@@ -279,8 +289,6 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       cad.json.entities = exportCadData(data, true).entities;
     });
     this.cadViewer = cadViewer;
-    this.updateCadInputs();
-    this.updateZhankaiInputs();
   }
 
   async initMubanViewer() {
@@ -308,54 +316,6 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     const cadViewer = this.initCadViewer0("CADmuban", mubanData, containerEl, () => {});
     this.mubanViewer = cadViewer;
     await this.updateMubanInputs();
-  }
-
-  updateCadInputs() {
-    const data = this.cad?.json as CadData;
-    if (!data) {
-      return;
-    }
-    this.cadInputs = [
-      [
-        {
-          type: "select",
-          label: "算料开料要求",
-          model: {data, key: "suanliaochuli"},
-          options: cadOptions.suanliaochuli.values.slice()
-        },
-        {
-          type: "select",
-          label: "算料单展开信息显示",
-          model: {data, key: "suanliaodanxianshi"},
-          options: cadOptions.suanliaodanxianshi.values.slice()
-        }
-      ]
-    ];
-    if (this.showMenshanhoudu) {
-      this.cadInputs.push([{type: "number", label: "对应门扇厚度", model: {data, key: "对应门扇厚度"}}]);
-    }
-  }
-
-  updateZhankaiInputs() {
-    const json = this.cad?.json;
-    if (!json) {
-      return;
-    }
-    if (!Array.isArray(json.zhankai)) {
-      json.zhankai = [];
-    }
-    const zhankais = json.zhankai;
-    this.zhankaiInputs = [];
-    if (zhankais.length < 1) {
-      zhankais.push(new CadZhankai({name: json.name}).export());
-    }
-    for (const zhankai of zhankais) {
-      this.zhankaiInputs.push({
-        width: {type: "string", label: "宽", model: {data: zhankai, key: "zhankaikuan"}, validators: Validators.required},
-        height: {type: "string", label: "高", model: {data: zhankai, key: "zhankaigao"}, validators: Validators.required},
-        num: {type: "string", label: "数量", model: {data: zhankai, key: "shuliang"}, validators: Validators.required}
-      });
-    }
   }
 
   async updateMubanInputs() {
@@ -443,12 +403,11 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   }
 
   async selectFentiCad() {
-    const {fentiCads} = this;
-    if (!fentiCads) {
+    const {fentiDialogInput} = this;
+    if (!fentiDialogInput) {
       return;
     }
-    const {cadWidth, cadHeight} = this;
-    await openFentiCadDialog(this.dialog, {data: {data: fentiCads, cadSize: [cadWidth, cadHeight]}});
+    await openFentiCadDialog(this.dialog, {data: fentiDialogInput});
   }
 
   validate() {
@@ -458,5 +417,23 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     } else {
       return true;
     }
+  }
+
+  getCadInfoStr(key: string) {
+    const value: any[] = [];
+    if (key in cadFields) {
+      const key2 = cadFields[key as keyof typeof cadFields];
+      value.push(this.cad.json[key2]);
+    } else if (key === "展开信息") {
+      const {cad} = this;
+      if (cad?.json?.zhankai && cad.json.zhankai[0]) {
+        const zhankai = cad.json.zhankai[0];
+        value.push(`${zhankai.zhankaikuan} × ${zhankai.zhankaigao} = ${zhankai.shuliang}`);
+      }
+    }
+    if (value.length > 0) {
+      return `${key}：${value[0]}`;
+    }
+    return "";
   }
 }

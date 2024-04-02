@@ -18,11 +18,12 @@ import {getCadPreview} from "@app/cad/cad-preview";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {GetCadParams} from "@modules/http/services/cad-data.service.types";
+import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {cloneDeep, difference} from "lodash";
+import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
@@ -323,12 +324,17 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async addCad() {
-    const data = cloneDeep(this.data.addCadData || {});
-    const result = await this.message.form([
-      {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
-      {type: "string", label: "分类", model: {data, key: "分类"}},
-      {type: "object", label: "选项", model: {data, key: "选项"}}
-    ]);
+    const addCadData = this.data.addCadData || {};
+    const data: Partial<HoutaiCad> = {名字: ""};
+    const form: InputInfo[] = [{type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required}];
+    for (const key in addCadData) {
+      if (key === "分类" || key === "分类2") {
+        const value = addCadData[key];
+        data[key] = value || "";
+        form.push({type: "string", label: key, model: {data, key}, readonly: !!value});
+      }
+    }
+    const result = await this.message.form(form);
     if (!result) {
       return;
     }
@@ -348,8 +354,9 @@ export class CadListComponent implements AfterViewInit {
 
   async editCad(i: number) {
     const item = this.pageData[i];
-    this.status.openCadInNewTab(item.data.id, this.data.collection);
-    if (await this.message.newTabConfirm()) {
+    const {collection} = this.data;
+    const result = await openCadEditorDialog(this.dialog, {data: {data: item.data, collection, center: true}});
+    if (result?.isSaved) {
       this.search();
     }
   }

@@ -18,6 +18,7 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {keysOf, Line, ObjectOf, Point, Rectangle} from "@lucilor/utils";
+import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {difference, intersection, isEqual} from "lodash";
 import {generateLineTexts2, isShiyitu, showIntersections} from "./utils";
 
@@ -105,31 +106,6 @@ export interface CadExportParams {
 }
 
 export class CadPortable {
-  static cadFields: ObjectOf<keyof CadData> = {
-    名字: "name",
-    分类: "type",
-    分类2: "type2",
-    全部刨坑: "kailiaoshibaokeng",
-    板材纹理方向: "bancaiwenlifangxiang",
-    默认开料板材: "morenkailiaobancai",
-    算料处理: "suanliaochuli",
-    显示宽度标注: "showKuandubiaozhu",
-    双向折弯: "shuangxiangzhewan",
-    算料特殊要求: "算料特殊要求",
-    算料单显示: "suanliaodanxianshi",
-    装配位置: "装配位置",
-    企料包边门框配合位增加值: "企料包边门框配合位增加值",
-    对应门扇厚度: "对应门扇厚度",
-    主CAD: "主CAD",
-    固定开料板材: "gudingkailiaobancai",
-    条件: "conditions",
-    对应计算条数的配件: "对应计算条数的配件",
-    指定板材分组: "指定板材分组",
-    默认开料材料: "默认开料材料",
-    默认开料板材厚度: "默认开料板材厚度",
-    算料单显示放大倍数: "suanliaodanZoom",
-    自动生成双折宽双折高公式: "自动生成双折宽双折高公式"
-  };
   static infoFields = ["唯一码", "修改包边正面宽规则", "锁边自动绑定可搭配铰边", "使用模板开料"];
   static slgsFields = ["名字", "分类", "条件", "选项", "算料公式"];
   static skipFields = ["模板放大"];
@@ -244,7 +220,7 @@ export class CadPortable {
       return {data, errors: [], skipErrorCheck: new Set()};
     });
     const slgses: SlgsInfo[] = [];
-    const {cadFields, skipFields} = this;
+    const {skipFields} = this;
     const globalOptions: CadData["options"] = {};
     let xinghaoInfo: XinghaoInfo | undefined;
     for (const e of sourceCad.entities.toArray()) {
@@ -268,7 +244,7 @@ export class CadPortable {
           sourceCadMap.slgses[obj.名字] = {text: e};
           for (const key in obj) {
             const value = obj[key];
-            const key2 = cadFields[key];
+            const key2 = cadFields[key as keyof typeof cadFields];
             if (key === "条件") {
               slgsData.条件 = value ? [value] : [];
             } else if (key2) {
@@ -392,7 +368,7 @@ export class CadPortable {
               continue;
             }
             obj[key] = value;
-            const key2 = cadFields[key];
+            const key2 = cadFields[key as keyof typeof cadFields];
             if (key === "对应计算条数的配件") {
               data.对应计算条数的配件 = getObject(value, "=");
             } else if (key2) {
@@ -594,8 +570,8 @@ export class CadPortable {
         } else {
           texts.push("唯一码: ");
         }
-        const {cadFields, skipFields} = this;
-        for (const key in cadFields) {
+        const {skipFields} = this;
+        for (const key of keysOf(cadFields)) {
           if (skipFields.includes(key)) {
             continue;
           }

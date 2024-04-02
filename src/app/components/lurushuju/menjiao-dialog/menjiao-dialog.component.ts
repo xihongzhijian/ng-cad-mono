@@ -394,7 +394,11 @@ export class MenjiaoDialogComponent implements OnInit {
   async selectCad0(info: typeof this.emptyCadTemplateType) {
     const data = this.formData;
     const {key1, key2, key3} = info;
-    const {search, addCadData} = getCadSearch(data, key1, key2, key3);
+    const shujuyaoqiu = this.getCadshujuyaoqiu(key3);
+    if (!shujuyaoqiu) {
+      return;
+    }
+    const {search, addCadData} = getCadSearch(data, shujuyaoqiu, key1, key2, key3);
     const result = await openCadListDialog(this.dialog, {
       data: {
         selectMode: "single",
@@ -713,6 +717,22 @@ export class MenjiaoDialogComponent implements OnInit {
       suanliaogongshiInfo: this.key1Infos[key1].suanliaogongshiInfo,
       suanliaoTablesInfo: {params: this.key1Infos[key1].suanliaoDataParams}
     };
+  }
+
+  getFentiDialogInput(key1: MenjiaoCadType, key2: string, key3: string): CadItemComponent["fentiDialogInput"] {
+    if (key2 === "企料CAD") {
+      return {
+        data: this.formData[key1][key2][key3]["企料分体CAD"] || {},
+        cadSize: [this.cadWidth, this.cadHeight],
+        cad数据要求: this.getCadshujuyaoqiu("企料分体")
+      };
+    }
+    return undefined;
+  }
+
+  getCadshujuyaoqiu(type: string) {
+    const {component} = this.data;
+    return component?.getCadshujuyaoqiu(type);
   }
 
   afterEditCad(key1: MenjiaoCadType) {

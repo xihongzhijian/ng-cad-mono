@@ -243,6 +243,7 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     const cad = this.status.cad;
     cad.off("entitiescopy", this._onEntitiesCopy);
     cad.off("entitiespaste", this._onEntitiesPaste);
+    cad.off("entitydblclick", this._onEntityDblClick);
   }
 
   private _onEntitiesCopy: CadEventCallBack<"entitiescopy"> = (entities) => {

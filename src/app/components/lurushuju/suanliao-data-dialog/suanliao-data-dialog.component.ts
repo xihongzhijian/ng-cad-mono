@@ -48,6 +48,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
   cadItemButtons: CadItemButton<SuanliaoDataCadItemInfo>[];
   mubanExtraData: CadItemComponent["mubanExtraData"] = {};
   openCadOptions: RequiredKeys<OpenCadOptions, "suanliaogongshiInfo">;
+  cadShujuyaoqiu: CadItemComponent["shujuyaoqiu"];
 
   @ViewChild(SuanliaoTablesComponent) suanliaoTables?: SuanliaoTablesComponent;
   @ViewChildren(CadItemComponent) cadItems?: QueryList<CadItemComponent>;
@@ -85,6 +86,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
         ]
       );
     }
+    this.cadShujuyaoqiu = this.data.component?.getCadshujuyaoqiu("算料");
   }
 
   ngOnInit() {

@@ -1,9 +1,8 @@
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 
-export const selectModes = ["single", "multiple"] as const;
+export const selectModes = ["single", "multiple", "none"] as const;
 
 export type SelectMode = (typeof selectModes)[number];
 
@@ -20,7 +19,7 @@ export interface CadListInput {
   pageSize?: number;
   source?: CadData[];
   raw?: boolean;
-  addCadData?: Omit<Partial<HoutaiCad>, "_id">;
+  addCadData?: ObjectOf<any>;
   hideCadInfo?: boolean;
 }
 

@@ -1,5 +1,5 @@
 <div class="name">
-  <button mat-button (click)="editCadName()">{{ cad["名字"] }}</button>
+  <button mat-button (click)="editCadForm()">{{ cad["名字"] }}</button>
 </div>
 <div class="cads">
   <div class="cad item">
@@ -16,37 +16,16 @@
         <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
       }
     </div>
-    <div class="inputs flex-column">
-      @for (group of cadInputs; track $index) {
-        <div class="group toolbar">
-          @for (info of group; track $index) {
-            <app-input [info]="info"></app-input>
-          }
-        </div>
+    <div class="item" style="width: 100%">
+      @for (key of shujuyaoqiu?.["CAD弹窗修改属性"]; track $index) {
+        @if (key !== "名字") {
+          <div class="text">{{ getCadInfoStr(key) }}</div>
+        }
       }
     </div>
-    @if (!noZhankai) {
-      <div class="zhankais flex-column">
-        @for (item of zhankaiInputs; track i; let i = $index) {
-          <div class="zhankai flex-row">
-            <!-- <button mat-icon-button color="primary" (click)="addZhankai(i)">
-              <mat-icon>add_circle</mat-icon>
-            </button>
-            <button [disabled]="i === 0" mat-icon-button color="primary" (click)="removeZhankai(i)">
-              <mat-icon>remove_circle</mat-icon>
-            </button> -->
-            <app-input class="width" [info]="item.width"></app-input>
-            <div class="symbol">×</div>
-            <app-input class="height" [info]="item.height"></app-input>
-            <div class="symbol">=</div>
-            <app-input class="num" [info]="item.num"></app-input>
-          </div>
-        }
-      </div>
-    }
-    @if (fentiCads) {
+    @if (fentiDialogInput) {
       <div class="fenti-cads toolbar">
-        @for (item of fentiCads | keyvalue: returnZero; track item.key) {
+        @for (item of fentiDialogInput.data | keyvalue: returnZero; track item.key) {
           <div class="fenti-cad toolbar">
             <div>{{ item.key }}:</div>
             <button mat-raised-button color="primary" (click)="selectFentiCad()">{{ item.value ? item.value["名字"] : "不做分体" }}</button>

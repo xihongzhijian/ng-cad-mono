@@ -10,6 +10,7 @@ import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/t
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, local, session, setGlobal} from "@app/app.common";
 import {AboutComponent} from "@components/about/about.component";
+import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
@@ -35,6 +36,9 @@ import {copySuanliaoData, updateMenjiaoData} from "../menjiao-dialog/menjiao-dia
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
 import {
+  Cad数据要求,
+  Cad数据要求Raw,
+  getCad数据要求,
   getGongyi,
   getXinghao,
   get算料数据,
@@ -115,11 +119,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   huajians: MrbcjfzHuajian[] = [];
   varNames: FormulasEditorComponent["vars"];
   bancaiList?: BancaiListData;
-  btns: {name: string; onClick: () => void}[] = [
-    {name: "返回至型号", onClick: this.backToXinghao.bind(this)},
-    {name: "复制页面信息", onClick: this.copyInfo.bind(this)},
-    {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)}
-  ];
+  cad数据要求: Cad数据要求[] = [];
+  btns: {name: string; onClick: () => void}[] = [];
   menuPoitonKey = "lurushujuMenuPosition";
   isMenuDisabled = false;
 
@@ -155,6 +156,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         session.remove(this.infoKey);
       }
     });
+    this.updateBtns();
     const info = session.load<ReturnType<typeof this.getInfo>>(this.infoKey);
     if (info) {
       session.remove(this.infoKey);
@@ -363,9 +365,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         this.setStep(1, {});
         break;
       case 3:
-        if (!this.production || (await this.message.confirm("确定返回吗？"))) {
-          this.setStep(2, {xinghaoName: this.xinghaoName});
-        }
+        this.setStep(2, {xinghaoName: this.xinghaoName});
         break;
     }
   }
@@ -438,12 +438,25 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     });
   }
 
+  async getCadShujuyaoqiuIfNotFetched() {
+    await this.getDataIfNotFetched("cadShujuyaoqiu", async () => {
+      const fields: (keyof Cad数据要求Raw)[] = ["mingzi", "cadtanchuangxiugaishuxing", "xianduantanchuangxiugaishuxing", "daorucadyaoqiu"];
+      const cad数据要求Raws = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu", fields});
+      this.cad数据要求 = cad数据要求Raws.map(getCad数据要求);
+      this.updateBtns();
+    });
+  }
+
+  getCadshujuyaoqiu(type: string) {
+    return this.cad数据要求.find((v) => v.CAD分类 === type);
+  }
+
   async setStep1() {
     const step = 1;
     if (this.step !== step) {
       return;
     }
-    await Promise.all([this.getXinghaosIfNotFetched(), this.getXinghaoOptionsAllIfNotFetched()]);
+    await Promise.all([this.getXinghaosIfNotFetched(), this.getXinghaoOptionsAllIfNotFetched(), this.getCadShujuyaoqiuIfNotFetched()]);
   }
 
   async setStep2() {
@@ -453,7 +466,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       return;
     }
     this.xinghaoInputInfos = [];
-    await Promise.all([this.getXinghaosIfNotFetched(), this.getXinghaoOptionsAllIfNotFetched()]);
+    await Promise.all([this.getXinghaosIfNotFetched(), this.getXinghaoOptionsAllIfNotFetched(), this.getCadShujuyaoqiuIfNotFetched()]);
     if (!this.xinghao) {
       await this.getXinghao();
     }
@@ -533,7 +546,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       this.getGongyiOptionsAllIfNotFetched(),
       this.getMenjiaoOptionsAllIfNotFetched(),
       this.geVarNamesAllIfNotFetched(),
-      this.getBancaiListIfNotFetched()
+      this.getBancaiListIfNotFetched(),
+      this.getCadShujuyaoqiuIfNotFetched()
     ]);
     if (!this.xinghao) {
       await this.getXinghao();
@@ -1438,5 +1452,22 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   autoTest() {
     this.message.alert("暂未实现");
+  }
+
+  updateBtns() {
+    this.btns = [
+      {name: "返回至型号", onClick: this.backToXinghao.bind(this)},
+      {name: "复制页面信息", onClick: this.copyInfo.bind(this)},
+      {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)}
+    ];
+    for (const item of this.cad数据要求) {
+      this.btns.push({
+        name: item.CAD分类,
+        onClick: () => {
+          const search = item.导入CAD要求;
+          openCadListDialog(this.dialog, {data: {selectMode: "none", collection: "cad", search, addCadData: search}});
+        }
+      });
+    }
   }
 }

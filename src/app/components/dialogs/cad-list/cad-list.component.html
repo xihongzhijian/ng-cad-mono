@@ -51,7 +51,7 @@
       @for (item of pageData; track i; let i = $index) {
         <div class="item">
           <div class="toolbar" (click)="clickItem(i)">
-            <mat-checkbox [checked]="item.checked"> </mat-checkbox>
+            <mat-checkbox [checked]="item.checked" [disabled]="data.selectMode === 'none'"> </mat-checkbox>
             <div class="text long link" [matTooltip]="item.data.name">{{ item.data.name }}</div>
           </div>
           <app-image

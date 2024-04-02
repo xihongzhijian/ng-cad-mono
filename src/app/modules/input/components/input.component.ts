@@ -344,7 +344,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  private _getErrorMsg(errors: ValidationErrors | null, label?: string): string {
+  private _getErrorMsg(errors: ValidationErrors | null): string {
     if (!errors) {
       return "";
     }
@@ -356,8 +356,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       } else {
         msg = key;
       }
-      if (label && msg === "required") {
-        return `${label}不能为空`;
+      if (msg === "required") {
+        return "不能为空";
       }
       return msg;
     }
@@ -365,12 +365,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   getErrorMsg() {
-    return this._getErrorMsg(this.errors, this.info.label);
+    return this._getErrorMsg(this.errors);
   }
 
   getErrorMsgKey(key: string) {
     if (this.info.type === "object") {
-      return this._getErrorMsg(this.errorsKey[key], this.info.keyLabel);
+      return this._getErrorMsg(this.errorsKey[key]);
     } else {
       return "";
     }
@@ -378,7 +378,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   getErrorMsgValue(key: string) {
     if (this.info.type === "object" || this.info.type === "array") {
-      return this._getErrorMsg(this.errorsValue[key], this.info.valueLabel);
+      return this._getErrorMsg(this.errorsValue[key]);
     } else {
       return "";
     }
@@ -437,6 +437,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     if (info.disabled) {
       this.class.push("disabled");
+    }
+    if (info.clearable) {
+      if (info.readonly || info.disabled) {
+        info.clearable = false;
+      }
     }
     if (info.class) {
       if (Array.isArray(info.class)) {

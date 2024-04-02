@@ -43,7 +43,7 @@ export class FentiCadDialogComponent {
 
   async selectFentiCad(key: string) {
     const fentiCads = this.data.data;
-    const search: ObjectOf<any> = {分类: "企料分体"};
+    const search: ObjectOf<any> = this.data.cad数据要求?.导入CAD要求 || {};
     const checkedItems = [];
     const cad = fentiCads[key];
     if (cad) {

@@ -1,7 +1,7 @@
 import {ActivatedRoute} from "@angular/router";
 import {Formulas} from "@app/utils/calc";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {uniq} from "lodash";
 
@@ -300,21 +300,23 @@ for (const key in 企料排列) {
 }
 export const 企料组合共享: [string, string][] = [["小锁料", "小扇小锁料"]];
 
-export const cadMatchRules: ObjectOf<{分类: string[]; 选项: (keyof 算料数据)[]}> = {
-  锁框: {分类: ["锁框"], 选项: []},
-  铰框: {分类: ["铰框"], 选项: []},
-  顶框: {分类: ["顶框"], 选项: []},
-
-  锁企料: {分类: ["锁企料"], 选项: []},
-  铰企料: {分类: ["铰企料"], 选项: []},
-  扇锁企料: {分类: ["锁企料", "扇锁企料"], 选项: []},
-  小锁料: {分类: ["小锁料"], 选项: []},
-  小扇小锁料: {分类: ["小锁料", "小扇小锁料"], 选项: []},
-  小扇铰企料: {分类: ["铰企料", "小扇铰企料"], 选项: []},
-
-  中锁料: {分类: ["中锁料"], 选项: []},
-  中铰料: {分类: ["中铰料"], 选项: []}
-};
+export interface Cad数据要求Raw extends TableDataBase {
+  cadtanchuangxiugaishuxing: string;
+  xianduantanchuangxiugaishuxing: string;
+  daorucadyaoqiu: string;
+}
+export interface Cad数据要求 {
+  CAD分类: string;
+  CAD弹窗修改属性: string[];
+  线段弹窗修改属性: string[];
+  导入CAD要求: ObjectOf<string | undefined>;
+}
+export const getCad数据要求 = (raw: Cad数据要求Raw): Cad数据要求 => ({
+  CAD分类: raw.mingzi,
+  CAD弹窗修改属性: raw.cadtanchuangxiugaishuxing.split("+"),
+  线段弹窗修改属性: raw.xianduantanchuangxiugaishuxing.split("+"),
+  导入CAD要求: Object.fromEntries(raw.daorucadyaoqiu.split("+").map((i) => i.split("=")))
+});
 
 export type 门缝配置 = ObjectOf<number>;
 
