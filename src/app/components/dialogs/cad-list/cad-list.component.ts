@@ -13,7 +13,7 @@ import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/pag
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
-import {imgCadEmpty} from "@app/app.common";
+import {imgCadEmpty, session} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, timeout} from "@lucilor/utils";
@@ -23,6 +23,7 @@ import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {ExportCache} from "@views/export/export.types";
 import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
@@ -303,10 +304,11 @@ export class CadListComponent implements AfterViewInit {
   }
 
   clickItem(i: number) {
-    if (this.data?.selectMode === "multiple") {
+    const {selectMode} = this.data;
+    if (selectMode === "multiple") {
       const item = this.pageData[i];
       item.checked = !item.checked;
-    } else {
+    } else if (selectMode === "single") {
       this.checkedItems.length = 0;
       for (const [j, item] of this.pageData.entries()) {
         if (i === j) {
@@ -315,6 +317,8 @@ export class CadListComponent implements AfterViewInit {
           item.checked = false;
         }
       }
+    } else {
+      return;
     }
     this.syncCheckedItems();
   }
@@ -410,6 +414,7 @@ export class CadListComponent implements AfterViewInit {
   }
 
   openExportPage() {
+    session.save<ExportCache>("exportParams", {search: this.data.search});
     this.status.openInNewTab(["export"]);
   }
 }

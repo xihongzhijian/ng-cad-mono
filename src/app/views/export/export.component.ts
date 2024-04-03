@@ -17,11 +17,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {DateTime} from "luxon";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
-
-interface ExportCache {
-  ids?: string[];
-  direct?: boolean;
-}
+import {ExportCache} from "./export.types";
 
 @Component({
   selector: "app-export",
@@ -61,14 +57,8 @@ export class ExportComponent implements OnInit {
 
   ngOnInit() {
     this.exportCache = session.load<ExportCache>("exportParams");
-    // session.remove("exportParams");
     if (this.exportCache?.direct) {
       this.exportCads("导出选中");
-    } else if (this.exportCache) {
-      const ids = this.exportCache.ids;
-      if (!Array.isArray(ids) || ids.length < 1) {
-        this.exportCache = null;
-      }
     }
   }
 
@@ -171,14 +161,20 @@ export class ExportComponent implements OnInit {
         break;
       }
       case "自由选择":
-        idsList = [
-          (
-            (await openCadListDialog(this.dialog, {
-              data: {selectMode: "multiple", collection: "cad", search: {分类: "^.+$"}}
-            })) ?? []
-          ).map((v) => v.id)
-        ];
-        filename0 = "自由选择";
+        {
+          let search = this.exportCache?.search;
+          if (!search) {
+            search = {分类: "^.+$"};
+          }
+          const cads = await openCadListDialog(this.dialog, {data: {selectMode: "multiple", collection: "cad", search}});
+          if (cads) {
+            idsList = [cads.map((v) => v.id)];
+            filename0 = "自由选择";
+          } else {
+            finish("hidden");
+            return;
+          }
+        }
         break;
       case "导出选中":
         idsList = [this.exportCache?.ids || []];
@@ -202,7 +198,7 @@ export class ExportComponent implements OnInit {
           finish("hidden");
           return;
         }
-        idsList = await this._queryIds({}, limit);
+        idsList = await this._queryIds(this.exportCache?.search || {}, limit);
         filename0 = "导出所有";
         break;
       }
