@@ -12,7 +12,7 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute} from "@angular/router";
 import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
-import mokuaidaixiaoData from "@assets/testData/mokuaidaxiao.json";
+import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
@@ -747,7 +747,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         }
       }
       const data = await this.message.json(选中布局数据.模块大小关系, {
-        defaultJson: msbj?.peizhishuju.模块大小关系 ?? mokuaidaixiaoData,
+        defaultJson: msbj?.peizhishuju.模块大小关系 ?? mokuaidaxiaoData,
         btnTexts: {reset: "重置为默认模块大小"}
       });
       if (data) {

@@ -80,21 +80,12 @@ export class HttpService {
   }
 
   async request<T>(url: string, method: "GET" | "POST", data?: ObjectOf<any>, options?: HttpOptions): Promise<CustomResponse<T> | null> {
-    const testData = options?.testData;
     let offlineMode = this.offlineMode;
     if (typeof options?.offlineMode === "boolean") {
       offlineMode = options.offlineMode;
     }
-    const getTestData = async (): Promise<CustomResponse<T>> => {
-      const response = await axios.get<T>(`${location.origin}/assets/testData/${testData}.json`, options);
-      return {code: 0, msg: "", data: response.data};
-    };
     if ((offlineMode && !environment.production) || environment.unitTest) {
-      if (testData) {
-        return await getTestData();
-      } else {
-        return null;
-      }
+      return null;
     }
     const rawData = {...data};
     const encrypt = options?.encrypt ?? "no";
@@ -237,9 +228,6 @@ export class HttpService {
         return response;
       }
     } catch (error) {
-      if (testData) {
-        return await getTestData();
-      }
       let content = "";
       let errorData: any;
       if (error instanceof AxiosError && error.response) {

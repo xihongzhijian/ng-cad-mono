@@ -246,7 +246,7 @@ export class CadDataService extends HttpService {
   }
 
   async queryMySql<T extends TableDataBase>(params: QueryMysqlParams, options?: HttpOptions) {
-    const data = await this.getData<T[]>("ngcad/queryMysql", params, {testData: params.table, ...options});
+    const data = await this.getData<T[]>("ngcad/queryMysql", params, options);
     return data || [];
   }
 

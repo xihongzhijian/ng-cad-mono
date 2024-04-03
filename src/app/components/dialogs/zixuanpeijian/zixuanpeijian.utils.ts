@@ -4,8 +4,8 @@ import {getCADBeishu} from "@app/utils/beishu";
 import {Formulas, toFixed} from "@app/utils/calc";
 import {matchOrderData} from "@app/utils/mongo";
 import {nameEquals} from "@app/utils/zhankai";
-import zxpjTestData from "@assets/testData/zixuanpeijian.json";
-import zixuanpeijianTypesInfo from "@assets/testData/zixuanpeijianTypesInfo.json";
+import zxpjTestData from "@assets/json/zixuanpeijian.json";
+import zixuanpeijianTypesInfo from "@assets/json/zixuanpeijianTypesInfo.json";
 import {CadData, CadMtext, CadZhankai, setLinesLength} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -173,7 +173,7 @@ export const getZixuanpeijianCads = async (
   const data = await http.getData<{cads: ObjectOf<ObjectOf<any[]>>; bancais: BancaiList[]}>(
     "ngcad/getZixuanpeijianCads",
     {typesInfo},
-    {testData: "zixuanpeijianCads", ...httpOptions}
+    httpOptions
   );
   if (data) {
     const cads: ObjectOf<ObjectOf<CadData[]>> = {};

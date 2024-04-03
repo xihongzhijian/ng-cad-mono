@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import bancaifenzuIndexData from "@assets/testData/bancaifenzuIndex.json";
+import bancaifenzuIndexData from "@assets/json/bancaifenzuIndex.json";
 import {BancaiFormComponent} from "@components/bancai-form/bancai-form.component";
 import {HttpModule} from "@modules/http/http.module";
 import {BancaiFormDialogComponent, BancaiFormInput} from "./bancai-form-dialog.component";

@@ -222,11 +222,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         this.huajians[vid] = {id: vid, data: huajian, selected: huajianIds2.includes(vid)};
       }
     } else {
-      const data = await this.http.getData<MrbcjfzResponseData>(
-        "peijian/xinghao/bancaifenzuIndex",
-        {table, id},
-        {spinner: this.loaderId, testData: "bancaifenzuIndex"}
-      );
+      const data = await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {table, id}, {spinner: this.loaderId});
       if (data) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, data.xinghao);
         this.bancaiKeys = data.bancaiKeys;

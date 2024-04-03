@@ -49,7 +49,9 @@ export class JiaoweiComponent implements OnInit {
     const {id} = this.router.snapshot.queryParams;
     const data = await this.http.queryMySql<JiaoweiTableData>({table, filter: {where: {vid: id}}});
     try {
-      this.jiaowei.import(JSON.parse(data[0].jiaowei || ""));
+      if (data[0]?.jiaowei) {
+        this.jiaowei.import(JSON.parse(data[0].jiaowei || ""));
+      }
     } catch (error) {
       console.error(error);
       this.message.error("数据格式错误");

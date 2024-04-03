@@ -36,7 +36,7 @@ export class KailiaokongweipeizhiComponent implements OnInit {
     const id = this.route.snapshot.queryParams.id;
     if (id) {
       this.id = id;
-      const data = await this.http.getData<ObjectOf<KlkwpzItem[]>>("peijian/kailiaokongweipeizhi/get", {id}, {testData: "klkwpz"});
+      const data = await this.http.getData<ObjectOf<KlkwpzItem[]>>("peijian/kailiaokongweipeizhi/get", {id});
       if (data && typeof data === "object" && !Array.isArray(data)) {
         this.data = data;
       }

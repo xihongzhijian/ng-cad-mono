@@ -18,7 +18,6 @@ export interface HttpOptions extends AxiosRequestConfig {
   bypassCodes?: number[];
   silent?: boolean;
   encrypt?: DataEncrpty;
-  testData?: string;
   offlineMode?: boolean;
   spinner?: string | boolean | {id?: string; config: SpinnerConfig};
 }
