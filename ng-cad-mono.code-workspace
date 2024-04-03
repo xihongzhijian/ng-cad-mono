@@ -13,6 +13,7 @@
   "settings": {
     "yaml.schemas": {
       "https://json.schemastore.org/github-workflow.json": "file:///e%3A/Documents/%40lucilor/ng-cad-mono/.github/workflows/deploy.yml"
-    }
+    },
+    "powershell.cwd": "ng-cad-mono"
   }
 }

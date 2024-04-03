@@ -1,6 +1,7 @@
 {
   "name": "ng-cad-mono",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "start": "ng serve",
     "build": "ng build --configuration production",
@@ -61,6 +62,7 @@
     "quill": "2.0.0-rc.4",
     "rxjs": "~7.8.1",
     "tslib": "^2.6.2",
+    "tsx": "^4.7.1",
     "uuid": "^9.0.1",
     "vanilla-jsoneditor": "^0.23.1",
     "zone.js": "~0.14.4"
@@ -107,7 +109,6 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "^2.1.0",
     "prettier": "^3.2.5",
-    "ts-node": "^10.9.2",
     "typescript": "~5.4.3"
   },
   "packageManager": "yarn@4.1.1"

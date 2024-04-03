@@ -28,4 +28,4 @@ jobs:
           yarn install
           yarn build:packages
           yarn build
-          yarn ts-node ./upload.ts
+          yarn tsx ./upload.ts
