@@ -13,7 +13,7 @@
     </div>
   }
 } @else {
-  <ng-scrollbar style="flex: 1 1 0">
+  <ng-scrollbar>
     <div class="qiezhongkong">
       @if (inputInfos2.length < 1) {
         <button mat-raised-button color="primary" (click)="addQiezhongkongItem(0)">新增</button>
@@ -34,7 +34,7 @@
   </ng-scrollbar>
 }
 <ng-template #qiezhongkong>
-  <ng-scrollbar style="flex: 1 1 0">
+  <ng-scrollbar>
     <div class="qiezhongkong">
       @if (inputInfos2.length < 1) {
         <button mat-raised-button color="primary" (click)="addQiezhongkongItem(0)">新增</button>

@@ -64,6 +64,7 @@ body {
 
 // ngx scrollbar
 ng-scrollbar.ng-scrollbar {
+  flex: 1 1 0;
   --scrollbar-border-radius: 7px;
   --scrollbar-padding: 0px;
   --scrollbar-viewport-margin: 0;
@@ -76,11 +77,8 @@ ng-scrollbar.ng-scrollbar {
   --scrollbar-thumb-transition: height ease-out 150ms, width ease-out 150ms;
   --scrollbar-track-transition: height ease-out 150ms, width ease-out 150ms;
 
-  &.fixed-width .ng-scroll-content {
-    width: 100%;
-  }
-  &.fixed-height .ng-scroll-content {
-    height: 100%;
+  .ng-scroll-content {
+    box-sizing: border-box;
   }
 }
 
@@ -162,6 +160,7 @@ ng-scrollbar.ng-scrollbar {
 }
 .flex-110 {
   flex: 1 1 0;
+  overflow: hidden;
 }
 
 img.cad-preview,

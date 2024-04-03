@@ -38,7 +38,7 @@ export class MessageService {
   ) {}
 
   async open(config: MatDialogConfig<MessageData>) {
-    config = {width: "40%", ...config};
+    config = {width: "50%", ...config};
     const data = config.data;
     if (data?.disableCancel || config.disableClose === undefined) {
       config.disableClose = true;

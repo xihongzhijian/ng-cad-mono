@@ -52,6 +52,7 @@ import {isEmpty, isEqual} from "lodash";
 import {Color as NgxColor} from "ngx-color";
 import {ChromeComponent, ColorChromeModule} from "ngx-color/chrome";
 import {ColorCircleModule} from "ngx-color/circle";
+import {NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
@@ -86,6 +87,7 @@ import {getValue} from "./input.utils";
     MatRadioModule,
     MatSelectModule,
     MatTooltipModule,
+    NgScrollbarModule,
     TextFieldModule
   ]
 })

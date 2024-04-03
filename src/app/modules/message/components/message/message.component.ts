@@ -23,6 +23,7 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
+import {NgScrollbarModule} from "ngx-scrollbar";
 import {JSONContent, JSONEditor, Mode} from "vanilla-jsoneditor";
 import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./message.types";
 import {validateForm} from "./message.utils";
@@ -33,17 +34,18 @@ import {validateForm} from "./message.utils";
   styleUrls: ["./message.component.scss"],
   standalone: true,
   imports: [
-    MatButtonModule,
-    MatIconModule,
-    MatDialogTitle,
-    NgClass,
-    MatDialogContent,
-    QuillEditorComponent,
+    A11yModule,
     FormsModule,
     InputComponent,
-    A11yModule,
+    MatButtonModule,
     MatDialogActions,
-    NgTemplateOutlet
+    MatDialogContent,
+    MatDialogTitle,
+    MatIconModule,
+    NgClass,
+    NgScrollbarModule,
+    NgTemplateOutlet,
+    QuillEditorComponent
   ]
 })
 export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {

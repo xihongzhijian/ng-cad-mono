@@ -1,7 +1,7 @@
 @if (!data.editDisabled) {
   <mat-slide-toggle [(ngModel)]="noPaiban">激光开料不排版</mat-slide-toggle>
 }
-<ng-scrollbar class="flex-110">
+<ng-scrollbar>
   @for (order of data.orders; track order; let i = $index) {
     <div class="order">
       @if (i > 0) {

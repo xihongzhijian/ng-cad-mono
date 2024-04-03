@@ -1,5 +1,5 @@
 <h1>编辑标注</h1>
-<ng-scrollbar class="content">
+<ng-scrollbar>
   <form [formGroup]="form">
     <mat-form-field>
       <mat-label>名字</mat-label>
@@ -97,7 +97,7 @@
     </mat-form-field>
   </form>
 </ng-scrollbar>
-<div matDialogActions>
+<div class="toolbar">
   <button mat-raised-button color="primary" (click)="submit()">确定</button>
   <button mat-raised-button color="primary" (click)="cancel()">取消</button>
 </div>

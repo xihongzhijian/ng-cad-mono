@@ -9,7 +9,7 @@
 <div class="flex-110 flex-row">
   <app-suanliaogongshi class="suanliaogongshis" [info]="openCadOptions.suanliaogongshiInfo"></app-suanliaogongshi>
   <mat-divider vertical></mat-divider>
-  <ng-scrollbar class="flex-110" track="all">
+  <ng-scrollbar>
     <div class="cads flex-row">
       @for (cad of suanliaoData["算料CAD"]; track i; let i = $index) {
         <app-cad-item

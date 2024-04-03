@@ -29,7 +29,7 @@
         </div>
         <div class="flex-column flex-110">
           <app-input [info]="searchMokuaiInputInfo"></app-input>
-          <ng-scrollbar class="flex-110">
+          <ng-scrollbar>
             @if (typesInfo[type1]) {
               <div class="types-info-items flex-row flex-110">
                 @for (item of typesInfo[type1] | keyvalue: returnZero; track $index) {
@@ -60,7 +60,7 @@
         <mat-divider vertical></mat-divider>
         <div class="flex-column flex-110">
           <ng-template [ngTemplateOutlet]="dropdownList"></ng-template>
-          <ng-scrollbar class="flex-110">
+          <ng-scrollbar>
             <div
               class="types-info-items flex-row flex-110"
               cdkDropListOrientation="horizontal"
@@ -134,7 +134,7 @@
           <button mat-raised-button color="primary" (click)="openMokuaiUrl()">查看配件模块数据</button>
         </div>
         <ng-template [ngTemplateOutlet]="dropdownList"></ng-template>
-        <ng-scrollbar class="flex-row flex-110">
+        <ng-scrollbar class="flex-row">
           @for (item of result["模块"]; track i; let i = $index) {
             <div>
               <div>{{ getMokuaiTitle(item) }}</div>
@@ -160,9 +160,9 @@
     }
     @case (3) {
       <div class="step-3 flex-row flex-110">
-        <div class="types-buttons">
-          @for (info of lingsanCadInfos; track $index) {
-            <div>
+        <ng-scrollbar style="flex: 0 0 auto">
+          <div class="types-buttons">
+            @for (info of lingsanCadInfos; track $index) {
               @if (!info.hidden) {
                 <button
                   #typesButton
@@ -173,9 +173,9 @@
                   {{ info.type }}
                 </button>
               }
-            </div>
-          }
-        </div>
+            }
+          </div>
+        </ng-scrollbar>
         <div class="flex-column flex-110">
           <div class="btn-group">
             <app-input [info]="lingsanCadsSearchInput" style="width: 100px; flex: 1 1 0"></app-input>
@@ -186,7 +186,7 @@
             <button mat-raised-button color="primary" (click)="step3Refresh()">刷新</button>
             <button mat-raised-button color="primary" (click)="step3Add()">添加</button>
           </div>
-          <ng-scrollbar class="flex-110">
+          <ng-scrollbar>
             <div class="lingsan-cads">
               @for (item of lingsanCads[lingsanCadType]; track i; let i = $index) {
                 @if (!item.hidden) {
@@ -215,7 +215,7 @@
           </ng-scrollbar>
         </div>
         <mat-divider vertical></mat-divider>
-        <ng-scrollbar class="flex-110">
+        <ng-scrollbar>
           <div class="lingsan-cads">
             @for (item of result["零散"]; track i; let i = $index) {
               <div class="lingsan-cad">

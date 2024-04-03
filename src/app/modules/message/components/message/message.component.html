@@ -17,28 +17,30 @@
   }
 }
 <div mat-dialog-content [ngClass]="data.type">
-  @switch (data.type) {
-    @case ("editor") {
-      <quill-editor [(ngModel)]="data.content"></quill-editor>
+  <ng-scrollbar>
+    @switch (data.type) {
+      @case ("editor") {
+        <quill-editor [(ngModel)]="data.content"></quill-editor>
+      }
+      @case ("iframe") {
+        <iframe #iframe [src]="iframeSrc" frameborder="0"></iframe>
+      }
+      @case ("json") {
+        <div #jsonEditorContainer></div>
+      }
+      @case ("form") {
+        <div [innerHTML]="contentHTML"></div>
+        <div (keyup)="onKeyUp($event)">
+          @for (info of inputs; track info) {
+            <app-input #formInput [info]="info"></app-input>
+          }
+        </div>
+      }
+      @default {
+        <div [innerHTML]="contentHTML"></div>
+      }
     }
-    @case ("iframe") {
-      <iframe #iframe [src]="iframeSrc" frameborder="0"></iframe>
-    }
-    @case ("json") {
-      <div #jsonEditorContainer></div>
-    }
-    @case ("form") {
-      <div [innerHTML]="contentHTML"></div>
-      <div (keyup)="onKeyUp($event)">
-        @for (info of inputs; track info) {
-          <app-input #formInput [info]="info"></app-input>
-        }
-      </div>
-    }
-    @default {
-      <div [innerHTML]="contentHTML"></div>
-    }
-  }
+  </ng-scrollbar>
 </div>
 <div class="hidden-if-empty" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" mat-dialog-actions style="justify-content: center">
   @switch (data.type) {

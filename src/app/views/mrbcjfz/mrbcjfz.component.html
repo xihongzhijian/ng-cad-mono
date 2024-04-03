@@ -12,7 +12,7 @@
 
 <div class="flex-row flex-110">
   <div class="bancais flex-110">
-    <ng-scrollbar class="flex-110">
+    <ng-scrollbar>
       @for (key of bancaiKeys; track key; let i = $index) {
         <div class="bancai flex-column" [ngClass]="{active: key === activeBancaiKey}" (click)="selectBancaiKey(key)">
           <div class="bancai-info flex-row">
@@ -75,7 +75,7 @@
   @if (inputData || !isFromOrder) {
     <mat-divider vertical></mat-divider>
     <div class="flex-column flex-110">
-      <ng-scrollbar class="flex-110">
+      <ng-scrollbar>
         <div class="item-list flex-row">
           @for (item of cads | keyvalue: returnZero; track item.key) {
             @if (!item.value.selected) {
@@ -106,7 +106,7 @@
       </ng-scrollbar>
       <div class="tips">企料不分组则程序自动分组为：门扇板材</div>
       <mat-divider></mat-divider>
-      <ng-scrollbar class="flex-110">
+      <ng-scrollbar>
         <div class="item-list flex-row">
           @for (item of huajians | keyvalue: returnZero; track item.key) {
             @if (!item.value.selected) {

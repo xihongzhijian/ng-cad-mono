@@ -12,7 +12,6 @@
 .types-buttons {
   display: flex;
   flex-direction: column;
-  overflow: auto;
 
   > :not(:last-child) {
     margin-bottom: 5px;

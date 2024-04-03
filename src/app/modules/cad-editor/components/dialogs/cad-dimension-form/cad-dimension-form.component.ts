@@ -1,4 +1,4 @@
-import {Component, Inject} from "@angular/core";
+import {Component, HostBinding, Inject} from "@angular/core";
 import {AbstractControl, FormsModule, ReactiveFormsModule, ValidatorFn} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatOptionModule} from "@angular/material/core";
@@ -39,18 +39,20 @@ export interface CadDimensionForm {
   styleUrls: ["./cad-dimension-form.component.scss"],
   standalone: true,
   imports: [
-    NgScrollbar,
     FormsModule,
-    ReactiveFormsModule,
+    MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
     MatOptionModule,
+    MatSelectModule,
     MatSlideToggleModule,
-    MatButtonModule
+    NgScrollbar,
+    ReactiveFormsModule
   ]
 })
 export class CadDimensionFormComponent {
+  @HostBinding("class") class = "ng-page";
+
   form: TypedFormGroup<CadDimensionForm>;
   dimension: CadDimensionLinear;
   constructor(
@@ -152,5 +154,5 @@ export class CadDimensionFormComponent {
 
 export const openCadDimensionFormDialog = getOpenDialogFunc<CadDimensionFormComponent, CadDimensionData, CadDimensionLinear>(
   CadDimensionFormComponent,
-  {height: "65%"}
+  {width: "50%", height: "80%"}
 );

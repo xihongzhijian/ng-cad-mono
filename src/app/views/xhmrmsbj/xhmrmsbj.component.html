@@ -49,7 +49,7 @@
           <mat-slide-toggle [(ngModel)]="ignoreXiaoguotu">ignoreXiaoguotu</mat-slide-toggle>
         }
         <mat-divider class="placeholder"></mat-divider>
-        <ng-scrollbar class="flex-110">
+        <ng-scrollbar>
           <div class="flex-column menshan-options">
             @for (item of data?.menshanbujuInfos | keyvalue: returnZero; track item) {
               @if (!data?.["铰扇跟随锁扇"] || !item.key.includes("铰扇")) {
@@ -84,7 +84,7 @@
           }
           <div class="flex-110 flex-row">
             <div class="flex-column flex-110">
-              <ng-scrollbar class="flex-110">
+              <ng-scrollbar>
                 <div class="mokuai-inputs flex-row">
                   @for (info of mokuaiInputInfos; track info) {
                     <app-input [info]="info"></app-input>
@@ -95,7 +95,7 @@
           </div>
         </div>
         <div class="flex-column flex-110">
-          <ng-scrollbar class="flex-110">
+          <ng-scrollbar>
             <div class="flex-row" style="flex-wrap: wrap" [ngStyle]="{display: showMokuais ? 'flex' : 'none'}">
               @for (mokuai of activeMokuaiNode?.["可选模块"]; track mokuai) {
                 <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai, isActive: isMokuaiActive(mokuai)}"> </ng-template>

@@ -5,7 +5,7 @@
   <button mat-raised-button color="primary" (click)="clearMsgs()">清空信息</button>
   <app-input [info]="deleteLimitInfo"></app-input>
 </div>
-<ng-scrollbar style="flex: 1 1 0">
+<ng-scrollbar>
   <div class="msgs">
     @for (msg of msgs; track msg) {
       <div class="msg" [ngClass]="msg.type">{{ msg.content }}</div>

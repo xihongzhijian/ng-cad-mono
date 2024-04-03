@@ -265,8 +265,10 @@
           (selectionChange)="onChange()"
           [placeholder]="info.placeholder || ''"
         >
-          <mat-option [value]="true" [disabled]="info.readonly">是</mat-option>
-          <mat-option [value]="false" [disabled]="info.readonly">否</mat-option>
+          <ng-scrollbar matSelectViewport>
+            <mat-option [value]="true" [disabled]="info.readonly">是</mat-option>
+            <mat-option [value]="false" [disabled]="info.readonly">否</mat-option>
+          </ng-scrollbar>
         </mat-select>
       }
       <mat-error>{{ getErrorMsg() }}</mat-error>
@@ -302,14 +304,16 @@
           [multiple]="info.multiple"
           (selectionChange)="onChange()"
         >
-          @if (optionText) {
-            <mat-select-trigger [innerHtml]="optionText"></mat-select-trigger>
-          }
-          @for (option of options; track option) {
-            <mat-option [value]="option.value" [disabled]="info.readonly || option.disabled">
-              {{ option.label || option.value }}
-            </mat-option>
-          }
+          <ng-scrollbar matSelectViewport>
+            @if (optionText) {
+              <mat-select-trigger [innerHtml]="optionText"></mat-select-trigger>
+            }
+            @for (option of options; track option) {
+              <mat-option [value]="option.value" [disabled]="info.readonly || option.disabled">
+                {{ option.label || option.value }}
+              </mat-option>
+            }
+          </ng-scrollbar>
         </mat-select>
       }
       @if (info.openInNewTab) {
@@ -359,9 +363,11 @@
           <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[0])}">
             <mat-label>{{ info.labelX || "x" }}</mat-label>
             <mat-select [(ngModel)]="value[0]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
-              <mat-option [value]="0">左</mat-option>
-              <mat-option [value]="0.5">中</mat-option>
-              <mat-option [value]="1">右</mat-option>
+              <ng-scrollbar matSelectViewport>
+                <mat-option [value]="0">左</mat-option>
+                <mat-option [value]="0.5">中</mat-option>
+                <mat-option [value]="1">右</mat-option>
+              </ng-scrollbar>
             </mat-select>
             <ng-template #anchorX>
               <input matInput type="number" [(ngModel)]="value[0]" (change)="onChange()" />
@@ -371,9 +377,11 @@
           <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[1])}">
             <mat-label>{{ info.labelY || "y" }}</mat-label>
             <mat-select [(ngModel)]="value[1]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
-              <mat-option [value]="1">上</mat-option>
-              <mat-option [value]="0.5">中</mat-option>
-              <mat-option [value]="0">下</mat-option>
+              <ng-scrollbar matSelectViewport>
+                <mat-option [value]="1">上</mat-option>
+                <mat-option [value]="0.5">中</mat-option>
+                <mat-option [value]="0">下</mat-option>
+              </ng-scrollbar>
             </mat-select>
             <mat-error>{{ getErrorMsg() }}</mat-error>
           </mat-form-field>
