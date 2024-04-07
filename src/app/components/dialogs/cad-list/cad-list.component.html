@@ -1,5 +1,7 @@
-@if (!data.source) {
-  <div class="toolbar">
+<div class="toolbar">
+  @if (data.source) {
+    <div class="flex-110"></div>
+  } @else {
     <mat-form-field style="flex: 0 0 150px">
       <mat-label>搜索类型</mat-label>
       <mat-select name="search-field" [(ngModel)]="searchField">
@@ -25,14 +27,14 @@
     <button mat-raised-button color="primary" (click)="addCad()">添加</button>
     <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
     <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
-    <mat-divider vertical class="placeholder large"></mat-divider>
-    <div class="spinner-container">
-      <button mat-raised-button color="primary" (click)="submit()">确定</button>
-      <app-spinner [id]="loaderIdSubmit" [inline]="true"></app-spinner>
-    </div>
-    <button mat-raised-button color="primary" (click)="close()">取消</button>
+  }
+  <mat-divider vertical class="placeholder large"></mat-divider>
+  <div class="spinner-container">
+    <button mat-raised-button color="primary" (click)="submit()">确定</button>
+    <app-spinner [id]="loaderIdSubmit" [inline]="true"></app-spinner>
   </div>
-}
+  <button mat-raised-button color="primary" (click)="close()">取消</button>
+</div>
 <div class="toolbar">
   <mat-slide-toggle [checked]="showCheckedOnly" (change)="toggleShowCheckedOnly($event)">
     <span>只显示已选</span>
