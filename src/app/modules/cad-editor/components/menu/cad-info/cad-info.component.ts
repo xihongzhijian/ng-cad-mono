@@ -1,4 +1,4 @@
-import {Component, forwardRef, OnDestroy, OnInit} from "@angular/core";
+import {Component, forwardRef, HostBinding, OnDestroy, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatOptionModule} from "@angular/material/core";
@@ -49,6 +49,8 @@ import {getCadInfoInputs} from "./cad-info.utils";
   ]
 })
 export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnDestroy {
+  @HostBinding("class") class = "ng-page";
+
   private _cadPointsLock = false;
   cadStatusIntersectionInfo: string | null = null;
   get data() {

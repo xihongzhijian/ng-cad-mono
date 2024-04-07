@@ -359,7 +359,8 @@ export class CadListComponent implements AfterViewInit {
   async editCad(i: number) {
     const item = this.pageData[i];
     const {collection} = this.data;
-    const result = await openCadEditorDialog(this.dialog, {data: {data: item.data, collection, center: true}});
+    const data = await this.getCad(item.data.id);
+    const result = await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
     if (result?.isSaved) {
       this.search();
     }
@@ -394,11 +395,16 @@ export class CadListComponent implements AfterViewInit {
     }
   }
 
+  async getCad(id: string) {
+    const {collection} = this.data;
+    const {cads} = await this.http.getCad({id, collection});
+    return cads.at(0);
+  }
+
   async onCadImgError(i: number) {
     const item = this.pageData[i];
     const {collection} = this.data;
-    const cads = await this.http.getCad({id: item.data.id, collection}, {spinner: false});
-    const data = cads.cads[0];
+    const data = await this.getCad(item.data.id);
     if (!data) {
       return;
     }
