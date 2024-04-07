@@ -2,6 +2,7 @@ import {AfterViewInit, Component, ViewChild} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
+import {provideNativeDateAdapter} from "@angular/material/core";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
@@ -42,16 +43,17 @@ export interface BackupCadsData {
   templateUrl: "./backup.component.html",
   styleUrls: ["./backup.component.scss"],
   standalone: true,
+  providers: [provideNativeDateAdapter()],
   imports: [
     FormsModule,
     MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatDatepickerModule,
-    MatIconModule,
-    NgScrollbar,
     MatCardModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
     MatPaginatorModule,
+    NgScrollbar,
     SpinnerComponent
   ]
 })

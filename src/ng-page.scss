@@ -125,6 +125,12 @@
         padding: 0;
       }
     }
+
+    .mat-divider {
+      &.large {
+        margin: 30px;
+      }
+    }
   }
 
   .success {
