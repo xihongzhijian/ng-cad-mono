@@ -1,5 +1,6 @@
 :host {
   --text-font-size: 17px;
+  font-size: var(--text-font-size);
 }
 
 .table-list,
@@ -10,32 +11,37 @@
   flex-direction: column;
 }
 .table-list {
-  width: 405px;
+  flex: 0 1 405px;
 }
 .active-item {
-  width: 300px;
+  flex: 0 1 300px;
 }
 .cad-list {
-  flex: 1 1 0;
+  flex: 1 0 200px;
 }
 
 .table-item,
 .active-item-item {
-  margin-bottom: 0;
+  --item-min-height: 40px;
+  width: 100%;
+  min-height: var(--item-min-height);
+  display: flex;
+  align-items: center;
   &.active {
     background-color: lightgray;
   }
 
   .name {
-    --mdc-text-button-label-text-size: var(--text-font-size);
+    flex: 1 1 0;
+    cursor: pointer;
+    min-height: var(--item-min-height);
+    display: flex;
+    align-items: center;
   }
 }
 
 .cad-item {
-  font-size: var(--text-font-size);
-
-  app-image {
-    width: 200px;
-    height: 100px;
-  }
+  --cad-preview-width: 200px;
+  --cad-preview-height: 100px;
+  --item-width: var(--cad-preview-width);
 }

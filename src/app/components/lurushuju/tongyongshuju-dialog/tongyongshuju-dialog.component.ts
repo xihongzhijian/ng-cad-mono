@@ -39,6 +39,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   collection: CadCollection = "cad";
   tableData: TongyongshujuData[] = [];
   activeItem: TongyongshujuActiveItem | null = null;
+  activeItemPrev: TongyongshujuActiveItem | null = null;
   activeCadList: TongyongshujuActiveCadList | null = null;
 
   tabelListLoader = uniqueId("tabelListLoader");
@@ -67,8 +68,30 @@ export class TongyongshujuDialogComponent implements OnInit {
     if (typeof i === "number" && this.tableData.length > i) {
       await this.clickTableListItem(i);
     }
-    if (typeof j === "number" && this.activeItem && this.activeItem.data.length > j) {
-      await this.clickActiveItem(this.activeItem.index, j);
+    const {activeItem, activeItemPrev} = this;
+    if (activeItem) {
+      if (activeItemPrev && activeItemPrev.index === activeItem.index) {
+        let maxVid1 = -1;
+        let maxVid2 = -1;
+        let maxVid2Index = -1;
+        for (const item of activeItemPrev.data) {
+          if (item.vid > maxVid1) {
+            maxVid1 = item.vid;
+          }
+        }
+        for (const [k, item] of activeItem.data.entries()) {
+          if (item.vid > maxVid2) {
+            maxVid2 = item.vid;
+            maxVid2Index = k;
+          }
+        }
+        if (maxVid2 > maxVid1) {
+          j = maxVid2Index;
+        }
+      }
+      if (typeof j === "number") {
+        await this.clickActiveItem(activeItem.index, j);
+      }
     }
   }
 
@@ -100,6 +123,7 @@ export class TongyongshujuDialogComponent implements OnInit {
 
   async setActiveItem(index: number) {
     const item = this.tableData[index];
+    this.activeItemPrev = this.activeItem;
     this.activeItem = null;
     if (item.active && item.xiaodaohang) {
       const struct = await this.http.getXiaodaohangStructure(item.xiaodaohang, {spinner: this.activeItemLoader});
@@ -163,7 +187,8 @@ export class TongyongshujuDialogComponent implements OnInit {
     }
   }
 
-  async editTableListItem(item: TongyongshujuData) {
+  async editTableListItem(i: number) {
+    const item = this.tableData[i];
     if (!item.xiaodaohang) {
       return;
     }
@@ -184,7 +209,8 @@ export class TongyongshujuDialogComponent implements OnInit {
     }
   }
 
-  helpTableListItem(item: TongyongshujuData) {
+  helpTableListItem(i: number) {
+    const item = this.tableData[i];
     if (!item.bangzhuwendang) {
       return;
     }

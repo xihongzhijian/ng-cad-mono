@@ -1,26 +1,23 @@
 <div class="toolbar">
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
 </div>
-<div class="flex-110 items no-items-per-row">
+<div class="flex-110 flex-row">
   <div class="table-list">
     <div class="title center">通用数据分类</div>
     <app-spinner [id]="tabelListLoader"></app-spinner>
     <ng-scrollbar>
-      <div class="item">
+      <div class="flex-column">
         @for (item of tableData; track i; let i = $index) {
           @if (i > 0) {
             <mat-divider></mat-divider>
           }
-          <div class="table-item item-list toolbar" [class]="{active: item.active}">
-            <button mat-button class="text short name" (click)="clickTableListItem(i)">{{ item.mingzi }}</button>
-            <button mat-button class="text long" style="opacity: 0" (click)="clickTableListItem(i)"></button>
-            @if (item.active) {
-              @if (item.xiaodaohang) {
-                <button mat-button color="primary" (click)="editTableListItem(item)">编辑</button>
-              }
-              @if (item.bangzhuwendang) {
-                <button mat-button color="primary" (click)="helpTableListItem(item)">帮助</button>
-              }
+          <div class="table-item item-list" [class]="{active: item.active}">
+            <div class="name" (click)="clickTableListItem(i)">{{ item.mingzi }}</div>
+            @if (item.xiaodaohang) {
+              <button mat-button color="primary" (click)="editTableListItem(i)">编辑</button>
+            }
+            @if (item.bangzhuwendang) {
+              <button mat-button color="primary" (click)="helpTableListItem(i)">帮助</button>
             }
           </div>
         }
@@ -32,15 +29,22 @@
     <div class="title center">可选项</div>
     <app-spinner [id]="activeItemLoader"></app-spinner>
     @if (activeItem) {
+      <div class="toolbar right">
+        @if (tableData[activeItem.index].xiaodaohang) {
+          <button mat-button color="primary" (click)="editTableListItem(activeItem.index)">编辑</button>
+        }
+        @if (tableData[activeItem.index].bangzhuwendang) {
+          <button mat-button color="primary" (click)="helpTableListItem(activeItem.index)">帮助</button>
+        }
+      </div>
       <ng-scrollbar>
-        <div class="item">
+        <div class="flex-column">
           @for (item of activeItem.data; track i; let i = $index) {
             @if (i > 0) {
               <mat-divider></mat-divider>
             }
-            <div class="active-item-item toolbar" [class]="{active: item.active}">
-              <button mat-button class="text short name" (click)="clickActiveItem(activeItem.index, i)">{{ item.mingzi }}</button>
-              <button mat-button class="text long" style="opacity: 0" (click)="clickActiveItem(activeItem.index, i)">&nbsp;</button>
+            <div class="active-item-item" [class]="{active: item.active}">
+              <div class="name" (click)="clickActiveItem(activeItem.index, i)">{{ item.mingzi }}</div>
             </div>
           }
         </div>
@@ -53,12 +57,18 @@
     <app-spinner [id]="cadListLoader"></app-spinner>
     @if (activeCadList && activeItem && isDataHaveCad(tableData[activeItem.index])) {
       <div class="toolbar">
-        <button mat-button color="primary" (click)="addCad()">添加</button>
+        <button mat-raised-button color="primary" (click)="addCad()">添加</button>
       </div>
       <ng-scrollbar>
         <div class="items no-items-per-row">
-          @for (item of activeCadList.data; track i; let i = $index) {
-            <ng-container *ngTemplateOutlet="cadItem; context: {$implicit: item}"></ng-container>
+          @if (activeCadList.data.length < 1) {
+            <div class="item">
+              <div class="title error">请添加CAD</div>
+            </div>
+          } @else {
+            @for (item of activeCadList.data; track i; let i = $index) {
+              <ng-container *ngTemplateOutlet="cadItem; context: {$implicit: item}"></ng-container>
+            }
           }
         </div>
       </ng-scrollbar>
@@ -70,9 +80,9 @@
   <div class="cad-item item">
     <div class="name center">{{ item["名字"] }}</div>
     <app-image class="cad-preview" [src]="item.img" (imgError)="getCadPreview(item)"></app-image>
-    <div class="item" style="width: 100%">
+    <div class="item">
       @for (option of item["选项"] | keyvalue: returnZero; track option.key) {
-        <div class="text long">{{ option.key }}: {{ option.value }}</div>
+        <div class="text">{{ option.key }}: {{ option.value }}</div>
       }
     </div>
     <div class="toolbar center">
