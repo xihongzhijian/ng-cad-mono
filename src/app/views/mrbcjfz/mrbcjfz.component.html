@@ -11,7 +11,7 @@
 </div>
 
 <div class="flex-row flex-110">
-  <div class="bancais flex-110">
+  <div class="bancais flex-110 flex-column">
     <ng-scrollbar>
       @for (key of bancaiKeys; track key; let i = $index) {
         <div class="bancai flex-column" [ngClass]="{active: key === activeBancaiKey}" (click)="selectBancaiKey(key)">
