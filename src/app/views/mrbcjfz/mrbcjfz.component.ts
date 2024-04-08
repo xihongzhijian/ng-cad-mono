@@ -1,6 +1,17 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {CommonModule} from "@angular/common";
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
+import {
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  QueryList,
+  SimpleChanges,
+  ViewChildren
+} from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -68,6 +79,8 @@ import {
   ]
 })
 export class MrbcjfzComponent implements OnInit, OnChanges {
+  @HostBinding("class") class = "ng-page";
+
   @Input() id = 0;
   @Input() table = "";
   @Input() closeable = false;

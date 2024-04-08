@@ -1,12 +1,14 @@
-<div class="btn-group" style="justify-content: flex-end">
+<div class="toolbar">
+  @if (!inputData && xinghao.raw.mingzi) {
+    <div class="title text short">{{ xiaodaohangStructure?.mingzi }}：{{ xinghao.raw.mingzi }}</div>
+  }
+  <div class="flex-110"></div>
+  <mat-divider class="placeholder large"></mat-divider>
   @if (inputData || !isFromOrder) {
     <button mat-raised-button color="primary" (click)="submit()">提交</button>
     @if (closeable) {
       <button mat-raised-button color="primary" (click)="close()">关闭</button>
     }
-  }
-  @if (!inputData && xinghao.raw.mingzi) {
-    <div class="title">{{ xiaodaohangStructure?.mingzi }}：{{ xinghao.raw.mingzi }}</div>
   }
 </div>
 

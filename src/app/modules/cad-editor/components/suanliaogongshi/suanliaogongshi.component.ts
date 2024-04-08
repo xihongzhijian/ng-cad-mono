@@ -120,6 +120,15 @@ export class SuanliaogongshiComponent implements OnChanges {
     return null;
   }
 
+  justifyGongshi(item: 算料公式) {
+    if (item.选项) {
+      const removeKeys = ["产品分类", "包边方向", "开启"];
+      for (const key of removeKeys) {
+        delete item.选项[key];
+      }
+    }
+  }
+
   async addGongshi() {
     const data = this.info.data;
     if (!data.算料公式) {
@@ -140,6 +149,7 @@ export class SuanliaogongshiComponent implements OnChanges {
     }
     const item = await this.getGongshiItem(data.算料公式[index]);
     if (item) {
+      this.justifyGongshi(item);
       data.算料公式[index] = item;
       this.slgsChange.emit();
     }
@@ -211,7 +221,10 @@ export class SuanliaogongshiComponent implements OnChanges {
         if (!Array.isArray(data.算料公式)) {
           data.算料公式 = [];
         }
-        data.算料公式.push(...data2);
+        for (const item of data2) {
+          this.justifyGongshi(item);
+          data.算料公式.push(item);
+        }
         this.slgsChange.emit();
       } else {
         this.message.error("算料公式数据有误");

@@ -159,18 +159,18 @@ export class MenjiaoDialogComponent implements OnInit {
           updateMenjiaoData(data);
         };
         info.style = getInfoStyle(n);
-        const dialogKeys: (keyof 算料数据)[] = [];
+        const dialogKeys: (keyof 算料数据)[] = ["门铰"];
         const openInNewTabKeys: (keyof 算料数据)[] = ["门铰", "门扇厚度"];
         if (dialogKeys.includes(key)) {
           info.optionsDialog = {
             noImage: true,
-            defaultValue: {value: data.选项默认值[key] || ""},
+            defaultValue: {value: data.选项默认值[key] || "", required: true},
             optionKey: key,
             useLocalOptions: true,
             openInNewTab: true,
             onChange(val) {
-              if (info.multiple) {
-                data.选项默认值[key] = val.defaultValue || "";
+              if (val.defaultValue) {
+                data.选项默认值[key] = val.defaultValue;
               }
             }
           };
