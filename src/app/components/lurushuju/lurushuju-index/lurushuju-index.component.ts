@@ -43,6 +43,7 @@ import {
   getXinghao,
   get算料数据,
   menjiaoCadTypes,
+  sortGongyis,
   SuanliaoDataParams,
   updateXinghaoFenleis,
   xiaoguotuKeys,
@@ -696,12 +697,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!this.xinghao) {
       return;
     }
-    const data0 = this.xinghao.产品分类[产品分类].find((gongyi) => gongyi.名字 === 名字);
+    const gongyis = this.xinghao.产品分类[产品分类];
+    const data0 = gongyis.find((gongyi) => gongyi.名字 === 名字);
     if (!data0) {
       return;
     }
     const data = cloneDeep(data0);
-    const mingziOld = data.名字;
     const form: InputInfo<Partial<工艺做法>>[] = [
       {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
       {
@@ -724,15 +725,15 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         }
       },
       {type: "boolean", label: "停用", model: {data, key: "停用"}},
+      {type: "number", label: "排序", model: {data, key: "排序"}},
       {type: "boolean", label: "录入完成", model: {data, key: "录入完成"}},
       {type: "boolean", label: "默认值", model: {data, key: "默认值"}}
     ];
     const result = await this.message.form(form);
     if (result) {
-      Object.assign(data0, result);
       const updateDatas: ObjectOf<typeof result> = {[名字]: result};
       if (result.默认值) {
-        for (const gongyi of this.xinghao.产品分类[产品分类]) {
+        for (const gongyi of gongyis) {
           if (gongyi.名字 !== 名字) {
             gongyi.默认值 = false;
             updateDatas[gongyi.名字] = {默认值: false};
@@ -742,10 +743,20 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       const 型号 = this.xinghao.名字;
       const success = await this.http.post<boolean>("shuju/api/editGongyi", {型号, 产品分类, updateDatas});
       if (success) {
+        const mingziOld = data0.名字;
         const mingziNew = data.名字;
         if (mingziOld !== mingziNew) {
           const params = {xinghao: this.xinghaoName, fenlei: 产品分类, mingziOld, mingziNew};
           await this.http.getData("shuju/api/onGongyiNameChange", params);
+        }
+        const paixu1 = data0.排序;
+        const paixu2 = data.排序;
+        Object.assign(data0, result);
+        if (paixu1 !== paixu2) {
+          console.log(gongyis.map((v) => v.名字));
+          sortGongyis(gongyis);
+          console.log(gongyis.map((v) => v.名字));
+          this.setXinghao({产品分类: this.xinghao.产品分类}, true);
         }
       }
     }

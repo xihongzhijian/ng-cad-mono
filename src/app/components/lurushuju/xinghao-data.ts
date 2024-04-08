@@ -26,6 +26,10 @@ export const updateXinghaoFenleis = (xinghao: Xinghao, allFenleis: string[], def
     if (!allFenleis.includes(fenlei)) {
       delete xinghao.产品分类[fenlei];
     }
+    if (!Array.isArray(xinghao.产品分类[fenlei])) {
+      xinghao.产品分类[fenlei] = [];
+    }
+    sortGongyis(xinghao.产品分类[fenlei]);
   }
 };
 
@@ -36,6 +40,7 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     图片: "",
     录入完成: false,
     停用: false,
+    排序: 0,
     输入数据: [],
     选项数据: [],
     CAD模板: null,
@@ -47,6 +52,10 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     算料数据: (raw?.算料数据 || []).map(get算料数据)
   };
   return result;
+};
+
+export const sortGongyis = (gongyis: 工艺做法[]) => {
+  return gongyis.sort((a, b) => (a.排序 || 0) - (b.排序 || 0));
 };
 
 export const get算料数据 = (raw?: Partial<算料数据> | null) => {
@@ -162,6 +171,7 @@ export interface 工艺做法 {
   录入完成: boolean;
   默认值: boolean;
   停用: boolean;
+  排序: number;
   输入数据: 输入[];
   选项数据: 选项[];
   算料数据: 算料数据[];
