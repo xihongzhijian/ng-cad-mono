@@ -379,11 +379,13 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   async step3Fetch(noUpdateInputInfos = false, noCache = false) {
     let responseData: {cads: CadData[]} | null = null;
-    if (noCache || !(window as any)._lingsanCadsCache) {
-      responseData = await this.http.getData<{cads: CadData[]}>("ngcad/getLingsanCads");
-      (window as any)._lingsanCadsCache = responseData;
+    const getAll = this.data?.getAllLingsanCads;
+    const cacheKey = getAll ? "_lingsanCadsCacheGetAll" : "_lingsanCadsCache";
+    if (noCache || !(window as any)[cacheKey]) {
+      responseData = await this.http.getData<{cads: CadData[]}>("ngcad/getLingsanCads", {getAll});
+      (window as any)[cacheKey] = responseData;
     } else {
-      responseData = (window as any)._lingsanCadsCache;
+      responseData = (window as any)[cacheKey];
     }
     if (responseData) {
       this.lingsanCadImgs = {};
@@ -435,10 +437,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         }
       }
       await this.sortLingsanCadInfos();
-      const sortedTypes = this.lingsanCadInfos.map((v) => v.type);
-      if (!isEqual(sortedTypes, this.lingsanSortedTypes)) {
-        await this.setLingsanSortedTypes(sortedTypes);
-      }
     }
     if (noUpdateInputInfos) {
       this._updateInputInfos();
@@ -1288,9 +1286,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const fenleis = this.lingsanCadInfos.map((v) => v.type);
     const fenleis2 = await this.message.prompt({type: "list", label: "分类排序", value: [...fenleis]});
     if (fenleis2 && !isEqual(fenleis, fenleis2)) {
-      const success = await this.setLingsanSortedTypes(fenleis2);
-      if (success) {
-        this.lingsanSortedTypes = fenleis2;
+      const result = await this.http.getData<string[]>("ngcad/setLingsanSortedTypes", {sortedTypes: fenleis2});
+      if (result) {
+        this.lingsanSortedTypes = result;
         await this.sortLingsanCadInfos();
       }
     }
@@ -1322,10 +1320,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (shouldRefresh) {
       this.step3Refresh();
     }
-  }
-
-  async setLingsanSortedTypes(sortedTypes: typeof this.lingsanSortedTypes) {
-    return await this.http.post("ngcad/setLingsanSortedTypes", {sortedTypes});
   }
 }
 

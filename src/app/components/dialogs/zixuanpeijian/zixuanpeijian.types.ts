@@ -66,6 +66,7 @@ export interface ZixuanpeijianInput {
   step1Data?: Step1Data;
   noValidateCads?: boolean;
   readonly?: boolean;
+  getAllLingsanCads?: boolean;
 }
 
 export type ZixuanpeijianOutput = Required<ZixuanpeijianData>;

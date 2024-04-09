@@ -48,7 +48,8 @@ export const getTestData = () => {
     可替换模块: true,
     step1Data: zixuanpeijianTypesInfo,
     noValidateCads: false,
-    readonly: false
+    readonly: false,
+    getAllLingsanCads: false
   };
   return data;
 };

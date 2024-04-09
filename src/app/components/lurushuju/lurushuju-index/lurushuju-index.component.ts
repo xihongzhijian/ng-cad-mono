@@ -1324,7 +1324,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   async openZxpj() {
-    const data: ZixuanpeijianInput = {step: 3, stepFixed: true, noValidateCads: true, readonly: true};
+    const data: ZixuanpeijianInput = {step: 3, stepFixed: true, noValidateCads: true, readonly: true, getAllLingsanCads: true};
     await openZixuanpeijianDialog(this.dialog, {data});
   }
 
