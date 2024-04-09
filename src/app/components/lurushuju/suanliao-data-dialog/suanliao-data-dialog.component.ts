@@ -8,7 +8,7 @@ import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijia
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, RequiredKeys} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";

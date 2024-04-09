@@ -36,7 +36,8 @@ import {
 import {FileSizeOptions, getFileSize, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {clamp, differenceWith} from "lodash";

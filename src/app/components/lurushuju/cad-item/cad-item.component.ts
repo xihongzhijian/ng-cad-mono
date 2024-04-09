@@ -22,7 +22,8 @@ import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadZhanka
 import {keysOf, ObjectOf, selectFiles} from "@lucilor/utils";
 import {cadFields, getCadInfoInputs} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {getHoutaiCad, HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";

@@ -1,15 +1,9 @@
 :host {
   padding: 20px;
   --active-color: lightgray;
-  --item-margin: 2px;
-  --item-padding: 5px;
 }
 
 .bancai {
-  margin: var(--item-margin);
-  padding: var(--item-padding);
-  border: var(--border);
-  box-sizing: border-box;
   --title-size: 1rem;
   &.active {
     background-color: var(--active-color);
@@ -45,11 +39,6 @@
   flex-wrap: wrap;
 
   .item {
-    width: calc(25% - var(--item-margin) * 2);
-    margin: var(--item-margin);
-    padding: var(--item-padding);
-    box-sizing: border-box;
-    cursor: pointer;
     &.active {
       background-color: var(--active-color);
     }

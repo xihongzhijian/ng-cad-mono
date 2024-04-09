@@ -1,5 +1,4 @@
 import {CadCollection} from "@app/cad/collections";
-import {exportCadData} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 
@@ -146,6 +145,10 @@ export interface TableDataBase {
   vid: number;
   mingzi: string;
 }
+export interface TableDataBase2 extends TableDataBase {
+  paixu: number;
+  tingyong: boolean;
+}
 
 export interface MongodbDataBase {
   _id: string;
@@ -188,24 +191,6 @@ export interface HoutaiCad extends MongodbDataBase {
   显示名字: string;
   json: ObjectOf<any>;
 }
-
-export const getHoutaiCad = (data = new CadData(), info?: {houtaiId?: string}) => {
-  const cad: HoutaiCad = {
-    _id: data.id,
-    名字: data.name,
-    分类: data.type,
-    分类2: data.type2,
-    选项: data.options,
-    条件: data.conditions,
-    显示名字: data.xianshimingzi,
-    json: exportCadData(data, true)
-  };
-  const {houtaiId} = info || {};
-  if (houtaiId) {
-    cad.json.houtaiId = houtaiId;
-  }
-  return cad;
-};
 
 export interface GetShortUrlParams {
   search?: ObjectOf<any>;

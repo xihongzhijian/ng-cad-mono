@@ -22,7 +22,7 @@ import {ObjectOf, WindowMessageManager} from "@lucilor/utils";
 import {openSuanliaogongshiDialog} from "@modules/cad-editor/components/dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
 import {MsbjData, MsbjInfo} from "@views/msbj/msbj.types";

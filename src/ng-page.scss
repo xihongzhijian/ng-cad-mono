@@ -123,6 +123,7 @@
     &.compact {
       .mdc-button {
         padding: 0;
+        --mdc-text-button-container-height: auto;
       }
     }
 

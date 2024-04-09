@@ -5,7 +5,7 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {ObjectOf} from "@lucilor/utils";
-import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";

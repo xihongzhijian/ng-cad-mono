@@ -5,7 +5,15 @@ import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {getArrayString} from "@modules/table/components/table/table.utils";
 import {算料数据} from "../xinghao-data";
-import {MenjiaoData, OptionsAll, OptionsAll2, ShuruTableData, XuanxiangTableData} from "./lurushuju-index.types";
+import {
+  MenjiaoData,
+  OptionsAll,
+  OptionsAll2,
+  ShuruTableData,
+  XinghaoGongyi,
+  XinghaoMenchuang,
+  XuanxiangTableData
+} from "./lurushuju-index.types";
 
 export const getXuanxiangTable = (): TableRenderInfo<XuanxiangTableData> => {
   return {
@@ -168,4 +176,24 @@ export const getOptionInputInfo = (
   }
 
   return info;
+};
+
+export const getXinghaoMenchuang = (raw?: Partial<XinghaoMenchuang>): XinghaoMenchuang => {
+  return {
+    vid: 0,
+    mingzi: "",
+    paixu: 0,
+    ...raw,
+    tingyong: !!raw?.tingyong
+  };
+};
+export const getXinghaoGongyi = (raw?: Partial<XinghaoGongyi>): XinghaoGongyi => {
+  return {
+    vid: 0,
+    mingzi: "",
+    paixu: 0,
+    menchuang: 0,
+    ...raw,
+    tingyong: !!raw?.tingyong
+  };
 };

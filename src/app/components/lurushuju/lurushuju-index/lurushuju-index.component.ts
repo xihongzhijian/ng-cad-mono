@@ -17,8 +17,10 @@ import {FormulasEditorComponent} from "@components/formulas-editor/formulas-edit
 import {environment} from "@env";
 import {ObjectOf, queryString} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {getTableUpdateData} from "@modules/http/services/cad-data.service.utils";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
@@ -62,9 +64,19 @@ import {
   OptionsAll2,
   ShuruTableData,
   XinghaoData,
+  XinghaoGongyi,
+  XinghaoMenchuang,
+  XinghaoMenchuangs,
   XuanxiangTableData
 } from "./lurushuju-index.types";
-import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./lurushuju-index.utils";
+import {
+  getMenjiaoTable,
+  getOptions,
+  getShuruTable,
+  getXinghaoGongyi,
+  getXinghaoMenchuang,
+  getXuanxiangTable
+} from "./lurushuju-index.utils";
 
 @Component({
   selector: "app-lurushuju-index",
@@ -72,6 +84,7 @@ import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./l
   imports: [
     AboutComponent,
     CdkDrag,
+    ClickStopPropagationDirective,
     ImageComponent,
     InputComponent,
     MatButtonModule,
@@ -89,7 +102,9 @@ import {getMenjiaoTable, getOptions, getShuruTable, getXuanxiangTable} from "./l
 })
 export class LurushujuIndexComponent extends Subscribed() implements OnInit, AfterViewInit {
   @HostBinding("class") class = ["ng-page"];
+
   defaultFenleis = ["单门", "子母对开", "双开"];
+  xinghaoMenchuangs: XinghaoMenchuangs = {items: [], count: 0};
   xinghaos: XinghaoData[] = [];
   xinghao: Xinghao | null = null;
   gongyi: 工艺做法 | null = null;
@@ -181,17 +196,65 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   async getXinghaos() {
-    const xinghaos = await this.http.getData<TableDataBase[]>("shuju/api/getXinghaos");
+    const xinghaos = await this.http.getData<XinghaoData[]>("shuju/api/getXinghaos");
+    const fields = ["vid", "mingzi"];
+    const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields});
+    const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields: [...fields, "menchuang"]});
+    this.xinghaoMenchuangs.items = [];
+    for (const menchuang of menchuangs) {
+      const xinghaoMenchuang = getXinghaoMenchuang(menchuang);
+      xinghaoMenchuang.gongyis = {items: [], count: 0};
+      this.xinghaoMenchuangs.items.push(xinghaoMenchuang);
+      for (const gongyi of gongyis) {
+        if (gongyi.menchuang !== menchuang.vid) {
+          continue;
+        }
+        const xinghaoGongyi = getXinghaoGongyi(gongyi);
+        xinghaoMenchuang.gongyis.items.push(xinghaoGongyi);
+      }
+    }
     if (xinghaos) {
-      this.filterXinghaos(xinghaos);
-      this.xinghaos = xinghaos;
+      for (const xinghao of xinghaos) {
+        const {menchuang, gongyi} = xinghao;
+        const menchuangItem = this.xinghaoMenchuangs.items.find((v) => v.mingzi === menchuang);
+        const gongyiItem = menchuangItem?.gongyis?.items.find((v) => v.mingzi === gongyi);
+        if (gongyiItem) {
+          if (!gongyiItem.xinghaos) {
+            gongyiItem.xinghaos = {items: [], count: 0};
+          }
+          gongyiItem.xinghaos.items.push(xinghao);
+        }
+      }
+      this.filterXinghaos();
+      this.clikcXinghaoGongyi(0, 0);
     }
   }
 
-  filterXinghaos(xinghaos = this.xinghaos) {
+  filterXinghaos() {
     const str = this.xinghaoFilterStr;
-    for (const xinghao of xinghaos) {
-      xinghao.hidden = !queryString(str, xinghao.mingzi);
+    const menchuangs = this.xinghaoMenchuangs;
+    menchuangs.count = 0;
+    for (const menchuang of menchuangs.items) {
+      if (!menchuang.gongyis) {
+        menchuang.gongyis = {items: [], count: 0};
+      }
+      const gongyis = menchuang.gongyis;
+      gongyis.count = 0;
+      for (const gongyi of gongyis.items) {
+        if (!gongyi.xinghaos) {
+          gongyi.xinghaos = {items: [], count: 0};
+        }
+        const xinghaos = gongyi.xinghaos;
+        xinghaos.count = 0;
+        for (const xinghao of xinghaos.items) {
+          xinghao.hidden = !queryString(str, xinghao.mingzi);
+          if (!xinghao.hidden) {
+            xinghaos.count++;
+            gongyis.count++;
+            menchuangs.count++;
+          }
+        }
+      }
     }
   }
 
@@ -223,7 +286,24 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   async getXinghaoItem(xinghao?: XinghaoData) {
     const data: XinghaoData = xinghao
       ? cloneDeep(xinghao)
-      : {vid: 0, mingzi: "", menchuang: "", gongyi: "", dingdanliucheng: "新工艺", tingyong: 0, paixu: -10000, tupian: ""};
+      : {vid: 0, mingzi: "", menchuang: "", gongyi: "", dingdanliucheng: "新工艺", tingyong: false, paixu: -10000, tupian: ""};
+    const {xinghaoMenchuangs} = this;
+    if (typeof xinghaoMenchuangs.index === "number") {
+      const menchuang = xinghaoMenchuangs.items[xinghaoMenchuangs.index];
+      if (menchuang) {
+        data.menchuang = menchuang.mingzi;
+        if (typeof menchuang.gongyis?.index === "number") {
+          const gongyi = menchuang.gongyis.items[menchuang.gongyis.index];
+          if (gongyi) {
+            data.gongyi = gongyi.mingzi;
+          }
+        }
+      }
+    }
+    if (!data.menchuang || !data.gongyi) {
+      await this.message.error("请先选择一个工艺");
+      return null;
+    }
     if (!data.算料单模板) {
       data.算料单模板 = this.status.projectConfig.get("新做数据算料单排版默认方案") || "自动排版模板";
     }
@@ -292,8 +372,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           }
         }
       },
-      getOptionInput("门窗", "所属门窗"),
-      getOptionInput("工艺", "所属工艺"),
       getOptionInput("订单流程", "订单流程"),
       {
         type: "select",
@@ -1480,5 +1558,140 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         }
       });
     }
+  }
+
+  async getXinghaoMenchaung(menchuang?: XinghaoMenchuang) {
+    const data = menchuang ? cloneDeep({...menchuang, gongyis: undefined}) : getXinghaoMenchuang();
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "string",
+        label: "名字",
+        model: {data, key: "mingzi"},
+        validators: Validators.required
+      },
+      {type: "number", label: "排序", model: {data, key: "paixu"}},
+      {type: "boolean", label: "停用", model: {data, key: "tingyong"}}
+    ];
+    const result = await this.message.form(form);
+    return result ? data : null;
+  }
+  async addXinghaoMenchaung() {
+    const data = await this.getXinghaoMenchaung();
+    if (data) {
+      await this.http.tableInsert({table: "p_menchuang", data});
+      await this.getXinghaos();
+    }
+  }
+  async editXinghaoMenchaung(i: number) {
+    const data0 = this.xinghaoMenchuangs.items[i];
+    const data1 = await this.getXinghaoMenchaung(data0);
+    if (!data1) {
+      return;
+    }
+    const data = getTableUpdateData(data0, data1);
+    if (data) {
+      await this.http.tableUpdate({table: "p_menchuang", data});
+      await this.getXinghaos();
+    }
+  }
+
+  async removeXinghaoMenchaung(i: number) {
+    const data = this.xinghaoMenchuangs.items[i];
+    if (data.gongyis && data.gongyis.items.length > 0) {
+      this.message.error("门窗存在工艺时不能删除");
+      return;
+    }
+    if (!(await this.message.confirm("确定删除吗？"))) {
+      return;
+    }
+    await this.http.tableDelete({table: "p_menchuang", vids: [data.vid]});
+    await this.getXinghaos();
+  }
+
+  async openXinghaoMenchaung() {
+    const url = await this.http.getShortUrl("p_menchuang");
+    if (!url) {
+      return;
+    }
+    window.open(url);
+    if (await this.message.newTabConfirm()) {
+      await this.getXinghaos();
+    }
+  }
+
+  async getXinghaoGongyi(gongyi?: XinghaoGongyi) {
+    const data = gongyi ? cloneDeep({...gongyi, xinghaos: undefined}) : getXinghaoGongyi();
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "string",
+        label: "名字",
+        model: {data, key: "mingzi"},
+        validators: Validators.required
+      },
+      {type: "number", label: "排序", model: {data, key: "paixu"}},
+      {type: "boolean", label: "停用", model: {data, key: "tingyong"}}
+    ];
+    const result = await this.message.form(form);
+    return result ? data : null;
+  }
+
+  async addXinghaoGongyi(i: number) {
+    const data = await this.getXinghaoGongyi();
+    if (data) {
+      data.menchuang = this.xinghaoMenchuangs.items[i].vid;
+      await this.http.tableInsert({table: "p_gongyi", data});
+      await this.getXinghaos();
+    }
+  }
+  async editXinghaoGongyi(i: number, j: number) {
+    const data0 = this.xinghaoMenchuangs.items[i].gongyis?.items[j];
+    const data1 = await this.getXinghaoGongyi(data0);
+    if (!data0 || !data1) {
+      return;
+    }
+    const data = getTableUpdateData(data0, data1);
+    if (data) {
+      await this.http.tableUpdate({table: "p_gongyi", data});
+      await this.getXinghaos();
+    }
+  }
+
+  async removeXinghaoGongyi(i: number, j: number) {
+    const data = this.xinghaoMenchuangs.items[i].gongyis?.items[j];
+    if (!data) {
+      return;
+    }
+    if (data.xinghaos && data.xinghaos.items.length > 0) {
+      this.message.error("工艺存在型号时不能删除");
+      return;
+    }
+    if (!(await this.message.confirm("确定删除吗？"))) {
+      return;
+    }
+    await this.http.tableDelete({table: "p_gongyi", vids: [data.vid]});
+    await this.getXinghaos();
+  }
+
+  async openXinghaoGongyi() {
+    const url = await this.http.getShortUrl("p_gongyi");
+    if (!url) {
+      return;
+    }
+    window.open(url);
+    if (await this.message.newTabConfirm()) {
+      await this.getXinghaos();
+    }
+  }
+
+  clikcXinghaoGongyi(i: number, j: number) {
+    const menchuangs = this.xinghaoMenchuangs;
+    menchuangs.index = i;
+    const gongyis = menchuangs.items[i].gongyis;
+    if (!gongyis) {
+      return;
+    }
+    gongyis.index = j;
+    const xinghaos = gongyis.items[j].xinghaos;
+    this.xinghaos = xinghaos?.items || [];
   }
 }

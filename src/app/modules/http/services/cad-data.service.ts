@@ -4,7 +4,7 @@ import {imgCadEmpty, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {dataURLtoBlob, downloadByUrl, DownloadOptions, ObjectOf} from "@lucilor/utils";
+import {dataURLtoBlob, downloadByUrl, DownloadOptions, keysOf, ObjectOf} from "@lucilor/utils";
 import {
   BancaiCad,
   BancaiList,
@@ -312,22 +312,16 @@ export class CadDataService extends HttpService {
       delete params2.data;
       return params2;
     };
-    if (Object.keys(data).length > 1) {
-      const fields = Object.keys(data).filter((v) => v !== "vid");
-      const results = await Promise.all(
-        fields.map(async (field) => {
-          const data2 = {vid: data.vid, [field]: (data as any)[field]} as any;
-          const params2 = getParams2({...params, data: data2});
-          const response = await this.post<void>("jichu/jichu/table_update", params2, options);
-          return response?.code === 0;
-        })
-      );
-      return results.every(Boolean);
-    } else {
-      const params2 = getParams2(params);
-      const response = await this.post<void>("jichu/jichu/table_update", params2, options);
-      return response?.code === 0;
-    }
+    const fields = keysOf(data).filter((v) => v !== "vid" && data[v] !== undefined);
+    const results = await Promise.all(
+      fields.map(async (field) => {
+        const data2 = {vid: data.vid, [field]: data[field]} as any;
+        const params2 = getParams2({...params, data: data2});
+        const response = await this.post<void>("jichu/jichu/table_update", params2, options);
+        return response?.code === 0;
+      })
+    );
+    return results.every(Boolean);
   }
 
   async tableDelete(params: TableDeleteParams, options?: HttpOptions) {

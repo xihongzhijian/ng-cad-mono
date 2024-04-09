@@ -2,7 +2,7 @@ import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {getHoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {random} from "lodash";
 import {OptionsAll2} from "../lurushuju-index/lurushuju-index.types";
 import {

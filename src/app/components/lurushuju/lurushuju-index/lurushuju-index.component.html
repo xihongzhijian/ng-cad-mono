@@ -2,8 +2,6 @@
   <div class="toolbar">
     @switch (step) {
       @case (1) {
-        <button mat-raised-button color="primary" (click)="addXinghao()">新建型号</button>
-        <app-input style="width: 200px" [info]="filterInputInfo"></app-input>
         <button mat-raised-button color="primary" (click)="xinghaoTongyongGongshi()">所有型号通用公式</button>
         <button mat-raised-button color="primary" (click)="tongyongshuju()">通用数据录入</button>
         <button mat-raised-button color="primary" (click)="openZxpj()">配件库</button>
@@ -30,23 +28,79 @@
   </div>
 </div>
 
-<ng-scrollbar [class.hidden]="step !== 1" class="step-1">
-  <div class="items no-items-per-row">
-    @for (xinghao of xinghaos; track xinghao) {
-      @if (!xinghao.hidden) {
-        <div class="item">
-          <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="enterXinghao(xinghao)"></app-image>
-          <div class="name" [matTooltip]="xinghao.mingzi">{{ xinghao.mingzi }}</div>
-          <div class="toolbar center">
-            <button mat-button color="primary" (click)="editXinghao(xinghao)">编辑</button>
-            <button mat-button color="primary" (click)="copyXinghao(xinghao)">复制</button>
-            <button mat-button color="primary" (click)="removeXinghao(xinghao)">删除</button>
+<div class="step-1 flex-row flex-110" [class.hidden]="step !== 1">
+  <div class="menchaungs flex-column">
+    <div class="toolbar compact"></div>
+    @for (menchuang of xinghaoMenchuangs.items; track i; let i = $index) {
+      @if (menchuang.gongyis) {
+        <div class="item" [class.active]="xinghaoMenchuangs.index === i" expanded>
+          <div class="menchuang-header flex-column">
+            <div class="name">
+              <span>{{ menchuang.mingzi }}</span>
+              @if (!production) {
+                <span>({{ menchuang.gongyis.count }})</span>
+              }
+            </div>
+            <div class="toolbar compact">
+              <button mat-button color="primary" appClickStop (click)="addXinghaoMenchaung()">添加门窗</button>
+              <button mat-button color="primary" appClickStop (click)="editXinghaoMenchaung(i)">编辑</button>
+              <button mat-button color="primary" appClickStop (click)="removeXinghaoMenchaung(i)">删除</button>
+              <button mat-button color="primary" appClickStop (click)="openXinghaoMenchaung()">查看所有</button>
+            </div>
+          </div>
+          <div class="gongyis">
+            <div class="toolbar compact right">
+              <button mat-button color="primary" (click)="addXinghaoGongyi(i)">添加工艺</button>
+              <button mat-button color="primary" (click)="openXinghaoGongyi()">查看所有</button>
+            </div>
+            @for (gongyi of menchuang.gongyis.items; track j; let j = $index) {
+              @if (gongyi.xinghaos) {
+                <div class="item" [class.active]="xinghaoMenchuangs.index === i && menchuang.gongyis.index === j">
+                  <div class="gongyi-header flex-row">
+                    <div class="name flex-110 link" (click)="clikcXinghaoGongyi(i, j)">
+                      <span>{{ gongyi.mingzi }}</span>
+                      @if (!production) {
+                        <span>({{ gongyi.xinghaos.count }})</span>
+                      }
+                    </div>
+                    <div class="toolbar compact">
+                      <button mat-button color="primary" (click)="editXinghaoGongyi(i, j)">编辑</button>
+                      <button mat-button color="primary" (click)="removeXinghaoGongyi(i, j)">删除</button>
+                    </div>
+                  </div>
+                </div>
+              }
+            }
           </div>
         </div>
       }
     }
   </div>
-</ng-scrollbar>
+  <mat-divider vertical></mat-divider>
+  <div class="item flex-110">
+    <div class="toolbar">
+      <button mat-raised-button color="primary" (click)="addXinghao()">新建型号</button>
+      <app-input style="width: 200px" [info]="filterInputInfo"></app-input>
+    </div>
+    <ng-scrollbar style="width: 100%">
+      <div class="xinghaos items no-items-per-row">
+        @for (xinghao of xinghaos; track xinghao) {
+          @if (!xinghao.hidden) {
+            <div class="item">
+              <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="enterXinghao(xinghao)"></app-image>
+              <div class="name" [matTooltip]="xinghao.mingzi">{{ xinghao.mingzi }}</div>
+              <div class="toolbar center">
+                <button mat-button color="primary" (click)="editXinghao(xinghao)">编辑</button>
+                <button mat-button color="primary" (click)="copyXinghao(xinghao)">复制</button>
+                <button mat-button color="primary" (click)="removeXinghao(xinghao)">删除</button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </ng-scrollbar>
+  </div>
+</div>
 <div [class.hidden]="step !== 2" class="step-2 flex-column flex-110">
   <div class="toolbar">
     @for (info of xinghaoInputInfos; track info) {
@@ -139,8 +193,10 @@
     <mat-icon>apps</mat-icon>
   </button>
   <mat-menu #links="matMenu">
-    @for (btn of btns; track $index) {
-      <button mat-menu-item (click)="btn.onClick()">{{ btn.name }}</button>
-    }
+    <ng-scrollbar>
+      @for (btn of btns; track $index) {
+        <button mat-menu-item (click)="btn.onClick()">{{ btn.name }}</button>
+      }
+    </ng-scrollbar>
   </mat-menu>
 </div>

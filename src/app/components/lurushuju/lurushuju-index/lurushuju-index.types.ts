@@ -1,15 +1,13 @@
 import {ObjectOf} from "@lucilor/utils";
-import {OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {OptionsDataData, TableDataBase2} from "@modules/http/services/cad-data.service.types";
 import {算料数据, 输入, 选项} from "../xinghao-data";
 import {LurushujuIndexComponent} from "./lurushuju-index.component";
 
-export interface XinghaoData extends TableDataBase {
-  paixu?: number;
-  tingyong?: number;
+export interface XinghaoData extends TableDataBase2 {
   tupian?: string;
   hidden?: boolean;
-  menchuang?: string;
-  gongyi?: string;
+  menchuang: string;
+  gongyi: string;
   dingdanliucheng?: string;
   算料单模板?: string;
 }
@@ -34,3 +32,19 @@ export type OptionsAll2 = ObjectOf<{options: OptionsDataData[]; disabled?: boole
 export type XuanxiangTableData = 选项 & {操作?: string};
 export type ShuruTableData = 输入 & {操作?: string};
 export type MenjiaoData = 算料数据 & {操作?: string};
+
+export interface XinghaoMenchuang extends TableDataBase2 {
+  gongyis?: XinghaoGongyis;
+}
+export interface XinghaoGongyi extends TableDataBase2 {
+  menchuang: number;
+  xinghaos?: XinghaoXinghaos;
+}
+export interface XinghaoDataList<T> {
+  items: T[];
+  count: number;
+  index?: number;
+}
+export type XinghaoMenchuangs = XinghaoDataList<XinghaoMenchuang>;
+export type XinghaoGongyis = XinghaoDataList<XinghaoGongyi>;
+export type XinghaoXinghaos = XinghaoDataList<XinghaoData>;
