@@ -1,4 +1,4 @@
-import {CadBaseLine, CadData, CadJointPoint} from "@lucilor/cad-viewer";
+import {CadBaseLine, CadData, CadDimension, CadJointPoint} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {AppConfig} from "@services/app-config.service";
 import {CadCollection} from "./collections";
@@ -50,8 +50,11 @@ export const setCadData = (data: CadData, project: string, collection: CadCollec
     data.info._layerInfos = layerInfos;
   }
 
-  data.entities.forEach((e) => {
+  data.getAllEntities().forEach((e) => {
     if (e.layer === "分页线") {
+      e.calcBoundingRect = false;
+    }
+    if (e instanceof CadDimension) {
       e.calcBoundingRect = false;
     }
     e.visible = true;
