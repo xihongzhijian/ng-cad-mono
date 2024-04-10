@@ -17,7 +17,6 @@ import {FormulasEditorComponent} from "@components/formulas-editor/formulas-edit
 import {environment} from "@env";
 import {ObjectOf, queryString} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
-import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {getTableUpdateData} from "@modules/http/services/cad-data.service.utils";
@@ -73,6 +72,7 @@ import {
   getMenjiaoTable,
   getOptions,
   getShuruTable,
+  getXinghaoData,
   getXinghaoGongyi,
   getXinghaoMenchuang,
   getXuanxiangTable
@@ -284,9 +284,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   async getXinghaoItem(xinghao?: XinghaoData) {
-    const data: XinghaoData = xinghao
-      ? cloneDeep(xinghao)
-      : {vid: 0, mingzi: "", menchuang: "", gongyi: "", dingdanliucheng: "新工艺", tingyong: false, paixu: -10000, tupian: ""};
+    const data: XinghaoData = xinghao ? cloneDeep(xinghao) : getXinghaoData();
     const {xinghaoMenchuangs} = this;
     if (typeof xinghaoMenchuangs.index === "number") {
       const menchuang = xinghaoMenchuangs.items[xinghaoMenchuangs.index];

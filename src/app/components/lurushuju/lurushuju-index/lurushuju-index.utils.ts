@@ -10,6 +10,7 @@ import {
   OptionsAll,
   OptionsAll2,
   ShuruTableData,
+  XinghaoData,
   XinghaoGongyi,
   XinghaoMenchuang,
   XuanxiangTableData
@@ -195,5 +196,18 @@ export const getXinghaoGongyi = (raw?: Partial<XinghaoGongyi>): XinghaoGongyi =>
     menchuang: 0,
     ...raw,
     tingyong: !!raw?.tingyong
+  };
+};
+export const getXinghaoData = (raw?: Partial<XinghaoData>): XinghaoData => {
+  return {
+    vid: 0,
+    mingzi: "",
+    menchuang: "",
+    gongyi: "",
+    dingdanliucheng: "新工艺",
+    tingyong: false,
+    paixu: -10000,
+    tupian: "",
+    ...raw
   };
 };

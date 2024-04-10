@@ -22,7 +22,6 @@ import {getXinghaoQuery, SuanliaoDataParams} from "@components/lurushuju/xinghao
 import {environment} from "@env";
 import {
   CadData,
-  CadDimension,
   CadEntities,
   CadEntity,
   CadHatch,
