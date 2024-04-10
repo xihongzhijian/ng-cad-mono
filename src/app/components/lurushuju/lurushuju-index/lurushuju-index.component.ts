@@ -84,7 +84,6 @@ import {
   imports: [
     AboutComponent,
     CdkDrag,
-    ClickStopPropagationDirective,
     ImageComponent,
     InputComponent,
     MatButtonModule,
@@ -139,6 +138,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   btns: {name: string; onClick: () => void}[] = [];
   menuPoitonKey = "lurushujuMenuPosition";
   isMenuDisabled = false;
+  isMenchuangEditable = false;
 
   infoKey = "lurushujuInfo";
   step: LurushujuIndexStep = 1;
@@ -559,24 +559,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     this.xinghaoInputInfos = [
       {
         type: "select",
-        label: "所属门窗",
-        model: {data: xinghao, key: "所属门窗"},
-        options: this.getOptions("门窗"),
-        multiple: false,
-        onChange: (val) => onChange({所属门窗: val}),
-        style: {width: "0", flex: "1 1 150px"}
-      },
-      {
-        type: "select",
-        label: "所属工艺",
-        model: {data: xinghao, key: "所属工艺"},
-        options: this.getOptions("工艺"),
-        multiple: false,
-        onChange: (val) => onChange({所属工艺: val}),
-        style: {width: "0", flex: "1 1 200px"}
-      },
-      {
-        type: "select",
         label: "产品分类",
         model: {data: xinghao, key: "显示产品分类"},
         options: this.getOptions("产品分类"),
@@ -845,12 +827,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   async copyGongyi2() {
-    const {xinghao, xinghaos} = this;
+    const {xinghao, xinghaoMenchuangs} = this;
     if (!xinghao) {
       return;
     }
     const result = await openSelectGongyiDialog(this.dialog, {
-      data: {xinghaos, xinghaoOptions: this.xinghaoOptionsAll, multiple: true}
+      data: {xinghaoMenchuangs, xinghaoOptions: this.xinghaoOptionsAll, multiple: true}
     });
     if (!result) {
       return;
@@ -1144,7 +1126,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   async onMenjiaoToolbar(event: ToolbarButtonEvent) {
-    const {gongyi, xinghaos} = this;
+    const {gongyi, xinghaoMenchuangs} = this;
     if (!gongyi) {
       return;
     }
@@ -1165,7 +1147,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         {
           const result = await openSelectGongyiDialog(this.dialog, {
             data: {
-              xinghaos,
+              xinghaoMenchuangs,
               xinghaoOptions: this.xinghaoOptionsAll,
               menjiaoOptions: this.menjiaoOptionsAll,
               excludeXinghaos: [this.xinghaoName],

@@ -16,6 +16,9 @@
   <div class="bancais flex-110 flex-column">
     <ng-scrollbar>
       @for (key of bancaiKeys; track key; let i = $index) {
+        @if (i > 0) {
+          <mat-divider></mat-divider>
+        }
         <div class="bancai flex-column" [ngClass]="{active: key === activeBancaiKey}" (click)="selectBancaiKey(key)">
           <div class="bancai-info flex-row">
             <div class="title">{{ key }}:</div>

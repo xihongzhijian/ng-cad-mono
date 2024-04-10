@@ -39,7 +39,7 @@ export class SelectGongyiDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data?: SelectGongyiInput
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.updateInputInfos();
   }
 
@@ -57,9 +57,16 @@ export class SelectGongyiDialogComponent implements OnInit {
   }
 
   updateInputInfos() {
-    const {xinghaos, xinghaoOptions: options, menjiaoOptions, fenlei} = this.data || {};
+    const {xinghaoMenchuangs, xinghaoOptions: options, menjiaoOptions, fenlei} = this.data || {};
     const data = this.searchForm;
-    const xinghaoOptions = (xinghaos || []).map<InputInfoOption>(({mingzi, tupian}) => ({value: mingzi, img: tupian}));
+    const xinghaoOptions: InputInfoOption<string>[] = [];
+    for (const menchuang of xinghaoMenchuangs?.items || []) {
+      for (const gongyi of menchuang.gongyis?.items || []) {
+        for (const xinghao of gongyi.xinghaos?.items || []) {
+          xinghaoOptions.push({value: xinghao.mingzi, img: xinghao.tupian});
+        }
+      }
+    }
     this.inputInfos = [
       {
         type: "select",
@@ -67,21 +74,7 @@ export class SelectGongyiDialogComponent implements OnInit {
         clearable: true,
         model: {key: "型号", data},
         options: xinghaoOptions,
-        optionsDialog: {
-          onChange: () => {
-            this.searchForm.工艺 = "";
-          }
-        }
-      },
-      {
-        type: "select",
-        label: "工艺",
-        clearable: true,
-        model: {key: "工艺", data},
-        options: getOptions(options, "工艺"),
-        onChange: () => {
-          this.searchForm.型号 = "";
-        }
+        optionsDialog: {}
       },
       {
         type: "select",

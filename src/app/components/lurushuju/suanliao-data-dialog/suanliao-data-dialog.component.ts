@@ -124,7 +124,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
     }
     const result = await openSelectGongyiDialog(this.dialog, {
       data: {
-        xinghaos: component.xinghaos,
+        xinghaoMenchuangs: component.xinghaoMenchuangs,
         xinghaoOptions: component.xinghaoOptionsAll,
         menjiaoOptions: component.menjiaoOptionsAll,
         key: "算料数据",
