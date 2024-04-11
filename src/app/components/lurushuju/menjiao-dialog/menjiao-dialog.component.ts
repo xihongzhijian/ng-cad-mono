@@ -389,6 +389,7 @@ export class MenjiaoDialogComponent implements OnInit {
       return;
     }
     autoFillMenjiao(this.formData, this.data.component.menjiaoOptionsAll);
+    this.validate();
   }
 
   async selectCad0(info: typeof this.emptyCadTemplateType) {

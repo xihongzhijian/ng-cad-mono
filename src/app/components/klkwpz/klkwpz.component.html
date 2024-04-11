@@ -1,8 +1,8 @@
 <ng-scrollbar>
-  <div class="items">
+  <div class="items no-items-per-row">
     @for (item of formData; track item; let i = $index) {
       <mat-card class="item" (click)="printItem(item.item)">
-        <div class="btn-group">
+        <div class="toolbar">
           <button mat-raised-button color="primary" (click)="addItem(i)">新增</button>
           <button mat-raised-button color="primary" (click)="addItem(i, item.item)">复制</button>
           <button mat-raised-button color="primary" (click)="removeItem(i)">删除</button>
@@ -20,7 +20,7 @@
     }
     @if (formData.length < 1) {
       <mat-card class="item">
-        <div class="btn-group">
+        <div class="toolbar">
           <button mat-raised-button color="primary" (click)="addItem(0)">新增</button>
         </div>
       </mat-card>

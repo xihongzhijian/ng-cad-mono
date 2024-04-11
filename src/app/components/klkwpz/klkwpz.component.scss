@@ -1,18 +1,9 @@
 .items {
-  display: flex;
-  flex-wrap: wrap;
   background-color: gray;
+  --item-width: 400px;
 
   .item {
-    width: 400px;
     margin: 10px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-
-    .btn-group {
-      width: 100%;
-    }
   }
 
   ::ng-deep app-input {
