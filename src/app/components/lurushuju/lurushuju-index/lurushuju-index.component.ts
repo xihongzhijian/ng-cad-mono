@@ -192,6 +192,9 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   get isKailiao() {
+    if (typeof this.xinghao?.是否需要激光开料 === "boolean") {
+      return this.xinghao.是否需要激光开料;
+    }
     return this.status.projectConfig.getBoolean("新版本做数据可以做激光开料");
   }
 
@@ -323,7 +326,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       所属门窗: data.menchuang,
       所属工艺: data.gongyi,
       订单流程: data.dingdanliucheng,
-      算料单模板: data.算料单模板
+      算料单模板: data.算料单模板,
+      是否需要激光开料: data.是否需要激光开料
     };
     const mingziOld = data.mingzi;
     const names = this.xinghaos.map((xinghao) => xinghao.mingzi);
@@ -389,6 +393,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         label: "算料单模板",
         model: {data: data2, key: "算料单模板"},
         options: ["自动排版模板", "手动装配配件模板", "混合模板"]
+      },
+      {
+        type: "boolean",
+        label: "是否需要激光开料",
+        model: {data: data2, key: "是否需要激光开料"},
+        validators: Validators.required
       },
       {type: "number", label: "排序", model: {data, key: "paixu"}},
       {type: "boolean", label: "停用", model: {data, key: "tingyong"}}
@@ -588,15 +598,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           }
           onChange(data);
         },
-        style: {width: "0", flex: "1 1 200px"}
-      },
-      {
-        type: "select",
-        label: "订单流程",
-        model: {data: xinghao, key: "订单流程"},
-        options: this.getOptions("订单流程"),
-        multiple: false,
-        onChange: (val) => onChange({订单流程: val}),
         style: {width: "0", flex: "1 1 200px"}
       }
     ];

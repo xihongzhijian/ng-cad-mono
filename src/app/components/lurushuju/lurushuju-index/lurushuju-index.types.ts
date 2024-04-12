@@ -10,6 +10,7 @@ export interface XinghaoData extends TableDataBase2 {
   gongyi: string;
   dingdanliucheng?: string;
   算料单模板?: string;
+  是否需要激光开料?: boolean;
 }
 
 export type LurushujuIndexStep = 1 | 2 | 3;
