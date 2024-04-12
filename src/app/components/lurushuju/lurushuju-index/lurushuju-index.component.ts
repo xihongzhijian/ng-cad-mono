@@ -234,13 +234,14 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const str = this.xinghaoFilterStr;
     const menchuangs = this.xinghaoMenchuangs;
     menchuangs.count = 0;
-    for (const menchuang of menchuangs.items) {
+    const foundGongyis: [number, number][] = [];
+    for (const [i, menchuang] of menchuangs.items.entries()) {
       if (!menchuang.gongyis) {
         menchuang.gongyis = {items: [], count: 0};
       }
       const gongyis = menchuang.gongyis;
       gongyis.count = 0;
-      for (const gongyi of gongyis.items) {
+      for (const [j, gongyi] of gongyis.items.entries()) {
         if (!gongyi.xinghaos) {
           gongyi.xinghaos = {items: [], count: 0};
         }
@@ -254,6 +255,18 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
             menchuangs.count++;
           }
         }
+        if (xinghaos.count) {
+          foundGongyis.push([i, j]);
+        }
+      }
+    }
+    if (str) {
+      const foundCount = foundGongyis.length;
+      if (foundCount < 1) {
+        this.message.snack("搜索不到数据");
+      } else if (foundCount === 1) {
+        const [i, j] = foundGongyis[0];
+        this.clikcXinghaoGongyi(i, j);
       }
     }
   }

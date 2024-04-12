@@ -68,6 +68,9 @@
                           <span>&nbsp;({{ gongyi.xinghaos.count }})</span>
                         }
                       </div>
+                      @if (xinghaoFilterStr && gongyi.xinghaos.count > 0) {
+                        <div class="error">搜索到{{ gongyi.xinghaos.count }}个型号</div>
+                      }
                       @if (isMenchuangEditable) {
                         <div class="toolbar compact">
                           <button mat-button color="primary" (click)="editXinghaoGongyi(i, j)">编辑</button>
