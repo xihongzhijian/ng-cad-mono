@@ -209,7 +209,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       xinghaoMenchuang.gongyis = {items: [], count: 0};
       this.xinghaoMenchuangs.items.push(xinghaoMenchuang);
       for (const gongyi of gongyis) {
-        if (gongyi.menchuang !== menchuang.vid) {
+        if (Number(gongyi.menchuang) !== menchuang.vid) {
           continue;
         }
         const xinghaoGongyi = getXinghaoGongyi(gongyi);
@@ -1679,13 +1679,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   clikcXinghaoGongyi(i: number, j: number) {
     const menchuangs = this.xinghaoMenchuangs;
+    const iPrev = menchuangs.index;
     menchuangs.index = i;
-    const gongyis = menchuangs.items[i].gongyis;
+    const gongyis = menchuangs.items[i]?.gongyis;
     if (!gongyis) {
       return;
     }
+    const jPrev = gongyis.index;
     gongyis.index = j;
-    const xinghaos = gongyis.items[j].xinghaos;
-    this.xinghaos = xinghaos?.items || [];
+    if (iPrev !== i || jPrev !== j) {
+      const xinghaos = gongyis.items[j]?.xinghaos;
+      this.xinghaos = xinghaos?.items || [];
+    }
   }
 }
