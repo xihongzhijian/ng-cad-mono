@@ -1,9 +1,9 @@
+import {getArrayString} from "@app/app.common";
 import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
-import {getArrayString} from "@modules/table/components/table/table.utils";
 import {算料数据} from "../xinghao-data";
 import {
   MenjiaoData,
@@ -85,7 +85,7 @@ export const getMenjiaoTable = () => {
       {type: "string", field: "产品分类", width: "100px"},
       {type: "string", field: "开启", width: "100px"},
       {type: "string", field: "门铰", width: "100px", getString: (value) => getArrayString(value.门铰, "，")},
-      {type: "string", field: "门扇厚度", width: "80px", getString: (value) => getArrayString(value.门扇厚度)},
+      {type: "string", field: "门扇厚度", width: "80px", getString: (value) => getArrayString(value.门扇厚度, "，")},
       {type: "string", field: "锁边", width: "120px"},
       {type: "string", field: "铰边", width: "120px"},
       {

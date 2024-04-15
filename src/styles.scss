@@ -99,6 +99,8 @@ ng-scrollbar.ng-scrollbar {
 .sub-form-field {
   .label {
     color: black;
+    display: flex;
+    align-items: center;
   }
 }
 

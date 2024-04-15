@@ -16,10 +16,13 @@
         <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
       }
     </div>
-    <div class="item link" style="width: 100%" (dblclick)="editCadForm()">
+    <div class="cad-info item link" style="align-items: flex-start" (dblclick)="editCadForm()">
       @for (key of shujuyaoqiu?.["CAD弹窗修改属性"]; track $index) {
         @if (key !== "名字") {
-          <div class="text">{{ getCadInfoStr(key) }}</div>
+          <div class="flex-row">
+            <div class="key">{{ key }}：</div>
+            <div class="value">{{ getCadInfoStr(key) }}</div>
+          </div>
         }
       }
     </div>

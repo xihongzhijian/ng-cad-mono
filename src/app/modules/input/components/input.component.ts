@@ -40,7 +40,7 @@ import {CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {CadData, CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
-import {isTypeOf, ObjectOf, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
+import {getTypeOf, isTypeOf, ObjectOf, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
@@ -482,19 +482,25 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return;
     }
     let toChange: any;
-    switch (typeof value) {
+    switch (getTypeOf(value)) {
       case "string":
         toChange = "";
         break;
       case "number":
+      case "NaN":
         toChange = 0;
         break;
+      case "bigint":
+        toChange = 0n;
+        break;
+      case "boolean":
+        toChange = false;
+        break;
+      case "array":
+        toChange = [];
+        break;
       case "object":
-        if (Array.isArray(value)) {
-          toChange = [];
-        } else {
-          toChange = null;
-        }
+        toChange = {};
         break;
       default:
         toChange = null;

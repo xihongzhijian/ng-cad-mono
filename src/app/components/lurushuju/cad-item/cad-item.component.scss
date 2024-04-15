@@ -39,6 +39,15 @@
     justify-content: center;
     align-items: center;
   }
+
+  .cad-info {
+    align-items: flex-start;
+    width: 100%;
+
+    .value {
+      white-space: pre;
+    }
+  }
 }
 
 .fenti-cads {

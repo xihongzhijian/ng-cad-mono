@@ -237,3 +237,30 @@ export const getPdfInfo = (others?: TDocumentInformation): TDocumentInformation 
     ...others
   };
 };
+
+export const getArrayString = (value: any, separator: string) => {
+  if (Array.isArray(value)) {
+    return value.join(separator);
+  } else {
+    return value;
+  }
+};
+export const getObjectString = (value: any, separator: string, separatorKv: string) => {
+  if (!value || typeof value !== "object") {
+    return "";
+  }
+  const strs: string[] = [];
+  for (const key in value) {
+    strs.push(`${key}${separatorKv}${value[key]}`);
+  }
+  return strs.join(separator);
+};
+export const getValueString = (value: any, separator: string, separatorKv: string) => {
+  if (Array.isArray(value)) {
+    return getArrayString(value, separator);
+  } else if (value && typeof value === "object") {
+    return getObjectString(value, separator, separatorKv);
+  } else {
+    return String(value);
+  }
+};

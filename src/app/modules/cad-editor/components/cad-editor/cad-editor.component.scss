@@ -98,6 +98,10 @@
       height: 0;
     }
   }
+
+  ng-scrollbar {
+    --_scrollbar-content-width: 100%;
+  }
 }
 
 :host-context(.mat-tab-label) {

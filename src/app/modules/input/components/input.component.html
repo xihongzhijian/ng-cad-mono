@@ -131,7 +131,12 @@
   }
   @case ("object") {
     <div class="sub-form-field">
-      <div class="label">{{ info.label }}</div>
+      <div class="label">
+        <span>{{ info.label }}</span>
+        @if (info.clearable) {
+          <button mat-button color="primary" (click)="clear()">清空</button>
+        }
+      </div>
       @if (keysOf(value)["length"] === 0) {
         <div>
           <button mat-icon-button color="primary" (click)="objectAdd(value, '')">
@@ -157,6 +162,11 @@
               (blur)="onBlur()"
             />
             <mat-error>{{ getErrorMsgKey(item.key) }}</mat-error>
+            @if (info.clearable) {
+              <button mat-icon-button matSuffix color="primary" (click)="changeObjectKey(value, item.key, '')">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
           </mat-form-field>
           <mat-form-field style="width: 70%" [ngClass]="{empty: isEmpty(item.value)}">
             @if (info.valueLabel) {
@@ -173,6 +183,11 @@
               (change)="changeObjectValue2(value, item.key, item.value)"
               (blur)="onBlur()"
             />
+            @if (info.clearable) {
+              <button mat-icon-button matSuffix color="primary" (click)="changeObjectValue(value, item.key, '')">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
             @if (optionsDialog) {
               <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key, item.key)">
                 <mat-icon>list</mat-icon>
@@ -198,7 +213,12 @@
   }
   @case ("array") {
     <div class="sub-form-field">
-      <div class="label">{{ info.label }}</div>
+      <div class="label">
+        <span>{{ info.label }}</span>
+        @if (info.clearable) {
+          <button mat-button color="primary" (click)="clear()">清空</button>
+        }
+      </div>
       @if (value.length === 0 && !info.readonly) {
         <div>
           <button mat-icon-button color="primary" (click)="arrayAdd(value, '')">
@@ -232,6 +252,11 @@
               </button>
             }
           </ng-container>
+          @if (info.clearable) {
+            <button mat-icon-button matSuffix color="primary" (click)="value[j] = ''">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
           @for (icon of suffixIcons; track icon) {
             <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
               <mat-icon>{{ icon.name }}</mat-icon>

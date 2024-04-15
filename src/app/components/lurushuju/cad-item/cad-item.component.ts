@@ -15,6 +15,7 @@ import {
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
+import {getValueString} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData, generateLineTexts2, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
@@ -144,6 +145,9 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       }
     }
     const data = new CadData(dataRaw);
+    if (this.shujuyaoqiu?.CAD弹窗修改属性 && !this.shujuyaoqiu.CAD弹窗修改属性.includes("选项")) {
+      this.shujuyaoqiu.CAD弹窗修改属性.push("选项");
+    }
     const form = getCadInfoInputs(this.shujuyaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status);
     const result = await this.message.form(form);
     if (result) {
@@ -421,19 +425,15 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
   }
 
   getCadInfoStr(key: string) {
-    const value: any[] = [];
     if (key in cadFields) {
       const key2 = cadFields[key as keyof typeof cadFields];
-      value.push(this.cad.json[key2]);
+      return getValueString(this.cad.json[key2], "\n", "：");
     } else if (key === "展开信息") {
       const {cad} = this;
       if (cad?.json?.zhankai && cad.json.zhankai[0]) {
         const zhankai = cad.json.zhankai[0];
-        value.push(`${zhankai.zhankaikuan} × ${zhankai.zhankaigao} = ${zhankai.shuliang}`);
+        return `${zhankai.zhankaikuan} × ${zhankai.zhankaigao} = ${zhankai.shuliang}`;
       }
-    }
-    if (value.length > 0) {
-      return `${key}：${value[0]}`;
     }
     return "";
   }

@@ -70,7 +70,12 @@ export class HttpService {
   }
 
   getUrl(path: string, params?: ObjectOf<string>) {
-    const url = new URL(path, this.baseURL);
+    let url: URL;
+    try {
+      url = new URL(path, this.baseURL || location.origin);
+    } catch (error) {
+      return path;
+    }
     if (params) {
       for (const key in params) {
         url.searchParams.set(key, params[key]);

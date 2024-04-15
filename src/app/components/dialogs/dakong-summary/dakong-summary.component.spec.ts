@@ -14,6 +14,7 @@ const data: DakongSummaryInput = {
       {
         cadId: "123",
         cadName: "abc",
+        peizhiName: "def",
         summary: [
           {peizhiId: "1", kongId: "2", kongName: "edf1", face: "zzz1", count: 0, error: "123"},
           {peizhiId: "3", kongId: "4", kongName: "edf2", face: "zzz2", count: 2, error: ""}
