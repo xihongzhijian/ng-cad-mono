@@ -4,9 +4,7 @@ import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {imgCadEmpty, session, setGlobal} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
-import {CadData} from "@lucilor/cad-viewer";
+import {session, setGlobal} from "@app/app.common";
 import {ObjectOf, queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -105,7 +103,7 @@ export class DakongSummaryComponent {
           data.push({
             cadId: item.cadId,
             cadName: item.cadName,
-            peizhiName: item.cadName,
+            peizhiName: item.peizhiName,
             hidden: false,
             ...detail
           });
@@ -141,12 +139,7 @@ export class DakongSummaryComponent {
   }
 
   async getCadImg(id: string) {
-    if (!this.cadImgs[id]) {
-      const data = new CadData();
-      data.id = id;
-      this.cadImgs[id] = imgCadEmpty;
-      this.cadImgs[id] = await getCadPreview("cad", data, {http: this.http});
-    }
+    this.cadImgs[id] = this.http.getCadImgUrl(id);
   }
 
   filterTableData() {
