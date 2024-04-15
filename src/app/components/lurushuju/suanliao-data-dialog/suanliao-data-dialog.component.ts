@@ -113,7 +113,10 @@ export class SuanliaoDataDialogComponent implements OnInit {
     };
     const result = await openZixuanpeijianDialog(this.dialog, {data: zxpjData});
     if (result) {
-      data.算料CAD = result.零散.map((v) => getHoutaiCad(v.data, {houtaiId: v.info.houtaiId}));
+      data.算料CAD = result.零散.map((v) => {
+        v.data.options = {};
+        return getHoutaiCad(v.data, {houtaiId: v.info.houtaiId});
+      });
     }
   }
 

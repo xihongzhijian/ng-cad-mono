@@ -145,9 +145,6 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       }
     }
     const data = new CadData(dataRaw);
-    if (this.shujuyaoqiu?.CAD弹窗修改属性 && !this.shujuyaoqiu.CAD弹窗修改属性.includes("选项")) {
-      this.shujuyaoqiu.CAD弹窗修改属性.push("选项");
-    }
     const form = getCadInfoInputs(this.shujuyaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status);
     const result = await this.message.form(form);
     if (result) {

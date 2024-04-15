@@ -13,6 +13,7 @@ import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongsh
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoGroup, InputInfoOptions, InputInfoSelect} from "@modules/input/components/input.types";
 import {validateForm} from "@modules/message/components/message/message.utils";
@@ -458,7 +459,6 @@ export class MenjiaoDialogComponent implements OnInit {
       data: {
         selectMode: "multiple",
         collection: "cad",
-        raw: true,
         hideCadInfo: true,
         search,
         checkedItems,
@@ -466,7 +466,10 @@ export class MenjiaoDialogComponent implements OnInit {
       }
     });
     if (result) {
-      data.算料单示意图 = result as unknown as HoutaiCad[];
+      data.算料单示意图 = result.map((v) => {
+        v.options = {};
+        return getHoutaiCad(v);
+      });
       updateMenjiaoData(this.formData);
     }
   }
