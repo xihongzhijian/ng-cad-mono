@@ -9,11 +9,13 @@ import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, RequiredKeys} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {OpenCadOptions} from "@services/app-status.service";
-import {cloneDeep} from "lodash";
+import {cloneDeep, debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {SuanliaogongshiComponent} from "../../../modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {CadItemComponent} from "../cad-item/cad-item.component";
@@ -22,7 +24,7 @@ import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dial
 import {SelectGongyiItemData} from "../select-gongyi-dialog/select-gongyi-dialog.types";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
 import {openSuanliaoTestDialog} from "../suanliao-test-dialog/suanliao-test-dialog.component";
-import {SuanliaoDataParams, 算料数据} from "../xinghao-data";
+import {filterCad, SuanliaoDataParams, 算料数据} from "../xinghao-data";
 import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./suanliao-data-dialog.type";
 
 @Component({
@@ -30,6 +32,7 @@ import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./
   standalone: true,
   imports: [
     CadItemComponent,
+    InputComponent,
     MatButtonModule,
     MatDividerModule,
     NgScrollbarModule,
@@ -49,6 +52,8 @@ export class SuanliaoDataDialogComponent implements OnInit {
   mubanExtraData: CadItemComponent["mubanExtraData"] = {};
   openCadOptions: RequiredKeys<OpenCadOptions, "suanliaogongshiInfo">;
   cadShujuyaoqiu: CadItemComponent["shujuyaoqiu"];
+  suanliaoCadsSearch: InputInfo;
+  hiddenSuanliaoCads: number[] = [];
 
   @ViewChild(SuanliaoTablesComponent) suanliaoTables?: SuanliaoTablesComponent;
   @ViewChildren(CadItemComponent) cadItems?: QueryList<CadItemComponent>;
@@ -87,6 +92,21 @@ export class SuanliaoDataDialogComponent implements OnInit {
       );
     }
     this.cadShujuyaoqiu = this.data.component?.getCadshujuyaoqiu("算料");
+    this.suanliaoCadsSearch = {
+      type: "string",
+      label: "搜索",
+      onInput: debounce((val) => {
+        this.hiddenSuanliaoCads = [];
+        const yaoqiu = this.cadShujuyaoqiu;
+        if (yaoqiu) {
+          for (const [i, cad] of this.suanliaoData.算料CAD.entries()) {
+            if (!filterCad(val, cad, yaoqiu)) {
+              this.hiddenSuanliaoCads.push(i);
+            }
+          }
+        }
+      }, 500)
+    };
   }
 
   ngOnInit() {

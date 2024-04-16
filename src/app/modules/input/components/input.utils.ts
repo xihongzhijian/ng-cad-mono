@@ -1,5 +1,5 @@
+import {ObjectOf} from "@lucilor/utils";
 import {MessageService} from "@modules/message/services/message.service";
-import {ObjectOf} from "packages/utils/lib";
 import {Value} from "./input.types";
 
 export const getValue = <T>(fromValue: Value<T>, message: MessageService) => {

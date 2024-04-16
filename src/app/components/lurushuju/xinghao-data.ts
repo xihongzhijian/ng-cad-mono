@@ -1,6 +1,8 @@
 import {ActivatedRoute} from "@angular/router";
+import {getValueString} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
-import {isTypeOf, ObjectOf} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, queryString} from "@lucilor/utils";
+import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {uniq} from "lodash";
@@ -327,6 +329,20 @@ export const getCad数据要求 = (raw: Cad数据要求Raw): Cad数据要求 => 
   线段弹窗修改属性: raw.xianduantanchuangxiugaishuxing.split("+"),
   导入CAD要求: Object.fromEntries(raw.daorucadyaoqiu.split("+").map((i) => i.split("=")))
 });
+export const filterCad = (query: string, cad: HoutaiCad, yaoqiu: Cad数据要求) => {
+  for (const key of yaoqiu.CAD弹窗修改属性) {
+    const key2 = cadFields[key as keyof typeof cadFields];
+    if (!key2) {
+      continue;
+    }
+    const value = cad.json?.[key2];
+    const str = getValueString(value, ",", ":");
+    if (queryString(query, str)) {
+      return true;
+    }
+  }
+  return false;
+};
 
 export type 门缝配置 = ObjectOf<number>;
 

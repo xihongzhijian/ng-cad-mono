@@ -29,10 +29,13 @@
                   }
                 </div>
                 <div class="sub-form-field">
-                  <div class="label">示意图CAD</div>
+                  <div class="label toolbar">
+                    <div>示意图CAD</div>
+                    <app-input [info]="shiyituSearchInputInfo[key1]"></app-input>
+                  </div>
                   <div class="list">
                     @if (formData[key1]["示意图CAD"]["算料单示意图"].length > 0) {
-                      @for (item of formData[key1]["示意图CAD"]["算料单示意图"]; track $index) {
+                      @for (item of formData[key1]["示意图CAD"]["算料单示意图"]; track i; let i = $index) {
                         <app-cad-item
                           [cad]="item"
                           [buttons]="shiyituCadItemButtons"
@@ -41,6 +44,7 @@
                           [openCadOptions]="getOpenCadOptions(key1)"
                           [noMuban]="true"
                           [cadWidth]="cadWidth"
+                          [class.hidden]="hiddenShiyitus.includes(i)"
                           (afterEditCad)="afterEditCad(key1)"
                         ></app-cad-item>
                       }

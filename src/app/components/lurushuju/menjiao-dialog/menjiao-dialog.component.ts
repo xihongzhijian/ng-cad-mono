@@ -19,7 +19,7 @@ import {InputInfo, InputInfoGroup, InputInfoOptions, InputInfoSelect} from "@mod
 import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import csstype from "csstype";
-import {cloneDeep, isEmpty} from "lodash";
+import {cloneDeep, debounce, isEmpty} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
@@ -27,6 +27,7 @@ import {getOptionInputInfo, getOptions2} from "../lurushuju-index/lurushuju-inde
 import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dialog.component";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
 import {
+  filterCad,
   get算料数据,
   MenjiaoCadType,
   menjiaoCadTypes,
@@ -93,6 +94,8 @@ export class MenjiaoDialogComponent implements OnInit {
   menjiaoTabGroupIndex = 0;
 
   form: InputInfo[] = [];
+  shiyituSearchInputInfo: ObjectOf<InputInfo> = {};
+  hiddenShiyitus: number[] = [];
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
   @ViewChildren(SuanliaoTablesComponent) suanliaoTablesList?: QueryList<SuanliaoTablesComponent>;
 
@@ -120,6 +123,23 @@ export class MenjiaoDialogComponent implements OnInit {
       {name: "选择", onClick: this.selectShiyituCad.bind(this)},
       {name: "删除", onClick: this.removeShiyituCad.bind(this)}
     ];
+    for (const type of menjiaoCadTypes) {
+      this.shiyituSearchInputInfo[type] = {
+        type: "string",
+        label: "搜索",
+        onInput: debounce((val) => {
+          this.hiddenShiyitus = [];
+          const yaoqiu = this.data.component?.getCadshujuyaoqiu("算料单示意图");
+          if (yaoqiu) {
+            for (const [i, cad] of this.formData[type].示意图CAD.算料单示意图.entries()) {
+              if (!filterCad(val, cad, yaoqiu)) {
+                this.hiddenShiyitus.push(i);
+              }
+            }
+          }
+        }, 500)
+      };
+    }
   }
 
   async ngOnInit() {
