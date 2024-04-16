@@ -1,4 +1,4 @@
-import {replaceChars} from "@app/app.common";
+import {getValueString, replaceChars} from "@app/app.common";
 import {ProjectConfig} from "@app/utils/project-config";
 import {
   CadArc,
@@ -106,6 +106,31 @@ export interface CadExportParams {
 }
 
 export class CadPortable {
+  static cadIncludeFields: (keyof typeof cadFields)[] = [
+    "名字",
+    "分类",
+    "分类2",
+    "全部刨坑",
+    "板材纹理方向",
+    "默认开料板材",
+    "算料处理",
+    "显示宽度标注",
+    "双向折弯",
+    "算料特殊要求",
+    "算料单显示",
+    "装配位置",
+    "企料包边门框配合位增加值",
+    "对应门扇厚度",
+    "主CAD",
+    "固定开料板材",
+    "条件",
+    "对应计算条数的配件",
+    "指定板材分组",
+    "默认开料材料",
+    "默认开料板材厚度",
+    "算料单显示放大倍数",
+    "自动生成双折宽双折高公式"
+  ];
   static infoFields = ["唯一码", "修改包边正面宽规则", "锁边自动绑定可搭配铰边", "使用模板开料"];
   static slgsFields = ["名字", "分类", "条件", "选项", "算料公式"];
   static skipFields = ["模板放大"];
@@ -220,7 +245,7 @@ export class CadPortable {
       return {data, errors: [], skipErrorCheck: new Set()};
     });
     const slgses: SlgsInfo[] = [];
-    const {skipFields} = this;
+    const {skipFields, cadIncludeFields} = this;
     const globalOptions: CadData["options"] = {};
     let xinghaoInfo: XinghaoInfo | undefined;
     for (const e of sourceCad.entities.toArray()) {
@@ -247,7 +272,7 @@ export class CadPortable {
             const key2 = cadFields[key as keyof typeof cadFields];
             if (key === "条件") {
               slgsData.条件 = value ? [value] : [];
-            } else if (key2) {
+            } else if (key2 && cadIncludeFields.includes(key2 as any)) {
               if (value === "是") {
                 (slgsData[key] as boolean) = true;
               } else if (value === "否") {
@@ -372,13 +397,15 @@ export class CadPortable {
             if (key === "对应计算条数的配件") {
               data.对应计算条数的配件 = getObject(value, "=");
             } else if (key2) {
-              const defaultValue = emptyCad[key2];
-              if (typeof defaultValue === "boolean") {
-                (data[key2] as boolean) = value === "是";
-              } else if (Array.isArray(defaultValue)) {
-                (data[key2] as string[]) = this.splitOptionValue(value);
-              } else {
-                (data[key2] as string) = value;
+              if (cadIncludeFields.includes(key as any)) {
+                const defaultValue = emptyCad[key2];
+                if (typeof defaultValue === "boolean") {
+                  (data[key2] as boolean) = value === "是";
+                } else if (Array.isArray(defaultValue)) {
+                  (data[key2] as string[]) = this.splitOptionValue(value);
+                } else {
+                  (data[key2] as string) = value;
+                }
               }
             } else if (this.infoFields.includes(key)) {
               data.info[key] = value;
@@ -570,20 +597,17 @@ export class CadPortable {
         } else {
           texts.push("唯一码: ");
         }
-        const {skipFields} = this;
+        const {skipFields, cadIncludeFields} = this;
         for (const key of keysOf(cadFields)) {
-          if (skipFields.includes(key)) {
+          if (skipFields.includes(key) || !cadIncludeFields.includes(key)) {
             continue;
           }
           const value = cad[cadFields[key]];
           const defaultValue = emptyData[cadFields[key]];
           if (!isEqual(value, defaultValue)) {
-            if (typeof value === "boolean") {
-              texts.push(`${key}: ${value ? "是" : "否"}`);
-            } else if (Array.isArray(value)) {
-              texts.push(`${key}: ${value.join(",")}`);
-            } else {
-              texts.push(`${key}: ${value}`);
+            const text = getValueString(value, ",", ":");
+            if (text) {
+              texts.push(`${key}: ${text}`);
             }
           }
         }

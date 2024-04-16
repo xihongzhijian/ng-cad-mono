@@ -262,6 +262,8 @@ export const getValueString = (value: any, separator: string, separatorKv: strin
     return getObjectString(value, separator, separatorKv);
   } else if ([null, undefined].includes(value)) {
     return "";
+  } else if (typeof value === "boolean") {
+    return getBooleanStr(value);
   } else {
     return String(value);
   }
