@@ -50,11 +50,6 @@
           <mat-icon>list</mat-icon>
         </button>
       }
-      @if (info.clearable) {
-        <button mat-icon-button matSuffix color="primary" (click)="clear()">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
       @if (info.copyable) {
         <button mat-icon-button matSuffix color="primary" (click)="copy()">
           <mat-icon>content_copy</mat-icon>
@@ -63,6 +58,11 @@
       @for (icon of suffixIcons; track icon) {
         <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
           <mat-icon>{{ icon.name }}</mat-icon>
+        </button>
+      }
+      @if (info.clearable) {
+        <button mat-icon-button matSuffix color="primary" (click)="clear()">
+          <mat-icon>close</mat-icon>
         </button>
       }
       <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAutocompleteChange($event)">
@@ -183,11 +183,6 @@
               (change)="changeObjectValue2(value, item.key, item.value)"
               (blur)="onBlur()"
             />
-            @if (info.clearable) {
-              <button mat-icon-button matSuffix color="primary" (click)="changeObjectValue(value, item.key, '')">
-                <mat-icon>close</mat-icon>
-              </button>
-            }
             @if (optionsDialog) {
               <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key, item.key)">
                 <mat-icon>list</mat-icon>
@@ -202,6 +197,11 @@
             @for (icon of suffixIcons; track icon) {
               <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
                 <mat-icon>{{ icon.name }}</mat-icon>
+              </button>
+            }
+            @if (info.clearable) {
+              <button mat-icon-button matSuffix color="primary" (click)="changeObjectValue(value, item.key, '')">
+                <mat-icon>close</mat-icon>
               </button>
             }
             <mat-error>{{ getErrorMsgValue(item.key) }}</mat-error>
@@ -252,14 +252,14 @@
               </button>
             }
           </ng-container>
-          @if (info.clearable) {
-            <button mat-icon-button matSuffix color="primary" (click)="value[j] = ''">
-              <mat-icon>close</mat-icon>
-            </button>
-          }
           @for (icon of suffixIcons; track icon) {
             <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
               <mat-icon>{{ icon.name }}</mat-icon>
+            </button>
+          }
+          @if (info.clearable) {
+            <button mat-icon-button matSuffix color="primary" (click)="value[j] = ''">
+              <mat-icon>close</mat-icon>
             </button>
           }
           <mat-error>{{ getErrorMsgValue(j.toString()) }}</mat-error>
@@ -362,14 +362,14 @@
           <mat-icon>content_copy</mat-icon>
         </button>
       }
-      @if (info.clearable) {
-        <button appClickStop mat-icon-button matSuffix color="primary" (click)="clear()">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
       @for (icon of suffixIcons; track icon) {
         <button mat-icon-button matSuffix color="primary" appClickStop (click)="icon.onClick()">
           <mat-icon>{{ icon.name }}</mat-icon>
+        </button>
+      }
+      @if (info.clearable) {
+        <button appClickStop mat-icon-button matSuffix color="primary" (click)="clear()">
+          <mat-icon>close</mat-icon>
         </button>
       }
       <mat-error>{{ getErrorMsg() }}</mat-error>
@@ -508,14 +508,14 @@
         }
       </mat-menu>
       <ng-template></ng-template>
-      @if (info.clearable) {
-        <button mat-icon-button matSuffix color="primary" (click)="clear()">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
       @for (icon of suffixIcons; track icon) {
         <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
           <mat-icon>{{ icon.name }}</mat-icon>
+        </button>
+      }
+      @if (info.clearable) {
+        <button mat-icon-button matSuffix color="primary" (click)="clear()">
+          <mat-icon>close</mat-icon>
         </button>
       }
       <mat-error>{{ getErrorMsg() }}</mat-error>
