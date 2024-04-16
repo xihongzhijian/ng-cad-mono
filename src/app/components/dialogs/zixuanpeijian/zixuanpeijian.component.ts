@@ -90,7 +90,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   @HostBinding("class") class = "ng-page";
 
   spinnerId = "zixuanpeijian-" + uniqueId();
-  step$ = new BehaviorSubject<{value: number; refresh: boolean; noCache?: boolean}>({value: 0, refresh: false});
+  step$ = new BehaviorSubject<{value: number; refresh: boolean; noCache?: boolean; preserveImgs?: boolean}>({value: 0, refresh: false});
   type1 = "";
   type2 = "";
   urlPrefix = remoteFilePath;
@@ -377,7 +377,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this._step2Fetched = true;
   }
 
-  async step3Fetch(noUpdateInputInfos = false, noCache = false) {
+  async step3Fetch(noUpdateInputInfos = false, noCache = false, preserveImgs = false) {
     let responseData: {cads: CadData[]} | null = null;
     const getAll = this.data?.getAllLingsanCads;
     const cacheKey = getAll ? "_lingsanCadsCacheGetAll" : "_lingsanCadsCache";
@@ -388,7 +388,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       responseData = (window as any)[cacheKey];
     }
     if (responseData) {
-      this.lingsanCadImgs = {};
+      if (!preserveImgs) {
+        this.lingsanCadImgs = {};
+      }
       this.lingsanCadInfos = [];
       this.lingsanCads = {};
       this.lingsanSortedTypes = await this.http.getData("ngcad/getLingsanSortedTypes");
@@ -419,9 +421,11 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
           item.data = found.data;
         } else {
           if (noValidateCads) {
-            getCadPreview("cad", item.data).then((img) => {
-              this.lingsanCadImgs[item.data.id] = img;
-            });
+            if (!preserveImgs) {
+              getCadPreview("cad", item.data).then((img) => {
+                this.lingsanCadImgs[item.data.id] = img;
+              });
+            }
           } else {
             toRemove.push(i);
           }
@@ -455,8 +459,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
   }
 
-  step3Refresh() {
-    this.step$.next({value: 3, refresh: true, noCache: true});
+  step3Refresh(preserveImgs = false) {
+    this.step$.next({value: 3, refresh: true, noCache: true, preserveImgs});
   }
 
   async step3Add() {
@@ -560,7 +564,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
   }
 
-  private async _onStep({value, refresh, noCache}: ZixuanpeijianComponent["step$"]["value"]) {
+  private async _onStep({value, refresh, noCache, preserveImgs}: ZixuanpeijianComponent["step$"]["value"]) {
     let isRefreshed = false;
     if (value === 1) {
       if (refresh || !this._step1Fetched) {
@@ -578,7 +582,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       }
     } else if (value === 3) {
       if (refresh || !this._step3Fetched) {
-        await this.step3Fetch(false, noCache);
+        await this.step3Fetch(false, noCache, preserveImgs);
         isRefreshed = true;
       }
       if (isRefreshed || !this.lingsanCadType) {
@@ -671,8 +675,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
   }
 
-  setStep(value: number, refresh = false) {
-    this.step$.next({value, refresh});
+  setStep(value: number, refresh = false, preserveImgs = false) {
+    this.step$.next({value, refresh, preserveImgs});
   }
 
   setTypesInfo1(type1: string) {
@@ -978,7 +982,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   async openLingsanCad(type: string, i: number) {
     this.status.openCadInNewTab(this.lingsanCads[type][i].data.id, "cad");
     if (await this.message.newTabConfirm()) {
-      this.step3Refresh();
+      this.step3Refresh(true);
     }
   }
 
