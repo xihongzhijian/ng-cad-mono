@@ -25,8 +25,8 @@ import {NgScrollbar} from "ngx-scrollbar";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 
-export type ImportComponentConfigName = "requireLineId" | "pruneLines" | "addUniqCode" | "dryRun";
-export type ImportComponentConfig = Record<ImportComponentConfigName, {label: string; value: boolean | null}>;
+export type ImportComponentConfigName = "requireLineId" | "pruneLines" | "addUniqCode" | "dryRun" | "noFilterEntities";
+export type ImportComponentConfig = Record<ImportComponentConfigName, {value: boolean | null; hidden?: boolean}>;
 
 @Component({
   selector: "app-import",
@@ -71,17 +71,26 @@ export class ImportComponent extends Utils() implements OnInit {
   isImporting = false;
   progressBar = new ProgressBar(0);
   progressBarStatus: ProgressBarStatus = "hidden";
+  importConfigTranslation: Record<ImportComponentConfigName, string> = {
+    requireLineId: "上传线必须全部带ID",
+    pruneLines: "后台线在上传数据中没有时删除",
+    addUniqCode: "没有唯一码生成新CAD数据",
+    dryRun: "仅检查数据，不导入",
+    noFilterEntities: "示意图不删除小于3的线"
+  };
   importConfigNormal: ImportComponentConfig = {
-    requireLineId: {label: "上传线必须全部带ID", value: false},
-    pruneLines: {label: "后台线在上传数据中没有时删除", value: true},
-    addUniqCode: {label: "没有唯一码生成新CAD数据", value: true},
-    dryRun: {label: "仅检查数据，不导入", value: false}
+    requireLineId: {value: false},
+    pruneLines: {value: true},
+    addUniqCode: {value: true},
+    dryRun: {value: false},
+    noFilterEntities: {value: false}
   };
   importConfigSuanliao: ImportComponentConfig = {
-    requireLineId: {label: "上传线必须全部带ID", value: false},
-    pruneLines: {label: "后台线在上传数据中没有时删除", value: true},
-    addUniqCode: {label: "没有唯一码生成新CAD数据", value: true},
-    dryRun: {label: "仅检查数据，不导入", value: false}
+    requireLineId: {value: false},
+    pruneLines: {value: true},
+    addUniqCode: {value: true},
+    dryRun: {value: false},
+    noFilterEntities: {value: false, hidden: true}
   };
   maxLineLength = 200;
   导入dxf文件时展开名字不改变 = false;
@@ -111,8 +120,8 @@ export class ImportComponent extends Utils() implements OnInit {
   private _getImportConfigValues(isXinghao: boolean) {
     const config = this._getImportConfig(isXinghao);
     const values: ObjectOf<boolean> = {};
-    Object.keys(config).forEach((key) => {
-      values[key] = !!config[key as keyof ImportComponentConfig].value;
+    this.keysOf(config).forEach((key) => {
+      values[key] = !!config[key].value;
     });
     return values as Record<ImportComponentConfigName, boolean>;
   }
@@ -122,7 +131,7 @@ export class ImportComponent extends Utils() implements OnInit {
       return false;
     }
     const {requireLineId, pruneLines} = this._getImportConfig(isXinghao);
-    return requireLineId.value !== null && pruneLines.value !== null;
+    return requireLineId !== null && pruneLines !== null;
   }
 
   async importDxf(event: Event | null, isXinghao: boolean, loaderId: string): Promise<boolean> {
@@ -365,7 +374,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this.hasError = false;
     this._clearCache();
     const uniqCodesCount: ObjectOf<number> = {};
-    const {requireLineId, addUniqCode} = this._getImportConfigValues(isXinghao);
+    const {requireLineId, addUniqCode, noFilterEntities} = this._getImportConfigValues(isXinghao);
     for (const v of cads) {
       const data = v.data;
       let uniqCode = data.info.唯一码;
@@ -397,8 +406,10 @@ export class ImportComponent extends Utils() implements OnInit {
         uniqCodesCount[uniqCode]++;
       }
 
-      const {entities} = filterCadEntitiesToSave(data);
-      data.entities = entities;
+      if (!noFilterEntities) {
+        const {entities} = filterCadEntitiesToSave(data);
+        data.entities = entities;
+      }
     }
 
     this.cads = cads;

@@ -25,14 +25,16 @@
           </div>
           <div class="form">
             @for (name of keysOf(importConfigNormal); track name) {
-              <mat-form-field>
-                <mat-label>{{ importConfigNormal[name].label }}</mat-label>
-                <input type="text" matInput value="1" hidden />
-                <mat-radio-group [(ngModel)]="importConfigNormal[name].value" required>
-                  <mat-radio-button [value]="true">是</mat-radio-button>
-                  <mat-radio-button [value]="false">否</mat-radio-button>
-                </mat-radio-group>
-              </mat-form-field>
+              @if (!importConfigNormal[name].hidden) {
+                <mat-form-field>
+                  <mat-label>{{ importConfigTranslation[name] }}</mat-label>
+                  <input type="text" matInput value="1" hidden />
+                  <mat-radio-group [(ngModel)]="importConfigNormal[name].value" required>
+                    <mat-radio-button [value]="true">是</mat-radio-button>
+                    <mat-radio-button [value]="false">否</mat-radio-button>
+                  </mat-radio-group>
+                </mat-form-field>
+              }
             }
           </div>
         </mat-card-content>
@@ -61,14 +63,16 @@
           </div>
           <div class="form">
             @for (name of keysOf(importConfigSuanliao); track name) {
-              <mat-form-field>
-                <mat-label>{{ importConfigSuanliao[name].label }}</mat-label>
-                <input type="text" matInput value="1" hidden />
-                <mat-radio-group [(ngModel)]="importConfigSuanliao[name].value" required>
-                  <mat-radio-button [value]="true">是</mat-radio-button>
-                  <mat-radio-button [value]="false">否</mat-radio-button>
-                </mat-radio-group>
-              </mat-form-field>
+              @if (!importConfigSuanliao[name].hidden) {
+                <mat-form-field>
+                  <mat-label>{{ importConfigTranslation[name] }}</mat-label>
+                  <input type="text" matInput value="1" hidden />
+                  <mat-radio-group [(ngModel)]="importConfigSuanliao[name].value" required>
+                    <mat-radio-button [value]="true">是</mat-radio-button>
+                    <mat-radio-button [value]="false">否</mat-radio-button>
+                  </mat-radio-group>
+                </mat-form-field>
+              }
             }
             <mat-form-field>
               <mat-label>使用公式的线段最大长度</mat-label>
