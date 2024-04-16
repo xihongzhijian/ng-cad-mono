@@ -1,4 +1,5 @@
 import {MessageService} from "@modules/message/services/message.service";
+import {ObjectOf} from "packages/utils/lib";
 import {Value} from "./input.types";
 
 export const getValue = <T>(fromValue: Value<T>, message: MessageService) => {
@@ -14,4 +15,30 @@ export const getValue = <T>(fromValue: Value<T>, message: MessageService) => {
     }
   }
   return result as T;
+};
+
+export const parseObjectString = (str: string, objectBefore: ObjectOf<string>, mode: "replace" | "append") => {
+  const data = Object.fromEntries(
+    str
+      .replace(/ /g, "")
+      .split("\n")
+      .map((v) => {
+        const [key, value] = v.split(/[:：]/);
+        return [key, value];
+      })
+  );
+  for (const key in data) {
+    if (mode === "replace") {
+      if (objectBefore[key] === undefined) {
+        continue;
+      }
+    } else if (mode === "append") {
+      if (objectBefore[key] !== undefined) {
+        continue;
+      }
+    } else {
+      throw new Error("Invalid mode");
+    }
+    objectBefore[key] = data[key];
+  }
 };

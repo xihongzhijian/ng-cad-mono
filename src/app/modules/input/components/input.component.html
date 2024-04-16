@@ -137,6 +137,11 @@
           <button mat-button color="primary" (click)="clear()">清空</button>
         }
       </div>
+      <mat-form-field>
+        <textarea matInput rows="1" class="flex-110" [(ngModel)]="objectString"></textarea>
+        <button mat-button matSuffix color="primary" (click)="parseObjectString('replace')">全部替换</button>
+        <button mat-button matSuffix color="primary" (click)="parseObjectString('append')">没有的插入</button>
+      </mat-form-field>
       @if (keysOf(value)["length"] === 0) {
         <div>
           <button mat-icon-button color="primary" (click)="objectAdd(value, '')">

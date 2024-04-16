@@ -58,7 +58,7 @@ import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
 import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoString} from "./input.types";
-import {getValue} from "./input.utils";
+import {getValue, parseObjectString} from "./input.utils";
 
 @Component({
   selector: "app-input",
@@ -101,6 +101,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   onChangeDelay: {timeoutId: number} | null = null;
   cadInfos: {id: string; name: string; img: SafeUrl; val: any}[] = [];
   showListInput = true;
+  objectString = "";
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
 
   private _model: NonNullable<Required<InputInfo["model"]>> = {data: {key: ""}, key: "key"};
@@ -1198,6 +1199,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (event.key === "Enter") {
       event.stopPropagation();
     }
+  }
+
+  parseObjectString(mode: Parameters<typeof parseObjectString>[2]) {
+    parseObjectString(this.objectString, this.value, mode);
   }
 }
 
