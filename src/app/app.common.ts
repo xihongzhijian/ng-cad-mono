@@ -260,6 +260,8 @@ export const getValueString = (value: any, separator: string, separatorKv: strin
     return getArrayString(value, separator);
   } else if (value && typeof value === "object") {
     return getObjectString(value, separator, separatorKv);
+  } else if ([null, undefined].includes(value)) {
+    return "";
   } else {
     return String(value);
   }

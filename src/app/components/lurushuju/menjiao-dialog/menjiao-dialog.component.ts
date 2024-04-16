@@ -449,7 +449,7 @@ export class MenjiaoDialogComponent implements OnInit {
       key1 = key1.customInfo.key1;
     }
     const data = this.formData[key1].示意图CAD;
-    const checkedItems = data.算料单示意图.map((v) => v.json.id);
+    const checkedItems: string[] = [];
     const {component} = this.data;
     if (!component) {
       return;
@@ -467,7 +467,9 @@ export class MenjiaoDialogComponent implements OnInit {
     });
     if (result) {
       data.算料单示意图 = result.map((v) => {
-        v.options = {};
+        if (!checkedItems.includes(v.id)) {
+          v.options = {};
+        }
         return getHoutaiCad(v);
       });
       updateMenjiaoData(this.formData);

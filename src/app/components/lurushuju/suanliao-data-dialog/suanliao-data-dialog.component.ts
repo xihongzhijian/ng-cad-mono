@@ -104,7 +104,9 @@ export class SuanliaoDataDialogComponent implements OnInit {
     const zxpjData: ZixuanpeijianInput = {
       data: {
         零散: data.算料CAD.map((v) => {
-          return {data: new CadData(v.json), info: {houtaiId: v._id, zhankai: [], calcZhankai: []}};
+          const cad = new CadData(v.json);
+          cad.info.isSuanliaoSelected = true;
+          return {data: cad, info: {houtaiId: v._id, zhankai: [], calcZhankai: []}};
         })
       },
       step: 3,
@@ -114,7 +116,10 @@ export class SuanliaoDataDialogComponent implements OnInit {
     const result = await openZixuanpeijianDialog(this.dialog, {data: zxpjData});
     if (result) {
       data.算料CAD = result.零散.map((v) => {
-        v.data.options = {};
+        const isSelected = v.data.info.isSuanliaoSelected;
+        if (!isSelected) {
+          v.data.options = {};
+        }
         return getHoutaiCad(v.data, {houtaiId: v.info.houtaiId});
       });
     }
