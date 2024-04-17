@@ -49,11 +49,7 @@ export class CadEditorDialogComponent extends Subscribed() implements OnInit {
 
   async close(save: boolean) {
     if (save) {
-      if (this.data.isLocal) {
-        this.isSaved = true;
-      } else {
-        await this.save();
-      }
+      await this.save();
     }
     if (this.cadEditor) {
       this.dialogRef.close({isSaved: this.isSaved});

@@ -51,10 +51,7 @@ export const setCadData = (data: CadData, project: string, collection: CadCollec
   }
 
   data.getAllEntities().forEach((e) => {
-    if (e.layer === "分页线") {
-      e.calcBoundingRect = false;
-    }
-    if (e instanceof CadDimension) {
+    if (e.layer === "分页线" || e instanceof CadDimension) {
       e.calcBoundingRect = false;
     }
     e.visible = true;

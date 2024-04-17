@@ -289,7 +289,7 @@ export class AppStatusService {
     return data2;
   }
 
-  async saveCad(loaderId?: string): Promise<CadData | null> {
+  async saveCad(loaderId?: string, isLocal = false): Promise<CadData | null> {
     this.saveCadStart$.next();
     this.saveCadLocked$.next(true);
     await timeout(100); // 等待input事件触发
@@ -331,6 +331,11 @@ export class AppStatusService {
       }
     }
     data = this.closeCad();
+    if (isLocal) {
+      this.saveCadEnd$.next();
+      this.saveCadLocked$.next(false);
+      return data;
+    }
     if (!loaderId) {
       loaderId = spinner.defaultLoaderId;
     }

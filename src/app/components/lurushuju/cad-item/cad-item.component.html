@@ -10,7 +10,9 @@
       }
     </div>
     <div class="toolbar compact">
-      <button mat-button color="primary" (click)="centerCad()">居中</button>
+      @if (cadViewer) {
+        <button mat-button color="primary" (click)="centerCad()">居中</button>
+      }
       <button mat-button color="primary" (click)="editCad()">编辑</button>
       @for (button of buttons; track $index) {
         <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
@@ -45,7 +47,9 @@
       <div #mubanContainer class="cad-container flex-row"></div>
       @if (mubanData) {
         <div class="toolbar compact">
-          <button mat-button color="primary" (click)="centerMuban()">居中</button>
+          @if (mubanViewer) {
+            <button mat-button color="primary" (click)="centerMuban()">居中</button>
+          }
           <button mat-button color="primary" (click)="uploadMuban()">上传</button>
           <button mat-button color="primary" (click)="editMuban()">编辑</button>
           <button mat-button color="primary" (click)="removeMuban()">删除</button>

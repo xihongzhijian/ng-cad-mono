@@ -16,11 +16,13 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {getValueString} from "@app/app.common";
+import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData, generateLineTexts2, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
-import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadZhankai} from "@lucilor/cad-viewer";
+import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, selectFiles} from "@lucilor/utils";
+import {Subscribed} from "@mixins/subscribed.mixin";
 import {cadFields, getCadInfoInputs} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -30,6 +32,7 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
 import {isEmpty} from "lodash";
+import {BehaviorSubject} from "rxjs";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
 import {Cad数据要求} from "../xinghao-data";
@@ -42,7 +45,7 @@ import {CadItemButton, typeOptions} from "./cad-item.types";
   templateUrl: "./cad-item.component.html",
   styleUrl: "./cad-item.component.scss"
 })
-export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
+export class CadItemComponent<T = undefined> extends Subscribed() implements OnChanges, OnDestroy {
   @Input() cadWidth = 360;
   cadHeight = 0;
   @Input({required: true}) cad: HoutaiCad = getHoutaiCad();
@@ -91,13 +94,14 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     private http: CadDataService,
     private status: AppStatusService
   ) {
+    super();
     this.showMuban = status.projectConfig.getBoolean("新版本做数据可以做激光开料");
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.cad) {
       setTimeout(() => {
-        this.update();
+        this.update(false);
       }, 0);
     }
   }
@@ -127,7 +131,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     });
     if (result?.isSaved) {
       Object.assign(cad, getHoutaiCad(cadData));
-      this.initCadViewer();
+      this.initCadViewer(true);
       this.afterEditCad.emit();
     }
   }
@@ -192,7 +196,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     }
     this.mubanId = result.id;
     this.mubanData = result;
-    this.initMubanViewer();
+    this.initMubanViewer(true);
   }
 
   async editMuban() {
@@ -209,7 +213,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       }
     });
     if (result?.isSaved) {
-      this.initMubanViewer();
+      this.initMubanViewer(true);
     }
   }
 
@@ -224,21 +228,29 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
     if (await this.http.mongodbDelete("kailiaocadmuban", {id: mubanData.id})) {
       this.mubanId = "";
       this.mubanData = undefined;
-      this.initMubanViewer();
+      this.initMubanViewer(true);
     }
   }
 
-  update() {
+  update(updateImg: boolean) {
     delete this.mubanData;
-    this.initCadViewer();
-    this.initMubanViewer();
+    this.initCadViewer(updateImg);
+    this.initMubanViewer(updateImg);
   }
 
-  initCadViewer0(collection: CadCollection, data: CadData, containerEl: HTMLDivElement, afterDblClickForm: () => void) {
+  initCadViewer0(
+    collection: CadCollection,
+    cad: HoutaiCad | CadData,
+    containerEl: HTMLDivElement,
+    updateImg: boolean,
+    afterDblClickForm: (data: CadData) => void
+  ) {
+    containerEl.innerHTML = "";
     const width = this.cadWidth;
     const height = (width / 300) * 150;
     this.cadHeight = height;
-    const cadViewer = new CadViewer(data, {
+    const cadViewerSubject = new BehaviorSubject<CadViewer | undefined>(undefined);
+    const cadViewerConfig: Partial<CadViewerConfig> = {
       width,
       height,
       backgroundColor: "black",
@@ -246,54 +258,105 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       dragAxis: "xy",
       selectMode: "single",
       entityDraggable: false,
-      lineGongshi: 24
-    });
-    cadViewer.appendTo(containerEl);
-    cadViewer.on("entitydblclick", async (_, entity) => {
-      if (entity instanceof CadMtext && entity.parent) {
-        entity = entity.parent;
-      }
-      if (entity instanceof CadLineLike) {
-        const result = await openCadLineForm(collection, this.message, cadViewer, entity);
-        if (result) {
-          afterDblClickForm();
+      lineGongshi: 24,
+      hideLineGongshi: false
+    };
+    const init = () => {
+      const cadViewer = new CadViewer(data, cadViewerConfig);
+      cadViewer.appendTo(containerEl);
+      cadViewer.on("entitydblclick", async (_, entity) => {
+        if (entity instanceof CadMtext && entity.parent) {
+          entity = entity.parent;
         }
-      } else if (entity instanceof CadDimensionLinear) {
-        const dimension2 = await openCadDimensionForm(collection, this.message, cadViewer, entity);
-        if (dimension2) {
-          afterDblClickForm();
+        if (entity instanceof CadLineLike) {
+          const result = await openCadLineForm(collection, this.message, cadViewer, entity);
+          if (result) {
+            afterDblClickForm(data);
+          }
+        } else if (entity instanceof CadDimensionLinear) {
+          const dimension2 = await openCadDimensionForm(collection, this.message, cadViewer, entity);
+          if (dimension2) {
+            afterDblClickForm(data);
+          }
         }
-      }
-    });
-    cadViewer.on("click", () => {
-      cadViewer.setConfig("enableZoom", true);
-    });
-    cadViewer.on("pointerleave", () => {
-      cadViewer.setConfig("enableZoom", false);
-    });
-    setTimeout(() => {
-      cadViewer.center();
-    }, 0);
-    return cadViewer;
+      });
+      cadViewer.on("click", () => {
+        cadViewer.setConfig("enableZoom", true);
+      });
+      cadViewer.on("pointerleave", () => {
+        cadViewer.setConfig("enableZoom", false);
+      });
+      setTimeout(() => {
+        cadViewer.center();
+      }, 0);
+      cadViewerSubject.next(cadViewer);
+    };
+    let data: CadData;
+    if (cad instanceof CadData) {
+      data = cad;
+    } else {
+      data = new CadData(cad.json);
+      generateLineTexts2(data);
+    }
+    if (this.showCadViewer) {
+      init();
+    } else {
+      (async () => {
+        const imgId = updateImg ? null : data.info.imgId;
+        let img: string | null = null;
+        if (imgId) {
+          img = this.http.getCadImgUrl(imgId);
+        } else {
+          if (cad instanceof CadData) {
+            img = await this.http.getCadImg(cad.id);
+          }
+          if (!img) {
+            img = await getCadPreview(collection, data, {config: cadViewerConfig});
+            const imgId2 = await this.http.getMongoId({silent: true});
+            if (imgId2) {
+              data.info.imgId = imgId2;
+              if (!(cad instanceof CadData)) {
+                if (!cad.json.info) {
+                  cad.json.info = {};
+                }
+                cad.json.info.imgId = imgId2;
+              }
+              this.http.setCadImg(imgId2, img, {silent: true});
+            }
+          }
+        }
+        const imgEl = document.createElement("img");
+        imgEl.src = img;
+        imgEl.classList.add("cad-preview");
+        imgEl.style.width = `${width}px`;
+        imgEl.style.height = `${height}px`;
+        containerEl.appendChild(imgEl);
+        imgEl.addEventListener("dblclick", () => {
+          containerEl.innerHTML = "";
+          this.showCadViewer = true;
+          init();
+        });
+      })();
+    }
+    return cadViewerSubject;
   }
 
-  initCadViewer() {
+  initCadViewer(updateImg: boolean) {
     this.cadViewer?.destroy();
     const {cad, cadContainer} = this;
     if (!cad || !cadContainer) {
       return;
     }
     const containerEl = cadContainer.nativeElement;
-    containerEl.innerHTML = "";
-    const data = new CadData(cad.json);
-    generateLineTexts2(data);
-    const cadViewer = this.initCadViewer0("cad", data, containerEl, () => {
+    const cadViewerSubject = this.initCadViewer0("cad", cad, containerEl, updateImg, (data) => {
       cad.json.entities = exportCadData(data, true).entities;
     });
-    this.cadViewer = cadViewer;
+    this.subscribe(cadViewerSubject, (cadViewer) => {
+      this.cadViewer = cadViewer;
+    });
   }
 
-  async initMubanViewer() {
+  async initMubanViewer(updateImg: boolean) {
     this.mubanViewer?.destroy();
     if (!this.showMuban) {
       return;
@@ -313,10 +376,10 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       return;
     }
     const containerEl = mubanContainer.nativeElement;
-    containerEl.innerHTML = "";
-    generateLineTexts2(mubanData);
-    const cadViewer = this.initCadViewer0("CADmuban", mubanData, containerEl, () => {});
-    this.mubanViewer = cadViewer;
+    const cadViewerSubject = this.initCadViewer0("CADmuban", mubanData, containerEl, updateImg, () => {});
+    this.subscribe(cadViewerSubject, (cadViewer) => {
+      this.mubanViewer = cadViewer;
+    });
     await this.updateMubanInputs();
   }
 
@@ -388,7 +451,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       return;
     }
     zhankai.splice(i + 1, 0, new CadZhankai().export());
-    this.update();
+    this.update(true);
   }
 
   removeZhankai(i: number) {
@@ -397,7 +460,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnDestroy {
       return;
     }
     zhankai.splice(i, 1);
-    this.update();
+    this.update(true);
   }
 
   returnZero() {
