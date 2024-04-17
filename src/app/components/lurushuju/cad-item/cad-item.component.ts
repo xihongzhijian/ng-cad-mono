@@ -259,7 +259,8 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       selectMode: "single",
       entityDraggable: false,
       lineGongshi: 24,
-      hideLineGongshi: false
+      hideLineGongshi: false,
+      padding: [5]
     };
     const init = () => {
       const cadViewer = new CadViewer(data, cadViewerConfig);
@@ -376,7 +377,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       return;
     }
     const containerEl = mubanContainer.nativeElement;
-    const cadViewerSubject = this.initCadViewer0("CADmuban", mubanData, containerEl, updateImg, () => {});
+    const cadViewerSubject = this.initCadViewer0("CADmuban", mubanData, containerEl, updateImg, () => {
+      this.http.setCad({collection: "kailiaocadmuban", cadData: mubanData, force: true}, true);
+    });
     this.subscribe(cadViewerSubject, (cadViewer) => {
       this.mubanViewer = cadViewer;
     });
