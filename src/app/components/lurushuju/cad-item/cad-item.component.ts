@@ -377,7 +377,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       return;
     }
     const containerEl = mubanContainer.nativeElement;
-    const cadViewerSubject = this.initCadViewer0("CADmuban", mubanData, containerEl, updateImg, () => {
+    const cadViewerSubject = this.initCadViewer0("kailiaocadmuban", mubanData, containerEl, updateImg, () => {
       this.http.setCad({collection: "kailiaocadmuban", cadData: mubanData, force: true}, true);
     });
     this.subscribe(cadViewerSubject, (cadViewer) => {

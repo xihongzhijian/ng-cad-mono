@@ -617,7 +617,7 @@ export const openCadLineForm = async (collection: CadCollection, message: Messag
     {type: "string", label: "公式", model: {data: line, key: "gongshi"}},
     {type: "string", label: "显示线长", model: {data: line, key: "显示线长"}}
   ];
-  if (collection === "CADmuban") {
+  if (collection === "kailiaocadmuban") {
     form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});
   }
   const result = await message.form(form);
