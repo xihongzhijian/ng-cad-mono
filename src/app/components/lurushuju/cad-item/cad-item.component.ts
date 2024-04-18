@@ -217,7 +217,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   }
 
   async editMuban() {
-    const {mubanData} = this;
+    const {mubanData, mubanExtraData} = this;
     if (!mubanData) {
       return;
     }
@@ -226,6 +226,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
         data: mubanData,
         center: true,
         collection: "kailiaocadmuban",
+        extraData: mubanExtraData,
         ...this.openCadOptions
       }
     });

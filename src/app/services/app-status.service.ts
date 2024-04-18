@@ -580,4 +580,5 @@ export interface OpenCadOptions {
   isDialog?: boolean;
   suanliaogongshiInfo?: SuanliaogongshiInfo;
   suanliaoTablesInfo?: {params: SuanliaoDataParams};
+  extraData?: Partial<CadData>;
 }
