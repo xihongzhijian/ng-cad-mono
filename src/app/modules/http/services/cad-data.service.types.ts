@@ -198,4 +198,9 @@ export interface GetShortUrlParams {
   extraData?: ObjectOf<any>;
   useData?: ObjectOf<any>[];
   noToolbar?: boolean;
+  noHeader?: boolean;
+  showCols?: string[];
+  hideCols?: string[];
+  showBtns?: string[];
+  hideBtns?: string[];
 }
