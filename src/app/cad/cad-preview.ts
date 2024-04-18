@@ -12,9 +12,10 @@ export interface CadPreviewRawParams {
   config?: Partial<CadViewerConfig>;
   autoSize?: boolean;
   maxZoom?: number;
+  ignoreShiyitu?: boolean;
 }
 export const getCadPreviewRaw = async (collection: CadCollection, data: CadData, params: CadPreviewRawParams = {}) => {
-  const shiyitu = isShiyitu(data);
+  const shiyitu = !params.ignoreShiyitu && isShiyitu(data);
   const cad = new CadViewer(new CadData(), {
     width: 300,
     height: 150,

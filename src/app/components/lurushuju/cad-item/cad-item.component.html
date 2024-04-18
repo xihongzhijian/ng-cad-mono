@@ -4,7 +4,9 @@
 <div class="cads">
   <div class="cad item">
     <div class="toolbar">
-      <div #cadContainer class="cad-container flex-row"></div>
+      <div #cadContainer class="cad-container flex-row">
+        <img class="cad-preview" [src]="imgCadEmpty" />
+      </div>
       @for (button of buttons2; track $index) {
         <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
       }
@@ -44,7 +46,9 @@
       <mat-icon color="primary">link</mat-icon>
     </div>
     <div class="cad item">
-      <div #mubanContainer class="cad-container flex-row"></div>
+      <div #mubanContainer class="cad-container flex-row">
+        <img class="cad-preview" [src]="imgCadEmpty" />
+      </div>
       @if (mubanData) {
         <div class="toolbar compact">
           @if (mubanViewer) {

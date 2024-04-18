@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostBinding,
   Input,
   OnChanges,
   OnDestroy,
@@ -15,12 +16,12 @@ import {
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
-import {getValueString} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
+import {getValueString, imgCadEmpty} from "@app/app.common";
+import {CadPreviewRawParams, getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData, generateLineTexts2, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
-import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai} from "@lucilor/cad-viewer";
+import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadZhankai} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, selectFiles} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {cadFields, getCadInfoInputs} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
@@ -30,6 +31,7 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
 import {isEmpty} from "lodash";
 import {BehaviorSubject} from "rxjs";
@@ -48,6 +50,9 @@ import {CadItemButton, typeOptions} from "./cad-item.types";
 export class CadItemComponent<T = undefined> extends Subscribed() implements OnChanges, OnDestroy {
   @Input() cadWidth = 360;
   cadHeight = 0;
+
+  @HostBinding("style") style = {};
+
   @Input({required: true}) cad: HoutaiCad = getHoutaiCad();
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input() buttons2: CadItemButton<T>[] = [];
@@ -65,6 +70,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   cadViewer?: CadViewer;
   mubanViewer?: CadViewer;
   mubanData?: CadData;
+  imgCadEmpty = imgCadEmpty;
   get mubanId() {
     return this.cad?.json?.zhankai?.[0]?.kailiaomuban || "";
   }
@@ -92,7 +98,8 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
-    private status: AppStatusService
+    private status: AppStatusService,
+    private config: AppConfigService
   ) {
     super();
     this.showMuban = status.projectConfig.getBoolean("新版本做数据可以做激光开料");
@@ -109,6 +116,13 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   ngOnDestroy(): void {
     this.cadViewer?.destroy();
     this.mubanViewer?.destroy();
+  }
+
+  updateStyle() {
+    this.style = {
+      "--cad-preview-width": `${this.cadWidth}px`,
+      "--cad-preview-height": `${this.cadHeight}px`
+    };
   }
 
   centerCad() {
@@ -130,6 +144,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       }
     });
     if (result?.isSaved) {
+      for (const e of cadData.entities.dimension) {
+        e.calcBoundingRect = true;
+      }
       Object.assign(cad, getHoutaiCad(cadData));
       this.initCadViewer(true);
       this.afterEditCad.emit();
@@ -236,6 +253,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     delete this.mubanData;
     this.initCadViewer(updateImg);
     this.initMubanViewer(updateImg);
+    this.updateStyle();
   }
 
   initCadViewer0(
@@ -245,25 +263,27 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     updateImg: boolean,
     afterDblClickForm: (data: CadData) => void
   ) {
-    containerEl.innerHTML = "";
     const width = this.cadWidth;
     const height = (width / 300) * 150;
     this.cadHeight = height;
     const cadViewerSubject = new BehaviorSubject<CadViewer | undefined>(undefined);
-    const cadViewerConfig: Partial<CadViewerConfig> = {
-      width,
-      height,
-      backgroundColor: "black",
-      enableZoom: false,
-      dragAxis: "xy",
-      selectMode: "single",
-      entityDraggable: false,
-      lineGongshi: 24,
-      hideLineGongshi: false,
-      padding: [5]
+    const getPreviewParams: CadPreviewRawParams = {
+      ignoreShiyitu: true,
+      config: {
+        width,
+        height,
+        backgroundColor: "black",
+        enableZoom: false,
+        dragAxis: "xy",
+        selectMode: "single",
+        entityDraggable: false,
+        lineGongshi: 24,
+        hideLineGongshi: false,
+        padding: [5]
+      }
     };
     const init = () => {
-      const cadViewer = new CadViewer(data, cadViewerConfig);
+      const cadViewer = new CadViewer(data, getPreviewParams.config);
       cadViewer.appendTo(containerEl);
       cadViewer.on("entitydblclick", async (_, entity) => {
         if (entity instanceof CadMtext && entity.parent) {
@@ -300,25 +320,34 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       generateLineTexts2(data);
     }
     if (this.showCadViewer) {
+      containerEl.innerHTML = "";
       init();
     } else {
       (async () => {
-        const imgId = updateImg ? null : data.info.imgId;
+        if (this.config.getConfig("forceUpdateCadItemImg")) {
+          updateImg = true;
+        }
+        const imgId = data.info.imgId;
         let img: string | null = null;
         let onError: OnErrorEventHandler = null;
+        const setCadImg = (id: string, img: string) => this.http.setCadImg(id, img, {silent: true});
         if (imgId) {
-          img = this.http.getCadImgUrl(imgId);
+          if (updateImg) {
+            img = await getCadPreview(collection, data, getPreviewParams);
+            setCadImg(imgId, img);
+          } else {
+            img = this.http.getCadImgUrl(imgId);
+          }
         } else {
-          const setCadImg = (id: string, img: string) => this.http.setCadImg(id, img, {silent: true});
           if (cad instanceof CadData) {
             img = this.http.getCadImgUrl(cad.id);
             onError = async function (this: HTMLImageElement) {
-              const img2 = await getCadPreview(collection, data, {config: cadViewerConfig});
+              const img2 = await getCadPreview(collection, data, getPreviewParams);
               setCadImg(cad.id, img2);
             };
           }
           if (!img) {
-            img = await getCadPreview(collection, data, {config: cadViewerConfig});
+            img = await getCadPreview(collection, data, getPreviewParams);
             const imgId2 = await this.http.getMongoId({silent: true});
             if (imgId2) {
               data.info.imgId = imgId2;
@@ -336,8 +365,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
         imgEl.src = img;
         imgEl.onerror = onError;
         imgEl.classList.add("cad-preview");
-        imgEl.style.width = `${width}px`;
-        imgEl.style.height = `${height}px`;
+        containerEl.innerHTML = "";
         containerEl.appendChild(imgEl);
         imgEl.addEventListener("dblclick", () => {
           containerEl.innerHTML = "";
