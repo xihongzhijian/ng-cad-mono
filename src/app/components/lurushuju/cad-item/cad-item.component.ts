@@ -345,6 +345,8 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
             onError = async function (this: HTMLImageElement) {
               const img2 = await getCadPreview(collection, data, getPreviewParams);
               setCadImg(cad.id, img2);
+              this.src = img2;
+              this.onerror = null;
             };
           }
           if (!img) {

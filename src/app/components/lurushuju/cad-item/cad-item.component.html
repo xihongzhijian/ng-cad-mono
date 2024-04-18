@@ -47,7 +47,9 @@
     </div>
     <div class="cad item">
       <div #mubanContainer class="cad-container flex-row">
-        <img class="cad-preview" [src]="imgCadEmpty" />
+        @if (mubanData) {
+          <img class="cad-preview" [src]="imgCadEmpty" />
+        }
       </div>
       @if (mubanData) {
         <div class="toolbar compact">
