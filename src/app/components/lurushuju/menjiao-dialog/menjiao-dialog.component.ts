@@ -7,6 +7,7 @@ import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
+import {environment} from "@env";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, RequiredKeys} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
@@ -79,6 +80,7 @@ export class MenjiaoDialogComponent implements OnInit {
   qiliaoKeys = 企料组合;
   cadWidth = 300;
   cadHeight = 150;
+  production = environment.production;
   cadItemButtons: CadItemButton<MenjiaoCadItemInfo>[];
   cadItemButtons2: CadItemButton<MenjiaoCadItemInfo>[];
   shiyituCadItemButtons: CadItemButton<MenjiaoShiyituCadItemInfo>[];

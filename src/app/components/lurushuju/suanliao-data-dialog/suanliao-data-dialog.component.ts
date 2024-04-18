@@ -15,7 +15,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {OpenCadOptions} from "@services/app-status.service";
-import {cloneDeep, debounce} from "lodash";
+import {debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {SuanliaogongshiComponent} from "../../../modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {CadItemComponent} from "../cad-item/cad-item.component";
@@ -47,7 +47,6 @@ export class SuanliaoDataDialogComponent implements OnInit {
   @HostBinding("class") class = "ng-page";
   @Output() cadFormSubmitted = new EventEmitter<void>();
 
-  suanliaoData: SuanliaoDataInput["data"];
   cadItemButtons: CadItemButton<SuanliaoDataCadItemInfo>[];
   mubanExtraData: CadItemComponent["mubanExtraData"] = {};
   openCadOptions: RequiredKeys<OpenCadOptions, "suanliaogongshiInfo">;
@@ -66,14 +65,12 @@ export class SuanliaoDataDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<SuanliaoDataDialogComponent, SuanliaoDataOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoDataInput
   ) {
-    // TODO: remove cloneDeep
-    this.suanliaoData = cloneDeep(this.data.data);
     this.mubanExtraData.options = this.data.suanliaoDataParams.选项;
     this.openCadOptions = {
       suanliaogongshiInfo: {
         data: {
-          算料公式: this.suanliaoData.算料公式,
-          输入数据: this.suanliaoData.输入数据
+          算料公式: this.data.data.算料公式,
+          输入数据: this.data.data.输入数据
         },
         varNames: this.data.varNames
       },
@@ -99,7 +96,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
         this.hiddenSuanliaoCads = [];
         const yaoqiu = this.cadShujuyaoqiu;
         if (yaoqiu) {
-          for (const [i, cad] of this.suanliaoData.算料CAD.entries()) {
+          for (const [i, cad] of this.data.data.算料CAD.entries()) {
             if (!filterCad(val, cad, yaoqiu)) {
               this.hiddenSuanliaoCads.push(i);
             }
@@ -120,7 +117,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
   }
 
   async selectSuanliaoCads() {
-    const data = this.suanliaoData;
+    const data = this.data.data;
     const zxpjData: ZixuanpeijianInput = {
       data: {
         零散: data.算料CAD.map((v) => {
@@ -162,8 +159,8 @@ export class SuanliaoDataDialogComponent implements OnInit {
     const data = result?.items[0] as SelectGongyiItemData<算料数据>;
     if (data && data.工艺做法 && data.data) {
       const {suanliaoTables} = this;
-      this.suanliaoData.算料CAD.push(...data.data[key1].算料CAD);
-      this.suanliaoData.算料公式.push(...data.data[key1].算料公式);
+      this.data.data.算料CAD.push(...data.data[key1].算料CAD);
+      this.data.data.算料公式.push(...data.data[key1].算料公式);
       if (suanliaoTables) {
         const [包边方向, 开启] = key1.split("+");
         const suanliaoDataParams: SuanliaoDataParams = {
@@ -205,7 +202,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
     }
     component.suanliaoTestName = "true";
     component.saveInfo();
-    await openSuanliaoTestDialog(this.dialog, {data: {data: this.suanliaoData, varNames, suanliaoDataParams}});
+    await openSuanliaoTestDialog(this.dialog, {data: {data: this.data.data, varNames, suanliaoDataParams}});
     component.suanliaoTestName = "";
     component.saveInfo();
   }
@@ -220,11 +217,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
       this.message.error(errors.join("<br>"));
       return;
     }
-    this.dialogRef.close({data: this.suanliaoData});
-  }
-
-  cancel() {
-    this.dialogRef.close();
+    this.dialogRef.close({data: this.data.data});
   }
 
   async copyCad(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
@@ -245,7 +238,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
       component.mubanId = result.id;
       component.mubanData = cadData;
     }
-    this.suanliaoData.算料CAD.splice(component.customInfo.index + 1, 0, cad2);
+    this.data.data.算料CAD.splice(component.customInfo.index + 1, 0, cad2);
   }
 
   async removeCad(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
@@ -257,14 +250,14 @@ export class SuanliaoDataDialogComponent implements OnInit {
     if (mubanId) {
       await this.http.mongodbDelete("kailiaocadmuban", {id: mubanId});
     }
-    const names = this.suanliaoData.算料CAD.filter((v) => v.名字 === cad.名字);
+    const names = this.data.data.算料CAD.filter((v) => v.名字 === cad.名字);
     if (names.length < 2) {
       const params: ObjectOf<any> = this.data.suanliaoDataParams;
       await this.http.mongodbDelete("kailiaokongweipeizhi", {filter: {...params, 名字: cad.名字}});
       await this.http.mongodbDelete("kailiaocanshu", {filter: {...params, 名字: cad.名字 + "中空参数"}});
       this.suanliaoTables?.update();
     }
-    this.suanliaoData.算料CAD.splice(component.customInfo.index, 1);
+    this.data.data.算料CAD.splice(component.customInfo.index, 1);
   }
 
   async addKwpz(component: CadItemComponent<SuanliaoDataCadItemInfo>) {

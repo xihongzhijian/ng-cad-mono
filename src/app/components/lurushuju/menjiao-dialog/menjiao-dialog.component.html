@@ -20,6 +20,17 @@
             <div class="label">{{ key1 }}</div>
             <div class="flex-row">
               <div class="flex-column flex-110" style="width: 0">
+                <ng-template #btns>
+                  <div class="toolbar">
+                    <button mat-raised-button color="primary" (click)="editBcfz(key1)">板材分组</button>
+                    <button mat-raised-button color="primary" (click)="editSuanliaoData(key1)">算料公式CAD配置</button>
+                    <button mat-raised-button color="primary" (click)="copy(key1)">复制</button>
+                    <button mat-raised-button color="primary" (click)="empty(key1)">清空</button>
+                  </div>
+                </ng-template>
+                @if (!production) {
+                  <ng-container [ngTemplateOutlet]="btns"></ng-container>
+                }
                 <div class="list">
                   @for (key3 of qiliaoKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
                     <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '企料CAD', key3}"></ng-container>
@@ -62,12 +73,9 @@
                     }
                   </div>
                 }
-                <div class="toolbar">
-                  <button mat-raised-button color="primary" (click)="editBcfz(key1)">板材分组</button>
-                  <button mat-raised-button color="primary" (click)="editSuanliaoData(key1)">算料公式CAD配置</button>
-                  <button mat-raised-button color="primary" (click)="copy(key1)">复制</button>
-                  <button mat-raised-button color="primary" (click)="empty(key1)">清空</button>
-                </div>
+                @if (production) {
+                  <ng-container [ngTemplateOutlet]="btns"></ng-container>
+                }
                 @if (key1Infos[key1].error) {
                   <div class="error-msg">{{ key1Infos[key1].error }}</div>
                 }

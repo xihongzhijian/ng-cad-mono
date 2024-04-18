@@ -305,11 +305,17 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       (async () => {
         const imgId = updateImg ? null : data.info.imgId;
         let img: string | null = null;
+        let onError: OnErrorEventHandler = null;
         if (imgId) {
           img = this.http.getCadImgUrl(imgId);
         } else {
+          const setCadImg = (id: string, img: string) => this.http.setCadImg(id, img, {silent: true});
           if (cad instanceof CadData) {
-            img = await this.http.getCadImg(cad.id);
+            img = this.http.getCadImgUrl(cad.id);
+            onError = async function (this: HTMLImageElement) {
+              const img2 = await getCadPreview(collection, data, {config: cadViewerConfig});
+              setCadImg(cad.id, img2);
+            };
           }
           if (!img) {
             img = await getCadPreview(collection, data, {config: cadViewerConfig});
@@ -322,12 +328,13 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
                 }
                 cad.json.info.imgId = imgId2;
               }
-              this.http.setCadImg(imgId2, img, {silent: true});
+              setCadImg(imgId2, img);
             }
           }
         }
         const imgEl = document.createElement("img");
         imgEl.src = img;
+        imgEl.onerror = onError;
         imgEl.classList.add("cad-preview");
         imgEl.style.width = `${width}px`;
         imgEl.style.height = `${height}px`;

@@ -48,6 +48,15 @@
       white-space: pre;
     }
   }
+
+  .inputs {
+    width: 100%;
+
+    app-input {
+      width: 0;
+      flex: 1 1 0;
+    }
+  }
 }
 
 .fenti-cads {

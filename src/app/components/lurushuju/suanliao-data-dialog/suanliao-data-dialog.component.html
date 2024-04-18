@@ -15,7 +15,7 @@
     </div>
     <ng-scrollbar>
       <div class="cads flex-row">
-        @for (cad of suanliaoData["算料CAD"]; track i; let i = $index) {
+        @for (cad of data.data["算料CAD"]; track i; let i = $index) {
           <app-cad-item
             [cad]="cad"
             [buttons]="cadItemButtons"
