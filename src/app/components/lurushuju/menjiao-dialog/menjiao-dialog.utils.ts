@@ -224,14 +224,7 @@ export const getCadSearch = (data: 算料数据, shujuyaoqiu: Cad数据要求, k
         if (包边方向1 === "包边在外") {
           return matchOption(包边方向1, 包边方向2) && matchOption(开启1, 开启2, true);
         } else if (包边方向1 === "包边在内") {
-          if (matchOption("包边在内", 包边方向2, true) && matchOption(开启1, 开启2, true)) {
-            return true;
-          }
-          if (开启1 === "外开") {
-            return matchOption("包边在外", 包边方向2) && matchOption("内开", 开启2, true);
-          } else if (开启1 === "内开") {
-            return matchOption("包边在外", 包边方向2) && matchOption("外开", 开启2, true);
-          }
+          return matchOption(开启1, 开启2, true);
         }
       }
       if (!check()) {
