@@ -1,4 +1,3 @@
-import {SafeUrl} from "@angular/platform-browser";
 import {Formulas} from "@app/utils/calc";
 import {KailiaocanshuData} from "@components/klcs/klcs.component";
 import {KlkwpzSource} from "@components/klkwpz/klkwpz";
@@ -131,7 +130,6 @@ export interface MokuaiInputInfos {
 
 export interface ZixuanpeijianlingsanCadItem {
   data: CadData;
-  img: SafeUrl;
   hidden: boolean;
   isFetched: boolean;
 }

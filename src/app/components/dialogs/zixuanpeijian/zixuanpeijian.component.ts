@@ -9,12 +9,11 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {SafeUrl} from "@angular/platform-browser";
 import {imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {setDimensionText} from "@app/cad/utils";
 import {toFixed} from "@app/utils/func";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {Debounce} from "@decorators/debounce";
 import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai, setLinesLength} from "@lucilor/cad-viewer";
 import {ObjectOf, queryStringList, timeout} from "@lucilor/utils";
@@ -67,6 +66,7 @@ import {
   styleUrls: ["./zixuanpeijian.component.scss"],
   standalone: true,
   imports: [
+    CadImageComponent,
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
@@ -126,7 +126,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     model: {data: this, key: "searchLingsanValue"},
     onInput: debounce(this.filterLingsanItems.bind(this), 200)
   };
-  lingsanCadImgs: ObjectOf<SafeUrl> = {};
   lingsanCadViewers: CadViewer[] = [];
   imgCadEmpty = imgCadEmpty;
   selectAllForm = {baicai: "", cailiao: "", houdu: ""};
@@ -397,9 +396,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       const {noValidateCads} = this.data || {};
       for (const v of responseData.cads) {
         const data = new CadData(v);
-        const img = this.http.getCadImgUrl(data.id);
-        this.lingsanCadImgs[data.id] = img;
-        const item: ZixuanpeijianlingsanCadItem = {data, img, hidden: false, isFetched: false};
+        const item: ZixuanpeijianlingsanCadItem = {data, hidden: false, isFetched: false};
         const type = item.data.type;
         if (!this.lingsanCads[type]) {
           this.lingsanCads[type] = [];
@@ -422,9 +419,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         } else {
           if (noValidateCads) {
             if (!preserveImgs) {
-              getCadPreview("cad", item.data).then((img) => {
-                this.lingsanCadImgs[item.data.id] = img;
-              });
+              // TODO
             }
           } else {
             toRemove.push(i);
@@ -980,8 +975,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async openLingsanCad(type: string, i: number) {
-    this.status.openCadInNewTab(this.lingsanCads[type][i].data.id, "cad");
+    const id = this.lingsanCads[type][i].data.id;
+    this.status.openCadInNewTab(id, "cad");
     if (await this.message.newTabConfirm()) {
+      this.status.cadImgToUpdate[id] = {t: Date.now()};
       this.step3Refresh(true);
     }
   }
@@ -1242,17 +1239,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (result) {
       item.可替换模块 = result.模块;
     }
-  }
-
-  async onCadImgError(item: ZixuanpeijianlingsanCadItem) {
-    const cads = await this.http.getCad({collection: "cad", id: item.data.id});
-    const data = cads.cads[0];
-    if (!data) {
-      return;
-    }
-    const img = await getCadPreview("cad", data, {http: this.http});
-    item.img = img;
-    this.lingsanCadImgs[item.data.id] = img;
   }
 
   async openImportPage() {

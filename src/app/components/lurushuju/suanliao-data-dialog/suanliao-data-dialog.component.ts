@@ -227,6 +227,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
     }
     const {mubanData} = component;
     const cadData2 = new CadData(cad.json).clone(true);
+    delete cadData2.info.imgId;
     cadData2.name += "_复制";
     const cad2 = getHoutaiCad(cadData2);
     if (mubanData) {

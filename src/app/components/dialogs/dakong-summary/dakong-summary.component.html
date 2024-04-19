@@ -43,7 +43,7 @@
                       <span>
                         <span>{{ item.cadName }}</span>
                         <br />
-                        <app-image class="cad-preview" [src]="cadImgs[item.cadId]" [bigPicSrc]="cadImgs[item.cadId]" />
+                        <app-cad-image [id]="item.cadId" />
                         <span class="link" (click)="openCad(item)">查看</span>
                       </span>
                     }
@@ -51,7 +51,7 @@
                       <span>
                         <span>{{ item.kongName }}</span>
                         <br />
-                        <app-image class="cad-preview" [src]="cadImgs[item.kongId]" [bigPicSrc]="cadImgs[item.kongId]" />
+                        <app-cad-image [id]="item.kongId" />
                         <span class="link" (click)="openKongCad(item)">查看</span>
                       </span>
                     }

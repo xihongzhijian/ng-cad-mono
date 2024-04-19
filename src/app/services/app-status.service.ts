@@ -85,6 +85,9 @@ export class AppStatusService {
   private _isZhewanLengthsFetched = false;
   projectConfig = new ProjectConfig();
 
+  forceUpdateCadImg = false;
+  cadImgToUpdate: ObjectOf<{t: number}> = {};
+
   constructor(
     private config: AppConfigService,
     private route: ActivatedRoute,
@@ -357,6 +360,7 @@ export class AppStatusService {
         beforeOpen: async (data2) => {
           const url = await getCadPreview(collection, data2);
           await http.setCadImg(data2.id, url, {silent: true});
+          this.cadImgToUpdate[data2.id] = {t: Date.now()};
         }
       });
       this.saveCadLocked$.next(false);

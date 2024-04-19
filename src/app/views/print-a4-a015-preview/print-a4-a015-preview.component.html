@@ -15,7 +15,13 @@
           }
           @if (card.type === "CAD") {
             <div class="zhankai">{{ card.zhankai }}</div>
-            <app-image class="cad-preview" [src]="card.cadImg"></app-image>
+            <app-cad-image
+              [id]="card.id"
+              [width]="cadWidth"
+              [height]="cadHeight"
+              [backgroundColor]="cadBackgroundColor"
+              [params]="params"
+            ></app-cad-image>
             <app-image class="qrcode" [src]="card.codeText"></app-image>
             <div class="code">{{ card.code }}</div>
             <div class="desc-right">

@@ -44,7 +44,7 @@ describe("BackupComponent", () => {
     fixture = TestBed.createComponent(BackupComponent);
     component = fixture.componentInstance;
     const now = new Date();
-    component.data = [{time: now.getTime(), title: now.toLocaleTimeString(), img: "", data: new CadData()}];
+    component.data = [{time: now.getTime(), title: now.toLocaleTimeString(), data: new CadData()}];
     fixture.detectChanges();
   });
 

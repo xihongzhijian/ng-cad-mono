@@ -34,14 +34,9 @@ $space: 3px;
       display: flex;
       flex-direction: column;
 
-      .cad-preview {
+      app-cad-image {
         cursor: pointer;
         flex: 1 1 0;
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-        }
       }
     }
   }

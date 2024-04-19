@@ -24,7 +24,7 @@ export const filterSlgsList = async (slgsList: 算料公式[], vars: Formulas, c
 export const getTestCaseInfo = async (testCase: 测试用例, data: 算料数据2, calc: CalcService) => {
   const {算料公式} = data;
   const cads = cloneDeep(data.算料CAD);
-  const info: SuanliaoTestInfo = {slgsList: [], errors: [], allVars: [], requiredVars: [], cads, cadImgs: {}};
+  const info: SuanliaoTestInfo = {slgsList: [], errors: [], allVars: [], requiredVars: [], cads};
 
   const isValueEmpty = (v: any) => v === "" || v === null || v === undefined;
   const testVars = {...testCase.测试数据};

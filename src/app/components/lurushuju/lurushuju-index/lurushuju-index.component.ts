@@ -26,7 +26,6 @@ import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/compon
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
-import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
@@ -160,8 +159,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     private http: CadDataService,
     private message: MessageService,
     private dialog: MatDialog,
-    private status: AppStatusService,
-    private config: AppConfigService
+    private status: AppStatusService
   ) {
     super();
     setGlobal("lrsj", this, true);
@@ -1540,20 +1538,19 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   updateBtns() {
-    const toggleForceUpdateCadItemImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.config.getConfig("forceUpdateCadItemImg"))})`;
-    const toggleForceUpdateCadItemImgBtn: (typeof this.btns)[number] = {
-      name: toggleForceUpdateCadItemImgBtnName(),
+    const toggleforceUpdateCadImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.status.forceUpdateCadImg)})`;
+    const toggleforceUpdateCadImgBtn: (typeof this.btns)[number] = {
+      name: toggleforceUpdateCadImgBtnName(),
       onClick: () => {
-        const force = !this.config.getConfig("forceUpdateCadItemImg");
-        this.config.setConfig("forceUpdateCadItemImg", force, {sync: false});
-        toggleForceUpdateCadItemImgBtn.name = toggleForceUpdateCadItemImgBtnName();
+        this.status.forceUpdateCadImg = !this.status.forceUpdateCadImg;
+        toggleforceUpdateCadImgBtn.name = toggleforceUpdateCadImgBtnName();
       }
     };
     this.btns = [
       {name: "返回至型号", onClick: this.backToXinghao.bind(this)},
       {name: "复制页面信息", onClick: this.copyInfo.bind(this)},
       {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)},
-      toggleForceUpdateCadItemImgBtn
+      toggleforceUpdateCadImgBtn
     ];
     for (const item of this.cad数据要求) {
       this.btns.push({

@@ -37,12 +37,19 @@ describe("CadEditorComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        AnchorSelectorComponent,
+        CadDimensionComponent,
+        CadEditorComponent,
+        CadInfoComponent,
+        CadLayerInputComponent,
+        CadLineComponent,
+        CadMtextComponent,
+        CadPointsComponent,
         ColorChromeModule,
         ColorCircleModule,
         DragDropModule,
         FormsModule,
         HttpModule,
-
         MatAutocompleteModule,
         MatButtonModule,
         MatCheckboxModule,
@@ -58,14 +65,6 @@ describe("CadEditorComponent", () => {
         MatTooltipModule,
         NgScrollbarModule,
         SpinnerModule,
-        AnchorSelectorComponent,
-        CadDimensionComponent,
-        CadEditorComponent,
-        CadInfoComponent,
-        CadLayerInputComponent,
-        CadLineComponent,
-        CadMtextComponent,
-        CadPointsComponent,
         SubCadsComponent,
         ToolbarComponent
       ]

@@ -76,7 +76,6 @@ export type ListItemKey = (typeof listItemKeys)[number];
 
 export interface MrbcjfzCadInfo extends MrbcjfzListItem {
   data: CadData;
-  img: string;
 }
 
 export interface MrbcjfzHuajianInfo extends MrbcjfzListItem {

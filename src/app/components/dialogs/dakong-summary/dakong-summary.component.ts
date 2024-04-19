@@ -5,12 +5,12 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {session, setGlobal} from "@app/app.common";
-import {ObjectOf, queryString} from "@lucilor/utils";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
+import {queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbar} from "ngx-scrollbar";
-import {ImageComponent} from "../../../modules/image/components/image/image.component";
 import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 import {DakongSummaryInput, DakongSummaryOutput, DakongSummaryTableData, DakongSummaryTableInfo} from "./dakong-summary.types";
@@ -20,7 +20,7 @@ import {DakongSummaryInput, DakongSummaryOutput, DakongSummaryTableData, DakongS
   templateUrl: "./dakong-summary.component.html",
   styleUrls: ["./dakong-summary.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, MatSlideToggleModule, FormsModule, InputComponent, NgScrollbar, NgClass, ImageComponent]
+  imports: [CadImageComponent, FormsModule, InputComponent, MatButtonModule, MatSlideToggleModule, NgClass, NgScrollbar]
 })
 export class DakongSummaryComponent {
   tableInfos: DakongSummaryTableInfo[] = [];
@@ -45,7 +45,6 @@ export class DakongSummaryComponent {
     session.save("dakongSummaryShowIds", value);
     this.updateTableColumns();
   }
-  cadImgs: ObjectOf<string> = {};
   form = {
     strictFilter: false,
     filterCad: "",
@@ -98,8 +97,6 @@ export class DakongSummaryComponent {
       const data: DakongSummaryTableData[] = [];
       for (const item of items) {
         for (const detail of item.summary || []) {
-          this.getCadImg(item.cadId);
-          this.getCadImg(detail.kongId);
           data.push({
             cadId: item.cadId,
             cadName: item.cadName,
@@ -136,10 +133,6 @@ export class DakongSummaryComponent {
     if (url) {
       open(url, "_blank");
     }
-  }
-
-  async getCadImg(id: string) {
-    this.cadImgs[id] = this.http.getCadImgUrl(id);
   }
 
   filterTableData() {

@@ -5,7 +5,17 @@
   <div class="cad item">
     <div class="toolbar">
       <div #cadContainer class="cad-container flex-row">
-        <img class="cad-preview" [src]="imgCadEmpty" />
+        @if (!showCadViewer) {
+          <app-cad-image
+            #cadImage
+            [id]="''"
+            [width]="cadWidth"
+            [height]="cadHeight"
+            [style.width.px]="cadWidth"
+            (dblclick)="onCadImageClick()"
+            (dataInfoChange)="onCadInfoChange($event)"
+          ></app-cad-image>
+        }
       </div>
       @for (button of buttons2; track $index) {
         <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
@@ -47,8 +57,17 @@
     </div>
     <div class="cad item">
       <div #mubanContainer class="cad-container flex-row">
-        @if (mubanData) {
-          <img class="cad-preview" [src]="imgCadEmpty" />
+        @if (!showMubanViewer) {
+          <app-cad-image
+            #mubanImage
+            [id]="mubanId"
+            [collection]="'kailiaocadmuban'"
+            [width]="cadWidth"
+            [height]="cadHeight"
+            [style.width.px]="cadWidth"
+            [class.hidden]="!mubanData"
+            (dblclick)="onMubanImageClick()"
+          ></app-cad-image>
         }
       </div>
       @if (mubanData) {

@@ -56,13 +56,7 @@
             <mat-checkbox [checked]="item.checked" [disabled]="data.selectMode === 'none'"> </mat-checkbox>
             <div class="text long link" [matTooltip]="item.data.name">{{ item.data.name }}</div>
           </div>
-          <app-image
-            class="cad-preview link"
-            [src]="item.img"
-            [emptySrc]="imgCadEmpty"
-            (click)="clickItem(i)"
-            (imgError)="onCadImgError(i)"
-          />
+          <app-cad-image class="link" [id]="item.data.id" [width]="width" [height]="height" (click)="clickItem(i)"></app-cad-image>
           <div class="toolbar">
             <button mat-button color="primary" (click)="editCad(i)">编辑</button>
             <button mat-button color="primary" (click)="copyCad(i)">复制</button>

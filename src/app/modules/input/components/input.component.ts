@@ -6,6 +6,7 @@ import {
   Component,
   DoCheck,
   ElementRef,
+  forwardRef,
   HostBinding,
   Input,
   KeyValueDiffer,
@@ -30,21 +31,15 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {SafeUrl} from "@angular/platform-browser";
 import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
-import {exportCadData} from "@app/cad/utils";
-import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
-import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
-import {CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
-import {CadData, CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
+import {CadViewer} from "@lucilor/cad-viewer";
 import {getTypeOf, isTypeOf, ObjectOf, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
-import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import Color from "color";
@@ -76,6 +71,7 @@ import {getValue, parseObjectString} from "./input.utils";
     ColorCircleModule,
     CommonModule,
     FormsModule,
+    forwardRef(() => CadImageComponent),
     ImageComponent,
     MatAutocompleteModule,
     MatButtonModule,
@@ -99,7 +95,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   modelDataDiffer: KeyValueDiffer<keyof InputInfo["model"], ValueOf<InputInfo["model"]>>;
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
-  cadInfos: {id: string; name: string; img: SafeUrl; val: any}[] = [];
+  cadInfos: {id: string; name: string; val: any}[] = [];
   showListInput = true;
   objectString = "";
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
@@ -212,15 +208,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return info.accept || "image/*";
     }
     return undefined;
-  }
-
-  get isCadMultiple() {
-    const {info} = this;
-    if (info.type === "cad") {
-      const params = getValue(info.params, this.message);
-      return params?.selectMode === "multiple";
-    }
-    return false;
   }
 
   displayValue: string | null = null;
@@ -427,8 +414,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
           this.value = this.options[0].value;
         }
       }
-    } else if (type === "cad") {
-      this.updateCadInfos();
     } else if (type === "formulas") {
       this.updateFormulasStr();
     }
@@ -457,11 +442,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     this.style = {...info.style};
     if (info.hidden) {
       this.style.display = "none";
-    }
-    if (info.type === "cad") {
-      const {width, height} = info.config || {};
-      (this.style as any)["--cad-preview-width"] = width && width > 0 ? `${width}px` : "200px";
-      (this.style as any)["--cad-preview-height"] = height && height > 0 ? `${height}px` : "100px";
     }
     let validateValue = !!info.initialValidate;
     changes.forEachItem((item) => {
@@ -899,193 +879,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       info.onChange?.(files, info);
     } else if (info.type === "image" && files[0]) {
       info.onChange?.(files[0], info);
-    }
-  }
-
-  getCadName(val: any) {
-    const {info} = this;
-    if (info.type === "cad") {
-      if (info.showName) {
-        if (isTypeOf(val, "object")) {
-          let name = "";
-          for (const key of ["name", "名字"]) {
-            if (isTypeOf(val[key], "string") && val[key].length > 0) {
-              name = val[key];
-              break;
-            }
-          }
-          return name || "";
-        }
-      } else {
-        if (this.isCadMultiple) {
-          return "";
-        } else {
-          return info.label;
-        }
-      }
-    }
-    return "";
-  }
-
-  getCadId(value: any) {
-    if (!isTypeOf(value, "object")) {
-      return "";
-    }
-    let id = "";
-    for (const key of ["id", "_id"]) {
-      if (isTypeOf(value[key], "string") && value[key].length > 0) {
-        id = value[key];
-        break;
-      }
-    }
-    return id || "";
-  }
-
-  getCadData(val: any) {
-    if (!isTypeOf(val, "object")) {
-      return new CadData();
-    }
-    if (val.json) {
-      return new CadData(val.json);
-    } else {
-      return new CadData(val);
-    }
-  }
-
-  getCadsValue() {
-    let {value} = this;
-    if (!Array.isArray(value)) {
-      if (isTypeOf(value, "object")) {
-        value = [value];
-      } else {
-        value = [];
-      }
-    }
-    return value as any[];
-  }
-
-  updateCadInfos() {
-    let {info} = this;
-    if (info.type !== "cad") {
-      return;
-    }
-    const params = getValue(info.params, this.message);
-    const getInfo = (val: any): (typeof this.cadInfos)[number] => {
-      const infoItem: (typeof this.cadInfos)[number] = {id: "", name: "", img: imgCadEmpty, val};
-      const id = this.getCadId(val);
-      if (!id) {
-        infoItem.val = null;
-        return infoItem;
-      }
-      infoItem.id = id;
-      infoItem.name = this.getCadName(val);
-      getCadPreview(params?.collection || "cad", this.getCadData(val)).then((img) => {
-        infoItem.img = img;
-      });
-      return infoItem;
-    };
-    this.cadInfos = [];
-
-    for (const val of this.getCadsValue()) {
-      this.cadInfos.push(getInfo(val));
-    }
-    setTimeout(async () => {
-      const cadViewers = this.cadViewers;
-      for (const cadViewer of cadViewers) {
-        cadViewer.destroy();
-      }
-      cadViewers.length = 0;
-      info = this.info;
-      if (info.type === "cad" && info.showCadViewer) {
-        const cadContainers = this.cadContainers?.toArray() || [];
-        for (const [i, cadInfo] of this.cadInfos.entries()) {
-          const cadContainer = cadContainers[i];
-          if (!cadContainer) {
-            break;
-          }
-          const {val} = cadInfo;
-          const cadData = this.getCadData(val);
-          const config: Partial<CadViewerConfig> = {backgroundColor: "black", ...info?.config};
-          const cadViewer = new CadViewer(cadData, config);
-          cadViewer.appendTo(cadContainer.nativeElement);
-          cadViewers.push(cadViewer);
-          info.showCadViewer.onInit?.(cadViewer);
-          await cadViewer.render();
-          cadViewer.center();
-        }
-      }
-    }, 0);
-  }
-
-  async selectCad() {
-    const {info} = this;
-    if (info.type !== "cad") {
-      return;
-    }
-    const params = getValue(info.params, this.message);
-    if (!params) {
-      return;
-    }
-    params.checkedItems = this.cadInfos.map((v) => v.id);
-    const result = await openCadListDialog(this.dialog, {data: params});
-    if (result) {
-      if (this.isCadMultiple) {
-        this.value = result;
-      } else {
-        this.value = result[0] || null;
-      }
-      info.onChange?.(result, info);
-      this.updateCadInfos();
-    }
-  }
-
-  async clearCad(i: number) {
-    const {info} = this;
-    if (info.type !== "cad") {
-      return;
-    }
-    if (!(await this.message.confirm("确定要清除吗？"))) {
-      return;
-    }
-    const {value, isCadMultiple} = this;
-    let result: CadListOutput;
-    if (isCadMultiple) {
-      if (Array.isArray(value)) {
-        value.splice(i, 1);
-        result = value;
-      } else {
-        this.value = result = [];
-      }
-    } else {
-      this.value = null;
-      result = [];
-    }
-    info.onChange?.(result, info);
-    this.updateCadInfos();
-  }
-
-  async editCad(i: number) {
-    const {info} = this;
-    if (info.type !== "cad") {
-      return;
-    }
-    const value = this.getCadsValue();
-    const cadDatas = value.map((v) => this.getCadData(v));
-    const cadData = cadDatas[i];
-    const result = await openCadEditorDialog(this.dialog, {data: {data: cadData, isLocal: true, center: true}});
-    if (result?.isSaved) {
-      if (value[i]?.json) {
-        value[i] = {...getHoutaiCad(cadData), _id: value[i]._id};
-      } else {
-        value[i] = exportCadData(cadData, true);
-      }
-      if (this.isCadMultiple) {
-        this.value = [...value];
-      } else {
-        this.value = value[i];
-      }
-      info.onChange?.(cadDatas, info);
-      this.updateCadInfos();
     }
   }
 

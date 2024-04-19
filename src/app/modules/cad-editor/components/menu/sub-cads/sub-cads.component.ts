@@ -1,5 +1,4 @@
-import {NgFor, NgIf, NgSwitch, NgSwitchCase} from "@angular/common";
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {Component, ElementRef, forwardRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
@@ -7,11 +6,10 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {DomSanitizer} from "@angular/platform-browser";
-import {imgLoading, timer} from "@app/app.common";
+import {timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-data-transform";
-import {getCadPreview} from "@app/cad/cad-preview";
 import {isShiyitu} from "@app/cad/utils";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadData, CadDimensionLinear, CadEntities, CadEventCallBack, CadLine, CadLineLike} from "@lucilor/cad-viewer";
 import {downloadByString, Matrix, ObjectOf, Point} from "@lucilor/utils";
@@ -26,7 +24,6 @@ import {NgScrollbar} from "ngx-scrollbar";
 
 interface CadNode {
   data: CadData;
-  img: string;
   checked: boolean;
 }
 
@@ -38,17 +35,14 @@ type ContextMenuCadField = "main" | "component";
   styleUrls: ["./sub-cads.component.scss"],
   standalone: true,
   imports: [
-    MatSlideToggleModule,
-    NgScrollbar,
-    NgIf,
-    MatTooltipModule,
-    MatDividerModule,
-    NgSwitch,
-    NgSwitchCase,
+    forwardRef(() => CadImageComponent),
     MatButtonModule,
-    NgFor,
     MatCheckboxModule,
-    MatMenuModule
+    MatDividerModule,
+    MatMenuModule,
+    MatSlideToggleModule,
+    MatTooltipModule,
+    NgScrollbar
   ]
 })
 export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnInit, OnDestroy {
@@ -79,7 +73,6 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
   }
 
   constructor(
-    private sanitizer: DomSanitizer,
     private config: AppConfigService,
     private status: AppStatusService,
     private dialog: MatDialog,
@@ -169,12 +162,7 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
   };
 
   private _getCadNode(data: CadData) {
-    const node: CadNode = {data, img: imgLoading, checked: false};
-    const collection = this.status.collection$.value;
-    setTimeout(async () => {
-      const img = await getCadPreview(collection, node.data, {http: this.http});
-      node.img = this.sanitizer.bypassSecurityTrustUrl(img) as string;
-    }, 0);
+    const node: CadNode = {data, checked: false};
     return node;
   }
 

@@ -6,7 +6,7 @@
     @for (item of items; track item) {
       <div class="flex-column item" (click)="logCad(item.data)" (contextmenu)="openCad(item.data)">
         <div class="title center">{{ item.data.name }}</div>
-        <app-image class="cad-preview" [src]="item.img"></app-image>
+        <app-cad-image [id]="item.data.id" [data]="item.data"></app-cad-image>
       </div>
     }
   </div>

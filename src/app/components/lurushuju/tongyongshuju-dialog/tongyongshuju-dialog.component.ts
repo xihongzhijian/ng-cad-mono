@@ -5,12 +5,11 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {setGlobal} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
-import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
@@ -29,7 +28,7 @@ import {
 @Component({
   selector: "app-tongyongshuju-dialog",
   standalone: true,
-  imports: [KeyValuePipe, ImageComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, NgTemplateOutlet, SpinnerModule],
+  imports: [CadImageComponent, KeyValuePipe, MatButtonModule, MatDividerModule, NgScrollbarModule, NgTemplateOutlet, SpinnerModule],
   templateUrl: "./tongyongshuju-dialog.component.html",
   styleUrl: "./tongyongshuju-dialog.component.scss"
 })
@@ -169,9 +168,7 @@ export class TongyongshujuDialogComponent implements OnInit {
       );
       this.activeCadList = {
         index,
-        data: cads.map<TongyongshujuCadItem>((cad) => {
-          return {...cad, img: this.http.getCadImgUrl(cad._id)};
-        })
+        data: cads
       };
     }
   }
@@ -225,18 +222,6 @@ export class TongyongshujuDialogComponent implements OnInit {
       } else {
         item.active = false;
       }
-    }
-  }
-
-  async getCadPreview(item: TongyongshujuCadItem) {
-    const collection = this.collection;
-    const id = item._id;
-    const data = await this.http.getCad({collection, id}, {silent: true});
-    const cad = data?.cads[0];
-    if (cad) {
-      const img = await getCadPreview(collection, cad);
-      this.http.setCadImg(id, img, {silent: true});
-      item.img = img;
     }
   }
 

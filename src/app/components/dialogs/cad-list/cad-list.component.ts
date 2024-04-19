@@ -1,5 +1,5 @@
 import {KeyValuePipe} from "@angular/common";
-import {AfterViewInit, Component, HostBinding, Inject, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, forwardRef, HostBinding, Inject, ViewChild} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -14,12 +14,12 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, session} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
-import {ImageComponent} from "@modules/image/components/image/image.component";
+import {HttpOptions} from "@modules/http/services/http.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -47,8 +47,8 @@ export const customTooltipOptions: MatTooltipDefaultOptions = {
   standalone: true,
   imports: [
     FormsModule,
+    forwardRef(() => CadImageComponent),
     KeyValuePipe,
-    ImageComponent,
     MatButtonModule,
     MatCheckboxModule,
     MatDividerModule,
@@ -70,7 +70,7 @@ export class CadListComponent implements AfterViewInit {
   length = 0;
   pageSizeOptions = [1, 10, 20, 50, 100];
   pageSize = 20;
-  pageData: {data: CadData; img: string; checked: boolean}[] = [];
+  pageData: {data: CadData; checked: boolean}[] = [];
   tableData: any = [];
   displayedColumns = ["select", "mingzi", "wenjian", "create_time", "modify_time"];
   width = 300;
@@ -147,6 +147,8 @@ export class CadListComponent implements AfterViewInit {
     }
     const limit = this.paginator.pageSize;
     let result: Awaited<ReturnType<CadDataService["getCad"]>>;
+    this.pageData.length = 0;
+    this.length = 0;
     const {collection, standaloneSearch} = this.data;
     if (this.data.source) {
       const total = this.data.source.length;
@@ -174,7 +176,6 @@ export class CadListComponent implements AfterViewInit {
       result = await this.http.getCad(params);
     }
     this.length = result.total;
-    this.pageData.length = 0;
     result.cads.forEach(async (d) => {
       const checked = this.checkedItems.find((v) => v === d.id) ? true : false;
       const img = this.http.getCadImgUrl(d.id);
@@ -359,7 +360,8 @@ export class CadListComponent implements AfterViewInit {
   async editCad(i: number) {
     const item = this.pageData[i];
     const {collection} = this.data;
-    const data = await this.getCad(item.data.id);
+    const id = item.data.id;
+    const data = await this.getCad(id);
     const result = await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
     if (result?.isSaved) {
       this.search();
@@ -395,21 +397,10 @@ export class CadListComponent implements AfterViewInit {
     }
   }
 
-  async getCad(id: string) {
+  async getCad(id: string, options?: HttpOptions) {
     const {collection} = this.data;
-    const {cads} = await this.http.getCad({id, collection});
+    const {cads} = await this.http.getCad({id, collection}, options);
     return cads.at(0);
-  }
-
-  async onCadImgError(i: number) {
-    const item = this.pageData[i];
-    const {collection} = this.data;
-    const data = await this.getCad(item.data.id);
-    if (!data) {
-      return;
-    }
-    const url = await getCadPreview(collection, data, {http: this.http});
-    item.img = url;
   }
 
   async openImportPage() {

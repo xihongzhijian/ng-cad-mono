@@ -18,8 +18,8 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute} from "@angular/router";
-import {imgCadEmpty, setGlobal, XiaodaohangStructure} from "@app/app.common";
-import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
+import {setGlobal, XiaodaohangStructure} from "@app/app.common";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout, WindowMessageManager} from "@lucilor/utils";
@@ -65,6 +65,7 @@ import {
   styleUrls: ["./mrbcjfz.component.scss"],
   standalone: true,
   imports: [
+    CadImageComponent,
     CdkDrag,
     CdkDropList,
     ClickStopPropagationDirective,
@@ -212,14 +213,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       }
       this.cads = {};
       for (const cad of cads) {
-        const info: MrbcjfzCadInfo = {id: cad.id, data: cad, img: imgCadEmpty};
-        const options: CadPreviewParams = {};
-        if (!this.inputData?.isLocal) {
-          options.http = this.http;
-        }
-        getCadPreview("cad", cad, options).then((img) => {
-          info.img = img;
-        });
+        const info: MrbcjfzCadInfo = {id: cad.id, data: cad};
         info.selected = cadIds2.includes(cad.id);
         this.cads[cad.id] = info;
       }
@@ -246,10 +240,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         const cadsToRemove: MrbcjfzCadInfo[] = [];
         data.cads.forEach((v) => {
           const cadData = new CadData(v);
-          const item: MrbcjfzCadInfo = {data: cadData, img: imgCadEmpty, id: cadData.id};
-          (async () => {
-            item.img = await getCadPreview("cad", item.data, {http: this.http});
-          })();
+          const item: MrbcjfzCadInfo = {data: cadData, id: cadData.id};
           if (filterCad(item)) {
             this.cads[item.id] = item;
           } else {

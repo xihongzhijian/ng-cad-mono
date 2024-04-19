@@ -260,13 +260,10 @@ export class CadDataService extends HttpService {
     return !!data;
   }
 
-  getCadImgUrl(id: string, noCache = false) {
+  getCadImgUrl(id: string) {
     let url = "";
     if (id) {
       const params: ObjectOf<any> = {id};
-      if (noCache) {
-        params.t = Date.now().toString();
-      }
       url = this.getUrl("ngcad/cadImg", params);
     }
     if (!url) {
@@ -275,20 +272,20 @@ export class CadDataService extends HttpService {
     return url;
   }
 
-  async getCadImg(id: string, noCache = false, options?: HttpOptions) {
-    if (!noCache) {
-      const url = this.cadImgCache.get(id);
-      if (url) {
-        return url;
-      }
-    }
-    const result = await this.getData<{url: string | null}>("ngcad/getCadImg", {id}, options);
-    const url = result?.url || null;
-    if (url) {
-      this.cadImgCache.set(id, url);
-    }
-    return url;
-  }
+  // async getCadImg(id: string, noCache = false, options?: HttpOptions) {
+  //   if (!noCache) {
+  //     const url = this.cadImgCache.get(id);
+  //     if (url) {
+  //       return url;
+  //     }
+  //   }
+  //   const result = await this.getData<{url: string | null}>("ngcad/getCadImg", {id}, options);
+  //   const url = result?.url || null;
+  //   if (url) {
+  //     this.cadImgCache.set(id, url);
+  //   }
+  //   return url;
+  // }
 
   async setCadImg(id: string, dataURL: string, options?: HttpOptions) {
     const blob = dataURLtoBlob(dataURL);

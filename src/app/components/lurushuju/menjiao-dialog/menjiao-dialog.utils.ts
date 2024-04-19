@@ -2,6 +2,7 @@ import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {random} from "lodash";
 import {OptionsAll2} from "../lurushuju-index/lurushuju-index.types";
@@ -280,9 +281,27 @@ export const copySuanliaoData = async (
 ) => {
   const mubanIds: ObjectOf<string> = {};
   const toChangeMubanId: any[] = [];
+  const clear = (cad: HoutaiCad | undefined | null) => {
+    if (cad?.json?.info?.imgId) {
+      delete cad.json.info.imgId;
+    }
+  };
+  for (const v of Object.values(toData.企料CAD).concat(Object.values(toData.配合框CAD))) {
+    clear(v.cad);
+  }
+  for (const v of Object.values(toData.示意图CAD)) {
+    if (Array.isArray(v)) {
+      for (const vv of v) {
+        clear(vv);
+      }
+    } else {
+      clear(v);
+    }
+  }
   for (const key2 in fromData.算料CAD) {
     const cadFrom = fromData.算料CAD[key2].json;
     const cadTo = toData.算料CAD[key2].json;
+    clear(toData.算料CAD[key2]);
     if (!cadFrom || !cadTo) {
       return;
     }

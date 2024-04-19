@@ -46,12 +46,7 @@
                 @for (item of data.data["算料CAD"]; track $index) {
                   <div class="item">
                     <div class="name">{{ item["名字"] }}</div>
-                    <app-image
-                      class="cad-preview"
-                      [src]="infos[i].cadImgs[item._id]"
-                      [bigPicSrc]="infos[i].cadImgs[item._id]"
-                      (imgEnd)="onCadImgEnd()"
-                    ></app-image>
+                    <app-cad-image [id]="item._id"></app-cad-image>
                   </div>
                 }
               </div>
@@ -129,11 +124,7 @@
                   @for (item of data.data["算料CAD"]; track $index) {
                     <div class="item">
                       <div class="name">{{ item["名字"] }}</div>
-                      <app-image
-                        class="cad-preview"
-                        [src]="infos[i].cadImgs[item._id]"
-                        [bigPicSrc]="infos[i].cadImgs[item._id]"
-                      ></app-image>
+                      <app-cad-image [id]="item._id"></app-cad-image>
                     </div>
                   }
                 </div>

@@ -1,13 +1,11 @@
 import {Component, Inject, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
-import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbar} from "ngx-scrollbar";
-import {ImageComponent} from "../../../modules/image/components/image/image.component";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
@@ -15,15 +13,14 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./draw-cad.component.html",
   styleUrls: ["./draw-cad.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, NgScrollbar, ImageComponent]
+  imports: [CadImageComponent, MatButtonModule, NgScrollbar]
 })
 export class DrawCadComponent implements OnInit {
-  items: {data: CadData; img: SafeUrl}[] = [];
+  items: {data: CadData}[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<DrawCadComponent, DrawCadOutput>,
     @Inject(MAT_DIALOG_DATA) public data: DrawCadInput,
-    private sanitizer: DomSanitizer,
     private status: AppStatusService
   ) {}
 
@@ -31,8 +28,7 @@ export class DrawCadComponent implements OnInit {
     const cads = this.data?.cads || [];
     this.items = [];
     for (const cad of cads) {
-      const img = this.sanitizer.bypassSecurityTrustUrl(await getCadPreview("cad", cad));
-      this.items.push({data: cad, img});
+      this.items.push({data: cad});
     }
   }
 

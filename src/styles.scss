@@ -76,6 +76,11 @@ ng-scrollbar.ng-scrollbar {
   --scrollbar-hover-size: 12px;
   --scrollbar-thumb-transition: height ease-out 150ms, width ease-out 150ms;
   --scrollbar-track-transition: height ease-out 150ms, width ease-out 150ms;
+  --_scrollbar-content-width: 100%;
+
+  &.enable-x {
+    --_scrollbar-content-width: fit-content;
+  }
 
   .ng-scroll-content {
     box-sizing: border-box;
@@ -167,18 +172,6 @@ ng-scrollbar.ng-scrollbar {
   flex: 1 1 0;
 }
 
-img.cad-preview,
-.cad-preview img {
-  width: var(--cad-preview-width, 100%);
-  height: var(--cad-preview-height, 100%);
-  object-fit: contain;
-  background-color: black;
-}
-app-image.cad-preview {
-  width: var(--cad-preview-width, auto);
-  height: var(--cad-preview-height, auto);
-}
-
 /* Remove Input Arrows/Spinners */
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -246,8 +239,6 @@ input[type="number"] {
   --top-z-index: 99999;
   --top-z-index1: calc(var(--top-z-index) + 1);
   --top-z-index2: calc(var(--top-z-index1) + 1);
-  // --cad-preview-width: 300px;
-  // --cad-preview-height: 150px;
 }
 
 .title {

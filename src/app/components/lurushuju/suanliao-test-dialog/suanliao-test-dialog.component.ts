@@ -5,15 +5,13 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {getCopyName, timer} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
-import {CadData} from "@lucilor/cad-viewer";
 import {downloadByString, selectFiles, timeout} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -31,7 +29,15 @@ import {calcTestCase, getTestCaseInfo} from "./suanliao-test-dialog.utils";
 @Component({
   selector: "app-suanliao-test-dialog",
   standalone: true,
-  imports: [ImageComponent, InputComponent, KeyValuePipe, MatButtonModule, MatDividerModule, NgScrollbarModule, SuanliaogongshiComponent],
+  imports: [
+    CadImageComponent,
+    InputComponent,
+    KeyValuePipe,
+    MatButtonModule,
+    MatDividerModule,
+    NgScrollbarModule,
+    SuanliaogongshiComponent
+  ],
   templateUrl: "./suanliao-test-dialog.component.html",
   styleUrl: "./suanliao-test-dialog.component.scss"
 })
@@ -60,24 +66,10 @@ export class SuanliaoTestDialogComponent implements OnInit {
 
   async updateInfo() {
     const {测试用例} = this.data.data;
-    const infosOld = [...this.infos];
     this.infos = [];
-    for (const [i, testCase] of 测试用例.entries()) {
-      const infoOld = infosOld[i];
+    for (const testCase of 测试用例) {
       const info = await getTestCaseInfo(testCase, this.data.data, this.calc);
       this.infos.push(info);
-      await this.updateCadImgs(info, infoOld?.cadImgs);
-    }
-  }
-
-  async updateCadImgs(info: SuanliaoTestInfo, cache?: SuanliaoTestInfo["cadImgs"]) {
-    info.cadImgs = {...cache};
-    for (const cad of info.cads) {
-      if (info.cadImgs[cad._id]) {
-        continue;
-      }
-      const data = new CadData(cad.json);
-      info.cadImgs[cad._id] = await getCadPreview("cad", data);
     }
   }
 
@@ -250,9 +242,6 @@ export class SuanliaoTestDialogComponent implements OnInit {
     const testCase = this.data.data.测试用例[i];
     const info = this.infos[i];
     const result = await calcTestCase(testCase, info, this.data.data, this.dialog, this.message, this.calc);
-    if (result.cads) {
-      await this.updateCadImgs(info);
-    }
     const data = {
       名字: testCase.名字,
       数据: {

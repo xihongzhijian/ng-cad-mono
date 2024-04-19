@@ -34,7 +34,7 @@
         @for (cad of cads; track cad) {
           <div class="cad flex-column">
             <div class="title center">{{ cad.data.name }}</div>
-            <app-image class="cad-preview" [src]="cad.img" (click)="openCad(cad.data)"></app-image>
+            <app-cad-image [id]="cad.data.id" [data]="cad.data" (click)="openCad(cad.data)"></app-cad-image>
           </div>
         }
       </div>

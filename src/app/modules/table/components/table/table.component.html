@@ -225,17 +225,13 @@
                 }
                 @case ("cad") {
                   <div class="flex-column">
-                    @if (cadImgs[getItemCadImgId(item, column)]) {
-                      <app-image
-                        class="cad-preview"
-                        [src]="cadImgs[getItemCadImgId(item, column)]"
-                        [bigPicSrc]="cadImgs[getItemCadImgId(item, column)]"
-                      ></app-image>
+                    @if (getItemCadImgId(item, column)) {
+                      <app-cad-image [id]="getItemCadImgId(item, column)"></app-cad-image>
                     }
                     @if (isColumnEditable({column, item, colIdx, rowIdx}, true)) {
                       <div class="btn-group">
                         <button mat-raised-button color="primary" (click)="uploadCad(colIdx, rowIdx, item)">上传</button>
-                        @if (cadImgs[getItemCadImgId(item, column)]) {
+                        @if (getItemCadImgId(item, column)) {
                           <button mat-raised-button color="primary" (click)="openCad(colIdx, rowIdx, item)">编辑</button>
                           <button mat-raised-button color="accent" (click)="deleteCad(colIdx, rowIdx, item)">删除</button>
                         }

@@ -1,10 +1,9 @@
 import {CdkDragDrop, CdkDropListGroup, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
 import {AfterViewInit, Component, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
-import {imgEmpty, setGlobal} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
+import {setGlobal} from "@app/app.common";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
@@ -15,16 +14,15 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbar} from "ngx-scrollbar";
-import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {InputComponent} from "../../modules/input/components/input.component";
 import {MsbjData, MsbjFenlei, MsbjInfo} from "./msbj.types";
 
 @Component({
-  selector: "app-msjgbj",
+  selector: "app-msbj",
   templateUrl: "./msbj.component.html",
   styleUrls: ["./msbj.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, MsbjRectsComponent, CdkDropListGroup, InputComponent, NgScrollbar, ImageComponent]
+  imports: [CadImageComponent, CdkDropListGroup, InputComponent, MatButtonModule, MsbjRectsComponent, NgScrollbar]
 })
 export class MsbjComponent implements AfterViewInit {
   production = environment.production;
@@ -38,14 +36,13 @@ export class MsbjComponent implements AfterViewInit {
     label: "名字",
     readonly: true
   };
-  cads: {data: CadData; img: SafeUrl}[] = [];
+  cads: {data: CadData}[] = [];
   @ViewChild(MsbjRectsComponent) msbjRects?: MsbjRectsComponent;
 
   constructor(
     private route: ActivatedRoute,
     private http: CadDataService,
     private message: MessageService,
-    private sanitizer: DomSanitizer,
     private status: AppStatusService
   ) {
     setGlobal("msbj", this);
@@ -61,8 +58,7 @@ export class MsbjComponent implements AfterViewInit {
       this.msbjInfo = new MsbjInfo(msbjData[0]);
       const getCadResult = await this.http.getCad({collection: "cad", search: {"选项.门扇布局": msbjData[0].mingzi}});
       this.cads = getCadResult.cads.map((data) => {
-        const item: MsbjComponent["cads"][number] = {data, img: imgEmpty};
-        getCadPreview("cad", data).then((img) => (item.img = this.sanitizer.bypassSecurityTrustUrl(img)));
+        const item: MsbjComponent["cads"][number] = {data};
         return item;
       });
     } else {

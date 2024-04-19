@@ -166,9 +166,8 @@ export interface 测试用例 {
 }
 
 export interface 工艺做法 {
-  // 数据大小应小于3M
   tableId: number;
-  名字: string; // '做法1',
+  名字: string;
   图片: string;
   录入完成: boolean;
   默认值: boolean;
@@ -177,12 +176,12 @@ export interface 工艺做法 {
   输入数据: 输入[];
   选项数据: 选项[];
   算料数据: 算料数据[];
-  CAD模板: HoutaiCad | null; // 选择后台的CAD模板
-  创建时间: number; // 不带小数的时间戳
-  最后一次修改时间: number; // 不带小数的时间戳
+  CAD模板: HoutaiCad | null;
+  创建时间: number;
+  最后一次修改时间: number;
   修改记录: {
     修改人: string;
-    修改时间: number; // 不带小数的时间戳
+    修改时间: number;
   }[];
 }
 

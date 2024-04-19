@@ -13,7 +13,7 @@
     <div class="toolbar">
       <app-input [info]="suanliaoCadsSearch"></app-input>
     </div>
-    <ng-scrollbar>
+    <ng-scrollbar class="enable-x">
       <div class="cads flex-row">
         @for (cad of data.data["算料CAD"]; track i; let i = $index) {
           <app-cad-item

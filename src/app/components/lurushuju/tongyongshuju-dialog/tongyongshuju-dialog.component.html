@@ -79,7 +79,7 @@
 <ng-template #cadItem let-item>
   <div class="cad-item item">
     <div class="name center">{{ item["名字"] }}</div>
-    <app-image class="cad-preview" [src]="item.img" (imgError)="getCadPreview(item)"></app-image>
+    <app-cad-image [id]="item._id" [data]="item.json"></app-cad-image>
     <div class="item">
       @for (option of item["选项"] | keyvalue: returnZero; track option.key) {
         <div class="text">{{ option.key }}: {{ option.value }}</div>

@@ -5,6 +5,7 @@ import {
   Component,
   DoCheck,
   EventEmitter,
+  forwardRef,
   HostBinding,
   Input,
   KeyValueChanges,
@@ -28,19 +29,17 @@ import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatTable, MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
 import {getFilepathUrl, joinOptions, splitOptions} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {CadData} from "@lucilor/cad-viewer";
-import {dataURLtoBlob, downloadByString, ObjectOf, selectFiles} from "@lucilor/utils";
+import {downloadByString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
 import csstype from "csstype";
 import {cloneDeep, intersection, isEqual} from "lodash";
-import md5 from "md5";
-import {BehaviorSubject, filter, lastValueFrom, take} from "rxjs";
 import {ImageComponent} from "../../../image/components/image/image.component";
 import {
   CellEvent,
@@ -60,17 +59,18 @@ import {getInputInfosFromTableColumns} from "./table.utils";
   styleUrls: ["./table.component.scss"],
   standalone: true,
   imports: [
+    forwardRef(() => CadImageComponent),
+    ImageComponent,
     MatButtonModule,
-    MatIconModule,
-    MatTableModule,
-    MatSortModule,
     MatCheckboxModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
-    MatSlideToggleModule,
-    MatSelectModule,
     MatOptionModule,
-    ImageComponent
+    MatSelectModule,
+    MatSlideToggleModule,
+    MatSortModule,
+    MatTableModule
   ]
 })
 export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
@@ -104,8 +104,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     (node) => node.expandable,
     (node) => node.children
   );
-  cadImgs: ObjectOf<string> = {};
-  private _isGeneratingCadImg$ = new BehaviorSubject(false);
 
   dataSource: MatTreeFlatDataSource<any, any> | MatTableDataSource<T> = new MatTableDataSource();
 
@@ -170,7 +168,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       }
     }
     if (intersection<InfoKey>(changedKeys, ["data", "validator", "isTree"]).length > 0) {
-      this.cadImgs = {};
       const data = this.info.data;
       if (this.info.isTree) {
         this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener, data);
@@ -461,17 +458,21 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     }
   }
 
+  // TODO: 提高效率
   getItemCadImgId(item: T, column: ColumnInfo<T>) {
     const value = item[column.field];
     let id: string;
     if (typeof value === "string") {
-      id = md5(value);
+      try {
+        id = JSON.parse(value).id;
+      } catch (error) {
+        id = "";
+      }
     } else if (value instanceof CadData) {
       id = value.id;
     } else {
       return "";
     }
-    this.generateItemCadImg(id, item, column);
     return id;
   }
 
@@ -510,33 +511,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const vid = Number((item as any).vid);
     const field = column.field as any;
     await this.http.tableDeleteFile({table: onlineMode.tableName, vid, field});
-  }
-
-  async generateItemCadImg(id: string, item: T, column: ColumnInfo<T>) {
-    if (id in this.cadImgs) {
-      return;
-    }
-    this.cadImgs[id] = "";
-    if (this._isGeneratingCadImg$) {
-      await lastValueFrom(
-        this._isGeneratingCadImg$.pipe(
-          filter((v) => !v),
-          take(1)
-        )
-      );
-    }
-    let value = item[column.field];
-    try {
-      value = JSON.parse(value as any);
-    } catch (error) {}
-    if (value) {
-      this._isGeneratingCadImg$.next(true);
-      const data = new CadData(value);
-      const dataURL = await getCadPreview("cad", data);
-      const src = URL.createObjectURL(dataURLtoBlob(dataURL));
-      this.cadImgs[id] = src;
-      this._isGeneratingCadImg$.next(false);
-    }
   }
 
   onToolbarBtnClick(event: ToolbarButtonEvent) {

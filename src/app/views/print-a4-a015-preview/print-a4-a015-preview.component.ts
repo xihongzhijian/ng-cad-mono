@@ -1,11 +1,10 @@
 import {AfterViewInit, Component, OnDestroy} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
-import {CadData, CadViewer} from "@lucilor/cad-viewer";
+import {CadPreviewParams} from "@app/cad/cad-preview";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {NgScrollbar} from "ngx-scrollbar";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
@@ -18,7 +17,7 @@ export type PreviewData = {
   type: "说明" | "CAD";
   zhankai: string;
   title?: string;
-  cadImg: SafeUrl;
+  id: string;
 }[][];
 
 @Component({
@@ -26,17 +25,23 @@ export type PreviewData = {
   templateUrl: "./print-a4-a015-preview.component.html",
   styleUrls: ["./print-a4-a015-preview.component.scss"],
   standalone: true,
-  imports: [NgScrollbar, ImageComponent, MatButtonModule, SpinnerComponent]
+  imports: [CadImageComponent, ImageComponent, MatButtonModule, NgScrollbar, SpinnerComponent]
 })
 export class PrintA4A015PreviewComponent implements AfterViewInit, OnDestroy {
   data: PreviewData = [];
   loaderId = "printPreview";
+  cadWidth = 92;
+  cadHeight = 92;
+  cadBackgroundColor = "white";
+  params: CadPreviewParams = {
+    config: {
+      padding: [15]
+    }
+  };
 
   constructor(
-    private sanitizer: DomSanitizer,
     private http: CadDataService,
-    private route: ActivatedRoute,
-    private spinner: SpinnerService
+    private route: ActivatedRoute
   ) {}
 
   async ngAfterViewInit() {
@@ -45,31 +50,14 @@ export class PrintA4A015PreviewComponent implements AfterViewInit, OnDestroy {
       return;
     }
     this.data = data;
-    const total = this.data.reduce((sum, v) => sum + v.length, 0);
-    let done = 0;
-    this.spinner.show(this.loaderId, {text: `0 / ${total}`});
     for (const page of this.data) {
       for (const card of page) {
         if (card.type === "CAD") {
-          const cad = new CadViewer(new CadData(card.CAD), {
-            padding: [15],
-            width: 92,
-            height: 92,
-            backgroundColor: "white"
-          });
-          document.body.appendChild(cad.dom);
-          cad.data.transform({scale: [1, -1]}, true);
-          await cad.render();
-          cad.center();
-          card.cadImg = this.sanitizer.bypassSecurityTrustUrl(cad.toBase64());
-          cad.destroy();
+          card.id = card.CAD?.id || "";
         }
-        done++;
-        this.spinner.show(this.loaderId, {text: `${done} / ${total}`});
       }
       await timeout(0);
     }
-    this.spinner.hide(this.loaderId);
   }
 
   ngOnDestroy() {

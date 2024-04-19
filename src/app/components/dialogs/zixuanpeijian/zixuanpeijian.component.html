@@ -191,13 +191,7 @@
               @for (item of lingsanCads[lingsanCadType]; track i; let i = $index) {
                 @if (!item.hidden) {
                   <div class="lingsan-cad">
-                    <app-image
-                      class="cad-preview"
-                      [src]="item.img"
-                      [emptySrc]="imgCadEmpty"
-                      (click)="addLingsanItem(lingsanCadType, i)"
-                      (imgError)="onCadImgError(item)"
-                    />
+                    <app-cad-image [id]="item.data.id" (click)="addLingsanItem(lingsanCadType, i)" />
                     <div class="flex-row">
                       <button mat-button color="primary" (click)="copyLingsanCad(lingsanCadType, i)">复制</button>
                       <button mat-button color="primary" (click)="openLingsanCad(lingsanCadType, i)">编辑</button>
@@ -219,19 +213,7 @@
           <div class="lingsan-cads">
             @for (item of result["零散"]; track i; let i = $index) {
               <div class="lingsan-cad">
-                @if (data?.noValidateCads) {
-                  <app-image
-                    class="cad-preview"
-                    [src]="lingsanCadImgs[item.data.id] || lingsanCadImgs[item.info.houtaiId]"
-                    [emptySrc]="imgCadEmpty"
-                  ></app-image>
-                } @else {
-                  <app-image
-                    class="cad-preview"
-                    [src]="lingsanCadImgs[item.info.houtaiId] || lingsanCadImgs[item.data.id]"
-                    [emptySrc]="imgCadEmpty"
-                  ></app-image>
-                }
+                <app-cad-image [id]="item.data.id" [data]="item.data"></app-cad-image>
                 <div class="title flex-row flex-110">
                   <button mat-icon-button color="primary" (click)="removeLingsanItem(i)">
                     <mat-icon>remove_circle</mat-icon>

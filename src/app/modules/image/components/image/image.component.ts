@@ -1,6 +1,6 @@
 import {animate, style, transition, trigger} from "@angular/animations";
 import {coerceBooleanProperty} from "@angular/cdk/coercion";
-import {CommonModule} from "@angular/common";
+import {NgClass, NgStyle} from "@angular/common";
 import {Component, ElementRef, EventEmitter, HostBinding, Input, Output, ViewChild} from "@angular/core";
 import {SafeUrl} from "@angular/platform-browser";
 import {timeout} from "@lucilor/utils";
@@ -27,7 +27,7 @@ const imgLoading = "assets/images/loading.gif";
     ])
   ],
   standalone: true,
-  imports: [CommonModule]
+  imports: [NgStyle, NgClass]
 })
 export class ImageComponent {
   private _src?: string | SafeUrl;

@@ -17,42 +17,6 @@
       }
     }
   }
-  &.cad {
-    --border: 1px dashed gray;
-    border: var(--border);
-    padding: 5px;
-    border-radius: 10px;
-
-    app-image,
-    .cad-preview-empty {
-      width: var(--cad-preview-width);
-      height: var(--cad-preview-height);
-      cursor: pointer;
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 5px;
-    }
-    app-image {
-      display: block;
-    }
-    .cad-preview-empty {
-      background: white;
-      color: gray;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .label {
-      text-align: center;
-    }
-
-    .cad-name {
-      text-align: center;
-      white-space: pre-wrap;
-    }
-  }
   &.button {
     display: flex;
     flex-direction: column;

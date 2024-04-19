@@ -35,5 +35,4 @@ export interface TongyongshujuActiveCadList {
 
 export interface TongyongshujuCadItem extends MongodbDataBase {
   选项?: ObjectOf<string>;
-  img: string;
 }

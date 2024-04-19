@@ -5,8 +5,6 @@
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
-  --cad-preview-width: 300px;
-  --cad-preview-height: 150px;
   &.mat-mdc-dialog-component-host {
     display: flex;
   }
@@ -41,10 +39,14 @@
       --border: 1px solid var(--accent-color);
     }
 
-    app-image:not(.cad-preview) {
+    app-image {
       width: 100%;
       height: var(--item-image-height, 0);
       flex: 1 1 0;
+    }
+    app-cad-image app-image {
+      height: auto;
+      flex: 0 0 auto;
     }
 
     .name,

@@ -1,10 +1,8 @@
 import {AbstractControlOptions} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
 import {Formulas} from "@app/utils/calc";
-import {CadListInput, CadListOutput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.component";
 import {EditFormulasInput} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
-import {CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {OptionsData} from "@modules/http/services/cad-data.service.types";
 import Color from "color";
@@ -145,16 +143,6 @@ export interface InputInfoImage<T = any> extends InputInfoBase<T> {
   onChange?: (val: File | null, info: InputInfoImage<T>) => void;
 }
 
-export interface InputInfoCad<T = any> extends InputInfoBase<T> {
-  type: "cad";
-  params: Value<CadListInput>;
-  openable?: boolean;
-  showName?: boolean;
-  config?: Partial<CadViewerConfig>;
-  showCadViewer?: {onInit?: (cadViewer: CadViewer) => void};
-  onChange?: (val: CadListOutput, info: InputInfoCad<T>) => void;
-}
-
 export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
   type: "formulas";
   value?: Value<Formulas>;
@@ -194,7 +182,6 @@ export type InputInfo<T = any> =
   | InputInfoColor<T>
   | InputInfoFile<T>
   | InputInfoImage<T>
-  | InputInfoCad<T>
   | InputInfoFormulas<T>
   | InputInfoButton<T>
   | InputInfoList<T>

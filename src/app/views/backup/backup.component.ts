@@ -8,12 +8,9 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
-import {imgLoading} from "@app/app.common";
-import {getCadPreview} from "@app/cad/cad-preview";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadData} from "@lucilor/cad-viewer";
-import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
@@ -35,7 +32,6 @@ export interface BackupCadsData {
   time: number;
   title: string;
   data: CadData;
-  img: string | SafeUrl;
 }
 
 @Component({
@@ -45,6 +41,7 @@ export interface BackupCadsData {
   standalone: true,
   providers: [provideNativeDateAdapter()],
   imports: [
+    CadImageComponent,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -72,7 +69,6 @@ export class BackupComponent implements AfterViewInit {
   constructor(
     private message: MessageService,
     private http: CadDataService,
-    private sanitizer: DomSanitizer,
     private route: ActivatedRoute,
     private spinner: SpinnerService,
     private status: AppStatusService
@@ -140,19 +136,10 @@ export class BackupComponent implements AfterViewInit {
         const item: BackupCadsData = {
           time: v.time,
           title: new Date(v.time).toLocaleString(),
-          img: imgLoading,
           data: cadData
         };
         this.data.push(item);
       }
-      await timeout();
-      const collection = this.status.collection$.value;
-      await Promise.all(
-        this.data.map(async (v) => {
-          const url = await getCadPreview(collection, v.data, {http: this.http});
-          v.img = this.sanitizer.bypassSecurityTrustUrl(url);
-        })
-      );
     }
   }
 

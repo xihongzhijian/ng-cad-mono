@@ -16,7 +16,6 @@ export interface AppConfig extends CadViewerConfig {
   cadPointsAnywhere: boolean;
   kailiaoAutoGuige: boolean;
   testMode: boolean;
-  forceUpdateCadItemImg: boolean;
 }
 
 export interface AppConfigChange {
@@ -67,8 +66,7 @@ export class AppConfigService {
       pointSize: 20,
       cadPointsAnywhere: false,
       kailiaoAutoGuige: false,
-      testMode: false,
-      forceUpdateCadItemImg: false
+      testMode: false
     };
     this._configKeys = keysOf(defaultConfig);
     const localUserConfig = this._purgeUserConfig(local.load<Partial<AppConfig>>("userConfig") || {});

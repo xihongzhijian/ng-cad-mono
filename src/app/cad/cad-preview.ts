@@ -1,7 +1,4 @@
-import {remoteHost} from "@app/app.common";
-import {environment} from "@env";
 import {CadData, CadDimension, CadImage, CadLineLike, CadMtext, CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
-import {CadDataService} from "@modules/http/services/cad-data.service";
 import {CadCollection} from "./collections";
 import {isShiyitu, prepareCadViewer} from "./utils";
 
@@ -76,27 +73,10 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
   return cad;
 };
 
-export interface CadPreviewParams extends CadPreviewRawParams {
-  http?: CadDataService;
-  noCache?: boolean;
-}
+export interface CadPreviewParams extends CadPreviewRawParams {}
 export const getCadPreview = async (collection: CadCollection, data: CadData, params: CadPreviewParams = {}) => {
-  const {http, noCache} = params;
-  let url: string | null;
-  if (http) {
-    url = await http.getCadImg(data.id, noCache, {silent: true});
-    if (url) {
-      if (!environment.production) {
-        url = url.replace(remoteHost, origin);
-      }
-      return url;
-    }
-  }
   const cad = await getCadPreviewRaw(collection, data, params);
-  url = await cad.toDataURL();
-  if (http) {
-    http.setCadImg(data.id, url, {silent: true});
-  }
+  const url = await cad.toDataURL();
   cad.destroy();
   return url;
 };
