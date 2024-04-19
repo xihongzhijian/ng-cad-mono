@@ -59,6 +59,9 @@
                           (afterEditCad)="afterEditCad(key1)"
                         ></app-cad-item>
                       }
+                      <div class="flex-row" style="align-items: center">
+                        <button mat-raised-button color="primary" (click)="selectShiyituCad(key1)">选择</button>
+                      </div>
                     } @else {
                       <div class="empty-cad item link" (click)="selectShiyituCad(key1)">
                         <div class="box border" [ngStyle]="{'width.px': cadWidth, 'height.px': cadHeight}"></div>

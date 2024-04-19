@@ -459,7 +459,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async step3Add() {
-    const data = {名字: "", 分类: "", 分类2: ""};
+    const data = {名字: "", 分类: this.lingsanCadType, 分类2: ""};
     const result = await this.message.form<typeof data>([
       {type: "string", label: "CAD名字", model: {key: "名字", data}, validators: Validators.required},
       {type: "string", label: "CAD分类", model: {key: "分类", data}, validators: Validators.required},
@@ -580,7 +580,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         await this.step3Fetch(false, noCache, preserveImgs);
         isRefreshed = true;
       }
-      if (isRefreshed || !this.lingsanCadType) {
+      if (!this.lingsanCadInfos.find((v) => v.type === this.lingsanCadType)) {
         this.setlingsanCadType(this.lingsanCadInfos[0].type);
       }
       this.filterLingsanItems();

@@ -476,6 +476,9 @@ export class MenjiaoDialogComponent implements OnInit {
     if (!component) {
       return;
     }
+    for (const item of data.算料单示意图) {
+      checkedItems.push(item._id);
+    }
     const {search, addCadData} = getShiyituCadSearch(this.formData, key1);
     const result = await openCadListDialog(this.dialog, {
       data: {
