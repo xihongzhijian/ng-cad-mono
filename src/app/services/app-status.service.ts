@@ -86,6 +86,8 @@ export class AppStatusService {
   projectConfig = new ProjectConfig();
 
   forceUpdateCadImg = false;
+  forceUpdateCadImg2 = false;
+  updateCadImglLock$ = new BehaviorSubject<number>(0);
   cadImgToUpdate: ObjectOf<{t: number}> = {};
 
   constructor(

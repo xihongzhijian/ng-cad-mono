@@ -1538,11 +1538,11 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   updateBtns() {
-    const toggleforceUpdateCadImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.status.forceUpdateCadImg)})`;
+    const toggleforceUpdateCadImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.status.forceUpdateCadImg2)})`;
     const toggleforceUpdateCadImgBtn: (typeof this.btns)[number] = {
       name: toggleforceUpdateCadImgBtnName(),
       onClick: () => {
-        this.status.forceUpdateCadImg = !this.status.forceUpdateCadImg;
+        this.status.forceUpdateCadImg2 = !this.status.forceUpdateCadImg2;
         toggleforceUpdateCadImgBtn.name = toggleforceUpdateCadImgBtnName();
       }
     };
