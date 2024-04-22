@@ -338,7 +338,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     for (const cadViewer of this.cadViewers) {
       cadViewer.destroy();
     }

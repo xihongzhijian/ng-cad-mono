@@ -7,7 +7,7 @@ export const Subscribed = <T extends Constructor>(base: T = class {} as T) =>
   class extends base implements OnDestroy {
     destroyed$ = new Subject<void>();
 
-    ngOnDestroy(): void {
+    ngOnDestroy() {
       this.destroyed$.next();
     }
 

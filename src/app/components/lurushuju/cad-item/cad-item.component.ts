@@ -117,7 +117,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     }
   }
 
-  ngOnDestroy(): void {
+  ngOnDestroy() {
     this.cadViewer?.destroy();
     this.mubanViewer?.destroy();
   }
