@@ -112,6 +112,15 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return model;
   }
 
+  get name() {
+    const {name, label} = this.info;
+    let key = this.model.key;
+    if (typeof key !== "string") {
+      key = String(key);
+    }
+    return name || key || label;
+  }
+
   get value() {
     const {data, key} = this.model;
     if (data && typeof data === "object" && key) {
@@ -390,7 +399,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   private async _onInfoChange(changes: NonNullable<ReturnType<typeof this.infoDiffer.diff>>) {
     const {info} = this;
     if (!info.autocomplete) {
-      info.autocomplete = "off";
+      info.autocomplete = "on";
     }
     if ("value" in info) {
       this.value = getValue(info.value, this.message);

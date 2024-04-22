@@ -21,6 +21,7 @@
             [disabled]="info.disabled || false"
             [autocomplete]="info.autocomplete || ''"
             [(ngModel)]="value"
+            [name]="name"
             type="text"
             (change)="onChange()"
             (input)="onInput()"
@@ -36,11 +37,11 @@
             [disabled]="info.disabled || false"
             [autocomplete]="info.autocomplete || ''"
             [(ngModel)]="value"
+            [name]="name"
             type="text"
             (change)="onChange()"
             (input)="onInput()"
             (blur)="onBlur()"
-            [matAutocomplete]="auto"
             [placeholder]="info.placeholder || ''"
           />
         }
@@ -95,6 +96,7 @@
         [disabled]="info.disabled || false"
         [autocomplete]="info.autocomplete || ''"
         [(ngModel)]="value"
+        [name]="name"
         type="number"
         [step]="info.step"
         [min]="info.min ?? null"
@@ -163,6 +165,7 @@
               [disabled]="info.disabled || false"
               [autocomplete]="info.autocomplete"
               [value]="item.key"
+              [name]="name + '-key'"
               (change)="changeObjectKey2(value, item.key, $event)"
               (blur)="onBlur()"
             />
@@ -185,6 +188,7 @@
               [disabled]="info.disabled || false"
               [autocomplete]="info.autocomplete"
               [(ngModel)]="item.value"
+              [name]="name + '-value'"
               (change)="changeObjectValue2(value, item.key, item.value)"
               (blur)="onBlur()"
             />
@@ -244,6 +248,7 @@
             [disabled]="info.disabled || false"
             [autocomplete]="info.autocomplete"
             [(ngModel)]="value[j]"
+            [name]="name + '-value'"
             [ngModelOptions]="{standalone: true}"
             (blur)="onBlur()"
           />
@@ -292,6 +297,7 @@
           [errorStateMatcher]="getErrorStateMatcher()"
           [disabled]="info.disabled || false"
           [(ngModel)]="value"
+          [name]="name"
           (selectionChange)="onChange()"
           [placeholder]="info.placeholder || ''"
         >
@@ -319,6 +325,7 @@
           readonly
           [disabled]="!!info.disabled"
           [(ngModel)]="displayValue"
+          [name]="name"
           type="text"
           (change)="onChange()"
           (input)="onInput()"
