@@ -29,6 +29,7 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {difference, isEmpty} from "lodash";
 import {CadCollection} from "./collections";
+import {cadDimensionOptions} from "./options";
 
 export const reservedDimNames = ["前板宽", "后板宽", "小前板宽", "小后板宽", "骨架宽", "小骨架宽", "骨架中空宽", "小骨架中空宽"];
 
@@ -645,13 +646,32 @@ export const openCadDimensionForm = async (
 ) => {
   const form: InputInfo<typeof dimension>[] = [
     {type: "string", label: "名字", model: {data: dimension, key: "mingzi"}},
-    {type: "boolean", label: "删除标注", radio: true, value: false}
+    {type: "boolean", label: "删除标注", radio: true, value: false},
+    {type: "boolean", label: "隐藏尺寸线", radio: true, value: !!dimension.style.dimensionLine?.hidden},
+    {
+      type: "select",
+      label: "小数处理",
+      model: {data: dimension, key: "xiaoshuchuli"},
+      options: cadDimensionOptions.xiaoshuchuli.values.slice()
+    },
+    {type: "number", label: "字体大小", value: dimension.style.text?.size}
   ];
-  const result = await message.form(form);
+  const name = dimension.mingzi;
+  let title = "编辑标注";
+  if (name) {
+    title += `【${name}】`;
+  }
+  const result = await message.form({title, form});
   if (result) {
     if (result.删除标注) {
       cad.remove(dimension);
     } else {
+      if (result.隐藏尺寸线) {
+        dimension.setStyle({dimensionLine: {hidden: true}});
+      }
+      if (result.字体大小) {
+        dimension.setStyle({text: {size: result.字体大小}});
+      }
       await cad.render(dimension);
     }
   }

@@ -825,9 +825,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         const paixu2 = data.排序;
         Object.assign(data0, result);
         if (paixu1 !== paixu2) {
-          console.log(gongyis.map((v) => v.名字));
           sortGongyis(gongyis);
-          console.log(gongyis.map((v) => v.名字));
           this.setXinghao({产品分类: this.xinghao.产品分类}, true);
         }
       }

@@ -8,6 +8,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {getFormControl, getFormGroup, TypedFormGroup} from "@app/app.common";
+import {cadDimensionOptions} from "@app/cad/options";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadDimensionLinear, FontStyle} from "@lucilor/cad-viewer";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -55,6 +56,8 @@ export class CadDimensionFormComponent {
 
   form: TypedFormGroup<CadDimensionForm>;
   dimension: CadDimensionLinear;
+  cadDimensionOptions = cadDimensionOptions;
+
   constructor(
     public dialogRef: MatDialogRef<CadDimensionFormComponent, CadDimensionLinear>,
     @Inject(MAT_DIALOG_DATA) public data: CadDimensionData

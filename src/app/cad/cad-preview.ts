@@ -29,10 +29,11 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
   cad.data = data.clone();
   if (shiyitu) {
     cad.data.entities.dimension = [];
+  } else {
+    for (const e of cad.data.entities.dimension) {
+      e.calcBoundingRect = true;
+    }
   }
-  // if (collection !== "cad") {
-  //   cad.data.entities.mtext = [];
-  // }
   await cad.render();
   if (params.autoSize) {
     const {width, height} = cad.data.getBoundingRect();

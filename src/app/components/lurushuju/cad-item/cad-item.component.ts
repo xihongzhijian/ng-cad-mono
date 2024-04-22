@@ -141,9 +141,6 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       }
     });
     if (result?.isSaved) {
-      for (const e of cadData.entities.dimension) {
-        e.calcBoundingRect = true;
-      }
       Object.assign(cad, getHoutaiCad(cadData));
       if (cad.json.info?.imgId) {
         cad.json.info.imgUpdate = true;

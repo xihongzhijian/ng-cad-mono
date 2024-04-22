@@ -10,6 +10,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectChange, MatSelectModule} from "@angular/material/select";
+import {cadLineOptions} from "@app/cad/options";
 import {autoFixLine, generateLineTexts2, getLineLengthTextSize, isLengthTextSizeSetKey, validColors} from "@app/cad/utils";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
@@ -80,6 +81,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
   zhewan = this.status.zhewanLengths$;
   WHDashedLines: {line: CadLineLike; map: PointsMap} | null = null;
   qlwzshb = 企料位置识别;
+  cadLineOptions = cadLineOptions;
 
   get isDrawingLine() {
     return this.status.cadStatus instanceof CadStatusDrawLine;

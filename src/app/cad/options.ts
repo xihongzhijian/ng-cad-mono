@@ -60,3 +60,12 @@ export const cadOptions = {
   },
   算料单展开显示位置: {values: ["CAD上面", "CAD下面", "CAD中间", "CAD左边", "CAD右边"], defaultValue: "CAD下面"}
 } as const;
+
+export const cadLineOptions = {
+  zhankaixiaoshuchuli: {values: ["不处理", "舍去小数", "小数进一", "四舍五入", "0.5取整", "保留一位小数四舍五入"], defaultValue: "不处理"},
+  suanliaosanxiaoshuchuli: {values: ["默认", "舍去小数", "小数进一", "四舍五入"], defaultValue: "默认"}
+} as const;
+
+export const cadDimensionOptions = {
+  xiaoshuchuli: {values: ["四舍五入", "舍去小数", "小数进一", "保留一位", "保留两位"], defaultValue: "四舍五入"}
+} as const;

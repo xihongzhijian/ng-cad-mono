@@ -123,7 +123,6 @@ export class NavsDialogComponent {
     } else {
       this.dialogRef.close(result);
     }
-    console.log(result);
   }
 
   cancel() {

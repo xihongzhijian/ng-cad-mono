@@ -330,7 +330,7 @@ export class CadListComponent implements AfterViewInit {
 
   async addCad() {
     const addCadData = this.data.addCadData || {};
-    const data: Partial<HoutaiCad> = {名字: ""};
+    const data: Partial<HoutaiCad> = {名字: "", ...addCadData};
     const form: InputInfo[] = [{type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required}];
     for (const key in addCadData) {
       if (key === "分类" || key === "分类2") {
