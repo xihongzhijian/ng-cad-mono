@@ -22,14 +22,14 @@ export class CadImageComponent implements OnChanges {
     if (typeof this.width === "number") {
       return `${this.width}px`;
     } else {
-      return "auto";
+      return "";
     }
   }
   @HostBinding("style.--cad-image-height") get heightStyle() {
     if (typeof this.height === "number") {
       return `${this.height}px`;
     } else {
-      return "auto";
+      return "";
     }
   }
   @HostBinding("style.--cad-image-background-color") get backgroundColorStyle() {

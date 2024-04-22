@@ -66,6 +66,7 @@ export interface ZixuanpeijianInput {
   noValidateCads?: boolean;
   readonly?: boolean;
   getAllLingsanCads?: boolean;
+  lingsanCadType?: string;
 }
 
 export type ZixuanpeijianOutput = Required<ZixuanpeijianData>;

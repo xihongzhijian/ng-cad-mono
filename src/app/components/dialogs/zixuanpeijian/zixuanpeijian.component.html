@@ -1,5 +1,5 @@
 <div class="toolbar right">
-  @if (isEditingFenlei$.value) {
+  @if (isEditingFenlei) {
     <button mat-raised-button color="primary" (click)="setCadsFenlei()">转移到分类</button>
   } @else {
     <button mat-raised-button color="primary" (click)="submit()">{{ summitBtnText }}</button>
@@ -179,7 +179,7 @@
         <div class="flex-column flex-110">
           <div class="btn-group">
             <app-input [info]="lingsanCadsSearchInput" style="width: 100px; flex: 1 1 0"></app-input>
-            <button mat-raised-button [color]="isEditingFenlei$.value ? 'accent' : 'primary'" (click)="editFenlei()">编辑配件分类</button>
+            <button mat-raised-button [color]="isEditingFenlei ? 'accent' : 'primary'" (click)="editFenlei()">编辑配件分类</button>
             <button mat-raised-button color="primary" (click)="sortFenlei()">编辑分类排序</button>
             <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
             <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
@@ -208,24 +208,26 @@
             </div>
           </ng-scrollbar>
         </div>
-        <mat-divider vertical></mat-divider>
-        <ng-scrollbar>
-          <div class="lingsan-cads">
-            @for (item of result["零散"]; track i; let i = $index) {
-              <div class="lingsan-cad">
-                <app-cad-image [id]="''" [data]="item.data"></app-cad-image>
-                <div class="title flex-row flex-110">
-                  <button mat-icon-button color="primary" (click)="removeLingsanItem(i)">
-                    <mat-icon>remove_circle</mat-icon>
-                  </button>
-                  <div class="name text-ellipsis" [matTooltip]="item.data.name" matTooltipPosition="above">
-                    {{ item.data.name }}
+        @if (isEditingFenlei || !data?.readonly) {
+          <mat-divider vertical></mat-divider>
+          <ng-scrollbar>
+            <div class="lingsan-cads">
+              @for (item of result["零散"]; track i; let i = $index) {
+                <div class="lingsan-cad">
+                  <app-cad-image [id]="isEditingFenlei ? item.data.id : ''" [data]="item.data"></app-cad-image>
+                  <div class="title flex-row flex-110">
+                    <button mat-icon-button color="primary" (click)="removeLingsanItem(i)">
+                      <mat-icon>remove_circle</mat-icon>
+                    </button>
+                    <div class="name text-ellipsis" [matTooltip]="item.data.name" matTooltipPosition="above">
+                      {{ item.data.name }}
+                    </div>
                   </div>
                 </div>
-              </div>
-            }
-          </div>
-        </ng-scrollbar>
+              }
+            </div>
+          </ng-scrollbar>
+        }
       </div>
     }
   }

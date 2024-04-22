@@ -1,4 +1,4 @@
-<div class="toolbar">
+<div class="toolbar right">
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
 </div>
 <div class="flex-110 flex-row">
@@ -58,6 +58,7 @@
     @if (activeCadList && activeItem && isDataHaveCad(tableData[activeItem.index])) {
       <div class="toolbar">
         <button mat-raised-button color="primary" (click)="addCad()">添加</button>
+        <button mat-raised-button color="primary" (click)="addCadAtZxpj()">在配件库添加</button>
       </div>
       <ng-scrollbar>
         <div class="items no-items-per-row">

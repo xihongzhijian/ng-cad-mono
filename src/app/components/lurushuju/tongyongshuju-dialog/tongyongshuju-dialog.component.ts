@@ -2,12 +2,14 @@ import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {Component, HostBinding, Inject, OnInit} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {setGlobal} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
+import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
+import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -49,6 +51,7 @@ export class TongyongshujuDialogComponent implements OnInit {
     private http: CadDataService,
     private status: AppStatusService,
     private message: MessageService,
+    private dialog: MatDialog,
     public dialogRef: MatDialogRef<TongyongshujuDialogComponent, TongyongshujuOutput>,
     @Inject(MAT_DIALOG_DATA) public data: TongyongshujuInput
   ) {
@@ -279,6 +282,19 @@ export class TongyongshujuDialogComponent implements OnInit {
         await this.refreshActiveCadList();
       }
     }
+  }
+
+  async addCadAtZxpj() {
+    const item = this.activeItem?.data.find((v) => v.active);
+    const data: ZixuanpeijianInput = {
+      step: 3,
+      stepFixed: true,
+      noValidateCads: true,
+      readonly: true,
+      getAllLingsanCads: true,
+      lingsanCadType: item?.mingzi
+    };
+    await openZixuanpeijianDialog(this.dialog, {data});
   }
 
   editCad(item: TongyongshujuCadItem) {

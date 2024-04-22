@@ -139,6 +139,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     onInput: debounce(this.filterMokuaiItems.bind(this), 200)
   };
   isEditingFenlei$ = new BehaviorSubject<boolean>(false);
+  get isEditingFenlei() {
+    return this.isEditingFenlei$.value;
+  }
 
   get summitBtnText() {
     if (this.data?.stepFixed) {
@@ -580,7 +583,11 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         await this.step3Fetch(false, noCache, preserveImgs);
         isRefreshed = true;
       }
-      if (!this.lingsanCadInfos.find((v) => v.type === this.lingsanCadType)) {
+      const lingsanCadType = this.data?.lingsanCadType;
+      const hasType = (type: string) => this.lingsanCadInfos.find((v) => v.type === type);
+      if (lingsanCadType && hasType(lingsanCadType)) {
+        this.setlingsanCadType(lingsanCadType);
+      } else if (!hasType(this.lingsanCadType)) {
         this.setlingsanCadType(this.lingsanCadInfos[0].type);
       }
       this.filterLingsanItems();
@@ -918,7 +925,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async addLingsanItem(type: string, i: number) {
-    const isEditingFenlei = this.isEditingFenlei$.value;
+    const {isEditingFenlei} = this;
     if (this.data?.readonly && !isEditingFenlei) {
       return;
     }
@@ -927,16 +934,14 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       if (this.result.零散.find((v) => v.info.houtaiId === item.data.id)) {
         return;
       }
-    } else {
-      if (!item.isFetched) {
-        const data0 = (await this.http.getCad({collection: "cad", id: item.data.id})).cads[0];
-        item.isFetched = true;
-        if (data0) {
-          item.data = data0;
-        }
+    } else if (!item.isFetched) {
+      const data0 = (await this.http.getCad({collection: "cad", id: item.data.id})).cads[0];
+      item.isFetched = true;
+      if (data0) {
+        item.data = data0;
       }
     }
-    const data = item.data.clone(true);
+    const data = item.data.clone(!isEditingFenlei);
     data.zhankai = [new CadZhankai({name: data.name})];
     data.entities.forEach((e) => {
       if (e instanceof CadLineLike) {
@@ -950,7 +955,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   removeLingsanItem(i: number) {
-    if (this.data?.readonly && !this.isEditingFenlei$.value) {
+    if (this.data?.readonly && !this.isEditingFenlei) {
       return;
     }
     this.result.零散.splice(i, 1);
@@ -1253,7 +1258,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   editFenlei() {
-    if (this.isEditingFenlei$.value) {
+    if (this.isEditingFenlei) {
       this.isEditingFenlei$.next(false);
     } else {
       this.isEditingFenlei$.next(true);

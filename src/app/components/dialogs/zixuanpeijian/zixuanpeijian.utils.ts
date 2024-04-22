@@ -49,7 +49,8 @@ export const getTestData = () => {
     step1Data: zixuanpeijianTypesInfo,
     noValidateCads: false,
     readonly: false,
-    getAllLingsanCads: false
+    getAllLingsanCads: false,
+    lingsanCadType: ""
   };
   return data;
 };
