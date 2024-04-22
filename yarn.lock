@@ -3500,7 +3500,7 @@ __metadata:
     jsencrypt: "npm:^3.3.2"
     lodash: "npm:^4.17.21"
     md5: "npm:^2.3.0"
-    pinyin-pro: "npm:^3.19.7"
+    pinyin-pro: "npm:^3.20.2"
     prettier: "npm:^3.2.5"
     terser-webpack-plugin: "npm:^5.3.10"
     ts-loader: "npm:^9.5.1"
@@ -13219,10 +13219,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pinyin-pro@npm:^3.19.7":
-  version: 3.19.7
-  resolution: "pinyin-pro@npm:3.19.7"
-  checksum: 10c0/6dde702754154ea80fb50e0744f90b24ddf42a008d0dc493d505d5ec422a9e0daee484cb472abf9360a11a21ca66aefef628d1332d50b2b629363fb530c570ec
+"pinyin-pro@npm:^3.20.2":
+  version: 3.20.2
+  resolution: "pinyin-pro@npm:3.20.2"
+  checksum: 10c0/7af56d5d3629d5aa2f9f41382d0f7b853c561e66f5079a895a4d064ace9d02acf36022a99b42458454dc9969e835e13f80f25ca1e1fa57d94006f2ff64aacd90
   languageName: node
   linkType: hard
 
