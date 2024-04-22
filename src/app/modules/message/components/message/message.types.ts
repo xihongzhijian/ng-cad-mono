@@ -40,7 +40,7 @@ export interface ButtonMessageData extends BaseMessageData {
 
 export interface FormMessageData extends BaseMessageData, FormBaseMessageData {
   type: "form";
-  inputs: InputInfo[];
+  form: InputInfo[];
   autoFill?: (inputs: InputInfo[]) => void;
 }
 

@@ -620,7 +620,12 @@ export const openCadLineForm = async (collection: CadCollection, message: Messag
   if (collection === "kailiaocadmuban") {
     form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});
   }
-  const result = await message.form(form);
+  let title = "编辑线";
+  const name = line.mingzi || line.mingzi2;
+  if (name) {
+    title += `【${name}】`;
+  }
+  const result = await message.form({title, form});
   if (result) {
     let toChange = [line];
     if (isLine && result.线长 !== lineLength) {

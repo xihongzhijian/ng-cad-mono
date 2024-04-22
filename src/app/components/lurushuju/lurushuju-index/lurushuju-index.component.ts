@@ -1361,7 +1361,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const data = {name: "", regex: true};
     const result = await this.message.form<typeof data>({
       title: "清除多余型号数据",
-      inputs: [
+      form: [
         {
           type: "string",
           label: "型号名字",

@@ -33,11 +33,6 @@ export class PrintA4A015PreviewComponent implements AfterViewInit, OnDestroy {
   cadWidth = 92;
   cadHeight = 92;
   cadBackgroundColor = "white";
-  params: CadPreviewParams = {
-    config: {
-      padding: [15]
-    }
-  };
 
   constructor(
     private http: CadDataService,
@@ -92,5 +87,14 @@ export class PrintA4A015PreviewComponent implements AfterViewInit, OnDestroy {
 
   getLeft(i: number) {
     return (i % 4 ? 10 : 0) + "px";
+  }
+
+  getCadPreviewParams() {
+    const params: CadPreviewParams = {
+      config: {
+        padding: [15]
+      }
+    };
+    return params;
   }
 }

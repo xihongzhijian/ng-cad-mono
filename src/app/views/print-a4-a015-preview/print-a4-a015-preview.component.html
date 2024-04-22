@@ -20,7 +20,7 @@
               [width]="cadWidth"
               [height]="cadHeight"
               [backgroundColor]="cadBackgroundColor"
-              [params]="params"
+              [paramsGetter]="getCadPreviewParams"
             ></app-cad-image>
             <app-image class="qrcode" [src]="card.codeText"></app-image>
             <div class="code">{{ card.code }}</div>

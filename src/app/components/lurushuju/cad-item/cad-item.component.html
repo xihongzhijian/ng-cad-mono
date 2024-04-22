@@ -11,6 +11,7 @@
             [id]="''"
             [width]="cadWidth"
             [height]="cadHeight"
+            [paramsGetter]="getCadPreviewParams"
             [style.width.px]="cadWidth"
             (dblclick)="onCadImageClick()"
             (dataInfoChange)="onCadInfoChange($event)"

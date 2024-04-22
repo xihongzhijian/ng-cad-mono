@@ -42,7 +42,7 @@ export class CadImageComponent implements OnChanges {
   @Input() width?: number;
   @Input() height?: number;
   @Input() backgroundColor = "black";
-  @Input() params?: CadPreviewParams;
+  @Input() paramsGetter?: () => CadPreviewParams;
   @Output() dataInfoChange = new EventEmitter<DataInfoChnageEvent>();
 
   url = "";
@@ -79,9 +79,27 @@ export class CadImageComponent implements OnChanges {
     return this.http.getUrl("ngcad/cadImg", params);
   }
 
+  async getPreview(data: CadData) {
+    const {collection} = this;
+    const params = this.paramsGetter?.() || {};
+    if (!params.config) {
+      params.config = {};
+    }
+    if (params.config.width === undefined) {
+      params.config.width = this.width || 300;
+    }
+    if (params.config.height === undefined) {
+      params.config.height = this.height || 150;
+    }
+    if (params.config.backgroundColor === undefined) {
+      params.config.backgroundColor = this.backgroundColor;
+    }
+    return await getCadPreview(collection, data, params);
+  }
+
   async updateUrl() {
     let url = "";
-    const {id, data, collection} = this;
+    const {id, data} = this;
     let force: boolean | number = this.status.forceUpdateCadImg;
     const force2 = this.status.forceUpdateCadImg2;
     const toUpdate = this.status.cadImgToUpdate;
@@ -92,18 +110,18 @@ export class CadImageComponent implements OnChanges {
       url = this.getImgUrl(id + (force2 ? "null" : ""), force);
     } else if (data) {
       const {imgId, imgUpdate} = data.info;
-      if (imgId && !force2) {
-        if (imgUpdate || force) {
+      if (imgId) {
+        if (imgUpdate || force || force2) {
           delete data.info.imgUpdate;
-          url = await getCadPreview(collection, data);
-          await this.http.setCadImg(data.id, url, {spinner: false});
+          url = await this.getPreview(data);
+          await this.http.setCadImg(imgId, url, {spinner: false});
           url = this.getImgUrl(imgId, true);
           this.dataInfoChange.emit({info: data.info});
         } else {
           url = this.getImgUrl(imgId, false);
         }
       } else {
-        url = await getCadPreview(collection, data);
+        url = await this.getPreview(data);
         data.info.imgId = await this.http.getMongoId({spinner: false});
         await this.http.setCadImg(data.info.imgId, url, {spinner: false});
         url = this.getImgUrl(data.info.imgId, true);
@@ -140,22 +158,11 @@ export class CadImageComponent implements OnChanges {
           data = cadsResult.cads[0];
         }
       }
-      if (!data) {
-        return;
-      }
-      const params: CadPreviewParams = {...this.params};
-      if (!params.config) {
-        params.config = {};
-      }
-      params.config.width = this.width || 300;
-      params.config.height = this.height || 150;
-      params.config.backgroundColor = this.backgroundColor;
-      const url = await getCadPreview(collection, data, params);
-      if (data.info.imgId) {
-        this.url = url;
-      } else {
-        await this.http.setCadImg(id, url, {spinner: false});
-        this.url = this.getImgUrl(id, true);
+      if (data) {
+        const url = await this.getPreview(data);
+        const id2 = data.info.imgId || id;
+        await this.http.setCadImg(id2, url, {spinner: false});
+        this.url = this.getImgUrl(id2, true);
       }
     } catch (error) {
       console.error(error);

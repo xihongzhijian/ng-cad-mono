@@ -74,7 +74,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get inputs() {
     if (this.data.type === "form") {
-      return this.data.inputs;
+      return this.data.form;
     }
     return [];
   }
@@ -131,8 +131,8 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.contentHTML = this.sanitizer.bypassSecurityTrustHtml(data.content);
 
     if (data.type === "form") {
-      if (data.inputs.length > 0 && !data.inputs.some((v) => v.autoFocus)) {
-        data.inputs[0].autoFocus = true;
+      if (data.form.length > 0 && !data.form.some((v) => v.autoFocus)) {
+        data.form[0].autoFocus = true;
       }
     } else if (data.type === "book") {
       this.setPage(0);
@@ -229,7 +229,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   reset() {
     switch (this.data.type) {
       case "form":
-        this.data.inputs = cloneDeep(this.inputsBackup);
+        this.data.form = cloneDeep(this.inputsBackup);
         break;
       case "json":
         this.jsonEditor?.set(this.data.defaultJson || null);
@@ -242,7 +242,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   autoFill() {
     switch (this.data.type) {
       case "form":
-        this.data.autoFill?.(this.data.inputs);
+        this.data.autoFill?.(this.data.form);
         validateForm(this.formInputs?.toArray() || []);
         break;
       default:

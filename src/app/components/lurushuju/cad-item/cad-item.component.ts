@@ -23,7 +23,7 @@ import {exportCadData, generateLineTexts2, openCadDimensionForm, openCadLineForm
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {DataInfoChnageEvent} from "@components/cad-image/cad-image.types";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
-import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadZhankai} from "@lucilor/cad-viewer";
+import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {cadFields, getCadInfoInputs} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
@@ -51,7 +51,7 @@ import {CadItemButton, typeOptions} from "./cad-item.types";
 })
 export class CadItemComponent<T = undefined> extends Subscribed() implements OnChanges, OnDestroy {
   @Input() cadWidth = 360;
-  cadHeight = 0;
+  @Input() cadHeight = 180;
 
   @HostBinding("style") style = {};
 
@@ -167,7 +167,12 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     }
     const data = new CadData(dataRaw);
     const form = getCadInfoInputs(this.shujuyaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status);
-    const result = await this.message.form(form);
+    let title = "编辑CAD";
+    const name = data.name;
+    if (name) {
+      title += `【${name}】`;
+    }
+    const result = await this.message.form({title, form});
     if (result) {
       const cad2 = getHoutaiCad(data);
       for (const key of keysOf(cad2)) {
@@ -258,6 +263,22 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     this.initMubanViewer();
   }
 
+  getCadPreviewParams = (() => {
+    const params: CadPreviewParams = {
+      ignoreShiyitu: true,
+      config: {
+        width: this.cadWidth,
+        height: this.cadHeight,
+        backgroundColor: "black",
+        lineGongshi: 24,
+        hideLineGongshi: false,
+        hideLineLength: false,
+        padding: [5]
+      }
+    };
+    return params;
+  }).bind(this);
+
   initCadViewer0(
     collection: CadCollection,
     data: CadData,
@@ -265,27 +286,17 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     imageComponent: CadImageComponent | undefined,
     afterDblClickForm: (data: CadData) => void
   ) {
-    const width = this.cadWidth;
-    const height = (width / 300) * 150;
-    this.cadHeight = height;
-    const cadViewerSubject = new BehaviorSubject<CadViewer | undefined>(undefined);
-    const getPreviewParams: CadPreviewParams = {
-      ignoreShiyitu: true,
-      config: {
-        width,
-        height,
-        backgroundColor: "black",
-        enableZoom: false,
-        dragAxis: "xy",
-        selectMode: "single",
-        entityDraggable: false,
-        lineGongshi: 24,
-        hideLineGongshi: false,
-        padding: [5]
-      }
+    const params = this.getCadPreviewParams();
+    const cadConfig: Partial<CadViewerConfig> = {
+      ...params.config,
+      enableZoom: false,
+      dragAxis: "xy",
+      selectMode: "single",
+      entityDraggable: false
     };
+    const cadViewerSubject = new BehaviorSubject<CadViewer | undefined>(undefined);
     const init = () => {
-      const cadViewer = new CadViewer(data, getPreviewParams.config);
+      const cadViewer = new CadViewer(data, cadConfig);
       cadViewer.appendTo(containerEl);
       cadViewer.on("entitydblclick", async (_, entity) => {
         if (entity instanceof CadMtext && entity.parent) {

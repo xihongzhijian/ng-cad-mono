@@ -15,7 +15,7 @@ export class MessageTestComponent {
   btns: Record<keyof MessageDataMap, MessageData> = {
     alert: {type: "alert", content: "alert", title: "title"},
     confirm: {type: "confirm", content: "confirm", title: "title"},
-    form: {type: "form", inputs: [{type: "string", label: "label", value: "value"}], title: "title"},
+    form: {type: "form", form: [{type: "string", label: "label", value: "value"}], title: "title"},
     book: {type: "book", bookData: [{content: "content", title: "title2"}], title: "title1"},
     editor: {type: "editor", content: "editor", title: "title"},
     button: {type: "button", buttons: ["button1", "button2"], title: "title"},

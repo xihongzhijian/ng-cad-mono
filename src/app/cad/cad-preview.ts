@@ -23,15 +23,16 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
     ...params.config
   });
   cad.dom.style.opacity = "0";
+  cad.dom.style.position = "fixed";
   cad.appendTo(document.body);
   await prepareCadViewer(cad);
   cad.data = data.clone();
   if (shiyitu) {
     cad.data.entities.dimension = [];
   }
-  if (collection !== "cad") {
-    cad.data.entities.mtext = [];
-  }
+  // if (collection !== "cad") {
+  //   cad.data.entities.mtext = [];
+  // }
   await cad.render();
   if (params.autoSize) {
     const {width, height} = cad.data.getBoundingRect();

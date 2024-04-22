@@ -13,7 +13,7 @@ const dataArr: MessageData[] = [
   {type: "alert", content: "test"},
   {type: "confirm", content: "test"},
   {type: "button", buttons: ["test1", "test2"]},
-  {type: "form", inputs: [{type: "string", label: "test"}]},
+  {type: "form", form: [{type: "string", label: "test"}]},
   {type: "book", bookData: [{title: "test", content: "test"}]},
   {type: "editor", editable: true, content: "test"}
 ];

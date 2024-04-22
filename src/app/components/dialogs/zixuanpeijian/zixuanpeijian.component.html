@@ -213,7 +213,7 @@
           <div class="lingsan-cads">
             @for (item of result["零散"]; track i; let i = $index) {
               <div class="lingsan-cad">
-                <app-cad-image [id]="item.data.id"></app-cad-image>
+                <app-cad-image [id]="''" [data]="item.data"></app-cad-image>
                 <div class="title flex-row flex-110">
                   <button mat-icon-button color="primary" (click)="removeLingsanItem(i)">
                     <mat-icon>remove_circle</mat-icon>

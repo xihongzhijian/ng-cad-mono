@@ -55,6 +55,7 @@
                           [openCadOptions]="getOpenCadOptions(key1)"
                           [noMuban]="true"
                           [cadWidth]="cadWidth"
+                          [cadHeight]="cadHeight"
                           [class.hidden]="hiddenShiyitus.includes(i)"
                           (afterEditCad)="afterEditCad(key1)"
                         ></app-cad-item>
@@ -106,6 +107,7 @@
       [openCadOptions]="getOpenCadOptions(key1)"
       [noMuban]="true"
       [cadWidth]="cadWidth"
+      [cadHeight]="cadHeight"
       (afterEditCad)="afterEditCad(key1)"
     ></app-cad-item>
   } @else {

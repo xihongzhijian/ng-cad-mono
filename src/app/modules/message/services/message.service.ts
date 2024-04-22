@@ -101,10 +101,10 @@ export class MessageService {
     others: MessageDataParams2<FormMessageData> = {}
   ) {
     if (Array.isArray(data)) {
-      data = {inputs: data};
+      data = {form: data};
     }
-    if (data.inputs.length > 0) {
-      data.inputs[0].autoFocus = true;
+    if (data.form.length > 0) {
+      data.form[0].autoFocus = true;
     }
     const result = await this.open({data: this._getData(data, "form"), ...others});
     if (result && typeof result === "object") {
@@ -115,10 +115,10 @@ export class MessageService {
 
   async prompt<T = any>(
     info: InputInfo,
-    data?: Omit<MessageDataParams<FormMessageData>, "inputs">,
+    data?: Omit<MessageDataParams<FormMessageData>, "form">,
     others: MessageDataParams2<FormMessageData> = {}
   ) {
-    const result = await this.form({inputs: [info], ...data}, others);
+    const result = await this.form({form: [info], ...data}, others);
     if (result && typeof result === "object") {
       return Object.values(result)[0] as T;
     }
