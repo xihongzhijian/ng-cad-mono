@@ -46,3 +46,15 @@ export const isTypeOf = (value: any, type: ReturnType<typeof getTypeOf> | Return
   }
   return valueType === type;
 };
+
+export const getElementVisiblePercentage = (el: HTMLElement) => {
+  const rect = el.getBoundingClientRect();
+  const windowWidth = window.innerWidth || document.documentElement.clientWidth;
+  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+  const area = rect.width * rect.height;
+  const xVisible = Math.min(rect.right, windowWidth) - Math.max(rect.left, 0);
+  const yVisible = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+  const visibleArea = xVisible * yVisible;
+  const visiblePercentage = (visibleArea / area) * 100;
+  return visiblePercentage;
+};
