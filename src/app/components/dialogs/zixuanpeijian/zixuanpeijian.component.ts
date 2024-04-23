@@ -102,6 +102,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   cadViewers: {模块: ObjectOf<ObjectOf<CadViewer[]>>; 零散: CadViewer[]} = {模块: {}, 零散: []};
   getMokuaiTitle = getMokuaiTitle;
   @ViewChild(MatMenuTrigger) contextMenu!: MatMenuTrigger;
+  @ViewChild("lingsanTypesScrollbar") lingsanTypesScrollbar?: NgScrollbar;
   @ViewChild("lingsanLeftScrollbar") lingsanLeftScrollbar?: NgScrollbar;
   @ViewChild("lingsanRightScrollbar") lingsanRightScrollbar?: NgScrollbar;
   @ViewChildren("typesButton", {read: ElementRef}) typesButtons?: QueryList<ElementRef<HTMLButtonElement>>;
@@ -1117,8 +1118,14 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     return 0;
   }
 
-  setlingsanCadType(type: string) {
+  async setlingsanCadType(type: string) {
     this.lingsanCadType = type;
+    await timeout(0);
+    const index = this.lingsanCadInfos.findIndex((v) => v.type === type);
+    const button = this.typesButtons?.get(index);
+    if (button) {
+      this.lingsanTypesScrollbar?.scrollToElement(button);
+    }
   }
 
   private _setInfoBancai(info: ZixuanpeijianInfo, bancai: BancaiList) {

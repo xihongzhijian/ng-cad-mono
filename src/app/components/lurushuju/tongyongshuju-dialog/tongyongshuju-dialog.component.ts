@@ -285,14 +285,14 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async addCadAtZxpj() {
-    const item = this.activeItem?.data.find((v) => v.active);
+    const item = this.tableData[this.activeItem?.index ?? -1];
     const data: ZixuanpeijianInput = {
       step: 3,
       stepFixed: true,
       noValidateCads: true,
       readonly: true,
       getAllLingsanCads: true,
-      lingsanCadType: item?.mingzi
+      lingsanCadType: item?.cadyaoqiu
     };
     await openZixuanpeijianDialog(this.dialog, {data});
   }
