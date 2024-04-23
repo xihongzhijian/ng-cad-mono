@@ -247,10 +247,6 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     cad.off("zoom", this._updateCadPoints);
   }
 
-  private _getcadDataModel(key: keyof CadData) {
-    return {key, data: () => this.data} as InputInfo<CadData>["model"];
-  }
-
   private _onEntityClick: CadEventCallBack<"entityclick"> = (_, entity) => {
     const cadStatus = this.status.cadStatus;
     const data = this.data;

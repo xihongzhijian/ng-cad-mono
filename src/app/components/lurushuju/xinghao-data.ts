@@ -3,9 +3,9 @@ import {getValueString} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {isTypeOf, ObjectOf, queryString} from "@lucilor/utils";
 import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
-import {uniq} from "lodash";
+import {isArray, uniq} from "lodash";
 
 export const getXinghao = (raw: XinghaoRaw | null | undefined) => {
   const result: Xinghao = {名字: "", 产品分类: {}, 显示产品分类: [], ...raw};
@@ -15,7 +15,12 @@ export const getXinghao = (raw: XinghaoRaw | null | undefined) => {
   return result;
 };
 
-export const updateXinghaoFenleis = (xinghao: Xinghao, allFenleis: string[], defaultFenleis: string[]) => {
+export const updateXinghaoFenleis = (
+  xinghao: Xinghao,
+  allFenleis: string[],
+  defaultFenleis: string[],
+  选项要求Options: OptionsDataData[]
+) => {
   for (const fenlei of defaultFenleis) {
     if (!isTypeOf(xinghao.产品分类[fenlei], "array")) {
       xinghao.产品分类[fenlei] = [];
@@ -32,6 +37,11 @@ export const updateXinghaoFenleis = (xinghao: Xinghao, allFenleis: string[], def
       xinghao.产品分类[fenlei] = [];
     }
     sortGongyis(xinghao.产品分类[fenlei]);
+    for (const gongyi of xinghao.产品分类[fenlei]) {
+      for (const slsj of gongyi.算料数据) {
+        update算料数据(slsj, 选项要求Options);
+      }
+    }
   }
 };
 
@@ -76,6 +86,7 @@ export const get算料数据 = (raw?: Partial<算料数据> | null) => {
     铰边: "",
     选项默认值: {},
     门缝配置: {},
+    选项要求: {},
     关闭碰撞检查: false,
     双开门扇宽生成方式: "",
     ...raw,
@@ -90,6 +101,13 @@ export const get算料数据 = (raw?: Partial<算料数据> | null) => {
     }
   }
   return result;
+};
+export const update算料数据 = (data: 算料数据, 选项要求Options: OptionsDataData[]) => {
+  const 选项要求Prev = data.选项要求;
+  data.选项要求 = {};
+  for (const {name} of 选项要求Options) {
+    data.选项要求[name] = isArray(选项要求Prev[name]) ? 选项要求Prev[name] : [];
+  }
 };
 
 export const get算料数据2 = (raw?: Partial<算料数据2> | null) => {
@@ -134,9 +152,15 @@ export interface Xinghao extends XinghaoRaw {
   显示产品分类: string[];
 }
 
+export interface 可选项 {
+  vid: number;
+  mingzi: string;
+  morenzhi?: boolean;
+}
+
 export interface 选项 {
   名字: string;
-  可选项: {vid: number; mingzi: string; morenzhi?: boolean}[];
+  可选项: 可选项[];
 }
 
 export interface 输入 {
@@ -226,6 +250,7 @@ export interface 算料数据 {
   锁边: string;
   铰边: string;
   选项默认值: ObjectOf<string>;
+  选项要求: ObjectOf<可选项[]>;
 
   "包边在外+外开": 算料数据2;
   "包边在外+内开": 算料数据2;

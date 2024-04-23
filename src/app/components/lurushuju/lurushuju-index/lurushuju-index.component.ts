@@ -691,7 +691,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
     const fenleisBefore = cloneDeep(this.xinghao.产品分类);
     const allFenleis = this.xinghaoOptionsAll.产品分类.map((v) => v.name);
-    updateXinghaoFenleis(this.xinghao, allFenleis, this.defaultFenleis);
+    const 选项要求 = this.menjiaoOptionsAll.选项要求?.options || [];
+    updateXinghaoFenleis(this.xinghao, allFenleis, this.defaultFenleis, 选项要求);
     const fenleisAfter = this.xinghao.产品分类;
     if (!isEqual(fenleisBefore, fenleisAfter)) {
       await this.setXinghao({产品分类: fenleisAfter}, true);

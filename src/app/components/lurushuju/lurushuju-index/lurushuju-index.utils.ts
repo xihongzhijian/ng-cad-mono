@@ -4,7 +4,6 @@ import {ObjectOf} from "@lucilor/utils";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
-import {算料数据} from "../xinghao-data";
 import {
   MenjiaoData,
   OptionsAll,
@@ -114,6 +113,29 @@ export const getMenjiaoTable = () => {
           return strs.join("，");
         }
       },
+      {
+        type: "string",
+        field: "选项要求",
+        width: "250px",
+        style: {textAlign: "left"},
+        getString: (value) => {
+          const data = value.选项要求;
+          if (!data) {
+            return "";
+          }
+          const strs = Object.entries(data)
+            .map(([k, v]) => {
+              const valueStr = v
+                .map((v2) => {
+                  return v2.mingzi + (v2.morenzhi ? "（默认）" : "");
+                })
+                .join("，");
+              return `${k}：${valueStr}`;
+            })
+            .filter((v) => v);
+          return strs.join("<br>");
+        }
+      },
       {type: "boolean", field: "停用", width: "60px"},
       {type: "number", field: "排序", width: "60px"},
       {type: "boolean", field: "默认值", width: "60px"}
@@ -157,7 +179,7 @@ export const getOptions2 = (options: OptionsDataData[]) => {
 
 export const getOptionInputInfo = (
   optionsAll: OptionsAll2 | undefined | null,
-  key: keyof 算料数据,
+  key: string,
   setter?: (info: InputInfoSelect) => void
 ): InputInfoSelect => {
   const optionsInfo = optionsAll?.[key];

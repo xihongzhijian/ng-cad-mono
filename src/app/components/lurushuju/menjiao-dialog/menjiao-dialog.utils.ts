@@ -24,29 +24,19 @@ import {
 } from "../xinghao-data";
 
 export const autoFillMenjiao = (data: 算料数据, menjiaoOptionsAll: OptionsAll2) => {
-  const setOption = (key: string) => {
-    const {options, multiple, disabled} = menjiaoOptionsAll[key];
+  const setOption = (data0: any, key: string) => {
+    if (Array.isArray(data0[key]) && data0[key].length > 0) {
+      return;
+    }
+    const {options, multiple, disabled} = menjiaoOptionsAll[key] || {};
     if (disabled || !options || options.length < 1) {
       return;
     }
-    if (multiple) {
-      const result = [];
-      for (const option of options) {
-        if (Math.random() > 0.5) {
-          result.push(option.name);
-        }
-      }
-      if (result.length < 1) {
-        result.push(options[0]);
-      }
-      (data as any)[key] = result;
-    } else {
-      (data as any)[key] = options[random(0, options.length - 1)].name;
-    }
+    data0[key] = multiple ? [options[0].name] : options[0].name;
   };
   for (const key1 in data) {
-    if (key1 in menjiaoOptionsAll) {
-      setOption(key1);
+    if (key1 in menjiaoOptionsAll && key1 !== "选项要求") {
+      setOption(data, key1);
     } else if (key1 === menjiaoCadTypes[0]) {
       for (const key2 of 算料数据2Keys) {
         for (const key3 of keysOf(data[key1][key2])) {
@@ -61,9 +51,21 @@ export const autoFillMenjiao = (data: 算料数据, menjiaoOptionsAll: OptionsAl
     }
   }
   for (const item of 门缝配置输入) {
-    data.门缝配置[item.name] = isTypeOf(item.defaultValue, "number") ? (item.defaultValue as number) : 1;
+    if (typeof data.门缝配置[item.name] !== "number") {
+      data.门缝配置[item.name] = isTypeOf(item.defaultValue, "number") ? (item.defaultValue as number) : 1;
+    }
   }
-  data.名字 = "autoFill";
+  if (!data.名字) {
+    data.名字 = "autoFill";
+  }
+  for (const key in data.选项要求) {
+    if (data.选项要求[key].length < 1) {
+      const option = menjiaoOptionsAll[key]?.options[0];
+      if (option) {
+        data.选项要求[key].push({vid: option.vid, mingzi: option.name});
+      }
+    }
+  }
   updateMenjiaoData(data);
 };
 

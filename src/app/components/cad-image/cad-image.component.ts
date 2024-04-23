@@ -106,7 +106,8 @@ export class CadImageComponent implements OnChanges {
     if (toUpdate[id]) {
       force = toUpdate[id].t;
     }
-    if (id) {
+    const hasImgId = !!data?.info.imgId;
+    if (id && !hasImgId) {
       url = this.getImgUrl(id + (force2 ? "null" : ""), force);
     } else if (data) {
       const {imgId, imgUpdate} = data.info;

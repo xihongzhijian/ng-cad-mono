@@ -4,6 +4,7 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
+import {setGlobal} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
@@ -108,6 +109,7 @@ export class MenjiaoDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<MenjiaoDialogComponent, MenjiaoOutput>,
     @Inject(MAT_DIALOG_DATA) public data: MenjiaoInput
   ) {
+    setGlobal("menjiaoDialog", this);
     if (!this.data) {
       this.data = {};
     }
@@ -154,12 +156,14 @@ export class MenjiaoDialogComponent implements OnInit {
     }
   }
 
-  async update() {
+  async update(useFormData?: boolean) {
     const {data: data0, component} = this.data;
     if (!component) {
       return;
     }
-    this.formData = data0 ? cloneDeep(data0) : get算料数据();
+    if (!useFormData) {
+      this.formData = data0 ? cloneDeep(data0) : get算料数据();
+    }
     const data = this.formData;
     const 产品分类 = data0 ? data0.产品分类 : component.fenleiName;
     data.产品分类 = 产品分类;
@@ -172,7 +176,7 @@ export class MenjiaoDialogComponent implements OnInit {
       const margin = 5;
       return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`, ...style};
     };
-    const getOptionInputInfo2 = (key: keyof 算料数据, n: number): InputInfoSelect => {
+    const getOptionInputInfo2 = (key: string, n: number): InputInfoSelect => {
       return getOptionInputInfo(component.menjiaoOptionsAll, key, (info) => {
         info.model = {data, key};
         if (!info.readonly && !info.disabled) {
@@ -182,8 +186,8 @@ export class MenjiaoDialogComponent implements OnInit {
           updateMenjiaoData(data);
         };
         info.style = getInfoStyle(n);
-        const dialogKeys: (keyof 算料数据)[] = ["门铰"];
-        const openInNewTabKeys: (keyof 算料数据)[] = ["门铰", "门扇厚度"];
+        const dialogKeys = ["门铰"];
+        const openInNewTabKeys = ["门扇厚度"];
         if (dialogKeys.includes(key)) {
           info.optionsDialog = {
             noImage: true,
@@ -234,7 +238,6 @@ export class MenjiaoDialogComponent implements OnInit {
             type: "group",
             label: "选项",
             infos: optionKeys.map((v) => getOptionInputInfo2(v, 2)),
-            style: {flex: "1 1 0"},
             groupStyle: getGroupStyle()
           }
         ]
@@ -247,6 +250,31 @@ export class MenjiaoDialogComponent implements OnInit {
         groupStyle: getGroupStyle({flexDirection: "column"})
       }
     ];
+    const 选项要求Form: InputInfo[] = [];
+    for (const key in data.选项要求) {
+      const value = data.选项要求[key];
+      const info = getOptionInputInfo2(key, 4);
+      选项要求Form.push(info);
+      delete info.model;
+      info.value = value.map((v) => v.mingzi);
+      info.optionsDialog = {
+        noImage: true,
+        defaultValue: {value: value.find((v) => v.morenzhi)?.mingzi || ""},
+        optionKey: key,
+        useLocalOptions: true,
+        openInNewTab: true,
+        onChange(val) {
+          data.选项要求[key] = cloneDeep(val.options);
+          if (val.defaultValue) {
+            for (const item of data.选项要求[key]) {
+              if (item.mingzi === val.defaultValue) {
+                item.morenzhi = true;
+              }
+            }
+          }
+        }
+      };
+    }
     const form1: InputInfo<typeof data>[] = [
       {
         type: "string",
@@ -268,6 +296,12 @@ export class MenjiaoDialogComponent implements OnInit {
         type: "group",
         label: "",
         infos: form1Group,
+        groupStyle: getGroupStyle()
+      },
+      {
+        type: "group",
+        label: "选项要求",
+        infos: 选项要求Form,
         groupStyle: getGroupStyle()
       }
     ];
@@ -412,6 +446,7 @@ export class MenjiaoDialogComponent implements OnInit {
       return;
     }
     autoFillMenjiao(this.formData, this.data.component.menjiaoOptionsAll);
+    this.update(true);
     this.validate();
   }
 

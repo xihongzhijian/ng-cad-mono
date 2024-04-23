@@ -46,26 +46,6 @@
           />
         }
       }
-      @if (info.optionsDialog) {
-        <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key)">
-          <mat-icon>list</mat-icon>
-        </button>
-      }
-      @if (info.copyable) {
-        <button mat-icon-button matSuffix color="primary" (click)="copy()">
-          <mat-icon>content_copy</mat-icon>
-        </button>
-      }
-      @for (icon of suffixIcons; track icon) {
-        <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
-          <mat-icon>{{ icon.name }}</mat-icon>
-        </button>
-      }
-      @if (info.clearable) {
-        <button mat-icon-button matSuffix color="primary" (click)="clear()">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
       <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAutocompleteChange($event)">
         @for (option of filteredOptions$ | async; track option) {
           <mat-option
@@ -78,6 +58,28 @@
           </mat-option>
         }
       </mat-autocomplete>
+      <ng-container matSuffix>
+        @if (info.optionsDialog) {
+          <button mat-icon-button color="primary" (click)="selectOptions(model.key)">
+            <mat-icon>list</mat-icon>
+          </button>
+        }
+        @if (info.copyable) {
+          <button mat-icon-button color="primary" (click)="copy()">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        }
+        @for (icon of suffixIcons; track icon) {
+          <button mat-icon-button color="primary" (click)="icon.onClick()">
+            <mat-icon>{{ icon.name }}</mat-icon>
+          </button>
+        }
+        @if (info.clearable) {
+          <button mat-icon-button color="primary" (click)="clear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </ng-container>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
@@ -107,16 +109,6 @@
         [matAutocomplete]="auto"
         [placeholder]="info.placeholder || ''"
       />
-      @if (info.copyable) {
-        <button mat-icon-button matSuffix color="primary" (click)="copy()">
-          <mat-icon>content_copy</mat-icon>
-        </button>
-      }
-      @for (icon of suffixIcons; track icon) {
-        <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
-          <mat-icon>{{ icon.name }}</mat-icon>
-        </button>
-      }
       <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAutocompleteChange($event)">
         @for (option of filteredOptions$ | async; track option) {
           <mat-option
@@ -128,6 +120,18 @@
           </mat-option>
         }
       </mat-autocomplete>
+      <ng-container matSuffix>
+        @if (info.copyable) {
+          <button mat-icon-button color="primary" (click)="copy()">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        }
+        @for (icon of suffixIcons; track icon) {
+          <button mat-icon-button color="primary" (click)="icon.onClick()">
+            <mat-icon>{{ icon.name }}</mat-icon>
+          </button>
+        }
+      </ng-container>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
@@ -144,7 +148,7 @@
         <button mat-button matSuffix color="primary" (click)="parseObjectString('replace')">全部替换</button>
         <button mat-button matSuffix color="primary" (click)="parseObjectString('append')">没有的插入</button>
       </mat-form-field>
-      @if (keysOf(value)["length"] === 0) {
+      @if (!info.keysReadonly && keysOf(value)["length"] === 0) {
         <div>
           <button mat-icon-button color="primary" (click)="objectAdd(value, '')">
             <mat-icon>add_circle</mat-icon>
@@ -192,27 +196,31 @@
               (change)="changeObjectValue2(value, item.key, item.value)"
               (blur)="onBlur()"
             />
-            @if (optionsDialog) {
-              <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key, item.key)">
-                <mat-icon>list</mat-icon>
-              </button>
-            }
-            <button mat-icon-button matSuffix color="primary" (click)="objectAdd(value, '', '')">
-              <mat-icon>add_circle</mat-icon>
-            </button>
-            <button mat-icon-button matSuffix color="primary" (click)="objectRemove(value, item.key)">
-              <mat-icon>remove_circle</mat-icon>
-            </button>
-            @for (icon of suffixIcons; track icon) {
-              <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
-                <mat-icon>{{ icon.name }}</mat-icon>
-              </button>
-            }
-            @if (info.clearable) {
-              <button mat-icon-button matSuffix color="primary" (click)="changeObjectValue(value, item.key, '')">
-                <mat-icon>close</mat-icon>
-              </button>
-            }
+            <ng-container matSuffix>
+              @if (optionsDialog) {
+                <button mat-icon-button color="primary" (click)="selectOptions(model.key, item.key)">
+                  <mat-icon>list</mat-icon>
+                </button>
+              }
+              @if (!info.keysReadonly) {
+                <button mat-icon-button color="primary" (click)="objectAdd(value, item.key)">
+                  <mat-icon>add_circle</mat-icon>
+                </button>
+                <button mat-icon-button color="primary" (click)="objectRemove(value, item.key)">
+                  <mat-icon>remove_circle</mat-icon>
+                </button>
+              }
+              @for (icon of suffixIcons; track icon) {
+                <button mat-icon-button color="primary" (click)="icon.onClick()">
+                  <mat-icon>{{ icon.name }}</mat-icon>
+                </button>
+              }
+              @if (info.clearable) {
+                <button mat-icon-button color="primary" (click)="changeObjectValue(value, item.key, '')">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
+            </ng-container>
             <mat-error>{{ getErrorMsgValue(item.key) }}</mat-error>
           </mat-form-field>
         </div>
@@ -261,17 +269,17 @@
                 <mat-icon>remove_circle</mat-icon>
               </button>
             }
+            @for (icon of suffixIcons; track icon) {
+              <button mat-icon-button color="primary" (click)="icon.onClick()">
+                <mat-icon>{{ icon.name }}</mat-icon>
+              </button>
+            }
+            @if (info.clearable) {
+              <button mat-icon-button color="primary" (click)="value[j] = ''">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
           </ng-container>
-          @for (icon of suffixIcons; track icon) {
-            <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
-              <mat-icon>{{ icon.name }}</mat-icon>
-            </button>
-          }
-          @if (info.clearable) {
-            <button mat-icon-button matSuffix color="primary" (click)="value[j] = ''">
-              <mat-icon>close</mat-icon>
-            </button>
-          }
           <mat-error>{{ getErrorMsgValue(j.toString()) }}</mat-error>
         </mat-form-field>
       }
@@ -353,14 +361,14 @@
           </ng-scrollbar>
         </mat-select>
       }
-      @if (info.openInNewTab) {
-        <button mat-icon-button matSuffix color="primary" appClickStop (click)="openInNewTab()">
-          <mat-icon>open_in_new</mat-icon>
-        </button>
-      }
-      @if (info.optionsDialog && !info.readonly && !info.disabled) {
-        <ng-container matSuffix>
-          <button mat-icon-button matSuffix color="primary" (click)="selectOptions(model.key)">
+      <ng-container matSuffix>
+        @if (info.openInNewTab) {
+          <button mat-icon-button color="primary" appClickStop (click)="openInNewTab()">
+            <mat-icon>open_in_new</mat-icon>
+          </button>
+        }
+        @if (info.optionsDialog && !info.readonly && !info.disabled) {
+          <button mat-icon-button color="primary" (click)="selectOptions(model.key)">
             <mat-icon>list</mat-icon>
           </button>
           @if (info.copyable !== false) {
@@ -368,22 +376,22 @@
               <mat-icon>content_copy</mat-icon>
             </button>
           }
-        </ng-container>
-      } @else if (info.copyable) {
-        <button mat-icon-button matSuffix color="primary" (click)="copy()">
-          <mat-icon>content_copy</mat-icon>
-        </button>
-      }
-      @for (icon of suffixIcons; track icon) {
-        <button mat-icon-button matSuffix color="primary" appClickStop (click)="icon.onClick()">
-          <mat-icon>{{ icon.name }}</mat-icon>
-        </button>
-      }
-      @if (info.clearable) {
-        <button appClickStop mat-icon-button matSuffix color="primary" (click)="clear()">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
+        } @else if (info.copyable) {
+          <button mat-icon-button color="primary" (click)="copy()">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        }
+        @for (icon of suffixIcons; track icon) {
+          <button mat-icon-button color="primary" appClickStop (click)="icon.onClick()">
+            <mat-icon>{{ icon.name }}</mat-icon>
+          </button>
+        }
+        @if (info.clearable) {
+          <button appClickStop mat-icon-button color="primary" (click)="clear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </ng-container>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
@@ -441,17 +449,19 @@
           readonly
           [disabled]="info.disabled || false"
         />
-        <button mat-icon-button matSuffix color="primary" [matMenuTriggerFor]="editable ? anchor : null">
-          <mat-icon>list</mat-icon>
-        </button>
-        <mat-menu #anchor="matMenu">
-          <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
-        </mat-menu>
-        @for (icon of suffixIcons; track icon) {
-          <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
-            <mat-icon>{{ icon.name }}</mat-icon>
+        <ng-container matSuffix>
+          <button mat-icon-button color="primary" [matMenuTriggerFor]="editable ? anchor : null">
+            <mat-icon>list</mat-icon>
           </button>
-        }
+          <mat-menu #anchor="matMenu">
+            <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
+          </mat-menu>
+          @for (icon of suffixIcons; track icon) {
+            <button mat-icon-button color="primary" (click)="icon.onClick()">
+              <mat-icon>{{ icon.name }}</mat-icon>
+            </button>
+          }
+        </ng-container>
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
     }
@@ -472,17 +482,19 @@
           readonly
           [disabled]="info.disabled || false"
         />
-        <button mat-icon-button matSuffix color="primary" [matMenuTriggerFor]="editable ? anchor : null">
-          <mat-icon>list</mat-icon>
-        </button>
-        <mat-menu #anchor="matMenu">
-          <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
-        </mat-menu>
-        @for (icon of suffixIcons; track icon) {
-          <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
-            <mat-icon>{{ icon.name }}</mat-icon>
+        <ng-container matSuffix>
+          <button mat-icon-button color="primary" [matMenuTriggerFor]="editable ? anchor : null">
+            <mat-icon>list</mat-icon>
           </button>
-        }
+          <mat-menu #anchor="matMenu">
+            <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
+          </mat-menu>
+          @for (icon of suffixIcons; track icon) {
+            <button mat-icon-button color="primary" (click)="icon.onClick()">
+              <mat-icon>{{ icon.name }}</mat-icon>
+            </button>
+          }
+        </ng-container>
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
     </ng-template>
@@ -519,17 +531,18 @@
           <color-chrome #colorChrome [color]="colorStr" (onChangeComplete)="onColorChange($event.color)" appClickStop> </color-chrome>
         }
       </mat-menu>
-      <ng-template></ng-template>
-      @for (icon of suffixIcons; track icon) {
-        <button mat-icon-button matSuffix color="primary" (click)="icon.onClick()">
-          <mat-icon>{{ icon.name }}</mat-icon>
-        </button>
-      }
-      @if (info.clearable) {
-        <button mat-icon-button matSuffix color="primary" (click)="clear()">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
+      <ng-container matSuffix>
+        @for (icon of suffixIcons; track icon) {
+          <button mat-icon-button color="primary" (click)="icon.onClick()">
+            <mat-icon>{{ icon.name }}</mat-icon>
+          </button>
+        }
+        @if (info.clearable) {
+          <button mat-icon-button color="primary" (click)="clear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </ng-container>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
@@ -542,9 +555,11 @@
         <mat-hint>{{ hint }}</mat-hint>
       }
       <input matInput readonly [errorStateMatcher]="getErrorStateMatcher()" />
-      <button mat-icon-button matSuffix color="primary" (click)="selectFile()">
-        <mat-icon>file_open</mat-icon>
-      </button>
+      <ng-container matSuffix>
+        <button mat-icon-button color="primary" (click)="selectFile()">
+          <mat-icon>file_open</mat-icon>
+        </button>
+      </ng-container>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
@@ -583,14 +598,16 @@
         [placeholder]="info.placeholder || ''"
         (click)="editFormulas()"
       />
-      @if (!info.readonly && !info.disabled) {
-        <button mat-icon-button matSuffix color="primary" (click)="editFormulas()">
-          <mat-icon>edit</mat-icon>
+      <ng-container matSuffix>
+        @if (!info.readonly && !info.disabled) {
+          <button mat-icon-button color="primary" (click)="editFormulas()">
+            <mat-icon>edit</mat-icon>
+          </button>
+        }
+        <button mat-icon-button color="primary" (click)="copy()">
+          <mat-icon>content_copy</mat-icon>
         </button>
-      }
-      <button mat-icon-button matSuffix color="primary" (click)="copy()">
-        <mat-icon>content_copy</mat-icon>
-      </button>
+      </ng-container>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }

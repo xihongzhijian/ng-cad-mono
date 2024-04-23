@@ -105,7 +105,7 @@
                       />
                     </mat-form-field>
                   } @else {
-                    {{ getValueString(item, column) }}
+                    <span [innerHTML]="getValueString(item, column)"></span>
                   }
                 }
                 @case ("number") {
@@ -121,7 +121,7 @@
                       />
                     </mat-form-field>
                   } @else {
-                    {{ getValueString(item, column) }}
+                    <span [innerHTML]="getValueString(item, column)"></span>
                   }
                 }
                 @case ("boolean") {
@@ -134,7 +134,7 @@
                       ></mat-slide-toggle>
                     </mat-form-field>
                   } @else {
-                    {{ getValueString(item, column) }}
+                    <span [innerHTML]="getValueString(item, column)"></span>
                   }
                 }
                 @case ("time") {
@@ -151,7 +151,7 @@
                       />
                     </mat-form-field>
                   } @else {
-                    {{ getValueString(item, column) }}
+                    <span [innerHTML]="getValueString(item, column)"></span>
                   }
                 }
                 @case ("select") {
@@ -166,12 +166,12 @@
                       </mat-select>
                     </mat-form-field>
                   } @else {
-                    {{ getValueString(item, column) }}
+                    <span [innerHTML]="getValueString(item, column)"></span>
                   }
                 }
                 @case ("button") {
                   @if (column.showValue) {
-                    <div>{{ getValueString(item, column) }}</div>
+                    <div><span [innerHTML]="getValueString(item, column)"></span></div>
                   }
                   <div class="btn-group">
                     @for (button of getColumnButtons(column); track $index) {
@@ -205,7 +205,7 @@
                       </button>
                     </mat-form-field>
                   } @else {
-                    {{ getValueString(item, column) }}
+                    <span [innerHTML]="getValueString(item, column)"></span>
                   }
                 }
                 @case ("image") {
