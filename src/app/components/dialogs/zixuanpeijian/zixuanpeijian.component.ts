@@ -102,6 +102,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   cadViewers: {模块: ObjectOf<ObjectOf<CadViewer[]>>; 零散: CadViewer[]} = {模块: {}, 零散: []};
   getMokuaiTitle = getMokuaiTitle;
   @ViewChild(MatMenuTrigger) contextMenu!: MatMenuTrigger;
+  @ViewChild("lingsanLeftScrollbar") lingsanLeftScrollbar?: NgScrollbar;
+  @ViewChild("lingsanRightScrollbar") lingsanRightScrollbar?: NgScrollbar;
   @ViewChildren("typesButton", {read: ElementRef}) typesButtons?: QueryList<ElementRef<HTMLButtonElement>>;
   contextMenuData = {i: -1, j: -1};
   fractionDigits = 1;
@@ -399,7 +401,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       const {noValidateCads} = this.data || {};
       for (const v of responseData.cads) {
         const data = new CadData(v);
-        const item: ZixuanpeijianlingsanCadItem = {data, hidden: false, isFetched: false};
+        const item: ZixuanpeijianlingsanCadItem = {data, hidden: false, isFetched: false, active: false};
         const type = item.data.type;
         if (!this.lingsanCads[type]) {
           this.lingsanCads[type] = [];
@@ -579,6 +581,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         isRefreshed = true;
       }
     } else if (value === 3) {
+      const scrollTop = this.lingsanLeftScrollbar?.nativeElement.scrollTop;
+      const lingsanCadTypePrev = this.lingsanCadType;
       if (refresh || !this._step3Fetched) {
         await this.step3Fetch(false, noCache, preserveImgs);
         isRefreshed = true;
@@ -591,6 +595,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         this.setlingsanCadType(this.lingsanCadInfos[0].type);
       }
       this.filterLingsanItems();
+      await timeout(500);
+      if (lingsanCadTypePrev === this.lingsanCadType) {
+        this.lingsanLeftScrollbar?.nativeElement.scrollTo({top: scrollTop});
+      }
     }
   }
 
@@ -929,6 +937,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (this.data?.readonly && !isEditingFenlei) {
       return;
     }
+    this.activeLingsanCad(type, i);
     const item = this.lingsanCads[type][i];
     if (isEditingFenlei) {
       if (this.result.零散.find((v) => v.info.houtaiId === item.data.id)) {
@@ -952,6 +961,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     });
     this.result.零散.push({data, info: {houtaiId: item.data.id, zhankai: [], calcZhankai: []}});
     this._updateInputInfos();
+    await timeout(0);
+    this.lingsanRightScrollbar?.scrollTo({bottom: 0});
   }
 
   removeLingsanItem(i: number) {
@@ -980,10 +991,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async openLingsanCad(type: string, i: number) {
-    const id = this.lingsanCads[type][i].data.id;
-    this.status.openCadInNewTab(id, "cad");
+    const item = this.lingsanCads[type][i];
+    this.status.openCadInNewTab(item.data.id, "cad");
+    this.activeLingsanCad(type, i);
     if (await this.message.newTabConfirm()) {
-      this.status.cadImgToUpdate[id] = {t: Date.now()};
       this.step3Refresh(true);
     }
   }
@@ -995,6 +1006,12 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
     if (await this.http.mongodbDelete("cad", {id: item.data.id})) {
       this.step3Refresh();
+    }
+  }
+
+  activeLingsanCad(type: string, i: number) {
+    for (const [j, item] of this.lingsanCads[type].entries()) {
+      item.active = i === j;
     }
   }
 

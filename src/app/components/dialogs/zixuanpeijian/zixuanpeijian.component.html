@@ -186,11 +186,11 @@
             <button mat-raised-button color="primary" (click)="step3Refresh()">刷新</button>
             <button mat-raised-button color="primary" (click)="step3Add()">添加</button>
           </div>
-          <ng-scrollbar>
+          <ng-scrollbar #lingsanLeftScrollbar>
             <div class="lingsan-cads">
               @for (item of lingsanCads[lingsanCadType]; track i; let i = $index) {
                 @if (!item.hidden) {
-                  <div class="lingsan-cad">
+                  <div class="lingsan-cad" [class.active]="item.active">
                     <app-cad-image [id]="item.data.id" (click)="addLingsanItem(lingsanCadType, i)" />
                     <div class="flex-row">
                       <button mat-button color="primary" (click)="copyLingsanCad(lingsanCadType, i)">复制</button>
@@ -210,7 +210,7 @@
         </div>
         @if (isEditingFenlei || !data?.readonly) {
           <mat-divider vertical></mat-divider>
-          <ng-scrollbar>
+          <ng-scrollbar #lingsanRightScrollbar>
             <div class="lingsan-cads">
               @for (item of result["零散"]; track i; let i = $index) {
                 <div class="lingsan-cad">

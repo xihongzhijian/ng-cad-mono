@@ -132,6 +132,12 @@ $border: 1px solid lightgray;
     padding: 5px;
     box-sizing: border-box;
   }
+
+  .lingsan-cad {
+    &.active {
+      border: 1px solid red;
+    }
+  }
 }
 
 .dropdown-list {
