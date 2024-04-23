@@ -59,6 +59,7 @@ export interface OptionsDataData {
   name: string;
   img: string;
   disabled: boolean;
+  label?: string;
 }
 
 export interface BancaiList {

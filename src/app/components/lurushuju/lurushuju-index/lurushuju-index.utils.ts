@@ -173,7 +173,7 @@ export const getOptions = (optionsAll: OptionsAll | undefined | null, key: strin
 
 export const getOptions2 = (options: OptionsDataData[]) => {
   return options.map<InputInfoOption>((v) => {
-    return {value: v.name, img: v.img};
+    return {value: v.name, label: v.label, img: v.img};
   });
 };
 

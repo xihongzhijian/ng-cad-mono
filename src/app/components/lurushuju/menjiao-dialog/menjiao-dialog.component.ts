@@ -297,14 +297,16 @@ export class MenjiaoDialogComponent implements OnInit {
         label: "",
         infos: form1Group,
         groupStyle: getGroupStyle()
-      },
-      {
+      }
+    ];
+    if (选项要求Form.length > 0) {
+      form1.push({
         type: "group",
         label: "选项要求",
         infos: 选项要求Form,
         groupStyle: getGroupStyle()
-      }
-    ];
+      });
+    }
     const form2: InputInfo<门缝配置>[] = [
       {
         type: "group",
@@ -327,7 +329,7 @@ export class MenjiaoDialogComponent implements OnInit {
             validators: Validators.required
           },
           {
-            ...getOptionInputInfo2("双开门扇宽生成方式", 4),
+            ...getOptionInputInfo2("双开门扇宽生成方式", 2),
             onChange: () => {
               if (使用锁扇铰扇蓝线宽固定差值()) {
                 form3[0].infos[2].hidden = false;

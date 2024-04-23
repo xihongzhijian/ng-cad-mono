@@ -765,7 +765,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
             }
           }
         }
-        return {vid, name, img: v.img || "", disabled: false};
+        return {vid, name, label: v.label, img: v.img || "", disabled: false};
       });
     }
     const dialogData: CadOptionsInput = {
