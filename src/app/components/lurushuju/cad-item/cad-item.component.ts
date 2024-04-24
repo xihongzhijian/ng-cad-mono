@@ -220,10 +220,14 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   }
 
   async editMuban() {
-    const {mubanData, mubanExtraData} = this;
+    const {mubanData, mubanExtraData, cad} = this;
     if (!mubanData) {
       return;
     }
+    mubanData.info.fromCad = {
+      name: cad.名字,
+      imgId: cad.json.info?.imgId
+    };
     const result = await openCadEditorDialog(this.dialog, {
       data: {
         data: mubanData,

@@ -18,6 +18,16 @@
           <app-cad-image [id]="main.data.id" [data]="main.data"></app-cad-image>
         </div>
       </div>
+      @if (main.data.info.fromCad) {
+        <div class="cad-image" [matTooltip]="main.data.info.fromCad.name" [matTooltipPosition]="'above'">
+          <span>
+            {{ main.data.info.fromCad.name }}
+          </span>
+          <div class="content">
+            <app-cad-image [id]="main.data.info.fromCad.imgId"></app-cad-image>
+          </div>
+        </div>
+      }
     }
   </div>
 
