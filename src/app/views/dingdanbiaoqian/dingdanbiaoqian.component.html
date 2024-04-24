@@ -1,176 +1,225 @@
 <div class="pages flex-column">
-  <div class="page flex-row" [ngStyle]="order.style" *ngFor="let order of orders; let i = index">
-    <ng-container *ngIf="order.info; else cads">
-      <div class="info">
-        <div class="section" *ngFor="let section of order.info">
-          <div class="row" *ngFor="let row of sectionConfig.rows">
-            <div class="cell border" *ngFor="let cell of row.cells" [ngClass]="cell.class || ''">
-              <div class="label center">{{ cell.label || cell.key }}</div>
-              <div class="value center">{{ getValue(section, cell) }}</div>
-            </div>
-          </div>
-          <div class="row flex-row">
-            <div class="cell" style="height: 40px">
-              <svg class="barcode value" [attr.jsbarcode-value]="order.code"></svg>
-            </div>
-            <div class="cell" style="flex: 0 0 auto">
-              <div class="value">{{ section["制单"] }}</div>
-            </div>
-          </div>
-          <div class="row flex-column" style="border-bottom: none">
-            <div class="flex-row" style="width: 100%">
-              <div class="flex-column flex-110 info-border-right">
+  @for (order of orders; track i; let i = $index) {
+    <div class="page flex-row" [style]="order.style">
+      @if (order.info) {
+        <div class="info">
+          @for (section of order.info; track $index) {
+            <div class="section">
+              @for (row of sectionConfig.rows; track $index) {
+                <div class="row">
+                  @for (cell of row.cells; track $index) {
+                    <div class="cell border" [class]="cell.class || ''">
+                      <div class="label center">{{ cell.label || cell.key }}</div>
+                      <div class="value center">{{ getValue(section, cell) }}</div>
+                    </div>
+                  }
+                </div>
+              }
+              <div class="row flex-row">
+                <div class="cell" style="height: 40px">
+                  <svg class="barcode value" [attr.jsbarcode-value]="order.code"></svg>
+                </div>
+                <div class="cell" style="flex: 0 0 auto">
+                  <div class="value">{{ section["制单"] }}</div>
+                </div>
+              </div>
+              <div class="row flex-column" style="border-bottom: none">
+                <div class="flex-row" style="width: 100%">
+                  <div class="flex-column flex-110 info-border-right">
+                    <div class="cell">
+                      <div class="value center">宽×高×厚</div>
+                    </div>
+                    <div class="flex-row cell">
+                      <div class="label">外尺&nbsp;</div>
+                      <div class="value info-border-bottom">{{ section["包框规格"] }}</div>
+                    </div>
+                    <div class="flex-row cell">
+                      <div class="label">外门板</div>
+                      <div class="value info-border-bottom">{{ section["订货单门扇信息"] }}</div>
+                    </div>
+                    <div class="flex-row cell">
+                      <div class="label">内门板</div>
+                      <div class="value info-border-bottom">{{ section["套门门扇信息"] }}</div>
+                    </div>
+                    <div class="flex-row cell">
+                      <div class="label">门花&nbsp;</div>
+                      <div class="value info-border-bottom">{{ section["花件尺寸"] }}</div>
+                    </div>
+                    <div class="flex-row cell">
+                      <div class="label">门头花</div>
+                      <div class="value">{{ section["门头花尺寸"] }}</div>
+                    </div>
+                  </div>
+                  <div class="flex-column flex-110">
+                    <div class="cell">
+                      <div class="value">{{ section["其他备注"] }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row" style="height: 60px; border-bottom: none">
                 <div class="cell">
-                  <div class="value center">宽×高×厚</div>
-                </div>
-                <div class="flex-row cell">
-                  <div class="label">外尺&nbsp;</div>
-                  <div class="value info-border-bottom">{{ section["包框规格"] }}</div>
-                </div>
-                <div class="flex-row cell">
-                  <div class="label">外门板</div>
-                  <div class="value info-border-bottom">{{ section["订货单门扇信息"] }}</div>
-                </div>
-                <div class="flex-row cell">
-                  <div class="label">内门板</div>
-                  <div class="value info-border-bottom">{{ section["套门门扇信息"] }}</div>
-                </div>
-                <div class="flex-row cell">
-                  <div class="label">门花&nbsp;</div>
-                  <div class="value info-border-bottom">{{ section["花件尺寸"] }}</div>
-                </div>
-                <div class="flex-row cell">
-                  <div class="label">门头花</div>
-                  <div class="value">{{ section["门头花尺寸"] }}</div>
+                  <div class="value center">{{ section["花件备注"] }}</div>
                 </div>
               </div>
-              <div class="flex-column flex-110">
-                <div class="cell">
-                  <div class="value">{{ section["其他备注"] }}</div>
+              <div class="示意图">
+                @if (order["开启锁向示意图"]) {
+                  <div class="开启锁向示意图" [style]="order['开启锁向示意图'].style">
+                    <app-image [src]="order['开启锁向示意图'].img" [bigPicSrc]="order['开启锁向示意图'].img"></app-image>
+                  </div>
+                }
+                @if (order["配合框"]) {
+                  <div class="配合框-group">
+                    @for (item of order["配合框"]; track $index) {
+                      <div class="配合框" [style]="item.style">
+                        @if (order["配合框"].length > 1) {
+                          <div class="name">{{ item.data.name }}</div>
+                        }
+                        <app-image [src]="item.img" [bigPicSrc]="item.img"></app-image>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex-row flex-110">
+          @if (type === "配件模块" && order.mokuaiInfo) {
+            <div class="配件模块 flex-column out-of-page">
+              @for (info of order.mokuaiInfo.details; track $index) {
+                <div>
+                  @if (info.title) {
+                    <span>{{ info.title }}：</span>
+                  }
+                  <span>{{ info.value }}</span>
+                </div>
+              }
+              <div class="flex-110 flex-row">
+                <div class="flex-colummn">
+                  @for (info of order.mokuaiInfo.formulaInfos; track j; let j = $index) {
+                    <div class="formula-infos">
+                      @if (j > 0) {
+                        <mat-divider></mat-divider>
+                      }
+                      <div class="title flex-row">
+                        <span>{{ info.title }}</span>
+                        @if (info.title === "测试数据") {
+                          <button
+                            class="no-print"
+                            mat-raised-button
+                            [color]="calcResults[order.mokuaiInfo.index].fulfilled ? 'primary' : 'accent'"
+                            (click)="editMokuaiFormulas(order.mokuaiInfo.index)"
+                          >
+                            编辑
+                          </button>
+                        }
+                      </div>
+                      <app-formulas [formulaInfos]="info.infos" [keyStyles]="{color: 'black'}"></app-formulas>
+                    </div>
+                  }
+                </div>
+                <div class="image-container flex-column">
+                  <app-image [src]="mokuais[order.mokuaiInfo.index].xiaoguotu" [prefix]="urlPrefix"></app-image>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="row" style="height: 60px; border-bottom: none">
-            <div class="cell">
-              <div class="value center">{{ section["花件备注"] }}</div>
-            </div>
-          </div>
-          <div class="示意图">
-            <div class="开启锁向示意图" *ngIf="order['开启锁向示意图']" [ngStyle]="order['开启锁向示意图'].style">
-              <app-image [src]="order['开启锁向示意图'].img" [bigPicSrc]="order['开启锁向示意图'].img"></app-image>
-            </div>
-            <div class="配合框-group" *ngIf="order['配合框']">
-              <div class="配合框" *ngFor="let item of order['配合框']" [ngStyle]="item.style">
-                <div class="name" *ngIf="order['配合框'].length > 1">{{ item.data.name }}</div>
-                <app-image [src]="item.img" [bigPicSrc]="item.img"></app-image>
+          }
+          <div #cadsEl class="cads flex-110 flex-row">
+            @for (cad of order.cads; track $index) {
+              <div class="cad flex-column" [style]="cad.style">
+                <div class="cad-tags flex-column">
+                  @for (item of cad.data.info["标签信息"]; track $index) {
+                    <div [style]="isArray(item) ? item[1] : {}">
+                      {{ isArray(item) ? item[0] : item }}
+                    </div>
+                  }
+                </div>
+                @if (config.showBarcode) {
+                  <div>
+                    <svg class="barcode" [attr.jsbarcode-value]="cad.data.info.groupId"></svg>
+                  </div>
+                }
+                <div class="cad-image flex-110 flex-column" [style]="cad.imgStyle">
+                  <div class="cad-image-inner">
+                    <app-image class="img" [src]="cad.img" [bigPicSrc]="cad.imgLarge" (click)="openCad(cad)"></app-image>
+                    @if (!config.showBarcode) {
+                      <div class="排版编号">{{ cad.data.info.groupId }}</div>
+                    }
+                  </div>
+                </div>
+                <div class="cad-info flex-column">
+                  @for (zhankai of cad.zhankai; track $index) {
+                    <div class="cad-size flex-row">
+                      @if (isLvxingcai) {
+                        <span>长{{ zhankai.height }}mm</span>
+                      } @else {
+                        <span class="highlight">{{ zhankai.width }}</span>
+                        <span class="sign">×</span>
+                        <span>{{ zhankai.height }}</span>
+                        @if (hasZhankaiNum(zhankai)) {
+                          <span class="sign">=</span>
+                          <span>{{ zhankai.num }}</span>
+                        }
+                      }
+                    </div>
+                  }
+                </div>
               </div>
-            </div>
+            }
           </div>
         </div>
-      </div>
-    </ng-container>
-    <ng-template #cads>
-      <div class="flex-row flex-110">
-        <div class="配件模块 flex-column out-of-page" *ngIf="type === '配件模块' && order.mokuaiInfo">
-          <div *ngFor="let info of order.mokuaiInfo.details">
-            <span *ngIf="info.title">{{ info.title }}：</span>
-            <span>{{ info.value }}</span>
-          </div>
-          <div class="flex-110 flex-row">
-            <div class="flex-colummn">
-              <div class="formula-infos" *ngFor="let info of order.mokuaiInfo.formulaInfos; let j = index">
-                <mat-divider *ngIf="j > 0"></mat-divider>
-                <div class="title flex-row">
-                  <span>{{ info.title }}</span>
-                  <button
-                    *ngIf="info.title === '测试数据'"
-                    class="no-print"
-                    mat-raised-button
-                    [color]="calcResults[order.mokuaiInfo.index].fulfilled ? 'primary' : 'accent'"
-                    (click)="editMokuaiFormulas(order.mokuaiInfo.index)"
-                  >
-                    编辑
-                  </button>
-                </div>
-                <app-formulas [formulaInfos]="info.infos" [keyStyles]="{color: 'black'}"></app-formulas>
-              </div>
-            </div>
-            <div class="image-container flex-column">
-              <app-image [src]="mokuais[order.mokuaiInfo.index].xiaoguotu" [prefix]="urlPrefix"></app-image>
-            </div>
-          </div>
-        </div>
-        <div #cadsEl class="cads flex-110 flex-row">
-          <div class="cad flex-column" *ngFor="let cad of order.cads" [ngStyle]="cad.style">
-            <div class="cad-tags flex-column">
-              <div *ngFor="let item of cad.data.info['标签信息']" [ngStyle]="isArray(item) ? item[1] : {}">
-                {{ isArray(item) ? item[0] : item }}
-              </div>
-            </div>
-            <div *ngIf="config.showBarcode">
-              <svg class="barcode" [attr.jsbarcode-value]="cad.data.info.groupId"></svg>
-            </div>
-            <div class="cad-image flex-110 flex-column" [ngStyle]="cad.imgStyle">
-              <div class="cad-image-inner">
-                <app-image class="img" [src]="cad.img" [bigPicSrc]="cad.imgLarge" (click)="openCad(cad)"></app-image>
-                <div class="排版编号" *ngIf="!config.showBarcode">{{ cad.data.info.groupId }}</div>
-              </div>
-            </div>
-            <div class="cad-info flex-column">
-              <div class="cad-size flex-row" *ngFor="let zhankai of cad.zhankai">
-                <ng-container *ngIf="isLvxingcai; else cadSizeNormal">
-                  <span>长{{ zhankai.height }}mm</span>
-                </ng-container>
-                <ng-template #cadSizeNormal>
-                  <span class="highlight">{{ zhankai.width }}</span>
-                  <span class="sign">×</span>
-                  <span>{{ zhankai.height }}</span>
-                  <ng-container *ngIf="hasZhankaiNum(zhankai)">
-                    <span class="sign">=</span>
-                    <span>{{ zhankai.num }}</span>
-                  </ng-container>
-                </ng-template>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ng-template>
-  </div>
+      }
+    </div>
+  }
 </div>
 
 <div class="forms">
-  <div class="form" [ngClass]="type" *ngFor="let form of forms">
-    <div class="title" *ngIf="form.title">{{ form.title }}</div>
-    <div class="form-inner">
-      <ng-template *ngTemplateOutlet="formItem; context: {$implicit: form}"></ng-template>
-      <div class="barcode-container" *ngIf="form.barCode">
-        <svg class="barcode value" [attr.jsbarcode-value]="form.barCode"></svg>
+  @for (form of forms; track $index) {
+    <div class="form" [class]="type">
+      @if (form.title) {
+        <div class="title">{{ form.title }}</div>
+      }
+      <div class="form-inner">
+        <ng-template *ngTemplateOutlet="formItem; context: {$implicit: form}"></ng-template>
+        @if (form.barCode) {
+          <div class="barcode-container">
+            <svg class="barcode value" [attr.jsbarcode-value]="form.barCode"></svg>
+          </div>
+        }
       </div>
     </div>
-  </div>
+  }
 </div>
 
 <ng-template #formItem let-form [appTypedTemplate]="{$implicit: forms[0]}">
-  <div class="row" *ngFor="let row of form.rows">
-    <div class="item" *ngFor="let item of row" [ngStyle]="item.style">
-      <div class="label" [ngStyle]="item.labelStyle">{{ item.label }}</div>
-      <div class="value" [ngStyle]="item.valueStyle">
-        <ng-container [ngSwitch]="item.type">
-          <app-image *ngSwitchCase="'image'" [src]="item.value" [prefix]="remoteFilePath"></app-image>
-          <ng-container *ngSwitchDefault>{{ item.value }}</ng-container>
-        </ng-container>
-      </div>
+  @for (row of form.rows; track $index) {
+    <div class="row">
+      @for (item of row; track $index) {
+        <div class="item" [style]="item.style">
+          <div class="label" [style]="item.labelStyle">{{ item.label }}</div>
+          <div class="value" [style]="item.valueStyle">
+            @switch (item.type) {
+              @case ("image") {
+                <app-image [src]="item.value" [prefix]="remoteFilePath"></app-image>
+              }
+              @default {
+                {{ item.value }}
+              }
+            }
+          </div>
+        </div>
+      }
     </div>
-  </div>
+  }
 </ng-template>
 
 <div class="btn-group toolbar no-print">
   <button mat-raised-button color="primary" (click)="print()">打印</button>
-  <ng-container *ngIf="!production">
+  @if (!production) {
     <button mat-raised-button color="primary" (click)="clearHttpCache()">clearHttpCache</button>
     <mat-slide-toggle [(ngModel)]="config.showCadSmallImg" (change)="onConfigChange()">渲染小图</mat-slide-toggle>
     <mat-slide-toggle [(ngModel)]="config.showCadLargeImg" (change)="onConfigChange()">渲染大图</mat-slide-toggle>
-  </ng-container>
+  }
 </div>

@@ -65,7 +65,7 @@
                       </div>
                     } @else {
                       <div class="empty-cad item link" (click)="selectShiyituCad(key1)">
-                        <div class="box border" [ngStyle]="{'width.px': cadWidth, 'height.px': cadHeight}"></div>
+                        <div class="box border" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}"></div>
                       </div>
                     }
                   </div>
@@ -85,7 +85,7 @@
                 }
               </div>
               @if (data.isKailiao && key1Infos[key1].isLoaded) {
-                <app-suanliao-tables [ngClass]="key1" [suanliaoDataParams]="key1Infos[key1].suanliaoDataParams"></app-suanliao-tables>
+                <app-suanliao-tables [class]="key1" [suanliaoDataParams]="key1Infos[key1].suanliaoDataParams"></app-suanliao-tables>
               }
             </div>
           </div>
@@ -113,7 +113,7 @@
   } @else {
     <div class="empty-cad item link" (click)="selectCad0({key1, key2, key3})">
       <div class="name">{{ cadNameMap[key3] || key3 }}</div>
-      <div class="box border" [ngStyle]="{'width.px': cadWidth, 'height.px': cadHeight}"></div>
+      <div class="box border" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}"></div>
     </div>
   }
 </ng-template>

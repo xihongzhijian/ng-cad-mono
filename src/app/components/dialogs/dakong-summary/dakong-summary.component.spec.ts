@@ -1,10 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
-import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {HttpModule} from "@modules/http/http.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {DakongSummaryComponent} from "./dakong-summary.component";
 import {DakongSummaryInput} from "./dakong-summary.types";
 
@@ -30,11 +27,8 @@ describe("DakongSummaryComponent", () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, HttpModule, MatButtonModule, MatSlideToggleModule, NgScrollbarModule, DakongSummaryComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [DakongSummaryComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
     });
     fixture = TestBed.createComponent(DakongSummaryComponent);
     component = fixture.componentInstance;

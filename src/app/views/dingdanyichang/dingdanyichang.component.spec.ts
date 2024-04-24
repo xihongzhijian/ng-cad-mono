@@ -1,6 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {RouterModule} from "@angular/router";
-import {routesInfo} from "@app/routing/routes-info";
+import {provideRouter} from "@angular/router";
 import {DingdanyichangComponent} from "./dingdanyichang.component";
 
 describe("DingdanyichangComponent", () => {
@@ -9,7 +8,8 @@ describe("DingdanyichangComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DingdanyichangComponent, RouterModule.forRoot(routesInfo)]
+      imports: [DingdanyichangComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(DingdanyichangComponent);

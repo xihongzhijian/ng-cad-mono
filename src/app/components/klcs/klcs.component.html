@@ -8,7 +8,7 @@
   @for (group of inputInfos2; track group; let i = $index) {
     <div class="qiezhongkong-item">
       @for (info of group; track info) {
-        <app-input [info]="info" [ngClass]="info.label"></app-input>
+        <app-input [info]="info" [class]="info.label"></app-input>
       }
     </div>
   }
@@ -26,7 +26,7 @@
             <button mat-raised-button color="primary" (click)="removeQiezhongkongItem(i)">删除</button>
           </div>
           @for (info of group; track info) {
-            <app-input [info]="info" [ngClass]="info.label"></app-input>
+            <app-input [info]="info" [class]="info.label"></app-input>
           }
         </div>
       }
@@ -47,7 +47,7 @@
             <button mat-raised-button color="primary" (click)="removeQiezhongkongItem(i)">删除</button>
           </div>
           @for (info of group; track info) {
-            <app-input [info]="info" [ngClass]="info.label"></app-input>
+            <app-input [info]="info" [class]="info.label"></app-input>
           }
         </div>
       }

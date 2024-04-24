@@ -1,8 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
+import {provideRouter} from "@angular/router";
 import {CadLineTjqzComponent} from "./cad-line-tjqz.component";
 
 describe("CadLineTjqzComponent", () => {
@@ -11,11 +9,8 @@ describe("CadLineTjqzComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MessageModule, SpinnerModule, CadLineTjqzComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: {}}
-      ]
+      imports: [CadLineTjqzComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: {}}, {provide: MatDialogRef, useValue: {}}, provideRouter([])]
     }).compileComponents();
   });
 

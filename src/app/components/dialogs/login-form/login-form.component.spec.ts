@@ -1,12 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {ReactiveFormsModule} from "@angular/forms";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatIconModule} from "@angular/material/icon";
-import {MatInputModule} from "@angular/material/input";
-import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
+import {provideAnimations} from "@angular/platform-browser/animations";
 import {RECAPTCHA_V3_SITE_KEY, RecaptchaV3Module} from "ng-recaptcha";
 import {LoginFormComponent, LoginFormData} from "./login-form.component";
 
@@ -18,21 +12,12 @@ describe("LoginFormComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        BrowserAnimationsModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        MessageModule,
-        ReactiveFormsModule,
-        RecaptchaV3Module,
-        SpinnerModule,
-        LoginFormComponent
-      ],
+      imports: [LoginFormComponent, RecaptchaV3Module],
       providers: [
-        {provide: MatDialogRef, useValue: {}},
         {provide: MAT_DIALOG_DATA, useValue: data},
-        {provide: RECAPTCHA_V3_SITE_KEY, useValue: ""}
+        {provide: MatDialogRef, useValue: {}},
+        {provide: RECAPTCHA_V3_SITE_KEY, useValue: ""},
+        provideAnimations()
       ]
     }).compileComponents();
   });

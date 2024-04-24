@@ -1,9 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatButtonModule} from "@angular/material/button";
-import {MatMenuModule} from "@angular/material/menu";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {getTestData, importZixuanpeijian} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
 import {PjmkComponent} from "./pjmk.component";
 
 describe("PjmkComponent", () => {
@@ -12,7 +10,8 @@ describe("PjmkComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MatButtonModule, MatMenuModule, MessageModule, PjmkComponent]
+      imports: [PjmkComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PjmkComponent);

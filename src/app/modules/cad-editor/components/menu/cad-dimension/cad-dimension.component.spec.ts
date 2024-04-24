@@ -1,9 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatButtonModule} from "@angular/material/button";
-import {MatDialogModule} from "@angular/material/dialog";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
+import {provideRouter} from "@angular/router";
 import {CadDimensionComponent} from "./cad-dimension.component";
 
 describe("CadDimensionComponent", () => {
@@ -12,7 +8,8 @@ describe("CadDimensionComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MatButtonModule, MatDialogModule, MessageModule, SpinnerModule, CadDimensionComponent]
+      imports: [CadDimensionComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 

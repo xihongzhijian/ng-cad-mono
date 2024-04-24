@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {HttpModule} from "@modules/http/http.module";
+import {provideRouter} from "@angular/router";
 import {CadImageComponent} from "./cad-image.component";
 
 describe("CadImageComponent", () => {
@@ -8,7 +8,8 @@ describe("CadImageComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CadImageComponent, HttpModule]
+      imports: [CadImageComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(CadImageComponent);

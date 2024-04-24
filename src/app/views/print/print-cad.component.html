@@ -54,7 +54,7 @@
   }
   <div class="cad-container" #cadContainer>
     @if (pdfUrl) {
-      <embed [ngClass]="{hidden: mode !== 'print'}" name="算料单" width="100%" height="100%" [src]="pdfUrl" type="application/pdf" />
+      <embed [class]="{hidden: mode !== 'print'}" name="算料单" width="100%" height="100%" [src]="pdfUrl" type="application/pdf" />
     }
   </div>
   @if (mode === "edit") {

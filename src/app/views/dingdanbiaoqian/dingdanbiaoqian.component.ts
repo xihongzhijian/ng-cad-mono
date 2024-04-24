@@ -1,4 +1,4 @@
-import {NgClass, NgFor, NgIf, NgStyle, NgSwitch, NgSwitchCase, NgSwitchDefault, NgTemplateOutlet} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -44,21 +44,14 @@ import {DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig} from "./din
   styleUrls: ["./dingdanbiaoqian.component.scss"],
   standalone: true,
   imports: [
-    NgFor,
-    NgStyle,
-    NgIf,
-    NgClass,
-    ImageComponent,
-    MatDividerModule,
-    MatButtonModule,
+    FormsModule,
     FormulasComponent,
-    NgTemplateOutlet,
-    TypedTemplateDirective,
-    NgSwitch,
-    NgSwitchCase,
-    NgSwitchDefault,
+    ImageComponent,
+    MatButtonModule,
+    MatDividerModule,
     MatSlideToggleModule,
-    FormsModule
+    NgTemplateOutlet,
+    TypedTemplateDirective
   ]
 })
 export class DingdanbiaoqianComponent implements OnInit {

@@ -1,7 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MessageModule} from "@app/modules/message/message.module";
 import {CadLineTjqzSelectComponent} from "./cad-line-tjqz-select.component";
 
 describe("CadLineTjqzSelectComponent", () => {
@@ -10,10 +8,10 @@ describe("CadLineTjqzSelectComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatFormFieldModule, MessageModule, CadLineTjqzSelectComponent],
+      imports: [CadLineTjqzSelectComponent],
       providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: {}}
+        {provide: MAT_DIALOG_DATA, useValue: {}},
+        {provide: MatDialogRef, useValue: {}}
       ]
     }).compileComponents();
   });

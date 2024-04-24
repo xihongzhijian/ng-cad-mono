@@ -1,6 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {HttpModule} from "@modules/http/http.module";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {getXinghaoData, getXinghaoGongyi, getXinghaoMenchuang} from "../lurushuju-index/lurushuju-index.utils";
 import {SelectGongyiDialogComponent} from "./select-gongyi-dialog.component";
 import {SelectGongyiInput} from "./select-gongyi-dialog.types";
@@ -19,11 +20,8 @@ describe("SelectGongyiDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, SelectGongyiDialogComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [SelectGongyiDialogComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SelectGongyiDialogComponent);

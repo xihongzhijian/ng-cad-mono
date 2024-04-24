@@ -1,4 +1,3 @@
-import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 import {ListRandom} from "@lucilor/utils";
 import {NgxUiLoaderModule, SPINNER} from "ngx-ui-loader";
@@ -32,7 +31,6 @@ const spinnerTypeList = new ListRandom(spinnerTypes);
 
 @NgModule({
   imports: [
-    CommonModule,
     NgxUiLoaderModule.forRoot({
       fgsColor: "#2196f3",
       bgsColor: "#2196f3",

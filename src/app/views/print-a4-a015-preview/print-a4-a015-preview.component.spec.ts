@@ -1,8 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideRouter} from "@angular/router";
 import {PrintA4A015PreviewComponent} from "./print-a4-a015-preview.component";
 
 describe("PrintA4A015PreviewComponent", () => {
@@ -11,7 +8,8 @@ describe("PrintA4A015PreviewComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MessageModule, NgScrollbarModule, SpinnerModule, PrintA4A015PreviewComponent]
+      imports: [PrintA4A015PreviewComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 

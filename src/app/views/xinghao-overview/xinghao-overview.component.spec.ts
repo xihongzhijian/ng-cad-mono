@@ -1,7 +1,5 @@
-import {DragDropModule} from "@angular/cdk/drag-drop";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
+import {provideRouter} from "@angular/router";
 import {XinghaoOverviewComponent} from "./xinghao-overview.component";
 
 describe("XinghaoOverviewComponent", () => {
@@ -10,7 +8,8 @@ describe("XinghaoOverviewComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DragDropModule, HttpModule, MessageModule, XinghaoOverviewComponent]
+      imports: [XinghaoOverviewComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(XinghaoOverviewComponent);

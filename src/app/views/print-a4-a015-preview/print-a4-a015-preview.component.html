@@ -4,7 +4,6 @@
       @for (card of page; track card; let j = $index) {
         <div class="card" [style.margin-top]="getTop(j)" [style.margin-left]="getLeft(j)">
           @if (card.type === "说明") {
-            <!-- <div class="title" *ngIf="card.title">{{ card.title }}</div> -->
             <div class="desc-left">
               @for (t of card.text; track t) {
                 <div>{{ t }}</div>

@@ -1,4 +1,3 @@
-import {NgStyle} from "@angular/common";
 import {AfterViewInit, ElementRef, EventEmitter, Output} from "@angular/core";
 import {QueryList} from "@angular/core";
 import {ViewChildren} from "@angular/core";
@@ -13,7 +12,7 @@ import {lastValueFrom, Subject} from "rxjs";
   templateUrl: "./formulas.component.html",
   styleUrls: ["./formulas.component.scss"],
   standalone: true,
-  imports: [NgStyle]
+  imports: []
 })
 export class FormulasComponent implements AfterViewInit {
   private _formulaInfos: FormulaInfo[] = [];

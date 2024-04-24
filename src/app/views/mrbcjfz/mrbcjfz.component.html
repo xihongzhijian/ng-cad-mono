@@ -19,10 +19,10 @@
         @if (i > 0) {
           <mat-divider></mat-divider>
         }
-        <div class="bancai flex-column" [ngClass]="{active: key === activeBancaiKey}" (click)="selectBancaiKey(key)">
+        <div class="bancai flex-column" [class]="{active: key === activeBancaiKey}" (click)="selectBancaiKey(key)">
           <div class="bancai-info flex-row">
             <div class="title">{{ key }}:</div>
-            <div class="bancai-text" [ngStyle]="getBancaiStyle(key)">{{ xinghao.getBancaiTitle(key, "请选择") }}</div>
+            <div class="bancai-text" [style]="getBancaiStyle(key)">{{ xinghao.getBancaiTitle(key, "请选择") }}</div>
             <button mat-raised-button color="primary" (click)="editBancaiForm(key)">编辑</button>
             <button mat-raised-button color="primary" (click)="emptyBancaiForm(key)">清空</button>
           </div>

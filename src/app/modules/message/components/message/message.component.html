@@ -9,14 +9,14 @@
   }
   @default {
     @if (titleHTML) {
-      <div mat-dialog-title [ngClass]="titleClass" [innerHTML]="titleHTML"></div>
+      <div mat-dialog-title [class]="titleClass" [innerHTML]="titleHTML"></div>
     }
     @if (subTitleHTML) {
       <div mat-dialog-title class="sub-title" [innerHTML]="subTitleHTML"></div>
     }
   }
 }
-<div mat-dialog-content [ngClass]="data.type">
+<div mat-dialog-content [class]="data.type">
   <ng-scrollbar>
     @switch (data.type) {
       @case ("editor") {

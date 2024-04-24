@@ -1,8 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatButtonModule} from "@angular/material/button";
-import {MatDividerModule} from "@angular/material/divider";
-import {HttpModule} from "@modules/http/http.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideRouter} from "@angular/router";
 import {MrbcjfzComponent} from "./mrbcjfz.component";
 
 describe("MrbcjfzComponent", () => {
@@ -11,7 +8,8 @@ describe("MrbcjfzComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MatDividerModule, MatButtonModule, NgScrollbarModule, MrbcjfzComponent]
+      imports: [MrbcjfzComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MrbcjfzComponent);

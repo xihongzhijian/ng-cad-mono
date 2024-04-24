@@ -1,5 +1,5 @@
 import {A11yModule} from "@angular/cdk/a11y";
-import {NgClass, NgTemplateOutlet} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
   Component,
@@ -42,7 +42,6 @@ import {validateForm} from "./message.utils";
     MatDialogContent,
     MatDialogTitle,
     MatIconModule,
-    NgClass,
     NgScrollbarModule,
     NgTemplateOutlet,
     QuillEditorComponent

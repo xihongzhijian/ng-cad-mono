@@ -55,7 +55,7 @@
               @if (!data?.["铰扇跟随锁扇"] || !item.key.includes("铰扇")) {
                 <div
                   class="flex-column menshan-option"
-                  [ngClass]="{active: activeMenshanKey === item.key}"
+                  [class]="{active: activeMenshanKey === item.key}"
                   (click)="selectMenshanKey(item.key)"
                 >
                   <div style="font-weight: bold">{{ item.key }}</div>
@@ -96,7 +96,7 @@
         </div>
         <div class="flex-column flex-110">
           <ng-scrollbar>
-            <div class="flex-row" style="flex-wrap: wrap" [ngStyle]="{display: showMokuais ? 'flex' : 'none'}">
+            <div class="flex-row" style="flex-wrap: wrap" [style]="{display: showMokuais ? 'flex' : 'none'}">
               @for (mokuai of activeMokuaiNode?.["可选模块"]; track mokuai) {
                 <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai, isActive: isMokuaiActive(mokuai)}"> </ng-template>
               }
@@ -149,7 +149,7 @@
 }
 
 <ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai let-isActive="isActive">
-  <div class="flex-column mokuai" [ngClass]="{active: isActive}">
+  <div class="flex-column mokuai" [class]="{active: isActive}">
     <div class="flex-column" (click)="selectMokuai(mokuai)">
       <app-image class="mokuai-xiaoguotu" [src]="mokuai?.xiaoguotu" [prefix]="urlPrefix"></app-image>
       <div class="flex-row" style="align-items: center">
@@ -163,7 +163,7 @@
       }
     </div>
     @if (!isFromOrder) {
-      <div class="default-sign" [ngClass]="{active: mokuai?.info?.isDefault}" (click)="setDefaultMokuai(mokuai)">默认</div>
+      <div class="default-sign" [class]="{active: mokuai?.info?.isDefault}" (click)="setDefaultMokuai(mokuai)">默认</div>
     }
   </div>
 </ng-template>

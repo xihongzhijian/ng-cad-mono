@@ -1,4 +1,4 @@
-import {KeyValuePipe, NgClass, NgStyle, NgTemplateOutlet} from "@angular/common";
+import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -53,23 +53,21 @@ const table = "p_xinghaomorenmenshanbuju";
   styleUrls: ["./xhmrmsbj.component.scss"],
   standalone: true,
   imports: [
+    FormsModule,
+    ImageComponent,
+    InputComponent,
+    KeyValuePipe,
     MatButtonModule,
     MatDividerModule,
-    MatSlideToggleModule,
-    FormsModule,
-    NgScrollbar,
-    NgClass,
-    MsbjRectsComponent,
-    InputComponent,
-    NgStyle,
-    NgTemplateOutlet,
     MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    TypedTemplateDirective,
-    ImageComponent,
     MatIconModule,
-    KeyValuePipe
+    MatOptionModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+    MsbjRectsComponent,
+    NgScrollbar,
+    NgTemplateOutlet,
+    TypedTemplateDirective
   ]
 })
 export class XhmrmsbjComponent implements OnInit, OnDestroy {

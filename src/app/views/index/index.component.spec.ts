@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {CadEditorModule} from "@modules/cad-editor/cad-editor.module";
-import {HttpModule} from "@modules/http/http.module";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {IndexComponent} from "./index.component";
 
 describe("IndexComponent", () => {
@@ -9,7 +9,8 @@ describe("IndexComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CadEditorModule, HttpModule, IndexComponent]
+      imports: [IndexComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

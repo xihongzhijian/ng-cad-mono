@@ -1,12 +1,8 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatCardModule} from "@angular/material/card";
-import {MatExpansionModule} from "@angular/material/expansion";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {imgCadEmpty} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
 import {Bancai, PiliangjianbanComponent} from "./piliangjianban.component";
 
 const bancais: Bancai[] = [
@@ -42,7 +38,8 @@ describe("PiliangjianbanComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MatCardModule, MatExpansionModule, MessageModule, NgScrollbarModule, SpinnerModule, PiliangjianbanComponent]
+      imports: [PiliangjianbanComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

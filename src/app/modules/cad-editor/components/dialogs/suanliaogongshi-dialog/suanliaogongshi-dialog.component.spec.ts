@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {HttpModule} from "@modules/http/http.module";
+import {provideRouter} from "@angular/router";
 import {SuanliaogongshiDialogComponent} from "./suanliaogongshi-dialog.component";
 import {SuanliaogongshiDialogInput} from "./suanliaogongshi-dialog.types";
 
@@ -15,11 +15,8 @@ describe("SuanliaogongshiDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, SuanliaogongshiDialogComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [SuanliaogongshiDialogComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SuanliaogongshiDialogComponent);

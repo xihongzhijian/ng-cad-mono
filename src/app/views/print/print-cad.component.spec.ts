@@ -1,9 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
-import {MatIconModule} from "@angular/material/icon";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {HttpModule} from "@modules/http/http.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {PrintCadComponent} from "./print-cad.component";
 
 describe("PrintCADComponent", () => {
@@ -12,7 +9,8 @@ describe("PrintCADComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormsModule, HttpModule, MatIconModule, MatSlideToggleModule, SpinnerModule, PrintCadComponent]
+      imports: [PrintCadComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

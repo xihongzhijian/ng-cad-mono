@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {HttpModule} from "@modules/http/http.module";
+import {provideRouter} from "@angular/router";
 import {TongyongshujuDialogComponent} from "./tongyongshuju-dialog.component";
 import {TongyongshujuInput} from "./tongyongshuju-dialog.types";
 
@@ -12,11 +12,8 @@ describe("TongyongshujuDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, TongyongshujuDialogComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [TongyongshujuDialogComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TongyongshujuDialogComponent);

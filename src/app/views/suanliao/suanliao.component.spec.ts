@@ -1,6 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
+import {provideRouter} from "@angular/router";
 import {SuanliaoComponent} from "./suanliao.component";
 
 describe("SuanliaoComponent", () => {
@@ -9,7 +8,8 @@ describe("SuanliaoComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MessageModule, SuanliaoComponent]
+      imports: [SuanliaoComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SuanliaoComponent);

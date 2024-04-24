@@ -1,4 +1,3 @@
-import {CommonModule} from "@angular/common";
 import {Component, ElementRef, HostBinding, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
@@ -16,7 +15,7 @@ import {TableData, TableInfoData, XikongData, XikongDataRaw} from "./print-table
 @Component({
   selector: "app-print-table",
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatDividerModule, TableComponent],
+  imports: [MatButtonModule, MatDividerModule, TableComponent],
   templateUrl: "./print-table.component.html",
   styleUrl: "./print-table.component.scss"
 })

@@ -1,13 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
-import {MatCardModule} from "@angular/material/card";
-import {MatExpansionModule} from "@angular/material/expansion";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {provideRouter} from "@angular/router";
 import {imgEmpty} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {DingdanbiaoqianComponent} from "./dingdanbiaoqian.component";
 import {Order} from "./dingdanbiaoqian.types";
 
@@ -42,16 +36,8 @@ describe("DingdanbiaoqianComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        HttpModule,
-        MatCardModule,
-        MatExpansionModule,
-        MatSlideToggleModule,
-        MessageModule,
-        SpinnerModule,
-        DingdanbiaoqianComponent
-      ]
+      imports: [DingdanbiaoqianComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 

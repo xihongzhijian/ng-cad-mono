@@ -1,6 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {HttpModule} from "@modules/http/http.module";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {get算料数据2} from "../xinghao-data";
 import {SuanliaoTestDialogComponent} from "./suanliao-test-dialog.component";
 import {SuanliaoTestInput} from "./suanliao-test-dialog.types";
@@ -31,11 +32,8 @@ describe("SuanliaoTestDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, SuanliaoTestDialogComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [SuanliaoTestDialogComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SuanliaoTestDialogComponent);

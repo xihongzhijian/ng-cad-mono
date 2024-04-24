@@ -1,6 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, CdkDropListGroup, moveItemInArray} from "@angular/cdk/drag-drop";
 import {TextFieldModule} from "@angular/cdk/text-field";
-import {CommonModule} from "@angular/common";
+import {AsyncPipe, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
   Component,
@@ -62,6 +62,7 @@ import {getValue, parseObjectString} from "./input.utils";
   standalone: true,
   imports: [
     AnchorSelectorComponent,
+    AsyncPipe,
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
@@ -69,10 +70,10 @@ import {getValue, parseObjectString} from "./input.utils";
     ClickStopPropagationDirective,
     ColorChromeModule,
     ColorCircleModule,
-    CommonModule,
     FormsModule,
     forwardRef(() => CadImageComponent),
     ImageComponent,
+    KeyValuePipe,
     MatAutocompleteModule,
     MatButtonModule,
     MatDividerModule,
@@ -85,6 +86,7 @@ import {getValue, parseObjectString} from "./input.utils";
     MatSelectModule,
     MatTooltipModule,
     NgScrollbarModule,
+    NgTemplateOutlet,
     TextFieldModule
   ]
 })

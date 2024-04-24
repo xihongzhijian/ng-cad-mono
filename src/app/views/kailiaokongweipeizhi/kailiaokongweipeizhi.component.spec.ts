@@ -1,10 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatCardModule} from "@angular/material/card";
-import {KlkwpzComponent} from "@components/klkwpz/klkwpz.component";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideRouter} from "@angular/router";
 import {KailiaokongweipeizhiComponent} from "./kailiaokongweipeizhi.component";
 
 describe("KailiaokongweipeizhiComponent", () => {
@@ -13,7 +8,8 @@ describe("KailiaokongweipeizhiComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MatCardModule, MessageModule, NgScrollbarModule, SpinnerModule, KailiaokongweipeizhiComponent, KlkwpzComponent]
+      imports: [KailiaokongweipeizhiComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 

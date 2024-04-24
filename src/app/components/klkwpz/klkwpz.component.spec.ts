@@ -1,8 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatCardModule} from "@angular/material/card";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {KlkwpzComponent} from "./klkwpz.component";
 
 describe("KlkwpzComponent", () => {
@@ -11,7 +9,8 @@ describe("KlkwpzComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MatCardModule, MessageModule, NgScrollbarModule, KlkwpzComponent]
+      imports: [KlkwpzComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(KlkwpzComponent);

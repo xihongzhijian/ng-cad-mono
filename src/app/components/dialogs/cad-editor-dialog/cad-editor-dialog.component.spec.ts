@@ -1,8 +1,8 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {CadData} from "@lucilor/cad-viewer";
-import {CadEditorModule} from "@modules/cad-editor/cad-editor.module";
-import {HttpModule} from "@modules/http/http.module";
 import {CadEditorDialogComponent, CadEditorInput} from "./cad-editor-dialog.component";
 
 const data: CadEditorInput = {data: new CadData({name: "test"}), collection: "cad"};
@@ -13,11 +13,8 @@ describe("CadEditorDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CadEditorModule, HttpModule, CadEditorDialogComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [CadEditorDialogComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(CadEditorDialogComponent);

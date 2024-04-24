@@ -1,13 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatDialogModule} from "@angular/material/dialog";
-import {MatDividerModule} from "@angular/material/divider";
-import {MatMenuModule} from "@angular/material/menu";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {MatTooltipModule} from "@angular/material/tooltip";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {SubCadsComponent} from "./sub-cads.component";
 
 describe("SubCadsComponent", () => {
@@ -16,18 +9,8 @@ describe("SubCadsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpModule,
-        MatDialogModule,
-        MatDividerModule,
-        MatMenuModule,
-        MatSlideToggleModule,
-        MatTooltipModule,
-        MessageModule,
-        NgScrollbarModule,
-        SpinnerModule,
-        SubCadsComponent
-      ]
+      imports: [SubCadsComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

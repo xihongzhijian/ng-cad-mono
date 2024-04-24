@@ -20,14 +20,14 @@
         <div class="title">CAD开孔情况</div>
         <div class="row">
           @for (col of tableColumns; track col) {
-            <div [ngClass]="['cell', col.field]">{{ col.name }}</div>
+            <div [class]="['cell', col.field]">{{ col.name }}</div>
           }
         </div>
         @for (item of info.data; track item) {
           @if (!item.hidden) {
             <div class="row">
               @for (col of tableColumns; track col) {
-                <div [ngClass]="['cell', col.field]">
+                <div [class]="['cell', col.field]">
                   @switch (col.field) {
                     @case ("count") {
                       <span>

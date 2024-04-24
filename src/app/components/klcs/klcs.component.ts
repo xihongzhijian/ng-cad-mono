@@ -1,4 +1,3 @@
-import {NgClass} from "@angular/common";
 import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
@@ -18,7 +17,7 @@ import {InputComponent} from "../../modules/input/components/input.component";
   templateUrl: "./klcs.component.html",
   styleUrls: ["./klcs.component.scss"],
   standalone: true,
-  imports: [InputComponent, NgClass, NgScrollbar, MatButtonModule]
+  imports: [InputComponent, MatButtonModule, NgScrollbar]
 })
 export class KlcsComponent implements OnInit, AfterViewInit {
   private _data: KailiaocanshuData = {_id: "", 名字: "", 分类: "", 参数: []};

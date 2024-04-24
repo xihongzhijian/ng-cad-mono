@@ -1,12 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
-import {MatButtonModule} from "@angular/material/button";
-import {MatDividerModule} from "@angular/material/divider";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideRouter} from "@angular/router";
 import {XhmrmsbjComponent} from "./xhmrmsbj.component";
 
 describe("XhmrmsbjComponent", () => {
@@ -15,17 +8,8 @@ describe("XhmrmsbjComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        HttpModule,
-        MatButtonModule,
-        MatDividerModule,
-        MatSlideToggleModule,
-        MessageModule,
-        NgScrollbarModule,
-        MsbjRectsComponent,
-        XhmrmsbjComponent
-      ]
+      imports: [XhmrmsbjComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(XhmrmsbjComponent);

@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {HttpModule} from "@modules/http/http.module";
+import {provideRouter} from "@angular/router";
 import {SuanliaoTablesComponent} from "./suanliao-tables.component";
 
 describe("SuanliaoTablesComponent", () => {
@@ -8,7 +8,8 @@ describe("SuanliaoTablesComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, SuanliaoTablesComponent]
+      imports: [SuanliaoTablesComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SuanliaoTablesComponent);

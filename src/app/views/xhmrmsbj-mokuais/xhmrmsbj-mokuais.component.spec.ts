@@ -1,10 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatDividerModule} from "@angular/material/divider";
-import {FormulasComponent} from "@components/formulas/formulas.component";
-import {MessageModule} from "@modules/message/message.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
 import {XhmrmsbjMokuaisComponent, XhmrmsbjMokuaisInput} from "./xhmrmsbj-mokuais.component";
 
 const data: XhmrmsbjMokuaisInput = {
@@ -38,10 +33,10 @@ describe("XhmrmsbjMokuaisComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatButtonModule, MatDividerModule, MessageModule, NgScrollbarModule, XhmrmsbjMokuaisComponent, FormulasComponent],
+      imports: [XhmrmsbjMokuaisComponent],
       providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
+        {provide: MAT_DIALOG_DATA, useValue: data},
+        {provide: MatDialogRef, useValue: {}}
       ]
     }).compileComponents();
 

@@ -1,4 +1,3 @@
-import {NgClass} from "@angular/common";
 import {Component, Inject} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -20,7 +19,7 @@ import {DakongSummaryInput, DakongSummaryOutput, DakongSummaryTableData, DakongS
   templateUrl: "./dakong-summary.component.html",
   styleUrls: ["./dakong-summary.component.scss"],
   standalone: true,
-  imports: [CadImageComponent, FormsModule, InputComponent, MatButtonModule, MatSlideToggleModule, NgClass, NgScrollbar]
+  imports: [CadImageComponent, FormsModule, InputComponent, MatButtonModule, MatSlideToggleModule, NgScrollbar]
 })
 export class DakongSummaryComponent {
   tableInfos: DakongSummaryTableInfo[] = [];

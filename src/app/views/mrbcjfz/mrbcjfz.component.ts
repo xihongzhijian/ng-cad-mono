@@ -1,5 +1,5 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {CommonModule} from "@angular/common";
+import {KeyValuePipe} from "@angular/common";
 import {
   Component,
   EventEmitter,
@@ -69,9 +69,9 @@ import {
     CdkDrag,
     CdkDropList,
     ClickStopPropagationDirective,
-    CommonModule,
     ImageComponent,
     InputComponent,
+    KeyValuePipe,
     MatButtonModule,
     MatDividerModule,
     MatIconModule,

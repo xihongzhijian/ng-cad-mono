@@ -1,11 +1,8 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
-import {MatButtonModule} from "@angular/material/button";
-import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from "@angular/material/dialog";
-import {MatSnackBarModule} from "@angular/material/snack-bar";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {timeout} from "@lucilor/utils";
-import {HttpModule} from "@modules/http/http.module";
-import {QuillModule} from "ngx-quill";
 import {MessageComponent} from "./message.component";
 import {MessageData} from "./message.types";
 
@@ -24,11 +21,8 @@ describe("MessageComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormsModule, HttpModule, MatButtonModule, MatDialogModule, MatSnackBarModule, QuillModule, MessageComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: {}}
-      ]
+      imports: [MessageComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: {}}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

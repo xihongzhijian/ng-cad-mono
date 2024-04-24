@@ -4,8 +4,8 @@
       <div
         [id]="info.raw.vid"
         class="rect flex-row"
-        [ngClass]="{'is-buju': info.raw.isBuju, active: info.id === currRectInfo?.id}"
-        [ngStyle]="getRectStyle(info)"
+        [class]="{'is-buju': info.raw.isBuju, active: info.id === currRectInfo?.id}"
+        [style]="getRectStyle(info)"
         (click)="setCurrRectInfo(info)"
         appClickStop
       >

@@ -1,18 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
-import {MatButtonModule} from "@angular/material/button";
-import {MatCardModule} from "@angular/material/card";
-import {MatNativeDateModule} from "@angular/material/core";
-import {MatDatepickerModule} from "@angular/material/datepicker";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatIconModule} from "@angular/material/icon";
-import {MatInputModule} from "@angular/material/input";
-import {MatPaginatorModule} from "@angular/material/paginator";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {CadData} from "@lucilor/cad-viewer";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
 import {BackupComponent} from "./backup.component";
 
 describe("BackupComponent", () => {
@@ -21,22 +10,8 @@ describe("BackupComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        HttpModule,
-        MatButtonModule,
-        MatCardModule,
-        MatDatepickerModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        MatNativeDateModule,
-        MatPaginatorModule,
-        MessageModule,
-        NgScrollbarModule,
-        SpinnerModule,
-        BackupComponent
-      ]
+      imports: [BackupComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

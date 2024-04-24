@@ -1,12 +1,12 @@
 import {TestBed} from "@angular/core/testing";
-import {HttpModule} from "../http.module";
+import {provideRouter} from "@angular/router";
 import {CadDataService} from "./cad-data.service";
 
 describe("CadDataService", () => {
   let service: CadDataService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({imports: [HttpModule]});
+    TestBed.configureTestingModule({providers: [provideRouter([])]});
     service = TestBed.inject(CadDataService);
   });
 

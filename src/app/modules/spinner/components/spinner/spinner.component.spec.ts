@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {SpinnerComponent} from "./spinner.component";
 
 describe("SpinnerComponent", () => {
@@ -8,7 +7,7 @@ describe("SpinnerComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SpinnerModule, SpinnerComponent]
+      imports: [SpinnerComponent]
     }).compileComponents();
   });
 

@@ -1,6 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatButtonModule} from "@angular/material/button";
-import {HttpModule} from "@modules/http/http.module";
+import {provideRouter} from "@angular/router";
 import {CadItemComponent} from "./cad-item.component";
 
 describe("CadItemComponent", () => {
@@ -9,7 +8,8 @@ describe("CadItemComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CadItemComponent, HttpModule, MatButtonModule]
+      imports: [CadItemComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent<CadItemComponent>(CadItemComponent);

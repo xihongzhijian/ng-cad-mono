@@ -1,13 +1,8 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {ReactiveFormsModule} from "@angular/forms";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatInputModule} from "@angular/material/input";
-import {MatSelectModule} from "@angular/material/select";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {CadDimensionLinear} from "@lucilor/cad-viewer";
-import {NgScrollbarModule} from "ngx-scrollbar";
 import {CadDimensionData, CadDimensionFormComponent} from "./cad-dimension-form.component";
 
 const data: CadDimensionData = {data: new CadDimensionLinear()};
@@ -17,20 +12,8 @@ describe("CadDimensionFormComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        BrowserAnimationsModule,
-        MatInputModule,
-        MatFormFieldModule,
-        MatSelectModule,
-        MatSlideToggleModule,
-        NgScrollbarModule,
-        ReactiveFormsModule,
-        CadDimensionFormComponent
-      ],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [CadDimensionFormComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

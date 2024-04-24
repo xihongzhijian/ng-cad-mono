@@ -32,14 +32,14 @@ import {InputComponent} from "../../modules/input/components/input.component";
   styleUrls: ["./formulas-editor.component.scss"],
   standalone: true,
   imports: [
-    forwardRef(() => InputComponent),
-    MatButtonModule,
-    NgScrollbar,
-    CdkDropList,
     CdkDrag,
     CdkDragHandle,
+    CdkDropList,
+    forwardRef(() => InputComponent),
+    KeyValuePipe,
+    MatButtonModule,
     MatIconModule,
-    KeyValuePipe
+    NgScrollbar
   ]
 })
 export class FormulasEditorComponent implements OnChanges {

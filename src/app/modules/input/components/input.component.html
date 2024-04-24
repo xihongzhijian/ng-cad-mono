@@ -1,6 +1,6 @@
 @switch (info.type) {
   @case ("string") {
-    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+    <mat-form-field [class]="{empty: isEmpty(value)}">
       @if (info.label) {
         <mat-label>{{ info.label }}</mat-label>
       }
@@ -84,7 +84,7 @@
     </mat-form-field>
   }
   @case ("number") {
-    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+    <mat-form-field [class]="{empty: isEmpty(value)}">
       @if (info.label) {
         <mat-label>{{ info.label }}</mat-label>
       }
@@ -157,7 +157,7 @@
       }
       @for (item of asObject(value) | keyvalue: returnZero; track item) {
         <div>
-          <mat-form-field style="width: 30%" [ngClass]="{empty: isEmpty(item.key)}">
+          <mat-form-field style="width: 30%" [class]="{empty: isEmpty(item.key)}">
             @if (info.keyLabel) {
               <mat-label>{{ info.keyLabel }}</mat-label>
             }
@@ -180,7 +180,7 @@
               </button>
             }
           </mat-form-field>
-          <mat-form-field style="width: 70%" [ngClass]="{empty: isEmpty(item.value)}">
+          <mat-form-field style="width: 70%" [class]="{empty: isEmpty(item.value)}">
             @if (info.valueLabel) {
               <mat-label>{{ info.valueLabel }}</mat-label>
             }
@@ -244,7 +244,7 @@
         </div>
       }
       @for (c of value; track j; let j = $index) {
-        <mat-form-field [ngClass]="{empty: isEmpty(c)}">
+        <mat-form-field [class]="{empty: isEmpty(c)}">
           @if (info.valueLabel) {
             <mat-label>{{ info.valueLabel }}</mat-label>
           }
@@ -287,7 +287,7 @@
     </div>
   }
   @case ("boolean") {
-    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+    <mat-form-field [class]="{empty: isEmpty(value)}">
       @if (info.label) {
         <mat-label>{{ info.label }}</mat-label>
       }
@@ -319,7 +319,7 @@
     </mat-form-field>
   }
   @case ("select") {
-    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+    <mat-form-field [class]="{empty: isEmpty(value)}">
       @if (info.label) {
         <mat-label>{{ info.label }}</mat-label>
       }
@@ -405,7 +405,7 @@
           }
         </div>
         <div>
-          <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[0])}">
+          <mat-form-field style="width: 50%" [class]="{empty: isEmpty(value[0])}">
             <mat-label>{{ info.labelX || "x" }}</mat-label>
             <mat-select [(ngModel)]="value[0]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
               <ng-scrollbar matSelectViewport>
@@ -419,7 +419,7 @@
             </ng-template>
             <mat-error>{{ getErrorMsg() }}</mat-error>
           </mat-form-field>
-          <mat-form-field style="width: 50%" [ngClass]="{empty: isEmpty(value[1])}">
+          <mat-form-field style="width: 50%" [class]="{empty: isEmpty(value[1])}">
             <mat-label>{{ info.labelY || "y" }}</mat-label>
             <mat-select [(ngModel)]="value[1]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
               <ng-scrollbar matSelectViewport>
@@ -433,7 +433,7 @@
         </div>
       </div>
     } @else {
-      <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+      <mat-form-field [class]="{empty: isEmpty(value)}">
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
@@ -466,7 +466,7 @@
       </mat-form-field>
     }
     <ng-template #coordinate>
-      <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+      <mat-form-field [class]="{empty: isEmpty(value)}">
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
@@ -500,7 +500,7 @@
     </ng-template>
   }
   @case ("color") {
-    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+    <mat-form-field [class]="{empty: isEmpty(value)}">
       @if (info.label) {
         <mat-label>{{ info.label }}</mat-label>
       }
@@ -547,7 +547,7 @@
     </mat-form-field>
   }
   @case ("file") {
-    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+    <mat-form-field [class]="{empty: isEmpty(value)}">
       @if (info.label) {
         <mat-label>{{ info.label }}</mat-label>
       }
@@ -564,7 +564,7 @@
     </mat-form-field>
   }
   @case ("image") {
-    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+    <mat-form-field [class]="{empty: isEmpty(value)}">
       @if (info.label) {
         <mat-label>{{ info.label }}</mat-label>
       }
@@ -580,7 +580,7 @@
     </mat-form-field>
   }
   @case ("formulas") {
-    <mat-form-field [ngClass]="{empty: isEmpty(value)}">
+    <mat-form-field [class]="{empty: isEmpty(value)}">
       @if (info.label) {
         <mat-label>{{ info.label }}</mat-label>
       }
@@ -648,7 +648,7 @@
         <div class="label">
           <span>{{ info.label }}</span>
         </div>
-        <div class="group" [ngStyle]="info.groupStyle">
+        <div class="group" [style]="info.groupStyle">
           @for (info2 of info.infos; track info2) {
             <app-input [info]="info2"></app-input>
           }
@@ -656,7 +656,7 @@
         <ng-template [ngTemplateOutlet]="footer"></ng-template>
       </div>
     } @else {
-      <div class="group" [ngStyle]="info.groupStyle">
+      <div class="group" [style]="info.groupStyle">
         @for (info2 of info.infos; track info2) {
           <app-input [info]="info2"></app-input>
         }

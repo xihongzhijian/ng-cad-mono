@@ -1,11 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MatDialogRef} from "@angular/material/dialog";
-import {MatDividerModule} from "@angular/material/divider";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {InfiniteScrollModule} from "ngx-infinite-scroll";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideRouter} from "@angular/router";
 import {ChangelogComponent} from "./changelog.component";
 
 describe("ChangelogComponent", () => {
@@ -14,8 +9,8 @@ describe("ChangelogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, InfiniteScrollModule, MatDividerModule, MessageModule, NgScrollbarModule, SpinnerModule, ChangelogComponent],
-      providers: [{provide: MatDialogRef, useValue: {}}]
+      imports: [ChangelogComponent],
+      providers: [{provide: MatDialogRef, useValue: {}}, provideRouter([])]
     }).compileComponents();
   });
 

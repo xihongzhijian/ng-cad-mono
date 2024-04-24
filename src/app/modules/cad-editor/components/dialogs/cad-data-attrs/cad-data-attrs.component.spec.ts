@@ -1,11 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatIconModule} from "@angular/material/icon";
-import {MatInputModule} from "@angular/material/input";
-import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {CadDataAttrsComponent, CadDataAttrsComponentData} from "./cad-data-attrs.component";
 
 const data: CadDataAttrsComponentData = {a: "1", b: "2"};
@@ -15,19 +11,8 @@ describe("CadDataAttrsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        BrowserAnimationsModule,
-        FormsModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        NgScrollbarModule,
-        CadDataAttrsComponent
-      ],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [CadDataAttrsComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

@@ -1,13 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
-import {MatButtonModule} from "@angular/material/button";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatIconModule} from "@angular/material/icon";
-import {MatInputModule} from "@angular/material/input";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {CadPointsComponent} from "../../cad-points/cad-points.component";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {CadInfoComponent} from "./cad-info.component";
 
 describe("CadInfoComponent", () => {
@@ -16,19 +9,8 @@ describe("CadInfoComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        HttpModule,
-
-        MatButtonModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        MessageModule,
-        SpinnerModule,
-        CadInfoComponent,
-        CadPointsComponent
-      ]
+      imports: [CadInfoComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {importObject} from "@lucilor/utils";
-import {HttpModule} from "@modules/http/http.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
 import {defaultQiezhongkongItem, KailiaocanshuData, KlcsComponent, QiezhongkongItem} from "./klcs.component";
 
 const 参数: QiezhongkongItem[] = [importObject({}, defaultQiezhongkongItem)];
@@ -13,7 +13,8 @@ describe("KlcsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, NgScrollbarModule, KlcsComponent]
+      imports: [KlcsComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(KlcsComponent);

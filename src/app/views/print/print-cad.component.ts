@@ -1,4 +1,3 @@
-import {NgClass} from "@angular/common";
 import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
@@ -52,16 +51,15 @@ const duration = 400;
   ],
   standalone: true,
   imports: [
-    MatButtonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
     FormsModule,
+    ImageComponent,
     MatAutocompleteModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
     MatOptionModule,
     MatSlideToggleModule,
-    ImageComponent,
-    NgClass,
     SpinnerComponent
   ]
 })

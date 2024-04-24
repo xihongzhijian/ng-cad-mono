@@ -16,8 +16,8 @@ describe("FentiCadDialogComponent", () => {
     await TestBed.configureTestingModule({
       imports: [FentiCadDialogComponent],
       providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
+        {provide: MAT_DIALOG_DATA, useValue: data},
+        {provide: MatDialogRef, useValue: {}}
       ]
     }).compileComponents();
 

@@ -1,11 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatCheckboxModule} from "@angular/material/checkbox";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {MatTableModule} from "@angular/material/table";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideRouter} from "@angular/router";
 import {TableComponent} from "./table.component";
 
 describe("TableComponent", () => {
@@ -14,16 +8,8 @@ describe("TableComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        HttpModule,
-        MatCheckboxModule,
-        MatFormFieldModule,
-        MatSlideToggleModule,
-        MatTableModule,
-        MessageModule,
-        NgScrollbarModule,
-        TableComponent
-      ]
+      imports: [TableComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 

@@ -36,7 +36,7 @@
 
 <ng-scrollbar>
   @if (isShowXikong) {
-    <div [ngClass]="{'xingkong-strings': true, formatted: xikongOptions.codeFormat, wrap: xikongOptions.autoWrap}">
+    <div [class]="{'xingkong-strings': true, formatted: xikongOptions.codeFormat, wrap: xikongOptions.autoWrap}">
       @for (group of xikongStrings; track group) {
         <div class="group">
           @for (item of group; track item) {

@@ -1,9 +1,9 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {defaultQiezhongkongItem, KlcsComponent, QiezhongkongItem} from "@components/klcs/klcs.component";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
+import {defaultQiezhongkongItem, QiezhongkongItem} from "@components/klcs/klcs.component";
 import {importObject} from "@lucilor/utils";
-import {HttpModule} from "@modules/http/http.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
 import {KlcsDialogComponent, KlcsDialogInput} from "./klcs-dialog.component";
 
 const 参数: QiezhongkongItem[] = [importObject({}, defaultQiezhongkongItem)];
@@ -15,11 +15,8 @@ describe("KlcsDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, NgScrollbarModule, KlcsDialogComponent, KlcsComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [KlcsDialogComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(KlcsDialogComponent);

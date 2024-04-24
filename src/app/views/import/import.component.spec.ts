@@ -1,14 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
-import {MatCardModule} from "@angular/material/card";
-import {MatDialogModule} from "@angular/material/dialog";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatInputModule} from "@angular/material/input";
-import {MatRadioModule} from "@angular/material/radio";
-import {ProgressBarComponent} from "@components/progress-bar/progress-bar.component";
-import {HttpModule} from "@modules/http/http.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {ImportComponent} from "./import.component";
 
 describe("ImportComponent", () => {
@@ -17,19 +9,8 @@ describe("ImportComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        HttpModule,
-        MatCardModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatRadioModule,
-        NgScrollbarModule,
-        SpinnerModule,
-        ImportComponent,
-        ProgressBarComponent
-      ]
+      imports: [ImportComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

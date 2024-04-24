@@ -1,4 +1,4 @@
-import {NgClass, NgStyle, NgTemplateOutlet} from "@angular/common";
+import {NgTemplateOutlet} from "@angular/common";
 import {Component, HostBinding, Inject, OnInit, QueryList, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -61,9 +61,7 @@ import {
     InputComponent,
     MatButtonModule,
     MatTabsModule,
-    NgClass,
     NgScrollbarModule,
-    NgStyle,
     NgTemplateOutlet,
     SuanliaoTablesComponent,
     TypedTemplateDirective

@@ -1,13 +1,14 @@
 import {TestBed} from "@angular/core/testing";
-import {HttpModule} from "@modules/http/http.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
+import {provideRouter} from "@angular/router";
 import {AppStatusService} from "./app-status.service";
 
 describe("AppStatusService", () => {
   let service: AppStatusService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({imports: [HttpModule, SpinnerModule]});
+    TestBed.configureTestingModule({
+      providers: [provideRouter([])]
+    });
     service = TestBed.inject(AppStatusService);
   });
 

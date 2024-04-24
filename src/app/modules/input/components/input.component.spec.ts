@@ -1,11 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {FormsModule} from "@angular/forms";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatInputModule} from "@angular/material/input";
-import {MatSelectModule} from "@angular/material/select";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {timeout} from "@lucilor/utils";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
 import {InputComponent} from "./input.component";
 
 describe("InputComponent", () => {
@@ -14,7 +10,8 @@ describe("InputComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormsModule, HttpModule, InputComponent, MatFormFieldModule, MatInputModule, MatSelectModule, MessageModule]
+      imports: [InputComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(InputComponent);

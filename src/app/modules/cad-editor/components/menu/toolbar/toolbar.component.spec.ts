@@ -1,9 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatDividerModule} from "@angular/material/divider";
-import {MatMenuModule} from "@angular/material/menu";
-import {HttpModule} from "@modules/http/http.module";
-import {MessageModule} from "@modules/message/message.module";
-import {SpinnerModule} from "@modules/spinner/spinner.module";
+import {provideRouter} from "@angular/router";
 import {ToolbarComponent} from "./toolbar.component";
 
 describe("ToolbarComponent", () => {
@@ -12,7 +8,8 @@ describe("ToolbarComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MatDividerModule, MatMenuModule, HttpModule, MessageModule, SpinnerModule, ToolbarComponent]
+      imports: [ToolbarComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 

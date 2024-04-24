@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatButtonModule} from "@angular/material/button";
-import {HttpModule} from "@modules/http/http.module";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {CadMtextComponent} from "./cad-mtext.component";
 
 describe("CadMtextComponent", () => {
@@ -9,7 +9,8 @@ describe("CadMtextComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MatButtonModule, CadMtextComponent]
+      imports: [CadMtextComponent],
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
   });
 

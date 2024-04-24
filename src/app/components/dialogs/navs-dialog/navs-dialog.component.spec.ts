@@ -1,10 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatIconModule} from "@angular/material/icon";
-import {MatTreeModule} from "@angular/material/tree";
-import {HttpModule} from "@modules/http/http.module";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideRouter} from "@angular/router";
 import {NavsDialogComponent} from "./navs-dialog.component";
 import {NavsDialogInput} from "./navs-dialog.types";
 
@@ -18,11 +15,8 @@ describe("NavsDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpModule, MatCheckboxModule, MatIconModule, MatTreeModule, NgScrollbarModule, NavsDialogComponent],
-      providers: [
-        {provide: MatDialogRef, useValue: {}},
-        {provide: MAT_DIALOG_DATA, useValue: data}
-      ]
+      imports: [NavsDialogComponent],
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavsDialogComponent);
