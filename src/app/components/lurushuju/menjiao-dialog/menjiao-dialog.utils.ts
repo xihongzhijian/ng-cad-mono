@@ -4,7 +4,6 @@ import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
-import {random} from "lodash";
 import {OptionsAll2} from "../lurushuju-index/lurushuju-index.types";
 import {
   Cad数据要求,
@@ -38,6 +37,7 @@ export const autoFillMenjiao = (data: 算料数据, menjiaoOptionsAll: OptionsAl
     if (key1 in menjiaoOptionsAll && key1 !== "选项要求") {
       setOption(data, key1);
     } else if (key1 === menjiaoCadTypes[0]) {
+      setOption(data[key1], "双开门扇宽生成方式");
       for (const key2 of 算料数据2Keys) {
         for (const key3 of keysOf(data[key1][key2])) {
           if (!data[key1][key2][key3].cad) {
@@ -46,8 +46,6 @@ export const autoFillMenjiao = (data: 算料数据, menjiaoOptionsAll: OptionsAl
           }
         }
       }
-    } else if (key1 === "锁扇铰扇蓝线宽固定差值") {
-      data[key1] = random(0, 100);
     }
   }
   for (const item of 门缝配置输入) {

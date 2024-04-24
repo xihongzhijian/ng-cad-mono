@@ -437,9 +437,8 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     return "primary";
   }
 
-  async copyCadId(cad: CadData) {
-    await navigator.clipboard.writeText(cad.id);
-    this.message.snack("id已复制");
+  copyCadId(cad: CadData) {
+    this.message.copyText(cad.id, {successText: "id已复制"});
   }
 
   async openKlkwpzDialog(data: CadData) {

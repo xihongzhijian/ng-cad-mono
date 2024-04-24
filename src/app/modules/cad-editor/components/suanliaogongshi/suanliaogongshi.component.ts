@@ -51,6 +51,8 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   shuruTable: TableRenderInfo<any> = {
     title: "输入数据",
+    subTitle: "注意：有输入时，相同名字的公式无效",
+    subTitleStyle: {color: "red"},
     noCheckBox: true,
     columns: [
       {type: "string", field: "名字"},

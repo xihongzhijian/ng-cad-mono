@@ -31,6 +31,11 @@
                 @if (!production) {
                   <ng-container [ngTemplateOutlet]="btns"></ng-container>
                 }
+                <div class="flex-row">
+                  @for (info of key1Infos[key1].inputs; track $index) {
+                    <app-input [info]="info"></app-input>
+                  }
+                </div>
                 <div class="list">
                   @for (key3 of qiliaoKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
                     <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '企料CAD', key3}"></ng-container>

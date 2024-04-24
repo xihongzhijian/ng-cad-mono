@@ -1,31 +1,40 @@
 <div class="table-container" [class]="{'no-scroll': info.noScroll, 'no-data': !haveData}">
-  @if (info.title && !toolbarButtons.inlineTitle) {
-    <div class="title center">{{ info.title }}</div>
+  @if (!toolbarButtons.inlineTitle) {
+    <div class="flex-column">
+      @if (info.title) {
+        <div class="title" [style]="info.titleStyle">{{ info.title }}</div>
+      }
+      @if (info.subTitle) {
+        <div [style]="info.subTitleStyle">{{ info.subTitle }}</div>
+      }
+    </div>
   }
   @if (haveToolbarButtons) {
     <div class="btn-group table-toolbar">
       @if (info.title && toolbarButtons.inlineTitle) {
-        <div class="title">{{ info.title }}</div>
+        @if (info.title) {
+          <div class="title" [style]="info.titleStyle">{{ info.title }}</div>
+        }
       }
       @if (toolbarButtons.add) {
-        <button mat-raised-button color="primary" (click)="addItem()">添加</button>
+        <button mat-stroked-button color="primary" (click)="addItem()">添加</button>
       }
       @if (toolbarButtons.remove) {
-        <button mat-raised-button color="primary" (click)="removeItem()" [disabled]="selection.selected.length < 1">删除</button>
+        <button mat-stroked-button color="primary" (click)="removeItem()" [disabled]="selection.selected.length < 1">删除</button>
       }
       @if (toolbarButtons.export) {
-        <button mat-raised-button color="primary" (click)="export()">导出</button>
+        <button mat-stroked-button color="primary" (click)="export()">导出</button>
       }
       @if (toolbarButtons.import) {
-        <button mat-raised-button color="primary" (click)="import()">导入</button>
+        <button mat-stroked-button color="primary" (click)="import()">导入</button>
       }
       @if (toolbarButtons.editModeToggle) {
-        <button mat-raised-button [color]="info.editMode ? 'accent' : 'primary'" (click)="toggleEditMode()">编辑</button>
+        <button mat-stroked-button [color]="info.editMode ? 'accent' : 'primary'" (click)="toggleEditMode()">编辑</button>
       }
       @for (button of toolbarButtons.extra; track $index) {
         @if (!button.hidden) {
           <button
-            mat-raised-button
+            mat-stroked-button
             [color]="button.color"
             [class]="button.class"
             [style]="button.style"
@@ -36,6 +45,9 @@
         }
       }
     </div>
+    @if (info.subTitleStyle && toolbarButtons.inlineTitle) {
+      <div [style]="info.subTitleStyle">{{ info.subTitle }}</div>
+    }
   }
   @for (item of errorState; track $index) {
     <div class="error-msg">
@@ -215,9 +227,9 @@
                     }
                     @if (isColumnEditable({column, item, colIdx, rowIdx})) {
                       <div class="btn-group">
-                        <button mat-raised-button color="primary" (click)="uploadFile(colIdx, rowIdx, item)">上传</button>
+                        <button mat-stroked-button color="primary" (click)="uploadFile(colIdx, rowIdx, item)">上传</button>
                         @if (getItemImgSmall(item, column)) {
-                          <button mat-raised-button color="accent" (click)="deleteFile(colIdx, rowIdx, item)">删除</button>
+                          <button mat-stroked-button color="accent" (click)="deleteFile(colIdx, rowIdx, item)">删除</button>
                         }
                       </div>
                     }
@@ -230,10 +242,10 @@
                     }
                     @if (isColumnEditable({column, item, colIdx, rowIdx}, true)) {
                       <div class="btn-group">
-                        <button mat-raised-button color="primary" (click)="uploadCad(colIdx, rowIdx, item)">上传</button>
+                        <button mat-stroked-button color="primary" (click)="uploadCad(colIdx, rowIdx, item)">上传</button>
                         @if (getItemCadImgId(item, column)) {
-                          <button mat-raised-button color="primary" (click)="openCad(colIdx, rowIdx, item)">编辑</button>
-                          <button mat-raised-button color="accent" (click)="deleteCad(colIdx, rowIdx, item)">删除</button>
+                          <button mat-stroked-button color="primary" (click)="openCad(colIdx, rowIdx, item)">编辑</button>
+                          <button mat-stroked-button color="accent" (click)="deleteCad(colIdx, rowIdx, item)">删除</button>
                         }
                       </div>
                     }

@@ -513,4 +513,8 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     await timeout(0);
     this.initMubanViewer();
   }
+
+  async copyName() {
+    await this.message.copyText(this.cad.名字, {successText: "已复制名字"});
+  }
 }

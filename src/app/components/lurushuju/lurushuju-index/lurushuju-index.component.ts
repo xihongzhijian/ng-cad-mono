@@ -1482,13 +1482,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const text = Object.entries(info)
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n");
-    try {
-      navigator.clipboard.writeText(text);
-      this.message.snack("已复制");
-    } catch (e) {
-      console.error(e);
-      this.message.snack("复制失败");
-    }
+    this.message.copyText(text);
   }
 
   async pasteInfo(text?: string) {

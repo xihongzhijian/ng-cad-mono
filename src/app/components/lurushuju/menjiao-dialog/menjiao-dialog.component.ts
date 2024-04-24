@@ -10,14 +10,14 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {environment} from "@env";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf, RequiredKeys} from "@lucilor/utils";
+import {keysOf, ObjectOf} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoGroup, InputInfoOptions, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOptions, InputInfoSelect} from "@modules/input/components/input.types";
 import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import csstype from "csstype";
@@ -90,6 +90,7 @@ export class MenjiaoDialogComponent implements OnInit {
     suanliaoDataParams: SuanliaoDataParams;
     suanliaogongshiInfo: SuanliaogongshiInfo;
     isLoaded: boolean;
+    inputs: InputInfo[];
   }> = {};
   cadNameMap = 孔位CAD名字对应关系;
   menjiaoTabGroupIndex = 0;
@@ -174,7 +175,7 @@ export class MenjiaoDialogComponent implements OnInit {
       const margin = 5;
       return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`, ...style};
     };
-    const getOptionInputInfo2 = (key: string, n: number): InputInfoSelect => {
+    const getOptionInputInfo2 = (data: any, key: string, n: number): InputInfoSelect => {
       return getOptionInputInfo(component.menjiaoOptionsAll, key, (info) => {
         info.model = {data, key};
         if (!info.readonly && !info.disabled) {
@@ -223,7 +224,7 @@ export class MenjiaoDialogComponent implements OnInit {
     };
     const optionKeys: (keyof 算料数据)[] = ["门铰", "门扇厚度", "锁边", "铰边"];
     const 使用双开门扇宽生成方式 = () => component.fenleiName === "双开";
-    const 使用锁扇铰扇蓝线宽固定差值 = () => data.双开门扇宽生成方式 === "按锁扇铰扇蓝线宽固定差值等生成";
+    const 锁扇蓝线宽比铰扇蓝线宽大 = (key1: MenjiaoCadType) => data[key1].双开门扇宽生成方式 === "锁扇蓝线宽比铰扇蓝线宽大";
     const form1Group2: InputInfo[] = [];
     const form1Group: InputInfo[] = [
       {
@@ -235,7 +236,7 @@ export class MenjiaoDialogComponent implements OnInit {
           {
             type: "group",
             label: "选项",
-            infos: optionKeys.map((v) => getOptionInputInfo2(v, 2)),
+            infos: optionKeys.map((v) => getOptionInputInfo2(data, v, 2)),
             groupStyle: getGroupStyle()
           }
         ]
@@ -251,7 +252,7 @@ export class MenjiaoDialogComponent implements OnInit {
     const 选项要求Form: InputInfo[] = [];
     for (const key in data.选项要求) {
       const value = data.选项要求[key];
-      const info = getOptionInputInfo2(key, 4);
+      const info = getOptionInputInfo2(data, key, 4);
       选项要求Form.push(info);
       delete info.model;
       info.value = value.map((v) => v.mingzi);
@@ -314,7 +315,7 @@ export class MenjiaoDialogComponent implements OnInit {
         groupStyle: getGroupStyle()
       }
     ];
-    const form3 = [
+    const form3: InputInfo[] = [
       {
         type: "group",
         label: "其他",
@@ -323,48 +324,72 @@ export class MenjiaoDialogComponent implements OnInit {
             type: "boolean",
             label: "关闭碰撞检查",
             model: {data, key: "关闭碰撞检查"},
-            style: getInfoStyle(4),
+            style: getInfoStyle(2),
             validators: Validators.required
-          },
-          {
-            ...getOptionInputInfo2("双开门扇宽生成方式", 2),
-            onChange: () => {
-              if (使用锁扇铰扇蓝线宽固定差值()) {
-                form3[0].infos[2].hidden = false;
-                if (!data.锁扇铰扇蓝线宽固定差值) {
-                  data.锁扇铰扇蓝线宽固定差值 = 0;
-                }
-              } else {
-                form3[0].infos[2].hidden = true;
-                delete data.锁扇铰扇蓝线宽固定差值;
-              }
-            }
-          },
-          {
-            type: "number",
-            label: "锁扇铰扇蓝线宽固定差值",
-            model: {data, key: "锁扇铰扇蓝线宽固定差值"},
-            style: getInfoStyle(4)
           }
         ],
         groupStyle: getGroupStyle()
-      } as InputInfoGroup<typeof data> & RequiredKeys<InputInfoGroup, "infos">
-    ] as const;
-    if (!使用双开门扇宽生成方式()) {
-      form3[0].infos[1].hidden = true;
-      data.双开门扇宽生成方式 = "";
-      form3[0].infos[2].hidden = true;
-      delete data.锁扇铰扇蓝线宽固定差值;
-    } else if (!使用锁扇铰扇蓝线宽固定差值()) {
-      form3[0].infos[2].hidden = true;
-      delete data.锁扇铰扇蓝线宽固定差值;
-    }
+      }
+    ];
     form1Group2.push(...form2, ...form3);
     this.form = form1;
 
     this.key1Infos = {};
+
     for (const key1 of menjiaoCadTypes) {
       const [包边方向, 开启] = key1.split("+");
+      const validators: InputInfo["validators"] = [
+        (control) => {
+          const menjiaoCadInfos = getMenjiaoCadInfos(data);
+          if (menjiaoCadInfos[key1].isEmpty) {
+            return null;
+          }
+          return Validators.required(control);
+        }
+      ];
+      const setInputHidden = (info: InputInfo, hidden: boolean) => {
+        info.hidden = hidden;
+        if (hidden) {
+          delete info.validators;
+        } else {
+          info.validators = validators;
+        }
+      };
+      const inputs = [
+        {
+          ...getOptionInputInfo2(data[key1], "双开门扇宽生成方式", 1.5),
+          onChange: () => {
+            if (锁扇蓝线宽比铰扇蓝线宽大(key1)) {
+              setInputHidden(inputs[1], false);
+              if (!data[key1].锁扇铰扇蓝线宽固定差值) {
+                data[key1].锁扇铰扇蓝线宽固定差值 = 0;
+              }
+            } else {
+              setInputHidden(inputs[1], true);
+              delete data[key1].锁扇铰扇蓝线宽固定差值;
+            }
+          }
+        },
+        {
+          type: "number",
+          label: "锁扇铰扇蓝线宽固定差值",
+          model: {data: data[key1], key: "锁扇铰扇蓝线宽固定差值"},
+          style: getInfoStyle(3)
+        }
+      ] as InputInfo<(typeof data)[typeof key1]>[];
+      if (!使用双开门扇宽生成方式()) {
+        setInputHidden(inputs[0], true);
+        setInputHidden(inputs[1], true);
+        data[key1].双开门扇宽生成方式 = "";
+        delete data[key1].锁扇铰扇蓝线宽固定差值;
+      } else if (!锁扇蓝线宽比铰扇蓝线宽大(key1)) {
+        setInputHidden(inputs[0], false);
+        setInputHidden(inputs[1], true);
+        delete data[key1].锁扇铰扇蓝线宽固定差值;
+      } else {
+        setInputHidden(inputs[0], false);
+        setInputHidden(inputs[1], false);
+      }
       this.key1Infos[key1] = {
         xiaoguotuInputs: [],
         error: "",
@@ -382,7 +407,8 @@ export class MenjiaoDialogComponent implements OnInit {
           data: {算料公式: data[key1].算料公式, 输入数据: data[key1].输入数据},
           varNames: component.varNames
         },
-        isLoaded: key1 === "包边在外+外开"
+        isLoaded: key1 === "包边在外+外开",
+        inputs
       };
       // if (component.parentInfo.isZhijianUser) { // TODO
       // eslint-disable-next-line no-constant-condition
@@ -436,7 +462,7 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async cancel(confirm: boolean) {
-    if (!confirm || (await this.message.confirm("确定关闭吗？"))) {
+    if (!confirm || (await this.message.confirm("确定不保存关闭吗？"))) {
       this.dialogRef.close();
     }
   }

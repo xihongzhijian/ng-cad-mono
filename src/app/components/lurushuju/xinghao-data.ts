@@ -88,7 +88,6 @@ export const get算料数据 = (raw?: Partial<算料数据> | null) => {
     门缝配置: {},
     选项要求: {},
     关闭碰撞检查: false,
-    双开门扇宽生成方式: "",
     ...raw,
     "包边在外+外开": get算料数据2(raw?.["包边在外+外开"]),
     "包边在外+内开": get算料数据2(raw?.["包边在外+内开"]),
@@ -132,6 +131,7 @@ export const get算料数据2 = (raw?: Partial<算料数据2> | null) => {
     铰扇背面: "",
     花件玻璃信息: [],
     输入数据: [],
+    双开门扇宽生成方式: "",
     ...raw
   };
   return result;
@@ -230,6 +230,8 @@ export interface 算料数据2 {
   铰扇背面: string;
   花件玻璃信息: 花件玻璃信息[];
   输入数据: 输入[];
+  双开门扇宽生成方式: string;
+  锁扇铰扇蓝线宽固定差值?: number;
 }
 
 export const 算料数据2Keys = ["配合框CAD", "企料CAD"] as const;
@@ -259,8 +261,6 @@ export interface 算料数据 {
 
   门缝配置: 门缝配置;
   关闭碰撞检查: boolean;
-  双开门扇宽生成方式: string;
-  锁扇铰扇蓝线宽固定差值?: number;
 }
 
 export const menjiaoCadTypes = ["包边在外+外开", "包边在外+内开", "包边在内+外开", "包边在内+内开"] as const;

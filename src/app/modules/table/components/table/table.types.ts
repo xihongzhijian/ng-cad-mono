@@ -8,6 +8,9 @@ export interface TableRenderInfo<T> {
   columns: ColumnInfo<T>[];
   newItem?: T | ItemGetter<T>;
   title?: string;
+  titleStyle?: csstype.Properties;
+  subTitle?: string;
+  subTitleStyle?: csstype.Properties;
   noCheckBox?: boolean;
   checkBoxSize?: number;
   editMode?: boolean;

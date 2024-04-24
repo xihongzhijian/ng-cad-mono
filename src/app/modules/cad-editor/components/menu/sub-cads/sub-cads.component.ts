@@ -494,13 +494,12 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
     input.value = "";
   }
 
-  async getJson() {
+  getJson() {
     if (!this.contextMenuCad) {
       return;
     }
     const data = this.status.closeCad(this.contextMenuCad.data);
-    await navigator.clipboard.writeText(JSON.stringify(data.export()));
-    this.message.snack("内容已复制");
+    this.message.copyText(JSON.stringify(data.export()), {successText: "内容已复制"});
   }
 
   async setJson() {

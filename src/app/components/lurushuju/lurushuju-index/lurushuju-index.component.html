@@ -31,9 +31,9 @@
 <div class="step-1 flex-row flex-110" [class.hidden]="step !== 1">
   <div class="menchaungs flex-column">
     <div class="toolbar">
-      <button mat-raised-button color="primary" (click)="addXinghaoMenchaung()">添加门窗</button>
-      <button mat-raised-button color="primary" (click)="openXinghaoMenchaung()">查看所有门窗分类</button>
-      <button mat-raised-button [color]="isMenchuangEditable ? 'accent' : 'primary'" (click)="isMenchuangEditable = !isMenchuangEditable">
+      <button mat-stroked-button color="primary" (click)="addXinghaoMenchaung()">添加门窗</button>
+      <button mat-stroked-button color="primary" (click)="openXinghaoMenchaung()">查看所有门窗分类</button>
+      <button mat-stroked-button [color]="isMenchuangEditable ? 'accent' : 'primary'" (click)="isMenchuangEditable = !isMenchuangEditable">
         {{ isMenchuangEditable ? "关闭" : "开启" }}编辑
       </button>
     </div>

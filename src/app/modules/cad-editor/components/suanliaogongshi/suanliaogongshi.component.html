@@ -2,10 +2,10 @@
   <div class="gongshis flex-column flex-110">
     <div class="toolbar">
       <div class="title">算料公式</div>
-      <button mat-raised-button color="primary" (click)="addGongshi()">添加</button>
-      <button mat-raised-button color="primary" (click)="viewAll()">查看全部</button>
-      <button mat-raised-button color="primary" (click)="importGonshis()">导入</button>
-      <button mat-raised-button color="primary" (click)="exportGongshis()">导出</button>
+      <button mat-stroked-button color="primary" (click)="addGongshi()">添加</button>
+      <button mat-stroked-button color="primary" (click)="viewAll()">全部</button>
+      <button mat-stroked-button color="primary" (click)="importGonshis()">导入</button>
+      <button mat-stroked-button color="primary" (click)="exportGongshis()">导出</button>
     </div>
     @if (noScroll) {
       <ng-container *ngTemplateOutlet="content"></ng-container>

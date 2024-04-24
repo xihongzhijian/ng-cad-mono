@@ -233,13 +233,8 @@ export class FormulasEditorComponent implements OnChanges {
     return 0;
   }
 
-  async clickVarName(name: string) {
-    try {
-      await navigator.clipboard.writeText(name);
-      await this.message.snack("已复制");
-    } catch (error) {
-      await this.message.snack("复制失败");
-    }
+  clickVarName(name: string) {
+    this.message.copyText(name);
   }
 
   openDoc() {

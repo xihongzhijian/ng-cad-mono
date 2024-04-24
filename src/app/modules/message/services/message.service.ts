@@ -155,4 +155,15 @@ export class MessageService {
       snackBarRef.dismiss();
     }
   }
+
+  async copyText(text: string, config?: {successText?: string; errorText?: string}) {
+    const {successText = "已复制", errorText = "复制失败"} = config || {};
+    try {
+      navigator.clipboard.writeText(text);
+      this.snack(successText);
+    } catch (e) {
+      console.error(e);
+      this.snack(errorText);
+    }
+  }
 }

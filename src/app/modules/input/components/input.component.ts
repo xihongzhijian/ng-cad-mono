@@ -505,15 +505,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   copy() {
-    const copy = async (str: string) => {
-      try {
-        await navigator.clipboard.writeText(str);
-      } catch (error) {
-        console.error(error);
-        await this.message.snack("复制失败");
-        return;
-      }
-      await this.message.snack(`${this.info.label}已复制`);
+    const copy = (str: string) => {
+      this.message.copyText(str, {successText: `${this.info.label}已复制`});
     };
     const {info} = this;
     if (info.type === "formulas") {
