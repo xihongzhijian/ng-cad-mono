@@ -171,6 +171,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     }
     const result = await this.message.form({title, form});
     if (result) {
+      if (data.zhankai[0] && data.zhankai[0].name !== data.name) {
+        data.zhankai[0].name = data.name;
+      }
       const cad2 = getHoutaiCad(data);
       for (const key of keysOf(cad2)) {
         if (key === "json") {
