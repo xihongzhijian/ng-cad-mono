@@ -486,9 +486,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!this.gongyiName) {
       this.gongyi = null;
     }
-    await this.setStep1();
-    await this.setStep2();
-    await this.setStep3();
+    await Promise.all([this.setStep1(), this.setStep2(), this.setStep3()]);
   }
 
   async getDataIfNotFetched(key: string, fn: () => Promise<any>) {

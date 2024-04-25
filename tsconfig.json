@@ -17,16 +17,16 @@
     "module": "ESNext",
     "lib": ["DOM", "ESNext"],
     "paths": {
+      "@app/*": ["src/app/*"],
+      "@assets/*": ["src/assets/*"],
       "@components/*": ["src/app/components/*"],
       "@decorators/*": ["src/app/decorators/*"],
+      "@env": ["src/environments/environment.ts"],
       "@guards/*": ["src/app/guards/*"],
       "@mixins/*": ["src/app/mixins/*"],
       "@modules/*": ["src/app/modules/*"],
       "@services/*": ["src/app/services/*"],
-      "@views/*": ["src/app/views/*"],
-      "@env": ["src/environments/environment.ts"],
-      "@app/*": ["src/app/*"],
-      "@assets/*": ["src/assets/*"]
+      "@views/*": ["src/app/views/*"]
     },
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
