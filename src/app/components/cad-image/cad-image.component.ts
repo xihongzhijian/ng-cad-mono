@@ -41,6 +41,7 @@ export class CadImageComponent implements OnChanges {
   @Input() collection: CadCollection = "cad";
   @Input() width?: number;
   @Input() height?: number;
+  @Input() isImgId?: boolean;
   @Input() backgroundColor = "black";
   @Input() paramsGetter?: () => CadPreviewParams;
   @Output() dataInfoChange = new EventEmitter<DataInfoChnageEvent>();
@@ -99,7 +100,7 @@ export class CadImageComponent implements OnChanges {
 
   async updateUrl() {
     let url = "";
-    const {id, data} = this;
+    const {id, data, isImgId} = this;
     let force: boolean | number = this.status.forceUpdateCadImg;
     const force2 = this.status.forceUpdateCadImg2;
     const toUpdate = this.status.cadImgToUpdate;
@@ -108,7 +109,12 @@ export class CadImageComponent implements OnChanges {
     }
     const hasImgId = !!data?.info.imgId;
     if (id && !hasImgId) {
-      url = this.getImgUrl(id + (force2 ? "null" : ""), force);
+      if (force2 && !isImgId) {
+        await this.refreshCadPreview();
+        return;
+      } else {
+        url = this.getImgUrl(id, force);
+      }
     } else if (data) {
       const {imgId, imgUpdate} = data.info;
       if (imgId) {
@@ -135,7 +141,7 @@ export class CadImageComponent implements OnChanges {
     this.url = url;
   }
 
-  async onImgError() {
+  async refreshCadPreview() {
     let {data} = this;
     if (data?.info.isLocal) {
       return;
@@ -154,7 +160,7 @@ export class CadImageComponent implements OnChanges {
     try {
       const {collection, id} = this;
       if (!data) {
-        const cadsResult = await this.http.getCad({collection, id}, {spinner: false});
+        const cadsResult = await this.http.getCad({collection, id}, {silent: true});
         if (cadsResult.cads[0]) {
           data = cadsResult.cads[0];
         }
@@ -162,7 +168,7 @@ export class CadImageComponent implements OnChanges {
       if (data) {
         const url = await this.getPreview(data);
         const id2 = data.info.imgId || id;
-        await this.http.setCadImg(id2, url, {spinner: false});
+        await this.http.setCadImg(id2, url, {silent: true});
         this.url = this.getImgUrl(id2, true);
       }
     } catch (error) {
@@ -170,5 +176,9 @@ export class CadImageComponent implements OnChanges {
     } finally {
       this.status.updateCadImglLock$.next(this.status.updateCadImglLock$.value - 1);
     }
+  }
+
+  async onImgError() {
+    await this.refreshCadPreview();
   }
 }

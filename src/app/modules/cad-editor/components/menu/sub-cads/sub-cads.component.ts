@@ -72,6 +72,10 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
     this.status.components.mode$.next(value);
   }
 
+  get collection() {
+    return this.status.collection$.value;
+  }
+
   constructor(
     private config: AppConfigService,
     private status: AppStatusService,

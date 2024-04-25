@@ -123,12 +123,8 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   isDraggingLeft = false;
   isDraggingRight = false;
   spinnerId = "cadEditor";
+  openCad$ = this.status.openCad$;
   private _isViewInited = false;
-
-  isCadLocal$ = this.status.openCad$.pipe<OpenCadOptions, boolean>(
-    startWith({}),
-    map((v) => !!v.isLocal)
-  );
 
   get multiSelect() {
     return this.status.cad.getConfig("selectMode") === "multiple";

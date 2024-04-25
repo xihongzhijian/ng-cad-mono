@@ -275,11 +275,7 @@ export class HttpService {
       if (response) {
         response.duration = timer.getDuration(timerName);
       }
-      if (silent) {
-        timer.end(timerName);
-      } else {
-        timer.end(timerName, `${method} ${rawUrl}`);
-      }
+      timer.end(timerName, `${method} ${rawUrl}`);
     }
   }
 

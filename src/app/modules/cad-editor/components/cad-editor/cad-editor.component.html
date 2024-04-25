@@ -22,7 +22,7 @@
   <div class="menus-row">
     <div class="menu left" [style.width.px]="leftMenuWidth$ | async" [@closeLeft]="showLeftMenu ? 'open' : 'closed'">
       <div class="btn-group" style="width: 100%">
-        @if ((isCadLocal$ | async) === false) {
+        @if (!openCad$.value.isLocal) {
           <button mat-raised-button color="accent" (click)="save()">保存</button>
         }
         <div class="flex-110"></div>

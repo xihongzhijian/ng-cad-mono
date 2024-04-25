@@ -15,7 +15,7 @@
           {{ main.data.name }}
         </span>
         <div class="content">
-          <app-cad-image [id]="main.data.id" [data]="main.data"></app-cad-image>
+          <app-cad-image [id]="main.data.id" [collection]="collection" [data]="main.data"></app-cad-image>
         </div>
       </div>
       @if (main.data.info.fromCad) {
@@ -24,7 +24,7 @@
             {{ main.data.info.fromCad.name }}
           </span>
           <div class="content">
-            <app-cad-image [id]="main.data.info.fromCad.imgId"></app-cad-image>
+            <app-cad-image [id]="main.data.info.fromCad.imgId" [isImgId]="true"></app-cad-image>
           </div>
         </div>
       }

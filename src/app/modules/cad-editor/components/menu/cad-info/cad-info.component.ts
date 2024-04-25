@@ -272,7 +272,6 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     const cadStatus = this.status.cadStatus;
     const data = this.data;
     const key = this.cadStatusIntersectionInfo;
-    console.log(cadStatus);
     if (cadStatus instanceof CadStatusSelectJointpoint) {
       const points = this.status.getCadPoints(data.getAllEntities());
       const {valueX, valueY} = data.jointPoints[cadStatus.index];

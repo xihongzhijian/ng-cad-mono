@@ -72,7 +72,7 @@ export class AppStatusService {
     mode$: new BehaviorSubject<"single" | "multiple">("single"),
     selectable$: new BehaviorSubject<boolean>(true)
   };
-  openCad$ = new Subject<OpenCadOptions>();
+  openCad$ = new BehaviorSubject<OpenCadOptions>({});
   saveCadStart$ = new Subject<void>();
   saveCadEnd$ = new Subject<void>();
   saveCadLocked$ = new BehaviorSubject<boolean>(false);
@@ -294,7 +294,7 @@ export class AppStatusService {
     return data2;
   }
 
-  async saveCad(loaderId?: string, isLocal = false): Promise<CadData | null> {
+  async saveCad(loaderId?: string): Promise<CadData | null> {
     this.saveCadStart$.next();
     this.saveCadLocked$.next(true);
     await timeout(100); // 等待input事件触发
@@ -336,6 +336,7 @@ export class AppStatusService {
       }
     }
     data = this.closeCad();
+    const isLocal = this.openCad$.value.isLocal;
     if (isLocal) {
       this.saveCadEnd$.next();
       this.saveCadLocked$.next(false);
