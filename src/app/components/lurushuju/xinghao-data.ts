@@ -1,6 +1,8 @@
 import {ActivatedRoute} from "@angular/router";
 import {getValueString} from "@app/app.common";
+import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {Formulas} from "@app/utils/calc";
+import {CadData, CadZhankai} from "@lucilor/cad-viewer";
 import {isTypeOf, ObjectOf, queryString} from "@lucilor/utils";
 import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {HoutaiCad, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
@@ -339,20 +341,78 @@ export const 企料组合共享: [string, string][] = [["小锁料", "小扇小�
 export interface Cad数据要求Raw extends TableDataBase {
   cadtanchuangxiugaishuxing: string;
   xianduantanchuangxiugaishuxing: string;
-  daorucadyaoqiu: string;
+  tianjiahuodaorucadyaoqiu: string;
+  xuanzhongshujubaoliuxuanxiang: string;
 }
 export interface Cad数据要求 {
   CAD分类: string;
   CAD弹窗修改属性: string[];
   线段弹窗修改属性: string[];
-  导入CAD要求: ObjectOf<string | undefined>;
+  保留选项: string[];
+  新建CAD要求: Cad数据要求Item[];
+  search: ObjectOf<string>;
 }
-export const getCad数据要求 = (raw: Cad数据要求Raw): Cad数据要求 => ({
-  CAD分类: raw.mingzi,
-  CAD弹窗修改属性: raw.cadtanchuangxiugaishuxing.split("+"),
-  线段弹窗修改属性: raw.xianduantanchuangxiugaishuxing.split("+"),
-  导入CAD要求: Object.fromEntries(raw.daorucadyaoqiu.split("+").map((i) => i.split("=")))
-});
+export interface Cad数据要求Item {
+  key: string;
+  key2?: string;
+  cadKey?: keyof CadData;
+  isHoutaiCadKey?: boolean;
+  value: string;
+  readonly?: boolean;
+  required?: boolean;
+  override?: boolean;
+}
+export const getCad数据要求 = (raw: Cad数据要求Raw) => {
+  const split = (str: string) => str.split("+").filter(Boolean);
+  const result: Cad数据要求 = {
+    CAD分类: raw.mingzi,
+    CAD弹窗修改属性: split(raw.cadtanchuangxiugaishuxing),
+    线段弹窗修改属性: split(raw.xianduantanchuangxiugaishuxing),
+    保留选项: split(raw.xuanzhongshujubaoliuxuanxiang),
+    新建CAD要求: [],
+    search: {}
+  };
+  const emptyCad = new CadData();
+  const emptyHoutaiCad = getHoutaiCad(emptyCad);
+  for (const str of split(raw.tianjiahuodaorucadyaoqiu)) {
+    const arr = str.split("=");
+    let key = arr[0];
+    const value = arr[1];
+    const item: Cad数据要求Item = {key: "", value};
+    if (key.startsWith("固定")) {
+      item.readonly = true;
+      key = key.slice(2);
+    } else if (key.startsWith("选填")) {
+      item.override = true;
+      key = key.slice(2);
+    } else if (key.startsWith("默认")) {
+      key = key.slice(2);
+    } else if (key.startsWith("必填")) {
+      item.required = true;
+      key = key.slice(2);
+    } else {
+      item.required = true;
+    }
+    let key2: string | undefined;
+    if (key.startsWith("选项")) {
+      item.key2 = key2 = key.slice(2);
+      key = "选项";
+    }
+    item.key = key;
+    if (key in emptyHoutaiCad) {
+      item.isHoutaiCadKey = true;
+      if (value) {
+        const searchKey = key + (key2 ? `.${key2}` : "");
+        result.search[searchKey] = value;
+      }
+    }
+    if (key in cadFields) {
+      item.cadKey = cadFields[key as keyof typeof cadFields];
+    }
+    result.新建CAD要求.push(item);
+  }
+  return result;
+};
 export const filterCad = (query: string, cad: HoutaiCad, yaoqiu: Cad数据要求) => {
   for (const key of yaoqiu.CAD弹窗修改属性) {
     const key2 = cadFields[key as keyof typeof cadFields];
@@ -424,4 +484,60 @@ export const getXinghaoQuery = (route: ActivatedRoute) => {
     result[key] = value;
   }
   return result;
+};
+
+export const setCadDataOptions = (cad: HoutaiCad, yaoqiu: Cad数据要求 | null | undefined) => {
+  const optionKeys = yaoqiu?.保留选项 || [];
+  const setOptions = (obj: ObjectOf<any>) => {
+    if (!obj) {
+      return;
+    }
+    for (const key of Object.keys(obj)) {
+      if (!optionKeys.includes(key)) {
+        delete obj[key];
+      }
+    }
+  };
+  setOptions(cad.选项);
+  setOptions(cad.json?.options);
+};
+
+export const setCadData = (data: CadData, yaoqiu: Cad数据要求 | null | undefined) => {
+  const dataAny = data as any;
+  for (const {key, cadKey, value, key2, override} of yaoqiu?.新建CAD要求 || []) {
+    if (value) {
+      if (key === "展开信息") {
+        let arr: any[];
+        try {
+          arr = JSON.parse(value);
+        } catch (error) {
+          continue;
+        }
+        const [a, b, c] = arr.map((v) => v?.toString?.() || "");
+        if (data.zhankai.length < 1) {
+          data.zhankai.push(new CadZhankai({name: data.name}));
+        }
+        const zhankai = data.zhankai[0];
+        if (!zhankai.zhankaikuan || override) {
+          zhankai.zhankaikuan = a || "";
+        }
+        if (!zhankai.zhankaigao || override) {
+          zhankai.zhankaigao = b || "";
+        }
+        if (!zhankai.shuliang || override) {
+          zhankai.shuliang = c || "";
+        }
+      } else if (cadKey) {
+        if (key2) {
+          if (!dataAny[cadKey][key2] || override) {
+            dataAny[cadKey][key2] = value;
+          }
+        } else {
+          if (!dataAny[cadKey] || override) {
+            dataAny[cadKey] = value;
+          }
+        }
+      }
+    }
+  }
 };

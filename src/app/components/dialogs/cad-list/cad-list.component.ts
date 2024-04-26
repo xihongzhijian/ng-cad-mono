@@ -1,6 +1,6 @@
 import {KeyValuePipe} from "@angular/common";
 import {AfterViewInit, Component, forwardRef, HostBinding, Inject, ViewChild} from "@angular/core";
-import {FormsModule, Validators} from "@angular/forms";
+import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatOptionModule} from "@angular/material/core";
@@ -14,13 +14,15 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, session} from "@app/app.common";
+import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
+import {ImportCache} from "@app/views/import/import.types";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadData} from "@lucilor/cad-viewer";
-import {isBetween, isNumber, timeout} from "@lucilor/utils";
+import {isBetween, isNumber, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
-import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {ExportCache} from "@views/export/export.types";
@@ -329,21 +331,16 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async addCad() {
-    const addCadData = this.data.addCadData || {};
-    const data: Partial<HoutaiCad> = {名字: "", ...addCadData};
-    const form: InputInfo[] = [{type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required}];
-    for (const key in addCadData) {
-      if (key === "分类" || key === "分类2") {
-        const value = addCadData[key];
-        data[key] = value || "";
-        form.push({type: "string", label: key, model: {data, key}, readonly: !!value});
-      }
-    }
+    const {addCadData, yaoqiu} = this.data;
+    const cadData = new CadData(addCadData);
+    const form = getCadInfoInputs2(yaoqiu, cadData, this.dialog, this.status);
     const result = await this.message.form(form);
     if (!result) {
       return;
     }
     const {collection} = this.data;
+    const data: ObjectOf<any> = getHoutaiCad(cadData);
+    delete data._id;
     const id = await this.http.mongodbInsert(collection, data);
     if (id) {
       if (await this.message.confirm("是否编辑新的CAD？")) {
@@ -404,6 +401,7 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async openImportPage() {
+    session.save<ImportCache>("importParams", {yaoqiu: this.data.yaoqiu});
     this.status.openInNewTab(["import"]);
     if (await this.message.newTabConfirm()) {
       this.search();

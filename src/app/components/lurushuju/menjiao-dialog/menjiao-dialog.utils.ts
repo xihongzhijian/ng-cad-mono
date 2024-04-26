@@ -192,8 +192,8 @@ function (value1, value2, falseIfEmpty) {
   return false;
 }`;
 
-export const getCadSearch = (data: 算料数据, shujuyaoqiu: Cad数据要求, key1: MenjiaoCadType, key2: string, key3: string) => {
-  const 分类0 = shujuyaoqiu.导入CAD要求.分类;
+export const getCadSearch = (data: 算料数据, yaoqiu: Cad数据要求, key1: MenjiaoCadType, key2: string, key3: string) => {
+  const 分类0 = yaoqiu.search.分类;
   const 分类: string[] = [];
   if (分类0) {
     分类.push(分类0);
@@ -246,7 +246,7 @@ export const getCadSearch = (data: 算料数据, shujuyaoqiu: Cad数据要求, k
     }
     `;
   const search: CadListInput["search"] = {$where: filter};
-  const addCadData: CadListInput["addCadData"] = {分类: 分类0 || key3, 选项: {开启}};
+  const addCadData: CadListInput["addCadData"] = {type: 分类0 || key3, options: {开启}};
   return {search, addCadData};
 };
 
@@ -268,7 +268,7 @@ export const getShiyituCadSearch = (data: 算料数据, key1: MenjiaoCadType) =>
     }
     `;
   const search: CadListInput["search"] = {$where: filter, 分类, 名字: {$ne: "开启锁向示意图"}};
-  const addCadData: CadListInput["addCadData"] = {分类, 选项: {产品分类, 开启}};
+  const addCadData: CadListInput["addCadData"] = {type: 分类, options: {产品分类, 开启}};
   return {search, addCadData};
 };
 

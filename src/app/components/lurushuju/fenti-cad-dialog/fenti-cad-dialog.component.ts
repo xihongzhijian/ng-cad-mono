@@ -4,7 +4,6 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
-import {ObjectOf} from "@lucilor/utils";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../cad-item/cad-item.component";
@@ -43,7 +42,7 @@ export class FentiCadDialogComponent {
 
   async selectFentiCad(key: string) {
     const fentiCads = this.data.data;
-    const search: ObjectOf<any> = this.data.cad数据要求?.导入CAD要求 || {};
+    const yaoqiu = this.data.cad数据要求;
     const checkedItems = [];
     const cad = fentiCads[key];
     if (cad) {
@@ -54,8 +53,8 @@ export class FentiCadDialogComponent {
         selectMode: "single",
         checkedItems,
         collection: "cad",
-        search,
-        addCadData: search,
+        search: yaoqiu?.search,
+        yaoqiu: yaoqiu,
         hideCadInfo: true
       }
     });

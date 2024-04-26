@@ -5,9 +5,10 @@ import {MatCardModule} from "@angular/material/card";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {MatRadioModule} from "@angular/material/radio";
-import {setGlobal, timer} from "@app/app.common";
+import {session, setGlobal, timer} from "@app/app.common";
 import {CadInfo, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
+import {setCadData} from "@app/components/lurushuju/xinghao-data";
 import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
 import {environment} from "@env";
 import {CadData, CadDimensionLinear, CadLayer, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
@@ -24,9 +25,7 @@ import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
-
-export type ImportComponentConfigName = "requireLineId" | "pruneLines" | "addUniqCode" | "dryRun" | "noFilterEntities";
-export type ImportComponentConfig = Record<ImportComponentConfigName, {value: boolean | null; hidden?: boolean}>;
+import {ImportCache, ImportComponentConfig, ImportComponentConfigName} from "./import.types";
 
 @Component({
   selector: "app-import",
@@ -94,6 +93,7 @@ export class ImportComponent extends Utils() implements OnInit {
   };
   maxLineLength = 200;
   导入dxf文件时展开名字不改变 = false;
+  importCache: ImportCache | null = null;
 
   constructor(
     private http: CadDataService,
@@ -111,6 +111,7 @@ export class ImportComponent extends Utils() implements OnInit {
       this.importConfigNormal.pruneLines.value = true;
     }
     this.keysOf(this.importConfigSuanliao);
+    this.importCache = session.load<ImportCache>("importParams");
   }
 
   private _getImportConfig(isXinghao: boolean) {
@@ -375,6 +376,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this._clearCache();
     const uniqCodesCount: ObjectOf<number> = {};
     const {requireLineId, addUniqCode, noFilterEntities} = this._getImportConfigValues(isXinghao);
+    const {yaoqiu} = this.importCache || {};
     for (const v of cads) {
       const data = v.data;
       let uniqCode = data.info.唯一码;
@@ -409,6 +411,32 @@ export class ImportComponent extends Utils() implements OnInit {
       if (!noFilterEntities) {
         const {entities} = filterCadEntitiesToSave(data);
         data.entities = entities;
+      }
+
+      if (yaoqiu) {
+        setCadData(data, yaoqiu);
+        for (const {cadKey, key, key2, required} of yaoqiu.新建CAD要求) {
+          const dataAny = data as any;
+          if (cadKey && required) {
+            if (key2 && !dataAny[cadKey][key2]) {
+              v.errors.push(`【${key}${key2}】不能为空`);
+            } else if (!dataAny[cadKey]) {
+              v.errors.push(`【${key}】不能为空`);
+            }
+          }
+        }
+      }
+
+      for (const zhankai of data.zhankai) {
+        if (!zhankai.zhankaikuan) {
+          v.errors.push("【展开宽】不能为空");
+        }
+        if (!zhankai.zhankaigao) {
+          v.errors.push("【展开高】不能为空");
+        }
+        if (!zhankai.shuliang) {
+          v.errors.push("【展开数量】不能为空");
+        }
       }
     }
 

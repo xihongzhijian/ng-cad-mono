@@ -1,4 +1,5 @@
 import {CadCollection} from "@app/cad/collections";
+import {Cad数据要求} from "@app/components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 
@@ -19,7 +20,8 @@ export interface CadListInput {
   pageSize?: number;
   source?: CadData[];
   raw?: boolean;
-  addCadData?: ObjectOf<any>;
+  addCadData?: Partial<CadData>;
+  yaoqiu?: Cad数据要求;
   hideCadInfo?: boolean;
 }
 

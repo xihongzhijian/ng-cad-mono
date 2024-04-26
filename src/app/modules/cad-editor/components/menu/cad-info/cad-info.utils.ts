@@ -1,7 +1,9 @@
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {cadOptions} from "@app/cad/options";
+import {Cad数据要求} from "@app/components/lurushuju/xinghao-data";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
+import {environment} from "@env";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
 import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
@@ -63,13 +65,14 @@ export const cadFields = {
   拉码碰撞判断: "拉码碰撞判断"
 } as const;
 
+const getData = (data: CadData | (() => CadData)) => (typeof data === "function" ? data() : data);
+
 export const getCadInfoInputs = (keys: string[], data: CadData | (() => CadData), dialog: MatDialog, status: AppStatusService) => {
   const result: InputInfo[] = [];
-  const getData = () => (typeof data === "function" ? data() : data);
   const attrGetter =
     <T extends keyof CadData>(key: T) =>
     () => {
-      return getData()[key];
+      return getData(data)[key];
     };
   for (const key of keys) {
     let info: InputInfo;
@@ -179,7 +182,7 @@ export const getCadInfoInputs = (keys: string[], data: CadData | (() => CadData)
             {
               name: "list",
               onClick: async () => {
-                const data2 = getData();
+                const data2 = getData(data);
                 const result = await openCadDataAttrsDialog(dialog, {data: data2.attributes});
                 if (result) {
                   data2.attributes = result;
@@ -198,14 +201,14 @@ export const getCadInfoInputs = (keys: string[], data: CadData | (() => CadData)
             {
               name: "open_in_new",
               onClick: () => {
-                status.openCadInNewTab(getData().info[key], "kailiaocadmuban");
+                status.openCadInNewTab(getData(data).info[key], "kailiaocadmuban");
               }
             },
             {
               name: "list",
               onClick: async () => {
                 const checkedItems = [];
-                const dataInfo = getData().info;
+                const dataInfo = getData(data).info;
                 if (dataInfo[key]) {
                   checkedItems.push(dataInfo[key]);
                 }
@@ -223,7 +226,7 @@ export const getCadInfoInputs = (keys: string[], data: CadData | (() => CadData)
       case "展开信息":
         {
           const getter = () => {
-            const data2 = getData();
+            const data2 = getData(data);
             if (!data2.zhankai) {
               data2.zhankai = [];
             }
@@ -261,6 +264,59 @@ export const getCadInfoInputs = (keys: string[], data: CadData | (() => CadData)
     }
     info.clearable = true;
     result.push(info);
+  }
+  return result;
+};
+
+export const getCadInfoInputs2 = (
+  yaoqiu: Cad数据要求 | null | undefined,
+  data: CadData | (() => CadData),
+  dialog: MatDialog,
+  status: AppStatusService
+) => {
+  const result: InputInfo[] = [];
+  const addCadData = yaoqiu?.新建CAD要求 || [];
+  for (const {key, value, cadKey, key2, readonly, required} of addCadData) {
+    let info: InputInfo;
+    if (cadKey) {
+      if (key === "选项") {
+        if (!key2) {
+          continue;
+        }
+        info = {
+          type: "select",
+          label: key2,
+          model: {data: () => getData(data).options, key: key2},
+          options: [],
+          optionsDialog: {optionKey: key2, openInNewTab: true}
+        };
+      } else {
+        info = getCadInfoInputs([key], data, dialog, status)[0];
+      }
+      if (!info) {
+        continue;
+      }
+      result.push(info);
+      if (readonly) {
+        if (environment.production) {
+          info.hidden = true;
+        } else {
+          info.readonly = true;
+        }
+      }
+      if (required) {
+        info.validators = Validators.required;
+      } else {
+        delete info.validators;
+      }
+      if (value) {
+        if (key2) {
+          (data as any)[cadKey][key2] = value;
+        } else {
+          (data as any)[cadKey] = value;
+        }
+      }
+    }
   }
   return result;
 };

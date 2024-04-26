@@ -33,6 +33,7 @@ import {
   get算料数据,
   MenjiaoCadType,
   menjiaoCadTypes,
+  setCadDataOptions,
   SuanliaoDataParams,
   xiaoguotuKeys,
   企料组合,
@@ -479,11 +480,11 @@ export class MenjiaoDialogComponent implements OnInit {
   async selectCad0(info: typeof this.emptyCadTemplateType) {
     const data = this.formData;
     const {key1, key2, key3} = info;
-    const shujuyaoqiu = this.getCadshujuyaoqiu(key3);
-    if (!shujuyaoqiu) {
+    const yaoqiu = this.getCadshujuyaoqiu(key3);
+    if (!yaoqiu) {
       return;
     }
-    const {search, addCadData} = getCadSearch(data, shujuyaoqiu, key1, key2, key3);
+    const {search, addCadData} = getCadSearch(data, yaoqiu, key1, key2, key3);
     const result = await openCadListDialog(this.dialog, {
       data: {
         selectMode: "single",
@@ -492,6 +493,7 @@ export class MenjiaoDialogComponent implements OnInit {
         raw: true,
         search,
         addCadData,
+        yaoqiu,
         hideCadInfo: true
       }
     });
@@ -500,6 +502,7 @@ export class MenjiaoDialogComponent implements OnInit {
       const name = this.cadNameMap[key3] || key3;
       cad.名字 = name;
       cad.json.name = name;
+      setCadDataOptions(cad, yaoqiu);
       if (!data[key1][key2][key3]) {
         data[key1][key2][key3] = {};
       }
@@ -540,6 +543,7 @@ export class MenjiaoDialogComponent implements OnInit {
     for (const item of data.算料单示意图) {
       checkedItems.push(item._id);
     }
+    const yaoqiu = component.getCadshujuyaoqiu("算料单示意图");
     const {search, addCadData} = getShiyituCadSearch(this.formData, key1);
     const result = await openCadListDialog(this.dialog, {
       data: {
@@ -548,15 +552,17 @@ export class MenjiaoDialogComponent implements OnInit {
         hideCadInfo: true,
         search,
         checkedItems,
-        addCadData
+        addCadData,
+        yaoqiu
       }
     });
     if (result) {
       data.算料单示意图 = result.map((v) => {
+        const v2 = getHoutaiCad(v);
         if (!checkedItems.includes(v.id)) {
-          v.options = {};
+          setCadDataOptions(v2, yaoqiu);
         }
-        return getHoutaiCad(v);
+        return v2;
       });
       updateMenjiaoData(this.formData);
     }

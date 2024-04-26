@@ -538,7 +538,13 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   async getCadShujuyaoqiuIfNotFetched() {
     await this.getDataIfNotFetched("cadShujuyaoqiu", async () => {
-      const fields: (keyof Cad数据要求Raw)[] = ["mingzi", "cadtanchuangxiugaishuxing", "xianduantanchuangxiugaishuxing", "daorucadyaoqiu"];
+      const fields: (keyof Cad数据要求Raw)[] = [
+        "mingzi",
+        "cadtanchuangxiugaishuxing",
+        "xianduantanchuangxiugaishuxing",
+        "tianjiahuodaorucadyaoqiu",
+        "xuanzhongshujubaoliuxuanxiang"
+      ];
       const cad数据要求Raws = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu", fields});
       this.cad数据要求 = cad数据要求Raws.map(getCad数据要求);
       this.updateBtns();
@@ -1548,8 +1554,9 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       this.btns.push({
         name: item.CAD分类,
         onClick: () => {
-          const search = item.导入CAD要求;
-          openCadListDialog(this.dialog, {data: {selectMode: "none", collection: "cad", search, addCadData: search}});
+          openCadListDialog(this.dialog, {
+            data: {selectMode: "none", collection: "cad", search: item.search, yaoqiu: item}
+          });
         }
       });
     }
