@@ -1,7 +1,7 @@
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {cadOptions} from "@app/cad/options";
-import {Cad数据要求} from "@app/components/lurushuju/xinghao-data";
+import {Cad数据要求Item} from "@app/components/lurushuju/xinghao-data";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {environment} from "@env";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
@@ -269,14 +269,13 @@ export const getCadInfoInputs = (keys: string[], data: CadData | (() => CadData)
 };
 
 export const getCadInfoInputs2 = (
-  yaoqiu: Cad数据要求 | null | undefined,
+  items: Cad数据要求Item[] | null | undefined,
   data: CadData | (() => CadData),
   dialog: MatDialog,
   status: AppStatusService
 ) => {
   const result: InputInfo[] = [];
-  const addCadData = yaoqiu?.新建CAD要求 || [];
-  for (const {key, value, cadKey, key2, readonly, required} of addCadData) {
+  for (const {key, value, cadKey, key2, readonly, required} of items || []) {
     let info: InputInfo;
     if (cadKey) {
       if (key === "选项") {
@@ -316,6 +315,9 @@ export const getCadInfoInputs2 = (
           (data as any)[cadKey] = value;
         }
       }
+    } else {
+      info = {type: "string", label: key + "（未实现）", disabled: true};
+      result.push(info);
     }
   }
   return result;

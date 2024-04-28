@@ -46,6 +46,12 @@
     align-items: flex-start;
     width: 100%;
 
+    .key {
+      &.disabled {
+        color: gray;
+      }
+    }
+
     .value {
       white-space: pre;
     }

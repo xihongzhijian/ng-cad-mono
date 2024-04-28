@@ -346,7 +346,7 @@ export interface Cad数据要求Raw extends TableDataBase {
 }
 export interface Cad数据要求 {
   CAD分类: string;
-  CAD弹窗修改属性: string[];
+  CAD弹窗修改属性: Cad数据要求Item[];
   线段弹窗修改属性: string[];
   保留选项: string[];
   新建CAD要求: Cad数据要求Item[];
@@ -364,58 +364,64 @@ export interface Cad数据要求Item {
 }
 export const getCad数据要求 = (raw: Cad数据要求Raw) => {
   const split = (str: string) => (typeof str === "string" ? str.split("+").filter(Boolean) : []);
-  const result: Cad数据要求 = {
-    CAD分类: raw.mingzi,
-    CAD弹窗修改属性: split(raw.cadtanchuangxiugaishuxing),
-    线段弹窗修改属性: split(raw.xianduantanchuangxiugaishuxing),
-    保留选项: split(raw.xuanzhongshujubaoliuxuanxiang),
-    新建CAD要求: [],
-    search: {}
-  };
   const emptyCad = new CadData();
   const emptyHoutaiCad = getHoutaiCad(emptyCad);
-  for (const str of split(raw.tianjiahuodaorucadyaoqiu)) {
-    const arr = str.split("=");
-    let key = arr[0];
-    const value = arr[1];
-    const item: Cad数据要求Item = {key: "", value};
-    if (key.startsWith("固定")) {
-      item.readonly = true;
-      key = key.slice(2);
-    } else if (key.startsWith("选填")) {
-      item.override = true;
-      key = key.slice(2);
-    } else if (key.startsWith("默认")) {
-      key = key.slice(2);
-    } else if (key.startsWith("必填")) {
-      item.required = true;
-      key = key.slice(2);
-    } else {
-      item.required = true;
-    }
-    let key2: string | undefined;
-    if (key.startsWith("选项")) {
-      item.key2 = key2 = key.slice(2);
-      key = "选项";
-    }
-    item.key = key;
-    if (key in emptyHoutaiCad) {
-      item.isHoutaiCadKey = true;
-      if (value) {
-        const searchKey = key + (key2 ? `.${key2}` : "");
-        result.search[searchKey] = value;
+  const search: Cad数据要求["search"] = {};
+  const getItems = (source: string) => {
+    const items: Cad数据要求Item[] = [];
+    for (const str of split(source)) {
+      const arr = str.split("=");
+      let key = arr[0];
+      const value = arr[1];
+      const item: Cad数据要求Item = {key: "", value};
+      items.push(item);
+      if (key.startsWith("固定")) {
+        item.readonly = true;
+        key = key.slice(2);
+      } else if (key.startsWith("选填")) {
+        item.override = true;
+        key = key.slice(2);
+      } else if (key.startsWith("默认")) {
+        key = key.slice(2);
+      } else if (key.startsWith("必填")) {
+        item.required = true;
+        key = key.slice(2);
+      } else {
+        item.required = true;
+      }
+      let key2: string | undefined;
+      if (key.startsWith("选项")) {
+        item.key2 = key2 = key.slice(2);
+        key = "选项";
+      }
+      item.key = key;
+      if (key in emptyHoutaiCad) {
+        item.isHoutaiCadKey = true;
+        if (value) {
+          const searchKey = key + (key2 ? `.${key2}` : "");
+          search[searchKey] = value;
+        }
+      }
+      if (key in cadFields) {
+        item.cadKey = cadFields[key as keyof typeof cadFields];
       }
     }
-    if (key in cadFields) {
-      item.cadKey = cadFields[key as keyof typeof cadFields];
-    }
-    result.新建CAD要求.push(item);
-  }
+    return items;
+  };
+
+  const result: Cad数据要求 = {
+    CAD分类: raw.mingzi,
+    CAD弹窗修改属性: getItems(raw.cadtanchuangxiugaishuxing),
+    线段弹窗修改属性: split(raw.xianduantanchuangxiugaishuxing),
+    保留选项: split(raw.xuanzhongshujubaoliuxuanxiang),
+    新建CAD要求: getItems(raw.tianjiahuodaorucadyaoqiu),
+    search
+  };
   return result;
 };
 export const filterCad = (query: string, cad: HoutaiCad, yaoqiu: Cad数据要求) => {
-  for (const key of yaoqiu.CAD弹窗修改属性) {
-    const key2 = cadFields[key as keyof typeof cadFields];
+  for (const item of yaoqiu.CAD弹窗修改属性) {
+    const key2 = item.cadKey;
     if (!key2) {
       continue;
     }

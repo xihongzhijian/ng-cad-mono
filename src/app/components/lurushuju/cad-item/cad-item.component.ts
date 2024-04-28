@@ -26,7 +26,7 @@ import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-edi
 import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
-import {cadFields, getCadInfoInputs} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -39,7 +39,7 @@ import {isEmpty} from "lodash";
 import {BehaviorSubject} from "rxjs";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
-import {Cad数据要求} from "../xinghao-data";
+import {Cad数据要求, Cad数据要求Item} from "../xinghao-data";
 import {CadItemButton, typeOptions} from "./cad-item.types";
 
 @Component({
@@ -163,7 +163,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       }
     }
     const data = new CadData(dataRaw);
-    const form = getCadInfoInputs(this.shujuyaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status);
+    const form = getCadInfoInputs2(this.shujuyaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status);
     let title = "编辑CAD";
     const name = data.name;
     if (name) {
@@ -487,11 +487,21 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     }
   }
 
-  getCadInfoStr(key: string) {
-    if (key in cadFields) {
-      const key2 = cadFields[key as keyof typeof cadFields];
-      return getValueString(this.cad.json[key2], "\n", "：");
-    } else if (key === "展开信息") {
+  isCadInfoVisible(item: Cad数据要求Item) {
+    if (item.key === "展开信息") {
+      return true;
+    }
+    return !!item.cadKey;
+  }
+
+  getCadInfoStr(item: Cad数据要求Item) {
+    if (item.cadKey) {
+      let value = this.cad.json[item.cadKey];
+      if (item.key2) {
+        value = value?.[item.key2];
+      }
+      return getValueString(value, "\n", "：");
+    } else if (item.key === "展开信息") {
       const {cad} = this;
       if (cad?.json?.zhankai && cad.json.zhankai[0]) {
         const zhankai = cad.json.zhankai[0];

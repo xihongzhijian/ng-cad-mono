@@ -33,12 +33,16 @@
       }
     </div>
     <div class="cad-info item link" style="align-items: flex-start" (dblclick)="editCadForm()">
-      @for (key of shujuyaoqiu?.["CAD弹窗修改属性"]; track $index) {
-        @if (key !== "名字") {
-          <div class="flex-row">
-            <div class="key">{{ key }}：</div>
-            <div class="value">{{ getCadInfoStr(key) }}</div>
-          </div>
+      @for (item of shujuyaoqiu?.["CAD弹窗修改属性"]; track $index) {
+        @if (item.key !== "名字") {
+          @if (isCadInfoVisible(item)) {
+            <div class="flex-row">
+              <div class="key">{{ item.key }}{{ item.key2 }}：</div>
+              <div class="value">{{ getCadInfoStr(item) }}</div>
+            </div>
+          } @else {
+            <div class="key disabled">{{ item.key }}（未实现）</div>
+          }
         }
       }
     </div>
