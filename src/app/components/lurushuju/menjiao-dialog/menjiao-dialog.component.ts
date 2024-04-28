@@ -813,8 +813,7 @@ export class MenjiaoDialogComponent implements OnInit {
   getOpenCadOptions(key1: MenjiaoCadType): CadItemComponent["openCadOptions"] {
     return {
       suanliaogongshiInfo: this.key1Infos[key1].suanliaogongshiInfo,
-      suanliaoTablesInfo: {params: this.key1Infos[key1].suanliaoDataParams},
-      extraData: {options: this.key1Infos[key1].suanliaoDataParams.选项}
+      suanliaoTablesInfo: {params: this.key1Infos[key1].suanliaoDataParams}
     };
   }
 

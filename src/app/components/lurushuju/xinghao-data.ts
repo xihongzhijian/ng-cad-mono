@@ -363,7 +363,7 @@ export interface Cad数据要求Item {
   override?: boolean;
 }
 export const getCad数据要求 = (raw: Cad数据要求Raw) => {
-  const split = (str: string) => str.split("+").filter(Boolean);
+  const split = (str: string) => (typeof str === "string" ? str.split("+").filter(Boolean) : []);
   const result: Cad数据要求 = {
     CAD分类: raw.mingzi,
     CAD弹窗修改属性: split(raw.cadtanchuangxiugaishuxing),
@@ -489,7 +489,7 @@ export const getXinghaoQuery = (route: ActivatedRoute) => {
 export const setCadDataOptions = (cad: HoutaiCad, yaoqiu: Cad数据要求 | null | undefined) => {
   const optionKeys = yaoqiu?.保留选项 || [];
   const setOptions = (obj: ObjectOf<any>) => {
-    if (!obj) {
+    if (!obj || optionKeys.includes("全部")) {
       return;
     }
     for (const key of Object.keys(obj)) {

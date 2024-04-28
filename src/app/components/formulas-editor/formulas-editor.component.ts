@@ -49,17 +49,11 @@ export class FormulasEditorComponent implements OnChanges {
   @Input() varNames?: {names?: ObjectOf<string[]>; width?: number};
   @Input() extraInputInfos?: InputInfo[];
   @Input() required?: boolean;
-  @Input() compact?: boolean;
+  @Input() compact?: {minRows: number; maxRows: number};
   @Output() formulasChange = new EventEmitter<Formulas | null>();
   formulaList: [string, string][] = [];
   formulaListInputInfos: InputInfo[][] = [];
-  formulasInputInfo: InputInfo = {
-    type: "string",
-    label: "",
-    textarea: {autosize: {minRows: 5}},
-    model: {key: "formulasText", data: this},
-    onChange: () => this.onFormulasTextChange()
-  };
+  formulasInputInfo: InputInfo;
   testResult: CalcResult | null = null;
   @ViewChild("testResultEl", {read: ElementRef}) testResultEl?: ElementRef<HTMLDivElement>;
   @ViewChildren(forwardRef(() => InputComponent)) inputs?: QueryList<InputComponent>;
@@ -69,12 +63,27 @@ export class FormulasEditorComponent implements OnChanges {
     private calc: CalcService
   ) {
     setGlobal("formulasEditor", this);
+    this.formulasInputInfo = {type: "string", label: ""};
+    this.updateFormulasInfo();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.formulas) {
       this.updateFormulas(this.formulas);
     }
+    if (changes.compact) {
+      this.updateFormulasInfo();
+    }
+  }
+
+  updateFormulasInfo() {
+    this.formulasInputInfo = {
+      type: "string",
+      label: "",
+      textarea: {autosize: {minRows: this.compact?.minRows, maxRows: this.compact?.maxRows}},
+      model: {key: "formulasText", data: this},
+      onChange: () => this.onFormulasTextChange()
+    };
   }
 
   updateFormulas(formulas?: Formulas, lock = false) {

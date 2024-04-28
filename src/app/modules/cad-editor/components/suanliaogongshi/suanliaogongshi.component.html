@@ -36,7 +36,7 @@
               @if (gongshiInfo.at(i)?.formulas) {
                 <app-formulas-editor
                   [formulas]="gongshiInfo[i].formulas"
-                  [compact]="true"
+                  [compact]="{minRows: 5, maxRows: 20}"
                   (formulasChange)="editGongshiEnd(i, $event)"
                 ></app-formulas-editor>
               } @else {
