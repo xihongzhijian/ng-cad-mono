@@ -100,6 +100,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   cadInfos: {id: string; name: string; val: any}[] = [];
   showListInput = true;
   objectString = "";
+  fileName = "";
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
 
   private _model: NonNullable<Required<InputInfo["model"]>> = {data: {key: ""}, key: "key"};
@@ -469,6 +470,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   clear() {
+    const {info} = this;
+    if (info.type === "file" || info.type === "image") {
+      this.onChange(null);
+      return;
+    }
     const value = this.value;
     if (value === undefined || value === null) {
       return;
@@ -570,6 +576,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         info.onChange?.(value, info);
         break;
       case "file":
+        this.fileName = "";
         info.onChange?.(null, info);
         break;
       case "image":
@@ -881,6 +888,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const {info} = this;
     if (info.type === "file") {
       info.onChange?.(files, info);
+      this.fileName = Array.from(files)
+        .map((v) => v.name)
+        .join(", ");
     } else if (info.type === "image" && files[0]) {
       info.onChange?.(files[0], info);
     }

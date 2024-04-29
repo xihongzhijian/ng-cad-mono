@@ -1,6 +1,6 @@
 import {CadData, CadDimension, CadImage, CadLineLike, CadMtext, CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
 import {CadCollection} from "./collections";
-import {isShiyitu, prepareCadViewer} from "./utils";
+import {prepareCadViewer} from "./utils";
 
 export interface CadPreviewRawParams {
   fixedLengthTextSize?: number;
@@ -9,17 +9,16 @@ export interface CadPreviewRawParams {
   config?: Partial<CadViewerConfig>;
   autoSize?: boolean;
   maxZoom?: number;
-  ignoreShiyitu?: boolean;
 }
 export const getCadPreviewRaw = async (collection: CadCollection, data: CadData, params: CadPreviewRawParams = {}) => {
-  const shiyitu = !params.ignoreShiyitu && isShiyitu(data);
   const cad = new CadViewer(new CadData(), {
     width: 300,
     height: 150,
     padding: [5],
     backgroundColor: "rgba(0,0,0,0)",
-    hideLineLength: collection === "CADmuban" || shiyitu,
-    hideLineGongshi: true,
+    hideLineLength: collection === "CADmuban",
+    hideLineGongshi: false,
+    lineGongshi: 24,
     ...params.config
   });
   cad.dom.style.opacity = "0";
@@ -27,12 +26,8 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
   cad.appendTo(document.body);
   await prepareCadViewer(cad);
   cad.data = data.clone();
-  if (shiyitu) {
-    cad.data.entities.dimension = [];
-  } else {
-    for (const e of cad.data.entities.dimension) {
-      e.calcBoundingRect = true;
-    }
+  for (const e of cad.data.entities.dimension) {
+    e.calcBoundingRect = true;
   }
   await cad.render();
   if (params.autoSize) {

@@ -75,11 +75,13 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     private message: MessageService
   ) {
     super();
+    const parseOptionString = false;
     this.infoGroup1 = getCadInfoInputs(
       ["id", "名字", "唯一码", "显示名字", "开孔对应名字", "切内空对应名字", "分类", "分类2", "选项", "条件"],
       () => this.data,
       this.dialog,
-      this.status
+      this.status,
+      parseOptionString
     );
     this.infoGroup2 = getCadInfoInputs(
       [
@@ -106,7 +108,8 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       ],
       () => this.data,
       this.dialog,
-      this.status
+      this.status,
+      parseOptionString
     );
     this.infoGroup3 = getCadInfoInputs(
       [
@@ -136,7 +139,8 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       ],
       () => this.data,
       this.dialog,
-      this.status
+      this.status,
+      parseOptionString
     );
 
     const 名字 = this.infoGroup1.find((v) => v.label === "名字");

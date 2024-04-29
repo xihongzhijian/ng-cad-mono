@@ -55,9 +55,11 @@ export const Utils = <T extends Constructor>(base: T = class {} as T) =>
           return;
         }
       }
-      const tmp = obj[oldKey];
-      delete obj[oldKey];
-      obj[newKey] = tmp;
+      if (oldKey !== newKey) {
+        const tmp = obj[oldKey];
+        delete obj[oldKey];
+        obj[newKey] = tmp;
+      }
     }
 
     changeObjectValue<K>(obj: ObjectOf<K>, key: string, value: K) {

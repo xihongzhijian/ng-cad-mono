@@ -23,7 +23,7 @@ export const parseObjectString = (str: string, objectBefore: ObjectOf<string>, m
       .replace(/ /g, "")
       .split("\n")
       .map((v) => {
-        const [key, value] = v.split(/[:：]/);
+        const [key, value] = v.split(/[:：]/).map((v) => v.trim());
         return [key, value];
       })
   );

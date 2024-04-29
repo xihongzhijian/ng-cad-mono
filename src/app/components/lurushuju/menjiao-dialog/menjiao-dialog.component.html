@@ -2,7 +2,7 @@
   <button mat-raised-button color="primary" (click)="submit(false)">保存</button>
   <button mat-raised-button color="primary" (click)="submit(true)">保存并关闭</button>
   <button mat-raised-button color="primary" (click)="cancel(true)">不保存关闭</button>
-  @if (!data.component?.production) {
+  @if (!data.componentLrsj?.production) {
     <button mat-raised-button color="primary" (click)="cancel(false)">cancel</button>
     <button mat-raised-button color="primary" (click)="autoFill()">autoFill</button>
   }
@@ -37,10 +37,10 @@
                   }
                 </div>
                 <div class="list">
-                  @for (key3 of qiliaoKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
+                  @for (key3 of qiliaoKeys[data.componentLrsj?.fenleiName || ""] || []; track i; let i = $index) {
                     <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '企料CAD', key3}"></ng-container>
                   }
-                  @for (key3 of peiheKeys[data.component?.fenleiName || ""] || []; track i; let i = $index) {
+                  @for (key3 of peiheKeys[data.componentLrsj?.fenleiName || ""] || []; track i; let i = $index) {
                     <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '配合框CAD', key3}"></ng-container>
                   }
                 </div>

@@ -433,6 +433,17 @@ export const filterCad = (query: string, cad: HoutaiCad, yaoqiu: Cad数据要求
   }
   return false;
 };
+export class Cad数据要求List {
+  constructor(public list: Cad数据要求[]) {}
+
+  get(name: string) {
+    let result = this.list.find((v) => v.CAD分类 === name);
+    if (!result) {
+      result = this.list.find((v) => v.CAD分类 === "配件库");
+    }
+    return result;
+  }
+}
 
 export type 门缝配置 = ObjectOf<number>;
 

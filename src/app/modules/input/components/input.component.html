@@ -143,11 +143,13 @@
           <button mat-button color="primary" (click)="clear()">清空</button>
         }
       </div>
-      <mat-form-field>
-        <textarea matInput rows="1" class="flex-110" [(ngModel)]="objectString"></textarea>
-        <button mat-button matSuffix color="primary" (click)="parseObjectString('replace')">全部替换</button>
-        <button mat-button matSuffix color="primary" (click)="parseObjectString('append')">没有的插入</button>
-      </mat-form-field>
+      @if (info.parseString) {
+        <mat-form-field>
+          <textarea matInput rows="1" class="flex-110" [(ngModel)]="objectString"></textarea>
+          <button mat-button matSuffix color="primary" (click)="parseObjectString('replace')">全部替换</button>
+          <button mat-button matSuffix color="primary" (click)="parseObjectString('append')">没有的插入</button>
+        </mat-form-field>
+      }
       @if (!info.keysReadonly && keysOf(value)["length"] === 0) {
         <div>
           <button mat-icon-button color="primary" (click)="objectAdd(value, '')">
@@ -554,11 +556,16 @@
       @if (info.hint) {
         <mat-hint>{{ hint }}</mat-hint>
       }
-      <input matInput readonly [errorStateMatcher]="getErrorStateMatcher()" />
+      <input matInput readonly [value]="fileName" [errorStateMatcher]="getErrorStateMatcher()" (click)="selectFile()" />
       <ng-container matSuffix>
         <button mat-icon-button color="primary" (click)="selectFile()">
           <mat-icon>file_open</mat-icon>
         </button>
+        @if (info.clearable) {
+          <button mat-icon-button color="primary" (click)="clear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
       </ng-container>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>

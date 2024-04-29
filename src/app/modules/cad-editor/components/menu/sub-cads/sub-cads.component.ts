@@ -8,10 +8,10 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-data-transform";
-import {isShiyitu} from "@app/cad/utils";
+import {uploadAndReplaceCad} from "@app/cad/utils";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
-import {CadData, CadDimensionLinear, CadEntities, CadEventCallBack, CadLine, CadLineLike} from "@lucilor/cad-viewer";
+import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
 import {downloadByString, Matrix, ObjectOf, Point} from "@lucilor/utils";
 import {ContextMenu} from "@mixins/context-menu.mixin";
 import {Subscribed} from "@mixins/subscribed.mixin";
@@ -418,81 +418,9 @@ export class SubCadsComponent extends ContextMenu(Subscribed()) implements OnIni
         await this.status.openCad();
       }
     } else {
-      const content = `确定要上传<span style="color:red">${file.name}</span>并替换<span style="color:red">${data.name}</span>的数据吗？`;
-      const yes = await this.message.confirm(content);
-      if (yes) {
-        const resData = await this.http.uploadDxf(file);
-        if (resData) {
-          const lines = resData.entities.line;
-          const groupedLines: CadLine[][] = [];
-          const isLinesDepulicate = (e1: CadLine, e2: CadLine) => {
-            if (e1.start.equals(e2.start) && e1.end.equals(e2.end)) {
-              return true;
-            } else if (e1.start.equals(e2.end) && e1.end.equals(e2.start)) {
-              return true;
-            }
-            return false;
-          };
-          const toRemove: string[] = [];
-          for (const e of lines) {
-            if (groupedLines.length > 0) {
-              const group = groupedLines.find((e2) => e2[0] && isLinesDepulicate(e, e2[0]));
-              if (group) {
-                group.push(e);
-                toRemove.push(e.id);
-              } else {
-                groupedLines.push([e]);
-              }
-            } else {
-              groupedLines.push([e]);
-            }
-          }
-          if (toRemove.length > 0 && (await this.message.confirm("存在重复线，是否自动清理？"))) {
-            resData.entities.line = resData.entities.line.filter((e) => !toRemove.includes(e.id));
-          }
-          const isShiyituCad = isShiyitu(data);
-          const toRemoveDims: CadDimensionLinear[] = [];
-          resData.entities.forEach((e) => {
-            if (e instanceof CadDimensionLinear) {
-              if (e.defPoints) {
-                toRemoveDims.push(e);
-              }
-            }
-            if (e instanceof CadLineLike) {
-              if (isShiyituCad) {
-                e.hideLength = true;
-              }
-            }
-          });
-          if (toRemoveDims.length > 0) {
-            const namesStr = toRemoveDims.map((e) => e.mingzi).join("，");
-            if (await this.message.confirm(`以下标注没有标到直线端点，是否自动清理？<br>${namesStr}`)) {
-              resData.entities.dimension = resData.entities.dimension.filter((e) => toRemoveDims.find((v) => v.id !== e.id));
-            }
-          }
-
-          if (mainCad) {
-            const data1 = new CadData();
-            data1.entities = data.entities;
-            const data2 = new CadData();
-            data2.entities = resData.entities;
-            const rect1 = data1.getBoundingRect();
-            const rect2 = data2.getBoundingRect();
-            if (rect1.isFinite && rect2.isFinite) {
-              data2.transform({translate: rect1.min.clone().sub(rect2.min)}, true);
-            }
-            data.entities = data2.entities;
-          } else {
-            data.entities = resData.entities;
-            // data.partners = resData.partners;
-            // data.components = resData.components;
-            data.zhidingweizhipaokeng = resData.zhidingweizhipaokeng;
-            data.info = resData.info;
-          }
-          data.blocks = resData.blocks;
-          data.layers = resData.layers;
-          await this.status.openCad();
-        }
+      const success = await uploadAndReplaceCad(file, data, !!mainCad, this.message, this.http);
+      if (success) {
+        await this.status.openCad();
       }
     }
     input.value = "";

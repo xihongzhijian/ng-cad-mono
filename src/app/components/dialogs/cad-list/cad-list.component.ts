@@ -333,7 +333,7 @@ export class CadListComponent implements AfterViewInit {
   async addCad() {
     const {addCadData, yaoqiu} = this.data;
     const cadData = new CadData(addCadData);
-    const form = getCadInfoInputs2(yaoqiu?.新建CAD要求, cadData, this.dialog, this.status);
+    const form = getCadInfoInputs2(yaoqiu?.新建CAD要求, cadData, this.dialog, this.status, true);
     const result = await this.message.form(form);
     if (!result) {
       return;

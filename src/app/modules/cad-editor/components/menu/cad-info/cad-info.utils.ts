@@ -67,7 +67,13 @@ export const cadFields = {
 
 const getData = (data: CadData | (() => CadData)) => (typeof data === "function" ? data() : data);
 
-export const getCadInfoInputs = (keys: string[], data: CadData | (() => CadData), dialog: MatDialog, status: AppStatusService) => {
+export const getCadInfoInputs = (
+  keys: string[],
+  data: CadData | (() => CadData),
+  dialog: MatDialog,
+  status: AppStatusService,
+  parseOptionString: boolean
+) => {
   const result: InputInfo[] = [];
   const attrGetter =
     <T extends keyof CadData>(key: T) =>
@@ -135,7 +141,14 @@ export const getCadInfoInputs = (keys: string[], data: CadData | (() => CadData)
         break;
       case "选项":
       case "型号花件":
-        info = {type: "object", label: key, model: {data, key: cadFields[key]}, optionsDialog: {}, optionMultiple: true};
+        info = {
+          type: "object",
+          label: key,
+          model: {data, key: cadFields[key]},
+          optionsDialog: {},
+          optionMultiple: true,
+          parseString: parseOptionString
+        };
         break;
       case "条件":
         info = {type: "array", label: key, model: {data, key: cadFields[key]}};
@@ -249,6 +262,18 @@ export const getCadInfoInputs = (keys: string[], data: CadData | (() => CadData)
           };
         }
         break;
+      case "上传dxf文件":
+        info = {
+          type: "file",
+          label: key,
+          accept: ".dxf",
+          clearable: true,
+          onChange: (files) => {
+            const file = files?.[0];
+            getData(data).info.uploadDxf = file;
+          }
+        };
+        break;
       default:
         info = {type: "string", label: key + "（未实现）", disabled: true};
     }
@@ -272,30 +297,26 @@ export const getCadInfoInputs2 = (
   items: Cad数据要求Item[] | null | undefined,
   data: CadData | (() => CadData),
   dialog: MatDialog,
-  status: AppStatusService
+  status: AppStatusService,
+  parseOptionString: boolean
 ) => {
   const result: InputInfo[] = [];
   for (const {key, value, cadKey, key2, readonly, required} of items || []) {
     let info: InputInfo;
-    if (cadKey) {
-      if (key === "选项") {
-        if (!key2) {
-          continue;
-        }
-        info = {
-          type: "select",
-          label: key2,
-          model: {data: () => getData(data).options, key: key2},
-          options: [],
-          optionsDialog: {optionKey: key2, openInNewTab: true}
-        };
-      } else {
-        info = getCadInfoInputs([key], data, dialog, status)[0];
-      }
-      if (!info) {
-        continue;
-      }
-      result.push(info);
+    if (key === "选项" && key2) {
+      info = {
+        type: "select",
+        label: key2,
+        model: {data: () => getData(data).options, key: key2},
+        options: [],
+        optionsDialog: {optionKey: key2, openInNewTab: true}
+      };
+    } else {
+      info = getCadInfoInputs([key], data, dialog, status, parseOptionString)[0];
+    }
+    if (!info) {
+      info = {type: "string", label: key + "（未实现）", disabled: true};
+    } else {
       if (readonly) {
         if (environment.production) {
           info.hidden = true;
@@ -303,22 +324,29 @@ export const getCadInfoInputs2 = (
           info.readonly = true;
         }
       }
-      if (required) {
-        info.validators = Validators.required;
-      } else {
-        delete info.validators;
-      }
-      if (value) {
+      const setInfo = (info2: InputInfo) => {
+        if (info2.type === "group") {
+          for (const info3 of info2.infos || []) {
+            setInfo(info3);
+          }
+        } else {
+          if (required) {
+            info2.validators = Validators.required;
+          } else {
+            delete info2.validators;
+          }
+        }
+      };
+      setInfo(info);
+      if (value && cadKey) {
         if (key2) {
           (data as any)[cadKey][key2] = value;
         } else {
           (data as any)[cadKey] = value;
         }
       }
-    } else {
-      info = {type: "string", label: key + "（未实现）", disabled: true};
-      result.push(info);
     }
+    result.push(info);
   }
   return result;
 };

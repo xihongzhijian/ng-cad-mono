@@ -11,7 +11,10 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
-import {setDimensionText} from "@app/cad/utils";
+import {setDimensionText, uploadAndReplaceCad} from "@app/cad/utils";
+import {Cad数据要求List} from "@app/components/lurushuju/xinghao-data";
+import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {toFixed} from "@app/utils/func";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {Debounce} from "@decorators/debounce";
@@ -141,6 +144,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     model: {data: this, key: "searchMokuaiValue"},
     onInput: debounce(this.filterMokuaiItems.bind(this), 200)
   };
+  cad数据要求List = new Cad数据要求List([]);
   isEditingFenlei$ = new BehaviorSubject<boolean>(false);
   get isEditingFenlei() {
     return this.isEditingFenlei$.value;
@@ -446,6 +450,11 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (noUpdateInputInfos) {
       this._updateInputInfos();
     }
+    if (this.data?.cad数据要求List) {
+      this.cad数据要求List = this.data.cad数据要求List;
+    } else {
+      this.cad数据要求List = await this.http.getCad数据要求List();
+    }
     this._step3Fetched = true;
   }
 
@@ -465,20 +474,29 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async step3Add() {
-    const data = {名字: "", 分类: this.lingsanCadType, 分类2: ""};
-    const result = await this.message.form<typeof data>([
-      {type: "string", label: "CAD名字", model: {key: "名字", data}, validators: Validators.required},
-      {type: "string", label: "CAD分类", model: {key: "分类", data}, validators: Validators.required},
-      {type: "string", label: "CAD分类2", model: {key: "分类2", data}}
-    ]);
+    const yaoqiu = this.cad数据要求List.get(this.lingsanCadType);
+    const cadData = new CadData({type: this.lingsanCadType});
+    const form = getCadInfoInputs2(yaoqiu?.新建CAD要求, cadData, this.dialog, this.status, true);
+    const result = await this.message.form<typeof data>(form);
     if (!result) {
       return;
     }
-    const response = await this.http.post("ngcad/mongodbTableInsert", {
-      collection: "cad",
-      data
-    });
-    if (response?.code === 0) {
+    const {uploadDxf} = cadData.info;
+    if (uploadDxf instanceof File) {
+      await uploadAndReplaceCad(uploadDxf, cadData, true, this.message, this.http);
+    }
+    const data: ObjectOf<any> = getHoutaiCad(cadData);
+    delete data._id;
+    const collection: CadCollection = "cad";
+    const id = await this.http.mongodbInsert(collection, data);
+    if (id) {
+      if (await this.message.confirm("是否编辑新的CAD？")) {
+        const {cads} = await this.http.getCad({collection, id});
+        const data = cads[0];
+        if (data) {
+          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
+        }
+      }
       this.step3Refresh();
     }
   }

@@ -1,5 +1,6 @@
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {LurushujuIndexComponent} from "../lurushuju-index/lurushuju-index.component";
+import {MenjiaoDialogComponent} from "../menjiao-dialog/menjiao-dialog.component";
 import {MenjiaoCadType, SuanliaoDataParams, 算料数据2} from "../xinghao-data";
 
 export interface SuanliaoDataInput {
@@ -7,7 +8,8 @@ export interface SuanliaoDataInput {
   varNames: FormulasEditorComponent["varNames"];
   suanliaoDataParams: SuanliaoDataParams;
   key1: MenjiaoCadType;
-  component?: LurushujuIndexComponent;
+  componentLrsj?: LurushujuIndexComponent;
+  componentMenjiao?: MenjiaoDialogComponent;
   isKailiao?: boolean;
   suanliaoTestName?: string;
 }

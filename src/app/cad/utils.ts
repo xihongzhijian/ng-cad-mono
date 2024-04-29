@@ -1,4 +1,5 @@
 import {remoteHost} from "@app/app.common";
+import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {Formulas} from "@app/utils/calc";
 import {ProjectConfig} from "@app/utils/project-config";
 import {getCalcZhankaiText} from "@app/utils/zhankai";
@@ -703,4 +704,84 @@ export const generateLineTexts2 = (data: CadData) => {
       }
     }
   });
+};
+
+export const uploadAndReplaceCad = async (file: File, data: CadData, isMain: boolean, message: MessageService, http: CadDataService) => {
+  const content = `确定要上传<span style="color:red">${file.name}</span>并替换<span style="color:red">${data.name}</span>的数据吗？`;
+  const yes = await message.confirm(content);
+  if (yes) {
+    const resData = await http.uploadDxf(file);
+    if (resData) {
+      const lines = resData.entities.line;
+      const groupedLines: CadLine[][] = [];
+      const isLinesDepulicate = (e1: CadLine, e2: CadLine) => {
+        if (e1.start.equals(e2.start) && e1.end.equals(e2.end)) {
+          return true;
+        } else if (e1.start.equals(e2.end) && e1.end.equals(e2.start)) {
+          return true;
+        }
+        return false;
+      };
+      const toRemove: string[] = [];
+      for (const e of lines) {
+        if (groupedLines.length > 0) {
+          const group = groupedLines.find((e2) => e2[0] && isLinesDepulicate(e, e2[0]));
+          if (group) {
+            group.push(e);
+            toRemove.push(e.id);
+          } else {
+            groupedLines.push([e]);
+          }
+        } else {
+          groupedLines.push([e]);
+        }
+      }
+      if (toRemove.length > 0 && (await message.confirm("存在重复线，是否自动清理？"))) {
+        resData.entities.line = resData.entities.line.filter((e) => !toRemove.includes(e.id));
+      }
+      const isShiyituCad = isShiyitu(data);
+      const toRemoveDims: CadDimensionLinear[] = [];
+      resData.entities.forEach((e) => {
+        if (e instanceof CadDimensionLinear) {
+          if (e.defPoints) {
+            toRemoveDims.push(e);
+          }
+        }
+        if (e instanceof CadLineLike) {
+          if (isShiyituCad) {
+            e.hideLength = true;
+          }
+        }
+      });
+      if (toRemoveDims.length > 0) {
+        const namesStr = toRemoveDims.map((e) => e.mingzi).join("，");
+        if (await message.confirm(`以下标注没有标到直线端点，是否自动清理？<br>${namesStr}`)) {
+          resData.entities.dimension = resData.entities.dimension.filter((e) => toRemoveDims.find((v) => v.id !== e.id));
+        }
+      }
+
+      if (isMain) {
+        const data1 = new CadData();
+        data1.entities = data.entities;
+        const data2 = new CadData();
+        data2.entities = resData.entities;
+        const rect1 = data1.getBoundingRect();
+        const rect2 = data2.getBoundingRect();
+        if (rect1.isFinite && rect2.isFinite) {
+          data2.transform({translate: rect1.min.clone().sub(rect2.min)}, true);
+        }
+        data.entities = data2.entities;
+      } else {
+        data.entities = resData.entities;
+        // data.partners = resData.partners;
+        // data.components = resData.components;
+        data.zhidingweizhipaokeng = resData.zhidingweizhipaokeng;
+        data.info = resData.info;
+      }
+      data.blocks = resData.blocks;
+      data.layers = resData.layers;
+      return true;
+    }
+  }
+  return false;
 };

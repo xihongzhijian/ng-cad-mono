@@ -74,6 +74,7 @@ export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   keyValidators?: AbstractControlOptions["validators"];
   valueValidators?: AbstractControlOptions["validators"];
   keysReadonly?: boolean;
+  parseString?: boolean;
 }
 
 export interface InputInfoArray<T = any> extends InputInfoBase<T> {

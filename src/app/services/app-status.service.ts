@@ -74,7 +74,7 @@ export class AppStatusService {
   };
   openCad$ = new BehaviorSubject<OpenCadOptions>({});
   saveCadStart$ = new Subject<void>();
-  saveCadEnd$ = new Subject<void>();
+  saveCadEnd$ = new Subject<{data: CadData}>();
   saveCadLocked$ = new BehaviorSubject<boolean>(false);
   cadPoints$ = new BehaviorSubject<CadPoints>([]);
   setProject$ = new Subject<void>();
@@ -338,7 +338,7 @@ export class AppStatusService {
     data = this.closeCad();
     const isLocal = this.openCad$.value.isLocal;
     if (isLocal) {
-      this.saveCadEnd$.next();
+      this.saveCadEnd$.next({data});
       this.saveCadLocked$.next(false);
       return data;
     }
@@ -356,7 +356,7 @@ export class AppStatusService {
       resData = await http.setCad({collection, cadData: data, force: true}, hideLineLength);
     }
     if (resData) {
-      this.saveCadEnd$.next();
+      this.saveCadEnd$.next({data: resData});
       await this.openCad({
         data: resData,
         collection,

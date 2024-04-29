@@ -3,7 +3,7 @@ import {MenjiaoCadType, 算料数据} from "../xinghao-data";
 
 export interface MenjiaoInput {
   data?: 算料数据;
-  component?: LurushujuIndexComponent;
+  componentLrsj?: LurushujuIndexComponent;
   onSubmit?: (result: MenjiaoOutput) => void;
   isKailiao?: boolean;
   suanliaoDataName?: string;

@@ -88,7 +88,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
         ]
       );
     }
-    this.cadShujuyaoqiu = this.data.component?.getCadshujuyaoqiu("算料");
+    this.cadShujuyaoqiu = this.data.componentLrsj?.cad数据要求List.get("算料");
     this.suanliaoCadsSearch = {
       type: "string",
       label: "搜索",
@@ -117,7 +117,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
   }
 
   async selectSuanliaoCads() {
-    const data = this.data.data;
+    const {data, componentLrsj} = this.data;
     const zxpjData: ZixuanpeijianInput = {
       data: {
         零散: data.算料CAD.map((v) => {
@@ -128,7 +128,8 @@ export class SuanliaoDataDialogComponent implements OnInit {
       },
       step: 3,
       stepFixed: true,
-      noValidateCads: true
+      noValidateCads: true,
+      cad数据要求List: componentLrsj?.cad数据要求List
     };
     const result = await openZixuanpeijianDialog(this.dialog, {data: zxpjData});
     if (result) {
@@ -144,17 +145,17 @@ export class SuanliaoDataDialogComponent implements OnInit {
   }
 
   async copySuanliaoCads() {
-    const {component, key1} = this.data;
-    if (!component) {
+    const {componentLrsj, key1} = this.data;
+    if (!componentLrsj) {
       return;
     }
     const result = await openSelectGongyiDialog(this.dialog, {
       data: {
-        xinghaoMenchuangs: component.xinghaoMenchuangs,
-        xinghaoOptions: component.xinghaoOptionsAll,
-        menjiaoOptions: component.menjiaoOptionsAll,
+        xinghaoMenchuangs: componentLrsj.xinghaoMenchuangs,
+        xinghaoOptions: componentLrsj.xinghaoOptionsAll,
+        menjiaoOptions: componentLrsj.menjiaoOptionsAll,
         key: "算料数据",
-        fenlei: component.fenleiName
+        fenlei: componentLrsj.fenleiName
       }
     });
     const data = result?.items[0] as SelectGongyiItemData<算料数据>;
@@ -197,7 +198,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
   }
 
   async suanliaoTest() {
-    const {component, varNames, suanliaoDataParams} = this.data;
+    const {componentLrsj: component, varNames, suanliaoDataParams} = this.data;
     if (!component) {
       return;
     }
@@ -288,6 +289,22 @@ export class SuanliaoDataDialogComponent implements OnInit {
     if (response) {
       suanliaoTables.updateKlcsTable();
     }
+  }
+
+  async editBcfz() {
+    const {componentMenjiao, key1} = this.data;
+    if (!componentMenjiao) {
+      return;
+    }
+    await componentMenjiao.editBcfz(key1);
+  }
+
+  async submitMenjiao() {
+    const {componentMenjiao} = this.data;
+    if (!componentMenjiao) {
+      return;
+    }
+    componentMenjiao.submit(false);
   }
 }
 

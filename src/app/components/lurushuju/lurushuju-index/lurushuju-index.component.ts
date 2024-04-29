@@ -37,9 +37,7 @@ import {copySuanliaoData, updateMenjiaoData} from "../menjiao-dialog/menjiao-dia
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
 import {
-  Cad数据要求,
-  Cad数据要求Raw,
-  getCad数据要求,
+  Cad数据要求List,
   getGongyi,
   getXinghao,
   get算料数据,
@@ -134,7 +132,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   huajians: MrbcjfzHuajian[] = [];
   varNames: FormulasEditorComponent["vars"];
   bancaiList?: BancaiListData;
-  cad数据要求: Cad数据要求[] = [];
+  cad数据要求List = new Cad数据要求List([]);
   btns: {name: string; onClick: () => void}[] = [];
   menuPoitonKey = "lurushujuMenuPosition";
   isMenuDisabled = false;
@@ -538,21 +536,9 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   async getCadShujuyaoqiuIfNotFetched() {
     await this.getDataIfNotFetched("cadShujuyaoqiu", async () => {
-      const fields: (keyof Cad数据要求Raw)[] = [
-        "mingzi",
-        "cadtanchuangxiugaishuxing",
-        "xianduantanchuangxiugaishuxing",
-        "tianjiahuodaorucadyaoqiu",
-        "xuanzhongshujubaoliuxuanxiang"
-      ];
-      const cad数据要求Raws = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu", fields});
-      this.cad数据要求 = cad数据要求Raws.map(getCad数据要求);
+      this.cad数据要求List = await this.http.getCad数据要求List();
       this.updateBtns();
     });
-  }
-
-  getCadshujuyaoqiu(type: string) {
-    return this.cad数据要求.find((v) => v.CAD分类 === type);
   }
 
   async setStep1() {
@@ -1129,7 +1115,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     await openMenjiaoDialog(this.dialog, {
       data: {
         data: data0,
-        component: this,
+        componentLrsj: this,
         onSubmit,
         isKailiao: this.isKailiao,
         suanliaoDataName,
@@ -1399,7 +1385,14 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   async openZxpj() {
-    const data: ZixuanpeijianInput = {step: 3, stepFixed: true, noValidateCads: true, readonly: true, getAllLingsanCads: true};
+    const data: ZixuanpeijianInput = {
+      step: 3,
+      stepFixed: true,
+      noValidateCads: true,
+      readonly: true,
+      getAllLingsanCads: true,
+      cad数据要求List: this.cad数据要求List
+    };
     await openZixuanpeijianDialog(this.dialog, {data});
   }
 
@@ -1550,7 +1543,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)},
       toggleforceUpdateCadImgBtn
     ];
-    for (const item of this.cad数据要求) {
+    for (const item of this.cad数据要求List.list) {
       this.btns.push({
         name: item.CAD分类,
         onClick: () => {
