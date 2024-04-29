@@ -348,15 +348,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/common@npm:^17.3.5":
-  version: 17.3.5
-  resolution: "@angular/common@npm:17.3.5"
+"@angular/common@npm:^17.3.6":
+  version: 17.3.6
+  resolution: "@angular/common@npm:17.3.6"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/core": 17.3.5
+    "@angular/core": 17.3.6
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/e1a8d956a2312fed9b05d83ad6b7fa3c639c2965bc9cd53d61bba8cac5b5657c22dd18d6c7e74f98f32eb4752acd2101cd177a09ac6fc9dc3ba026bca0151d74
+  checksum: 10c0/3506e063f841078f0532b50b61d8db72e74ff1dcb6b0438614074f24164cd78ac80d71dc5ff0c5ee18fe3fd407351121f7791bdf042737fab3804fdbc6729d58
   languageName: node
   linkType: hard
 
@@ -12178,7 +12178,7 @@ __metadata:
     "@angular/animations": "npm:^17.3.5"
     "@angular/cdk": "npm:^17.3.6"
     "@angular/cli": "npm:^17.3.5"
-    "@angular/common": "npm:^17.3.5"
+    "@angular/common": "npm:^17.3.6"
     "@angular/compiler": "npm:^17.3.5"
     "@angular/compiler-cli": "npm:^17.3.5"
     "@angular/core": "npm:^17.3.5"
