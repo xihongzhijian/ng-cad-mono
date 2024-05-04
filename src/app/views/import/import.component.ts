@@ -376,7 +376,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this._clearCache();
     const uniqCodesCount: ObjectOf<number> = {};
     const {requireLineId, addUniqCode, noFilterEntities} = this._getImportConfigValues(isXinghao);
-    const {yaoqiu} = this.importCache || {};
+    const {yaoqiu, xinghao} = this.importCache || {};
     for (const v of cads) {
       const data = v.data;
       let uniqCode = data.info.唯一码;
@@ -425,6 +425,9 @@ export class ImportComponent extends Utils() implements OnInit {
             }
           }
         }
+      }
+      if (xinghao) {
+        data.options.型号 = xinghao;
       }
 
       for (const zhankai of data.zhankai) {

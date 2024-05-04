@@ -5,4 +5,5 @@ export type ImportComponentConfig = Record<ImportComponentConfigName, {value: bo
 
 export interface ImportCache {
   yaoqiu?: Cad数据要求;
+  xinghao?: string;
 }

@@ -66,7 +66,7 @@ export interface ZixuanpeijianInput {
   step1Data?: Step1Data;
   noValidateCads?: boolean;
   readonly?: boolean;
-  getAllLingsanCads?: boolean;
+  lingsanOptions?: {getAll?: boolean; typePrefix?: boolean; xinghao?: string};
   lingsanCadType?: string;
   cad数据要求List?: Cad数据要求List;
 }

@@ -50,7 +50,7 @@ export const getTestData = () => {
     step1Data: zixuanpeijianTypesInfo,
     noValidateCads: false,
     readonly: false,
-    getAllLingsanCads: false,
+    lingsanOptions: {},
     lingsanCadType: "",
     cad数据要求List: new Cad数据要求List([])
   };

@@ -1384,13 +1384,13 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     openTongyongshujuDialog(this.dialog, {data: {}});
   }
 
-  async openZxpj() {
+  async openZxpj(isXinghao: boolean) {
     const data: ZixuanpeijianInput = {
       step: 3,
       stepFixed: true,
       noValidateCads: true,
       readonly: true,
-      getAllLingsanCads: true,
+      lingsanOptions: isXinghao ? {getAll: true, typePrefix: true, xinghao: this.xinghaoName} : {getAll: true},
       cad数据要求List: this.cad数据要求List
     };
     await openZixuanpeijianDialog(this.dialog, {data});

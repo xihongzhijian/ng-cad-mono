@@ -16,6 +16,7 @@ import {Cad数据要求List} from "@app/components/lurushuju/xinghao-data";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {toFixed} from "@app/utils/func";
+import {ImportCache} from "@app/views/import/import.types";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {Debounce} from "@decorators/debounce";
 import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai, setLinesLength} from "@lucilor/cad-viewer";
@@ -28,6 +29,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {cloneDeep, debounce, isEqual, uniq, uniqueId} from "lodash";
+import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, take} from "rxjs";
 import {ClickStopPropagationDirective} from "../../../modules/directives/click-stop-propagation.directive";
@@ -388,10 +390,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   async step3Fetch(noUpdateInputInfos = false, noCache = false, preserveImgs = false) {
     let responseData: {cads: CadData[]} | null = null;
-    const getAll = this.data?.getAllLingsanCads;
-    const cacheKey = getAll ? "_lingsanCadsCacheGetAll" : "_lingsanCadsCache";
+    const {getAll, typePrefix, xinghao} = this.data?.lingsanOptions || {};
+    const cacheKey = "_lingsanCadsCache_" + md5(JSON.stringify({getAll, typePrefix, xinghao}));
     if (noCache || !(window as any)[cacheKey]) {
-      responseData = await this.http.getData<{cads: CadData[]}>("ngcad/getLingsanCads", {getAll});
+      responseData = await this.http.getData<{cads: CadData[]}>("ngcad/getLingsanCads", {getAll, typePrefix, xinghao});
       (window as any)[cacheKey] = responseData;
     } else {
       responseData = (window as any)[cacheKey];
@@ -484,6 +486,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const {uploadDxf} = cadData.info;
     if (uploadDxf instanceof File) {
       await uploadAndReplaceCad(uploadDxf, cadData, true, this.message, this.http);
+    }
+    const {xinghao} = this.data?.lingsanOptions || {};
+    if (xinghao) {
+      cadData.options.型号 = xinghao;
     }
     const data: ObjectOf<any> = getHoutaiCad(cadData);
     delete data._id;
@@ -611,7 +617,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       if (lingsanCadType && hasType(lingsanCadType)) {
         this.setlingsanCadType(lingsanCadType);
       } else if (!hasType(this.lingsanCadType)) {
-        this.setlingsanCadType(this.lingsanCadInfos[0].type);
+        this.setlingsanCadType(this.lingsanCadInfos[0]?.type);
       }
       this.filterLingsanItems();
       await timeout(500);
@@ -1289,6 +1295,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async openImportPage() {
+    const yaoqiu = this.cad数据要求List.get(this.lingsanCadType);
+    const {xinghao} = this.data?.lingsanOptions || {};
+    session.save<ImportCache>("importParams", {yaoqiu, xinghao});
     this.status.openInNewTab(["import"]);
     if (await this.message.newTabConfirm()) {
       this.step3Refresh();

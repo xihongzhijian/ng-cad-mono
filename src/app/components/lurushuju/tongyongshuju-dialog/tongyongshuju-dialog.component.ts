@@ -291,7 +291,7 @@ export class TongyongshujuDialogComponent implements OnInit {
       stepFixed: true,
       noValidateCads: true,
       readonly: true,
-      getAllLingsanCads: true,
+      lingsanOptions: {getAll: true},
       lingsanCadType: item?.cadyaoqiu
     };
     await openZixuanpeijianDialog(this.dialog, {data});

@@ -4,7 +4,7 @@
       @case (1) {
         <button mat-raised-button color="primary" (click)="xinghaoTongyongGongshi()">所有型号通用公式</button>
         <button mat-raised-button color="primary" (click)="tongyongshuju()">通用数据录入</button>
-        <button mat-raised-button color="primary" (click)="openZxpj()">配件库</button>
+        <button mat-raised-button color="primary" (click)="openZxpj(false)">配件库</button>
         <button mat-raised-button color="primary" (click)="autoTest()">自动测试已经测试通过的型号</button>
       }
       @case (2) {
@@ -119,6 +119,7 @@
     }
     <button mat-raised-button color="primary" (click)="copyGongyi2()">从其他型号复制工艺做法</button>
     <button mat-raised-button color="primary" (click)="xinghaoZhuanyongGongshi()">型号专用公式</button>
+    <button mat-raised-button color="primary" (click)="openZxpj(true)">型号专用CAD</button>
   </div>
   @if (xinghao) {
     <ng-scrollbar>
