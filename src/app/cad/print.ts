@@ -1,12 +1,9 @@
 import {getOrderBarcode, getPdfInfo, replaceRemoteHost} from "@app/app.common";
-import {Formulas} from "@app/utils/calc";
-import {ProjectConfig} from "@app/utils/project-config";
 import {
   CadCircle,
   CadData,
   CadDimension,
   CadDimensionLinear,
-  CadDimensionStyle,
   CadEntities,
   CadEntity,
   CadImage,
@@ -32,11 +29,19 @@ import {
   Rectangle,
   timeout
 } from "@lucilor/utils";
-import {Properties} from "csstype";
 import {cloneDeep, intersection} from "lodash";
 import {createPdf} from "pdfmake/build/pdfmake";
 import QRCode from "qrcode";
 import {getCadPreview} from "./cad-preview";
+import {
+  BomTable,
+  DrawDesignPicsParams,
+  PdfDocument,
+  PrintCadsParams,
+  PrintCadsParamsOrder,
+  型材物料明细,
+  型材物料明细Item
+} from "./print.types";
 import {
   getCadCalcZhankaiText,
   getShuangxiangLineRects,
@@ -47,9 +52,7 @@ import {
   splitShuangxiangCad
 } from "./utils";
 
-type PdfDocument = Parameters<typeof createPdf>[0];
-
-const findDesignPicsRectLines = (data: CadData, keyword: string, findLocator: boolean) => {
+const findRectLines = (data: CadData, keyword: string, findLocator: boolean) => {
   const rectData = data.getBoundingRect();
   const rect = rectData.clone();
   const vLines: CadLine[] = [];
@@ -172,13 +175,26 @@ const findDesignPicsRectLines = (data: CadData, keyword: string, findLocator: bo
   return {...result};
 };
 
-export interface DrawDesignPicsParams {
-  margin?: number;
-  anchorImg?: number[];
-  anchorBg?: number[];
-  objectFit?: Properties["objectFit"];
-  flip?: string;
-}
+const imgMap: ObjectOf<string> = {};
+const setImageUrl = async (cadImage: CadImage, url: string) => {
+  const url2 = replaceRemoteHost(url);
+  if (url2 in imgMap && imgMap[url2]) {
+    cadImage.url = imgMap[url2];
+  } else {
+    try {
+      const image = await loadImage(url2);
+      cadImage.url = getImageDataUrl(image);
+      cadImage.sourceSize = new Point(image.width, image.height);
+      imgMap[url2] = cadImage.url;
+    } catch (error) {
+      imgMap[url2] = "";
+    }
+  }
+};
+const setImagesUrl = (cadImages: CadImage[], urls: string[]) => {
+  return Promise.all(cadImages.map((e, i) => setImageUrl(e, urls[i])));
+};
+
 const drawDesignPics = async (
   data: CadData,
   keyword: string,
@@ -831,43 +847,6 @@ const getBomTableImgs = async (bomTable: BomTable, config: CadViewerConfig, size
   return imgs;
 };
 
-export interface PrintCadsParamsOrder {
-  materialResult?: Formulas;
-  unfold?: {cad: CadData; offsetStrs: string[]}[];
-  bomTable?: BomTable;
-}
-
-export interface BomTable {
-  title: string;
-  data: ObjectOf<any>[];
-  cols: {field: string; label?: string; width?: number; link?: ObjectOf<string>}[];
-}
-
-export interface PrintCadsParams {
-  cads: CadData[];
-  projectConfig: ProjectConfig;
-  config?: Partial<CadViewerConfig>;
-  linewidth?: number;
-  dimStyle?: CadDimensionStyle;
-  designPics?: ObjectOf<{
-    urls: string[][];
-    showSmall: boolean;
-    showLarge: boolean;
-    styles?: DrawDesignPicsParams;
-  }>;
-  extra?: {拉手信息宽度?: number};
-  url?: string;
-  keepCad?: boolean;
-  codes?: string[];
-  type?: string;
-  info?: PdfDocument["info"];
-  orders?: PrintCadsParamsOrder[];
-  textMap?: ObjectOf<string>;
-  dropDownKeys?: string[];
-  projectName?: string;
-  errors?: string[];
-}
-
 /**
  * A4: (210 × 297)mm²
  *    =(8.26 × 11.69)in² (1in = 25.4mm)
@@ -911,7 +890,6 @@ export const printCads = async (params: PrintCadsParams) => {
   const content: PdfDocument["content"] = [];
   const content2: PdfDocument["content"] = [];
   let pageOrientation: PdfDocument["pageOrientation"] = "portrait";
-  const imgMap: ObjectOf<string> = {};
   for (let i = 0; i < cads.length; i++) {
     const data = cads[i];
     const rect = data.getBoundingRect();
@@ -964,7 +942,7 @@ export const printCads = async (params: PrintCadsParams) => {
           currUrls = urls[0];
           isOwn = false;
         }
-        const result = findDesignPicsRectLines(data, keyword, showSmall);
+        const result = findRectLines(data, keyword, showSmall);
         if (result.locator) {
           result.locator.visible = false;
           cad.render(result.locator);
@@ -976,29 +954,10 @@ export const printCads = async (params: PrintCadsParams) => {
               cad.render(e);
             }
           }
-          const setImageUrl = async (cadImages: CadImage[]) => {
-            await Promise.all(
-              cadImages.map(async (e, j) => {
-                const url2 = replaceRemoteHost(currUrls[j]);
-                if (url2 in imgMap && imgMap[url2]) {
-                  e.url = imgMap[url2];
-                } else {
-                  try {
-                    const image = await loadImage(url2);
-                    e.url = getImageDataUrl(image);
-                    e.sourceSize = new Point(image.width, image.height);
-                    imgMap[url2] = e.url;
-                  } catch (error) {
-                    imgMap[url2] = "";
-                  }
-                }
-              })
-            );
-          };
           if (result.errors.length < 1 && showSmall) {
             const cadImages = await drawDesignPics(data, keyword, currUrls.length, true, result.rect, styles);
             if (cadImages) {
-              await setImageUrl(cadImages);
+              await setImagesUrl(cadImages, currUrls);
               await cad.render(cadImages);
               cad.center();
               img = await cad.toDataURL();
@@ -1011,7 +970,7 @@ export const printCads = async (params: PrintCadsParams) => {
             const cadImages = await drawDesignPics(data2, keyword, currUrls.length, false, rect, styles);
             const cadImagePadding = [50 * scaleY, 50 * scaleX];
             if (cadImages) {
-              await setImageUrl(cadImages);
+              await setImagesUrl(cadImages, currUrls);
               data2.entities.image = cadImages;
               const cadImage = cadImages[0];
               if (cadImage && keyword === "设计图") {
@@ -1062,6 +1021,7 @@ export const printCads = async (params: PrintCadsParams) => {
         }
       }
     }
+    await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细);
     img = await cad.toDataURL();
     content.push({image: img, width: localWidth, height: localHeight});
     if (img2) {
@@ -1113,4 +1073,116 @@ export const printCads = async (params: PrintCadsParams) => {
     pdf.getBlob((blob) => resolve(URL.createObjectURL(blob)));
   });
   return {url, errors, cad};
+};
+
+const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物料明细: 型材物料明细 | undefined) => {
+  if (!型材物料明细) {
+    return;
+  }
+  const lines = findRectLines(data, "型材物料明细", true);
+  if (lines.errors.length > 0 || !lines.locator || !lines.rect.isFinite) {
+    console.warn("型材物料明细定位出错");
+    return;
+  }
+
+  const items0 = 型材物料明细.items;
+  const items1: typeof items0 = [];
+  const itemsGroup: (typeof items0)[] = [];
+  for (const item of items0) {
+    const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色", "型材长度", "是横料", "左切角", "右切角"];
+    const itemPrev = items1.find((v) => keys.every((k) => v[k] === item[k]));
+    if (itemPrev) {
+      itemPrev.要求数量 += item.要求数量;
+    } else {
+      items1.push(cloneDeep(item));
+    }
+  }
+  for (const item of items1) {
+    const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色"];
+    const itemsPrev = itemsGroup.find((v) => v.find((v2) => keys.every((k) => v2[k] === item[k])));
+    if (itemsPrev) {
+      itemsPrev.push(item);
+    } else {
+      itemsGroup.push([item]);
+    }
+  }
+
+  const lineHeight = 119;
+  const rowWidth = lines.rect.width;
+  const widths = [180, 120, 80, 140, 80];
+  widths.push(rowWidth - widths.reduce((a, b) => a + b, 0));
+  const cellPadding = 10;
+  let x = lines.rect.left;
+  let y = lines.rect.top;
+  const ps: Promise<void>[] = [];
+  const addLine = (x1: number, y1: number, x2: number, y2: number) => {
+    const line = new CadLine({start: [x1, y1], end: [x2, y2]});
+    line.linewidth = 1;
+    data.entities.add(line);
+    ps.push(cad.render(line));
+    return line;
+  };
+  const addText = (maxLength: number, text: string, insert: [number, number], anchor: [number, number], fontStyle?: FontStyle) => {
+    const mtext = new CadMtext({text, insert, anchor, fontStyle});
+    mtext.text = getWrapedText(cad, text, mtext, {maxLength}).join("\n");
+    data.entities.add(mtext);
+    ps.push(cad.render(mtext));
+    return mtext;
+  };
+  const getWidth = (i: number) => widths.slice(0, i === -1 ? undefined : i + 1).reduce((a, b) => a + b, 0);
+  for (const w of widths) {
+    x += w;
+    addLine(x, y, x, y - lineHeight * itemsGroup.length);
+  }
+  x = lines.rect.left;
+  for (const items of itemsGroup) {
+    addLine(x, y - lineHeight, x + rowWidth, y - lineHeight);
+    addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
+
+    const img = new CadImage();
+    img.position.set(x + cellPadding, y - cellPadding);
+    img.anchor.set(0, 0);
+    img.targetSize = new Point(widths[0] - cellPadding * 2, lineHeight - cellPadding * 2);
+    await setImageUrl(img, items[0].截面图);
+    data.entities.add(img);
+    ps.push(cad.render(img));
+    x += widths[0];
+
+    addText(widths[1], items[0].铝型材, [x + widths[1] / 2, y - lineHeight / 2], [0.5, 0.5], {size: 40});
+    x += widths[1];
+
+    addText(widths[2], "横料", [x + widths[2] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: 30});
+    addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: 30});
+    x += widths[2];
+
+    const 横料Count = items.filter((v) => v.是横料 === "是").reduce((a, b) => a + b.要求数量, 0);
+    if (横料Count > 0) {
+      const text = `${items[0].型材长度}=${横料Count}`;
+      addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: 30});
+    }
+    const 竖料Count = items.filter((v) => v.是横料 === "否").reduce((a, b) => a + b.要求数量, 0);
+    if (竖料Count > 0) {
+      const text = `${items[0].型材长度}=${竖料Count}`;
+      addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: 30});
+    }
+    x += widths[3];
+
+    const 双45Count = items.filter((v) => v.左切角 === "45" && v.右切角 === "45").length;
+    const 单45Count = items.filter((v) => v.左切角 === "45" || v.右切角 === "45").length - 双45Count;
+    if (双45Count > 0) {
+      addText(widths[4], `双45`, [x + widths[4] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: 30});
+    }
+    if (单45Count > 0) {
+      addText(widths[4], `单45`, [x + widths[4] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: 30});
+    }
+    x += widths[4];
+
+    addText(widths[5], items[0].型材颜色, [x + widths[5] / 2, y - lineHeight / 2], [0.5, 0.5], {size: 30});
+
+    x = lines.rect.left;
+    y -= lineHeight;
+  }
+  await Promise.all(ps);
+  lines.locator.visible = false;
+  await cad.render(lines.locator);
 };
