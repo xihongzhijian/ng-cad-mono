@@ -9,19 +9,6 @@
   }
 }
 
-.types-buttons {
-  display: flex;
-  flex-direction: column;
-
-  > :not(:last-child) {
-    margin-bottom: 5px;
-  }
-
-  .mdc-button {
-    width: 100%;
-  }
-}
-
 .types-info-items {
   flex-wrap: wrap;
 }

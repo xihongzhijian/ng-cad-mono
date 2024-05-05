@@ -77,15 +77,38 @@
 
   .toolbar {
     display: flex;
-    align-items: center;
-    &.center {
-      justify-content: center;
+    &:not(.vertical) {
+      align-items: center;
+      &.center {
+        justify-content: center;
+      }
+      &.right {
+        justify-content: flex-end;
+      }
+      &.left {
+        justify-content: flex-start;
+      }
+
+      .mdc-button {
+        flex: 0 0 auto;
+      }
     }
-    &.right {
-      justify-content: flex-end;
-    }
-    &.left {
-      justify-content: flex-start;
+    &.vertical {
+      flex-direction: column;
+      align-items: center;
+      &.center {
+        justify-content: center;
+      }
+      &.bottom {
+        justify-content: flex-end;
+      }
+      &.top {
+        justify-content: flex-start;
+      }
+
+      .mdc-button {
+        width: 100%;
+      }
     }
 
     .text {
@@ -107,10 +130,6 @@
 
     > * {
       margin: 2.5px;
-    }
-
-    .mdc-button {
-      flex: 0 0 auto;
     }
 
     --mdc-checkbox-state-layer-size: 30px;

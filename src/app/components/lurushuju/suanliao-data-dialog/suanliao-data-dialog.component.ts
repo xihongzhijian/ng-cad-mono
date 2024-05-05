@@ -53,6 +53,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
   cadShujuyaoqiu: CadItemComponent["shujuyaoqiu"];
   suanliaoCadsSearch: InputInfo;
   hiddenSuanliaoCads: number[] = [];
+  isSuanliaoCadReversed = true;
 
   @ViewChild(SuanliaoTablesComponent) suanliaoTables?: SuanliaoTablesComponent;
   @ViewChildren(CadItemComponent) cadItems?: QueryList<CadItemComponent>;
@@ -305,6 +306,14 @@ export class SuanliaoDataDialogComponent implements OnInit {
       return;
     }
     componentMenjiao.submit(false);
+  }
+
+  getSuanliaoCads() {
+    const cads = [...this.data.data.算料CAD];
+    if (this.isSuanliaoCadReversed) {
+      cads.reverse();
+    }
+    return cads;
   }
 }
 

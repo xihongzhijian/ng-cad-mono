@@ -161,7 +161,7 @@
     @case (3) {
       <div class="step-3 flex-row flex-110">
         <ng-scrollbar #lingsanTypesScrollbar style="flex: 0 0 auto">
-          <div class="types-buttons">
+          <div class="toolbar vertical">
             @for (info of lingsanCadInfos; track $index) {
               @if (!info.hidden) {
                 <button

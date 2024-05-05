@@ -1,8 +1,9 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {Component, HostBinding, Inject, OnInit, QueryList, ViewChildren} from "@angular/core";
+import {Component, ElementRef, HostBinding, Inject, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -22,7 +23,7 @@ import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import csstype from "csstype";
 import {cloneDeep, debounce, isEmpty} from "lodash";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
 import {getOptionInputInfo, getOptions2} from "../lurushuju-index/lurushuju-index.utils";
@@ -61,6 +62,7 @@ import {
     CadItemComponent,
     InputComponent,
     MatButtonModule,
+    MatDividerModule,
     MatTabsModule,
     NgScrollbarModule,
     NgTemplateOutlet,
@@ -93,6 +95,7 @@ export class MenjiaoDialogComponent implements OnInit {
     isLoaded: boolean;
     inputs: InputInfo[];
   }> = {};
+  currKey1: MenjiaoCadType = menjiaoCadTypes[0];
   cadNameMap = 孔位CAD名字对应关系;
   menjiaoTabGroupIndex = 0;
 
@@ -102,11 +105,13 @@ export class MenjiaoDialogComponent implements OnInit {
   errors = {bcfz: false, others: false};
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
   @ViewChildren(SuanliaoTablesComponent) suanliaoTablesList?: QueryList<SuanliaoTablesComponent>;
+  @ViewChild("inputScrollbar") inputScrollbar?: NgScrollbar;
 
   constructor(
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
+    private el: ElementRef<HTMLElement>,
     public dialogRef: MatDialogRef<MenjiaoDialogComponent, MenjiaoOutput>,
     @Inject(MAT_DIALOG_DATA) public data: MenjiaoInput
   ) {
@@ -860,6 +865,8 @@ export class MenjiaoDialogComponent implements OnInit {
     for (const key of menjiaoCadTypes) {
       if (label.startsWith(key)) {
         this.key1Infos[key].isLoaded = true;
+        this.currKey1 = key;
+        break;
       }
     }
   }
@@ -883,6 +890,13 @@ export class MenjiaoDialogComponent implements OnInit {
       label += "（有数据）";
     }
     return label;
+  }
+
+  scrollToElement(selector: string) {
+    const el = this.el.nativeElement.querySelector(selector);
+    if (el) {
+      this.inputScrollbar?.scrollToElement(el);
+    }
   }
 }
 
