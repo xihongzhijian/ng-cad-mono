@@ -13,7 +13,7 @@
   <mat-divider vertical></mat-divider>
   <div class="flex-column flex-110 scrollbar-container">
     <div class="toolbar">
-      <app-input [info]="suanliaoCadsSearch"></app-input>
+      <app-input style="width: 0; flex: 0 1 180px" [info]="suanliaoCadsSearch"></app-input>
       <button mat-raised-button [color]="isSuanliaoCadReversed ? 'accent' : 'primary'" (click)="isSuanliaoCadReversed = true">升序</button>
       <button mat-raised-button [color]="isSuanliaoCadReversed ? 'primary' : 'accent'" (click)="isSuanliaoCadReversed = false">降序</button>
     </div>

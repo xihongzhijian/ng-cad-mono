@@ -454,9 +454,6 @@ export class CadPortable {
             vars[varName] = e.id;
           }
           delete e.info.varName;
-          if (isShiyituCad) {
-            e.hideLength = true;
-          }
         }
       });
       for (const e of [...data.entities.line, ...data.entities.arc]) {
@@ -467,7 +464,7 @@ export class CadPortable {
         delete e.info.varName;
       }
 
-      if (typeof maxLineLength === "number" && !isShiyitu(data) && !data.shuangxiangzhewan && maxLineLength > 0) {
+      if (typeof maxLineLength === "number" && !isShiyituCad && !data.shuangxiangzhewan && maxLineLength > 0) {
         const linesToSet = data.entities.line.filter((e) => e.gongshi && e.length > maxLineLength);
         setLinesLength(data, linesToSet, maxLineLength);
       }
