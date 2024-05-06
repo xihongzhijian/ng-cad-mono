@@ -342,14 +342,14 @@ export interface Cad数据要求Raw extends TableDataBase {
   cadtanchuangxiugaishuxing: string;
   xianduantanchuangxiugaishuxing: string;
   tianjiahuodaorucadyaoqiu: string;
-  xuanzhongshujubaoliuxuanxiang: string;
+  xuanzhongcadyuchuli: string;
 }
 export interface Cad数据要求 {
   CAD分类: string;
   CAD弹窗修改属性: Cad数据要求Item[];
   线段弹窗修改属性: string[];
-  保留选项: string[];
   新建CAD要求: Cad数据要求Item[];
+  选中CAD要求: Cad数据要求Item[];
   search: ObjectOf<string>;
 }
 export interface Cad数据要求Item {
@@ -361,9 +361,20 @@ export interface Cad数据要求Item {
   readonly?: boolean;
   required?: boolean;
   override?: boolean;
+  remove?: boolean;
+  reserve?: boolean;
 }
 export const getCad数据要求 = (raw: Cad数据要求Raw) => {
-  const split = (str: string) => (typeof str === "string" ? str.split("+").filter(Boolean) : []);
+  const split = (str: string) => {
+    if (typeof str === "string") {
+      return str
+        .split("+")
+        .filter(Boolean)
+        .map((v) => v.replaceAll("加号", "+"));
+    } else {
+      return [];
+    }
+  };
   const emptyCad = new CadData();
   const emptyHoutaiCad = getHoutaiCad(emptyCad);
   const search: Cad数据要求["search"] = {};
@@ -377,6 +388,7 @@ export const getCad数据要求 = (raw: Cad数据要求Raw) => {
       items.push(item);
       if (key.startsWith("固定")) {
         item.readonly = true;
+        item.override = true;
         key = key.slice(2);
       } else if (key.startsWith("选填")) {
         item.override = true;
@@ -385,6 +397,12 @@ export const getCad数据要求 = (raw: Cad数据要求Raw) => {
         key = key.slice(2);
       } else if (key.startsWith("必填")) {
         item.required = true;
+        key = key.slice(2);
+      } else if (key.startsWith("保留")) {
+        item.reserve = true;
+        key = key.slice(2);
+      } else if (key.startsWith("删除")) {
+        item.remove = true;
         key = key.slice(2);
       } else {
         item.required = true;
@@ -413,8 +431,8 @@ export const getCad数据要求 = (raw: Cad数据要求Raw) => {
     CAD分类: raw.mingzi,
     CAD弹窗修改属性: getItems(raw.cadtanchuangxiugaishuxing),
     线段弹窗修改属性: split(raw.xianduantanchuangxiugaishuxing),
-    保留选项: split(raw.xuanzhongshujubaoliuxuanxiang),
     新建CAD要求: getItems(raw.tianjiahuodaorucadyaoqiu),
+    选中CAD要求: getItems(raw.xuanzhongcadyuchuli),
     search
   };
   return result;
@@ -503,25 +521,31 @@ export const getXinghaoQuery = (route: ActivatedRoute) => {
   return result;
 };
 
-export const setCadDataOptions = (cad: HoutaiCad, yaoqiu: Cad数据要求 | null | undefined) => {
-  const optionKeys = yaoqiu?.保留选项 || [];
-  const setOptions = (obj: ObjectOf<any>) => {
-    if (!obj || optionKeys.includes("全部")) {
-      return;
-    }
-    for (const key of Object.keys(obj)) {
-      if (!optionKeys.includes(key)) {
-        delete obj[key];
+export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[]) => {
+  const dataAny = data as any;
+  const toRemoveMap: ObjectOf<{keys2: string[]}> = {};
+  const toReserveMap: typeof toRemoveMap = {};
+  for (const {key, cadKey, value, key2, override, remove, reserve} of yaoqiuItems) {
+    if (cadKey) {
+      if (remove) {
+        if (toRemoveMap[cadKey]) {
+          if (key2) {
+            toRemoveMap[cadKey].keys2.push(key2);
+          }
+        } else {
+          toRemoveMap[cadKey] = {keys2: key2 ? [key2] : []};
+        }
+      }
+      if (reserve) {
+        if (toReserveMap[cadKey]) {
+          if (key2) {
+            toReserveMap[cadKey].keys2.push(key2);
+          }
+        } else {
+          toReserveMap[cadKey] = {keys2: key2 ? [key2] : []};
+        }
       }
     }
-  };
-  setOptions(cad.选项);
-  setOptions(cad.json?.options);
-};
-
-export const setCadData = (data: CadData, yaoqiu: Cad数据要求 | null | undefined) => {
-  const dataAny = data as any;
-  for (const {key, cadKey, value, key2, override} of yaoqiu?.新建CAD要求 || []) {
     if (value) {
       if (key === "展开信息") {
         let arr: any[];
@@ -555,6 +579,32 @@ export const setCadData = (data: CadData, yaoqiu: Cad数据要求 | null | undef
           }
         }
       }
+    }
+  }
+  for (const key in toRemoveMap) {
+    let {keys2} = toRemoveMap[key];
+    const toReserve = toReserveMap[key];
+    if (keys2.length > 0) {
+      if (!isTypeOf(dataAny[key], "object")) {
+        dataAny[key] = {};
+      }
+      if (keys2.includes("全部")) {
+        keys2 = Object.keys(dataAny[key]);
+        if (toReserve) {
+          if (toReserve.keys2.includes("全部")) {
+            keys2 = [];
+          } else {
+            keys2 = keys2.filter((v) => !toReserve.keys2.includes(v));
+          }
+        }
+      }
+      for (const key2 of keys2) {
+        delete dataAny[key][key2];
+      }
+    } else if (key === "展开信息") {
+      data.zhankai = [new CadZhankai({name: data.name})];
+    } else {
+      dataAny[key] = "";
     }
   }
 };

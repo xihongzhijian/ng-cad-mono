@@ -14,6 +14,7 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, session} from "@app/app.common";
+import {setCadData} from "@app/components/lurushuju/xinghao-data";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {ImportCache} from "@app/views/import/import.types";
@@ -333,7 +334,9 @@ export class CadListComponent implements AfterViewInit {
   async addCad() {
     const {addCadData, yaoqiu} = this.data;
     const cadData = new CadData(addCadData);
-    const form = getCadInfoInputs2(yaoqiu?.新建CAD要求, cadData, this.dialog, this.status, true);
+    const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
+    setCadData(cadData, yaoqiuItems);
+    const form = getCadInfoInputs2(yaoqiuItems, cadData, this.dialog, this.status, true);
     const result = await this.message.form(form);
     if (!result) {
       return;

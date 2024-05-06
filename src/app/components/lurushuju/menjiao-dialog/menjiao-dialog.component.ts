@@ -5,7 +5,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
-import {setGlobal} from "@app/app.common";
+import {session, setGlobal} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
@@ -34,7 +34,7 @@ import {
   get算料数据,
   MenjiaoCadType,
   menjiaoCadTypes,
-  setCadDataOptions,
+  setCadData,
   SuanliaoDataParams,
   xiaoguotuKeys,
   企料组合,
@@ -98,6 +98,8 @@ export class MenjiaoDialogComponent implements OnInit {
   currKey1: MenjiaoCadType = menjiaoCadTypes[0];
   cadNameMap = 孔位CAD名字对应关系;
   menjiaoTabGroupIndex = 0;
+  showSidebarKey = "menjiaoDialogShowSidebar";
+  showSidebar = session.load<boolean>(this.showSidebarKey);
 
   form: InputInfo[] = [];
   shiyituSearchInputInfo: ObjectOf<InputInfo> = {};
@@ -453,13 +455,14 @@ export class MenjiaoDialogComponent implements OnInit {
             this.data.data.名字 = mingziNew;
             refreshSuanliaoTables = true;
           } else {
-            return;
+            return false;
           }
         }
       }
       this.data.onSubmit?.(result);
       if (close) {
         this.dialogRef.close(result);
+        return true;
       } else if (refreshSuanliaoTables) {
         this.suanliaoTablesList?.forEach((v) => v.update());
       }
@@ -471,6 +474,7 @@ export class MenjiaoDialogComponent implements OnInit {
         this.message.error("无法保存，输入不完整，请补充");
       }
     }
+    return false;
   }
 
   async cancel(confirm: boolean) {
@@ -511,13 +515,13 @@ export class MenjiaoDialogComponent implements OnInit {
     const cad = result?.[0] as unknown as HoutaiCad | undefined;
     if (cad) {
       const name = this.cadNameMap[key3] || key3;
-      cad.名字 = name;
-      cad.json.name = name;
-      setCadDataOptions(cad, yaoqiu);
+      const cadData = new CadData(cad.json);
+      cadData.name = name;
+      setCadData(cadData, yaoqiu.选中CAD要求);
       if (!data[key1][key2][key3]) {
         data[key1][key2][key3] = {};
       }
-      data[key1][key2][key3].cad = cad;
+      data[key1][key2][key3].cad = getHoutaiCad(cadData);
       updateMenjiaoData(this.formData);
     }
   }
@@ -547,14 +551,13 @@ export class MenjiaoDialogComponent implements OnInit {
     }
     const data = this.formData[key1].示意图CAD;
     const checkedItems: string[] = [];
-    const {componentLrsj} = this.data;
-    if (!componentLrsj) {
+    const yaoqiu = this.data.componentLrsj?.cad数据要求List.get("算料单示意图");
+    if (!yaoqiu) {
       return;
     }
     for (const item of data.算料单示意图) {
       checkedItems.push(item._id);
     }
-    const yaoqiu = componentLrsj.cad数据要求List.get("算料单示意图");
     const {search, addCadData} = getShiyituCadSearch(this.formData, key1);
     const result = await openCadListDialog(this.dialog, {
       data: {
@@ -569,11 +572,10 @@ export class MenjiaoDialogComponent implements OnInit {
     });
     if (result) {
       data.算料单示意图 = result.map((v) => {
-        const v2 = getHoutaiCad(v);
         if (!checkedItems.includes(v.id)) {
-          setCadDataOptions(v2, yaoqiu);
+          setCadData(v, yaoqiu.选中CAD要求);
         }
-        return v2;
+        return getHoutaiCad(v);
       });
       updateMenjiaoData(this.formData);
     }
@@ -897,6 +899,29 @@ export class MenjiaoDialogComponent implements OnInit {
     if (el) {
       this.inputScrollbar?.scrollToElement(el);
     }
+  }
+
+  toggleShowSidebar() {
+    this.showSidebar = !this.showSidebar;
+    session.save(this.showSidebarKey, this.showSidebar);
+  }
+
+  async back1() {
+    const {componentLrsj} = this.data;
+    if (!(await this.submit(true)) || !componentLrsj) {
+      return false;
+    }
+    await componentLrsj.back();
+    return true;
+  }
+
+  async back2() {
+    const {componentLrsj} = this.data;
+    if (!(await this.back1()) || !componentLrsj) {
+      return;
+    }
+    await componentLrsj.back();
+    return true;
   }
 }
 

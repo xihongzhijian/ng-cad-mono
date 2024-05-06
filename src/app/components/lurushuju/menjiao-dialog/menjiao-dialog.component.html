@@ -1,4 +1,6 @@
-<div class="toolbar right">
+<div class="toolbar">
+  <button mat-raised-button color="primary" (click)="toggleShowSidebar()">{{ showSidebar ? "隐藏" : "显示" }}侧边栏</button>
+  <div class="flex-110"></div>
   <button mat-raised-button color="primary" (click)="submit(false)">保存</button>
   <button mat-raised-button color="primary" (click)="submit(true)">保存并关闭</button>
   <button mat-raised-button color="primary" (click)="cancel(true)">不保存关闭</button>
@@ -9,26 +11,31 @@
 </div>
 
 <div class="flex-row flex-110 scrollbar-container">
-  <ng-scrollbar style="flex: 0 0 auto">
-    <div class="toolbar vertical">
-      <button mat-raised-button color="primary" (click)="scrollToElement('app-input.选项')">选项信息</button>
-      <button mat-raised-button color="primary" (click)="scrollToElement('app-input.门缝配置')">门缝参数</button>
-      <button mat-raised-button color="primary" (click)="scrollToElement('.menjiao-data')">包边+企料数据</button>
-      <button mat-raised-button color="primary" (click)="scrollToElement('.示意图CAD')">示意图CAD</button>
-      @if (currKey1) {
-        <button mat-raised-button color="primary" (click)="editBcfz(currKey1)">板材分组</button>
-        <button mat-raised-button color="primary" (click)="editSuanliaoData(currKey1)">算料公式CAD配置</button>
-      }
-      <button mat-raised-button color="primary" (click)="submit(false)">保存</button>
-      <button mat-raised-button color="primary" (click)="submit(true)">保存并关闭</button>
-      <button mat-raised-button color="primary" (click)="cancel(true)">不保存关闭</button>
-      @if (currKey1) {
-        <button mat-raised-button color="primary" (click)="copy(currKey1)">复制</button>
-        <button mat-raised-button color="primary" (click)="empty(currKey1)">清空</button>
-      }
-    </div>
-  </ng-scrollbar>
-  <mat-divider vertical></mat-divider>
+  @if (showSidebar) {
+    <ng-scrollbar style="flex: 0 0 auto">
+      <div class="toolbar vertical">
+        <button mat-raised-button color="primary" (click)="scrollToElement('app-input.选项')">选项信息</button>
+        <button mat-raised-button color="primary" (click)="scrollToElement('app-input.门缝配置')">门缝参数</button>
+        <button mat-raised-button color="primary" (click)="scrollToElement('.menjiao-data')">包边+企料数据</button>
+        <button mat-raised-button color="primary" (click)="scrollToElement('.示意图CAD')">示意图CAD</button>
+        @if (currKey1) {
+          <button mat-raised-button color="primary" (click)="editBcfz(currKey1)">板材分组</button>
+          <button mat-raised-button color="primary" (click)="editSuanliaoData(currKey1)">算料公式CAD配置</button>
+        }
+        <button mat-raised-button color="primary" (click)="submit(false)">保存</button>
+        <button mat-raised-button color="primary" (click)="submit(true)">保存并关闭</button>
+        <button mat-raised-button color="primary" (click)="cancel(true)">不保存关闭</button>
+        @if (currKey1) {
+          <button mat-raised-button color="primary" (click)="copy(currKey1)">复制</button>
+          <button mat-raised-button color="primary" (click)="empty(currKey1)">清空</button>
+        }
+        <button mat-raised-button color="primary" (click)="submit(true)">返回上一界面</button>
+        <button mat-raised-button color="primary" (click)="back1()">返回上二界面</button>
+        <button mat-raised-button color="primary" (click)="back2()">返回上三界面</button>
+      </div>
+    </ng-scrollbar>
+    <mat-divider vertical></mat-divider>
+  }
   <ng-scrollbar #inputScrollbar>
     @for (info of form; track $index) {
       <app-input [info]="info"></app-input>

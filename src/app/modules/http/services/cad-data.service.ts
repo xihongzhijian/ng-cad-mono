@@ -420,7 +420,7 @@ export class CadDataService extends HttpService {
       "cadtanchuangxiugaishuxing",
       "xianduantanchuangxiugaishuxing",
       "tianjiahuodaorucadyaoqiu",
-      "xuanzhongshujubaoliuxuanxiang"
+      "xuanzhongcadyuchuli"
     ];
     const cad数据要求Raws = await this.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu", fields});
     return new Cad数据要求List(cad数据要求Raws.map(getCad数据要求));

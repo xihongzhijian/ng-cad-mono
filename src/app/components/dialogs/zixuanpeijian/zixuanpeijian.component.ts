@@ -12,7 +12,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {setDimensionText, uploadAndReplaceCad} from "@app/cad/utils";
-import {Cad数据要求List} from "@app/components/lurushuju/xinghao-data";
+import {Cad数据要求List, setCadData} from "@app/components/lurushuju/xinghao-data";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {toFixed} from "@app/utils/func";
@@ -478,7 +478,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   async step3Add() {
     const yaoqiu = this.cad数据要求List.get(this.lingsanCadType);
     const cadData = new CadData({type: this.lingsanCadType});
-    const form = getCadInfoInputs2(yaoqiu?.新建CAD要求, cadData, this.dialog, this.status, true);
+    const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
+    setCadData(cadData, yaoqiuItems);
+    const form = getCadInfoInputs2(yaoqiuItems, cadData, this.dialog, this.status, true);
     const result = await this.message.form<typeof data>(form);
     if (!result) {
       return;

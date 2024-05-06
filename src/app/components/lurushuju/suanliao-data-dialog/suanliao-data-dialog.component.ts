@@ -24,7 +24,7 @@ import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dial
 import {SelectGongyiItemData} from "../select-gongyi-dialog/select-gongyi-dialog.types";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
 import {openSuanliaoTestDialog} from "../suanliao-test-dialog/suanliao-test-dialog.component";
-import {filterCad, setCadDataOptions, SuanliaoDataParams, 算料数据} from "../xinghao-data";
+import {filterCad, setCadData, SuanliaoDataParams, 算料数据} from "../xinghao-data";
 import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./suanliao-data-dialog.type";
 
 @Component({
@@ -136,11 +136,10 @@ export class SuanliaoDataDialogComponent implements OnInit {
     if (result) {
       data.算料CAD = result.零散.map((v) => {
         const isSelected = v.data.info.isSuanliaoSelected;
-        const v2 = getHoutaiCad(v.data, {houtaiId: v.info.houtaiId});
         if (!isSelected) {
-          setCadDataOptions(v2, this.cadShujuyaoqiu);
+          setCadData(v.data, this.cadShujuyaoqiu?.选中CAD要求 || []);
         }
-        return v2;
+        return getHoutaiCad(v.data, {houtaiId: v.info.houtaiId});
       });
     }
   }

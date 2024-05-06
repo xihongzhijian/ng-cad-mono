@@ -414,7 +414,7 @@ export class ImportComponent extends Utils() implements OnInit {
       }
 
       if (yaoqiu) {
-        setCadData(data, yaoqiu);
+        setCadData(data, yaoqiu.新建CAD要求);
         for (const {cadKey, key, key2, required} of yaoqiu.新建CAD要求) {
           const dataAny = data as any;
           if (cadKey && required) {

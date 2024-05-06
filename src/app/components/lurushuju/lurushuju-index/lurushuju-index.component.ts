@@ -460,10 +460,10 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       case 1:
         break;
       case 2:
-        this.setStep(1, {});
+        await this.setStep(1, {});
         break;
       case 3:
-        this.setStep(2, {xinghaoName: this.xinghaoName});
+        await this.setStep(2, {xinghaoName: this.xinghaoName});
         break;
     }
   }
