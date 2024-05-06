@@ -26,9 +26,9 @@
             [shujuyaoqiu]="cadShujuyaoqiu"
             [mubanExtraData]="mubanExtraData"
             [openCadOptions]="openCadOptions"
-            [customInfo]="{index: i}"
+            [customInfo]="{index: getSuanliaoCadIndex(i)}"
             [noMuban]="!data.isKailiao"
-            [class.hidden]="hiddenSuanliaoCads.includes(i)"
+            [class.hidden]="hiddenSuanliaoCads.includes(getSuanliaoCadIndex(i))"
           ></app-cad-item>
         }
       </div>

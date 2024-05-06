@@ -314,6 +314,10 @@ export class SuanliaoDataDialogComponent implements OnInit {
     }
     return cads;
   }
+
+  getSuanliaoCadIndex(index: number) {
+    return this.isSuanliaoCadReversed ? this.data.data.算料CAD.length - index - 1 : index;
+  }
 }
 
 export const openSuanliaoDataDialog = getOpenDialogFunc<SuanliaoDataDialogComponent, SuanliaoDataInput, SuanliaoDataOutput>(
