@@ -233,7 +233,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     const resultData = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId}, {spinner: false});
     const mubanData = resultData?.cads[0] as CadData | undefined;
     this.mubanData = mubanData;
-    if (!mubanData) {
+    if (mubanData) {
+      generateLineTexts2(mubanData);
+    } else {
       this.mubanId = "";
     }
     return mubanData;
