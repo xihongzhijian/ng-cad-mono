@@ -12,17 +12,17 @@ import {MatInputModule} from "@angular/material/input";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions, MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, session} from "@app/app.common";
+import {CadItemComponent} from "@app/components/lurushuju/cad-item/cad-item.component";
+import {CadItemButton} from "@app/components/lurushuju/cad-item/cad-item.types";
 import {setCadData} from "@app/components/lurushuju/xinghao-data";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {ImportCache} from "@app/views/import/import.types";
-import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {GetCadParams} from "@modules/http/services/cad-data.service.types";
+import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -34,23 +34,16 @@ import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spin
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
 import {openCadSearchFormDialog} from "../cad-search-form/cad-search-form.component";
 import {getOpenDialogFunc} from "../dialog.common";
-import {CadListInput, CadListOutput, selectModes} from "./cad-list.types";
+import {CadListInput, CadListItemInfo, CadListOutput, selectModes} from "./cad-list.types";
 
-export const customTooltipOptions: MatTooltipDefaultOptions = {
-  showDelay: 500,
-  hideDelay: 0,
-  touchendHideDelay: 0,
-  position: "above"
-};
 @Component({
   selector: "app-cad-list",
   templateUrl: "./cad-list.component.html",
   styleUrls: ["./cad-list.component.scss"],
-  providers: [{provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: customTooltipOptions}],
   standalone: true,
   imports: [
     FormsModule,
-    forwardRef(() => CadImageComponent),
+    forwardRef(() => CadItemComponent),
     KeyValuePipe,
     MatButtonModule,
     MatCheckboxModule,
@@ -62,7 +55,6 @@ export const customTooltipOptions: MatTooltipDefaultOptions = {
     MatPaginatorModule,
     MatSelectModule,
     MatSlideToggleModule,
-    MatTooltipModule,
     NgScrollbar,
     SpinnerComponent,
     TypedTemplateDirective
@@ -73,7 +65,7 @@ export class CadListComponent implements AfterViewInit {
   length = 0;
   pageSizeOptions = [1, 10, 20, 50, 100];
   pageSize = 20;
-  pageData: {data: CadData; checked: boolean}[] = [];
+  pageData: {data: HoutaiCad; checked: boolean}[] = [];
   tableData: any = [];
   displayedColumns = ["select", "mingzi", "wenjian", "create_time", "modify_time"];
   width = 300;
@@ -89,6 +81,7 @@ export class CadListComponent implements AfterViewInit {
   loaderIdSubmit = "cadListSubmit";
   cadDataType!: CadData;
   imgCadEmpty = imgCadEmpty;
+  cadItemButtons: CadItemButton<CadListItemInfo>[];
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
 
   constructor(
@@ -108,6 +101,10 @@ export class CadListComponent implements AfterViewInit {
     if (!selectModes.includes(this.data.selectMode)) {
       this.data.selectMode = "single";
     }
+    this.cadItemButtons = [
+      {name: "复制", onClick: this.copyCad.bind(this)},
+      {name: "删除", onClick: this.deleteCad.bind(this)}
+    ];
   }
 
   async ngAfterViewInit() {
@@ -128,16 +125,16 @@ export class CadListComponent implements AfterViewInit {
     const toRemove: string[] = [];
     let checkedNum = 0;
     this.pageData.forEach((v) => {
-      const index = this.checkedItems.indexOf(v.data.id);
+      const index = this.checkedItems.indexOf(v.data._id);
       if (v.checked) {
         if (index === -1) {
-          this.checkedItems.push(v.data.id);
+          this.checkedItems.push(v.data._id);
         } else {
-          this.checkedItems[index] = v.data.id;
+          this.checkedItems[index] = v.data._id;
         }
         checkedNum++;
       } else if (index > -1) {
-        toRemove.push(v.data.id);
+        toRemove.push(v.data._id);
       }
     });
     this.checkedItems = difference(this.checkedItems, toRemove, [""]);
@@ -168,7 +165,16 @@ export class CadListComponent implements AfterViewInit {
       params.qiliao = this.data.qiliao;
       params.options = options;
       params.optionsMatchType = matchType;
+      if (!this.data.yaoqiu) {
+        await this.status.fetchCad数据要求List();
+        this.data.yaoqiu = this.status.getCad数据要求("配件库");
+      }
       const keys: (keyof CadData)[] = ["id", "name", "options", "conditions", "type", "type2"];
+      for (const {cadKey} of this.data.yaoqiu?.CAD弹窗修改属性 || []) {
+        if (cadKey && !keys.includes(cadKey)) {
+          keys.push(cadKey);
+        }
+      }
       params.fields = keys.map((v) => `json.${v}`);
       if (this.showCheckedOnly) {
         params.ids = this.checkedItems.slice();
@@ -181,9 +187,7 @@ export class CadListComponent implements AfterViewInit {
     this.length = result.total;
     result.cads.forEach(async (d) => {
       const checked = this.checkedItems.find((v) => v === d.id) ? true : false;
-      const img = this.http.getCadImgUrl(d.id);
-      const pageData = {data: d, img, checked};
-      this.pageData.push(pageData);
+      this.pageData.push({data: getHoutaiCad(d), checked});
     });
     this.syncCheckedItems();
     return result;
@@ -357,24 +361,14 @@ export class CadListComponent implements AfterViewInit {
     }
   }
 
-  async editCad(i: number) {
+  async copyCad(component: CadItemComponent<CadListItemInfo>) {
+    const {index: i} = component.customInfo;
     const item = this.pageData[i];
-    const {collection} = this.data;
-    const id = item.data.id;
-    const data = await this.getCad(id);
-    const result = await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
-    if (result?.isSaved) {
-      this.search();
-    }
-  }
-
-  async copyCad(i: number) {
-    const item = this.pageData[i];
-    if (!(await this.message.confirm(`是否确定复制【${item.data.name}】？`))) {
+    if (!(await this.message.confirm(`是否确定复制【${item.data.名字}】？`))) {
       return;
     }
     const {collection} = this.data;
-    const ids = await this.http.mongodbCopy(collection, [item.data.id]);
+    const ids = await this.http.mongodbCopy(collection, [item.data._id]);
     if (ids) {
       if (await this.message.confirm("是否编辑新的CAD？")) {
         const {cads} = await this.http.getCad({collection, ids});
@@ -387,12 +381,13 @@ export class CadListComponent implements AfterViewInit {
     }
   }
 
-  async deleteCad(i: number) {
+  async deleteCad(component: CadItemComponent<CadListItemInfo>) {
+    const {index: i} = component.customInfo;
     const item = this.pageData[i];
-    if (!(await this.message.confirm(`是否确定删除【${item.data.name}】？`))) {
+    if (!(await this.message.confirm(`是否确定删除【${item.data.名字}】？`))) {
       return;
     }
-    if (await this.http.mongodbDelete(this.data.collection, {id: item.data.id})) {
+    if (await this.http.mongodbDelete(this.data.collection, {id: item.data._id})) {
       this.search();
     }
   }
@@ -414,6 +409,27 @@ export class CadListComponent implements AfterViewInit {
   openExportPage() {
     session.save<ExportCache>("exportParams", {search: this.data.search});
     this.status.openInNewTab(["export"]);
+  }
+
+  onSelectChange(component: CadItemComponent<CadListItemInfo>) {
+    const {index: i} = component.customInfo;
+    const {selectMode} = this.data;
+    if (selectMode === "multiple") {
+      const item = this.pageData[i];
+      item.checked = !item.checked;
+    } else if (selectMode === "single") {
+      this.checkedItems.length = 0;
+      for (const [j, item] of this.pageData.entries()) {
+        if (i === j) {
+          item.checked = !item.checked;
+        } else {
+          item.checked = false;
+        }
+      }
+    } else {
+      return;
+    }
+    this.syncCheckedItems();
   }
 }
 

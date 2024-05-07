@@ -18,7 +18,7 @@ import {
   validateLines
 } from "@app/cad/utils";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
-import {getXinghaoQuery, SuanliaoDataParams} from "@components/lurushuju/xinghao-data";
+import {Cad数据要求, Cad数据要求Raw, getCad数据要求, getXinghaoQuery, SuanliaoDataParams} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {
   CadData,
@@ -89,6 +89,8 @@ export class AppStatusService {
   forceUpdateCadImg2 = false;
   updateCadImglLock$ = new BehaviorSubject<number>(0);
   cadImgToUpdate: ObjectOf<{t: number}> = {};
+  cad数据要求List: Cad数据要求[] = [];
+  isCad数据要求ListFetched = false;
 
   constructor(
     private config: AppConfigService,
@@ -561,6 +563,30 @@ export class AppStatusService {
       const url2 = this.router.createUrlTree(url, opts);
       location.href = url2.toString();
     }, 0);
+  }
+
+  async fetchCad数据要求List(forced?: boolean) {
+    if (!forced && this.isCad数据要求ListFetched) {
+      return;
+    }
+    const fields: (keyof Cad数据要求Raw)[] = [
+      "mingzi",
+      "cadtanchuangxiugaishuxing",
+      "xianduantanchuangxiugaishuxing",
+      "tianjiahuodaorucadyaoqiu",
+      "xuanzhongcadyuchuli"
+    ];
+    const cad数据要求Raws = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu", fields});
+    this.cad数据要求List = cad数据要求Raws.map(getCad数据要求);
+    this.isCad数据要求ListFetched = true;
+  }
+
+  getCad数据要求(name: string) {
+    let result = this.cad数据要求List.find((v) => v.CAD分类 === name);
+    if (!result) {
+      result = this.cad数据要求List.find((v) => v.CAD分类 === "配件库");
+    }
+    return result;
   }
 }
 

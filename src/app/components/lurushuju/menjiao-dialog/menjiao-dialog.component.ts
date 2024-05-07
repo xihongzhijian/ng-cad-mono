@@ -6,6 +6,7 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {session, setGlobal} from "@app/app.common";
+import {AppStatusService} from "@app/services/app-status.service";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
@@ -113,6 +114,7 @@ export class MenjiaoDialogComponent implements OnInit {
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
+    private status: AppStatusService,
     private el: ElementRef<HTMLElement>,
     public dialogRef: MatDialogRef<MenjiaoDialogComponent, MenjiaoOutput>,
     @Inject(MAT_DIALOG_DATA) public data: MenjiaoInput
@@ -141,7 +143,7 @@ export class MenjiaoDialogComponent implements OnInit {
         label: "搜索",
         onInput: debounce((val) => {
           this.hiddenShiyitus = [];
-          const yaoqiu = this.data.componentLrsj?.cad数据要求List.get("算料单示意图");
+          const yaoqiu = this.status.getCad数据要求("算料单示意图");
           if (yaoqiu) {
             for (const [i, cad] of this.formData[type].示意图CAD.算料单示意图.entries()) {
               if (!filterCad(val, cad, yaoqiu)) {
@@ -508,8 +510,7 @@ export class MenjiaoDialogComponent implements OnInit {
         raw: true,
         search,
         addCadData,
-        yaoqiu,
-        hideCadInfo: true
+        yaoqiu
       }
     });
     const cad = result?.[0] as unknown as HoutaiCad | undefined;
@@ -551,7 +552,7 @@ export class MenjiaoDialogComponent implements OnInit {
     }
     const data = this.formData[key1].示意图CAD;
     const checkedItems: string[] = [];
-    const yaoqiu = this.data.componentLrsj?.cad数据要求List.get("算料单示意图");
+    const yaoqiu = await this.status.getCad数据要求("算料单示意图");
     if (!yaoqiu) {
       return;
     }
@@ -563,7 +564,6 @@ export class MenjiaoDialogComponent implements OnInit {
       data: {
         selectMode: "multiple",
         collection: "cad",
-        hideCadInfo: true,
         search,
         checkedItems,
         addCadData,
@@ -854,8 +854,7 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   getCadshujuyaoqiu(type: string) {
-    const {componentLrsj} = this.data;
-    return componentLrsj?.cad数据要求List.get(type);
+    return this.status.getCad数据要求(type);
   }
 
   afterEditCad(key1: MenjiaoCadType) {

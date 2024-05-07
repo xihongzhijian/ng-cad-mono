@@ -6,3 +6,8 @@ export interface CadItemButton<T> {
 }
 
 export const typeOptions = ["按开料模板公式展开", "自动展开+模板", "双向自动展开+模板"] as const;
+
+export interface CadItemSelectable<T> {
+  isSelected: boolean;
+  onChange: (component: CadItemComponent<T>) => void;
+}

@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  forwardRef,
   HostBinding,
   Input,
   OnChanges,
@@ -14,12 +15,14 @@ import {
   ViewChildren
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {getValueString} from "@app/app.common";
 import {CadPreviewParams} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData, generateLineTexts2, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
+import {ClickStopPropagationDirective} from "@app/modules/directives/click-stop-propagation.directive";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {DataInfoChnageEvent} from "@components/cad-image/cad-image.types";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
@@ -39,12 +42,20 @@ import {isEmpty} from "lodash";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
 import {Cad数据要求, Cad数据要求Item} from "../xinghao-data";
-import {CadItemButton, typeOptions} from "./cad-item.types";
+import {CadItemButton, CadItemSelectable, typeOptions} from "./cad-item.types";
 
 @Component({
   selector: "app-cad-item",
   standalone: true,
-  imports: [CadImageComponent, InputComponent, KeyValuePipe, MatButtonModule, MatIconModule],
+  imports: [
+    ClickStopPropagationDirective,
+    forwardRef(() => CadImageComponent),
+    forwardRef(() => InputComponent),
+    KeyValuePipe,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatIconModule
+  ],
   templateUrl: "./cad-item.component.html",
   styleUrl: "./cad-item.component.scss"
 })
@@ -62,12 +73,14 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input() fentiDialogInput?: FentiCadDialogInput;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
-  @Input() noMuban?: boolean;
+  @Input() showMuban?: boolean;
+  @Input() isOnline = false;
+  @Input() selectable?: CadItemSelectable<T>;
   @Output() afterEditCad = new EventEmitter<void>();
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
   @ViewChild("mubanContainer") mubanContainer?: ElementRef<HTMLDivElement>;
-  @ViewChildren(InputComponent) inputComponents?: QueryList<InputComponent>;
+  @ViewChildren(forwardRef(() => InputComponent)) inputComponents?: QueryList<InputComponent>;
   cadViewer?: CadViewer;
   mubanViewer?: CadViewer;
   showCadViewer = false;
@@ -95,7 +108,6 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   }
 
   mubanInputs: InputInfo[][] = [];
-  showMuban: boolean;
 
   constructor(
     private message: MessageService,
@@ -104,7 +116,6 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     private status: AppStatusService
   ) {
     super();
-    this.showMuban = status.projectConfig.getBoolean("新版本做数据可以做激光开料");
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -149,8 +160,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   }
 
   async editCadForm() {
-    const {cad} = this;
-    if (!cad) {
+    const {cad, isOnline} = this;
+    if (!cad || isOnline) {
+      this.selectable?.onChange(this);
       return;
     }
     const ignoreKeys = ["entities"];

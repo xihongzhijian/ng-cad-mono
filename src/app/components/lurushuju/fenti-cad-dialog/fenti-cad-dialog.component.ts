@@ -54,8 +54,7 @@ export class FentiCadDialogComponent {
         checkedItems,
         collection: "cad",
         search: yaoqiu?.search,
-        yaoqiu: yaoqiu,
-        hideCadInfo: true
+        yaoqiu: yaoqiu
       }
     });
     if (!result || !result.length) {

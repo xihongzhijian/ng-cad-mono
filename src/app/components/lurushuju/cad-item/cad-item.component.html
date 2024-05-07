@@ -1,22 +1,40 @@
 <div class="name toolbar">
-  <button mat-button (click)="editCadForm()">{{ cad["名字"] }}</button>
-  <button mat-icon-button color="primary" (click)="copyName()"><mat-icon>content_copy</mat-icon></button>
+  @if (selectable) {
+    <mat-checkbox [checked]="selectable.isSelected" (change)="selectable.onChange(this)"></mat-checkbox>
+  }
+  <div class="flex-110 flex-row link" style="justify-content: center; align-items: center" (click)="selectable?.onChange(this)">
+    <button mat-button appClickStop (click)="editCadForm()">{{ cad["名字"] }}</button>
+    <button mat-icon-button color="primary" appClickStop (click)="copyName()"><mat-icon>content_copy</mat-icon></button>
+  </div>
 </div>
 <div class="cads">
   <div class="cad item">
     <div class="toolbar">
       <div #cadContainer class="cad-container flex-row">
         @if (!showCadViewer) {
-          <app-cad-image
-            id=""
-            [data]="cadData"
-            [width]="cadWidth"
-            [height]="cadHeight"
-            [paramsGetter]="getCadPreviewParams"
-            [style.width.px]="cadWidth"
-            (dblclick)="onCadImageClick()"
-            (dataInfoChange)="onCadInfoChange($event)"
-          ></app-cad-image>
+          @if (isOnline) {
+            <app-cad-image
+              class="link"
+              [id]="cad._id"
+              [width]="cadWidth"
+              [height]="cadHeight"
+              [paramsGetter]="getCadPreviewParams"
+              [style.width.px]="cadWidth"
+              (click)="selectable?.onChange(this)"
+            ></app-cad-image>
+          } @else {
+            <app-cad-image
+              class="link"
+              id=""
+              [data]="cadData"
+              [width]="cadWidth"
+              [height]="cadHeight"
+              [paramsGetter]="getCadPreviewParams"
+              [style.width.px]="cadWidth"
+              (dblclick)="onCadImageClick()"
+              (dataInfoChange)="onCadInfoChange($event)"
+            ></app-cad-image>
+          }
         }
       </div>
       @for (button of buttons2; track $index) {
@@ -32,7 +50,7 @@
         <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
       }
     </div>
-    <div class="cad-info item link" style="align-items: flex-start" (dblclick)="editCadForm()">
+    <div class="cad-info item link" style="align-items: flex-start" (click)="selectable?.onChange(this)" (dblclick)="editCadForm()">
       @for (item of shujuyaoqiu?.["CAD弹窗修改属性"]; track $index) {
         @if (item.key !== "名字") {
           @if (isCadInfoVisible(item)) {
@@ -57,14 +75,15 @@
       </div>
     }
   </div>
-  @if (!noMuban) {
+  @if (showMuban) {
     <div class="divider" [style]="{height: cadHeight + 'px'}">
       <mat-icon color="primary">link</mat-icon>
     </div>
     <div class="cad item">
-      <div #mubanContainer class="cad-container flex-row">
+      <div #mubanContainer class="cad-container f lex-row">
         @if (!showMubanViewer && mubanId && mubanData) {
           <app-cad-image
+            class="link"
             [id]="mubanId"
             [data]="mubanData"
             collection="kailiaocadmuban"

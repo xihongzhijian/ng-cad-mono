@@ -14,7 +14,7 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {OpenCadOptions} from "@services/app-status.service";
+import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
 import {debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {SuanliaogongshiComponent} from "../../../modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
@@ -63,6 +63,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
     private dialog: MatDialog,
     private http: CadDataService,
     private spinner: SpinnerService,
+    private status: AppStatusService,
     public dialogRef: MatDialogRef<SuanliaoDataDialogComponent, SuanliaoDataOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoDataInput
   ) {
@@ -89,7 +90,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
         ]
       );
     }
-    this.cadShujuyaoqiu = this.data.componentLrsj?.cad数据要求List.get("算料");
+    this.cadShujuyaoqiu = this.status.getCad数据要求("算料");
     this.suanliaoCadsSearch = {
       type: "string",
       label: "搜索",
@@ -118,7 +119,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
   }
 
   async selectSuanliaoCads() {
-    const {data, componentLrsj} = this.data;
+    const {data} = this.data;
     const zxpjData: ZixuanpeijianInput = {
       data: {
         零散: data.算料CAD.map((v) => {
@@ -129,8 +130,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
       },
       step: 3,
       stepFixed: true,
-      noValidateCads: true,
-      cad数据要求List: componentLrsj?.cad数据要求List
+      noValidateCads: true
     };
     const result = await openZixuanpeijianDialog(this.dialog, {data: zxpjData});
     if (result) {

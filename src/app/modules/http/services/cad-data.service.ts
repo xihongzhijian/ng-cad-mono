@@ -3,7 +3,6 @@ import {ActivatedRoute} from "@angular/router";
 import {imgCadEmpty, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData} from "@app/cad/utils";
-import {Cad数据要求List, Cad数据要求Raw, getCad数据要求} from "@app/components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {dataURLtoBlob, downloadByUrl, DownloadOptions, keysOf, ObjectOf} from "@lucilor/utils";
 import {
@@ -412,17 +411,5 @@ export class CadDataService extends HttpService {
 
   async getMongoId(options?: HttpOptions) {
     return await this.getData<string>("ngcad/getMongoId", {}, options);
-  }
-
-  async getCad数据要求List() {
-    const fields: (keyof Cad数据要求Raw)[] = [
-      "mingzi",
-      "cadtanchuangxiugaishuxing",
-      "xianduantanchuangxiugaishuxing",
-      "tianjiahuodaorucadyaoqiu",
-      "xuanzhongcadyuchuli"
-    ];
-    const cad数据要求Raws = await this.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu", fields});
-    return new Cad数据要求List(cad数据要求Raws.map(getCad数据要求));
   }
 }

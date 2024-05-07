@@ -1,4 +1,3 @@
-import {Cad数据要求List} from "@app/components/lurushuju/xinghao-data";
 import {Formulas} from "@app/utils/calc";
 import {KailiaocanshuData} from "@components/klcs/klcs.component";
 import {KlkwpzSource} from "@components/klkwpz/klkwpz";
@@ -68,7 +67,6 @@ export interface ZixuanpeijianInput {
   readonly?: boolean;
   lingsanOptions?: {getAll?: boolean; typePrefix?: boolean; xinghao?: string};
   lingsanCadType?: string;
-  cad数据要求List?: Cad数据要求List;
 }
 
 export type ZixuanpeijianOutput = Required<ZixuanpeijianData>;

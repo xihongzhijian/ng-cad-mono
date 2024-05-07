@@ -1,6 +1,5 @@
 import {MatDialog} from "@angular/material/dialog";
 import {getCadTotalLength, getShuangxiangLineRects, setShuangxiangLineRects, splitShuangxiangCad} from "@app/cad/utils";
-import {Cad数据要求List} from "@app/components/lurushuju/xinghao-data";
 import {getCADBeishu} from "@app/utils/beishu";
 import {Formulas, toFixed} from "@app/utils/calc";
 import {matchOrderData} from "@app/utils/mongo";
@@ -51,8 +50,7 @@ export const getTestData = () => {
     noValidateCads: false,
     readonly: false,
     lingsanOptions: {},
-    lingsanCadType: "",
-    cad数据要求List: new Cad数据要求List([])
+    lingsanCadType: ""
   };
   return data;
 };

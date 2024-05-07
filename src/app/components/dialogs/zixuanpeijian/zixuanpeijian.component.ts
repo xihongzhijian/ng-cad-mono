@@ -12,7 +12,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {setDimensionText, uploadAndReplaceCad} from "@app/cad/utils";
-import {Cad数据要求List, setCadData} from "@app/components/lurushuju/xinghao-data";
+import {setCadData} from "@app/components/lurushuju/xinghao-data";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {toFixed} from "@app/utils/func";
@@ -147,7 +147,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     model: {data: this, key: "searchMokuaiValue"},
     onInput: debounce(this.filterMokuaiItems.bind(this), 200)
   };
-  cad数据要求List = new Cad数据要求List([]);
   isEditingFenlei$ = new BehaviorSubject<boolean>(false);
   get isEditingFenlei() {
     return this.isEditingFenlei$.value;
@@ -453,11 +452,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (noUpdateInputInfos) {
       this._updateInputInfos();
     }
-    if (this.data?.cad数据要求List) {
-      this.cad数据要求List = this.data.cad数据要求List;
-    } else {
-      this.cad数据要求List = await this.http.getCad数据要求List();
-    }
+    this.status.fetchCad数据要求List();
     this._step3Fetched = true;
   }
 
@@ -477,7 +472,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async step3Add() {
-    const yaoqiu = this.cad数据要求List.get(this.lingsanCadType || "分类为空");
+    const yaoqiu = this.status.getCad数据要求(this.lingsanCadType || "分类为空");
     const cadData = new CadData({type: this.lingsanCadType});
     const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
     setCadData(cadData, yaoqiuItems);
@@ -1298,7 +1293,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async openImportPage() {
-    const yaoqiu = this.cad数据要求List.get(this.lingsanCadType);
+    const yaoqiu = this.status.getCad数据要求(this.lingsanCadType);
     const {xinghao} = this.data?.lingsanOptions || {};
     session.save<ImportCache>("importParams", {yaoqiu, xinghao});
     this.status.openInNewTab(["import"]);

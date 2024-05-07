@@ -22,7 +22,10 @@ export interface CadListInput {
   raw?: boolean;
   addCadData?: Partial<CadData>;
   yaoqiu?: Cad数据要求;
-  hideCadInfo?: boolean;
 }
 
 export type CadListOutput = CadData[];
+
+export interface CadListItemInfo {
+  index: number;
+}
