@@ -16,6 +16,7 @@ import {Cad数据要求List, setCadData} from "@app/components/lurushuju/xinghao
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {toFixed} from "@app/utils/func";
+import {ExportCache} from "@app/views/export/export.types";
 import {ImportCache} from "@app/views/import/import.types";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {Debounce} from "@decorators/debounce";
@@ -476,7 +477,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async step3Add() {
-    const yaoqiu = this.cad数据要求List.get(this.lingsanCadType);
+    const yaoqiu = this.cad数据要求List.get(this.lingsanCadType || "分类为空");
     const cadData = new CadData({type: this.lingsanCadType});
     const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
     setCadData(cadData, yaoqiuItems);
@@ -1307,6 +1308,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   openExportPage() {
+    const cads = this.lingsanCads[this.lingsanCadType] || [];
+    const ids = cads.map((v) => v.data.id);
+    session.save<ExportCache>("exportParams", {search: {_id: {$in: ids}}});
     this.status.openInNewTab(["export"]);
   }
 

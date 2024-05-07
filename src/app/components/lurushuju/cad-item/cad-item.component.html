@@ -63,7 +63,7 @@
     </div>
     <div class="cad item">
       <div #mubanContainer class="cad-container flex-row">
-        @if (!showMubanViewer && mubanId) {
+        @if (!showMubanViewer && mubanId && mubanData) {
           <app-cad-image
             [id]="mubanId"
             [data]="mubanData"

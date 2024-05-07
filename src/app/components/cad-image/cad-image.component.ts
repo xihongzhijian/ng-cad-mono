@@ -2,6 +2,7 @@ import {Component, EventEmitter, HostBinding, Input, OnChanges, Output, SimpleCh
 import {imgCadEmpty} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
+import {generateLineTexts2} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {getTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -166,6 +167,7 @@ export class CadImageComponent implements OnChanges {
         }
       }
       if (data) {
+        generateLineTexts2(data);
         const url = await this.getPreview(data);
         const id2 = data.info.imgId || id;
         await this.http.setCadImg(id2, url, {silent: true});
