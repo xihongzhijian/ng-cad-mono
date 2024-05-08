@@ -32,7 +32,7 @@
     "@types/events": "^3.0.3",
     "@types/lodash": "^4.17.1",
     "@types/md5": "^2.3.5",
-    "@types/node": "^20.12.8",
+    "@types/node": "^20.12.10",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
     "clean-webpack-plugin": "^4.0.0",
@@ -55,6 +55,6 @@
     "jsencrypt": "^3.3.2",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
-    "pinyin-pro": "^3.19.7"
+    "pinyin-pro": "^3.20.4"
   }
 }
