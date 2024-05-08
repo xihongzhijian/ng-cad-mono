@@ -76,6 +76,7 @@
                 [buttons]="cadItemButtons"
                 [customInfo]="{index: i}"
                 [shujuyaoqiu]="getShujuyaoqiu(tableData[activeItem.index])"
+                (afterEditCad)="editCad(item)"
               ></app-cad-item>
             }
           }

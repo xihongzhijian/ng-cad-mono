@@ -306,19 +306,19 @@ export class TongyongshujuDialogComponent implements OnInit {
     if (result) {
       const {collection} = this;
       for (const cad of result) {
-        const ids = await this.http.mongodbCopy(collection, [cad.id]);
+        const ids = await this.http.mongodbCopy(collection, [cad.id], {spinner: this.cadListLoader});
         const id = ids?.[0];
         if (!id) {
           continue;
         }
-        const cads = await this.http.queryMongodb<HoutaiCad>({collection, where: {_id: id}});
+        const cads = await this.http.queryMongodb<HoutaiCad>({collection, where: {_id: id}}, {spinner: this.cadListLoader});
         if (!cads?.[0]) {
           continue;
         }
         const cad2 = new CadData(cads[0].json);
         cad2.options[item.mingzi] = item2.mingzi;
         setCadData(cad, yaoqiu?.选中CAD要求 || []);
-        await this.http.mongodbUpdate(collection, getHoutaiCad(cad2));
+        await this.http.mongodbUpdate(collection, getHoutaiCad(cad2), {spinner: this.cadListLoader});
       }
     }
     await this.refreshActiveCadList();
@@ -344,6 +344,10 @@ export class TongyongshujuDialogComponent implements OnInit {
     if (success) {
       await this.refreshActiveCadList();
     }
+  }
+
+  editCad(item: HoutaiCad) {
+    this.http.mongodbUpdate(this.collection, item, {}, {spinner: this.cadListLoader});
   }
 
   returnZero() {

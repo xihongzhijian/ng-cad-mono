@@ -196,6 +196,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
           cad[key] = cad2[key] as any;
         }
       }
+      this.afterEditCad.emit();
     }
   }
 
