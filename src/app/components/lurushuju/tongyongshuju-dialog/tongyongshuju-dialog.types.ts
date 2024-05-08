@@ -1,5 +1,4 @@
-import {ObjectOf} from "@lucilor/utils";
-import {MongodbDataBase, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
 
 export interface TongyongshujuInput {}
 
@@ -30,9 +29,9 @@ export interface TongyongshujuTableItem extends TableDataBase {
 
 export interface TongyongshujuActiveCadList {
   index?: number;
-  data: TongyongshujuCadItem[];
+  data: HoutaiCad[];
 }
 
-export interface TongyongshujuCadItem extends MongodbDataBase {
-  选项?: ObjectOf<string>;
+export interface TongyongshujuCadItemInfo {
+  index: number;
 }

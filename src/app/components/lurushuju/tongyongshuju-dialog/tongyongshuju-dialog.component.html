@@ -58,7 +58,7 @@
     @if (activeCadList && activeItem && isDataHaveCad(tableData[activeItem.index])) {
       <div class="toolbar">
         <button mat-raised-button color="primary" (click)="addCad()">添加</button>
-        <button mat-raised-button color="primary" (click)="addCadAtZxpj()">在配件库添加</button>
+        <button mat-raised-button color="primary" (click)="addCadFromList()">从配件库添加</button>
       </div>
       <ng-scrollbar>
         <div class="items no-items-per-row">
@@ -68,7 +68,15 @@
             </div>
           } @else {
             @for (item of activeCadList.data; track i; let i = $index) {
-              <ng-container *ngTemplateOutlet="cadItem; context: {$implicit: item}"></ng-container>
+              <!-- <ng-container *ngTemplateOutlet="cadItem; context: {$implicit: item}"></ng-container> -->
+              <app-cad-item
+                [cad]="item"
+                [cadWidth]="300"
+                [cadHeight]="150"
+                [buttons]="cadItemButtons"
+                [customInfo]="{index: i}"
+                [shujuyaoqiu]="getShujuyaoqiu(tableData[activeItem.index])"
+              ></app-cad-item>
             }
           }
         </div>
@@ -76,20 +84,3 @@
     }
   </div>
 </div>
-
-<ng-template #cadItem let-item>
-  <div class="cad-item item">
-    <div class="name center">{{ item["名字"] }}</div>
-    <app-cad-image [id]="item._id" [data]="item.json"></app-cad-image>
-    <div class="item">
-      @for (option of item["选项"] | keyvalue: returnZero; track option.key) {
-        <div class="text">{{ option.key }}: {{ option.value }}</div>
-      }
-    </div>
-    <div class="toolbar center">
-      <button mat-button color="primary" (click)="editCad(item)">编辑</button>
-      <button mat-button color="primary" (click)="copyCad(item)">复制</button>
-      <button mat-button color="primary" (click)="deleteCad(item)">删除</button>
-    </div>
-  </div>
-</ng-template>

@@ -48,13 +48,14 @@
     width: 100%;
 
     .key {
+      flex: 0 0 auto;
       &.disabled {
         color: gray;
       }
     }
 
     .value {
-      white-space: pre;
+      white-space: pre-wrap;
     }
   }
 

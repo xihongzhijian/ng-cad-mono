@@ -5,11 +5,12 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {setGlobal} from "@app/app.common";
+import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
-import {CadImageComponent} from "@components/cad-image/cad-image.component";
+import {openCadListDialog} from "@app/components/dialogs/cad-list/cad-list.component";
+import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
-import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
-import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -18,10 +19,12 @@ import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {AppStatusService} from "@services/app-status.service";
 import {uniqueId} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {CadItemComponent} from "../cad-item/cad-item.component";
+import {CadItemButton} from "../cad-item/cad-item.types";
 import {
   TongyongshujuActiveCadList,
   TongyongshujuActiveItem,
-  TongyongshujuCadItem,
+  TongyongshujuCadItemInfo,
   TongyongshujuData,
   TongyongshujuInput,
   TongyongshujuOutput
@@ -30,7 +33,7 @@ import {
 @Component({
   selector: "app-tongyongshuju-dialog",
   standalone: true,
-  imports: [CadImageComponent, KeyValuePipe, MatButtonModule, MatDividerModule, NgScrollbarModule, NgTemplateOutlet, SpinnerModule],
+  imports: [CadItemComponent, KeyValuePipe, MatButtonModule, MatDividerModule, NgScrollbarModule, NgTemplateOutlet, SpinnerModule],
   templateUrl: "./tongyongshuju-dialog.component.html",
   styleUrl: "./tongyongshuju-dialog.component.scss"
 })
@@ -42,6 +45,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   activeItem: TongyongshujuActiveItem | null = null;
   activeItemPrev: TongyongshujuActiveItem | null = null;
   activeCadList: TongyongshujuActiveCadList | null = null;
+  cadItemButtons: CadItemButton<TongyongshujuCadItemInfo>[];
 
   tabelListLoader = uniqueId("tabelListLoader");
   activeItemLoader = uniqueId("activeItemLoader");
@@ -56,6 +60,10 @@ export class TongyongshujuDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: TongyongshujuInput
   ) {
     setGlobal("tongyongshujuDialog", this);
+    this.cadItemButtons = [
+      {name: "复制", onClick: this.copyCad.bind(this)},
+      {name: "删除", onClick: this.deleteCad.bind(this)}
+    ];
   }
 
   ngOnInit() {
@@ -165,10 +173,7 @@ export class TongyongshujuDialogComponent implements OnInit {
       if (!$where) {
         return;
       }
-      const cads = await this.http.queryMongodb(
-        {collection: this.collection, fields: ["_id", "名字", "选项"], where: {$where}},
-        {spinner: this.cadListLoader}
-      );
+      const cads = await this.http.queryMongodb<HoutaiCad>({collection: this.collection, where: {$where}}, {spinner: this.cadListLoader});
       this.activeCadList = {
         index,
         data: cads
@@ -284,25 +289,44 @@ export class TongyongshujuDialogComponent implements OnInit {
     }
   }
 
-  async addCadAtZxpj() {
+  getShujuyaoqiu(item: TongyongshujuData) {
+    return this.status.getCad数据要求(item.cadyaoqiu);
+  }
+
+  async addCadFromList() {
     const item = this.tableData[this.activeItem?.index ?? -1];
-    const data: ZixuanpeijianInput = {
-      step: 3,
-      stepFixed: true,
-      noValidateCads: true,
-      readonly: true,
-      lingsanOptions: {getAll: true},
-      lingsanCadType: item?.cadyaoqiu
-    };
-    await openZixuanpeijianDialog(this.dialog, {data});
+    const item2 = this.activeItem?.data[this.activeCadList?.index ?? -1];
+    if (!item || !item2) {
+      return;
+    }
+    const yaoqiu = this.getShujuyaoqiu(item);
+    const result = await openCadListDialog(this.dialog, {
+      data: {collection: "cad", selectMode: "multiple", fixedSearch: {分类: item.cadyaoqiu}, yaoqiu}
+    });
+    if (result) {
+      const {collection} = this;
+      for (const cad of result) {
+        const ids = await this.http.mongodbCopy(collection, [cad.id]);
+        const id = ids?.[0];
+        if (!id) {
+          continue;
+        }
+        const cads = await this.http.queryMongodb<HoutaiCad>({collection, where: {_id: id}});
+        if (!cads?.[0]) {
+          continue;
+        }
+        const cad2 = new CadData(cads[0].json);
+        cad2.options[item.mingzi] = item2.mingzi;
+        setCadData(cad, yaoqiu?.选中CAD要求 || []);
+        await this.http.mongodbUpdate(collection, getHoutaiCad(cad2));
+      }
+    }
+    await this.refreshActiveCadList();
   }
 
-  editCad(item: TongyongshujuCadItem) {
-    this.status.openCadInNewTab(item._id, this.collection);
-  }
-
-  async copyCad(item: TongyongshujuCadItem) {
-    if (!(await this.message.confirm("确定复制该CAD吗？"))) {
+  async copyCad(component: CadItemComponent<TongyongshujuCadItemInfo>) {
+    const item = this.activeCadList?.data[component.customInfo.index];
+    if (!item || !(await this.message.confirm("确定复制该CAD吗？"))) {
       return;
     }
     const success = await this.http.mongodbCopy(this.collection, [item._id], {spinner: this.cadListLoader});
@@ -311,8 +335,9 @@ export class TongyongshujuDialogComponent implements OnInit {
     }
   }
 
-  async deleteCad(item: TongyongshujuCadItem) {
-    if (!(await this.message.confirm("确定删除该CAD吗？"))) {
+  async deleteCad(component: CadItemComponent<TongyongshujuCadItemInfo>) {
+    const item = this.activeCadList?.data[component.customInfo.index];
+    if (!item || !(await this.message.confirm("确定删除该CAD吗？"))) {
       return;
     }
     const success = await this.http.mongodbDelete(this.collection, {id: item._id}, {spinner: this.cadListLoader});

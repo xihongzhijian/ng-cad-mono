@@ -478,17 +478,20 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     setCadData(cadData, yaoqiuItems);
     const form = getCadInfoInputs2(yaoqiuItems, cadData, this.dialog, this.status, true);
     const result = await this.message.form<typeof data>(form);
+    console.log(cadData.options.产品分类);
     if (!result) {
       return;
     }
     const {uploadDxf} = cadData.info;
     if (uploadDxf instanceof File) {
       await uploadAndReplaceCad(uploadDxf, cadData, true, this.message, this.http);
+      console.log(cadData.options.产品分类);
     }
     const {xinghao} = this.data?.lingsanOptions || {};
     if (xinghao) {
       cadData.options.型号 = xinghao;
     }
+    console.log(cadData.options.产品分类);
     const data: ObjectOf<any> = getHoutaiCad(cadData);
     delete data._id;
     const collection: CadCollection = "cad";
