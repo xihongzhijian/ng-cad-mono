@@ -38,7 +38,7 @@ export const getXuanxiangTable = (): TableRenderInfo<XuanxiangTableData> => {
       }
     ],
     data: [],
-    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
+    toolbarButtons: {extra: [], inlineTitle: true}
   };
 };
 

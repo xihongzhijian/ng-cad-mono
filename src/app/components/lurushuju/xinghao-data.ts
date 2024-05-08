@@ -8,6 +8,7 @@ import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.u
 import {HoutaiCad, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {isArray, uniq} from "lodash";
+import {OptionsAll} from "./lurushuju-index/lurushuju-index.types";
 
 export const getXinghao = (raw: XinghaoRaw | null | undefined) => {
   const result: Xinghao = {名字: "", 产品分类: {}, 显示产品分类: [], ...raw};
@@ -50,7 +51,7 @@ export const updateXinghaoFenleis = (
   }
 };
 
-export const getGongyi = (raw: 工艺做法 | null | undefined) => {
+export const getGongyi = (raw: 工艺做法 | null | undefined, 选项数据选项: OptionsAll) => {
   const result: 工艺做法 = {
     tableId: -1,
     名字: "",
@@ -68,6 +69,11 @@ export const getGongyi = (raw: 工艺做法 | null | undefined) => {
     ...raw,
     算料数据: (raw?.算料数据 || []).map(get算料数据)
   };
+  for (const optionName in 选项数据选项) {
+    if (!result.选项数据.find((v) => v.名字 === optionName)) {
+      result.选项数据.push({名字: optionName, 可选项: []});
+    }
+  }
   return result;
 };
 

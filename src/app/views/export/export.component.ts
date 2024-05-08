@@ -2,11 +2,11 @@ import {Component, OnInit} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
+import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal} from "@app/app.common";
 import {CadExportParams, CadPortable, CadSourceParams, ExportType} from "@app/cad/portable";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
-import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, ProgressBar} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -34,31 +34,31 @@ export class ExportComponent implements OnInit {
   exportParams: CadExportParams = {
     cads: [],
     type: "自由选择",
-    exportId: environment.production,
+    exportId: true,
     exportUniqCode: true,
     exportOptions: true
   };
-  inputInfos: InputInfo<CadExportParams>[];
+  inputInfos: InputInfo<CadExportParams>[] = [];
 
   constructor(
     private dialog: MatDialog,
     private http: CadDataService,
     private message: MessageService,
-    private status: AppStatusService
+    private status: AppStatusService,
+    private route: ActivatedRoute
   ) {
     setGlobal("exporter", this);
-    const data = this.exportParams;
-    this.inputInfos = [
-      {type: "boolean", label: "导出ID", radio: true, model: {data, key: "exportId"}},
-      {type: "boolean", label: "导出唯一码", radio: true, model: {data, key: "exportUniqCode"}},
-      {type: "boolean", label: "导出选项", radio: true, model: {data, key: "exportOptions"}}
-    ];
   }
 
   ngOnInit() {
-    this.exportCache = session.load<ExportCache>("exportParams");
+    const {key} = this.route.snapshot.queryParams;
+    this.exportCache = session.load<ExportCache>("exportParams-" + key);
     if (this.exportCache?.direct) {
       this.exportCads("导出选中");
+    }
+    if (this.exportCache?.lurushuju) {
+      this.exportParams.exportId = false;
+      this.exportParams.exportUniqCode = false;
     }
   }
 

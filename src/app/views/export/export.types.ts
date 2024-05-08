@@ -4,4 +4,5 @@ export interface ExportCache {
   ids?: string[];
   direct?: boolean;
   search?: ObjectOf<any>;
+  lurushuju?: boolean;
 }

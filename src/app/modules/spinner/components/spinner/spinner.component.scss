@@ -1,3 +1,9 @@
+::ng-deep {
+  .spinner-container {
+    position: relative;
+  }
+}
+
 :host ::ng-deep {
   .spinner-container {
     position: relative;

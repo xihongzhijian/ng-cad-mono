@@ -16,12 +16,12 @@ import {setCadData} from "@app/components/lurushuju/xinghao-data";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {toFixed} from "@app/utils/func";
-import {ExportCache} from "@app/views/export/export.types";
-import {ImportCache} from "@app/views/import/import.types";
+import {openExportPage} from "@app/views/export/export.utils";
+import {openImportPage} from "@app/views/import/import.utils";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {Debounce} from "@decorators/debounce";
 import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai, setLinesLength} from "@lucilor/cad-viewer";
-import {ObjectOf, queryStringList, timeout} from "@lucilor/utils";
+import {getElementVisiblePercentage, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {ContextMenu} from "@mixins/context-menu.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
@@ -620,7 +620,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       this.filterLingsanItems();
       await timeout(500);
       if (lingsanCadTypePrev === this.lingsanCadType) {
-        this.lingsanLeftScrollbar?.nativeElement.scrollTo({top: scrollTop});
+        this.lingsanLeftScrollbar?.scrollTo({top: scrollTop});
       }
     }
   }
@@ -1145,7 +1145,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     await timeout(0);
     const index = this.lingsanCadInfos.findIndex((v) => v.type === type);
     const button = this.typesButtons?.get(index);
-    if (button) {
+    if (button && getElementVisiblePercentage(button.nativeElement) < 1) {
       this.lingsanTypesScrollbar?.scrollToElement(button);
     }
   }
@@ -1295,8 +1295,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   async openImportPage() {
     const yaoqiu = this.status.getCad数据要求(this.lingsanCadType);
     const {xinghao} = this.data?.lingsanOptions || {};
-    session.save<ImportCache>("importParams", {yaoqiu, xinghao});
-    this.status.openInNewTab(["import"]);
+    openImportPage(this.status, {yaoqiu, xinghao, lurushuju: true});
     if (await this.message.newTabConfirm()) {
       this.step3Refresh();
     }
@@ -1305,8 +1304,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   openExportPage() {
     const cads = this.lingsanCads[this.lingsanCadType] || [];
     const ids = cads.map((v) => v.data.id);
-    session.save<ExportCache>("exportParams", {search: {_id: {$in: ids}}});
-    this.status.openInNewTab(["export"]);
+    openExportPage(this.status, {search: {_id: {$in: ids}}, lurushuju: true});
   }
 
   editFenlei() {

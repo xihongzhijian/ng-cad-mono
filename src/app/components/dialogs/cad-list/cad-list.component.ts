@@ -12,13 +12,14 @@ import {MatInputModule} from "@angular/material/input";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {imgCadEmpty, session} from "@app/app.common";
+import {imgCadEmpty} from "@app/app.common";
 import {CadItemComponent} from "@app/components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton} from "@app/components/lurushuju/cad-item/cad-item.types";
 import {setCadData} from "@app/components/lurushuju/xinghao-data";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
-import {ImportCache} from "@app/views/import/import.types";
+import {openExportPage} from "@app/views/export/export.utils";
+import {openImportPage} from "@app/views/import/import.utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -26,7 +27,6 @@ import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.t
 import {HttpOptions} from "@modules/http/services/http.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {ExportCache} from "@views/export/export.types";
 import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
@@ -399,16 +399,14 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async openImportPage() {
-    session.save<ImportCache>("importParams", {yaoqiu: this.data.yaoqiu});
-    this.status.openInNewTab(["import"]);
+    openImportPage(this.status, {yaoqiu: this.data.yaoqiu, lurushuju: true});
     if (await this.message.newTabConfirm()) {
       this.search();
     }
   }
 
   openExportPage() {
-    session.save<ExportCache>("exportParams", {search: this.data.search});
-    this.status.openInNewTab(["export"]);
+    openExportPage(this.status, {search: this.data.search, lurushuju: true});
   }
 
   onSelectChange(component: CadItemComponent<CadListItemInfo>) {

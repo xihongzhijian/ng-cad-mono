@@ -1,18 +1,17 @@
-import {Component, OnInit} from "@angular/core";
-import {FormsModule} from "@angular/forms";
+import {Component, HostBinding, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
-import {MatCardModule} from "@angular/material/card";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatInputModule} from "@angular/material/input";
-import {MatRadioModule} from "@angular/material/radio";
+import {MatDividerModule} from "@angular/material/divider";
+import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
 import {CadInfo, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
 import {setCadData} from "@app/components/lurushuju/xinghao-data";
+import {InputComponent} from "@app/modules/input/components/input.component";
+import {InputInfo} from "@app/modules/input/components/input.types";
 import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
 import {environment} from "@env";
 import {CadData, CadDimensionLinear, CadLayer, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
-import {downloadByString, ObjectOf, ProgressBar, timeout} from "@lucilor/utils";
+import {downloadByString, keysOf, ObjectOf, ProgressBar, selectFiles, timeout} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -32,25 +31,17 @@ import {ImportCache, ImportComponentConfig, ImportComponentConfigName} from "./i
   templateUrl: "./import.component.html",
   styleUrls: ["./import.component.scss"],
   standalone: true,
-  imports: [
-    NgScrollbar,
-    MatCardModule,
-    MatButtonModule,
-    SpinnerComponent,
-    MatFormFieldModule,
-    MatInputModule,
-    MatRadioModule,
-    FormsModule,
-    ProgressBarComponent
-  ]
+  imports: [InputComponent, MatButtonModule, MatDividerModule, NgScrollbar, ProgressBarComponent, SpinnerComponent]
 })
 export class ImportComponent extends Utils() implements OnInit {
+  @HostBinding("class") class = "ng-page";
+
   private _cadNameRegex = /^(?!\d)[\da-zA-Z\u4e00-\u9fa5_]*$/u;
   private _optionsCache: ObjectOf<string[]> = {};
   // private _peiheCadCache: ObjectOf<boolean> = {};
-  private _sourceFile: File | null = null;
   private _sourceCadMap: SourceCadMap = {cads: {}, slgses: {}};
   private _errorMsgLayer = "导入错误信息";
+  sourceFile?: File;
   sourceCad: CadData | null = null;
   batchCheckData: ObjectOf<any>[] | null = null;
 
@@ -78,28 +69,32 @@ export class ImportComponent extends Utils() implements OnInit {
     noFilterEntities: "示意图不删除小于3的线"
   };
   importConfigNormal: ImportComponentConfig = {
-    requireLineId: {value: false},
-    pruneLines: {value: true},
-    addUniqCode: {value: true},
-    dryRun: {value: false},
-    noFilterEntities: {value: false}
+    requireLineId: false,
+    pruneLines: true,
+    addUniqCode: true,
+    dryRun: false,
+    noFilterEntities: false
   };
   importConfigSuanliao: ImportComponentConfig = {
-    requireLineId: {value: false},
-    pruneLines: {value: true},
-    addUniqCode: {value: true},
-    dryRun: {value: false},
-    noFilterEntities: {value: false, hidden: true}
+    requireLineId: false,
+    pruneLines: true,
+    addUniqCode: true,
+    dryRun: false,
+    noFilterEntities: false
   };
+  importNormalInputs: InputInfo[] = [];
+  importSuanliaoInputs: InputInfo[] = [];
   maxLineLength = 200;
   导入dxf文件时展开名字不改变 = false;
   importCache: ImportCache | null = null;
+  compactPage = false;
 
   constructor(
     private http: CadDataService,
     private message: MessageService,
     private spinner: SpinnerService,
-    private status: AppStatusService
+    private status: AppStatusService,
+    private route: ActivatedRoute
   ) {
     super();
     setGlobal("importer", this);
@@ -107,11 +102,40 @@ export class ImportComponent extends Utils() implements OnInit {
 
   async ngOnInit() {
     if (!environment.production) {
-      this.importConfigNormal.requireLineId.value = false;
-      this.importConfigNormal.pruneLines.value = true;
+      this.importConfigNormal.requireLineId = false;
+      this.importConfigNormal.pruneLines = true;
     }
-    this.keysOf(this.importConfigSuanliao);
-    this.importCache = session.load<ImportCache>("importParams");
+    const suanliaoHiddenKeys: ImportComponentConfigName[] = ["noFilterEntities"];
+    for (const key of keysOf(this.importConfigTranslation)) {
+      const label = this.importConfigTranslation[key];
+      this.importNormalInputs.push({type: "boolean", label, radio: true, model: {data: this.importConfigNormal, key}});
+      this.importSuanliaoInputs.push({
+        type: "boolean",
+        label,
+        radio: true,
+        model: {data: this.importConfigSuanliao, key},
+        hidden: suanliaoHiddenKeys.includes(key)
+      });
+    }
+    this.importSuanliaoInputs.push({
+      type: "number",
+      label: "使用公式的线段最大长度",
+      hint: () => {
+        const len = this.maxLineLength;
+        if (len > 0) {
+          return `长于${len}的线段会被调整至${len}`;
+        } else {
+          return "最大长度不大于0则不调整";
+        }
+      },
+      model: {data: this, key: "maxLineLength"}
+    });
+
+    const {key} = this.route.snapshot.queryParams;
+    if (key) {
+      this.importCache = session.load<ImportCache>("importParams-" + key);
+      this.compactPage = !!this.importCache?.lurushuju;
+    }
   }
 
   private _getImportConfig(isXinghao: boolean) {
@@ -122,7 +146,7 @@ export class ImportComponent extends Utils() implements OnInit {
     const config = this._getImportConfig(isXinghao);
     const values: ObjectOf<boolean> = {};
     this.keysOf(config).forEach((key) => {
-      values[key] = !!config[key].value;
+      values[key] = !!config[key];
     });
     return values as Record<ImportComponentConfigName, boolean>;
   }
@@ -135,8 +159,7 @@ export class ImportComponent extends Utils() implements OnInit {
     return requireLineId !== null && pruneLines !== null;
   }
 
-  async importDxf(event: Event | null, isXinghao: boolean, loaderId: string): Promise<boolean> {
-    let el: HTMLInputElement | undefined;
+  async importDxf(isXinghao: boolean, loaderId: string, file?: File | null): Promise<boolean> {
     timer.start("导入总用时");
     const finish = (hasLoader: boolean, progressBarStatus: ProgressBarStatus, msg?: string) => {
       if (hasLoader) {
@@ -145,23 +168,21 @@ export class ImportComponent extends Utils() implements OnInit {
       this.progressBar.end();
       this.progressBarStatus = progressBarStatus;
       this.msg = typeof msg === "string" ? msg : "";
-      if (el) {
-        el.value = "";
-      }
       this.isImporting = false;
       timer.end("导入总用时", "导入总用时");
       return progressBarStatus === "success";
     };
-    if (event) {
-      el = event.target as HTMLInputElement;
-      if (!el.files || el.files.length < 1) {
+    if (!file) {
+      file = (await selectFiles({accept: ".dxf"}))?.[0];
+      if (!file) {
         return finish(false, "hidden");
       }
-      this._sourceFile = el.files[0];
-    } else if (!this._sourceFile) {
+      this.sourceFile = file;
+    }
+    if (!this.sourceFile) {
       return finish(false, "hidden");
     }
-    if (!(await this.message.confirm(`是否确定导入【${this._sourceFile.name}】？`))) {
+    if (!(await this.message.confirm(`是否确定导入【${this.sourceFile.name}】？`))) {
       return finish(false, "hidden");
     }
     this.isImporting = true;
@@ -172,7 +193,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this.spinner.show(loaderId);
     const 导入dxf文件时展开名字不改变 = this.status.projectConfig.getBoolean("导入dxf文件时展开名字不改变");
     const httpOptions: HttpOptions = {silent: true};
-    const data = await this.http.uploadDxf(this._sourceFile, false, httpOptions);
+    const data = await this.http.uploadDxf(this.sourceFile, false, httpOptions);
     if (!data) {
       return finish(true, "error", "读取文件失败");
     }
@@ -313,7 +334,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this.msg = `正在保存dxf文件`;
     if (isXinghao) {
       const xinghao = this.cads[0].data.options.型号;
-      const result = await this.http.post<boolean>("ngcad/setImportDxf", {file: this._sourceFile, xinghao});
+      const result = await this.http.post<boolean>("ngcad/setImportDxf", {file: this.sourceFile, xinghao});
       if (!result) {
         return finish(true, "error", this.http.lastResponse?.msg || "保存失败");
       }
@@ -809,8 +830,8 @@ export class ImportComponent extends Utils() implements OnInit {
 
   downloadBatchCheckData() {
     let filename: string | undefined;
-    if (this._sourceFile) {
-      filename = this._sourceFile.name.split(".")[0] + ".json";
+    if (this.sourceFile) {
+      filename = this.sourceFile.name.split(".")[0] + ".json";
     }
     downloadByString(JSON.stringify(this.batchCheckData), {filename});
   }

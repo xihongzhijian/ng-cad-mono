@@ -617,7 +617,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       this.gongyi = null;
       return;
     }
-    gongyi = getGongyi(gongyi);
+    gongyi = getGongyi(gongyi, this.gongyiOptionsAll);
     this.gongyi = gongyi;
     this.xuanxiangTable.data = [...gongyi.选项数据];
     this.shuruTable.data = [...gongyi.输入数据];
