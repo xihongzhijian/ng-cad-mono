@@ -1169,7 +1169,10 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
 
     const 双45Count = items.filter((v) => v.左切角 === "45" && v.右切角 === "45").length;
     const 单45Count = items.filter((v) => v.左切角 === "45" || v.右切角 === "45").length - 双45Count;
-    if (双45Count > 0) {
+    const 双90Count = items.filter((v) => v.左切角 === "90" && v.右切角 === "90").length;
+    if (双90Count > 0) {
+      addText(widths[4], `双90`, [x + widths[4] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: 30});
+    } else if (双45Count > 0) {
       addText(widths[4], `双45`, [x + widths[4] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: 30});
     }
     if (单45Count > 0) {
