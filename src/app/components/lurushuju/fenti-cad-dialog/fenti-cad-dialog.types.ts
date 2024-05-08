@@ -1,6 +1,6 @@
+import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {ObjectOf} from "@lucilor/utils";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
-import {Cad数据要求} from "../xinghao-data";
 
 export interface FentiCadDialogInput {
   data: FentiCadData;

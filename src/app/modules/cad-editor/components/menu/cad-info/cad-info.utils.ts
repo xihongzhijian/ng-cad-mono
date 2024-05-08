@@ -1,7 +1,7 @@
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
+import {Cad数据要求Item} from "@app/cad/cad-shujuyaoqiu";
 import {cadOptions} from "@app/cad/options";
-import {Cad数据要求Item} from "@app/components/lurushuju/xinghao-data";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {environment} from "@env";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";

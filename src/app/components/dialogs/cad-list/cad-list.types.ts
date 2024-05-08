@@ -1,5 +1,5 @@
+import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
-import {Cad数据要求} from "@app/components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 

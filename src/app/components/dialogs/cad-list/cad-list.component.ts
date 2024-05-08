@@ -13,9 +13,9 @@ import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/pag
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {imgCadEmpty} from "@app/app.common";
+import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadItemComponent} from "@app/components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton} from "@app/components/lurushuju/cad-item/cad-item.types";
-import {setCadData} from "@app/components/lurushuju/xinghao-data";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {openExportPage} from "@app/views/export/export.utils";

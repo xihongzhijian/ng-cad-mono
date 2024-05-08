@@ -3,9 +3,9 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
+import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadInfo, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
-import {setCadData} from "@app/components/lurushuju/xinghao-data";
 import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo} from "@app/modules/input/components/input.types";
 import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
@@ -24,7 +24,7 @@ import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
-import {ImportCache, ImportComponentConfig, ImportComponentConfigName} from "./import.types";
+import {ImportCache, ImportComponentConfig, ImportComponentConfigName, importComponentConfigNames} from "./import.types";
 
 @Component({
   selector: "app-import",
@@ -105,18 +105,6 @@ export class ImportComponent extends Utils() implements OnInit {
       this.importConfigNormal.requireLineId = false;
       this.importConfigNormal.pruneLines = true;
     }
-    const suanliaoHiddenKeys: ImportComponentConfigName[] = ["noFilterEntities"];
-    for (const key of keysOf(this.importConfigTranslation)) {
-      const label = this.importConfigTranslation[key];
-      this.importNormalInputs.push({type: "boolean", label, radio: true, model: {data: this.importConfigNormal, key}});
-      this.importSuanliaoInputs.push({
-        type: "boolean",
-        label,
-        radio: true,
-        model: {data: this.importConfigSuanliao, key},
-        hidden: suanliaoHiddenKeys.includes(key)
-      });
-    }
     this.importSuanliaoInputs.push({
       type: "number",
       label: "使用公式的线段最大长度",
@@ -134,7 +122,37 @@ export class ImportComponent extends Utils() implements OnInit {
     const {key} = this.route.snapshot.queryParams;
     if (key) {
       this.importCache = session.load<ImportCache>("importParams-" + key);
+      if (this.importCache?.yaoqiu?.导入配置) {
+        Object.assign(this.importConfigNormal, this.importCache.yaoqiu.导入配置);
+      }
       this.compactPage = !!this.importCache?.lurushuju;
+    }
+
+    const normalHiddenKeys: ImportComponentConfigName[] = [];
+    const suanliaoHiddenKeys: ImportComponentConfigName[] = ["noFilterEntities"];
+    if (this.compactPage) {
+      const toPush = new Set<ImportComponentConfigName>(importComponentConfigNames);
+      if (this.importCache?.yaoqiu?.CAD分类?.includes("算料单示意图")) {
+        toPush.delete("noFilterEntities");
+      }
+      normalHiddenKeys.push(...toPush);
+    }
+    for (const key of keysOf(this.importConfigTranslation)) {
+      const label = this.importConfigTranslation[key];
+      this.importNormalInputs.push({
+        type: "boolean",
+        label,
+        radio: true,
+        model: {data: this.importConfigNormal, key},
+        hidden: normalHiddenKeys.includes(key)
+      });
+      this.importSuanliaoInputs.push({
+        type: "boolean",
+        label,
+        radio: true,
+        model: {data: this.importConfigSuanliao, key},
+        hidden: suanliaoHiddenKeys.includes(key)
+      });
     }
   }
 

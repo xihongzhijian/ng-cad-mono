@@ -1,6 +1,7 @@
-import {Cad数据要求} from "@app/components/lurushuju/xinghao-data";
+import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 
-export type ImportComponentConfigName = "requireLineId" | "pruneLines" | "addUniqCode" | "dryRun" | "noFilterEntities";
+export const importComponentConfigNames = ["requireLineId", "pruneLines", "addUniqCode", "dryRun", "noFilterEntities"] as const;
+export type ImportComponentConfigName = (typeof importComponentConfigNames)[number];
 export type ImportComponentConfig = Record<ImportComponentConfigName, boolean>;
 
 export interface ImportCache {

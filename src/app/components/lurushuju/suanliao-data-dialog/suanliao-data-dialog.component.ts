@@ -2,6 +2,7 @@ import {Component, EventEmitter, HostBinding, Inject, OnInit, Output, QueryList,
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
+import {filterCad, setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
@@ -24,7 +25,7 @@ import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dial
 import {SelectGongyiItemData} from "../select-gongyi-dialog/select-gongyi-dialog.types";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
 import {openSuanliaoTestDialog} from "../suanliao-test-dialog/suanliao-test-dialog.component";
-import {filterCad, setCadData, SuanliaoDataParams, 算料数据} from "../xinghao-data";
+import {SuanliaoDataParams, 算料数据} from "../xinghao-data";
 import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./suanliao-data-dialog.type";
 
 @Component({

@@ -1,3 +1,4 @@
+import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
@@ -6,7 +7,6 @@ import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {OptionsAll2} from "../lurushuju-index/lurushuju-index.types";
 import {
-  Cad数据要求,
   get算料数据2,
   MenjiaoCadType,
   menjiaoCadTypes,

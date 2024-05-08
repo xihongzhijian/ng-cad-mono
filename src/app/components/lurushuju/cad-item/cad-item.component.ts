@@ -20,6 +20,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {getValueString} from "@app/app.common";
 import {CadPreviewParams} from "@app/cad/cad-preview";
+import {Cad数据要求, Cad数据要求Item} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData, generateLineTexts2, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
 import {ClickStopPropagationDirective} from "@app/modules/directives/click-stop-propagation.directive";
@@ -41,7 +42,6 @@ import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
 import {isEmpty} from "lodash";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
-import {Cad数据要求, Cad数据要求Item} from "../xinghao-data";
 import {CadItemButton, CadItemSelectable, typeOptions} from "./cad-item.types";
 
 @Component({
