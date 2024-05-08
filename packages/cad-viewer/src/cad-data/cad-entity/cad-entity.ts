@@ -184,7 +184,7 @@ export abstract class CadEntity extends ColoredObject {
 
   getColor() {
     let color = super.getColor();
-    if (!color) {
+    if (!color || this.byLayerColor) {
       const layers = this.root?.root?.layers;
       const layer = layers?.find((v) => v.name === this.layer);
       if (layer) {

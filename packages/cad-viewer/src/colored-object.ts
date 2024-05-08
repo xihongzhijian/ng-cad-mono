@@ -4,7 +4,7 @@ import {isEqual} from "lodash";
 
 export class ColoredObject {
   private _color: Color;
-  byLayer?: boolean;
+  byLayerColor?: boolean;
 
   constructor(...params: Parameters<typeof Color>) {
     this._color = new Color(...params);
@@ -35,9 +35,9 @@ export class ColoredObject {
 
   setIndexColor(index: number) {
     if (index === 256) {
-      this.byLayer = true;
+      this.byLayerColor = true;
     } else {
-      this.byLayer = false;
+      this.byLayerColor = false;
       const rgb = list[index];
       if (rgb) {
         this._color = new Color(rgb);
