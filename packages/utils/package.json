@@ -1,6 +1,6 @@
 {
   "name": "@lucilor/utils",
-  "version": "1.23.0",
+  "version": "1.23.1",
   "description": "utils",
   "main": "lib/index.js",
   "files": [
@@ -32,7 +32,7 @@
     "@types/events": "^3.0.3",
     "@types/lodash": "^4.17.1",
     "@types/md5": "^2.3.5",
-    "@types/node": "^20.12.10",
+    "@types/node": "^20.12.11",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
     "clean-webpack-plugin": "^4.0.0",
