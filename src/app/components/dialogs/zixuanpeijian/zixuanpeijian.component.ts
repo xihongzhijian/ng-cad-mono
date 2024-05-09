@@ -151,6 +151,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   get isEditingFenlei() {
     return this.isEditingFenlei$.value;
   }
+  downloadApi = this.http.getUrl("ngcad/downloadFile");
 
   get summitBtnText() {
     if (this.data?.stepFixed) {

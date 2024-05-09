@@ -29,7 +29,7 @@
       <button mat-raised-button color="primary" (click)="data.yaoqiu?.['打开帮助文档']()">帮助文档</button>
     }
     @if (data.yaoqiu?.["有导入参考dxf模板"]) {
-      <button mat-raised-button color="primary" (click)="data.yaoqiu?.['下载导入参考dxf模板']()">下载导入cad模板</button>
+      <button mat-raised-button color="primary" (click)="data.yaoqiu?.['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
     }
     <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
     <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>

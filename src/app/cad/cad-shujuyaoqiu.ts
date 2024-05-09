@@ -1,4 +1,4 @@
-import {getValueString, remoteFilePath} from "@app/app.common";
+import {getValueString} from "@app/app.common";
 import {cadFields} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {HoutaiCad, TableDataBase} from "@app/modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
@@ -126,9 +126,9 @@ export class Cad数据要求 {
   get 有导入参考dxf模板() {
     return !!this.导入参考dxf模板;
   }
-  下载导入参考dxf模板() {
+  下载导入参考dxf模板(api: string) {
     const filename = this.CAD分类 || "导入参考dxf模板";
-    const url = [remoteFilePath, this.导入参考dxf模板].join("/");
+    const url = `${api}?path=${this.导入参考dxf模板}`;
     downloadByUrl(url, {filename});
   }
 }

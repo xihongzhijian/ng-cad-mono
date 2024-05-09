@@ -82,6 +82,7 @@ export class CadListComponent implements AfterViewInit {
   cadDataType!: CadData;
   imgCadEmpty = imgCadEmpty;
   cadItemButtons: CadItemButton<CadListItemInfo>[];
+  downloadApi = this.http.getUrl("ngcad/downloadFile");
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
 
   constructor(
