@@ -8,7 +8,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, local, session, setGlobal} from "@app/app.common";
+import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, local, session, setGlobal, splitOptions} from "@app/app.common";
 import {AboutComponent} from "@components/about/about.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
@@ -215,13 +215,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (xinghaos) {
       for (const xinghao of xinghaos) {
         const {menchuang, gongyi} = xinghao;
-        const menchuangItem = this.xinghaoMenchuangs.items.find((v) => v.mingzi === menchuang);
-        const gongyiItem = menchuangItem?.gongyis?.items.find((v) => v.mingzi === gongyi);
-        if (gongyiItem) {
-          if (!gongyiItem.xinghaos) {
-            gongyiItem.xinghaos = {items: [], count: 0};
+        const menchuangs = splitOptions(menchuang);
+        const gongyis = splitOptions(gongyi);
+        const menchuangItems = this.xinghaoMenchuangs.items.filter((v) => menchuangs.includes(v.mingzi));
+        for (const menchuangItem of menchuangItems) {
+          const gongyiItems = menchuangItem.gongyis?.items.filter((v) => gongyis.includes(v.mingzi));
+          for (const gongyiItem of gongyiItems || []) {
+            if (!gongyiItem.xinghaos) {
+              gongyiItem.xinghaos = {items: [], count: 0};
+            }
+            gongyiItem.xinghaos.items.push(xinghao);
           }
-          gongyiItem.xinghaos.items.push(xinghao);
         }
       }
       this.filterXinghaos();
@@ -297,23 +301,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   async getXinghaoItem(xinghao?: XinghaoData) {
     const data: XinghaoData = xinghao ? cloneDeep(xinghao) : getXinghaoData();
-    const {xinghaoMenchuangs} = this;
-    if (typeof xinghaoMenchuangs.index === "number") {
-      const menchuang = xinghaoMenchuangs.items[xinghaoMenchuangs.index];
-      if (menchuang) {
-        data.menchuang = menchuang.mingzi;
-        if (typeof menchuang.gongyis?.index === "number") {
-          const gongyi = menchuang.gongyis.items[menchuang.gongyis.index];
-          if (gongyi) {
-            data.gongyi = gongyi.mingzi;
-          }
-        }
-      }
-    }
-    if (!data.menchuang || !data.gongyi) {
-      await this.message.error("请先选择一个工艺");
-      return null;
-    }
     if (!data.算料单模板) {
       data.算料单模板 = this.status.projectConfig.get("新做数据算料单排版默认方案") || "自动排版模板";
     }
