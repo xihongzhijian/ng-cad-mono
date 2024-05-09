@@ -135,6 +135,11 @@ export const updateMenjiaoData = (data: 算料数据) => {
       data.开启.push(key2);
     }
   }
+  for (const key of ["门扇厚度"] as const) {
+    if (!Array.isArray(data[key])) {
+      data[key] = data[key] ? [data[key] as any] : [];
+    }
+  }
   const keys = ["vid", "产品分类", "开启", "门铰", "门扇厚度", "锁边", "铰边"] as const;
   const values = keys
     .map((k) => {
