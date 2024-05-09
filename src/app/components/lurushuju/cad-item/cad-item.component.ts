@@ -63,9 +63,15 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input() cadWidth = 360;
   @Input() cadHeight = 180;
 
+  @HostBinding("style.--cad-image-width") get widthStyle() {
+    return `${this.cadWidth}px`;
+  }
+  @HostBinding("style.--cad-image-height") get heightStyle() {
+    return `${this.cadHeight}px`;
+  }
   @HostBinding("style") style = {};
 
-  @Input({required: true}) cad: HoutaiCad = getHoutaiCad();
+  @Input({required: true}) cad: HoutaiCad | CadData = new CadData();
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input() buttons2: CadItemButton<T>[] = [];
   @Input({required: true}) customInfo!: T;
@@ -74,7 +80,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
   @Input() showMuban?: boolean;
-  @Input() isOnline = false;
+  @Input() isOnline?: {collection?: CadCollection; isFetched?: boolean; afterFetch: (component: CadItemComponent<T>) => void};
   @Input() selectable?: CadItemSelectable<T>;
   @Output() afterEditCad = new EventEmitter<void>();
 
@@ -87,26 +93,6 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   showMubanViewer = false;
   cadData?: CadData;
   mubanData?: CadData;
-  get mubanId() {
-    return this.cad?.json?.zhankai?.[0]?.kailiaomuban || "";
-  }
-  set mubanId(value: string) {
-    const {cad} = this;
-    if (!cad) {
-      return;
-    }
-    if (!cad.json) {
-      cad.json = {};
-    }
-    if (!cad.json.zhankai) {
-      cad.json.zhankai = [];
-    }
-    if (!cad.json.zhankai[0]) {
-      cad.json.zhankai[0] = {};
-    }
-    cad.json.zhankai[0].kailiaomuban = value;
-  }
-
   mubanInputs: InputInfo[][] = [];
 
   constructor(
@@ -131,48 +117,111 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     this.mubanViewer?.destroy();
   }
 
-  centerCad() {
-    this.cadViewer?.center();
+  get cadId() {
+    return this.cad instanceof CadData ? this.cad.id : this.cad._id;
   }
-
-  async editCad() {
+  get cadName() {
+    return this.cad instanceof CadData ? this.cad.name : this.cad.名字;
+  }
+  get mubanId() {
+    if (this.cad instanceof CadData) {
+      return this.cad.zhankai[0]?.kailiaomuban || "";
+    }
+    return this.cad?.json?.zhankai?.[0]?.kailiaomuban || "";
+  }
+  set mubanId(value: string) {
     const {cad} = this;
     if (!cad) {
       return;
     }
-    const cadData = new CadData(cad.json);
+    if (cad instanceof CadData) {
+      if (!cad.zhankai[0]) {
+        cad.zhankai[0] = new CadZhankai({name: cad.name});
+      }
+      cad.zhankai[0].kailiaomuban = value;
+    } else {
+      if (!cad.json) {
+        cad.json = {};
+      }
+      if (!cad.json.zhankai) {
+        cad.json.zhankai = [];
+      }
+      if (!cad.json.zhankai[0]) {
+        cad.json.zhankai[0] = {};
+      }
+      cad.json.zhankai[0].kailiaomuban = value;
+    }
+  }
+
+  centerCad() {
+    this.cadViewer?.center();
+  }
+
+  async onlineFetch() {
+    const {isOnline} = this;
+    if (!isOnline || isOnline.isFetched) {
+      return;
+    }
+    const data = (await this.http.queryMongodb<HoutaiCad>({collection: isOnline.collection || "cad", where: {_id: this.cadId}}))[0];
+    if (data) {
+      if (this.cad instanceof CadData) {
+        Object.assign(this.cad, new CadData(data.json));
+      } else {
+        Object.assign(this.cad, data);
+      }
+      isOnline.afterFetch(this);
+    }
+  }
+
+  async editCad() {
+    const {cad, isOnline} = this;
+    if (!cad) {
+      return;
+    }
+    await this.onlineFetch();
+    const cadData = cad instanceof CadData ? cad : new CadData(cad.json);
     const result = await openCadEditorDialog(this.dialog, {
       data: {
         data: cadData,
         center: true,
-        isLocal: true,
+        isLocal: !isOnline,
         ...this.openCadOptions
       }
     });
     if (result?.isSaved) {
-      Object.assign(cad, getHoutaiCad(cadData));
-      if (cad.json.info?.imgId) {
-        cad.json.info.imgUpdate = true;
+      if (cad instanceof CadData) {
+        Object.assign(cad, cadData);
+        cad.info.imgUpdate = true;
+      } else {
+        Object.assign(cad, getHoutaiCad(cadData));
+        if (cad.json.info?.imgId) {
+          cad.json.info.imgUpdate = true;
+        }
       }
-      this.initCadViewer();
+      await this.initCadViewer();
       this.afterEditCad.emit();
     }
   }
 
   async editCadForm() {
     const {cad, isOnline} = this;
-    if (!cad || isOnline) {
-      this.selectable?.onChange(this);
+    if (!cad) {
       return;
     }
+    await this.onlineFetch();
+    let data: CadData;
     const ignoreKeys = ["entities"];
-    const dataRaw: ObjectOf<any> = {};
-    for (const key in cad.json) {
-      if (!ignoreKeys.includes(key)) {
-        dataRaw[key] = cad.json[key];
+    if (cad instanceof CadData) {
+      data = cad;
+    } else {
+      const dataRaw: ObjectOf<any> = {};
+      for (const key in cad.json) {
+        if (!ignoreKeys.includes(key)) {
+          dataRaw[key] = cad.json[key];
+        }
       }
+      data = new CadData(dataRaw);
     }
-    const data = new CadData(dataRaw);
     const form = getCadInfoInputs2(this.shujuyaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status, true);
     let title = "编辑CAD";
     const name = data.name;
@@ -184,17 +233,22 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       if (data.zhankai[0] && data.zhankai[0].name !== data.name) {
         data.zhankai[0].name = data.name;
       }
-      const cad2 = getHoutaiCad(data);
-      for (const key of keysOf(cad2)) {
-        if (key === "json") {
-          for (const key2 in cad2.json) {
-            if (!ignoreKeys.includes(key2)) {
-              cad.json[key2] = cad2.json[key2];
+      if (!(cad instanceof CadData)) {
+        const cad2 = getHoutaiCad(data);
+        for (const key of keysOf(cad2)) {
+          if (key === "json") {
+            for (const key2 in cad2.json) {
+              if (!ignoreKeys.includes(key2)) {
+                cad.json[key2] = cad2.json[key2];
+              }
             }
+          } else {
+            cad[key] = cad2[key] as any;
           }
-        } else {
-          cad[key] = cad2[key] as any;
         }
+      }
+      if (isOnline) {
+        await this.http.setCad({collection: isOnline.collection || "cad", cadData: data, force: true}, true);
       }
       this.afterEditCad.emit();
     }
@@ -218,15 +272,23 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (mubanId) {
       cadData.id = mubanId;
     }
-    cadData.name = cad?.名字 || "模板";
     cadData.type = typeOptions[0];
     if (mubanExtraData) {
       Object.assign(cadData, mubanExtraData);
     }
-    cadData.info.fromCad = {
-      name: cad.名字,
-      imgId: cad.json.info?.imgId
-    };
+    if (cad instanceof CadData) {
+      cadData.name = cad?.name || "模板";
+      cadData.info.fromCad = {
+        name: cad.name,
+        imgId: cad.info.imgId
+      };
+    } else {
+      cadData.name = cad?.名字 || "模板";
+      cadData.info.fromCad = {
+        name: cad.名字,
+        imgId: cad.json.info?.imgId
+      };
+    }
     const result = await this.http.setCad({collection: "kailiaocadmuban", cadData, force: true}, true);
     if (!result) {
       return;
@@ -234,7 +296,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     this.mubanId = result.id;
     this.mubanData = result;
     await timeout(0);
-    this.initMubanViewer();
+    await this.initMubanViewer();
   }
 
   async getMubanData() {
@@ -274,7 +336,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     });
     this.mubanData = this.status.cad.data.clone();
     if (result?.isSaved) {
-      this.initMubanViewer();
+      await this.initMubanViewer();
     }
   }
 
@@ -291,7 +353,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
 
   async refreshMuban() {
     await this.getMubanData();
-    this.initMubanViewer();
+    await this.initMubanViewer();
   }
 
   async removeMuban() {
@@ -305,14 +367,14 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (await this.http.mongodbDelete("kailiaocadmuban", {id: mubanId})) {
       this.mubanId = "";
       this.mubanData = undefined;
-      this.initMubanViewer();
+      await this.initMubanViewer();
     }
   }
 
-  update() {
+  async update() {
     delete this.mubanData;
-    this.initCadViewer();
-    this.initMubanViewer();
+    await this.initCadViewer();
+    await this.initMubanViewer();
   }
 
   getCadPreviewParams = (() => {
@@ -370,19 +432,22 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     return cadViewer;
   }
 
-  initCadViewer() {
+  async initCadViewer() {
     this.cadViewer?.destroy();
     const {cad, cadContainer, showCadViewer} = this;
     if (!cad || !cadContainer) {
       return;
     }
-    const data = new CadData(cad.json);
+    await this.onlineFetch();
+    const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     this.cadData = data;
     generateLineTexts2(data);
     if (showCadViewer) {
       const containerEl = cadContainer.nativeElement;
       this.cadViewer = this.initCadViewer0("cad", data, containerEl, (data) => {
-        cad.json.entities = exportCadData(data, true).entities;
+        if (!(cad instanceof CadData)) {
+          cad.json.entities = exportCadData(data, true).entities;
+        }
       });
     }
   }
@@ -417,20 +482,31 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (!cad || !mubanData) {
       return;
     }
-    if (!cad.json) {
-      cad.json = {};
+    let flip: any;
+    if (cad instanceof CadData) {
+      if (cad.zhankai.length < 1) {
+        cad.zhankai.push(new CadZhankai({name: cad.name}));
+      }
+      if (cad.zhankai[0].flip.length < 1) {
+        cad.zhankai[0].flip.push({chanpinfenlei: "", fanzhuanfangshi: "", kaiqi: ""});
+      }
+      flip = cad.zhankai[0].flip[0];
+    } else {
+      if (!cad.json) {
+        cad.json = {};
+      }
+      if (!cad.json.zhankai) {
+        cad.json.zhankai = [];
+      }
+      if (!cad.json.zhankai[0]) {
+        cad.json.zhankai[0] = {};
+      }
+      const zhankai = cad.json.zhankai[0];
+      if (!zhankai.flip || !zhankai.flip[0]) {
+        zhankai.flip = [{chanpinfenlei: "", fanzhuanfangshi: "", kaiqi: ""}];
+      }
+      flip = zhankai.flip[0];
     }
-    if (!cad.json.zhankai) {
-      cad.json.zhankai = [];
-    }
-    if (!cad.json.zhankai[0]) {
-      cad.json.zhankai[0] = {};
-    }
-    const zhankai = cad.json.zhankai[0];
-    if (!zhankai.flip || !zhankai.flip[0]) {
-      zhankai.flip = [{chanpinfenlei: "", fanzhuanfangshi: "", kaiqi: ""}];
-    }
-    const flip = zhankai.flip[0];
     const updateMuban = async (options?: HttpOptions) => {
       return await this.http.setCad({collection: "kailiaocadmuban", cadData: mubanData, force: true}, true, options);
     };
@@ -469,24 +545,6 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     ];
   }
 
-  addZhankai(i: number) {
-    const zhankai = this.cad?.json?.zhankai;
-    if (!Array.isArray(zhankai)) {
-      return;
-    }
-    zhankai.splice(i + 1, 0, new CadZhankai().export());
-    this.update();
-  }
-
-  removeZhankai(i: number) {
-    const zhankai = this.cad?.json?.zhankai;
-    if (!Array.isArray(zhankai)) {
-      return;
-    }
-    zhankai.splice(i, 1);
-    this.update();
-  }
-
   returnZero() {
     return 0;
   }
@@ -516,16 +574,23 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   }
 
   getCadInfoStr(item: Cad数据要求Item) {
+    const {cad} = this;
     if (item.cadKey) {
-      let value = this.cad.json[item.cadKey];
+      let value = cad instanceof CadData ? cad[item.cadKey] : cad.json[item.cadKey];
       if (item.key2) {
         value = value?.[item.key2];
       }
       return getValueString(value, "\n", "：");
     } else if (item.key === "展开信息") {
-      const {cad} = this;
-      if (cad?.json?.zhankai && cad.json.zhankai[0]) {
-        const zhankai = cad.json.zhankai[0];
+      let zhankai: any;
+      if (cad instanceof CadData) {
+        zhankai = cad.zhankai[0];
+      } else {
+        if (cad?.json?.zhankai && cad.json.zhankai[0]) {
+          zhankai = cad.json.zhankai[0];
+        }
+      }
+      if (zhankai) {
         return `${zhankai.zhankaikuan || ""} × ${zhankai.zhankaigao || ""} = ${zhankai.shuliang || ""}`;
       }
     }
@@ -535,20 +600,23 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   async onCadImageClick() {
     this.showCadViewer = true;
     await timeout(0);
-    this.initCadViewer();
+    await this.initCadViewer();
   }
 
   onCadInfoChange(event: DataInfoChnageEvent) {
-    this.cad.json.info = event.info;
+    const {cad} = this;
+    if (!(cad instanceof CadData)) {
+      cad.json.info = event.info;
+    }
   }
 
   async onMubanImageClick() {
     this.showMubanViewer = true;
     await timeout(0);
-    this.initMubanViewer();
+    await this.initMubanViewer();
   }
 
   async copyName() {
-    await this.message.copyText(this.cad.名字, {successText: "已复制名字"});
+    await this.message.copyText(this.cadName, {successText: "已复制名字"});
   }
 }

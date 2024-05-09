@@ -224,12 +224,12 @@ export class SuanliaoDataDialogComponent implements OnInit {
   }
 
   async copyCad(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
-    const {cad} = component;
-    if (!cad || !(await this.message.confirm(`确定复制【${cad.名字}】吗？`))) {
+    const {cad, cadName} = component;
+    if (!(await this.message.confirm(`确定复制【${cadName}】吗？`))) {
       return;
     }
     const {mubanData} = component;
-    const cadData2 = new CadData(cad.json).clone(true);
+    const cadData2 = (cad instanceof CadData ? cad : new CadData(cad.json)).clone(true);
     delete cadData2.info.imgId;
     cadData2.name += "_复制";
     const cad2 = getHoutaiCad(cadData2);
@@ -246,19 +246,18 @@ export class SuanliaoDataDialogComponent implements OnInit {
   }
 
   async removeCad(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
-    const {cad} = component;
-    if (!cad || !(await this.message.confirm(`删除【${cad.名字}】将同时删除对应的孔位配置、开料参数、开料模板，确定删除吗？`))) {
+    const {cadName, mubanId} = component;
+    if (!(await this.message.confirm(`删除【${cadName}】将同时删除对应的孔位配置、开料参数、开料模板，确定删除吗？`))) {
       return;
     }
-    const {mubanId} = component;
     if (mubanId) {
       await this.http.mongodbDelete("kailiaocadmuban", {id: mubanId});
     }
-    const names = this.data.data.算料CAD.filter((v) => v.名字 === cad.名字);
+    const names = this.data.data.算料CAD.filter((v) => v.名字 === cadName);
     if (names.length < 2) {
       const params: ObjectOf<any> = this.data.suanliaoDataParams;
-      await this.http.mongodbDelete("kailiaokongweipeizhi", {filter: {...params, 名字: cad.名字}});
-      await this.http.mongodbDelete("kailiaocanshu", {filter: {...params, 名字: cad.名字 + "中空参数"}});
+      await this.http.mongodbDelete("kailiaokongweipeizhi", {filter: {...params, 名字: cadName}});
+      await this.http.mongodbDelete("kailiaocanshu", {filter: {...params, 名字: cadName + "中空参数"}});
       this.suanliaoTables?.update();
     }
     this.data.data.算料CAD.splice(component.customInfo.index, 1);
@@ -269,8 +268,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
     if (!suanliaoTables) {
       return;
     }
-    const {cad} = component;
-    const id = await this.http.mongodbInsert(suanliaoTables.klkwpzCollection, {...this.data.suanliaoDataParams, 名字: cad.名字});
+    const id = await this.http.mongodbInsert(suanliaoTables.klkwpzCollection, {...this.data.suanliaoDataParams, 名字: component.cadName});
     if (id) {
       suanliaoTables.updateKlkwpzTable();
     }
@@ -281,10 +279,9 @@ export class SuanliaoDataDialogComponent implements OnInit {
     if (!suanliaoTables) {
       return;
     }
-    const {cad} = component;
     const response = await this.http.mongodbInsert(suanliaoTables.klcsCollection, {
       ...this.data.suanliaoDataParams,
-      名字: cad.名字 + "中空参数",
+      名字: component.cadName + "中空参数",
       分类: "切中空"
     });
     if (response) {

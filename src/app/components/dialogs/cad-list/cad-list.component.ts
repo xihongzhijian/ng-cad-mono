@@ -65,7 +65,7 @@ export class CadListComponent implements AfterViewInit {
   length = 0;
   pageSizeOptions = [1, 10, 20, 50, 100];
   pageSize = 20;
-  pageData: {data: HoutaiCad; checked: boolean}[] = [];
+  pageData: {data: HoutaiCad; checked: boolean; isFetched?: boolean}[] = [];
   tableData: any = [];
   displayedColumns = ["select", "mingzi", "wenjian", "create_time", "modify_time"];
   width = 300;
@@ -429,6 +429,12 @@ export class CadListComponent implements AfterViewInit {
       return;
     }
     this.syncCheckedItems();
+  }
+
+  afterFetch(component: CadItemComponent<CadListItemInfo>) {
+    const {index: i} = component.customInfo;
+    const item = this.pageData[i];
+    item.isFetched = true;
   }
 }
 

@@ -3,7 +3,7 @@
     <mat-checkbox [checked]="selectable.isSelected" (change)="selectable.onChange(this)"></mat-checkbox>
   }
   <div class="flex-110 flex-row link" style="justify-content: center; align-items: center" (click)="selectable?.onChange(this)">
-    <button mat-button appClickStop (click)="editCadForm()">{{ cad["名字"] }}</button>
+    <button mat-button appClickStop (click)="editCadForm()">{{ cadName }}</button>
     <button mat-icon-button color="primary" appClickStop (click)="copyName()"><mat-icon>content_copy</mat-icon></button>
   </div>
 </div>
@@ -15,12 +15,15 @@
           @if (isOnline) {
             <app-cad-image
               class="link"
-              [id]="cad._id"
+              [id]="cadId"
+              [data]="cadData"
               [width]="cadWidth"
               [height]="cadHeight"
               [paramsGetter]="getCadPreviewParams"
               [style.width.px]="cadWidth"
               (click)="selectable?.onChange(this)"
+              (dblclick)="onCadImageClick()"
+              (dataInfoChange)="onCadInfoChange($event)"
             ></app-cad-image>
           } @else {
             <app-cad-image
@@ -38,16 +41,16 @@
         }
       </div>
       @for (button of buttons2; track $index) {
-        <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
+        <button mat-button color="primary" appClickStop (click)="button.onClick(this)">{{ button.name }}</button>
       }
     </div>
     <div class="toolbar compact">
       @if (cadViewer) {
-        <button mat-button color="primary" (click)="centerCad()">居中</button>
+        <button mat-button color="primary" appClickStop (click)="centerCad()">居中</button>
       }
-      <button mat-button color="primary" (click)="editCad()">编辑</button>
+      <button mat-button color="primary" appClickStop (click)="editCad()">编辑</button>
       @for (button of buttons; track $index) {
-        <button mat-button color="primary" (click)="button.onClick(this)">{{ button.name }}</button>
+        <button mat-button color="primary" appClickStop (click)="button.onClick(this)">{{ button.name }}</button>
       }
     </div>
     <div class="cad-info item link" style="align-items: flex-start" (click)="selectable?.onChange(this)" (dblclick)="editCadForm()">
@@ -69,7 +72,9 @@
         @for (item of fentiDialogInput.data | keyvalue: returnZero; track item.key) {
           <div class="fenti-cad toolbar">
             <div>{{ item.key }}:</div>
-            <button mat-raised-button color="primary" (click)="selectFentiCad()">{{ item.value ? item.value["名字"] : "不做分体" }}</button>
+            <button mat-raised-button color="primary" appClickStop (click)="selectFentiCad()">
+              {{ item.value ? item.value["名字"] : "不做分体" }}
+            </button>
           </div>
         }
       </div>
@@ -97,13 +102,13 @@
       @if (mubanId) {
         <div class="toolbar compact">
           @if (mubanViewer) {
-            <button mat-button color="primary" (click)="centerMuban()">居中</button>
+            <button mat-button color="primary" appClickStop (click)="centerMuban()">居中</button>
           }
-          <button mat-button color="primary" (click)="uploadMuban()">上传</button>
-          <button mat-button color="primary" (click)="editMuban()">编辑</button>
-          <button mat-button color="primary" (click)="editMubanInNewTab()">新窗口编辑</button>
-          <button mat-button color="primary" (click)="refreshMuban()">刷新</button>
-          <button mat-button color="primary" (click)="removeMuban()">删除</button>
+          <button mat-button color="primary" appClickStop (click)="uploadMuban()">上传</button>
+          <button mat-button color="primary" appClickStop (click)="editMuban()">编辑</button>
+          <button mat-button color="primary" appClickStop (click)="editMubanInNewTab()">新窗口编辑</button>
+          <button mat-button color="primary" appClickStop (click)="refreshMuban()">刷新</button>
+          <button mat-button color="primary" appClickStop (click)="removeMuban()">删除</button>
         </div>
         <div class="inputs flex-column">
           @for (group of mubanInputs; track $index) {
@@ -115,11 +120,16 @@
           }
         </div>
       } @else {
-        <div class="empty-cad item border link" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}" (click)="uploadMuban()">
+        <div
+          class="empty-cad item border link"
+          [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}"
+          appClickStop
+          (click)="uploadMuban()"
+        >
           软件自动开料
         </div>
         <div class="toolbar compact">
-          <button mat-button color="primary" (click)="uploadMuban()">上传</button>
+          <button mat-button color="primary" appClickStop (click)="uploadMuban()">上传</button>
         </div>
       }
     </div>

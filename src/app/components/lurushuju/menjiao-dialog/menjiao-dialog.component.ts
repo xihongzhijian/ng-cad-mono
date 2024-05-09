@@ -802,8 +802,7 @@ export class MenjiaoDialogComponent implements OnInit {
     return true;
   }
 
-  getTableCadName(cad: HoutaiCad) {
-    const name = cad.名字;
+  getTableCadName(name: string) {
     if (["小扇铰企料", "小扇小锁料"].includes(name)) {
       return name.replace("小扇", "");
     }
@@ -811,22 +810,23 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async addKwpz(component: CadItemComponent<MenjiaoCadItemInfo>) {
-    const {cad} = component;
     const {key1} = component.customInfo;
     const suanliaoDataParams = this.key1Infos[key1].suanliaoDataParams;
-    const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {...suanliaoDataParams, 名字: this.getTableCadName(cad)});
+    const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {
+      ...suanliaoDataParams,
+      名字: this.getTableCadName(component.cadName)
+    });
     if (response) {
       this.getSuanliaoTables(key1)?.updateKlkwpzTable();
     }
   }
 
   async addKlcs(component: CadItemComponent<MenjiaoCadItemInfo>) {
-    const {cad} = component;
     const {key1} = component.customInfo;
     const suanliaoDataParams = this.key1Infos[key1].suanliaoDataParams;
     const response = await this.http.mongodbInsert("kailiaocanshu", {
       ...suanliaoDataParams,
-      名字: this.getTableCadName(cad) + "中空参数",
+      名字: this.getTableCadName(component.cadName) + "中空参数",
       分类: "切中空"
     });
     if (response) {

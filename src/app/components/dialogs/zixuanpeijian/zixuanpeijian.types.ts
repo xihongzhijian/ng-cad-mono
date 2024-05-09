@@ -153,3 +153,7 @@ export interface CalcZxpjResult {
   门扇布局大小?: ObjectOf<Formulas>;
   error?: SuanliaoCalcError;
 }
+
+export interface LingsanCadItemInfo {
+  index: number;
+}

@@ -3,7 +3,7 @@
   flex-direction: column;
   align-items: center;
   padding: 5px;
-  width: var(--item-width);
+  width: calc(var(--cad-image-width) + 15px);
 
   > :not(:last-child) {
     margin-bottom: 5px;

@@ -198,19 +198,14 @@
             <div class="lingsan-cads">
               @for (item of lingsanCads[lingsanCadType]; track i; let i = $index) {
                 @if (!item.hidden) {
-                  <div class="lingsan-cad" [class.active]="item.active">
-                    <app-cad-image [id]="item.data.id" (click)="addLingsanItem(lingsanCadType, i)" />
-                    <div class="flex-row">
-                      <button mat-button color="primary" (click)="copyLingsanCad(lingsanCadType, i)">复制</button>
-                      <button mat-button color="primary" (click)="openLingsanCad(lingsanCadType, i)">编辑</button>
-                      <button mat-button color="primary" (click)="deleteLingsanCad(lingsanCadType, i)">删除</button>
-                    </div>
-                    <div class="title flex-row flex-110">
-                      <div class="name text-ellipsis" [matTooltip]="item.data.name" matTooltipPosition="above">
-                        {{ item.data.name }}
-                      </div>
-                    </div>
-                  </div>
+                  <app-cad-item
+                    [cad]="item.data"
+                    [buttons]="lingsanCadItemButtons"
+                    [customInfo]="{index: i}"
+                    [shujuyaoqiu]="getCadYaoqiu()"
+                    [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
+                    (click)="addLingsanItem(lingsanCadType, i)"
+                  ></app-cad-item>
                 }
               }
             </div>
