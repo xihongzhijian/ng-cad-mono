@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {ActivatedRoute, Params, Router, UrlCreationOptions} from "@angular/router";
 import {setCadData, unsetCadData} from "@app/cad/cad-data-transform";
 import {getCadPreview, updateCadPreviewImg} from "@app/cad/cad-preview";
-import {Cad数据要求, Cad数据要求Raw, getCad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {Cad数据要求, Cad数据要求Raw} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {
   exportCadData,
@@ -570,16 +570,8 @@ export class AppStatusService {
     if (!forced && this.isCad数据要求ListFetched) {
       return;
     }
-    const fields: (keyof Cad数据要求Raw)[] = [
-      "mingzi",
-      "cadtanchuangxiugaishuxing",
-      "xianduantanchuangxiugaishuxing",
-      "tianjiahuodaorucadyaoqiu",
-      "xuanzhongcadyuchuli",
-      "daorucadpeizhi"
-    ];
-    const cad数据要求Raws = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu", fields});
-    this.cad数据要求List = cad数据要求Raws.map(getCad数据要求);
+    const cad数据要求Raws = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu"});
+    this.cad数据要求List = cad数据要求Raws.map((v) => new Cad数据要求(v));
     this.isCad数据要求ListFetched = true;
   }
 

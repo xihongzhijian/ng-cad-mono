@@ -181,6 +181,12 @@
             <app-input [info]="lingsanCadsSearchInput" style="width: 100px; flex: 1 1 0"></app-input>
             <button mat-raised-button [color]="isEditingFenlei ? 'accent' : 'primary'" (click)="editFenlei()">编辑配件分类</button>
             <button mat-raised-button color="primary" (click)="sortFenlei()">编辑分类排序</button>
+            @if (getCadYaoqiu()?.["有帮助文档"]) {
+              <button mat-raised-button color="primary" (click)="getCadYaoqiu()?.['打开帮助文档']()">帮助文档</button>
+            }
+            @if (getCadYaoqiu()?.["有导入参考dxf模板"]) {
+              <button mat-raised-button color="primary" (click)="getCadYaoqiu()?.['下载导入参考dxf模板']()">下载导入cad模板</button>
+            }
             <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
             <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
             <button mat-raised-button color="primary" (click)="step3Refresh()">刷新</button>

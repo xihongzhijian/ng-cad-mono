@@ -1,5 +1,6 @@
 export interface DownloadOptions {
   filename?: string;
+  noNewTab?: boolean;
 }
 
 export const downloadByString = (content: string, options?: DownloadOptions) => {
@@ -13,11 +14,14 @@ export const downloadByBlob = (blob: Blob, options?: DownloadOptions) => {
 };
 
 export const downloadByUrl = (url: string, options?: DownloadOptions) => {
-  const {filename} = options || {};
+  const {filename, noNewTab} = options || {};
   const link = document.createElement("a");
   link.download = filename || "";
   link.style.display = "none";
   link.href = url;
+  if (!noNewTab) {
+    link.target = "_blank";
+  }
   link.click();
 };
 

@@ -1295,8 +1295,12 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
   }
 
+  getCadYaoqiu() {
+    return this.status.getCad数据要求(this.lingsanCadType);
+  }
+
   async openImportPage() {
-    const yaoqiu = this.status.getCad数据要求(this.lingsanCadType);
+    const yaoqiu = this.getCadYaoqiu();
     const {xinghao} = this.data?.lingsanOptions || {};
     openImportPage(this.status, {yaoqiu, xinghao, lurushuju: true});
     if (await this.message.newTabConfirm()) {

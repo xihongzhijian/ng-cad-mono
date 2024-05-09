@@ -8,6 +8,7 @@ import {setGlobal} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {openCadListDialog} from "@app/components/dialogs/cad-list/cad-list.component";
+import {CadListInput} from "@app/components/dialogs/cad-list/cad-list.types";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadData} from "@lucilor/cad-viewer";
@@ -300,8 +301,14 @@ export class TongyongshujuDialogComponent implements OnInit {
       return;
     }
     const yaoqiu = this.getShujuyaoqiu(item);
+    let fixedSearch: CadListInput["fixedSearch"];
+    if (yaoqiu?.选择CAD弹窗筛选数据要求) {
+      fixedSearch = {$where: yaoqiu.选择CAD弹窗筛选数据要求};
+    } else {
+      fixedSearch = {分类: item.cadyaoqiu};
+    }
     const result = await openCadListDialog(this.dialog, {
-      data: {collection: "cad", selectMode: "multiple", fixedSearch: {分类: item.cadyaoqiu}, yaoqiu}
+      data: {collection: "cad", selectMode: "multiple", fixedSearch, yaoqiu}
     });
     if (result) {
       const {collection} = this;

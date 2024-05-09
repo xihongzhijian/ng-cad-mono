@@ -526,7 +526,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       const {cad} = this;
       if (cad?.json?.zhankai && cad.json.zhankai[0]) {
         const zhankai = cad.json.zhankai[0];
-        return `${zhankai.zhankaikuan} × ${zhankai.zhankaigao} = ${zhankai.shuliang}`;
+        return `${zhankai.zhankaikuan || ""} × ${zhankai.zhankaigao || ""} = ${zhankai.shuliang || ""}`;
       }
     }
     return "";

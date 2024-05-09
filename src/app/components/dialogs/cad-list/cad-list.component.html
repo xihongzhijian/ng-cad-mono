@@ -2,7 +2,7 @@
   @if (data.source) {
     <div class="flex-110"></div>
   } @else {
-    <mat-form-field style="flex: 0 0 150px">
+    <mat-form-field style="flex: 0 1 150px">
       <mat-label>搜索类型</mat-label>
       <mat-select name="search-field" [(ngModel)]="searchField">
         <mat-option value="_id">ID</mat-option>
@@ -25,6 +25,12 @@
     <button mat-raised-button color="primary" (click)="advancedSearch()">高级搜索</button>
     <button mat-raised-button color="primary" (click)="search()">刷新</button>
     <button mat-raised-button color="primary" (click)="addCad()">添加</button>
+    @if (data.yaoqiu?.["有帮助文档"]) {
+      <button mat-raised-button color="primary" (click)="data.yaoqiu?.['打开帮助文档']()">帮助文档</button>
+    }
+    @if (data.yaoqiu?.["有导入参考dxf模板"]) {
+      <button mat-raised-button color="primary" (click)="data.yaoqiu?.['下载导入参考dxf模板']()">下载导入cad模板</button>
+    }
     <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
     <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
   }
@@ -51,31 +57,6 @@
   <ng-scrollbar>
     <div class="cads items no-items-per-row add-empty-msg">
       @for (item of pageData; track i; let i = $index) {
-        <!-- <div class="item">
-          <div class="toolbar" (click)="clickItem(i)">
-            <mat-checkbox [checked]="item.checked" [disabled]="data.selectMode === 'none'"> </mat-checkbox>
-            <div class="text long link" [matTooltip]="item.data.name">{{ item.data.name }}</div>
-          </div>
-          <app-cad-image class="link" [id]="item.data.id" [width]="width" [height]="height" (click)="clickItem(i)"></app-cad-image>
-          <div class="toolbar">
-            <button mat-button color="primary" (click)="editCad(i)">编辑</button>
-            <button mat-button color="primary" (click)="copyCad(i)">复制</button>
-            <button mat-button color="primary" (click)="deleteCad(i)">删除</button>
-          </div>
-          @if (!data.hideCadInfo) {
-            <div class="details flex-column">
-              <div class="title">选项</div>
-              @for (item2 of item.data.options | keyvalue: returnZero; track $index) {
-                <div class="text long" [matTooltip]="item2.key + ': ' + item2.value">{{ item2.key }}: {{ item2.value }}</div>
-              }
-              <mat-divider></mat-divider>
-              <div class="title">条件</div>
-              @for (c of item.data.conditions; track $index) {
-                <div class="text long" [matTooltip]="c">{{ c }}</div>
-              }
-            </div>
-          }
-        </div> -->
         <app-cad-item
           [cad]="item.data"
           [buttons]="cadItemButtons"
