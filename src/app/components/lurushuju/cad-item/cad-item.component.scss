@@ -25,7 +25,6 @@
 
   .cad {
     margin: 0;
-    width: calc(var(--cad-image-width) + 5px);
   }
 
   .divider {
@@ -45,7 +44,7 @@
 
   .cad-info {
     align-items: flex-start;
-    width: 100%;
+    width: var(--cad-image-widt) h;
 
     .key {
       flex: 0 0 auto;

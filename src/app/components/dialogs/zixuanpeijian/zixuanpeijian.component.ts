@@ -19,6 +19,7 @@ import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-inf
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {toFixed} from "@app/utils/func";
 import {openExportPage} from "@app/views/export/export.utils";
+import {ImportCache} from "@app/views/import/import.types";
 import {openImportPage} from "@app/views/import/import.utils";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {Debounce} from "@decorators/debounce";
@@ -1272,10 +1273,15 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     return this.status.getCad数据要求(this.lingsanCadType);
   }
 
-  async openImportPage() {
-    const yaoqiu = this.getCadYaoqiu();
+  async openImportPage(searchYaoqiu: boolean) {
     const {xinghao} = this.data?.lingsanOptions || {};
-    openImportPage(this.status, {yaoqiu, xinghao, lurushuju: true});
+    const data: ImportCache = {xinghao, lurushuju: true};
+    if (searchYaoqiu) {
+      data.searchYaoqiu = true;
+    } else {
+      data.yaoqiu = this.getCadYaoqiu();
+    }
+    openImportPage(this.status, data);
     if (await this.message.newTabConfirm()) {
       this.step3Refresh();
     }

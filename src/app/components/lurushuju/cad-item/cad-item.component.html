@@ -72,9 +72,13 @@
         @for (item of fentiDialogInput.data | keyvalue: returnZero; track item.key) {
           <div class="fenti-cad toolbar">
             <div>{{ item.key }}:</div>
-            <button mat-raised-button color="primary" appClickStop (click)="selectFentiCad()">
-              {{ item.value ? item.value["名字"] : "不做分体" }}
-            </button>
+            @if (item.value) {
+              <button mat-raised-button color="primary" appClickStop (click)="selectFentiCad()">
+                {{ item.value["名字"] }}
+              </button>
+            } @else {
+              <button mat-button color="primary" appClickStop (click)="selectFentiCad()">不做分体</button>
+            }
           </div>
         }
       </div>

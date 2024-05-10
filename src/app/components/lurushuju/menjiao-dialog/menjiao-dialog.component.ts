@@ -423,7 +423,7 @@ export class MenjiaoDialogComponent implements OnInit {
       // if (component.parentInfo.isZhijianUser) { // TODO
       // eslint-disable-next-line no-constant-condition
       if (true) {
-        const options: InputInfoOptions = componentLrsj.menshans.map((v) => v.mingzi);
+        const options: InputInfoOptions = componentLrsj.menshans.map((v) => ({value: v.name, label: v.label, img: v.img}));
         this.key1Infos[key1].xiaoguotuInputs = xiaoguotuKeys.map<InputInfo>((key) => {
           return {
             type: "select",
@@ -431,6 +431,9 @@ export class MenjiaoDialogComponent implements OnInit {
             options,
             clearable: true,
             model: {data: data[key1], key},
+            optionsDialog: {
+              useLocalOptions: true
+            },
             style: getInfoStyle(6)
           };
         });

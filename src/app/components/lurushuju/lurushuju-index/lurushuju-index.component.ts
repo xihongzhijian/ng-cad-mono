@@ -28,7 +28,7 @@ import {environment} from "@env";
 import {ObjectOf, queryString} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {BancaiListData} from "@modules/http/services/cad-data.service.types";
 import {getTableUpdateData} from "@modules/http/services/cad-data.service.utils";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -66,6 +66,7 @@ import {
 import {
   LurushujuIndexStep,
   LurushujuIndexStepInfo,
+  MenshanOption,
   OptionsAll,
   OptionsAll2,
   ShuruTableData,
@@ -137,7 +138,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   xuanxiangTable = getXuanxiangTable();
   shuruTable = getShuruTable();
   menjiaoTable = getMenjiaoTable();
-  menshans: (TableDataBase & {zuchenghuajian?: string})[] = [];
+  menshans: MenshanOption[] = [];
   huajians: MrbcjfzHuajian[] = [];
   varNames: FormulasEditorComponent["vars"];
   bancaiList?: BancaiListData;
@@ -624,10 +625,13 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!this.xinghao) {
       return;
     }
-    this.menshans = await this.http.queryMySql<(typeof this.menshans)[number]>({
-      table: "p_menshan",
-      fields: ["vid", "mingzi", "zuchenghuajian"]
-    });
+    this.menshans =
+      (
+        await this.http.getOptions<MenshanOption>({
+          name: "p_menshan",
+          fields: ["zuchenghuajian"]
+        })
+      )?.data || [];
     let gongyi = this.xinghao.产品分类[this.fenleiName].find((v) => v.名字 === this.gongyiName);
     if (!gongyi) {
       this.gongyi = null;
@@ -1347,7 +1351,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         xiaoguotuValues.add(value);
       }
     }
-    const menshans = this.menshans.filter((v) => xiaoguotuValues.has(v.mingzi));
+    const menshans = this.menshans.filter((v) => xiaoguotuValues.has(v.name));
     const huajianIds = this.getHuajianIds(menshans);
     return this.huajians.filter((v) => huajianIds.has(v.vid));
   }

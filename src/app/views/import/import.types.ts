@@ -6,6 +6,7 @@ export type ImportComponentConfig = Record<ImportComponentConfigName, boolean>;
 
 export interface ImportCache {
   yaoqiu?: Cad数据要求;
+  searchYaoqiu?: boolean;
   xinghao?: string;
   lurushuju?: boolean;
 }

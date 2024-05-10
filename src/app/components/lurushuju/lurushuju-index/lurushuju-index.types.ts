@@ -48,3 +48,7 @@ export interface XinghaoDataList<T> {
 export type XinghaoMenchuangs = XinghaoDataList<XinghaoMenchuang>;
 export type XinghaoGongyis = XinghaoDataList<XinghaoGongyi>;
 export type XinghaoXinghaos = XinghaoDataList<XinghaoData>;
+
+export interface MenshanOption extends OptionsDataData {
+  zuchenghuajian?: string;
+}

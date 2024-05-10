@@ -49,8 +49,8 @@ export interface GetOptionsParams {
   nameField?: string;
 }
 
-export interface OptionsData {
-  data: OptionsDataData[];
+export interface OptionsData<T extends OptionsDataData = OptionsDataData> {
+  data: T[];
   count: number;
 }
 

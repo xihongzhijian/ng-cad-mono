@@ -189,7 +189,8 @@
                 下载导入cad模板
               </button>
             }
-            <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
+            <button mat-raised-button color="primary" (click)="openImportPage(false)">导入CAD</button>
+            <button mat-raised-button color="primary" (click)="openImportPage(true)">保留分类导入CAD</button>
             <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
             <button mat-raised-button color="primary" (click)="step3Refresh()">刷新</button>
             <button mat-raised-button color="primary" (click)="step3Add()">添加</button>

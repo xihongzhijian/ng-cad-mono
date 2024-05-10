@@ -188,7 +188,7 @@ export class CadDataService extends HttpService {
     return null;
   }
 
-  async getOptions(params: GetOptionsParams, httpOptions?: HttpOptions) {
+  async getOptions<T extends OptionsDataData = OptionsDataData>(params: GetOptionsParams, httpOptions?: HttpOptions) {
     const postData: ObjectOf<any> = {...params};
     if (params.data instanceof CadData) {
       delete postData.data;
@@ -198,11 +198,11 @@ export class CadDataService extends HttpService {
       postData.xuanxiang = exportData.options;
       postData.tiaojian = exportData.conditions;
     }
-    const result = await this.getDataAndCount<OptionsDataData[]>("ngcad/getOptions", postData, httpOptions);
+    const result = await this.getDataAndCount<T[]>("ngcad/getOptions", postData, httpOptions);
     if (result && !Array.isArray(result.data)) {
       result.data = [];
     }
-    return result as OptionsData | null;
+    return result as OptionsData<T> | null;
   }
 
   async removeBackup(name: string, time: number) {
