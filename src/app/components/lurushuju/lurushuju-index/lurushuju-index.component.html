@@ -95,7 +95,7 @@
     </div>
     <ng-scrollbar style="width: 100%">
       <div class="xinghaos items no-items-per-row">
-        @for (xinghao of xinghaos; track xinghao) {
+        @for (xinghao of xinghaos; track $index) {
           @if (!xinghao.hidden) {
             <div class="item">
               <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="enterXinghao(xinghao)"></app-image>

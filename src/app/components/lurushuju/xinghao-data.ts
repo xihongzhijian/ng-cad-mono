@@ -146,7 +146,6 @@ export const get算料数据2 = (raw?: Partial<算料数据2> | null) => {
 
 export interface XinghaoRaw {
   名字: string;
-  所属门窗?: string;
   所属工艺?: string;
   产品分类?: ObjectOf<工艺做法[]>;
   显示产品分类?: string[];

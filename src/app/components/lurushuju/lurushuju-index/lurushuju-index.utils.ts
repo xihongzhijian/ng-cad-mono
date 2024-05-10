@@ -224,9 +224,8 @@ export const getXinghaoData = (raw?: Partial<XinghaoData>): XinghaoData => {
   return {
     vid: 0,
     mingzi: "",
-    menchuang: "",
     gongyi: "",
-    dingdanliucheng: "新工艺",
+    dingdanliucheng: "",
     tingyong: false,
     paixu: -10000,
     tupian: "",

@@ -8,7 +8,17 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl, local, session, setGlobal, splitOptions} from "@app/app.common";
+import {
+  filePathUrl,
+  getBooleanStr,
+  getCopyName,
+  getFilepathUrl,
+  joinOptions,
+  local,
+  session,
+  setGlobal,
+  splitOptions
+} from "@app/app.common";
 import {AboutComponent} from "@components/about/about.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
@@ -205,7 +215,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       xinghaoMenchuang.gongyis = {items: [], count: 0};
       this.xinghaoMenchuangs.items.push(xinghaoMenchuang);
       for (const gongyi of gongyis) {
-        if (Number(gongyi.menchuang) !== menchuang.vid) {
+        const menchuangIds = splitOptions(String(gongyi.menchuang)).map(Number);
+        if (!menchuangIds.includes(menchuang.vid)) {
           continue;
         }
         const xinghaoGongyi = getXinghaoGongyi(gongyi);
@@ -214,11 +225,9 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
     if (xinghaos) {
       for (const xinghao of xinghaos) {
-        const {menchuang, gongyi} = xinghao;
-        const menchuangs = splitOptions(menchuang);
+        const {gongyi} = xinghao;
         const gongyis = splitOptions(gongyi);
-        const menchuangItems = this.xinghaoMenchuangs.items.filter((v) => menchuangs.includes(v.mingzi));
-        for (const menchuangItem of menchuangItems) {
+        for (const menchuangItem of this.xinghaoMenchuangs.items) {
           const gongyiItems = menchuangItem.gongyis?.items.filter((v) => gongyis.includes(v.mingzi));
           for (const gongyiItem of gongyiItems || []) {
             if (!gongyiItem.xinghaos) {
@@ -304,9 +313,19 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!data.算料单模板) {
       data.算料单模板 = this.status.projectConfig.get("新做数据算料单排版默认方案") || "自动排版模板";
     }
+    if (typeof data.是否需要激光开料 !== "boolean") {
+      data.是否需要激光开料 = this.isKailiao;
+    }
+    if (!data.gongyi) {
+      const menchuang = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1];
+      const gongyi = menchuang?.gongyis?.items[menchuang?.gongyis.index ?? -1];
+      if (gongyi) {
+        data.gongyi = gongyi.mingzi;
+      }
+    }
+
     const data2: XinghaoRaw = {
       名字: data.mingzi,
-      所属门窗: data.menchuang,
       所属工艺: data.gongyi,
       订单流程: data.dingdanliucheng,
       算料单模板: data.算料单模板,
@@ -315,11 +334,11 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const mingziOld = data.mingzi;
     const names = this.xinghaos.map((xinghao) => xinghao.mingzi);
     let refreshOptions = false;
-    const getOptionInput = (key1: string, key2: string) => {
+    const getOptionInput = (key1: string, key2: string, multiple?: boolean) => {
       const info: InputInfoSelect = {
         type: "select",
         label: key1,
-        model: {data: data2, key: key2},
+        multiple,
         validators: Validators.required,
         options: this.getOptions(key1),
         optionsDialog: {
@@ -331,6 +350,14 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           }
         }
       };
+      if (multiple && info.optionsDialog) {
+        info.value = splitOptions((data2 as any)[key2]);
+        info.optionsDialog.onChange = (val) => {
+          (data2 as any)[key2] = joinOptions(val.options, "*");
+        };
+      } else {
+        info.model = {data: data2, key: key2};
+      }
       return info;
     };
     const form: InputInfo[] = [
@@ -370,6 +397,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           }
         }
       },
+      getOptionInput("工艺", "所属工艺", true),
       getOptionInput("订单流程", "订单流程"),
       {
         type: "select",
@@ -392,6 +420,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         this._isDataFetched.xinghaoOptionsAll = false;
         await this.getXinghaoOptionsAllIfNotFetched();
       }
+      data.gongyi = data2.所属工艺 || "";
       return {data, data2, mingziOld};
     }
     return null;
