@@ -445,8 +445,12 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (showCadViewer) {
       const containerEl = cadContainer.nativeElement;
       this.cadViewer = this.initCadViewer0("cad", data, containerEl, (data) => {
+        data.info.imgUpdate = true;
         if (!(cad instanceof CadData)) {
-          cad.json.entities = exportCadData(data, true).entities;
+          const exportData = exportCadData(data, true);
+          for (const key of ["entities", "info"] as const) {
+            cad.json[key] = exportData[key];
+          }
         }
       });
     }
