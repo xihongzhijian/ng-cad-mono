@@ -6,6 +6,7 @@ import {LurushujuIndexComponent} from "./lurushuju-index.component";
 export interface XinghaoData extends TableDataBase2 {
   tupian?: string;
   hidden?: boolean;
+  menchuang: string;
   gongyi: string;
   dingdanliucheng?: string;
   算料单模板?: string;

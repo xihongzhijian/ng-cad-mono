@@ -210,6 +210,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const fields = ["vid", "mingzi"];
     const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields});
     const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields: [...fields, "menchuang"]});
+    const iPrev = this.xinghaoMenchuangs.index;
+    const jPrev = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1]?.gongyis?.index;
     this.xinghaoMenchuangs.items = [];
     for (const menchuang of menchuangs) {
       const xinghaoMenchuang = getXinghaoMenchuang(menchuang);
@@ -226,9 +228,11 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
     if (xinghaos) {
       for (const xinghao of xinghaos) {
-        const {gongyi} = xinghao;
+        const {menchuang, gongyi} = xinghao;
+        const menchuangs = splitOptions(menchuang);
         const gongyis = splitOptions(gongyi);
-        for (const menchuangItem of this.xinghaoMenchuangs.items) {
+        const menchuangItems = this.xinghaoMenchuangs.items.filter((v) => menchuangs.includes(v.mingzi));
+        for (const menchuangItem of menchuangItems) {
           const gongyiItems = menchuangItem.gongyis?.items.filter((v) => gongyis.includes(v.mingzi));
           for (const gongyiItem of gongyiItems || []) {
             if (!gongyiItem.xinghaos) {
@@ -239,7 +243,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         }
       }
       this.filterXinghaos();
-      this.clikcXinghaoGongyi(0, 0);
+      this.clikcXinghaoGongyi(iPrev ?? 0, jPrev ?? 0);
     }
   }
 
@@ -317,16 +321,18 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (typeof data.是否需要激光开料 !== "boolean") {
       data.是否需要激光开料 = this.isKailiao;
     }
-    if (!data.gongyi) {
-      const menchuang = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1];
-      const gongyi = menchuang?.gongyis?.items[menchuang?.gongyis.index ?? -1];
-      if (gongyi) {
-        data.gongyi = gongyi.mingzi;
-      }
+    const menchuang = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1];
+    const gongyi = menchuang?.gongyis?.items[menchuang?.gongyis.index ?? -1];
+    if (!data.menchuang && menchuang) {
+      data.menchuang = menchuang.mingzi;
+    }
+    if (!data.gongyi && gongyi) {
+      data.gongyi = gongyi.mingzi;
     }
 
     const data2: XinghaoRaw = {
       名字: data.mingzi,
+      所属门窗: data.menchuang,
       所属工艺: data.gongyi,
       订单流程: data.dingdanliucheng,
       算料单模板: data.算料单模板,
@@ -398,6 +404,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           }
         }
       },
+      getOptionInput("门窗", "所属门窗", true),
       getOptionInput("工艺", "所属工艺", true),
       getOptionInput("订单流程", "订单流程"),
       {
@@ -421,6 +428,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         this._isDataFetched.xinghaoOptionsAll = false;
         await this.getXinghaoOptionsAllIfNotFetched();
       }
+      data.menchuang = data2.所属门窗 || "";
       data.gongyi = data2.所属工艺 || "";
       return {data, data2, mingziOld};
     }
