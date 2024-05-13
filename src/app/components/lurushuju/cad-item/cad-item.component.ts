@@ -353,6 +353,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
 
   async refreshMuban() {
     await this.getMubanData();
+    if (this.mubanData) {
+      this.status.cadImgToUpdate[this.mubanData.id] = {t: Date.now()};
+    }
     await this.initMubanViewer();
   }
 
