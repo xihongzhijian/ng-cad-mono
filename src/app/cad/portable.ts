@@ -1,5 +1,7 @@
 import {getValueString, replaceChars} from "@app/app.common";
+import {AppUser} from "@app/services/app-status.types";
 import {ProjectConfig} from "@app/utils/project-config";
+import {ImportCache} from "@app/views/import/import.types";
 import {
   CadArc,
   CadCircle,
@@ -19,7 +21,7 @@ import {
 } from "@lucilor/cad-viewer";
 import {keysOf, Line, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {difference, intersection, isEqual} from "lodash";
+import {difference, intersection, isEqual, uniqueId} from "lodash";
 import {generateLineTexts2, isShiyitu, showIntersections} from "./utils";
 
 export interface Slgs {
@@ -648,7 +650,7 @@ export class CadPortable {
           const uniqCode = cad.info.唯一码;
           let found = false;
           for (const cad2 of importResult.cads) {
-            const uniqCode2 = this.getUniqCode(cad2.data);
+            const uniqCode2 = this.getUniqCode(cad2.data, null, null);
             if (uniqCode === uniqCode2) {
               found = true;
               toRemove.delete(cad2.data.id);
@@ -912,10 +914,10 @@ export class CadPortable {
     return result;
   }
 
-  static getUniqCode(cad: CadData) {
+  static getUniqCode(cad: CadData, importCache: ImportCache | null, user: AppUser | null) {
     const {name, type} = cad;
     const get = (key: string) => cad.options[key] || "";
-    return [
+    const arr = [
       type,
       get("型号"),
       get("开启"),
@@ -937,7 +939,14 @@ export class CadPortable {
       get("顶框分体"),
       get("配件模块"),
       name
-    ].join("");
+    ];
+    if (importCache?.lurushuju) {
+      arr.push(Date.now().toString() + uniqueId());
+    }
+    if (user) {
+      arr.push(String(user.vid));
+    }
+    return arr.join("");
   }
 
   private static _extractIntersections(cad: CadData) {

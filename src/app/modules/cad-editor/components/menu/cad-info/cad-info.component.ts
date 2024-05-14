@@ -8,6 +8,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatSelectModule} from "@angular/material/select";
 import {激光开料标记线类型} from "@app/cad/utils";
+import {CadPoints} from "@app/services/app-status.types";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
 import {openKlkwpzDialog} from "@components/dialogs/klkwpz-dialog/klkwpz-dialog.component";
 import {
@@ -26,7 +27,7 @@ import {Subscribed} from "@mixins/subscribed.mixin";
 import {Utils} from "@mixins/utils.mixin";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {AppStatusService, CadPoints} from "@services/app-status.service";
+import {AppStatusService} from "@services/app-status.service";
 import {CadStatusIntersection, CadStatusSelectBaseline, CadStatusSelectJointpoint} from "@services/cad-status";
 import {isEqual} from "lodash";
 import {InputComponent} from "../../../../input/components/input.component";

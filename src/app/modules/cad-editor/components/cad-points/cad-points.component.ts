@@ -1,7 +1,8 @@
 import {Component, OnInit} from "@angular/core";
+import {CadPoints} from "@app/services/app-status.types";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {AppConfigService} from "@services/app-config.service";
-import {AppStatusService, CadPoints} from "@services/app-status.service";
+import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
 
 @Component({

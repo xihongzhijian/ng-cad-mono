@@ -19,7 +19,7 @@ import {
   validateLines
 } from "@app/cad/utils";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
-import {getXinghaoQuery, SuanliaoDataParams} from "@components/lurushuju/xinghao-data";
+import {getXinghaoQuery} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {
   CadData,
@@ -35,7 +35,6 @@ import {
   setLinesLength
 } from "@lucilor/cad-viewer";
 import {FileSizeOptions, getFileSize, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
-import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -45,6 +44,7 @@ import {clamp, differenceWith} from "lodash";
 import {BehaviorSubject, Subject} from "rxjs";
 import {local, remoteHost, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
+import {AppUser, CadPoints, OpenCadOptions} from "./app-status.types";
 import {CadStatus, CadStatusNormal} from "./cad-status";
 
 const 合型板示意图 = new CadData();
@@ -79,6 +79,7 @@ export class AppStatusService {
   saveCadLocked$ = new BehaviorSubject<boolean>(false);
   cadPoints$ = new BehaviorSubject<CadPoints>([]);
   setProject$ = new Subject<void>();
+  user$ = new BehaviorSubject<AppUser | null>(null);
   isAdmin$ = new BehaviorSubject<boolean>(false);
   updateTimeStamp$ = new BehaviorSubject<number>(-1);
   zhewanLengths$ = new BehaviorSubject<[number, number]>([1, 3]);
@@ -153,11 +154,14 @@ export class AppStatusService {
       if (action) {
         this.config.noUser = true;
       } else {
-        const response = await this.http.get<boolean>("ngcad/isAdmin", {timeStamp: new Date().getTime()}, {silent: true});
+        const response = await this.http.get<AppUser>("ngcad/getUser", {timeStamp: new Date().getTime()}, {silent: true});
         if (!response) {
           this.http.offlineMode = true;
         }
-        this.isAdmin$.next(response?.data === true);
+        if (response?.data) {
+          this.user$.next(response.data);
+          this.isAdmin$.next(response.data.isAdmin);
+        }
         await this.config.getUserConfig();
       }
       const updateTimeStamp = await this.getUpdateTimeStamp();
@@ -582,30 +586,4 @@ export class AppStatusService {
     }
     return result;
   }
-}
-
-export interface Loader {
-  id: string;
-  start: boolean;
-  text?: string;
-}
-
-export type CadPoints = {x: number; y: number; active: boolean; lines: string[]}[];
-
-export interface CadComponentsStatus {
-  selected: CadData[];
-  mode: "single" | "multiple";
-  selectable: boolean;
-}
-
-export interface OpenCadOptions {
-  data?: CadData;
-  collection?: CadCollection;
-  center?: boolean;
-  beforeOpen?: (data: CadData) => any;
-  isLocal?: boolean;
-  isDialog?: boolean;
-  suanliaogongshiInfo?: SuanliaogongshiInfo;
-  suanliaoTablesInfo?: {params: SuanliaoDataParams};
-  extraData?: Partial<CadData>;
 }

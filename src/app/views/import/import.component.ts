@@ -369,23 +369,6 @@ export class ImportComponent extends Utils() implements OnInit {
     return finish(true, status, `导入结束, ${total - skipped}个成功(共${total}个)`);
   }
 
-  private _getCadMd5(cad: CadData) {
-    const options: [string, string[]][] = [];
-    const optionKeys = Object.keys(cad.options).sort();
-    optionKeys.forEach((key) => {
-      options.push([key, CadPortable.splitOptionValue(cad.options[key]).sort()]);
-    });
-    return md5(
-      JSON.stringify({
-        name: cad.name,
-        type: cad.type,
-        type2: cad.type2,
-        conditions: cad.conditions.sort(),
-        options
-      })
-    );
-  }
-
   private _getSlgsMd5(slgs: Slgs) {
     const options: [string, string[]][] = [];
     const optionKeys = Object.keys(slgs.选项).sort();
@@ -420,12 +403,13 @@ export class ImportComponent extends Utils() implements OnInit {
       let uniqCode = data.info.唯一码;
       if (!uniqCode) {
         if (addUniqCode) {
+          this.status.isAdmin$;
           if (isXinghao) {
-            v.data.info.唯一码 = CadPortable.getUniqCode(v.data);
+            v.data.info.唯一码 = CadPortable.getUniqCode(v.data, this.importCache, this.status.user$.value);
           } else {
             const 唯一码 = await this.http.getData<string>(
               "ngcad/generateUniqCode",
-              {uniqCode: CadPortable.getUniqCode(v.data)},
+              {uniqCode: CadPortable.getUniqCode(v.data, this.importCache, this.status.user$.value)},
               httpOptions
             );
             if (唯一码) {
@@ -491,24 +475,6 @@ export class ImportComponent extends Utils() implements OnInit {
     this.slgses = slgses;
     this.xinghaoInfo = xinghaoInfo;
 
-    const cadMd5Map: ObjectOf<CadInfo[]> = {};
-    cads.forEach((cad) => {
-      const md5Str = this._getCadMd5(cad.data);
-      if (cadMd5Map[md5Str]) {
-        cadMd5Map[md5Str].push(cad);
-      } else {
-        cadMd5Map[md5Str] = [cad];
-      }
-    });
-    for (const md5Str in cadMd5Map) {
-      if (cadMd5Map[md5Str].length > 1) {
-        this.hasError = true;
-        const uniqCodes = cadMd5Map[md5Str].map((v) => v.data.info.唯一码);
-        cadMd5Map[md5Str].forEach((cad) => {
-          cad.errors.push(`数据重复: ${uniqCodes.filter((v) => v !== cad.data.info.唯一码).join(", ")}`);
-        });
-      }
-    }
     const slgsMd5Map: ObjectOf<SlgsInfo[]> = {};
     slgses.forEach((slgs) => {
       const md5Str = this._getSlgsMd5(slgs.data);
@@ -584,6 +550,20 @@ export class ImportComponent extends Utils() implements OnInit {
       }
     }
 
+    for (const cad of this.cads) {
+      if (cad.errors.length > 0) {
+        this.hasError = true;
+        if (this.sourceCad) {
+          const sourceCadInfo = this._sourceCadMap.cads[cad.data.id];
+          const mtext = new CadMtext();
+          mtext.text = cad.errors.join("\n");
+          mtext.setColor("red");
+          mtext.layer = this._errorMsgLayer;
+          mtext.insert.set(sourceCadInfo.rect.left, sourceCadInfo.rect.bottom - 10);
+          this.sourceCad.entities.add(mtext);
+        }
+      }
+    }
     this.cadsParsed = true;
   }
 
@@ -643,7 +623,7 @@ export class ImportComponent extends Utils() implements OnInit {
     CadPortable.addLineId(data);
 
     data.name = data.name.replaceAll("-", "_");
-    if (/^\d+/.test("name")) {
+    if (/^\d+/.test(data.name)) {
       data.name = "_" + data.name;
     } else if (!this._cadNameRegex.test(data.name) && !cad.skipErrorCheck.has("名字")) {
       cad.errors.push("CAD名字只能是：中文、英文字母、数字、下划线");
@@ -764,19 +744,6 @@ export class ImportComponent extends Utils() implements OnInit {
       if (e.gongshi.match(/[,.;，。；]/)) {
         cad.errors.push(`线公式不能包含逗号、句号或分号`);
         break;
-      }
-    }
-
-    if (cad.errors.length > 0) {
-      this.hasError = true;
-      if (this.sourceCad) {
-        const sourceCadInfo = this._sourceCadMap.cads[data.id];
-        const mtext = new CadMtext();
-        mtext.text = cad.errors.join("\n");
-        mtext.setColor("red");
-        mtext.layer = this._errorMsgLayer;
-        mtext.insert.set(sourceCadInfo.rect.left, sourceCadInfo.rect.bottom - 10);
-        this.sourceCad.entities.add(mtext);
       }
     }
   }

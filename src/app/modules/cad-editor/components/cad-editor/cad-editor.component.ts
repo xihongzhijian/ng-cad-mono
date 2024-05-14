@@ -9,6 +9,7 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
 import {openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
+import {OpenCadOptions} from "@app/services/app-status.types";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
@@ -18,7 +19,7 @@ import {CadConsoleComponent} from "@modules/cad-console/components/cad-console/c
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
-import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
+import {AppStatusService} from "@services/app-status.service";
 import {CadStatusAssemble, CadStatusSplit} from "@services/cad-status";
 import {debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";

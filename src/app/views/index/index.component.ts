@@ -1,5 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
+import {OpenCadOptions} from "@app/services/app-status.types";
 import {getXinghaoQuery} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {log} from "@lucilor/utils";
@@ -7,7 +8,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
-import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
+import {AppStatusService} from "@services/app-status.service";
 import {CadEditorComponent} from "../../modules/cad-editor/components/cad-editor/cad-editor.component";
 
 @Component({
