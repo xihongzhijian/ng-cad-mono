@@ -34,7 +34,7 @@ import {keysOf, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad, QueryMongodbParams} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {HttpOptions} from "@modules/http/services/http.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -79,7 +79,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input() buttons2: CadItemButton<T>[] = [];
   @Input({required: true}) customInfo!: T;
-  @Input({required: true}) shujuyaoqiu: Cad数据要求 | undefined;
+  @Input({required: true}) yaoqiu: Cad数据要求 | undefined;
   @Input() fentiDialogInput?: FentiCadDialogInput;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
@@ -165,12 +165,23 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     this.cadViewer?.center();
   }
 
-  async onlineFetch() {
-    const {isOnline} = this;
+  async onlineFetch(compact = false) {
+    const {isOnline, yaoqiu} = this;
     if (!isOnline || isOnline.isFetched) {
       return;
     }
-    const data = (await this.http.queryMongodb<HoutaiCad>({collection: isOnline.collection || "cad", where: {_id: this.cadId}}))[0];
+    const params: QueryMongodbParams = {collection: isOnline.collection || "cad", where: {_id: this.cadId}};
+    if (compact && yaoqiu) {
+      const fields: string[] = [];
+      for (const {cadKey} of yaoqiu.CAD弹窗修改属性) {
+        if (cadKey) {
+          fields.push(`json.${cadKey}`);
+        }
+      }
+      // fixme
+      // params.fields = fields;
+    }
+    const data = (await this.http.queryMongodb<HoutaiCad>(params))[0];
     if (data) {
       if (this.cad instanceof CadData) {
         Object.assign(this.cad, new CadData(data.json));
@@ -230,7 +241,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       }
       data = new CadData(dataRaw);
     }
-    const form = getCadInfoInputs2(this.shujuyaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status, true);
+    const form = getCadInfoInputs2(this.yaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status, true);
     let title = "编辑CAD";
     const name = data.name;
     if (name) {
@@ -449,7 +460,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (!cad || !cadContainer) {
       return;
     }
-    await this.onlineFetch();
+    await this.onlineFetch(!showCadViewer);
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     this.cadData = data;
     generateLineTexts2(data);

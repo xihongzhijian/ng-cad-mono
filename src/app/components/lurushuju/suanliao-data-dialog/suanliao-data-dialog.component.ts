@@ -52,7 +52,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
   cadItemButtons: CadItemButton<SuanliaoDataCadItemInfo>[];
   mubanExtraData: CadItemComponent["mubanExtraData"] = {};
   openCadOptions: RequiredKeys<OpenCadOptions, "suanliaogongshiInfo">;
-  cadShujuyaoqiu: CadItemComponent["shujuyaoqiu"];
+  cadShujuyaoqiu: CadItemComponent["yaoqiu"];
   suanliaoCadsSearch: InputInfo;
   hiddenSuanliaoCads: number[] = [];
   isSuanliaoCadReversed = true;

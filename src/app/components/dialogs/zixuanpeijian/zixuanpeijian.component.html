@@ -197,17 +197,21 @@
           </div>
           <ng-scrollbar #lingsanLeftScrollbar>
             <div class="lingsan-cads">
-              @for (item of lingsanCads[lingsanCadType]; track i; let i = $index) {
-                @if (!item.hidden) {
-                  <app-cad-item
-                    [cad]="item.data"
-                    [buttons]="lingsanCadItemButtons"
-                    [customInfo]="{index: i}"
-                    [shujuyaoqiu]="getCadYaoqiu()"
-                    [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
-                    [events]="{clickBlank: addLingsanItem.bind(this), clickAll: onLingsanItemClickAll.bind(this)}"
-                    [class.active]="item.active"
-                  ></app-cad-item>
+              @for (item of lingsanCads | keyvalue; track $index) {
+                @if (item.key === lingsanCadType) {
+                  @for (item of item.value; track i; let i = $index) {
+                    @if (!item.hidden) {
+                      <app-cad-item
+                        [cad]="item.data"
+                        [buttons]="lingsanCadItemButtons"
+                        [customInfo]="{index: i}"
+                        [yaoqiu]="getCadYaoqiu()"
+                        [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
+                        [events]="{clickBlank: addLingsanItem.bind(this), clickAll: onLingsanItemClickAll.bind(this)}"
+                        [class.active]="item.active"
+                      ></app-cad-item>
+                    }
+                  }
                 }
               }
             </div>

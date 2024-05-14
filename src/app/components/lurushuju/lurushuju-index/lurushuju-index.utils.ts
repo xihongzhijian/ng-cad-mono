@@ -101,36 +101,13 @@ export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
           return strs.join("，");
         }
       },
-      {
-        type: "string",
-        field: "选项要求",
-        width: "250px",
-        style: {textAlign: "left"},
-        getString: (value) => {
-          const data = value.选项要求;
-          if (!data) {
-            return "";
-          }
-          const strs = Object.entries(data)
-            .map(([k, v]) => {
-              const valueStr = v
-                .map((v2) => {
-                  return v2.mingzi + (v2.morenzhi ? "（默认）" : "");
-                })
-                .join("，");
-              return `${k}：${valueStr}`;
-            })
-            .filter((v) => v);
-          return strs.join("<br>");
-        }
-      },
       {type: "boolean", field: "停用", width: "60px"},
       {type: "number", field: "排序", width: "60px"},
       {type: "boolean", field: "默认值", width: "60px"},
       {
         type: "button",
         field: "操作",
-        width: "240px",
+        width: "150px",
         stickyEnd: true,
         buttons: [
           {event: "编辑", color: "primary"},

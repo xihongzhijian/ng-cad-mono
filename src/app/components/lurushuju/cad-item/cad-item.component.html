@@ -60,7 +60,7 @@
       }
     </div>
     <div class="cad-info item link" style="align-items: flex-start" (click)="selectable?.onChange(this)" (dblclick)="editCadForm()">
-      @for (item of shujuyaoqiu?.["CAD弹窗修改属性"]; track $index) {
+      @for (item of yaoqiu?.["CAD弹窗修改属性"]; track $index) {
         @if (item.key !== "名字") {
           @if (isCadInfoVisible(item)) {
             <div class="flex-row">
