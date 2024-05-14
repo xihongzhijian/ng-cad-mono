@@ -1,9 +1,8 @@
 import {getArrayString} from "@app/app.common";
-import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
-import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
+import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {
   MenjiaoData,
   OptionsAll,
@@ -65,19 +64,8 @@ export const getShuruTable = (): TableRenderInfo<ShuruTableData> => {
   };
 };
 
-export const getMenjiaoTable = () => {
-  const btnsCol: ColumnInfo<MenjiaoData> = {
-    type: "button",
-    field: "操作",
-    width: "240px",
-    buttons: [
-      {event: "编辑", color: "primary"},
-      {event: "编辑排序", color: "primary"},
-      {event: "复制", color: "primary"},
-      {event: "删除", color: "primary"}
-    ]
-  };
-  const reuslt: TableRenderInfo<MenjiaoData> = {
+export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
+  return {
     noCheckBox: true,
     columns: [
       {type: "string", field: "名字", width: "180px", name: "门铰锁边铰边"},
@@ -138,7 +126,19 @@ export const getMenjiaoTable = () => {
       },
       {type: "boolean", field: "停用", width: "60px"},
       {type: "number", field: "排序", width: "60px"},
-      {type: "boolean", field: "默认值", width: "60px"}
+      {type: "boolean", field: "默认值", width: "60px"},
+      {
+        type: "button",
+        field: "操作",
+        width: "240px",
+        stickyEnd: true,
+        buttons: [
+          {event: "编辑", color: "primary"},
+          {event: "编辑排序", color: "primary"},
+          {event: "复制", color: "primary"},
+          {event: "删除", color: "primary"}
+        ]
+      }
     ],
     data: [],
     toolbarButtons: {
@@ -149,12 +149,6 @@ export const getMenjiaoTable = () => {
       inlineTitle: true
     }
   };
-  if (environment.production) {
-    reuslt.columns.push(btnsCol);
-  } else {
-    reuslt.columns.splice(1, 0, btnsCol);
-  }
-  return reuslt;
 };
 
 export const getOptions = (optionsAll: OptionsAll | undefined | null, key: string, setter?: (option: InputInfoOption) => void) => {

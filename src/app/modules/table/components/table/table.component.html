@@ -74,7 +74,7 @@
         </ng-container>
 
         @for (column of info.columns; track colIdx; let colIdx = $index) {
-          <ng-container [matColumnDef]="toTypeString(column.field)" [sticky]="column.sticky">
+          <ng-container [matColumnDef]="toTypeString(column.field)" [sticky]="column.sticky" [stickyEnd]="column.stickyEnd">
             @if (info.sortable) {
               <mat-header-cell *matHeaderCellDef mat-sort-header [class]="getCellClass(column, -1)" [style]="getCellStyle(column)">
                 {{ column.name || column.field }}

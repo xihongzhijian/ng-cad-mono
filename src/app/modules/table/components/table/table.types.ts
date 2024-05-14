@@ -50,6 +50,7 @@ export interface ColumnInfoBase<T> {
   editable?: boolean;
   required?: boolean;
   sticky?: boolean;
+  stickyEnd?: boolean;
   hidden?: boolean;
   style?: csstype.Properties;
   getString?: (value: T) => string;
