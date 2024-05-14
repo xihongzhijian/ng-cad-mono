@@ -205,7 +205,8 @@
                     [customInfo]="{index: i}"
                     [shujuyaoqiu]="getCadYaoqiu()"
                     [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
-                    (click)="addLingsanItem(lingsanCadType, i)"
+                    [events]="{clickBlank: addLingsanItem.bind(this), clickAll: onLingsanItemClickAll.bind(this)}"
+                    [class.active]="item.active"
                   ></app-cad-item>
                 }
               }

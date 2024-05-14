@@ -968,7 +968,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this._updateInputInfos();
   }
 
-  async addLingsanItem(type: string, i: number) {
+  async addLingsanItem(component: CadItemComponent<LingsanCadItemInfo>) {
+    const type = this.lingsanCadType;
+    const {index: i} = component.customInfo;
     const {isEditingFenlei} = this;
     if (this.data?.readonly && !isEditingFenlei) {
       return;
@@ -1386,6 +1388,13 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const {index} = component.customInfo;
     const item = this.lingsanCads[this.lingsanCadType][index];
     item.isFetched = true;
+  }
+
+  onLingsanItemClickAll(component: CadItemComponent<LingsanCadItemInfo>) {
+    const {index} = component.customInfo;
+    for (const [i, item] of this.lingsanCads[this.lingsanCadType].entries()) {
+      item.active = index === i;
+    }
   }
 }
 

@@ -120,7 +120,7 @@ $border: 1px solid lightgray;
     box-sizing: border-box;
   }
 
-  .lingsan-cad {
+  app-cad-item {
     &.active {
       border: 1px solid red;
     }

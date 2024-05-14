@@ -5,6 +5,7 @@ import {
   EventEmitter,
   forwardRef,
   HostBinding,
+  HostListener,
   Input,
   OnChanges,
   OnDestroy,
@@ -39,6 +40,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService, OpenCadOptions} from "@services/app-status.service";
+import csstype from "csstype";
 import {isEmpty} from "lodash";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
@@ -69,7 +71,8 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @HostBinding("style.--cad-image-height") get heightStyle() {
     return `${this.cadHeight}px`;
   }
-  @HostBinding("style") style = {};
+  @HostBinding("style") style: csstype.Properties = {};
+  @HostBinding("class") class: string[] = [];
 
   @Input({required: true}) cad: HoutaiCad | CadData = new CadData();
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
@@ -82,6 +85,10 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input() showMuban?: boolean;
   @Input() isOnline?: {collection?: CadCollection; isFetched?: boolean; afterFetch: (component: CadItemComponent<T>) => void};
   @Input() selectable?: CadItemSelectable<T>;
+  @Input() events?: {
+    clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
+    clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
+  };
   @Output() afterEditCad = new EventEmitter<void>();
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
@@ -626,4 +633,14 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   async copyName() {
     await this.message.copyText(this.cadName, {successText: "已复制名字"});
   }
+
+  @HostListener("click", ["$event"])
+  onHostClick(event: MouseEvent) {
+    this.events?.clickAll?.(this, event);
+    this.events?.clickBlank?.(this, event);
+  }
+
+  onClickStopped = ((event: MouseEvent) => {
+    this.events?.clickAll?.(this, event);
+  }).bind(this);
 }

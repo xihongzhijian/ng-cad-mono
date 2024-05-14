@@ -1,12 +1,15 @@
-import {Directive, HostListener} from "@angular/core";
+import {Directive, HostListener, Input} from "@angular/core";
 
 @Directive({
   selector: "[appClickStop]",
   standalone: true
 })
 export class ClickStopPropagationDirective {
+  @Input() onClickStopped?: (event: MouseEvent) => void;
+
   @HostListener("click", ["$event"])
-  public onClick(event: MouseEvent) {
+  public onHostClick(event: MouseEvent) {
     event.stopPropagation();
+    this.onClickStopped?.(event);
   }
 }
