@@ -74,7 +74,7 @@ export const getCadInfoInputs = (
   status: AppStatusService,
   parseOptionString: boolean
 ) => {
-  const result: InputInfo[] = [];
+  const result: InputInfo<CadData>[] = [];
   const attrGetter =
     <T extends keyof CadData>(key: T) =>
     () => {

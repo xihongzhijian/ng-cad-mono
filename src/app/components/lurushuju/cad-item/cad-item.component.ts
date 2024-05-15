@@ -20,10 +20,11 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {getValueString} from "@app/app.common";
-import {CadPreviewParams} from "@app/cad/cad-preview";
+import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {Cad数据要求, Cad数据要求Item} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
-import {exportCadData, generateLineTexts2, openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
+import {exportCadData, generateLineTexts2, openCadDimensionForm} from "@app/cad/utils";
+import {openCadLineForm} from "@app/modules/cad-editor/components/menu/cad-line/cad-line.utils";
 import {ClickStopPropagationDirective} from "@app/modules/directives/click-stop-propagation.directive";
 import {OpenCadOptions} from "@app/services/app-status.types";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
@@ -223,7 +224,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   }
 
   async editCadForm() {
-    const {cad, isOnline} = this;
+    const {cad, isOnline, yaoqiu} = this;
     if (!cad) {
       return;
     }
@@ -231,7 +232,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     let data: CadData;
     const ignoreKeys = ["entities"];
     if (cad instanceof CadData) {
-      data = cad;
+      data = cad.clone();
     } else {
       const dataRaw: ObjectOf<any> = {};
       for (const key in cad.json) {
@@ -241,7 +242,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       }
       data = new CadData(dataRaw);
     }
-    const form = getCadInfoInputs2(this.yaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status, true);
+    const form = getCadInfoInputs2(yaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status, true);
     let title = "编辑CAD";
     const name = data.name;
     if (name) {
@@ -252,7 +253,13 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       if (data.zhankai[0] && data.zhankai[0].name !== data.name) {
         data.zhankai[0].name = data.name;
       }
-      if (!(cad instanceof CadData)) {
+      if (cad instanceof CadData) {
+        for (const {cadKey} of yaoqiu?.CAD弹窗修改属性 || []) {
+          if (cadKey) {
+            (cad as any)[cadKey] = data[cadKey];
+          }
+        }
+      } else {
         const cad2 = getHoutaiCad(data);
         for (const key of keysOf(cad2)) {
           if (key === "json") {
@@ -431,7 +438,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
         entity = entity.parent;
       }
       if (entity instanceof CadLineLike) {
-        const result = await openCadLineForm(collection, this.message, cadViewer, entity);
+        const result = await openCadLineForm(collection, this.status, this.message, cadViewer, entity);
         if (result) {
           afterDblClickForm(data);
         }
@@ -466,13 +473,23 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     generateLineTexts2(data);
     if (showCadViewer) {
       const containerEl = cadContainer.nativeElement;
-      this.cadViewer = this.initCadViewer0("cad", data, containerEl, (data) => {
-        data.info.imgUpdate = true;
-        if (!(cad instanceof CadData)) {
+      const collection: CadCollection = "cad";
+      this.cadViewer = this.initCadViewer0(collection, data, containerEl, async (data) => {
+        if (!this.isOnline) {
+          data.info.imgUpdate = true;
+        }
+        if (cad instanceof CadData) {
+          Object.assign(cad, data);
+        } else {
           const exportData = exportCadData(data, true);
           for (const key of ["entities", "info"] as const) {
             cad.json[key] = exportData[key];
           }
+        }
+        if (this.isOnline) {
+          const url = await getCadPreview(collection, data);
+          await this.http.setCad({collection: collection, cadData: data, force: true}, true);
+          await this.http.setCadImg(data.id, url, {silent: true});
         }
       });
     }

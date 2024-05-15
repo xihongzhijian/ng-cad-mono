@@ -8,7 +8,7 @@ import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
-import {openCadDimensionForm, openCadLineForm} from "@app/cad/utils";
+import {openCadDimensionForm} from "@app/cad/utils";
 import {OpenCadOptions} from "@app/services/app-status.types";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
@@ -30,6 +30,7 @@ import {CadAssembleComponent} from "../menu/cad-assemble/cad-assemble.component"
 import {CadDimensionComponent} from "../menu/cad-dimension/cad-dimension.component";
 import {CadInfoComponent} from "../menu/cad-info/cad-info.component";
 import {CadLineComponent} from "../menu/cad-line/cad-line.component";
+import {openCadLineForm} from "../menu/cad-line/cad-line.utils";
 import {CadMtextComponent} from "../menu/cad-mtext/cad-mtext.component";
 import {CadSplitComponent} from "../menu/cad-split/cad-split.component";
 import {SubCadsComponent} from "../menu/sub-cads/sub-cads.component";
@@ -260,9 +261,9 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     const collection = this.status.collection$.value;
     const cad = this.status.cad;
     if (entity instanceof CadMtext && entity.parent instanceof CadLineLike) {
-      openCadLineForm(collection, this.message, cad, entity.parent);
+      openCadLineForm(collection, this.status, this.message, cad, entity.parent);
     } else if (entity instanceof CadLineLike) {
-      openCadLineForm(collection, this.message, cad, entity);
+      openCadLineForm(collection, this.status, this.message, cad, entity);
     } else if (entity instanceof CadDimensionLinear) {
       openCadDimensionForm(collection, this.message, cad, entity);
     }

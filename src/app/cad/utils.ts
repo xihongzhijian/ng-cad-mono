@@ -22,7 +22,6 @@ import {
   getLinesDistance,
   intersectionKeys,
   intersectionKeysTranslate,
-  setLinesLength,
   sortLines
 } from "@lucilor/cad-viewer";
 import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, ObjectOf, Point} from "@lucilor/utils";
@@ -609,55 +608,26 @@ export const exportCadData = (data: CadData, hideLineLength: boolean) => {
   return exportData;
 };
 
-export const openCadLineForm = async (collection: CadCollection, message: MessageService, cad: CadViewer, line: CadLineLike) => {
-  const lineLength = Number(line.length.toFixed(2));
-  const isLine = line instanceof CadLine;
-  const form: InputInfo<typeof line>[] = [
-    {type: "number", label: "线长", value: lineLength, readonly: !isLine},
-    {type: "string", label: "名字", model: {data: line, key: "mingzi"}},
-    {type: "string", label: "名字2", model: {data: line, key: "mingzi2"}},
-    {type: "string", label: "公式", model: {data: line, key: "gongshi"}},
-    {type: "string", label: "显示线长", model: {data: line, key: "显示线长"}}
-  ];
-  if (collection === "kailiaocadmuban") {
-    form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});
-  }
-  let title = "编辑线";
-  const name = line.mingzi || line.mingzi2;
-  if (name) {
-    title += `【${name}】`;
-  }
-  const result = await message.form({title, form});
-  if (result) {
-    let toChange = [line];
-    if (isLine && result.线长 !== lineLength) {
-      toChange = cad.data.entities.line;
-      setLinesLength(cad.data, [line], result.线长);
-    }
-    await cad.render(toChange);
-  }
-  return result;
-};
-
 export const openCadDimensionForm = async (
   collection: CadCollection,
   message: MessageService,
   cad: CadViewer,
   dimension: CadDimensionLinear
 ) => {
+  const dimension2 = dimension.clone();
   const form: InputInfo<typeof dimension>[] = [
-    {type: "string", label: "名字", model: {data: dimension, key: "mingzi"}},
+    {type: "string", label: "名字", model: {data: dimension2, key: "mingzi"}},
     {type: "boolean", label: "删除标注", radio: true, value: false},
-    {type: "boolean", label: "隐藏尺寸线", radio: true, value: !!dimension.style.dimensionLine?.hidden},
+    {type: "boolean", label: "隐藏尺寸线", radio: true, value: !!dimension2.style.dimensionLine?.hidden},
     {
       type: "select",
       label: "小数处理",
-      model: {data: dimension, key: "xiaoshuchuli"},
+      model: {data: dimension2, key: "xiaoshuchuli"},
       options: cadDimensionOptions.xiaoshuchuli.values.slice()
     },
-    {type: "number", label: "字体大小", value: dimension.style.text?.size}
+    {type: "number", label: "字体大小", value: dimension2.style.text?.size}
   ];
-  const name = dimension.mingzi;
+  const name = dimension2.mingzi;
   let title = "编辑标注";
   if (name) {
     title += `【${name}】`;
@@ -667,6 +637,7 @@ export const openCadDimensionForm = async (
     if (result.删除标注) {
       cad.remove(dimension);
     } else {
+      Object.assign(dimension, dimension2);
       if (result.隐藏尺寸线) {
         dimension.setStyle({dimensionLine: {hidden: true}});
       }

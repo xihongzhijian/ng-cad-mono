@@ -4,7 +4,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
-import {isLengthTextSizeSetKey, openCadLineForm} from "@app/cad/utils";
+import {isLengthTextSizeSetKey} from "@app/cad/utils";
 import {OpenCadOptions} from "@app/services/app-status.types";
 import {AboutComponent} from "@components/about/about.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
@@ -22,6 +22,7 @@ import {CadStatusNormal} from "@services/cad-status";
 import {isEqual} from "lodash";
 import {map, startWith} from "rxjs";
 import {CadLayerInput, openCadLayerDialog} from "../../dialogs/cad-layer/cad-layer.component";
+import {openCadLineForm} from "../cad-line/cad-line.utils";
 
 @Component({
   selector: "app-toolbar",
@@ -304,7 +305,7 @@ export class ToolbarComponent {
     if (!line) {
       return;
     }
-    await openCadLineForm(this.status.collection$.value, this.message, this.status.cad, line);
+    await openCadLineForm(this.status.collection$.value, this.status, this.message, this.status.cad, line);
   }
 
   async editBbzhmkgz() {
