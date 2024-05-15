@@ -179,6 +179,7 @@
         <div class="flex-column flex-110">
           <div class="btn-group">
             <app-input [info]="lingsanCadsSearchInput" style="width: 100px; flex: 1 1 0"></app-input>
+            <button mat-raised-button [color]="multiDeleting ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
             <button mat-raised-button [color]="isEditingFenlei ? 'accent' : 'primary'" (click)="editFenlei()">编辑配件分类</button>
             <button mat-raised-button color="primary" (click)="sortFenlei()">编辑分类排序</button>
             @if (getCadYaoqiu()?.["有帮助文档"]) {
@@ -197,18 +198,20 @@
           </div>
           <ng-scrollbar #lingsanLeftScrollbar>
             <div class="lingsan-cads">
-              @for (item of lingsanCads | keyvalue; track $index) {
-                @if (item.key === lingsanCadType) {
-                  @for (item of item.value; track i; let i = $index) {
+              @for (obj of lingsanCads | keyvalue; track $index) {
+                @if (obj.key === lingsanCadType) {
+                  @for (item of obj.value; track i; let i = $index) {
                     @if (!item.hidden) {
                       <app-cad-item
+                        class="border"
+                        [class.active]="item.active"
                         [cad]="item.data"
                         [buttons]="lingsanCadItemButtons"
                         [customInfo]="{index: i}"
                         [yaoqiu]="getCadYaoqiu()"
                         [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
                         [events]="{clickBlank: addLingsanItem.bind(this), clickAll: onLingsanItemClickAll.bind(this)}"
-                        [class.active]="item.active"
+                        [selectable]="getLingsanItemSelectable(item)"
                       ></app-cad-item>
                     }
                   }

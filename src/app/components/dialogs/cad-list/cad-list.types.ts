@@ -1,5 +1,6 @@
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
+import {HoutaiCad} from "@app/modules/http/services/cad-data.service.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 
@@ -28,4 +29,11 @@ export type CadListOutput = CadData[];
 
 export interface CadListItemInfo {
   index: number;
+}
+
+export interface CadListPageItem {
+  data: HoutaiCad;
+  checked: boolean;
+  isFetched?: boolean;
+  toDelete?: boolean;
 }

@@ -23,7 +23,7 @@ import {openImportPage} from "@app/views/import/import.utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -34,7 +34,7 @@ import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spin
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
 import {openCadSearchFormDialog} from "../cad-search-form/cad-search-form.component";
 import {getOpenDialogFunc} from "../dialog.common";
-import {CadListInput, CadListItemInfo, CadListOutput, selectModes} from "./cad-list.types";
+import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectModes} from "./cad-list.types";
 
 @Component({
   selector: "app-cad-list",
@@ -65,7 +65,7 @@ export class CadListComponent implements AfterViewInit {
   length = 0;
   pageSizeOptions = [1, 10, 20, 50, 100];
   pageSize = 20;
-  pageData: {data: HoutaiCad; checked: boolean; isFetched?: boolean}[] = [];
+  pageData: CadListPageItem[] = [];
   tableData: any = [];
   displayedColumns = ["select", "mingzi", "wenjian", "create_time", "modify_time"];
   width = 300;
@@ -83,6 +83,7 @@ export class CadListComponent implements AfterViewInit {
   imgCadEmpty = imgCadEmpty;
   cadItemButtons: CadItemButton<CadListItemInfo>[];
   downloadApi = this.http.getUrl("ngcad/downloadFile");
+  multiDeleting = false;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
 
   constructor(
@@ -194,13 +195,13 @@ export class CadListComponent implements AfterViewInit {
     return result;
   }
 
-  search(withOption = false, matchType: "and" | "or" = "and") {
+  async search(withOption = false, matchType: "and" | "or" = "and") {
     if (!this.paginator) {
       return;
     }
     this.paginator.pageIndex = 0;
     const options = withOption ? this.data.options : {};
-    this.getData(this.paginator.pageIndex + 1, options, matchType);
+    await this.getData(this.paginator.pageIndex + 1, options, matchType);
   }
 
   async advancedSearch() {
@@ -407,15 +408,31 @@ export class CadListComponent implements AfterViewInit {
   }
 
   openExportPage() {
-    openExportPage(this.status, {search: this.data.search, lurushuju: true});
+    const ids = this.checkedItems.slice();
+    openExportPage(this.status, {ids, search: this.data.search, lurushuju: true});
+  }
+
+  getItemSelectable(item: CadListPageItem): CadItemComponent<CadListItemInfo>["selectable"] {
+    if (this.multiDeleting) {
+      return {selected: item.toDelete, onChange: this.onSelectChange.bind(this)};
+    } else if (this.data.selectMode !== "none") {
+      return {selected: item.checked, onChange: this.onSelectChange.bind(this)};
+    }
+    return undefined;
   }
 
   onSelectChange(component: CadItemComponent<CadListItemInfo>) {
     const {index: i} = component.customInfo;
     const {selectMode} = this.data;
-    if (selectMode === "multiple") {
+    const {multiDeleting} = this;
+    let needsSync = false;
+    if (multiDeleting) {
+      const item = this.pageData[i];
+      item.toDelete = !item.toDelete;
+    } else if (selectMode === "multiple" || multiDeleting) {
       const item = this.pageData[i];
       item.checked = !item.checked;
+      needsSync = true;
     } else if (selectMode === "single") {
       this.checkedItems.length = 0;
       for (const [j, item] of this.pageData.entries()) {
@@ -425,10 +442,26 @@ export class CadListComponent implements AfterViewInit {
           item.checked = false;
         }
       }
-    } else {
-      return;
+      needsSync = true;
     }
-    this.syncCheckedItems();
+    if (needsSync) {
+      this.syncCheckedItems();
+    }
+  }
+
+  async toggleMultiDeleting() {
+    if (this.multiDeleting) {
+      const ids = this.pageData.filter((v) => v.toDelete).map((v) => v.data._id);
+      if (ids.length > 0 && (await this.message.confirm(`是否删除${ids.length}个选中的cad？`))) {
+        if (await this.http.mongodbDelete(this.data.collection, {ids})) {
+          await this.search();
+        }
+      }
+    }
+    this.multiDeleting = !this.multiDeleting;
+    for (const item of this.pageData) {
+      delete item.toDelete;
+    }
   }
 
   afterFetch(component: CadItemComponent<CadListItemInfo>) {

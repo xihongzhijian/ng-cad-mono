@@ -124,10 +124,11 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   _step3Fetched = false;
   cadItemType!: CadItemContext;
 
+  collection: CadCollection = "cad";
   mokuaiInputInfos: MokuaiInputInfos[] = [];
   lingsanInputInfos: CadItemInputInfo[] = [];
   dropDownOptions: {label: string; value: string; customClass?: string}[] = [];
-  lingsanCads: ObjectOf<ZixuanpeijianlingsanCadItem[]> = {};
+  lingsanCads: ObjectOf<ZixuanpeijianlingsanCadItem[] | undefined> = {};
   lingsanCadInfos: Array<{type: string; hidden: boolean}> = [];
   lingsanCadType = "";
   lingsanSortedTypes: string[] | null | undefined;
@@ -158,6 +159,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
   downloadApi = this.http.getUrl("ngcad/downloadFile");
   lingsanCadItemButtons: CadItemButton<LingsanCadItemInfo>[];
+  multiDeleting = false;
 
   get summitBtnText() {
     if (this.data?.stepFixed) {
@@ -419,19 +421,19 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       const {noValidateCads} = this.data || {};
       for (const v of responseData.cads) {
         const data = new CadData(v);
-        const item: ZixuanpeijianlingsanCadItem = {data, hidden: false, isFetched: false, active: false};
+        const item: ZixuanpeijianlingsanCadItem = {data, hidden: false, isFetched: false};
         const type = item.data.type;
         if (!this.lingsanCads[type]) {
           this.lingsanCads[type] = [];
         }
-        this.lingsanCads[type].push(item);
+        this.lingsanCads[type]?.push(item);
       }
       const toRemove: number[] = [];
       for (const [i, item] of this.result.零散.entries()) {
         let found: ZixuanpeijianlingsanCadItem | undefined;
         if (!noValidateCads) {
           for (const type in this.lingsanCads) {
-            found = this.lingsanCads[type].find((v) => v.data.id === item.info.houtaiId);
+            found = this.lingsanCads[type]?.find((v) => v.data.id === item.info.houtaiId);
             if (found) {
               break;
             }
@@ -489,7 +491,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     setCadData(cadData, yaoqiuItems);
     const form = getCadInfoInputs2(yaoqiuItems, cadData, this.dialog, this.status, true);
     const result = await this.message.form<typeof data>(form);
-    console.log(cadData.options.产品分类);
     if (!result) {
       return;
     }
@@ -504,7 +505,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
     const data: ObjectOf<any> = getHoutaiCad(cadData);
     delete data._id;
-    const collection: CadCollection = "cad";
+    const {collection} = this;
     const id = await this.http.mongodbInsert(collection, data);
     if (id) {
       if (await this.message.confirm("是否编辑新的CAD？")) {
@@ -971,12 +972,15 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   async addLingsanItem(component: CadItemComponent<LingsanCadItemInfo>) {
     const type = this.lingsanCadType;
     const {index: i} = component.customInfo;
-    const {isEditingFenlei} = this;
-    if (this.data?.readonly && !isEditingFenlei) {
+    const {isEditingFenlei, multiDeleting} = this;
+    if ((this.data?.readonly && !isEditingFenlei) || multiDeleting) {
       return;
     }
     this.activeLingsanCad(type, i);
-    const item = this.lingsanCads[type][i];
+    const item = this.lingsanCads[type]?.[i];
+    if (!item) {
+      return;
+    }
     if (isEditingFenlei) {
       if (this.result.零散.find((v) => v.info.houtaiId === item.data.id)) {
         return;
@@ -1012,7 +1016,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   activeLingsanCad(type: string, i: number) {
-    for (const [j, item] of this.lingsanCads[type].entries()) {
+    for (const [j, item] of this.lingsanCads[type]?.entries() || []) {
       item.active = i === j;
     }
   }
@@ -1099,7 +1103,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const needle = this.searchLingsanValue;
     for (const type in this.lingsanCads) {
       let count = 0;
-      for (const item of this.lingsanCads[type]) {
+      for (const item of this.lingsanCads[type] || []) {
         item.hidden = !queryStringList(needle, [item.data.name, item.data.type2]);
         if (!item.hidden) {
           count++;
@@ -1357,7 +1361,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   async copyLingsanCad(component: CadItemComponent<LingsanCadItemInfo>) {
     const {index} = component.customInfo;
-    const item = this.lingsanCads[this.lingsanCadType][index];
+    const item = this.lingsanCads[this.lingsanCadType]?.[index];
+    if (!item) {
+      return;
+    }
     const collection = "cad";
     const ids = await this.http.mongodbCopy(collection, [item.data.id]);
     if (!ids || !ids[0]) {
@@ -1375,8 +1382,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   async deleteLingsanCad(component: CadItemComponent<LingsanCadItemInfo>) {
     const {index} = component.customInfo;
-    const item = this.lingsanCads[this.lingsanCadType][index];
-    if (!(await this.message.confirm(`是否确定删除【${item.data.name}】？`))) {
+    const item = this.lingsanCads[this.lingsanCadType]?.[index];
+    if (!item || !(await this.message.confirm(`是否确定删除【${item.data.name}】？`))) {
       return;
     }
     if (await this.http.mongodbDelete("cad", {id: item.data.id})) {
@@ -1386,14 +1393,47 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   afterFetch(component: CadItemComponent<LingsanCadItemInfo>) {
     const {index} = component.customInfo;
-    const item = this.lingsanCads[this.lingsanCadType][index];
+    const item = this.lingsanCads[this.lingsanCadType]?.[index];
+    if (!item) {
+      return;
+    }
     item.isFetched = true;
   }
 
   onLingsanItemClickAll(component: CadItemComponent<LingsanCadItemInfo>) {
     const {index} = component.customInfo;
-    for (const [i, item] of this.lingsanCads[this.lingsanCadType].entries()) {
+    const {multiDeleting} = this;
+    if (multiDeleting) {
+      return;
+    }
+    for (const [i, item] of this.lingsanCads[this.lingsanCadType]?.entries() || []) {
       item.active = index === i;
+    }
+  }
+
+  getLingsanItemSelectable(item: ZixuanpeijianlingsanCadItem): CadItemComponent<LingsanCadItemInfo>["selectable"] {
+    if (this.multiDeleting) {
+      return {selected: item.toDelete, onChange: () => (item.toDelete = !item.toDelete)};
+    }
+    return undefined;
+  }
+
+  async toggleMultiDeleting() {
+    const cads = this.lingsanCads[this.lingsanCadType];
+    if (!cads) {
+      return;
+    }
+    if (this.multiDeleting) {
+      const ids = cads.filter((v) => v.toDelete).map((v) => v.data.id);
+      if (ids.length > 0 && (await this.message.confirm(`是否删除${ids.length}个选中的cad？`))) {
+        if (await this.http.mongodbDelete(this.collection, {ids})) {
+          this.step3Refresh();
+        }
+      }
+    }
+    this.multiDeleting = !this.multiDeleting;
+    for (const item of cads) {
+      delete item.toDelete;
     }
   }
 }

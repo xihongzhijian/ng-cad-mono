@@ -1,6 +1,11 @@
 <div class="name toolbar">
   @if (selectable) {
-    <mat-checkbox [checked]="selectable.isSelected" (change)="selectable.onChange(this)"></mat-checkbox>
+    <mat-checkbox
+      appClickStop
+      [onClickStopped]="onClickStopped"
+      [checked]="selectable.selected"
+      (change)="selectable.onChange(this)"
+    ></mat-checkbox>
   }
   <div class="flex-110 flex-row link" style="justify-content: center; align-items: center" (click)="selectable?.onChange(this)">
     <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="editCadForm()">{{ cadName }}</button>

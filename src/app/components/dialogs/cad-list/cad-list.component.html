@@ -18,6 +18,7 @@
         <mat-icon>search</mat-icon>
       </button>
     </mat-form-field>
+    <button mat-raised-button [color]="multiDeleting ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
     @if (data.options) {
       <button mat-raised-button color="primary" (click)="search(true, 'and')">父级搜索</button>
       <button mat-raised-button color="primary" (click)="search(true, 'or')">父级搜索2</button>
@@ -63,7 +64,7 @@
           [customInfo]="{index: i}"
           [yaoqiu]="data.yaoqiu"
           [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
-          [selectable]="{isSelected: item.checked, onChange: onSelectChange.bind(this)}"
+          [selectable]="getItemSelectable(item)"
         ></app-cad-item>
       }
     </div>

@@ -133,7 +133,9 @@ export interface ZixuanpeijianlingsanCadItem {
   data: CadData;
   hidden: boolean;
   isFetched: boolean;
-  active: boolean;
+  active?: boolean;
+  selected?: boolean;
+  toDelete?: boolean;
 }
 
 export interface CadItemContext {
