@@ -1,6 +1,6 @@
 import {getArrayString} from "@app/app.common";
+import {convertOptions} from "@app/modules/input/components/input.utils";
 import {ObjectOf} from "@lucilor/utils";
-import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {
@@ -142,12 +142,6 @@ export const getOptions = (optionsAll: OptionsAll | undefined | null, key: strin
   });
 };
 
-export const getOptions2 = (options: OptionsDataData[]) => {
-  return options.map<InputInfoOption>((v) => {
-    return {value: v.name, label: v.label, img: v.img};
-  });
-};
-
 export const getOptionInputInfo = (
   optionsAll: OptionsAll2 | undefined | null,
   key: string,
@@ -161,7 +155,7 @@ export const getOptionInputInfo = (
   const info: InputInfoSelect = {
     type: "select",
     label: key,
-    options: getOptions2(optionsInfo.options),
+    options: convertOptions(optionsInfo.options),
     disabled,
     multiple
   };

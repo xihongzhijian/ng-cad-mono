@@ -7,6 +7,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {session, setGlobal} from "@app/app.common";
 import {filterCad, setCadData} from "@app/cad/cad-shujuyaoqiu";
+import {convertOptions} from "@app/modules/input/components/input.utils";
 import {AppStatusService} from "@app/services/app-status.service";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -20,7 +21,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoOptions, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
 import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import csstype from "csstype";
@@ -28,7 +29,7 @@ import {cloneDeep, debounce, isEmpty} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
-import {getOptionInputInfo, getOptions2} from "../lurushuju-index/lurushuju-index.utils";
+import {getOptionInputInfo} from "../lurushuju-index/lurushuju-index.utils";
 import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dialog.component";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
 import {
@@ -214,7 +215,7 @@ export class MenjiaoDialogComponent implements OnInit {
           info.openInNewTab = {
             optionKey: key,
             onOptionsChange: (options) => {
-              info.options = getOptions2(options.data);
+              info.options = convertOptions(options.data);
             }
           };
         }
@@ -423,12 +424,11 @@ export class MenjiaoDialogComponent implements OnInit {
       // if (component.parentInfo.isZhijianUser) { // TODO
       // eslint-disable-next-line no-constant-condition
       if (true) {
-        const options: InputInfoOptions = componentLrsj.menshans.map((v) => ({value: v.name, label: v.label, img: v.img}));
         this.key1Infos[key1].xiaoguotuInputs = xiaoguotuKeys.map<InputInfo>((key) => {
           return {
             type: "select",
             label: key,
-            options,
+            options: convertOptions(componentLrsj.menshans),
             clearable: true,
             model: {data: data[key1], key},
             optionsDialog: {

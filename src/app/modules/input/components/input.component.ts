@@ -19,7 +19,7 @@ import {
   ViewChildren
 } from "@angular/core";
 import {FormControl, FormsModule, ValidationErrors, Validators} from "@angular/forms";
-import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
+import {MatAutocompleteModule, MatAutocompleteSelectedEvent, MatAutocompleteTrigger} from "@angular/material/autocomplete";
 import {MatButtonModule} from "@angular/material/button";
 import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
@@ -237,6 +237,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   errorsKey: ObjectOf<ValidationErrors | null> = {};
   errorsValue: ObjectOf<ValidationErrors | null> = {};
   imgCadEmpty = imgCadEmpty;
+
+  @ViewChild(MatAutocompleteTrigger) matAutocompleteTrigger?: MatAutocompleteTrigger;
+  matAutocompleteDisabled = true;
 
   valueChange$ = new BehaviorSubject<any>(null);
   filteredOptions$ = new BehaviorSubject<InputComponent["options"]>([]);
@@ -1010,6 +1013,15 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   parseObjectString(mode: Parameters<typeof parseObjectString>[2]) {
     parseObjectString(this.objectString, this.value, mode);
+  }
+
+  updateMatAutocompleteDisabled() {
+    const disabled = this.options.length < 1;
+    this.matAutocompleteDisabled = disabled;
+    const {matAutocompleteTrigger: trigger} = this;
+    if (!disabled && trigger && !trigger.panelOpen) {
+      trigger.openPanel();
+    }
   }
 }
 

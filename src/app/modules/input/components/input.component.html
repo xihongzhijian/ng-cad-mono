@@ -19,14 +19,13 @@
             [cdkAutosizeMaxRows]="info.textarea.autosize?.maxRows"
             [readonly]="info.readonly"
             [disabled]="info.disabled || false"
-            [autocomplete]="info.autocomplete || ''"
+            [matAutocomplete]="auto"
             [(ngModel)]="value"
             [name]="name"
             type="text"
             (change)="onChange()"
             (input)="onInput()"
             (blur)="onBlur()"
-            [matAutocomplete]="auto"
             [placeholder]="info.placeholder || ''"
           ></textarea>
         } @else {
@@ -42,7 +41,10 @@
             (change)="onChange()"
             (input)="onInput()"
             (blur)="onBlur()"
+            (click)="updateMatAutocompleteDisabled()"
             [placeholder]="info.placeholder || ''"
+            [matAutocomplete]="auto"
+            [matAutocompleteDisabled]="matAutocompleteDisabled"
           />
         }
       }

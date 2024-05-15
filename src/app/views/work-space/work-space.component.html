@@ -1,0 +1,44 @@
+<div class="toolbar">
+  <button mat-raised-button color="primary" (click)="refresh()">刷新</button>
+  <button mat-raised-button color="primary" (click)="clear()">清空</button>
+  <button mat-raised-button color="primary" (click)="import()">导入</button>
+  <button mat-raised-button color="primary" (click)="export()">导出</button>
+  <button mat-raised-button [color]="showMoreButtons ? 'accent' : 'primary'" (click)="showMoreButtons = !showMoreButtons">编辑</button>
+  @if (defaultWorkDataFormInfo) {
+    <button mat-raised-button color="primary" (click)="setDefaultWorkData()">保存默认配置</button>
+    <button mat-raised-button color="primary" (click)="unsetDefaultWorkData()">删除默认配置</button>
+  }
+</div>
+
+<ng-scrollbar>
+  <div class="favorites-groups flex-column">
+    @for (i of manager.typesSortedIndexs; track $index) {
+      <div class="favorites-group item">
+        <div class="toolbar">
+          <div class="title">{{ manager.types[i].name }}</div>
+          @if (showMoreButtons) {
+            <button mat-button color="primary" (click)="editType(i)">编辑</button>
+          }
+        </div>
+        <div class="items no-items-per-row">
+          @for (j of manager.favoritesSortedIndexs; track $index) {
+            @if (manager.favorites[j].type === manager.types[i].name) {
+              <div class="favorite-item item border">
+                <div class="toolbar">
+                  <div class="title text link" (click)="openFavorite(j)">{{ manager.favorites[j].xiao }}</div>
+                </div>
+                <div class="desc text link" (click)="openFavorite(j)">{{ manager.favorites[j].tou }}/{{ manager.favorites[j].da }}</div>
+                @if (showMoreButtons) {
+                  <div class="toolbar">
+                    <button mat-button color="primary" (click)="editFavorite(j)">编辑</button>
+                    <button mat-button color="primary" (click)="removeFavorite(j)">删除</button>
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+</ng-scrollbar>

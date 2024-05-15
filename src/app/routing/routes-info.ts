@@ -1,4 +1,5 @@
 import {Route} from "@angular/router";
+import {WorkSpaceComponent} from "@app/views/work-space/work-space.component";
 import {LurushujuIndexComponent} from "@components/lurushuju/lurushuju-index/lurushuju-index.component";
 import {PrintTableComponent} from "@components/print-table/print-table.component";
 import {BackupComponent} from "@views/backup/backup.component";
@@ -27,6 +28,8 @@ import {XinghaoOverviewComponent} from "@views/xinghao-overview/xinghao-overview
 
 export const routesInfo: (Route & {path: string})[] = [
   {path: "index", component: IndexComponent},
+  {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"},
+  {path: "work-space", component: WorkSpaceComponent, title: "我的工作台"},
   {path: "print-cad", component: PrintCadComponent, title: "打印CAD"},
   {path: "printA4A015Preview", component: PrintA4A015PreviewComponent, title: "订单配件标签"},
   {path: "import", component: ImportComponent, title: "导入CAD"},
@@ -56,6 +59,5 @@ export const routesInfo: (Route & {path: string})[] = [
     }
   },
   {path: "print-table", component: PrintTableComponent, title: "打印表格"},
-  {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"},
   {path: "订单异常", component: DingdanyichangComponent, title: "订单异常"}
 ];

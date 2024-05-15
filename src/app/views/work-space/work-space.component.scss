@@ -1,0 +1,24 @@
+:host {
+  padding: 20px;
+}
+
+.favorites-group {
+  > * {
+    width: 100%;
+  }
+
+  > .items {
+    margin-top: -20px;
+  }
+}
+
+.favorite-item {
+  --item-width: 230px;
+  padding: 5px;
+  border-radius: 10px;
+  margin: 10px;
+
+  .title {
+    color: blue;
+  }
+}
