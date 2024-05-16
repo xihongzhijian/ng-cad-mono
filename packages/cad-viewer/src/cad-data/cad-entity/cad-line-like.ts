@@ -66,7 +66,7 @@ export abstract class CadLineLike extends CadEntity {
   变化方式: string;
   角度范围: number[];
   可输入修改: boolean;
-  info!: CadLineLikeInfo;
+  info: CadLineLikeInfo;
   圆弧显示: "默认" | "半径" | "R+半径" | "φ+直径" | "弧长" | "弧长+线长" = "默认";
   显示线长?: string;
   线id?: string;
@@ -109,6 +109,7 @@ export abstract class CadLineLike extends CadEntity {
     this.变化方式 = data.变化方式 ?? 变化方式[0];
     this.角度范围 = data.角度范围 ?? [0, 90];
     this.可输入修改 = typeof data.可输入修改 === "boolean" ? data.可输入修改 : true;
+    this.info = data.info ?? {};
     this.圆弧显示 = data.圆弧显示 ?? "默认";
     if (data.显示线长) {
       this.显示线长 = data.显示线长;

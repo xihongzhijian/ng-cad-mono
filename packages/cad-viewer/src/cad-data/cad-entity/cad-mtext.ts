@@ -19,7 +19,7 @@ export class CadMtext extends CadEntity {
   text: string;
   anchor: Point;
   fontStyle: FontStyle;
-  info!: CadMtextInfo;
+  info: CadMtextInfo;
 
   get _boundingRectCalc() {
     const rect = Rectangle.min;
@@ -38,6 +38,7 @@ export class CadMtext extends CadEntity {
     if (data.font_size) {
       this.fontStyle.size = data.font_size;
     }
+    this.info = data.info ?? {};
   }
 
   export(): ObjectOf<any> {

@@ -14,7 +14,6 @@ import {CustomResponse, HttpOptions, HttpServiceResponseError} from "./http.serv
   providedIn: "root"
 })
 export class HttpService {
-  loaderId = "master";
   protected dialog: MatDialog;
   protected message: MessageService;
   protected snackBar: MatSnackBar;
@@ -117,7 +116,7 @@ export class HttpService {
         this.spinner.show(loaderId);
       }
     } else {
-      this.spinner.show(this.loaderId, {background: true});
+      this.spinner.show(this.spinner.defaultLoaderId, {background: true});
     }
     try {
       if (method === "GET") {
@@ -269,7 +268,7 @@ export class HttpService {
           this.spinner.hide(loaderId);
         }
       } else {
-        this.spinner.hide(this.loaderId);
+        this.spinner.hide(this.spinner.defaultLoaderId);
       }
       this.lastResponse = response;
       if (response) {
