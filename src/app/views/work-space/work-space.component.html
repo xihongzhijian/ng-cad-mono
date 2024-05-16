@@ -17,6 +17,7 @@
         <div class="toolbar">
           <div class="title">{{ manager.types[i].name }}</div>
           @if (showMoreButtons) {
+            <div class="text short">排序：{{ manager.types[i].order || 0 }}</div>
             <button mat-button color="primary" (click)="editType(i)">编辑</button>
           }
         </div>

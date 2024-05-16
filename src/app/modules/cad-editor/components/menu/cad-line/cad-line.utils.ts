@@ -54,7 +54,7 @@ export const openCadLineForm = async (
   await status.fetchCad数据要求List();
   const yaoqiu = status.getCad数据要求(cad.data.type);
   const form = getCadInfoInputs(yaoqiu?.线段弹窗修改属性 || [], line2);
-  if (collection === "kailiaocadmuban") {
+  if (collection === "kailiaocadmuban" && !form.some((v) => v.label === "关联变化公式")) {
     form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});
   }
   let title = "编辑线";

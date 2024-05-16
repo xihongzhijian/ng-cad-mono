@@ -8,6 +8,7 @@ import {InputInfo} from "@app/modules/input/components/input.types";
 import {convertOptions} from "@app/modules/input/components/input.utils";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {AppStatusService} from "@app/services/app-status.service";
+import {environment} from "@env";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -28,7 +29,7 @@ export class WorkSpaceComponent implements OnInit {
   project = this.status.project;
   isAdmin$ = this.status.isAdmin$;
   defaultWorkDataFormInfo: DefaultWorkDataFormInfo | null = null;
-  showMoreButtons = false;
+  showMoreButtons = !environment.production;
 
   constructor(
     private http: CadDataService,
