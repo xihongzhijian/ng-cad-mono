@@ -19,7 +19,7 @@ import {
   ViewChildren
 } from "@angular/core";
 import {FormControl, FormsModule, ValidationErrors, Validators} from "@angular/forms";
-import {MatAutocompleteModule, MatAutocompleteSelectedEvent, MatAutocompleteTrigger} from "@angular/material/autocomplete";
+import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {MatButtonModule} from "@angular/material/button";
 import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
@@ -36,7 +36,7 @@ import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {CadViewer} from "@lucilor/cad-viewer";
-import {getTypeOf, isTypeOf, ObjectOf, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
+import {getTypeOf, isTypeOf, ObjectOf, queryString, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
@@ -238,9 +238,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   errorsValue: ObjectOf<ValidationErrors | null> = {};
   imgCadEmpty = imgCadEmpty;
 
-  @ViewChild(MatAutocompleteTrigger) matAutocompleteTrigger?: MatAutocompleteTrigger;
-  matAutocompleteDisabled = true;
-
   valueChange$ = new BehaviorSubject<any>(null);
   filteredOptions$ = new BehaviorSubject<InputComponent["options"]>([]);
 
@@ -281,7 +278,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         options = this.options.filter((option) => {
           const values = getFilterValues(option);
           for (const v of values) {
-            if (v.includes(val) || (fixedOptions && fixedOptions.includes(v))) {
+            if (typeof val === "string" && queryString(val, v)) {
+              return true;
+            }
+            if (fixedOptions && fixedOptions.includes(v)) {
               return true;
             }
           }
@@ -545,11 +545,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     switch (info.type) {
       case "string":
         {
-          const {options, optionInputOnly} = info;
+          const {options, optionRequired} = info;
           if (value && options && !isAutocomplete) {
             const timeoutId = window.setTimeout(() => {
-              if (optionInputOnly && !this.options.find((v) => v.value === value)) {
+              if (optionRequired && !this.options.find((v) => v.value === value)) {
                 this.value = "";
+                this.onInput();
               }
               this.onChange(value, true);
             }, this.onChangeDelayTime);
@@ -1013,15 +1014,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   parseObjectString(mode: Parameters<typeof parseObjectString>[2]) {
     parseObjectString(this.objectString, this.value, mode);
-  }
-
-  updateMatAutocompleteDisabled() {
-    const disabled = this.options.length < 1;
-    this.matAutocompleteDisabled = disabled;
-    const {matAutocompleteTrigger: trigger} = this;
-    if (!disabled && trigger && !trigger.panelOpen) {
-      trigger.openPanel();
-    }
   }
 }
 

@@ -1287,6 +1287,15 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     } else {
       data.yaoqiu = this.getCadYaoqiu();
     }
+    if (data.yaoqiu && !data.yaoqiu.新建CAD要求.some((v) => v.cadKey === "type")) {
+      data.yaoqiu.新建CAD要求.push({
+        cadKey: "type",
+        key: "分类",
+        readonly: true,
+        override: true,
+        value: this.lingsanCadType
+      });
+    }
     openImportPage(this.status, data);
     if (await this.message.newTabConfirm()) {
       this.step3Refresh();

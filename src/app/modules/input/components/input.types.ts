@@ -36,16 +36,16 @@ export interface InputInfoBase<T = any> {
   filterValuesGetter?: (option: InputInfoOption<T>) => string[];
 }
 
-export interface InputInfoString<T = any, K = string> extends InputInfoBase<T> {
+export interface InputInfoString<T = any> extends InputInfoBase<T> {
   type: "string";
   value?: Value<string>;
   textarea?: {autosize?: {minRows?: number; maxRows?: number}};
-  onInput?: (val: string, info: InputInfoString<T, K>) => void;
-  onChange?: (val: string, info: InputInfoString<T, K>) => void;
-  options?: Value<InputInfoOptions<K>>;
+  onInput?: (val: string, info: InputInfoString<T>) => void;
+  onChange?: (val: string, info: InputInfoString<T>) => void;
+  options?: Value<InputInfoOptions<string>>;
   optionValueType?: "string" | "array";
   fixedOptions?: string[];
-  optionInputOnly?: boolean;
+  optionRequired?: boolean;
   optionsDisplayLimit?: number;
   optionMultiple?: boolean;
   optionsDialog?: OptionsDialog;

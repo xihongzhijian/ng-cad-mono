@@ -1,8 +1,8 @@
+import {KeyValuePipe} from "@angular/common";
 import {Component, forwardRef, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
-import {Utils} from "@mixins/utils.mixin";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {InputComponent} from "../../../modules/input/components/input.component";
@@ -18,9 +18,9 @@ export interface BbzhmkgzComponentData {
   templateUrl: "./bbzhmkgz.component.html",
   styleUrls: ["./bbzhmkgz.component.scss"],
   standalone: true,
-  imports: [forwardRef(() => InputComponent), MatDialogActions, MatButtonModule]
+  imports: [forwardRef(() => InputComponent), KeyValuePipe, MatDialogActions, MatButtonModule]
 })
-export class BbzhmkgzComponent extends Utils() {
+export class BbzhmkgzComponent {
   inputInfo: InputInfo = {type: "string", textarea: {}, label: ""};
 
   constructor(
@@ -28,7 +28,6 @@ export class BbzhmkgzComponent extends Utils() {
     @Inject(MAT_DIALOG_DATA) public data: BbzhmkgzComponentData,
     private message: MessageService
   ) {
-    super();
     if (!data.value) {
       data.value = "";
     }

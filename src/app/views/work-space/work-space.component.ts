@@ -12,7 +12,7 @@ import {environment} from "@env";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {DefaultWorkDataFormInfo, WorkSpaceData} from "./work-space.types";
+import {DefaultWorkDataFormInfo, DefaultWorkDataListItem, WorkSpaceData} from "./work-space.types";
 import {WorkSpaceManager} from "./work-space.utils";
 
 @Component({
@@ -26,10 +26,14 @@ export class WorkSpaceComponent implements OnInit {
   @HostBinding("class") class = "ng-page";
 
   manager = new WorkSpaceManager();
+  defaultWorkDataFormInfo: DefaultWorkDataFormInfo | null = null;
+  defaultWorkDataList: DefaultWorkDataListItem[] | null = null;
+
   project = this.status.project;
   isAdmin$ = this.status.isAdmin$;
-  defaultWorkDataFormInfo: DefaultWorkDataFormInfo | null = null;
   showMoreButtons = !environment.production;
+  production = environment.production;
+  showDefaultWorkDataList = false;
 
   constructor(
     private http: CadDataService,
@@ -173,6 +177,24 @@ export class WorkSpaceComponent implements OnInit {
     downloadByString(JSON.stringify(data), {filename: "工作台.json"});
   }
 
+  async loadDefaultWorkData(data: WorkSpaceData) {
+    this.manager.import(data);
+    await this.submit();
+  }
+
+  async removeDefaultWorkData(key: string, juese: string | null = null, confirm = false) {
+    if (confirm && !(await this.message.confirm("是否确定删除？"))) {
+      return;
+    }
+    const arr = key.split(".");
+    if (arr.length === 2) {
+      key = arr[0];
+      juese = arr[1];
+    }
+    await this.http.getData("jichu/work/unsetDefaultWorkData", {key, juese});
+    await this.getDefaultWorkDataList();
+  }
+
   getDefaultWorkDataForm(type: "set" | "unset") {
     const values = {key: "", juese: ""};
     const form: InputInfo<typeof values>[] = [];
@@ -194,13 +216,10 @@ export class WorkSpaceComponent implements OnInit {
     }
     if (jueses) {
       form.push({
-        type: "select",
+        type: "string",
         label: jueses[labelKey],
         options: convertOptions(jueses.options),
-        optionsDialog: {
-          useLocalOptions: true,
-          noImage: true
-        },
+        optionRequired: true,
         model: {data: values, key: "juese"},
         hidden: true
       });
@@ -214,6 +233,7 @@ export class WorkSpaceComponent implements OnInit {
     if (result) {
       const data = this.manager.export();
       await this.http.getData("jichu/work/setDefaultWorkData", {...values, data});
+      await this.getDefaultWorkDataList();
     }
   }
 
@@ -221,7 +241,7 @@ export class WorkSpaceComponent implements OnInit {
     const {form, values} = this.getDefaultWorkDataForm("unset");
     const result = await this.message.form(form);
     if (result) {
-      await this.http.getData("jichu/work/unsetDefaultWorkData", values);
+      await this.removeDefaultWorkData(values.key, values.juese);
     }
   }
 
@@ -231,8 +251,21 @@ export class WorkSpaceComponent implements OnInit {
     }
     const data = await this.http.getData<WorkSpaceData>("jichu/work/getDefaultWorkData");
     if (data) {
-      this.manager.import(data);
-      await this.submit();
+      await this.loadDefaultWorkData(data);
+    }
+  }
+
+  async getDefaultWorkDataList(force = false) {
+    if (!force && !this.defaultWorkDataList) {
+      return;
+    }
+    this.defaultWorkDataList = await this.http.getData<DefaultWorkDataListItem[]>("jichu/work/getDefaultWorkDataList");
+  }
+
+  async toggleDefaultWorkDataList() {
+    this.showDefaultWorkDataList = !this.showDefaultWorkDataList;
+    if (this.showDefaultWorkDataList && !this.defaultWorkDataList) {
+      await this.getDefaultWorkDataList(true);
     }
   }
 }

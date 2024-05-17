@@ -9,9 +9,29 @@
     <button mat-raised-button color="primary" (click)="setDefaultWorkData()">保存默认配置</button>
     <button mat-raised-button color="primary" (click)="unsetDefaultWorkData()">删除默认配置</button>
   }
+  @if (!production) {
+    <button mat-raised-button color="primary" (click)="toggleDefaultWorkDataList()">list</button>
+  }
 </div>
 
 <ng-scrollbar>
+  @if (showDefaultWorkDataList && defaultWorkDataList) {
+    <div class="items no-items-per-row">
+      @for (item of defaultWorkDataList; track $index) {
+        <div class="favorite-item item border">
+          <div class="toolbar header">
+            <div class="title">{{ item.key }}</div>
+          </div>
+          <div class="text">{{ item.path }}</div>
+          <div class="toolbar">
+            <button mat-button color="primary" (click)="loadDefaultWorkData(item.data)">加载</button>
+            <button mat-button color="primary" (click)="removeDefaultWorkData(item.key, null, true)">删除</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
   <div class="favorites-groups flex-column">
     @for (i of manager.typesSortedIndexs; track $index) {
       <div class="favorites-group item">

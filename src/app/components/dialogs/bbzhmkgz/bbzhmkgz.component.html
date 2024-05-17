@@ -1,10 +1,10 @@
 <app-input [info]="inputInfo" class="flex-110"></app-input>
 <div class="flex-column">
-  @for (key of keysOf(data.vars || {}); track key) {
+  @for (item of data.vars | keyvalue; track $index) {
     <div class="var">
-      <span>{{ key }}</span>
+      <span>{{ item.key }}</span>
       :
-      <span>{{ (data.vars || {})[key] }}</span>
+      <span>{{ item.value }}</span>
     </div>
   }
 </div>

@@ -29,3 +29,9 @@ export interface DefaultWorkDataFormInfoItem {
   labelUnset: string;
   options: OptionsDataData[];
 }
+
+export interface DefaultWorkDataListItem {
+  key: string;
+  path: string;
+  data: WorkSpaceData;
+}

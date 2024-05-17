@@ -19,7 +19,7 @@
             [cdkAutosizeMaxRows]="info.textarea.autosize?.maxRows"
             [readonly]="info.readonly"
             [disabled]="info.disabled || false"
-            [matAutocomplete]="auto"
+            [autocomplete]="info.autocomplete || ''"
             [(ngModel)]="value"
             [name]="name"
             type="text"
@@ -41,15 +41,13 @@
             (change)="onChange()"
             (input)="onInput()"
             (blur)="onBlur()"
-            (click)="updateMatAutocompleteDisabled()"
             [placeholder]="info.placeholder || ''"
             [matAutocomplete]="auto"
-            [matAutocompleteDisabled]="matAutocompleteDisabled"
           />
         }
       }
       <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAutocompleteChange($event)">
-        @for (option of filteredOptions$ | async; track option) {
+        @for (option of filteredOptions$ | async; track $index) {
           <mat-option
             [value]="option.value"
             [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
@@ -108,20 +106,8 @@
         (change)="onChange()"
         (input)="onInput()"
         (blur)="onBlur()"
-        [matAutocomplete]="auto"
         [placeholder]="info.placeholder || ''"
       />
-      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAutocompleteChange($event)">
-        @for (option of filteredOptions$ | async; track option) {
-          <mat-option
-            [value]="option.value"
-            [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
-            [matTooltipPosition]="'right'"
-          >
-            {{ option.label }}
-          </mat-option>
-        }
-      </mat-autocomplete>
       <ng-container matSuffix>
         @if (info.copyable) {
           <button mat-icon-button color="primary" (click)="copy()">

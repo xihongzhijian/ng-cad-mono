@@ -5,7 +5,9 @@
         @for (info of inputInfos; track $index) {
           <app-input [info]="info"></app-input>
         }
-        <button mat-raised-button color="primary" (click)="search()">搜索</button>
+        @if (inputInfosMenjiao.length < 1) {
+          <button mat-raised-button color="primary" (click)="search()">搜索</button>
+        }
         <div class="flex-110"></div>
         <button mat-raised-button color="primary" (click)="submit()">确定</button>
         <button mat-raised-button color="primary" (click)="cancel()">取消</button>
@@ -15,6 +17,7 @@
           @for (info of inputInfosMenjiao; track $index) {
             <app-input [info]="info"></app-input>
           }
+          <button mat-raised-button color="primary" (click)="search()">搜索</button>
         </div>
       }
     </div>

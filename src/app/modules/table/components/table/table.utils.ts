@@ -88,7 +88,7 @@ export const getInputInfosFromTableColumns = <T>(
         return {
           ...base,
           type: "string",
-          optionInputOnly: true,
+          optionRequired: true,
           optionMultiple: column.multiSelect,
           optionsDialog: {
             optionKey: column.linkedTable,

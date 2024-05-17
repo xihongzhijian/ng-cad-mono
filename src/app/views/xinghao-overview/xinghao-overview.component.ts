@@ -124,7 +124,7 @@ export class XinghaoOverviewComponent implements OnInit {
       type: "string",
       label: "小导航",
       options,
-      optionInputOnly: true,
+      optionRequired: true,
       optionsDisplayLimit: 10,
       filterValuesGetter: (option) => {
         const key = typeof option === "string" ? option : option.value;

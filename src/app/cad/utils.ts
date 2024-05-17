@@ -118,6 +118,23 @@ export const validateLines = (data: CadData, noInfo?: boolean, tolerance = DEFAU
   if (isShiyitu(data) || ["企料算料", "孔"].includes(data.type)) {
     return result;
   }
+  const types = [
+    "铰企料",
+    "中锁料",
+    "中铰料",
+    "小锁料",
+    "扇锁企料",
+    "中铰料",
+    "中锁料",
+    "铰企料",
+    "包边正面",
+    "锁框",
+    "铰框",
+    "顶框",
+    "底框",
+    "中横框"
+  ];
+  const typeCheck = types.includes(data.type);
   const lines = sortLines(data, tolerance);
   result.errorLines = lines;
   const [min, max] = LINE_LIMIT;
@@ -149,13 +166,11 @@ export const validateLines = (data: CadData, noInfo?: boolean, tolerance = DEFAU
           刨坑起始线位置错误 = true;
         }
       }
-      if (isBetween(dx, min, max) || isBetween(dy, min, max)) {
+      if (typeCheck && (isBetween(dx, min, max) || isBetween(dy, min, max))) {
         addInfoError(e, "斜率不符合要求");
         slopeErrCount++;
-        if (slopeErrCount < slopeErrMax) {
+        if (slopeErrCount <= slopeErrMax) {
           result.errors.push(`线段斜率不符合要求(线长: ${e.length.toFixed(2)})`);
-        } else if (slopeErrCount === slopeErrMax) {
-          result.errors.push("分类包含【示意图】或者分类等于【企料算料】就不会报斜率错误, 请自行判断修改");
         }
       }
     }
@@ -168,7 +183,7 @@ export const validateLines = (data: CadData, noInfo?: boolean, tolerance = DEFAU
   }
   if (lines.length < 1) {
     result.errors.push("没有线");
-  } else if (lines.length > groupMaxLength) {
+  } else if (typeCheck && lines.length > groupMaxLength) {
     result.errors.push("CAD分成了多段或线重叠");
     for (let i = 0; i < lines.length - 1; i++) {
       const currGroup = lines[i];
