@@ -81,6 +81,9 @@ export const getCadInfoInputs = (
       return getData(data)[key];
     };
   for (const key of keys) {
+    if (result.some((v) => v.label === key)) {
+      continue;
+    }
     let info: InputInfo;
     switch (key) {
       case "id":

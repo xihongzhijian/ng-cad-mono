@@ -34,8 +34,8 @@ export class ExportComponent implements OnInit {
   exportParams: CadExportParams = {
     cads: [],
     type: "自由选择",
-    exportId: true,
-    exportUniqCode: true,
+    exportId: false,
+    exportUniqCode: false,
     exportOptions: true
   };
   inputInfos: InputInfo<CadExportParams>[] = [];
@@ -56,9 +56,13 @@ export class ExportComponent implements OnInit {
     if (this.exportCache?.direct) {
       this.exportCads("导出选中");
     }
-    if (this.exportCache?.lurushuju) {
-      this.exportParams.exportId = false;
-      this.exportParams.exportUniqCode = false;
+    if (!this.exportCache?.lurushuju) {
+      const data = this.exportParams;
+      this.inputInfos = [
+        {type: "boolean", label: "导出ID", radio: true, model: {data, key: "exportId"}},
+        {type: "boolean", label: "导出唯一码", radio: true, model: {data, key: "exportUniqCode"}},
+        {type: "boolean", label: "导出选项", radio: true, model: {data, key: "exportOptions"}}
+      ];
     }
   }
 

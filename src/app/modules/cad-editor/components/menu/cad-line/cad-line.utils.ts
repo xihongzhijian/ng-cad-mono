@@ -14,11 +14,14 @@ export const cadLineFields = {
   双向折弯附加值: "双向折弯附加值"
 } as const;
 
-export const getCadInfoInputs = (keys: string[], data: CadLineLike | (() => CadLineLike)) => {
+export const getCadLineInputs = (keys: string[], data: CadLineLike | (() => CadLineLike)) => {
   const result: InputInfo<CadLineLike>[] = [];
   const lineLength = Number(data.length.toFixed(2));
   const isLine = data instanceof CadLine;
   for (const key of keys) {
+    if (result.some((v) => v.label === key)) {
+      continue;
+    }
     let info: InputInfo;
     switch (key) {
       case "名字":
@@ -53,7 +56,7 @@ export const openCadLineForm = async (
   const isLine = line instanceof CadLine;
   await status.fetchCad数据要求List();
   const yaoqiu = status.getCad数据要求(cad.data.type);
-  const form = getCadInfoInputs(yaoqiu?.线段弹窗修改属性 || [], line2);
+  const form = getCadLineInputs(yaoqiu?.线段弹窗修改属性 || [], line2);
   if (collection === "kailiaocadmuban" && !form.some((v) => v.label === "关联变化公式")) {
     form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});
   }

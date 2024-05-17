@@ -224,4 +224,15 @@ export class WorkSpaceComponent implements OnInit {
       await this.http.getData("jichu/work/unsetDefaultWorkData", values);
     }
   }
+
+  async importDefaultWorkData() {
+    if (!(await this.message.confirm("加载默认配置会覆盖当前配置，是否继续？"))) {
+      return;
+    }
+    const data = await this.http.getData<WorkSpaceData>("jichu/work/getDefaultWorkData");
+    if (data) {
+      this.manager.import(data);
+      await this.submit();
+    }
+  }
 }

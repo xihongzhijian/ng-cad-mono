@@ -13,12 +13,18 @@
 }
 
 .favorite-item {
-  --item-width: 230px;
+  --item-width: 240px;
   padding: 5px;
   border-radius: 10px;
   margin: 10px;
 
-  .title {
-    color: blue;
+  .header {
+    flex-grow: 1;
+    align-items: flex-start;
+
+    .title {
+      color: blue;
+      padding: 10px 0;
+    }
   }
 }
