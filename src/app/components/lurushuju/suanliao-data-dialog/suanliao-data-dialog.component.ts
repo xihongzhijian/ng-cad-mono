@@ -184,13 +184,13 @@ export class SuanliaoDataDialogComponent implements OnInit {
         await this.http.mongodbInsertMulti(
           suanliaoTables.klkwpzCollection,
           klkwpzData.map((v) => ({名字: v.名字, 孔位配置: v.孔位配置})),
-          suanliaoDataParams2,
+          {extraData: suanliaoDataParams2},
           {silent: true}
         );
         await this.http.mongodbInsertMulti(
           suanliaoTables.klcsCollection,
           klcsData.map((v) => ({名字: v.名字, 参数: v.参数})),
-          suanliaoDataParams2,
+          {extraData: suanliaoDataParams2},
           {silent: true}
         );
         await suanliaoTables.update();

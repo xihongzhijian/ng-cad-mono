@@ -17,6 +17,7 @@ import {
   GetShortUrlParams,
   HoutaiCad,
   MongodbDataBase,
+  MongodbInsertOptions,
   OptionsData,
   OptionsDataData,
   QueryMongodbParams,
@@ -272,21 +273,6 @@ export class CadDataService extends HttpService {
     return url;
   }
 
-  // async getCadImg(id: string, noCache = false, options?: HttpOptions) {
-  //   if (!noCache) {
-  //     const url = this.cadImgCache.get(id);
-  //     if (url) {
-  //       return url;
-  //     }
-  //   }
-  //   const result = await this.getData<{url: string | null}>("ngcad/getCadImg", {id}, options);
-  //   const url = result?.url || null;
-  //   if (url) {
-  //     this.cadImgCache.set(id, url);
-  //   }
-  //   return url;
-  // }
-
   async setCadImg(id: string, dataURL: string, options?: HttpOptions) {
     const blob = dataURLtoBlob(dataURL);
     const file = new File([blob], `${id}.png`);
@@ -369,12 +355,12 @@ export class CadDataService extends HttpService {
     return await this.getData<UploadImageResult>("ngcad/uploadImage", {key: "file", file}, options);
   }
 
-  async mongodbInsert(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>, options?: HttpOptions) {
-    return await this.getData<string>("ngcad/mongodbTableInsert", {collection, data, extraData}, options);
+  async mongodbInsert(collection: CadCollection, data: ObjectOf<any>, optionsInsert?: MongodbInsertOptions, options?: HttpOptions) {
+    return await this.getData<string>("ngcad/mongodbTableInsert", {collection, data, ...optionsInsert}, options);
   }
 
-  async mongodbInsertMulti(collection: CadCollection, data: ObjectOf<any>[], extraData?: ObjectOf<any>, options?: HttpOptions) {
-    return await this.getData<string[]>("ngcad/mongodbTableInsertMulti", {collection, data, extraData}, options);
+  async mongodbInsertMulti(collection: CadCollection, data: ObjectOf<any>[], optionsInsert?: MongodbInsertOptions, options?: HttpOptions) {
+    return await this.getData<string[]>("ngcad/mongodbTableInsertMulti", {collection, data, ...optionsInsert}, options);
   }
 
   async mongodbUpdate(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>, options?: HttpOptions) {

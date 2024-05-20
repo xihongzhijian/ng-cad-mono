@@ -283,7 +283,7 @@ export class TongyongshujuDialogComponent implements OnInit {
 
     const result = await this.message.form(form);
     if (result) {
-      const success = await this.http.mongodbInsert(collection, data, {spinner: this.cadListLoader});
+      const success = await this.http.mongodbInsert(collection, data, {}, {spinner: this.cadListLoader});
       if (success) {
         await this.refreshActiveCadList();
       }

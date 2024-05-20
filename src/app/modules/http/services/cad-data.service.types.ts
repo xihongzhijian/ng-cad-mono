@@ -205,3 +205,8 @@ export interface GetShortUrlParams {
   showBtns?: string[];
   hideBtns?: string[];
 }
+
+export interface MongodbInsertOptions {
+  extraData?: ObjectOf<any>;
+  force?: boolean;
+}
