@@ -5,20 +5,6 @@
   overflow: hidden;
 }
 
-.content {
-  flex: 1 1 0;
-}
-
 .bancai-list {
-  display: flex;
-  flex-wrap: wrap;
-
-  .bancai {
-    width: calc(20% - 6px);
-    margin: 3px;
-
-    .name {
-      width: 100%;
-    }
-  }
+  --items-per-row: 5;
 }

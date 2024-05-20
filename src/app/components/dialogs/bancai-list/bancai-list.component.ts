@@ -1,14 +1,12 @@
-import {Component, Inject} from "@angular/core";
-import {Validators} from "@angular/forms";
+import {Component, HostBinding, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {session, setGlobal} from "@app/app.common";
-import {queryString, timeout} from "@lucilor/utils";
+import {queryString} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
-import {MessageService} from "@modules/message/services/message.service";
 import {debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../../modules/input/components/input.component";
@@ -22,6 +20,8 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [InputComponent, MatButtonModule, NgScrollbar, MatCheckboxModule, MatTooltipModule]
 })
 export class BancaiListComponent {
+  @HostBinding("class") class = "ng-page";
+
   filterText = "";
   filterInputInfo: InputInfo = {
     type: "string",
@@ -39,8 +39,7 @@ export class BancaiListComponent {
 
   constructor(
     public dialogRef: MatDialogRef<BancaiListComponent, BancaiListOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: BancaiListInput,
-    private message: MessageService
+    @Inject(MAT_DIALOG_DATA) public data: BancaiListInput
   ) {
     const {checkedItems} = this.data || {};
     let list = this.data.list;
@@ -101,34 +100,18 @@ export class BancaiListComponent {
   }
 
   async onCheckboxChange(item: BancaiListComponent["list"][number]) {
-    const bancai = item.bancai;
     const checked = item.checked;
-    const checkedArr = this.list.map((v) => v.checked);
     if (!this.data.multi) {
       this.list.forEach((v) => (v.checked = false));
-    }
-    if (bancai.mingzi === "自定义") {
-      await timeout(0);
-      const zidingyi = await this.message.prompt({
-        type: "string",
-        label: "自定义板材",
-        value: this.zidingyi,
-        validators: Validators.required
-      });
-      if (zidingyi) {
-        this.zidingyi = zidingyi;
-      } else {
-        for (const [i, v] of this.list.entries()) {
-          v.checked = checkedArr[i];
-        }
-        return;
-      }
     }
     item.checked = !checked;
   }
 
-  selectZidingyi() {
-    this.onCheckboxChange(this.list[this.zidingyiIndex]);
+  selectAll() {
+    const allChecked = this.list.every((v) => v.checked);
+    for (const item of this.list) {
+      item.checked = !allChecked;
+    }
   }
 }
 

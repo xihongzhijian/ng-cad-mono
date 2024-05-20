@@ -703,6 +703,16 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
+  onClick() {
+    const {type, suffixIcons} = this.info;
+    const defaultSuffixIcon = suffixIcons?.find((v) => v.isDefault);
+    if (defaultSuffixIcon) {
+      defaultSuffixIcon?.onClick?.();
+    } else if (type === "select") {
+      this.selectOptions(this.model.key);
+    }
+  }
+
   async selectOptions(key?: keyof any, optionKey?: string) {
     const {info} = this;
     if (info.readonly || info.disabled) {

@@ -26,6 +26,7 @@
             (change)="onChange()"
             (input)="onInput()"
             (blur)="onBlur()"
+            (click)="onClick()"
             [placeholder]="info.placeholder || ''"
           ></textarea>
         } @else {
@@ -41,6 +42,7 @@
             (change)="onChange()"
             (input)="onInput()"
             (blur)="onBlur()"
+            (click)="onClick()"
             [placeholder]="info.placeholder || ''"
             [matAutocomplete]="auto"
           />
@@ -106,6 +108,7 @@
         (change)="onChange()"
         (input)="onInput()"
         (blur)="onBlur()"
+        (click)="onClick()"
         [placeholder]="info.placeholder || ''"
       />
       <ng-container matSuffix>
@@ -185,6 +188,7 @@
               [name]="name + '-value'"
               (change)="changeObjectValue2(value, item.key, item.value)"
               (blur)="onBlur()"
+              (click)="onClick()"
             />
             <ng-container matSuffix>
               @if (optionsDialog) {
@@ -249,6 +253,7 @@
             [name]="name + '-value'"
             [ngModelOptions]="{standalone: true}"
             (blur)="onBlur()"
+            (click)="onClick()"
           />
           <ng-container matSuffix>
             @if (!info.readonly) {
@@ -328,7 +333,7 @@
           (change)="onChange()"
           (input)="onInput()"
           (blur)="onBlur()"
-          (click)="selectOptions(model.key)"
+          (click)="onClick()"
           [placeholder]="info.placeholder || ''"
         />
       } @else {
@@ -609,7 +614,7 @@
   @case ("button") {
     <div class="buttons">
       @for (button of info.buttons; track $index) {
-        <button mat-raised-button [color]="button.color" (click)="button.onClick?.()">{{ button.name }}</button>
+        <button mat-raised-button [color]="button.color" (click)="button.onClick()">{{ button.name }}</button>
       }
     </div>
     <ng-template [ngTemplateOutlet]="footer"></ng-template>

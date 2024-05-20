@@ -19,7 +19,7 @@ export interface InputInfoBase<T = any> {
   clearable?: boolean;
   copyable?: boolean;
   disabled?: boolean;
-  suffixIcons?: {name: string; onClick: () => void}[];
+  suffixIcons?: InputInfoButtonInfo[];
   hint?: Value<string>;
   autocomplete?: "on" | "off";
   showEmpty?: boolean;
@@ -154,8 +154,9 @@ export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoButtonInfo {
   name: string;
+  onClick: () => void;
   color?: "" | "primary" | "accent" | "warn";
-  onClick?: () => void;
+  isDefault?: boolean;
 }
 export interface InputInfoButton<T = any> extends InputInfoBase<T> {
   type: "button";

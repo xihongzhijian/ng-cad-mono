@@ -1,5 +1,6 @@
 import {Component, Input} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
+import {joinOptions} from "@app/app.common";
 import {openBancaiListDialog} from "@components/dialogs/bancai-list/bancai-list.component";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -60,6 +61,7 @@ export class BancaiFormComponent {
           suffixIcons: [
             {
               name: "list",
+              isDefault: true,
               onClick: async () => {
                 const result = await openBancaiListDialog(this.dialog, {
                   data: {list: this.bancaiList, checkedItems: checkedItem ? [checkedItem] : undefined}
@@ -89,11 +91,12 @@ export class BancaiFormComponent {
         {
           type: "string",
           label: "可选板材",
-          value: (this.data.bancaiList || []).join("*"),
+          value: joinOptions(this.data.bancaiList),
           readonly: true,
           suffixIcons: [
             {
               name: "list",
+              isDefault: true,
               onClick: async () => {
                 const bancaiList = this.data.bancaiList || [];
                 const checkedItems = this.bancaiList.filter((v) => bancaiList.includes(v.mingzi));
