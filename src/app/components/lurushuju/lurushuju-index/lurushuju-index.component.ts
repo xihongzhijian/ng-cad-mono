@@ -48,6 +48,7 @@ import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dial
 import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
 import {
   getGongyi,
+  getSortedItems,
   getXinghao,
   get算料数据,
   menjiaoCadTypes,
@@ -648,7 +649,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     gongyi = getGongyi(gongyi, this.gongyiOptionsAll);
     this.gongyi = gongyi;
     this.xuanxiangTable.data = [...gongyi.选项数据];
-    this.shuruTable.data = [...gongyi.输入数据];
+    this.shuruTable.data = getSortedItems(gongyi.输入数据);
     this.menjiaoTable.data = gongyi.算料数据;
 
     await this.updateHuajians();
@@ -1062,7 +1063,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           }
         ]
       },
-      {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}}
+      {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}},
+      {type: "number", label: "排序", model: {data, key: "排序"}}
     ];
     return await this.message.form<typeof data, typeof data>(form);
   }
@@ -1077,7 +1079,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           const item = await this.getShuruItem();
           if (item) {
             this.gongyi.输入数据.push(item);
-            this.shuruTable.data = [...this.gongyi.输入数据];
+            this.shuruTable.data = getSortedItems(this.gongyi.输入数据);
             await this.submitGongyi(["输入数据"]);
           }
         }
@@ -1089,23 +1091,23 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!this.gongyi) {
       return;
     }
-    const {button, item, rowIdx} = event;
+    const {button, item} = event;
     switch (button.event) {
       case "编辑":
         {
-          const item2 = this.gongyi.输入数据[rowIdx];
+          const item2 = this.gongyi.输入数据[item.originalIndex];
           const item3 = await this.getShuruItem(item2);
           if (item3) {
-            this.gongyi.输入数据[rowIdx] = item3;
-            this.shuruTable.data = [...this.gongyi.输入数据];
+            this.gongyi.输入数据[item.originalIndex] = item3;
+            this.shuruTable.data = getSortedItems(this.gongyi.输入数据);
             await this.submitGongyi(["输入数据"]);
           }
         }
         break;
       case "删除":
         if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          this.gongyi.输入数据.splice(rowIdx, 1);
-          this.shuruTable.data = [...this.gongyi.输入数据];
+          this.gongyi.输入数据.splice(item.originalIndex, 1);
+          this.shuruTable.data = getSortedItems(this.gongyi.输入数据);
           await this.submitGongyi(["输入数据"]);
         }
         break;

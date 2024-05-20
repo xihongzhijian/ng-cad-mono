@@ -175,6 +175,7 @@ export interface 输入 {
   默认值: string | number;
   可以修改: boolean;
   取值范围: string;
+  排序?: number;
 }
 
 export interface 花件玻璃信息 {
@@ -399,4 +400,9 @@ export const getXinghaoQuery = (route: ActivatedRoute) => {
     result[key] = value;
   }
   return result;
+};
+
+export const getSortedItems = <T extends {排序?: number}>(items: T[]) => {
+  const result = items.map<T & {originalIndex: number}>((v, i) => ({...v, originalIndex: i}));
+  return result.sort((a, b) => (a.排序 || 0) - (b.排序 || 0));
 };
