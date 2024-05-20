@@ -161,41 +161,71 @@ export class SuanliaoDataDialogComponent implements OnInit {
       }
     });
     const data = result?.items[0] as SelectGongyiItemData<算料数据>;
-    if (data && data.工艺做法 && data.data) {
-      const {suanliaoTables} = this;
-      this.data.data.算料CAD.push(...data.data[key1].算料CAD);
-      this.data.data.算料公式.push(...data.data[key1].算料公式);
-      if (suanliaoTables) {
-        const [包边方向, 开启] = key1.split("+");
-        const suanliaoDataParams: SuanliaoDataParams = {
-          选项: {
-            型号: data.型号,
-            产品分类: data.产品分类,
-            工艺做法: data.工艺做法,
-            包边方向,
-            开启,
-            门铰锁边铰边: data.data.名字
-          }
-        };
-        this.spinner.show(this.spinner.defaultLoaderId);
-        const klkwpzData = await suanliaoTables.getKlkwpzData(suanliaoDataParams);
-        const klcsData = await suanliaoTables.getKlcsTableData(suanliaoDataParams);
-        const suanliaoDataParams2 = this.data.suanliaoDataParams;
-        await this.http.mongodbInsertMulti(
-          suanliaoTables.klkwpzCollection,
-          klkwpzData.map((v) => ({名字: v.名字, 孔位配置: v.孔位配置})),
-          {extraData: suanliaoDataParams2},
-          {silent: true}
-        );
-        await this.http.mongodbInsertMulti(
-          suanliaoTables.klcsCollection,
-          klcsData.map((v) => ({名字: v.名字, 参数: v.参数})),
-          {extraData: suanliaoDataParams2},
-          {silent: true}
-        );
-        await suanliaoTables.update();
-        this.spinner.hide(this.spinner.defaultLoaderId);
+    if (!data?.工艺做法 || !data.data) {
+      return;
+    }
+    const {suanliaoTables} = this;
+    const [包边方向, 开启] = key1.split("+");
+    const suanliaoDataParams: SuanliaoDataParams = {
+      选项: {
+        型号: data.型号,
+        产品分类: data.产品分类,
+        工艺做法: data.工艺做法,
+        包边方向,
+        开启,
+        门铰锁边铰边: data.data.名字
       }
+    };
+    const suanliaoDataParams2 = this.data.suanliaoDataParams;
+    for (const cad of data.data[key1].算料CAD) {
+      const zhankai = cad.json.zhankai?.[0];
+      if (!zhankai) {
+        continue;
+      }
+      let zhankaiKey: string | undefined;
+      let mubanId: string | undefined;
+      const zhankaiKeys = ["neikaimuban", "kailiaomuban"];
+      for (const key of zhankaiKeys) {
+        if (zhankai[key]) {
+          zhankaiKey = key;
+          mubanId = zhankai[key];
+          break;
+        }
+      }
+      if (!zhankaiKey || !mubanId) {
+        continue;
+      }
+      if (mubanId) {
+        const ids = await this.http.mongodbCopy("kailiaocadmuban", mubanId, {extraData: suanliaoDataParams2, force: true}, {silent: true});
+        if (ids?.[0]) {
+          zhankai[zhankaiKey] = ids[0];
+        } else {
+          for (const key of zhankaiKeys) {
+            delete zhankai[key];
+          }
+        }
+      }
+    }
+    this.data.data.算料CAD.push(...data.data[key1].算料CAD);
+    this.data.data.算料公式.push(...data.data[key1].算料公式);
+    if (suanliaoTables) {
+      this.spinner.show(this.spinner.defaultLoaderId);
+      const klkwpzData = await suanliaoTables.getKlkwpzData(suanliaoDataParams);
+      const klcsData = await suanliaoTables.getKlcsTableData(suanliaoDataParams);
+      await this.http.mongodbInsertMulti(
+        suanliaoTables.klkwpzCollection,
+        klkwpzData.map((v) => ({名字: v.名字, 孔位配置: v.孔位配置})),
+        {extraData: suanliaoDataParams2},
+        {silent: true}
+      );
+      await this.http.mongodbInsertMulti(
+        suanliaoTables.klcsCollection,
+        klcsData.map((v) => ({名字: v.名字, 参数: v.参数})),
+        {extraData: suanliaoDataParams2},
+        {silent: true}
+      );
+      await suanliaoTables.update();
+      this.spinner.hide(this.spinner.defaultLoaderId);
     }
   }
 

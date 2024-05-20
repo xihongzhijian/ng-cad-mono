@@ -313,7 +313,7 @@ export class TongyongshujuDialogComponent implements OnInit {
     if (result) {
       const {collection} = this;
       for (const cad of result) {
-        const ids = await this.http.mongodbCopy(collection, [cad.id], {spinner: this.cadListLoader});
+        const ids = await this.http.mongodbCopy(collection, [cad.id], {}, {spinner: this.cadListLoader});
         const id = ids?.[0];
         if (!id) {
           continue;
@@ -336,7 +336,7 @@ export class TongyongshujuDialogComponent implements OnInit {
     if (!item || !(await this.message.confirm("确定复制该CAD吗？"))) {
       return;
     }
-    const success = await this.http.mongodbCopy(this.collection, [item._id], {spinner: this.cadListLoader});
+    const success = await this.http.mongodbCopy(this.collection, [item._id], {}, {spinner: this.cadListLoader});
     if (success) {
       await this.refreshActiveCadList();
     }

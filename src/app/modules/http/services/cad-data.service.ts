@@ -16,6 +16,7 @@ import {
   GetOptionsParams,
   GetShortUrlParams,
   HoutaiCad,
+  MongodbCopyOptions,
   MongodbDataBase,
   MongodbInsertOptions,
   OptionsData,
@@ -387,8 +388,11 @@ export class CadDataService extends HttpService {
     return false;
   }
 
-  async mongodbCopy(collection: CadCollection, ids: string | string[], options?: HttpOptions) {
-    return await this.getData<string[]>("ngcad/mongodbTableCopy", {collection, vids: ids}, options);
+  async mongodbCopy(collection: CadCollection, ids: string | string[], optionsCopy?: MongodbCopyOptions, options?: HttpOptions) {
+    if (!Array.isArray(ids)) {
+      ids = [ids];
+    }
+    return await this.getData<string[]>("ngcad/mongodbTableCopy", {collection, vids: ids, ...optionsCopy}, options);
   }
 
   async getXiaodaohangStructure(xiaodaohang: string, options?: HttpOptions) {

@@ -210,3 +210,8 @@ export interface MongodbInsertOptions {
   extraData?: ObjectOf<any>;
   force?: boolean;
 }
+
+export interface MongodbCopyOptions {
+  extraData?: ObjectOf<any>;
+  force?: boolean;
+}

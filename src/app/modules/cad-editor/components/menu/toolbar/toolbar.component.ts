@@ -337,7 +337,7 @@ export class ToolbarComponent {
   async copyCad() {
     const collection = this.status.collection$.getValue();
     const loaderId = this.spinner.defaultLoaderId;
-    const ids = await this.http.mongodbCopy(collection, [this.status.cad.data.id], {spinner: loaderId});
+    const ids = await this.http.mongodbCopy(collection, [this.status.cad.data.id], {}, {spinner: loaderId});
     if (ids) {
       const yes = await this.message.confirm("是否跳转至新的CAD？");
       if (yes) {
