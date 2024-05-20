@@ -1,4 +1,4 @@
-import {Component, EventEmitter, HostBinding, Inject, OnInit, Output, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {Component, ElementRef, EventEmitter, HostBinding, Inject, OnInit, Output, QueryList, ViewChild, ViewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -8,7 +8,7 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf, RequiredKeys} from "@lucilor/utils";
+import {ObjectOf, RequiredKeys, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -18,7 +18,7 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {AppStatusService} from "@services/app-status.service";
 import {debounce} from "lodash";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {SuanliaogongshiComponent} from "../../../modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
@@ -59,6 +59,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
 
   @ViewChild(SuanliaoTablesComponent) suanliaoTables?: SuanliaoTablesComponent;
   @ViewChildren(CadItemComponent) cadItems?: QueryList<CadItemComponent>;
+  @ViewChild("cadsScrollbar") cadsScrollbar?: NgScrollbar;
 
   constructor(
     private message: MessageService,
@@ -66,6 +67,7 @@ export class SuanliaoDataDialogComponent implements OnInit {
     private http: CadDataService,
     private spinner: SpinnerService,
     private status: AppStatusService,
+    private el: ElementRef<HTMLElement>,
     public dialogRef: MatDialogRef<SuanliaoDataDialogComponent, SuanliaoDataOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoDataInput
   ) {
@@ -241,17 +243,42 @@ export class SuanliaoDataDialogComponent implements OnInit {
     component.saveInfo();
   }
 
-  async submit() {
+  async validate() {
     const cadItems = this.cadItems?.toArray() || [];
     const errors: string[] = [];
-    if (!cadItems.every((v) => v.validate())) {
-      errors.push("CAD数据有误");
+    for (const item of cadItems) {
+      for (const err of item.validate()) {
+        errors.push(err);
+      }
     }
-    if (errors.length) {
+
+    await timeout(0);
+    const targetY = window.innerHeight / 2;
+    const errorElInfos: {el: HTMLElement; y: number; order: number}[] = [];
+    this.el.nativeElement.querySelectorAll<HTMLElement>(".error").forEach((el) => {
+      const {top, bottom} = el.getBoundingClientRect();
+      errorElInfos.push({el, y: (top + bottom) / 2, order: Math.abs((top + bottom) / 2 - targetY)});
+    });
+    errorElInfos.sort((a, b) => a.order - b.order);
+    const {cadsScrollbar: scrollbar} = this;
+    if (errorElInfos.length > 0 && scrollbar) {
+      const dy = errorElInfos[0].y - targetY;
+      if (dy !== 0) {
+        scrollbar.scrollTo({top: scrollbar.nativeElement.scrollTop + dy});
+      }
+    }
+
+    if (errors.length > 0) {
       this.message.error(errors.join("<br>"));
-      return;
     }
-    this.dialogRef.close({data: this.data.data});
+    return errors;
+  }
+
+  async submit() {
+    const errors = await this.validate();
+    if (errors.length < 1) {
+      this.dialogRef.close({data: this.data.data});
+    }
   }
 
   async copyCad(component: CadItemComponent<SuanliaoDataCadItemInfo>) {
@@ -329,6 +356,10 @@ export class SuanliaoDataDialogComponent implements OnInit {
   }
 
   async submitMenjiao() {
+    const errors = await this.validate();
+    if (errors.length > 0) {
+      return;
+    }
     const {componentMenjiao} = this.data;
     if (!componentMenjiao) {
       return;

@@ -17,7 +17,7 @@
       <button mat-raised-button [color]="isSuanliaoCadReversed ? 'accent' : 'primary'" (click)="isSuanliaoCadReversed = true">升序</button>
       <button mat-raised-button [color]="isSuanliaoCadReversed ? 'primary' : 'accent'" (click)="isSuanliaoCadReversed = false">降序</button>
     </div>
-    <ng-scrollbar class="enable-x">
+    <ng-scrollbar #cadsScrollbar class="enable-x">
       <div class="cads flex-row">
         @for (cad of getSuanliaoCads(); track i; let i = $index) {
           <app-cad-item
@@ -28,6 +28,7 @@
             [openCadOptions]="openCadOptions"
             [customInfo]="{index: getSuanliaoCadIndex(i)}"
             [showMuban]="data.isKailiao"
+            [validators]="{zhankai: true}"
             [class.hidden]="hiddenSuanliaoCads.includes(getSuanliaoCadIndex(i))"
           ></app-cad-item>
         }

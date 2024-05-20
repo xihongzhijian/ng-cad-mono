@@ -9,6 +9,7 @@ import {
   Input,
   OnChanges,
   OnDestroy,
+  OnInit,
   Output,
   QueryList,
   SimpleChanges,
@@ -63,7 +64,7 @@ import {CadItemButton, CadItemSelectable, typeOptions} from "./cad-item.types";
   templateUrl: "./cad-item.component.html",
   styleUrl: "./cad-item.component.scss"
 })
-export class CadItemComponent<T = undefined> extends Subscribed() implements OnChanges, OnDestroy {
+export class CadItemComponent<T = undefined> extends Subscribed() implements OnChanges, OnInit, OnDestroy {
   @Input() cadWidth = 360;
   @Input() cadHeight = 180;
 
@@ -91,6 +92,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
   };
+  @Input() validators?: {zhankai?: boolean};
   @Output() afterEditCad = new EventEmitter<void>();
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
@@ -103,6 +105,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   cadData?: CadData;
   mubanData?: CadData;
   mubanInputs: InputInfo[][] = [];
+  errorMsgs: ObjectOf<string> = {};
 
   constructor(
     private message: MessageService,
@@ -121,7 +124,14 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     }
   }
 
+  ngOnInit() {
+    this.subscribe(this.afterEditCad, () => {
+      this.validate();
+    });
+  }
+
   ngOnDestroy() {
+    super.ngOnDestroy();
     this.cadViewer?.destroy();
     this.mubanViewer?.destroy();
   }
@@ -160,6 +170,18 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       }
       cad.json.zhankai[0].kailiaomuban = value;
     }
+  }
+  get zhankai() {
+    const {cad} = this;
+    let zhankai: any;
+    if (cad instanceof CadData) {
+      zhankai = cad.zhankai[0];
+    } else {
+      if (cad?.json?.zhankai && cad.json.zhankai[0]) {
+        zhankai = cad.json.zhankai[0];
+      }
+    }
+    return zhankai as CadZhankai | undefined;
   }
 
   centerCad() {
@@ -602,11 +624,22 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
 
   validate() {
     const inputs = this.inputComponents?.toArray() || [];
+    const errors: string[] = [];
+    this.errorMsgs = {};
+    const {cadName, validators} = this;
+    const name = `【${cadName}】`;
     if (inputs.some((v) => !isEmpty(v.validateValue()))) {
-      return false;
-    } else {
-      return true;
+      errors.push(`${name}输入数据有误`);
     }
+    if (validators?.zhankai) {
+      const {zhankai} = this;
+      if (!zhankai?.zhankaigao) {
+        const err = `${name}展开高不能为空`;
+        errors.push(err);
+        this.errorMsgs.展开信息 = err;
+      }
+    }
+    return errors;
   }
 
   isCadInfoVisible(item: Cad数据要求Item) {
@@ -625,14 +658,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       }
       return getValueString(value, "\n", "：");
     } else if (item.key === "展开信息") {
-      let zhankai: any;
-      if (cad instanceof CadData) {
-        zhankai = cad.zhankai[0];
-      } else {
-        if (cad?.json?.zhankai && cad.json.zhankai[0]) {
-          zhankai = cad.json.zhankai[0];
-        }
-      }
+      const zhankai = this.zhankai;
       if (zhankai) {
         return `${zhankai.zhankaikuan || ""} × ${zhankai.zhankaigao || ""} = ${zhankai.shuliang || ""}`;
       }

@@ -45,6 +45,7 @@
             (click)="onClick()"
             [placeholder]="info.placeholder || ''"
             [matAutocomplete]="auto"
+            [matAutocompleteDisabled]="options.length < 1"
           />
         }
       }
