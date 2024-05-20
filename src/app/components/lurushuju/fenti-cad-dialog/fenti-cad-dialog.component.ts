@@ -61,8 +61,9 @@ export class FentiCadDialogComponent {
       return;
     }
     const data = result[0];
-    data.resetIds(true);
-    fentiCads[key] = getHoutaiCad(data);
+    const houtaiId = data.id;
+    data.resetIds();
+    fentiCads[key] = getHoutaiCad(data, {houtaiId: houtaiId});
   }
 
   removeCad(component: CadItemComponent<FentiCadItemInfo>) {
