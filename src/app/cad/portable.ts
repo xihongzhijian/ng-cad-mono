@@ -22,7 +22,7 @@ import {
 import {keysOf, Line, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {difference, intersection, isEqual, uniqueId} from "lodash";
-import {generateLineTexts2, isShiyitu, showIntersections} from "./utils";
+import {autoShuangxiangzhewan, generateLineTexts2, isShiyitu, showIntersections} from "./utils";
 
 export interface Slgs {
   名字: string;
@@ -471,6 +471,8 @@ export class CadPortable {
         setLinesLength(data, linesToSet, maxLineLength);
       }
       generateLineTexts2(data);
+
+      autoShuangxiangzhewan(data);
     });
     return {cads, slgses, sourceCadMap, xinghaoInfo};
   }

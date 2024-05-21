@@ -771,3 +771,14 @@ export const uploadAndReplaceCad = async (file: File, data: CadData, isMain: boo
   }
   return false;
 };
+
+export const autoShuangxiangzhewan = (data: CadData, tolerance?: number) => {
+  if (!data.type.includes("算料")) {
+    return;
+  }
+  const lines = sortLines(data, tolerance);
+  if (lines.length !== 2) {
+    return;
+  }
+  data.shuangxiangzhewan = true;
+};
