@@ -1,6 +1,8 @@
 <div class="toolbar">
   @if (data.source) {
-    <div class="flex-110"></div>
+    <div class="flex-110">
+      <ng-container [ngTemplateOutlet]="searchInput"></ng-container>
+    </div>
   } @else {
     <mat-form-field style="flex: 0 1 150px">
       <mat-label>搜索类型</mat-label>
@@ -11,13 +13,7 @@
         <mat-option value="条件">条件</mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-form-field>
-      <mat-label>搜索CAD</mat-label>
-      <input name="search-value" matInput type="search" (keydown)="searchKeydown($event)" [(ngModel)]="searchNameInput" />
-      <button mat-icon-button color="primary" type="submit" matSuffix (click)="search()">
-        <mat-icon>search</mat-icon>
-      </button>
-    </mat-form-field>
+    <ng-container [ngTemplateOutlet]="searchInput"></ng-container>
     <button mat-raised-button [color]="multiDeleting ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
     @if (data.options) {
       <button mat-raised-button color="primary" (click)="search(true, 'and')">父级搜索</button>
@@ -83,4 +79,12 @@
   ></mat-paginator>
 </div>
 
-<ng-template #details let-data [appTypedTemplate]="{$implicit: cadDataType}"> </ng-template>
+<ng-template #searchInput let-data [appTypedTemplate]="{$implicit: cadDataType}">
+  <mat-form-field>
+    <mat-label>搜索CAD</mat-label>
+    <input name="search-value" matInput type="search" (keydown)="searchKeydown($event)" [(ngModel)]="searchNameInput" />
+    <button mat-icon-button color="primary" type="submit" matSuffix (click)="search()">
+      <mat-icon>search</mat-icon>
+    </button>
+  </mat-form-field>
+</ng-template>

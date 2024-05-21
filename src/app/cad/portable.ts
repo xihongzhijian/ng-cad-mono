@@ -485,7 +485,7 @@ export class CadPortable {
     const cols = 10;
     const {type, exportId, exportUniqCode, exportOptions} = params;
     const {sourceCad, importResult, xinghaoInfo, slgses} = params.sourceParams || {};
-    const cads = params.cads.filter((v) => v.entities.length > 0 && Object.keys(v.options).length > 0);
+    const cads = params.cads.filter((v) => v.entities.length > 0);
     const emptyData = new CadData();
 
     const groupedCads: (CadData[] | null)[] = [];

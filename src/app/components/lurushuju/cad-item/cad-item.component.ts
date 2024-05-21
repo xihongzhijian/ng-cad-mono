@@ -204,7 +204,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       // fixme
       // params.fields = fields;
     }
-    const data = (await this.http.queryMongodb<HoutaiCad>(params))[0];
+    const data = (await this.http.queryMongodb<HoutaiCad>(params, {spinner: false}))[0];
     if (data) {
       if (this.cad instanceof CadData) {
         Object.assign(this.cad, new CadData(data.json));

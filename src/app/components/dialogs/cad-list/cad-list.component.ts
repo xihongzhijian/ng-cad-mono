@@ -1,4 +1,4 @@
-import {KeyValuePipe} from "@angular/common";
+import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {AfterViewInit, Component, forwardRef, HostBinding, Inject, ViewChild} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -21,7 +21,7 @@ import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {openExportPage} from "@app/views/export/export.utils";
 import {openImportPage} from "@app/views/import/import.utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {isBetween, isNumber, ObjectOf, timeout} from "@lucilor/utils";
+import {isBetween, isNumber, ObjectOf, queryString, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
@@ -56,6 +56,7 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
     MatSelectModule,
     MatSlideToggleModule,
     NgScrollbar,
+    NgTemplateOutlet,
     SpinnerComponent,
     TypedTemplateDirective
   ]
@@ -153,8 +154,12 @@ export class CadListComponent implements AfterViewInit {
     this.length = 0;
     const {collection, standaloneSearch} = this.data;
     if (this.data.source) {
-      const total = this.data.source.length;
-      const cads = this.data.source.slice((page - 1) * limit, page * limit);
+      let cadsAll = this.data.source;
+      if (this.searchNameInput) {
+        cadsAll = cadsAll.filter((v) => queryString(this.searchNameInput, v.name));
+      }
+      const total = cadsAll.length;
+      const cads = cadsAll.slice((page - 1) * limit, page * limit);
       result = {cads, total};
     } else {
       const search = {...this.data.search};
@@ -187,7 +192,7 @@ export class CadListComponent implements AfterViewInit {
       result = await this.http.getCad(params);
     }
     this.length = result.total;
-    result.cads.forEach(async (d) => {
+    result.cads.forEach((d) => {
       const checked = this.checkedItems.find((v) => v === d.id) ? true : false;
       this.pageData.push({data: getHoutaiCad(d), checked});
     });
