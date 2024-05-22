@@ -37,6 +37,25 @@ export const maxLineLength = 130 as const;
 
 export const 激光开料标记线类型 = ["短直线", "直角三角形", "等腰三角形"] as const;
 
+const cadSkipTypes = [
+  "铰企料",
+  "中锁料",
+  "中铰料",
+  "小锁料",
+  "扇锁企料",
+  "中铰料",
+  "中锁料",
+  "铰企料",
+  "包边正面",
+  "锁框",
+  "铰框",
+  "顶框",
+  "底框",
+  "中横框",
+  "算料单示意图",
+  "______算料单示意图"
+];
+
 export const prepareCadViewer = async (cad: CadViewer) => {
   let url = "n/static/fonts/xhzj_sp.ttf";
   if (environment.production) {
@@ -118,23 +137,7 @@ export const validateLines = (data: CadData, noInfo?: boolean, tolerance = DEFAU
   if (isShiyitu(data) || ["企料算料", "孔"].includes(data.type)) {
     return result;
   }
-  const types = [
-    "铰企料",
-    "中锁料",
-    "中铰料",
-    "小锁料",
-    "扇锁企料",
-    "中铰料",
-    "中锁料",
-    "铰企料",
-    "包边正面",
-    "锁框",
-    "铰框",
-    "顶框",
-    "底框",
-    "中横框"
-  ];
-  const typeCheck = types.includes(data.type);
+  const typeCheck = cadSkipTypes.includes(data.type);
   const lines = sortLines(data, tolerance);
   result.errorLines = lines;
   const [min, max] = LINE_LIMIT;
@@ -773,12 +776,25 @@ export const uploadAndReplaceCad = async (file: File, data: CadData, isMain: boo
 };
 
 export const autoShuangxiangzhewan = (data: CadData, tolerance?: number) => {
-  if (!data.type.includes("算料")) {
+  if (cadSkipTypes.includes(data.type)) {
     return;
   }
   const lines = sortLines(data, tolerance);
   if (lines.length !== 2) {
     return;
   }
-  data.shuangxiangzhewan = true;
+  const [lines1, lines2] = lines;
+  let intersectionCount = 0;
+  for (const line1 of lines1) {
+    for (const line2 of lines2) {
+      if (line1 instanceof CadLine && line2 instanceof CadLine) {
+        if (line1.curve.intersects(line2.curve)) {
+          intersectionCount++;
+        }
+      }
+    }
+  }
+  if (intersectionCount === 1) {
+    data.shuangxiangzhewan = true;
+  }
 };

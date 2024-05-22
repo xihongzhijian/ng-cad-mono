@@ -843,14 +843,14 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       return;
     }
     if (codes.length > 1) {
-      await this.message.alert("无法保存到多个订单");
+      await this.message.alert("错误：只能保存一个订单的pdf文件");
       return;
     }
     const table = "j_dingdansuandanshenhe";
     const records = await this.http.queryMySql({table, fields: ["vid"], filter: {where: {mingzi: codes[0]}}});
     const record = records[0];
     if (!record) {
-      await this.message.alert("没有订单审核");
+      await this.message.alert("【订单算单审核】查询不到订单");
       return;
     }
     await this.http.post("jichu/jichu/upload_file", {
