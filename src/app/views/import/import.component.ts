@@ -457,18 +457,6 @@ export class ImportComponent extends Utils() implements OnInit {
       if (xinghao) {
         data.options.型号 = xinghao;
       }
-
-      for (const zhankai of data.zhankai) {
-        if (!zhankai.zhankaikuan) {
-          v.errors.push("【展开宽】不能为空");
-        }
-        if (!zhankai.zhankaigao) {
-          v.errors.push("【展开高】不能为空");
-        }
-        if (!zhankai.shuliang) {
-          v.errors.push("【展开数量】不能为空");
-        }
-      }
     }
 
     this.cads = cads;
