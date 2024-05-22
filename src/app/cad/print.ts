@@ -1069,10 +1069,15 @@ export const printCads = async (params: PrintCadsParams) => {
     },
     {}
   );
-  const url = await new Promise<string>((resolve) => {
-    pdf.getBlob((blob) => resolve(URL.createObjectURL(blob)));
+  const {pdfFile, url} = await new Promise<{pdfFile: File; url: string}>((resolve) => {
+    pdf.getBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const name = params.codes?.join(",") || "print";
+      const file = new File([blob], `${name}.pdf`, {type: "application/pdf"});
+      resolve({pdfFile: file, url});
+    });
   });
-  return {url, errors, cad};
+  return {url, errors, cad, pdfFile};
 };
 
 const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物料明细: 型材物料明细 | undefined) => {

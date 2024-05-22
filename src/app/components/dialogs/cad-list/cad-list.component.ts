@@ -21,7 +21,7 @@ import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {openExportPage} from "@app/views/export/export.utils";
 import {openImportPage} from "@app/views/import/import.utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {isBetween, isNumber, ObjectOf, queryString, timeout} from "@lucilor/utils";
+import {isBetween, isNumber, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
@@ -156,7 +156,7 @@ export class CadListComponent implements AfterViewInit {
     if (this.data.source) {
       let cadsAll = this.data.source;
       if (this.searchNameInput) {
-        cadsAll = cadsAll.filter((v) => queryString(this.searchNameInput, v.name));
+        cadsAll = cadsAll.filter((v) => queryStringList(this.searchNameInput, [v.name, v.id]));
       }
       const total = cadsAll.length;
       const cads = cadsAll.slice((page - 1) * limit, page * limit);

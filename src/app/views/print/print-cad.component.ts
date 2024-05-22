@@ -68,6 +68,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   loaderId = "printLoader";
   pdfUrlRaw?: string;
   pdfUrl?: SafeUrl;
+  pdfFile: File | null = null;
   showDxfInput = false;
   private _paramKey = "printCad-paramCache";
   private _httpCacheKey = "printCad-httpCache";
@@ -283,7 +284,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     } else {
       params.keepCad = false;
     }
-    const {url, errors, cad} = await printCads({...params, cads});
+    const {url, errors, cad, pdfFile} = await printCads({...params, cads});
     if (this.enableZixuanpeijian) {
       this.cad = cad;
       if (this.mode === "edit") {
@@ -298,6 +299,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     }
     this.pdfUrlRaw = url;
     this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.pdfFile = pdfFile;
     timer.end(this.loaderId, "生成算料单");
   }
 
@@ -827,5 +829,35 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       return;
     }
     this.status.openCadInNewTab(id, "CADmuban");
+  }
+
+  async savePdf() {
+    const {pdfFile} = this;
+    if (!pdfFile) {
+      await this.message.alert("没有pdf文件");
+      return;
+    }
+    const {codes} = this.printParams;
+    if (codes.length < 1) {
+      await this.message.alert("没有订单号");
+      return;
+    }
+    if (codes.length > 1) {
+      await this.message.alert("无法保存到多个订单");
+      return;
+    }
+    const table = "j_dingdansuandanshenhe";
+    const records = await this.http.queryMySql({table, fields: ["vid"], filter: {where: {mingzi: codes[0]}}});
+    const record = records[0];
+    if (!record) {
+      await this.message.alert("没有订单审核");
+      return;
+    }
+    await this.http.post("jichu/jichu/upload_file", {
+      table,
+      vid: record.vid,
+      field: "suanliaodanpdf",
+      file: pdfFile
+    });
   }
 }
