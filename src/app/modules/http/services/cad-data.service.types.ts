@@ -204,6 +204,7 @@ export interface GetShortUrlParams {
   hideCols?: string[];
   showBtns?: string[];
   hideBtns?: string[];
+  forceInsert?: boolean;
 }
 
 export interface MongodbInsertOptions {

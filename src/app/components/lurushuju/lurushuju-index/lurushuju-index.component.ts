@@ -1394,7 +1394,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   async xinghaoTongyongGongshi() {
     const where = {分类: "型号通用公式"};
-    const url = await this.http.getShortUrl("算料公式", {search2: where, extraData: where});
+    const url = await this.http.getShortUrl("算料公式", {search2: where, extraData: where, forceInsert: true});
     if (url) {
       window.open(url);
     }
