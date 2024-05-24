@@ -10,13 +10,13 @@ export type PointsMap = {
   selected: boolean;
 }[];
 
-export const generatePointsMap = (entities?: CadEntities, tolerance = DEFAULT_TOLERANCE) => {
+export const generatePointsMap = (entities?: CadEntities, tol = DEFAULT_TOLERANCE) => {
   const map: PointsMap = [];
   if (!entities) {
     return map;
   }
   const addToMap = (point: Point, line: CadLine | CadArc) => {
-    const linesAtPoint = map.find((v) => v.point.distanceTo(point) <= tolerance);
+    const linesAtPoint = map.find((v) => v.point.distanceTo(point) <= tol);
     if (linesAtPoint) {
       linesAtPoint.lines.push(line);
     } else {
@@ -43,13 +43,13 @@ export const generatePointsMap = (entities?: CadEntities, tolerance = DEFAULT_TO
   return map;
 };
 
-export const findAdjacentLines = (map: PointsMap, entity: CadLineLike, point: Point, tolerance = DEFAULT_TOLERANCE): CadLineLike[] => {
+export const findAdjacentLines = (map: PointsMap, entity: CadLineLike, point: Point, tol = DEFAULT_TOLERANCE): CadLineLike[] => {
   if (!point && entity instanceof CadLine) {
     const adjStart = findAdjacentLines(map, entity, entity.start);
     const adjEnd = findAdjacentLines(map, entity, entity.end);
     return [...adjStart, ...adjEnd];
   }
-  const pal = map.find((v) => v.point.distanceTo(point) <= tolerance);
+  const pal = map.find((v) => v.point.distanceTo(point) <= tol);
   if (pal) {
     const lines = pal.lines.filter((v) => v.id !== entity.id);
     return lines;
@@ -61,13 +61,13 @@ export const findAllAdjacentLines = (
   map: PointsMap,
   entity: CadLineLike,
   point: Point,
-  tolerance = DEFAULT_TOLERANCE,
+  tol = DEFAULT_TOLERANCE,
   ids: string[] = []
 ): {entities: CadLineLike[]; closed: boolean} => {
   const entities: CadLineLike[] = [];
   let closed = false;
   ids.push(entity.id);
-  const next = findAdjacentLines(map, entity, point, tolerance);
+  const next = findAdjacentLines(map, entity, point, tol);
   for (const e of next) {
     if (ids.includes(e.id)) {
       closed = true;
@@ -75,16 +75,16 @@ export const findAllAdjacentLines = (
     }
     let p: Point | undefined;
     const {start, end} = e;
-    if (start.equals(point, tolerance)) {
+    if (start.equals(point, tol)) {
       p = end;
-    } else if (end.equals(point, tolerance)) {
+    } else if (end.equals(point, tol)) {
       p = start;
     } else {
       continue;
     }
     entities.push(e);
     ids.push(e.id);
-    const result = findAllAdjacentLines(map, e, p, tolerance, ids);
+    const result = findAllAdjacentLines(map, e, p, tol, ids);
     closed = result.closed;
     entities.push(...result.entities);
   }
@@ -94,7 +94,7 @@ export const findAllAdjacentLines = (
 export const findCrossingLine = (data: CadData, line: CadLine) => {
   const lines = data.getAllEntities().line;
   const curve = line.curve;
-  return lines.filter((l) => l.curve.intersects(curve));
+  return lines.filter((l) => l.curve.intersects(curve).length > 0);
 };
 
 export const setLinesLength = (data: CadData, lines: CadLine[], length: number) => {
@@ -122,7 +122,7 @@ export const swapStartEnd = (entity: CadLineLike) => {
   entity.swapped = !entity.swapped;
 };
 
-export const sortLines = (data: CadData, tolerance = DEFAULT_TOLERANCE) => {
+export const sortLines = (data: CadData, tol = DEFAULT_TOLERANCE) => {
   const entities = data.entities;
   const result: CadLineLike[][] = [];
   if (entities.length === 0) {
@@ -166,13 +166,13 @@ export const sortLines = (data: CadData, tolerance = DEFAULT_TOLERANCE) => {
     if (startLine instanceof CadLine) {
       adjLines = adjLines.filter((e) => {
         if (e instanceof CadLine) {
-          if (!e.theta.equals(startLine.theta, tolerance)) {
+          if (!e.theta.equals(startLine.theta, tol)) {
             return true;
           }
-          if (e.start.equals(startLine.start, tolerance) && e.end.equals(startLine.end, tolerance)) {
+          if (e.start.equals(startLine.start, tol) && e.end.equals(startLine.end, tol)) {
             return false;
           }
-          if (e.start.equals(startLine.end, tolerance) && e.end.equals(startLine.start, tolerance)) {
+          if (e.start.equals(startLine.end, tol) && e.end.equals(startLine.start, tol)) {
             return false;
           }
           return true;
@@ -183,7 +183,7 @@ export const sortLines = (data: CadData, tolerance = DEFAULT_TOLERANCE) => {
     let lines = [startLine, ...adjLines];
     let count = lines.length;
     const duplicateLines: Set<number>[] = [];
-    const isPtEq = (p1: Point, p2: Point) => p1.equals(p2, tolerance);
+    const isPtEq = (p1: Point, p2: Point) => p1.equals(p2, tol);
     for (let i = 0; i < count; i++) {
       for (let j = i + 1; j < count; j++) {
         const e1 = lines[i];
@@ -195,7 +195,7 @@ export const sortLines = (data: CadData, tolerance = DEFAULT_TOLERANCE) => {
         const p2 = e1.end;
         const p3 = e2.start;
         const p4 = e2.end;
-        if (e1.theta.equals(e2.theta, tolerance) && ((isPtEq(p1, p3) && isPtEq(p2, p4)) || (isPtEq(p1, p4) && isPtEq(p2, p3)))) {
+        if (e1.theta.equals(e2.theta, tol) && ((isPtEq(p1, p3) && isPtEq(p2, p4)) || (isPtEq(p1, p4) && isPtEq(p2, p3)))) {
           const group = duplicateLines.find((vv) => vv.has(i) || vv.has(j));
           if (group) {
             group.add(i);
@@ -213,7 +213,7 @@ export const sortLines = (data: CadData, tolerance = DEFAULT_TOLERANCE) => {
     for (let i = 1; i < count; i++) {
       const prev = lines[i - 1];
       const curr = lines[i];
-      if (prev.end.distanceTo(curr.start) > tolerance) {
+      if (prev.end.distanceTo(curr.start) > tol) {
         swapStartEnd(curr);
         regen = true;
       }
@@ -240,8 +240,8 @@ export const getLinesDistance = (l1: CadLineLike, l2: CadLineLike) => {
   return Math.min(d1, d2, d3, d4);
 };
 
-export const generateLineTexts = (data: CadData, tolerance = DEFAULT_TOLERANCE) => {
-  const lines = sortLines(data, tolerance);
+export const generateLineTexts = (data: CadData, tol = DEFAULT_TOLERANCE) => {
+  const lines = sortLines(data, tol);
   lines.forEach((group) => {
     let cp = 0;
     const length = group.length;
@@ -283,14 +283,14 @@ export const generateLineTexts = (data: CadData, tolerance = DEFAULT_TOLERANCE) 
       } else {
         x = 0;
       }
-      if (Math.abs(x) > tolerance) {
+      if (Math.abs(x) > tol) {
         if (x > 0) {
           anchor.x = 0;
         } else {
           anchor.x = 1;
         }
       }
-      if (Math.abs(y) > tolerance) {
+      if (Math.abs(y) > tol) {
         if (y > 0) {
           anchor.y = 1;
         } else {

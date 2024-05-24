@@ -127,7 +127,7 @@ export const filterCadEntitiesToSave = (data: CadData) => {
 
 export const LINE_LIMIT = [0.01, 0.1] as const;
 export const validColors = ["#ffffff", "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#00ffff"] as const;
-export const validateLines = (data: CadData, noInfo?: boolean, tolerance = DEFAULT_TOLERANCE) => {
+export const validateLines = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOLERANCE) => {
   const result: ValidateResult = {errors: [], errorLines: []};
   data.entities.forEach((e) => {
     if (e instanceof CadLineLike) {
@@ -138,7 +138,7 @@ export const validateLines = (data: CadData, noInfo?: boolean, tolerance = DEFAU
     return result;
   }
   const typeCheck = cadSkipTypes.includes(data.type);
-  const lines = sortLines(data, tolerance);
+  const lines = sortLines(data, tol);
   result.errorLines = lines;
   const [min, max] = LINE_LIMIT;
   const groupMaxLength = data.shuangxiangzhewan ? 2 : 1;
@@ -217,7 +217,7 @@ export const validateLines = (data: CadData, noInfo?: boolean, tolerance = DEFAU
   return result;
 };
 
-export const validateCad = (data: CadData, noInfo?: boolean, tolerance = DEFAULT_TOLERANCE) => {
+export const validateCad = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOLERANCE) => {
   const result: ValidateResult = {errors: [], errorLines: []};
   const entities = data.getAllEntities();
   const idsAll = entities.toArray().map((e) => e.id);
@@ -230,14 +230,14 @@ export const validateCad = (data: CadData, noInfo?: boolean, tolerance = DEFAULT
   if (!isEmpty(data.blocks) || data.entities.insert.length > 0) {
     result.errors.push("不能包含块");
   }
-  const linesResult = validateLines(data, noInfo, tolerance);
+  const linesResult = validateLines(data, noInfo, tol);
   for (const key in result) {
     (result as any)[key].push(...(linesResult as any)[key]);
   }
   return result;
 };
 
-export const autoFixLine = (cad: CadViewer, line: CadLine, tolerance = DEFAULT_TOLERANCE) => {
+export const autoFixLine = (cad: CadViewer, line: CadLine, tol = DEFAULT_TOLERANCE) => {
   const {start, end} = line;
   const dx = start.x - end.x;
   const dy = start.y - end.y;
@@ -249,8 +249,8 @@ export const autoFixLine = (cad: CadViewer, line: CadLine, tolerance = DEFAULT_T
   if (isBetween(Math.abs(dy), min, max)) {
     translate.y = dy;
   }
-  const map = generatePointsMap(cad.data.getAllEntities(), tolerance);
-  const {entities} = findAllAdjacentLines(map, line, line.end, tolerance);
+  const map = generatePointsMap(cad.data.getAllEntities(), tol);
+  const {entities} = findAllAdjacentLines(map, line, line.end, tol);
   entities.forEach((e) => e.transform({translate}, true));
   line.end.add(translate);
 };
@@ -787,10 +787,8 @@ export const autoShuangxiangzhewan = (data: CadData, tolerance?: number) => {
   let intersectionCount = 0;
   for (const line1 of lines1) {
     for (const line2 of lines2) {
-      if (line1 instanceof CadLine && line2 instanceof CadLine) {
-        if (line1.curve.intersects(line2.curve)) {
-          intersectionCount++;
-        }
+      if (line1.curve.intersects(line2.curve).length > 0) {
+        intersectionCount++;
       }
     }
   }

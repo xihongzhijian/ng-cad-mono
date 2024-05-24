@@ -168,7 +168,7 @@ export class CadConsoleComponent {
       const p4 = new Point(end2.x, end2.y);
       const l1 = new Line(p1.clone(), p2.clone());
       const l2 = new Line(p3.clone(), p4.clone());
-      let point = l1.intersects(l2, true);
+      let point = l1.intersects(l2, true).at(0);
       let center: Point;
       let startAngle: number;
       let endAngle: number;
@@ -185,12 +185,12 @@ export class CadConsoleComponent {
         if (l1.theta.equals(l2.theta)) {
           l3 = l1.clone().transform({rotate: Math.PI / 2, origin: l1.start});
           l4 = l1.clone().transform({rotate: Math.PI / 2, origin: l1.end});
-          const p5 = l3.intersects(l2, true);
+          const p5 = l3.intersects(l2, true).at(0);
           if (p5) {
             l3.end.copy(p5);
           }
           l4.reverse();
-          const p6 = l4.intersects(l2, true);
+          const p6 = l4.intersects(l2, true).at(0);
           if (p6) {
             l4.end.copy(p6);
           }
@@ -199,11 +199,11 @@ export class CadConsoleComponent {
           l3 = l1.clone().transform({rotate: Math.PI / 2, origin: l1.end});
           l4 = l1.clone().transform({rotate: Math.PI / 2, origin: l1.start});
           l3.reverse();
-          const p5 = l3.intersects(l2, true);
+          const p5 = l3.intersects(l2, true).at(0);
           if (p5) {
             l3.end.copy(p5);
           }
-          const p6 = l4.intersects(l2, true);
+          const p6 = l4.intersects(l2, true).at(0);
           if (p6) {
             l4.end.copy(p6);
           }

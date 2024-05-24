@@ -1,4 +1,4 @@
-import {ObjectOf, Point} from "@lucilor/utils";
+import {Curve, ObjectOf, Point} from "@lucilor/utils";
 import {purgeObject} from "../../cad-utils";
 import {DEFAULT_LENGTH_TEXT_SIZE} from "../cad-entities";
 import {CadEntity} from "./cad-entity";
@@ -46,6 +46,7 @@ export abstract class CadLineLike extends CadEntity {
   get minY() {
     return Math.min(this.start.y, this.end.y);
   }
+  abstract curve: Curve;
   swapped: boolean;
   mingzi: string;
   mingzi2: string;

@@ -438,7 +438,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
           if (l.id === selected0.id) {
             return;
           }
-          const intersection = l.curve.intersects(curve);
+          const intersection = l.curve.intersects(curve).at(0);
           if (intersection && !intersection.equals(start) && !intersection.equals(end)) {
             const {x, y} = this.status.cad.getScreenPoint(intersection.x, intersection.y);
             points.push({x, y, active: false, lines: []});

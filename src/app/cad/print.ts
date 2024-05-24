@@ -134,7 +134,7 @@ const findRectLines = (data: CadData, keyword: string, findLocator: boolean) => 
         topLines.push(e);
       }
     });
-    const instersects = (e: CadLine, es: CadLine[]) => es.some((e2) => e.curve.intersects(e2.curve));
+    const instersects = (e: CadLine, es: CadLine[]) => es.some((e2) => e.curve.intersects(e2.curve).length > 0);
     const leftLines2 = leftLines.filter((e) => instersects(e, topLines) || instersects(e, bottomLines));
     const rightLines2 = rightLines.filter((e) => instersects(e, topLines) || instersects(e, bottomLines));
     const topLines2 = topLines.filter((e) => instersects(e, leftLines) || instersects(e, rightLines));

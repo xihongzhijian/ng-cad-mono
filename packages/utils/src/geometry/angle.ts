@@ -1,4 +1,4 @@
-import {DEFAULT_TOLERANCE} from "./numbers";
+import {DEFAULT_TOLERANCE} from "./constants";
 
 export class Angle {
   private _value: number;
@@ -107,7 +107,7 @@ export class Angle {
     return this;
   }
 
-  equals(angle: Angle, tolerance = DEFAULT_TOLERANCE) {
-    return Math.abs(this.rad - angle.rad) <= tolerance;
+  equals(angle: Angle, tol = DEFAULT_TOLERANCE) {
+    return Math.abs(this.rad - angle.rad) <= tol;
   }
 }

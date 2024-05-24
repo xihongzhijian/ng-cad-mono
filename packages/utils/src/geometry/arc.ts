@@ -1,9 +1,13 @@
 import {Angle} from "./angle";
+import {DEFAULT_TOLERANCE} from "./constants";
+import {Curve} from "./curve";
+import {arcIntersectsArc, lineIntersectsArc} from "./intersection";
 import {Line} from "./line";
 import {Matrix, MatrixLike} from "./matrix";
+import {isBetween, isNearZero} from "./numbers";
 import {Point} from "./point";
 
-export class Arc {
+export class Arc extends Curve {
   center: Point;
   radius: number;
   clockwise: boolean;
@@ -31,6 +35,7 @@ export class Arc {
   }
 
   constructor(center = new Point(), radius?: number, start?: Angle | Point, end?: Angle | Point, clockwise = true) {
+    super();
     this.center = center;
     this.radius = radius || 0;
     this.clockwise = clockwise;
@@ -115,5 +120,43 @@ export class Arc {
     }
 
     return this;
+  }
+
+  contains(object: Point | this, extend = false, tol = DEFAULT_TOLERANCE): boolean {
+    if (object instanceof Point) {
+      const t1 = this.startAngle.constrain().rad;
+      const t2 = this.endAngle.constrain().rad;
+      const l = new Line(this.center, object);
+      if (isNearZero(this.radius - l.length, tol)) {
+        return false;
+      }
+      if (extend) {
+        return true;
+      }
+      const theta = new Line(this.center, object).theta.constrain().rad;
+      if (t1 > t2 !== this.clockwise) {
+        return !isBetween(theta, t1, t2, false, -tol);
+      } else {
+        return isBetween(theta, t1, t2, true, tol);
+      }
+    } else if (object instanceof Arc) {
+      return (
+        this.contains(object.startPoint, extend, tol) &&
+        this.contains(object.endPoint, extend, tol) &&
+        this.center.equals(object.center) &&
+        this.radius === object.radius &&
+        this.clockwise === object.clockwise
+      );
+    }
+    return false;
+  }
+
+  intersects(target: Curve, extend = false, refPoint?: Point, tol = DEFAULT_TOLERANCE) {
+    if (target instanceof Line) {
+      return lineIntersectsArc(target, this, extend, refPoint, tol);
+    } else if (target instanceof Arc) {
+      return arcIntersectsArc(this, target, extend, refPoint, tol);
+    }
+    return [];
   }
 }

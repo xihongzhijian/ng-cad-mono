@@ -1,32 +1,31 @@
-export const DEFAULT_TOLERANCE = 0.001;
+import {DEFAULT_TOLERANCE} from "./constants";
 
-export const isNearZero = (n: number, tolerance = DEFAULT_TOLERANCE) => Math.abs(n) <= tolerance;
+export const isNearZero = (n: number, tol = DEFAULT_TOLERANCE) => Math.abs(n) <= tol;
 
-export const isEqualTo = (n1: number, n2: number, tolerance = DEFAULT_TOLERANCE) => isNearZero(n1 - n2, tolerance);
+export const isEqualTo = (n1: number, n2: number, tol = DEFAULT_TOLERANCE) => isNearZero(n1 - n2, tol);
 
-export const isGreaterThan = (n1: number, n2: number, tolerance = DEFAULT_TOLERANCE) =>
-  !isEqualTo(n1, n2, tolerance) && n1 - n2 > tolerance && n1 > n2;
+export const isGreaterThan = (n1: number, n2: number, tol = DEFAULT_TOLERANCE) => !isEqualTo(n1, n2, tol) && n1 - n2 > tol && n1 > n2;
 
-export const isLessThan = (n1: number, n2: number, tolerance = DEFAULT_TOLERANCE) => !isEqualTo(n1, n2, tolerance) && n1 < n2;
+export const isLessThan = (n1: number, n2: number, tol = DEFAULT_TOLERANCE) => !isEqualTo(n1, n2, tol) && n1 < n2;
 
-export const approachZero = (n: number, tolerance = DEFAULT_TOLERANCE) => {
-  if (isNearZero(n, tolerance)) {
+export const approachZero = (n: number, tol = DEFAULT_TOLERANCE) => {
+  if (isNearZero(n, tol)) {
     return 0;
   }
   return n;
 };
 
-export const isBetween = (n: number, min: number, max: number, eq = true, tolerance = DEFAULT_TOLERANCE) => {
-  if (isEqualTo(min, max, tolerance)) {
-    return isEqualTo(n, min, tolerance);
+export const isBetween = (n: number, min: number, max: number, eq = true, tol = DEFAULT_TOLERANCE) => {
+  if (isEqualTo(min, max, tol)) {
+    return isEqualTo(n, min, tol);
   }
   if (min > max) {
     [min, max] = [max, min];
   }
-  if (eq && (isEqualTo(n, min, tolerance) || isEqualTo(n, max, tolerance))) {
+  if (eq && (isEqualTo(n, min, tol) || isEqualTo(n, max, tol))) {
     return true;
   }
-  return isGreaterThan(n, min, tolerance) && isLessThan(n, max, tolerance);
+  return isGreaterThan(n, min, tol) && isLessThan(n, max, tol);
 };
 
 export const isNumber = (n: any) => typeof n === "number" && !isNaN(n);

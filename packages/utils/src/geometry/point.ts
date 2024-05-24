@@ -1,6 +1,6 @@
 import {Line} from "..";
+import {DEFAULT_TOLERANCE} from "./constants";
 import {Matrix, MatrixLike} from "./matrix";
-import {DEFAULT_TOLERANCE} from "./numbers";
 
 export type PointLike = number | number[] | {x: number; y: number};
 
@@ -42,9 +42,9 @@ export class Point {
     return this.set(x, y);
   }
 
-  equals(point: Point, tolerance = DEFAULT_TOLERANCE) {
+  equals(point: Point, tol = DEFAULT_TOLERANCE) {
     const {x, y} = point;
-    return Math.abs(x - this.x) <= tolerance && Math.abs(y - this.y) <= tolerance;
+    return Math.abs(x - this.x) <= tol && Math.abs(y - this.y) <= tol;
   }
 
   add(point?: Point): Point;

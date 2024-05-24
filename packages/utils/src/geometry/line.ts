@@ -1,9 +1,13 @@
 import {Angle} from "./angle";
+import {Arc} from "./arc";
+import {DEFAULT_TOLERANCE} from "./constants";
+import {Curve} from "./curve";
+import {lineIntersectsArc, lineIntersectsLine} from "./intersection";
 import {MatrixLike} from "./matrix";
-import {approachZero, DEFAULT_TOLERANCE, isBetween, isEqualTo, isNearZero} from "./numbers";
+import {approachZero, isBetween, isEqualTo, isNearZero} from "./numbers";
 import {Point} from "./point";
 
-export class Line {
+export class Line extends Curve {
   start: Point;
   end: Point;
   get isFinite() {
@@ -14,6 +18,7 @@ export class Line {
   }
 
   constructor(start: Point, end = start) {
+    super();
     this.start = start;
     this.end = end;
   }
@@ -32,19 +37,6 @@ export class Line {
     return this;
   }
 
-  contains(object: Point | Line, extend = false, tolerance = DEFAULT_TOLERANCE): boolean {
-    if (object instanceof Point) {
-      const {x: x1, y: y1} = this.start;
-      const {x: x2, y: y2} = this.end;
-      const {x, y} = object;
-      const withinLine = extend || (isBetween(x, x1, x2, true, tolerance) && isBetween(y, y1, y2, true, tolerance));
-      return isNearZero((x - x1) * (y2 - y1) - (x2 - x1) * (y - y1), tolerance) && withinLine;
-    } else if (object instanceof Line) {
-      return this.contains(object.start, extend, tolerance) && this.contains(object.end, extend, tolerance);
-    }
-    return false;
-  }
-
   get length() {
     return this.start.distanceTo(this.end);
   }
@@ -59,17 +51,17 @@ export class Line {
     return new Angle(Math.atan2(y2 - y1, x2 - x1), "rad");
   }
 
-  getSlope(tolerance = DEFAULT_TOLERANCE) {
+  getSlope(tol = DEFAULT_TOLERANCE) {
     const {x: x1, y: y1} = this.start;
     const {x: x2, y: y2} = this.end;
-    if (isEqualTo(x1, x2, tolerance)) {
+    if (isEqualTo(x1, x2, tol)) {
       return Infinity;
     }
-    return approachZero((y1 - y2) / (x1 - x2), tolerance);
+    return approachZero((y1 - y2) / (x1 - x2), tol);
   }
 
-  getExpression(tolerance = DEFAULT_TOLERANCE) {
-    const slope = this.getSlope(tolerance);
+  getExpression(tol = DEFAULT_TOLERANCE) {
+    const slope = this.getSlope(tol);
     const result = {a: 0, b: 0, c: 0};
     if (isFinite(slope)) {
       result.a = slope;
@@ -93,17 +85,17 @@ export class Line {
     return result;
   }
 
-  equals(line: Line, tolerance = DEFAULT_TOLERANCE) {
-    return this.start.equals(line.start, tolerance) && this.end.equals(line.end, tolerance);
+  equals(line: Line, tol = DEFAULT_TOLERANCE) {
+    return this.start.equals(line.start, tol) && this.end.equals(line.end, tol);
   }
 
-  isParallelWith(line: Line, tolerance = DEFAULT_TOLERANCE) {
-    const slope1 = line.getSlope(tolerance);
-    const slope2 = this.getSlope(tolerance);
+  isParallelWith(line: Line, tol = DEFAULT_TOLERANCE) {
+    const slope1 = line.getSlope(tol);
+    const slope2 = this.getSlope(tol);
     if (!isFinite(slope1) && !isFinite(slope2)) {
       return true;
     }
-    return isNearZero(slope1 - slope2, tolerance);
+    return isNearZero(slope1 - slope2, tol);
   }
 
   transform(matrix: MatrixLike) {
@@ -112,37 +104,18 @@ export class Line {
     return this;
   }
 
-  distanceTo(line: Line | Point, tolerance = DEFAULT_TOLERANCE) {
+  distanceTo(line: Line | Point, tol = DEFAULT_TOLERANCE) {
     if (line instanceof Line) {
-      if (!this.isParallelWith(line, tolerance)) {
+      if (!this.isParallelWith(line, tol)) {
         return NaN;
       }
-      const exp1 = this.getExpression(tolerance);
-      const exp2 = line.getExpression(tolerance);
+      const exp1 = this.getExpression(tol);
+      const exp2 = line.getExpression(tol);
       return Math.abs(exp1.c - exp2.c) / Math.sqrt(exp1.a ** 2 + exp1.b ** 2);
     } else {
-      const {a, b, c} = this.getExpression(tolerance);
+      const {a, b, c} = this.getExpression(tol);
       return Math.abs((a * line.x + b * line.y + c) / Math.sqrt(a ** 2 + b ** 2));
     }
-  }
-
-  intersects(line: Line, extend = false, tolerance = DEFAULT_TOLERANCE) {
-    let intersection: Point | null = null;
-    if (this.isParallelWith(line, tolerance)) {
-      return intersection;
-    }
-    const exp1 = this.getExpression(tolerance);
-    const exp2 = line.getExpression(tolerance);
-    if (exp1 && exp2) {
-      intersection = solveLinearEqXY(exp1.a, exp1.b, -exp1.c, exp2.a, exp2.b, -exp2.c);
-    }
-    if (!intersection) {
-      return null;
-    }
-    if (extend === false && (!this.contains(intersection, extend, tolerance) || !line.contains(intersection, extend, tolerance))) {
-      intersection = null;
-    }
-    return intersection;
   }
 
   crossProduct(line: Line) {
@@ -158,13 +131,26 @@ export class Line {
     const dy = Math.sin(theta) * d;
     return this.start.clone().add(dx, dy);
   }
-}
 
-const solveLinearEqXY = (a1: number, b1: number, c1: number, a2: number, b2: number, c2: number) => {
-  const k = a1 * b2 - a2 * b1;
-  if (k === 0) {
-    return null;
-  } else {
-    return new Point(b2 * c1 - b1 * c2, a1 * c2 - a2 * c1).divide(k);
+  contains(object: Point | this, extend = false, tol = DEFAULT_TOLERANCE): boolean {
+    if (object instanceof Point) {
+      const {x: x1, y: y1} = this.start;
+      const {x: x2, y: y2} = this.end;
+      const {x, y} = object;
+      const withinLine = extend || (isBetween(x, x1, x2, true, tol) && isBetween(y, y1, y2, true, tol));
+      return isNearZero((x - x1) * (y2 - y1) - (x2 - x1) * (y - y1), tol) && withinLine;
+    } else if (object instanceof Line) {
+      return this.contains(object.start, extend, tol) && this.contains(object.end, extend, tol);
+    }
+    return false;
   }
-};
+
+  intersects(target: Curve, extend = false, refPoint?: Point, tol = DEFAULT_TOLERANCE) {
+    if (target instanceof Line) {
+      return lineIntersectsLine(this, target, extend, tol);
+    } else if (target instanceof Arc) {
+      return lineIntersectsArc(this, target, extend, refPoint, tol);
+    }
+    return [];
+  }
+}
