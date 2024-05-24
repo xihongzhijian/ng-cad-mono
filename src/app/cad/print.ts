@@ -806,12 +806,9 @@ const getBomTableImgs = async (bomTable: BomTable, config: CadViewerConfig, size
   };
   const addRow = async (addDivider: boolean, rowData?: ObjectOf<any>) => {
     let maxTextHeight = 0;
-    let emptyNext = false;
     for (const [i, col] of bomTable.cols.entries()) {
       const mtext = new CadMtext({insert: pointer, anchor: [0, 0]});
-      if (emptyNext) {
-        mtext.text = "";
-      } else if (rowData) {
+      if (rowData) {
         if (col.link) {
           mtext.text = getText(col.link[rowData[col.field]]);
         } else {
@@ -823,7 +820,6 @@ const getBomTableImgs = async (bomTable: BomTable, config: CadViewerConfig, size
       mtext.fontStyle.size = 12;
       await viewer.add(mtext);
       const rect = mtext.boundingRect;
-      emptyNext = rect.width > colWidths[i];
       maxTextHeight = Math.max(maxTextHeight, rect.height);
       pointer[0] += colWidths[i];
     }
