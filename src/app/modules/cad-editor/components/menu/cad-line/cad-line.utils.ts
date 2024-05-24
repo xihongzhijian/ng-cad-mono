@@ -65,7 +65,7 @@ export const openCadLineForm = async (
   if (name) {
     title += `【${name}】`;
   }
-  const result = await message.form({title, form});
+  const result = await message.form(form, {title});
   if (result) {
     for (const key of keysOf(cadLineFields)) {
       const key2 = cadLineFields[key];

@@ -255,7 +255,7 @@ export const getObjectString = (value: any, separator: string, separatorKv: stri
   }
   return strs.join(separator);
 };
-export const getValueString = (value: any, separator: string, separatorKv: string) => {
+export const getValueString = (value: any, separator = ",", separatorKv = ":") => {
   if (Array.isArray(value)) {
     return getArrayString(value, separator);
   } else if (value && typeof value === "object") {

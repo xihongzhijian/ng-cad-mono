@@ -650,7 +650,7 @@ export const openCadDimensionForm = async (
   if (name) {
     title += `【${name}】`;
   }
-  const result = await message.form({title, form});
+  const result = await message.form(form, {title});
   if (result) {
     if (result.删除标注) {
       cad.remove(dimension);

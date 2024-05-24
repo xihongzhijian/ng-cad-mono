@@ -604,7 +604,7 @@ export class CadPortable {
           const value = cad[cadFields[key]];
           const defaultValue = emptyData[cadFields[key]];
           if (!isEqual(value, defaultValue)) {
-            const text = getValueString(value, ",", ":");
+            const text = getValueString(value);
             if (text) {
               texts.push(`${key}: ${text}`);
             }

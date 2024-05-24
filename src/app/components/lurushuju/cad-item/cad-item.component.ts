@@ -270,7 +270,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (name) {
       title += `【${name}】`;
     }
-    const result = await this.message.form({title, form});
+    const result = await this.message.form(form, {title});
     if (result) {
       if (data.zhankai[0] && data.zhankai[0].name !== data.name) {
         data.zhankai[0].name = data.name;

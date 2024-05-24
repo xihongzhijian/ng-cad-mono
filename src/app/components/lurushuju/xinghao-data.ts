@@ -402,7 +402,13 @@ export const getXinghaoQuery = (route: ActivatedRoute) => {
   return result;
 };
 
-export const getSortedItems = <T extends {排序?: number}>(items: T[]) => {
-  const result = items.map<T & {originalIndex: number}>((v, i) => ({...v, originalIndex: i}));
+export interface SortableItem {
+  排序?: number;
+}
+export interface SortedItem {
+  originalIndex: number;
+}
+export const getSortedItems = <T extends SortableItem>(items: T[]) => {
+  const result = items.map<T & SortedItem>((v, i) => ({...v, originalIndex: i}));
   return result.sort((a, b) => (a.排序 || 0) - (b.排序 || 0));
 };

@@ -1,6 +1,6 @@
 import {ObjectOf} from "@lucilor/utils";
 import {OptionsDataData, TableDataBase2} from "@modules/http/services/cad-data.service.types";
-import {算料数据, 输入, 选项} from "../xinghao-data";
+import {SortedItem, 算料数据, 输入, 选项} from "../xinghao-data";
 import {LurushujuIndexComponent} from "./lurushuju-index.component";
 
 export interface XinghaoData extends TableDataBase2 {
@@ -31,7 +31,7 @@ export type OptionsAll = ObjectOf<OptionsDataData[]>;
 export type OptionsAll2 = ObjectOf<{options: OptionsDataData[]; disabled?: boolean; multiple?: boolean}>;
 
 export type XuanxiangTableData = 选项 & {操作?: string};
-export type ShuruTableData = 输入 & {操作?: string; originalIndex: number};
+export type ShuruTableData = 输入 & {操作?: string} & SortedItem;
 export type MenjiaoData = 算料数据 & {操作?: string};
 
 export interface XinghaoMenchuang extends TableDataBase2 {

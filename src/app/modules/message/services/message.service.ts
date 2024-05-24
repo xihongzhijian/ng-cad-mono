@@ -96,31 +96,27 @@ export class MessageService {
     return await this.confirm(data, others);
   }
 
-  async form<T = ObjectOf<any>, K = ObjectOf<any>>(
-    data: InputInfo<T>[] | MessageDataParams<FormMessageData>,
+  async form<T = any, K = ObjectOf<any>>(
+    form: InputInfo<T>[],
+    data?: Omit<MessageDataParams<FormMessageData>, "form">,
     others: MessageDataParams2<FormMessageData> = {}
   ) {
-    if (Array.isArray(data)) {
-      data = {form: data};
-    }
-    if (data.form.length > 0) {
-      data.form[0].autoFocus = true;
-    }
-    const result = await this.open({data: this._getData(data, "form"), ...others});
+    const data2: MessageDataParams<FormMessageData> = {...data, form};
+    const result = await this.open({data: this._getData(data2, "form"), ...others});
     if (result && typeof result === "object") {
       return result as K;
     }
     return null;
   }
 
-  async prompt<T = any>(
-    info: InputInfo,
+  async prompt<T = any, K = any>(
+    info: InputInfo<T>,
     data?: Omit<MessageDataParams<FormMessageData>, "form">,
     others: MessageDataParams2<FormMessageData> = {}
   ) {
-    const result = await this.form({form: [info], ...data}, others);
+    const result = await this.form([info], data, others);
     if (result && typeof result === "object") {
-      return Object.values(result)[0] as T;
+      return Object.values(result)[0] as K;
     }
     return null;
   }

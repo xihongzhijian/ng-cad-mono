@@ -71,13 +71,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     return 0;
   }
 
-  get inputs() {
-    if (this.data.type === "form") {
-      return this.data.form;
-    }
-    return [];
-  }
-
   get buttons() {
     if (this.data.type === "button") {
       return this.data.buttons;
@@ -145,7 +138,9 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }, 600);
 
-    this.inputsBackup = cloneDeep(this.inputs);
+    if (data.type === "form") {
+      this.inputsBackup = cloneDeep(data.form);
+    }
   }
 
   ngAfterViewInit() {

@@ -32,7 +32,7 @@
         <div [innerHTML]="contentHTML"></div>
         <form style="padding: 1px" (keyup)="onKeyUp($event)">
           <button hidden></button>
-          @for (info of inputs; track info) {
+          @for (info of data.form; track $index) {
             <app-input #formInput [info]="info"></app-input>
           }
         </form>

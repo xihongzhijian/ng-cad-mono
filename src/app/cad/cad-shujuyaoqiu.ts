@@ -153,7 +153,7 @@ export const filterCad = (query: string, cad: HoutaiCad, yaoqiu: Cad数据要求
       continue;
     }
     const value = cad.json?.[key2];
-    const str = getValueString(value, ",", ":");
+    const str = getValueString(value);
     if (queryString(query, str)) {
       return true;
     }

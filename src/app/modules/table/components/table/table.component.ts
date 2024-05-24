@@ -28,7 +28,7 @@ import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slid
 import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatTable, MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
-import {getFilepathUrl, joinOptions, splitOptions} from "@app/app.common";
+import {getFilepathUrl, getValueString, joinOptions, splitOptions} from "@app/app.common";
 import {OpenCadOptions} from "@app/services/app-status.types";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
@@ -628,8 +628,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const value = item[column.field];
 
     switch (column.type) {
-      case "boolean":
-        return value ? "是" : "否";
       case "link":
         if (typeof value === "string") {
           const vals = splitOptions(value);
@@ -638,7 +636,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
           return String(value);
         }
       default:
-        return String(value);
+        return getValueString(value, ",", ":");
     }
   }
 }

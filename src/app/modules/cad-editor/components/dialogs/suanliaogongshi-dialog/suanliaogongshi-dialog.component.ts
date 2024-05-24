@@ -1,4 +1,4 @@
-import {Component, HostBinding, Inject} from "@angular/core";
+import {Component, forwardRef, HostBinding, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -9,7 +9,7 @@ import {SuanliaogongshiDialogInput, SuanliaogongshiDialogOutput} from "./suanlia
 @Component({
   selector: "app-suanliaogongshi-dialog",
   standalone: true,
-  imports: [MatButtonModule, SuanliaogongshiComponent],
+  imports: [forwardRef(() => SuanliaogongshiComponent), MatButtonModule],
   templateUrl: "./suanliaogongshi-dialog.component.html",
   styleUrl: "./suanliaogongshi-dialog.component.scss"
 })
@@ -29,7 +29,11 @@ export class SuanliaogongshiDialogComponent {
   }
 
   cancel() {
-    this.dialogRef.close();
+    if (this.info.isFromSelf) {
+      this.dialogRef.close({data: this.info.data});
+    } else {
+      this.dialogRef.close();
+    }
   }
 }
 

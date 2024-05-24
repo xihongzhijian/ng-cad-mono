@@ -48,9 +48,7 @@ export interface BookPageData {
   title?: string;
   content: string;
 }
-
 export type BookData = BookPageData[];
-
 export interface BookMessageData extends BaseMessageData {
   type: "book";
   bookData: BookData;

@@ -1368,9 +1368,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   async purgeXinghaos() {
     const data = {name: "", regex: true};
-    const result = await this.message.form<typeof data>({
-      title: "清除多余型号数据",
-      form: [
+    const result = await this.message.form<typeof data>(
+      [
         {
           type: "string",
           label: "型号名字",
@@ -1378,8 +1377,9 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           model: {data, key: "name"}
         },
         {type: "boolean", label: "正则匹配", model: {data, key: "regex"}}
-      ]
-    });
+      ],
+      {title: "清除多余型号数据"}
+    );
     if (!result) {
       return;
     }
