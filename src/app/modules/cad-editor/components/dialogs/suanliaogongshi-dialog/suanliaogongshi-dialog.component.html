@@ -1,7 +1,4 @@
 <div class="toolbar right">
-  @if (!info.isFromSelf) {
-    <button mat-raised-button color="primary" (click)="submit()">保存</button>
-  }
-  <button mat-raised-button color="primary" (click)="cancel()">关闭</button>
+  <button mat-raised-button color="primary" (click)="submit()">确定</button>
 </div>
-<app-suanliaogongshi [info]="info"></app-suanliaogongshi>
+<app-suanliaogongshi [info]="data.info"></app-suanliaogongshi>

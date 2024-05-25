@@ -332,13 +332,10 @@ export class SuanliaogongshiComponent implements OnChanges {
         break;
       case "全部":
         {
-          const result = await openSuanliaogongshiDialog(this.dialog, {
-            data: {info: {...this.info, data: {输入数据: this.info.data.输入数据}, isFromSelf: true}}
+          await openSuanliaogongshiDialog(this.dialog, {
+            data: {info: {...this.info, data: {输入数据: data.输入数据}, isFromSelf: true}}
           });
-          if (result) {
-            data.输入数据 = result.data.输入数据;
-            this.shuruTable.data = getSortedItems(data.输入数据 || []);
-          }
+          this.shuruTable.data = getSortedItems(data.输入数据);
         }
         break;
     }

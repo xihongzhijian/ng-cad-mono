@@ -2,7 +2,6 @@ import {Component, forwardRef, HostBinding, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
-import {cloneDeep} from "lodash";
 import {SuanliaogongshiComponent} from "../../suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiDialogInput, SuanliaogongshiDialogOutput} from "./suanliaogongshi-dialog.types";
 
@@ -15,25 +14,14 @@ import {SuanliaogongshiDialogInput, SuanliaogongshiDialogOutput} from "./suanlia
 })
 export class SuanliaogongshiDialogComponent {
   @HostBinding("class") class = "ng-page";
-  info: SuanliaogongshiDialogInput["info"];
 
   constructor(
     public dialogRef: MatDialogRef<SuanliaogongshiDialogComponent, SuanliaogongshiDialogOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaogongshiDialogInput
-  ) {
-    this.info = cloneDeep(data.info);
-  }
+  ) {}
 
   submit() {
-    this.dialogRef.close({data: this.info.data});
-  }
-
-  cancel() {
-    if (this.info.isFromSelf) {
-      this.dialogRef.close({data: this.info.data});
-    } else {
-      this.dialogRef.close();
-    }
+    this.dialogRef.close();
   }
 }
 
