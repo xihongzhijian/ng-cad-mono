@@ -1,6 +1,6 @@
 {
   "name": "@lucilor/utils",
-  "version": "1.25.0",
+  "version": "1.25.1",
   "description": "utils",
   "type": "module",
   "main": "lib/index.js",

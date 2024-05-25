@@ -37,11 +37,15 @@ export const lineIntersectsLine = (line1: Line, line2: Line, extend = false, tol
       p6 = isContain3 ? p1 : p2;
     }
     if (p5 && p6) {
-      if (p5.equals(p6)) {
+      if (p5.equals(p6, tol)) {
         return [p5.clone()];
       } else {
         return [p5.clone(), p6.clone()];
       }
+    }
+    p5 = new Point(b2 * c1 - b1 * c2, a1 * c2 - a2 * c1).divide(k);
+    if (extend || (line1.contains(p5, false, tol) && line2.contains(p5, false, tol))) {
+      return [p5];
     }
   }
   return [];
