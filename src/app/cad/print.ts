@@ -870,9 +870,27 @@ export const printCads = async (params: PrintCadsParams) => {
   const {width, height, scaleX, scaleY, scale} = getA4PrintInfo();
   const errors: string[] = [];
 
+  const pdfPadding: number[] = [];
+  const 算料单页边距 = params.projectConfig.get("算料单页边距");
+  const defaultPadding = 18;
+  const 算料单页边距Num = Number(算料单页边距);
+  if (isNaN(算料单页边距Num)) {
+    const 算料单页边距Arr = 算料单页边距.split("+");
+    for (const char of "上右下左") {
+      const str = 算料单页边距Arr.find((v) => v.startsWith(char))?.slice(char.length);
+      const num = Number(str);
+      if (isNaN(num)) {
+        pdfPadding.push(defaultPadding);
+      } else {
+        pdfPadding.push(num);
+      }
+    }
+  } else {
+    pdfPadding.push(算料单页边距 ? 算料单页边距Num : defaultPadding);
+  }
   const config2: Partial<CadViewerConfig> = {
     backgroundColor: "white",
-    padding: [18 * scale],
+    padding: pdfPadding.map((v) => v * scale),
     hideLineLength: true,
     hideLineGongshi: true,
     minLinewidth: 0,
