@@ -211,7 +211,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this.spinner.show(loaderId);
     const 导入dxf文件时展开名字不改变 = this.status.projectConfig.getBoolean("导入dxf文件时展开名字不改变");
     const httpOptions: HttpOptions = {silent: true};
-    const data = await this.http.uploadDxf(this.sourceFile, false, httpOptions);
+    const data = await this.http.uploadDxf(this.sourceFile, {rectLineColor: 3}, httpOptions);
     if (!data) {
       return finish(true, "error", "读取文件失败");
     }
