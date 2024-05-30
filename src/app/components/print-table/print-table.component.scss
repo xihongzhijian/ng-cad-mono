@@ -30,9 +30,10 @@
   box-sizing: border-box;
 }
 
-app-table {
+.content .table-container app-table {
   --border: 1px solid black;
-  --row-max-height: 40px;
+  --row-min-height: 36px;
+  --row-max-height: 36px;
   --cell-active-color: #b2b2b2;
   ::ng-deep {
     .title {
@@ -42,8 +43,16 @@ app-table {
       border-right: var(--border);
     }
 
-    .table-body {
-      box-shadow: none !important;
+    .table-container {
+      .table-body {
+        box-shadow: none;
+
+        .mat-mdc-header-cell,
+        .mat-mdc-cell,
+        .mat-mdc-footer-cell {
+          padding: 2px;
+        }
+      }
     }
   }
   &:not(:first-child) {

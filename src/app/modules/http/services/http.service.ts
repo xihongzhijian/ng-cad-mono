@@ -68,7 +68,7 @@ export class HttpService {
     }
   }
 
-  getUrl(path: string, params?: ObjectOf<string>) {
+  getUrl(path: string, params?: ObjectOf<any>) {
     let url: URL;
     try {
       url = new URL(path, this.baseURL || location.origin);

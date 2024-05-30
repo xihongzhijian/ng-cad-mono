@@ -27,7 +27,7 @@ export class PrintTableComponent implements OnInit {
   xikongTableInfo: TableRenderInfo<XikongData> | null = null;
   xikongTableWidth = 0;
   xikongColWidths: ObjectOf<number> = {};
-  表换行索引: NonNullable<TableInfoData["表换行索引"]> = {};
+  data: TableInfoData | null = null;
 
   constructor(
     private http: CadDataService,
@@ -42,8 +42,14 @@ export class PrintTableComponent implements OnInit {
     await this.getData();
   }
 
+  export() {
+    const {小导航, vid} = this.data || {};
+    window.open(this.http.getUrl("order/lvxingcai/exportBOM", {小导航, vid}));
+  }
+
   async print() {
-    const {tableInfos, 表换行索引} = this;
+    const {tableInfos} = this;
+    const {表换行索引} = this.data || {};
     const columnsAll: ColumnInfo<TableData>[][] = [];
     for (const info of tableInfos) {
       columnsAll.push(info.columns);
@@ -57,7 +63,6 @@ export class PrintTableComponent implements OnInit {
     }
     await timeout(1000);
     const toRemove: HTMLElement[] = [];
-    let titledIndex = -1;
     for (const info of tableInfos) {
       const title = info.title;
       if (!title) {
@@ -67,17 +72,7 @@ export class PrintTableComponent implements OnInit {
       if (!(tableEl instanceof HTMLElement)) {
         continue;
       }
-      titledIndex++;
-      if (titledIndex > 0) {
-        const titleEl = tableEl.querySelector(".title");
-        if (titleEl instanceof HTMLElement) {
-          const dummyTitleEl = document.createElement("div");
-          dummyTitleEl.classList.add("page-break");
-          titleEl.before(dummyTitleEl);
-          toRemove.push(dummyTitleEl);
-        }
-      }
-      const indexs = 表换行索引[title];
+      const indexs = 表换行索引?.[title];
       let j = 0;
       if (Array.isArray(indexs) && indexs.length > 0) {
         for (const i of indexs) {
@@ -113,7 +108,7 @@ export class PrintTableComponent implements OnInit {
     }
     this.title = data.标题;
     document.title = data.标题;
-    this.表换行索引 = data.表换行索引 || {};
+    this.data = data;
     this.tableInfos = [];
     for (const [i, value] of data.表头.entries()) {
       const 表头列: ColumnInfo<TableData>[] = [];
