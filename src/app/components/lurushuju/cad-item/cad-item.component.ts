@@ -689,6 +689,30 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     await this.message.copyText(this.cadName, {successText: "已复制名字"});
   }
 
+  async toggleShowLineLength() {
+    if (!(await this.message.confirm("是否将所有线的线长数字如果是隐藏的就显示，如果是显示的就隐藏？"))) {
+      return;
+    }
+    const cad = this.cad;
+    const toggle = async (data: CadData) => {
+      data.entities.forEach((e) => {
+        if (e instanceof CadLineLike) {
+          e.hideLength = !e.hideLength;
+        }
+      });
+      await this.http.setCadImg(data.id, await getCadPreview("cad", data), {silent: true});
+      this.status.cadImgToUpdate[data.id] = {t: Date.now()};
+      await this.initCadViewer();
+    };
+    if (cad instanceof CadData) {
+      await toggle(cad);
+    } else {
+      const data = new CadData(cad.json);
+      await toggle(data);
+      Object.assign(cad, getHoutaiCad(data));
+    }
+  }
+
   @HostListener("click", ["$event"])
   onHostClick(event: MouseEvent) {
     this.events?.clickAll?.(this, event);

@@ -49,8 +49,8 @@
                 <div class="toolbar header">
                   <div class="title link" (click)="openFavorite(j)">{{ manager.favorites[j].xiao }}</div>
                 </div>
-                <div class="desc text link" (click)="openFavorite(j)">{{ manager.favorites[j].tou }}/{{ manager.favorites[j].da }}</div>
                 @if (showMoreButtons) {
+                  <div class="desc text link" (click)="openFavorite(j)">{{ manager.favorites[j].tou }}/{{ manager.favorites[j].da }}</div>
                   <div class="toolbar">
                     <button mat-button color="primary" (click)="editFavorite(j)">编辑</button>
                     <button mat-button color="primary" (click)="removeFavorite(j)">删除</button>

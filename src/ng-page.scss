@@ -88,6 +88,12 @@
       &.left {
         justify-content: flex-start;
       }
+      &.top {
+        align-items: flex-start;
+      }
+      &.bottom {
+        align-items: flex-end;
+      }
 
       .mdc-button {
         flex: 0 0 auto;
@@ -104,6 +110,12 @@
       }
       &.top {
         justify-content: flex-start;
+      }
+      &.left {
+        align-items: flex-start;
+      }
+      &.right {
+        align-items: flex-end;
       }
 
       .mdc-button {
@@ -130,6 +142,10 @@
 
     > * {
       margin: 2.5px;
+    }
+    > .toolbar {
+      margin: 0;
+      height: 100%;
     }
 
     --mdc-checkbox-state-layer-size: 30px;

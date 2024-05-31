@@ -102,7 +102,7 @@ export class WorkSpaceComponent implements OnInit {
     const typeNames = this.manager.types.map((v) => v.name);
     const form: InputInfo<typeof favorite>[] = [
       {type: "string", label: "分类", options: typeNames, fixedOptions: typeNames, model: {data: favorite, key: "type"}},
-      {type: "number", label: "排序", model: {data: favorite, key: "order"}}
+      {type: "number", label: "排序", model: {data: favorite, key: "order"}, autoFocus: true}
     ];
     const result = await this.message.form(form);
     if (result) {

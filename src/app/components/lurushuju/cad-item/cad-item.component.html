@@ -63,6 +63,9 @@
           {{ button.name }}
         </button>
       }
+      <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="toggleShowLineLength()">
+        隐藏线长数字
+      </button>
     </div>
     <div class="cad-info item link" style="align-items: flex-start" (click)="selectable?.onChange(this)" (dblclick)="editCadForm()">
       @for (item of yaoqiu?.["CAD弹窗修改属性"]; track $index) {
