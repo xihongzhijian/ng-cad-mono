@@ -1,7 +1,22 @@
-import {Component, ElementRef, EventEmitter, HostBinding, Inject, OnInit, Output, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {
+  Component,
+  effect,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  Inject,
+  OnInit,
+  Output,
+  QueryList,
+  signal,
+  ViewChild,
+  ViewChildren
+} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
+import {MatIconModule} from "@angular/material/icon";
+import {session} from "@app/app.common";
 import {filterCad, setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {OpenCadOptions} from "@app/services/app-status.types";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -37,6 +52,7 @@ import {SuanliaoDataCadItemInfo, SuanliaoDataInput, SuanliaoDataOutput} from "./
     InputComponent,
     MatButtonModule,
     MatDividerModule,
+    MatIconModule,
     NgScrollbarModule,
     SuanliaogongshiComponent,
     SuanliaoTablesComponent,
@@ -56,6 +72,11 @@ export class SuanliaoDataDialogComponent implements OnInit {
   suanliaoCadsSearch: InputInfo;
   hiddenSuanliaoCads: number[] = [];
   isSuanliaoCadReversed = true;
+
+  showMenuLeftKey = "suanliaoDataDialog.showMenuLeft";
+  showMenuRightKey = "suanliaoDataDialog.showMenuRight";
+  showMenuLeft = signal(session.load<boolean>(this.showMenuLeftKey) ?? true);
+  showMenuRight = signal(session.load<boolean>(this.showMenuRightKey) ?? true);
 
   @ViewChild(SuanliaoTablesComponent) suanliaoTables?: SuanliaoTablesComponent;
   @ViewChildren(CadItemComponent) cadItems?: QueryList<CadItemComponent>;
@@ -110,6 +131,13 @@ export class SuanliaoDataDialogComponent implements OnInit {
         }
       }, 500)
     };
+
+    effect(() => {
+      session.save(this.showMenuLeftKey, this.showMenuLeft());
+    });
+    effect(() => {
+      session.save(this.showMenuRightKey, this.showMenuRight());
+    });
   }
 
   ngOnInit() {
