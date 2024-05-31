@@ -60,4 +60,4 @@ cypress/downloads
 cypress/screenshots
 cypress/videos
 
-/upload.ps1
+*.ps1
