@@ -160,10 +160,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  get suffixIcons() {
-    return this.info.suffixIcons || [];
-  }
-
   get hint() {
     const hint = this.info.hint;
     if (typeof hint === "function") {
@@ -880,7 +876,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const value = typeof color === "string" ? color : color?.hex();
     try {
       const c = new Color(value);
-      if (c.isLight()) {
+      if (c) {
         this.colorBg = "black";
       } else {
         this.colorBg = "white";

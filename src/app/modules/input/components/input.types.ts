@@ -20,6 +20,7 @@ export interface InputInfoBase<T = any> {
   copyable?: boolean;
   disabled?: boolean;
   suffixIcons?: InputInfoButtonInfo[];
+  suffixTexts?: InputInfoTextInfo[];
   hint?: Value<string>;
   autocomplete?: "on" | "off";
   showEmpty?: boolean;
@@ -100,13 +101,13 @@ export interface InputInfoSelectSingle<T = any, K = string> extends InputInfoSel
   value?: Value<string>;
   optionText?: string | ((val: string) => string);
   multiple?: false;
-  onChange?: (val: string, info: InputInfoSelectSingle<T, K>) => void;
+  onChange?: (val: K, info: InputInfoSelectSingle<T, K>) => void;
 }
 export interface InputInfoSelectMultiple<T = any, K = string> extends InputInfoSelectBase<T, K> {
   value?: Value<string[]>;
   optionText?: string | ((val: string[]) => string);
   multiple: true;
-  onChange?: (val: string[], info: InputInfoSelectMultiple<T, K>) => void;
+  onChange?: (val: K[], info: InputInfoSelectMultiple<T, K>) => void;
 }
 export type InputInfoSelect<T = any, K = any> = InputInfoSelectSingle<T, K> | InputInfoSelectMultiple<T, K>;
 
@@ -154,9 +155,13 @@ export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoButtonInfo {
   name: string;
-  onClick: () => void;
+  onClick?: () => void;
   color?: "" | "primary" | "accent" | "warn";
   isDefault?: boolean;
+}
+export interface InputInfoTextInfo {
+  name: string;
+  color?: "" | "primary" | "accent" | "warn";
 }
 export interface InputInfoButton<T = any> extends InputInfoBase<T> {
   type: "button";

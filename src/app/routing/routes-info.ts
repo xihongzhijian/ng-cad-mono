@@ -1,4 +1,5 @@
 import {Route} from "@angular/router";
+import {CustomPageIndexComponent} from "@app/components/custom-page/views/custom-page-index/custom-page-index.component";
 import {WorkSpaceComponent} from "@app/views/work-space/work-space.component";
 import {LurushujuIndexComponent} from "@components/lurushuju/lurushuju-index/lurushuju-index.component";
 import {PrintTableComponent} from "@components/print-table/print-table.component";
@@ -30,6 +31,7 @@ export const routesInfo: (Route & {path: string})[] = [
   {path: "index", component: IndexComponent},
   {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"},
   {path: "work-space", component: WorkSpaceComponent, title: "我的工作台"},
+  {path: "custom-page", component: CustomPageIndexComponent, title: "自定义报表"},
   {path: "print-cad", component: PrintCadComponent, title: "打印CAD"},
   {path: "printA4A015Preview", component: PrintA4A015PreviewComponent, title: "订单配件标签"},
   {path: "import", component: ImportComponent, title: "导入CAD"},

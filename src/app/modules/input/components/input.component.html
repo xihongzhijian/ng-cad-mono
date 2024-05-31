@@ -61,28 +61,23 @@
           </mat-option>
         }
       </mat-autocomplete>
-      <ng-container matSuffix>
-        @if (info.optionsDialog) {
-          <button mat-icon-button color="primary" (click)="selectOptions(model.key)">
-            <mat-icon>list</mat-icon>
-          </button>
-        }
-        @if (info.copyable) {
-          <button mat-icon-button color="primary" (click)="copy()">
-            <mat-icon>content_copy</mat-icon>
-          </button>
-        }
-        @for (icon of suffixIcons; track icon) {
-          <button mat-icon-button color="primary" (click)="icon.onClick()">
-            <mat-icon>{{ icon.name }}</mat-icon>
-          </button>
-        }
-        @if (info.clearable) {
-          <button mat-icon-button color="primary" (click)="clear()">
-            <mat-icon>close</mat-icon>
-          </button>
-        }
-      </ng-container>
+      @if (info.optionsDialog) {
+        <button matSuffix mat-icon-button color="primary" (click)="selectOptions(model.key)">
+          <mat-icon>list</mat-icon>
+        </button>
+      }
+      @if (info.copyable) {
+        <button matSuffix mat-icon-button color="primary" (click)="copy()">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+      }
+      <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+      <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
+      @if (info.clearable) {
+        <button matSuffix mat-icon-button color="primary" (click)="clear()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
@@ -112,18 +107,13 @@
         (click)="onClick()"
         [placeholder]="info.placeholder || ''"
       />
-      <ng-container matSuffix>
-        @if (info.copyable) {
-          <button mat-icon-button color="primary" (click)="copy()">
-            <mat-icon>content_copy</mat-icon>
-          </button>
-        }
-        @for (icon of suffixIcons; track icon) {
-          <button mat-icon-button color="primary" (click)="icon.onClick()">
-            <mat-icon>{{ icon.name }}</mat-icon>
-          </button>
-        }
-      </ng-container>
+      @if (info.copyable) {
+        <button matSuffix mat-icon-button color="primary" (click)="copy()">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+      }
+      <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+      <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
   }
@@ -205,11 +195,8 @@
                   <mat-icon>remove_circle</mat-icon>
                 </button>
               }
-              @for (icon of suffixIcons; track icon) {
-                <button mat-icon-button color="primary" (click)="icon.onClick()">
-                  <mat-icon>{{ icon.name }}</mat-icon>
-                </button>
-              }
+              <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+              <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
               @if (info.clearable) {
                 <button mat-icon-button color="primary" (click)="changeObjectValue(value, item.key, '')">
                   <mat-icon>close</mat-icon>
@@ -265,11 +252,8 @@
                 <mat-icon>remove_circle</mat-icon>
               </button>
             }
-            @for (icon of suffixIcons; track icon) {
-              <button mat-icon-button color="primary" (click)="icon.onClick()">
-                <mat-icon>{{ icon.name }}</mat-icon>
-              </button>
-            }
+            <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+            <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
             @if (info.clearable) {
               <button mat-icon-button color="primary" (click)="value[j] = ''">
                 <mat-icon>close</mat-icon>
@@ -349,7 +333,7 @@
             @if (optionText) {
               <mat-select-trigger [innerHtml]="optionText"></mat-select-trigger>
             }
-            @for (option of options; track option) {
+            @for (option of options; track $index) {
               <mat-option [value]="option.value" [disabled]="info.readonly || option.disabled">
                 {{ option.label || option.value }}
               </mat-option>
@@ -377,11 +361,8 @@
             <mat-icon>content_copy</mat-icon>
           </button>
         }
-        @for (icon of suffixIcons; track icon) {
-          <button mat-icon-button color="primary" appClickStop (click)="icon.onClick()">
-            <mat-icon>{{ icon.name }}</mat-icon>
-          </button>
-        }
+        <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+        <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
         @if (info.clearable) {
           <button appClickStop mat-icon-button color="primary" (click)="clear()">
             <mat-icon>close</mat-icon>
@@ -452,11 +433,8 @@
           <mat-menu #anchor="matMenu">
             <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
           </mat-menu>
-          @for (icon of suffixIcons; track icon) {
-            <button mat-icon-button color="primary" (click)="icon.onClick()">
-              <mat-icon>{{ icon.name }}</mat-icon>
-            </button>
-          }
+          <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+          <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
         </ng-container>
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
@@ -485,11 +463,8 @@
           <mat-menu #anchor="matMenu">
             <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
           </mat-menu>
-          @for (icon of suffixIcons; track icon) {
-            <button mat-icon-button color="primary" (click)="icon.onClick()">
-              <mat-icon>{{ icon.name }}</mat-icon>
-            </button>
-          }
+          <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+          <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
         </ng-container>
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
@@ -528,11 +503,8 @@
         }
       </mat-menu>
       <ng-container matSuffix>
-        @for (icon of suffixIcons; track icon) {
-          <button mat-icon-button color="primary" (click)="icon.onClick()">
-            <mat-icon>{{ icon.name }}</mat-icon>
-          </button>
-        }
+        <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+        <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
         @if (info.clearable) {
           <button mat-icon-button color="primary" (click)="clear()">
             <mat-icon>close</mat-icon>
@@ -615,7 +587,7 @@
   @case ("button") {
     <div class="buttons">
       @for (button of info.buttons; track $index) {
-        <button mat-raised-button [color]="button.color" (click)="button.onClick()">{{ button.name }}</button>
+        <button mat-raised-button [color]="button.color" (click)="button.onClick?.()">{{ button.name }}</button>
       }
     </div>
     <ng-template [ngTemplateOutlet]="footer"></ng-template>
@@ -674,4 +646,19 @@
     }
     <span class="error">{{ getErrorMsg() }}</span>
   </div>
+</ng-template>
+
+<ng-template #suffixIconsTmp>
+  @for (icon of info.suffixIcons; track $index) {
+    <button mat-icon-button [color]="icon.color || 'primary'" (click)="icon.onClick?.()">
+      <mat-icon>{{ icon.name }}</mat-icon>
+    </button>
+  }
+</ng-template>
+<ng-template #suffixTextsTmp>
+  @for (text of info.suffixTexts; track $index) {
+    <span [style.color]="text.color">
+      {{ text.name }}
+    </span>
+  }
 </ng-template>

@@ -1,0 +1,24 @@
+.显示内容 {
+  width: 300px;
+}
+
+.工作区 {
+  flex: 1 1 0;
+  overflow: hidden;
+}
+
+.功能区 {
+  width: 300px;
+}
+
+mat-tab-group {
+  ::ng-deep {
+    mat-tab-body {
+      padding: 5px;
+    }
+
+    .mat-mdc-tab {
+      padding: 0;
+    }
+  }
+}
