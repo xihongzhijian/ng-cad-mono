@@ -16,9 +16,9 @@ const postFormData = (url: string, data: ObjectOf<any>, file?: fs.ReadStream) =>
 
 const token = process.env.SERVER_TOKEN;
 const host = "https://www.let888.cn";
-const targetDir = "./dist/ng-cad2/browser";
+const targetDir = "../dist/ng-cad2/browser";
 
-const tmpDir = "./.tmp";
+const tmpDir = "../.tmp";
 const zipName = "upload.zip";
 const project = "ng-cad2";
 
