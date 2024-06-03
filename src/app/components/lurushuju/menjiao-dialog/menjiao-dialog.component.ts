@@ -624,7 +624,12 @@ export class MenjiaoDialogComponent implements OnInit {
     });
     if (result) {
       this.formData[key1].板材分组 = result.data.默认板材;
-      await this.validate();
+      console.log(result);
+      if (result.submit2) {
+        await this.submit(false);
+      } else {
+        await this.validate();
+      }
     }
   }
 
