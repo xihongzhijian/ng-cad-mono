@@ -3600,7 +3600,7 @@ __metadata:
     jsencrypt: "npm:^3.3.2"
     lodash: "npm:^4.17.21"
     md5: "npm:^2.3.0"
-    pinyin-pro: "npm:^3.21.0"
+    pinyin-pro: "npm:^3.21.1"
     typescript: "npm:~5.4.5"
     vite: "npm:^5.2.12"
     vite-plugin-dts: "npm:^3.9.1"
@@ -13632,10 +13632,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pinyin-pro@npm:^3.21.0":
-  version: 3.21.0
-  resolution: "pinyin-pro@npm:3.21.0"
-  checksum: 10c0/80f4de438e037478e5a6bb3658e79a250ad42a10b3880147ac125385bf6a29d6f5ff20f54a37160cf68498cc2664de6578728a659a84c48c8989e956f05d8d5d
+"pinyin-pro@npm:^3.21.1":
+  version: 3.21.1
+  resolution: "pinyin-pro@npm:3.21.1"
+  checksum: 10c0/8ebe902e51bb0fa52603591b0c2c220ee0eed2ebaaae7e06b5447161ee8066ef2c4c413fbc3c7d50defd9bfccb57a10be6cf050107b60d0dc3efdc46d939d611
   languageName: node
   linkType: hard
 
