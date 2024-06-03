@@ -197,7 +197,7 @@ export class MenjiaoDialogComponent implements OnInit {
         };
         info.style = getInfoStyle(n);
         const dialogKeys = ["门铰"];
-        const openInNewTabKeys = ["门扇厚度"];
+        const openInNewTabKeys = ["门扇厚度", "锁边", "铰边"];
         if (dialogKeys.includes(key)) {
           info.optionsDialog = {
             noImage: true,
