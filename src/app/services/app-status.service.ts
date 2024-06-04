@@ -137,7 +137,7 @@ export class AppStatusService {
   }
 
   async getUpdateTimeStamp() {
-    const s = await this.http.getData<string>("ngcad/getUpdateTime", {}, {spinner: false});
+    const s = await this.http.getData<string>("ngcad/getUpdateTime", {beta: environment.beta}, {spinner: false});
     let n = Number(s);
     if (typeof n !== "number" || isNaN(n)) {
       n = 0;
