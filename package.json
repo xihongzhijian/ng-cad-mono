@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "start": "ng serve",
-    "build": "ng build --configuration production",
+    "build": "ng build --configuration=production",
+    "build:beta": "ng build --configuration=production --base-href='static/ng-cad2-beta'",
     "build:packages": "yarn workspaces foreach -Apt run lib",
     "test": "ng test",
     "test:ci": "ng test --watch=false --progress=false --browsers=ChromeHeadless",
