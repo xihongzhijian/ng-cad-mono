@@ -4,6 +4,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
+import {environment} from "@env";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
@@ -61,7 +62,11 @@ export class ChangelogComponent implements OnInit {
   private async getData() {
     const {pageSize} = this;
     this.updateTime = await this.status.getUpdateTimeStamp();
-    const changelog = await this.http.getChangelog(1, pageSize, {spinner: this.loaderId});
+    let branch = "master";
+    if (!environment.production || window.location.href.includes("beta")) {
+      branch = "next";
+    }
+    const changelog = await this.http.getChangelog({page: 1, pageSize, branch}, {spinner: this.loaderId});
     this.updateDivideIndex = -1;
     this.changelog = changelog.map((item, i) => {
       const [message, ...details] = item.commit.message.split(this.separator);

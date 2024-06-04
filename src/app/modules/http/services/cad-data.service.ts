@@ -233,8 +233,8 @@ export class CadDataService extends HttpService {
     }>("order/order/getBancais", {table, codes});
   }
 
-  async getChangelog(page?: number, pageSize?: number, options?: HttpOptions) {
-    const result = await this.getData<Changelog>("ngcad/getChangelog", {page, pageSize}, options);
+  async getChangelog(params?: {page?: number; pageSize?: number; branch?: string}, options?: HttpOptions) {
+    const result = await this.getData<Changelog>("ngcad/getChangelog", params, options);
     return result || [];
   }
 
