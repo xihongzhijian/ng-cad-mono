@@ -147,6 +147,7 @@ export class AppStatusService {
   }
 
   async setProject(queryParams: Params) {
+    this.checkEnvBeta();
     const {project, action} = queryParams;
     if (project && project !== this.project) {
       this.project = project;
@@ -585,5 +586,22 @@ export class AppStatusService {
       result = this.cad数据要求List.find((v) => v.CAD分类 === "配件库");
     }
     return result;
+  }
+
+  checkEnvBeta() {
+    if (!environment.production) {
+      return;
+    }
+    const testMode = this.config.getConfig("testMode");
+    const masterPath = "ng-cad2";
+    const nextPath = "ng-cad2-beta";
+    const masterReg = new RegExp(`/${masterPath}/`);
+    const nextReg = new RegExp(`/${nextPath}/`);
+    const url = location.href;
+    if (masterReg.test(url) && testMode) {
+      location.href = url.replace(masterReg, `/${nextPath}/`);
+    } else if (nextReg.test(url) && !testMode) {
+      location.href = url.replace(nextReg, `/${masterPath}/`);
+    }
   }
 }

@@ -22,7 +22,7 @@ const targetDir = "../dist/ng-cad2/browser";
 
 const tmpDir = "../.tmp";
 const zipName = "upload.zip";
-const project = args.beta ? "ng-cad2" : "ng-cad2-beta";
+const project = args.beta ? "ng-cad2-beta" : "ng-cad2";
 
 const upload = async () => {
   fs.cpSync(targetDir, path.join(tmpDir, project), {recursive: true});

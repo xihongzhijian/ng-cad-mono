@@ -10,6 +10,7 @@ import {AboutComponent} from "@components/about/about.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
+import {environment} from "@env";
 import {CadLine, CadMtext, sortLines} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
@@ -73,6 +74,7 @@ export class ToolbarComponent {
     startWith({}),
     map((v) => !!v.isLocal)
   );
+  env = environment;
 
   @HostListener("window:keydown", ["$event"])
   onKeyDown(event: KeyboardEvent) {
@@ -365,10 +367,6 @@ export class ToolbarComponent {
     const url = new URL(location.href);
     url.pathname = url.pathname.slice(0, url.pathname.lastIndexOf("/")) + "/backup";
     window.open(url.href);
-  }
-
-  toggleTestMode() {
-    this.config.setConfigWith("testMode", (v) => !v);
   }
 
   async openCadLayerDialog() {
