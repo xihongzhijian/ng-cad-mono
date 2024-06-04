@@ -290,6 +290,11 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
                 cad.json[key2] = cad2.json[key2];
               }
             }
+            for (const key2 in cad.json) {
+              if (!(key2 in cad2.json)) {
+                delete cad.json[key2];
+              }
+            }
           } else {
             cad[key] = cad2[key] as any;
           }

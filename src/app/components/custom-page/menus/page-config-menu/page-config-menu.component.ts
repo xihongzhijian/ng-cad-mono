@@ -46,9 +46,9 @@ export class PageConfigMenuComponent implements OnInit {
           this.pageChanged.emit();
           orientationInput.disabled = false;
           widthInput.readonly = true;
-          widthInput.value = page.size[0];
+          widthInput.value = page.size.x;
           heightInput.readonly = true;
-          heightInput.value = page.size[1];
+          heightInput.value = page.size.y;
         }
       }
     };
@@ -71,22 +71,22 @@ export class PageConfigMenuComponent implements OnInit {
     const widthInput: InputInfo = {
       type: "number",
       label: "页宽",
-      value: page.size[0],
+      value: page.size.x,
       suffixTexts: [{name: "mm"}],
       style: getInputStyle(),
       onChange: (val) => {
-        page.setSize({width: val, height: page.size[1]});
+        page.setSize({width: val, height: page.size.y});
         this.pageChanged.emit();
       }
     };
     const heightInput: InputInfo = {
       type: "number",
       label: "页高",
-      value: page.size[1],
+      value: page.size.y,
       suffixTexts: [{name: "mm"}],
       style: getInputStyle(),
       onChange: (val) => {
-        page.setSize({width: page.size[0], height: val});
+        page.setSize({width: page.size.x, height: val});
         this.pageChanged.emit();
       }
     };

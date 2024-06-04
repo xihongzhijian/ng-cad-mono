@@ -11,6 +11,15 @@
   width: 300px;
 }
 
+.page {
+  margin: auto;
+  position: relative;
+}
+
+.page-component {
+  position: absolute;
+}
+
 mat-tab-group {
   ::ng-deep {
     mat-tab-body {
