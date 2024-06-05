@@ -291,7 +291,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
               }
             }
             for (const key2 in cad.json) {
-              if (!(key2 in cad2.json)) {
+              if (!(key2 in cad2.json) && !ignoreKeys.includes(key2)) {
                 delete cad.json[key2];
               }
             }
