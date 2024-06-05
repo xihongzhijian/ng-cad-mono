@@ -202,8 +202,9 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   get isKailiao() {
     const projectKey = "新版本做数据可以做激光开料";
-    if (this.status.projectConfig.exists(projectKey)) {
-      return this.status.projectConfig.getBoolean(projectKey);
+    const projectKailiao = this.status.projectConfig.getBoolean(projectKey);
+    if (!projectKailiao) {
+      return false;
     }
     if (typeof this.xinghao?.是否需要激光开料 === "boolean") {
       return this.xinghao.是否需要激光开料;
