@@ -3,6 +3,7 @@ import {Properties, Property} from "csstype";
 import {v4} from "uuid";
 
 export abstract class PageComponentBase {
+  abstract readonly type: string;
   id = v4();
   size = new Point(0, 0);
   position = new Point(0, 0);
@@ -20,6 +21,9 @@ export abstract class PageComponentBase {
   constructor(public name: string) {}
 
   import(data: ReturnType<typeof this.export>) {
+    if (data.type !== this.type) {
+      throw new Error(`Invalid component type: ${data.type}, expected: ${this.type}`);
+    }
     this.size.copy(data.size);
     this.position.copy(data.position);
     this.scale.copy(data.scale);
@@ -31,6 +35,7 @@ export abstract class PageComponentBase {
   }
   export() {
     return {
+      type: this.type,
       id: this.id,
       name: this.name,
       size: this.size.toArray(),

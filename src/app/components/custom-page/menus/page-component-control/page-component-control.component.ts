@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, effect, HostBinding, input} from "@angular/core";
 import {Properties} from "csstype";
-import {PageComponentItem} from "../../models/page-component-infos";
+import {PageComponentBase} from "../../models/page-components/page-component-base";
 
 @Component({
   selector: "app-page-component-control",
@@ -13,7 +13,7 @@ import {PageComponentItem} from "../../models/page-component-infos";
 export class PageComponentControlComponent {
   @HostBinding("style") style: Properties = {};
 
-  item = input.required<PageComponentItem | null>();
+  component = input.required<PageComponentBase | null>();
 
   constructor() {
     effect(() => {
@@ -22,12 +22,11 @@ export class PageComponentControlComponent {
   }
 
   update() {
-    const item = this.item();
-    if (!item) {
+    const component = this.component();
+    if (!component) {
       this.style = {};
       return;
     }
-    const {component} = item;
     this.style = {
       width: `${component.size.x}px`,
       height: `${component.size.y}px`,
