@@ -11,8 +11,9 @@
     <ng-scrollbar class="enable-x">
       <div class="page" [style]="pageStyle()">
         @for (item of pageComponentItems(); track $index) {
-          <div class="page-component" [class]="item.key" [style]="item.component.getStyle()"></div>
+          <div class="page-component" [class]="item.key" [style]="item.component.getStyle()" (click)="clickComponent(item)"></div>
         }
+        <app-page-component-control [item]="activePageComponentItem()"></app-page-component-control>
       </div>
     </ng-scrollbar>
   </div>
@@ -23,7 +24,7 @@
           class="tab"
           [page]="page"
           [workSpaceStyle]="workSpaceStyle()"
-          (pageChanged)="onPageChanged()"
+          (pageConfigChanged)="onPageConfigChanged()"
           (workSpaceStyleChanged)="workSpaceStyle.set($event)"
         ></app-page-config-menu>
       </mat-tab>

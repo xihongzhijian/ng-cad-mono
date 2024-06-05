@@ -19,6 +19,32 @@ export abstract class PageComponentBase {
 
   constructor(public name: string) {}
 
+  import(data: ReturnType<typeof this.export>) {
+    this.size.copy(data.size);
+    this.position.copy(data.position);
+    this.scale.copy(data.scale);
+    this.anchor.copy(data.anchor);
+    this.rotation.deg = data.rotation;
+    this.border = data.border;
+    this.zIndex = data.zIndex;
+    this.background = data.background;
+  }
+  export() {
+    return {
+      id: this.id,
+      name: this.name,
+      size: this.size.toArray(),
+      position: this.position.toArray(),
+      scale: this.scale.toArray(),
+      anchor: this.anchor.toArray(),
+      rotation: this.rotation.deg,
+      border: this.border,
+      zIndex: this.zIndex,
+      background: this.background,
+      styleOverrides: this.styleOverrides
+    };
+  }
+
   getStyle(): Properties {
     const {x: scaleX, y: scaleY} = this.scale;
     let rotation = "";

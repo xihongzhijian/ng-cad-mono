@@ -1,6 +1,7 @@
 import {isTypeOf, Point} from "@lucilor/utils";
 import {Properties, Property} from "csstype";
 import {PageOrientation} from "pdfmake/interfaces";
+import {pageComponentInfos, PageComponentItem, PageComponentName} from "./page-component-infos";
 import {PageSizeName, PageSizeNameCustom, pageSizes} from "./page-size";
 
 export class Page {
@@ -12,8 +13,44 @@ export class Page {
   padding: [number, number, number, number] = [0, 0, 0, 0];
 
   styleOverrides: Properties = {};
+  componentItems: PageComponentItem[] = [];
 
   constructor() {}
+
+  import(data: ReturnType<typeof this.export>) {
+    if (data.sizeName === "自定义") {
+      this.setSize({width: data.size[0], height: data.size[1]});
+    } else {
+      this.setSize({name: data.sizeName, orientation: data.orientation});
+    }
+    this.background = data.background;
+    this.scale.copy(data.scale);
+    this.padding = data.padding;
+    this.styleOverrides = data.styleOverrides;
+    this.componentItems = data.componentItems.map(({key, component}) => {
+      const componentInstance = new pageComponentInfos[key].class(component.name);
+      componentInstance.import(component as any);
+      return {
+        key,
+        component: componentInstance
+      };
+    });
+  }
+  export() {
+    return {
+      size: this.size.toArray(),
+      sizeName: this.sizeName,
+      orientation: this.orientation,
+      background: this.background,
+      scale: this.scale.toArray(),
+      padding: this.padding,
+      styleOverrides: this.styleOverrides,
+      componentItems: this.componentItems.map(({key, component}) => ({
+        key,
+        component: component.export()
+      }))
+    };
+  }
 
   setSize(params: {name: PageSizeName; orientation?: PageOrientation} | {width: number; height: number}) {
     if ("name" in params) {
@@ -56,5 +93,13 @@ export class Page {
     const {x: w, y: h} = this.size;
     const scale = Math.min(width / w, height / h);
     this.scale.set(scale, scale);
+  }
+
+  addComponent(key: PageComponentName) {
+    const info = pageComponentInfos[key];
+    const component = new info.class(info.name + "组件");
+    component.background = "black";
+    component.size.set(100, 100);
+    this.componentItems.push({key, component});
   }
 }

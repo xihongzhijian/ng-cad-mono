@@ -1,5 +1,6 @@
 import {imgEmpty} from "@app/app.common";
 import {keysOf} from "@lucilor/utils";
+import {PageComponentBase} from "./page-components/page-component-base";
 import {PageComponentImage} from "./page-components/page-component-image";
 import {PageComponentText} from "./page-components/page-component-text";
 
@@ -20,4 +21,9 @@ export interface PageComponentInfo<T> {
   previewImg: string;
   class: T;
   conditions?: string[];
+}
+
+export interface PageComponentItem<T extends PageComponentBase = PageComponentBase> {
+  key: PageComponentName;
+  component: T;
 }

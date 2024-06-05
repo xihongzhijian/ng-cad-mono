@@ -18,7 +18,7 @@ import {PageOrientation, PageSizeNameCustom, pageSizeNamesCustom} from "../../mo
 })
 export class PageConfigMenuComponent implements OnInit {
   page = input.required<Page>();
-  pageChanged = output();
+  pageConfigChanged = output();
   workSpaceStyle = input.required<Properties>();
   workSpaceStyleChanged = output<Properties>();
 
@@ -43,7 +43,7 @@ export class PageConfigMenuComponent implements OnInit {
           heightInput.readonly = false;
         } else {
           page.setSize({name: val, orientation: page.orientation});
-          this.pageChanged.emit();
+          this.pageConfigChanged.emit();
           orientationInput.disabled = false;
           widthInput.readonly = true;
           widthInput.value = page.size.x;
@@ -64,7 +64,7 @@ export class PageConfigMenuComponent implements OnInit {
       onChange: (val) => {
         if (page.sizeName !== "自定义") {
           page.setSize({name: page.sizeName, orientation: val});
-          this.pageChanged.emit();
+          this.pageConfigChanged.emit();
         }
       }
     };
@@ -76,7 +76,7 @@ export class PageConfigMenuComponent implements OnInit {
       style: getInputStyle(),
       onChange: (val) => {
         page.setSize({width: val, height: page.size.y});
-        this.pageChanged.emit();
+        this.pageConfigChanged.emit();
       }
     };
     const heightInput: InputInfo = {
@@ -87,7 +87,7 @@ export class PageConfigMenuComponent implements OnInit {
       style: getInputStyle(),
       onChange: (val) => {
         page.setSize({width: page.size.x, height: val});
-        this.pageChanged.emit();
+        this.pageConfigChanged.emit();
       }
     };
     const backgroundInput: InputInfoColor = {
@@ -97,7 +97,7 @@ export class PageConfigMenuComponent implements OnInit {
       style: getInputStyle(),
       onChange: (val) => {
         page.background = val.string();
-        this.pageChanged.emit();
+        this.pageConfigChanged.emit();
       }
     };
     const workSpaceBackgroundInput: InputInfoColor = {
@@ -125,7 +125,7 @@ export class PageConfigMenuComponent implements OnInit {
         style: getInputStyle({width: "50%"}),
         onChange: (val) => {
           page.padding[index] = val;
-          this.pageChanged.emit();
+          this.pageConfigChanged.emit();
         }
       };
     });
