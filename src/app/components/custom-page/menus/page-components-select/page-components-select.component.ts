@@ -4,14 +4,14 @@ import {ImageComponent} from "@app/modules/image/components/image/image.componen
 import {pageComponentInfos, PageComponentType} from "../../models/page-component-infos";
 
 @Component({
-  selector: "app-page-components-menu",
+  selector: "app-page-components-select",
   standalone: true,
   imports: [ImageComponent, MatTooltipModule],
-  templateUrl: "./page-components-menu.component.html",
-  styleUrl: "./page-components-menu.component.scss",
+  templateUrl: "./page-components-select.component.html",
+  styleUrl: "./page-components-select.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PageComponentsMenuComponent {
+export class PageComponentsSeletComponent {
   chooseComponent = output<PageComponentType>();
 
   infos = Object.entries(pageComponentInfos).map(([key, value]) => ({key: key as PageComponentType, value}));

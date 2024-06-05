@@ -6,8 +6,8 @@ import {MessageService} from "@app/modules/message/services/message.service";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageComponentControlComponent} from "../../menus/page-component-control/page-component-control.component";
-import {PageComponentsMenuComponent} from "../../menus/page-components-menu/page-components-menu.component";
-import {PageConfigMenuComponent} from "../../menus/page-config-menu/page-config-menu.component";
+import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
+import {PageConfigComponent} from "../../menus/page-config/page-config.component";
 import {Page} from "../../models/page";
 import {pageComponentInfos, PageComponentType} from "../../models/page-component-infos";
 import {PageComponentBase} from "../../models/page-components/page-component-base";
@@ -20,8 +20,8 @@ import {PageComponentBase} from "../../models/page-components/page-component-bas
     MatTabsModule,
     NgScrollbarModule,
     PageComponentControlComponent,
-    PageComponentsMenuComponent,
-    PageConfigMenuComponent
+    PageComponentsSeletComponent,
+    PageConfigComponent
   ],
   templateUrl: "./custom-page-index.component.html",
   styleUrl: "./custom-page-index.component.scss",

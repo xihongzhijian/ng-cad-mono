@@ -9,14 +9,14 @@ import {Page} from "../../models/page";
 import {PageOrientation, PageSizeNameCustom, pageSizeNamesCustom} from "../../models/page-size";
 
 @Component({
-  selector: "app-page-config-menu",
+  selector: "app-page-config",
   standalone: true,
   imports: [InputComponent, NgScrollbarModule],
-  templateUrl: "./page-config-menu.component.html",
-  styleUrl: "./page-config-menu.component.scss",
+  templateUrl: "./page-config.component.html",
+  styleUrl: "./page-config.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PageConfigMenuComponent implements OnInit {
+export class PageConfigComponent implements OnInit {
   page = input.required<Page>();
   pageConfigChanged = output();
   workSpaceStyle = input.required<Properties>();

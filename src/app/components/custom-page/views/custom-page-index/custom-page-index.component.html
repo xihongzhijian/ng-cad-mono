@@ -1,6 +1,6 @@
 <div class="toolbar">
   <div class="组件栏 flex-110">
-    <app-page-components-menu (chooseComponent)="addComponent($event)"></app-page-components-menu>
+    <app-page-components-select (chooseComponent)="addComponent($event)"></app-page-components-select>
   </div>
   <button mat-raised-button color="primary" (click)="resetPage()">清空</button>
   <button mat-raised-button color="primary">预览</button>
@@ -21,13 +21,13 @@
   <div class="功能区">
     <mat-tab-group [(selectedIndex)]="menuTabIndex">
       <mat-tab label="页面设置">
-        <app-page-config-menu
+        <app-page-config
           class="tab"
           [page]="page"
           [workSpaceStyle]="workSpaceStyle()"
           (pageConfigChanged)="onPageConfigChanged()"
           (workSpaceStyleChanged)="workSpaceStyle.set($event)"
-        ></app-page-config-menu>
+        ></app-page-config>
       </mat-tab>
       <mat-tab label="图层管理"></mat-tab>
       <mat-tab label="页面管理"></mat-tab>
