@@ -276,9 +276,11 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
         data.zhankai[0].name = data.name;
       }
       if (cad instanceof CadData) {
-        for (const {cadKey} of yaoqiu?.CAD弹窗修改属性 || []) {
+        for (const {cadKey, key} of yaoqiu?.CAD弹窗修改属性 || []) {
           if (cadKey) {
             (cad as any)[cadKey] = data[cadKey];
+          } else if (key === "展开信息") {
+            cad.zhankai = data.zhankai;
           }
         }
       } else {
