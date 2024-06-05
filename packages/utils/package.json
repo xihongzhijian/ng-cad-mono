@@ -32,7 +32,7 @@
     "@types/events": "^3.0.3",
     "@types/lodash": "^4.17.4",
     "@types/md5": "^2.3.5",
-    "@types/node": "^20.12.13",
+    "@types/node": "^20.14.1",
     "typescript": "~5.4.5",
     "vite": "^5.2.12",
     "vite-plugin-dts": "^3.9.1"
@@ -43,6 +43,6 @@
     "jsencrypt": "^3.3.2",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
-    "pinyin-pro": "^3.21.0"
+    "pinyin-pro": "^3.21.1"
   }
 }
