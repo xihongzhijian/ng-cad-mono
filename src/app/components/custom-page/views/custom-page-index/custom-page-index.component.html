@@ -1,6 +1,9 @@
 <div class="toolbar">
   <div class="组件栏 flex-110">
-    <app-page-components-select (chooseComponent)="addComponent($event)"></app-page-components-select>
+    <app-page-components-select
+      [(components)]="pageComponents"
+      (componentsChange)="onPageComponentChanged($event)"
+    ></app-page-components-select>
   </div>
   <button mat-raised-button color="primary" (click)="resetPage()">清空</button>
   <button mat-raised-button color="primary">预览</button>
@@ -8,22 +11,22 @@
 </div>
 <div class="flex-row flex-110" style="overflow: hidden">
   <div class="显示内容"></div>
-  <div class="工作区" #pageContainer [style]="workSpaceStyle()">
+  <div class="工作区" [style]="workSpaceStyle()">
     <ng-scrollbar class="enable-x">
-      <div class="page" [style]="pageStyle()" (click)="onPageClick()">
-        @for (component of pageComponents(); track $index) {
-          <div
-            class="page-component"
-            [class]="component.type"
-            [style]="component.getStyle()"
-            (click)="clickComponent($event, component)"
-          ></div>
-        }
-        <!-- <app-page-component-control [component]="activePageComponent()"></app-page-component-control> -->
+      <div #pageEl class="page" [style]="pageStyle()" (click)="onPageClick()">
+        <app-page-components-diaplay
+          [(components)]="pageComponents"
+          (componentsChange)="onPageComponentChanged($event)"
+          [(activeComponent)]="activePageComponent"
+        ></app-page-components-diaplay>
       </div>
     </ng-scrollbar>
   </div>
   <div class="功能区">
+    <div class="toolbar vertical">
+      <button mat-icon-button color="primary" matTooltip="撤销(ctrl+z)" (click)="undo()"><mat-icon>undo</mat-icon></button>
+      <button mat-icon-button color="primary" matTooltip="恢复(ctrl+y)" (click)="redo()"><mat-icon>redo</mat-icon></button>
+    </div>
     <mat-tab-group [(selectedIndex)]="menuTabIndex">
       <mat-tab label="页面设置">
         <ng-scrollbar>

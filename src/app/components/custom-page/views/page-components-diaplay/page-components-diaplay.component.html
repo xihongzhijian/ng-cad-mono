@@ -1,0 +1,21 @@
+@for (component of components(); track $index) {
+  <div
+    class="page-component"
+    [class]="component.type"
+    [attr.data-id]="component.id"
+    [style]="component.getStyle()"
+    (click)="clickComponent($event, component)"
+    cdkDrag
+    (cdkDragMoved)="moveComponent($event, component)"
+    (cdkDragEnded)="moveComponentEnd($event, component)"
+  ></div>
+}
+
+@if (controlStyle(); as controlStyle) {
+  <div class="control-rect" [style]="controlStyle">
+    <div class="border top"></div>
+    <div class="border right"></div>
+    <div class="border bottom"></div>
+    <div class="border left"></div>
+  </div>
+}

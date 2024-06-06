@@ -124,13 +124,6 @@ export class Page {
     const scale = Math.min(width / w, height / h);
     this.scale.set(scale, scale);
   }
-
-  addComponent(type: PageComponentType, name: string) {
-    const info = pageComponentInfos[type];
-    const component = new info.class(name);
-    this.components.push(component);
-    return component;
-  }
 }
 
 export interface PageConfig {

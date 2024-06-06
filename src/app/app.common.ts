@@ -212,17 +212,19 @@ export const getBooleanStr = (value: boolean) => {
   return value ? "是" : "否";
 };
 
-export const getCopyName = (names: string[], name: string) => {
+export const getNameWithSuffix = (names: string[], name: string, suffix: string, startNum: number) => {
   if (!names.includes(name)) {
     return name;
   }
-  let i = 0;
-  const getSuffix = () => "_复制" + (i === 0 ? "" : i.toString());
+  let i = startNum;
+  const getSuffix = () => suffix + (i === 0 ? "" : i.toString());
   while (names.includes(name + getSuffix())) {
     i++;
   }
   return name + getSuffix();
 };
+export const getInsertName = (names: string[], name: string) => getNameWithSuffix(names, name, "", 1);
+export const getCopyName = (names: string[], name: string) => getNameWithSuffix(names, name, "_复制", 0);
 
 export const getPdfInfo = (others?: TDocumentInformation): TDocumentInformation => {
   const now = new Date();

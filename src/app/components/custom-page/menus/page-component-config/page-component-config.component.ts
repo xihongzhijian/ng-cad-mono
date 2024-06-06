@@ -22,7 +22,7 @@ export class PageComponentConfigComponent {
   async getActiveComponent() {
     const component = this.activeComponent();
     if (!component) {
-      await this.message.error("请先选择一个组件");
+      await this.message.snack("请先选择一个组件");
     }
     return component;
   }

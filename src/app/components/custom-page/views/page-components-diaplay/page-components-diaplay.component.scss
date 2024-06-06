@@ -1,0 +1,35 @@
+.page-component {
+  position: absolute;
+}
+
+.control-rect {
+  position: absolute;
+
+  > * {
+    position: absolute;
+    &.top {
+      width: var(--width);
+      height: 0;
+      top: 0;
+      left: 0;
+    }
+    &.right {
+      width: 0;
+      height: var(--height);
+      top: 0;
+      left: var(--width);
+    }
+    &.bottom {
+      width: var(--width);
+      height: 0;
+      top: var(--height);
+      left: 0;
+    }
+    &.left {
+      width: 0;
+      height: var(--height);
+      top: 0;
+      left: 0;
+    }
+  }
+}

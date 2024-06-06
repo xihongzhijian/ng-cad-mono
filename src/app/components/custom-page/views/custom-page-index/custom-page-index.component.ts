@@ -1,27 +1,32 @@
-import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, signal, viewChild} from "@angular/core";
+import {CdkDrag} from "@angular/cdk/drag-drop";
+import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
+import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {session, setGlobal} from "@app/app.common";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageComponentConfigComponent} from "../../menus/page-component-config/page-component-config.component";
-import {PageComponentControlComponent} from "../../menus/page-component-control/page-component-control.component";
 import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
 import {Page, PageConfig} from "../../models/page";
-import {pageComponentInfos, PageComponentType} from "../../models/page-component-infos";
 import {PageComponentBase} from "../../models/page-components/page-component-base";
+import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
 
 @Component({
   selector: "app-custom-page-index",
   standalone: true,
   imports: [
+    CdkDrag,
     MatButtonModule,
+    MatIconModule,
     MatTabsModule,
+    MatTooltipModule,
     NgScrollbarModule,
     PageComponentConfigComponent,
-    PageComponentControlComponent,
+    PageComponentsDiaplayComponent,
     PageComponentsSeletComponent,
     PageConfigComponent
   ],
@@ -44,13 +49,11 @@ export class CustomPageIndexComponent {
   private _menuTabIndexKey = "customPageMenuTabIndex";
   menuTabIndex = signal(session.load(this._menuTabIndexKey) || 0);
 
-  pageContainer = viewChild.required<HTMLDivElement>("pageContainer");
-
   constructor() {
     setGlobal("customPage", this);
     effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
     effect(() => (this.page.components = this.pageComponents()));
-    this.loadPageFromSession();
+    this.loadPageSnapshot();
   }
 
   updatePageStyle() {
@@ -65,12 +68,19 @@ export class CustomPageIndexComponent {
     this.updatePageComponents();
     this.pageConfig.set(this.page.getPageConfig());
   }
-  private _pageDataKey = "customPageData";
-  savePageToSession() {
-    session.save(this._pageDataKey, this.page.export());
+  private _pageSnapshotsKey = "customPageSnapshots";
+  savePageSnapshot() {
+    const snapshots = session.load(this._pageSnapshotsKey);
+    if (Array.isArray(snapshots)) {
+      snapshots.push(this.page.export());
+      session.save(this._pageSnapshotsKey, snapshots);
+    } else {
+      session.save(this._pageSnapshotsKey, [this.page.export()]);
+    }
   }
-  loadPageFromSession() {
-    const data = session.load(this._pageDataKey);
+  loadPageSnapshot() {
+    const snapshots = session.load(this._pageSnapshotsKey);
+    const data = Array.isArray(snapshots) ? snapshots.at(-1) : null;
     if (data) {
       try {
         this.page.import(data);
@@ -82,6 +92,8 @@ export class CustomPageIndexComponent {
     }
     this.updatePage();
   }
+  undo() {}
+  redo() {}
 
   async initPage() {
     this.page = new Page();
@@ -94,35 +106,27 @@ export class CustomPageIndexComponent {
     }
     this.initPage();
     this.updatePage();
-    this.savePageToSession();
+    this.savePageSnapshot();
   }
 
   onPageConfigChanged(config: PageConfig) {
     this.page.setPageConfig(config);
     this.pageConfig.set(this.page.getPageConfig());
     this.updatePageStyle();
-    this.savePageToSession();
+    this.savePageSnapshot();
   }
 
   onPageClick() {
     this.activePageComponent.set(null);
   }
 
-  addComponent(type: PageComponentType) {
-    const info = pageComponentInfos[type];
-    const component = this.page.addComponent(type, info.name + "组件");
-    component.background = "black";
-    component.size.set(100, 100);
-    this.updatePageComponents();
-    this.savePageToSession();
-  }
-  clickComponent(event: Event, component: PageComponentBase) {
-    event.stopPropagation();
-    this.activePageComponent.set(component);
-  }
   onPageComponentChanged(components: PageComponentBase[]) {
     this.page.components = components;
+    const activeComponent = this.activePageComponent();
+    if (activeComponent && !components.find((v) => v.id === activeComponent.id)) {
+      this.activePageComponent.set(null);
+    }
     this.updatePageComponents();
-    this.savePageToSession();
+    this.savePageSnapshot();
   }
 }
