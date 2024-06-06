@@ -1,0 +1,12 @@
+.item {
+  color: black;
+  cursor: move;
+  &.active,
+  &:hover {
+    color: var(--primary-color);
+  }
+
+  .name {
+    font-size: 16px;
+  }
+}

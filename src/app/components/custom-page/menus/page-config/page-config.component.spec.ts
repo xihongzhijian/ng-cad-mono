@@ -17,8 +17,7 @@ describe("PageConfigMenuComponent", () => {
     fixture = TestBed.createComponent(PageConfigComponent);
     component = fixture.componentInstance;
     const ref = fixture.componentRef;
-    ref.setInput("page", new Page());
-    ref.setInput("workSpaceStyle", {});
+    ref.setInput("config", new Page().getPageConfig());
     fixture.detectChanges();
   });
 

@@ -5,6 +5,7 @@ import {session, setGlobal} from "@app/app.common";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {PageComponentConfigComponent} from "../../menus/page-component-config/page-component-config.component";
 import {PageComponentControlComponent} from "../../menus/page-component-control/page-component-control.component";
 import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
@@ -19,6 +20,7 @@ import {PageComponentBase} from "../../models/page-components/page-component-bas
     MatButtonModule,
     MatTabsModule,
     NgScrollbarModule,
+    PageComponentConfigComponent,
     PageComponentControlComponent,
     PageComponentsSeletComponent,
     PageConfigComponent
@@ -47,6 +49,7 @@ export class CustomPageIndexComponent {
   constructor() {
     setGlobal("customPage", this);
     effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
+    effect(() => (this.page.components = this.pageComponents()));
     this.loadPageFromSession();
   }
 
@@ -54,12 +57,12 @@ export class CustomPageIndexComponent {
     this.pageStyle.set(this.page.getStyle());
     this.workSpaceStyle.set({...this.page.workSpaceStyle});
   }
-  updatePageComponentItems() {
-    this.pageComponents.set(this.page.components);
+  updatePageComponents() {
+    this.pageComponents.set([...this.page.components]);
   }
   updatePage() {
     this.updatePageStyle();
-    this.updatePageComponentItems();
+    this.updatePageComponents();
     this.pageConfig.set(this.page.getPageConfig());
   }
   private _pageDataKey = "customPageData";
@@ -101,16 +104,25 @@ export class CustomPageIndexComponent {
     this.savePageToSession();
   }
 
+  onPageClick() {
+    this.activePageComponent.set(null);
+  }
+
   addComponent(type: PageComponentType) {
     const info = pageComponentInfos[type];
     const component = this.page.addComponent(type, info.name + "组件");
     component.background = "black";
     component.size.set(100, 100);
-    this.updatePageComponentItems();
+    this.updatePageComponents();
     this.savePageToSession();
   }
-
-  clickComponent(component: PageComponentBase) {
+  clickComponent(event: Event, component: PageComponentBase) {
+    event.stopPropagation();
     this.activePageComponent.set(component);
+  }
+  onPageComponentChanged(components: PageComponentBase[]) {
+    this.page.components = components;
+    this.updatePageComponents();
+    this.savePageToSession();
   }
 }

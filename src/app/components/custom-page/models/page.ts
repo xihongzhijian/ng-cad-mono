@@ -54,6 +54,11 @@ export class Page {
       components: this.components.map((v) => v.export())
     };
   }
+  clone() {
+    const page = new Page();
+    page.import(this.export());
+    return page;
+  }
 
   getPageConfig(): PageConfig {
     return {

@@ -10,20 +10,35 @@
   <div class="显示内容"></div>
   <div class="工作区" #pageContainer [style]="workSpaceStyle()">
     <ng-scrollbar class="enable-x">
-      <div class="page" [style]="pageStyle()">
+      <div class="page" [style]="pageStyle()" (click)="onPageClick()">
         @for (component of pageComponents(); track $index) {
-          <div class="page-component" [class]="component.type" [style]="component.getStyle()" (click)="clickComponent(component)"></div>
+          <div
+            class="page-component"
+            [class]="component.type"
+            [style]="component.getStyle()"
+            (click)="clickComponent($event, component)"
+          ></div>
         }
-        <app-page-component-control [component]="activePageComponent()"></app-page-component-control>
+        <!-- <app-page-component-control [component]="activePageComponent()"></app-page-component-control> -->
       </div>
     </ng-scrollbar>
   </div>
   <div class="功能区">
     <mat-tab-group [(selectedIndex)]="menuTabIndex">
       <mat-tab label="页面设置">
-        <app-page-config class="tab" [(config)]="pageConfig" (configChange)="onPageConfigChanged($event)"></app-page-config>
+        <ng-scrollbar>
+          <app-page-config class="tab" [(config)]="pageConfig" (configChange)="onPageConfigChanged($event)"></app-page-config>
+        </ng-scrollbar>
       </mat-tab>
-      <mat-tab label="图层管理"></mat-tab>
+      <mat-tab label="图层管理">
+        <ng-scrollbar>
+          <app-page-component-config
+            [(components)]="pageComponents"
+            [(activeComponent)]="activePageComponent"
+            (componentsChange)="onPageComponentChanged($event)"
+          ></app-page-component-config>
+        </ng-scrollbar>
+      </mat-tab>
       <mat-tab label="页面管理"></mat-tab>
     </mat-tab-group>
   </div>

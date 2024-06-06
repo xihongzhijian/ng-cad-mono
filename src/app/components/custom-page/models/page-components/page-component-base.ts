@@ -11,7 +11,6 @@ export abstract class PageComponentBase {
   anchor = new Point(0.5, 0.5);
   rotation = new Angle(0);
   border: Property.Border = "none";
-  zIndex: Property.ZIndex = 0;
   background: Property.Background = "transparent";
 
   protected _locked = false;
@@ -30,7 +29,6 @@ export abstract class PageComponentBase {
     this.anchor.copy(data.anchor);
     this.rotation.deg = data.rotation;
     this.border = data.border;
-    this.zIndex = data.zIndex;
     this.background = data.background;
   }
   export() {
@@ -44,10 +42,14 @@ export abstract class PageComponentBase {
       anchor: this.anchor.toArray(),
       rotation: this.rotation.deg,
       border: this.border,
-      zIndex: this.zIndex,
       background: this.background,
       styleOverrides: this.styleOverrides
     };
+  }
+  clone(): this {
+    const component = new (this.constructor as any)(this.name);
+    component.import(this.export());
+    return component;
   }
 
   getStyle(): Properties {
@@ -66,7 +68,6 @@ export abstract class PageComponentBase {
       transform: `scale(${scaleX},${scaleY}) rotate(${rotation}deg)`,
       transformOrigin: `${this.anchor.x * 100}% ${this.anchor.y * 100}%`,
       background: this.background,
-      zIndex: this.zIndex,
       display: this._hidden ? "none" : "block",
       ...this.styleOverrides
     };
@@ -81,6 +82,9 @@ export abstract class PageComponentBase {
   unlock() {
     this._locked = false;
   }
+  toggleLock() {
+    this._locked = !this._locked;
+  }
 
   isHidden() {
     return this._hidden;
@@ -90,5 +94,8 @@ export abstract class PageComponentBase {
   }
   show() {
     this._hidden = false;
+  }
+  toggleHidden() {
+    this._hidden = !this._hidden;
   }
 }

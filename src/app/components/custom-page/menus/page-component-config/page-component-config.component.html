@@ -1,0 +1,30 @@
+<div class="flex-column">
+  <div class="toolbar">
+    <button mat-stroked-button color="primary" (click)="copy()">复制</button>
+    <button mat-stroked-button color="primary" (click)="remove()">删除</button>
+  </div>
+  <div class="items" cdkDropList [cdkDropListData]="components()" cdkDropListLockAxis="y" (cdkDropListDropped)="drop($event)">
+    @for (component of components(); track $index) {
+      <div class="item" [class.active]="activeComponent()?.id === component.id" cdkDrag (click)="click(component)">
+        <div class="cdk-drag-placeholder" *cdkDragPlaceholder></div>
+        <div class="toolbar">
+          <button mat-icon-button (click)="toggleHidden(component)">
+            @if (component.isHidden()) {
+              <mat-icon>visibility_off</mat-icon>
+            } @else {
+              <mat-icon>visibility</mat-icon>
+            }
+          </button>
+          <button mat-icon-button (click)="toggleLock(component)">
+            @if (component.isLocked()) {
+              <mat-icon>lock</mat-icon>
+            } @else {
+              <mat-icon>lock_open</mat-icon>
+            }
+          </button>
+          <div class="name">{{ component.name }}</div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
