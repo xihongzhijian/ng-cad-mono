@@ -23,7 +23,7 @@ import {ImportCache} from "@app/views/import/import.types";
 import {openImportPage} from "@app/views/import/import.utils";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {Debounce} from "@decorators/debounce";
-import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai, setLinesLength} from "@lucilor/cad-viewer";
+import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, setLinesLength} from "@lucilor/cad-viewer";
 import {getElementVisiblePercentage, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {ContextMenu} from "@mixins/context-menu.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -993,7 +993,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       }
     }
     const data = item.data.clone(!isEditingFenlei);
-    data.zhankai = [new CadZhankai({name: data.name})];
     data.entities.forEach((e) => {
       if (e instanceof CadLineLike) {
         e.mingzi = "";

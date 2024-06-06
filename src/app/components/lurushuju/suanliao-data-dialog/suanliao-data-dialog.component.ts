@@ -18,6 +18,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {session} from "@app/app.common";
 import {filterCad, setCadData} from "@app/cad/cad-shujuyaoqiu";
+import {HoutaiCad} from "@app/modules/http/services/cad-data.service.types";
 import {OpenCadOptions} from "@app/services/app-status.types";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
@@ -68,7 +69,6 @@ export class SuanliaoDataDialogComponent implements OnInit {
   cadItemButtons: CadItemButton<SuanliaoDataCadItemInfo>[];
   mubanExtraData: CadItemComponent["mubanExtraData"] = {};
   openCadOptions: RequiredKeys<OpenCadOptions, "suanliaogongshiInfo">;
-  cadShujuyaoqiu: CadItemComponent["yaoqiu"];
   suanliaoCadsSearch: InputInfo;
   hiddenSuanliaoCads: number[] = [];
   isSuanliaoCadReversed = true;
@@ -115,18 +115,15 @@ export class SuanliaoDataDialogComponent implements OnInit {
         ]
       );
     }
-    this.cadShujuyaoqiu = this.status.getCad数据要求("算料");
     this.suanliaoCadsSearch = {
       type: "string",
       label: "搜索",
       onInput: debounce((val) => {
         this.hiddenSuanliaoCads = [];
-        const yaoqiu = this.cadShujuyaoqiu;
-        if (yaoqiu) {
-          for (const [i, cad] of this.data.data.算料CAD.entries()) {
-            if (!filterCad(val, cad, yaoqiu)) {
-              this.hiddenSuanliaoCads.push(i);
-            }
+        for (const [i, cad] of this.data.data.算料CAD.entries()) {
+          const yaoqiu = this.status.getCad数据要求(cad.分类);
+          if (yaoqiu && !filterCad(val, cad, yaoqiu)) {
+            this.hiddenSuanliaoCads.push(i);
           }
         }
       }, 500)
@@ -150,6 +147,10 @@ export class SuanliaoDataDialogComponent implements OnInit {
     return 0;
   }
 
+  getCadYaoqiu(cad: HoutaiCad) {
+    return this.status.getCad数据要求(cad.分类);
+  }
+
   async selectSuanliaoCads() {
     const {data} = this.data;
     const zxpjData: ZixuanpeijianInput = {
@@ -169,7 +170,8 @@ export class SuanliaoDataDialogComponent implements OnInit {
       data.算料CAD = result.零散.map((v) => {
         const isSelected = v.data.info.isSuanliaoSelected;
         if (!isSelected) {
-          setCadData(v.data, this.cadShujuyaoqiu?.选中CAD要求 || []);
+          const yaoqiu = this.status.getCad数据要求(v.data.type);
+          setCadData(v.data, yaoqiu?.选中CAD要求 || []);
         }
         return getHoutaiCad(v.data, {houtaiId: v.info.houtaiId});
       });
