@@ -241,7 +241,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         data.cads.forEach((v) => {
           const cadData = new CadData(v);
           const item: MrbcjfzCadInfo = {data: cadData, id: cadData.id};
-          if (filterCad(item)) {
+          if (filterCad(item.data)) {
             this.cads[item.id] = item;
           } else {
             cadsToRemove.push(item);

@@ -1,15 +1,8 @@
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {difference, isEqual} from "lodash";
-import {
-  MrbcjfzCadInfo,
-  MrbcjfzHuajian,
-  MrbcjfzInfo,
-  MrbcjfzInfoShowItem,
-  mrbcjfzInfoShowItems,
-  mrbcjfzMsxzItems,
-  MrbcjfzXinghao
-} from "./mrbcjfz.types";
+import {CadData} from "packages/cad-viewer/lib";
+import {MrbcjfzHuajian, MrbcjfzInfo, MrbcjfzInfoShowItem, mrbcjfzInfoShowItems, mrbcjfzMsxzItems, MrbcjfzXinghao} from "./mrbcjfz.types";
 
 export class MrbcjfzXinghaoInfo {
   默认板材: ObjectOf<MrbcjfzInfo> = {};
@@ -192,9 +185,8 @@ export const getMrbcjfzInfo = (source: Partial<MrbcjfzInfo> = {}): MrbcjfzInfo =
   ...source
 });
 
-export const filterCad = (info: MrbcjfzCadInfo) => {
-  const data = info.data;
-  if (data.gudingkailiaobancai || data.板材绑定选项) {
+export const filterCad = (data: CadData) => {
+  if (data.gudingkailiaobancai || data.板材绑定选项 || data.指定板材分组) {
     return false;
   }
   const typeReg = /激光花|花件|示意图|装配示意图|特定企料|横截面示意图|纵截面示意图/;

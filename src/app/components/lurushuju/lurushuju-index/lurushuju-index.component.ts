@@ -202,8 +202,9 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   get isKailiao() {
     const projectKey = "新版本做数据可以做激光开料";
-    if (this.status.projectConfig.exists(projectKey)) {
-      return this.status.projectConfig.getBoolean(projectKey);
+    const projectKailiao = this.status.projectConfig.getBoolean(projectKey);
+    if (!projectKailiao) {
+      return false;
     }
     if (typeof this.xinghao?.是否需要激光开料 === "boolean") {
       return this.xinghao.是否需要激光开料;
@@ -216,8 +217,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const fields = ["vid", "mingzi"];
     const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields});
     const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields: [...fields, "menchuang"]});
-    const iPrev = this.xinghaoMenchuangs.index;
-    const jPrev = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1]?.gongyis?.index;
     this.xinghaoMenchuangs.items = [];
     for (const menchuang of menchuangs) {
       const xinghaoMenchuang = getXinghaoMenchuang(menchuang);
@@ -249,7 +248,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         }
       }
       this.filterXinghaos();
-      this.clikcXinghaoGongyi(iPrev ?? 0, jPrev ?? 0);
     }
   }
 
@@ -291,6 +289,10 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         const [i, j] = foundGongyis[0];
         this.clikcXinghaoGongyi(i, j);
       }
+    } else {
+      const iPrev = this.xinghaoMenchuangs.index;
+      const jPrev = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1]?.gongyis?.index;
+      this.clikcXinghaoGongyi(iPrev || 0, jPrev || 0);
     }
   }
 

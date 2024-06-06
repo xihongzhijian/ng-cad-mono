@@ -24,6 +24,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
 import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
+import {filterCad as filterCad2} from "@views/mrbcjfz/mrbcjfz.utils";
 import csstype from "csstype";
 import {cloneDeep, debounce, isEmpty} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
@@ -601,7 +602,7 @@ export class MenjiaoDialogComponent implements OnInit {
     }
     const data = this.formData;
     const morenbancai = cloneDeep(data[key1].板材分组);
-    const cads = data[key1].算料CAD.map((v) => new CadData(v.json));
+    const cads = data[key1].算料CAD.map((v) => new CadData(v.json)).filter(filterCad2);
     await componentLrsj.updateHuajians();
     const huajians = componentLrsj.filterHuajians(data[key1]);
     return {

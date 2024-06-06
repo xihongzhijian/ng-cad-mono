@@ -1174,14 +1174,16 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
     addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: 30});
     x += widths[2];
 
-    const 横料Count = items.filter((v) => v.是横料 === "是").reduce((a, b) => a + b.要求数量, 0);
+    const 横料 = items.filter((v) => v.是横料 === "是");
+    const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
     if (横料Count > 0) {
-      const text = `${items[0].型材长度}=${横料Count}`;
+      const text = `${横料[0].型材长度}=${横料Count}`;
       addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: 30});
     }
-    const 竖料Count = items.filter((v) => v.是横料 === "否").reduce((a, b) => a + b.要求数量, 0);
+    const 竖料 = items.filter((v) => v.是横料 === "否");
+    const 竖料Count = 竖料.reduce((a, b) => a + b.要求数量, 0);
     if (竖料Count > 0) {
-      const text = `${items[0].型材长度}=${竖料Count}`;
+      const text = `${竖料[0].型材长度}=${竖料Count}`;
       addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: 30});
     }
     x += widths[3];
