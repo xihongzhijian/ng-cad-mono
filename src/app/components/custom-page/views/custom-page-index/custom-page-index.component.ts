@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatTabsModule} from "@angular/material/tabs";
 import {session, setGlobal} from "@app/app.common";
@@ -8,7 +8,7 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageComponentControlComponent} from "../../menus/page-component-control/page-component-control.component";
 import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
-import {Page} from "../../models/page";
+import {Page, PageConfig} from "../../models/page";
 import {pageComponentInfos, PageComponentType} from "../../models/page-component-infos";
 import {PageComponentBase} from "../../models/page-components/page-component-base";
 
@@ -27,14 +27,15 @@ import {PageComponentBase} from "../../models/page-components/page-component-bas
   styleUrl: "./custom-page-index.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CustomPageIndexComponent implements OnInit {
+export class CustomPageIndexComponent {
   private message = inject(MessageService);
 
   @HostBinding("class") class = "ng-page";
 
   page = new Page();
+  pageConfig = signal<PageConfig>(this.page.getPageConfig());
   pageStyle = signal<ReturnType<Page["getStyle"]>>({});
-  workSpaceStyle = signal<Properties>({backgroundColor: "gray"});
+  workSpaceStyle = signal<Properties>({});
   pageComponents = signal<PageComponentBase[]>([]);
   activePageComponent = signal<PageComponentBase | null>(null);
 
@@ -44,19 +45,14 @@ export class CustomPageIndexComponent implements OnInit {
   pageContainer = viewChild.required<HTMLDivElement>("pageContainer");
 
   constructor() {
-    effect(() => {
-      session.save(this._menuTabIndexKey, this.menuTabIndex());
-    });
-  }
-
-  ngOnInit() {
     setGlobal("customPage", this);
+    effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
     this.loadPageFromSession();
-    this.updatePage();
   }
 
   updatePageStyle() {
     this.pageStyle.set(this.page.getStyle());
+    this.workSpaceStyle.set({...this.page.workSpaceStyle});
   }
   updatePageComponentItems() {
     this.pageComponents.set(this.page.components);
@@ -64,6 +60,7 @@ export class CustomPageIndexComponent implements OnInit {
   updatePage() {
     this.updatePageStyle();
     this.updatePageComponentItems();
+    this.pageConfig.set(this.page.getPageConfig());
   }
   private _pageDataKey = "customPageData";
   savePageToSession() {
@@ -72,24 +69,34 @@ export class CustomPageIndexComponent implements OnInit {
   loadPageFromSession() {
     const data = session.load(this._pageDataKey);
     if (data) {
-      this.page.import(data);
-      this.updatePageStyle();
-      this.updatePageComponentItems();
+      try {
+        this.page.import(data);
+      } catch (error) {
+        this.initPage();
+      }
     } else {
-      this.page.padding = [12, 12, 12, 12];
+      this.initPage();
     }
+    this.updatePage();
   }
 
+  async initPage() {
+    this.page = new Page();
+    this.page.padding = [12, 12, 12, 12];
+    this.page.workSpaceStyle.backgroundColor = "lightgray";
+  }
   async resetPage() {
     if (!(await this.message.confirm("确定要将当前页面重置为初始状态吗？"))) {
       return;
     }
-    this.page = new Page();
+    this.initPage();
     this.updatePage();
     this.savePageToSession();
   }
 
-  onPageConfigChanged() {
+  onPageConfigChanged(config: PageConfig) {
+    this.page.setPageConfig(config);
+    this.pageConfig.set(this.page.getPageConfig());
     this.updatePageStyle();
     this.savePageToSession();
   }

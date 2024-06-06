@@ -1,4 +1,5 @@
 import {isTypeOf, Point} from "@lucilor/utils";
+import Color from "color";
 import {Properties, Property} from "csstype";
 import {PageOrientation} from "pdfmake/interfaces";
 import {pageComponentInfos, PageComponentType} from "./page-component-infos";
@@ -14,6 +15,7 @@ export class Page {
   padding: [number, number, number, number] = [0, 0, 0, 0];
 
   styleOverrides: Properties = {};
+  workSpaceStyle: Properties = {};
   components: PageComponentBase[] = [];
 
   constructor() {}
@@ -28,6 +30,7 @@ export class Page {
     this.scale.copy(data.scale);
     this.padding = data.padding;
     this.styleOverrides = data.styleOverrides;
+    this.workSpaceStyle = data.workSpaceStyle;
     this.components = data.components.map((component) => {
       const type = component.type as PageComponentType;
       if (!(type in pageComponentInfos)) {
@@ -47,8 +50,31 @@ export class Page {
       scale: this.scale.toArray(),
       padding: this.padding,
       styleOverrides: this.styleOverrides,
+      workSpaceStyle: this.workSpaceStyle,
       components: this.components.map((v) => v.export())
     };
+  }
+
+  getPageConfig(): PageConfig {
+    return {
+      sizeName: this.sizeName,
+      orientation: this.orientation,
+      width: this.size.x,
+      height: this.size.y,
+      backgroundColor: Color(this.background),
+      workSpaceBgColor: Color(this.workSpaceStyle.backgroundColor),
+      padding: this.padding
+    };
+  }
+  setPageConfig(config: PageConfig) {
+    if (config.sizeName === "自定义") {
+      this.setSize({width: config.width, height: config.height});
+    } else {
+      this.setSize({name: config.sizeName, orientation: config.orientation});
+    }
+    this.background = config.backgroundColor.toString();
+    this.workSpaceStyle.backgroundColor = config.workSpaceBgColor.toString();
+    this.padding = config.padding;
   }
 
   setSize(params: {name: PageSizeName; orientation?: PageOrientation} | {width: number; height: number}) {
@@ -100,4 +126,14 @@ export class Page {
     this.components.push(component);
     return component;
   }
+}
+
+export interface PageConfig {
+  sizeName: Page["sizeName"];
+  orientation: Page["orientation"];
+  width: number;
+  height: number;
+  backgroundColor: Color;
+  workSpaceBgColor: Color;
+  padding: Page["padding"];
 }

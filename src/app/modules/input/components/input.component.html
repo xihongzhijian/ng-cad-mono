@@ -622,7 +622,7 @@
           <span>{{ info.label }}</span>
         </div>
         <div class="group" [style]="info.groupStyle">
-          @for (info2 of info.infos; track info2) {
+          @for (info2 of info.infos; track $index) {
             <app-input [info]="info2"></app-input>
           }
         </div>
@@ -630,7 +630,7 @@
       </div>
     } @else {
       <div class="group" [style]="info.groupStyle">
-        @for (info2 of info.infos; track info2) {
+        @for (info2 of info.infos; track $index) {
           <app-input [info]="info2"></app-input>
         }
       </div>

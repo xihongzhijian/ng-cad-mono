@@ -1,11 +1,10 @@
-import {ChangeDetectionStrategy, Component, input, OnInit, output, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, model} from "@angular/core";
 import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoColor, InputInfoNumber, InputInfoSelect} from "@app/modules/input/components/input.types";
-import Color from "color";
-import {Properties} from "csstype";
+import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {getGroupStyle, getInputStyle} from "../../models/input-info-utils";
-import {Page} from "../../models/page";
+import {PageConfig} from "../../models/page";
 import {PageOrientation, PageSizeNameCustom, pageSizeNamesCustom} from "../../models/page-size";
 
 @Component({
@@ -16,99 +15,60 @@ import {PageOrientation, PageSizeNameCustom, pageSizeNamesCustom} from "../../mo
   styleUrl: "./page-config.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PageConfigComponent implements OnInit {
-  page = input.required<Page>();
-  pageConfigChanged = output();
-  workSpaceStyle = input.required<Properties>();
-  workSpaceStyleChanged = output<Properties>();
+export class PageConfigComponent {
+  config = model.required<PageConfig>();
 
-  inputInfos = signal<InputInfo[]>([]);
-
-  ngOnInit() {
-    this.update();
-  }
-
-  update() {
-    const page = this.page();
-    const sizeNameInput: InputInfoSelect<any, PageSizeNameCustom> = {
+  inputInfos = computed(() => {
+    const config = this.config();
+    const onChange = () => this.config.set(cloneDeep(config));
+    const sizeNameInput: InputInfoSelect<PageConfig, PageSizeNameCustom> = {
       type: "select",
       label: "页面大小",
       options: pageSizeNamesCustom,
-      value: page.sizeName,
       style: getInputStyle(),
-      onChange: (val) => {
-        if (val === "自定义") {
-          orientationInput.disabled = true;
-          widthInput.readonly = false;
-          heightInput.readonly = false;
-        } else {
-          page.setSize({name: val, orientation: page.orientation});
-          this.pageConfigChanged.emit();
-          orientationInput.disabled = false;
-          widthInput.readonly = true;
-          widthInput.value = page.size.x;
-          heightInput.readonly = true;
-          heightInput.value = page.size.y;
-        }
-      }
+      model: {data: config, key: "sizeName"},
+      onChange
     };
-    const orientationInput: InputInfoSelect<any, PageOrientation> = {
+    const orientationInput: InputInfoSelect<PageConfig, PageOrientation> = {
       type: "select",
       label: "页面方向",
       options: [
         {label: "纵向", value: "portrait"},
         {label: "横向", value: "landscape"}
       ],
-      value: page.orientation,
       style: getInputStyle(),
-      onChange: (val) => {
-        if (page.sizeName !== "自定义") {
-          page.setSize({name: page.sizeName, orientation: val});
-          this.pageConfigChanged.emit();
-        }
-      }
+      model: {data: config, key: "orientation"},
+      onChange
     };
-    const widthInput: InputInfo = {
+    const widthInput: InputInfoNumber<PageConfig> = {
       type: "number",
       label: "页宽",
-      value: page.size.x,
       suffixTexts: [{name: "mm"}],
       style: getInputStyle(),
-      onChange: (val) => {
-        page.setSize({width: val, height: page.size.y});
-        this.pageConfigChanged.emit();
-      }
+      model: {data: config, key: "width"},
+      onChange
     };
-    const heightInput: InputInfo = {
+    const heightInput: InputInfoNumber<PageConfig> = {
       type: "number",
       label: "页高",
-      value: page.size.y,
       suffixTexts: [{name: "mm"}],
       style: getInputStyle(),
-      onChange: (val) => {
-        page.setSize({width: page.size.x, height: val});
-        this.pageConfigChanged.emit();
-      }
+      model: {data: config, key: "height"},
+      onChange
     };
-    const backgroundInput: InputInfoColor = {
+    const backgroundInput: InputInfoColor<PageConfig> = {
       type: "color",
       label: "页面背景",
-      value: Color(page.background),
       style: getInputStyle(),
-      onChange: (val) => {
-        page.background = val.string();
-        this.pageConfigChanged.emit();
-      }
+      model: {data: config, key: "backgroundColor"},
+      onChange
     };
-    const workSpaceBackgroundInput: InputInfoColor = {
+    const workSpaceBackgroundInput: InputInfoColor<PageConfig> = {
       type: "color",
       label: "工作区背景",
-      value: Color(this.workSpaceStyle().backgroundColor),
       style: getInputStyle(),
-      onChange: (val) => {
-        const style: Properties = {...this.workSpaceStyle(), backgroundColor: val.string()};
-        this.workSpaceStyleChanged.emit(style);
-      }
+      model: {data: config, key: "workSpaceBgColor"},
+      onChange
     };
     const paddingItems = [
       {name: "上", index: 0},
@@ -116,17 +76,14 @@ export class PageConfigComponent implements OnInit {
       {name: "左", index: 3},
       {name: "右", index: 1}
     ];
-    const paddingInput: InputInfoNumber[] = paddingItems.map(({name, index}) => {
+    const paddingInput: InputInfoNumber<PageConfig["padding"]>[] = paddingItems.map(({name, index}) => {
       return {
         type: "number",
         label: name,
-        value: page.padding[index],
         suffixTexts: [{name: "mm"}],
         style: getInputStyle({width: "50%"}),
-        onChange: (val) => {
-          page.padding[index] = val;
-          this.pageConfigChanged.emit();
-        }
+        model: {data: config.padding, key: index},
+        onChange
       };
     });
     const inputInfos: InputInfo[] = [
@@ -135,6 +92,6 @@ export class PageConfigComponent implements OnInit {
       {type: "group", label: "", infos: [backgroundInput, workSpaceBackgroundInput], groupStyle: getGroupStyle()},
       {type: "group", label: "页边距", infos: paddingInput, groupStyle: getGroupStyle()}
     ];
-    this.inputInfos.set(inputInfos);
-  }
+    return inputInfos;
+  });
 }
