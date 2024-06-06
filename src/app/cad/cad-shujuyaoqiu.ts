@@ -96,7 +96,7 @@ export class Cad数据要求 {
     this.CAD弹窗修改属性 = getItems(raw.cadtanchuangxiugaishuxing);
     this.线段弹窗修改属性 = split(raw.xianduantanchuangxiugaishuxing);
     this.新建CAD要求 = getItems(raw.tianjiahuodaorucadyaoqiu);
-    this.选中CAD要求 = getItems(raw.xuanzhongcadyuchuli);
+    this.选中CAD要求 = getItems(raw.xuanzhongcadyuchuli || "删除展开信息");
     this.search = search;
     this.导入配置 = {};
     this.选择CAD弹窗筛选数据要求 = raw.xuanzecadtanchuangshaixuanshujuyaoqiu;
@@ -185,30 +185,7 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[]) =>
           toReserveMap[cadKey] = {keys2: key2 ? [key2] : []};
         }
       }
-    }
-    if (value) {
-      if (key === "展开信息") {
-        let arr: any[];
-        try {
-          arr = JSON.parse(value);
-        } catch (error) {
-          continue;
-        }
-        const [a, b, c] = arr.map((v) => v?.toString?.() || "");
-        if (data.zhankai.length < 1) {
-          data.zhankai.push(new CadZhankai({name: data.name}));
-        }
-        const zhankai = data.zhankai[0];
-        if (!zhankai.zhankaikuan || override) {
-          zhankai.zhankaikuan = a || "";
-        }
-        if (!zhankai.zhankaigao || override) {
-          zhankai.zhankaigao = b || "";
-        }
-        if (!zhankai.shuliang || override) {
-          zhankai.shuliang = c || "";
-        }
-      } else if (cadKey) {
+      if (value) {
         if (key2) {
           if (!dataAny[cadKey][key2] || override) {
             dataAny[cadKey][key2] = value;
@@ -217,6 +194,34 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[]) =>
           if (!dataAny[cadKey] || override) {
             dataAny[cadKey] = value;
           }
+        }
+      }
+    }
+    if (key === "展开信息") {
+      if (data.zhankai.length < 1) {
+        data.zhankai.push(new CadZhankai({name: data.name}));
+      }
+      const zhankai = data.zhankai[0];
+      if (remove) {
+        zhankai.zhankaikuan = "";
+        zhankai.zhankaigao = "";
+        zhankai.shuliang = "";
+      } else {
+        let arr: any[];
+        try {
+          arr = JSON.parse(value);
+        } catch (error) {
+          continue;
+        }
+        const [a, b, c] = arr.map((v) => v?.toString?.() || "");
+        if (!zhankai.zhankaikuan || override) {
+          zhankai.zhankaikuan = a || "";
+        }
+        if (!zhankai.zhankaigao || override) {
+          zhankai.zhankaigao = b || "";
+        }
+        if (!zhankai.shuliang || override) {
+          zhankai.shuliang = c || "";
         }
       }
     }
