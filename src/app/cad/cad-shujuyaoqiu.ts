@@ -203,7 +203,7 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[]) =>
       }
       const zhankai = data.zhankai[0];
       if (remove) {
-        zhankai.zhankaikuan = "";
+        zhankai.zhankaikuan = "ceil(总长)+0";
         zhankai.zhankaigao = "";
         zhankai.shuliang = "";
       } else {
