@@ -207,7 +207,7 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[]) =>
         zhankai.zhankaigao = "";
         zhankai.shuliang = "";
       } else {
-        let value2 = value;
+        let value2 = typeof value === "string" ? value : "";
         if (value2[0] === "[") {
           value2 = value2.slice(1);
         }
