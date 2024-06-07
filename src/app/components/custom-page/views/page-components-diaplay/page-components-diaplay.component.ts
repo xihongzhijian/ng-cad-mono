@@ -1,12 +1,16 @@
 import {CdkDrag, CdkDragEnd, CdkDragMove} from "@angular/cdk/drag-drop";
-import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, model, signal} from "@angular/core";
+import {CdkTextareaAutosize} from "@angular/cdk/text-field";
+import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, model, signal, untracked, viewChildren} from "@angular/core";
+import {MatInputModule} from "@angular/material/input";
 import {Properties} from "csstype";
-import {PageComponentBase} from "../../models/page-components/page-component-base";
+import {debounce} from "lodash";
+import {PageComponentTypeAny} from "../../models/page-component-infos";
+import {PageComponentText} from "../../models/page-components/page-component-text";
 
 @Component({
   selector: "app-page-components-diaplay",
   standalone: true,
-  imports: [CdkDrag],
+  imports: [CdkDrag, CdkTextareaAutosize, MatInputModule],
   templateUrl: "./page-components-diaplay.component.html",
   styleUrl: "./page-components-diaplay.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -14,8 +18,8 @@ import {PageComponentBase} from "../../models/page-components/page-component-bas
 export class PageComponentsDiaplayComponent {
   private elRef: ElementRef<HTMLElement> = inject(ElementRef);
 
-  components = model.required<PageComponentBase[]>();
-  activeComponent = model.required<PageComponentBase | null>();
+  components = model.required<PageComponentTypeAny[]>();
+  activeComponent = model.required<PageComponentTypeAny | null>();
 
   controlConfig = {
     borderWidth: 3,
@@ -25,19 +29,42 @@ export class PageComponentsDiaplayComponent {
   };
   controlStyle = signal<Properties | null>(null);
   componentMenuStyle = signal<Properties | null>(null);
+  editingComponent = signal<PageComponentTypeAny | null>(null);
+
+  componentEls = viewChildren<ElementRef<HTMLDivElement>>("componentEl");
 
   constructor() {
     effect(() => this.updateControlStyles(), {allowSignalWrites: true});
+    effect(
+      () => {
+        const editingComponent = untracked(() => this.editingComponent());
+        const activeComponent = this.activeComponent();
+        if (editingComponent && (!activeComponent || editingComponent.id !== activeComponent.id)) {
+          this.editingComponent.set(null);
+        }
+      },
+      {allowSignalWrites: true}
+    );
   }
 
-  clickComponent(event: Event, component: PageComponentBase) {
+  clickComponent(event: Event, component: PageComponentTypeAny) {
     event.stopPropagation();
     this.activeComponent.set(component);
   }
-  moveComponent(event: CdkDragMove, component: PageComponentBase) {
+  dblClickComponent(component: PageComponentTypeAny, componentEl: HTMLDivElement) {
+    this.editingComponent.set(component);
+    if (component instanceof PageComponentText) {
+      const input = componentEl.querySelector("textarea");
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
+  }
+  moveComponent(event: CdkDragMove, component: PageComponentTypeAny) {
     this.updateControlStyles(component);
   }
-  moveComponentEnd(event: CdkDragEnd, component: PageComponentBase) {
+  moveComponentEnd(event: CdkDragEnd, component: PageComponentTypeAny) {
     component.position.add(event.distance.x, event.distance.y);
     event.source._dragRef.reset();
     this.components.update((v) => [...v]);
@@ -46,7 +73,7 @@ export class PageComponentsDiaplayComponent {
     }, 0);
   }
 
-  updateControlStyles(target?: PageComponentBase) {
+  updateControlStyles(target?: PageComponentTypeAny) {
     const component = this.activeComponent();
     const componentEl = this.elRef.nativeElement.querySelector(`.page-component[data-id="${component?.id}"]`);
     const rect2 = document.body.querySelector(".page")?.getBoundingClientRect();
@@ -72,4 +99,10 @@ export class PageComponentsDiaplayComponent {
       "--component-left": `${left.toFixed(0)}px`
     } as Properties);
   }
+
+  onComponentTextInput = debounce((event: Event, component: PageComponentText) => {
+    component.text = (event.target as HTMLInputElement).value;
+    this.components.update((v) => [...v]);
+    this.updateControlStyles(component);
+  }, 200);
 }

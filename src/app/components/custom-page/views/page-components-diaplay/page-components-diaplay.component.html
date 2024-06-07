@@ -1,14 +1,29 @@
 @for (component of components(); track $index) {
   <div
+    #componentEl
     class="page-component"
     [class]="component.type"
     [attr.data-id]="component.id"
     [style]="component.getStyle()"
     (click)="clickComponent($event, component)"
+    (dblclick)="dblClickComponent(component, componentEl)"
     cdkDrag
+    [cdkDragDisabled]="editingComponent()?.id === component.id"
     (cdkDragMoved)="moveComponent($event, component)"
     (cdkDragEnded)="moveComponentEnd($event, component)"
-  ></div>
+  >
+    @switch (component.type) {
+      @case ("text") {
+        <textarea
+          matInput
+          [value]="component.text"
+          [readonly]="editingComponent()?.id !== component.id"
+          (input)="onComponentTextInput($event, component)"
+          [cdkTextareaAutosize]="true"
+        ></textarea>
+      }
+    }
+  </div>
 }
 
 @if (controlStyle(); as controlStyle) {

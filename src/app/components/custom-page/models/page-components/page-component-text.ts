@@ -8,6 +8,8 @@ export class PageComponentText extends PageComponentBase {
   fontFamily: Property.FontFamily = "";
   color: Property.Color = "black";
 
+  readonly = false;
+
   import(data: ReturnType<typeof this.export>) {
     super.import(data);
     this.text = data.text;
@@ -23,5 +25,11 @@ export class PageComponentText extends PageComponentBase {
       fontFamily: this.fontFamily,
       color: this.color
     };
+  }
+
+  getStyle() {
+    const style = super.getStyle();
+    style.height = "auto";
+    return style;
   }
 }

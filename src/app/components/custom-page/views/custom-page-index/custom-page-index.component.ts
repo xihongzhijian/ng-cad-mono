@@ -24,7 +24,7 @@ import {PageComponentConfigComponent} from "../../menus/page-component-config/pa
 import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
 import {Page, PageConfig} from "../../models/page";
-import {PageComponentBase} from "../../models/page-components/page-component-base";
+import {PageComponentTypeAny} from "../../models/page-component-infos";
 import {PageSnapshotManager} from "../../models/page-snapshot-manager";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
 
@@ -58,8 +58,8 @@ export class CustomPageIndexComponent {
   pageConfig = signal<PageConfig>(this.page.getPageConfig());
   pageStyle = signal<ReturnType<Page["getStyle"]>>({});
   workSpaceStyle = signal<Properties>({});
-  pageComponents = signal<PageComponentBase[]>([]);
-  activePageComponent = signal<PageComponentBase | null>(null);
+  pageComponents = signal<PageComponentTypeAny[]>([]);
+  activePageComponent = signal<PageComponentTypeAny | null>(null);
   canUndo = signal(false);
   canRedo = signal(false);
   componentMenuStyleOverride = signal<Properties | null>(null);
@@ -197,7 +197,7 @@ export class CustomPageIndexComponent {
     this.activePageComponent.set(null);
   }
 
-  onPageComponentChanged(components: PageComponentBase[]) {
+  onPageComponentChanged(components: PageComponentTypeAny[]) {
     this.page.components = components;
     const activeComponent = this.activePageComponent();
     if (activeComponent && !components.find((v) => v.id === activeComponent.id)) {

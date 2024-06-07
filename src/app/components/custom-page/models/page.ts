@@ -2,8 +2,7 @@ import {isTypeOf, Point} from "@lucilor/utils";
 import Color from "color";
 import {Properties, Property} from "csstype";
 import {PageOrientation} from "pdfmake/interfaces";
-import {pageComponentInfos, PageComponentType} from "./page-component-infos";
-import {PageComponentBase} from "./page-components/page-component-base";
+import {pageComponentInfos, PageComponentType, PageComponentTypeAny} from "./page-component-infos";
 import {PageSizeName, PageSizeNameCustom, pageSizes} from "./page-size";
 
 export class Page {
@@ -16,7 +15,7 @@ export class Page {
 
   styleOverrides: Properties = {};
   workSpaceStyle: Properties = {};
-  components: PageComponentBase[] = [];
+  components: PageComponentTypeAny[] = [];
 
   constructor() {}
 

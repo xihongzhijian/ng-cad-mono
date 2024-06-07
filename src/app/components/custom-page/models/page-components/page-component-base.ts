@@ -23,6 +23,8 @@ export abstract class PageComponentBase {
     if (data.type !== this.type) {
       throw new Error(`Invalid component type: ${data.type}, expected: ${this.type}`);
     }
+    this.id = data.id;
+    this.name = data.name;
     this.size.copy(data.size);
     this.position.copy(data.position);
     this.scale.copy(data.scale);

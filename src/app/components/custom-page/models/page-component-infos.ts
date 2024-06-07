@@ -11,8 +11,10 @@ export const pageComponentInfos = {
     typeof PageComponentImage
   >
 };
+export type PageComponentInfos = typeof pageComponentInfos;
 export const pageComponentTypes = keysOf(pageComponentInfos);
-export type PageComponentType = keyof typeof pageComponentInfos;
+export type PageComponentType = keyof PageComponentInfos;
+export type PageComponentTypeAny = InstanceType<PageComponentInfos[PageComponentType]["class"]>;
 
 export interface PageComponentInfo<T> {
   name: string;
