@@ -4,32 +4,50 @@
 
 .control-rect {
   position: absolute;
+  top: 0;
+  left: 0;
+
+  --width: calc(var(--component-width) + 2 * var(--padding) + 1px);
+  --height: calc(var(--component-height) + 2 * var(--padding) + 1px);
+  --top: calc(var(--component-top) - var(--padding) - var(--border-width));
+  --left: calc(var(--component-left) - var(--padding) - var(--border-width));
+  --bottom: calc(var(--component-top) + var(--component-height) + var(--padding) - var(--border-width) + 1px);
+  --right: calc(var(--component-left) + var(--component-width) + var(--padding) - var(--border-width) + 1px);
 
   > * {
     position: absolute;
+  }
+  .line {
+    border-width: var(--border-width);
+    border-style: var(--border-style);
+    border-color: transparent;
     &.top {
       width: var(--width);
       height: 0;
-      top: 0;
-      left: 0;
+      top: var(--top);
+      left: var(--left);
+      border-top-color: var(--border-color);
     }
     &.right {
       width: 0;
       height: var(--height);
-      top: 0;
-      left: var(--width);
+      top: var(--top);
+      left: var(--right);
+      border-right-color: var(--border-color);
     }
     &.bottom {
       width: var(--width);
       height: 0;
-      top: var(--height);
-      left: 0;
+      top: var(--bottom);
+      left: var(--left);
+      border-bottom-color: var(--border-color);
     }
     &.left {
       width: 0;
       height: var(--height);
-      top: 0;
-      left: 0;
+      top: var(--top);
+      left: var(--left);
+      border-left-color: var(--border-color);
     }
   }
 }

@@ -1,11 +1,10 @@
 <div class="header toolbar">
-  <div class="组件栏 flex-110">
-    <app-page-components-select
-      [(components)]="pageComponents"
-      (componentsChange)="onPageComponentChanged($event)"
-    ></app-page-components-select>
-  </div>
-  <div class="菜单栏 toolbar">
+  <app-page-components-select
+    class="flex-110"
+    [(components)]="pageComponents"
+    (componentsChange)="onPageComponentChanged($event)"
+  ></app-page-components-select>
+  <div class="actions toolbar">
     <button mat-raised-button color="primary" (click)="resetPage()">清空</button>
     <button mat-raised-button color="primary">预览</button>
     <button mat-raised-button color="primary">保存</button>
@@ -13,7 +12,7 @@
 </div>
 <div class="flex-row flex-110" style="overflow: hidden">
   <div class="显示内容"></div>
-  <div class="工作区" [style]="workSpaceStyle()">
+  <div #workSpace class="work-space" [style]="workSpaceStyle()">
     <ng-scrollbar class="enable-x">
       <div #pageEl class="page" [style]="pageStyle()" (click)="onPageClick()">
         <app-page-components-diaplay
@@ -23,8 +22,23 @@
         ></app-page-components-diaplay>
       </div>
     </ng-scrollbar>
+    @if (componentMenuStyle(); as style) {
+      <div
+        #componentMenu
+        class="componet-menu item"
+        [style]="style"
+        cdkDrag
+        cdkDragBoundary=".work-space"
+        (cdkDragEnded)="moveComponentMenuEnd($event)"
+      >
+        <div class="toolbar">
+          <div class="name" cdkDragHandle>组件设置</div>
+          <button mat-icon-button><mat-icon>close</mat-icon></button>
+        </div>
+      </div>
+    }
   </div>
-  <div class="功能区">
+  <div class="menus">
     <div class="toolbar vertical">
       <button mat-icon-button color="primary" matTooltip="撤销(ctrl+z)" matTooltipPosition="left" [disabled]="!canUndo()" (click)="undo()">
         <mat-icon>undo</mat-icon>

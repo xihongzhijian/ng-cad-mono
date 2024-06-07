@@ -1,20 +1,22 @@
 .header {
   position: relative;
-}
-.菜单栏 {
-  position: absolute;
-  right: 0;
-  height: 100%;
+
+  .actions {
+    position: absolute;
+    right: 0;
+    height: 100%;
+  }
 }
 
 .显示内容 {
   width: 300px;
 }
-.工作区 {
+.work-space {
   flex: 1 1 0;
   overflow: hidden;
+  position: relative;
 }
-.功能区 {
+.menus {
   width: 300px;
   display: flex;
 }
@@ -22,6 +24,21 @@
 .page {
   margin: auto;
   position: relative;
+}
+
+.componet-menu {
+  position: absolute;
+  width: 240px;
+  max-height: 100%;
+  top: 0;
+  right: 0;
+  background-color: white;
+  box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.15);
+
+  .name {
+    text-align: left;
+    padding: 5px 10px;
+  }
 }
 
 mat-tab-group {

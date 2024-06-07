@@ -18,12 +18,13 @@ export class PageComponentsDiaplayComponent {
   activeComponent = model.required<PageComponentBase | null>();
 
   controlConfig = {
-    borderWidth: 1,
+    borderWidth: 3,
     borderStyle: "solid",
     borderColor: "var(--primary-color)",
     padding: 5
   };
   controlStyle = signal<Properties | null>(null);
+  componentMenuStyle = signal<Properties | null>(null);
 
   constructor() {
     effect(() => this.updateControlStyles(), {allowSignalWrites: true});
@@ -58,16 +59,17 @@ export class PageComponentsDiaplayComponent {
     }
     const {borderWidth, borderStyle, borderColor, padding} = this.controlConfig;
     const rect = componentEl.getBoundingClientRect();
-    const width = rect.width + borderWidth * 2 + padding * 2;
-    const height = rect.height + borderWidth * 2 + padding * 2;
-    const left = rect.left - borderWidth - padding - rect2.left;
-    const top = rect.top - borderWidth - padding - rect2.top;
+    const top = rect.top - rect2.top;
+    const left = rect.left - rect2.left;
     this.controlStyle.set({
-      left: `${left}px`,
-      top: `${top}px`,
-      "--border": `${borderWidth}px ${borderStyle} ${borderColor}`,
-      "--width": `${width}px`,
-      "--height": `${height}px`
+      "--border-width": `${borderWidth.toFixed(0)}px`,
+      "--border-style": borderStyle,
+      "--border-color": borderColor,
+      "--padding": `${padding.toFixed(0)}px`,
+      "--component-width": `${rect.width.toFixed(0)}px`,
+      "--component-height": `${rect.height.toFixed(0)}px`,
+      "--component-top": `${top.toFixed(0)}px`,
+      "--component-left": `${left.toFixed(0)}px`
     } as Properties);
   }
 }
