@@ -203,17 +203,18 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[]) =>
       }
       const zhankai = data.zhankai[0];
       if (remove) {
-        zhankai.zhankaikuan = "";
+        zhankai.zhankaikuan = "ceil(总长)+0";
         zhankai.zhankaigao = "";
         zhankai.shuliang = "";
       } else {
-        let arr: any[];
-        try {
-          arr = JSON.parse(value);
-        } catch (error) {
-          continue;
+        let value2 = typeof value === "string" ? value : "";
+        if (value2[0] === "[") {
+          value2 = value2.slice(1);
         }
-        const [a, b, c] = arr.map((v) => v?.toString?.() || "");
+        if (value2[value2.length - 1] === "]") {
+          value2 = value2.slice(0, -1);
+        }
+        const [a, b, c] = value2.split(/[,，]/);
         if (!zhankai.zhankaikuan || override) {
           zhankai.zhankaikuan = a || "";
         }
