@@ -1,10 +1,10 @@
 import {CdkDrag} from "@angular/cdk/drag-drop";
-import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, HostBinding, HostListener, inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {session, setGlobal} from "@app/app.common";
+import {KeyEventItem, onKeyEvent, session, setGlobal} from "@app/app.common";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -13,6 +13,7 @@ import {PageComponentsSeletComponent} from "../../menus/page-components-select/p
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
 import {Page, PageConfig} from "../../models/page";
 import {PageComponentBase} from "../../models/page-components/page-component-base";
+import {PageSnapshotManager} from "../../models/page-snapshot-manager";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
 
 @Component({
@@ -40,14 +41,21 @@ export class CustomPageIndexComponent {
   @HostBinding("class") class = "ng-page";
 
   page = new Page();
+  psm = new PageSnapshotManager(session, 20);
   pageConfig = signal<PageConfig>(this.page.getPageConfig());
   pageStyle = signal<ReturnType<Page["getStyle"]>>({});
   workSpaceStyle = signal<Properties>({});
   pageComponents = signal<PageComponentBase[]>([]);
   activePageComponent = signal<PageComponentBase | null>(null);
+  canUndo = signal(false);
+  canRedo = signal(false);
 
   private _menuTabIndexKey = "customPageMenuTabIndex";
   menuTabIndex = signal(session.load(this._menuTabIndexKey) || 0);
+  keyEventItems: KeyEventItem[] = [
+    {key: "z", ctrl: true, action: () => this.undo()},
+    {key: "y", ctrl: true, action: () => this.redo()}
+  ];
 
   constructor() {
     setGlobal("customPage", this);
@@ -68,32 +76,49 @@ export class CustomPageIndexComponent {
     this.updatePageComponents();
     this.pageConfig.set(this.page.getPageConfig());
   }
-  private _pageSnapshotsKey = "customPageSnapshots";
-  savePageSnapshot() {
-    const snapshots = session.load(this._pageSnapshotsKey);
-    if (Array.isArray(snapshots)) {
-      snapshots.push(this.page.export());
-      session.save(this._pageSnapshotsKey, snapshots);
-    } else {
-      session.save(this._pageSnapshotsKey, [this.page.export()]);
-    }
-  }
+
   loadPageSnapshot() {
-    const snapshots = session.load(this._pageSnapshotsKey);
-    const data = Array.isArray(snapshots) ? snapshots.at(-1) : null;
-    if (data) {
-      try {
-        this.page.import(data);
-      } catch (error) {
-        this.initPage();
-      }
-    } else {
-      this.initPage();
+    const {snapshot, canUndo, canRedo} = this.psm.loadSnapshot();
+    if (snapshot) {
+      this.page.import(snapshot);
+      this.updatePage();
     }
-    this.updatePage();
+    this.canUndo.set(canUndo);
+    this.canRedo.set(canRedo);
   }
-  undo() {}
-  redo() {}
+  savePageSnapshot() {
+    this.psm.saveSnapshot(this.page.export());
+    this.canUndo.set(true);
+    this.canRedo.set(false);
+  }
+  undo() {
+    const {snapshot, canUndo} = this.psm.undo();
+    if (snapshot) {
+      this.page.import(snapshot);
+      this.updatePage();
+    }
+    this.canUndo.set(canUndo);
+    this.canRedo.set(true);
+  }
+  redo() {
+    const {snapshot, canRedo} = this.psm.redo();
+    if (snapshot) {
+      this.page.import(snapshot);
+      this.updatePage();
+    }
+    this.canUndo.set(true);
+    this.canRedo.set(canRedo);
+  }
+  resetPageSnapshot() {
+    this.psm.reset();
+    this.canUndo.set(false);
+    this.canRedo.set(false);
+  }
+
+  @HostListener("window:keydown", ["$event"])
+  onKeyDown(event: KeyboardEvent) {
+    onKeyEvent(event, this.keyEventItems);
+  }
 
   async initPage() {
     this.page = new Page();
@@ -101,9 +126,6 @@ export class CustomPageIndexComponent {
     this.page.workSpaceStyle.backgroundColor = "lightgray";
   }
   async resetPage() {
-    if (!(await this.message.confirm("确定要将当前页面重置为初始状态吗？"))) {
-      return;
-    }
     this.initPage();
     this.updatePage();
     this.savePageSnapshot();

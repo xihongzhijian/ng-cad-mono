@@ -1,12 +1,19 @@
+.header {
+  position: relative;
+}
+.菜单栏 {
+  position: absolute;
+  right: 0;
+  height: 100%;
+}
+
 .显示内容 {
   width: 300px;
 }
-
 .工作区 {
   flex: 1 1 0;
   overflow: hidden;
 }
-
 .功能区 {
   width: 300px;
   display: flex;

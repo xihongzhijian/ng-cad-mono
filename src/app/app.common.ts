@@ -270,3 +270,30 @@ export const getValueString = (value: any, separator = ",", separatorKv = ":") =
     return String(value);
   }
 };
+
+export interface KeyEventItem {
+  key: string;
+  ctrl?: boolean;
+  shift?: boolean;
+  alt?: boolean;
+  action: () => void;
+}
+export const onKeyEvent = (event: KeyboardEvent, items: KeyEventItem[]) => {
+  for (const item of items) {
+    const {key, ctrl, shift, alt, action: callback} = item;
+    if (ctrl && !event.ctrlKey) {
+      continue;
+    }
+    if (shift && !event.shiftKey) {
+      continue;
+    }
+    if (alt && !event.altKey) {
+      continue;
+    }
+    if (event.key.toLowerCase() === key.toLowerCase()) {
+      callback();
+      event.preventDefault();
+      return;
+    }
+  }
+};
