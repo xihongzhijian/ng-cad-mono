@@ -2576,7 +2576,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/autocomplete@npm:^6.16.1":
+"@codemirror/autocomplete@npm:^6.16.2":
   version: 6.16.2
   resolution: "@codemirror/autocomplete@npm:6.16.2"
   dependencies:
@@ -2593,15 +2593,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/commands@npm:^6.5.0":
-  version: 6.5.0
-  resolution: "@codemirror/commands@npm:6.5.0"
+"@codemirror/commands@npm:^6.6.0":
+  version: 6.6.0
+  resolution: "@codemirror/commands@npm:6.6.0"
   dependencies:
     "@codemirror/language": "npm:^6.0.0"
     "@codemirror/state": "npm:^6.4.0"
-    "@codemirror/view": "npm:^6.0.0"
+    "@codemirror/view": "npm:^6.27.0"
     "@lezer/common": "npm:^1.1.0"
-  checksum: 10c0/4a4a9870b5d53f6537245cfb1c13e56537b05914f998f949c79a1aecb902277f81e14d5f0e2e6a8cbfa2375752965c87c65321391791a250e0e2aab408447d85
+  checksum: 10c0/72be283779dafb1dc7ec4a7c80a7911b9edc251944f0a2c8112230154e7e84a0b3dedc3f09277935614b92eb3d3194b32fdbc3e167496c2501e8ee2ed4e42909
   languageName: node
   linkType: hard
 
@@ -2615,7 +2615,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/language@npm:^6.0.0, @codemirror/language@npm:^6.10.1":
+"@codemirror/language@npm:^6.0.0":
   version: 6.10.1
   resolution: "@codemirror/language@npm:6.10.1"
   dependencies:
@@ -2626,6 +2626,20 @@ __metadata:
     "@lezer/lr": "npm:^1.0.0"
     style-mod: "npm:^4.0.0"
   checksum: 10c0/b910b7be491d3c73389e31d54a6910ad82b35f8ba7a7a48048ea949d881a16e261789b133bee7d458bc5cb1a14eaa2e18f50ac643da17a29d9323d346d3f2a74
+  languageName: node
+  linkType: hard
+
+"@codemirror/language@npm:^6.10.2":
+  version: 6.10.2
+  resolution: "@codemirror/language@npm:6.10.2"
+  dependencies:
+    "@codemirror/state": "npm:^6.0.0"
+    "@codemirror/view": "npm:^6.23.0"
+    "@lezer/common": "npm:^1.1.0"
+    "@lezer/highlight": "npm:^1.0.0"
+    "@lezer/lr": "npm:^1.0.0"
+    style-mod: "npm:^4.0.0"
+  checksum: 10c0/ac9b24dffb3aa6f502283dfe2bc4b4038f9fecbed9450fc4a72d408b9a09dc254f9af735b98091531829da163eb116e4cfa95aeacacff4fd36ef95cd9a54c4a6
   languageName: node
   linkType: hard
 
@@ -2669,14 +2683,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/view@npm:^6.26.3":
-  version: 6.26.3
-  resolution: "@codemirror/view@npm:6.26.3"
+"@codemirror/view@npm:^6.27.0":
+  version: 6.28.0
+  resolution: "@codemirror/view@npm:6.28.0"
   dependencies:
     "@codemirror/state": "npm:^6.4.0"
     style-mod: "npm:^4.1.0"
     w3c-keyname: "npm:^2.2.4"
-  checksum: 10c0/b2018bd4a0f738dcbfb609412784c7fb13d276d8be6044b513875710567c802c8d6ab5ad755c5669d09029b1c0f7dc739c2e5e5e1256df3d879b1899a07b8df8
+  checksum: 10c0/8930d42c5732359549aa4bf4f0d24c559a203df387487779e5e4ee7dd9723ee7398170e3bfffd5d72fd86ef0bff3bd3ae525ef2f75ae4888aa5a88149c11e7d4
   languageName: node
   linkType: hard
 
@@ -4775,14 +4789,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@replit/codemirror-indentation-markers@npm:^6.5.1":
-  version: 6.5.1
-  resolution: "@replit/codemirror-indentation-markers@npm:6.5.1"
+"@replit/codemirror-indentation-markers@npm:^6.5.2":
+  version: 6.5.2
+  resolution: "@replit/codemirror-indentation-markers@npm:6.5.2"
   peerDependencies:
     "@codemirror/language": ^6.0.0
     "@codemirror/state": ^6.0.0
     "@codemirror/view": ^6.0.0
-  checksum: 10c0/07a97acc7f1c543235dfcdffe63d0157c35dca4a331a735db17e5af83f58885102f2dd3a803e1b1c7d8847a405750c72d6372441020b95ab458f1bff8ef6fb14
+  checksum: 10c0/83d0ca20b4a61ccc367704c7659f833917d7918e3dbe6a022861767e7de98b8c6760185cee330f0d5c4bf416e7cf7583cef580c2a4105300f1586cccf2e4b65c
   languageName: node
   linkType: hard
 
@@ -6200,7 +6214,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^8.14.0":
+"ajv@npm:^8.16.0":
   version: 8.16.0
   resolution: "ajv@npm:8.16.0"
   dependencies:
@@ -12481,7 +12495,7 @@ __metadata:
     tsx: "npm:^4.11.2"
     typescript: "npm:~5.4.5"
     uuid: "npm:^9.0.1"
-    vanilla-jsoneditor: "npm:^0.23.5"
+    vanilla-jsoneditor: "npm:^0.23.7"
     zone.js: "npm:~0.14.6"
   languageName: unknown
   linkType: soft
@@ -14477,7 +14491,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.77.3":
+"sass@npm:^1.77.4":
   version: 1.77.4
   resolution: "sass@npm:1.77.4"
   dependencies:
@@ -16035,23 +16049,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vanilla-jsoneditor@npm:^0.23.5":
-  version: 0.23.5
-  resolution: "vanilla-jsoneditor@npm:0.23.5"
+"vanilla-jsoneditor@npm:^0.23.7":
+  version: 0.23.7
+  resolution: "vanilla-jsoneditor@npm:0.23.7"
   dependencies:
-    "@codemirror/autocomplete": "npm:^6.16.1"
-    "@codemirror/commands": "npm:^6.5.0"
+    "@codemirror/autocomplete": "npm:^6.16.2"
+    "@codemirror/commands": "npm:^6.6.0"
     "@codemirror/lang-json": "npm:^6.0.1"
-    "@codemirror/language": "npm:^6.10.1"
+    "@codemirror/language": "npm:^6.10.2"
     "@codemirror/lint": "npm:^6.8.0"
     "@codemirror/search": "npm:^6.5.6"
     "@codemirror/state": "npm:^6.4.1"
-    "@codemirror/view": "npm:^6.26.3"
+    "@codemirror/view": "npm:^6.27.0"
     "@fortawesome/free-regular-svg-icons": "npm:^6.5.2"
     "@fortawesome/free-solid-svg-icons": "npm:^6.5.2"
     "@lezer/highlight": "npm:^1.2.0"
-    "@replit/codemirror-indentation-markers": "npm:^6.5.1"
-    ajv: "npm:^8.14.0"
+    "@replit/codemirror-indentation-markers": "npm:^6.5.2"
+    ajv: "npm:^8.16.0"
     codemirror-wrapped-line-indent: "npm:^1.0.8"
     diff-sequences: "npm:^29.6.3"
     immutable-json-patch: "npm:6.0.1"
@@ -16061,10 +16075,10 @@ __metadata:
     lodash-es: "npm:^4.17.21"
     memoize-one: "npm:^6.0.0"
     natural-compare-lite: "npm:^1.4.0"
-    sass: "npm:^1.77.3"
+    sass: "npm:^1.77.4"
     svelte: "npm:^4.2.17"
     vanilla-picker: "npm:^2.12.3"
-  checksum: 10c0/443b0438cb149d17debca43e052e5cac9fd73cda27d3e02183fa1ba0608104c83c0ffb21a26d16bdd5865a1de3bf3e6af3be578a1af0c769ec6f56ae029490bc
+  checksum: 10c0/462b4cd017d6cb2d5147101e6d0b74343bc28d4e4947176eb6283bd1571dd4bca9dbfba37a033d61d8c8415f1f59ae8f18370e9bcc0cc9b1daca46fe8b8c4ec7
   languageName: node
   linkType: hard
 
