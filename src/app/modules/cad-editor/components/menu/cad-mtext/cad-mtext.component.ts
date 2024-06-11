@@ -77,7 +77,10 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
         value: this.getInfo("text"),
         onInput: debounce((val) => {
           this.setInfo("text", val);
-        }, 500)
+        }, 500),
+        onChange: (val) => {
+          this.setInfo("text", val);
+        }
       },
       {
         type: "string",
