@@ -55,6 +55,9 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     cad.on("entitiesunselect", this._updateSelected);
     cad.on("entitiesadd", this._updateSelected);
     cad.on("entitiesremove", this._updateSelected);
+    this.subscribe(this.status.openCad$, () => {
+      this._updateSelected();
+    });
   }
 
   ngOnDestroy() {
