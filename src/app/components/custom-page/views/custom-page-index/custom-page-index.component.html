@@ -35,6 +35,11 @@
           <div class="name" cdkDragHandle>组件设置</div>
           <button mat-icon-button><mat-icon>close</mat-icon></button>
         </div>
+        <div class="inputs">
+          @for (info of componentMenuInputs(); track $index) {
+            <app-input [info]="info"></app-input>
+          }
+        </div>
       </div>
     }
   </div>

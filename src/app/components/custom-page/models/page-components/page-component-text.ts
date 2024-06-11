@@ -4,9 +4,8 @@ import {PageComponentBase} from "./page-component-base";
 export class PageComponentText extends PageComponentBase {
   readonly type = "text";
   text = "";
-  fontSize: Property.FontSize = "16px";
+  fontSize: number = 16;
   fontFamily: Property.FontFamily = "";
-  color: Property.Color = "black";
 
   readonly = false;
 
@@ -30,6 +29,9 @@ export class PageComponentText extends PageComponentBase {
   getStyle() {
     const style = super.getStyle();
     style.height = "auto";
+    style.fontSize = `${this.fontSize}px`;
+    style.fontFamily = this.fontFamily;
+    style.color = this.color;
     return style;
   }
 }

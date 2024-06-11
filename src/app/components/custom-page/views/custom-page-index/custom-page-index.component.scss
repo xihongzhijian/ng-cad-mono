@@ -39,6 +39,13 @@
     text-align: left;
     padding: 5px 10px;
   }
+
+  .inputs {
+    padding: 5px;
+    app-input {
+      width: 100%;
+    }
+  }
 }
 
 mat-tab-group {

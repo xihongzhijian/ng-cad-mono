@@ -28,31 +28,47 @@ export class PageComponentsDiaplayComponent {
     padding: 5
   };
   controlStyle = signal<Properties | null>(null);
-  componentMenuStyle = signal<Properties | null>(null);
-  editingComponent = signal<PageComponentTypeAny | null>(null);
+  isEditingComponent = signal<PageComponentTypeAny | null>(null);
+  isDraggingComponent = false;
 
   componentEls = viewChildren<ElementRef<HTMLDivElement>>("componentEl");
+  autoSizes = viewChildren<CdkTextareaAutosize>(CdkTextareaAutosize);
 
   constructor() {
     effect(() => this.updateControlStyles(), {allowSignalWrites: true});
     effect(
       () => {
-        const editingComponent = untracked(() => this.editingComponent());
+        const editingComponent = untracked(() => this.isEditingComponent());
         const activeComponent = this.activeComponent();
         if (editingComponent && (!activeComponent || editingComponent.id !== activeComponent.id)) {
-          this.editingComponent.set(null);
+          this.isEditingComponent.set(null);
         }
       },
       {allowSignalWrites: true}
     );
+    effect(() => {
+      this.components();
+      for (const autoSize of this.autoSizes()) {
+        autoSize.resizeToFitContent(true);
+      }
+      setTimeout(() => {
+        this.updateControlStyles();
+      }, 0);
+    });
   }
 
   clickComponent(event: Event, component: PageComponentTypeAny) {
     event.stopPropagation();
-    this.activeComponent.set(component);
+    if (this.isDraggingComponent) {
+      this.isDraggingComponent = false;
+      return;
+    }
+    if (this.activeComponent()?.id !== component.id) {
+      this.activeComponent.set(component);
+    }
   }
   dblClickComponent(component: PageComponentTypeAny, componentEl: HTMLDivElement) {
-    this.editingComponent.set(component);
+    this.isEditingComponent.set(component);
     if (component instanceof PageComponentText) {
       const input = componentEl.querySelector("textarea");
       if (input) {
@@ -60,6 +76,9 @@ export class PageComponentsDiaplayComponent {
         input.select();
       }
     }
+  }
+  moveComponentStart() {
+    this.isDraggingComponent = true;
   }
   moveComponent(event: CdkDragMove, component: PageComponentTypeAny) {
     this.updateControlStyles(component);

@@ -81,7 +81,7 @@ export class PageConfigComponent {
         type: "number",
         label: name,
         suffixTexts: [{name: "mm"}],
-        style: getInputStyle({width: "50%"}),
+        style: getInputStyle({flex: "0 0 50%"}),
         model: {data: config.padding, key: index},
         onChange
       };

@@ -8,7 +8,8 @@
     (click)="clickComponent($event, component)"
     (dblclick)="dblClickComponent(component, componentEl)"
     cdkDrag
-    [cdkDragDisabled]="editingComponent()?.id === component.id"
+    [cdkDragDisabled]="isEditingComponent()?.id === component.id"
+    (cdkDragStarted)="moveComponentStart()"
     (cdkDragMoved)="moveComponent($event, component)"
     (cdkDragEnded)="moveComponentEnd($event, component)"
   >
@@ -17,9 +18,10 @@
         <textarea
           matInput
           [value]="component.text"
-          [readonly]="editingComponent()?.id !== component.id"
+          [readonly]="isEditingComponent()?.id !== component.id"
           (input)="onComponentTextInput($event, component)"
-          [cdkTextareaAutosize]="true"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="1"
         ></textarea>
       }
     }
@@ -33,8 +35,4 @@
     <div class="line bottom"></div>
     <div class="line left"></div>
   </div>
-}
-
-@if (componentMenuStyle(); as style) {
-  <div cdkDrag class="componet-menu" [style]="style">123</div>
 }

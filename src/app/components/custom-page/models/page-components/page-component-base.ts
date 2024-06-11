@@ -12,6 +12,7 @@ export abstract class PageComponentBase {
   rotation = new Angle(0);
   border: Property.Border = "none";
   background: Property.Background = "transparent";
+  color: Property.Color = "black";
 
   protected _locked = false;
   protected _hidden = false;
@@ -32,6 +33,7 @@ export abstract class PageComponentBase {
     this.rotation.deg = data.rotation;
     this.border = data.border;
     this.background = data.background;
+    this.color = data.color;
   }
   export() {
     return {
@@ -45,6 +47,7 @@ export abstract class PageComponentBase {
       rotation: this.rotation.deg,
       border: this.border,
       background: this.background,
+      color: this.color,
       styleOverrides: this.styleOverrides
     };
   }
@@ -70,6 +73,8 @@ export abstract class PageComponentBase {
       transform: `scale(${scaleX},${scaleY}) rotate(${rotation}deg)`,
       transformOrigin: `${this.anchor.x * 100}% ${this.anchor.y * 100}%`,
       background: this.background,
+      border: this.border,
+      color: this.color,
       display: this._hidden ? "none" : "block",
       ...this.styleOverrides
     };

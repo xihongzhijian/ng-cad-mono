@@ -16,6 +16,8 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {KeyEventItem, onKeyEvent, session, setGlobal} from "@app/app.common";
+import {InputComponent} from "@app/modules/input/components/input.component";
+import {InputInfo} from "@app/modules/input/components/input.types";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {getElementVisiblePercentage, isTypeOf} from "@lucilor/utils";
 import {Properties} from "csstype";
@@ -25,6 +27,7 @@ import {PageComponentsSeletComponent} from "../../menus/page-components-select/p
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
 import {Page, PageConfig} from "../../models/page";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
+import {PageComponentText} from "../../models/page-components/page-component-text";
 import {PageSnapshotManager} from "../../models/page-snapshot-manager";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
 
@@ -34,6 +37,7 @@ import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-co
   imports: [
     CdkDrag,
     CdkDragHandle,
+    InputComponent,
     MatButtonModule,
     MatIconModule,
     MatTabsModule,
@@ -101,6 +105,38 @@ export class CustomPageIndexComponent {
     }, 0);
     return style;
   });
+  componentMenuInputs = computed(() => {
+    const component = this.activePageComponent();
+    let inputs: InputInfo[] = [];
+    const onChange = () => {
+      const components = this.pageComponents();
+      this.onPageComponentChanged([...components]);
+    };
+    if (component instanceof PageComponentText) {
+      inputs = [
+        {
+          type: "string",
+          label: "字体",
+          value: component.fontFamily,
+          onChange: (val) => {
+            component.fontFamily = val;
+            onChange();
+          }
+        },
+        {
+          type: "number",
+          label: "字号",
+          value: component.fontSize,
+          suffixTexts: [{name: "px"}],
+          onChange: (val) => {
+            component.fontSize = val;
+            onChange();
+          }
+        }
+      ];
+    }
+    return inputs;
+  });
   moveComponentMenuEnd(event: CdkDragEnd) {
     const style: Properties = {};
     const rect = event.source.element.nativeElement.getBoundingClientRect();
@@ -136,6 +172,9 @@ export class CustomPageIndexComponent {
     const {snapshot, canUndo, canRedo} = this.psm.loadSnapshot();
     if (snapshot) {
       this.page.import(snapshot);
+      this.updatePage();
+    } else {
+      this.initPage();
       this.updatePage();
     }
     this.canUndo.set(canUndo);
