@@ -242,7 +242,7 @@ export const getArrayString = (value: any, separator: string) => {
   if (Array.isArray(value)) {
     return value.join(separator);
   } else {
-    return value;
+    return "";
   }
 };
 export const getObjectString = (value: any, separator: string, separatorKv: string) => {

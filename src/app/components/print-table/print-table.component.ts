@@ -190,6 +190,7 @@ export class PrintTableComponent implements OnInit {
           this.xikongTableWidth = 10 + Object.values(xikongColWidths).reduce((a, b) => a + b, 0);
           this.xikongTableInfo = {
             noCheckBox: true,
+            filterable: {searchColumns: ["加工孔名字"]},
             columns: [
               {type: "number", field: "序号", width: `${xikongColWidths.序号}px`},
               {type: "string", field: "加工面", width: `${xikongColWidths.加工面}px`},
