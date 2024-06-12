@@ -96,12 +96,13 @@ export class PageComponentsDiaplayComponent {
     const component = this.activeComponent();
     const componentEl = this.elRef.nativeElement.querySelector(`.page-component[data-id="${component?.id}"]`);
     const rect2 = document.body.querySelector(".page")?.getBoundingClientRect();
+    const result = {isComponentsUpdated: false};
     if (!component || !componentEl || !rect2) {
       this.controlStyle.set(null);
-      return;
+      return result;
     }
     if (target && target.id !== component.id) {
-      return;
+      return result;
     }
     const {borderWidth, borderStyle, borderColor, padding} = this.controlConfig;
     const rect = componentEl.getBoundingClientRect();
@@ -117,11 +118,21 @@ export class PageComponentsDiaplayComponent {
       "--component-top": `${top.toFixed(0)}px`,
       "--component-left": `${left.toFixed(0)}px`
     } as Properties);
+    if (component instanceof PageComponentText) {
+      if (component.size.y !== rect.height) {
+        component.size.y = rect.height;
+        this.components.update((v) => [...v]);
+        result.isComponentsUpdated = true;
+      }
+    }
+    return result;
   }
 
   onComponentTextInput = debounce((event: Event, component: PageComponentText) => {
     component.text = (event.target as HTMLInputElement).value;
-    this.components.update((v) => [...v]);
-    this.updateControlStyles(component);
+    const {isComponentsUpdated} = this.updateControlStyles(component);
+    if (!isComponentsUpdated) {
+      this.components.update((v) => [...v]);
+    }
   }, 200);
 }

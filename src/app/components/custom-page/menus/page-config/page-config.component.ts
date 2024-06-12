@@ -3,7 +3,7 @@ import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoColor, InputInfoNumber, InputInfoSelect} from "@app/modules/input/components/input.types";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {getGroupStyle, getInputStyle} from "../../models/input-info-utils";
+import {getGroupStyle, getInputStyle, getNumberUnitInput} from "../../models/input-info-utils";
 import {PageConfig} from "../../models/page";
 import {PageOrientation, PageSizeNameCustom, pageSizeNamesCustom} from "../../models/page-size";
 
@@ -25,7 +25,7 @@ export class PageConfigComponent {
       type: "select",
       label: "页面大小",
       options: pageSizeNamesCustom,
-      style: getInputStyle(),
+      style: getInputStyle(true),
       model: {data: config, key: "sizeName"},
       onChange
     };
@@ -36,37 +36,31 @@ export class PageConfigComponent {
         {label: "纵向", value: "portrait"},
         {label: "横向", value: "landscape"}
       ],
-      style: getInputStyle(),
+      style: getInputStyle(true),
       model: {data: config, key: "orientation"},
       onChange
     };
     const widthInput: InputInfoNumber<PageConfig> = {
-      type: "number",
-      label: "页宽",
-      suffixTexts: [{name: "mm"}],
-      style: getInputStyle(),
+      ...getNumberUnitInput(true, "页宽", "mm"),
       model: {data: config, key: "width"},
       onChange
     };
     const heightInput: InputInfoNumber<PageConfig> = {
-      type: "number",
-      label: "页高",
-      suffixTexts: [{name: "mm"}],
-      style: getInputStyle(),
+      ...getNumberUnitInput(true, "页高", "mm"),
       model: {data: config, key: "height"},
       onChange
     };
     const backgroundInput: InputInfoColor<PageConfig> = {
       type: "color",
       label: "页面背景",
-      style: getInputStyle(),
+      style: getInputStyle(true),
       model: {data: config, key: "backgroundColor"},
       onChange
     };
     const workSpaceBackgroundInput: InputInfoColor<PageConfig> = {
       type: "color",
       label: "工作区背景",
-      style: getInputStyle(),
+      style: getInputStyle(true),
       model: {data: config, key: "workSpaceBgColor"},
       onChange
     };
@@ -78,10 +72,7 @@ export class PageConfigComponent {
     ];
     const paddingInput: InputInfoNumber<PageConfig["padding"]>[] = paddingItems.map(({name, index}) => {
       return {
-        type: "number",
-        label: name,
-        suffixTexts: [{name: "mm"}],
-        style: getInputStyle({flex: "0 0 50%"}),
+        ...getNumberUnitInput(true, name, "mm"),
         model: {data: config.padding, key: index},
         onChange
       };

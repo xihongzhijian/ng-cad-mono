@@ -1,9 +1,5 @@
 <div class="header toolbar">
-  <app-page-components-select
-    class="flex-110"
-    [(components)]="pageComponents"
-    (componentsChange)="onPageComponentChanged($event)"
-  ></app-page-components-select>
+  <app-page-components-select class="flex-110" [(components)]="components"></app-page-components-select>
   <div class="actions toolbar">
     <button mat-raised-button color="primary" (click)="resetPage()">清空</button>
     <button mat-raised-button color="primary">预览</button>
@@ -15,11 +11,7 @@
   <div #workSpace class="work-space" [style]="workSpaceStyle()">
     <ng-scrollbar class="enable-x">
       <div #pageEl class="page" [style]="pageStyle()" (click)="onPageClick()">
-        <app-page-components-diaplay
-          [(components)]="pageComponents"
-          (componentsChange)="onPageComponentChanged($event)"
-          [(activeComponent)]="activePageComponent"
-        ></app-page-components-diaplay>
+        <app-page-components-diaplay [(components)]="components" [(activeComponent)]="activeComponent"></app-page-components-diaplay>
       </div>
     </ng-scrollbar>
     @if (componentMenuStyle(); as style) {
@@ -33,13 +25,9 @@
       >
         <div class="toolbar">
           <div class="name" cdkDragHandle>组件设置</div>
-          <button mat-icon-button><mat-icon>close</mat-icon></button>
+          <button mat-icon-button (click)="closeComponentMenu()"><mat-icon>close</mat-icon></button>
         </div>
-        <div class="inputs">
-          @for (info of componentMenuInputs(); track $index) {
-            <app-input [info]="info"></app-input>
-          }
-        </div>
+        <app-page-component-config2 [(activeComponent)]="activeComponent" [(components)]="components"></app-page-component-config2>
       </div>
     }
   </div>
@@ -61,9 +49,9 @@
       <mat-tab label="图层管理">
         <ng-scrollbar>
           <app-page-component-config
-            [(components)]="pageComponents"
-            [(activeComponent)]="activePageComponent"
-            (componentsChange)="onPageComponentChanged($event)"
+            [(components)]="components"
+            [(activeComponent)]="activeComponent"
+            [(showComponentMenu)]="showComponentMenu"
           ></app-page-component-config>
         </ng-scrollbar>
       </mat-tab>

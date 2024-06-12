@@ -58,3 +58,6 @@ export const getElementVisiblePercentage = (el: HTMLElement) => {
   const visiblePercentage = (visibleArea / area) * 100;
   return visiblePercentage;
 };
+
+export const px2mm = (px: number, dpi: number) => (px * 25.4) / dpi;
+export const mm2px = (mm: number, dpi: number) => (mm * dpi) / 25.4;

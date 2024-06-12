@@ -25,6 +25,7 @@ export class PageComponentsSeletComponent {
     const component = new info.class(getInsertName(names, info.name + "组件"));
     if (component instanceof PageComponentText) {
       component.text = "双击编辑文本";
+      component.background = "transparent";
       component.size.set(100, 100);
     } else {
       component.background = "black";

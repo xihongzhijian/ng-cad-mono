@@ -1,0 +1,18 @@
+:host {
+  padding: 6px;
+}
+
+mat-expansion-panel {
+  --mat-expansion-header-collapsed-state-height: auto;
+  --mat-expansion-header-expanded-state-height: auto;
+
+  mat-expansion-panel-header {
+    padding: 5px;
+  }
+
+  ::ng-deep {
+    .mat-expansion-panel-body {
+      padding: 0;
+    }
+  }
+}

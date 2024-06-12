@@ -17,17 +17,16 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {KeyEventItem, onKeyEvent, session, setGlobal} from "@app/app.common";
 import {InputComponent} from "@app/modules/input/components/input.component";
-import {InputInfo} from "@app/modules/input/components/input.types";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {getElementVisiblePercentage, isTypeOf} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {PageComponentConfig2Component} from "../../menus/page-component-config2/page-component-config2.component";
 import {PageComponentConfigComponent} from "../../menus/page-component-config/page-component-config.component";
 import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
 import {Page, PageConfig} from "../../models/page";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
-import {PageComponentText} from "../../models/page-components/page-component-text";
 import {PageSnapshotManager} from "../../models/page-snapshot-manager";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
 
@@ -44,6 +43,7 @@ import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-co
     MatTooltipModule,
     NgScrollbarModule,
     PageComponentConfigComponent,
+    PageComponentConfig2Component,
     PageComponentsDiaplayComponent,
     PageComponentsSeletComponent,
     PageConfigComponent
@@ -62,10 +62,11 @@ export class CustomPageIndexComponent {
   pageConfig = signal<PageConfig>(this.page.getPageConfig());
   pageStyle = signal<ReturnType<Page["getStyle"]>>({});
   workSpaceStyle = signal<Properties>({});
-  pageComponents = signal<PageComponentTypeAny[]>([]);
-  activePageComponent = signal<PageComponentTypeAny | null>(null);
+  components = signal<PageComponentTypeAny[]>([]);
+  activeComponent = signal<PageComponentTypeAny | null>(null);
   canUndo = signal(false);
   canRedo = signal(false);
+  showComponentMenu = signal(false);
   componentMenuStyleOverride = signal<Properties | null>(null);
 
   private _menuTabIndexKey = "customPageMenuTabIndex";
@@ -82,14 +83,14 @@ export class CustomPageIndexComponent {
   constructor() {
     setGlobal("customPage", this);
     effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
-    effect(() => (this.page.components = this.pageComponents()));
+    effect(() => this.onComponentsChanged(), {allowSignalWrites: true});
     this.loadPageSnapshot();
   }
 
   componentMenuStyle = computed(() => {
-    const component = this.activePageComponent();
+    const component = this.activeComponent();
     const componentMenuStyleOverride = this.componentMenuStyleOverride();
-    if (!component) {
+    if (!component || !this.showComponentMenu()) {
       return null;
     }
     const style: Properties = {};
@@ -105,38 +106,6 @@ export class CustomPageIndexComponent {
     }, 0);
     return style;
   });
-  componentMenuInputs = computed(() => {
-    const component = this.activePageComponent();
-    let inputs: InputInfo[] = [];
-    const onChange = () => {
-      const components = this.pageComponents();
-      this.onPageComponentChanged([...components]);
-    };
-    if (component instanceof PageComponentText) {
-      inputs = [
-        {
-          type: "string",
-          label: "字体",
-          value: component.fontFamily,
-          onChange: (val) => {
-            component.fontFamily = val;
-            onChange();
-          }
-        },
-        {
-          type: "number",
-          label: "字号",
-          value: component.fontSize,
-          suffixTexts: [{name: "px"}],
-          onChange: (val) => {
-            component.fontSize = val;
-            onChange();
-          }
-        }
-      ];
-    }
-    return inputs;
-  });
   moveComponentMenuEnd(event: CdkDragEnd) {
     const style: Properties = {};
     const rect = event.source.element.nativeElement.getBoundingClientRect();
@@ -151,8 +120,11 @@ export class CustomPageIndexComponent {
     const componentMenuEl = this.componentMenuEl()?.nativeElement;
     if (componentMenuEl && getElementVisiblePercentage(componentMenuEl) < 100) {
       session.remove(this._componentMenuStyleKey);
-      this.componentMenuStyleOverride.set({});
+      this.componentMenuStyleOverride.update((v) => ({...v, top: undefined, left: undefined}));
     }
+  }
+  closeComponentMenu() {
+    this.showComponentMenu.set(false);
   }
 
   updatePageStyle() {
@@ -160,7 +132,7 @@ export class CustomPageIndexComponent {
     this.workSpaceStyle.set({...this.page.workSpaceStyle});
   }
   updatePageComponents() {
-    this.pageComponents.set([...this.page.components]);
+    this.components.set([...this.page.components]);
   }
   updatePage() {
     this.updatePageStyle();
@@ -233,16 +205,19 @@ export class CustomPageIndexComponent {
   }
 
   onPageClick() {
-    this.activePageComponent.set(null);
+    this.activeComponent.set(null);
   }
 
-  onPageComponentChanged(components: PageComponentTypeAny[]) {
+  onComponentsChanged() {
+    const components = this.components();
+    const activeComponent = this.activeComponent();
     this.page.components = components;
-    const activeComponent = this.activePageComponent();
-    if (activeComponent && !components.find((v) => v.id === activeComponent.id)) {
-      this.activePageComponent.set(null);
+    if (activeComponent) {
+      if (!components.find((v) => v.id === activeComponent.id)) {
+        this.activeComponent.set(null);
+      }
+      this.showComponentMenu.set(true);
     }
-    this.updatePageComponents();
     this.savePageSnapshot();
   }
 }

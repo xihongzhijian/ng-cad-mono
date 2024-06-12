@@ -18,6 +18,7 @@ export class PageComponentConfigComponent {
 
   components = model.required<PageComponentTypeAny[]>();
   activeComponent = model.required<PageComponentTypeAny | null>();
+  showComponentMenu = model.required<boolean>();
 
   async getActiveComponent() {
     const component = this.activeComponent();
@@ -49,6 +50,7 @@ export class PageComponentConfigComponent {
   }
   click(component: PageComponentTypeAny) {
     this.activeComponent.set(component);
+    this.showComponentMenu.set(true);
   }
 
   drop(event: CdkDragDrop<PageComponentTypeAny[]>) {

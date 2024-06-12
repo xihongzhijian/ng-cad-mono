@@ -126,10 +126,17 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   get value() {
     const {data, key} = this.model;
+    const info = this.info;
+    let value: any;
     if (data && typeof data === "object" && key !== undefined) {
-      return data[key];
+      value = data[key];
+    } else {
+      value = "";
     }
-    return "";
+    if (info.type === "number" && typeof value === "number" && typeof info.ndigits === "number") {
+      value = Number(value.toFixed(info.ndigits));
+    }
+    return value;
   }
   set value(val) {
     const {data, key} = this.model;

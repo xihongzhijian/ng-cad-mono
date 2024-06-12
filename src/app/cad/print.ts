@@ -24,6 +24,7 @@ import {
   isTypeOf,
   loadImage,
   Matrix,
+  mm2px,
   ObjectOf,
   Point,
   Rectangle,
@@ -843,11 +844,6 @@ const getBomTableImgs = async (bomTable: BomTable, config: CadViewerConfig, size
   return imgs;
 };
 
-/**
- * A4: (210 × 297)mm²
- *    =(8.26 × 11.69)in² (1in = 25.4mm)
- * 	  =(794 × 1123)px² (96dpi)
- */
 export const getA4PrintInfo = () => {
   let [dpiX, dpiY] = getDPI();
   if (!(dpiX > 0) || !(dpiY > 0)) {
@@ -855,8 +851,8 @@ export const getA4PrintInfo = () => {
     dpiX = dpiY = 96;
   }
   const factor = 0.75;
-  const width = (210 / 25.4) * dpiX * factor;
-  const height = (297 / 25.4) * dpiY * factor;
+  const width = mm2px(210, dpiX) * factor;
+  const height = mm2px(297, dpiY) * factor;
   const scaleX = 300 / dpiX / factor;
   const scaleY = 300 / dpiY / factor;
   const scale = Math.sqrt(scaleX * scaleY);
