@@ -4,6 +4,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  forwardRef,
   HostListener,
   Inject,
   OnDestroy,
@@ -36,7 +37,7 @@ import {validateForm} from "./message.utils";
   imports: [
     A11yModule,
     FormsModule,
-    InputComponent,
+    forwardRef(() => InputComponent),
     MatButtonModule,
     MatDialogActions,
     MatDialogContent,
