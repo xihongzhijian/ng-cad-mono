@@ -993,14 +993,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       }
     }
     const data = item.data.clone(!isEditingFenlei);
-    data.entities.forEach((e) => {
-      if (e instanceof CadLineLike) {
-        e.mingzi = "";
-        e.mingzi2 = "";
-        e.gongshi = "";
-        e.guanlianbianhuagongshi = "";
-      }
-    });
     this.result.零散.push({data, info: {houtaiId: item.data.id, zhankai: [], calcZhankai: []}});
     this._updateInputInfos();
     await timeout(0);

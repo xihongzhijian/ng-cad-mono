@@ -3,7 +3,7 @@ import {cadFields} from "@app/modules/cad-editor/components/menu/cad-info/cad-in
 import {HoutaiCad, TableDataBase} from "@app/modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {importComponentConfigNames} from "@app/views/import/import.types";
-import {CadData, CadZhankai} from "@lucilor/cad-viewer";
+import {CadData, CadLineLike, CadZhankai} from "@lucilor/cad-viewer";
 import {downloadByUrl, isTypeOf, ObjectOf, queryString} from "@lucilor/utils";
 
 export interface Cad数据要求Raw extends TableDataBase {
@@ -252,5 +252,17 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[]) =>
     } else {
       dataAny[key] = "";
     }
+  }
+
+  const item = yaoqiuItems.find((v) => v.key === "线属性");
+  if (!item?.reserve) {
+    data.entities.forEach((e) => {
+      if (e instanceof CadLineLike) {
+        e.mingzi = "";
+        e.mingzi2 = "";
+        e.gongshi = "";
+        e.guanlianbianhuagongshi = "";
+      }
+    });
   }
 };
