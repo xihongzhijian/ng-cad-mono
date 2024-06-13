@@ -789,7 +789,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       options,
       openInNewTab: optionsDialog.openInNewTab,
       noImage: optionsDialog.noImage,
-      nameField: optionsDialog.nameField
+      nameField: optionsDialog.nameField,
+      info: optionsDialog.info
     };
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));
