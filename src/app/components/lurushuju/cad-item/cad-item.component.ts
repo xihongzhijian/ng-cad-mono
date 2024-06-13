@@ -106,6 +106,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   mubanData?: CadData;
   mubanInputs: InputInfo[][] = [];
   errorMsgs: ObjectOf<string> = {};
+  isOnlineFetched = false;
 
   constructor(
     private message: MessageService,
@@ -496,7 +497,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (!cad || !cadContainer) {
       return;
     }
-    await this.onlineFetch(!showCadViewer);
+    if (showCadViewer) {
+      await this.onlineFetch();
+    }
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     this.cadData = data;
     generateLineTexts2(data);
