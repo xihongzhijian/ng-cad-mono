@@ -59,7 +59,7 @@ export class BancaiFormComponent {
       }
     }
     this.inputInfos = [
-      this.xinghao.inputInfos[this.key][0],
+      this.xinghao?.inputInfos[this.key]?.[0] || [],
       [
         {
           type: "string",
