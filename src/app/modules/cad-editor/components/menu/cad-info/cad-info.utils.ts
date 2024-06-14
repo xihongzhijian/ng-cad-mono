@@ -153,7 +153,8 @@ export const getCadInfoInputs = (
           model: {data, key: cadFields[key]},
           optionsDialog: {},
           optionMultiple: true,
-          parseString: parseOptionString
+          parseString: parseOptionString,
+          isXuanxiang: key === "选项"
         };
         break;
       case "条件":

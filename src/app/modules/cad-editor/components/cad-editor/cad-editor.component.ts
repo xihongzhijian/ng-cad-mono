@@ -162,6 +162,7 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     private message: MessageService
   ) {
     super();
+    this.status.fetchInputOptions();
   }
 
   onScrollChange = debounce(() => {

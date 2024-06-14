@@ -605,13 +605,19 @@ export class AppStatusService {
   }
 
   private _gongshiOptions: string[] | null = null;
-  private _gongshiOptionsFetched = false;
-  async fetchGongshiOptions() {
-    if (this._gongshiOptionsFetched) {
+  private _xuanxiangOptions: string[] | null = null;
+  private _isInputOptionsFetched = false;
+  async fetchInputOptions() {
+    if (this._isInputOptionsFetched) {
       return;
     }
-    this._gongshiOptions = await this.http.getData<string[]>("shuju/api/getInputNames", {spinner: false});
-    this._gongshiOptionsFetched = true;
+    const result = await this.http.getData<ObjectOf<string[]>>("shuju/api/getInputNames", {spinner: false});
+    if (!result || !isTypeOf(result, "object")) {
+      return;
+    }
+    this._gongshiOptions = result.公式;
+    this._xuanxiangOptions = result.选项;
+    this._isInputOptionsFetched = true;
   }
   getGongshiOptions(gongshis: 算料公式[] | null | undefined) {
     const result = new Set<string>(this._gongshiOptions);
@@ -621,5 +627,8 @@ export class AppStatusService {
       }
     }
     return Array.from(result);
+  }
+  getXuanxiangOptions() {
+    return this._xuanxiangOptions || [];
   }
 }
