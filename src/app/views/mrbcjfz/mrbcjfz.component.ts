@@ -344,7 +344,8 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
           cailiaoList: info.可选材料,
           houduList: info.可选厚度
         },
-        bancaiList: this.bancaiList
+        bancaiList: this.bancaiList,
+        title: `分组：【${key}】`
       }
     });
     if (result) {

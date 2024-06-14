@@ -1,6 +1,6 @@
 import {Component, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
-import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
 import {BancaiFormData} from "@components/bancai-form/bancai-form.component";
 import {environment} from "@env";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
@@ -14,7 +14,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./bancai-form-dialog.component.html",
   styleUrls: ["./bancai-form-dialog.component.scss"],
   standalone: true,
-  imports: [BancaiFormComponent, MatDialogActions, MatButtonModule]
+  imports: [BancaiFormComponent, MatButtonModule, MatDialogActions, MatDialogTitle]
 })
 export class BancaiFormDialogComponent {
   prod = environment.production;
@@ -80,6 +80,7 @@ export class BancaiFormDialogComponent {
 export interface BancaiFormInput {
   data: BancaiFormData;
   bancaiList: BancaiList[];
+  title?: string;
 }
 
 export type BancaiFormOutput = BancaiFormData;
