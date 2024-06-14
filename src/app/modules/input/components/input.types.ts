@@ -27,7 +27,7 @@ export interface InputInfoBase<T = any> {
   autoFocus?: boolean;
   placeholder?: string;
   validators?: AbstractControlOptions["validators"];
-  initialValidate?: boolean;
+  noInitialValidate?: boolean;
   forceValidateNum?: number; // change this to trigger validation
   name?: string;
   class?: string | string[];
