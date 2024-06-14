@@ -8,10 +8,14 @@
 </div>
 <div class="flex-row flex-110" style="overflow: hidden">
   <div class="显示内容"></div>
-  <div #workSpace class="work-space" [style]="workSpaceStyle()">
+  <div #workSpaceEl class="work-space" [style]="workSpaceStyle()">
     <ng-scrollbar class="enable-x">
-      <div #pageEl class="page" [style]="pageStyle()" (click)="onPageClick()">
-        <app-page-components-diaplay [(components)]="components" [(activeComponent)]="activeComponent"></app-page-components-diaplay>
+      <div #pageEl class="page" [style]="pageStyle()" (pointerdown)="onPagePointerDown($event)" (pointerup)="onPagePointerUp($event)">
+        <app-page-components-diaplay
+          [(components)]="components"
+          [(activeComponent)]="activeComponent"
+          [(activeComponent2)]="activeComponent2"
+        ></app-page-components-diaplay>
       </div>
     </ng-scrollbar>
     @if (componentMenuStyle(); as style) {
@@ -27,7 +31,11 @@
           <div class="name" cdkDragHandle>组件设置</div>
           <button mat-icon-button (click)="closeComponentMenu()"><mat-icon>close</mat-icon></button>
         </div>
-        <app-page-component-config2 [(activeComponent)]="activeComponent" [(components)]="components"></app-page-component-config2>
+        <app-page-component-config2
+          [(components)]="components"
+          [(activeComponent)]="activeComponent"
+          [(activeComponent2)]="activeComponent2"
+        ></app-page-component-config2>
       </div>
     }
   </div>

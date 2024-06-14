@@ -17,6 +17,7 @@ describe("PageComponentsDiaplayComponent", () => {
     const components = [new PageComponentText("1"), new PageComponentText("2")];
     ref.setInput("components", components);
     ref.setInput("activeComponent", components[0]);
+    ref.setInput("activeComponent2", components[0]);
     fixture.detectChanges();
   });
 

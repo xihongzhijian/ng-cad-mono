@@ -4,35 +4,48 @@
     class="page-component"
     [class]="component.type"
     [attr.data-id]="component.id"
-    [style]="component.getStyle()"
-    (click)="clickComponent($event, component)"
+    [style]="getComponentStyle(component)"
+    (click)="clickComponent(component)"
     (dblclick)="dblClickComponent(component, componentEl)"
     cdkDrag
-    [cdkDragDisabled]="isEditingComponent()?.id === component.id"
-    (cdkDragStarted)="moveComponentStart()"
+    [cdkDragDisabled]="getComponentDragDisabled(component)"
+    (cdkDragStarted)="moveComponentStart(component)"
     (cdkDragMoved)="moveComponent($event, component)"
     (cdkDragEnded)="moveComponentEnd($event, component)"
   >
-    @switch (component.type) {
-      @case ("text") {
-        <textarea
-          matInput
-          [value]="component.text"
-          [readonly]="isEditingComponent()?.id !== component.id"
-          (input)="onComponentTextInput($event, component)"
-          cdkTextareaAutosize
-          cdkAutosizeMinRows="1"
-        ></textarea>
+    @if (activeComponent()?.id === component.id) {
+      @if (control(); as control) {
+        <div class="page-component-control" [class]="control.class" [style]="control.style">
+          @for (point of controlPoints; track $index) {
+            <div
+              class="point"
+              [class]="point.position"
+              cdkDrag
+              cdkDragBoundary=".work-space"
+              [cdkDragLockAxis]="point.axis"
+              (cdkDragStarted)="moveControlPointStart()"
+              (cdkDragMoved)="moveControlPoint($event, point)"
+              (cdkDragEnded)="moveControlPointEnd($event)"
+            >
+              <div class="point-inner"></div>
+            </div>
+          }
+        </div>
       }
     }
-  </div>
-}
-
-@if (controlStyle(); as controlStyle) {
-  <div class="control-rect" [style]="controlStyle">
-    <div class="line top"></div>
-    <div class="line right"></div>
-    <div class="line bottom"></div>
-    <div class="line left"></div>
+    <div class="page-component-content">
+      @switch (component.type) {
+        @case ("text") {
+          <textarea
+            matInput
+            [value]="component.text"
+            [readonly]="isEditingComponent()?.id !== component.id"
+            (input)="onComponentTextInput($event, component)"
+            cdkTextareaAutosize
+            cdkAutosizeMinRows="1"
+          ></textarea>
+        }
+      }
+    </div>
   </div>
 }

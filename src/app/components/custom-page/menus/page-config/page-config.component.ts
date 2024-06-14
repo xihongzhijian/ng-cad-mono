@@ -72,7 +72,7 @@ export class PageConfigComponent {
     ];
     const paddingInput: InputInfoNumber<PageConfig["padding"]>[] = paddingItems.map(({name, index}) => {
       return {
-        ...getNumberUnitInput(true, name, "mm"),
+        ...getNumberUnitInput(true, name, "mm", {width: "50%"}),
         model: {data: config.padding, key: index},
         onChange
       };

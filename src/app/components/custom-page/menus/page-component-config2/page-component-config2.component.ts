@@ -21,8 +21,9 @@ import {PageComponentText} from "../../models/page-components/page-component-tex
 export class PageComponentConfig2Component {
   @HostBinding("class") class = "ng-page";
 
-  activeComponent = model.required<PageComponentTypeAny | null>();
   components = model.required<PageComponentTypeAny[]>();
+  activeComponent = model.required<PageComponentTypeAny | null>();
+  activeComponent2 = model.required<PageComponentTypeAny | null>();
 
   private _expandedGroupsKey = "expandedGroups";
   expandedGroups = signal<string[]>(session.load(this._expandedGroupsKey) || []);
@@ -35,7 +36,7 @@ export class PageComponentConfig2Component {
 
   componentMenuInputs = computed(() => {
     this.components();
-    const component = this.activeComponent();
+    const component = this.activeComponent2() || this.activeComponent();
     const inputGroups: {name: string; infos: InputInfo[]; expanded?: boolean}[] = [];
     const onChange = () => {
       this.components.update((v) => [...v]);

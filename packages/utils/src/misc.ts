@@ -1,3 +1,5 @@
+import {Rectangle} from "./geometry";
+
 export const dataURLtoBlob = (dataURL: string) => {
   const arr = dataURL.split(",");
   const mime = arr[0].split(":")[1].split(";")[0];
@@ -47,15 +49,13 @@ export const isTypeOf = (value: any, type: ReturnType<typeof getTypeOf> | Return
   return valueType === type;
 };
 
-export const getElementVisiblePercentage = (el: HTMLElement) => {
-  const rect = el.getBoundingClientRect();
-  const windowWidth = window.innerWidth || document.documentElement.clientWidth;
-  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-  const area = rect.width * rect.height;
-  const xVisible = Math.min(rect.right, windowWidth) - Math.max(rect.left, 0);
-  const yVisible = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
-  const visibleArea = xVisible * yVisible;
-  const visiblePercentage = (visibleArea / area) * 100;
+export const getElementVisiblePercentage = (el: HTMLElement, parentEl = document.body) => {
+  const rect0 = el.getBoundingClientRect();
+  const parentRect0 = parentEl.getBoundingClientRect();
+  const rect = new Rectangle([rect0.left, rect0.top], [rect0.right, rect0.bottom]);
+  const parentRect = new Rectangle([parentRect0.left, parentRect0.top], [parentRect0.right, parentRect0.bottom]);
+  const visibleArea = rect.intersects(parentRect)?.area || 0;
+  const visiblePercentage = (visibleArea / rect.area) * 100;
   return visiblePercentage;
 };
 

@@ -9,6 +9,7 @@ import {
   HostListener,
   inject,
   signal,
+  untracked,
   viewChild
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
@@ -64,6 +65,7 @@ export class CustomPageIndexComponent {
   workSpaceStyle = signal<Properties>({});
   components = signal<PageComponentTypeAny[]>([]);
   activeComponent = signal<PageComponentTypeAny | null>(null);
+  activeComponent2 = signal<PageComponentTypeAny | null>(null);
   canUndo = signal(false);
   canRedo = signal(false);
   showComponentMenu = signal(false);
@@ -77,13 +79,15 @@ export class CustomPageIndexComponent {
     {key: "y", ctrl: true, action: () => this.redo()}
   ];
 
-  workSpaceEl = viewChild.required<ElementRef<HTMLDivElement>>("workSpace");
+  workSpaceEl = viewChild.required<ElementRef<HTMLDivElement>>("workSpaceEl");
+  pageEl = viewChild.required<ElementRef<HTMLDivElement>>("pageEl");
   componentMenuEl = viewChild<ElementRef<HTMLDivElement>>("componentMenu");
 
   constructor() {
     setGlobal("customPage", this);
     effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
     effect(() => this.onComponentsChanged(), {allowSignalWrites: true});
+    effect(() => this.onActiveComponentChanged(), {allowSignalWrites: true});
     this.loadPageSnapshot();
   }
 
@@ -109,18 +113,28 @@ export class CustomPageIndexComponent {
   moveComponentMenuEnd(event: CdkDragEnd) {
     const style: Properties = {};
     const rect = event.source.element.nativeElement.getBoundingClientRect();
-    style.top = `${rect.top}px`;
-    style.left = `${rect.left}px`;
+    const workSpaceRect = this.workSpaceEl().nativeElement.getBoundingClientRect();
+    style.top = `${rect.top - workSpaceRect.top}px`;
+    style.left = `${rect.left - workSpaceRect.left}px`;
     session.save(this._componentMenuStyleKey, style);
   }
   constrainComponentMenu() {
     if (!session.load(this._componentMenuStyleKey)) {
       return;
     }
+    const workSpaceEl = this.workSpaceEl()?.nativeElement;
     const componentMenuEl = this.componentMenuEl()?.nativeElement;
-    if (componentMenuEl && getElementVisiblePercentage(componentMenuEl) < 100) {
+    if (componentMenuEl && getElementVisiblePercentage(componentMenuEl, workSpaceEl) < 25) {
       session.remove(this._componentMenuStyleKey);
-      this.componentMenuStyleOverride.update((v) => ({...v, top: undefined, left: undefined}));
+      this.componentMenuStyleOverride.update((v) => {
+        if (v) {
+          delete v.top;
+          delete v.left;
+        } else {
+          v = {};
+        }
+        return v;
+      });
     }
   }
   closeComponentMenu() {
@@ -132,6 +146,7 @@ export class CustomPageIndexComponent {
     this.workSpaceStyle.set({...this.page.workSpaceStyle});
   }
   updatePageComponents() {
+    this._noSaveOnComponentsChanged = true;
     this.components.set([...this.page.components]);
   }
   updatePage() {
@@ -204,20 +219,43 @@ export class CustomPageIndexComponent {
     this.savePageSnapshot();
   }
 
-  onPageClick() {
-    this.activeComponent.set(null);
+  private _pagePointer: [number, number] | null = null;
+  onPagePointerDown(event: PointerEvent) {
+    this._pagePointer = [event.clientX, event.clientY];
+  }
+  onPagePointerUp(event: PointerEvent) {
+    if (!this._pagePointer || event.target !== this.pageEl().nativeElement) {
+      return;
+    }
+    const [x, y] = this._pagePointer;
+    this._pagePointer = null;
+    if (Math.abs(event.clientX - x) < 5 && Math.abs(event.clientY - y) < 5) {
+      this.activeComponent.set(null);
+    }
   }
 
+  private _noSaveOnComponentsChanged = true;
   onComponentsChanged() {
     const components = this.components();
-    const activeComponent = this.activeComponent();
+    const activeComponent = untracked(() => this.activeComponent());
+    if (activeComponent) {
+      this.activeComponent.set(components.find((v) => v.id === activeComponent.id) || null);
+    }
     this.page.components = components;
+    if (this._noSaveOnComponentsChanged) {
+      this._noSaveOnComponentsChanged = false;
+    } else {
+      this.savePageSnapshot();
+    }
+  }
+  onActiveComponentChanged() {
+    const activeComponent = this.activeComponent();
+    const components = untracked(() => this.components());
     if (activeComponent) {
       if (!components.find((v) => v.id === activeComponent.id)) {
         this.activeComponent.set(null);
       }
       this.showComponentMenu.set(true);
     }
-    this.savePageSnapshot();
   }
 }
