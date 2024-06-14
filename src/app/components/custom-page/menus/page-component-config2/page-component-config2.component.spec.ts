@@ -21,6 +21,8 @@ describe("PageComponentConfig2Component", () => {
     ref.setInput("components", components);
     ref.setInput("activeComponent", components[0]);
     ref.setInput("activeComponent2", components[0]);
+    ref.setInput("showComponentMenu", true);
+    ref.setInput("workSpaceEl", document.createElement("div"));
     fixture.detectChanges();
   });
 

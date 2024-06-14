@@ -18,26 +18,13 @@
         ></app-page-components-diaplay>
       </div>
     </ng-scrollbar>
-    @if (componentMenuStyle(); as style) {
-      <div
-        #componentMenu
-        class="componet-menu item"
-        [style]="style"
-        cdkDrag
-        cdkDragBoundary=".work-space"
-        (cdkDragEnded)="moveComponentMenuEnd($event)"
-      >
-        <div class="toolbar">
-          <div class="name" cdkDragHandle>组件设置</div>
-          <button mat-icon-button (click)="closeComponentMenu()"><mat-icon>close</mat-icon></button>
-        </div>
-        <app-page-component-config2
-          [(components)]="components"
-          [(activeComponent)]="activeComponent"
-          [(activeComponent2)]="activeComponent2"
-        ></app-page-component-config2>
-      </div>
-    }
+    <app-page-component-config2
+      [(components)]="components"
+      [(activeComponent)]="activeComponent"
+      [(activeComponent2)]="activeComponent2"
+      [(showComponentMenu)]="showComponentMenu"
+      [workSpaceEl]="workSpaceEl"
+    ></app-page-component-config2>
   </div>
   <div class="menus">
     <div class="toolbar vertical">

@@ -1,8 +1,6 @@
-import {CdkDrag, CdkDragEnd, CdkDragHandle} from "@angular/cdk/drag-drop";
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
   ElementRef,
   HostBinding,
@@ -17,9 +15,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {KeyEventItem, onKeyEvent, session, setGlobal} from "@app/app.common";
-import {InputComponent} from "@app/modules/input/components/input.component";
 import {MessageService} from "@app/modules/message/services/message.service";
-import {getElementVisiblePercentage, isTypeOf} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageComponentConfig2Component} from "../../menus/page-component-config2/page-component-config2.component";
@@ -35,9 +31,6 @@ import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-co
   selector: "app-custom-page-index",
   standalone: true,
   imports: [
-    CdkDrag,
-    CdkDragHandle,
-    InputComponent,
     MatButtonModule,
     MatIconModule,
     MatTabsModule,
@@ -69,10 +62,8 @@ export class CustomPageIndexComponent {
   canUndo = signal(false);
   canRedo = signal(false);
   showComponentMenu = signal(false);
-  componentMenuStyleOverride = signal<Properties | null>(null);
 
   private _menuTabIndexKey = "customPageMenuTabIndex";
-  private _componentMenuStyleKey = "customPageComponentMenuStyle";
   menuTabIndex = signal(session.load(this._menuTabIndexKey) || 0);
   keyEventItems: KeyEventItem[] = [
     {key: "z", ctrl: true, action: () => this.undo()},
@@ -81,7 +72,6 @@ export class CustomPageIndexComponent {
 
   workSpaceEl = viewChild.required<ElementRef<HTMLDivElement>>("workSpaceEl");
   pageEl = viewChild.required<ElementRef<HTMLDivElement>>("pageEl");
-  componentMenuEl = viewChild<ElementRef<HTMLDivElement>>("componentMenu");
 
   constructor() {
     setGlobal("customPage", this);
@@ -89,56 +79,6 @@ export class CustomPageIndexComponent {
     effect(() => this.onComponentsChanged(), {allowSignalWrites: true});
     effect(() => this.onActiveComponentChanged(), {allowSignalWrites: true});
     this.loadPageSnapshot();
-  }
-
-  componentMenuStyle = computed(() => {
-    const component = this.activeComponent();
-    const componentMenuStyleOverride = this.componentMenuStyleOverride();
-    if (!component || !this.showComponentMenu()) {
-      return null;
-    }
-    const style: Properties = {};
-    const stylePrev = session.load(this._componentMenuStyleKey);
-    if (isTypeOf(stylePrev, "object")) {
-      Object.assign(style, stylePrev);
-    }
-    if (componentMenuStyleOverride) {
-      Object.assign(style, componentMenuStyleOverride);
-    }
-    setTimeout(() => {
-      this.constrainComponentMenu();
-    }, 0);
-    return style;
-  });
-  moveComponentMenuEnd(event: CdkDragEnd) {
-    const style: Properties = {};
-    const rect = event.source.element.nativeElement.getBoundingClientRect();
-    const workSpaceRect = this.workSpaceEl().nativeElement.getBoundingClientRect();
-    style.top = `${rect.top - workSpaceRect.top}px`;
-    style.left = `${rect.left - workSpaceRect.left}px`;
-    session.save(this._componentMenuStyleKey, style);
-  }
-  constrainComponentMenu() {
-    if (!session.load(this._componentMenuStyleKey)) {
-      return;
-    }
-    const workSpaceEl = this.workSpaceEl()?.nativeElement;
-    const componentMenuEl = this.componentMenuEl()?.nativeElement;
-    if (componentMenuEl && getElementVisiblePercentage(componentMenuEl, workSpaceEl) < 25) {
-      session.remove(this._componentMenuStyleKey);
-      this.componentMenuStyleOverride.update((v) => {
-        if (v) {
-          delete v.top;
-          delete v.left;
-        } else {
-          v = {};
-        }
-        return v;
-      });
-    }
-  }
-  closeComponentMenu() {
-    this.showComponentMenu.set(false);
   }
 
   updatePageStyle() {
