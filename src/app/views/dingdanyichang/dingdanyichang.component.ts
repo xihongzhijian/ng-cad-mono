@@ -62,7 +62,7 @@ export class DingdanyichangComponent extends Subscribed() {
           label: "订单状态",
           model: {data, key: "dingdanzhuangtai"},
           options: [],
-          optionsDialog: {optionKey: "订单状态"},
+          optionsDialog: {optionKey: "订单状态", info: {订单异常报告: true}, noImage: true},
           validators: Validators.required
         },
         {type: "string", label: "异常信息", model: {data, key: "yichangxinxi"}, textarea: {autosize: {minRows: 3, maxRows: 6}}},

@@ -1,5 +1,6 @@
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
+import {算料公式} from "@app/components/lurushuju/xinghao-data";
 import {HoutaiCad} from "@app/modules/http/services/cad-data.service.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
@@ -23,6 +24,7 @@ export interface CadListInput {
   raw?: boolean;
   addCadData?: Partial<CadData>;
   yaoqiu?: Cad数据要求;
+  gongshis?: 算料公式[];
 }
 
 export type CadListOutput = CadData[];

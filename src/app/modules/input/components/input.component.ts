@@ -32,6 +32,7 @@ import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
+import {AppStatusService} from "@app/services/app-status.service";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
@@ -225,6 +226,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return undefined;
   }
 
+  get xuanxiangOptions() {
+    return this.status.getXuanxiangOptions().map<(typeof this.options)[number]>((v) => ({value: v, label: v}));
+  }
+
   displayValue: string | null = null;
   formulasStr = "";
 
@@ -243,6 +248,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   valueChange$ = new BehaviorSubject<any>(null);
   filteredOptions$ = new BehaviorSubject<InputComponent["options"]>([]);
+  filteredXuanxiangOptions$ = new BehaviorSubject<InputComponent["options"][]>([]);
 
   private _validateValueLock = false;
 
@@ -251,63 +257,15 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     private dialog: MatDialog,
     private differs: KeyValueDiffers,
     private elRef: ElementRef<HTMLElement>,
-    private http: CadDataService
+    private http: CadDataService,
+    private status: AppStatusService
   ) {
     super();
     this.valueChange$.subscribe((val) => {
-      const info = this.info;
-      const {filterValuesGetter} = info;
-      let sortOptions: boolean;
-      const getFilterValues = (option: (typeof this.options)[number]) => {
-        let values: string[] = [];
-        if (typeof filterValuesGetter === "function") {
-          values = filterValuesGetter(option);
-        } else {
-          values = [option.label];
-          if (typeof option.value === "string") {
-            values.push(option.value);
-          }
-        }
-        return values;
-      };
-      let fixedOptions: string[] | undefined;
-      let optionsDisplayLimit: number | undefined;
-      if (info.type === "string") {
-        fixedOptions = info.fixedOptions;
-        optionsDisplayLimit = info.optionsDisplayLimit;
-      }
-      let options: typeof this.options;
-      if (val) {
-        options = this.options.filter((option) => {
-          const values = getFilterValues(option);
-          for (const v of values) {
-            if (typeof val === "string" && queryString(val, v)) {
-              return true;
-            }
-            if (fixedOptions && fixedOptions.includes(v)) {
-              return true;
-            }
-          }
-          return false;
-        });
-        sortOptions = true;
-      } else {
-        options = this.options;
-        sortOptions = false;
-      }
-      if (typeof optionsDisplayLimit === "number") {
-        options = options.slice(0, optionsDisplayLimit);
-      }
-      if (sortOptions) {
-        const value = this.value;
-        if (typeof value === "string") {
-          sortArrayByLevenshtein(options, getFilterValues, value);
-        }
-      }
       if (this.optionsDialog) {
         this.filteredOptions$.next([]);
       } else {
-        this.filteredOptions$.next(options);
+        this.filteredOptions$.next(this._filterOptions(val, this.options));
       }
     });
     this.infoDiffer = differs.find(this.info).create();
@@ -350,6 +308,77 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   ngOnDestroy() {
     for (const cadViewer of this.cadViewers) {
       cadViewer.destroy();
+    }
+  }
+
+  private _filterOptions(value: string, options: typeof this.options): typeof this.options {
+    const info = this.info;
+    const {filterValuesGetter} = info;
+    let sortOptions: boolean;
+    const getFilterValues = (option: (typeof this.options)[number]) => {
+      let values: string[] = [];
+      if (typeof filterValuesGetter === "function") {
+        values = filterValuesGetter(option);
+      } else {
+        values = [option.label];
+        if (typeof option.value === "string") {
+          values.push(option.value);
+        }
+      }
+      return values;
+    };
+    let fixedOptions: string[] | undefined;
+    let optionsDisplayLimit: number | undefined;
+    if (info.type === "string") {
+      fixedOptions = info.fixedOptions;
+      optionsDisplayLimit = info.optionsDisplayLimit;
+    }
+    let result: typeof this.options;
+    if (value) {
+      result = options.filter((option) => {
+        const values = getFilterValues(option);
+        for (const v of values) {
+          if (typeof value === "string" && queryString(value, v)) {
+            return true;
+          }
+          if (fixedOptions && fixedOptions.includes(v)) {
+            return true;
+          }
+        }
+        return false;
+      });
+      sortOptions = true;
+    } else {
+      result = options;
+      sortOptions = false;
+    }
+    if (typeof optionsDisplayLimit === "number") {
+      result = result.slice(0, optionsDisplayLimit);
+    }
+    if (sortOptions) {
+      const value = this.value;
+      if (typeof value === "string") {
+        sortArrayByLevenshtein(result, getFilterValues, value);
+      }
+    }
+    return result;
+  }
+  private _filterXuanxiangOptions(i?: number, keyVal?: string) {
+    const info = this.info;
+    const value = this.value;
+    if (info.type !== "object" || !info.isXuanxiang || !isTypeOf(value, "object")) {
+      return;
+    }
+    if (typeof i === "number") {
+      const options = this.filteredXuanxiangOptions$.value;
+      options[i] = this._filterOptions(keyVal || "", this.xuanxiangOptions);
+      this.filteredXuanxiangOptions$.next(options);
+    } else {
+      const options: (typeof this.options)[] = [];
+      for (const key in value) {
+        options.push(this._filterOptions(key, this.xuanxiangOptions));
+      }
+      this.filteredXuanxiangOptions$.next(options);
     }
   }
 
@@ -461,7 +490,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.hidden) {
       this.style.display = "none";
     }
-    let validateValue = !!info.initialValidate;
+    let validateValue = !info.noInitialValidate;
     changes.forEachItem((item) => {
       if (item.key === "forceValidateNum") {
         if (item.currentValue !== item.previousValue) {
@@ -473,6 +502,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.validateValue();
     }
     this.valueChange$.next(this.value);
+    this._filterXuanxiangOptions();
   }
 
   clear() {
@@ -796,7 +826,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       options,
       openInNewTab: optionsDialog.openInNewTab,
       noImage: optionsDialog.noImage,
-      nameField: optionsDialog.nameField
+      nameField: optionsDialog.nameField,
+      info: optionsDialog.info
     };
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));
@@ -913,18 +944,36 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  changeObjectKey2(obj: ObjectOf<any>, oldKey: string, newKey: string | Event) {
-    this.changeObjectKey(obj, oldKey, newKey);
+  changeObjectKey2(...args: Parameters<InputComponent["changeObjectKey"]>) {
+    this.changeObjectKey(...args);
     setTimeout(() => {
       this.validateValue();
     }, 0);
   }
-
-  changeObjectValue2(obj: ObjectOf<any>, key: string, value: any) {
-    this.changeObjectValue(obj, key, value);
+  changeObjectValue2(...args: Parameters<InputComponent["changeObjectValue"]>) {
+    this.changeObjectValue(...args);
     setTimeout(() => {
       this.validateValue();
     }, 0);
+  }
+  objectAdd2(...args: Parameters<InputComponent["objectAdd"]>) {
+    this.objectAdd(...args);
+    this._filterXuanxiangOptions();
+    setTimeout(() => {
+      this.validateValue();
+    }, 0);
+  }
+  objectRemove2(...args: Parameters<InputComponent["objectRemove"]>) {
+    this.objectRemove(...args);
+    this._filterXuanxiangOptions();
+    setTimeout(() => {
+      this.validateValue();
+    }, 0);
+  }
+  onObjectKeyInput(event: Event, i: number) {
+    const target = event.target as HTMLInputElement;
+    const value = target.value;
+    this._filterXuanxiangOptions(i, value);
   }
 
   updateFormulasStr() {

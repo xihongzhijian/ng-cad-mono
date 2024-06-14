@@ -19,7 +19,7 @@ import {
   validateLines
 } from "@app/cad/utils";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
-import {getXinghaoQuery} from "@components/lurushuju/xinghao-data";
+import {getXinghaoQuery, 算料公式} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {
   CadData,
@@ -91,8 +91,6 @@ export class AppStatusService {
   forceUpdateCadImg2 = false;
   updateCadImglLock$ = new BehaviorSubject<number>(0);
   cadImgToUpdate: ObjectOf<{t: number}> = {};
-  cad数据要求List: Cad数据要求[] = [];
-  isCad数据要求ListFetched = false;
 
   constructor(
     private config: AppConfigService,
@@ -571,6 +569,8 @@ export class AppStatusService {
     }, 0);
   }
 
+  cad数据要求List: Cad数据要求[] = [];
+  isCad数据要求ListFetched = false;
   async fetchCad数据要求List(forced?: boolean) {
     if (!forced && this.isCad数据要求ListFetched) {
       return;
@@ -579,7 +579,6 @@ export class AppStatusService {
     this.cad数据要求List = cad数据要求Raws.map((v) => new Cad数据要求(v));
     this.isCad数据要求ListFetched = true;
   }
-
   getCad数据要求(name: string) {
     let result = this.cad数据要求List.find((v) => v.CAD分类 === name);
     if (!result) {
@@ -603,5 +602,33 @@ export class AppStatusService {
     } else if (nextReg.test(url) && !testMode) {
       location.href = url.replace(nextReg, `/${masterPath}/`);
     }
+  }
+
+  private _gongshiOptions: string[] | null = null;
+  private _xuanxiangOptions: string[] | null = null;
+  private _isInputOptionsFetched = false;
+  async fetchInputOptions() {
+    if (this._isInputOptionsFetched) {
+      return;
+    }
+    const result = await this.http.getData<ObjectOf<string[]>>("shuju/api/getInputNames", {spinner: false});
+    if (!result || !isTypeOf(result, "object")) {
+      return;
+    }
+    this._gongshiOptions = result.公式;
+    this._xuanxiangOptions = result.选项;
+    this._isInputOptionsFetched = true;
+  }
+  getGongshiOptions(gongshis: 算料公式[] | null | undefined) {
+    const result = new Set<string>(this._gongshiOptions);
+    for (const gongshi of gongshis || []) {
+      for (const key in gongshi.公式 || {}) {
+        result.add(key);
+      }
+    }
+    return Array.from(result);
+  }
+  getXuanxiangOptions() {
+    return this._xuanxiangOptions || [];
   }
 }

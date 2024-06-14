@@ -306,7 +306,7 @@ export class ToolbarComponent {
     if (!line) {
       return;
     }
-    await openCadLineForm(this.status.collection$.value, this.status, this.message, this.status.cad, line);
+    await openCadLineForm(this.status.collection$.value, this.status, this.message, this.status.cad, line, null);
   }
 
   async editBbzhmkgz() {

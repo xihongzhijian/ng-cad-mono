@@ -217,6 +217,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const fields = ["vid", "mingzi"];
     const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields});
     const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields: [...fields, "menchuang"]});
+    const iPrev = this.xinghaoMenchuangs.index;
+    const jPrev = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1]?.gongyis?.index;
     this.xinghaoMenchuangs.items = [];
     for (const menchuang of menchuangs) {
       const xinghaoMenchuang = getXinghaoMenchuang(menchuang);
@@ -245,6 +247,13 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
             }
             gongyiItem.xinghaos.items.push(xinghao);
           }
+        }
+      }
+      if (typeof iPrev === "number") {
+        this.xinghaoMenchuangs.index = iPrev;
+        const menchuangItem = this.xinghaoMenchuangs.items[iPrev];
+        if (menchuangItem?.gongyis && typeof jPrev === "number") {
+          menchuangItem.gongyis.index = jPrev;
         }
       }
       this.filterXinghaos();
@@ -287,12 +296,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         this.message.snack("搜索不到数据");
       } else if (foundCount === 1) {
         const [i, j] = foundGongyis[0];
-        this.clikcXinghaoGongyi(i, j);
+        this.clikcXinghaoGongyi(i, j, true);
       }
     } else {
       const iPrev = this.xinghaoMenchuangs.index;
       const jPrev = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1]?.gongyis?.index;
-      this.clikcXinghaoGongyi(iPrev || 0, jPrev || 0);
+      this.clikcXinghaoGongyi(iPrev || 0, jPrev || 0, true);
     }
   }
 
@@ -1570,6 +1579,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       toggleforceUpdateCadImgBtn
     ];
     await this.status.fetchCad数据要求List();
+    await this.status.fetchInputOptions();
     for (const item of this.status.cad数据要求List) {
       this.btns.push({
         name: item.CAD分类,
@@ -1705,7 +1715,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
   }
 
-  clikcXinghaoGongyi(i: number, j: number) {
+  clikcXinghaoGongyi(i: number, j: number, refresh?: boolean) {
     const menchuangs = this.xinghaoMenchuangs;
     const iPrev = menchuangs.index;
     menchuangs.index = i;
@@ -1715,7 +1725,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
     const jPrev = gongyis.index;
     gongyis.index = j;
-    if (iPrev !== i || jPrev !== j) {
+    if (iPrev !== i || jPrev !== j || refresh) {
       const xinghaos = gongyis.items[j]?.xinghaos;
       this.xinghaos = xinghaos?.items || [];
     }

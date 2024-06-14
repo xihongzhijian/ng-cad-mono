@@ -2,6 +2,7 @@ import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {Cad数据要求Item} from "@app/cad/cad-shujuyaoqiu";
 import {cadOptions} from "@app/cad/options";
+import {算料公式} from "@app/components/lurushuju/xinghao-data";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {environment} from "@env";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
@@ -72,7 +73,8 @@ export const getCadInfoInputs = (
   data: CadData | (() => CadData),
   dialog: MatDialog,
   status: AppStatusService,
-  parseOptionString: boolean
+  parseOptionString: boolean,
+  gongshis?: 算料公式[] | null | undefined
 ) => {
   const result: InputInfo<CadData>[] = [];
   const attrGetter =
@@ -80,6 +82,7 @@ export const getCadInfoInputs = (
     () => {
       return getData(data)[key];
     };
+  const gongshiOptions = status.getGongshiOptions(gongshis);
   for (const key of keys) {
     if (result.some((v) => v.label === key)) {
       continue;
@@ -150,7 +153,8 @@ export const getCadInfoInputs = (
           model: {data, key: cadFields[key]},
           optionsDialog: {},
           optionMultiple: true,
-          parseString: parseOptionString
+          parseString: parseOptionString,
+          isXuanxiang: key === "选项"
         };
         break;
       case "条件":
@@ -258,8 +262,22 @@ export const getCadInfoInputs = (
             label: key,
             groupStyle: {display: "flex"},
             infos: [
-              {type: "string", label: "宽", style, model: {data: getter, key: "zhankaikuan"}, validators: Validators.required},
-              {type: "string", label: "高", style, model: {data: getter, key: "zhankaigao"}, validators: Validators.required},
+              {
+                type: "string",
+                label: "宽",
+                style,
+                options: gongshiOptions,
+                model: {data: getter, key: "zhankaikuan"},
+                validators: Validators.required
+              },
+              {
+                type: "string",
+                label: "高",
+                style,
+                options: gongshiOptions,
+                model: {data: getter, key: "zhankaigao"},
+                validators: Validators.required
+              },
               {type: "string", label: "数量", style, model: {data: getter, key: "shuliang"}, validators: Validators.required}
             ]
           };
@@ -301,7 +319,8 @@ export const getCadInfoInputs2 = (
   data: CadData | (() => CadData),
   dialog: MatDialog,
   status: AppStatusService,
-  parseOptionString: boolean
+  parseOptionString: boolean,
+  gongshis: 算料公式[] | null | undefined
 ) => {
   const result: InputInfo[] = [];
   for (const {key, value, cadKey, key2, readonly, required} of items || []) {
@@ -315,7 +334,7 @@ export const getCadInfoInputs2 = (
         optionsDialog: {optionKey: key2, openInNewTab: true}
       };
     } else {
-      info = getCadInfoInputs([key], data, dialog, status, parseOptionString)[0];
+      info = getCadInfoInputs([key], data, dialog, status, parseOptionString, gongshis)[0];
     }
     if (!info) {
       info = {type: "string", label: key + "（未实现）", disabled: true};

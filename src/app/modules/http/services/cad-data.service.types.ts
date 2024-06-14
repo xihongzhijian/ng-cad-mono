@@ -47,6 +47,7 @@ export interface GetOptionsParams {
   filter?: ObjectOf<any>;
   fields?: string[];
   nameField?: string;
+  info?: ObjectOf<any>;
 }
 
 export interface OptionsData<T extends OptionsDataData = OptionsDataData> {

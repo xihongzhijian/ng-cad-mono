@@ -27,7 +27,7 @@ export interface InputInfoBase<T = any> {
   autoFocus?: boolean;
   placeholder?: string;
   validators?: AbstractControlOptions["validators"];
-  initialValidate?: boolean;
+  noInitialValidate?: boolean;
   forceValidateNum?: number; // change this to trigger validation
   name?: string;
   class?: string | string[];
@@ -76,6 +76,7 @@ export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   valueValidators?: AbstractControlOptions["validators"];
   keysReadonly?: boolean;
   parseString?: boolean;
+  isXuanxiang?: boolean;
 }
 
 export interface InputInfoArray<T = any> extends InputInfoBase<T> {
@@ -208,5 +209,6 @@ export interface OptionsDialog {
   openInNewTab?: CadOptionsInput["openInNewTab"];
   useLocalOptions?: CadOptionsInput["useLocalOptions"];
   nameField?: CadOptionsInput["nameField"];
+  info?: CadOptionsInput["info"];
   onChange?: (val: CadOptionsOutput) => void;
 }

@@ -853,10 +853,12 @@ export class MenjiaoDialogComponent implements OnInit {
 
   getFentiDialogInput(key1: MenjiaoCadType, key2: string, key3: string): CadItemComponent["fentiDialogInput"] {
     if (key2 === "企料CAD") {
+      const item = this.formData[key1];
       return {
-        data: this.formData[key1][key2][key3]["企料分体CAD"] || {},
+        data: item[key2][key3]["企料分体CAD"] || {},
         cadSize: [this.cadWidth, this.cadHeight],
-        cad数据要求: this.getCadshujuyaoqiu("企料分体")
+        cad数据要求: this.getCadshujuyaoqiu("企料分体"),
+        gongshis: item.算料公式
       };
     }
     return undefined;

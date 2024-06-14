@@ -489,7 +489,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const cadData = new CadData({type: this.lingsanCadType});
     const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
     setCadData(cadData, yaoqiuItems);
-    const form = getCadInfoInputs2(yaoqiuItems, cadData, this.dialog, this.status, true);
+    const form = getCadInfoInputs2(yaoqiuItems, cadData, this.dialog, this.status, true, this.data?.gongshis);
     const result = await this.message.form<typeof data>(form);
     if (!result) {
       return;
@@ -512,7 +512,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         const {cads} = await this.http.getCad({collection, id});
         const data = cads[0];
         if (data) {
-          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
+          const gongshis = this.data?.gongshis;
+          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true, gongshis}});
         }
       }
       this.step3Refresh();
@@ -993,14 +994,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       }
     }
     const data = item.data.clone(!isEditingFenlei);
-    data.entities.forEach((e) => {
-      if (e instanceof CadLineLike) {
-        e.mingzi = "";
-        e.mingzi2 = "";
-        e.gongshi = "";
-        e.guanlianbianhuagongshi = "";
-      }
-    });
     this.result.零散.push({data, info: {houtaiId: item.data.id, zhankai: [], calcZhankai: []}});
     this._updateInputInfos();
     await timeout(0);
@@ -1073,7 +1066,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         }
       }
     }
-    const result = await openCadEditorDialog(this.dialog, {data: {data, collection, isLocal, center: true}});
+    const gongshis = this.data?.gongshis;
+    const result = await openCadEditorDialog(this.dialog, {data: {data, collection, isLocal, center: true, gongshis}});
     if (result?.isSaved) {
       await this.allFetch();
     }
@@ -1383,7 +1377,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       const {cads} = await this.http.getCad({collection, ids});
       const data = cads[0];
       if (data) {
-        await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
+        const gongshis = this.data?.gongshis;
+        await openCadEditorDialog(this.dialog, {data: {data, collection, center: true, gongshis}});
       }
     }
     this.step3Refresh();

@@ -47,6 +47,7 @@ import csstype from "csstype";
 import {isEmpty} from "lodash";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
+import {算料公式} from "../xinghao-data";
 import {CadItemButton, CadItemSelectable, typeOptions} from "./cad-item.types";
 
 @Component({
@@ -82,6 +83,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input() buttons2: CadItemButton<T>[] = [];
   @Input({required: true}) customInfo!: T;
   @Input({required: true}) yaoqiu: Cad数据要求 | undefined;
+  @Input({required: true}) gongshis: 算料公式[] | null | undefined;
   @Input() fentiDialogInput?: FentiCadDialogInput;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
@@ -106,6 +108,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   mubanData?: CadData;
   mubanInputs: InputInfo[][] = [];
   errorMsgs: ObjectOf<string> = {};
+  isOnlineFetched = false;
 
   constructor(
     private message: MessageService,
@@ -227,6 +230,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
         data: cadData,
         center: true,
         isLocal: !isOnline,
+        gongshis: this.gongshis,
         ...this.openCadOptions
       }
     });
@@ -264,7 +268,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       }
       data = new CadData(dataRaw);
     }
-    const form = getCadInfoInputs2(yaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status, true);
+    const form = getCadInfoInputs2(yaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status, true, this.gongshis);
     let title = "编辑CAD";
     const name = data.name;
     if (name) {
@@ -386,6 +390,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
         center: true,
         collection: "kailiaocadmuban",
         extraData: mubanExtraData,
+        gongshis: this.gongshis,
         ...this.openCadOptions
       }
     });
@@ -467,7 +472,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
         entity = entity.parent;
       }
       if (entity instanceof CadLineLike) {
-        const result = await openCadLineForm(collection, this.status, this.message, cadViewer, entity);
+        const result = await openCadLineForm(collection, this.status, this.message, cadViewer, entity, this.gongshis);
         if (result) {
           afterDblClickForm(data);
         }
@@ -496,7 +501,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (!cad || !cadContainer) {
       return;
     }
-    await this.onlineFetch(!showCadViewer);
+    if (showCadViewer) {
+      await this.onlineFetch();
+    }
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     this.cadData = data;
     generateLineTexts2(data);
