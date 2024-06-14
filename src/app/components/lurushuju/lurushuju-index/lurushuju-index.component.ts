@@ -1579,6 +1579,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       toggleforceUpdateCadImgBtn
     ];
     await this.status.fetchCad数据要求List();
+    await this.status.fetchGongshiOptions();
     for (const item of this.status.cad数据要求List) {
       this.btns.push({
         name: item.CAD分类,

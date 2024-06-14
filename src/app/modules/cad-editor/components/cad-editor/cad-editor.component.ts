@@ -260,10 +260,11 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (event, entity) => {
     const collection = this.status.collection$.value;
     const cad = this.status.cad;
+    const gongshis = this.status.openCad$.value.gongshis;
     if (entity instanceof CadMtext && entity.parent instanceof CadLineLike) {
-      openCadLineForm(collection, this.status, this.message, cad, entity.parent);
+      openCadLineForm(collection, this.status, this.message, cad, entity.parent, gongshis);
     } else if (entity instanceof CadLineLike) {
-      openCadLineForm(collection, this.status, this.message, cad, entity);
+      openCadLineForm(collection, this.status, this.message, cad, entity, gongshis);
     } else if (entity instanceof CadDimensionLinear) {
       openCadDimensionForm(collection, this.message, cad, entity);
     }

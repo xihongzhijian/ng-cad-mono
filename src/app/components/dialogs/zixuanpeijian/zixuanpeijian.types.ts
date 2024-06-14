@@ -1,3 +1,4 @@
+import {算料公式} from "@app/components/lurushuju/xinghao-data";
 import {Formulas} from "@app/utils/calc";
 import {KailiaocanshuData} from "@components/klcs/klcs.component";
 import {KlkwpzSource} from "@components/klkwpz/klkwpz";
@@ -67,6 +68,7 @@ export interface ZixuanpeijianInput {
   readonly?: boolean;
   lingsanOptions?: {getAll?: boolean; typePrefix?: boolean; xinghao?: string};
   lingsanCadType?: string;
+  gongshis?: 算料公式[];
 }
 
 export type ZixuanpeijianOutput = Required<ZixuanpeijianData>;

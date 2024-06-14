@@ -343,11 +343,11 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async addCad() {
-    const {addCadData, yaoqiu} = this.data;
+    const {addCadData, yaoqiu, gongshis} = this.data;
     const cadData = new CadData(addCadData);
     const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
     setCadData(cadData, yaoqiuItems);
-    const form = getCadInfoInputs2(yaoqiuItems, cadData, this.dialog, this.status, true);
+    const form = getCadInfoInputs2(yaoqiuItems, cadData, this.dialog, this.status, true, gongshis);
     const result = await this.message.form(form);
     if (!result) {
       return;
@@ -361,7 +361,7 @@ export class CadListComponent implements AfterViewInit {
         const {cads} = await this.http.getCad({collection, id});
         const data = cads[0];
         if (data) {
-          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
+          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true, gongshis}});
         }
       }
       this.search();
@@ -381,7 +381,8 @@ export class CadListComponent implements AfterViewInit {
         const {cads} = await this.http.getCad({collection, ids});
         const data = cads[0];
         if (data) {
-          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
+          const gongshis = this.data.gongshis;
+          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true, gongshis}});
         }
       }
       this.search();

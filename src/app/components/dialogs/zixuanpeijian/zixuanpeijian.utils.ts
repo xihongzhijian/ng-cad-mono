@@ -50,7 +50,8 @@ export const getTestData = () => {
     noValidateCads: false,
     readonly: false,
     lingsanOptions: {},
-    lingsanCadType: ""
+    lingsanCadType: "",
+    gongshis: []
   };
   return data;
 };

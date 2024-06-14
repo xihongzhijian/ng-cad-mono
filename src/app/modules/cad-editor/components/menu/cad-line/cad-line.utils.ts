@@ -1,4 +1,5 @@
 import {CadCollection} from "@app/cad/collections";
+import {算料公式} from "@app/components/lurushuju/xinghao-data";
 import {InputInfo} from "@app/modules/input/components/input.types";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {AppStatusService} from "@app/services/app-status.service";
@@ -14,10 +15,16 @@ export const cadLineFields = {
   双向折弯附加值: "双向折弯附加值"
 } as const;
 
-export const getCadLineInputs = (keys: string[], data: CadLineLike | (() => CadLineLike)) => {
+export const getCadLineInputs = (
+  keys: string[],
+  data: CadLineLike | (() => CadLineLike),
+  status: AppStatusService,
+  gongshis: 算料公式[] | null | undefined
+) => {
   const result: InputInfo<CadLineLike>[] = [];
   const lineLength = Number(data.length.toFixed(2));
   const isLine = data instanceof CadLine;
+  const gongshiOptions = status.getGongshiOptions(gongshis);
   for (const key of keys) {
     if (result.some((v) => v.label === key)) {
       continue;
@@ -26,11 +33,13 @@ export const getCadLineInputs = (keys: string[], data: CadLineLike | (() => CadL
     switch (key) {
       case "名字":
       case "名字2":
-      case "公式":
       case "显示线长":
       case "关联变化公式":
       case "双向折弯附加值":
         info = {type: "string", label: key, model: {data, key: cadLineFields[key]}};
+        break;
+      case "公式":
+        info = {type: "string", label: key, options: gongshiOptions, model: {data, key: cadLineFields[key]}};
         break;
       case "线长":
         info = {type: "number", label: key, value: lineLength, readonly: !isLine};
@@ -49,14 +58,15 @@ export const openCadLineForm = async (
   status: AppStatusService,
   message: MessageService,
   cad: CadViewer,
-  line: CadLineLike
+  line: CadLineLike,
+  gongshis: 算料公式[] | null | undefined
 ) => {
   const line2 = line.clone();
   const lineLength = Number(line.length.toFixed(2));
   const isLine = line instanceof CadLine;
   await status.fetchCad数据要求List();
   const yaoqiu = status.getCad数据要求(cad.data.type);
-  const form = getCadLineInputs(yaoqiu?.线段弹窗修改属性 || [], line2);
+  const form = getCadLineInputs(yaoqiu?.线段弹窗修改属性 || [], line2, status, gongshis);
   if (collection === "kailiaocadmuban" && !form.some((v) => v.label === "关联变化公式")) {
     form.push({type: "string", label: "关联变化公式", model: {data: line, key: "guanlianbianhuagongshi"}});
   }

@@ -163,7 +163,8 @@ export class SuanliaoDataDialogComponent implements OnInit {
       },
       step: 3,
       stepFixed: true,
-      noValidateCads: true
+      noValidateCads: true,
+      gongshis: data.算料公式
     };
     const result = await openZixuanpeijianDialog(this.dialog, {data: zxpjData});
     if (result) {
