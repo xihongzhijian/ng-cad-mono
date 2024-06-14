@@ -1,6 +1,7 @@
 import {Component, Input} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {joinOptions} from "@app/app.common";
+import {MrbcjfzXinghaoInfo} from "@app/views/mrbcjfz/mrbcjfz.utils";
 import {openBancaiListDialog} from "@components/dialogs/bancai-list/bancai-list.component";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -14,6 +15,8 @@ import {InputComponent} from "../../modules/input/components/input.component";
   imports: [InputComponent]
 })
 export class BancaiFormComponent {
+  @Input({required: true}) xinghao!: MrbcjfzXinghaoInfo;
+  @Input({required: true}) key!: string;
   private _data: BancaiFormData = {bancai: "", cailiao: "", houdu: ""};
   @Input()
   get data() {
@@ -21,7 +24,9 @@ export class BancaiFormComponent {
   }
   set data(value) {
     this._data = value;
-    this.update();
+    setTimeout(() => {
+      this.update();
+    }, 0);
   }
   private _bancaiList: BancaiList[] = [];
   @Input()
@@ -30,7 +35,9 @@ export class BancaiFormComponent {
   }
   set bancaiList(value) {
     this._bancaiList = value;
-    this.update();
+    setTimeout(() => {
+      this.update();
+    }, 0);
   }
   inputInfos: InputInfo<BancaiFormData>[][] = [];
 
@@ -52,6 +59,7 @@ export class BancaiFormComponent {
       }
     }
     this.inputInfos = [
+      this.xinghao.inputInfos[this.key][0],
       [
         {
           type: "string",
