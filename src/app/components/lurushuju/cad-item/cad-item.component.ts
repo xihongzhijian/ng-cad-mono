@@ -114,7 +114,8 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
-    private status: AppStatusService
+    private status: AppStatusService,
+    private el: ElementRef<HTMLElement>
   ) {
     super();
   }
@@ -501,9 +502,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (!cad || !cadContainer) {
       return;
     }
-    if (showCadViewer) {
-      await this.onlineFetch();
-    }
+    await this.onlineFetch();
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     this.cadData = data;
     generateLineTexts2(data);
