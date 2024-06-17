@@ -8,6 +8,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {Router} from "@angular/router";
 import {
   filePathUrl,
   getBooleanStr,
@@ -168,7 +169,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     private http: CadDataService,
     private message: MessageService,
     private dialog: MatDialog,
-    private status: AppStatusService
+    private status: AppStatusService,
+    private router: Router
   ) {
     super();
     setGlobal("lrsj", this, true);
@@ -1564,20 +1566,26 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   async updateBtns() {
-    const toggleforceUpdateCadImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.status.forceUpdateCadImg2)})`;
-    const toggleforceUpdateCadImgBtn: (typeof this.btns)[number] = {
-      name: toggleforceUpdateCadImgBtnName(),
-      onClick: () => {
-        this.status.forceUpdateCadImg2 = !this.status.forceUpdateCadImg2;
-        toggleforceUpdateCadImgBtn.name = toggleforceUpdateCadImgBtnName();
-      }
-    };
     this.btns = [
       {name: "返回至型号", onClick: this.backToXinghao.bind(this)},
       {name: "复制页面信息", onClick: this.copyInfo.bind(this)},
       {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)},
-      toggleforceUpdateCadImgBtn
+      {
+        name: "重新生成所有cad图片",
+        onClick: () => this.status.openInNewTab(["/refresh-cad-imgs"])
+      }
     ];
+    if (!environment.production) {
+      const toggleforceUpdateCadImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.status.forceUpdateCadImg2)})`;
+      const toggleforceUpdateCadImgBtn: (typeof this.btns)[number] = {
+        name: toggleforceUpdateCadImgBtnName(),
+        onClick: () => {
+          this.status.forceUpdateCadImg2 = !this.status.forceUpdateCadImg2;
+          toggleforceUpdateCadImgBtn.name = toggleforceUpdateCadImgBtnName();
+        }
+      };
+      this.btns.push(toggleforceUpdateCadImgBtn);
+    }
     await this.status.fetchCad数据要求List();
     await this.status.fetchInputOptions();
     for (const item of this.status.cad数据要求List) {

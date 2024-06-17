@@ -185,13 +185,15 @@ export const getMrbcjfzInfo = (source: Partial<MrbcjfzInfo> = {}): MrbcjfzInfo =
   ...source
 });
 
-export const filterCad = (data: CadData) => {
+export const filterCad = (data: CadData, options?: {skipTpyeCheck?: boolean}) => {
   if (data.gudingkailiaobancai || data.板材绑定选项 || data.指定板材分组) {
     return false;
   }
-  const typeReg = /激光花|花件|示意图|装配示意图|特定企料|横截面示意图|纵截面示意图/;
-  if (typeReg.test(data.type) || typeReg.test(data.type2)) {
-    return false;
+  if (!options?.skipTpyeCheck) {
+    const typeReg = /激光花|花件|示意图|装配示意图|特定企料|横截面示意图|纵截面示意图/;
+    if (typeReg.test(data.type) || typeReg.test(data.type2)) {
+      return false;
+    }
   }
   if (data.options.花件 || Object.keys(data.options).some((v2) => v2.includes("压条"))) {
     return false;
