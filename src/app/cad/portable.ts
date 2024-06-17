@@ -381,7 +381,7 @@ export class CadPortable {
                 const zhankaikuan = arr[0];
                 const zhankaigao = arr[1];
                 const shuliang = arr[2];
-                const conditions = arr[3] ? [arr[3]] : undefined;
+                const conditions = arr.slice(3);
                 for (const vvv of [zhankaikuan, zhankaigao, shuliang]) {
                   if (vvv && vvv.match(/['"]/)) {
                     cad.errors.push("展开宽, 展开高和数量不能有引号");
@@ -621,9 +621,7 @@ export class CadPortable {
         const zhankaiStr = cad.zhankai
           .map((v) => {
             const arr = [v.zhankaikuan, v.zhankaigao, v.shuliang];
-            if (v.conditions.length > 0) {
-              arr.push(v.conditions[0]);
-            }
+            arr.push(...v.conditions);
             return `[${arr.join(", ")}]`;
           })
           .join(", ");
