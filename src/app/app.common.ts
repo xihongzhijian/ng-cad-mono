@@ -13,12 +13,11 @@ declare global {
 export const remoteHost = "https://www.let888.cn" as const;
 export const remoteFilePath = `${remoteHost}/filepath`;
 
-const addJs = (name: string) => {
+export const addJs = (name: string) => {
   const script = document.createElement("script");
   script.src = `${remoteHost}/static/js/${name}.js?${new Date().getTime()}`;
   document.head.append(script);
 };
-addJs("batchUploadChecker");
 addJs("node2rect");
 
 export const projectName = "NgCad2";

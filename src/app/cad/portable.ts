@@ -34,8 +34,12 @@ export interface Slgs {
 
 export interface CadInfo {
   data: CadData;
-  errors: string[];
+  errors: (CadInfoError | string)[];
   skipErrorCheck: Set<string>;
+}
+export interface CadInfoError {
+  text: string;
+  detail: string;
 }
 
 /**
