@@ -1,8 +1,10 @@
 import {CdkDrag, CdkDragEnd, CdkDragMove} from "@angular/cdk/drag-drop";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, model, signal, untracked, viewChildren} from "@angular/core";
+import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {setGlobal} from "@app/app.common";
+import {Angle, Point} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {debounce} from "lodash";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
@@ -12,7 +14,7 @@ import {ControlPoint} from "./page-components-diaplay.types";
 @Component({
   selector: "app-page-components-diaplay",
   standalone: true,
-  imports: [CdkDrag, CdkTextareaAutosize, MatInputModule],
+  imports: [CdkDrag, CdkTextareaAutosize, MatIconModule, MatInputModule],
   templateUrl: "./page-components-diaplay.component.html",
   styleUrl: "./page-components-diaplay.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -123,16 +125,14 @@ export class PageComponentsDiaplayComponent {
   updateControl(target?: PageComponentTypeAny) {
     const component = this.activeComponent2() || this.activeComponent();
     const componentEl = this.elRef.nativeElement.querySelector(`.page-component[data-id="${component?.id}"]`);
-    const rect2 = document.body.querySelector(".page")?.getBoundingClientRect();
     const result = {isComponentsUpdated: false};
-    if (!component || !componentEl || !rect2) {
+    if (!component || !(componentEl instanceof HTMLElement)) {
       this.control.set(null);
       return result;
     }
     if (target && target.id !== component.id) {
       return result;
     }
-    const rect = componentEl.getBoundingClientRect();
     const {resizable = {}} = pageComponentInfos[component.type] || {};
     const classArr: string[] = [];
     if (resizable.x) {
@@ -141,29 +141,30 @@ export class PageComponentsDiaplayComponent {
     if (resizable.y) {
       classArr.push("resize-y");
     }
-    this.control.set({
-      class: classArr,
-      style: {
-        "--component-width": `${rect.width.toFixed(0)}px`,
-        "--component-height": `${rect.height.toFixed(0)}px`
-      } as Properties
-    });
-    if (component instanceof PageComponentText) {
-      if (component.size.y !== rect.height) {
-        component.size.y = rect.height;
-        this.components.update((v) => [...v]);
-        result.isComponentsUpdated = true;
-      }
+    this.control.set({class: classArr, style: {}});
+
+    let updateComponents = false;
+    if (!resizable.x && component.size.x !== componentEl.offsetWidth) {
+      component.size.x = componentEl.offsetWidth;
+      updateComponents = true;
+    }
+    if (!resizable.y && component.size.y !== componentEl.offsetHeight) {
+      component.size.y = componentEl.offsetHeight;
+      updateComponents = true;
+    }
+    if (updateComponents) {
+      this.components.update((v) => [...v]);
+      result.isComponentsUpdated = true;
     }
     return result;
   }
-  moveControlPointStart() {
+  moveResizePointStart() {
     const component = this.activeComponent();
     if (component) {
       this.activeComponent2.set(component.clone());
     }
   }
-  moveControlPoint(event: CdkDragMove, point: ControlPoint) {
+  moveResizePoint(event: CdkDragMove, point: ControlPoint) {
     const {distance} = event;
     const component2 = this.activeComponent2();
     const component = this.activeComponent();
@@ -203,7 +204,7 @@ export class PageComponentsDiaplayComponent {
     event.source._dragRef.reset();
     this.activeComponent2.set(component2.clone());
   }
-  moveControlPointEnd(event: CdkDragEnd) {
+  moveResizePointEnd(event: CdkDragEnd) {
     event.source._dragRef.reset();
     const component = this.activeComponent2();
     if (component) {
@@ -212,6 +213,45 @@ export class PageComponentsDiaplayComponent {
       if (activeComponent) {
         activeComponent.position.copy(component.position);
         activeComponent.size.copy(component.size);
+        this.components.update((v) => [...v]);
+      }
+    }
+  }
+  moveRotatePointStart() {
+    const component = this.activeComponent();
+    if (component) {
+      this.activeComponent2.set(component.clone());
+    }
+  }
+  private _moveRotatePointPosPrev: Point | null = null;
+  moveRotatePoint(event: CdkDragMove, componentEl: HTMLElement) {
+    const component2 = this.activeComponent2();
+    const component = this.activeComponent();
+    if (!component2 || !component) {
+      return;
+    }
+
+    const {pointerPosition, distance} = event;
+    const rect = componentEl.getBoundingClientRect();
+    const origin = new Point(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    const p2 = new Point(pointerPosition.x, pointerPosition.y).sub(origin);
+    const p1 = this._moveRotatePointPosPrev || p2.clone().sub(distance.x, distance.y);
+    this._moveRotatePointPosPrev = p2.clone();
+    const angle2 = Math.atan2(p2.y, p2.x);
+    const angle1 = Math.atan2(p1.y, p1.x);
+    component2.rotation.add(new Angle(angle2 - angle1, "rad")).constrain(true);
+
+    event.source._dragRef.reset();
+    this.activeComponent2.set(component2.clone());
+  }
+  moveRotatePointEnd(event: CdkDragEnd) {
+    event.source._dragRef.reset();
+    const component = this.activeComponent2();
+    if (component) {
+      this.activeComponent2.set(null);
+      const activeComponent = this.activeComponent();
+      if (activeComponent) {
+        activeComponent.rotation.copy(component.rotation);
         this.components.update((v) => [...v]);
       }
     }

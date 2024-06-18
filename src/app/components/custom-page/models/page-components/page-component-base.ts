@@ -1,6 +1,7 @@
 import {Angle, Point} from "@lucilor/utils";
 import {Properties, Property} from "csstype";
 import {v4} from "uuid";
+import {pageComponentInfos, PageComponentType} from "../page-component-infos";
 
 export abstract class PageComponentBase {
   abstract readonly type: string;
@@ -9,7 +10,7 @@ export abstract class PageComponentBase {
   position = new Point(0, 0);
   scale = new Point(1, 1);
   anchor = new Point(0.5, 0.5);
-  rotation = new Angle(0);
+  rotation = new Angle(0, "deg");
   border: Property.Border = "none";
   background: Property.Background = "transparent";
   color: Property.Color = "black";
@@ -65,12 +66,13 @@ export abstract class PageComponentBase {
     } else if (this.rotation.unit === "rad") {
       rotation = `${this.rotation.rad}rad`;
     }
+    const {resizable} = pageComponentInfos[this.type as PageComponentType] || {};
     return {
-      width: `${this.size.x}px`,
-      height: `${this.size.y}px`,
+      width: resizable.x ? `${this.size.x}px` : "auto",
+      height: resizable.y ? `${this.size.y}px` : "auto",
       left: `${this.position.x}px`,
       top: `${this.position.y}px`,
-      transform: `scale(${scaleX},${scaleY}) rotate(${rotation}deg)`,
+      transform: `scale(${scaleX},${scaleY}) rotate(${rotation})`,
       transformOrigin: `${this.anchor.x * 100}% ${this.anchor.y * 100}%`,
       background: this.background,
       border: this.border,

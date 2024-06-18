@@ -10,6 +10,11 @@ declare global {
     batchCheck(data: ObjectOf<any>[]): ObjectOf<string[]>;
   }
 }
+declare module "csstype" {
+  interface Properties {
+    [key: string]: any;
+  }
+}
 export const remoteHost = "https://www.let888.cn" as const;
 export const remoteFilePath = `${remoteHost}/filepath`;
 

@@ -28,7 +28,6 @@ export class PageComponentText extends PageComponentBase {
 
   getStyle() {
     const style = super.getStyle();
-    style.height = "auto";
     style.fontSize = `${this.fontSize}px`;
     style.fontFamily = this.fontFamily;
     style.color = this.color;

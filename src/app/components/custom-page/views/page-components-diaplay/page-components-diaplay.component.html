@@ -23,13 +23,22 @@
               cdkDrag
               cdkDragBoundary=".work-space"
               [cdkDragLockAxis]="point.axis"
-              (cdkDragStarted)="moveControlPointStart()"
-              (cdkDragMoved)="moveControlPoint($event, point)"
-              (cdkDragEnded)="moveControlPointEnd($event)"
+              (cdkDragStarted)="moveResizePointStart()"
+              (cdkDragMoved)="moveResizePoint($event, point)"
+              (cdkDragEnded)="moveResizePointEnd($event)"
             >
               <div class="point-inner"></div>
             </div>
           }
+          <div
+            class="rotate-point"
+            cdkDrag
+            (cdkDragStarted)="moveRotatePointStart()"
+            (cdkDragMoved)="moveRotatePoint($event, componentEl)"
+            (cdkDragEnded)="moveRotatePointEnd($event)"
+          >
+            <mat-icon>rotate_right</mat-icon>
+          </div>
         </div>
       }
     }

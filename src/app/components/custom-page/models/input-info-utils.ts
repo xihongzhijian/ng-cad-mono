@@ -13,12 +13,19 @@ export const getInputStyle = (isInGroup: boolean, others?: Properties) => {
   return result;
 };
 
-export const getNumberUnitInput = <T>(isInGroup: boolean, label: string, unit: "px" | "mm", style?: Properties): InputInfoNumber<T> => {
+export const getNumberUnitInput = <T>(
+  isInGroup: boolean,
+  label: string,
+  unit: string,
+  style?: Properties,
+  others?: Partial<InputInfoNumber<T>>
+): InputInfoNumber<T> => {
   return {
     type: "number",
     label,
     suffixTexts: [{name: unit}],
     style: getInputStyle(isInGroup, style),
-    ndigits: 2
+    ndigits: 2,
+    ...others
   };
 };

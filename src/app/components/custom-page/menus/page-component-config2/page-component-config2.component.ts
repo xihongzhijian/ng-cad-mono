@@ -1,4 +1,4 @@
-import {CdkDrag, CdkDragEnd} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragEnd, CdkDragHandle} from "@angular/cdk/drag-drop";
 import {NgTemplateOutlet} from "@angular/common";
 import {
   ChangeDetectionStrategy,
@@ -29,7 +29,16 @@ import {PageComponentText} from "../../models/page-components/page-component-tex
 @Component({
   selector: "app-page-component-config2",
   standalone: true,
-  imports: [CdkDrag, InputComponent, MatButtonModule, MatExpansionModule, MatIconModule, NgScrollbarModule, NgTemplateOutlet],
+  imports: [
+    CdkDrag,
+    CdkDragHandle,
+    InputComponent,
+    MatButtonModule,
+    MatExpansionModule,
+    MatIconModule,
+    NgScrollbarModule,
+    NgTemplateOutlet
+  ],
   templateUrl: "./page-component-config2.component.html",
   styleUrl: "./page-component-config2.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -186,7 +195,8 @@ export class PageComponentConfig2Component {
         name: "尺寸与位置",
         infos: [
           {type: "group", label: "尺寸", groupStyle: getGroupStyle(), infos: [widthInput, heightInput]},
-          {type: "group", label: "位置", groupStyle: getGroupStyle(), infos: [xInput, yInput]}
+          {type: "group", label: "位置", groupStyle: getGroupStyle(), infos: [xInput, yInput]},
+          {...getNumberUnitInput(true, "旋转", "°"), model: {data: component.rotation, key: "deg"}, onChange}
         ]
       }
     ];
