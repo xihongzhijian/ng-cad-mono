@@ -4,7 +4,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
-import {CadInfo, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
+import {CadInfo, CadInfoError, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
 import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo} from "@app/modules/input/components/input.types";
@@ -25,6 +25,7 @@ import {NgScrollbar} from "ngx-scrollbar";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 import {ImportCache, ImportComponentConfig, ImportComponentConfigName, importComponentConfigNames} from "./import.types";
+import {BatchUploadChecker} from "./import.utils";
 
 @Component({
   selector: "app-import",
@@ -43,7 +44,8 @@ export class ImportComponent extends Utils() implements OnInit {
   private _errorMsgLayer = "导入错误信息";
   sourceFile?: File;
   sourceCad: CadData | null = null;
-  batchCheckData: ObjectOf<any>[] | null = null;
+  batchUploadChecker = new BatchUploadChecker();
+  batchCheckData: ReturnType<BatchUploadChecker["batchCheck"]>["data"] | null = null;
 
   loaderIds = {
     importLoader: "importLoader",
@@ -499,36 +501,8 @@ export class ImportComponent extends Utils() implements OnInit {
     }
     this.progressBar.start(1);
 
-    const data = this.cads.map((v) => {
-      const json = v.data.export();
-      json.选项 = json.options;
-      json.条件 = json.conditions;
-      return {
-        json,
-        _id: json.id,
-        选项: json.options,
-        条件: json.conditions,
-        名字: json.name,
-        显示名字: json.xianshimingzi,
-        分类: json.type,
-        分类2: json.type2
-      };
-    });
-    try {
-      this.batchCheckData = data;
-      const checkResult = window.batchCheck(data);
-      this.cads.forEach((cad) => {
-        const errors = checkResult[cad.data.id];
-        if (errors && errors.length > 0) {
-          cad.errors = cad.errors.concat(errors);
-        }
-      });
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        this.message.alert(error.message);
-      }
-    }
+    const {data} = this.batchUploadChecker.batchCheck(cads);
+    this.batchCheckData = data;
 
     if (xinghaoInfo) {
       this.msg = `正在检查型号配置`;
@@ -623,7 +597,8 @@ export class ImportComponent extends Utils() implements OnInit {
     if (data.type === "包边正面") {
       if (修改包边正面宽规则) {
         修改包边正面宽规则 = "修改包边正面宽规则:\n" + 修改包边正面宽规则;
-        cad.errors = cad.errors.concat(window.parseBaobianzhengmianRules(修改包边正面宽规则, data.info.vars).errors);
+        const result = this.batchUploadChecker.parseBaobianzhengmianRules(修改包边正面宽规则, data.info.vars);
+        cad.errors.push(...result.errors);
       }
     } else if (修改包边正面宽规则) {
       cad.errors.push("分类不为【包边正面】不能写【修改包边正面宽规则】");
@@ -812,5 +787,13 @@ export class ImportComponent extends Utils() implements OnInit {
       filename = this.sourceFile.name.split(".")[0] + ".json";
     }
     downloadByString(JSON.stringify(this.batchCheckData), {filename});
+  }
+
+  isString(v: any): v is string {
+    return typeof v === "string";
+  }
+
+  alertError(error: CadInfoError) {
+    this.message.alert(error.detail);
   }
 }

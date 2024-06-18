@@ -1114,13 +1114,20 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
   }
   for (const item of items1) {
     const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色"];
-    const itemsPrev = itemsGroup.find((v) => v.find((v2) => keys.every((k) => v2[k] === item[k])));
+    const itemsPrev = itemsGroup.find((v) => {
+      if (!v.find((v2) => keys.every((k) => v2[k] === item[k]))) {
+        return false;
+      }
+      const target = v.find((v2) => v2.是横料 === item.是横料);
+      return !target || target.型材长度 === item.型材长度;
+    });
     if (itemsPrev) {
       itemsPrev.push(item);
     } else {
       itemsGroup.push([item]);
     }
   }
+  itemsGroup.sort((a, b) => a[0].铝型材.localeCompare(b[0].铝型材));
 
   const lineHeight = 119;
   const rowWidth = lines.rect.width;

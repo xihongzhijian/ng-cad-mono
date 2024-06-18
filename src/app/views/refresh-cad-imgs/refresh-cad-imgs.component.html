@@ -1,0 +1,7 @@
+<div class="toolbar">
+  @for (info of inputInfos(); track $index) {
+    <app-input [info]="info"></app-input>
+  }
+  <button mat-raised-button color="primary" (click)="start()">开始</button>
+</div>
+<app-progress-bar [progress]="progress()" [status]="status()" [msg]="msg()"></app-progress-bar>

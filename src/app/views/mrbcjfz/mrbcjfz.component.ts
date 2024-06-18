@@ -183,8 +183,6 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       } else {
         bancaiListData = await this.http.getBancaiList(9, {spinner: this.loaderId});
       }
-      this.xinghao.默认板材 = data.morenbancai;
-      this.xinghao.update();
       this.xiaodaohangStructure = {mingzi: "型号", table: "p_xinghao"};
       if (bancaiListData) {
         this.bancaiList = bancaiListData.bancais;
@@ -211,6 +209,8 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         info.花件 = info.花件.filter((v) => huajianIds1.includes(v));
         huajianIds2.push(...info.花件);
       }
+      this.xinghao.默认板材 = data.morenbancai;
+      this.xinghao.update();
       this.cads = {};
       for (const cad of cads) {
         const info: MrbcjfzCadInfo = {id: cad.id, data: cad};
@@ -493,7 +493,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       const errorMsg2 = new Set<string>();
       this.bancaiInputComponents.forEach((v) => {
         v.validateValue();
-        const errorMsg3 = v.errorMsg;
+        const errorMsg3 = v.getErrorMsg();
         if (errorMsg3) {
           errorMsg2.add(v.info.label + errorMsg3);
         }

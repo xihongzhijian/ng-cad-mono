@@ -503,6 +503,12 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     }
     if (showCadViewer) {
       await this.onlineFetch();
+    } else {
+      if (cad instanceof CadData) {
+        cad.info.incomplete = true;
+      } else {
+        cad.json.info = {...cad.json.info, incomplete: true};
+      }
     }
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     this.cadData = data;

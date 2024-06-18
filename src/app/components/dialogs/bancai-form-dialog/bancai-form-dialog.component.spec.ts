@@ -12,7 +12,6 @@ const data: BancaiFormInput = {
   xinghao: new MrbcjfzXinghaoInfo("test", {vid: 1, mingzi: "1"}),
   key: "a"
 };
-console.log(data.xinghao);
 
 describe("BancaiFormDialogComponent", () => {
   let component: BancaiFormDialogComponent;

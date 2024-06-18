@@ -160,7 +160,7 @@ export class CadImageComponent implements OnChanges {
     }
     try {
       const {collection, id} = this;
-      if (!data) {
+      if (!data || data.info.incomplete) {
         const cadsResult = await this.http.getCad({collection, id}, {silent: true});
         if (cadsResult.cads[0]) {
           data = cadsResult.cads[0];

@@ -602,7 +602,7 @@ export class MenjiaoDialogComponent implements OnInit {
     }
     const data = this.formData;
     const morenbancai = cloneDeep(data[key1].板材分组);
-    const cads = data[key1].算料CAD.map((v) => new CadData(v.json)).filter(filterCad2);
+    const cads = data[key1].算料CAD.map((v) => new CadData(v.json)).filter((v) => filterCad2(v, {skipTpyeCheck: true}));
     await componentLrsj.updateHuajians();
     const huajians = componentLrsj.filterHuajians(data[key1]);
     return {
@@ -625,7 +625,6 @@ export class MenjiaoDialogComponent implements OnInit {
     });
     if (result) {
       this.formData[key1].板材分组 = result.data.默认板材;
-      console.log(result);
       if (result.submit2) {
         await this.submit(false);
       } else {
