@@ -398,6 +398,9 @@ export class CadDataService extends HttpService {
   async getXiaodaohangStructure(xiaodaohang: string, options?: HttpOptions) {
     return await this.getData<XiaodaohangStructure>("ngcad/getXiaodaohangStructure", {xiaodaohang}, options);
   }
+  async getXiaodaohangStructures(xiaodaohangs: string[], options?: HttpOptions) {
+    return await this.getData<ObjectOf<XiaodaohangStructure>>("ngcad/getXiaodaohangStructures", {xiaodaohangs}, options);
+  }
 
   async getMongoId(options?: HttpOptions) {
     return await this.getData<string>("ngcad/getMongoId", {}, options);
