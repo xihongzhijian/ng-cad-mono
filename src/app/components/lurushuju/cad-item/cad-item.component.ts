@@ -275,7 +275,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       if (cad instanceof CadData) {
         Object.assign(cad, data);
       } else {
-        Object.assign(cad.json, getHoutaiCad(data));
+        Object.assign(cad, getHoutaiCad(data));
       }
       if (isOnline) {
         await this.http.setCad({collection: isOnline.collection || "cad", cadData: data, force: true}, true);

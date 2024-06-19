@@ -525,6 +525,7 @@ export class MenjiaoDialogComponent implements OnInit {
       cadData.name = name;
       if (imgIdPrev) {
         cadData.info.imgId = imgIdPrev;
+        cadData.info.imgUpdate = true;
       } else {
         delete cadData.info.imgId;
       }
