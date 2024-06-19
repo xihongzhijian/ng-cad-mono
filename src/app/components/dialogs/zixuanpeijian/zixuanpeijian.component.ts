@@ -33,7 +33,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {cloneDeep, debounce, isEqual, uniq, uniqueId} from "lodash";
-import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, take} from "rxjs";
 import {ClickStopPropagationDirective} from "../../../modules/directives/click-stop-propagation.directive";
@@ -67,6 +66,7 @@ import {
   getStep1Data,
   getZixuanpeijianCads,
   importZixuanpeijian,
+  step3FetchData,
   updateMokuaiItems
 } from "./zixuanpeijian.utils";
 
@@ -402,15 +402,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   }
 
   async step3Fetch(noUpdateInputInfos = false, noCache = false, preserveImgs = false) {
-    let responseData: {cads: CadData[]} | null = null;
-    const {getAll, typePrefix, xinghao} = this.data?.lingsanOptions || {};
-    const cacheKey = "_lingsanCadsCache_" + md5(JSON.stringify({getAll, typePrefix, xinghao}));
-    if (noCache || !(window as any)[cacheKey]) {
-      responseData = await this.http.getData<{cads: CadData[]}>("ngcad/getLingsanCads", {getAll, typePrefix, xinghao});
-      (window as any)[cacheKey] = responseData;
-    } else {
-      responseData = (window as any)[cacheKey];
-    }
+    const responseData = await step3FetchData(this.http, this.data?.lingsanOptions, noCache);
     if (responseData) {
       if (!preserveImgs) {
         this.lingsanCadImgs = {};

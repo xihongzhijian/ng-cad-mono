@@ -20,6 +20,7 @@ import {
   setGlobal,
   splitOptions
 } from "@app/app.common";
+import {step3FetchData} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {filterHuajian} from "@app/views/mrbcjfz/mrbcjfz.utils";
 import {AboutComponent} from "@components/about/about.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -158,6 +159,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   menjiaoName = "";
   suanliaoDataName = "";
   suanliaoTestName = "";
+  xinghaozhuanyongCadCount = 0;
   production = environment.production;
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
   @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
@@ -586,11 +588,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
 
   async setStep2() {
     const step = 2;
+    this.xinghaoInputInfos = [];
     if (this.step !== step) {
-      this.xinghaoInputInfos = [];
       return;
     }
-    this.xinghaoInputInfos = [];
+    const step3Data = await step3FetchData(this.http, {getAll: true, typePrefix: true, xinghao: this.xinghaoName});
+    this.xinghaozhuanyongCadCount = step3Data?.cads.length || 0;
     await Promise.all([this.getXinghaosIfNotFetched(), this.getXinghaoOptionsAllIfNotFetched()]);
     if (!this.xinghao) {
       await this.getXinghao();
@@ -1157,7 +1160,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         onSubmit,
         isKailiao: this.isKailiao,
         suanliaoDataName,
-        suanliaoTestName
+        suanliaoTestName,
+        xinghaozhuanyongCadCount: this.xinghaozhuanyongCadCount
       }
     });
     this.menjiaoName = "";

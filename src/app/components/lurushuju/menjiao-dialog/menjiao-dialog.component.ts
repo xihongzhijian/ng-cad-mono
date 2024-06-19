@@ -558,6 +558,10 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async selectShiyituCad(key1: MenjiaoCadType | CadItemComponent<MenjiaoShiyituCadItemInfo>) {
+    if ((this.data.xinghaozhuanyongCadCount || 0) > 0) {
+      await this.message.alert("不可以选择");
+      return;
+    }
     if (typeof key1 !== "string") {
       key1 = key1.customInfo.key1;
     }
