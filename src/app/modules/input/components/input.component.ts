@@ -44,7 +44,7 @@ import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import Color from "color";
-import csstype from "csstype";
+import {Properties} from "csstype";
 import {isEmpty, isEqual} from "lodash";
 import {Color as NgxColor} from "ngx-color";
 import {ChromeComponent, ColorChromeModule} from "ngx-color/chrome";
@@ -234,7 +234,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   formulasStr = "";
 
   @HostBinding("class") class: string[] = [];
-  @HostBinding("style") style: csstype.Properties = {};
+  @HostBinding("style") style: Properties = {};
 
   @ViewChild("colorChrome") colorChrome?: ChromeComponent;
   @ViewChildren("cadContainer") cadContainers?: QueryList<ElementRef<HTMLElement>>;
@@ -490,6 +490,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.hidden) {
       this.style.display = "none";
     }
+    this.style["--input-text-align"] = info.inputTextAlign || "left";
     let validateValue = !info.noInitialValidate;
     changes.forEachItem((item) => {
       if (item.key === "forceValidateNum") {

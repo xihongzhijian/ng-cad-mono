@@ -2,6 +2,7 @@ import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/d
 import {ChangeDetectionStrategy, Component, inject, model} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
+import {getCopyName} from "@app/app.common";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
 
@@ -32,7 +33,11 @@ export class PageComponentConfigComponent {
     if (!component) {
       return;
     }
-    this.components.update((v) => [...v, component.clone()]);
+    const components = this.components();
+    const names = components.map((v) => v.name);
+    const clone = component.clone(true);
+    clone.name = getCopyName(names, clone.name);
+    this.components.set([...components, clone]);
   }
   async remove() {
     const component = await this.getActiveComponent();

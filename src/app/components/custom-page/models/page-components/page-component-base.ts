@@ -1,5 +1,6 @@
 import {Angle, Point} from "@lucilor/utils";
 import {Properties, Property} from "csstype";
+import {cloneDeep} from "lodash";
 import {v4} from "uuid";
 import {pageComponentInfos, PageComponentType} from "../page-component-infos";
 
@@ -49,12 +50,16 @@ export abstract class PageComponentBase {
       border: this.border,
       background: this.background,
       color: this.color,
-      styleOverrides: this.styleOverrides
+      styleOverrides: cloneDeep(this.styleOverrides)
     };
   }
-  clone(): this {
+  clone(resetId?: boolean): this {
     const component = new (this.constructor as any)(this.name);
-    component.import(this.export());
+    const data = this.export();
+    if (resetId) {
+      data.id = component.id;
+    }
+    component.import(data);
     return component;
   }
 

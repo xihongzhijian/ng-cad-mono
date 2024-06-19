@@ -26,6 +26,7 @@ export const getNumberUnitInput = <T>(
     suffixTexts: [{name: unit}],
     style: getInputStyle(isInGroup, style),
     ndigits: 2,
+    inputTextAlign: "right",
     ...others
   };
 };

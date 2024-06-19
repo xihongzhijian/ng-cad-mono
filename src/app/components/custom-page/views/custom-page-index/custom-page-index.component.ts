@@ -108,9 +108,9 @@ export class CustomPageIndexComponent {
     this.canRedo.set(canRedo);
   }
   savePageSnapshot() {
-    this.psm.saveSnapshot(this.page.export());
-    this.canUndo.set(true);
-    this.canRedo.set(false);
+    const {canUndo, canRedo} = this.psm.saveSnapshot(this.page.export());
+    this.canUndo.set(canUndo);
+    this.canRedo.set(canRedo);
   }
   undo() {
     const {snapshot, canUndo} = this.psm.undo();
@@ -132,8 +132,7 @@ export class CustomPageIndexComponent {
   }
   resetPageSnapshot() {
     this.psm.reset();
-    this.canUndo.set(false);
-    this.canRedo.set(false);
+    this.savePageSnapshot();
   }
 
   @HostListener("window:keydown", ["$event"])

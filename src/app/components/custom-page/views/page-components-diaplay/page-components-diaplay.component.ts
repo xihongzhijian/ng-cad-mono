@@ -1,6 +1,17 @@
-import {CdkDrag, CdkDragEnd, CdkDragMove} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragEnd, CdkDragHandle, CdkDragMove} from "@angular/cdk/drag-drop";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
-import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, model, signal, untracked, viewChildren} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  model,
+  signal,
+  untracked,
+  viewChildren
+} from "@angular/core";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {setGlobal} from "@app/app.common";
@@ -14,7 +25,7 @@ import {ControlPoint} from "./page-components-diaplay.types";
 @Component({
   selector: "app-page-components-diaplay",
   standalone: true,
-  imports: [CdkDrag, CdkTextareaAutosize, MatIconModule, MatInputModule],
+  imports: [CdkDrag, CdkDragHandle, CdkTextareaAutosize, MatIconModule, MatInputModule],
   templateUrl: "./page-components-diaplay.component.html",
   styleUrl: "./page-components-diaplay.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -57,6 +68,15 @@ export class PageComponentsDiaplayComponent {
     });
   }
 
+  componentStyles = computed(() => {
+    const activeComponent = this.activeComponent2();
+    return this.components().map((component) => {
+      if (activeComponent?.id === component.id) {
+        return activeComponent.getStyle();
+      }
+      return component.getStyle();
+    });
+  });
   clickComponent(component: PageComponentTypeAny) {
     if (this.isDraggingComponent) {
       this.isDraggingComponent = false;
@@ -75,13 +95,6 @@ export class PageComponentsDiaplayComponent {
         input.select();
       }
     }
-  }
-  getComponentStyle(component: PageComponentTypeAny) {
-    const activeComponent = this.activeComponent2();
-    if (activeComponent?.id === component.id) {
-      return activeComponent.getStyle();
-    }
-    return component.getStyle();
   }
   getComponentDragDisabled(component: PageComponentTypeAny) {
     return this.isEditingComponent()?.id === component.id;
@@ -247,6 +260,7 @@ export class PageComponentsDiaplayComponent {
   moveRotatePointEnd(event: CdkDragEnd) {
     event.source._dragRef.reset();
     const component = this.activeComponent2();
+    this._moveRotatePointPosPrev = null;
     if (component) {
       this.activeComponent2.set(null);
       const activeComponent = this.activeComponent();

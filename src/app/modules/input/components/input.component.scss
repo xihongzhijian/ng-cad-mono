@@ -40,6 +40,9 @@
   .mat-mdc-form-field-infix {
     width: auto;
   }
+  input {
+    text-align: var(--input-text-align);
+  }
 }
 
 .drag-list-item {

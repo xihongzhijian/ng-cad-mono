@@ -41,11 +41,14 @@ export class PageSnapshotManager {
     snapshots.push(snapshot);
     this.setSnapshots(snapshots);
     this.setSnapshotIndex(snapshots.length - 1);
+    const canUndo = snapshots.length > 1;
+    const canRedo = false;
+    return {canUndo, canRedo};
   }
   loadSnapshot() {
     const snapshots = this.getSnapshots();
     const index = this.getSnapshotIndex();
-    const snapshot = snapshots.at(index);
+    const snapshot = snapshots[index] as PageSnapshot | undefined;
     const canUndo = index > 0;
     const canRedo = index < snapshots.length - 1;
     return {snapshot, canUndo, canRedo};
@@ -53,7 +56,7 @@ export class PageSnapshotManager {
   undo() {
     const snapshots = this.getSnapshots();
     const index = this.getSnapshotIndex();
-    const snapshot = snapshots.at(index - 1);
+    const snapshot = snapshots[index - 1] as PageSnapshot | undefined;
     if (snapshot) {
       this.setSnapshotIndex(index - 1);
     }
@@ -63,7 +66,7 @@ export class PageSnapshotManager {
   redo() {
     const snapshots = this.getSnapshots();
     const index = this.getSnapshotIndex();
-    const snapshot = snapshots.at(index + 1);
+    const snapshot = snapshots[index + 1] as PageSnapshot | undefined;
     if (snapshot) {
       this.setSnapshotIndex(index + 1);
     }
