@@ -565,7 +565,7 @@ export class AppStatusService {
         opts.queryParamsHandling = "merge";
       }
       const url2 = this.router.createUrlTree(url, opts);
-      location.href = url2.toString();
+      location.href = document.baseURI + url2.toString().slice(1);
     }, 0);
   }
 

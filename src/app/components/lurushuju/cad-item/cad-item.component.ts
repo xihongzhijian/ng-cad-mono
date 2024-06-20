@@ -32,7 +32,7 @@ import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {DataInfoChnageEvent} from "@components/cad-image/cad-image.types";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
+import {ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -256,17 +256,10 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     }
     await this.onlineFetch();
     let data: CadData;
-    const ignoreKeys = ["entities"];
     if (cad instanceof CadData) {
       data = cad.clone();
     } else {
-      const dataRaw: ObjectOf<any> = {};
-      for (const key in cad.json) {
-        if (!ignoreKeys.includes(key)) {
-          dataRaw[key] = cad.json[key];
-        }
-      }
-      data = new CadData(dataRaw);
+      data = new CadData(cad.json);
     }
     const form = getCadInfoInputs2(yaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status, true, this.gongshis);
     let title = "编辑CAD";
@@ -280,31 +273,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
         data.zhankai[0].name = data.name;
       }
       if (cad instanceof CadData) {
-        for (const {cadKey, key} of yaoqiu?.CAD弹窗修改属性 || []) {
-          if (cadKey) {
-            (cad as any)[cadKey] = data[cadKey];
-          } else if (key === "展开信息") {
-            cad.zhankai = data.zhankai;
-          }
-        }
+        Object.assign(cad, data);
       } else {
-        const cad2 = getHoutaiCad(data);
-        for (const key of keysOf(cad2)) {
-          if (key === "json") {
-            for (const key2 in cad2.json) {
-              if (!ignoreKeys.includes(key2)) {
-                cad.json[key2] = cad2.json[key2];
-              }
-            }
-            for (const key2 in cad.json) {
-              if (!(key2 in cad2.json) && !ignoreKeys.includes(key2)) {
-                delete cad.json[key2];
-              }
-            }
-          } else {
-            cad[key] = cad2[key] as any;
-          }
-        }
+        Object.assign(cad, getHoutaiCad(data));
       }
       if (isOnline) {
         await this.http.setCad({collection: isOnline.collection || "cad", cadData: data, force: true}, true);

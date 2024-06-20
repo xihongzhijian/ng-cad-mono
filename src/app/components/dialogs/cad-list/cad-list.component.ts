@@ -177,9 +177,11 @@ export class CadListComponent implements AfterViewInit {
         this.data.yaoqiu = this.status.getCad数据要求("配件库");
       }
       const keys: (keyof CadData)[] = ["id", "name", "options", "conditions", "type", "type2"];
-      for (const {cadKey} of this.data.yaoqiu?.CAD弹窗修改属性 || []) {
+      for (const {cadKey, key} of this.data.yaoqiu?.CAD弹窗修改属性 || []) {
         if (cadKey && !keys.includes(cadKey)) {
           keys.push(cadKey);
+        } else if (key === "展开信息") {
+          keys.push("zhankai");
         }
       }
       params.fields = keys.map((v) => `json.${v}`);

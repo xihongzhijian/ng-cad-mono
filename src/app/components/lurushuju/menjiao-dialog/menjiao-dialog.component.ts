@@ -107,6 +107,7 @@ export class MenjiaoDialogComponent implements OnInit {
   shiyituSearchInputInfo: ObjectOf<InputInfo> = {};
   hiddenShiyitus: number[] = [];
   errors = {bcfz: false, others: false};
+  menjiaoCadTabIndex = 0;
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
   @ViewChildren(SuanliaoTablesComponent) suanliaoTablesList?: QueryList<SuanliaoTablesComponent>;
   @ViewChild("inputScrollbar") inputScrollbar?: NgScrollbar;
@@ -505,6 +506,7 @@ export class MenjiaoDialogComponent implements OnInit {
       return;
     }
     const {search, addCadData} = getCadSearch(data, yaoqiu, key1, key2, key3);
+    const imgIdPrev = data[key1][key2][key3]?.cad?.json?.info?.imgId;
     const result = await openCadListDialog(this.dialog, {
       data: {
         selectMode: "single",
@@ -519,13 +521,20 @@ export class MenjiaoDialogComponent implements OnInit {
     const cad = result?.[0] as unknown as HoutaiCad | undefined;
     if (cad) {
       const name = this.cadNameMap[key3] || key3;
-      const cadData = new CadData(cad.json);
+      const houtaiId = cad._id;
+      const cadData = new CadData(cad.json, true);
       cadData.name = name;
+      if (imgIdPrev) {
+        cadData.info.imgId = imgIdPrev;
+        cadData.info.imgUpdate = true;
+      } else {
+        delete cadData.info.imgId;
+      }
       setCadData(cadData, yaoqiu.选中CAD要求);
       if (!data[key1][key2][key3]) {
         data[key1][key2][key3] = {};
       }
-      data[key1][key2][key3].cad = getHoutaiCad(cadData);
+      data[key1][key2][key3].cad = getHoutaiCad(cadData, {houtaiId});
       updateMenjiaoData(this.formData);
     }
   }
@@ -550,17 +559,17 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async selectShiyituCad(key1: MenjiaoCadType | CadItemComponent<MenjiaoShiyituCadItemInfo>) {
+    if ((this.data.xinghaozhuanyongCadCount || 0) > 0) {
+      await this.message.alert("不可以选择");
+      return;
+    }
     if (typeof key1 !== "string") {
       key1 = key1.customInfo.key1;
     }
     const data = this.formData[key1].示意图CAD;
-    const checkedItems: string[] = [];
-    const yaoqiu = await this.status.getCad数据要求("算料单示意图");
+    const yaoqiu = this.status.getCad数据要求("算料单示意图");
     if (!yaoqiu) {
       return;
-    }
-    for (const item of data.算料单示意图) {
-      checkedItems.push(item._id);
     }
     const {search, addCadData} = getShiyituCadSearch(this.formData, key1);
     const result = await openCadListDialog(this.dialog, {
@@ -568,18 +577,18 @@ export class MenjiaoDialogComponent implements OnInit {
         selectMode: "multiple",
         collection: "cad",
         search,
-        checkedItems,
         addCadData,
         yaoqiu
       }
     });
     if (result) {
-      data.算料单示意图 = result.map((v) => {
-        if (!checkedItems.includes(v.id)) {
-          setCadData(v, yaoqiu.选中CAD要求);
-        }
-        return getHoutaiCad(v);
-      });
+      for (const v of result) {
+        const houtaiId = v.id;
+        const v2 = v.clone(true);
+        delete v2.info.imgId;
+        setCadData(v2, yaoqiu.选中CAD要求);
+        data.算料单示意图.push(getHoutaiCad(v2, {houtaiId}));
+      }
       updateMenjiaoData(this.formData);
     }
   }
