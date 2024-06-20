@@ -11,11 +11,13 @@
   <div #workSpaceEl class="work-space" [style]="workSpaceStyle()">
     <ng-scrollbar class="enable-x">
       <div #pageEl class="page" [style]="pageStyle()" (pointerdown)="onPagePointerDown($event)" (pointerup)="onPagePointerUp($event)">
-        <app-page-components-diaplay
-          [(components)]="components"
-          [(activeComponent)]="activeComponent"
-          [(activeComponent2)]="activeComponent2"
-        ></app-page-components-diaplay>
+        <div class="page-inner">
+          <app-page-components-diaplay
+            [(components)]="components"
+            [(activeComponent)]="activeComponent"
+            [(activeComponent2)]="activeComponent2"
+          ></app-page-components-diaplay>
+        </div>
       </div>
     </ng-scrollbar>
     <app-page-component-config2

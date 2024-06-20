@@ -50,11 +50,18 @@ export class PageConfigComponent {
       model: {data: config, key: "height"},
       onChange
     };
-    const backgroundInput: InputInfoColor<PageConfig> = {
+    const backgroundInnerInput: InputInfoColor<PageConfig> = {
       type: "color",
-      label: "页面背景",
+      label: "页面背景（内）",
       style: getInputStyle(true),
-      model: {data: config, key: "backgroundColor"},
+      model: {data: config, key: "backgroundInnerColor"},
+      onChange
+    };
+    const backgroundOuterInput: InputInfoColor<PageConfig> = {
+      type: "color",
+      label: "页面背景（外）",
+      style: getInputStyle(true),
+      model: {data: config, key: "backgroundOuterColor"},
       onChange
     };
     const workSpaceBackgroundInput: InputInfoColor<PageConfig> = {
@@ -80,7 +87,8 @@ export class PageConfigComponent {
     const inputInfos: InputInfo[] = [
       {type: "group", label: "", infos: [sizeNameInput, orientationInput], groupStyle: getGroupStyle()},
       {type: "group", label: "", infos: [widthInput, heightInput], groupStyle: getGroupStyle()},
-      {type: "group", label: "", infos: [backgroundInput, workSpaceBackgroundInput], groupStyle: getGroupStyle()},
+      {type: "group", label: "", infos: [workSpaceBackgroundInput], groupStyle: getGroupStyle()},
+      {type: "group", label: "", infos: [backgroundInnerInput, backgroundOuterInput], groupStyle: getGroupStyle()},
       {type: "group", label: "页边距", infos: paddingInput, groupStyle: getGroupStyle()}
     ];
     return inputInfos;

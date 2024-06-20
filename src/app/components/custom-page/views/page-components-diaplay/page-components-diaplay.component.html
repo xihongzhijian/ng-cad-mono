@@ -1,65 +1,61 @@
 @for (component of components(); track i; let i = $index) {
   <div
-    class="page-component-container"
+    #componentEl
+    class="page-component"
+    [class]="component.type"
+    [attr.data-id]="component.id"
+    [style]="componentStyles()[i]"
+    (click)="clickComponent(component)"
+    (dblclick)="dblClickComponent(component, componentEl)"
     cdkDrag
+    cdkDragBoundary=".page-inner"
     [cdkDragDisabled]="getComponentDragDisabled(component)"
     (cdkDragStarted)="moveComponentStart(component)"
     (cdkDragMoved)="moveComponent($event, component)"
     (cdkDragEnded)="moveComponentEnd($event, component)"
   >
-    <div
-      #componentEl
-      cdkDragHandle
-      class="page-component"
-      [class]="component.type"
-      [attr.data-id]="component.id"
-      [style]="componentStyles()[i]"
-      (click)="clickComponent(component)"
-      (dblclick)="dblClickComponent(component, componentEl)"
-    >
-      @if (activeComponent()?.id === component.id) {
-        @if (control(); as control) {
-          <div class="page-component-control" [class]="control.class" [style]="control.style">
-            @for (point of controlPoints; track $index) {
-              <div
-                class="point"
-                [class]="point.position"
-                cdkDrag
-                cdkDragBoundary=".work-space"
-                [cdkDragLockAxis]="point.axis"
-                (cdkDragStarted)="moveResizePointStart()"
-                (cdkDragMoved)="moveResizePoint($event, point)"
-                (cdkDragEnded)="moveResizePointEnd($event)"
-              >
-                <div class="point-inner"></div>
-              </div>
-            }
+    @if (activeComponent()?.id === component.id) {
+      @if (control(); as control) {
+        <div class="page-component-control" [class]="control.class" [style]="control.style">
+          @for (point of controlPoints; track $index) {
             <div
-              class="rotate-point"
+              class="point"
+              [class]="point.position"
               cdkDrag
-              (cdkDragStarted)="moveRotatePointStart()"
-              (cdkDragMoved)="moveRotatePoint($event, componentEl)"
-              (cdkDragEnded)="moveRotatePointEnd($event)"
+              cdkDragBoundary=".page-inner"
+              [cdkDragLockAxis]="point.axis"
+              (cdkDragStarted)="moveResizePointStart()"
+              (cdkDragMoved)="moveResizePoint($event, point)"
+              (cdkDragEnded)="moveResizePointEnd($event)"
             >
-              <mat-icon>rotate_right</mat-icon>
+              <div class="point-inner"></div>
             </div>
+          }
+          <div
+            class="rotate-point"
+            cdkDrag
+            (cdkDragStarted)="moveRotatePointStart()"
+            (cdkDragMoved)="moveRotatePoint($event, componentEl)"
+            (cdkDragEnded)="moveRotatePointEnd($event)"
+          >
+            <mat-icon>rotate_right</mat-icon>
           </div>
+        </div>
+      }
+    }
+    <div class="page-component-content">
+      @switch (component.type) {
+        @case ("text") {
+          <textarea
+            matInput
+            [value]="component.text"
+            [readonly]="isEditingComponent()?.id !== component.id"
+            (input)="onComponentTextInput($event, component)"
+            cdkTextareaAutosize
+            cdkAutosizeMinRows="1"
+          ></textarea>
         }
       }
-      <div class="page-component-content">
-        @switch (component.type) {
-          @case ("text") {
-            <textarea
-              matInput
-              [value]="component.text"
-              [readonly]="isEditingComponent()?.id !== component.id"
-              (input)="onComponentTextInput($event, component)"
-              cdkTextareaAutosize
-              cdkAutosizeMinRows="1"
-            ></textarea>
-          }
-        }
-      </div>
     </div>
   </div>
 }

@@ -141,7 +141,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
   set value(val) {
     const {data, key} = this.model;
-    if (data && typeof data === "object" && key) {
+    if (data && typeof data === "object" && key !== undefined && key !== null) {
       data[key] = val;
     }
     const type = this.info.type;

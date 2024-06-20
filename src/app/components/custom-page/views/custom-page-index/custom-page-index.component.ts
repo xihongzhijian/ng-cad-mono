@@ -55,6 +55,7 @@ export class CustomPageIndexComponent {
   psm = new PageSnapshotManager(session, 20);
   pageConfig = signal<PageConfig>(this.page.getPageConfig());
   pageStyle = signal<ReturnType<Page["getStyle"]>>({});
+  pagePlaceholderStyle = signal<Properties>({});
   workSpaceStyle = signal<Properties>({});
   components = signal<PageComponentTypeAny[]>([]);
   activeComponent = signal<PageComponentTypeAny | null>(null);
@@ -144,6 +145,7 @@ export class CustomPageIndexComponent {
     this.page = new Page();
     this.page.padding = [12, 12, 12, 12];
     this.page.workSpaceStyle.backgroundColor = "lightgray";
+    this.page.backgroundOuter = "pink";
   }
   async resetPage() {
     this.initPage();
@@ -163,7 +165,9 @@ export class CustomPageIndexComponent {
     this._pagePointer = [event.clientX, event.clientY];
   }
   onPagePointerUp(event: PointerEvent) {
-    if (!this._pagePointer || event.target !== this.pageEl().nativeElement) {
+    const target = event.target as HTMLElement;
+    const isClickPage = target === this.pageEl().nativeElement || target.classList.contains("page-inner");
+    if (!this._pagePointer || !isClickPage) {
       return;
     }
     const [x, y] = this._pagePointer;

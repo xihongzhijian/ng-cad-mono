@@ -25,6 +25,12 @@
   margin: auto;
   position: relative;
 }
+.page-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: var(--background-inner);
+}
 
 mat-tab-group {
   ::ng-deep {

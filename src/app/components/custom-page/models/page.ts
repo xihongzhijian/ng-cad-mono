@@ -1,6 +1,7 @@
 import {isTypeOf, Point} from "@lucilor/utils";
 import Color from "color";
 import {Properties, Property} from "csstype";
+import {cloneDeep} from "lodash";
 import {PageOrientation} from "pdfmake/interfaces";
 import {pageComponentInfos, PageComponentType, PageComponentTypeAny} from "./page-component-infos";
 import {PageSizeName, PageSizeNameCustom, pageSizes} from "./page-size";
@@ -9,7 +10,8 @@ export class Page {
   size = new Point(pageSizes.A4.slice());
   sizeName: PageSizeNameCustom = "A4";
   orientation: PageOrientation = "portrait";
-  background: Property.Background = "white";
+  backgroundInner: Property.Background = "white";
+  backgroundOuter: Property.Background = "white";
   scale = new Point(1, 1);
   padding: [number, number, number, number] = [0, 0, 0, 0];
 
@@ -25,7 +27,8 @@ export class Page {
     } else {
       this.setSize({name: data.sizeName, orientation: data.orientation});
     }
-    this.background = data.background;
+    this.backgroundInner = data.backgroundInner;
+    this.backgroundOuter = data.backgroundOuter;
     this.scale.copy(data.scale);
     this.padding = data.padding;
     this.styleOverrides = data.styleOverrides;
@@ -45,7 +48,8 @@ export class Page {
       size: this.size.toArray(),
       sizeName: this.sizeName,
       orientation: this.orientation,
-      background: this.background,
+      backgroundInner: this.backgroundInner,
+      backgroundOuter: this.backgroundOuter,
       scale: this.scale.toArray(),
       padding: this.padding,
       styleOverrides: this.styleOverrides,
@@ -65,7 +69,8 @@ export class Page {
       orientation: this.orientation,
       width: this.size.x,
       height: this.size.y,
-      backgroundColor: Color(this.background),
+      backgroundInnerColor: Color(this.backgroundInner),
+      backgroundOuterColor: Color(this.backgroundOuter),
       workSpaceBgColor: Color(this.workSpaceStyle.backgroundColor),
       padding: this.padding
     };
@@ -76,9 +81,10 @@ export class Page {
     } else {
       this.setSize({name: config.sizeName, orientation: config.orientation});
     }
-    this.background = config.backgroundColor.toString();
+    this.backgroundInner = config.backgroundInnerColor.toString();
+    this.backgroundOuter = config.backgroundOuterColor.toString();
     this.workSpaceStyle.backgroundColor = config.workSpaceBgColor.toString();
-    this.padding = config.padding;
+    this.padding = cloneDeep(config.padding);
   }
 
   setSize(params: {name: PageSizeName; orientation?: PageOrientation} | {width: number; height: number}) {
@@ -112,8 +118,10 @@ export class Page {
     return {
       width: `${width}mm`,
       height: `${height}mm`,
-      background: this.background,
+      background: this.backgroundOuter,
+      "--background-inner": this.backgroundInner,
       padding: this.padding.map((v) => `${v}mm`).join(" "),
+      boxSizing: "border-box",
       ...this.styleOverrides
     };
   }
@@ -130,7 +138,8 @@ export interface PageConfig {
   orientation: Page["orientation"];
   width: number;
   height: number;
-  backgroundColor: Color;
+  backgroundInnerColor: Color;
+  backgroundOuterColor: Color;
   workSpaceBgColor: Color;
   padding: Page["padding"];
 }

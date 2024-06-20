@@ -1,4 +1,4 @@
-import {CdkDrag, CdkDragEnd, CdkDragHandle, CdkDragMove} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragEnd, CdkDragMove} from "@angular/cdk/drag-drop";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {
   ChangeDetectionStrategy,
@@ -25,7 +25,7 @@ import {ControlPoint} from "./page-components-diaplay.types";
 @Component({
   selector: "app-page-components-diaplay",
   standalone: true,
-  imports: [CdkDrag, CdkDragHandle, CdkTextareaAutosize, MatIconModule, MatInputModule],
+  imports: [CdkDrag, CdkTextareaAutosize, MatIconModule, MatInputModule],
   templateUrl: "./page-components-diaplay.component.html",
   styleUrl: "./page-components-diaplay.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -109,7 +109,8 @@ export class PageComponentsDiaplayComponent {
   moveComponent(event: CdkDragMove, component: PageComponentTypeAny) {
     const component2 = this.activeComponent2();
     if (component2) {
-      event.source._dragRef.reset();
+      const el = event.source._dragRef.getRootElement();
+      el.style.transform = component2.getStyle().transform as string;
       component2.position.x = component.position.x + event.distance.x;
       component2.position.y = component.position.y + event.distance.y;
       this.activeComponent2.set(component2.clone());
@@ -117,11 +118,18 @@ export class PageComponentsDiaplayComponent {
   }
   moveComponentEnd(event: CdkDragEnd, component: PageComponentTypeAny) {
     component.position.add(event.distance.x, event.distance.y);
-    event.source._dragRef.reset();
     this.components.update((v) => [...v]);
     const component2 = this.activeComponent2();
     if (component2) {
+      const el = event.source._dragRef.getRootElement();
+      el.style.transform = component2.getStyle().transform as string;
       this.activeComponent2.set(null);
+    }
+  }
+  updateComponentsTransform() {
+    const components = this.components();
+    for (const [i, el] of this.componentEls().entries()) {
+      el.nativeElement.style.transform = components[i].getStyle().transform as string;
     }
   }
 
