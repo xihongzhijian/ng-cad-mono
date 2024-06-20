@@ -8,11 +8,11 @@
     (click)="clickComponent(component)"
     (dblclick)="dblClickComponent(component, componentEl)"
     cdkDrag
-    cdkDragBoundary=".page-inner"
+    cdkDragBoundary="app-page-components-diaplay"
     [cdkDragDisabled]="getComponentDragDisabled(component)"
     (cdkDragStarted)="moveComponentStart(component)"
-    (cdkDragMoved)="moveComponent($event, component)"
-    (cdkDragEnded)="moveComponentEnd($event, component)"
+    (cdkDragMoved)="moveComponent($event)"
+    (cdkDragEnded)="moveComponentEnd($event)"
   >
     @if (activeComponent()?.id === component.id) {
       @if (control(); as control) {
@@ -22,7 +22,6 @@
               class="point"
               [class]="point.position"
               cdkDrag
-              cdkDragBoundary=".page-inner"
               [cdkDragLockAxis]="point.axis"
               (cdkDragStarted)="moveResizePointStart()"
               (cdkDragMoved)="moveResizePoint($event, point)"
@@ -49,7 +48,7 @@
           <textarea
             matInput
             [value]="component.text"
-            [readonly]="isEditingComponent()?.id !== component.id"
+            [readonly]="editingComponent()?.id !== component.id"
             (input)="onComponentTextInput($event, component)"
             cdkTextareaAutosize
             cdkAutosizeMinRows="1"
@@ -57,5 +56,29 @@
         }
       }
     </div>
+  </div>
+}
+
+@if (helpers(); as helpers) {
+  <div
+    class="helpers"
+    [style]="{
+      '--axis-x': helpers.axisX.snap?.from + 'px',
+      '--axis-y': helpers.axisY.snap?.from + 'px',
+      '--rotate-x': helpers.rotation.position[0] + 'px',
+      '--rotate-y': helpers.rotation.position[1] + 'px',
+      '--rotate-deg': helpers.rotation.deg + 'deg',
+      '--rotate-size': helpers.rotation.size + 'mm'
+    }"
+  >
+    @if (helpers.axisX.show) {
+      <div class="helper axis-x"></div>
+    }
+    @if (helpers.axisY.show) {
+      <div class="helper axis-y"></div>
+    }
+    @if (helpers.rotation.show) {
+      <div class="helper rotate"></div>
+    }
   </div>
 }

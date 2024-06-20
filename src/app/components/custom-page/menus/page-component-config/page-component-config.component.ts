@@ -3,13 +3,14 @@ import {ChangeDetectionStrategy, Component, inject, model} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {getCopyName} from "@app/app.common";
+import {ClickStopPropagationDirective} from "@app/modules/directives/click-stop-propagation.directive";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
 
 @Component({
   selector: "app-page-component-config",
   standalone: true,
-  imports: [CdkDrag, CdkDropList, MatButtonModule, MatIconModule],
+  imports: [CdkDrag, CdkDropList, ClickStopPropagationDirective, MatButtonModule, MatIconModule],
   templateUrl: "./page-component-config.component.html",
   styleUrl: "./page-component-config.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -49,9 +50,11 @@ export class PageComponentConfigComponent {
 
   toggleHidden(component: PageComponentTypeAny) {
     component.toggleHidden();
+    this.components.update((v) => [...v]);
   }
   toggleLock(component: PageComponentTypeAny) {
     component.toggleLock();
+    this.components.update((v) => [...v]);
   }
   click(component: PageComponentTypeAny) {
     this.activeComponent.set(component);

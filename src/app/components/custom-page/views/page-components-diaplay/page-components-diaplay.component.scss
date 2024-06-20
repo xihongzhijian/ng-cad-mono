@@ -1,3 +1,9 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .page-component {
   position: absolute;
   z-index: 1;
@@ -40,6 +46,10 @@
   border-style: var(--border-style);
   border-color: var(--border-color);
   padding: var(--padding);
+
+  &.locked {
+    --border-color: var(--accent-color);
+  }
 
   > * {
     position: absolute;
@@ -145,5 +155,39 @@
     top: calc(var(--top) - 5px - var(--rotate-point-size));
     cursor: grab;
     color: var(--border-color);
+    display: none;
+  }
+  &.rotate {
+    .rotate-point {
+      display: block;
+    }
+  }
+}
+
+.helpers {
+  .helper {
+    position: absolute;
+    --helper-size: 1px;
+    background: var(--accent-color);
+    opacity: 0.75;
+    &.axis-x {
+      top: 0;
+      left: calc(var(--axis-x) - var(--helper-size) / 2);
+      width: var(--helper-size);
+      height: 100%;
+    }
+    &.axis-y {
+      top: calc(var(--axis-y) - var(--helper-size) / 2);
+      left: 0;
+      width: 100%;
+      height: var(--helper-size);
+    }
+    &.rotate {
+      top: calc(var(--rotate-y) - var(--rotate-size) / 2);
+      left: var(--rotate-x);
+      width: var(--helper-size);
+      height: var(--rotate-size);
+      transform: rotate(var(--rotate-deg));
+    }
   }
 }

@@ -36,6 +36,9 @@ export abstract class PageComponentBase {
     this.border = data.border;
     this.background = data.background;
     this.color = data.color;
+    this.styleOverrides = data.styleOverrides;
+    this._locked = data.locked;
+    this._hidden = data.hidden;
   }
   export() {
     return {
@@ -50,7 +53,9 @@ export abstract class PageComponentBase {
       border: this.border,
       background: this.background,
       color: this.color,
-      styleOverrides: cloneDeep(this.styleOverrides)
+      styleOverrides: cloneDeep(this.styleOverrides),
+      locked: this._locked,
+      hidden: this._hidden
     };
   }
   clone(resetId?: boolean): this {

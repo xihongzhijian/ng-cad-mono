@@ -166,7 +166,8 @@ export class CustomPageIndexComponent {
   }
   onPagePointerUp(event: PointerEvent) {
     const target = event.target as HTMLElement;
-    const isClickPage = target === this.pageEl().nativeElement || target.classList.contains("page-inner");
+    const isClickPage =
+      target === this.pageEl().nativeElement || target.classList.contains("page-inner") || target.tagName === "APP-PAGE-COMPONENTS-DIAPLAY";
     if (!this._pagePointer || !isClickPage) {
       return;
     }

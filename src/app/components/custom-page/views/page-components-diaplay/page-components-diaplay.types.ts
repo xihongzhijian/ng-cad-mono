@@ -4,3 +4,16 @@ export interface ControlPoint {
   position: string;
   axis: DragAxis;
 }
+
+export interface Helpers {
+  axisX: {show: boolean; threshold: number; snap?: {from: number; to: number}};
+  axisY: {show: boolean; threshold: number; snap?: {from: number; to: number}};
+  rotation: {
+    show: boolean;
+    threshold: number;
+    snap?: {from: number; to: number};
+    position: [number, number];
+    deg: number;
+    size: number;
+  };
+}

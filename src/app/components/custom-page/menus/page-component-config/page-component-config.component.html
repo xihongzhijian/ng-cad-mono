@@ -8,14 +8,14 @@
       <div class="item" [class.active]="activeComponent()?.id === component.id" cdkDrag (click)="click(component)">
         <div class="cdk-drag-placeholder" *cdkDragPlaceholder></div>
         <div class="toolbar">
-          <button mat-icon-button (click)="toggleHidden(component)">
+          <button mat-icon-button (click)="toggleHidden(component)" appClickStop>
             @if (component.isHidden()) {
               <mat-icon>visibility_off</mat-icon>
             } @else {
               <mat-icon>visibility</mat-icon>
             }
           </button>
-          <button mat-icon-button (click)="toggleLock(component)">
+          <button mat-icon-button (click)="toggleLock(component)" appClickStop>
             @if (component.isLocked()) {
               <mat-icon>lock</mat-icon>
             } @else {

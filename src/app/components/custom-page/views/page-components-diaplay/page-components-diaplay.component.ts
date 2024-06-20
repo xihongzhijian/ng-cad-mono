@@ -7,6 +7,7 @@ import {
   effect,
   ElementRef,
   inject,
+  input,
   model,
   signal,
   untracked,
@@ -17,10 +18,11 @@ import {MatInputModule} from "@angular/material/input";
 import {setGlobal} from "@app/app.common";
 import {Angle, Point} from "@lucilor/utils";
 import {Properties} from "csstype";
-import {debounce} from "lodash";
+import {debounce, isEqual} from "lodash";
+import {PageConfig} from "../../models/page";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
 import {PageComponentText} from "../../models/page-components/page-component-text";
-import {ControlPoint} from "./page-components-diaplay.types";
+import {ControlPoint, Helpers} from "./page-components-diaplay.types";
 
 @Component({
   selector: "app-page-components-diaplay",
@@ -36,10 +38,16 @@ export class PageComponentsDiaplayComponent {
   components = model.required<PageComponentTypeAny[]>();
   activeComponent = model.required<PageComponentTypeAny | null>();
   activeComponent2 = model.required<PageComponentTypeAny | null>();
+  pageConfig = input.required<PageConfig>();
 
   control = signal<{class: string[]; style: Properties} | null>(null);
-  isEditingComponent = signal<PageComponentTypeAny | null>(null);
-  isDraggingComponent = false;
+  editingComponent = signal<PageComponentTypeAny | null>(null);
+  draggingComponent = signal<PageComponentTypeAny | null>(null);
+  helpers = signal<Helpers>({
+    axisX: {show: false, threshold: 3},
+    axisY: {show: false, threshold: 3},
+    rotation: {show: false, threshold: 3, position: [0, 0], deg: 0, size: 0}
+  });
 
   componentEls = viewChildren<ElementRef<HTMLDivElement>>("componentEl");
   autoSizes = viewChildren<CdkTextareaAutosize>(CdkTextareaAutosize);
@@ -49,10 +57,10 @@ export class PageComponentsDiaplayComponent {
     effect(() => this.updateControl(), {allowSignalWrites: true});
     effect(
       () => {
-        const editingComponent = untracked(() => this.isEditingComponent());
+        const editingComponent = untracked(() => this.editingComponent());
         const activeComponent = this.activeComponent();
         if (editingComponent && (!activeComponent || editingComponent.id !== activeComponent.id)) {
-          this.isEditingComponent.set(null);
+          this.editingComponent.set(null);
         }
       },
       {allowSignalWrites: true}
@@ -66,20 +74,36 @@ export class PageComponentsDiaplayComponent {
         this.updateControl();
       }, 0);
     });
+    effect(
+      () => {
+        const {width, height} = this.pageConfig();
+        const helpers = this.helpers();
+        const rotateSize = Math.max(width, height);
+        if (helpers.rotation.size !== rotateSize) {
+          helpers.rotation.size = rotateSize;
+          this.helpers.set({...helpers});
+        }
+      },
+      {allowSignalWrites: true}
+    );
   }
 
   componentStyles = computed(() => {
     const activeComponent = this.activeComponent2();
+    const draggingComponent = this.draggingComponent();
     return this.components().map((component) => {
       if (activeComponent?.id === component.id) {
         return activeComponent.getStyle();
+      }
+      if (draggingComponent?.id === component.id) {
+        return draggingComponent.getStyle();
       }
       return component.getStyle();
     });
   });
   clickComponent(component: PageComponentTypeAny) {
-    if (this.isDraggingComponent) {
-      this.isDraggingComponent = false;
+    if (this.draggingComponent()) {
+      this.draggingComponent.set(null);
       return;
     }
     if (this.activeComponent()?.id !== component.id) {
@@ -87,7 +111,7 @@ export class PageComponentsDiaplayComponent {
     }
   }
   dblClickComponent(component: PageComponentTypeAny, componentEl: HTMLDivElement) {
-    this.isEditingComponent.set(component);
+    this.editingComponent.set(component);
     if (component instanceof PageComponentText) {
       const input = componentEl.querySelector("textarea");
       if (input) {
@@ -97,33 +121,121 @@ export class PageComponentsDiaplayComponent {
     }
   }
   getComponentDragDisabled(component: PageComponentTypeAny) {
-    return this.isEditingComponent()?.id === component.id;
+    return this.editingComponent()?.id === component.id || component.isLocked() || component.isHidden();
   }
+  private _moveComponentStartPosition: Point | null = null;
   moveComponentStart(component: PageComponentTypeAny) {
-    this.isDraggingComponent = true;
-    const activeComponent = this.activeComponent();
-    if (activeComponent?.id === component.id) {
+    this.draggingComponent.set(component.clone());
+    this._moveComponentStartPosition = component.position.clone();
+    if (this.activeComponent()?.id === component.id) {
       this.activeComponent2.set(component.clone());
     }
   }
-  moveComponent(event: CdkDragMove, component: PageComponentTypeAny) {
-    const component2 = this.activeComponent2();
-    if (component2) {
-      const el = event.source._dragRef.getRootElement();
-      el.style.transform = component2.getStyle().transform as string;
-      component2.position.x = component.position.x + event.distance.x;
-      component2.position.y = component.position.y + event.distance.y;
-      this.activeComponent2.set(component2.clone());
+  moveComponent(event: CdkDragMove) {
+    const component = this.draggingComponent();
+    const start = this._moveComponentStartPosition;
+    if (!component || !start) {
+      return;
+    }
+    const {distance} = event;
+    event.source._dragRef.reset();
+    const el = event.source._dragRef.getRootElement();
+    el.style.transform = component.getStyle().transform as string;
+    component.position.set(start.x + distance.x, start.y + distance.y);
+    this.draggingComponent.set(component.clone());
+    if (this.activeComponent2()?.id === component.id) {
+      this.activeComponent2.set(component.clone());
+    }
+
+    const hostRect = this.elRef.nativeElement.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const snapXs = [hostRect.left + hostRect.width / 2];
+    const snapYs = [hostRect.top + hostRect.height / 2];
+    const xs = [elRect.left, elRect.left + elRect.width / 2, elRect.left + elRect.width];
+    const ys = [elRect.top, elRect.top + elRect.height / 2, elRect.top + elRect.height];
+    for (const componentEl of this.componentEls()) {
+      if (componentEl.nativeElement === el) {
+        continue;
+      }
+      const rect = componentEl.nativeElement.getBoundingClientRect();
+      snapXs.push(rect.left, rect.left + rect.width / 2, rect.right);
+      snapYs.push(rect.top, rect.top + rect.height / 2, rect.bottom);
+    }
+    const helpers = this.helpers();
+    helpers.axisX.show = false;
+    delete helpers.axisX.snap;
+    helpers.axisY.show = false;
+    delete helpers.axisY.snap;
+    for (const snapX of snapXs) {
+      let found = false;
+      for (const [i, x] of xs.entries()) {
+        if (Math.abs(x - snapX) < helpers.axisX.threshold) {
+          helpers.axisX.show = true;
+          const from = snapX - hostRect.left;
+          const to = Math.round(snapX - (elRect.width / 2) * i + el.offsetLeft - elRect.left);
+          helpers.axisX.snap = {from, to};
+          found = true;
+          break;
+        }
+      }
+      if (found) {
+        break;
+      }
+    }
+    for (const snapY of snapYs) {
+      let found = false;
+      for (const [i, y] of ys.entries()) {
+        if (Math.abs(y - snapY) < helpers.axisY.threshold) {
+          helpers.axisY.show = true;
+          const from = snapY - hostRect.top;
+          const to = Math.round(snapY - (elRect.height / 2) * i + el.offsetTop - elRect.top);
+          helpers.axisY.snap = {from, to};
+          found = true;
+          break;
+        }
+      }
+      if (found) {
+        break;
+      }
+    }
+    if (!isEqual(helpers, this.helpers())) {
+      this.helpers.set({...helpers});
     }
   }
-  moveComponentEnd(event: CdkDragEnd, component: PageComponentTypeAny) {
-    component.position.add(event.distance.x, event.distance.y);
-    this.components.update((v) => [...v]);
-    const component2 = this.activeComponent2();
-    if (component2) {
-      const el = event.source._dragRef.getRootElement();
-      el.style.transform = component2.getStyle().transform as string;
+  moveComponentEnd(event: CdkDragEnd) {
+    event.source._dragRef.reset();
+    const component = this.draggingComponent();
+    this._moveComponentStartPosition = null;
+    if (this.activeComponent2()) {
       this.activeComponent2.set(null);
+    }
+    setTimeout(() => {
+      this.draggingComponent.set(null);
+    }, 0);
+    if (!component) {
+      return;
+    }
+    const el = event.source._dragRef.getRootElement();
+    el.style.transform = component.getStyle().transform as string;
+
+    const component2 = this.components().find((v) => v.id === component.id);
+    if (component2) {
+      component2.position.copy(component.position);
+      const helpers = this.helpers();
+      if (helpers.axisX.snap) {
+        component2.position.x = helpers.axisX.snap.to;
+        delete helpers.axisX.snap;
+      }
+      if (helpers.axisY.snap) {
+        component2.position.y = helpers.axisY.snap.to;
+        delete helpers.axisY.snap;
+      }
+      helpers.axisX.show = false;
+      helpers.axisY.show = false;
+      if (!isEqual(helpers, this.helpers())) {
+        this.helpers.set({...helpers});
+      }
+      this.components.update((v) => [...v]);
     }
   }
   updateComponentsTransform() {
@@ -156,11 +268,16 @@ export class PageComponentsDiaplayComponent {
     }
     const {resizable = {}} = pageComponentInfos[component.type] || {};
     const classArr: string[] = [];
-    if (resizable.x) {
-      classArr.push("resize-x");
-    }
-    if (resizable.y) {
-      classArr.push("resize-y");
+    if (component.isLocked()) {
+      classArr.push("locked");
+    } else {
+      if (resizable.x) {
+        classArr.push("resize-x");
+      }
+      if (resizable.y) {
+        classArr.push("resize-y");
+      }
+      classArr.push("rotate");
     }
     this.control.set({class: classArr, style: {}});
 
@@ -260,7 +377,28 @@ export class PageComponentsDiaplayComponent {
     this._moveRotatePointPosPrev = p2.clone();
     const angle2 = Math.atan2(p2.y, p2.x);
     const angle1 = Math.atan2(p1.y, p1.x);
-    component2.rotation.add(new Angle(angle2 - angle1, "rad")).constrain(true);
+    component2.rotation.add(new Angle(angle2 - angle1, "rad")).constrain();
+
+    const helpers = this.helpers();
+    helpers.rotation.show = false;
+    delete helpers.rotation.snap;
+    helpers.rotation.position = [
+      componentEl.offsetLeft + componentEl.offsetWidth / 2,
+      componentEl.offsetTop + componentEl.offsetHeight / 2
+    ];
+    const divider = 8;
+    for (let i = 0; i < divider; i++) {
+      const snapDeg = i * (360 / divider);
+      if (Math.abs(component2.rotation.deg - snapDeg) < helpers.rotation.threshold) {
+        helpers.rotation.show = true;
+        helpers.rotation.snap = {from: snapDeg, to: snapDeg};
+        helpers.rotation.deg = snapDeg;
+        break;
+      }
+    }
+    if (!isEqual(helpers, this.helpers())) {
+      this.helpers.set({...helpers});
+    }
 
     event.source._dragRef.reset();
     this.activeComponent2.set(component2.clone());
@@ -274,6 +412,15 @@ export class PageComponentsDiaplayComponent {
       const activeComponent = this.activeComponent();
       if (activeComponent) {
         activeComponent.rotation.copy(component.rotation);
+        const helpers = this.helpers();
+        if (helpers.rotation.snap) {
+          activeComponent.rotation.deg = helpers.rotation.snap.to;
+          delete helpers.rotation.snap;
+        }
+        helpers.rotation.show = false;
+        if (!isEqual(helpers, this.helpers())) {
+          this.helpers.set({...helpers});
+        }
         this.components.update((v) => [...v]);
       }
     }
