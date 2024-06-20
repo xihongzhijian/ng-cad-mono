@@ -5,6 +5,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {setGlobal} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
+import {generateLineTexts2} from "@app/cad/utils";
 import {ProgressBarComponent, ProgressBarStatus} from "@app/components/progress-bar/progress-bar.component";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {HoutaiCad} from "@app/modules/http/services/cad-data.service.types";
@@ -173,8 +174,13 @@ export class RefreshCadImgsComponent implements OnInit {
       return Promise.all(
         cads.map(async (cad) => {
           try {
+            let id = cad.id;
+            if (cad.info.imgId) {
+              id = cad.info.imgId;
+            }
+            generateLineTexts2(cad);
             const img = await getCadPreview(collection, cad);
-            await this.http.setCadImg(cad.id, img, httpOptions);
+            await this.http.setCadImg(id, img, httpOptions);
             successCount++;
           } catch (error) {
             console.error(error);

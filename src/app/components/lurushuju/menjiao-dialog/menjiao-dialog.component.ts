@@ -107,6 +107,7 @@ export class MenjiaoDialogComponent implements OnInit {
   shiyituSearchInputInfo: ObjectOf<InputInfo> = {};
   hiddenShiyitus: number[] = [];
   errors = {bcfz: false, others: false};
+  menjiaoCadTabIndex = 0;
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
   @ViewChildren(SuanliaoTablesComponent) suanliaoTablesList?: QueryList<SuanliaoTablesComponent>;
   @ViewChild("inputScrollbar") inputScrollbar?: NgScrollbar;

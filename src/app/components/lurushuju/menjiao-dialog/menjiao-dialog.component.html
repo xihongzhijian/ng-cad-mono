@@ -40,7 +40,7 @@
     @for (info of form; track $index) {
       <app-input [info]="info"></app-input>
     }
-    <mat-tab-group class="menjiao-data" (selectedTabChange)="onMenjiaoCadTabChange($event)">
+    <mat-tab-group class="menjiao-data" [(selectedIndex)]="menjiaoCadTabIndex" (selectedTabChange)="onMenjiaoCadTabChange($event)">
       @for (key1 of menjiaoCadTypes; track $index) {
         <mat-tab [label]="getMenjiaoCadTabLabel(key1)">
           @if (key1Infos[key1]) {

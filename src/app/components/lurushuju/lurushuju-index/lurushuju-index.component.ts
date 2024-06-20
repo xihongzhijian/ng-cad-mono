@@ -1482,8 +1482,10 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       return;
     }
     if (this.status.project !== 项目) {
-      session.save(this.infoKey, {...info, changeProject: true});
-      this.status.changeProject(项目);
+      if (await this.message.confirm("页面信息的项目不同，是否切换项目？")) {
+        session.save(this.infoKey, {...info, changeProject: true});
+        this.status.changeProject(项目);
+      }
       return;
     }
     this.dialog.closeAll();
