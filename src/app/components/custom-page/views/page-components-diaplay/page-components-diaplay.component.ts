@@ -1,21 +1,11 @@
 import {CdkDrag, CdkDragEnd, CdkDragMove} from "@angular/cdk/drag-drop";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  inject,
-  input,
-  model,
-  signal,
-  untracked,
-  viewChildren
-} from "@angular/core";
+import {NgTemplateOutlet} from "@angular/common";
+import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, model, signal, untracked, viewChildren} from "@angular/core";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {setGlobal} from "@app/app.common";
+import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
 import {Angle, Point} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {debounce, isEqual} from "lodash";
@@ -27,7 +17,7 @@ import {ControlPoint, Helpers} from "./page-components-diaplay.types";
 @Component({
   selector: "app-page-components-diaplay",
   standalone: true,
-  imports: [CdkDrag, CdkTextareaAutosize, MatIconModule, MatInputModule],
+  imports: [CdkDrag, CdkTextareaAutosize, MatIconModule, MatInputModule, NgTemplateOutlet, TypedTemplateDirective],
   templateUrl: "./page-components-diaplay.component.html",
   styleUrl: "./page-components-diaplay.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -48,6 +38,7 @@ export class PageComponentsDiaplayComponent {
     axisY: {show: false, threshold: 3},
     rotation: {show: false, threshold: 3, position: [0, 0], deg: 0, size: 0}
   });
+  componentsTplType!: {$implicit: PageComponentTypeAny[]};
 
   componentEls = viewChildren<ElementRef<HTMLDivElement>>("componentEl");
   autoSizes = viewChildren<CdkTextareaAutosize>(CdkTextareaAutosize);
@@ -88,19 +79,17 @@ export class PageComponentsDiaplayComponent {
     );
   }
 
-  componentStyles = computed(() => {
+  getComponentStyle(component: PageComponentTypeAny) {
     const activeComponent = this.activeComponent2();
     const draggingComponent = this.draggingComponent();
-    return this.components().map((component) => {
-      if (activeComponent?.id === component.id) {
-        return activeComponent.getStyle();
-      }
-      if (draggingComponent?.id === component.id) {
-        return draggingComponent.getStyle();
-      }
-      return component.getStyle();
-    });
-  });
+    if (activeComponent?.id === component.id) {
+      return activeComponent.getStyle();
+    }
+    if (draggingComponent?.id === component.id) {
+      return draggingComponent.getStyle();
+    }
+    return component.getStyle();
+  }
   clickComponent(component: PageComponentTypeAny) {
     if (this.draggingComponent()) {
       this.draggingComponent.set(null);

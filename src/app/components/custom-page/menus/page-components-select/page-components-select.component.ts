@@ -3,6 +3,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {getInsertName} from "@app/app.common";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
 import {pageComponentInfos, PageComponentType, PageComponentTypeAny} from "../../models/page-component-infos";
+import {getPageComponentNames} from "../../models/page-component-utils";
 import {PageComponentText} from "../../models/page-components/page-component-text";
 
 @Component({
@@ -21,7 +22,7 @@ export class PageComponentsSeletComponent {
   addComponent(type: PageComponentType) {
     const info = pageComponentInfos[type];
     const components = this.components();
-    const names = components.map((v) => v.name);
+    const names = getPageComponentNames(components);
     const component = new info.class(getInsertName(names, info.name + "组件"));
     if (component instanceof PageComponentText) {
       component.text = "双击编辑文本";

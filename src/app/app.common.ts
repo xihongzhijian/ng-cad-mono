@@ -217,15 +217,17 @@ export const getBooleanStr = (value: boolean) => {
 };
 
 export const getNameWithSuffix = (names: string[], name: string, suffix: string, startNum: number) => {
-  if (!names.includes(name)) {
+  if (suffix && !names.includes(name)) {
     return name;
   }
   let i = startNum;
   const getSuffix = () => suffix + (i === 0 ? "" : i.toString());
-  while (names.includes(name + getSuffix())) {
+  let suffix2 = getSuffix();
+  while (names.includes(name + suffix2)) {
+    suffix2 = getSuffix();
     i++;
   }
-  return name + getSuffix();
+  return name + suffix2;
 };
 export const getInsertName = (names: string[], name: string) => getNameWithSuffix(names, name, "", 1);
 export const getCopyName = (names: string[], name: string) => getNameWithSuffix(names, name, "_复制", 0);

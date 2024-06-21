@@ -10,7 +10,7 @@ export abstract class PageComponentBase {
   size = new Point(0, 0);
   position = new Point(0, 0);
   scale = new Point(1, 1);
-  anchor = new Point(0.5, 0.5);
+  anchor = new Point(0, 0);
   rotation = new Angle(0, "deg");
   border: Property.Border = "none";
   background: Property.Background = "transparent";
@@ -69,21 +69,22 @@ export abstract class PageComponentBase {
   }
 
   getStyle(): Properties {
-    const {x: scaleX, y: scaleY} = this.scale;
     let rotation = "";
     if (this.rotation.unit === "deg") {
       rotation = `${this.rotation.deg}deg`;
     } else if (this.rotation.unit === "rad") {
       rotation = `${this.rotation.rad}rad`;
     }
+    const {x: scaleX, y: scaleY} = this.scale;
+    const {x: anchorX, y: anchorY} = this.anchor;
     const {resizable} = pageComponentInfos[this.type as PageComponentType] || {};
     return {
       width: resizable.x ? `${this.size.x}px` : "auto",
       height: resizable.y ? `${this.size.y}px` : "auto",
       left: `${this.position.x}px`,
       top: `${this.position.y}px`,
-      transform: `scale(${scaleX},${scaleY}) rotate(${rotation})`,
-      transformOrigin: `${this.anchor.x * 100}% ${this.anchor.y * 100}%`,
+      transform: `translate(-${anchorX * 100}%, -${anchorY * 100}%) scale(${scaleX},${scaleY}) rotate(${rotation})`,
+      transformOrigin: "center center",
       background: this.background,
       border: this.border,
       color: this.color,

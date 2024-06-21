@@ -2,6 +2,8 @@
   <app-page-components-select class="flex-110" [(components)]="components"></app-page-components-select>
   <div class="actions toolbar">
     <button mat-raised-button color="primary" (click)="resetPage()">清空</button>
+    <button mat-raised-button color="primary" (click)="import()">导入</button>
+    <button mat-raised-button color="primary" (click)="export()">导出</button>
     <button mat-raised-button color="primary">预览</button>
     <button mat-raised-button color="primary">保存</button>
   </div>
@@ -40,18 +42,10 @@
     </div>
     <mat-tab-group [(selectedIndex)]="menuTabIndex">
       <mat-tab label="页面设置">
-        <ng-scrollbar>
-          <app-page-config class="tab" [(config)]="pageConfig" (configChange)="onPageConfigChanged($event)"></app-page-config>
-        </ng-scrollbar>
+        <app-page-config class="tab" [(config)]="pageConfig" (configChange)="onPageConfigChanged($event)"></app-page-config>
       </mat-tab>
       <mat-tab label="图层管理">
-        <ng-scrollbar>
-          <app-page-component-config
-            [(components)]="components"
-            [(activeComponent)]="activeComponent"
-            [(showComponentMenu)]="showComponentMenu"
-          ></app-page-component-config>
-        </ng-scrollbar>
+        <app-page-component-config [(components)]="components" [(activeComponent)]="activeComponent"></app-page-component-config>
       </mat-tab>
       <mat-tab label="页面管理"></mat-tab>
     </mat-tab-group>

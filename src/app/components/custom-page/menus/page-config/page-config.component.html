@@ -1,3 +1,5 @@
-@for (info of inputInfos(); track $index) {
-  <app-input [info]="info"></app-input>
-}
+<ng-scrollbar>
+  @for (info of inputInfos(); track $index) {
+    <app-input [info]="info"></app-input>
+  }
+</ng-scrollbar>

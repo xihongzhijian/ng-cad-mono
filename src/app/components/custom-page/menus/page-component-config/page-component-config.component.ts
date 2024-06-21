@@ -1,16 +1,32 @@
-import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {ChangeDetectionStrategy, Component, inject, model} from "@angular/core";
+import {CdkDrag, CdkDragDrop, CdkDropList, transferArrayItem} from "@angular/cdk/drag-drop";
+import {NgTemplateOutlet} from "@angular/common";
+import {ChangeDetectionStrategy, Component, computed, inject, model, signal} from "@angular/core";
+import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
-import {getCopyName} from "@app/app.common";
+import {getCopyName, getInsertName} from "@app/app.common";
 import {ClickStopPropagationDirective} from "@app/modules/directives/click-stop-propagation.directive";
+import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
 import {MessageService} from "@app/modules/message/services/message.service";
+import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
+import {flatPageComponents, getPageComponentGroup, getPageComponentNames, removePageComponent} from "../../models/page-component-utils";
+import {PageComponentGroup} from "../../models/page-components/page-component-group";
 
 @Component({
   selector: "app-page-component-config",
   standalone: true,
-  imports: [CdkDrag, CdkDropList, ClickStopPropagationDirective, MatButtonModule, MatIconModule],
+  imports: [
+    CdkDrag,
+    CdkDropList,
+    ClickStopPropagationDirective,
+    FormsModule,
+    MatButtonModule,
+    MatIconModule,
+    NgScrollbarModule,
+    NgTemplateOutlet,
+    TypedTemplateDirective
+  ],
   templateUrl: "./page-component-config.component.html",
   styleUrl: "./page-component-config.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -20,7 +36,10 @@ export class PageComponentConfigComponent {
 
   components = model.required<PageComponentTypeAny[]>();
   activeComponent = model.required<PageComponentTypeAny | null>();
-  showComponentMenu = model.required<boolean>();
+
+  componentsTplType!: {$implicit: PageComponentTypeAny[]; level: number; id: string};
+  hoveringId = signal<string | null>(null);
+  editingId = signal<string | null>(null);
 
   async getActiveComponent() {
     const component = this.activeComponent();
@@ -29,23 +48,53 @@ export class PageComponentConfigComponent {
     }
     return component;
   }
+  async group() {
+    const component = await this.getActiveComponent();
+    if (!component || component.type === "group") {
+      return;
+    }
+    const components = this.components();
+    const components2 = getPageComponentGroup(components, component)?.children || components;
+    const names = getPageComponentNames(components);
+    const group = new PageComponentGroup(getInsertName(names, "分组"));
+    group.children = [component];
+    group.expanded = true;
+    const index = components2.findIndex((v) => v.id === component.id);
+    components2.splice(index, 1, group);
+    this.components.set([...components]);
+  }
+  async ungroup() {
+    const component = await this.getActiveComponent();
+    if (!component || component.type !== "group") {
+      return;
+    }
+    const components = this.components();
+    const components2 = getPageComponentGroup(components, component)?.children || components;
+    const index = components2.findIndex((v) => v.id === component.id);
+    components2.splice(index, 1, ...component.children);
+    this.components.set([...components]);
+  }
   async copy() {
     const component = await this.getActiveComponent();
     if (!component) {
       return;
     }
     const components = this.components();
-    const names = components.map((v) => v.name);
+    const names = getPageComponentNames(components);
     const clone = component.clone(true);
     clone.name = getCopyName(names, clone.name);
-    this.components.set([...components, clone]);
+    const components2 = getPageComponentGroup(components, component)?.children || components;
+    components2.push(clone);
+    this.components.set([...components]);
   }
   async remove() {
     const component = await this.getActiveComponent();
     if (!component) {
       return;
     }
-    this.components.update((v) => v.filter((v) => v.id !== component.id));
+    const components = this.components();
+    removePageComponent(components, component);
+    this.components.set([...components]);
   }
 
   toggleHidden(component: PageComponentTypeAny) {
@@ -56,14 +105,52 @@ export class PageComponentConfigComponent {
     component.toggleLock();
     this.components.update((v) => [...v]);
   }
+  toggleExpanded(component: PageComponentGroup) {
+    component.expanded = !component.expanded;
+    this.components.update((v) => [...v]);
+  }
   click(component: PageComponentTypeAny) {
     this.activeComponent.set(component);
-    this.showComponentMenu.set(true);
+  }
+  dblClick(event: Event, component: PageComponentTypeAny) {
+    event.stopPropagation();
+    this.editingId.set(component.id);
+  }
+  blur() {
+    this.editingId.set(null);
+    this.components.update((v) => [...v]);
+  }
+  pointerEnter(event: PointerEvent, component: PageComponentTypeAny) {
+    event.stopPropagation();
+    this.hoveringId.set(component.id);
+  }
+  pointerLeave(event: PointerEvent, component: PageComponentTypeAny) {
+    event.stopPropagation();
+    if (this.hoveringId() === component.id) {
+      const group = getPageComponentGroup(this.components(), component);
+      this.hoveringId.set(group?.id || null);
+    }
   }
 
+  // todo: https://stackblitz.com/edit/angular-cdk-nested-drag-drop-tree-structure
+  dropListIds = computed(() => {
+    const ids = ["main"];
+    for (const component of flatPageComponents(this.components(), true)) {
+      if (component.type === "group") {
+        ids.push(component.id);
+      }
+    }
+    return ids;
+  });
+  isDropListDisabled() {
+    return !!this.editingId();
+  }
   drop(event: CdkDragDrop<PageComponentTypeAny[]>) {
-    const components = this.components();
-    moveItemInArray(components, event.previousIndex, event.currentIndex);
-    this.components.set([...components]);
+    transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+    this.components.update((v) => [...v]);
+  }
+
+  isComponentGroup(component: PageComponentTypeAny): component is PageComponentGroup {
+    return component.type === "group";
   }
 }
