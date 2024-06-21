@@ -684,6 +684,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (!(await this.message.confirm("是否将所有线的线长数字如果是隐藏的就显示，如果是显示的就隐藏？"))) {
       return;
     }
+    await this.onlineFetch();
     const cad = this.cad;
     const toggle = async (data: CadData) => {
       data.entities.forEach((e) => {
@@ -695,8 +696,15 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       if (isOnline) {
         await this.http.setCad({collection: isOnline.collection || "cad", cadData: data, force: true}, true);
       }
-      await this.http.setCadImg(data.id, await getCadPreview("cad", data), {silent: true});
-      this.status.cadImgToUpdate[data.id] = {t: Date.now()};
+      generateLineTexts2(data);
+      let id = data.id;
+      if (data.info.imgId) {
+        id = data.info.imgId;
+      }
+      await this.http.setCadImg(id, await getCadPreview("cad", data), {silent: true});
+      this.status.cadImgToUpdate[id] = {t: Date.now()};
+      delete this.cadData;
+      await timeout(200);
       await this.initCadViewer();
     };
     if (cad instanceof CadData) {
