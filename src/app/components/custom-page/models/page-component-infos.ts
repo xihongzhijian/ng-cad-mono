@@ -22,7 +22,7 @@ export const pageComponentInfos: PageComponentInfos = {
     description: "这是图片组件",
     previewImg: imgEmpty,
     class: PageComponentImage,
-    resizable: {x: true, y: true, preserveRatio: true}
+    resizable: {x: true, y: true}
   },
   group: {
     name: "分组",
@@ -48,5 +48,4 @@ export interface PageComponentInfo<T> {
 export interface PageComponentResizable {
   x?: boolean;
   y?: boolean;
-  preserveRatio?: boolean;
 }

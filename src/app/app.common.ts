@@ -163,15 +163,15 @@ export interface XiaodaohangStructure {
 
 export const filePathUrl = `${origin}/filepath`;
 
-export const getFilepathUrl = (url: string | undefined | null, opts?: {prefix?: string; suffix?: string}) => {
+export const getFilepathUrl = (url: string | undefined | null, opts?: {prefix?: string; suffix?: string; remote?: boolean}) => {
   if (!url) {
     return "";
   }
   if (url.startsWith("http")) {
     return url;
   }
-  const {prefix, suffix} = opts || {};
-  let result = `${filePathUrl}/${url}`;
+  const {prefix, suffix, remote} = opts || {};
+  let result = `${remote ? remoteFilePath : filePathUrl}/${url}`;
   if (prefix || suffix) {
     const strs = url.split("/");
     if (strs.length > 0) {

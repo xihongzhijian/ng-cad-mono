@@ -56,6 +56,9 @@
               cdkAutosizeMinRows="1"
             ></textarea>
           }
+          @case ("image") {
+            <app-image [src]="component.src" [objectFit]="component.objectFit" (imgEnd)="onImgEnd($event, component)"></app-image>
+          }
           @case ("group") {
             <ng-container *ngTemplateOutlet="componentsTpl; context: {$implicit: component.children}"></ng-container>
           }

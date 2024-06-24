@@ -7,6 +7,7 @@ import {
   effect,
   ElementRef,
   HostBinding,
+  inject,
   input,
   model,
   signal,
@@ -15,17 +16,20 @@ import {
 import {MatButtonModule} from "@angular/material/button";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatIconModule} from "@angular/material/icon";
-import {session} from "@app/app.common";
+import {getFilepathUrl, session} from "@app/app.common";
+import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {InputComponent} from "@app/modules/input/components/input.component";
-import {InputInfo, InputInfoNumber} from "@app/modules/input/components/input.types";
-import {getElementVisiblePercentage, isTypeOf} from "@lucilor/utils";
+import {InputInfoNumber} from "@app/modules/input/components/input.types";
+import {getElementVisiblePercentage, isTypeOf, selectFiles} from "@lucilor/utils";
 import Color from "color";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {getGroupStyle, getNumberUnitInput} from "../../models/input-info-utils";
+import {getGroupStyle, getInputStyle, getNumberUnitInput} from "../../models/input-info-utils";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
 import {PageComponentBase} from "../../models/page-components/page-component-base";
+import {PageComponentImage} from "../../models/page-components/page-component-image";
 import {PageComponentText} from "../../models/page-components/page-component-text";
+import {InputGroup} from "./page-component-config2.types";
 
 @Component({
   selector: "app-page-component-config2",
@@ -45,6 +49,8 @@ import {PageComponentText} from "../../models/page-components/page-component-tex
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PageComponentConfig2Component {
+  private http = inject(CadDataService);
+
   @HostBinding("class") class = "ng-page";
 
   components = model.required<PageComponentTypeAny[]>();
@@ -119,11 +125,11 @@ export class PageComponentConfig2Component {
   componentMenuInputs = computed(() => {
     this.components();
     const component = this.activeComponent2() || this.activeComponent();
-    const inputGroups: {name: string; infos: InputInfo[]; expanded?: boolean}[] = [];
+    const inputGroups: InputGroup[] = [];
     const onChange = () => {
       this.components.update((v) => [...v]);
     };
-    const mergeGroups = (groups: ReturnType<typeof this.componentMenuInputs>) => {
+    const mergeGroups = (groups: InputGroup[]) => {
       for (const group of groups) {
         const group2 = inputGroups.find((g) => g.name === group.name);
         if (group2) {
@@ -136,7 +142,9 @@ export class PageComponentConfig2Component {
     if (component instanceof PageComponentText) {
       mergeGroups(this.getTextInputs(component, onChange));
     }
-
+    if (component instanceof PageComponentImage) {
+      mergeGroups(this.getImageInputs(component, onChange));
+    }
     if (component instanceof PageComponentBase) {
       mergeGroups(this.getCommonInputs(component, onChange));
     }
@@ -147,7 +155,7 @@ export class PageComponentConfig2Component {
     }
     return inputGroups;
   });
-  getTextInputs(component: PageComponentText, onChange: () => void): ReturnType<typeof this.componentMenuInputs> {
+  getTextInputs(component: PageComponentText, onChange: () => void): InputGroup<PageComponentText>[] {
     return [
       {
         name: "",
@@ -176,13 +184,82 @@ export class PageComponentConfig2Component {
       }
     ];
   }
-  getCommonInputs(component: PageComponentTypeAny, onChange: () => void): ReturnType<typeof this.componentMenuInputs> {
+  getImageInputs(component: PageComponentImage, onChange: () => void): InputGroup<PageComponentImage>[] {
+    return [
+      {
+        name: "",
+        infos: [
+          {
+            type: "string",
+            label: "图片链接",
+            model: {data: component, key: "src"},
+            onChange,
+            suffixIcons: [
+              {
+                name: "upload_file",
+                color: "primary",
+                onClick: async () => {
+                  const files = await selectFiles({accept: "image/*"});
+                  const file = files?.[0];
+                  if (!file) {
+                    return;
+                  }
+                  const result = await this.http.uploadImage(file);
+                  const src = result?.url;
+                  if (src) {
+                    component.src = getFilepathUrl(src, {remote: true});
+                    onChange();
+                  }
+                }
+              }
+            ],
+            style: getInputStyle(false)
+          },
+          {
+            type: "group",
+            label: "",
+            groupStyle: getGroupStyle(),
+            infos: [
+              {
+                type: "boolean",
+                label: "保持比例",
+                model: {data: component, key: "keepRatio"},
+                onChange: () => {
+                  component.fitSize();
+                  onChange();
+                },
+                style: getInputStyle(true)
+              },
+              {
+                type: "select",
+                label: "适应方式",
+                model: {data: component, key: "objectFit"},
+                options: [
+                  {label: "contain", value: "contain"},
+                  {label: "cover", value: "cover"},
+                  {label: "fill", value: "fill"},
+                  {label: "none", value: "none"},
+                  {label: "scale-down", value: "scale-down"}
+                ],
+                onChange,
+                style: getInputStyle(true)
+              }
+            ]
+          }
+        ]
+      }
+    ];
+  }
+  getCommonInputs(component: PageComponentTypeAny, onChange: () => void): InputGroup[] {
     const {resizable = {}} = pageComponentInfos[component.type] || {};
     const widthInput: InputInfoNumber<typeof component.size> = {
       ...getNumberUnitInput(true, "宽", "px"),
       model: {data: component.size, key: "x"},
       readonly: !resizable.x,
-      onChange
+      onChange: () => {
+        this.onComponentSizeChange(component, "x");
+        onChange();
+      }
     };
     if (!resizable.x) {
       widthInput.readonly = true;
@@ -192,7 +269,10 @@ export class PageComponentConfig2Component {
       ...getNumberUnitInput(true, "高", "px"),
       model: {data: component.size, key: "y"},
       readonly: !resizable.y,
-      onChange
+      onChange: () => {
+        this.onComponentSizeChange(component, "y");
+        onChange();
+      }
     };
     if (!resizable.y) {
       heightInput.readonly = true;
@@ -234,6 +314,18 @@ export class PageComponentConfig2Component {
         ]
       }
     ];
+  }
+  onComponentSizeChange(component: PageComponentTypeAny, axis: "x" | "y") {
+    if (component instanceof PageComponentImage) {
+      if (component.keepRatio) {
+        const ratio = component.naturalRatio;
+        if (axis === "x") {
+          component.size.y = component.size.x / ratio;
+        } else {
+          component.size.x = component.size.y * ratio;
+        }
+      }
+    }
   }
 
   onExpandedChange(group: ReturnType<typeof this.componentMenuInputs>[number], expanded: boolean) {

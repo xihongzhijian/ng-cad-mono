@@ -20,6 +20,14 @@
       background: inherit;
     }
   }
+  &.image {
+    app-image {
+      ::ng-deep img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
   &.group {
     > .page-component-content > .page-component {
       position: relative;
@@ -29,6 +37,8 @@
 
 .page-component-content {
   position: relative;
+  width: 100%;
+  height: 100%;
 }
 .page-component-control {
   --border-width: 2px;

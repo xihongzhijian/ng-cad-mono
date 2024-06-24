@@ -19,6 +19,7 @@ import {MessageService} from "@app/modules/message/services/message.service";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import printJS from "print-js";
 import {PageComponentConfig2Component} from "../../menus/page-component-config2/page-component-config2.component";
 import {PageComponentConfigComponent} from "../../menus/page-component-config/page-component-config.component";
 import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
@@ -174,6 +175,9 @@ export class CustomPageIndexComponent {
   export() {
     const data = this.page.export();
     downloadByString(JSON.stringify(data), {filename: "page.json"});
+  }
+  preview() {
+    printJS({printable: this.pageEl().nativeElement, type: "html", targetStyles: ["*"]});
   }
 
   onPageConfigChanged(config: PageConfig) {

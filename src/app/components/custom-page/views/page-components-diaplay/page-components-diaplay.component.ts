@@ -6,18 +6,21 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {setGlobal} from "@app/app.common";
 import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
+import {ImageComponent} from "@app/modules/image/components/image/image.component";
+import {ImageEvent} from "@app/modules/image/components/image/image.component.types";
 import {Angle, Point} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {debounce, isEqual} from "lodash";
 import {PageConfig} from "../../models/page";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
+import {PageComponentImage} from "../../models/page-components/page-component-image";
 import {PageComponentText} from "../../models/page-components/page-component-text";
 import {ControlPoint, Helpers} from "./page-components-diaplay.types";
 
 @Component({
   selector: "app-page-components-diaplay",
   standalone: true,
-  imports: [CdkDrag, CdkTextareaAutosize, MatIconModule, MatInputModule, NgTemplateOutlet, TypedTemplateDirective],
+  imports: [CdkDrag, CdkTextareaAutosize, ImageComponent, MatIconModule, MatInputModule, NgTemplateOutlet, TypedTemplateDirective],
   templateUrl: "./page-components-diaplay.component.html",
   styleUrl: "./page-components-diaplay.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -298,15 +301,9 @@ export class PageComponentsDiaplayComponent {
     if (!component2 || !component) {
       return;
     }
-    const {resizable = {}} = pageComponentInfos[component.type] || {};
-    if (resizable.preserveRatio) {
-      const absX = Math.abs(distance.x);
-      const absY = Math.abs(distance.y);
-      if (absX > absY) {
-        distance.y = distance.x;
-      } else {
-        distance.x = distance.y;
-      }
+    let ratio = 0;
+    if (component instanceof PageComponentImage && component.keepRatio) {
+      ratio = component.naturalRatio;
     }
     const {position: positionStr} = point;
     const position = component.position.clone();
@@ -314,16 +311,28 @@ export class PageComponentsDiaplayComponent {
     if (positionStr.includes("top")) {
       position.y += distance.y;
       size.y -= distance.y;
+      if (ratio > 0) {
+        size.x += distance.y * ratio;
+      }
     }
     if (positionStr.includes("bottom")) {
       size.y += distance.y;
+      if (ratio > 0) {
+        size.x += distance.y * ratio;
+      }
     }
     if (positionStr.includes("left")) {
       position.x += distance.x;
       size.x -= distance.x;
+      if (ratio > 0) {
+        size.y += distance.x / ratio;
+      }
     }
     if (positionStr.includes("right")) {
       size.x += distance.x;
+      if (ratio > 0) {
+        size.y += distance.x / ratio;
+      }
     }
     component2.position.copy(position);
     component2.size.copy(size);
@@ -422,4 +431,15 @@ export class PageComponentsDiaplayComponent {
       this.components.update((v) => [...v]);
     }
   }, 200);
+
+  onImgEnd(event: ImageEvent, component: PageComponentImage) {
+    const imgEl = event.event.target;
+    if (!(imgEl instanceof HTMLImageElement)) {
+      return;
+    }
+    const result = component.fitToImageElement(imgEl);
+    if (result.isChanged) {
+      this.components.update((v) => [...v]);
+    }
+  }
 }

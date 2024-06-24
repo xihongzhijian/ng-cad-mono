@@ -30,18 +30,15 @@ export class PageComponentsSeletComponent {
     }
   }
 
-  addComponent(type: PageComponentType) {
+  async addComponent(type: PageComponentType) {
     const info = pageComponentInfos[type];
     const components = this.components();
     const names = getPageComponentNames(components);
     const component = new info.class(getInsertName(names, info.name + "组件"));
+    component.background = "rgba(255,255,255,0)";
+    component.size.set(100, 100);
     if (component instanceof PageComponentText) {
       component.text = "双击编辑文本";
-      component.background = "rgba(255,255,255,0)";
-      component.size.set(100, 100);
-    } else {
-      component.background = "black";
-      component.size.set(100, 100);
     }
     this.components.set([...components, component]);
   }
