@@ -590,7 +590,8 @@ export const getCadCalcZhankaiText = (
   return text;
 };
 
-export const exportCadData = (data: CadData, hideLineLength: boolean) => {
+export const exportCadDataRemoveLengthTextCount = 200 as const;
+export const exportCadData = (data: CadData) => {
   const exportData = data.export();
   const count = data.entities.line.length + data.entities.arc.length;
   for (const type of ["line", "arc"]) {
@@ -608,7 +609,7 @@ export const exportCadData = (data: CadData, hideLineLength: boolean) => {
           if (isGongshiText || isBianhuazhiText) {
             delete mtexts[mtextId];
           } else if (isLengthText) {
-            if (count > 30 && (hideLineLength || e.hideLength)) {
+            if (count > exportCadDataRemoveLengthTextCount) {
               delete mtexts[mtextId];
             } else {
               const keys = ["type", "info", "insert", "lineweight", "anchor"];

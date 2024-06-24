@@ -494,7 +494,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
         if (cad instanceof CadData) {
           Object.assign(cad, data);
         } else {
-          const exportData = exportCadData(data, true);
+          const exportData = exportCadData(data);
           for (const key of ["entities", "info"] as const) {
             cad.json[key] = exportData[key];
           }

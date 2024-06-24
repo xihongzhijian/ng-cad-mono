@@ -7,13 +7,14 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatSelectModule} from "@angular/material/select";
-import {激光开料标记线类型} from "@app/cad/utils";
+import {exportCadDataRemoveLengthTextCount, 激光开料标记线类型} from "@app/cad/utils";
 import {CadPoints} from "@app/services/app-status.types";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
 import {openKlkwpzDialog} from "@components/dialogs/klkwpz-dialog/klkwpz-dialog.component";
 import {
   CadBaseLine,
   CadData,
+  CadEntities,
   CadEntity,
   CadEventCallBack,
   CadJointPoint,
@@ -29,7 +30,7 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadStatusIntersection, CadStatusSelectBaseline, CadStatusSelectJointpoint} from "@services/cad-status";
-import {isEqual} from "lodash";
+import {debounce, isEqual} from "lodash";
 import {InputComponent} from "../../../../input/components/input.component";
 import {getCadInfoInputs} from "./cad-info.utils";
 
@@ -240,7 +241,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     });
     const cad = this.status.cad;
     cad.on("entityclick", this._onEntityClick);
-    cad.on("moveentities", this._updateCadPoints);
+    cad.on("moveentities", this._onEntityMove);
     cad.on("zoom", this._updateCadPoints);
   }
 
@@ -248,7 +249,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     super.ngOnDestroy();
     const cad = this.status.cad;
     cad.off("entityclick", this._onEntityClick);
-    cad.off("moveentities", this._updateCadPoints);
+    cad.off("moveentities", this._onEntityMove);
     cad.off("zoom", this._updateCadPoints);
   }
 
@@ -272,7 +273,17 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       }
     }
   };
-
+  private _checkMtext = debounce((entities: CadEntities) => {
+    const cad = this.status.cad;
+    const count = exportCadDataRemoveLengthTextCount;
+    if (cad.data.entities.length > count && entities.mtext.some((e) => e.info.isLengthText)) {
+      this.message.snack(`CAD实体数量大于${count}，线长位置不会保存`);
+    }
+  }, 500).bind(this);
+  private _onEntityMove: CadEventCallBack<"moveentities"> = (entities) => {
+    this._checkMtext(entities);
+    this._updateCadPoints();
+  };
   private _updateCadPoints = () => {
     const cadStatus = this.status.cadStatus;
     const data = this.data;
@@ -294,7 +305,6 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       this.status.cadPoints$.next(points);
     }
   };
-
   private _setActiveCadPoint(point: Partial<CadPoints[0]>, points: CadPoints) {
     points.forEach((p) => (p.active = false));
     for (const p of points) {

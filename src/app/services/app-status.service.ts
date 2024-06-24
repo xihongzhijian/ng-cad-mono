@@ -521,16 +521,14 @@ export class AppStatusService {
   }
 
   exportSelected() {
-    const {hideLineLength} = this.config.getConfig();
     const entities = this.cad.selected();
     const data = new CadData();
     data.entities = entities;
-    return exportCadData(data, hideLineLength).entities;
+    return exportCadData(data).entities;
   }
 
   exportCadData() {
-    const {hideLineLength} = this.config.getConfig();
-    return exportCadData(this.cad.data, hideLineLength);
+    return exportCadData(this.cad.data);
   }
 
   getItemSize(item: any, options?: FileSizeOptions) {
