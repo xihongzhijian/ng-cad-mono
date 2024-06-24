@@ -625,7 +625,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (validators?.zhankai) {
       const {zhankai} = this;
       if (!zhankai?.zhankaigao) {
-        const err = `${name}展开高不能为空`;
+        const err = `${name}展开高不能为空，请检查红色文字并补充数据`;
         errors.push(err);
         this.errorMsgs.展开信息 = err;
       }
