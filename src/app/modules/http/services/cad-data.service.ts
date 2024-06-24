@@ -106,7 +106,7 @@ export class CadDataService extends HttpService {
   }
 
   async setCad(params: SetCadParams, hideLineLength: boolean, options?: HttpOptions): Promise<CadData | null> {
-    const cadData = exportCadData(params.cadData, hideLineLength);
+    const cadData = exportCadData(params.cadData);
     const data = {...params, cadData};
     const response = await this.post<any>("ngcad/setCad", data, options);
     if (response && response.data) {

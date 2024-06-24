@@ -75,6 +75,7 @@ export class CadImageComponent implements OnChanges {
     if (typeof force === "number") {
       params.t = force;
     }
+    force = true;
     if (force) {
       params.t = Date.now();
     }
