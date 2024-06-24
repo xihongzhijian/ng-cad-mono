@@ -33,6 +33,7 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
 import {AppStatusService} from "@app/services/app-status.service";
+import {toFixed} from "@app/utils/func";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
@@ -204,6 +205,24 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (typeof value === "string") {
       return value;
     } else if (value instanceof Color) {
+      return value.string();
+    }
+    return "";
+  }
+  get colorStr2() {
+    const value = this.value;
+    if (typeof value === "string") {
+      return value;
+    } else if (value instanceof Color) {
+      return value.hex() + (value.alpha() < 1 ? `(${toFixed(value.alpha(), 2)})` : "");
+    }
+    return "";
+  }
+  get colorStr3() {
+    const value = this.value;
+    if (typeof value === "string") {
+      return value;
+    } else if (value instanceof Color) {
       return value.hex();
     }
     return "";
@@ -213,7 +232,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.type !== "color" || !info.options) {
       return [];
     }
-    return info.options.map((v) => (typeof v === "string" ? v : new Color(v).hex()));
+    return info.options.map((v) => (typeof v === "string" ? v : new Color(v).string()));
   }
 
   get fileAccept() {
@@ -282,7 +301,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     if (this.colorChrome) {
       await timeout(0);
-      this.setColor(this.colorChrome.hex);
+      const {r, g, b, a} = this.colorChrome.rgb;
+      this.setColor(new Color([r, g, b, a]));
     }
     this.infoDiffer = this.differs.find(this.info).create();
   }
@@ -626,7 +646,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   onColorChange(ngxColor: NgxColor) {
-    this.value = new Color(ngxColor.hex);
+    const {r, g, b, a} = ngxColor.rgb;
+    this.value = new Color([r, g, b, a]);
     this.onChange();
   }
 
@@ -912,10 +933,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   setColor(color: Color | string | undefined | null) {
-    const value = typeof color === "string" ? color : color?.hex();
+    const value = typeof color === "string" ? color : color?.string();
     try {
       const c = new Color(value);
-      if (c) {
+      if (c.isLight()) {
         this.colorBg = "black";
       } else {
         this.colorBg = "white";

@@ -2,7 +2,8 @@ import {ChangeDetectionStrategy, Component, model} from "@angular/core";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getInsertName} from "@app/app.common";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
-import {pageComponentInfos, PageComponentType, PageComponentTypeAny} from "../../models/page-component-infos";
+import {keysOf} from "@lucilor/utils";
+import {PageComponentInfos, pageComponentInfos, PageComponentType, PageComponentTypeAny} from "../../models/page-component-infos";
 import {getPageComponentNames} from "../../models/page-component-utils";
 import {PageComponentText} from "../../models/page-components/page-component-text";
 
@@ -17,7 +18,17 @@ import {PageComponentText} from "../../models/page-components/page-component-tex
 export class PageComponentsSeletComponent {
   components = model.required<PageComponentTypeAny[]>();
 
-  infos = Object.entries(pageComponentInfos).map(([key, value]) => ({key: key as PageComponentType, value}));
+  infos: {key: PageComponentType; value: PageComponentInfos[PageComponentType]}[];
+
+  constructor() {
+    this.infos = [];
+    for (const key of keysOf(pageComponentInfos)) {
+      if (key === "group") {
+        continue;
+      }
+      this.infos.push({key, value: pageComponentInfos[key]});
+    }
+  }
 
   addComponent(type: PageComponentType) {
     const info = pageComponentInfos[type];
@@ -26,7 +37,7 @@ export class PageComponentsSeletComponent {
     const component = new info.class(getInsertName(names, info.name + "组件"));
     if (component instanceof PageComponentText) {
       component.text = "双击编辑文本";
-      component.background = "transparent";
+      component.background = "rgba(255,255,255,0)";
       component.size.set(100, 100);
     } else {
       component.background = "black";

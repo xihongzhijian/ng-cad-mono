@@ -19,6 +19,7 @@ import {session} from "@app/app.common";
 import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoNumber} from "@app/modules/input/components/input.types";
 import {getElementVisiblePercentage, isTypeOf} from "@lucilor/utils";
+import Color from "color";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {getGroupStyle, getNumberUnitInput} from "../../models/input-info-utils";
@@ -122,12 +123,22 @@ export class PageComponentConfig2Component {
     const onChange = () => {
       this.components.update((v) => [...v]);
     };
+    const mergeGroups = (groups: ReturnType<typeof this.componentMenuInputs>) => {
+      for (const group of groups) {
+        const group2 = inputGroups.find((g) => g.name === group.name);
+        if (group2) {
+          group2.infos.push(...group.infos);
+        } else {
+          inputGroups.push(group);
+        }
+      }
+    };
     if (component instanceof PageComponentText) {
-      inputGroups.push(...this.getTextInputs(component, onChange));
+      mergeGroups(this.getTextInputs(component, onChange));
     }
 
     if (component instanceof PageComponentBase) {
-      inputGroups.push(...this.getCommonInputs(component, onChange));
+      mergeGroups(this.getCommonInputs(component, onChange));
     }
 
     const expandedGroups = this.expandedGroups();
@@ -151,6 +162,15 @@ export class PageComponentConfig2Component {
             ...getNumberUnitInput(false, "字号", "px"),
             model: {data: component, key: "fontSize"},
             onChange
+          },
+          {
+            type: "color",
+            label: "字体颜色",
+            value: new Color(component.color),
+            onChange: (val) => {
+              component.color = val.string();
+              onChange();
+            }
           }
         ]
       }
@@ -191,6 +211,20 @@ export class PageComponentConfig2Component {
     };
 
     return [
+      {
+        name: "",
+        infos: [
+          {
+            type: "color",
+            label: "背景颜色",
+            value: new Color(component.background),
+            onChange: (val) => {
+              component.background = val.string();
+              onChange();
+            }
+          }
+        ]
+      },
       {
         name: "尺寸与位置",
         infos: [
