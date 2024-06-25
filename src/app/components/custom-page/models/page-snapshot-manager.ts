@@ -2,15 +2,9 @@ import {CustomStorage} from "@lucilor/utils";
 import {Page} from "./page";
 
 export class PageSnapshotManager {
-  private get _snapshotsKey() {
-    return `customPageSnapshots_${this.id}`;
-  }
-  private get _snapshotIndexKey() {
-    return `customPageSnapshotIndex_${this.id}`;
-  }
-  private get _savedSnapshotIndexKey() {
-    return `customPageSavedSnapshotIndex_${this.id}`;
-  }
+  snapshots: PageSnapshot[] = [];
+  snapshotIndex = -1;
+  savedSnapshotIndex = -1;
 
   constructor(
     public storage: CustomStorage,
@@ -19,33 +13,24 @@ export class PageSnapshotManager {
   ) {}
 
   getSnapshots() {
-    const snapshots = this.storage.load<PageSnapshot[]>(this._snapshotsKey);
-    return Array.isArray(snapshots) ? snapshots : [];
+    return this.snapshots;
   }
   setSnapshots(snapshots: PageSnapshot[]) {
-    this.storage.save(this._snapshotsKey, snapshots);
+    this.snapshots = snapshots;
   }
 
   getSnapshotIndex() {
-    const index = this.storage.load<number>(this._snapshotIndexKey);
-    if (typeof index !== "number") {
-      return -1;
-    }
-    return index;
+    return this.snapshotIndex;
   }
   setSnapshotIndex(index: number) {
-    this.storage.save(this._snapshotIndexKey, index);
+    this.snapshotIndex = index;
   }
 
   getSavedSnapshotIndex() {
-    const index = this.storage.load<number>(this._savedSnapshotIndexKey);
-    if (typeof index !== "number") {
-      return -1;
-    }
-    return index;
+    return this.savedSnapshotIndex;
   }
   setSavedSnapshotIndex(index: number) {
-    this.storage.save(this._savedSnapshotIndexKey, index);
+    this.savedSnapshotIndex = index;
   }
 
   saveSnapshot(snapshot: PageSnapshot) {

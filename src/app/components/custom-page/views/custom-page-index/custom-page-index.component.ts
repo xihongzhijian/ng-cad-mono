@@ -7,6 +7,8 @@ import {
   HostBinding,
   HostListener,
   inject,
+  OnDestroy,
+  OnInit,
   signal,
   untracked,
   viewChild
@@ -58,7 +60,7 @@ import {PagesDataRaw, Zidingyibaobiao} from "./custom-page-index.types";
   styleUrl: "./custom-page-index.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CustomPageIndexComponent extends Subscribed() {
+export class CustomPageIndexComponent extends Subscribed() implements OnInit, OnDestroy {
   private message = inject(MessageService);
   private spinner = inject(SpinnerService);
   private route = inject(ActivatedRoute);
@@ -103,6 +105,14 @@ export class CustomPageIndexComponent extends Subscribed() {
     this.loadPageSnapshot();
   }
 
+  ngOnInit() {
+    window.addEventListener("beforeunload", this.beforeUnload.bind(this));
+  }
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    window.removeEventListener("beforeunload", this.beforeUnload.bind(this));
+  }
+
   updatePageStyle() {
     this.pageStyle.set(this.page.getStyle());
     this.workSpaceStyle.set({...this.page.workSpaceStyle});
@@ -134,7 +144,11 @@ export class CustomPageIndexComponent extends Subscribed() {
     const {canUndo, canRedo, index} = this.psm.saveSnapshot(this.page.export());
     this.canUndo.set(canUndo);
     this.canRedo.set(canRedo);
-    this.snapshotIndex.set(index);
+    if (this.snapshotIndex() !== index) {
+      this.snapshotIndex.set(index);
+    } else {
+      this.savedSnapshotIndex.update((v) => v - 1);
+    }
   }
   undo() {
     const {snapshot, canUndo, index} = this.psm.undo();
@@ -275,8 +289,13 @@ export class CustomPageIndexComponent extends Subscribed() {
     }
     this.page.import(pageData);
     this.psm.id = this.page.id;
-    this.savedSnapshotIndex.set(this.psm.getSavedSnapshotIndex());
-    this.loadPageSnapshot();
+    this.psm.reset();
+    this.savePageSnapshot();
+    this.updatePage();
+    this.psm.setSavedSnapshotIndex(0);
+    this.savedSnapshotIndex.set(0);
+    this.canUndo.set(false);
+    this.canRedo.set(false);
   }
 
   onPageConfigChanged(config: PageConfig) {
@@ -323,5 +342,14 @@ export class CustomPageIndexComponent extends Subscribed() {
     if (activeComponent) {
       this.showComponentMenu.set(true);
     }
+  }
+
+  beforeUnload(event: BeforeUnloadEvent) {
+    if (this.isSaved()) {
+      return;
+    }
+    event.preventDefault();
+    // eslint-disable-next-line deprecation/deprecation
+    event.returnValue = "";
   }
 }
