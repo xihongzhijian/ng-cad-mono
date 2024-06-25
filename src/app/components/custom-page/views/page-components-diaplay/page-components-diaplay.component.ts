@@ -271,7 +271,7 @@ export class PageComponentsDiaplayComponent {
       }
       classArr.push("rotate");
     }
-    this.control.set({class: classArr, style: {}});
+    this.control.set({class: classArr, style: {"--component-border-width": `${Math.max(component.borderWidth, 0)}px`}});
 
     let updateComponents = false;
     if (!resizable.x && component.size.x !== componentEl.offsetWidth) {

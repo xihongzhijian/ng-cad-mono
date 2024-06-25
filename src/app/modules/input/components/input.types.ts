@@ -89,7 +89,7 @@ export interface InputInfoArray<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
   type: "boolean";
-  radio?: boolean;
+  appearance?: "select" | "radio" | "switch";
   onChange?: (val: boolean, info: InputInfoBoolean<T>) => void;
 }
 

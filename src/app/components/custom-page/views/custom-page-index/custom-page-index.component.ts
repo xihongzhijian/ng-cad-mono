@@ -34,7 +34,7 @@ import {PageComponentsSeletComponent} from "../../menus/page-components-select/p
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
 import {Page, PageConfig} from "../../models/page";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
-import {flatPageComponents} from "../../models/page-component-utils";
+import {findPageComponent} from "../../models/page-component-utils";
 import {PageSnapshotManager} from "../../models/page-snapshot-manager";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
 import {PagesDataRaw, Zidingyibaobiao} from "./custom-page-index.types";
@@ -309,12 +309,7 @@ export class CustomPageIndexComponent extends Subscribed() {
     const components = this.components();
     const activeComponent = untracked(() => this.activeComponent());
     if (activeComponent) {
-      for (const component of flatPageComponents(components, true)) {
-        if (component.id === activeComponent.id) {
-          this.activeComponent.set(component);
-          break;
-        }
-      }
+      this.activeComponent.set(findPageComponent(activeComponent.id, components));
     }
     this.page.components = components;
     if (this._noSaveOnComponentsChanged) {

@@ -54,10 +54,10 @@
   --right: calc(100% + var(--border-width-half));
 
   position: absolute;
-  top: calc(0px - var(--padding) - var(--border-width));
-  left: calc(0px - var(--padding) - var(--border-width));
-  width: 100%;
-  height: 100%;
+  top: calc(0px - var(--padding) - var(--border-width) - var(--component-border-width));
+  left: calc(0px - var(--padding) - var(--border-width) - var(--component-border-width));
+  width: calc(100% + var(--component-border-width) * 2);
+  height: calc(100% + var(--component-border-width) * 2);
   border-width: var(--border-width);
   border-style: var(--border-style);
   border-color: var(--border-color);

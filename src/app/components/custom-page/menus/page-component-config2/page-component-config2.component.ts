@@ -19,12 +19,12 @@ import {MatIconModule} from "@angular/material/icon";
 import {getFilepathUrl, session} from "@app/app.common";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {InputComponent} from "@app/modules/input/components/input.component";
-import {InputInfoNumber} from "@app/modules/input/components/input.types";
+import {InputInfo, InputInfoNumber, InputInfoOption} from "@app/modules/input/components/input.types";
 import {getElementVisiblePercentage, isTypeOf, selectFiles} from "@lucilor/utils";
 import Color from "color";
-import {Properties} from "csstype";
+import {DataType, Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {getGroupStyle, getInputStyle, getNumberUnitInput} from "../../models/input-info-utils";
+import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs, trblItems} from "../../models/input-info-utils";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
 import {PageComponentBase} from "../../models/page-components/page-component-base";
 import {PageComponentImage} from "../../models/page-components/page-component-image";
@@ -290,6 +290,49 @@ export class PageComponentConfig2Component {
       onChange
     };
 
+    const borderTypes: InputInfoOption<DataType.LineStyle>[] = [
+      {label: "无", value: "none"},
+      {label: "实线", value: "solid"},
+      {label: "虚线", value: "dashed"},
+      {label: "点线", value: "dotted"}
+    ];
+    const borderInputs: InputInfo<PageComponentTypeAny>[] = [
+      {
+        type: "select",
+        label: "边框样式",
+        options: borderTypes,
+        model: {data: component, key: "borderStyle"},
+        onChange,
+        style: getInputStyle(false)
+      },
+      {
+        type: "color",
+        label: "边框颜色",
+        value: new Color(component.borderColor),
+        onChange: (val) => {
+          component.borderColor = val.string();
+          onChange();
+        }
+      },
+      getNumberUnitInput(true, "边框宽度", "px", {}, {model: {data: component, key: "borderWidth"}, onChange}),
+      {
+        type: "group",
+        label: "框线显示",
+        groupStyle: getGroupStyle(),
+        infos: getUnifiedInputs(
+          "框线显示",
+          trblItems.map(({name, index}) => ({
+            type: "boolean",
+            label: name,
+            model: {data: component.borderShow, key: index},
+            style: getInputStyle(true, {flex: "0 0 50%"})
+          })),
+          component.borderShow,
+          onChange
+        )
+      }
+    ];
+
     return [
       {
         name: "",
@@ -305,6 +348,7 @@ export class PageComponentConfig2Component {
           }
         ]
       },
+      {name: "边框", infos: borderInputs},
       {
         name: "尺寸与位置",
         infos: [

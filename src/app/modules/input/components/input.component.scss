@@ -87,3 +87,9 @@
     color: var(--mat-form-field-error-text-color);
   }
 }
+
+.switch-container {
+  display: flex;
+  padding: 5px;
+  align-items: center;
+}

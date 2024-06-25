@@ -30,6 +30,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectModule} from "@angular/material/select";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
 import {AppStatusService} from "@app/services/app-status.service";
@@ -86,6 +87,7 @@ import {getValue, parseObjectString} from "./input.utils";
     MatOptionModule,
     MatRadioModule,
     MatSelectModule,
+    MatSlideToggleModule,
     MatTooltipModule,
     NgScrollbarModule,
     NgTemplateOutlet,

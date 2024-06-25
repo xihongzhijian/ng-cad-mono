@@ -50,3 +50,12 @@ export const isPageComponentGroupEmpty = (component: PageComponentGroup): boolea
     }).length === 0
   );
 };
+
+export const findPageComponent = (id: string, components: PageComponentTypeAny[]) => {
+  for (const component of flatPageComponents(components, true)) {
+    if (component.id === id) {
+      return component;
+    }
+  }
+  return null;
+};

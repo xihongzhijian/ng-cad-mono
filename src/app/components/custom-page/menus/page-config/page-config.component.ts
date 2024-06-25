@@ -3,7 +3,7 @@ import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoColor, InputInfoNumber, InputInfoSelect} from "@app/modules/input/components/input.types";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {getGroupStyle, getInputStyle, getNumberUnitInput} from "../../models/input-info-utils";
+import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs, trblItems} from "../../models/input-info-utils";
 import {PageConfig} from "../../models/page";
 import {PageOrientation, PageSizeNameCustom, pageSizeNamesCustom} from "../../models/page-size";
 
@@ -74,25 +74,20 @@ export class PageConfigComponent {
       model: {data: config, key: "workSpaceBgColor"},
       onChange
     };
-    const paddingItems = [
-      {name: "上", index: 0},
-      {name: "下", index: 2},
-      {name: "左", index: 3},
-      {name: "右", index: 1}
-    ];
-    const paddingInput: InputInfoNumber<PageConfig["padding"]>[] = paddingItems.map(({name, index}) => {
-      return {
-        ...getNumberUnitInput(true, name, "mm", {width: "50%"}),
-        model: {data: config.padding, key: index},
-        onChange
-      };
+    const paddingInputs: InputInfoNumber<PageConfig["padding"]>[] = trblItems.map(({name, index}) => {
+      return getNumberUnitInput(true, name, "mm", {flex: "0 0 50%"}, {model: {data: config.padding, key: index}});
     });
     const inputInfos: InputInfo[] = [
       {type: "group", label: "", infos: [sizeNameInput, orientationInput], groupStyle: getGroupStyle()},
       {type: "group", label: "", infos: [widthInput, heightInput], groupStyle: getGroupStyle()},
       {type: "group", label: "", infos: [workSpaceBackgroundInput], groupStyle: getGroupStyle()},
       {type: "group", label: "", infos: [backgroundInnerInput, backgroundOuterInput], groupStyle: getGroupStyle()},
-      {type: "group", label: "页边距", infos: paddingInput, groupStyle: getGroupStyle()}
+      {
+        type: "group",
+        label: "页边距",
+        infos: getUnifiedInputs("页边距", paddingInputs, config.padding, onChange),
+        groupStyle: getGroupStyle()
+      }
     ];
     return inputInfos;
   });

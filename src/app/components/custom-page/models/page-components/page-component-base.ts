@@ -1,5 +1,5 @@
 import {Angle, Point} from "@lucilor/utils";
-import {Properties, Property} from "csstype";
+import {DataType, Properties, Property} from "csstype";
 import {cloneDeep} from "lodash";
 import {v4} from "uuid";
 import {pageComponentInfos, PageComponentType} from "../page-component-infos";
@@ -12,9 +12,12 @@ export abstract class PageComponentBase {
   scale = new Point(1, 1);
   anchor = new Point(0, 0);
   rotation = new Angle(0, "deg");
-  border: Property.Border = "none";
   background: Property.Background = "transparent";
-  color: Property.Color = "black";
+  color: DataType.Color = "black";
+  borderStyle: DataType.LineStyle = "none";
+  borderColor: DataType.Color = "black";
+  borderWidth: number = 0;
+  borderShow: [boolean, boolean, boolean, boolean] = [true, true, true, true];
 
   protected _locked = false;
   protected _hidden = false;
@@ -34,10 +37,13 @@ export abstract class PageComponentBase {
     this.scale.copy(data.scale);
     this.anchor.copy(data.anchor);
     this.rotation.deg = data.rotation;
-    this.border = data.border;
     this.background = data.background;
     this.color = data.color;
-    this.styleOverrides = data.styleOverrides;
+    this.borderStyle = data.borderStyle;
+    this.borderColor = data.borderColor;
+    this.borderWidth = data.borderWidth;
+    this.borderShow = cloneDeep(data.borderShow);
+    this.styleOverrides = cloneDeep(data.styleOverrides);
     this._locked = data.locked;
     this._hidden = data.hidden;
   }
@@ -51,9 +57,12 @@ export abstract class PageComponentBase {
       scale: this.scale.toArray(),
       anchor: this.anchor.toArray(),
       rotation: this.rotation.deg,
-      border: this.border,
       background: this.background,
       color: this.color,
+      borderStyle: this.borderStyle,
+      borderColor: this.borderColor,
+      borderWidth: this.borderWidth,
+      borderShow: cloneDeep(this.borderShow),
       styleOverrides: cloneDeep(this.styleOverrides),
       locked: this._locked,
       hidden: this._hidden
@@ -87,9 +96,15 @@ export abstract class PageComponentBase {
       transform: `translate(-${anchorX * 100}%, -${anchorY * 100}%) scale(${scaleX},${scaleY}) rotate(${rotation})`,
       transformOrigin: "center center",
       background: this.background,
-      border: this.border,
       color: this.color,
+      borderTopStyle: this.borderShow[0] ? this.borderStyle : "none",
+      borderRightStyle: this.borderShow[1] ? this.borderStyle : "none",
+      borderBottomStyle: this.borderShow[2] ? this.borderStyle : "none",
+      borderLeftStyle: this.borderShow[3] ? this.borderStyle : "none",
+      borderColor: this.borderColor,
+      borderWidth: `${Math.max(this.borderWidth, 0)}px`,
       display: this._hidden ? "none" : "block",
+      boxSizing: "border-box",
       ...this.styleOverrides
     };
   }
