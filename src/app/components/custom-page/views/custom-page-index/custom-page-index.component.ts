@@ -16,9 +16,13 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {KeyEventItem, onKeyEvent, session, setGlobal} from "@app/app.common";
 import {MessageService} from "@app/modules/message/services/message.service";
+import {SpinnerService} from "@app/modules/spinner/services/spinner.service";
+import {getPdfInfo, htmlToPng} from "@app/utils/print";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {createPdf} from "pdfmake/build/pdfmake";
+import {TDocumentDefinitions} from "pdfmake/interfaces";
 import printJS from "print-js";
 import {PageComponentConfig2Component} from "../../menus/page-component-config2/page-component-config2.component";
 import {PageComponentConfigComponent} from "../../menus/page-component-config/page-component-config.component";
@@ -51,6 +55,7 @@ import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-co
 })
 export class CustomPageIndexComponent {
   private message = inject(MessageService);
+  private spinner = inject(SpinnerService);
 
   @HostBinding("class") class = "ng-page";
 
@@ -176,8 +181,41 @@ export class CustomPageIndexComponent {
     const data = this.page.export();
     downloadByString(JSON.stringify(data), {filename: "page.json"});
   }
-  preview() {
-    printJS({printable: this.pageEl().nativeElement, type: "html", targetStyles: ["*"]});
+  async getPagePng() {
+    this.spinner.show(this.spinner.defaultLoaderId, {text: "正在生成图片"});
+    const el = this.pageEl().nativeElement;
+    const {x: mmWidth, y: mmHeight} = this.page.size;
+    const result = htmlToPng(el, mmWidth, mmHeight);
+    this.spinner.hide(this.spinner.defaultLoaderId);
+    return result;
+  }
+  async getPagePdf() {
+    const {png, info} = await this.getPagePng();
+    this.spinner.show(this.spinner.defaultLoaderId, {text: "正在生成pdf"});
+    const params: TDocumentDefinitions = {
+      info: getPdfInfo({title: "自定义报表"}),
+      content: [{image: png, width: info.width, height: info.height}],
+      pageMargins: 0
+    };
+    const page = this.page;
+    if (page.sizeName === "自定义") {
+      params.pageSize = {width: page.size.x, height: page.size.y};
+    } else {
+      params.pageSize = page.sizeName;
+      params.pageOrientation = page.orientation;
+    }
+    const pdf = createPdf(params);
+    this.spinner.hide(this.spinner.defaultLoaderId);
+    return pdf;
+  }
+  async preview() {
+    const pdf = await this.getPagePdf();
+    const blob = await new Promise<Blob>((resolve) => {
+      pdf.getBlob((b) => resolve(b));
+    });
+    const url = URL.createObjectURL(blob);
+    printJS({printable: url, type: "pdf"});
+    URL.revokeObjectURL(url);
   }
 
   onPageConfigChanged(config: PageConfig) {

@@ -13,14 +13,19 @@ export const dataURLtoBlob = (dataURL: string) => {
 };
 
 export const getDPI = () => {
-  const result = Array<number>();
+  let dpiX = 0;
+  let dpiY = 0;
   const tmpNode = document.createElement("div");
   tmpNode.style.cssText = "width:1in;height:1in;position:absolute;left:0px;top:0px;z-index:99;visibility:hidden";
   document.body.appendChild(tmpNode);
-  result[0] = tmpNode.offsetWidth;
-  result[1] = tmpNode.offsetHeight;
+  dpiX = tmpNode.offsetWidth;
+  dpiY = tmpNode.offsetHeight;
+  if (!(dpiX > 0) || !(dpiY > 0)) {
+    console.warn("Unable to get screen dpi.Assuming dpi = 96.");
+    dpiX = dpiY = 96;
+  }
   tmpNode.remove();
-  return result;
+  return [dpiX, dpiY] as [number, number];
 };
 
 export const timeout = <T>(time = 0, value?: T) => new Promise<T | undefined>((resolve) => setTimeout(() => resolve(value), time));
