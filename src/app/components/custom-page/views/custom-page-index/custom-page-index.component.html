@@ -1,11 +1,11 @@
 <div class="header toolbar">
   <app-page-components-select class="flex-110" [(components)]="components"></app-page-components-select>
-  <div class="actions toolbar">
+  <div class="toolbar">
     <button mat-raised-button color="primary" (click)="resetPage()">清空</button>
     <button mat-raised-button color="primary" (click)="import()">导入</button>
     <button mat-raised-button color="primary" (click)="export()">导出</button>
     <button mat-raised-button color="primary" (click)="preview()">预览</button>
-    <button mat-raised-button color="primary">保存</button>
+    <button mat-raised-button [color]="isSaved() ? 'primary' : 'accent'" (click)="save()">保存</button>
   </div>
 </div>
 <div class="flex-row flex-110" style="overflow: hidden">

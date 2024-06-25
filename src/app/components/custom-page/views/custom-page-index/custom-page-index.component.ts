@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
   HostBinding,
@@ -14,7 +15,10 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {ActivatedRoute} from "@angular/router";
 import {KeyEventItem, onKeyEvent, session, setGlobal} from "@app/app.common";
+import {Subscribed} from "@app/mixins/subscribed.mixin";
+import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {SpinnerService} from "@app/modules/spinner/services/spinner.service";
 import {getPdfInfo, htmlToPng} from "@app/utils/print";
@@ -33,6 +37,7 @@ import {PageComponentTypeAny} from "../../models/page-component-infos";
 import {flatPageComponents} from "../../models/page-component-utils";
 import {PageSnapshotManager} from "../../models/page-snapshot-manager";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
+import {PagesDataRaw, Zidingyibaobiao} from "./custom-page-index.types";
 
 @Component({
   selector: "app-custom-page-index",
@@ -53,14 +58,20 @@ import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-co
   styleUrl: "./custom-page-index.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CustomPageIndexComponent {
+export class CustomPageIndexComponent extends Subscribed() {
   private message = inject(MessageService);
   private spinner = inject(SpinnerService);
+  private route = inject(ActivatedRoute);
+  private http = inject(CadDataService);
 
   @HostBinding("class") class = "ng-page";
 
+  table = "t_zidingyibaobiaomuban";
   page = new Page();
-  psm = new PageSnapshotManager(session, 20);
+  psm = new PageSnapshotManager(session, 20, this.page.id);
+  snapshotIndex = signal(-1);
+  savedSnapshotIndex = signal(-1);
+  isSaved = computed(() => this.snapshotIndex() === this.savedSnapshotIndex());
   pageConfig = signal<PageConfig>(this.page.getPageConfig());
   pageStyle = signal<ReturnType<Page["getStyle"]>>({});
   pagePlaceholderStyle = signal<Properties>({});
@@ -83,10 +94,12 @@ export class CustomPageIndexComponent {
   pageEl = viewChild.required<ElementRef<HTMLDivElement>>("pageEl");
 
   constructor() {
+    super();
     setGlobal("customPage", this);
     effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
     effect(() => this.onComponentsChanged(), {allowSignalWrites: true});
     effect(() => this.onActiveComponentChanged(), {allowSignalWrites: true});
+    this.subscribe(this.route.queryParams, () => this.load());
     this.loadPageSnapshot();
   }
 
@@ -105,7 +118,7 @@ export class CustomPageIndexComponent {
   }
 
   loadPageSnapshot() {
-    const {snapshot, canUndo, canRedo} = this.psm.loadSnapshot();
+    const {snapshot, canUndo, canRedo, index} = this.psm.loadSnapshot();
     if (snapshot) {
       this.page.import(snapshot);
       this.updatePage();
@@ -115,29 +128,33 @@ export class CustomPageIndexComponent {
     }
     this.canUndo.set(canUndo);
     this.canRedo.set(canRedo);
+    this.snapshotIndex.set(index);
   }
   savePageSnapshot() {
-    const {canUndo, canRedo} = this.psm.saveSnapshot(this.page.export());
+    const {canUndo, canRedo, index} = this.psm.saveSnapshot(this.page.export());
     this.canUndo.set(canUndo);
     this.canRedo.set(canRedo);
+    this.snapshotIndex.set(index);
   }
   undo() {
-    const {snapshot, canUndo} = this.psm.undo();
+    const {snapshot, canUndo, index} = this.psm.undo();
     if (snapshot) {
       this.page.import(snapshot);
       this.updatePage();
     }
     this.canUndo.set(canUndo);
     this.canRedo.set(true);
+    this.snapshotIndex.set(index);
   }
   redo() {
-    const {snapshot, canRedo} = this.psm.redo();
+    const {snapshot, canRedo, index} = this.psm.redo();
     if (snapshot) {
       this.page.import(snapshot);
       this.updatePage();
     }
     this.canUndo.set(true);
     this.canRedo.set(canRedo);
+    this.snapshotIndex.set(index);
   }
   resetPageSnapshot() {
     this.psm.reset();
@@ -169,6 +186,7 @@ export class CustomPageIndexComponent {
     try {
       const data = JSON.parse(await file.text());
       this.page.import(data);
+      this.psm.id = this.page.id;
       this.updatePage();
       this.savePageSnapshot();
       await this.message.snack("导入成功");
@@ -185,13 +203,12 @@ export class CustomPageIndexComponent {
     this.spinner.show(this.spinner.defaultLoaderId, {text: "正在生成图片"});
     const el = this.pageEl().nativeElement;
     const {x: mmWidth, y: mmHeight} = this.page.size;
-    const result = htmlToPng(el, mmWidth, mmHeight);
+    const result = await htmlToPng(el, mmWidth, mmHeight);
     this.spinner.hide(this.spinner.defaultLoaderId);
     return result;
   }
   async getPagePdf() {
     const {png, info} = await this.getPagePng();
-    this.spinner.show(this.spinner.defaultLoaderId, {text: "正在生成pdf"});
     const params: TDocumentDefinitions = {
       info: getPdfInfo({title: "自定义报表"}),
       content: [{image: png, width: info.width, height: info.height}],
@@ -205,17 +222,61 @@ export class CustomPageIndexComponent {
       params.pageOrientation = page.orientation;
     }
     const pdf = createPdf(params);
-    this.spinner.hide(this.spinner.defaultLoaderId);
     return pdf;
   }
   async preview() {
     const pdf = await this.getPagePdf();
+    this.spinner.show(this.spinner.defaultLoaderId, {text: "正在打印"});
     const blob = await new Promise<Blob>((resolve) => {
       pdf.getBlob((b) => resolve(b));
     });
+    this.spinner.hide(this.spinner.defaultLoaderId);
     const url = URL.createObjectURL(blob);
     printJS({printable: url, type: "pdf"});
     URL.revokeObjectURL(url);
+  }
+  async save() {
+    const {id} = this.route.snapshot.queryParams;
+    if (!id) {
+      return;
+    }
+    const data: PagesDataRaw = {pages: [this.page.export()]};
+    const mubanshuju = JSON.stringify(data);
+    await this.http.tableUpdate<Zidingyibaobiao>({table: this.table, data: {vid: id, mubanshuju}});
+    const index = this.snapshotIndex();
+    this.savedSnapshotIndex.set(index);
+    this.psm.setSavedSnapshotIndex(index);
+  }
+  async load() {
+    const {id} = this.route.snapshot.queryParams;
+    if (!id) {
+      return;
+    }
+    const records = await this.http.queryMySql<Zidingyibaobiao>({table: this.table, filter: {where: {vid: id}}});
+    const record = records[0];
+    if (!record) {
+      return;
+    }
+    let data: PagesDataRaw | undefined;
+    const mubanshuju = record.mubanshuju;
+    if (typeof mubanshuju === "string" && mubanshuju.length > 0) {
+      try {
+        data = JSON.parse(mubanshuju);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    if (!data) {
+      return;
+    }
+    const pageData = data.pages?.[0];
+    if (!pageData) {
+      return;
+    }
+    this.page.import(pageData);
+    this.psm.id = this.page.id;
+    this.savedSnapshotIndex.set(this.psm.getSavedSnapshotIndex());
+    this.loadPageSnapshot();
   }
 
   onPageConfigChanged(config: PageConfig) {

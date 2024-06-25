@@ -3,10 +3,12 @@ import Color from "color";
 import {Properties, Property} from "csstype";
 import {cloneDeep} from "lodash";
 import {PageOrientation} from "pdfmake/interfaces";
+import {v4} from "uuid";
 import {pageComponentInfos, PageComponentType, PageComponentTypeAny} from "./page-component-infos";
 import {PageSizeName, PageSizeNameCustom, pageSizes} from "./page-size";
 
 export class Page {
+  id = v4();
   size = new Point(pageSizes.A4.slice());
   sizeName: PageSizeNameCustom = "A4";
   orientation: PageOrientation = "portrait";
@@ -22,6 +24,8 @@ export class Page {
   constructor() {}
 
   import(data: ReturnType<typeof this.export>) {
+    data = {...this.export(), ...data};
+    this.id = data.id;
     if (data.sizeName === "自定义") {
       this.setSize({width: data.size[0], height: data.size[1]});
     } else {
@@ -45,6 +49,7 @@ export class Page {
   }
   export() {
     return {
+      id: this.id,
       size: this.size.toArray(),
       sizeName: this.sizeName,
       orientation: this.orientation,
@@ -57,9 +62,13 @@ export class Page {
       components: this.components.map((v) => v.export())
     };
   }
-  clone() {
+  clone(resetId?: boolean) {
     const page = new Page();
-    page.import(this.export());
+    const data = this.export();
+    if (resetId) {
+      data.id = page.id;
+    }
+    page.import(data);
     return page;
   }
 

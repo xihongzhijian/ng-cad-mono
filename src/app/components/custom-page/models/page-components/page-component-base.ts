@@ -23,6 +23,7 @@ export abstract class PageComponentBase {
   constructor(public name: string) {}
 
   import(data: ReturnType<typeof this.export>) {
+    data = {...this.export(), ...data};
     if (data.type !== this.type) {
       throw new Error(`Invalid component type: ${data.type}, expected: ${this.type}`);
     }

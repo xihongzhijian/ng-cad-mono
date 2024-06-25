@@ -40,13 +40,16 @@ export class PageConfigComponent {
       model: {data: config, key: "orientation"},
       onChange
     };
+    const isCustomSize = config.sizeName === "自定义";
     const widthInput: InputInfoNumber<PageConfig> = {
       ...getNumberUnitInput(true, "页宽", "mm"),
+      readonly: !isCustomSize,
       model: {data: config, key: "width"},
       onChange
     };
     const heightInput: InputInfoNumber<PageConfig> = {
       ...getNumberUnitInput(true, "页高", "mm"),
+      readonly: !isCustomSize,
       model: {data: config, key: "height"},
       onChange
     };
