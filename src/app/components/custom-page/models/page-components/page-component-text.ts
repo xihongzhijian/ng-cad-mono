@@ -7,22 +7,19 @@ export class PageComponentText extends PageComponentBase {
   fontSize: number = 16;
   fontFamily: Property.FontFamily = "";
 
-  readonly = false;
-
   import(data: ReturnType<typeof this.export>) {
+    data = this._getImportData(data);
     super.import(data);
     this.text = data.text;
     this.fontSize = data.fontSize;
     this.fontFamily = data.fontFamily;
-    this.color = data.color;
   }
   export() {
     return {
       ...super.export(),
       text: this.text,
       fontSize: this.fontSize,
-      fontFamily: this.fontFamily,
-      color: this.color
+      fontFamily: this.fontFamily
     };
   }
 
@@ -30,7 +27,6 @@ export class PageComponentText extends PageComponentBase {
     const style = super.getStyle();
     style.fontSize = `${this.fontSize}px`;
     style.fontFamily = this.fontFamily;
-    style.color = this.color;
     return style;
   }
 }

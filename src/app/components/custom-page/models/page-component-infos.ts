@@ -1,5 +1,6 @@
 import {imgEmpty} from "@app/app.common";
 import {keysOf} from "@lucilor/utils";
+import {PageComponentForm} from "./page-components/page-component-form";
 import {PageComponentGroup} from "./page-components/page-component-group";
 import {PageComponentImage} from "./page-components/page-component-image";
 import {PageComponentText} from "./page-components/page-component-text";
@@ -7,6 +8,7 @@ import {PageComponentText} from "./page-components/page-component-text";
 export interface PageComponentInfos {
   text: PageComponentInfo<typeof PageComponentText>;
   image: PageComponentInfo<typeof PageComponentImage>;
+  form: PageComponentInfo<typeof PageComponentForm>;
   group: PageComponentInfo<typeof PageComponentGroup>;
 }
 export const pageComponentInfos: PageComponentInfos = {
@@ -23,6 +25,13 @@ export const pageComponentInfos: PageComponentInfos = {
     previewImg: imgEmpty,
     class: PageComponentImage,
     resizable: {x: true, y: true}
+  },
+  form: {
+    name: "表格",
+    description: "这是表格组件",
+    previewImg: imgEmpty,
+    class: PageComponentForm,
+    resizable: {}
   },
   group: {
     name: "分组",

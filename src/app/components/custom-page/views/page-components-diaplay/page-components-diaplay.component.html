@@ -59,6 +59,45 @@
           @case ("image") {
             <app-image [src]="component.src" [objectFit]="component.objectFit" (imgEnd)="onImgEnd($event, component)"></app-image>
           }
+          @case ("form") {
+            <ng-template #formCellItem let-cell let-i="i" let-j="j" let-k="k" let-wrap="wrap">
+              @if (wrap) {
+                <textarea
+                  matInput
+                  [value]="cell[k]"
+                  [readonly]="this.editingComponent()?.id !== component.id"
+                  (input)="onComponentFormInput($event, component, i, j, k)"
+                  cdkTextareaAutosize
+                  cdkAutosizeMinRows="1"
+                ></textarea>
+              } @else {
+                <input
+                  matInput
+                  [value]="cell[k]"
+                  [readonly]="this.editingComponent()?.id !== component.id"
+                  (input)="onComponentFormInput($event, component, i, j, k)"
+                />
+              }
+            </ng-template>
+            @for (row of component.values; track i; let i = $index) {
+              <div class="row">
+                @for (cell of row; track j; let j = $index) {
+                  <div class="cell">
+                    <div class="label" [class]="{'has-separator': component.labelSeparator, wrap: component.labelWrap}">
+                      <ng-container
+                        *ngTemplateOutlet="formCellItem; context: {$implicit: cell, i: i, j: j, k: 0, wrap: component.labelWrap}"
+                      ></ng-container>
+                    </div>
+                    <div class="value" [class]="{wrap: component.valueWrap}">
+                      <ng-container
+                        *ngTemplateOutlet="formCellItem; context: {$implicit: cell, i: i, j: j, k: 1, wrap: component.valueWrap}"
+                      ></ng-container>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
           @case ("group") {
             <ng-container *ngTemplateOutlet="componentsTpl; context: {$implicit: component.children}"></ng-container>
           }

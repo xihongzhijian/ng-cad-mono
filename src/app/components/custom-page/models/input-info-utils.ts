@@ -33,13 +33,6 @@ export const getNumberUnitInput = <T>(
   };
 };
 
-export const trblItems = [
-  {name: "上", index: 0},
-  {name: "下", index: 2},
-  {name: "左", index: 3},
-  {name: "右", index: 1}
-];
-
 export const getUnifiedInputs = <T>(
   id: string,
   inputs: (InputInfoString | InputInfoNumber | InputInfoBoolean)[],

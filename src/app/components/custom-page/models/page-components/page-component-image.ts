@@ -17,6 +17,7 @@ export class PageComponentImage extends PageComponentBase {
   }
 
   import(data: ReturnType<typeof this.export>) {
+    data = this._getImportData(data);
     super.import(data);
     this.src = data.src;
     this.objectFit = data.objectFit;
@@ -43,6 +44,12 @@ export class PageComponentImage extends PageComponentBase {
     const result = {isChanged: false};
     if (!keepRatio) {
       return result;
+    }
+    if (!(this.size.x > 0)) {
+      this.size.x = this.naturalSize.x;
+    }
+    if (!(this.size.y > 0)) {
+      this.size.y = this.naturalSize.y;
     }
     const ratio = this.naturalRatio;
     const ratio2 = this.size.x / this.size.y;

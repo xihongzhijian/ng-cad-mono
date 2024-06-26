@@ -13,6 +13,7 @@ import {Properties} from "csstype";
 import {debounce, isEqual} from "lodash";
 import {PageConfig} from "../../models/page";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
+import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentImage} from "../../models/page-components/page-component-image";
 import {PageComponentText} from "../../models/page-components/page-component-text";
 import {ControlPoint, Helpers} from "./page-components-diaplay.types";
@@ -444,4 +445,24 @@ export class PageComponentsDiaplayComponent {
       // this.components.update((v) => [...v]);
     }
   }
+
+  editinFormItem = signal<{i: number; j: number; k: number} | null>(null);
+  isEditingFormItem(component: PageComponentForm, i: number, j: number, k: number) {
+    if (this.editingComponent()?.id !== component.id) {
+      return false;
+    }
+    const editingFormItem = this.editinFormItem();
+    if (!editingFormItem) {
+      return false;
+    }
+    return editingFormItem.i === i && editingFormItem.j === j && editingFormItem.k === k;
+  }
+  onComponentFormInput = debounce((event: Event, component: PageComponentForm, i: number, j: number, k: number) => {
+    const target = event.target as HTMLInputElement;
+    component.values[i][j][k] = target.value;
+    const {isComponentsUpdated} = this.updateControl(component);
+    if (!isComponentsUpdated) {
+      this.components.update((v) => [...v]);
+    }
+  }, 200);
 }

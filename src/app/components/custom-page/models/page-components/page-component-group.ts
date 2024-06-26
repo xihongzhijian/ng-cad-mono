@@ -3,11 +3,11 @@ import {PageComponentBase} from "./page-component-base";
 
 export class PageComponentGroup extends PageComponentBase {
   readonly type = "group";
-
   expanded: boolean = false;
   children: PageComponentTypeAny[] = [];
 
   import(data: ReturnType<typeof this.export>) {
+    data = this._getImportData(data);
     super.import(data);
     this.expanded = data.expanded;
     const infos = pageComponentInfos;

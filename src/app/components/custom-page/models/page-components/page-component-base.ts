@@ -25,8 +25,10 @@ export abstract class PageComponentBase {
 
   constructor(public name: string) {}
 
+  protected _getImportData<T>(data: T): T {
+    return {...this.export(), ...data};
+  }
   import(data: ReturnType<typeof this.export>) {
-    data = {...this.export(), ...data};
     if (data.type !== this.type) {
       throw new Error(`Invalid component type: ${data.type}, expected: ${this.type}`);
     }
@@ -105,6 +107,10 @@ export abstract class PageComponentBase {
       borderWidth: `${Math.max(this.borderWidth, 0)}px`,
       display: this._hidden ? "none" : "block",
       boxSizing: "border-box",
+      "--border-style": this.borderStyle,
+      "--border-color": this.borderColor,
+      "--border-width": `${this.borderWidth}px`,
+      "--border": `${this.borderWidth}px ${this.borderStyle} ${this.borderColor}`,
       ...this.styleOverrides
     };
   }

@@ -5,6 +5,7 @@ import {ImageComponent} from "@app/modules/image/components/image/image.componen
 import {keysOf} from "@lucilor/utils";
 import {PageComponentInfos, pageComponentInfos, PageComponentType, PageComponentTypeAny} from "../../models/page-component-infos";
 import {getPageComponentNames} from "../../models/page-component-utils";
+import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentText} from "../../models/page-components/page-component-text";
 
 @Component({
@@ -39,6 +40,17 @@ export class PageComponentsSeletComponent {
     component.size.set(100, 100);
     if (component instanceof PageComponentText) {
       component.text = "双击编辑文本";
+    } else if (component instanceof PageComponentForm) {
+      component.rows = 1;
+      component.cols = 1;
+      component.rowHeight = 22;
+      component.labelWidth = 50;
+      component.valueWidth = 100;
+      component.labelPadding = [5, 5, 5, 5];
+      component.valuePadding = [5, 5, 5, 5];
+      component.borderColor = "black";
+      component.borderWidth = 1;
+      component.borderStyle = "solid";
     }
     this.components.set([...components, component]);
   }

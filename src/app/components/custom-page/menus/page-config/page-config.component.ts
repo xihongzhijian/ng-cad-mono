@@ -3,9 +3,10 @@ import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoColor, InputInfoNumber, InputInfoSelect} from "@app/modules/input/components/input.types";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs, trblItems} from "../../models/input-info-utils";
+import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "../../models/input-info-utils";
 import {PageConfig} from "../../models/page";
 import {PageOrientation, PageSizeNameCustom, pageSizeNamesCustom} from "../../models/page-size";
+import {trblItems} from "../../models/page.utils";
 
 @Component({
   selector: "app-page-config",

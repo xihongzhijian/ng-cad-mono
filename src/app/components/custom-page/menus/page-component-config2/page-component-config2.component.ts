@@ -24,11 +24,13 @@ import {getElementVisiblePercentage, isTypeOf, selectFiles} from "@lucilor/utils
 import Color from "color";
 import {DataType, Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs, trblItems} from "../../models/input-info-utils";
+import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "../../models/input-info-utils";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
 import {PageComponentBase} from "../../models/page-components/page-component-base";
+import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentImage} from "../../models/page-components/page-component-image";
 import {PageComponentText} from "../../models/page-components/page-component-text";
+import {trblItems} from "../../models/page.utils";
 import {InputGroup} from "./page-component-config2.types";
 
 @Component({
@@ -145,6 +147,9 @@ export class PageComponentConfig2Component {
     if (component instanceof PageComponentImage) {
       mergeGroups(this.getImageInputs(component, onChange));
     }
+    if (component instanceof PageComponentForm) {
+      mergeGroups(this.getFormInputs(component, onChange));
+    }
     if (component instanceof PageComponentBase) {
       mergeGroups(this.getCommonInputs(component, onChange));
     }
@@ -245,6 +250,122 @@ export class PageComponentConfig2Component {
                 style: getInputStyle(true)
               }
             ]
+          }
+        ]
+      }
+    ];
+  }
+  getFormInputs(component: PageComponentForm, onChange: () => void): InputGroup[] {
+    return [
+      {
+        name: "",
+        infos: [
+          {
+            type: "string",
+            label: "字体",
+            model: {data: component, key: "fontFamily"},
+            onChange
+          },
+          {
+            ...getNumberUnitInput(false, "字号", "px"),
+            model: {data: component, key: "fontSize"},
+            onChange
+          },
+          {
+            type: "color",
+            label: "字体颜色",
+            value: new Color(component.color),
+            onChange: (val) => {
+              component.color = val.string();
+              onChange();
+            }
+          },
+          {
+            type: "group",
+            label: "",
+            groupStyle: getGroupStyle(),
+            infos: [
+              {type: "number", label: "行数", model: {data: component, key: "rows"}, onChange, style: getInputStyle(true)},
+              {type: "number", label: "列数", model: {data: component, key: "cols"}, onChange, style: getInputStyle(true)}
+            ]
+          },
+          {
+            type: "group",
+            label: "",
+            groupStyle: getGroupStyle(),
+            infos: [
+              {type: "number", label: "标题宽", model: {data: component, key: "labelWidth"}, onChange, style: getInputStyle(true)},
+              {type: "number", label: "内容宽", model: {data: component, key: "valueWidth"}, onChange, style: getInputStyle(true)}
+            ]
+          },
+          {
+            type: "group",
+            label: "",
+            groupStyle: getGroupStyle(),
+            infos: [
+              {
+                type: "boolean",
+                label: "标题换行",
+                disabled: true,
+                hint: "未实现",
+                model: {data: component, key: "labelWrap"},
+                onChange,
+                style: getInputStyle(true)
+              },
+              {
+                type: "boolean",
+                label: "内容换行",
+                disabled: true,
+                hint: "未实现",
+                model: {data: component, key: "valueWrap"},
+                onChange,
+                style: getInputStyle(true)
+              }
+            ]
+          },
+          {
+            type: "group",
+            label: "",
+            groupStyle: getGroupStyle(),
+            infos: [
+              {type: "boolean", label: "标题分隔线", model: {data: component, key: "labelSeparator"}, onChange, style: getInputStyle(true)},
+              {type: "number", label: "行高", model: {data: component, key: "rowHeight"}, onChange, style: getInputStyle(true)}
+            ]
+          }
+        ]
+      } as InputGroup<PageComponentForm>,
+      {
+        name: "表格边距",
+        infos: [
+          {
+            type: "group",
+            label: "标题边距",
+            groupStyle: getGroupStyle(),
+            infos: getUnifiedInputs(
+              "表格标题边距",
+              trblItems.map(({name, index}) => ({
+                ...getNumberUnitInput(true, name, "px", {flex: "0 0 50%"}),
+                model: {data: component.labelPadding, key: index},
+                onChange
+              })),
+              component.labelPadding,
+              onChange
+            )
+          },
+          {
+            type: "group",
+            label: "内容边距",
+            groupStyle: getGroupStyle(),
+            infos: getUnifiedInputs(
+              "表格内容边距",
+              trblItems.map(({name, index}) => ({
+                ...getNumberUnitInput(true, name, "px", {flex: "0 0 50%"}),
+                model: {data: component.valuePadding, key: index},
+                onChange
+              })),
+              component.valuePadding,
+              onChange
+            )
           }
         ]
       }
