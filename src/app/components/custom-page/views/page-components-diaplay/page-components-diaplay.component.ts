@@ -283,8 +283,9 @@ export class PageComponentsDiaplayComponent {
       updateComponents = true;
     }
     if (updateComponents) {
-      this.components.update((v) => [...v]);
-      result.isComponentsUpdated = true;
+      // todo
+      // this.components.update((v) => [...v]);
+      // result.isComponentsUpdated = true;
     }
     return result;
   }
@@ -439,7 +440,8 @@ export class PageComponentsDiaplayComponent {
     }
     const result = component.fitToImageElement(imgEl);
     if (result.isChanged) {
-      this.components.update((v) => [...v]);
+      // todo
+      // this.components.update((v) => [...v]);
     }
   }
 }

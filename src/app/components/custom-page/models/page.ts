@@ -37,15 +37,17 @@ export class Page {
     this.padding = data.padding;
     this.styleOverrides = data.styleOverrides;
     this.workSpaceStyle = data.workSpaceStyle;
-    this.components = data.components.map((component) => {
+    this.components = [];
+    for (const component of data.components) {
       const type = component.type as PageComponentType;
       if (!(type in pageComponentInfos)) {
-        throw new Error(`Unknown component type: ${type}`);
+        console.warn(`Unknown component type: ${type}`);
+        continue;
       }
       const componentInstance = new pageComponentInfos[type].class(component.name);
       componentInstance.import(component as any);
-      return componentInstance;
-    });
+      this.components.push(componentInstance);
+    }
   }
   export() {
     return {

@@ -334,7 +334,7 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     if (this._noSaveOnComponentsChanged) {
       this._noSaveOnComponentsChanged = false;
     } else {
-      this.savePageSnapshot();
+      untracked(() => this.savePageSnapshot());
     }
   }
   onActiveComponentChanged() {
