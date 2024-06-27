@@ -94,16 +94,18 @@ export class PageComponentsDiaplayComponent {
     }
     return component.getStyle();
   }
-  clickComponent(component: PageComponentTypeAny) {
+  clickComponent(event: Event, component: PageComponentTypeAny) {
     if (this.draggingComponent()) {
       this.draggingComponent.set(null);
       return;
     }
+    event.stopPropagation();
     if (this.activeComponent()?.id !== component.id) {
       this.activeComponent.set(component);
     }
   }
-  dblClickComponent(component: PageComponentTypeAny, componentEl: HTMLDivElement) {
+  dblClickComponent(event: Event, component: PageComponentTypeAny, componentEl: HTMLDivElement) {
+    event.stopPropagation();
     this.editingComponent.set(component);
     if (component instanceof PageComponentText) {
       const input = componentEl.querySelector("textarea");
@@ -150,9 +152,11 @@ export class PageComponentsDiaplayComponent {
       if (componentEl.nativeElement === el) {
         continue;
       }
-      const rect = componentEl.nativeElement.getBoundingClientRect();
-      snapXs.push(rect.left, rect.left + rect.width / 2, rect.right);
-      snapYs.push(rect.top, rect.top + rect.height / 2, rect.bottom);
+      componentEl.nativeElement.querySelectorAll(".snap").forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        snapXs.push(rect.left, rect.left + rect.width / 2, rect.right);
+        snapYs.push(rect.top, rect.top + rect.height / 2, rect.bottom);
+      });
     }
     const helpers = this.helpers();
     helpers.axisX.show = false;

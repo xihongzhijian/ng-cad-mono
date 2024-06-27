@@ -7,8 +7,8 @@
       [class]="component.type"
       [attr.data-id]="component.id"
       [style]="getComponentStyle(component)"
-      (click)="clickComponent(component)"
-      (dblclick)="dblClickComponent(component, componentEl)"
+      (click)="clickComponent($event, component)"
+      (dblclick)="dblClickComponent($event, component, componentEl)"
       cdkDrag
       cdkDragBoundary="app-page-components-diaplay"
       [cdkDragDisabled]="getComponentDragDisabled(component)"
@@ -48,6 +48,7 @@
         @switch (component.type) {
           @case ("text") {
             <textarea
+              class="snap"
               matInput
               [value]="component.text"
               [readonly]="editingComponent()?.id !== component.id"
@@ -57,7 +58,12 @@
             ></textarea>
           }
           @case ("image") {
-            <app-image [src]="component.src" [objectFit]="component.objectFit" (imgEnd)="onImgEnd($event, component)"></app-image>
+            <app-image
+              class="snap"
+              [src]="component.src"
+              [objectFit]="component.objectFit"
+              (imgEnd)="onImgEnd($event, component)"
+            ></app-image>
           }
           @case ("form") {
             <ng-template #formCellItem let-cell let-i="i" let-j="j" let-k="k" let-wrap="wrap">
@@ -83,12 +89,12 @@
               <div class="row">
                 @for (cell of row; track j; let j = $index) {
                   <div class="cell">
-                    <div class="label" [class]="{'has-separator': component.labelSeparator, wrap: component.labelWrap}">
+                    <div class="label snap" [class]="{'has-separator': component.labelSeparator, wrap: component.labelWrap}">
                       <ng-container
                         *ngTemplateOutlet="formCellItem; context: {$implicit: cell, i: i, j: j, k: 0, wrap: component.labelWrap}"
                       ></ng-container>
                     </div>
-                    <div class="value" [class]="{wrap: component.valueWrap}">
+                    <div class="value snap" [class]="{wrap: component.valueWrap}">
                       <ng-container
                         *ngTemplateOutlet="formCellItem; context: {$implicit: cell, i: i, j: j, k: 1, wrap: component.valueWrap}"
                       ></ng-container>
