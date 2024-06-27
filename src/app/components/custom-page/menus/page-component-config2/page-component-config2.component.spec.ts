@@ -1,7 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
-import {PageComponentText} from "../../models/page-components/page-component-text";
 import {PageComponentConfig2Component} from "./page-component-config2.component";
 
 describe("PageComponentConfig2Component", () => {
@@ -17,11 +16,6 @@ describe("PageComponentConfig2Component", () => {
     fixture = TestBed.createComponent(PageComponentConfig2Component);
     component = fixture.componentInstance;
     const ref = fixture.componentRef;
-    const components = [new PageComponentText("1"), new PageComponentText("2")];
-    ref.setInput("components", components);
-    ref.setInput("activeComponent", components[0]);
-    ref.setInput("activeComponent2", components[0]);
-    ref.setInput("showComponentMenu", true);
     ref.setInput("workSpaceEl", document.createElement("div"));
     fixture.detectChanges();
   });

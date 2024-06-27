@@ -9,7 +9,6 @@ import {
   HostBinding,
   inject,
   input,
-  model,
   signal,
   viewChild
 } from "@angular/core";
@@ -31,6 +30,7 @@ import {PageComponentForm} from "../../models/page-components/page-component-for
 import {PageComponentImage} from "../../models/page-components/page-component-image";
 import {PageComponentText} from "../../models/page-components/page-component-text";
 import {trblItems} from "../../models/page.utils";
+import {PageStatusService} from "../../services/page-status.service";
 import {InputGroup} from "./page-component-config2.types";
 
 @Component({
@@ -52,14 +52,24 @@ import {InputGroup} from "./page-component-config2.types";
 })
 export class PageComponentConfig2Component {
   private http = inject(CadDataService);
+  private pageStatus = inject(PageStatusService);
 
   @HostBinding("class") class = "ng-page";
 
-  components = model.required<PageComponentTypeAny[]>();
-  activeComponent = model.required<PageComponentTypeAny | null>();
-  activeComponent2 = model.required<PageComponentTypeAny | null>();
-  showComponentMenu = model.required<boolean>();
   workSpaceEl = input.required<HTMLElement>();
+
+  get components() {
+    return this.pageStatus.components;
+  }
+  get activeComponent() {
+    return this.pageStatus.activeComponent;
+  }
+  get activeComponent2() {
+    return this.pageStatus.activeComponent2;
+  }
+  get showComponentMenu() {
+    return this.pageStatus.showComponentMenu;
+  }
 
   private _expandedGroupsKey = "expandedGroups";
   private _componentMenuStyleKey = "customPageComponentMenuStyle";

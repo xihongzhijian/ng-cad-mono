@@ -1,7 +1,7 @@
 import {CdkDrag, CdkDragEnd, CdkDragMove} from "@angular/cdk/drag-drop";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, model, signal, untracked, viewChildren} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, signal, untracked, viewChildren} from "@angular/core";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {setGlobal} from "@app/app.common";
@@ -11,11 +11,11 @@ import {ImageEvent} from "@app/modules/image/components/image/image.component.ty
 import {Angle, Point} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {debounce, isEqual} from "lodash";
-import {PageConfig} from "../../models/page";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
 import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentImage} from "../../models/page-components/page-component-image";
 import {PageComponentText} from "../../models/page-components/page-component-text";
+import {PageStatusService} from "../../services/page-status.service";
 import {ControlPoint, Helpers} from "./page-components-diaplay.types";
 
 @Component({
@@ -28,11 +28,20 @@ import {ControlPoint, Helpers} from "./page-components-diaplay.types";
 })
 export class PageComponentsDiaplayComponent {
   private elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  private pageStatus = inject(PageStatusService);
 
-  components = model.required<PageComponentTypeAny[]>();
-  activeComponent = model.required<PageComponentTypeAny | null>();
-  activeComponent2 = model.required<PageComponentTypeAny | null>();
-  pageConfig = input.required<PageConfig>();
+  get components() {
+    return this.pageStatus.components;
+  }
+  get activeComponent() {
+    return this.pageStatus.activeComponent;
+  }
+  get activeComponent2() {
+    return this.pageStatus.activeComponent2;
+  }
+  get pageConfig() {
+    return this.pageStatus.pageConfig;
+  }
 
   control = signal<{class: string[]; style: Properties} | null>(null);
   editingComponent = signal<PageComponentTypeAny | null>(null);

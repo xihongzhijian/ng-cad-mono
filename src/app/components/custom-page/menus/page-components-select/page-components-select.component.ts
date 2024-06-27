@@ -1,12 +1,13 @@
-import {ChangeDetectionStrategy, Component, model} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject} from "@angular/core";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getInsertName} from "@app/app.common";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
 import {keysOf} from "@lucilor/utils";
-import {PageComponentInfos, pageComponentInfos, PageComponentType, PageComponentTypeAny} from "../../models/page-component-infos";
+import {PageComponentInfos, pageComponentInfos, PageComponentType} from "../../models/page-component-infos";
 import {getPageComponentNames} from "../../models/page-component-utils";
 import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentText} from "../../models/page-components/page-component-text";
+import {PageStatusService} from "../../services/page-status.service";
 
 @Component({
   selector: "app-page-components-select",
@@ -17,7 +18,11 @@ import {PageComponentText} from "../../models/page-components/page-component-tex
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PageComponentsSeletComponent {
-  components = model.required<PageComponentTypeAny[]>();
+  private pageStatus = inject(PageStatusService);
+
+  get components() {
+    return this.pageStatus.components;
+  }
 
   infos: {key: PageComponentType; value: PageComponentInfos[PageComponentType]}[];
 

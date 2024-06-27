@@ -1,5 +1,5 @@
 <div class="header toolbar">
-  <app-page-components-select class="flex-110" [(components)]="components"></app-page-components-select>
+  <app-page-components-select class="flex-110"></app-page-components-select>
   <div class="toolbar">
     <button mat-raised-button color="primary" (click)="resetPage()">清空</button>
     <button mat-raised-button color="primary" (click)="import()">导入</button>
@@ -14,22 +14,11 @@
     <ng-scrollbar class="enable-x">
       <div #pageEl class="page" [style]="pageStyle()" (pointerdown)="onPagePointerDown($event)" (pointerup)="onPagePointerUp($event)">
         <div class="page-inner">
-          <app-page-components-diaplay
-            [(components)]="components"
-            [(activeComponent)]="activeComponent"
-            [(activeComponent2)]="activeComponent2"
-            [pageConfig]="pageConfig()"
-          ></app-page-components-diaplay>
+          <app-page-components-diaplay></app-page-components-diaplay>
         </div>
       </div>
     </ng-scrollbar>
-    <app-page-component-config2
-      [(components)]="components"
-      [(activeComponent)]="activeComponent"
-      [(activeComponent2)]="activeComponent2"
-      [(showComponentMenu)]="showComponentMenu"
-      [workSpaceEl]="workSpaceEl"
-    ></app-page-component-config2>
+    <app-page-component-config2 [workSpaceEl]="workSpaceEl"></app-page-component-config2>
   </div>
   <div class="menus">
     <div class="toolbar vertical">
@@ -42,10 +31,10 @@
     </div>
     <mat-tab-group [(selectedIndex)]="menuTabIndex">
       <mat-tab label="页面设置">
-        <app-page-config class="tab" [(config)]="pageConfig" (configChange)="onPageConfigChanged($event)"></app-page-config>
+        <app-page-config class="tab"></app-page-config>
       </mat-tab>
       <mat-tab label="图层管理">
-        <app-page-component-config [(components)]="components" [(activeComponent)]="activeComponent"></app-page-component-config>
+        <app-page-component-config></app-page-component-config>
       </mat-tab>
       <mat-tab label="页面管理"></mat-tab>
     </mat-tab-group>

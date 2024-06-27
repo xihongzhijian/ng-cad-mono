@@ -1,6 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, transferArrayItem} from "@angular/cdk/drag-drop";
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, inject, model, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, inject, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
@@ -12,6 +12,7 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
 import {flatPageComponents, getPageComponentGroup, getPageComponentNames, removePageComponent} from "../../models/page-component-utils";
 import {PageComponentGroup} from "../../models/page-components/page-component-group";
+import {PageStatusService} from "../../services/page-status.service";
 
 @Component({
   selector: "app-page-component-config",
@@ -33,9 +34,14 @@ import {PageComponentGroup} from "../../models/page-components/page-component-gr
 })
 export class PageComponentConfigComponent {
   private message = inject(MessageService);
+  private pageStatus = inject(PageStatusService);
 
-  components = model.required<PageComponentTypeAny[]>();
-  activeComponent = model.required<PageComponentTypeAny | null>();
+  get components() {
+    return this.pageStatus.components;
+  }
+  get activeComponent() {
+    return this.pageStatus.activeComponent;
+  }
 
   componentsTplType!: {$implicit: PageComponentTypeAny[]; level: number; id: string};
   hoveringId = signal<string | null>(null);

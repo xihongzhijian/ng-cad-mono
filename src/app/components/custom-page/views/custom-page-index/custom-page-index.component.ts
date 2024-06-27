@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
   ElementRef,
   HostBinding,
@@ -10,7 +9,6 @@ import {
   OnDestroy,
   OnInit,
   signal,
-  untracked,
   viewChild
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
@@ -34,12 +32,10 @@ import {PageComponentConfig2Component} from "../../menus/page-component-config2/
 import {PageComponentConfigComponent} from "../../menus/page-component-config/page-component-config.component";
 import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
-import {Page, PageConfig} from "../../models/page";
-import {PageComponentTypeAny} from "../../models/page-component-infos";
-import {findPageComponent} from "../../models/page-component-utils";
-import {PageSnapshotManager} from "../../models/page-snapshot-manager";
+import {Page} from "../../models/page";
+import {PageStatusService} from "../../services/page-status.service";
+import {PagesDataRaw, Zidingyibaobiao} from "../../services/page-status.service.types";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
-import {PagesDataRaw, Zidingyibaobiao} from "./custom-page-index.types";
 
 @Component({
   selector: "app-custom-page-index",
@@ -61,29 +57,39 @@ import {PagesDataRaw, Zidingyibaobiao} from "./custom-page-index.types";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CustomPageIndexComponent extends Subscribed() implements OnInit, OnDestroy {
-  private message = inject(MessageService);
-  private spinner = inject(SpinnerService);
-  private route = inject(ActivatedRoute);
   private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private pageStatus = inject(PageStatusService);
+  private route = inject(ActivatedRoute);
+  private spinner = inject(SpinnerService);
 
   @HostBinding("class") class = "ng-page";
 
-  table = "t_zidingyibaobiaomuban";
-  page = new Page();
-  psm = new PageSnapshotManager(session, 20, this.page.id);
-  snapshotIndex = signal(-1);
-  savedSnapshotIndex = signal(-1);
-  isSaved = computed(() => this.snapshotIndex() === this.savedSnapshotIndex());
-  pageConfig = signal<PageConfig>(this.page.getPageConfig());
+  get page() {
+    return this.pageStatus.page;
+  }
+  get psm() {
+    return this.pageStatus.psm;
+  }
+  get isSaved() {
+    return this.pageStatus.isSaved;
+  }
+  get undo() {
+    return this.pageStatus.undo.bind(this.pageStatus);
+  }
+  get redo() {
+    return this.pageStatus.redo.bind(this.pageStatus);
+  }
+  get canUndo() {
+    return this.pageStatus.canUndo;
+  }
+  get canRedo() {
+    return this.pageStatus.canRedo;
+  }
+
   pageStyle = signal<ReturnType<Page["getStyle"]>>({});
   pagePlaceholderStyle = signal<Properties>({});
   workSpaceStyle = signal<Properties>({});
-  components = signal<PageComponentTypeAny[]>([]);
-  activeComponent = signal<PageComponentTypeAny | null>(null);
-  activeComponent2 = signal<PageComponentTypeAny | null>(null);
-  canUndo = signal(false);
-  canRedo = signal(false);
-  showComponentMenu = signal(false);
 
   private _menuTabIndexKey = "customPageMenuTabIndex";
   menuTabIndex = signal(session.load(this._menuTabIndexKey) || 0);
@@ -99,10 +105,8 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     super();
     setGlobal("customPage", this);
     effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
-    effect(() => this.onComponentsChanged(), {allowSignalWrites: true});
-    effect(() => this.onActiveComponentChanged(), {allowSignalWrites: true});
+    effect(() => this.onPageConfigChanged(), {allowSignalWrites: true});
     this.subscribe(this.route.queryParams, () => this.load());
-    this.loadPageSnapshot();
   }
 
   ngOnInit() {
@@ -117,62 +121,9 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     this.pageStyle.set(this.page.getStyle());
     this.workSpaceStyle.set({...this.page.workSpaceStyle});
   }
-  updatePageComponents() {
-    this._noSaveOnComponentsChanged = true;
-    this.components.set([...this.page.components]);
-  }
   updatePage() {
     this.updatePageStyle();
-    this.updatePageComponents();
-    this.pageConfig.set(this.page.getPageConfig());
-  }
-
-  loadPageSnapshot() {
-    const {snapshot, canUndo, canRedo, index} = this.psm.loadSnapshot();
-    if (snapshot) {
-      this.page.import(snapshot);
-      this.updatePage();
-    } else {
-      this.initPage();
-      this.updatePage();
-    }
-    this.canUndo.set(canUndo);
-    this.canRedo.set(canRedo);
-    this.snapshotIndex.set(index);
-  }
-  savePageSnapshot() {
-    const {canUndo, canRedo, index} = this.psm.saveSnapshot(this.page.export());
-    this.canUndo.set(canUndo);
-    this.canRedo.set(canRedo);
-    if (this.snapshotIndex() !== index) {
-      this.snapshotIndex.set(index);
-    } else {
-      this.savedSnapshotIndex.update((v) => v - 1);
-    }
-  }
-  undo() {
-    const {snapshot, canUndo, index} = this.psm.undo();
-    if (snapshot) {
-      this.page.import(snapshot);
-      this.updatePage();
-    }
-    this.canUndo.set(canUndo);
-    this.canRedo.set(true);
-    this.snapshotIndex.set(index);
-  }
-  redo() {
-    const {snapshot, canRedo, index} = this.psm.redo();
-    if (snapshot) {
-      this.page.import(snapshot);
-      this.updatePage();
-    }
-    this.canUndo.set(true);
-    this.canRedo.set(canRedo);
-    this.snapshotIndex.set(index);
-  }
-  resetPageSnapshot() {
-    this.psm.reset();
-    this.savePageSnapshot();
+    this.pageStatus.updatePageComponents();
   }
 
   @HostListener("window:keydown", ["$event"])
@@ -180,16 +131,10 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     onKeyEvent(event, this.keyEventItems);
   }
 
-  async initPage() {
-    this.page = new Page();
-    this.page.padding = [12, 12, 12, 12];
-    this.page.workSpaceStyle.backgroundColor = "lightgray";
-    this.page.backgroundOuter = "pink";
-  }
-  async resetPage() {
-    this.initPage();
+  resetPage() {
+    this.pageStatus.initPage();
     this.updatePage();
-    this.savePageSnapshot();
+    this.pageStatus.savePageSnapshot();
   }
   async import() {
     const files = await selectFiles({accept: ".json"});
@@ -202,7 +147,7 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
       this.page.import(data);
       this.psm.id = this.page.id;
       this.updatePage();
-      this.savePageSnapshot();
+      this.pageStatus.savePageSnapshot();
       await this.message.snack("导入成功");
     } catch (e) {
       console.error(e);
@@ -252,21 +197,23 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
   async save() {
     const {id} = this.route.snapshot.queryParams;
     if (!id) {
+      await this.message.error("缺少参数：id");
       return;
     }
     const data: PagesDataRaw = {pages: [this.page.export()]};
     const mubanshuju = JSON.stringify(data);
-    await this.http.tableUpdate<Zidingyibaobiao>({table: this.table, data: {vid: id, mubanshuju}});
-    const index = this.snapshotIndex();
-    this.savedSnapshotIndex.set(index);
+    await this.http.tableUpdate<Zidingyibaobiao>({table: this.pageStatus.table, data: {vid: id, mubanshuju}});
+    const index = this.pageStatus.snapshotIndex();
+    this.pageStatus.savedSnapshotIndex.set(index);
     this.psm.setSavedSnapshotIndex(index);
   }
   async load() {
     const {id} = this.route.snapshot.queryParams;
     if (!id) {
+      this.message.error("缺少参数：id");
       return;
     }
-    const records = await this.http.queryMySql<Zidingyibaobiao>({table: this.table, filter: {where: {vid: id}}});
+    const records = await this.http.queryMySql<Zidingyibaobiao>({table: this.pageStatus.table, filter: {where: {vid: id}}});
     const record = records[0];
     if (!record) {
       return;
@@ -290,19 +237,12 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     this.page.import(pageData);
     this.psm.id = this.page.id;
     this.psm.reset();
-    this.savePageSnapshot();
+    this.pageStatus.savePageSnapshot();
     this.updatePage();
     this.psm.setSavedSnapshotIndex(0);
-    this.savedSnapshotIndex.set(0);
+    this.pageStatus.savedSnapshotIndex.set(0);
     this.canUndo.set(false);
     this.canRedo.set(false);
-  }
-
-  onPageConfigChanged(config: PageConfig) {
-    this.page.setPageConfig(config);
-    this.pageConfig.set(this.page.getPageConfig());
-    this.updatePageStyle();
-    this.savePageSnapshot();
   }
 
   private _pagePointer: [number, number] | null = null;
@@ -319,29 +259,12 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     const [x, y] = this._pagePointer;
     this._pagePointer = null;
     if (Math.abs(event.clientX - x) < 5 && Math.abs(event.clientY - y) < 5) {
-      this.activeComponent.set(null);
+      this.pageStatus.activeComponent.set(null);
     }
   }
-
-  private _noSaveOnComponentsChanged = true;
-  onComponentsChanged() {
-    const components = this.components();
-    const activeComponent = untracked(() => this.activeComponent());
-    if (activeComponent) {
-      this.activeComponent.set(findPageComponent(activeComponent.id, components));
-    }
-    this.page.components = components;
-    if (this._noSaveOnComponentsChanged) {
-      this._noSaveOnComponentsChanged = false;
-    } else {
-      untracked(() => this.savePageSnapshot());
-    }
-  }
-  onActiveComponentChanged() {
-    const activeComponent = this.activeComponent();
-    if (activeComponent) {
-      this.showComponentMenu.set(true);
-    }
+  onPageConfigChanged() {
+    this.pageStatus.pageConfig();
+    this.updatePageStyle();
   }
 
   beforeUnload(event: BeforeUnloadEvent) {

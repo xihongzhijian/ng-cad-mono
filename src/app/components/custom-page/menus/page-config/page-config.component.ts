@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, model} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
 import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoColor, InputInfoNumber, InputInfoSelect} from "@app/modules/input/components/input.types";
 import {cloneDeep} from "lodash";
@@ -7,6 +7,7 @@ import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from
 import {PageConfig} from "../../models/page";
 import {PageOrientation, PageSizeNameCustom, pageSizeNamesCustom} from "../../models/page-size";
 import {trblItems} from "../../models/page.utils";
+import {PageStatusService} from "../../services/page-status.service";
 
 @Component({
   selector: "app-page-config",
@@ -17,7 +18,11 @@ import {trblItems} from "../../models/page.utils";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PageConfigComponent {
-  config = model.required<PageConfig>();
+  private pageStatus = inject(PageStatusService);
+
+  get config() {
+    return this.pageStatus.pageConfig;
+  }
 
   inputInfos = computed(() => {
     const config = this.config();
