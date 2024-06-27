@@ -1,4 +1,4 @@
-import {AbstractControlOptions} from "@angular/forms";
+import {AbstractControl, AbstractControlOptions, ValidationErrors} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
 import {Formulas} from "@app/utils/calc";
 import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.component";
@@ -63,6 +63,8 @@ export interface InputInfoNumber<T = any> extends InputInfoBase<T> {
   onChange?: (val: number, info: InputInfoNumber<T>) => void;
 }
 
+export type KeyValidatorFn = (control: AbstractControl, objValue: string) => ValidationErrors | null;
+export type ValueValidatorFn = (control: AbstractControl, objKey: string) => ValidationErrors | null;
 export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   type: "object";
   value?: Value<ObjectOf<any>>;
@@ -72,11 +74,12 @@ export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   optionMultiple?: boolean;
   keyLabel?: string;
   valueLabel?: string;
-  keyValidators?: AbstractControlOptions["validators"];
-  valueValidators?: AbstractControlOptions["validators"];
+  keyValidators?: KeyValidatorFn | KeyValidatorFn[] | null;
+  valueValidators?: ValueValidatorFn | ValueValidatorFn[] | null;
   keysReadonly?: boolean;
   parseString?: boolean;
   isXuanxiang?: boolean;
+  requiredKeys?: string[];
 }
 
 export interface InputInfoArray<T = any> extends InputInfoBase<T> {

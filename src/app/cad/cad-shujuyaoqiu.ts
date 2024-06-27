@@ -161,10 +161,50 @@ export const filterCad = (query: string, cad: HoutaiCad, yaoqiu: Cad数据要求
   return false;
 };
 
-export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[]) => {
+export const validateCad = (data: CadData, yaoqiuItems: Cad数据要求Item[]) => {
+  const isEmpty = (v: any) => [undefined, null, ""].includes(v);
+  for (const {key, key2, cadKey, required, value} of yaoqiuItems) {
+    if (!required) {
+      continue;
+    }
+    if (cadKey) {
+      let value2: any;
+      if (key2) {
+        value2 = (data[cadKey] as any)[key2];
+      } else {
+        value2 = data[cadKey];
+      }
+      if (isEmpty(value2)) {
+        return false;
+      }
+      if (!isEmpty(value) && value2 !== value) {
+        return false;
+      }
+    } else if (key === "展开信息") {
+      const zhankai = data.zhankai[0];
+      if (!zhankai || !zhankai.zhankaikuan || !zhankai.zhankaigao || !zhankai.shuliang) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[], vars?: ObjectOf<string>) => {
   const dataAny = data as any;
   const toRemoveMap: ObjectOf<{keys2: string[]}> = {};
   const toReserveMap: typeof toRemoveMap = {};
+  const getValue = (value: any) => {
+    if (typeof value === "string") {
+      if (vars) {
+        let value2 = value;
+        for (const key in vars) {
+          value2 = value2.replaceAll(key, vars[key]);
+        }
+      }
+    }
+    return value;
+  };
   for (const {key, cadKey, value, key2, override, remove, reserve} of yaoqiuItems) {
     if (cadKey) {
       if (remove) {
@@ -188,11 +228,11 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[]) =>
       if (value) {
         if (key2) {
           if (!dataAny[cadKey][key2] || override) {
-            dataAny[cadKey][key2] = value;
+            dataAny[cadKey][key2] = getValue(value);
           }
         } else {
           if (!dataAny[cadKey] || override) {
-            dataAny[cadKey] = value;
+            dataAny[cadKey] = getValue(value);
           }
         }
       }

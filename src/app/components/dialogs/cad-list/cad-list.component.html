@@ -55,6 +55,7 @@
     <div class="cads items no-items-per-row add-empty-msg">
       @for (item of pageData; track i; let i = $index) {
         <app-cad-item
+          #cadItem
           [cad]="item.data"
           [buttons]="cadItemButtons"
           [customInfo]="{index: i}"

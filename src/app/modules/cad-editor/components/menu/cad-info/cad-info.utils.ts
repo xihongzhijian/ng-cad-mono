@@ -316,6 +316,7 @@ export const getCadInfoInputs = (
 
 export const getCadInfoInputs2 = (
   items: Cad数据要求Item[] | null | undefined,
+  items2: Cad数据要求Item[] | null | undefined,
   data: CadData | (() => CadData),
   dialog: MatDialog,
   status: AppStatusService,
@@ -335,6 +336,16 @@ export const getCadInfoInputs2 = (
       };
     } else {
       info = getCadInfoInputs([key], data, dialog, status, parseOptionString, gongshis)[0];
+      if (key === "选项" && info.type === "object") {
+        const requiredOptionItems = items2?.filter((v) => v.key === "选项" && v.key2 && v.required);
+        const requiredKeys: string[] = [];
+        for (const {key2} of requiredOptionItems || []) {
+          if (key2) {
+            requiredKeys.push(key2);
+          }
+        }
+        info.requiredKeys = requiredKeys;
+      }
     }
     if (!info) {
       info = {type: "string", label: key + "（未实现）", disabled: true};

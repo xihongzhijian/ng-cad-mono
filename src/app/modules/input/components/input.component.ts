@@ -18,7 +18,7 @@ import {
   ViewChild,
   ViewChildren
 } from "@angular/core";
-import {FormControl, FormsModule, ValidationErrors, Validators} from "@angular/forms";
+import {FormControl, FormsModule, ValidationErrors, ValidatorFn, Validators} from "@angular/forms";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {MatButtonModule} from "@angular/material/button";
 import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
@@ -31,7 +31,7 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectModule} from "@angular/material/select";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
+import {getArray, imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
 import {AppStatusService} from "@app/services/app-status.service";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadOptionsInput, openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
@@ -454,6 +454,16 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
           this.value = this.options[0].value;
         }
       }
+    } else if (type === "object") {
+      const {requiredKeys} = info;
+      const value = this.value;
+      if (requiredKeys) {
+        for (const key of requiredKeys) {
+          if (!(key in value)) {
+            value[key] = "";
+          }
+        }
+      }
     } else if (type === "formulas") {
       this.updateFormulasStr();
     }
@@ -652,21 +662,38 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     this.errors = errors;
     this.errors2 = errors2;
     if (info.type === "object" && isTypeOf(value, "object")) {
-      const {keyValidators} = info;
       const errorsKey: ObjectOf<ValidationErrors | null> = {};
       const errorsValue: ObjectOf<ValidationErrors | null> = {};
+      const keyValidators = getArray(info.keyValidators);
+      const valueValidators = getArray(info.valueValidators);
       for (const key in value) {
         const val = value[key];
-        if (keyValidators) {
-          const control = new FormControl(key, keyValidators);
+        if (keyValidators.length > 0) {
+          const keyValidators2 = keyValidators.map<ValidatorFn>((v) => (control) => v(control, val));
+          const control = new FormControl(key, keyValidators2);
           if (!isEmpty(control.errors)) {
             errorsKey[key] = control.errors;
           }
         }
-        if (info.valueValidators) {
-          const control = new FormControl(val, info.valueValidators);
+        if (valueValidators.length > 0) {
+          const valueValidators2 = valueValidators.map<ValidatorFn>((v) => (control) => v(control, key));
+          const control = new FormControl(val, valueValidators2);
           if (!isEmpty(control.errors)) {
             errorsValue[key] = control.errors;
+          }
+        }
+      }
+      const {requiredKeys} = info;
+      if (requiredKeys) {
+        for (const key of requiredKeys) {
+          if (!value[key]) {
+            const key2 = `${key}不能为空`;
+            const a = errorsValue[key];
+            if (a) {
+              a[key2] = true;
+            } else {
+              errorsValue[key] = {[key2]: true};
+            }
           }
         }
       }
