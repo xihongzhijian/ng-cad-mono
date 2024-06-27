@@ -1,11 +1,25 @@
 <div class="header toolbar">
-  <app-page-components-select class="flex-110"></app-page-components-select>
+  @if (mode() === "design") {
+    <app-page-components-select class="flex-110"></app-page-components-select>
+  } @else {
+    <div class="flex-110"></div>
+  }
   <div class="toolbar">
-    <button mat-raised-button color="primary" (click)="resetPage()">清空</button>
-    <button mat-raised-button color="primary" (click)="import()">导入</button>
-    <button mat-raised-button color="primary" (click)="export()">导出</button>
-    <button mat-raised-button color="primary" (click)="preview()">预览</button>
-    <button mat-raised-button [color]="isSaved() ? 'primary' : 'accent'" (click)="save()">保存</button>
+    @for (info of toolbarInputs; track $index) {
+      <app-input [info]="info"></app-input>
+    }
+    @switch (mode()) {
+      @case ("design") {
+        <button mat-raised-button color="primary" (click)="clearPage()">清空</button>
+        <button mat-raised-button color="primary" (click)="import()">导入</button>
+        <button mat-raised-button color="primary" (click)="export()">导出</button>
+        <button mat-raised-button color="primary" (click)="preview()">预览</button>
+        <button mat-raised-button [color]="isSaved() ? 'primary' : 'accent'" (click)="save()">保存</button>
+      }
+      @case ("view") {
+        <button mat-raised-button color="primary" (click)="preview()">预览</button>
+      }
+    }
   </div>
 </div>
 <div class="flex-row flex-110" style="overflow: hidden">
@@ -18,25 +32,43 @@
         </div>
       </div>
     </ng-scrollbar>
-    <app-page-component-config2 [workSpaceEl]="workSpaceEl"></app-page-component-config2>
+    @if (mode() === "design") {
+      <app-page-component-config2 [workSpaceEl]="workSpaceEl"></app-page-component-config2>
+    }
   </div>
-  <div class="menus">
-    <div class="toolbar vertical">
-      <button mat-icon-button color="primary" matTooltip="撤销(ctrl+z)" matTooltipPosition="left" [disabled]="!canUndo()" (click)="undo()">
-        <mat-icon>undo</mat-icon>
-      </button>
-      <button mat-icon-button color="primary" matTooltip="恢复(ctrl+y)" matTooltipPosition="left" [disabled]="!canRedo()" (click)="redo()">
-        <mat-icon>redo</mat-icon>
-      </button>
+  @if (mode() === "design") {
+    <div class="menus">
+      <div class="toolbar vertical">
+        <button
+          mat-icon-button
+          color="primary"
+          matTooltip="撤销(ctrl+z)"
+          matTooltipPosition="left"
+          [disabled]="!canUndo()"
+          (click)="undo()"
+        >
+          <mat-icon>undo</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          color="primary"
+          matTooltip="恢复(ctrl+y)"
+          matTooltipPosition="left"
+          [disabled]="!canRedo()"
+          (click)="redo()"
+        >
+          <mat-icon>redo</mat-icon>
+        </button>
+      </div>
+      <mat-tab-group [(selectedIndex)]="menuTabIndex">
+        <mat-tab label="页面设置">
+          <app-page-config class="tab"></app-page-config>
+        </mat-tab>
+        <mat-tab label="图层管理">
+          <app-page-component-config></app-page-component-config>
+        </mat-tab>
+        <mat-tab label="页面管理"></mat-tab>
+      </mat-tab-group>
     </div>
-    <mat-tab-group [(selectedIndex)]="menuTabIndex">
-      <mat-tab label="页面设置">
-        <app-page-config class="tab"></app-page-config>
-      </mat-tab>
-      <mat-tab label="图层管理">
-        <app-page-component-config></app-page-component-config>
-      </mat-tab>
-      <mat-tab label="页面管理"></mat-tab>
-    </mat-tab-group>
-  </div>
+  }
 </div>

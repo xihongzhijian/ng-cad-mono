@@ -4,12 +4,16 @@ import {Page, PageConfig} from "../models/page";
 import {PageComponentTypeAny} from "../models/page-component-infos";
 import {findPageComponent} from "../models/page-component-utils";
 import {PageSnapshotManager} from "../models/page-snapshot-manager";
+import {PageMode} from "./page-status.service.types";
 
 @Injectable({
   providedIn: "root"
 })
 export class PageStatusService {
   table = "t_zidingyibaobiaomuban";
+  recordId = signal("");
+  mode = signal<PageMode>("design");
+
   page = new Page();
   psm = new PageSnapshotManager(session, 20, this.page.id);
   pageConfig = signal<PageConfig>(this.page.getPageConfig());

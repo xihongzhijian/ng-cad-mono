@@ -8,3 +8,6 @@ export interface PagesDataRaw {
 export interface Zidingyibaobiao extends TableDataBase {
   mubanshuju?: string | null;
 }
+
+export const pageModes = ["design", "view"] as const;
+export type PageMode = (typeof pageModes)[number];

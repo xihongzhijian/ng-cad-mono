@@ -30,6 +30,9 @@ export class PageComponentsDiaplayComponent {
   private elRef: ElementRef<HTMLElement> = inject(ElementRef);
   private pageStatus = inject(PageStatusService);
 
+  get mode() {
+    return this.pageStatus.mode;
+  }
   get components() {
     return this.pageStatus.components;
   }
@@ -104,6 +107,9 @@ export class PageComponentsDiaplayComponent {
     return component.getStyle();
   }
   clickComponent(event: Event, component: PageComponentTypeAny) {
+    if (this.mode() !== "design") {
+      return;
+    }
     if (this.draggingComponent()) {
       this.draggingComponent.set(null);
       return;
@@ -114,6 +120,9 @@ export class PageComponentsDiaplayComponent {
     }
   }
   dblClickComponent(event: Event, component: PageComponentTypeAny, componentEl: HTMLDivElement) {
+    if (this.mode() !== "design") {
+      return;
+    }
     event.stopPropagation();
     this.editingComponent.set(component);
     if (component instanceof PageComponentText) {
@@ -125,6 +134,9 @@ export class PageComponentsDiaplayComponent {
     }
   }
   getComponentDragDisabled(component: PageComponentTypeAny) {
+    if (this.mode() !== "design") {
+      return true;
+    }
     return this.editingComponent()?.id === component.id || component.isLocked() || component.isHidden();
   }
   private _moveComponentStartPosition: Point | null = null;
@@ -262,9 +274,13 @@ export class PageComponentsDiaplayComponent {
     {position: "bottom-right"}
   ] as ControlPoint[];
   updateControl(target?: PageComponentTypeAny) {
+    const result = {isComponentsUpdated: false};
+    if (this.mode() !== "design") {
+      this.control.set(null);
+      return result;
+    }
     const component = this.activeComponent2() || this.activeComponent();
     const componentEl = this.elRef.nativeElement.querySelector(`.page-component[data-id="${component?.id}"]`);
-    const result = {isComponentsUpdated: false};
     if (!component || !(componentEl instanceof HTMLElement)) {
       this.control.set(null);
       return result;

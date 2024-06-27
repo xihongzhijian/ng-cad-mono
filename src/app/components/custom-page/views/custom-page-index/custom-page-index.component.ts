@@ -19,9 +19,12 @@ import {ActivatedRoute} from "@angular/router";
 import {KeyEventItem, onKeyEvent, session, setGlobal} from "@app/app.common";
 import {Subscribed} from "@app/mixins/subscribed.mixin";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
+import {InputComponent} from "@app/modules/input/components/input.component";
+import {InputInfo} from "@app/modules/input/components/input.types";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {SpinnerService} from "@app/modules/spinner/services/spinner.service";
 import {getPdfInfo, htmlToPng} from "@app/utils/print";
+import {environment} from "@env";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -34,13 +37,14 @@ import {PageComponentsSeletComponent} from "../../menus/page-components-select/p
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
 import {Page} from "../../models/page";
 import {PageStatusService} from "../../services/page-status.service";
-import {PagesDataRaw, Zidingyibaobiao} from "../../services/page-status.service.types";
+import {pageModes, PagesDataRaw, Zidingyibaobiao} from "../../services/page-status.service.types";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
 
 @Component({
   selector: "app-custom-page-index",
   standalone: true,
   imports: [
+    InputComponent,
     MatButtonModule,
     MatIconModule,
     MatTabsModule,
@@ -65,6 +69,9 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
 
   @HostBinding("class") class = "ng-page";
 
+  get mode() {
+    return this.pageStatus.mode;
+  }
   get page() {
     return this.pageStatus.page;
   }
@@ -97,6 +104,7 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     {key: "z", ctrl: true, action: () => this.undo()},
     {key: "y", ctrl: true, action: () => this.redo()}
   ];
+  toolbarInputs: InputInfo[];
 
   workSpaceEl = viewChild.required<ElementRef<HTMLDivElement>>("workSpaceEl");
   pageEl = viewChild.required<ElementRef<HTMLDivElement>>("pageEl");
@@ -107,6 +115,23 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
     effect(() => this.onPageConfigChanged(), {allowSignalWrites: true});
     this.subscribe(this.route.queryParams, () => this.load());
+
+    if (environment.production) {
+      this.toolbarInputs = [];
+    } else {
+      this.toolbarInputs = [
+        {
+          type: "select",
+          label: "change mode",
+          options: pageModes.slice(),
+          value: this.mode(),
+          multiple: false,
+          onChange: (val) => {
+            this.pageStatus.mode.set(val);
+          }
+        }
+      ];
+    }
   }
 
   ngOnInit() {
@@ -131,10 +156,8 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     onKeyEvent(event, this.keyEventItems);
   }
 
-  resetPage() {
-    this.pageStatus.initPage();
-    this.updatePage();
-    this.pageStatus.savePageSnapshot();
+  clearPage() {
+    this.pageStatus.components.set([]);
   }
   async import() {
     const files = await selectFiles({accept: ".json"});
@@ -208,11 +231,13 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     this.psm.setSavedSnapshotIndex(index);
   }
   async load() {
-    const {id} = this.route.snapshot.queryParams;
+    const {id, mode} = this.route.snapshot.queryParams;
     if (!id) {
       this.message.error("缺少参数：id");
       return;
     }
+    this.pageStatus.recordId.set(id);
+    this.pageStatus.mode.set(pageModes.includes(mode) ? mode : pageModes[0]);
     const records = await this.http.queryMySql<Zidingyibaobiao>({table: this.pageStatus.table, filter: {where: {vid: id}}});
     const record = records[0];
     if (!record) {
