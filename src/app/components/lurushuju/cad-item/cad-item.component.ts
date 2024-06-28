@@ -261,7 +261,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     } else {
       data = new CadData(cad.json);
     }
-    const form = getCadInfoInputs2(yaoqiu?.CAD弹窗修改属性 || [], data, this.dialog, this.status, true, this.gongshis);
+    const items = yaoqiu?.CAD弹窗修改属性 || [];
+    const item2 = yaoqiu?.选中CAD要求 || [];
+    const form = getCadInfoInputs2(items, item2, data, this.dialog, this.status, true, this.gongshis);
     let title = "编辑CAD";
     const name = data.name;
     if (name) {
@@ -625,7 +627,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     if (validators?.zhankai) {
       const {zhankai} = this;
       if (!zhankai?.zhankaigao) {
-        const err = `${name}展开高不能为空`;
+        const err = `${name}展开高不能为空，请检查红色文字并补充数据`;
         errors.push(err);
         this.errorMsgs.展开信息 = err;
       }

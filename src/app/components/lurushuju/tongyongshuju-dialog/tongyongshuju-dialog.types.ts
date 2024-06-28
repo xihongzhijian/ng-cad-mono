@@ -6,9 +6,7 @@ export interface TongyongshujuOutput {}
 
 export interface TongyongshujuData extends TableDataBase {
   bangzhuwendang: string;
-  cadmingziyaoqiu: string;
   cadshaixuanyaoqiu: string;
-  cadxuanxiangyaoqiu: string;
   cadyaoqiu: string;
   xiaodaohang: string;
   xiaodaohang_id: number;

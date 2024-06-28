@@ -288,3 +288,13 @@ export const onKeyEvent = (event: KeyboardEvent, items: KeyEventItem[]) => {
     }
   }
 };
+
+export const getArray = <T>(validators: T | T[] | null | undefined) => {
+  if (validators === null || validators === undefined) {
+    return [];
+  }
+  if (Array.isArray(validators)) {
+    return validators;
+  }
+  return [validators];
+};

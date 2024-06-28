@@ -480,8 +480,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const yaoqiu = this.status.getCad数据要求(this.lingsanCadType || "分类为空");
     const cadData = new CadData({type: this.lingsanCadType});
     const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
+    const yaoqiuItems2 = yaoqiu?.选中CAD要求 || [];
     setCadData(cadData, yaoqiuItems);
-    const form = getCadInfoInputs2(yaoqiuItems, cadData, this.dialog, this.status, true, this.data?.gongshis);
+    const form = getCadInfoInputs2(yaoqiuItems, yaoqiuItems2, cadData, this.dialog, this.status, true, this.data?.gongshis);
     const result = await this.message.form<typeof data>(form);
     if (!result) {
       return;

@@ -206,9 +206,11 @@
                 <button mat-icon-button color="primary" (click)="objectAdd2(value, '', '')">
                   <mat-icon>add_circle</mat-icon>
                 </button>
-                <button mat-icon-button color="primary" (click)="objectRemove2(value, item.key)">
-                  <mat-icon>remove_circle</mat-icon>
-                </button>
+                @if (!info.requiredKeys?.includes(item.key)) {
+                  <button mat-icon-button color="primary" (click)="objectRemove2(value, item.key)">
+                    <mat-icon>remove_circle</mat-icon>
+                  </button>
+                }
               }
               <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
               <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>

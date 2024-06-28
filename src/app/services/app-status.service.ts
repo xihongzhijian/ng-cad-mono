@@ -359,6 +359,8 @@ export class AppStatusService {
       const resData2 = await this.http.getData<HoutaiCad>("shuju/api/getOrSetCad", params);
       resData = resData2 ? new CadData(resData2.json) : null;
     } else {
+      delete data.info.imgId;
+      delete data.info.imgUpdate;
       resData = await http.setCad({collection, cadData: data, force: true}, hideLineLength);
     }
     if (resData) {
