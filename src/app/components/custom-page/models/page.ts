@@ -75,7 +75,7 @@ export class Page {
     return page;
   }
 
-  getPageConfig(): PageConfig {
+  getConfig(): PageConfig {
     return {
       sizeName: this.sizeName,
       orientation: this.orientation,
@@ -87,7 +87,7 @@ export class Page {
       padding: this.padding
     };
   }
-  setPageConfig(config: PageConfig) {
+  setConfig(config: PageConfig) {
     if (config.sizeName === "自定义") {
       this.setSize({width: config.width, height: config.height});
     } else {

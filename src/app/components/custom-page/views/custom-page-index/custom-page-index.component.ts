@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
   HostBinding,
@@ -26,7 +27,6 @@ import {SpinnerService} from "@app/modules/spinner/services/spinner.service";
 import {getPdfInfo, htmlToPng} from "@app/utils/print";
 import {environment} from "@env";
 import {downloadByString, selectFiles} from "@lucilor/utils";
-import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {createPdf} from "pdfmake/build/pdfmake";
 import {TDocumentDefinitions} from "pdfmake/interfaces";
@@ -35,7 +35,6 @@ import {PageComponentConfig2Component} from "../../menus/page-component-config2/
 import {PageComponentConfigComponent} from "../../menus/page-component-config/page-component-config.component";
 import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
-import {Page} from "../../models/page";
 import {PageStatusService} from "../../services/page-status.service";
 import {pageModes, PagesDataRaw, Zidingyibaobiao} from "../../services/page-status.service.types";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
@@ -94,10 +93,6 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     return this.pageStatus.canRedo;
   }
 
-  pageStyle = signal<ReturnType<Page["getStyle"]>>({});
-  pagePlaceholderStyle = signal<Properties>({});
-  workSpaceStyle = signal<Properties>({});
-
   private _menuTabIndexKey = "customPageMenuTabIndex";
   menuTabIndex = signal(session.load(this._menuTabIndexKey) || 0);
   keyEventItems: KeyEventItem[] = [
@@ -106,6 +101,15 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
   ];
   toolbarInputs: InputInfo[];
 
+  pageStyle = computed(() => {
+    this.pageStatus.pageConfig();
+    return this.page.getStyle();
+  });
+  workSpaceStyle = computed(() => {
+    this.pageStatus.pageConfig();
+    return this.page.workSpaceStyle;
+  });
+
   workSpaceEl = viewChild.required<ElementRef<HTMLDivElement>>("workSpaceEl");
   pageEl = viewChild.required<ElementRef<HTMLDivElement>>("pageEl");
 
@@ -113,7 +117,6 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     super();
     setGlobal("customPage", this);
     effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
-    effect(() => this.onPageConfigChanged(), {allowSignalWrites: true});
     this.subscribe(this.route.queryParams, () => this.load());
 
     if (environment.production) {
@@ -142,15 +145,6 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     window.removeEventListener("beforeunload", this.beforeUnload.bind(this));
   }
 
-  updatePageStyle() {
-    this.pageStyle.set(this.page.getStyle());
-    this.workSpaceStyle.set({...this.page.workSpaceStyle});
-  }
-  updatePage() {
-    this.updatePageStyle();
-    this.pageStatus.updatePageComponents();
-  }
-
   @HostListener("window:keydown", ["$event"])
   onKeyDown(event: KeyboardEvent) {
     onKeyEvent(event, this.keyEventItems);
@@ -169,7 +163,7 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
       const data = JSON.parse(await file.text());
       this.page.import(data);
       this.psm.id = this.page.id;
-      this.updatePage();
+      this.pageStatus.updatePage();
       this.pageStatus.savePageSnapshot();
       await this.message.snack("导入成功");
     } catch (e) {
@@ -263,7 +257,7 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     this.psm.id = this.page.id;
     this.psm.reset();
     this.pageStatus.savePageSnapshot();
-    this.updatePage();
+    this.pageStatus.updatePage();
     this.psm.setSavedSnapshotIndex(0);
     this.pageStatus.savedSnapshotIndex.set(0);
     this.canUndo.set(false);
@@ -286,10 +280,6 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     if (Math.abs(event.clientX - x) < 5 && Math.abs(event.clientY - y) < 5) {
       this.pageStatus.activeComponent.set(null);
     }
-  }
-  onPageConfigChanged() {
-    this.pageStatus.pageConfig();
-    this.updatePageStyle();
   }
 
   beforeUnload(event: BeforeUnloadEvent) {

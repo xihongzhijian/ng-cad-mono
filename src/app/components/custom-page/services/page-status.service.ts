@@ -16,7 +16,7 @@ export class PageStatusService {
 
   page = new Page();
   psm = new PageSnapshotManager(session, 20, this.page.id);
-  pageConfig = signal<PageConfig>(this.page.getPageConfig());
+  pageConfig = signal<PageConfig>(this.page.getConfig());
   components = signal<PageComponentTypeAny[]>([]);
   activeComponent = signal<PageComponentTypeAny | null>(null);
   activeComponent2 = signal<PageComponentTypeAny | null>(null);
@@ -41,14 +41,14 @@ export class PageStatusService {
   updatePage() {
     this.updatePageComponents();
     this._noSaveOnPageConfigChanged = true;
-    this.pageConfig.set(this.page.getPageConfig());
+    this.pageConfig.set(this.page.getConfig());
   }
 
   initPage() {
     this.page = new Page();
     this.page.padding = [12, 12, 12, 12];
     this.page.workSpaceStyle.backgroundColor = "lightgray";
-    this.page.backgroundOuter = "pink";
+    this.page.backgroundOuter = "#E7E7E7";
   }
   loadPageSnapshot() {
     const {snapshot, canUndo, canRedo, index} = this.psm.loadSnapshot();
@@ -117,7 +117,7 @@ export class PageStatusService {
   private _noSaveOnPageConfigChanged = true;
   onPageConfigChanged() {
     const config = this.pageConfig();
-    this.page.setPageConfig(config);
+    this.page.setConfig(config);
     if (this._noSaveOnPageConfigChanged) {
       this._noSaveOnPageConfigChanged = false;
     } else {
