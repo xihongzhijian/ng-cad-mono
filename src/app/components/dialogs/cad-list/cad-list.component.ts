@@ -311,33 +311,32 @@ export class CadListComponent implements AfterViewInit {
         cads = result.cads;
       }
       const getInvalidCad = () => {
-        const result: CadData[] = [];
-        for (const v of cads) {
-          const data = v instanceof CadData ? v : new CadData(v.json);
-          if (!validateCad(data, yaoqiuItems)) {
-            result.push(data);
+        const result: {cad: CadData; i: number}[] = [];
+        for (const [i, v] of cads.entries()) {
+          const cad = v instanceof CadData ? v : new CadData(v.json);
+          if (!validateCad(cad, yaoqiuItems)) {
+            result.push({cad, i});
           }
         }
         return result;
       };
       const toEdit = getInvalidCad();
       if (toEdit.length > 0) {
-        const cadItems = this.cadItems().filter((v) => toEdit.find((v2) => v2.id === v.cadId));
-        await Promise.all(cadItems.map((v) => v.editCadForm()));
-        for (const cadItem of cadItems) {
-          const cad = cads.find((v) => (v instanceof CadData ? v.id : v._id) === cadItem.cadId);
-          const cad2 = cadItem.cad;
-          if (cad instanceof CadData) {
+        for (const {cad, i} of toEdit) {
+          const yaoqiuItems2 = data.yaoqiu?.CAD弹窗修改属性 || [];
+          const form = getCadInfoInputs2(yaoqiuItems2, yaoqiuItems, cad, this.dialog, this.status, true, []);
+          let title = "编辑CAD";
+          const name = cad.name;
+          if (name) {
+            title += `【${name}】`;
+          }
+          const result = await this.message.form(form, {title});
+          if (result) {
+            const cad2 = cads[i];
             if (cad2 instanceof CadData) {
-              Object.assign(cad, cad2);
+              Object.assign(cad2, cad);
             } else {
-              Object.assign(cad, new CadData(cad2.json));
-            }
-          } else if (cad) {
-            if (cad2 instanceof CadData) {
-              Object.assign(cad, getHoutaiCad(cad2));
-            } else {
-              Object.assign(cad, cad2);
+              Object.assign(cad2, getHoutaiCad(cad));
             }
           }
         }
