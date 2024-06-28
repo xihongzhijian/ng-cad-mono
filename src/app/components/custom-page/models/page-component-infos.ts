@@ -38,7 +38,7 @@ export const pageComponentInfos: PageComponentInfos = {
     description: "这是分组组件",
     previewImg: imgEmpty,
     class: PageComponentGroup,
-    resizable: {}
+    resizable: {xLocked: true, yLocked: true}
   }
 };
 export const pageComponentTypes = keysOf(pageComponentInfos);
@@ -57,4 +57,6 @@ export interface PageComponentInfo<T> {
 export interface PageComponentResizable {
   x?: boolean;
   y?: boolean;
+  xLocked?: boolean;
+  yLocked?: boolean;
 }

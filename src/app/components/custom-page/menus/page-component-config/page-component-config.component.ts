@@ -10,7 +10,14 @@ import {TypedTemplateDirective} from "@app/modules/directives/typed-template.dir
 import {MessageService} from "@app/modules/message/services/message.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
-import {flatPageComponents, getPageComponentGroup, getPageComponentNames, removePageComponent} from "../../models/page-component-utils";
+import {
+  beforeJoinGroup,
+  beforeLeaveGroup,
+  flatPageComponents,
+  getPageComponentGroup,
+  getPageComponentNames,
+  removePageComponent
+} from "../../models/page-component-utils";
 import {PageComponentGroup} from "../../models/page-components/page-component-group";
 import {PageStatusService} from "../../services/page-status.service";
 
@@ -63,6 +70,7 @@ export class PageComponentConfigComponent {
     const components2 = getPageComponentGroup(components, component)?.children || components;
     const names = getPageComponentNames(components);
     const group = new PageComponentGroup(getInsertName(names, "分组"));
+    beforeJoinGroup(group, [component]);
     group.children = [component];
     group.expanded = true;
     const index = components2.findIndex((v) => v.id === component.id);
@@ -77,6 +85,7 @@ export class PageComponentConfigComponent {
     const components = this.components();
     const components2 = getPageComponentGroup(components, component)?.children || components;
     const index = components2.findIndex((v) => v.id === component.id);
+    beforeLeaveGroup(component, component.children);
     components2.splice(index, 1, ...component.children);
     this.components.set([...components]);
   }
@@ -152,7 +161,19 @@ export class PageComponentConfigComponent {
     return !!this.editingId();
   }
   drop(event: CdkDragDrop<PageComponentTypeAny[]>) {
-    transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+    const {previousContainer, container, previousIndex, currentIndex} = event;
+    const prev = previousContainer.data[previousIndex];
+    const curr = container.data[currentIndex];
+    const components = this.components();
+    const prevGroup = getPageComponentGroup(components, prev);
+    const currGroup = curr ? getPageComponentGroup(components, curr) : null;
+    if (prevGroup) {
+      beforeLeaveGroup(prevGroup, [prev]);
+    }
+    if (currGroup) {
+      beforeJoinGroup(currGroup, [prev]);
+    }
+    transferArrayItem(previousContainer.data, container.data, previousIndex, currentIndex);
     this.components.update((v) => [...v]);
   }
 

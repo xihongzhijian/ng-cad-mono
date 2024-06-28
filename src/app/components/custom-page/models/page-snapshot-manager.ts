@@ -61,21 +61,20 @@ export class PageSnapshotManager {
     const snapshots = this.getSnapshots();
     const index = this.getSnapshotIndex() - 1;
     const snapshot = snapshots[index] as PageSnapshot | undefined;
-    if (snapshot) {
+    const canUndo = index > 0;
+    if (snapshot && canUndo) {
       this.setSnapshotIndex(index);
     }
-    const canUndo = index > 0;
-    console.log({snapshot, canUndo, index});
     return {snapshot, canUndo, index};
   }
   redo() {
     const snapshots = this.getSnapshots();
     const index = this.getSnapshotIndex() + 1;
     const snapshot = snapshots[index] as PageSnapshot | undefined;
-    if (snapshot) {
+    const canRedo = index < snapshots.length - 1;
+    if (snapshot && canRedo) {
       this.setSnapshotIndex(index);
     }
-    const canRedo = index < snapshots.length - 1;
     return {snapshot, canRedo, index};
   }
   reset() {

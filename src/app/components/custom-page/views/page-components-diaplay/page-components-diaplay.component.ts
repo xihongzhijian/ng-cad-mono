@@ -1,18 +1,21 @@
-import {CdkDrag, CdkDragEnd, CdkDragMove} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragEnd, CdkDragMove, DragRef} from "@angular/cdk/drag-drop";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {NgTemplateOutlet} from "@angular/common";
 import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, signal, untracked, viewChildren} from "@angular/core";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
-import {setGlobal} from "@app/app.common";
+import {getFilepathUrl, setGlobal} from "@app/app.common";
 import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
+import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
 import {ImageEvent} from "@app/modules/image/components/image/image.component.types";
-import {Angle, Point} from "@lucilor/utils";
+import {Angle, Point, selectFiles} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {debounce, isEqual} from "lodash";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
+import {findPageComponent, getComponentEl, updateGroup} from "../../models/page-component-utils";
 import {PageComponentForm} from "../../models/page-components/page-component-form";
+import {PageComponentGroup} from "../../models/page-components/page-component-group";
 import {PageComponentImage} from "../../models/page-components/page-component-image";
 import {PageComponentText} from "../../models/page-components/page-component-text";
 import {PageStatusService} from "../../services/page-status.service";
@@ -28,6 +31,7 @@ import {ControlPoint, Helpers} from "./page-components-diaplay.types";
 })
 export class PageComponentsDiaplayComponent {
   private elRef: ElementRef<HTMLElement> = inject(ElementRef);
+  private http = inject(CadDataService);
   private pageStatus = inject(PageStatusService);
 
   get mode() {
@@ -111,7 +115,9 @@ export class PageComponentsDiaplayComponent {
       return;
     }
     if (this.draggingComponent()) {
-      this.draggingComponent.set(null);
+      setTimeout(() => {
+        this.draggingComponent.set(null);
+      }, 0);
       return;
     }
     event.stopPropagation();
@@ -119,7 +125,7 @@ export class PageComponentsDiaplayComponent {
       this.activeComponent.set(component);
     }
   }
-  dblClickComponent(event: Event, component: PageComponentTypeAny, componentEl: HTMLDivElement) {
+  async dblClickComponent(event: Event, component: PageComponentTypeAny, componentEl: HTMLDivElement) {
     if (this.mode() !== "design") {
       return;
     }
@@ -131,6 +137,18 @@ export class PageComponentsDiaplayComponent {
         input.focus();
         input.select();
       }
+    } else if (component instanceof PageComponentImage) {
+      const files = await selectFiles({accept: "image/*"});
+      const file = files?.[0];
+      if (!file) {
+        return;
+      }
+      const result = await this.http.uploadImage(file);
+      const src = result?.url;
+      if (src) {
+        component.src = getFilepathUrl(src, {remote: true});
+        this.components.update((v) => [...v]);
+      }
     }
   }
   getComponentDragDisabled(component: PageComponentTypeAny) {
@@ -140,10 +158,22 @@ export class PageComponentsDiaplayComponent {
     return this.editingComponent()?.id === component.id || component.isLocked() || component.isHidden();
   }
   private _moveComponentStartPosition: Point | null = null;
+  private _resetDargRef<T>(ref: DragRef<T>) {
+    ref.reset();
+    const el = ref.getRootElement();
+    const component = findPageComponent(el.dataset.id || "", this.components());
+    if (component) {
+      el.style.transform = component.getStyle().transform as string;
+    }
+  }
   moveComponentStart(component: PageComponentTypeAny) {
+    const activeComponent = this.activeComponent();
+    if (activeComponent instanceof PageComponentGroup && activeComponent.findChild(component.id)) {
+      component = activeComponent;
+    }
     this.draggingComponent.set(component.clone());
     this._moveComponentStartPosition = component.position.clone();
-    if (this.activeComponent()?.id === component.id) {
+    if (activeComponent?.id === component.id) {
       this.activeComponent2.set(component.clone());
     }
   }
@@ -154,31 +184,37 @@ export class PageComponentsDiaplayComponent {
       return;
     }
     const {distance} = event;
-    event.source._dragRef.reset();
-    const el = event.source._dragRef.getRootElement();
-    el.style.transform = component.getStyle().transform as string;
+    this._resetDargRef(event.source._dragRef);
     component.position.set(start.x + distance.x, start.y + distance.y);
     this.draggingComponent.set(component.clone());
     if (this.activeComponent2()?.id === component.id) {
       this.activeComponent2.set(component.clone());
     }
 
-    const hostRect = this.elRef.nativeElement.getBoundingClientRect();
+    const hostEl = this.elRef.nativeElement;
+    const hostRect = hostEl.getBoundingClientRect();
+    const el = getComponentEl(component.id);
+    if (!el) {
+      return;
+    }
     const elRect = el.getBoundingClientRect();
     const snapXs = [hostRect.left + hostRect.width / 2];
     const snapYs = [hostRect.top + hostRect.height / 2];
     const xs = [elRect.left, elRect.left + elRect.width / 2, elRect.left + elRect.width];
     const ys = [elRect.top, elRect.top + elRect.height / 2, elRect.top + elRect.height];
-    for (const componentEl of this.componentEls()) {
-      if (componentEl.nativeElement === el) {
-        continue;
+
+    hostEl.querySelectorAll(".snap").forEach((snapEl) => {
+      if (!(snapEl instanceof HTMLElement) || !snapEl.offsetParent) {
+        return;
       }
-      componentEl.nativeElement.querySelectorAll(".snap").forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        snapXs.push(rect.left, rect.left + rect.width / 2, rect.right);
-        snapYs.push(rect.top, rect.top + rect.height / 2, rect.bottom);
-      });
-    }
+      const parent = snapEl.closest(".page-component");
+      if (!(parent instanceof HTMLElement) || parent.dataset.id === component.id || parent === el) {
+        return;
+      }
+      const rect = snapEl.getBoundingClientRect();
+      snapXs.push(rect.left, rect.left + rect.width / 2, rect.right);
+      snapYs.push(rect.top, rect.top + rect.height / 2, rect.bottom);
+    });
     const helpers = this.helpers();
     helpers.axisX.show = false;
     delete helpers.axisX.snap;
@@ -221,7 +257,6 @@ export class PageComponentsDiaplayComponent {
     }
   }
   moveComponentEnd(event: CdkDragEnd) {
-    event.source._dragRef.reset();
     const component = this.draggingComponent();
     this._moveComponentStartPosition = null;
     if (this.activeComponent2()) {
@@ -233,10 +268,10 @@ export class PageComponentsDiaplayComponent {
     if (!component) {
       return;
     }
-    const el = event.source._dragRef.getRootElement();
-    el.style.transform = component.getStyle().transform as string;
+    this._resetDargRef(event.source._dragRef);
 
-    const component2 = this.components().find((v) => v.id === component.id);
+    const components = this.components();
+    const component2 = findPageComponent(component.id, components);
     if (component2) {
       component2.position.copy(component.position);
       const helpers = this.helpers();
@@ -253,13 +288,8 @@ export class PageComponentsDiaplayComponent {
       if (!isEqual(helpers, this.helpers())) {
         this.helpers.set({...helpers});
       }
+      updateGroup(components, component2);
       this.components.update((v) => [...v]);
-    }
-  }
-  updateComponentsTransform() {
-    const components = this.components();
-    for (const [i, el] of this.componentEls().entries()) {
-      el.nativeElement.style.transform = components[i].getStyle().transform as string;
     }
   }
 
@@ -301,14 +331,19 @@ export class PageComponentsDiaplayComponent {
       }
       classArr.push("rotate");
     }
-    this.control.set({class: classArr, style: {"--component-border-width": `${Math.max(component.borderWidth, 0)}px`}});
+    const style: Properties = {
+      "--component-border-width": `${Math.max(component.borderWidth, 0)}px`
+    };
+    this.control.set({class: classArr, style});
 
     let updateComponents = false;
-    if (!resizable.x && component.size.x !== componentEl.offsetWidth) {
+    const resizeX = !resizable.x && !resizable.xLocked;
+    const resizeY = !resizable.y && !resizable.yLocked;
+    if (resizeX && component.size.x !== componentEl.offsetWidth) {
       component.size.x = componentEl.offsetWidth;
       updateComponents = true;
     }
-    if (!resizable.y && component.size.y !== componentEl.offsetHeight) {
+    if (resizeY && component.size.y !== componentEl.offsetHeight) {
       component.size.y = componentEl.offsetHeight;
       updateComponents = true;
     }
@@ -380,6 +415,7 @@ export class PageComponentsDiaplayComponent {
       if (activeComponent) {
         activeComponent.position.copy(component.position);
         activeComponent.size.copy(component.size);
+        updateGroup(this.components(), activeComponent);
         this.components.update((v) => [...v]);
       }
     }

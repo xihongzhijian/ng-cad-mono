@@ -25,6 +25,7 @@ import {DataType, Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "../../models/input-info-utils";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
+import {updateGroup} from "../../models/page-component-utils";
 import {PageComponentBase} from "../../models/page-components/page-component-base";
 import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentImage} from "../../models/page-components/page-component-image";
@@ -501,6 +502,7 @@ export class PageComponentConfig2Component {
         }
       }
     }
+    updateGroup(this.components(), component);
   }
 
   onExpandedChange(group: ReturnType<typeof this.componentMenuInputs>[number], expanded: boolean) {

@@ -90,12 +90,16 @@
   --left: calc(0px - var(--border-width-half));
   --bottom: calc(100% + var(--border-width-half));
   --right: calc(100% + var(--border-width-half));
+  --offset-x: 0px;
+  --offset-y: 0px;
+  --offset-w: 0px;
+  --offset-h: 0px;
 
   position: absolute;
-  top: calc(0px - var(--padding) - var(--border-width) - var(--component-border-width));
-  left: calc(0px - var(--padding) - var(--border-width) - var(--component-border-width));
-  width: calc(100% + var(--component-border-width) * 2);
-  height: calc(100% + var(--component-border-width) * 2);
+  top: calc(var(--offset-y) - var(--padding) - var(--border-width) - var(--component-border-width));
+  left: calc(var(--offset-x) - var(--padding) - var(--border-width) - var(--component-border-width));
+  width: calc(100% + var(--offset-w) + var(--component-border-width) * 2);
+  height: calc(100% + var(--offset-h) + var(--component-border-width) * 2);
   border-width: var(--border-width);
   border-style: var(--border-style);
   border-color: var(--border-color);

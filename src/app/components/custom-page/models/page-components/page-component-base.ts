@@ -90,9 +90,11 @@ export abstract class PageComponentBase {
     const {x: scaleX, y: scaleY} = this.scale;
     const {x: anchorX, y: anchorY} = this.anchor;
     const {resizable} = pageComponentInfos[this.type as PageComponentType] || {};
+    const useWidth = resizable.x || resizable.xLocked;
+    const useHeight = resizable.y || resizable.yLocked;
     return {
-      width: resizable.x ? `${this.size.x}px` : "auto",
-      height: resizable.y ? `${this.size.y}px` : "auto",
+      width: useWidth ? `${this.size.x}px` : "auto",
+      height: useHeight ? `${this.size.y}px` : "auto",
       left: `${this.position.x}px`,
       top: `${this.position.y}px`,
       transform: `translate(-${anchorX * 100}%, -${anchorY * 100}%) scale(${scaleX},${scaleY}) rotate(${rotation})`,
