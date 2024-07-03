@@ -226,7 +226,7 @@ export class PageComponentsDiaplayComponent {
         if (Math.abs(x - snapX) < helpers.axisX.threshold) {
           helpers.axisX.show = true;
           const from = snapX - hostRect.left;
-          const to = Math.round(snapX - (elRect.width / 2) * i + el.offsetLeft - elRect.left);
+          const to = Math.floor(snapX - (elRect.width / 2) * i + el.offsetLeft - elRect.left);
           helpers.axisX.snap = {from, to};
           found = true;
           break;
@@ -242,7 +242,7 @@ export class PageComponentsDiaplayComponent {
         if (Math.abs(y - snapY) < helpers.axisY.threshold) {
           helpers.axisY.show = true;
           const from = snapY - hostRect.top;
-          const to = Math.round(snapY - (elRect.height / 2) * i + el.offsetTop - elRect.top);
+          const to = Math.floor(snapY - (elRect.height / 2) * i + el.offsetTop - elRect.top);
           helpers.axisY.snap = {from, to};
           found = true;
           break;
