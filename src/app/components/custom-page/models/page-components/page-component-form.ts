@@ -1,9 +1,8 @@
-import {Property} from "csstype";
 import {cloneDeep} from "lodash";
 import {Trbl} from "../page.utils";
-import {PageComponentBase} from "./page-component-base";
+import {PageComponentTextBase} from "./page-component-text-base";
 
-export class PageComponentForm extends PageComponentBase {
+export class PageComponentForm extends PageComponentTextBase {
   readonly type = "form";
   private _rows = 0;
   get rows() {
@@ -30,8 +29,6 @@ export class PageComponentForm extends PageComponentBase {
   valueWrap = false;
   labelPadding: Trbl = [0, 0, 0, 0];
   valuePadding: Trbl = [0, 0, 0, 0];
-  fontSize: number = 16;
-  fontFamily: Property.FontFamily = "";
 
   import(data: ReturnType<typeof this.export>) {
     data = this._getImportData(data);
@@ -47,8 +44,6 @@ export class PageComponentForm extends PageComponentBase {
     this.valueWrap = data.valueWrap;
     this.labelPadding = cloneDeep(data.labelPadding);
     this.valuePadding = cloneDeep(data.valuePadding);
-    this.fontSize = data.fontSize;
-    this.fontFamily = data.fontFamily;
   }
   export() {
     return {
@@ -63,9 +58,7 @@ export class PageComponentForm extends PageComponentBase {
       labelWrap: this.labelWrap,
       valueWrap: this.valueWrap,
       labelPadding: cloneDeep(this.labelPadding),
-      valuePadding: cloneDeep(this.valuePadding),
-      fontSize: this.fontSize,
-      fontFamily: this.fontFamily
+      valuePadding: cloneDeep(this.valuePadding)
     };
   }
 
@@ -76,8 +69,6 @@ export class PageComponentForm extends PageComponentBase {
     style["--value-width"] = `${this.valueWidth}px`;
     style["--label-padding"] = this.labelPadding.join("px ") + "px";
     style["--value-padding"] = this.valuePadding.join("px ") + "px";
-    style.fontSize = `${this.fontSize}px`;
-    style.fontFamily = this.fontFamily;
     return style;
   }
 
