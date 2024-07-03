@@ -476,8 +476,12 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this.step$.next({value: 3, refresh: true, noCache: true, preserveImgs});
   }
 
+  getLingsanYaoqiu() {
+    return this.status.getCad数据要求(this.lingsanCadType || "分类为空");
+  }
+
   async step3Add() {
-    const yaoqiu = this.status.getCad数据要求(this.lingsanCadType || "分类为空");
+    const yaoqiu = this.getLingsanYaoqiu();
     const cadData = new CadData({type: this.lingsanCadType});
     const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
     const yaoqiuItems2 = yaoqiu?.选中CAD要求 || [];
@@ -490,7 +494,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const {uploadDxf} = cadData.info;
     if (uploadDxf instanceof File) {
       await uploadAndReplaceCad(uploadDxf, cadData, true, this.message, this.http);
-      console.log(cadData.options.产品分类);
     }
     const {xinghao} = this.data?.lingsanOptions || {};
     if (xinghao) {
@@ -987,6 +990,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       }
     }
     const data = item.data.clone(!isEditingFenlei);
+    data.info.imgId = await this.http.getMongoId();
+    const yaoqiu = this.getLingsanYaoqiu();
+    const yaoqiuItems = yaoqiu?.选中CAD要求 || [];
+    setCadData(data, yaoqiuItems);
     this.result.零散.push({data, info: {houtaiId: item.data.id, zhankai: [], calcZhankai: []}});
     this._updateInputInfos();
     await timeout(0);

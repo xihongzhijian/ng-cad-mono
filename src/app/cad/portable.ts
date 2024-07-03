@@ -460,6 +460,9 @@ export class CadPortable {
             vars[varName] = e.id;
           }
           delete e.info.varName;
+          if (isShiyituCad) {
+            e.hideLength = true;
+          }
         }
       });
       for (const e of [...data.entities.line, ...data.entities.arc]) {

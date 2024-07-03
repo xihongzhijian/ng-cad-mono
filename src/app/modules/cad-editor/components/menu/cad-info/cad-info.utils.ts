@@ -66,7 +66,7 @@ export const cadFields = {
   拉码碰撞判断: "拉码碰撞判断"
 } as const;
 
-const getData = (data: CadData | (() => CadData)) => (typeof data === "function" ? data() : data);
+export const getData = (data: CadData | (() => CadData)) => (typeof data === "function" ? data() : data);
 
 export const getCadInfoInputs = (
   keys: string[],

@@ -13,6 +13,7 @@ import {HttpOptions} from "@app/modules/http/services/http.service.types";
 import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoOption} from "@app/modules/input/components/input.types";
 import {MessageService} from "@app/modules/message/services/message.service";
+import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {ProgressBar} from "@lucilor/utils";
 import {CollecionQuery, LrsjQuery, RefreshCadImgsQueryConfig, RefreshCadImgsRefreshConfig} from "./refresh-cad-imgs.types";
@@ -45,6 +46,7 @@ export class RefreshCadImgsComponent implements OnInit {
   refreshConfig: RefreshCadImgsRefreshConfig = {
     step: signal(1)
   };
+  production = environment.production;
 
   inputs = viewChildren(InputComponent);
 
@@ -243,5 +245,12 @@ export class RefreshCadImgsComponent implements OnInit {
       this.status.set("success");
       this.msg.set(`全部${total}个刷新成功`);
     }
+  }
+
+  async clearCadImgs() {
+    if (!(await this.message.confirm("确定要清空所有CAD图片吗？"))) {
+      return;
+    }
+    await this.http.clearCadImgs();
   }
 }

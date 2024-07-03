@@ -3,6 +3,9 @@
     <app-input [info]="info"></app-input>
   }
   <button mat-raised-button color="primary" (click)="query()">查询数据</button>
+  @if (!production) {
+    <button mat-raised-button color="primary" (click)="clearCadImgs()">清空CAD图片</button>
+  }
 </div>
 @if (queriesCountTexts(); as texts) {
   <div class="toolbar">
