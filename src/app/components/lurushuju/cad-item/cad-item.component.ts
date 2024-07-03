@@ -337,8 +337,11 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       this.mubanData = undefined;
       return undefined;
     }
-    const resultData = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId}, {spinner: false});
+    const resultData = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId}, {silent: true});
     const mubanData = resultData?.cads[0] as CadData | undefined;
+    if (!mubanData) {
+      this.message.error(`【${this.cadName}】的模板不存在`);
+    }
     this.mubanData = mubanData;
     if (mubanData) {
       generateLineTexts2(mubanData);
