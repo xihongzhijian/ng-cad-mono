@@ -17,7 +17,7 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {session} from "@app/app.common";
-import {filterCad, setCadData} from "@app/cad/cad-shujuyaoqiu";
+import {filterCad} from "@app/cad/cad-shujuyaoqiu";
 import {HoutaiCad} from "@app/modules/http/services/cad-data.service.types";
 import {OpenCadOptions} from "@app/services/app-status.types";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -169,11 +169,6 @@ export class SuanliaoDataDialogComponent implements OnInit {
     const result = await openZixuanpeijianDialog(this.dialog, {data: zxpjData});
     if (result) {
       data.算料CAD = result.零散.map((v) => {
-        const isSelected = v.data.info.isSuanliaoSelected;
-        if (!isSelected) {
-          const yaoqiu = this.status.getCad数据要求(v.data.type);
-          setCadData(v.data, yaoqiu?.选中CAD要求 || []);
-        }
         return getHoutaiCad(v.data, {houtaiId: v.info.houtaiId});
       });
     }
