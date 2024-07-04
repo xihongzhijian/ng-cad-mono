@@ -255,13 +255,14 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[], va
           value2 = value2.slice(0, -1);
         }
         const [a, b, c] = value2.split(/[,，]/);
-        if (!zhankai.zhankaikuan || override || required) {
+        const override2 = required && value;
+        if (!zhankai.zhankaikuan || override || override2) {
           zhankai.zhankaikuan = a || "";
         }
-        if (!zhankai.zhankaigao || override || required) {
+        if (!zhankai.zhankaigao || override || override2) {
           zhankai.zhankaigao = b || "";
         }
-        if (!zhankai.shuliang || override || required) {
+        if (!zhankai.shuliang || override || override2) {
           zhankai.shuliang = c || "";
         }
       }
