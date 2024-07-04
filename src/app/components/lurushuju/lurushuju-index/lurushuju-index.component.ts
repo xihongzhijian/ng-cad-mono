@@ -736,11 +736,11 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const names = this.xinghao.产品分类[产品分类].map((gongyi) => gongyi.名字);
     const 名字 = await this.message.prompt({
       type: "string",
-      label: "新建工艺做法",
+      label: "",
       validators: (control) => {
         const value = control.value;
         if (!value) {
-          return {名字不能为空: true};
+          return {"请输入工艺做法名字，下单时需要选择": true};
         }
         if (names.includes(value)) {
           return {名字已存在: true};
@@ -1176,7 +1176,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     switch (event.button.event) {
       case "添加":
         {
-          const 名字 = await this.message.prompt({type: "string", label: "新建门铰锁边铰边", validators: Validators.required});
+          const 名字 = await this.message.prompt({
+            type: "string",
+            label: "",
+            validators: (control) => {
+              const value = control.value;
+              if (!value) {
+                return {"请输入【门铰锁边铰边】的名字，下单要选": true};
+              }
+              return null;
+            }
+          });
           if (名字) {
             const item = get算料数据({名字, 产品分类: this.fenleiName});
             updateMenjiaoData(item);

@@ -6,7 +6,7 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {session, setGlobal} from "@app/app.common";
-import {filterCad, setCadData} from "@app/cad/cad-shujuyaoqiu";
+import {filterCad} from "@app/cad/cad-shujuyaoqiu";
 import {convertOptions} from "@app/modules/input/components/input.utils";
 import {AppStatusService} from "@app/services/app-status.service";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -14,7 +14,7 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {environment} from "@env";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf} from "@lucilor/utils";
+import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -26,7 +26,7 @@ import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {filterCad as filterCad2} from "@views/mrbcjfz/mrbcjfz.utils";
 import csstype from "csstype";
-import {cloneDeep, debounce, isEmpty} from "lodash";
+import {cloneDeep, debounce, difference, isEmpty} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
@@ -106,7 +106,7 @@ export class MenjiaoDialogComponent implements OnInit {
   form: InputInfo[] = [];
   shiyituSearchInputInfo: ObjectOf<InputInfo> = {};
   hiddenShiyitus: number[] = [];
-  errors = {bcfz: false, others: false};
+  errors = this.getEmptyErrors();
   menjiaoCadTabIndex = 0;
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
   @ViewChildren(SuanliaoTablesComponent) suanliaoTablesList?: QueryList<SuanliaoTablesComponent>;
@@ -168,6 +168,10 @@ export class MenjiaoDialogComponent implements OnInit {
     }
   }
 
+  getEmptyErrors() {
+    return {bcfz: false, others: false, key1: {} as Partial<Record<MenjiaoCadType, string>>};
+  }
+
   async update(useFormData?: boolean) {
     const {data: data0, componentLrsj} = this.data;
     if (!componentLrsj) {
@@ -223,6 +227,24 @@ export class MenjiaoDialogComponent implements OnInit {
         }
         if (key === "锁边") {
           info.hint = "请使用和实际对应的名字";
+        } else if (key === "门扇厚度") {
+          let valueBefore = data.门扇厚度;
+          if (!Array.isArray(valueBefore)) {
+            data.门扇厚度 = [];
+            if (isTypeOf(valueBefore, ["string", "number"])) {
+              data.门扇厚度.push(valueBefore);
+            }
+          }
+          if (valueBefore.length > 1) {
+            valueBefore = [valueBefore[0]];
+          }
+          info.onChange = (val: any) => {
+            const diff = difference(val, valueBefore);
+            if (diff.length > 0) {
+              data.门扇厚度 = [diff[0]];
+              valueBefore = diff;
+            }
+          };
         }
       });
     };
@@ -474,11 +496,23 @@ export class MenjiaoDialogComponent implements OnInit {
       }
     } else {
       const {errors} = this;
+      const msgs: string[] = [];
       if (errors.bcfz && !errors.others) {
-        this.message.error("无法保存，输入不完整，请打开板材分组");
+        msgs.push("无法保存，输入不完整，请打开板材分组");
       } else {
-        this.message.error("无法保存，输入不完整，请补充");
+        msgs.push("无法保存，输入不完整，请补充");
       }
+      const key1Keys = keysOf(errors.key1);
+      if (key1Keys.length > 0) {
+        for (const key of key1Keys) {
+          msgs.push(`【${key}】${errors.key1[key]}`);
+        }
+        const index = menjiaoCadTypes.indexOf(key1Keys[0]);
+        if (index >= 0) {
+          this.menjiaoCadTabIndex = index;
+        }
+      }
+      this.message.error(msgs.join("<br>"));
     }
     return false;
   }
@@ -530,7 +564,6 @@ export class MenjiaoDialogComponent implements OnInit {
       } else {
         delete cadData.info.imgId;
       }
-      setCadData(cadData, yaoqiu.选中CAD要求);
       if (!data[key1][key2][key3]) {
         data[key1][key2][key3] = {};
       }
@@ -586,7 +619,6 @@ export class MenjiaoDialogComponent implements OnInit {
         const houtaiId = v.id;
         const v2 = v.clone(true);
         delete v2.info.imgId;
-        setCadData(v2, yaoqiu.选中CAD要求);
         data.算料单示意图.push(getHoutaiCad(v2, {houtaiId}));
       }
       updateMenjiaoData(this.formData);
@@ -752,10 +784,8 @@ export class MenjiaoDialogComponent implements OnInit {
   }
 
   async validate() {
+    this.errors = this.getEmptyErrors();
     const {inputs, formData: data, errors} = this;
-    for (const key of keysOf(errors)) {
-      errors[key] = false;
-    }
     const {errors: inputErrors} = await validateForm(inputs?.toArray() || []);
 
     const key1Errors = await Promise.all(
@@ -802,6 +832,7 @@ export class MenjiaoDialogComponent implements OnInit {
         if (errors2.length > 0) {
           const error = `请${errors2.join("并")}`;
           this.key1Infos[key1].error = error;
+          errors.key1[key1] = error;
           return {[error]: true};
         } else {
           this.key1Infos[key1].error = "";

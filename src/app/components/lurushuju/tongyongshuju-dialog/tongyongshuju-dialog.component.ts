@@ -4,7 +4,6 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {setGlobal} from "@app/app.common";
-import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {openCadListDialog} from "@app/components/dialogs/cad-list/cad-list.component";
 import {CadListInput} from "@app/components/dialogs/cad-list/cad-list.types";
@@ -249,18 +248,17 @@ export class TongyongshujuDialogComponent implements OnInit {
       fixedSearch = {分类: item.cadyaoqiu};
     }
     const result = await openCadListDialog(this.dialog, {
-      data: {collection: "cad", selectMode: "single", checkedItemsLimit: 1, fixedSearch, yaoqiu}
+      data: {collection: "cad", selectMode: "single", checkedItemsLimit: 1, fixedSearch, yaoqiu, vars: {当前选项: item2.mingzi}}
     });
     if (result) {
       const {collection} = this;
       for (const cad of result) {
-        setCadData(cad, yaoqiu?.选中CAD要求 || [], {当前选项: item2.mingzi});
         cad.id = "";
         cad.options[item.mingzi] = item2.mingzi;
         await this.http.mongodbInsert(collection, getHoutaiCad(cad), {force: true}, {spinner: this.cadListLoader});
+        await this.refreshActiveCadList();
       }
     }
-    await this.refreshActiveCadList();
   }
 
   async copyCad(component: CadItemComponent<TongyongshujuCadItemInfo>) {

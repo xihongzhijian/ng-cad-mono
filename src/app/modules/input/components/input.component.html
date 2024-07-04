@@ -194,7 +194,7 @@
               [name]="name + '-value'"
               (change)="changeObjectValue2(value, item.key, item.value)"
               (blur)="onBlur()"
-              (click)="onClick()"
+              (click)="onClick({key: item.key})"
             />
             <ng-container matSuffix>
               @if (optionsDialog) {
