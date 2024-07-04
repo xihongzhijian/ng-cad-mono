@@ -273,8 +273,9 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onKeyUp(event: KeyboardEvent) {
     if (event.key === "Enter" && event.target instanceof HTMLInputElement) {
-      this.formInputs?.forEach((v) => v.validateValue());
-      this.submit();
+      if (this.data.type !== "form") {
+        this.submit();
+      }
     }
   }
 }
