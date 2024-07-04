@@ -1095,7 +1095,7 @@ export const printCads = async (params: PrintCadsParams) => {
 };
 
 const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物料明细: 型材物料明细 | undefined) => {
-  if (!型材物料明细) {
+  if (!型材物料明细 || !型材物料明细.items) {
     return;
   }
   const lines = findRectLines(data, "型材物料明细", true);
