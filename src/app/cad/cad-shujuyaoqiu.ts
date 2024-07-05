@@ -205,7 +205,7 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[], va
     }
     return value;
   };
-  for (const {key, cadKey, value, key2, override, remove, reserve} of yaoqiuItems) {
+  for (const {key, cadKey, value, key2, override, remove, reserve, required} of yaoqiuItems) {
     if (cadKey) {
       if (remove) {
         if (toRemoveMap[cadKey]) {
@@ -255,13 +255,14 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[], va
           value2 = value2.slice(0, -1);
         }
         const [a, b, c] = value2.split(/[,，]/);
-        if (!zhankai.zhankaikuan || override) {
+        const override2 = required && value;
+        if (!zhankai.zhankaikuan || override || override2) {
           zhankai.zhankaikuan = a || "";
         }
-        if (!zhankai.zhankaigao || override) {
+        if (!zhankai.zhankaigao || override || override2) {
           zhankai.zhankaigao = b || "";
         }
-        if (!zhankai.shuliang || override) {
+        if (!zhankai.shuliang || override || override2) {
           zhankai.shuliang = c || "";
         }
       }

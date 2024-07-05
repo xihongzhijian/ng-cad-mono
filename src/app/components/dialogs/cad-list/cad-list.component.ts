@@ -299,7 +299,7 @@ export class CadListComponent implements AfterViewInit {
       return;
     }
     const {checkedItems: ids, data} = this;
-    const {collection, raw} = data;
+    const {collection, raw, vars} = data;
     const yaoqiuItems = data.yaoqiu?.选中CAD要求 || [];
     let cads: (CadData | HoutaiCad)[] = [];
     if (ids.length > 0) {
@@ -309,6 +309,15 @@ export class CadListComponent implements AfterViewInit {
       } else {
         const result = await this.http.getCad({ids, collection});
         cads = result.cads;
+      }
+      for (const cad of cads) {
+        if (cad instanceof CadData) {
+          setCadData(cad, yaoqiuItems, vars);
+        } else {
+          const cad2 = new CadData(cad.json);
+          setCadData(cad2, yaoqiuItems, vars);
+          Object.assign(cad, getHoutaiCad(cad2));
+        }
       }
       const getInvalidCad = () => {
         const result: {cad: CadData; i: number}[] = [];

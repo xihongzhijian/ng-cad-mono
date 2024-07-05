@@ -88,7 +88,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
   @Input() showMuban?: boolean;
-  @Input() isOnline?: {collection?: CadCollection; isFetched?: boolean; afterFetch: (component: CadItemComponent<T>) => void};
+  @Input() isOnline?: {collection?: CadCollection; isFetched?: boolean; afterFetch?: (component: CadItemComponent<T>) => void};
   @Input() selectable?: CadItemSelectable<T>;
   @Input() events?: {
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
@@ -214,7 +214,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       } else {
         Object.assign(this.cad, data);
       }
-      isOnline.afterFetch(this);
+      isOnline.afterFetch?.(this);
     }
   }
 

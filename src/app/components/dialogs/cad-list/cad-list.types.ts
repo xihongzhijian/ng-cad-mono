@@ -25,6 +25,7 @@ export interface CadListInput {
   addCadData?: Partial<CadData>;
   yaoqiu?: Cad数据要求;
   gongshis?: 算料公式[];
+  vars?: ObjectOf<string>;
 }
 
 export type CadListOutput = CadData[];

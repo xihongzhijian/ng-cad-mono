@@ -18,7 +18,7 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
     backgroundColor: "rgba(0,0,0,0)",
     hideLineLength: collection === "CADmuban",
     hideLineGongshi: false,
-    lineGongshi: 24,
+    lineGongshi: 8,
     ...params.config
   });
   cad.dom.style.opacity = "0";

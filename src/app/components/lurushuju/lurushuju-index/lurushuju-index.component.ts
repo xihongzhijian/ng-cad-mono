@@ -35,7 +35,7 @@ import {BancaiListData} from "@modules/http/services/cad-data.service.types";
 import {getTableUpdateData} from "@modules/http/services/cad-data.service.utils";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoGroup, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
@@ -476,14 +476,78 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   }
 
   async copyXinghao(xinghao: XinghaoData) {
-    const from = xinghao.mingzi;
-    if (!(await this.message.confirm(`确定复制选中${from}吗？`))) {
-      return;
-    }
-    const names = this.xinghaos.map((v) => v.mingzi);
-    const to = getCopyName(names, from);
-    const success = await this.http.getData<boolean>("shuju/api/copyXinghao", {from, to}, {spinner: false});
-    if (success) {
+    const fromName = xinghao.mingzi;
+    const namesAll = this.xinghaos.map((v) => v.mingzi);
+    const data = {num: 1, names: [] as string[]};
+    const getNameInputs = () => {
+      const result: InputInfo[] = [];
+      data.names = [];
+      const numPerRow = 5;
+      const w = 100 / numPerRow + "%";
+      for (let i = 0; i < data.num; i++) {
+        const name = getCopyName(namesAll.concat(data.names), fromName);
+        data.names.push(name);
+        result.push({
+          type: "string",
+          label: "",
+          model: {data: data.names, key: i},
+          validators: () => {
+            const val = data.names[i];
+            if (!val) {
+              return {不能为空: true};
+            }
+            if (namesAll.includes(val)) {
+              return {不能重复: true};
+            }
+            if (data.names.some((v, j) => i !== j && v === val)) {
+              return {不能重复: true};
+            }
+            return null;
+          },
+          style: {
+            flex: `0 0 calc(${w} - 20px * ${(numPerRow - 1) / numPerRow})`,
+            width: "0",
+            marginLeft: i % numPerRow === 0 ? "0" : "20px"
+          }
+        });
+      }
+      return result;
+    };
+    const namesGroupInput: InputInfoGroup = {
+      type: "group",
+      label: "",
+      groupStyle: {display: "flex", flexWrap: "wrap"},
+      infos: getNameInputs()
+    };
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "number",
+        label: "复制数量",
+        model: {data, key: "num"},
+        validators: () => {
+          const num = data.num;
+          const min = 1;
+          const max = 50;
+          if (num < min) {
+            return {[`不能小于${min}`]: true};
+          }
+          if (num > max) {
+            return {[`不能大于${max}`]: true};
+          }
+          return null;
+        },
+        onChange: () => {
+          namesGroupInput.infos = getNameInputs();
+        }
+      },
+      namesGroupInput
+    ];
+    const result = await this.message.form(form, {}, {width: "100%", height: "100%", maxWidth: "900px"});
+    if (result) {
+      if (data.num > 1 && !(await this.message.confirm(`确定复制吗？`))) {
+        return;
+      }
+      await this.http.getData<boolean>("shuju/api/copyXinghao", {fromName, toNames: data.names}, {spinner: false});
       await this.getXinghaos();
     }
   }
@@ -736,11 +800,11 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const names = this.xinghao.产品分类[产品分类].map((gongyi) => gongyi.名字);
     const 名字 = await this.message.prompt({
       type: "string",
-      label: "新建工艺做法",
+      label: "",
       validators: (control) => {
         const value = control.value;
         if (!value) {
-          return {名字不能为空: true};
+          return {"请输入工艺做法名字，下单时需要选择": true};
         }
         if (names.includes(value)) {
           return {名字已存在: true};
@@ -1176,7 +1240,17 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     switch (event.button.event) {
       case "添加":
         {
-          const 名字 = await this.message.prompt({type: "string", label: "新建门铰锁边铰边", validators: Validators.required});
+          const 名字 = await this.message.prompt({
+            type: "string",
+            label: "",
+            validators: (control) => {
+              const value = control.value;
+              if (!value) {
+                return {"请输入【门铰锁边铰边】的名字，下单要选": true};
+              }
+              return null;
+            }
+          });
           if (名字) {
             const item = get算料数据({名字, 产品分类: this.fenleiName});
             updateMenjiaoData(item);

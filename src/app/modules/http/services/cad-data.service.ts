@@ -4,7 +4,7 @@ import {imgCadEmpty, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {dataURLtoBlob, downloadByUrl, DownloadOptions, keysOf, ObjectOf} from "@lucilor/utils";
+import {dataURLtoBlob, downloadByUrl, DownloadOptions, isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {
   BancaiCad,
   BancaiList,
@@ -82,7 +82,7 @@ export class CadDataService extends HttpService {
     if (response && response.data) {
       if (response.code === 10) {
         const data = new CadData(response.data.cad);
-        data.info.isOnline = true;
+        delete data.info.imgId;
         result.cads = [data];
       } else {
         const restore = await this._resolveMissingCads(response);
@@ -91,7 +91,7 @@ export class CadDataService extends HttpService {
         } else {
           result.cads = response.data.map((v: any) => {
             const v2 = new CadData(v);
-            v2.info.isOnline = true;
+            delete v2.info.imgId;
             return v2;
           });
           result.total = response.count || 0;
@@ -244,6 +244,14 @@ export class CadDataService extends HttpService {
 
   async queryMongodb<T extends MongodbDataBase>(params: QueryMongodbParams, options?: HttpOptions) {
     const data = await this.getData<T[]>("ngcad/queryMongodb", params, options);
+    for (const item of data || []) {
+      if (isTypeOf(item, "object")) {
+        const info = (item as any).json?.info;
+        if (isTypeOf(info, "object")) {
+          delete info.imgId;
+        }
+      }
+    }
     return data || [];
   }
 
