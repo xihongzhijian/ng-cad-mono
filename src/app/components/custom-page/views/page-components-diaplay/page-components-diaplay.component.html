@@ -16,33 +16,31 @@
       (cdkDragMoved)="moveComponent($event)"
       (cdkDragEnded)="moveComponentEnd($event)"
     >
-      @if (activeComponent()?.id === component.id) {
-        @if (control(); as control) {
-          <div class="page-component-control" [class]="control.class" [style]="control.style">
-            @for (point of controlPoints; track $index) {
-              <div
-                class="point"
-                [class]="point.position"
-                cdkDrag
-                [cdkDragLockAxis]="point.axis"
-                (cdkDragStarted)="moveResizePointStart()"
-                (cdkDragMoved)="moveResizePoint($event, point)"
-                (cdkDragEnded)="moveResizePointEnd($event)"
-              >
-                <div class="point-inner"></div>
-              </div>
-            }
+      @if (controls()[component.id]; as control) {
+        <div class="page-component-control" [class]="control.class" [style]="control.style">
+          @for (point of controlPoints; track $index) {
             <div
-              class="rotate-point"
+              class="point"
+              [class]="point.position"
               cdkDrag
-              (cdkDragStarted)="moveRotatePointStart()"
-              (cdkDragMoved)="moveRotatePoint($event, componentEl)"
-              (cdkDragEnded)="moveRotatePointEnd($event)"
+              [cdkDragLockAxis]="point.axis"
+              (cdkDragStarted)="moveResizePointStart(component)"
+              (cdkDragMoved)="moveResizePoint($event, point)"
+              (cdkDragEnded)="moveResizePointEnd($event)"
             >
-              <mat-icon>rotate_right</mat-icon>
+              <div class="point-inner"></div>
             </div>
+          }
+          <div
+            class="rotate-point"
+            cdkDrag
+            (cdkDragStarted)="moveRotatePointStart(component)"
+            (cdkDragMoved)="moveRotatePoint($event, componentEl)"
+            (cdkDragEnded)="moveRotatePointEnd($event)"
+          >
+            <mat-icon>rotate_right</mat-icon>
           </div>
-        }
+        </div>
       }
       <div class="page-component-content">
         @switch (component.type) {

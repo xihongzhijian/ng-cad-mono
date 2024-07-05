@@ -10,12 +10,14 @@ export const flatPageComponents = function* (components: PageComponentTypeAny[],
     }
   }
 };
-export const getPageComponentNames = (components: PageComponentTypeAny[]) => {
-  const names: string[] = [];
-  for (const component of flatPageComponents(components, true)) {
-    names.push(component.name);
+export const flatMapPageComponents = function* <T>(
+  components: PageComponentTypeAny[],
+  expand: boolean,
+  fn: (component: PageComponentTypeAny) => T
+): Generator<T> {
+  for (const component of flatPageComponents(components, expand)) {
+    yield fn(component);
   }
-  return names;
 };
 
 export const getPageComponentGroup = (components: PageComponentTypeAny[], component: PageComponentTypeAny): PageComponentGroup | null => {

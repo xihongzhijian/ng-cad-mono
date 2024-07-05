@@ -23,10 +23,7 @@ import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
 import {updateGroup} from "../../models/page-component-utils";
-import {PageComponentBase} from "../../models/page-components/page-component-base";
-import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentImage} from "../../models/page-components/page-component-image";
-import {PageComponentText} from "../../models/page-components/page-component-text";
 import {PageStatusService} from "../../services/page-status.service";
 import {InputGroup} from "./page-component-config2.types";
 import {getCommonInputs, getFormInputs, getImageInputs, getTextInputs, mergeGroups} from "./page-component-config2.utils";
@@ -61,12 +58,6 @@ export class PageComponentConfig2Component {
   get components() {
     return this.pageStatus.components;
   }
-  get activeComponent() {
-    return this.pageStatus.activeComponent;
-  }
-  get activeComponent2() {
-    return this.pageStatus.activeComponent2;
-  }
   get showComponentMenu() {
     return this.pageStatus.showComponentMenu;
   }
@@ -85,9 +76,9 @@ export class PageComponentConfig2Component {
   }
 
   componentMenuStyle = computed(() => {
-    const component = this.activeComponent();
+    const components = this.pageStatus.activeComponents();
     const componentMenuStyleOverride = this.componentMenuStyleOverride();
-    if (!component || !this.showComponentMenu()) {
+    if (components.length < 1 || !this.showComponentMenu()) {
       return null;
     }
     const style: Properties = {};
@@ -136,23 +127,18 @@ export class PageComponentConfig2Component {
 
   componentMenuInputs = computed(() => {
     this.components();
-    const component = this.activeComponent2() || this.activeComponent();
+    const components = this.pageStatus.activeComponents3();
+    if (components.length < 1) {
+      return [];
+    }
     const inputGroups: InputGroup[] = [];
     const onChange = () => {
       this.components.update((v) => [...v]);
     };
-    if (component instanceof PageComponentText) {
-      mergeGroups(inputGroups, getTextInputs(component, onChange));
-    }
-    if (component instanceof PageComponentImage) {
-      mergeGroups(inputGroups, getImageInputs(component, onChange, this.http));
-    }
-    if (component instanceof PageComponentForm) {
-      mergeGroups(inputGroups, getFormInputs(component, onChange));
-    }
-    if (component instanceof PageComponentBase) {
-      mergeGroups(inputGroups, getCommonInputs(component, onChange, this.onComponentSizeChange.bind(this)));
-    }
+    mergeGroups(inputGroups, getTextInputs(components, onChange));
+    mergeGroups(inputGroups, getImageInputs(components, onChange, this.http));
+    mergeGroups(inputGroups, getFormInputs(components, onChange));
+    mergeGroups(inputGroups, getCommonInputs(components, onChange, this.onComponentSizeChange.bind(this)));
 
     const expandedGroups = this.expandedGroups();
     for (const group of inputGroups) {

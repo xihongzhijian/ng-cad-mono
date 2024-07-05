@@ -1,4 +1,5 @@
 <div class="header toolbar">
+  <app-about></app-about>
   @if (mode() === "design") {
     <app-page-components-select class="flex-110"></app-page-components-select>
   } @else {
@@ -24,14 +25,24 @@
 </div>
 <div class="flex-row flex-110" style="overflow: hidden">
   <div class="显示内容"></div>
-  <div #workSpaceEl class="work-space" [style]="workSpaceStyle()">
-    <ng-scrollbar class="enable-x">
-      <div #pageEl class="page" [style]="pageStyle()" (pointerdown)="onPagePointerDown($event)" (pointerup)="onPagePointerUp($event)">
+  <div
+    #workSpaceEl
+    class="work-space"
+    [style]="workSpaceStyle()"
+    (pointerdown)="onPagePointerDown($event)"
+    (pointermove)="onPagePointerMove($event)"
+    (pointerup)="onPagePointerUp($event)"
+  >
+    <ng-scrollbar class="enable-x work-space-scrollbar">
+      <div #pageEl class="page" [style]="pageStyle()">
         <div class="page-inner">
           <app-page-components-diaplay></app-page-components-diaplay>
         </div>
       </div>
     </ng-scrollbar>
+    @if (multiSelectorStyle(); as style) {
+      <div class="multi-selector" [style]="style" (pointerup)="onPagePointerUp($event)"></div>
+    }
     @if (mode() === "design") {
       <app-page-component-config2 [workSpaceEl]="workSpaceEl"></app-page-component-config2>
     }

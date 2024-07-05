@@ -1,10 +1,11 @@
 import {getFilepathUrl} from "@app/app.common";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {InputInfo, InputInfoNumber, InputInfoOption, InputInfoSelect} from "@app/modules/input/components/input.types";
-import {selectFiles} from "@lucilor/utils";
+import {InputInfo, InputInfoGroup, InputInfoNumber, InputInfoOption, InputInfoSelect} from "@app/modules/input/components/input.types";
+import {isTypeOf, selectFiles} from "@lucilor/utils";
 import Color from "color";
 import {DataType, Property} from "csstype";
 import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "../../models/input-info-utils";
+import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
 import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentImage} from "../../models/page-components/page-component-image";
 import {PageComponentTextBase} from "../../models/page-components/page-component-text-base";
@@ -23,7 +24,103 @@ export const mergeGroups = (groups1: InputGroup[], groups2: InputGroup[]) => {
   return groups1;
 };
 
-export const getTextInputs = (component: PageComponentTextBase, onChange: () => void): InputGroup<PageComponentTextBase>[] => {
+const getValue = <T>(values: T[]) => {
+  if (values.every((v) => v === values[0])) {
+    return {value: values[0], isUnique: true};
+  } else {
+    return {value: "" as T, isUnique: false};
+  }
+};
+const getInputInfoPart = <T>(
+  components: T[],
+  key: keyof T,
+  onChange?: () => void,
+  opts?: {isColor?: boolean; key2?: any; afterValSet?: (val: any, component: T) => void}
+) => {
+  const {isColor, key2, afterValSet} = opts || {};
+  const valueInfo = getValue(
+    components.map((v) => {
+      let result: any = v[key];
+      if (isTypeOf(key2, ["string", "number"])) {
+        result = result[key2];
+      }
+      return result;
+    })
+  );
+  let value = valueInfo.value;
+  if (isColor) {
+    try {
+      value = new Color(value);
+    } catch (error) {
+      value = new Color();
+    }
+  }
+  return {
+    value: value,
+    hint: valueInfo.isUnique ? "" : "包含多个值",
+    onChange: (val: any) => {
+      if (isColor) {
+        val = val.string();
+      }
+      for (const component of components) {
+        let obj: any = component;
+        let k: any = key;
+        if (isTypeOf(key2, ["string", "number"])) {
+          obj = component[key];
+          k = key2;
+        }
+        obj[k] = val;
+        afterValSet?.(val, component);
+      }
+      onChange?.();
+    }
+  };
+};
+const getInputInfoPartTrbl = <T>(
+  label: string,
+  id: string,
+  type: "boolean" | "number",
+  components: T[],
+  key: keyof T,
+  onChange?: () => void
+): InputInfoGroup => {
+  const arrs = components.map((v) => v[key]);
+  const arr = trblItems.map((_, i) => getValue(arrs.map((v) => (v as any)[i])).value);
+  return {
+    type: "group",
+    label,
+    groupStyle: getGroupStyle(),
+    infos: getUnifiedInputs(
+      id,
+      trblItems.map(({name, index}) => ({
+        type,
+        label: name,
+        style: getInputStyle(true, {flex: "0 0 50%"}),
+        ...getInputInfoPart(components, key, undefined, {
+          key2: index,
+          afterValSet: (val) => {
+            arr[index] = val;
+            for (const component of components) {
+              for (const [i, v] of arr.entries()) {
+                if (isTypeOf(v, type)) {
+                  (component as any)[key][i] = v;
+                }
+              }
+            }
+          }
+        })
+      })),
+      arr,
+      onChange
+    )
+  };
+};
+
+export const getTextInputs = (components0: PageComponentTypeAny[], onChange: () => void): InputGroup<PageComponentTextBase>[] => {
+  if (!components0.every((v) => v instanceof PageComponentTextBase)) {
+    return [];
+  }
+  const components = components0 as PageComponentTextBase[]; // fixme;
   const contentPositionOptions: InputInfoOption<Property.TextAlign>[] = [
     {label: "居左", value: "left"},
     {label: "居中", value: "center"},
@@ -36,30 +133,22 @@ export const getTextInputs = (component: PageComponentTextBase, onChange: () => 
         {
           type: "string",
           label: "字体",
-          model: {data: component, key: "fontFamily"},
-          onChange
+          ...getInputInfoPart(components, "fontFamily", onChange)
         },
         {
           ...getNumberUnitInput(false, "字号", "px"),
-          model: {data: component, key: "fontSize"},
-          onChange
+          ...getInputInfoPart(components, "fontSize", onChange)
         },
         {
           type: "select",
           label: "字体对齐方式",
           options: contentPositionOptions,
-          model: {data: component, key: "textAlign"},
-          onChange,
-          style: getInputStyle(false)
+          ...getInputInfoPart(components, "textAlign", onChange)
         },
         {
           type: "color",
           label: "字体颜色",
-          value: new Color(component.color),
-          onChange: (val) => {
-            component.color = val.string();
-            onChange();
-          }
+          ...getInputInfoPart(components, "color", onChange, {isColor: true})
         }
       ]
     }
@@ -67,10 +156,14 @@ export const getTextInputs = (component: PageComponentTextBase, onChange: () => 
 };
 
 export const getImageInputs = (
-  component: PageComponentImage,
+  components0: PageComponentTypeAny[],
   onChange: () => void,
   http: CadDataService
 ): InputGroup<PageComponentImage>[] => {
+  if (!components0.every((v) => v instanceof PageComponentImage)) {
+    return [];
+  }
+  const components = components0 as PageComponentImage[]; // fixme;
   return [
     {
       name: "",
@@ -78,8 +171,6 @@ export const getImageInputs = (
         {
           type: "string",
           label: "图片链接",
-          model: {data: component, key: "src"},
-          onChange,
           suffixIcons: [
             {
               name: "upload_file",
@@ -91,15 +182,19 @@ export const getImageInputs = (
                   return;
                 }
                 const result = await http.uploadImage(file);
-                const src = result?.url;
+                let src = result?.url;
                 if (src) {
-                  component.src = getFilepathUrl(src, {remote: true});
+                  src = getFilepathUrl(src, {remote: true});
+                  for (const component of components) {
+                    component.src = src;
+                  }
                   onChange();
                 }
               }
             }
           ],
-          style: getInputStyle(false)
+          style: getInputStyle(false),
+          ...getInputInfoPart(components, "src", onChange)
         },
         {
           type: "group",
@@ -109,17 +204,16 @@ export const getImageInputs = (
             {
               type: "boolean",
               label: "保持比例",
-              model: {data: component, key: "keepRatio"},
-              onChange: () => {
-                component.fitSize();
-                onChange();
-              },
-              style: getInputStyle(true)
+              style: getInputStyle(true),
+              ...getInputInfoPart(components, "keepRatio", onChange, {
+                afterValSet: (val, component) => {
+                  component.fitSize();
+                }
+              })
             },
             {
               type: "select",
               label: "适应方式",
-              model: {data: component, key: "objectFit"},
               options: [
                 {label: "contain", value: "contain"},
                 {label: "cover", value: "cover"},
@@ -127,8 +221,8 @@ export const getImageInputs = (
                 {label: "none", value: "none"},
                 {label: "scale-down", value: "scale-down"}
               ],
-              onChange,
-              style: getInputStyle(true)
+              style: getInputStyle(true),
+              ...getInputInfoPart(components, "objectFit", onChange)
             }
           ]
         }
@@ -137,8 +231,12 @@ export const getImageInputs = (
   ];
 };
 
-export const getFormInputs = (component: PageComponentForm, onChange: () => void): InputGroup[] => {
-  return mergeGroups(getTextInputs(component, onChange), [
+export const getFormInputs = (components0: PageComponentTypeAny[], onChange: () => void): InputGroup[] => {
+  if (!components0.every((v) => v instanceof PageComponentForm)) {
+    return [];
+  }
+  const components = components0 as PageComponentForm[]; // fixme;
+  return [
     {
       name: "",
       infos: [
@@ -147,8 +245,8 @@ export const getFormInputs = (component: PageComponentForm, onChange: () => void
           label: "",
           groupStyle: getGroupStyle(),
           infos: [
-            {type: "number", label: "行数", model: {data: component, key: "rows"}, onChange, style: getInputStyle(true)},
-            {type: "number", label: "列数", model: {data: component, key: "cols"}, onChange, style: getInputStyle(true)}
+            {type: "number", label: "行数", style: getInputStyle(true), ...getInputInfoPart(components, "rows", onChange)},
+            {type: "number", label: "列数", style: getInputStyle(true), ...getInputInfoPart(components, "cols", onChange)}
           ]
         },
         {
@@ -156,8 +254,8 @@ export const getFormInputs = (component: PageComponentForm, onChange: () => void
           label: "",
           groupStyle: getGroupStyle(),
           infos: [
-            {type: "number", label: "标题宽", model: {data: component, key: "labelWidth"}, onChange, style: getInputStyle(true)},
-            {type: "number", label: "内容宽", model: {data: component, key: "valueWidth"}, onChange, style: getInputStyle(true)}
+            {type: "number", label: "标题宽", style: getInputStyle(true), ...getInputInfoPart(components, "labelWidth", onChange)},
+            {type: "number", label: "内容宽", style: getInputStyle(true), ...getInputInfoPart(components, "valueWidth", onChange)}
           ]
         },
         {
@@ -165,33 +263,8 @@ export const getFormInputs = (component: PageComponentForm, onChange: () => void
           label: "",
           groupStyle: getGroupStyle(),
           infos: [
-            {
-              type: "boolean",
-              label: "标题换行",
-              disabled: true,
-              hint: "未实现",
-              model: {data: component, key: "labelWrap"},
-              onChange,
-              style: getInputStyle(true)
-            },
-            {
-              type: "boolean",
-              label: "内容换行",
-              disabled: true,
-              hint: "未实现",
-              model: {data: component, key: "valueWrap"},
-              onChange,
-              style: getInputStyle(true)
-            }
-          ]
-        },
-        {
-          type: "group",
-          label: "",
-          groupStyle: getGroupStyle(),
-          infos: [
-            {type: "boolean", label: "标题分隔线", model: {data: component, key: "labelSeparator"}, onChange, style: getInputStyle(true)},
-            {type: "number", label: "行高", model: {data: component, key: "rowHeight"}, onChange, style: getInputStyle(true)}
+            {type: "boolean", label: "标题分隔线", style: getInputStyle(true), ...getInputInfoPart(components, "labelSeparator", onChange)},
+            {type: "number", label: "行高", style: getInputStyle(true), ...getInputInfoPart(components, "rowHeight", onChange)}
           ]
         }
       ]
@@ -199,83 +272,73 @@ export const getFormInputs = (component: PageComponentForm, onChange: () => void
     {
       name: "表格边距",
       infos: [
-        {
-          type: "group",
-          label: "标题边距",
-          groupStyle: getGroupStyle(),
-          infos: getUnifiedInputs(
-            "表格标题边距",
-            trblItems.map(({name, index}) => ({
-              ...getNumberUnitInput(true, name, "px", {flex: "0 0 50%"}),
-              model: {data: component.labelPadding, key: index},
-              onChange
-            })),
-            component.labelPadding,
-            onChange
-          )
-        },
-        {
-          type: "group",
-          label: "内容边距",
-          groupStyle: getGroupStyle(),
-          infos: getUnifiedInputs(
-            "表格内容边距",
-            trblItems.map(({name, index}) => ({
-              ...getNumberUnitInput(true, name, "px", {flex: "0 0 50%"}),
-              model: {data: component.valuePadding, key: index},
-              onChange
-            })),
-            component.valuePadding,
-            onChange
-          )
-        }
+        getInputInfoPartTrbl("标题边距", "表格标题边距", "number", components, "labelPadding", onChange),
+        getInputInfoPartTrbl("内容边距", "表格内容边距", "number", components, "valuePadding", onChange)
       ]
     }
-  ]);
+  ];
 };
 
 export const getCommonInputs = (
-  component: any,
+  components: PageComponentTypeAny[],
   onChange: () => void,
   onComponentSizeChange: (component: any, axis: "x" | "y") => void
 ): InputGroup[] => {
-  const {resizable = {}} = ({} as any)[component.type] || {};
-  const widthInput: InputInfoNumber<typeof component.size> = {
-    ...getNumberUnitInput(true, "宽", "px"),
-    model: {data: component.size, key: "x"},
-    readonly: !resizable.x,
-    onChange: () => {
-      onComponentSizeChange(component, "x");
-      onChange();
+  let resizableX = true;
+  let resizableY = true;
+  for (const component of components) {
+    const {resizable = {}} = pageComponentInfos[component.type] || {};
+    if (!resizable.x) {
+      resizableX = false;
     }
+    if (!resizable.y) {
+      resizableY = false;
+    }
+  }
+  const widthInput: InputInfoNumber = {
+    ...getNumberUnitInput(true, "宽", "px"),
+    ...getInputInfoPart(components, "size", onChange, {
+      key2: "x",
+      afterValSet: (val, component) => {
+        onComponentSizeChange(component, "x");
+      }
+    })
   };
-  if (!resizable.x) {
+  if (!resizableX) {
     widthInput.readonly = true;
     widthInput.hint = "宽度自动调整";
   }
-  const heightInput: InputInfoNumber<typeof component.size> = {
+  const heightInput: InputInfoNumber = {
     ...getNumberUnitInput(true, "高", "px"),
-    model: {data: component.size, key: "y"},
-    readonly: !resizable.y,
-    onChange: () => {
-      onComponentSizeChange(component, "y");
-      onChange();
-    }
+    ...getInputInfoPart(components, "size", onChange, {
+      key2: "y",
+      afterValSet: (val, component) => {
+        onComponentSizeChange(component, "y");
+      }
+    })
   };
-  if (!resizable.y) {
+  if (!resizableY) {
     heightInput.readonly = true;
     heightInput.hint = "高度自动调整";
   }
 
-  const xInput: InputInfoNumber<typeof component.position> = {
+  const xInput: InputInfoNumber = {
     ...getNumberUnitInput(true, "X", "px"),
-    model: {data: component.position, key: "x"},
-    onChange
+    ...getInputInfoPart(components, "position", onChange, {
+      key2: "x",
+      afterValSet: (val, component) => {
+        onComponentSizeChange(component, "x");
+      }
+    })
   };
-  const yInput: InputInfoNumber<typeof component.position> = {
+  const yInput: InputInfoNumber = {
     ...getNumberUnitInput(true, "Y", "px"),
-    model: {data: component.position, key: "y"},
-    onChange
+    ...getInputInfoPart(components, "position", onChange, {
+      key2: "y",
+      afterValSet: (val, component) => {
+        onComponentSizeChange(component, "y");
+      }
+    })
   };
 
   const borderStyleInput: InputInfoSelect<any, DataType.LineStyle> = {
@@ -287,13 +350,13 @@ export const getCommonInputs = (
       {label: "虚线", value: "dashed"},
       {label: "点线", value: "dotted"}
     ],
-    model: {data: component, key: "borderStyle"},
-    onChange: (val) => {
-      if (val !== "none" && !(component.borderWidth > 0)) {
-        component.borderWidth = 1;
+    ...getInputInfoPart(components, "borderStyle", onChange, {
+      afterValSet: (val, component) => {
+        if (val !== "none" && !(component.borderWidth > 0)) {
+          component.borderWidth = 1;
+        }
       }
-      onChange();
-    },
+    }),
     style: getInputStyle(false)
   };
   const borderInputs: InputInfo<any>[] = [
@@ -301,29 +364,13 @@ export const getCommonInputs = (
     {
       type: "color",
       label: "边框颜色",
-      value: new Color(component.borderColor),
-      onChange: (val) => {
-        component.borderColor = val.string();
-        onChange();
-      }
+      ...getInputInfoPart(components, "borderColor", onChange, {isColor: true})
     },
-    getNumberUnitInput(true, "边框宽度", "px", {}, {model: {data: component, key: "borderWidth"}, onChange}),
     {
-      type: "group",
-      label: "框线显示",
-      groupStyle: getGroupStyle(),
-      infos: getUnifiedInputs(
-        "框线显示",
-        trblItems.map(({name, index}) => ({
-          type: "boolean",
-          label: name,
-          model: {data: component.borderShow, key: index},
-          style: getInputStyle(true, {flex: "0 0 50%"})
-        })),
-        component.borderShow,
-        onChange
-      )
-    }
+      ...getNumberUnitInput(true, "边框宽度", "px", {}),
+      ...getInputInfoPart(components, "borderWidth", onChange)
+    },
+    getInputInfoPartTrbl("框线显示", "框线显示", "boolean", components, "borderShow", onChange)
   ];
 
   return [
@@ -333,11 +380,7 @@ export const getCommonInputs = (
         {
           type: "color",
           label: "背景颜色",
-          value: new Color(component.background),
-          onChange: (val) => {
-            component.background = val.string();
-            onChange();
-          }
+          ...getInputInfoPart(components, "background", onChange, {isColor: true})
         }
       ]
     },
@@ -347,7 +390,10 @@ export const getCommonInputs = (
       infos: [
         {type: "group", label: "尺寸", groupStyle: getGroupStyle(), infos: [widthInput, heightInput]},
         {type: "group", label: "位置", groupStyle: getGroupStyle(), infos: [xInput, yInput]},
-        {...getNumberUnitInput(true, "旋转", "°"), model: {data: component.rotation, key: "deg"}, onChange}
+        {
+          ...getNumberUnitInput(true, "旋转", "°"),
+          ...getInputInfoPart(components, "rotation", onChange, {key2: "deg"})
+        }
       ]
     }
   ];

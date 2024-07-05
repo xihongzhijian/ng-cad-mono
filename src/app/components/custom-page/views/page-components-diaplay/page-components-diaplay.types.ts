@@ -6,8 +6,8 @@ export interface ControlPoint {
 }
 
 export interface Helpers {
-  axisX: {show: boolean; threshold: number; snap?: {from: number; to: number}};
-  axisY: {show: boolean; threshold: number; snap?: {from: number; to: number}};
+  axisX: {show: boolean; threshold: number; snap?: {from: number; to: number; id: string}};
+  axisY: {show: boolean; threshold: number; snap?: {from: number; to: number; id: string}};
   rotation: {
     show: boolean;
     threshold: number;

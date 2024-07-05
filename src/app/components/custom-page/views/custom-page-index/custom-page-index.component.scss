@@ -25,6 +25,11 @@
   position: relative;
   background: var(--background-inner);
 }
+.multi-selector {
+  position: absolute;
+  background-color: rgba(29, 149, 234, 0.3);
+  border: white solid 1px;
+}
 
 mat-tab-group {
   ::ng-deep {

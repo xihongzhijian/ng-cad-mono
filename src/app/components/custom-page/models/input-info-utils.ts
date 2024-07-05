@@ -37,7 +37,7 @@ export const getUnifiedInputs = <T>(
   id: string,
   inputs: (InputInfoString | InputInfoNumber | InputInfoBoolean)[],
   arr: T[],
-  onChange: () => void
+  onChange?: () => void
 ) => {
   const storageKey = `getUnifiedInputs_${id}`;
   let unified: boolean | null = session.load(storageKey);
@@ -62,20 +62,24 @@ export const getUnifiedInputs = <T>(
           }
         }
         if (isChanged) {
-          onChange();
+          for (const input of inputs) {
+            (input.onChange as any)?.(value, input);
+          }
         }
       }
     },
     style: getInputStyle(true, {flex: "0 0 100%"})
   };
   for (const input of inputs) {
+    const onChange2 = input.onChange as any;
     input.onChange = (val: any) => {
       if (unified) {
         for (let i = 0; i < arr.length; i++) {
           arr[i] = val;
         }
       }
-      onChange();
+      onChange2?.(val, input);
+      onChange?.();
     };
   }
   return [unifiedInput, ...inputs];

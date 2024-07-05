@@ -2,7 +2,7 @@ import {computed, effect, Injectable, signal, untracked} from "@angular/core";
 import {session, setGlobal} from "@app/app.common";
 import {Page, PageConfig} from "../models/page";
 import {PageComponentTypeAny} from "../models/page-component-infos";
-import {findPageComponent} from "../models/page-component-utils";
+import {flatMapPageComponents} from "../models/page-component-utils";
 import {PageSnapshotManager} from "../models/page-snapshot-manager";
 import {PageMode} from "./page-status.service.types";
 
@@ -18,8 +18,21 @@ export class PageStatusService {
   psm = new PageSnapshotManager(session, 20, this.page.id);
   pageConfig = signal<PageConfig>(this.page.getConfig());
   components = signal<PageComponentTypeAny[]>([]);
-  activeComponent = signal<PageComponentTypeAny | null>(null);
-  activeComponent2 = signal<PageComponentTypeAny | null>(null);
+  activeComponents = signal<PageComponentTypeAny[]>([]);
+  activeComponents2 = signal<PageComponentTypeAny[]>([]);
+  activeComponents3 = computed(() => {
+    const activeComponents = this.activeComponents().slice();
+    const activeComponent2 = this.activeComponents2();
+    for (const activeComponent of activeComponent2) {
+      const index = activeComponents.findIndex((v) => v.id === activeComponent.id);
+      if (index >= 0) {
+        activeComponents[index] = activeComponent;
+      } else {
+        activeComponents.push(activeComponent);
+      }
+    }
+    return activeComponents;
+  });
   snapshotIndex = signal(-1);
   savedSnapshotIndex = signal(-1);
   isSaved = computed(() => this.snapshotIndex() === this.savedSnapshotIndex());
@@ -97,9 +110,11 @@ export class PageStatusService {
   private _noSaveOnComponentsChanged = true;
   onComponentsChanged() {
     const components = this.components();
-    const activeComponent = untracked(() => this.activeComponent());
-    if (activeComponent) {
-      this.activeComponent.set(findPageComponent(activeComponent.id, components));
+    const ids = Array.from(flatMapPageComponents(components, true, (component) => component.id));
+    const activeComponents = untracked(() => this.activeComponents());
+    const activeComponents2 = activeComponents.filter((v) => ids.includes(v.id));
+    if (activeComponents.length !== activeComponents2.length) {
+      this.activeComponents.set(activeComponents2);
     }
     this.page.components = components;
     if (this._noSaveOnComponentsChanged) {
@@ -109,8 +124,8 @@ export class PageStatusService {
     }
   }
   onActiveComponentChanged() {
-    const activeComponent = this.activeComponent();
-    if (activeComponent) {
+    const activeComponents = this.activeComponents();
+    if (activeComponents.length > 0) {
       this.showComponentMenu.set(true);
     }
   }

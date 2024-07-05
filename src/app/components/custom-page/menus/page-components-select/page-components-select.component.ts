@@ -4,7 +4,7 @@ import {getInsertName} from "@app/app.common";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
 import {keysOf} from "@lucilor/utils";
 import {PageComponentInfos, pageComponentInfos, PageComponentType} from "../../models/page-component-infos";
-import {getPageComponentNames} from "../../models/page-component-utils";
+import {flatMapPageComponents} from "../../models/page-component-utils";
 import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentText} from "../../models/page-components/page-component-text";
 import {PageStatusService} from "../../services/page-status.service";
@@ -39,7 +39,7 @@ export class PageComponentsSeletComponent {
   async addComponent(type: PageComponentType) {
     const info = pageComponentInfos[type];
     const components = this.components();
-    const names = getPageComponentNames(components);
+    const names = Array.from(flatMapPageComponents(components, true, (v) => v.name));
     const component = new info.class(getInsertName(names, info.name + "组件"));
     component.background = "rgba(255,255,255,0)";
     component.size.set(100, 100);

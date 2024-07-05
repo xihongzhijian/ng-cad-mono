@@ -18,6 +18,7 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {ActivatedRoute} from "@angular/router";
 import {KeyEventItem, onKeyEvent, session, setGlobal} from "@app/app.common";
+import {AboutComponent} from "@app/components/about/about.component";
 import {Subscribed} from "@app/mixins/subscribed.mixin";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {InputComponent} from "@app/modules/input/components/input.component";
@@ -26,7 +27,9 @@ import {MessageService} from "@app/modules/message/services/message.service";
 import {SpinnerService} from "@app/modules/spinner/services/spinner.service";
 import {getPdfInfo, htmlToPng} from "@app/utils/print";
 import {environment} from "@env";
-import {downloadByString, selectFiles} from "@lucilor/utils";
+import {downloadByString, Rectangle, selectFiles} from "@lucilor/utils";
+import {Properties} from "csstype";
+import {isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {createPdf} from "pdfmake/build/pdfmake";
 import {TDocumentDefinitions} from "pdfmake/interfaces";
@@ -35,6 +38,8 @@ import {PageComponentConfig2Component} from "../../menus/page-component-config2/
 import {PageComponentConfigComponent} from "../../menus/page-component-config/page-component-config.component";
 import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
+import {PageComponentTypeAny} from "../../models/page-component-infos";
+import {flatPageComponents} from "../../models/page-component-utils";
 import {PageStatusService} from "../../services/page-status.service";
 import {pageModes, PagesDataRaw, Zidingyibaobiao} from "../../services/page-status.service.types";
 import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-components-diaplay.component";
@@ -43,6 +48,7 @@ import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-co
   selector: "app-custom-page-index",
   standalone: true,
   imports: [
+    AboutComponent,
     InputComponent,
     MatButtonModule,
     MatIconModule,
@@ -107,7 +113,11 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
   });
   workSpaceStyle = computed(() => {
     this.pageStatus.pageConfig();
-    return this.page.workSpaceStyle;
+    const style = {...this.page.workSpaceStyle};
+    if (this.multiSelectorStyle()) {
+      style.userSelect = "none";
+    }
+    return style;
   });
 
   workSpaceEl = viewChild.required<ElementRef<HTMLDivElement>>("workSpaceEl");
@@ -265,20 +275,90 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
   }
 
   private _pagePointer: [number, number] | null = null;
-  onPagePointerDown(event: PointerEvent) {
-    this._pagePointer = [event.clientX, event.clientY];
+  private _pagePointerNoClick = false;
+  multiSelectorRect: Rectangle | null = null;
+  multiSelectorStyle = signal<Properties | null>(null);
+  private _isPage(target: Event["target"]) {
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+    if (!target.closest(".page")) {
+      const parent = target.parentElement;
+      return parent && parent.classList.contains("work-space-scrollbar");
+    }
+    const closest = target.closest("app-page-components-diaplay");
+    if (closest && target !== closest) {
+      return false;
+    }
+    return true;
   }
-  onPagePointerUp(event: PointerEvent) {
-    const target = event.target as HTMLElement;
-    const isClickPage =
-      target === this.pageEl().nativeElement || target.classList.contains("page-inner") || target.tagName === "APP-PAGE-COMPONENTS-DIAPLAY";
-    if (!this._pagePointer || !isClickPage) {
+  onPagePointerDown(event: PointerEvent) {
+    if (this._isPage(event.target)) {
+      this._pagePointer = [event.clientX, event.clientY];
+      this._pagePointerNoClick = false;
+      this.multiSelectorRect = new Rectangle([0, 0], [0, 0]);
+    }
+  }
+  onPagePointerMove(event: PointerEvent) {
+    const rect = this.multiSelectorRect;
+    if (!this._pagePointer || !rect) {
       return;
     }
-    const [x, y] = this._pagePointer;
-    this._pagePointer = null;
-    if (Math.abs(event.clientX - x) < 5 && Math.abs(event.clientY - y) < 5) {
-      this.pageStatus.activeComponent.set(null);
+    const [x1, y1] = this._pagePointer;
+    const {clientX: x2, clientY: y2} = event;
+    const pageEl = this.workSpaceEl().nativeElement;
+    const pageRect = Rectangle.fromDomRect(pageEl.getBoundingClientRect());
+    const x = Math.min(x1, x2);
+    const y = Math.min(y1, y2);
+    const width = Math.abs(x2 - x1);
+    const height = Math.abs(y2 - y1);
+    if (width > 5 && height > 5) {
+      this._pagePointerNoClick = true;
+    }
+    rect.min.set(x, y);
+    rect.max.set(x + width, y + height);
+    this.multiSelectorStyle.set({
+      left: `${x - pageRect.left}px`,
+      top: `${y - pageRect.bottom}px`,
+      width: `${width}px`,
+      height: `${height}px`
+    });
+    const activeIds: string[] = [];
+    pageEl.querySelectorAll(".page-component").forEach((el) => {
+      if (!(el instanceof HTMLElement) || !el.dataset.id) {
+        return;
+      }
+      const elRect = Rectangle.fromDomRect(el.getBoundingClientRect());
+      if (rect.intersects(elRect)) {
+        activeIds.push(el.dataset.id);
+      }
+    });
+    const activeComponents: PageComponentTypeAny[] = [];
+    for (const component of flatPageComponents(this.page.components, true)) {
+      if (activeIds.includes(component.id)) {
+        activeComponents.push(component);
+      }
+    }
+    const activeIds1 = activeComponents.map((v) => v.id);
+    const activeIds2 = this.pageStatus.activeComponents().map((v) => v.id);
+    if (!isEqual(activeIds1, activeIds2)) {
+      this.pageStatus.activeComponents.set(activeComponents);
+    }
+  }
+  onPagePointerUp(event: PointerEvent) {
+    event.stopPropagation();
+    const rect = this.multiSelectorRect;
+    if (rect) {
+      this.multiSelectorRect = null;
+      this.multiSelectorStyle.set(null);
+    }
+    if (this._pagePointerNoClick) {
+      this._pagePointerNoClick = false;
+    } else if (this._pagePointer) {
+      this.pageStatus.activeComponents.set([]);
+    }
+    if (this._pagePointer) {
+      this._pagePointer = null;
     }
   }
 
