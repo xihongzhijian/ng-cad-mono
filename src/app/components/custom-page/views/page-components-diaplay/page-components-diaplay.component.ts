@@ -43,9 +43,11 @@ export class PageComponentsDiaplayComponent {
   get pageConfig() {
     return this.pageStatus.pageConfig;
   }
+  get editingComponent() {
+    return this.pageStatus.editingComponent;
+  }
 
   controls = signal<ObjectOf<{class: string[]; style: Properties}>>({});
-  editingComponent = signal<PageComponentTypeAny | null>(null);
   helpers = signal<Helpers>({
     axisX: {show: false, threshold: 3},
     axisY: {show: false, threshold: 3},

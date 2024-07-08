@@ -1,8 +1,11 @@
-import {computed, effect, Injectable, signal, untracked} from "@angular/core";
-import {session, setGlobal} from "@app/app.common";
+import {computed, effect, inject, Injectable, signal, untracked} from "@angular/core";
+import {getCopyName, KeyEventItem, session, setGlobal} from "@app/app.common";
+import {MessageService} from "@app/modules/message/services/message.service";
+import {isBetween} from "@lucilor/utils";
+import {Subject} from "rxjs";
 import {Page, PageConfig} from "../models/page";
 import {PageComponentTypeAny} from "../models/page-component-infos";
-import {flatMapPageComponents} from "../models/page-component-utils";
+import {flatMapPageComponents, getPageComponentGroup, removePageComponent} from "../models/page-component-utils";
 import {PageSnapshotManager} from "../models/page-snapshot-manager";
 import {PageMode} from "./page-status.service.types";
 
@@ -10,6 +13,8 @@ import {PageMode} from "./page-status.service.types";
   providedIn: "root"
 })
 export class PageStatusService {
+  private message = inject(MessageService);
+
   table = "t_zidingyibaobiaomuban";
   recordId = signal("");
   mode = signal<PageMode>("design");
@@ -33,12 +38,25 @@ export class PageStatusService {
     }
     return activeComponents;
   });
+  editingComponent = signal<PageComponentTypeAny | null>(null);
   snapshotIndex = signal(-1);
   savedSnapshotIndex = signal(-1);
   isSaved = computed(() => this.snapshotIndex() === this.savedSnapshotIndex());
   canUndo = signal(false);
   canRedo = signal(false);
   showComponentMenu = signal(false);
+
+  saveBefore = new Subject<void>();
+  saveAfter = new Subject<void>();
+  keyEventItems: KeyEventItem[] = [
+    {key: "s", ctrl: true, action: () => this.saveBefore.next()},
+    {key: "z", ctrl: true, action: () => this.undo()},
+    {key: "y", ctrl: true, action: () => this.redo()},
+    {key: "c", ctrl: true, action: () => this.copy()},
+    {key: "v", ctrl: true, action: () => this.paste()},
+    {key: "a", ctrl: true, action: () => this.selectAll()},
+    {key: "delete", action: () => this.remove()}
+  ];
 
   constructor() {
     setGlobal("pageStatus", this);
@@ -138,5 +156,59 @@ export class PageStatusService {
     } else {
       untracked(() => this.savePageSnapshot());
     }
+  }
+
+  getActiveComponents(limit?: {min?: number; max?: number}) {
+    const components = this.activeComponents();
+    const {min = -Infinity, max = Infinity} = limit || {};
+    if (!isBetween(components.length, min, max, true)) {
+      if (min === max) {
+        this.message.snack(`请先选择${min}个组件`);
+      } else {
+        this.message.snack(`请先选择${min}~${max}个组件`);
+      }
+      return null;
+    }
+    return components;
+  }
+
+  private _componentsToCopy: PageComponentTypeAny[] | null = null;
+  copy() {
+    const editingComponent = this.editingComponent();
+    if (editingComponent) {
+      return;
+    }
+    this._componentsToCopy = this.getActiveComponents({min: 1});
+  }
+  paste() {
+    const componentsToCopy = this._componentsToCopy;
+    if (!componentsToCopy || componentsToCopy.length < 1) {
+      return;
+    }
+    const components = this.components();
+    const names = Array.from(flatMapPageComponents(components, true, (v) => v.name));
+    for (const component of componentsToCopy) {
+      const clone = component.clone(true);
+      clone.name = getCopyName(names, clone.name);
+      clone.position.add(10, 10);
+      const components2 = getPageComponentGroup(components, component)?.children || components;
+      components2.push(clone);
+    }
+    this.components.set([...components]);
+  }
+  remove() {
+    const componentsToRemove = this.getActiveComponents({min: 1});
+    if (!componentsToRemove) {
+      return;
+    }
+    const components = this.components();
+    for (const component of componentsToRemove) {
+      removePageComponent(components, component);
+    }
+    this.components.set([...components]);
+  }
+  selectAll() {
+    const component = this.components();
+    this.activeComponents.set([...component]);
   }
 }

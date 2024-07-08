@@ -5,6 +5,7 @@
       #componentEl
       class="page-component"
       [class]="component.type"
+      [class.editing]="editingComponent()?.id === component.id"
       [attr.data-id]="component.id"
       [style]="getComponentStyle(component)"
       (click)="clickComponent($event, component)"

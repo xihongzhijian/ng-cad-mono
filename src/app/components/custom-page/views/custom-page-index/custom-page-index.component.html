@@ -50,6 +50,9 @@
   @if (mode() === "design") {
     <div class="menus">
       <div class="toolbar vertical">
+        <button mat-icon-button color="primary" matTooltip="打开帮助文档" matTooltipPosition="left" (click)="openDoc()">
+          <mat-icon>help</mat-icon>
+        </button>
         <button
           mat-icon-button
           color="primary"

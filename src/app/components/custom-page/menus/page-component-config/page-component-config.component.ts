@@ -4,10 +4,9 @@ import {ChangeDetectionStrategy, Component, computed, inject, signal} from "@ang
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
-import {getCopyName, getInsertName} from "@app/app.common";
+import {getInsertName} from "@app/app.common";
 import {ClickStopPropagationDirective} from "@app/modules/directives/click-stop-propagation.directive";
 import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
-import {MessageService} from "@app/modules/message/services/message.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
 import {
@@ -40,7 +39,6 @@ import {PageStatusService} from "../../services/page-status.service";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PageComponentConfigComponent {
-  private message = inject(MessageService);
   private pageStatus = inject(PageStatusService);
 
   get components() {
@@ -51,20 +49,13 @@ export class PageComponentConfigComponent {
   hoveringId = signal<string | null>(null);
   editingId = signal<string | null>(null);
 
-  async getActiveComponents() {
-    const components = this.pageStatus.activeComponents();
-    if (components.length < 1) {
-      await this.message.snack("请先选择一个组件");
-    }
-    return components;
-  }
   canGroup = computed(() => {
     const activeComponents = this.pageStatus.activeComponents();
-    return activeComponents.length > 1 || (activeComponents.length === 1 && activeComponents[0] instanceof PageComponentGroup);
+    return activeComponents.length > 0;
   });
-  async group() {
-    const activeComponents = await this.getActiveComponents();
-    if (!this.canGroup()) {
+  group() {
+    const activeComponents = this.pageStatus.getActiveComponents({min: 1});
+    if (!this.canGroup() || !activeComponents) {
       return;
     }
     const components = this.components();
@@ -73,10 +64,13 @@ export class PageComponentConfigComponent {
     const groupIndex = activeComponentGroups.findIndex((v) => v instanceof PageComponentGroup);
     if (groupIndex >= 0) {
       for (const [i, group] of activeComponentGroups.entries()) {
-        if (i === groupIndex || !group) {
+        if (i === groupIndex) {
           continue;
         }
-        beforeLeaveGroup(group, [activeComponents[i]]);
+        if (group) {
+          beforeLeaveGroup(group, [activeComponents[i]]);
+        }
+        removePageComponent(group?.children || components, activeComponents[i]);
       }
       const group = activeComponentGroups[groupIndex] as PageComponentGroup;
       for (const [i, component] of activeComponents.entries()) {
@@ -100,9 +94,9 @@ export class PageComponentConfigComponent {
     const activeComponents = this.pageStatus.activeComponents();
     return activeComponents.length === 1 && activeComponents[0] instanceof PageComponentGroup;
   });
-  async ungroup() {
-    const activeComponents = await this.getActiveComponents();
-    if (!this.canUngroup()) {
+  ungroup() {
+    const activeComponents = this.pageStatus.getActiveComponents({min: 1});
+    if (!this.canUngroup() || !activeComponents) {
       return;
     }
     const component = activeComponents[0] as PageComponentGroup;
@@ -113,36 +107,12 @@ export class PageComponentConfigComponent {
     components2.splice(index, 1, ...component.children);
     this.components.set([...components]);
   }
-  private _componentsToCopy: PageComponentTypeAny[] = [];
-  async copy() {
-    this._componentsToCopy = await this.getActiveComponents();
+  copyAndPaste() {
+    this.pageStatus.copy();
+    this.pageStatus.paste();
   }
-  paste() {
-    const componentsToCopy = this._componentsToCopy;
-    if (componentsToCopy.length < 1) {
-      return;
-    }
-    const components = this.components();
-    const names = Array.from(flatMapPageComponents(components, true, (v) => v.name));
-    for (const component of componentsToCopy) {
-      const clone = component.clone(true);
-      clone.name = getCopyName(names, clone.name);
-      const components2 = getPageComponentGroup(components, component)?.children || components;
-      components2.push(clone);
-    }
-    this.components.set([...components]);
-  }
-  async copyAndPaste() {
-    await this.copy();
-    this.paste();
-  }
-  async remove() {
-    const componentsToRemove = await this.getActiveComponents();
-    const components = this.components();
-    for (const component of componentsToRemove) {
-      removePageComponent(components, component);
-    }
-    this.components.set([...components]);
+  remove() {
+    this.pageStatus.remove();
   }
 
   toggleHidden(component: PageComponentTypeAny) {

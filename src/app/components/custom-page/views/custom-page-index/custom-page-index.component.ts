@@ -17,7 +17,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {ActivatedRoute} from "@angular/router";
-import {KeyEventItem, onKeyEvent, session, setGlobal} from "@app/app.common";
+import {onKeyEvent, session, setGlobal} from "@app/app.common";
 import {AboutComponent} from "@app/components/about/about.component";
 import {Subscribed} from "@app/mixins/subscribed.mixin";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
@@ -101,10 +101,6 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
 
   private _menuTabIndexKey = "customPageMenuTabIndex";
   menuTabIndex = signal(session.load(this._menuTabIndexKey) || 0);
-  keyEventItems: KeyEventItem[] = [
-    {key: "z", ctrl: true, action: () => this.undo()},
-    {key: "y", ctrl: true, action: () => this.redo()}
-  ];
   toolbarInputs: InputInfo[];
 
   pageStyle = computed(() => {
@@ -128,6 +124,10 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     setGlobal("customPage", this);
     effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
     this.subscribe(this.route.queryParams, () => this.load());
+    this.subscribe(this.pageStatus.saveBefore, async () => {
+      await this.save();
+      this.pageStatus.saveAfter.next();
+    });
 
     if (environment.production) {
       this.toolbarInputs = [];
@@ -157,7 +157,7 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
 
   @HostListener("window:keydown", ["$event"])
   onKeyDown(event: KeyboardEvent) {
-    onKeyEvent(event, this.keyEventItems);
+    onKeyEvent(event, this.pageStatus.keyEventItems);
   }
 
   clearPage() {
@@ -369,5 +369,9 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     event.preventDefault();
     // eslint-disable-next-line deprecation/deprecation
     event.returnValue = "";
+  }
+
+  openDoc() {
+    window.open("https://candypurity.notion.site/1de7d2c669c34e4ca65fc6b33241681e?v=93ac7d7cda0640a8b9ff566c28678643&pvs=4");
   }
 }
