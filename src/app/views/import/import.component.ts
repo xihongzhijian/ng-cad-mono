@@ -10,7 +10,7 @@ import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo} from "@app/modules/input/components/input.types";
 import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
 import {environment} from "@env";
-import {CadData, CadDimensionLinear, CadLayer, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
+import {CadData, CadDimensionLinear, CadLayer, CadLeader, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {downloadByString, keysOf, ObjectOf, ProgressBar, selectFiles, timeout} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -213,7 +213,7 @@ export class ImportComponent extends Utils() implements OnInit {
     this.spinner.show(loaderId);
     const 导入dxf文件时展开名字不改变 = this.status.projectConfig.getBoolean("导入dxf文件时展开名字不改变");
     const httpOptions: HttpOptions = {silent: true};
-    const data = await this.http.uploadDxf(this.sourceFile, {rectLineColor: 3}, httpOptions);
+    const data = await this.http.uploadDxf(this.sourceFile, {rectLineColor: 3}, {spinner: false});
     if (!data) {
       return finish(true, "error", "读取文件失败");
     }
@@ -459,6 +459,17 @@ export class ImportComponent extends Utils() implements OnInit {
       if (xinghao) {
         data.options.型号 = xinghao;
       }
+      const ellipses = data.entities.filter((e) => e.info.isEllipse);
+      if (ellipses.length > 0) {
+        v.errors.push("不能在CAD里画椭圆，不支持椭圆");
+        ellipses.forEach((e) => {
+          const e2 = this.sourceCad?.entities.find(e.id);
+          if (e2) {
+            e2.setColor("red");
+            e2.layer = this._errorMsgLayer;
+          }
+        });
+      }
     }
 
     this.cads = cads;
@@ -512,17 +523,44 @@ export class ImportComponent extends Utils() implements OnInit {
       }
     }
 
-    for (const cad of this.cads) {
-      if (cad.errors.length > 0) {
-        this.hasError = true;
-        if (this.sourceCad) {
+    const sourceCad = this.sourceCad;
+    if (sourceCad) {
+      for (const e of sourceCad.entities.dimension) {
+        if (e.layer === "0") {
+          e.layer = "标注线";
+        }
+      }
+      for (const cad of this.cads) {
+        if (cad.errors.length > 0) {
+          this.hasError = true;
           const sourceCadInfo = this._sourceCadMap.cads[cad.data.id];
           const mtext = new CadMtext();
           mtext.text = cad.errors.join("\n");
           mtext.setColor("red");
           mtext.layer = this._errorMsgLayer;
           mtext.insert.set(sourceCadInfo.rect.left, sourceCadInfo.rect.bottom - 10);
-          this.sourceCad.entities.add(mtext);
+          sourceCad.entities.add(mtext);
+          cad.data.entities.forEach((e) => {
+            if (!(e instanceof CadLineLike)) {
+              return;
+            }
+            const errors = e.info.errors;
+            if (!Array.isArray(errors) || errors.length < 1) {
+              return;
+            }
+            const leader = new CadLeader({layer: this._errorMsgLayer});
+            const pointTo = e.middle.clone();
+            const pointFrom = pointTo.clone().sub(20, 20);
+            leader.vertices = [pointTo, pointFrom];
+            leader.size = 10;
+            leader.setColor("red");
+            leader.layer = this._errorMsgLayer;
+            sourceCad.entities.add(leader);
+            const e2 = sourceCad.entities.find(e.id);
+            if (e2) {
+              e2.setColor("red");
+            }
+          });
         }
       }
     }
