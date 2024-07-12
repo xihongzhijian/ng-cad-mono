@@ -170,9 +170,9 @@ export class CadDataService extends HttpService {
   }
 
   async uploadDxf(dxf: File, options?: {skipLineContent?: boolean; rectLineColor?: number}, httpOptions?: HttpOptions) {
-    const response = await this.post<any>("ngcad/uploadDxf", {dxf, options}, httpOptions);
-    if (response) {
-      return new CadData(response.data);
+    const data = await this.getData<any>("ngcad/uploadDxf", {dxf, options}, httpOptions);
+    if (data) {
+      return new CadData(data);
     }
     return null;
   }
