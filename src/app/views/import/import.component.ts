@@ -536,7 +536,7 @@ export class ImportComponent extends Utils() implements OnInit {
           this.hasError = true;
           const sourceCadInfo = this._sourceCadMap.cads[cad.data.id];
           const mtext = new CadMtext();
-          mtext.text = cad.errors.join("\n");
+          mtext.text = cad.errors.map((v) => (typeof v === "string" ? v : v.text)).join("\n");
           mtext.setColor("red");
           mtext.layer = this._errorMsgLayer;
           mtext.insert.set(sourceCadInfo.rect.left, sourceCadInfo.rect.bottom - 10);
