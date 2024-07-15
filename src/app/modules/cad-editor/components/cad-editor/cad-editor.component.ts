@@ -354,9 +354,17 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   }
 
   async save() {
-    const {extraData} = this.params || {};
+    const {extraData, validator} = this.params || {};
+    const data = this.status.cad.data;
     if (extraData) {
-      Object.assign(this.status.cad.data, extraData);
+      Object.assign(data, extraData);
+    }
+    if (validator) {
+      const errors = Object.keys(validator(data) || {}).join("\n");
+      if (errors) {
+        this.message.error(errors);
+        return;
+      }
     }
     await this.status.saveCad(this.spinnerId);
   }

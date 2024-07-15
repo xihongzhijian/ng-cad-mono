@@ -16,11 +16,12 @@ import {
   ViewChild,
   ViewChildren
 } from "@angular/core";
+import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
-import {getValueString} from "@app/app.common";
+import {getArray, getValueString} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {Cad数据要求, Cad数据要求Item} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
@@ -94,7 +95,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
   };
-  @Input() validators?: {zhankai?: boolean};
+  @Input() validators?: {zhankai?: boolean; name?: (data: CadData) => ValidationErrors | null};
   @Output() afterEditCad = new EventEmitter<void>();
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
@@ -224,13 +225,16 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       return;
     }
     await this.onlineFetch();
-    const cadData = cad instanceof CadData ? cad : new CadData(cad.json);
+    const cadData = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     const result = await openCadEditorDialog(this.dialog, {
       data: {
         data: cadData,
         center: true,
         isLocal: !isOnline,
         gongshis: this.gongshis,
+        validator: (data) => {
+          return {...this.validateZhankai(data), ...this.validateName(data)};
+        },
         ...this.openCadOptions
       }
     });
@@ -246,6 +250,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       }
       await this.initCadViewer();
       this.afterEditCad.emit();
+      this.validate();
     }
   }
 
@@ -264,6 +269,13 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     const items = yaoqiu?.CAD弹窗修改属性 || [];
     const item2 = yaoqiu?.选中CAD要求 || [];
     const form = getCadInfoInputs2(items, item2, data, this.dialog, this.status, true, this.gongshis);
+    const nameInput = form.find((v) => v.label === "名字");
+    if (nameInput) {
+      const {name} = this.validators || {};
+      if (name) {
+        nameInput.validators = [...getArray(nameInput.validators), () => name(data)];
+      }
+    }
     let title = "编辑CAD";
     const name = data.name;
     if (name) {
@@ -282,7 +294,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       if (isOnline) {
         await this.http.setCad({collection: isOnline.collection || "cad", cadData: data, force: true}, true);
       }
+      await this.initCadViewer();
       this.afterEditCad.emit();
+      this.validate();
     }
   }
 
@@ -618,21 +632,45 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     await openFentiCadDialog(this.dialog, {data: fentiDialogInput});
   }
 
+  validateZhankai(data: CadData): ValidationErrors | null {
+    const {validators} = this;
+    const zhankai = data.zhankai[0];
+    if (validators?.zhankai) {
+      if (!zhankai?.zhankaigao) {
+        return {[`【${data.name}】展开高不能为空，请检查红色文字并补充数据`]: true};
+      }
+    }
+    return null;
+  }
+  validateName(data: CadData): ValidationErrors | null {
+    const {validators} = this;
+    if (validators?.name) {
+      const errors = validators.name(data);
+      if (!isEmpty(errors)) {
+        return {[`【${data.name}】名字有错：${Object.keys(errors).join("，")}`]: true};
+      }
+    }
+    return null;
+  }
   validate() {
     const inputs = this.inputComponents?.toArray() || [];
     const errors: string[] = [];
     this.errorMsgs = {};
-    const {cadName, validators} = this;
+    const {cadName} = this;
     const name = `【${cadName}】`;
     if (inputs.some((v) => !isEmpty(v.validateValue()))) {
       errors.push(`${name}输入数据有误`);
     }
-    if (validators?.zhankai) {
-      const {zhankai} = this;
-      if (!zhankai?.zhankaigao) {
-        const err = `${name}展开高不能为空，请检查红色文字并补充数据`;
-        errors.push(err);
-        this.errorMsgs.展开信息 = err;
+    if (this.cadData) {
+      const zhankaiError = Object.keys(this.validateZhankai(this.cadData) || {}).join("，");
+      if (zhankaiError) {
+        errors.push(zhankaiError);
+        this.errorMsgs.展开信息 = zhankaiError;
+      }
+      const nameError = Object.keys(this.validateName(this.cadData) || {}).join("，");
+      if (nameError) {
+        errors.push(nameError);
+        this.errorMsgs.名字 = nameError;
       }
     }
     return errors;

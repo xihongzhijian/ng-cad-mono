@@ -9,7 +9,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
+import {getNameWithSuffix, imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {setDimensionText, uploadAndReplaceCad} from "@app/cad/utils";
@@ -994,6 +994,8 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     const yaoqiu = this.getLingsanYaoqiu();
     const yaoqiuItems = yaoqiu?.选中CAD要求 || [];
     setCadData(data, yaoqiuItems);
+    const names = this.result.零散.map((v) => v.data.name);
+    data.name = getNameWithSuffix(names, data.name, "_", 1);
     this.result.零散.push({data, info: {houtaiId: item.data.id, zhankai: [], calcZhankai: []}});
     this._updateInputInfos();
     await timeout(0);
