@@ -1,6 +1,7 @@
 import {Component, HostBinding, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
@@ -32,7 +33,7 @@ import {BatchUploadChecker} from "./import.utils";
   templateUrl: "./import.component.html",
   styleUrls: ["./import.component.scss"],
   standalone: true,
-  imports: [InputComponent, MatButtonModule, MatDividerModule, NgScrollbar, ProgressBarComponent, SpinnerComponent]
+  imports: [InputComponent, MatButtonModule, MatDividerModule, MatTooltipModule, NgScrollbar, ProgressBarComponent, SpinnerComponent]
 })
 export class ImportComponent extends Utils() implements OnInit {
   @HostBinding("class") class = "ng-page";
