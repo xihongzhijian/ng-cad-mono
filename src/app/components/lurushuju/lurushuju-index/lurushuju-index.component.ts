@@ -46,7 +46,7 @@ import {cloneDeep, debounce, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {openMenjiaoDialog} from "../menjiao-dialog/menjiao-dialog.component";
 import {MenjiaoInput} from "../menjiao-dialog/menjiao-dialog.types";
-import {copySuanliaoData, updateMenjiaoData} from "../menjiao-dialog/menjiao-dialog.utils";
+import {copySuanliaoData, getMenfengInputs, getMenjiaoOptionInputInfo, updateMenjiaoData} from "../menjiao-dialog/menjiao-dialog.utils";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
 import {
@@ -1240,23 +1240,31 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     switch (event.button.event) {
       case "添加":
         {
-          const 名字 = await this.message.prompt({
-            type: "string",
-            label: "",
-            validators: (control) => {
-              const value = control.value;
-              if (!value) {
-                return {"请输入【门铰锁边铰边】的名字，下单要选": true};
+          const data = get算料数据();
+          const keys: (keyof 算料数据)[] = ["门铰", "门扇厚度", "锁边", "铰边"];
+          const form: InputInfo[] = [
+            {
+              type: "string",
+              label: "",
+              model: {data, key: "名字"},
+              validators: (control) => {
+                const value = control.value;
+                if (!value) {
+                  return {"请输入【门铰锁边铰边】的名字，下单要选": true};
+                }
+                return null;
               }
-              return null;
-            }
-          });
-          if (名字) {
-            const item = get算料数据({名字, 产品分类: this.fenleiName});
-            updateMenjiaoData(item);
-            gongyi.算料数据.push(item);
+            },
+            ...keys.map((k) => getMenjiaoOptionInputInfo(data, k, 1, this.menjiaoOptionsAll)),
+            getMenfengInputs(data)
+          ];
+          const result = await this.message.form(form);
+          if (result) {
+            updateMenjiaoData(data);
+            gongyi.算料数据.push(data);
             this.menjiaoTable.data = [...gongyi.算料数据];
             await this.submitGongyi(["算料数据"]);
+            await this.editGongyi3(data, gongyi.算料数据.length - 1);
           }
         }
         break;
@@ -1326,29 +1334,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const {button, item: fromItem, rowIdx} = event;
     switch (button.event) {
       case "编辑":
-        {
-          fromItem.产品分类 = this.fenleiName;
-          await this.getMenjiaoItem(
-            async (result) => {
-              const toItem = result.data;
-              if (toItem && this.gongyi) {
-                if (toItem.默认值) {
-                  for (const [i, item4] of this.gongyi.算料数据.entries()) {
-                    if (i !== rowIdx) {
-                      item4.默认值 = false;
-                    }
-                  }
-                }
-                this.gongyi.算料数据[rowIdx] = toItem;
-                this.menjiaoTable.data = [...this.gongyi.算料数据];
-                await this.submitGongyi(["算料数据"]);
-              }
-            },
-            fromItem,
-            suanliaoDataName,
-            suanliaoTestName
-          );
-        }
+        await this.editGongyi3(fromItem, rowIdx, suanliaoDataName, suanliaoTestName);
         break;
       case "编辑排序":
         {
@@ -1420,6 +1406,29 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         }
         break;
     }
+  }
+  async editGongyi3(data: 算料数据, rowIdx: number, suanliaoDataName?: string, suanliaoTestName?: string) {
+    data.产品分类 = this.fenleiName;
+    await this.getMenjiaoItem(
+      async (result) => {
+        const toItem = result.data;
+        if (toItem && this.gongyi) {
+          if (toItem.默认值) {
+            for (const [i, item4] of this.gongyi.算料数据.entries()) {
+              if (i !== rowIdx) {
+                item4.默认值 = false;
+              }
+            }
+          }
+          this.gongyi.算料数据[rowIdx] = toItem;
+          this.menjiaoTable.data = [...this.gongyi.算料数据];
+          await this.submitGongyi(["算料数据"]);
+        }
+      },
+      data,
+      suanliaoDataName,
+      suanliaoTestName
+    );
   }
 
   getHuajianIds(menshans: typeof this.menshans) {

@@ -14,7 +14,7 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {MrbcjfzDialogInput, openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {environment} from "@env";
 import {CadData, CadViewerConfig} from "@lucilor/cad-viewer";
-import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
+import {keysOf, ObjectOf} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -25,12 +25,10 @@ import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types"
 import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {filterCad as filterCad2} from "@views/mrbcjfz/mrbcjfz.utils";
-import csstype from "csstype";
-import {cloneDeep, debounce, difference, isEmpty} from "lodash";
+import {cloneDeep, debounce, isEmpty} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../cad-item/cad-item.component";
 import {CadItemButton} from "../cad-item/cad-item.types";
-import {getOptionInputInfo} from "../lurushuju-index/lurushuju-index.utils";
 import {openSuanliaoDataDialog} from "../suanliao-data-dialog/suanliao-data-dialog.component";
 import {SuanliaoTablesComponent} from "../suanliao-tables/suanliao-tables.component";
 import {
@@ -52,7 +50,10 @@ import {
   autoFillMenjiao,
   copySuanliaoData,
   getCadSearch,
+  getGroupStyle,
+  getInfoStyle,
   getMenjiaoCadInfos,
+  getMenjiaoOptionInputInfo,
   getShiyituCadSearch,
   updateMenjiaoData
 } from "./menjiao-dialog.utils";
@@ -184,69 +185,9 @@ export class MenjiaoDialogComponent implements OnInit {
     const 产品分类 = data0 ? data0.产品分类 : componentLrsj.fenleiName;
     data.产品分类 = 产品分类;
     updateMenjiaoData(data);
-    const getGroupStyle = (style?: csstype.Properties): csstype.Properties => {
-      return {display: "flex", flexWrap: "wrap", ...style};
-    };
-    const getInfoStyle = (n: number, style?: csstype.Properties): csstype.Properties => {
-      const percent = 100 / n;
-      const margin = 5;
-      return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`, ...style};
-    };
+
     const getOptionInputInfo2 = (data: any, key: string, n: number): InputInfoSelect => {
-      return getOptionInputInfo(componentLrsj.menjiaoOptionsAll, key, (info) => {
-        info.model = {data, key};
-        if (!info.readonly && !info.disabled) {
-          info.validators = Validators.required;
-        }
-        info.onChange = () => {
-          updateMenjiaoData(data);
-        };
-        info.style = getInfoStyle(n);
-        const dialogKeys = ["门铰"];
-        const openInNewTabKeys = ["门扇厚度", "锁边", "铰边"];
-        if (dialogKeys.includes(key)) {
-          info.optionsDialog = {
-            noImage: true,
-            defaultValue: {value: data.选项默认值[key] || "", required: true},
-            optionKey: key,
-            useLocalOptions: true,
-            openInNewTab: true,
-            onChange(val) {
-              if (val.defaultValue) {
-                data.选项默认值[key] = val.defaultValue;
-              }
-            }
-          };
-        } else if (openInNewTabKeys.includes(key)) {
-          info.openInNewTab = {
-            optionKey: key,
-            onOptionsChange: (options) => {
-              info.options = convertOptions(options.data);
-            }
-          };
-        }
-        if (key === "锁边") {
-          info.hint = "请使用和实际对应的名字";
-        } else if (key === "门扇厚度") {
-          let valueBefore = data.门扇厚度;
-          if (!Array.isArray(valueBefore)) {
-            data.门扇厚度 = [];
-            if (isTypeOf(valueBefore, ["string", "number"])) {
-              data.门扇厚度.push(valueBefore);
-            }
-          }
-          if (valueBefore.length > 1) {
-            valueBefore = [valueBefore[0]];
-          }
-          info.onChange = (val: any) => {
-            const diff = difference(val, valueBefore);
-            if (diff.length > 0) {
-              data.门扇厚度 = [diff[0]];
-              valueBefore = diff;
-            }
-          };
-        }
-      });
+      return {...getMenjiaoOptionInputInfo(data, key, n, componentLrsj.menjiaoOptionsAll), style: getInfoStyle(n)};
     };
     const getMenfengInputInfo = (value: (typeof 门缝配置输入)[number]): InputInfo => {
       return {
@@ -392,7 +333,7 @@ export class MenjiaoDialogComponent implements OnInit {
       };
       const inputs = [
         {
-          ...getOptionInputInfo2(data[key1], "双开门扇宽生成方式", 1.5),
+          ...getOptionInputInfo2(data[key1] as any, "双开门扇宽生成方式", 1.5),
           onChange: () => {
             if (锁扇蓝线宽比铰扇蓝线宽大(key1)) {
               setInputHidden(inputs[1], false);
