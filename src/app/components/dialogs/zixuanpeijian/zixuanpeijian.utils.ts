@@ -934,7 +934,7 @@ export const step3FetchData = async (
   const {getAll, typePrefix, xinghao} = lingsanOptions || {};
   const cacheKey = "_lingsanCadsCache_" + md5(JSON.stringify({getAll, typePrefix, xinghao}));
   if (noCache || !(window as any)[cacheKey]) {
-    responseData = await http.getData<{cads: CadData[]}>("ngcad/getLingsanCads", {getAll, typePrefix, xinghao});
+    responseData = await http.getData("ngcad/getLingsanCads", {getAll, typePrefix, xinghao});
     (window as any)[cacheKey] = responseData;
   } else {
     responseData = (window as any)[cacheKey];

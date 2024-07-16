@@ -1,3 +1,4 @@
+import {XiaodaohangColumn} from "@app/app.common";
 import {算料公式} from "@app/components/lurushuju/xinghao-data";
 import {Formulas} from "@app/utils/calc";
 import {KailiaocanshuData} from "@components/klcs/klcs.component";
@@ -160,4 +161,18 @@ export interface CalcZxpjResult {
 
 export interface LingsanCadItemInfo {
   index: number;
+}
+
+export interface LingsanTypesData {
+  typesMap: TypesMapNode[];
+  tables: {name: string; column?: XiaodaohangColumn}[];
+}
+
+export interface TypesMapNode {
+  id: number;
+  name: string;
+  level: number;
+  cadCount?: number;
+  hidden?: boolean;
+  children: TypesMapNode[];
 }

@@ -154,6 +154,13 @@ export const replaceRemoteHost = (urlStr: string) => {
 export interface XiaodaohangStructure {
   mingzi: string;
   table: string;
+  gongneng: {jiegou: XiaodaohangColumn[]};
+}
+export interface XiaodaohangColumn {
+  field: string;
+  ch: string;
+  datatype: string;
+  guanlianTable?: string;
 }
 
 export const filePathUrl = `${origin}/filepath`;
