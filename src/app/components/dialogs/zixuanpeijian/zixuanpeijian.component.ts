@@ -417,10 +417,6 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       }
       this.lingsanCadInfos = [];
       this.lingsanCads = {};
-      const responseData2 = await this.http.getData<LingsanTypesData>("ngcad/getLingsanTypes");
-      this.lingsanTypesTables = responseData2?.tables || [];
-      this.lingsanTypesDataSource.data = responseData2?.typesMap || [];
-      const {noValidateCads} = this.data || {};
       for (const v of responseData.cads) {
         const data = new CadData(v);
         const item: ZixuanpeijianlingsanCadItem = {data, hidden: false, isFetched: false};
@@ -430,6 +426,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
         }
         this.lingsanCads[type]?.push(item);
       }
+      const responseData2 = await this.http.getData<LingsanTypesData>("ngcad/getLingsanTypes", {allTypes: Object.keys(this.lingsanCads)});
+      this.lingsanTypesTables = responseData2?.tables || [];
+      this.lingsanTypesDataSource.data = responseData2?.typesMap || [];
+      const {noValidateCads} = this.data || {};
       const toRemove: number[] = [];
       for (const [i, item] of this.result.零散.entries()) {
         let found: ZixuanpeijianlingsanCadItem | undefined;
@@ -1200,10 +1200,20 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
     return null;
   }
-  async addLingsanCadType(parent?: TypesMapNode) {
-    const level = parent ? parent.level : 0;
+  async isVirtualNode(node: TypesMapNode) {
+    if (node.id <= 0) {
+      await this.message.error(`【${node.name}】是自动生成的，不能进行操作`);
+      return true;
+    }
+    return false;
+  }
+  async addLingsanCadType(node?: TypesMapNode) {
+    if (node && (await this.isVirtualNode(node))) {
+      return;
+    }
+    const level = node ? node.level : 0;
     const table = this.lingsanTypesTables[level];
-    const table2 = parent ? this.lingsanTypesTables[level + 1] : table;
+    const table2 = node ? this.lingsanTypesTables[level + 1] : table;
     if (!table2) {
       await this.message.error(`没有对应层级的信息，必须先手动关联一个【${level + 2}】级分类`);
       return;
@@ -1213,14 +1223,17 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
       return;
     }
     const record = await this.http.tableInsert({table: table2.name, data});
-    if (parent && record && table.column) {
-      const ids = parent.children.map((v) => v.id);
+    if (node && record && table.column) {
+      const ids = node.children.map((v) => v.id);
       ids.push(record.vid);
-      await this.http.tableUpdate({table: table.name, data: {vid: parent.id, [table.column.field]: ids.join("*")}});
+      await this.http.tableUpdate({table: table.name, data: {vid: node.id, [table.column.field]: ids.join("*")}});
     }
     this.step3Refresh(true, false);
   }
   async editLingsanCadType(node: TypesMapNode) {
+    if (await this.isVirtualNode(node)) {
+      return;
+    }
     const table = this.lingsanTypesTables[node.level];
     if (!table) {
       await this.message.error(`没有对应层级的信息`);
@@ -1240,6 +1253,9 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this.step3Refresh(true, false);
   }
   async removeLingsanCadType(node: TypesMapNode) {
+    if (await this.isVirtualNode(node)) {
+      return;
+    }
     if (!(await this.message.confirm(`是否确定删除【${node.name}】?`))) {
       return;
     }
