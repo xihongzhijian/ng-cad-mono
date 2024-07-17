@@ -1,6 +1,6 @@
 import {inject} from "@angular/core";
 import {addJs, session} from "@app/app.common";
-import {CadInfo, CadInfoError} from "@app/cad/portable";
+import {addCadInfoError, CadInfo, CadInfoError} from "@app/cad/portable";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {AppStatusService} from "@app/services/app-status.service";
 import {ObjectOf} from "@lucilor/utils";
@@ -64,7 +64,9 @@ export class BatchUploadChecker {
       for (const cad of cads) {
         const errors = result[cad.data.id];
         if (Array.isArray(errors)) {
-          cad.errors.push(...errors);
+          for (const error of errors) {
+            addCadInfoError(cad, {text: error, detail: "【batchUploadChecker.js】的报错"});
+          }
         }
       }
     }

@@ -2,6 +2,7 @@ import {AbstractControlOptions, FormControl, FormControlOptions, FormControlStat
 import {environment} from "@env";
 import {LocalStorage, log, ObjectOf, SessionStorage, Timer} from "@lucilor/utils";
 import JsBarcode from "jsbarcode";
+import {TDocumentInformation} from "pdfmake/interfaces";
 
 declare global {
   interface Window {
@@ -158,6 +159,13 @@ export const replaceRemoteHost = (urlStr: string) => {
 export interface XiaodaohangStructure {
   mingzi: string;
   table: string;
+  gongneng: {jiegou: XiaodaohangColumn[]};
+}
+export interface XiaodaohangColumn {
+  field: string;
+  ch: string;
+  datatype: string;
+  guanlianTable?: string;
 }
 
 export const filePathUrl = `${origin}/filepath`;
@@ -230,6 +238,20 @@ export const getNameWithSuffix = (names: string[], name: string, suffix: string,
 };
 export const getInsertName = (names: string[], name: string) => getNameWithSuffix(names, name, "", 1);
 export const getCopyName = (names: string[], name: string) => getNameWithSuffix(names, name, "_复制", 0);
+
+export const getPdfInfo = (others?: TDocumentInformation): TDocumentInformation => {
+  const now = new Date();
+  return {
+    title: "noname",
+    author: "Lucilor",
+    subject: "Lucilor",
+    creator: "Lucilor",
+    producer: "Lucilor",
+    creationDate: now,
+    modDate: now,
+    ...others
+  };
+};
 
 export const getArrayString = (value: any, separator: string) => {
   if (Array.isArray(value)) {

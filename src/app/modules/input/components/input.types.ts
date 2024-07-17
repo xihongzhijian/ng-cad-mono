@@ -200,7 +200,7 @@ export type InputInfo<T = any> =
   | InputInfoList<T>
   | InputInfoGroup<T>;
 
-export type InputInfoOption<T = any> = {value: T; label?: string; disabled?: boolean; img?: string};
+export type InputInfoOption<T = any> = {value: T; label?: string; disabled?: boolean; img?: string; vid?: number};
 
 export type InputInfoOptions<T = any> = (InputInfoOption<T> | string)[];
 

@@ -72,6 +72,14 @@ export class SuanliaoDataDialogComponent implements OnInit {
   suanliaoCadsSearch: InputInfo;
   hiddenSuanliaoCads: number[] = [];
   isSuanliaoCadReversed = true;
+  cadNameValidator = ((data: CadData) => {
+    for (const cad of this.data.data.算料CAD) {
+      if (cad._id !== data.id && cad.名字 === data.name) {
+        return {名字重复: true};
+      }
+    }
+    return null;
+  }).bind(this);
 
   showMenuLeftKey = "suanliaoDataDialog.showMenuLeft";
   showMenuRightKey = "suanliaoDataDialog.showMenuRight";
@@ -274,14 +282,16 @@ export class SuanliaoDataDialogComponent implements OnInit {
     const errors: string[] = [];
     for (const item of cadItems) {
       for (const err of item.validate()) {
-        errors.push(err);
+        if (!errors.includes(err)) {
+          errors.push(err);
+        }
       }
     }
 
     await timeout(0);
     const targetY = window.innerHeight / 2;
     const errorElInfos: {el: HTMLElement; y: number; order: number}[] = [];
-    this.el.nativeElement.querySelectorAll<HTMLElement>(".error").forEach((el) => {
+    this.el.nativeElement.querySelectorAll<HTMLElement>(".error, .name-error").forEach((el) => {
       const {top, bottom} = el.getBoundingClientRect();
       errorElInfos.push({el, y: (top + bottom) / 2, order: Math.abs((top + bottom) / 2 - targetY)});
     });

@@ -41,6 +41,22 @@ export interface CadInfoError {
   text: string;
   detail: string;
 }
+export const addCadInfoError = (cad: CadInfo, error: CadInfoError | string) => {
+  const errorText = typeof error === "string" ? error : error.text;
+  const found = cad.errors.find((v) => {
+    if (typeof v === "string") {
+      return v === errorText;
+    }
+    return v.text === errorText;
+  });
+  if (found) {
+    return;
+  }
+  cad.errors.push(error);
+};
+export const addCadInfoErrors = (cad: CadInfo, errors: (CadInfoError | string)[]) => {
+  errors.forEach((v) => addCadInfoError(cad, v));
+};
 
 /**
  * 算料公式

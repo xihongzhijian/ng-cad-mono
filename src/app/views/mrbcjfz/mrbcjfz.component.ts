@@ -183,7 +183,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       } else {
         bancaiListData = await this.http.getBancaiList(9, {spinner: this.loaderId});
       }
-      this.xiaodaohangStructure = {mingzi: "型号", table: "p_xinghao"};
+      this.xiaodaohangStructure = {mingzi: "型号", table: "p_xinghao", gongneng: {jiegou: []}};
       if (bancaiListData) {
         this.bancaiList = bancaiListData.bancais;
         this.bancaiKeys = bancaiListData.bancaiKeys;

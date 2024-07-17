@@ -179,7 +179,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return hint || "";
   }
 
-  options: {value: any; label: string; disabled?: boolean; img?: string}[] = [];
+  options: {value: any; label: string; disabled?: boolean; img?: string; vid?: number}[] = [];
 
   get optionText() {
     const info = this.info;
@@ -475,7 +475,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         if (typeof v === "number") {
           return {value: String(v), label: String(v)};
         }
-        return {label: v.label || String(v.value), value: v.value, disabled: v.disabled, img: v.img};
+        return {label: v.label || String(v.value), value: v.value, disabled: v.disabled, img: v.img, vid: v.vid};
       });
       const isRequired = validators === Validators.required || (Array.isArray(validators) && validators.includes(Validators.required));
       if (isRequired && !readonly && !disabled) {
@@ -847,7 +847,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     let options: OptionsDataData[] | undefined;
     if (hasOptions) {
       options = this.options.map<OptionsDataData>((v, i) => {
-        let vid = i;
+        let vid = typeof v.vid === "number" ? v.vid : i;
         let name = "";
         if (typeof v === "string") {
           name = v;

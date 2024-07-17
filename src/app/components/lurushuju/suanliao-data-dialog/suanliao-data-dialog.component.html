@@ -44,7 +44,7 @@
             [openCadOptions]="openCadOptions"
             [customInfo]="{index: getSuanliaoCadIndex(i)}"
             [showMuban]="data.isKailiao"
-            [validators]="{zhankai: true}"
+            [validators]="{zhankai: true, name: cadNameValidator}"
             [class.hidden]="hiddenSuanliaoCads.includes(getSuanliaoCadIndex(i))"
           ></app-cad-item>
         }
