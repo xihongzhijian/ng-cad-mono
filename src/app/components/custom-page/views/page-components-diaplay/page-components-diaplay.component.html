@@ -103,6 +103,9 @@
               </div>
             }
           }
+          @case ("rect") {
+            <div class="snap"></div>
+          }
           @case ("group") {
             <ng-container *ngTemplateOutlet="componentsTpl; context: {$implicit: component.children}"></ng-container>
           }

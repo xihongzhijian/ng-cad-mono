@@ -6,6 +6,7 @@ import {keysOf} from "@lucilor/utils";
 import {PageComponentInfos, pageComponentInfos, PageComponentType} from "../../models/page-component-infos";
 import {flatMapPageComponents} from "../../models/page-component-utils";
 import {PageComponentForm} from "../../models/page-components/page-component-form";
+import {PageComponentRect} from "../../models/page-components/page-component-rect";
 import {PageComponentText} from "../../models/page-components/page-component-text";
 import {PageStatusService} from "../../services/page-status.service";
 
@@ -53,6 +54,10 @@ export class PageComponentsSeletComponent {
       component.valueWidth = 100;
       component.labelPadding = [5, 5, 5, 5];
       component.valuePadding = [5, 5, 5, 5];
+      component.borderColor = "black";
+      component.borderWidth = 1;
+      component.borderStyle = "solid";
+    } else if (component instanceof PageComponentRect) {
       component.borderColor = "black";
       component.borderWidth = 1;
       component.borderStyle = "solid";

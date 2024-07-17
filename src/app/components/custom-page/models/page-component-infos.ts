@@ -3,12 +3,14 @@ import {keysOf} from "@lucilor/utils";
 import {PageComponentForm} from "./page-components/page-component-form";
 import {PageComponentGroup} from "./page-components/page-component-group";
 import {PageComponentImage} from "./page-components/page-component-image";
+import {PageComponentRect} from "./page-components/page-component-rect";
 import {PageComponentText} from "./page-components/page-component-text";
 
 export interface PageComponentInfos {
   text: PageComponentInfo<typeof PageComponentText>;
   image: PageComponentInfo<typeof PageComponentImage>;
   form: PageComponentInfo<typeof PageComponentForm>;
+  rect: PageComponentInfo<typeof PageComponentRect>;
   group: PageComponentInfo<typeof PageComponentGroup>;
 }
 export const pageComponentInfos: PageComponentInfos = {
@@ -32,6 +34,13 @@ export const pageComponentInfos: PageComponentInfos = {
     previewImg: imgEmpty,
     class: PageComponentForm,
     resizable: {}
+  },
+  rect: {
+    name: "矩形",
+    description: "这是矩形组件",
+    previewImg: imgEmpty,
+    class: PageComponentRect,
+    resizable: {x: true, y: true}
   },
   group: {
     name: "分组",
