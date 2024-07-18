@@ -73,10 +73,9 @@ export class SuanliaoDataDialogComponent implements OnInit {
   hiddenSuanliaoCads: number[] = [];
   isSuanliaoCadReversed = true;
   cadNameValidator = ((data: CadData) => {
-    for (const cad of this.data.data.算料CAD) {
-      if (cad._id !== data.id && cad.名字 === data.name) {
-        return {名字重复: true};
-      }
+    const names = this.data.data.算料CAD.map((v) => v.名字);
+    if (names.filter((v) => v === data.name).length > 1) {
+      return {名字重复: true};
     }
     return null;
   }).bind(this);
