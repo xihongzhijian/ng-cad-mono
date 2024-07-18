@@ -157,7 +157,7 @@
     @case (3) {
       <div class="step-3 flex-row flex-110">
         <div class="flex-column">
-          <div class="toolbar">
+          <div class="toolbar right">
             @if (lingsanTypesEditMode) {
               <button mat-stroked-button color="primary" (click)="addLingsanCadType()">添加1级</button>
             }
@@ -168,12 +168,18 @@
             >
               开启编辑
             </button>
-            <button mat-stroked-button [color]="lingsanTypesHideEmpty ? 'primary' : 'accent'" (click)="toggleLingsanTypesHideEmpty()">
-              显示所有
-            </button>
           </div>
-          <ng-template #nodeEdit [appTypedTemplate]="{$implicit: lingsanTypesDataSource.data[0]}" let-node>
+          <ng-template #nodeTitle [appTypedTemplate]="{$implicit: lingsanTypesDataSource.data[0]}" let-node>
+            {{ node.label || node.name }}
+            @if (lingsanTypesShowCount && !lingsanTypesEditMode) {
+              | {{ node.cadCount }}个
+            }
             @if (lingsanTypesEditMode) {
+              | 排序: {{ node.order }}
+            }
+          </ng-template>
+          <ng-template #nodeEdit [appTypedTemplate]="{$implicit: lingsanTypesDataSource.data[0]}" let-node>
+            @if (lingsanTypesEditMode && !isVirtualNode(node)) {
               <div class="flex-110 toolbar right compact">
                 <button mat-button color="primary" (click)="addLingsanCadType(node)">添加{{ node.level + 2 }}级</button>
                 <button mat-button color="primary" (click)="editLingsanCadType(node)">编辑</button>
@@ -197,10 +203,7 @@
                     (click)="setLingsanCadType(node.name)"
                     matTreeNodeToggle
                   >
-                    {{ node.name }}
-                    @if (lingsanTypesShowCount) {
-                      &nbsp;({{ node.cadCount }})
-                    }
+                    <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
                   </button>
                   <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
                 </div>
@@ -213,10 +216,7 @@
                     </mat-icon>
                   </button>
                   <button mat-button matTreeNodeToggle [attr.data-id]="node.id">
-                    {{ node.name }}
-                    @if (lingsanTypesShowCount) {
-                      &nbsp;({{ node.cadCount }})
-                    }
+                    <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
                   </button>
                   <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
                 </div>

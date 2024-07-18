@@ -172,6 +172,8 @@ export interface TypesMapNode {
   id: number;
   name: string;
   level: number;
+  order: number;
+  label?: string;
   cadCount?: number;
   hidden?: boolean;
   children: TypesMapNode[];

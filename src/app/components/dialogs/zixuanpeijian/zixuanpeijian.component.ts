@@ -26,7 +26,6 @@ import {ImportCache} from "@app/views/import/import.types";
 import {openImportPage} from "@app/views/import/import.utils";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {Debounce} from "@decorators/debounce";
-import {environment} from "@env";
 import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, setLinesLength} from "@lucilor/cad-viewer";
 import {getElementVisiblePercentage, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {ContextMenu} from "@mixins/context-menu.mixin";
@@ -141,8 +140,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   lingsanTypesDataSource = new MatTreeNestedDataSource<TypesMapNode>();
   lingsanTypesTreeControl = new NestedTreeControl<TypesMapNode>((node) => node.children);
   lingsanTypesEditMode = false;
-  lingsanTypesShowCount = !environment.production;
-  lingsanTypesHideEmpty = true;
+  lingsanTypesShowCount = true;
   hasChild = (_: number, node: TypesMapNode) => !!node.children && node.children.length > 0;
   searchLingsanValueKey = "zixuanpeijian-searchLingsanValue";
   searchLingsanValue = session.load(this.searchLingsanValueKey) || "";
@@ -1082,6 +1080,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   filterLingsanItems() {
     const needle = this.searchLingsanValue;
+    this.lingsanTypesHideEmpty = !!needle;
     const counts: ObjectOf<number> = {};
     for (const type in this.lingsanCads) {
       let count = 0;
@@ -1200,15 +1199,18 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
     return null;
   }
-  async isVirtualNode(node: TypesMapNode) {
-    if (node.id <= 0) {
+  isVirtualNode(node: TypesMapNode) {
+    return node.id <= 0;
+  }
+  async isVirtualNode2(node: TypesMapNode) {
+    if (this.isVirtualNode(node)) {
       await this.message.error(`【${node.name}】是自动生成的，不能进行操作`);
       return true;
     }
     return false;
   }
   async addLingsanCadType(node?: TypesMapNode) {
-    if (node && (await this.isVirtualNode(node))) {
+    if (node && (await this.isVirtualNode2(node))) {
       return;
     }
     const level = node ? node.level : 0;
@@ -1231,7 +1233,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this.step3Refresh(true, false);
   }
   async editLingsanCadType(node: TypesMapNode) {
-    if (await this.isVirtualNode(node)) {
+    if (await this.isVirtualNode2(node)) {
       return;
     }
     const table = this.lingsanTypesTables[node.level];
@@ -1253,7 +1255,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this.step3Refresh(true, false);
   }
   async removeLingsanCadType(node: TypesMapNode) {
-    if (await this.isVirtualNode(node)) {
+    if (await this.isVirtualNode2(node)) {
       return;
     }
     if (!(await this.message.confirm(`是否确定删除【${node.name}】?`))) {
