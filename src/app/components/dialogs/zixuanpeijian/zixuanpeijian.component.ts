@@ -1258,6 +1258,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (await this.isVirtualNode2(node)) {
       return;
     }
+    if (node.children.length > 0) {
+      await this.message.error(`【${node.name}】下面有子节点，不能删除`);
+      return;
+    }
     if (!(await this.message.confirm(`是否确定删除【${node.name}】?`))) {
       return;
     }
