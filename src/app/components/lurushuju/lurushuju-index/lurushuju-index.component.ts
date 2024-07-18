@@ -325,7 +325,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (xinghao) {
       result.mingziOld = result.data.mingzi;
       await this.editXinghaoByResult(result, xinghao);
-      this.getXinghaos();
+      await this.getXinghaos();
+      this.enterXinghao(xinghao);
     }
   }
 
@@ -350,6 +351,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!data.gongyi && gongyi) {
       data.gongyi = gongyi.mingzi;
     }
+    const isAdd = !xinghao;
 
     const data2: XinghaoRaw = {
       名字: data.mingzi,
@@ -362,7 +364,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const mingziOld = data.mingzi;
     const names = this.xinghaos.map((xinghao) => xinghao.mingzi);
     let refreshOptions = false;
-    const getOptionInput = (key1: string, key2: string, multiple?: boolean) => {
+    const getOptionInput = (key1: string, key2: string, multiple?: boolean, others?: Partial<InputInfo>) => {
       const info: InputInfoSelect = {
         type: "select",
         label: key1,
@@ -386,6 +388,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       } else {
         info.model = {data: data2, key: key2};
       }
+      Object.assign(info, others);
       return info;
     };
     const form: InputInfo[] = [
@@ -425,8 +428,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           }
         }
       },
-      getOptionInput("门窗", "所属门窗", true),
-      getOptionInput("工艺", "所属工艺", true),
+      getOptionInput("门窗", "所属门窗", true, {hidden: isAdd}),
+      getOptionInput("工艺", "所属工艺", true, {hidden: isAdd}),
       getOptionInput("订单流程", "订单流程"),
       {
         type: "select",
@@ -818,6 +821,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const 型号 = this.xinghao.名字;
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/addGongyi", {名字, 型号, 产品分类});
     await this.updateXinghao(xinghaoRaw?.产品分类);
+    this.enterGongyi(产品分类, 名字);
   }
 
   async removeGongyi(产品分类: string, 名字: string) {
@@ -927,7 +931,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
   }
 
-  editGongyi2(fenleiName: string, gongyiName: string) {
+  enterGongyi(fenleiName: string, gongyiName: string) {
     this.setStep(3, {xinghaoName: this.xinghaoName, fenleiName, gongyiName});
   }
 
