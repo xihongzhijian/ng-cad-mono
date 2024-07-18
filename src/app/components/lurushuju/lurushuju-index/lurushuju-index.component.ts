@@ -1445,14 +1445,25 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     return huajianIds;
   }
 
+  private _huajiansCache: ObjectOf<MrbcjfzHuajian[]> = {};
   async updateHuajians() {
     const huajianIds = this.getHuajianIds(this.menshans);
     if (huajianIds.size > 0) {
-      this.huajians = await this.http.queryMySql<MrbcjfzHuajian>({
-        table: "p_huajian",
-        fields: ["vid", "mingzi", "xiaotu", "shihuajian"],
-        filter: {where_in: {vid: Array.from(huajianIds)}}
-      });
+      const ids = Array.from(huajianIds);
+      const cacheKey = ids.join(",");
+      if (this._huajiansCache[cacheKey]) {
+        this.huajians = this._huajiansCache[cacheKey];
+      } else {
+        this.huajians = await this.http.queryMySql<MrbcjfzHuajian>(
+          {
+            table: "p_huajian",
+            fields: ["vid", "mingzi", "xiaotu", "shihuajian"],
+            filter: {where_in: {vid: ids}}
+          },
+          {spinner: false}
+        );
+        this._huajiansCache[cacheKey] = this.huajians;
+      }
     } else {
       this.huajians = [];
     }

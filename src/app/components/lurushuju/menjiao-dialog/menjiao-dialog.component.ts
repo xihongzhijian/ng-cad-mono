@@ -93,6 +93,7 @@ export class MenjiaoDialogComponent implements OnInit {
   key1Infos: ObjectOf<{
     xiaoguotuInputs: InputInfo[];
     error: string;
+    missingCads: string[];
     suanliaoDataParams: SuanliaoDataParams;
     suanliaogongshiInfo: SuanliaogongshiInfo;
     isLoaded: boolean;
@@ -369,6 +370,7 @@ export class MenjiaoDialogComponent implements OnInit {
       this.key1Infos[key1] = {
         xiaoguotuInputs: [],
         error: "",
+        missingCads: [],
         suanliaoDataParams: {
           选项: {
             型号: componentLrsj.xinghaoName,
@@ -510,6 +512,7 @@ export class MenjiaoDialogComponent implements OnInit {
       }
       data[key1][key2][key3].cad = getHoutaiCad(cadData, {houtaiId});
       updateMenjiaoData(this.formData);
+      await this.validate();
     }
   }
 
@@ -748,17 +751,18 @@ export class MenjiaoDialogComponent implements OnInit {
             }
           }
         }
-        const missingValues = [];
+        const missingCads: string[] = [];
+        this.key1Infos[key1].missingCads = missingCads;
         for (const key2 of 算料数据2Keys) {
           for (const key3 in value[key2]) {
             if (!value[key2][key3].cad) {
-              missingValues.push(key3);
+              missingCads.push(key3);
             }
           }
         }
         const errors2 = [];
-        if (missingValues.length > 0) {
-          errors2.push("选择" + missingValues.join("、"));
+        if (missingCads.length > 0) {
+          errors2.push("选择" + missingCads.join("、"));
           errors.others = true;
         }
         const mrbcjfzResult = await openMrbcjfzDialog(this.dialog, {
