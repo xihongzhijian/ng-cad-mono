@@ -157,10 +157,7 @@
     @case (3) {
       <div class="step-3 flex-row flex-110">
         <div class="flex-column">
-          <div class="toolbar right">
-            @if (lingsanTypesEditMode) {
-              <button mat-stroked-button color="primary" (click)="addLingsanCadType()">添加1级</button>
-            }
+          <div class="toolbar">
             <button
               mat-stroked-button
               [color]="lingsanTypesEditMode ? 'accent' : 'primary'"
@@ -168,14 +165,17 @@
             >
               开启编辑
             </button>
+            @if (lingsanTypesEditMode) {
+              <button mat-stroked-button color="primary" (click)="addLingsanCadType()">添加1级</button>
+            }
           </div>
           <ng-template #nodeTitle [appTypedTemplate]="{$implicit: lingsanTypesDataSource.data[0]}" let-node>
             {{ node.label || node.name }}
-            @if (lingsanTypesShowCount && !lingsanTypesEditMode) {
-              | {{ node.cadCount }}个
+            @if (lingsanTypesShowCount && !lingsanTypesEditMode && (!production || searchLingsanValue)) {
+              ({{ node.cadCount }}个)
             }
             @if (lingsanTypesEditMode) {
-              | 排序: {{ node.order }}
+              (排序{{ node.order }})
             }
           </ng-template>
           <ng-template #nodeEdit [appTypedTemplate]="{$implicit: lingsanTypesDataSource.data[0]}" let-node>

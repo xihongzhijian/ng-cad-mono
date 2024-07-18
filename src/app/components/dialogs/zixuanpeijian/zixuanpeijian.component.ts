@@ -26,6 +26,7 @@ import {ImportCache} from "@app/views/import/import.types";
 import {openImportPage} from "@app/views/import/import.utils";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {Debounce} from "@decorators/debounce";
+import {environment} from "@env";
 import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, setLinesLength} from "@lucilor/cad-viewer";
 import {getElementVisiblePercentage, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {ContextMenu} from "@mixins/context-menu.mixin";
@@ -129,6 +130,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   _step2Fetched = false;
   _step3Fetched = false;
   cadItemType!: CadItemContext;
+  production = environment.production;
 
   collection: CadCollection = "cad";
   mokuaiInputInfos: MokuaiInputInfos[] = [];
