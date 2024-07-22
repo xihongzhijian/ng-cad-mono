@@ -752,7 +752,9 @@ export class MenjiaoDialogComponent implements OnInit {
           }
         }
         const missingCads: string[] = [];
-        this.key1Infos[key1].missingCads = missingCads;
+        if (this.key1Infos[key1]) {
+          this.key1Infos[key1].missingCads = missingCads;
+        }
         for (const key2 of 算料数据2Keys) {
           for (const key3 in value[key2]) {
             if (!value[key2][key3].cad) {
