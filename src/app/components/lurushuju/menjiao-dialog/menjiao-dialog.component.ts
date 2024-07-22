@@ -37,6 +37,7 @@ import {
   menjiaoCadTypes,
   SuanliaoDataParams,
   xiaoguotuKeys,
+  企料CAD,
   企料组合,
   孔位CAD名字对应关系,
   算料数据,
@@ -688,6 +689,16 @@ export class MenjiaoDialogComponent implements OnInit {
     data[key1].算料公式 = cloneDeep(data2.算料公式);
     data[key1].测试用例 = cloneDeep(data2.测试用例);
     data[key1].算料CAD = cloneDeep(data2.算料CAD);
+    data[key1].企料CAD = {};
+    for (const key2 in data2.企料CAD) {
+      const item = {...data2.企料CAD[key2]};
+      let cad: 企料CAD["cad"] = undefined;
+      if (data2.企料CAD[key2].cad) {
+        cad = getHoutaiCad(new CadData(data2.企料CAD[key2].cad.json));
+      }
+      delete item.cad;
+      data[key1].企料CAD[key2] = {cad, ...cloneDeep(item)};
+    }
     const from = cloneDeep(suanliaoDataParams);
     const [包边方向2, 开启2] = result.split("+");
     from.选项.包边方向 = 包边方向2;
