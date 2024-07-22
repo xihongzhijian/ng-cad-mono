@@ -2,7 +2,7 @@
   <div class="toolbar">
     @switch (step) {
       @case (1) {
-        <button mat-raised-button color="primary" (click)="autoTest()">自动测试已经测试通过的型号</button>
+        <button mat-raised-button color="primary" (click)="autoTest()">测试</button>
         <button mat-raised-button color="primary" (click)="xinghaoTongyongGongshi()">所有型号通用公式</button>
         <button mat-raised-button color="primary" (click)="tongyongshuju()">通用数据录入</button>
         <button mat-raised-button color="primary" (click)="openZxpj(false)">配件库</button>
@@ -32,7 +32,6 @@
   <div class="menchaungs flex-column">
     <div class="toolbar">
       <button mat-stroked-button color="primary" (click)="addXinghaoMenchaung()">添加门窗</button>
-      <button mat-stroked-button color="primary" (click)="openXinghaoMenchaung()">查看所有门窗分类</button>
       <button mat-stroked-button [color]="isMenchuangEditable ? 'accent' : 'primary'" (click)="isMenchuangEditable = !isMenchuangEditable">
         {{ isMenchuangEditable ? "关闭" : "开启" }}编辑
       </button>
@@ -53,7 +52,6 @@
                   <button mat-button color="primary" (click)="editXinghaoMenchaung(i)">编辑</button>
                   <button mat-button color="primary" (click)="removeXinghaoMenchaung(i)">删除</button>
                   <button mat-button color="primary" (click)="addXinghaoGongyi(i)">添加工艺</button>
-                  <button mat-button color="primary" (click)="openXinghaoGongyi()">查看所有工艺</button>
                 </div>
               }
             </div>

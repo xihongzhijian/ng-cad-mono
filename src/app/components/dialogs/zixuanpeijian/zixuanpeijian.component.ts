@@ -145,13 +145,23 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   lingsanTypesShowCount = true;
   hasChild = (_: number, node: TypesMapNode) => !!node.children && node.children.length > 0;
   searchLingsanValueKey = "zixuanpeijian-searchLingsanValue";
-  searchLingsanValue = session.load(this.searchLingsanValueKey) || "";
+  searchLingsanValue = session.load<string>(this.searchLingsanValueKey) || "";
   lingsanCadsSearchInput: InputInfo = {
     type: "string",
     label: "搜索",
     clearable: true,
     model: {data: this, key: "searchLingsanValue"},
     onInput: debounce(this.filterLingsanItems.bind(this), 200)
+  };
+  searchLingsanTypeKey = "zixuanpeijian-searchLingsanType";
+  searchLingsanType = session.load<string>(this.searchLingsanTypeKey) || "";
+  lingsanTypesSearchInput: InputInfo = {
+    type: "string",
+    label: "搜索",
+    clearable: true,
+    model: {data: this, key: "searchLingsanType"},
+    onInput: debounce(this.filterLingsanTypes.bind(this), 200),
+    style: {width: "100px"}
   };
   lingsanCadViewers: CadViewer[] = [];
   imgCadEmpty = imgCadEmpty;
@@ -1130,6 +1140,20 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     } else if (firstVisibleNode) {
       this.setLingsanCadType(firstVisibleNode.name);
     }
+  }
+  filterLingsanTypes() {
+    const needle = this.searchLingsanType;
+    const search = (nodes: TypesMapNode[]) => {
+      for (const node of nodes) {
+        if (node.children.length > 0) {
+          search(node.children);
+          node.hidden2 = node.children.every((v) => v.hidden2);
+        } else {
+          node.hidden2 = !queryStringList(needle, [node.name, node.label || ""]);
+        }
+      }
+    };
+    search(this.lingsanTypesDataSource.data);
   }
 
   returnZero() {

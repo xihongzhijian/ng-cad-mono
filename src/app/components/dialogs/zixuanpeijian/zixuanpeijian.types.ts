@@ -176,5 +176,6 @@ export interface TypesMapNode {
   label?: string;
   cadCount?: number;
   hidden?: boolean;
+  hidden2?: boolean;
   children: TypesMapNode[];
 }

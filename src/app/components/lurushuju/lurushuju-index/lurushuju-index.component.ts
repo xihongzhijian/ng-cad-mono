@@ -1752,17 +1752,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     await this.getXinghaos();
   }
 
-  async openXinghaoMenchaung() {
-    const url = await this.http.getShortUrl("p_menchuang");
-    if (!url) {
-      return;
-    }
-    window.open(url);
-    if (await this.message.newTabConfirm()) {
-      await this.getXinghaos();
-    }
-  }
-
   async getXinghaoGongyi(gongyi?: XinghaoGongyi) {
     const data = gongyi ? cloneDeep({...gongyi, xinghaos: undefined}) : getXinghaoGongyi();
     const form: InputInfo<typeof data>[] = [
@@ -1814,17 +1803,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
     await this.http.tableDelete({table: "p_gongyi", vids: [data.vid]});
     await this.getXinghaos();
-  }
-
-  async openXinghaoGongyi() {
-    const url = await this.http.getShortUrl("p_gongyi");
-    if (!url) {
-      return;
-    }
-    window.open(url);
-    if (await this.message.newTabConfirm()) {
-      await this.getXinghaos();
-    }
   }
 
   clikcXinghaoGongyi(i: number, j: number, refresh?: boolean) {
