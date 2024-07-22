@@ -210,10 +210,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!projectKailiao) {
       return false;
     }
-    if (typeof this.xinghao?.是否需要激光开料 === "boolean") {
-      return this.xinghao.是否需要激光开料;
+    const xinghao = this.xinghao;
+    if (typeof xinghao?.是否需要激光开料 === "boolean") {
+      return xinghao.是否需要激光开料;
+    } else {
+      return projectKailiao;
     }
-    return false;
   }
 
   async getXinghaos() {
