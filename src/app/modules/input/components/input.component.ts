@@ -500,6 +500,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.hidden) {
       this.style.display = "none";
     }
+    const dataset = this.elRef.nativeElement.dataset;
+    dataset.type = type;
+    dataset.label = info.label;
     let validateValue = !info.noInitialValidate;
     changes.forEachItem((item) => {
       if (item.key === "forceValidateNum") {

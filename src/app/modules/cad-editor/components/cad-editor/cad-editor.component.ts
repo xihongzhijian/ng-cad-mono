@@ -1,7 +1,18 @@
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {CdkDrag, CdkDragEnd, CdkDragMove, CdkDragStart} from "@angular/cdk/drag-drop";
 import {AsyncPipe} from "@angular/common";
-import {AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  forwardRef,
+  HostListener,
+  Input,
+  OnDestroy,
+  QueryList,
+  ViewChild,
+  ViewChildren
+} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
@@ -9,10 +20,13 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
 import {openCadDimensionForm} from "@app/cad/utils";
+import {InputComponent} from "@app/modules/input/components/input.component";
+import {InputInfo} from "@app/modules/input/components/input.types";
 import {OpenCadOptions} from "@app/services/app-status.types";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
+import {queryString} from "@lucilor/utils";
 import {ContextMenu} from "@mixins/context-menu.mixin";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadConsoleComponent} from "@modules/cad-console/components/cad-console/cad-console.component";
@@ -21,7 +35,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadStatusAssemble, CadStatusSplit} from "@services/cad-status";
-import {debounce} from "lodash";
+import {debounce, throttle} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, map, startWith, take} from "rxjs";
 import {SpinnerComponent} from "../../../spinner/components/spinner/spinner.component";
@@ -79,6 +93,7 @@ import {SuanliaogongshiComponent} from "../suanliaogongshi/suanliaogongshi.compo
     CadPointsComponent,
     CadSplitComponent,
     CdkDrag,
+    forwardRef(() => InputComponent),
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
@@ -406,10 +421,6 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     this.config.setConfig("selectMode", selectMode);
   }
 
-  toggleEntityDraggable() {
-    this.config.setConfig("entityDraggable", !this.config.getConfig("entityDraggable"));
-  }
-
   onResizeMenuStart(_event: CdkDragStart<DragData>, key: Dragkey) {
     if (key === "leftMenuWidth") {
       this.dragDataLeft.width = this.leftMenuWidth$.value;
@@ -464,6 +475,55 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
       left += 30;
     }
     return left;
+  }
+
+  menuSearch: InputInfo = {
+    type: "string",
+    label: "搜索",
+    value: "",
+    autoFocus: true,
+    clearable: true,
+    onInput: throttle((val) => {
+      this.searchMenu(val);
+    }, 500)
+  };
+  menuSearchShown = false;
+  searchMenu(val: string) {
+    if (!val) {
+      return;
+    }
+    this._scrollbars.forEach((scrollbar) => {
+      const inputs = scrollbar.viewport.nativeElement.querySelectorAll("app-input");
+      const input = Array.from(inputs).find((el) => {
+        if (el instanceof HTMLElement && queryString(val, el.dataset.label || "")) {
+          return true;
+        }
+        return false;
+      });
+      if (input) {
+        scrollbar.scrollToElement(input);
+      }
+    });
+  }
+  showMenuSearch() {
+    this.menuSearchShown = true;
+    this.menuSearch.value = "";
+  }
+  hideMenuSearch() {
+    this.menuSearchShown = false;
+  }
+  onMenuSearchPointerMove(event: PointerEvent) {
+    const {target: el, clientX, clientY} = event;
+    if (!(el instanceof HTMLElement)) {
+      return;
+    }
+    const rect = el.querySelector("app-input")?.getBoundingClientRect();
+    if (!rect) {
+      return;
+    }
+    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+      this.hideMenuSearch();
+    }
   }
 }
 
