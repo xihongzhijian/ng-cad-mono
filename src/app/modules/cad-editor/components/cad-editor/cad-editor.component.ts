@@ -144,8 +144,7 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   @ViewChild(MatTabGroup) infoTabs!: MatTabGroup;
   @ViewChild("suanliaogongshi", {read: ElementRef}) suanliaogongshi?: ElementRef<HTMLElement>;
   @ViewChild("suanliaoTables", {read: ElementRef}) suanliaoTables?: ElementRef<HTMLElement>;
-  @ViewChildren(NgScrollbar)
-  private _scrollbars!: QueryList<NgScrollbar>;
+  @ViewChildren(NgScrollbar) private _scrollbars!: QueryList<NgScrollbar>;
   private get _scrollbar() {
     const scrollbar = this._scrollbars.get(this.tabIndex);
     if (!scrollbar) {
@@ -159,7 +158,8 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     private config: AppConfigService,
     private status: AppStatusService,
     private cadConsole: CadConsoleService,
-    private message: MessageService
+    private message: MessageService,
+    private el: ElementRef<HTMLElement>
   ) {
     super();
     this.status.fetchInputOptions();
@@ -353,18 +353,32 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     this.toggleSuanliaoTables();
   }
 
+  async validate() {
+    const {validator} = this.params || {};
+    const data = this.status.cad.data;
+    if (validator) {
+      const errors = Object.keys(validator(data) || {}).join("\n");
+      if (errors) {
+        await this.message.error(errors);
+        return false;
+      }
+    }
+    const matErrors = this.el.nativeElement.querySelectorAll("mat-error");
+    if (matErrors.length > 0) {
+      await this.message.error("输入有误");
+      return false;
+    }
+    return true;
+  }
+
   async save() {
-    const {extraData, validator} = this.params || {};
+    const {extraData} = this.params || {};
     const data = this.status.cad.data;
     if (extraData) {
       Object.assign(data, extraData);
     }
-    if (validator) {
-      const errors = Object.keys(validator(data) || {}).join("\n");
-      if (errors) {
-        this.message.error(errors);
-        return;
-      }
+    if (!(await this.validate())) {
+      return;
     }
     await this.status.saveCad(this.spinnerId);
   }
