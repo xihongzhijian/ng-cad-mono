@@ -92,6 +92,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
         "变形方式",
         "板材纹理方向",
         "激光开料是否翻转",
+        "激光开料打标",
         "开料排版方式",
         "默认开料板材",
         "默认开料材料",
