@@ -221,6 +221,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
               }
             }
           }
+          this.updateIntersectionInputs();
         } else if (key === this.bjxIntersectionKey) {
           if (!data.info.激光开料标记线) {
             data.info.激光开料标记线 = [];
@@ -240,6 +241,9 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
           }
         }
       }
+    });
+    this.subscribe(this.status.openCad$, () => {
+      this.updateIntersectionInputs();
     });
     const cad = this.status.cad;
     cad.on("entityclick", this._onEntityClick);
@@ -371,20 +375,19 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     for (const key of intersectionKeys) {
       const arr = this.data[key];
       inputs[key] = [];
-      // if (key === ) {
-
-      // }
       for (const [i, v] of arr.entries()) {
         const arr2: InputInfo[] = [
           {
             type: "string",
             label: "",
             value: v.length ? "已指定" : "未指定",
+            readonly: true,
             suffixIcons: [
               {name: "linear_scale", isDefault: true, color: this.getPointColor(i, key), onClick: () => this.selectPoint(i, key)},
               {name: "add_circle", color: "primary", onClick: () => this.addIntersectionValue(key, i + 1)},
               {name: "remove_circle", color: "primary", onClick: () => this.removeIntersectionValue(key, i)}
-            ]
+            ],
+            style: {flex: "2 2 0", width: 0}
           }
         ];
         if (key === "zhidingweizhipaokeng") {
@@ -409,7 +412,8 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
                 return {请输入不小于0的数字: true};
               }
               return null;
-            }
+            },
+            style: {flex: "1 1 0", width: 0}
           });
         }
         inputs[key].push(arr2);

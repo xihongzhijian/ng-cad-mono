@@ -92,6 +92,9 @@ export const updateMenjiaoData = (data: 算料数据) => {
       if (!data[key1][key2]) {
         data[key1][key2] = {};
       }
+      if (!isTypeOf(data[key1].配合框CAD, "object")) {
+        data[key1].配合框CAD = {};
+      }
       for (const name of 配合框组合[产品分类] || []) {
         if (!isTypeOf(data[key1].配合框CAD[name], "object")) {
           data[key1].配合框CAD[name] = {};
@@ -101,6 +104,9 @@ export const updateMenjiaoData = (data: 算料数据) => {
         if (!(配合框组合[产品分类] || []).includes(name)) {
           delete data[key1].配合框CAD[name];
         }
+      }
+      if (!isTypeOf(data[key1].企料CAD, "object")) {
+        data[key1].企料CAD = {};
       }
       for (const name of 企料组合[产品分类] || []) {
         if (!isTypeOf(data[key1].企料CAD[name], "object")) {
