@@ -46,7 +46,14 @@ import {cloneDeep, debounce, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {openMenjiaoDialog} from "../menjiao-dialog/menjiao-dialog.component";
 import {MenjiaoInput} from "../menjiao-dialog/menjiao-dialog.types";
-import {copySuanliaoData, getMenfengInputs, getMenjiaoOptionInputInfo, updateMenjiaoData} from "../menjiao-dialog/menjiao-dialog.utils";
+import {
+  copySuanliaoData,
+  getGroupStyle,
+  getInfoStyle,
+  getMenfengInputs,
+  getMenjiaoOptionInputInfo,
+  updateMenjiaoData
+} from "../menjiao-dialog/menjiao-dialog.utils";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
 import {
@@ -366,31 +373,13 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const mingziOld = data.mingzi;
     const names = this.xinghaos.map((xinghao) => xinghao.mingzi);
     let refreshOptions = false;
-    const getOptionInput = (key1: string, key2: string, multiple?: boolean, others?: Partial<InputInfo>) => {
-      const info: InputInfoSelect = {
-        type: "select",
-        label: key1,
-        multiple,
-        validators: Validators.required,
-        options: this.getOptions(key1),
-        optionsDialog: {
-          optionKey: key1,
-          useLocalOptions: true,
-          openInNewTab: true,
-          onChange: () => {
-            refreshOptions = true;
-          }
-        }
-      };
-      if (multiple && info.optionsDialog) {
-        info.value = splitOptions((data2 as any)[key2]);
-        info.optionsDialog.onChange = (val) => {
-          (data2 as any)[key2] = joinOptions(val.options, "*");
+    const getOptionInput = (key: string, label: string, multiple?: boolean, options?: {hidden?: boolean}) => {
+      const info = this.getOptionInput(data2, key, label, multiple, options);
+      if (info.optionsDialog) {
+        info.optionsDialog.onChange = () => {
+          refreshOptions = true;
         };
-      } else {
-        info.model = {data: data2, key: key2};
       }
-      Object.assign(info, others);
       return info;
     };
     const form: InputInfo[] = [
@@ -483,7 +472,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   async copyXinghao(xinghao: XinghaoData) {
     const fromName = xinghao.mingzi;
     const namesAll = this.xinghaos.map((v) => v.mingzi);
-    const data = {num: 1, names: [] as string[]};
+    const data = {num: 1, names: [] as string[], menchuang: xinghao.menchuang, gongyi: xinghao.gongyi};
     const getNameInputs = () => {
       const result: InputInfo[] = [];
       data.names = [];
@@ -545,6 +534,15 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           namesGroupInput.infos = getNameInputs();
         }
       },
+      {
+        type: "group",
+        label: "",
+        infos: [
+          this.getOptionInput(data, "门窗", "menchuang", true, {style: getInfoStyle(2)}),
+          this.getOptionInput(data, "工艺", "gongyi", true, {style: getInfoStyle(2)})
+        ],
+        groupStyle: getGroupStyle()
+      },
       namesGroupInput
     ];
     const result = await this.message.form(form, {}, {width: "100%", height: "100%", maxWidth: "900px"});
@@ -552,7 +550,11 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       if (data.num > 1 && !(await this.message.confirm(`确定复制吗？`))) {
         return;
       }
-      await this.http.getData<boolean>("shuju/api/copyXinghao", {fromName, toNames: data.names}, {spinner: false});
+      await this.http.getData<boolean>(
+        "shuju/api/copyXinghao",
+        {fromName, toNames: data.names, menchuang: data.menchuang, gongyi: data.gongyi},
+        {spinner: false}
+      );
       await this.getXinghaos();
     }
   }
@@ -752,6 +754,30 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
         option.disabled = this.defaultFenleis.includes(option.value);
       }
     });
+  }
+  getOptionInput(data: any, key1: string, key2: string, multiple?: boolean, others?: Partial<InputInfo>) {
+    const info: InputInfoSelect = {
+      type: "select",
+      label: key1,
+      multiple,
+      validators: Validators.required,
+      options: this.getOptions(key1),
+      optionsDialog: {
+        optionKey: key1,
+        useLocalOptions: true,
+        openInNewTab: true
+      }
+    };
+    if (multiple && info.optionsDialog) {
+      info.value = splitOptions(data[key2]);
+      info.optionsDialog.onChange = (val) => {
+        data[key2] = joinOptions(val.options, "*");
+      };
+    } else {
+      info.model = {data, key: key2};
+    }
+    Object.assign(info, others);
+    return info;
   }
 
   openTab(name: string) {
