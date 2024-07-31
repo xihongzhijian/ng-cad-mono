@@ -10,6 +10,11 @@ declare global {
     batchCheck(data: ObjectOf<any>[]): ObjectOf<string[]>;
   }
 }
+declare module "csstype" {
+  interface Properties {
+    [key: string]: any;
+  }
+}
 export const remoteHost = "https://www.let888.cn" as const;
 export const remoteFilePath = `${remoteHost}/filepath`;
 
@@ -165,15 +170,15 @@ export interface XiaodaohangColumn {
 
 export const filePathUrl = `${origin}/filepath`;
 
-export const getFilepathUrl = (url: string | undefined | null, opts?: {prefix?: string; suffix?: string}) => {
+export const getFilepathUrl = (url: string | undefined | null, opts?: {prefix?: string; suffix?: string; remote?: boolean}) => {
   if (!url) {
     return "";
   }
   if (url.startsWith("http")) {
     return url;
   }
-  const {prefix, suffix} = opts || {};
-  let result = `${filePathUrl}/${url}`;
+  const {prefix, suffix, remote} = opts || {};
+  let result = `${remote ? remoteFilePath : filePathUrl}/${url}`;
   if (prefix || suffix) {
     const strs = url.split("/");
     if (strs.length > 0) {
@@ -276,6 +281,33 @@ export const getValueString = (value: any, separator = ",", separatorKv = ":") =
     return getBooleanStr(value);
   } else {
     return String(value);
+  }
+};
+
+export interface KeyEventItem {
+  key: string;
+  ctrl?: boolean;
+  shift?: boolean;
+  alt?: boolean;
+  action: () => void;
+}
+export const onKeyEvent = (event: KeyboardEvent, items: KeyEventItem[]) => {
+  for (const item of items) {
+    const {key, ctrl, shift, alt, action: callback} = item;
+    if (ctrl && !event.ctrlKey) {
+      continue;
+    }
+    if (shift && !event.shiftKey) {
+      continue;
+    }
+    if (alt && !event.altKey) {
+      continue;
+    }
+    if (event.key.toLowerCase() === key.toLowerCase()) {
+      callback();
+      event.preventDefault();
+      return;
+    }
   }
 };
 
