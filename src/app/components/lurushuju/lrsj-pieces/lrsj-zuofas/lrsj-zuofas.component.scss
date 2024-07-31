@@ -1,0 +1,46 @@
+@import "../lrsj-xinghaos/lrsj-xinghaos.component.scss";
+
+.menchaungs {
+  margin-bottom: 10px;
+}
+
+.产品分类 {
+  flex-direction: row;
+  align-items: flex-start;
+  cursor: unset;
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .title {
+      width: 142px;
+      font-size: 28px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      height: 100%;
+      white-space: normal;
+    }
+  }
+}
+
+.工艺做法 {
+  flex: 1 1 0;
+  --item-width: 200px;
+  --item-image-height: 200px;
+}
+
+.fenlei-list {
+  .zuofa-list {
+    width: 100%;
+    padding-left: 40px;
+    box-sizing: border-box;
+  }
+  .name {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

@@ -1,9 +1,9 @@
 import {getArrayString} from "@app/app.common";
+import {TableRenderInfo} from "@app/modules/table/components/table/table.types";
 import {ObjectOf} from "@lucilor/utils";
-import {TableRenderInfo} from "@modules/table/components/table/table.types";
-import {MenjiaoData, ShuruTableData, XuanxiangTableData} from "./lurushuju-index.types";
+import {MenjiaoData, ShuruTableData, XuanxiangTableData} from "./lrsj-zuofa.types";
 
-export const getXuanxiangTable = (): TableRenderInfo<XuanxiangTableData> => {
+export const getXuanxiangTable = (data: XuanxiangTableData[]): TableRenderInfo<XuanxiangTableData> => {
   return {
     title: "选项数据",
     noCheckBox: true,
@@ -25,12 +25,12 @@ export const getXuanxiangTable = (): TableRenderInfo<XuanxiangTableData> => {
         ]
       }
     ],
-    data: [],
+    data,
     toolbarButtons: {extra: [], inlineTitle: true}
   };
 };
 
-export const getShuruTable = (): TableRenderInfo<ShuruTableData> => {
+export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTableData> => {
   return {
     title: "输入数据",
     noCheckBox: true,
@@ -48,12 +48,12 @@ export const getShuruTable = (): TableRenderInfo<ShuruTableData> => {
         ]
       }
     ],
-    data: [],
+    data,
     toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
   };
 };
 
-export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
+export const getMenjiaoTable = (data: MenjiaoData[]): TableRenderInfo<MenjiaoData> => {
   return {
     noCheckBox: true,
     columns: [
@@ -105,7 +105,7 @@ export const getMenjiaoTable = (): TableRenderInfo<MenjiaoData> => {
         ]
       }
     ],
-    data: [],
+    data,
     toolbarButtons: {
       extra: [
         {event: "添加", color: "primary"},

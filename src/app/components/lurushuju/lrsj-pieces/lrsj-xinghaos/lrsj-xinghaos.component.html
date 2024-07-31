@@ -1,0 +1,83 @@
+<div class="lrsj-left">
+  <div class="toolbar">
+    <button mat-stroked-button color="primary" (click)="addXinghaoMenchaung()">添加门窗</button>
+  </div>
+  <ng-scrollbar>
+    <div class="menchaungs">
+      @for (menchuang of xinghaoMenchuangs.items(); track i; let i = $index) {
+        @if (menchuang.gongyis) {
+          <div class="item" [class.active]="xinghaoMenchuangs.index() === i">
+            <div class="menchuang-header flex-column">
+              <div class="name">
+                <span>{{ menchuang.mingzi }}</span>
+                @if (!production) {
+                  <span>&nbsp;({{ menchuang.gongyis.count() }})</span>
+                }
+              </div>
+              @if (editMode()) {
+                <div class="toolbar compact">
+                  <button mat-button color="primary" (click)="editXinghaoMenchaung(i)">编辑</button>
+                  <button mat-button color="primary" (click)="removeXinghaoMenchaung(i)">删除</button>
+                  <button mat-button color="primary" (click)="addXinghaoGongyi(i)">添加工艺</button>
+                </div>
+              }
+            </div>
+            <div class="gongyis">
+              @for (gongyi of menchuang.gongyis.items(); track j; let j = $index) {
+                @if (gongyi.xinghaos) {
+                  <div class="item" [class.active]="xinghaoMenchuangs.index() === i && menchuang.gongyis.index() === j">
+                    <div class="gongyi-header flex-row">
+                      <div class="name flex-110 link" (click)="clickXinghaoGongyi(i, j)">
+                        <span>{{ gongyi.mingzi }}</span>
+                        @if (!production) {
+                          <span>&nbsp;({{ gongyi.xinghaos.count() }})</span>
+                        }
+                      </div>
+                      @if (xinghaoFilterStr() && gongyi.xinghaos.count() > 0) {
+                        <div class="error">搜索到{{ gongyi.xinghaos.count() }}个型号</div>
+                      }
+                      @if (editMode()) {
+                        <div class="toolbar compact">
+                          <button mat-button color="primary" (click)="editXinghaoGongyi(i, j)">编辑</button>
+                          <button mat-button color="primary" (click)="removeXinghaoGongyi(i, j)">删除</button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </ng-scrollbar>
+</div>
+<mat-divider vertical></mat-divider>
+<div class="lrsj-right flex-row">
+  <div class="item flex-110">
+    <div class="toolbar">
+      <button mat-raised-button color="primary" (click)="addXinghao()">新建型号</button>
+      <app-input [info]="filterInputInfo"></app-input>
+    </div>
+    <ng-scrollbar style="width: 100%">
+      <div class="xinghaos items no-items-per-row">
+        @for (xinghao of xinghaos(); track $index) {
+          @if (!xinghao.hidden) {
+            <div class="item">
+              <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="enterXinghao(xinghao.mingzi)"></app-image>
+              <div class="name" [matTooltip]="xinghao.mingzi">{{ xinghao.mingzi }}</div>
+              @if (editMode()) {
+                <div class="toolbar center">
+                  <button mat-button color="primary" (click)="editXinghao(xinghao)">编辑</button>
+                  <button mat-button color="primary" (click)="copyXinghao(xinghao)">复制</button>
+                  <button mat-button color="primary" (click)="removeXinghao(xinghao)">删除</button>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </ng-scrollbar>
+  </div>
+</div>

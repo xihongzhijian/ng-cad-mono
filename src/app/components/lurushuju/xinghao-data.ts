@@ -4,7 +4,7 @@ import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {HoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {isArray, uniq} from "lodash";
-import {OptionsAll} from "./lurushuju-index/lurushuju-index.types";
+import {OptionsAll} from "./services/lrsj-status.types";
 
 export const getXinghao = (raw: XinghaoRaw | null | undefined) => {
   const result: Xinghao = {名字: "", 产品分类: {}, 显示产品分类: [], ...raw};
@@ -35,7 +35,7 @@ export const updateXinghaoFenleis = (
     if (!Array.isArray(xinghao.产品分类[fenlei])) {
       xinghao.产品分类[fenlei] = [];
     }
-    sortGongyis(xinghao.产品分类[fenlei]);
+    sortZuofas(xinghao.产品分类[fenlei]);
     for (const gongyi of xinghao.产品分类[fenlei]) {
       if (!Array.isArray(gongyi.算料数据)) {
         gongyi.算料数据 = [];
@@ -47,7 +47,7 @@ export const updateXinghaoFenleis = (
   }
 };
 
-export const getGongyi = (raw: 工艺做法 | null | undefined, 选项数据选项: OptionsAll) => {
+export const getZuofa = (raw: 工艺做法 | null | undefined, 选项数据选项: OptionsAll) => {
   const result: 工艺做法 = {
     tableId: -1,
     名字: "",
@@ -73,8 +73,8 @@ export const getGongyi = (raw: 工艺做法 | null | undefined, 选项数据选�
   return result;
 };
 
-export const sortGongyis = (gongyis: 工艺做法[]) => {
-  return gongyis.sort((a, b) => (a.排序 || 0) - (b.排序 || 0));
+export const sortZuofas = (zuofas: 工艺做法[]) => {
+  return zuofas.sort((a, b) => (a.排序 || 0) - (b.排序 || 0));
 };
 
 export const get算料数据 = (raw?: Partial<算料数据> | null) => {
