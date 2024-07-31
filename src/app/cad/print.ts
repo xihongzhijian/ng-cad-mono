@@ -8,6 +8,7 @@ import {
   CadEntities,
   CadEntity,
   CadImage,
+  CadLeader,
   CadLine,
   CadLineLike,
   CadMtext,
@@ -550,7 +551,7 @@ export const configCadDataForPrint = async (
     } else if (e instanceof CadMtext) {
       configMText(e);
     }
-    if (colorNumber === 0x808080 || e.layer === "不显示") {
+    if (colorNumber === 0x808080 || ["开料额外信息", "不显示"].includes(e.layer)) {
       e.visible = false;
     } else if (e.layer === "分体") {
       if (e instanceof CadCircle) {
@@ -735,6 +736,26 @@ const getUnfoldCadViewers = async (
     const dy = imgRect.y - cadRect.y;
     const scale = Math.min(1, imgRect.width / cadRect.width, imgRect.height / cadRect.height);
     cad.transform({translate: [dx, dy], scale, origin: [cadRect.x, cadRect.y]}, true);
+
+    const startLines = [];
+    cad.entities.forEach((e) => {
+      if (e instanceof CadLineLike && e.info.startLine) {
+        startLines.push(e);
+        const leader = new CadLeader();
+        leader.setColor("red");
+        const to = e.start.clone().add(-1, 1);
+        const from = to.clone().add(-10, 10);
+        leader.vertices = [to, from];
+        unfoldCad.entities.add(leader);
+        const text = new CadMtext();
+        text.insert.copy(from);
+        text.setColor("red");
+        text.text = "刨坑起点";
+        text.fontStyle.size = 8;
+        text.anchor.set(0.5, 1);
+        unfoldCad.entities.add(text);
+      }
+    });
   }
   document.body.removeChild(barcodeEl);
 

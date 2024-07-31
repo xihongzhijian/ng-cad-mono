@@ -130,6 +130,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   _step2Fetched = false;
   _step3Fetched = false;
   cadItemType!: CadItemContext;
+  production = environment.production;
 
   collection: CadCollection = "cad";
   mokuaiInputInfos: MokuaiInputInfos[] = [];
@@ -141,17 +142,26 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
   lingsanTypesDataSource = new MatTreeNestedDataSource<TypesMapNode>();
   lingsanTypesTreeControl = new NestedTreeControl<TypesMapNode>((node) => node.children);
   lingsanTypesEditMode = false;
-  lingsanTypesShowCount = !environment.production;
-  lingsanTypesHideEmpty = true;
+  lingsanTypesShowCount = true;
   hasChild = (_: number, node: TypesMapNode) => !!node.children && node.children.length > 0;
   searchLingsanValueKey = "zixuanpeijian-searchLingsanValue";
-  searchLingsanValue = session.load(this.searchLingsanValueKey) || "";
+  searchLingsanValue = session.load<string>(this.searchLingsanValueKey) || "";
   lingsanCadsSearchInput: InputInfo = {
     type: "string",
     label: "搜索",
     clearable: true,
     model: {data: this, key: "searchLingsanValue"},
     onInput: debounce(this.filterLingsanItems.bind(this), 200)
+  };
+  searchLingsanTypeKey = "zixuanpeijian-searchLingsanType";
+  searchLingsanType = session.load<string>(this.searchLingsanTypeKey) || "";
+  lingsanTypesSearchInput: InputInfo = {
+    type: "string",
+    label: "搜索",
+    clearable: true,
+    model: {data: this, key: "searchLingsanType"},
+    onInput: debounce(this.filterLingsanTypes.bind(this), 200),
+    style: {width: "100px"}
   };
   lingsanCadViewers: CadViewer[] = [];
   imgCadEmpty = imgCadEmpty;
@@ -1082,6 +1092,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
 
   filterLingsanItems() {
     const needle = this.searchLingsanValue;
+    this.lingsanTypesHideEmpty = !!needle;
     const counts: ObjectOf<number> = {};
     for (const type in this.lingsanCads) {
       let count = 0;
@@ -1129,6 +1140,20 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     } else if (firstVisibleNode) {
       this.setLingsanCadType(firstVisibleNode.name);
     }
+  }
+  filterLingsanTypes() {
+    const needle = this.searchLingsanType;
+    const search = (nodes: TypesMapNode[]) => {
+      for (const node of nodes) {
+        if (node.children.length > 0) {
+          search(node.children);
+          node.hidden2 = node.children.every((v) => v.hidden2);
+        } else {
+          node.hidden2 = !queryStringList(needle, [node.name, node.label || ""]);
+        }
+      }
+    };
+    search(this.lingsanTypesDataSource.data);
   }
 
   returnZero() {
@@ -1200,15 +1225,18 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     }
     return null;
   }
-  async isVirtualNode(node: TypesMapNode) {
-    if (node.id <= 0) {
+  isVirtualNode(node: TypesMapNode) {
+    return node.id <= 0;
+  }
+  async isVirtualNode2(node: TypesMapNode) {
+    if (this.isVirtualNode(node)) {
       await this.message.error(`【${node.name}】是自动生成的，不能进行操作`);
       return true;
     }
     return false;
   }
   async addLingsanCadType(node?: TypesMapNode) {
-    if (node && (await this.isVirtualNode(node))) {
+    if (node && (await this.isVirtualNode2(node))) {
       return;
     }
     const level = node ? node.level : 0;
@@ -1231,7 +1259,7 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this.step3Refresh(true, false);
   }
   async editLingsanCadType(node: TypesMapNode) {
-    if (await this.isVirtualNode(node)) {
+    if (await this.isVirtualNode2(node)) {
       return;
     }
     const table = this.lingsanTypesTables[node.level];
@@ -1253,7 +1281,11 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     this.step3Refresh(true, false);
   }
   async removeLingsanCadType(node: TypesMapNode) {
-    if (await this.isVirtualNode(node)) {
+    if (await this.isVirtualNode2(node)) {
+      return;
+    }
+    if (node.children.length > 0) {
+      await this.message.error(`【${node.name}】下面有子节点，不能删除`);
       return;
     }
     if (!(await this.message.confirm(`是否确定删除【${node.name}】?`))) {

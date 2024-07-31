@@ -47,25 +47,16 @@
       <div class="label">{{ intersectionKeysTranslate[key] }}</div>
       @if (data[key].length === 0) {
         <div>
-          <button mat-icon-button color="primary" (click)="arrayAdd(data[key], [])">
+          <button mat-icon-button color="primary" (click)="addIntersectionValue(key)">
             <mat-icon>add_circle</mat-icon>
           </button>
         </div>
       }
-      @for (v of data[key]; track $index; let j = $index) {
-        <div>
-          <mat-form-field>
-            <input type="text" matInput [value]="v.length ? '已指定' : '未指定'" readonly />
-            <button mat-icon-button matSuffix [color]="getPointColor(j, key)" (click)="selectPoint(j, key)">
-              <mat-icon>linear_scale</mat-icon>
-            </button>
-            <button mat-icon-button matSuffix color="primary" (click)="arrayAdd(data[key], [], j + 1)">
-              <mat-icon>add_circle</mat-icon>
-            </button>
-            <button mat-icon-button matSuffix color="primary" (click)="arrayRemove(data[key], j)">
-              <mat-icon>remove_circle</mat-icon>
-            </button>
-          </mat-form-field>
+      @for (v of intersectionInputs[key]; track $index) {
+        <div class="toolbar">
+          @for (v2 of v; track $index) {
+            <app-input [info]="v2"></app-input>
+          }
         </div>
       }
     </div>

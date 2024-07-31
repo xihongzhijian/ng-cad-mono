@@ -523,6 +523,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.style.display = "none";
     }
     this.style["--input-text-align"] = info.inputTextAlign || "left";
+    const dataset = this.elRef.nativeElement.dataset;
+    dataset.type = type;
+    dataset.label = info.label;
     let validateValue = !info.noInitialValidate;
     changes.forEachItem((item) => {
       if (item.key === "forceValidateNum") {

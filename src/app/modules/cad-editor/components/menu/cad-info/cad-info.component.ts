@@ -42,12 +42,12 @@ import {getCadInfoInputs} from "./cad-info.utils";
   imports: [
     FormsModule,
     forwardRef(() => InputComponent),
-    MatFormFieldModule,
-    MatInputModule,
     MatButtonModule,
+    MatFormFieldModule,
     MatIconModule,
-    MatSelectModule,
-    MatOptionModule
+    MatInputModule,
+    MatOptionModule,
+    MatSelectModule
   ]
 })
 export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnDestroy {
@@ -67,6 +67,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   infoGroup1: InputInfo[];
   infoGroup2: InputInfo[];
   infoGroup3: InputInfo[];
+  intersectionInputs: Partial<Record<IntersectionKey, InputInfo[][]>> = {};
   bjxTypes = 激光开料标记线类型;
   bjxIntersectionKey = "激光开料标记线";
   emptyBjxItem: NonNullable<CadData["info"]["激光开料标记线"]>[0] = {type: "短直线", ids: []};
@@ -91,6 +92,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
         "变形方式",
         "板材纹理方向",
         "激光开料是否翻转",
+        "激光开料打标",
         "开料排版方式",
         "默认开料板材",
         "默认开料材料",
@@ -219,6 +221,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
               }
             }
           }
+          this.updateIntersectionInputs();
         } else if (key === this.bjxIntersectionKey) {
           if (!data.info.激光开料标记线) {
             data.info.激光开料标记线 = [];
@@ -238,6 +241,9 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
           }
         }
       }
+    });
+    this.subscribe(this.status.openCad$, () => {
+      this.updateIntersectionInputs();
     });
     const cad = this.status.cad;
     cad.on("entityclick", this._onEntityClick);
@@ -323,7 +329,6 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     }
     return "primary";
   }
-
   getJointPointItemColor(i: number) {
     const cadStatus = this.status.cadStatus;
     if (cadStatus instanceof CadStatusSelectJointpoint && i === cadStatus.index) {
@@ -331,11 +336,9 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     }
     return "primary";
   }
-
   addBaseLine(data: CadData, index: number) {
     data.baseLines.splice(index + 1, 0, new CadBaseLine());
   }
-
   async removeBaseLine(data: CadData, index: number) {
     if (await this.message.confirm("是否确定删除？")) {
       const arr = data.baseLines;
@@ -346,15 +349,12 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       }
     }
   }
-
   selectBaseLine(i: number) {
     this.status.toggleCadStatus(new CadStatusSelectBaseline(i));
   }
-
   addJointPoint(data: CadData, index: number) {
     data.jointPoints.splice(index + 1, 0, new CadJointPoint());
   }
-
   async removeJointPoint(data: CadData, index: number) {
     if (await this.message.confirm("是否确定删除？")) {
       const arr = data.jointPoints;
@@ -365,9 +365,61 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       }
     }
   }
-
   selectJointPoint(i: number) {
     this.status.toggleCadStatus(new CadStatusSelectJointpoint(i));
+  }
+
+  updateIntersectionInputs() {
+    const inputs: typeof this.intersectionInputs = {};
+    const data = this.data;
+    for (const key of intersectionKeys) {
+      const arr = this.data[key];
+      inputs[key] = [];
+      for (const [i, v] of arr.entries()) {
+        const arr2: InputInfo[] = [
+          {
+            type: "string",
+            label: "",
+            value: v.length ? "已指定" : "未指定",
+            readonly: true,
+            suffixIcons: [
+              {name: "linear_scale", isDefault: true, color: this.getPointColor(i, key), onClick: () => this.selectPoint(i, key)},
+              {name: "add_circle", color: "primary", onClick: () => this.addIntersectionValue(key, i + 1)},
+              {name: "remove_circle", color: "primary", onClick: () => this.removeIntersectionValue(key, i)}
+            ],
+            style: {flex: "2 2 0", width: 0}
+          }
+        ];
+        if (key === "zhidingweizhipaokeng") {
+          if (!Array.isArray(data.info.刨坑深度)) {
+            data.info.刨坑深度 = [];
+          }
+          if (typeof data.info.刨坑深度[i] !== "string") {
+            data.info.刨坑深度[i] = "";
+          }
+          arr2.push({
+            type: "string",
+            label: "刨坑深度",
+            model: {data: data.info.刨坑深度, key: i},
+            options: ["默认"],
+            validators: () => {
+              const val = data.info.刨坑深度[i];
+              if (val === "默认") {
+                return null;
+              }
+              const num = Number(val);
+              if (isNaN(num) || num < 0) {
+                return {请输入不小于0的数字: true};
+              }
+              return null;
+            },
+            style: {flex: "1 1 0", width: 0}
+          });
+        }
+        inputs[key].push(arr2);
+      }
+    }
+    this.intersectionInputs = inputs;
   }
 
   offset(value: string) {
@@ -429,6 +481,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   selectPoint(i: number, key: IntersectionKey) {
     this.cadStatusIntersectionInfo = key;
     this.status.toggleCadStatus(new CadStatusIntersection(key, i));
+    this.updateIntersectionInputs();
   }
 
   selectBjxPoint(i: number) {
@@ -460,5 +513,25 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     if (result) {
       data.info.开料孔位配置 = result;
     }
+  }
+
+  addIntersectionValue(key: IntersectionKey, i?: number) {
+    const data = this.data;
+    this.arrayAdd(data[key], [], i);
+    if (key === "zhidingweizhipaokeng") {
+      if (!Array.isArray(data.info.刨坑深度)) {
+        data.info.刨坑深度 = [];
+      }
+      this.arrayAdd(data.info.刨坑深度, "", i);
+    }
+    this.updateIntersectionInputs();
+  }
+  removeIntersectionValue(key: IntersectionKey, i: number) {
+    const data = this.data;
+    this.arrayRemove(data[key], i);
+    if (key === "zhidingweizhipaokeng") {
+      this.arrayRemove(data.info.刨坑深度, i);
+    }
+    this.updateIntersectionInputs();
   }
 }

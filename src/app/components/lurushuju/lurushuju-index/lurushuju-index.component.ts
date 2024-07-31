@@ -46,7 +46,14 @@ import {cloneDeep, debounce, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {openMenjiaoDialog} from "../menjiao-dialog/menjiao-dialog.component";
 import {MenjiaoInput} from "../menjiao-dialog/menjiao-dialog.types";
-import {copySuanliaoData, getMenfengInputs, getMenjiaoOptionInputInfo, updateMenjiaoData} from "../menjiao-dialog/menjiao-dialog.utils";
+import {
+  copySuanliaoData,
+  getGroupStyle,
+  getInfoStyle,
+  getMenfengInputs,
+  getMenjiaoOptionInputInfo,
+  updateMenjiaoData
+} from "../menjiao-dialog/menjiao-dialog.utils";
 import {openSelectGongyiDialog} from "../select-gongyi-dialog/select-gongyi-dialog.component";
 import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
 import {
@@ -210,10 +217,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!projectKailiao) {
       return false;
     }
-    if (typeof this.xinghao?.是否需要激光开料 === "boolean") {
-      return this.xinghao.是否需要激光开料;
+    const xinghao = this.xinghao;
+    if (typeof xinghao?.是否需要激光开料 === "boolean") {
+      return xinghao.是否需要激光开料;
+    } else {
+      return projectKailiao;
     }
-    return false;
   }
 
   async getXinghaos() {
@@ -325,7 +334,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (xinghao) {
       result.mingziOld = result.data.mingzi;
       await this.editXinghaoByResult(result, xinghao);
-      this.getXinghaos();
+      await this.getXinghaos();
+      this.enterXinghao(xinghao);
     }
   }
 
@@ -350,6 +360,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!data.gongyi && gongyi) {
       data.gongyi = gongyi.mingzi;
     }
+    const isAdd = !xinghao;
 
     const data2: XinghaoRaw = {
       名字: data.mingzi,
@@ -362,29 +373,12 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const mingziOld = data.mingzi;
     const names = this.xinghaos.map((xinghao) => xinghao.mingzi);
     let refreshOptions = false;
-    const getOptionInput = (key1: string, key2: string, multiple?: boolean) => {
-      const info: InputInfoSelect = {
-        type: "select",
-        label: key1,
-        multiple,
-        validators: Validators.required,
-        options: this.getOptions(key1),
-        optionsDialog: {
-          optionKey: key1,
-          useLocalOptions: true,
-          openInNewTab: true,
-          onChange: () => {
-            refreshOptions = true;
-          }
-        }
-      };
-      if (multiple && info.optionsDialog) {
-        info.value = splitOptions((data2 as any)[key2]);
-        info.optionsDialog.onChange = (val) => {
-          (data2 as any)[key2] = joinOptions(val.options, "*");
+    const getOptionInput = (key: string, label: string, multiple?: boolean, options?: {hidden?: boolean}) => {
+      const info = this.getOptionInput(data2, key, label, multiple, options);
+      if (info.optionsDialog) {
+        info.optionsDialog.onChange = () => {
+          refreshOptions = true;
         };
-      } else {
-        info.model = {data: data2, key: key2};
       }
       return info;
     };
@@ -425,8 +419,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           }
         }
       },
-      getOptionInput("门窗", "所属门窗", true),
-      getOptionInput("工艺", "所属工艺", true),
+      getOptionInput("门窗", "所属门窗", true, {hidden: isAdd}),
+      getOptionInput("工艺", "所属工艺", true, {hidden: isAdd}),
       getOptionInput("订单流程", "订单流程"),
       {
         type: "select",
@@ -478,7 +472,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   async copyXinghao(xinghao: XinghaoData) {
     const fromName = xinghao.mingzi;
     const namesAll = this.xinghaos.map((v) => v.mingzi);
-    const data = {num: 1, names: [] as string[]};
+    const data = {num: 1, names: [] as string[], menchuang: xinghao.menchuang, gongyi: xinghao.gongyi};
     const getNameInputs = () => {
       const result: InputInfo[] = [];
       data.names = [];
@@ -540,6 +534,15 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           namesGroupInput.infos = getNameInputs();
         }
       },
+      {
+        type: "group",
+        label: "",
+        infos: [
+          this.getOptionInput(data, "门窗", "menchuang", true, {style: getInfoStyle(2)}),
+          this.getOptionInput(data, "工艺", "gongyi", true, {style: getInfoStyle(2)})
+        ],
+        groupStyle: getGroupStyle()
+      },
       namesGroupInput
     ];
     const result = await this.message.form(form, {}, {width: "100%", height: "100%", maxWidth: "900px"});
@@ -547,7 +550,11 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       if (data.num > 1 && !(await this.message.confirm(`确定复制吗？`))) {
         return;
       }
-      await this.http.getData<boolean>("shuju/api/copyXinghao", {fromName, toNames: data.names}, {spinner: false});
+      await this.http.getData<boolean>(
+        "shuju/api/copyXinghao",
+        {fromName, toNames: data.names, menchuang: data.menchuang, gongyi: data.gongyi},
+        {spinner: false}
+      );
       await this.getXinghaos();
     }
   }
@@ -748,6 +755,30 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       }
     });
   }
+  getOptionInput(data: any, key1: string, key2: string, multiple?: boolean, others?: Partial<InputInfo>) {
+    const info: InputInfoSelect = {
+      type: "select",
+      label: key1,
+      multiple,
+      validators: Validators.required,
+      options: this.getOptions(key1),
+      optionsDialog: {
+        optionKey: key1,
+        useLocalOptions: true,
+        openInNewTab: true
+      }
+    };
+    if (multiple && info.optionsDialog) {
+      info.value = splitOptions(data[key2]);
+      info.optionsDialog.onChange = (val) => {
+        data[key2] = joinOptions(val.options, "*");
+      };
+    } else {
+      info.model = {data, key: key2};
+    }
+    Object.assign(info, others);
+    return info;
+  }
 
   openTab(name: string) {
     const tabs = this.tabGroup?._tabs.toArray();
@@ -818,6 +849,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const 型号 = this.xinghao.名字;
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/addGongyi", {名字, 型号, 产品分类});
     await this.updateXinghao(xinghaoRaw?.产品分类);
+    this.enterGongyi(产品分类, 名字);
   }
 
   async removeGongyi(产品分类: string, 名字: string) {
@@ -927,7 +959,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
   }
 
-  editGongyi2(fenleiName: string, gongyiName: string) {
+  enterGongyi(fenleiName: string, gongyiName: string) {
     this.setStep(3, {xinghaoName: this.xinghaoName, fenleiName, gongyiName});
   }
 
@@ -1445,14 +1477,25 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     return huajianIds;
   }
 
+  private _huajiansCache: ObjectOf<MrbcjfzHuajian[]> = {};
   async updateHuajians() {
     const huajianIds = this.getHuajianIds(this.menshans);
     if (huajianIds.size > 0) {
-      this.huajians = await this.http.queryMySql<MrbcjfzHuajian>({
-        table: "p_huajian",
-        fields: ["vid", "mingzi", "xiaotu", "shihuajian"],
-        filter: {where_in: {vid: Array.from(huajianIds)}}
-      });
+      const ids = Array.from(huajianIds);
+      const cacheKey = ids.join(",");
+      if (this._huajiansCache[cacheKey]) {
+        this.huajians = this._huajiansCache[cacheKey];
+      } else {
+        this.huajians = await this.http.queryMySql<MrbcjfzHuajian>(
+          {
+            table: "p_huajian",
+            fields: ["vid", "mingzi", "xiaotu", "shihuajian"],
+            filter: {where_in: {vid: ids}}
+          },
+          {spinner: false}
+        );
+        this._huajiansCache[cacheKey] = this.huajians;
+      }
     } else {
       this.huajians = [];
     }
@@ -1737,17 +1780,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     await this.getXinghaos();
   }
 
-  async openXinghaoMenchaung() {
-    const url = await this.http.getShortUrl("p_menchuang");
-    if (!url) {
-      return;
-    }
-    window.open(url);
-    if (await this.message.newTabConfirm()) {
-      await this.getXinghaos();
-    }
-  }
-
   async getXinghaoGongyi(gongyi?: XinghaoGongyi) {
     const data = gongyi ? cloneDeep({...gongyi, xinghaos: undefined}) : getXinghaoGongyi();
     const form: InputInfo<typeof data>[] = [
@@ -1799,17 +1831,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     }
     await this.http.tableDelete({table: "p_gongyi", vids: [data.vid]});
     await this.getXinghaos();
-  }
-
-  async openXinghaoGongyi() {
-    const url = await this.http.getShortUrl("p_gongyi");
-    if (!url) {
-      return;
-    }
-    window.open(url);
-    if (await this.message.newTabConfirm()) {
-      await this.getXinghaos();
-    }
   }
 
   clikcXinghaoGongyi(i: number, j: number, refresh?: boolean) {

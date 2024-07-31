@@ -3,8 +3,8 @@ import {cadFields} from "@app/modules/cad-editor/components/menu/cad-info/cad-in
 import {HoutaiCad, TableDataBase} from "@app/modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {importComponentConfigNames} from "@app/views/import/import.types";
-import {CadData, CadLineLike, CadZhankai} from "@lucilor/cad-viewer";
-import {downloadByUrl, isTypeOf, ObjectOf, queryString} from "@lucilor/utils";
+import {CadData, CadLineLike, CadZhankai, intersectionKeysTranslate} from "@lucilor/cad-viewer";
+import {downloadByUrl, isTypeOf, keysOf, ObjectOf, queryString} from "@lucilor/utils";
 
 export interface Cad数据要求Raw extends TableDataBase {
   cadtanchuangxiugaishuxing: string;
@@ -264,6 +264,22 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[], va
         }
         if (!zhankai.shuliang || override || override2) {
           zhankai.shuliang = c || "";
+        }
+      }
+    } else {
+      let intersectionKey = null;
+      for (const k of keysOf(intersectionKeysTranslate)) {
+        if (key === intersectionKeysTranslate[k]) {
+          intersectionKey = k;
+          break;
+        }
+      }
+      if (intersectionKey) {
+        if (remove) {
+          data[intersectionKey] = [];
+          if (intersectionKey === "zhidingweizhipaokeng") {
+            delete data.info.刨坑深度;
+          }
         }
       }
     }

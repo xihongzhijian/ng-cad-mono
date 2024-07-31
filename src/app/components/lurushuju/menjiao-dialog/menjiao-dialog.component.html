@@ -152,7 +152,11 @@
   } @else {
     <div class="empty-cad item link" (click)="selectCad0({key1, key2, key3})">
       <div class="name">{{ cadNameMap[key3] || key3 }}</div>
-      <div class="box border" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}"></div>
+      <div class="box border" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}">
+        @if (key1Infos[key1].missingCads.includes(key3)) {
+          <span class="error">请选择</span>
+        }
+      </div>
     </div>
   }
 </ng-template>

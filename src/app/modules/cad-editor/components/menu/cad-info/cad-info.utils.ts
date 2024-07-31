@@ -191,13 +191,14 @@ export const getCadInfoInputs = (
         info = {type: "string", label: key, model: {data: attrGetter("info"), key}};
         break;
       case "激光开料是否翻转":
+      case "激光开料打标":
         info = {type: "boolean", label: key, model: {data: attrGetter("info"), key}};
         break;
       case "自定义属性":
         info = {
           type: "string",
           label: key,
-          disabled: true,
+          readonly: true,
           suffixIcons: [
             {
               name: "list",
