@@ -8,6 +8,7 @@ import {AboutComponent} from "@app/components/about/about.component";
 import {openZixuanpeijianDialog} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {Subscribed} from "@app/mixins/subscribed.mixin";
+import {FloatingDialogModule} from "@app/modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
 import {MessageService} from "@app/modules/message/services/message.service";
@@ -27,6 +28,7 @@ import {ToolbarBtn} from "./lurushuju-index.types";
   standalone: true,
   imports: [
     AboutComponent,
+    FloatingDialogModule,
     ImageComponent,
     LrsjXinghaosComponent,
     LrsjZuofasComponent,
@@ -74,6 +76,7 @@ export class LurushujuIndexComponent extends Subscribed() implements AfterViewIn
       {name: ""},
       {name: "添加", color: "primary"},
       {name: "编辑", color: this.lrsjStatus.editMode() ? "accent" : "primary"},
+      {name: "复制做法", color: "primary", style: {display: this.lrsjStatus.xinghao() ? "" : "none"}},
       {name: ""},
       {name: "通用数据", color: "primary"},
       {name: "通用公式", color: "primary"},
@@ -85,28 +88,6 @@ export class LurushujuIndexComponent extends Subscribed() implements AfterViewIn
       {name: "测试", color: "primary"}
     ];
   });
-  moreBtns = computed(() => {
-    const btns: {name: string; onClick: () => void}[] = [
-      {name: "复制页面信息", onClick: this.copyInfo.bind(this)},
-      {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)},
-      {
-        name: "重新生成所有cad图片",
-        onClick: () => this.status.openInNewTab(["/refresh-cad-imgs"])
-      }
-    ];
-    if (!environment.production) {
-      const toggleforceUpdateCadImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.status.forceUpdateCadImg2)})`;
-      const toggleforceUpdateCadImgBtn: (typeof btns)[number] = {
-        name: toggleforceUpdateCadImgBtnName(),
-        onClick: () => {
-          this.status.forceUpdateCadImg2 = !this.status.forceUpdateCadImg2;
-          toggleforceUpdateCadImgBtn.name = toggleforceUpdateCadImgBtnName();
-        }
-      };
-      btns.push(toggleforceUpdateCadImgBtn);
-    }
-    return btns;
-  });
   async onToolbarBtnClick(btn: ToolbarBtn) {
     switch (btn.name) {
       case "关闭":
@@ -115,6 +96,9 @@ export class LurushujuIndexComponent extends Subscribed() implements AfterViewIn
         break;
       case "编辑":
         this.lrsjStatus.editMode.update((v) => !v);
+        return;
+      case "复制做法":
+        await this.copyZuofa();
         return;
       case "通用数据":
         await openTongyongshujuDialog(this.dialog, {data: {}});
@@ -151,6 +135,32 @@ export class LurushujuIndexComponent extends Subscribed() implements AfterViewIn
     };
     await openZixuanpeijianDialog(this.dialog, {data});
   }
+  async copyZuofa() {
+    // TODO
+  }
+
+  moreBtns = computed(() => {
+    const btns: {name: string; onClick: () => void}[] = [
+      {name: "复制页面信息", onClick: this.copyInfo.bind(this)},
+      {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)},
+      {
+        name: "重新生成所有cad图片",
+        onClick: () => this.status.openInNewTab(["/refresh-cad-imgs"])
+      }
+    ];
+    if (!environment.production) {
+      const toggleforceUpdateCadImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.status.forceUpdateCadImg2)})`;
+      const toggleforceUpdateCadImgBtn: (typeof btns)[number] = {
+        name: toggleforceUpdateCadImgBtnName(),
+        onClick: () => {
+          this.status.forceUpdateCadImg2 = !this.status.forceUpdateCadImg2;
+          toggleforceUpdateCadImgBtn.name = toggleforceUpdateCadImgBtnName();
+        }
+      };
+      btns.push(toggleforceUpdateCadImgBtn);
+    }
+    return btns;
+  });
 
   private _infoKey = "lurushujuInfo";
   getInfo() {

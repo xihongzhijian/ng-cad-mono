@@ -1,7 +1,9 @@
+import {Point} from "@angular/cdk/drag-drop";
+import {WritableSignal} from "@angular/core";
 import {工艺做法} from "../../xinghao-data";
 
 export interface ZuofaInfo {
   fenlei: string;
   zuofa: 工艺做法;
-  active: boolean;
+  position: WritableSignal<Readonly<Point>>;
 }

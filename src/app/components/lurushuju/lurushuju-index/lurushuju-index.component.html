@@ -1,4 +1,4 @@
-<div class="toolbar">
+<div class="toolbar" #toolbar>
   @for (btn of toolbarBtns(); track $index) {
     @if (btn.name) {
       <button mat-raised-button [class]="btn.class" [style]="btn.style" [color]="btn.color" (click)="onToolbarBtnClick(btn)">
@@ -23,3 +23,5 @@
   <app-lrsj-xinghaos #lrsjPiece class="lrsj-piece" (saveInfo)="saveInfo()"></app-lrsj-xinghaos>
   <app-lrsj-zuofas #lrsjPiece class="lrsj-piece" (saveInfo)="saveInfo()"></app-lrsj-zuofas>
 </div>
+
+<app-floating-dialog-trays #trays [limits]="{top: toolbar, bottom: trays.traysEl().nativeElement}"></app-floating-dialog-trays>

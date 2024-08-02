@@ -1,13 +1,92 @@
-:host {
-  max-width: 100vw;
-  max-height: 100vh;
+.floating-dialog {
+  --title-size: 1.2em;
+  --handle-size: 5px;
   position: fixed;
   z-index: var(--top-z-index);
   background-color: white;
   box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.15);
+  padding: var(--handle-size);
+
   &.active {
     z-index: var(--top-z-index1);
   }
+  &.pinned {
+    z-index: var(--top-z-index2);
+    &.active {
+      z-index: var(--top-z-index3);
+    }
+  }
+  &.minimized {
+    display: none;
+  }
 
-  --title-size: 1.2em;
+  .resize-handle {
+    position: absolute;
+    &.top {
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--handle-size);
+      cursor: ns-resize;
+    }
+    &.left {
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: var(--handle-size);
+      cursor: ew-resize;
+    }
+    &.right {
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: var(--handle-size);
+      cursor: ew-resize;
+    }
+    &.bottom {
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--handle-size);
+      cursor: ns-resize;
+    }
+    &.top-left {
+      top: 0;
+      left: 0;
+      width: var(--handle-size);
+      height: var(--handle-size);
+      cursor: nwse-resize;
+    }
+    &.top-right {
+      top: 0;
+      right: 0;
+      width: var(--handle-size);
+      height: var(--handle-size);
+      cursor: nesw-resize;
+    }
+    &.bottom-left {
+      bottom: 0;
+      left: 0;
+      width: var(--handle-size);
+      height: var(--handle-size);
+      cursor: nesw-resize;
+    }
+    &.bottom-right {
+      bottom: 0;
+      right: 0;
+      width: var(--handle-size);
+      height: var(--handle-size);
+      cursor: nwse-resize;
+    }
+  }
+}
+
+.title {
+  padding: 10px;
+  box-shadow: 0 6px 3px -3px rgba(0, 0, 0, 0.15);
+  margin-bottom: 3px;
+}
+
+.body {
+  padding: 5px;
 }

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, output, signal, viewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, output, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
@@ -26,7 +26,7 @@ import {ZuofaInfo} from "./lrsj-zuofas.types";
   styleUrl: "./lrsj-zuofas.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LrsjZuofasComponent extends LrsjPiece implements OnInit {
+export class LrsjZuofasComponent extends LrsjPiece {
   private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
@@ -45,18 +45,37 @@ export class LrsjZuofasComponent extends LrsjPiece implements OnInit {
 
   constructor() {
     super();
-    effect(() => (this.hidden = !this.xinghao()));
-  }
-
-  ngOnInit() {
-    this.isReadyForInfo.next(true);
+    effect(() => {
+      const xinghao = this.xinghao();
+      this.hidden = !xinghao;
+      this.isReadyForInfo.next(!!xinghao);
+    });
   }
 
   getInfo() {
-    return {};
+    const obj: ObjectOf<string[]> = {};
+    for (const info of this.zuofaInfos()) {
+      const {fenlei, zuofa} = info;
+      if (!obj[fenlei]) {
+        obj[fenlei] = [];
+      }
+      obj[fenlei].push(zuofa.名字);
+    }
+    return {
+      工艺做法: this.zuofaInfos()
+        .map(({fenlei, zuofa}) => `${fenlei}:${zuofa.名字}`)
+        .join(";")
+    };
   }
   async setInfo(info: LrsjPieceInfo) {
-    console.log(info);
+    const {工艺做法} = info;
+    if (typeof 工艺做法 !== "string") {
+      return;
+    }
+    for (const str of 工艺做法.split(";")) {
+      const [fenlei, zuofaName] = str.split(":");
+      await this.openZuofa(fenlei, zuofaName);
+    }
   }
 
   exitXinghao() {
@@ -206,22 +225,24 @@ export class LrsjZuofasComponent extends LrsjPiece implements OnInit {
       }
     }
   }
-  async openZuofa(fenleiName: string, zuofaName: string) {
-    let zuofa = this.xinghao()?.产品分类[fenleiName].find((v) => v.名字 === zuofaName);
+  async openZuofa(fenlei: string, zuofaName: string) {
+    let zuofa = this.xinghao()?.产品分类[fenlei].find((v) => v.名字 === zuofaName);
     if (!zuofa) {
       return;
     }
     zuofa = getZuofa(zuofa, await this.lrsjStatus.getZuofaOptionsAll());
     const infos = this.zuofaInfos().slice();
-    const i = infos.findIndex((v) => v.fenlei === fenleiName && v.zuofa.名字 === zuofaName);
-    if (i >= 0) {
-      for (const [j, info] of infos.entries()) {
-        info.active = j === i;
-      }
-    } else {
-      infos.push({fenlei: fenleiName, zuofa, active: true});
+    const i = infos.findIndex((v) => v.fenlei === fenlei && v.zuofa.名字 === zuofaName);
+    if (i < 0) {
+      infos.push({fenlei, zuofa, position: signal({x: 0, y: 0})});
     }
     this.zuofaInfos.set(infos);
+    this.saveInfo.emit();
+  }
+  closeZuofa(i: number) {
+    const infos = this.zuofaInfos().filter((_, j) => j !== i);
+    this.zuofaInfos.set(infos);
+    this.saveInfo.emit();
   }
 
   scrollToFenlei(i: number) {

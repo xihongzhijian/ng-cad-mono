@@ -235,6 +235,7 @@ input[type="number"] {
   --top-z-index: 99999;
   --top-z-index1: calc(var(--top-z-index) + 1);
   --top-z-index2: calc(var(--top-z-index1) + 1);
+  --top-z-index3: calc(var(--top-z-index2) + 1);
 }
 
 .title {
