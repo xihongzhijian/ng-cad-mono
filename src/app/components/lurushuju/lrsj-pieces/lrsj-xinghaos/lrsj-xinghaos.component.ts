@@ -558,7 +558,7 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
   }
 
   async getOptions(key: string) {
-    const xinghaoOptionsAll = await this.lrsjStatus.getXinghaoOptionsAll();
+    const xinghaoOptionsAll = await this.lrsjStatus.getXinghaoOptions();
     return getOptions(xinghaoOptionsAll, key, (option) => {
       if (key === "产品分类") {
         option.disabled = defaultFenleis.includes(option.value);

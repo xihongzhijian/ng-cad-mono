@@ -230,7 +230,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
     if (!zuofa) {
       return;
     }
-    zuofa = getZuofa(zuofa, await this.lrsjStatus.getZuofaOptionsAll());
+    zuofa = getZuofa(zuofa, await this.lrsjStatus.getZuofaOptions());
     const infos = this.zuofaInfos().slice();
     const i = infos.findIndex((v) => v.fenlei === fenlei && v.zuofa.名字 === zuofaName);
     if (i < 0) {

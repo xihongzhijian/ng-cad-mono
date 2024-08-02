@@ -36,42 +36,17 @@ export class LrsjZuofaComponent {
 
   constructor() {}
 
-  async submitZuofa(fields: (keyof 工艺做法)[], 产品分类?: string, 名字?: string) {
-    const xinghao = this.lrsjStatus.xinghao();
-    if (!xinghao) {
-      return;
-    }
-    const data: Partial<工艺做法> = {};
-    const 型号 = xinghao.名字;
-    let zuofa: 工艺做法 | undefined | null;
-    if (产品分类 && 名字) {
-      zuofa = xinghao.产品分类[产品分类]?.find((v) => v.名字 === 名字);
-    } else {
-      zuofa = this.zuofa();
-      产品分类 = this.fenlei();
-      名字 = zuofa.名字;
-    }
-    if (!zuofa || !Array.isArray(fields) || fields.length === 0) {
-      return;
-    }
-    for (const field of fields) {
-      data[field] = zuofa[field] as any;
-    }
-    const response = await this.http.post("shuju/api/editGongyi", {型号, 产品分类, updateDatas: {[名字]: data}}, {spinner: false});
-    if (response?.code === 0 && xinghao) {
-      const item = xinghao.产品分类[产品分类].find((v) => v.名字 === 名字);
-      if (item) {
-        Object.assign(item, data);
-      }
-      this.lrsjStatus.updateXinghao(xinghao);
-    }
+  async submitZuofa(fields: (keyof 工艺做法)[]) {
+    const fenlei = this.fenlei();
+    const zuofa = this.zuofa();
+    this.lrsjStatus.submitZuofa(fenlei, zuofa, fields);
   }
 
   xuanxiangTable = computed(() => getXuanxiangTable(this.zuofa().选项数据));
   async getXuanxiangItem(data0?: 选项) {
     const data: 选项 = {名字: "", 可选项: [], ...data0};
     const names = this.xuanxiangTable().data.map((v) => v.名字);
-    const zuofaOptionsAll = await this.lrsjStatus.getZuofaOptionsAll();
+    const zuofaOptionsAll = await this.lrsjStatus.getZuofaOptions();
     const form: InputInfo<typeof data>[] = [
       {
         type: "select",

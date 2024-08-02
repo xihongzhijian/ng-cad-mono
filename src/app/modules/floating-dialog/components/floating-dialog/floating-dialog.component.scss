@@ -1,19 +1,20 @@
 .floating-dialog {
   --title-size: 1.2em;
   --handle-size: 5px;
+  --z-index-base: calc(var(--top-z-index) - 3);
   position: fixed;
-  z-index: var(--top-z-index);
+  z-index: var(--z-index-base);
   background-color: white;
   box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.15);
   padding: var(--handle-size);
 
   &.active {
-    z-index: var(--top-z-index1);
+    z-index: calc(var(--z-index-base) + 1);
   }
   &.pinned {
-    z-index: var(--top-z-index2);
+    z-index: calc(var(--z-index-base) + 2);
     &.active {
-      z-index: var(--top-z-index3);
+      z-index: calc(var(--z-index-base) + 3);
     }
   }
   &.minimized {

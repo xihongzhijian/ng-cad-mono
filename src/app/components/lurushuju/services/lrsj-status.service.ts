@@ -5,7 +5,7 @@ import {ObjectOf} from "@lucilor/utils";
 import {cloneDeep, isEqual} from "lodash";
 import {defaultFenleis} from "../lrsj-pieces/lrsj-pieces.utils";
 import {XinghaoDataList, XinghaoMenchuang} from "../lrsj-pieces/lrsj-xinghaos/lrsj-xinghaos.types";
-import {getXinghao, updateXinghaoFenleis, Xinghao, XinghaoRaw} from "../xinghao-data";
+import {getXinghao, updateXinghaoFenleis, Xinghao, XinghaoRaw, 工艺做法} from "../xinghao-data";
 import {OptionsAll, OptionsAll2} from "./lrsj-status.types";
 
 @Injectable({
@@ -37,7 +37,7 @@ export class LrsjStatusService {
   constructor() {}
 
   private _dataFetched: ObjectOf<any> = {};
-  async getDataIfNotFetched<T>(key: string, api: string, force?: boolean) {
+  private async _getDataIfNotFetched<T>(key: string, api: string, force?: boolean) {
     if (force || !this._dataFetched[key]) {
       this._dataFetched[key] = await this.http.getData<T>("shuju/api/" + api);
     }
@@ -46,14 +46,14 @@ export class LrsjStatusService {
   deleteDataCache = (key: string) => {
     delete this._dataFetched[key];
   };
-  getXinghaoOptionsAll = async (force?: boolean) => {
-    return (await this.getDataIfNotFetched<OptionsAll>("xinghaoOptionsAll", "getXinghaoOption", force)) || {};
+  getXinghaoOptions = async (force?: boolean) => {
+    return (await this._getDataIfNotFetched<OptionsAll>("xinghaoOptionsAll", "getXinghaoOption", force)) || {};
   };
-  getZuofaOptionsAll = async (force?: boolean) => {
-    return (await this.getDataIfNotFetched<OptionsAll>("gongyiOptionsAll", "getGongyizuofaOption", force)) || {};
+  getZuofaOptions = async (force?: boolean) => {
+    return (await this._getDataIfNotFetched<OptionsAll>("gongyiOptionsAll", "getGongyizuofaOption", force)) || {};
   };
-  getMenjiaoOptionsAll = async (force?: boolean) => {
-    return (await this.getDataIfNotFetched<OptionsAll2>("menjiaoOptionsAll", "getMenjiaoOptions", force)) || {};
+  getMenjiaoOptions = async (force?: boolean) => {
+    return (await this._getDataIfNotFetched<OptionsAll2>("menjiaoOptionsAll", "getMenjiaoOptions", force)) || {};
   };
 
   async getXinghao(name: string) {
@@ -66,11 +66,20 @@ export class LrsjStatusService {
     }
     return await this.http.post("shuju/api/setXinghao", {名字: name, data, silent}, {spinner: false});
   }
+  async refreshXinghao() {
+    const xinghao = this.xinghao();
+    if (!xinghao) {
+      return;
+    }
+    const xinghao2 = await this.getXinghao(xinghao.名字);
+    this._xinghao.set(xinghao2);
+    return xinghao2;
+  }
   async updateXinghao(xinghao: Xinghao | null) {
     if (xinghao) {
       const fenleisBefore = cloneDeep(xinghao.产品分类);
-      const xinghaoOptionsAll = await this.getXinghaoOptionsAll();
-      const menjiaoOptionsAll = await this.getMenjiaoOptionsAll();
+      const xinghaoOptionsAll = await this.getXinghaoOptions();
+      const menjiaoOptionsAll = await this.getMenjiaoOptions();
       const allFenleis = xinghaoOptionsAll.产品分类.map((v) => v.name);
       const 选项要求 = menjiaoOptionsAll.选项要求?.options || [];
       updateXinghaoFenleis(xinghao, allFenleis, defaultFenleis, 选项要求);
@@ -90,5 +99,33 @@ export class LrsjStatusService {
     }
     xinghao.产品分类 = 产品分类;
     this.updateXinghao({...xinghao});
+  }
+
+  async submitZuofa(fenlei: string, zuofa: 工艺做法 | string, fields: (keyof 工艺做法)[]) {
+    const xinghao = this.xinghao();
+    if (!xinghao) {
+      return;
+    }
+    const data: Partial<工艺做法> = {};
+    const 型号 = xinghao.名字;
+    if (typeof zuofa === "string") {
+      const zuofa2 = xinghao.产品分类[fenlei].find((v) => v.名字 === zuofa);
+      if (!zuofa2) {
+        return;
+      }
+      zuofa = zuofa2;
+    }
+    if (!Array.isArray(fields) || fields.length === 0) {
+      return;
+    }
+    const {名字} = zuofa;
+    for (const field of fields) {
+      data[field] = zuofa[field] as any;
+    }
+    const response = await this.http.post("shuju/api/editGongyi", {型号, 产品分类: fenlei, updateDatas: {[名字]: data}}, {spinner: false});
+    if (response?.code === 0) {
+      Object.assign(zuofa, data);
+      this.updateXinghao(xinghao);
+    }
   }
 }

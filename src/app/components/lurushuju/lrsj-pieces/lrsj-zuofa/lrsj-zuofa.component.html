@@ -4,15 +4,13 @@
       <mat-tab [label]="tab.name">
         @switch (tab.name) {
           @case ("下单选项输入配置") {
-            <div class="tab-content items 下单选项输入配置">
+            <div class="tab-content 下单选项输入配置">
               <app-table
-                class="item"
                 [info]="xuanxiangTable()"
                 (toolbarButtonClick)="onXuanxiangToolbar($event)"
                 (rowButtonClick)="onXuanxiangRow($event)"
               ></app-table>
               <app-table
-                class="item"
                 [info]="shuruTable()"
                 (toolbarButtonClick)="onShuruToolbar($event)"
                 (rowButtonClick)="onShuruRow($event)"

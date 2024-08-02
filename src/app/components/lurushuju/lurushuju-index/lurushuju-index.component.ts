@@ -1,13 +1,12 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, computed, HostBinding, inject, viewChildren} from "@angular/core";
+import {AfterViewInit, ChangeDetectionStrategy, Component, computed, HostBinding, inject, OnDestroy, viewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
-import {getBooleanStr, session, setGlobal} from "@app/app.common";
+import {getBooleanStr, getCopyName, session, setGlobal} from "@app/app.common";
 import {AboutComponent} from "@app/components/about/about.component";
 import {openZixuanpeijianDialog} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.types";
-import {Subscribed} from "@app/mixins/subscribed.mixin";
 import {FloatingDialogModule} from "@app/modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
@@ -16,9 +15,11 @@ import {AppStatusService} from "@app/services/app-status.service";
 import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {Subject, takeUntil} from "rxjs";
 import {LrsjPiece, LrsjPieceInfo} from "../lrsj-pieces/lrsj-piece";
 import {LrsjXinghaosComponent} from "../lrsj-pieces/lrsj-xinghaos/lrsj-xinghaos.component";
 import {LrsjZuofasComponent} from "../lrsj-pieces/lrsj-zuofas/lrsj-zuofas.component";
+import {openSelectZuofaDialog} from "../select-zuofa-dialog/select-zuofa-dialog.component";
 import {LrsjStatusService} from "../services/lrsj-status.service";
 import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
 import {ToolbarBtn} from "./lurushuju-index.types";
@@ -41,7 +42,7 @@ import {ToolbarBtn} from "./lurushuju-index.types";
   styleUrl: "./lurushuju-index.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LurushujuIndexComponent extends Subscribed() implements AfterViewInit {
+export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
@@ -50,12 +51,13 @@ export class LurushujuIndexComponent extends Subscribed() implements AfterViewIn
 
   @HostBinding("class") class = ["ng-page"];
 
+  destoryed$ = new Subject<void>();
+
   pieces = viewChildren<LrsjPiece>("lrsjPiece");
 
   constructor() {
-    super();
     setGlobal("lrsj", this);
-    this.subscribe(this.status.changeProject$, () => {
+    this.status.changeProject$.pipe(takeUntil(this.destoryed$)).subscribe(() => {
       const info = session.load<LrsjPieceInfo>(this._infoKey) || {};
       if (info && !info.changeProject) {
         session.remove(this._infoKey);
@@ -68,6 +70,10 @@ export class LurushujuIndexComponent extends Subscribed() implements AfterViewIn
       session.remove(this._infoKey);
       await this.setInfo(info);
     }
+  }
+  ngOnDestroy() {
+    this.destoryed$.next();
+    this.destoryed$.complete();
   }
 
   toolbarBtns = computed<ToolbarBtn[]>(() => {
@@ -136,7 +142,53 @@ export class LurushujuIndexComponent extends Subscribed() implements AfterViewIn
     await openZixuanpeijianDialog(this.dialog, {data});
   }
   async copyZuofa() {
-    // TODO
+    const xinghao = this.lrsjStatus.xinghao();
+    if (!xinghao) {
+      return;
+    }
+    const xinghaoOptions = await this.lrsjStatus.getXinghaoOptions();
+    const result = await openSelectZuofaDialog(this.dialog, {
+      data: {xinghaoOptions, multiple: true}
+    });
+    if (!result) {
+      return;
+    }
+    const targetFenlei = await this.message.prompt<string>({
+      type: "select",
+      label: "复制到哪个分类",
+      options: xinghao.显示产品分类,
+      hint: "若留空则复制到对应分类"
+    });
+    if (typeof targetFenlei !== "string") {
+      return;
+    }
+    let successCount = 0;
+    const 型号2 = xinghao.名字;
+    const gongyiNames: ObjectOf<string[]> = {};
+    for (const item of result.items) {
+      const {型号, 产品分类, 名字} = item;
+      const 产品分类2 = targetFenlei || 产品分类;
+      if (!gongyiNames[产品分类2]) {
+        gongyiNames[产品分类2] = xinghao.产品分类[产品分类2].map((v) => v.名字);
+      }
+      const 复制名字 = getCopyName(gongyiNames[产品分类2], item.名字);
+      const success = await this.http.getData<boolean>("shuju/api/copyGongyi", {名字, 复制名字, 型号, 型号2, 产品分类, 产品分类2});
+      if (success) {
+        gongyiNames[产品分类2].push(复制名字);
+        successCount++;
+      }
+    }
+    if (successCount > 0) {
+      const xinghao2 = await this.lrsjStatus.refreshXinghao();
+      const data = xinghao2?.产品分类[targetFenlei]?.at(-1);
+      if (data) {
+        // TODO
+        // for (const menjiaoData of data.算料数据) {
+        //   updateMenjiaoData(menjiaoData);
+        // }
+        await this.lrsjStatus.submitZuofa(targetFenlei, data, ["算料数据"]);
+      }
+    }
   }
 
   moreBtns = computed(() => {
