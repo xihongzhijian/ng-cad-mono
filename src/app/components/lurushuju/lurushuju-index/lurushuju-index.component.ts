@@ -17,8 +17,10 @@ import {ObjectOf} from "@lucilor/utils";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {Subject, takeUntil} from "rxjs";
 import {LrsjPiece, LrsjPieceInfo} from "../lrsj-pieces/lrsj-piece";
+import {LrsjSuanliaoDataComponent} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.component";
 import {LrsjXinghaosComponent} from "../lrsj-pieces/lrsj-xinghaos/lrsj-xinghaos.component";
 import {LrsjZuofasComponent} from "../lrsj-pieces/lrsj-zuofas/lrsj-zuofas.component";
+import {LurushujuNavComponent} from "../lurushuju-nav/lurushuju-nav.component";
 import {openSelectZuofaDialog} from "../select-zuofa-dialog/select-zuofa-dialog.component";
 import {LrsjStatusService} from "../services/lrsj-status.service";
 import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
@@ -31,8 +33,10 @@ import {ToolbarBtn} from "./lurushuju-index.types";
     AboutComponent,
     FloatingDialogModule,
     ImageComponent,
+    LrsjSuanliaoDataComponent,
     LrsjXinghaosComponent,
     LrsjZuofasComponent,
+    LurushujuNavComponent,
     MatButtonModule,
     MatDividerModule,
     MatMenuModule,
@@ -52,6 +56,7 @@ export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
   @HostBinding("class") class = ["ng-page"];
 
   destoryed$ = new Subject<void>();
+  pieceInfos = this.lrsjStatus.pieceInfos;
 
   pieces = viewChildren<LrsjPiece>("lrsjPiece");
 

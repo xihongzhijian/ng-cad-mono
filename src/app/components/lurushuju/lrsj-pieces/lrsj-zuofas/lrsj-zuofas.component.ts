@@ -9,11 +9,11 @@ import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
 import {InputInfo} from "@app/modules/input/components/input.types";
 import {MessageService} from "@app/modules/message/services/message.service";
+import {ObjectOf} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
-import {ObjectOf} from "packages/utils/lib";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
-import {getZuofa, sortZuofas, XinghaoRaw, 工艺做法} from "../../xinghao-data";
+import {getZuofa, sortZuofas, XinghaoRaw, 工艺做法, 算料数据} from "../../xinghao-data";
 import {LrsjPiece, LrsjPieceInfo} from "../lrsj-piece";
 import {LrsjZuofaComponent} from "../lrsj-zuofa/lrsj-zuofa.component";
 import {ZuofaInfo} from "./lrsj-zuofas.types";
@@ -31,7 +31,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
 
-  @HostBinding("class.hidden") hidden = false;
+  @HostBinding("class") class = "ng-page";
 
   xinghao = this.lrsjStatus.xinghao;
   editMode = this.lrsjStatus.editMode;
@@ -47,9 +47,19 @@ export class LrsjZuofasComponent extends LrsjPiece {
     super();
     effect(() => {
       const xinghao = this.xinghao();
-      this.hidden = !xinghao;
       this.isReadyForInfo.next(!!xinghao);
     });
+    effect(
+      () => {
+        const pieceInfo = this.lrsjStatus.pieceInfos.zuofas();
+        if (!pieceInfo.show) {
+          this.zuofaInfos.set([]);
+          this.emitSaveInfo();
+        }
+      },
+      {allowSignalWrites: true}
+    );
+    effect(() => this.onFocusFenleiZuofa(), {allowSignalWrites: true});
   }
 
   getInfo() {
@@ -61,25 +71,42 @@ export class LrsjZuofasComponent extends LrsjPiece {
       }
       obj[fenlei].push(zuofa.名字);
     }
-    return {
-      工艺做法: this.zuofaInfos()
+    const info: LrsjPieceInfo = {};
+    const zuofaInfos = this.zuofaInfos();
+    if (zuofaInfos.length > 0) {
+      info.工艺做法弹窗 = this.zuofaInfos()
         .map(({fenlei, zuofa}) => `${fenlei}:${zuofa.名字}`)
-        .join(";")
-    };
+        .join(";");
+    }
+    const suanliaoDataInfo = this.lrsjStatus.suanliaoDataInfo();
+    if (suanliaoDataInfo) {
+      info.产品分类 = suanliaoDataInfo.fenlei;
+      info.工艺做法 = suanliaoDataInfo.zuofa;
+      info.算料数据 = suanliaoDataInfo.suanliaoData.名字;
+    }
+    return info;
   }
   async setInfo(info: LrsjPieceInfo) {
-    const {工艺做法} = info;
-    if (typeof 工艺做法 !== "string") {
-      return;
+    const {工艺做法弹窗, 产品分类, 工艺做法, 算料数据} = info;
+    if (typeof 工艺做法弹窗 === "string") {
+      for (const str of 工艺做法弹窗.split(";")) {
+        const [fenlei, zuofaName] = str.split(":");
+        await this.openZuofa(fenlei, zuofaName);
+      }
     }
-    for (const str of 工艺做法.split(";")) {
-      const [fenlei, zuofaName] = str.split(":");
-      await this.openZuofa(fenlei, zuofaName);
+    if (产品分类 && 工艺做法 && 算料数据) {
+      const xinghao = this.xinghao();
+      const zuofa = xinghao?.产品分类?.[产品分类]?.find((v) => v.名字 === 工艺做法);
+      const suanliaoData = zuofa?.算料数据?.find((v) => v.名字 === 算料数据);
+      if (suanliaoData) {
+        this.gotoSuanliaoData(产品分类, 工艺做法, suanliaoData);
+      }
     }
   }
 
   exitXinghao() {
     this.lrsjStatus.updateXinghao(null);
+    this.zuofaInfos.set([]);
     this.emitSaveInfo();
   }
 
@@ -237,26 +264,38 @@ export class LrsjZuofasComponent extends LrsjPiece {
       infos.push({fenlei, zuofa, position: signal({x: 0, y: 0})});
     }
     this.zuofaInfos.set(infos);
-    this.saveInfo.emit();
+    this.emitSaveInfo();
   }
   closeZuofa(i: number) {
     const infos = this.zuofaInfos().filter((_, j) => j !== i);
     this.zuofaInfos.set(infos);
-    this.saveInfo.emit();
+    this.emitSaveInfo();
+  }
+  gotoSuanliaoData(fenlei: string, zuofa: string, suanliaoData: 算料数据) {
+    this.lrsjStatus.gotoSuanliaoData(fenlei, zuofa, suanliaoData);
   }
 
-  scrollToFenlei(i: number) {
+  onFocusFenleiZuofa() {
+    const focusFenleiZuofa = this.lrsjStatus.focusFenleiZuofa();
+    if (!focusFenleiZuofa) {
+      return;
+    }
     const scrollbar = this.scrollbar();
-    const el = scrollbar.viewport.nativeElement.querySelector(`[data-i="${i}"]`);
+    const {i, j} = focusFenleiZuofa;
+    let el: Element | null;
+    if (typeof j === "number") {
+      el = scrollbar.viewport.nativeElement.querySelector(`[data-ij="${i},${j}"]`);
+    } else {
+      el = scrollbar.viewport.nativeElement.querySelector(`[data-i="${i}"]`);
+    }
     if (el) {
       scrollbar.scrollToElement(el);
     }
   }
+  scrollToFenlei(i: number) {
+    this.lrsjStatus.focusFenleiZuofa.set({i});
+  }
   scrollToZuofa(i: number, j: number) {
-    const scrollbar = this.scrollbar();
-    const el = scrollbar.viewport.nativeElement.querySelector(`[data-ij="${i},${j}"]`);
-    if (el) {
-      scrollbar.scrollToElement(el);
-    }
+    this.lrsjStatus.focusFenleiZuofa.set({i, j});
   }
 }

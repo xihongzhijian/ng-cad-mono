@@ -1,0 +1,63 @@
+.nav {
+  > *:not(:last-child) {
+    margin-bottom: 10px;
+  }
+}
+
+.menchaungs {
+  .menchuang-header {
+    width: 100%;
+    background-color: rgb(237, 191, 95);
+    padding: 5px;
+    align-items: center;
+
+    .name {
+      font-size: 18px;
+      padding: 0 2px;
+      display: flex;
+      box-sizing: border-box;
+    }
+  }
+}
+
+.gongyis {
+  width: 100%;
+  .item {
+    transition: 0.3s;
+    padding: 5px;
+    &.active,
+    &:hover {
+      background-color: lightgray;
+    }
+
+    .gongyi-header {
+      width: 100%;
+      align-items: center;
+
+      .name {
+        flex: 1 1 0;
+        display: flex;
+      }
+      .toolbar {
+        width: auto;
+      }
+    }
+  }
+}
+
+.fenlei-list {
+  .zuofa-list {
+    width: 100%;
+    padding-left: 20px;
+    box-sizing: border-box;
+  }
+  .name {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .mdc-button {
+    padding: 0;
+    --mdc-text-button-container-height: auto;
+  }
+}

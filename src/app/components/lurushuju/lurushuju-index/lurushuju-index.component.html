@@ -20,8 +20,20 @@
 </div>
 
 <div class="flex-110 flex-row" style="height: 0">
-  <app-lrsj-xinghaos #lrsjPiece class="lrsj-piece" (saveInfo)="saveInfo()"></app-lrsj-xinghaos>
-  <app-lrsj-zuofas #lrsjPiece class="lrsj-piece" (saveInfo)="saveInfo()"></app-lrsj-zuofas>
+  <div class="lrsj-left">
+    <app-lurushuju-nav></app-lurushuju-nav>
+  </div>
+  <mat-divider vertical></mat-divider>
+  <div class="lrsj-right">
+    <app-lrsj-xinghaos
+      #lrsjPiece
+      class="lrsj-piece"
+      [class.hidden]="!pieceInfos.xinghaos().show"
+      (saveInfo)="saveInfo()"
+    ></app-lrsj-xinghaos>
+    <app-lrsj-zuofas #lrsjPiece class="lrsj-piece" [class.hidden]="!pieceInfos.zuofas().show" (saveInfo)="saveInfo()"></app-lrsj-zuofas>
+    <app-lrsj-suanliao-data #lrsjPiece class="lrsj-piece" [class.hidden]="!pieceInfos.suanliaoData().show"></app-lrsj-suanliao-data>
+  </div>
 </div>
 
 <app-floating-dialog-trays #trays [limits]="{top: toolbar, bottom: trays.traysEl().nativeElement}"></app-floating-dialog-trays>

@@ -1,4 +1,4 @@
-import {XinghaoData, XinghaoGongyi, XinghaoMenchuang} from "./lrsj-xinghaos.types";
+import {XinghaoData, XinghaoGongyi, XinghaoMenchuang} from "./lrsj-status.types";
 
 export const getXinghaoMenchuang = (raw?: Partial<XinghaoMenchuang>): XinghaoMenchuang => {
   return {

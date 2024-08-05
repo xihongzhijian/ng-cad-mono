@@ -6,6 +6,7 @@ export interface ToolbarBtn {
   color?: string;
   class?: string[];
   style?: Properties;
+  onClick?: () => void;
 }
 
 export interface MenshanOption extends OptionsDataData {

@@ -3,19 +3,14 @@
   --title-size: 1.2em;
 }
 
+.lrsj-left {
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+}
+.lrsj-right {
+  flex: 1 1 0;
+}
 .lrsj-piece {
   display: flex;
-  --menchuang-name-bg: rgb(237, 191, 95);
-  --gongyi-name-bg: lightgray;
-
-  ::ng-deep {
-    .lrsj-left {
-      min-width: 180px;
-      display: flex;
-      flex-direction: column;
-    }
-    .lrsj-right {
-      flex: 1 1 0;
-    }
-  }
 }

@@ -1,11 +1,9 @@
 import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, output, signal, untracked} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MatDivider} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {filePathUrl, getCopyName, joinOptions, session, splitOptions} from "@app/app.common";
+import {filePathUrl, getCopyName, joinOptions, splitOptions} from "@app/app.common";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {getTableUpdateData} from "@app/modules/http/services/cad-data.service.utils";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
 import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoGroup, InputInfoSelect} from "@app/modules/input/components/input.types";
@@ -14,18 +12,18 @@ import {AppStatusService} from "@app/services/app-status.service";
 import {environment} from "@env";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {ObjectOf, queryString} from "packages/utils/lib";
+import {ObjectOf} from "packages/utils/lib";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
+import {XinghaoData} from "../../services/lrsj-status.types";
+import {getXinghaoData} from "../../services/lrsj-status.utils";
 import {XinghaoRaw} from "../../xinghao-data";
 import {LrsjPiece} from "../lrsj-piece";
 import {defaultFenleis, getGroupStyle, getInfoStyle, getOptions} from "../lrsj-pieces.utils";
-import {XinghaoData, XinghaoDataList, XinghaoGongyi, XinghaoMenchuang} from "./lrsj-xinghaos.types";
-import {getXinghaoData, getXinghaoGongyi, getXinghaoMenchuang} from "./lrsj-xinghaos.utils";
 
 @Component({
   selector: "app-lrsj-xinghaos",
   standalone: true,
-  imports: [ImageComponent, InputComponent, MatButtonModule, MatDivider, MatTooltipModule, NgScrollbarModule],
+  imports: [ImageComponent, InputComponent, MatButtonModule, MatTooltipModule, NgScrollbarModule],
   templateUrl: "./lrsj-xinghaos.component.html",
   styleUrl: "./lrsj-xinghaos.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -36,7 +34,7 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
-  @HostBinding("class.hidden") hidden = false;
+  @HostBinding("class") class = "ng-page";
 
   xinghaoMenchuangs = this.lrsjStatus.xinghaoMenchuangs;
   xinghao = this.lrsjStatus.xinghao;
@@ -48,15 +46,22 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
   constructor() {
     super();
     effect(() => {
-      const str = this.xinghaoFilterStr();
-      session.save(this._xinghaoFilterStrKey, str);
-      untracked(() => this.filterXinghaos());
+      const activeXinghaoGingyi = this.lrsjStatus.activeXinghaoGingyi();
+      if (activeXinghaoGingyi) {
+        const {i, j, refresh} = activeXinghaoGingyi;
+        untracked(() => this.clickXinghaoGongyi(i, j, refresh));
+      }
     });
-    effect(() => (this.hidden = !!this.xinghao()));
+    effect(() => {
+      const pieceInfo = this.lrsjStatus.pieceInfos.xinghaos();
+      if (!pieceInfo.show) {
+        this.emitSaveInfo();
+      }
+    });
   }
 
   async ngOnInit() {
-    await this.getXinghaos();
+    await this.lrsjStatus.getXinghaos();
     this.isReadyForInfo.next(true);
   }
 
@@ -93,116 +98,20 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
       this.clickXinghaoGongyi(i, j);
     }
     if (型号) {
-      this.enterXinghao(型号);
+      this.gotoZuofas(型号);
     }
   }
 
-  async getXinghaos() {
-    const xinghaos = await this.http.getData<XinghaoData[]>("shuju/api/getXinghaos");
-    const fields = ["vid", "mingzi"];
-    const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields});
-    const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields: [...fields, "menchuang"]});
-    const iPrev = this.xinghaoMenchuangs.index();
-    const jPrev = this.xinghaoMenchuangs.item()?.gongyis?.index();
-    this.xinghaoMenchuangs.items.set([]);
-    for (const menchuang of menchuangs) {
-      const xinghaoMenchuang = getXinghaoMenchuang(menchuang);
-      xinghaoMenchuang.gongyis = new XinghaoDataList();
-      this.xinghaoMenchuangs.items.update((v) => [...v, xinghaoMenchuang]);
-      for (const gongyi of gongyis) {
-        const menchuangIds = splitOptions(String(gongyi.menchuang)).map(Number);
-        if (!menchuangIds.includes(menchuang.vid)) {
-          continue;
-        }
-        const xinghaoGongyi = getXinghaoGongyi(gongyi);
-        xinghaoMenchuang.gongyis.items.update((v) => [...v, xinghaoGongyi]);
-      }
-    }
-    if (xinghaos) {
-      for (const xinghao of xinghaos) {
-        const {menchuang, gongyi} = xinghao;
-        const menchuangs = splitOptions(menchuang);
-        const gongyis = splitOptions(gongyi);
-        const menchuangItems = this.xinghaoMenchuangs.items().filter((v) => menchuangs.includes(v.mingzi));
-        for (const menchuangItem of menchuangItems) {
-          const gongyiItems = menchuangItem.gongyis?.items().filter((v) => gongyis.includes(v.mingzi));
-          for (const gongyiItem of gongyiItems || []) {
-            if (!gongyiItem.xinghaos) {
-              gongyiItem.xinghaos = new XinghaoDataList();
-            }
-            gongyiItem.xinghaos.items.update((v) => [...v, xinghao]);
-          }
-        }
-      }
-      if (typeof iPrev === "number") {
-        this.xinghaoMenchuangs.index.set(iPrev);
-        const menchuangItem = this.xinghaoMenchuangs.items()[iPrev];
-        if (menchuangItem?.gongyis && typeof jPrev === "number") {
-          menchuangItem.gongyis.index.set(jPrev);
-        }
-      }
-      this.filterXinghaos();
-    }
-  }
-  private _xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
-  xinghaoFilterStr = signal(session.load<string>(this._xinghaoFilterStrKey) || "");
   filterInputInfo: InputInfo<this> = {
     type: "string",
     label: "搜索型号",
     clearable: true,
-    value: this.xinghaoFilterStr(),
+    value: this.lrsjStatus.xinghaoFilterStr(),
     onInput: debounce((val) => {
-      this.xinghaoFilterStr.set(val);
+      this.lrsjStatus.xinghaoFilterStr.set(val);
     }, 500),
     style: {width: "200px"}
   };
-  filterXinghaos() {
-    const str = this.xinghaoFilterStr();
-    const menchuangs = this.xinghaoMenchuangs;
-    let menchuangCount = 0;
-    const foundGongyis: [number, number][] = [];
-    for (const [i, menchuang] of menchuangs.items().entries()) {
-      if (!menchuang.gongyis) {
-        menchuang.gongyis = new XinghaoDataList<XinghaoGongyi>();
-      }
-      const gongyis = menchuang.gongyis;
-      let gongyiCount = 0;
-      for (const [j, gongyi] of gongyis.items().entries()) {
-        if (!gongyi.xinghaos) {
-          gongyi.xinghaos = new XinghaoDataList();
-        }
-        const xinghaos = gongyi.xinghaos;
-        let xinghaoCount = 0;
-        for (const xinghao of xinghaos.items()) {
-          xinghao.hidden = !queryString(str, xinghao.mingzi);
-          if (!xinghao.hidden) {
-            xinghaoCount++;
-            gongyiCount++;
-            menchuangCount++;
-          }
-        }
-        xinghaos.count.set(xinghaoCount);
-        if (xinghaoCount) {
-          foundGongyis.push([i, j]);
-        }
-      }
-      gongyis.count.set(gongyiCount);
-    }
-    menchuangs.count.set(menchuangCount);
-    if (str) {
-      const foundCount = foundGongyis.length;
-      if (foundCount < 1) {
-        this.message.snack("搜索不到数据");
-      } else if (foundCount === 1) {
-        const [i, j] = foundGongyis[0];
-        this.clickXinghaoGongyi(i, j, true);
-      }
-    } else {
-      const iPrev = this.xinghaoMenchuangs.index();
-      const jPrev = this.xinghaoMenchuangs.item()?.gongyis?.index();
-      this.clickXinghaoGongyi(iPrev || 0, jPrev || 0, true);
-    }
-  }
   clickXinghaoGongyi(i: number, j: number, refresh?: boolean) {
     const menchuangs = this.xinghaoMenchuangs;
     const iPrev = menchuangs.index();
@@ -217,104 +126,6 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
       this.xinghaos.set(gongyis.item()?.xinghaos?.items() || []);
     }
     this.emitSaveInfo();
-  }
-
-  async getXinghaoMenchaung(menchuang?: XinghaoMenchuang) {
-    const data = menchuang ? cloneDeep({...menchuang, gongyis: undefined}) : getXinghaoMenchuang();
-    const form: InputInfo<typeof data>[] = [
-      {
-        type: "string",
-        label: "名字",
-        model: {data, key: "mingzi"},
-        validators: Validators.required
-      },
-      {type: "number", label: "排序", model: {data, key: "paixu"}},
-      {type: "boolean", label: "停用", model: {data, key: "tingyong"}}
-    ];
-    const result = await this.message.form(form);
-    return result ? data : null;
-  }
-  async addXinghaoMenchaung() {
-    const data = await this.getXinghaoMenchaung();
-    if (data) {
-      await this.http.tableInsert({table: "p_menchuang", data});
-      await this.getXinghaos();
-    }
-  }
-  async editXinghaoMenchaung(i: number) {
-    const data0 = this.xinghaoMenchuangs.items()[i];
-    const data1 = await this.getXinghaoMenchaung(data0);
-    if (!data1) {
-      return;
-    }
-    const data = getTableUpdateData(data0, data1);
-    if (data) {
-      await this.http.tableUpdate({table: "p_menchuang", data});
-      await this.getXinghaos();
-    }
-  }
-  async removeXinghaoMenchaung(i: number) {
-    const data = this.xinghaoMenchuangs.items()[i];
-    if (data.gongyis && data.gongyis.items().length > 0) {
-      this.message.error("门窗存在工艺时不能删除");
-      return;
-    }
-    if (!(await this.message.confirm("确定删除吗？"))) {
-      return;
-    }
-    await this.http.tableDelete({table: "p_menchuang", vids: [data.vid]});
-    await this.getXinghaos();
-  }
-
-  async getXinghaoGongyi(gongyi?: XinghaoGongyi) {
-    const data = gongyi ? cloneDeep({...gongyi, xinghaos: undefined}) : getXinghaoGongyi();
-    const form: InputInfo<typeof data>[] = [
-      {
-        type: "string",
-        label: "名字",
-        model: {data, key: "mingzi"},
-        validators: Validators.required
-      },
-      {type: "number", label: "排序", model: {data, key: "paixu"}},
-      {type: "boolean", label: "停用", model: {data, key: "tingyong"}}
-    ];
-    const result = await this.message.form(form);
-    return result ? data : null;
-  }
-  async addXinghaoGongyi(i: number) {
-    const data = await this.getXinghaoGongyi();
-    if (data) {
-      data.menchuang = this.xinghaoMenchuangs.items()[i].vid;
-      await this.http.tableInsert({table: "p_gongyi", data});
-      await this.getXinghaos();
-    }
-  }
-  async editXinghaoGongyi(i: number, j: number) {
-    const data0 = this.xinghaoMenchuangs.items()[i].gongyis?.items()[j];
-    const data1 = await this.getXinghaoGongyi(data0);
-    if (!data0 || !data1) {
-      return;
-    }
-    const data = getTableUpdateData(data0, data1);
-    if (data) {
-      await this.http.tableUpdate({table: "p_gongyi", data});
-      await this.getXinghaos();
-    }
-  }
-  async removeXinghaoGongyi(i: number, j: number) {
-    const data = this.xinghaoMenchuangs.items()[i].gongyis?.items()[j];
-    if (!data) {
-      return;
-    }
-    if (data.xinghaos && data.xinghaos.items.length > 0) {
-      this.message.error("工艺存在型号时不能删除");
-      return;
-    }
-    if (!(await this.message.confirm("确定删除吗？"))) {
-      return;
-    }
-    await this.http.tableDelete({table: "p_gongyi", vids: [data.vid]});
-    await this.getXinghaos();
   }
 
   xinghaos = signal<XinghaoData[]>([]);
@@ -431,8 +242,8 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
     if (xinghao) {
       result.mingziOld = result.data.mingzi;
       await this.editXinghaoByResult(result, xinghao);
-      await this.getXinghaos();
-      this.enterXinghao(xinghao.mingzi);
+      await this.lrsjStatus.getXinghaos();
+      this.gotoZuofas(xinghao.mingzi);
     }
   }
   async editXinghao(xinghao: XinghaoData) {
@@ -448,7 +259,7 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
     if (response?.code === 0) {
       const response2 = await this.lrsjStatus.setXinghao(data2, true, data2.名字);
       if (response2?.code === 0) {
-        await this.getXinghaos();
+        await this.lrsjStatus.getXinghaos();
       }
     }
   }
@@ -538,7 +349,7 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
         {fromName, toNames: data.names, menchuang: data.menchuang, gongyi: data.gongyi},
         {spinner: false}
       );
-      await this.getXinghaos();
+      await this.lrsjStatus.getXinghaos();
     }
   }
   async removeXinghao(xinghao: XinghaoData) {
@@ -548,13 +359,12 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
     }
     const success = await this.http.getData<boolean>("shuju/api/removeXinghao", {name});
     if (success) {
-      await this.getXinghaos();
+      await this.lrsjStatus.getXinghaos();
     }
   }
-  async enterXinghao(name: string) {
-    const xinghao = await this.lrsjStatus.getXinghao(name);
-    await this.lrsjStatus.updateXinghao(xinghao);
-    this.emitSaveInfo();
+  async gotoZuofas(xinghaoName: string) {
+    const xinghao = await this.lrsjStatus.getXinghao(xinghaoName);
+    this.lrsjStatus.gotoZuofas(xinghao);
   }
 
   async getOptions(key: string) {

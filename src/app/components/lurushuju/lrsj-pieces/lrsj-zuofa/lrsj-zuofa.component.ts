@@ -1,8 +1,7 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, input, model, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, input, model, output, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatTabsModule} from "@angular/material/tabs";
 import {getCopyName} from "@app/app.common";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@app/modules/input/components/input.types";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {TableComponent} from "@app/modules/table/components/table/table.component";
@@ -23,7 +22,6 @@ import {getMenjiaoTable, getShuruTable, getXuanxiangTable} from "./lrsj-zuofa.ut
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LrsjZuofaComponent {
-  private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
 
@@ -31,6 +29,7 @@ export class LrsjZuofaComponent {
 
   fenlei = input.required<string>();
   zuofa = model.required<工艺做法>();
+  enterSuanliaoData = output<算料数据>();
 
   tabs = signal<ZuofaTab[]>([{name: "算料数据"}, {name: "下单选项输入配置"}]);
 
@@ -251,12 +250,12 @@ export class LrsjZuofaComponent {
         break;
     }
   }
-  async onMenjiaoRow(event: RowButtonEvent<算料数据>, suanliaoDataName?: string, suanliaoTestName?: string) {
+  async onMenjiaoRow(event: RowButtonEvent<算料数据>) {
     const zuofa = this.zuofa();
     const {button, item: fromItem, rowIdx} = event;
     switch (button.event) {
       case "编辑":
-        await this.editSuanliao(fromItem, rowIdx, suanliaoDataName, suanliaoTestName);
+        this.enterSuanliaoData.emit(fromItem);
         break;
       case "编辑排序":
         {
@@ -325,10 +324,5 @@ export class LrsjZuofaComponent {
         }
         break;
     }
-  }
-  async editSuanliao(data: 算料数据, rowIdx: number, suanliaoDataName?: string, suanliaoTestName?: string) {
-    data.产品分类 = this.fenlei();
-    console.log(rowIdx, suanliaoDataName, suanliaoTestName);
-    await this.getMenjiaoItem();
   }
 }

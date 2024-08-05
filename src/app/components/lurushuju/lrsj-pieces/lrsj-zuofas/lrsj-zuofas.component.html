@@ -1,78 +1,42 @@
-<div class="lrsj-left">
-  <div class="menchaungs link" (click)="exitXinghao()">
-    <div class="item active">
-      <div class="menchuang-header">
-        <div class="name">{{ menchuangName() }}</div>
-      </div>
-      <div class="gongyis">
-        <div class="item active">
-          <div class="gongyi-header">
-            <div class="name">{{ gongyiName() }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  @if (xinghao(); as xinghao) {
-    <div>【{{ xinghao["名字"] }}】的工艺做法</div>
-    <div class="fenlei-list">
+@if (xinghao(); as xinghao) {
+  <ng-scrollbar #scrollbar>
+    <div class="items">
       @for (fenlei of xinghao["显示产品分类"]; track i; let i = $index) {
-        <div class="fenlei-item item">
-          <button class="name" mat-button (click)="scrollToFenlei(i)">{{ fenlei }}</button>
-          <div class="zuofa-list">
+        @if (i > 0) {
+          <mat-divider></mat-divider>
+        }
+        <div class="产品分类 item" [attr.data-i]="i">
+          <div class="header">
+            <div class="name title">{{ fenlei }}</div>
+          </div>
+          <div class="工艺做法 items no-items-per-row">
             @for (zuofa of xinghao["产品分类"][fenlei]; track j; let j = $index) {
-              <div class="zuofa-item item">
-                <button class="name" mat-button (click)="scrollToZuofa(i, j)">{{ zuofa["名字"] }}</button>
+              <div class="item link" [attr.data-ij]="i + ',' + j">
+                <app-image [src]="getFilepathUrl(zuofa['图片'])" (click)="openZuofa(fenlei, zuofa['名字'])"> </app-image>
+                <div class="name" (click)="openZuofa(fenlei, zuofa['名字'])">{{ zuofa["名字"] }}</div>
+                @if (editMode()) {
+                  <div class="toolbar center">
+                    <button mat-button color="primary" (click)="editZuofa(fenlei, zuofa['名字'])">编辑</button>
+                    <button mat-button color="primary" (click)="copyZuofa(fenlei, zuofa['名字'])">复制</button>
+                    <button mat-button color="primary" (click)="removeZuofa(fenlei, zuofa['名字'])">删除</button>
+                  </div>
+                }
+                <div class="text">停用：{{ getBooleanStr(zuofa["停用"]) }}</div>
+                <div class="text">录入完成：{{ getBooleanStr(zuofa["录入完成"]) }}</div>
+                <div class="text">默认值：{{ getBooleanStr(zuofa["默认值"]) }}</div>
               </div>
             }
+            <div class="item border link" (click)="addZuofa(fenlei)">
+              <div class="toolbar center flex-110">
+                <button mat-icon-button color="primary"><mat-icon>add</mat-icon></button>
+              </div>
+            </div>
           </div>
         </div>
       }
     </div>
-  }
-</div>
-<mat-divider vertical></mat-divider>
-<div class="lrsj-right">
-  @if (xinghao(); as xinghao) {
-    <ng-scrollbar #scrollbar>
-      <div class="items">
-        @for (fenlei of xinghao["显示产品分类"]; track i; let i = $index) {
-          @if (i > 0) {
-            <mat-divider></mat-divider>
-          }
-          <div class="产品分类 item" [attr.data-i]="i">
-            <div class="header">
-              <div class="name title">{{ fenlei }}</div>
-            </div>
-            <div class="工艺做法 items no-items-per-row">
-              @for (zuofa of xinghao["产品分类"][fenlei]; track j; let j = $index) {
-                <div class="item link" [attr.data-ij]="i + ',' + j">
-                  <app-image [src]="getFilepathUrl(zuofa['图片'])" (click)="openZuofa(fenlei, zuofa['名字'])"> </app-image>
-                  <div class="name" (click)="openZuofa(fenlei, zuofa['名字'])">{{ zuofa["名字"] }}</div>
-                  @if (editMode()) {
-                    <div class="toolbar center">
-                      <button mat-button color="primary" (click)="editZuofa(fenlei, zuofa['名字'])">编辑</button>
-                      <button mat-button color="primary" (click)="copyZuofa(fenlei, zuofa['名字'])">复制</button>
-                      <button mat-button color="primary" (click)="removeZuofa(fenlei, zuofa['名字'])">删除</button>
-                    </div>
-                  }
-                  <div class="text">停用：{{ getBooleanStr(zuofa["停用"]) }}</div>
-                  <div class="text">录入完成：{{ getBooleanStr(zuofa["录入完成"]) }}</div>
-                  <div class="text">默认值：{{ getBooleanStr(zuofa["默认值"]) }}</div>
-                </div>
-              }
-              <div class="item border link" (click)="addZuofa(fenlei)">
-                <div class="toolbar center flex-110">
-                  <button mat-icon-button color="primary"><mat-icon>add</mat-icon></button>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </ng-scrollbar>
-  }
-</div>
+  </ng-scrollbar>
+}
 
 @for (info of zuofaInfos(); track i; let i = $index) {
   <app-floating-dialog
@@ -86,7 +50,11 @@
   >
     <ng-container appFloatingDialogTitle>工艺做法：{{ info.zuofa["名字"] }}</ng-container>
     <ng-container appFloatingDialogBody>
-      <app-lrsj-zuofa [fenlei]="info.fenlei" [(zuofa)]="info.zuofa"></app-lrsj-zuofa>
+      <app-lrsj-zuofa
+        [fenlei]="info.fenlei"
+        [(zuofa)]="info.zuofa"
+        (enterSuanliaoData)="gotoSuanliaoData(info.fenlei, info.zuofa['名字'], $event)"
+      ></app-lrsj-zuofa>
     </ng-container>
   </app-floating-dialog>
 }
