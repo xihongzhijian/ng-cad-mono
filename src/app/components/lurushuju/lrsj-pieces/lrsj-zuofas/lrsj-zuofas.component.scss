@@ -25,4 +25,8 @@
   flex: 1 1 0;
   --item-width: 200px;
   --item-image-height: 200px;
+
+  .item {
+    position: relative;
+  }
 }

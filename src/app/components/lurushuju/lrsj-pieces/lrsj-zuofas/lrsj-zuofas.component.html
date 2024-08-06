@@ -12,6 +12,15 @@
           <div class="工艺做法 items no-items-per-row">
             @for (zuofa of xinghao["产品分类"][fenlei]; track j; let j = $index) {
               <div class="item link" [attr.data-ij]="i + ',' + j">
+                @if (zuofa["录入完成"]) {
+                  <div class="img done"></div>
+                }
+                @if (zuofa["停用"]) {
+                  <div class="img disabled"></div>
+                }
+                @if (zuofa["默认值"]) {
+                  <div class="img is-default"></div>
+                }
                 <app-image [src]="getFilepathUrl(zuofa['图片'])" (click)="openZuofa(fenlei, zuofa['名字'])"> </app-image>
                 <div class="name" (click)="openZuofa(fenlei, zuofa['名字'])">{{ zuofa["名字"] }}</div>
                 @if (editMode()) {
@@ -21,9 +30,6 @@
                     <button mat-button color="primary" (click)="removeZuofa(fenlei, zuofa['名字'])">删除</button>
                   </div>
                 }
-                <div class="text">停用：{{ getBooleanStr(zuofa["停用"]) }}</div>
-                <div class="text">录入完成：{{ getBooleanStr(zuofa["录入完成"]) }}</div>
-                <div class="text">默认值：{{ getBooleanStr(zuofa["默认值"]) }}</div>
               </div>
             }
             <div class="item border link" (click)="addZuofa(fenlei)">

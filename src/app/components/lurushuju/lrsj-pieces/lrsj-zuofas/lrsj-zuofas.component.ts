@@ -3,7 +3,7 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
-import {filePathUrl, getBooleanStr, getCopyName, getFilepathUrl} from "@app/app.common";
+import {filePathUrl, getCopyName, getFilepathUrl} from "@app/app.common";
 import {FloatingDialogModule} from "@app/modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
@@ -112,9 +112,6 @@ export class LrsjZuofasComponent extends LrsjPiece {
 
   getFilepathUrl(url: string) {
     return getFilepathUrl(url);
-  }
-  getBooleanStr(value: boolean) {
-    return getBooleanStr(value);
   }
 
   async addZuofa(产品分类: string) {
