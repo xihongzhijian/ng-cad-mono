@@ -1,23 +1,23 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {provideRouter} from "@angular/router";
+import {LrsjSuanliaoDataComponent} from "./lrsj-suanliao-data.component";
 
-import { LrsjSuanliaoDataComponent } from './lrsj-suanliao-data.component';
-
-describe('LrsjSuanliaoDataComponent', () => {
+describe("LrsjSuanliaoDataComponent", () => {
   let component: LrsjSuanliaoDataComponent;
   let fixture: ComponentFixture<LrsjSuanliaoDataComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LrsjSuanliaoDataComponent]
-    })
-    .compileComponents();
+      imports: [LrsjSuanliaoDataComponent],
+      providers: [provideRouter([])]
+    }).compileComponents();
 
     fixture = TestBed.createComponent(LrsjSuanliaoDataComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

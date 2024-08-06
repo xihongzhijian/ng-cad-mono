@@ -244,8 +244,9 @@ export class LrsjZuofasComponent extends LrsjPiece {
         Object.assign(data0, result);
         if (paixu1 !== paixu2) {
           sortZuofas(gongyis);
-          this.lrsjStatus.setXinghao({产品分类: xinghao.产品分类}, true);
+          await this.lrsjStatus.setXinghao({产品分类: xinghao.产品分类}, true);
         }
+        this.lrsjStatus.refreshXinghao(false);
       }
     }
   }

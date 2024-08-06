@@ -184,7 +184,7 @@ export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
       }
     }
     if (successCount > 0) {
-      const xinghao2 = await this.lrsjStatus.refreshXinghao();
+      const xinghao2 = await this.lrsjStatus.refreshXinghao(true);
       const data = xinghao2?.产品分类[targetFenlei]?.at(-1);
       if (data) {
         // TODO

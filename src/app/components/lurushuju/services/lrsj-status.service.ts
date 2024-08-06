@@ -111,14 +111,19 @@ export class LrsjStatusService {
     }
     return await this.http.post("shuju/api/setXinghao", {名字: name, data, silent}, {spinner: false});
   }
-  async refreshXinghao() {
+  async refreshXinghao(fetch: boolean) {
     const xinghao = this.xinghao();
     if (!xinghao) {
-      return;
+      return xinghao;
     }
-    const xinghao2 = await this.getXinghao(xinghao.名字);
-    this._xinghao.set(xinghao2);
-    return xinghao2;
+    if (fetch) {
+      const xinghao2 = await this.getXinghao(xinghao.名字);
+      this._xinghao.set(xinghao2);
+      return xinghao2;
+    } else {
+      this._xinghao.set({...xinghao});
+      return xinghao;
+    }
   }
   async updateXinghao(xinghao: Xinghao | null) {
     if (xinghao) {
