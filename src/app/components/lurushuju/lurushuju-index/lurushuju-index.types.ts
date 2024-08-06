@@ -1,4 +1,3 @@
-import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {Properties} from "csstype";
 
 export interface ToolbarBtn {
@@ -7,8 +6,4 @@ export interface ToolbarBtn {
   class?: string[];
   style?: Properties;
   onClick?: () => void;
-}
-
-export interface MenshanOption extends OptionsDataData {
-  zuchenghuajian?: string;
 }

@@ -2,6 +2,11 @@
   > *:not(:last-child) {
     margin-bottom: 10px;
   }
+  .toolbar.vertical {
+    .mdc-button {
+      width: auto;
+    }
+  }
 }
 
 .menchaungs {

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, HostBinding, inject} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
@@ -9,6 +9,7 @@ import {environment} from "@env";
 import {timeout} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {SuanliaoDataBtnName, suanliaoDataBtnNames} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.types";
 import {LrsjStatusService} from "../services/lrsj-status.service";
 import {XinghaoGongyi, XinghaoMenchuang} from "../services/lrsj-status.types";
 import {getXinghaoGongyi, getXinghaoMenchuang} from "../services/lrsj-status.utils";
@@ -26,12 +27,15 @@ export class LurushujuNavComponent {
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
 
+  @HostBinding("class") class = "ng-page";
+
   xinghaoMenchuangs = this.lrsjStatus.xinghaoMenchuangs;
   editMode = this.lrsjStatus.editMode;
   xinghao = this.lrsjStatus.xinghao;
   xinghaoFilterStr = this.lrsjStatus.xinghaoFilterStr;
   pieceInfos = this.lrsjStatus.pieceInfos;
   focusFenleiZuofa = this.lrsjStatus.focusFenleiZuofa;
+  suanliaoDataInfo = this.lrsjStatus.suanliaoDataInfo;
   production = environment.production;
   menchuangName = computed(() => this.xinghaoMenchuangs.item()?.mingzi);
   gongyiName = computed(() => this.xinghaoMenchuangs.item()?.gongyis?.item()?.mingzi);
@@ -149,5 +153,10 @@ export class LurushujuNavComponent {
       await timeout(0);
     }
     this.lrsjStatus.focusFenleiZuofa.set({i, j});
+  }
+
+  suanliaoDataBtnNames = suanliaoDataBtnNames;
+  clickSuanliaoDataBtnName(name: SuanliaoDataBtnName) {
+    this.lrsjStatus.triggerSuanliaoDataBtn.set({name});
   }
 }

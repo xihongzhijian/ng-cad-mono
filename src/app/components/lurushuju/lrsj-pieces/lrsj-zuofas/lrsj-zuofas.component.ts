@@ -65,23 +65,23 @@ export class LrsjZuofasComponent extends LrsjPiece {
   getInfo() {
     const obj: ObjectOf<string[]> = {};
     for (const info of this.zuofaInfos()) {
-      const {fenlei, zuofa} = info;
-      if (!obj[fenlei]) {
-        obj[fenlei] = [];
+      const {fenleiName, zuofa} = info;
+      if (!obj[fenleiName]) {
+        obj[fenleiName] = [];
       }
-      obj[fenlei].push(zuofa.名字);
+      obj[fenleiName].push(zuofa.名字);
     }
     const info: LrsjPieceInfo = {};
     const zuofaInfos = this.zuofaInfos();
     if (zuofaInfos.length > 0) {
       info.工艺做法弹窗 = this.zuofaInfos()
-        .map(({fenlei, zuofa}) => `${fenlei}:${zuofa.名字}`)
+        .map(({fenleiName, zuofa}) => `${fenleiName}:${zuofa.名字}`)
         .join(";");
     }
     const suanliaoDataInfo = this.lrsjStatus.suanliaoDataInfo();
     if (suanliaoDataInfo) {
-      info.产品分类 = suanliaoDataInfo.fenlei;
-      info.工艺做法 = suanliaoDataInfo.zuofa;
+      info.产品分类 = suanliaoDataInfo.fenleiName;
+      info.工艺做法 = suanliaoDataInfo.zuofaName;
       info.算料数据 = suanliaoDataInfo.suanliaoData.名字;
     }
     return info;
@@ -250,16 +250,16 @@ export class LrsjZuofasComponent extends LrsjPiece {
       }
     }
   }
-  async openZuofa(fenlei: string, zuofaName: string) {
-    let zuofa = this.xinghao()?.产品分类[fenlei].find((v) => v.名字 === zuofaName);
+  async openZuofa(fenleiName: string, zuofaName: string) {
+    let zuofa = this.xinghao()?.产品分类[fenleiName].find((v) => v.名字 === zuofaName);
     if (!zuofa) {
       return;
     }
     zuofa = getZuofa(zuofa, await this.lrsjStatus.getZuofaOptions());
     const infos = this.zuofaInfos().slice();
-    const i = infos.findIndex((v) => v.fenlei === fenlei && v.zuofa.名字 === zuofaName);
+    const i = infos.findIndex((v) => v.fenleiName === fenleiName && v.zuofa.名字 === zuofaName);
     if (i < 0) {
-      infos.push({fenlei, zuofa, position: signal({x: 0, y: 0})});
+      infos.push({fenleiName, zuofa, position: signal({x: 0, y: 0})});
     }
     this.zuofaInfos.set(infos);
     this.emitSaveInfo();

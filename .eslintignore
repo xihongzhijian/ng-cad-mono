@@ -50,6 +50,7 @@ Thumbs.db
 # yarn
 .yarn
 
-lib
-dist
+/lib
+/dist
 src/assets/json
+/test

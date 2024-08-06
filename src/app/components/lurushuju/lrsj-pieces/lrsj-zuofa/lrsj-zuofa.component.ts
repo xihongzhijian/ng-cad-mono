@@ -1,15 +1,24 @@
 import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, input, model, output, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
+import {MatDialog} from "@angular/material/dialog";
 import {MatTabsModule} from "@angular/material/tabs";
 import {getCopyName} from "@app/app.common";
+import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@app/modules/input/components/input.types";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {TableComponent} from "@app/modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@app/modules/table/components/table/table.types";
 import {ObjectOf} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
+import {openSelectZuofaDialog} from "../../select-zuofa-dialog/select-zuofa-dialog.component";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
-import {getSortedItems, 工艺做法, 算料数据, 输入, 选项} from "../../xinghao-data";
+import {getSortedItems, get算料数据, menjiaoCadTypes, SuanliaoDataParams, 工艺做法, 算料数据, 输入, 选项} from "../../xinghao-data";
+import {
+  copySuanliaoData,
+  getMenfengInputs,
+  getMenjiaoOptionInputInfo,
+  updateMenjiaoData
+} from "../lrsj-suanliao-data/lrsj-suanliao-data.utils";
 import {ShuruTableData, XuanxiangTableData, ZuofaTab} from "./lrsj-zuofa.types";
 import {getMenjiaoTable, getShuruTable, getXuanxiangTable} from "./lrsj-zuofa.utils";
 
@@ -22,12 +31,14 @@ import {getMenjiaoTable, getShuruTable, getXuanxiangTable} from "./lrsj-zuofa.ut
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LrsjZuofaComponent {
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
 
   @HostBinding("class") class = ["ng-page"];
 
-  fenlei = input.required<string>();
+  fenleiName = input.required<string>();
   zuofa = model.required<工艺做法>();
   enterSuanliaoData = output<算料数据>();
 
@@ -36,7 +47,7 @@ export class LrsjZuofaComponent {
   constructor() {}
 
   async submitZuofa(fields: (keyof 工艺做法)[]) {
-    const fenlei = this.fenlei();
+    const fenlei = this.fenleiName();
     const zuofa = this.zuofa();
     this.lrsjStatus.submitZuofa(fenlei, zuofa, fields);
   }
@@ -243,10 +254,92 @@ export class LrsjZuofaComponent {
   }
   async getMenjiaoItem() {}
   async onMenjiaoToolbar(event: ToolbarButtonEvent) {
+    const zuofa = this.zuofa();
     switch (event.button.event) {
       case "添加":
+        {
+          const data = get算料数据();
+          const keys: (keyof 算料数据)[] = ["门铰", "门扇厚度", "锁边", "铰边"];
+          const menjiaoOptions = await this.lrsjStatus.getMenjiaoOptions();
+          const form: InputInfo[] = [
+            {
+              type: "string",
+              label: "",
+              model: {data, key: "名字"},
+              validators: (control) => {
+                const value = control.value;
+                if (!value) {
+                  return {"请输入【门铰锁边铰边】的名字，下单要选": true};
+                }
+                return null;
+              }
+            },
+            ...keys.map((k) => getMenjiaoOptionInputInfo(data, k, 1, menjiaoOptions)),
+            getMenfengInputs(data)
+          ];
+          const result = await this.message.form(form);
+          if (result) {
+            updateMenjiaoData(data);
+            zuofa.算料数据.push(data);
+            await this.updateMenjiao();
+            this.lrsjStatus.gotoSuanliaoData(this.fenleiName(), zuofa.名字, data);
+          }
+        }
         break;
       case "从其他做法选择":
+        {
+          const xinghaoName = this.lrsjStatus.xinghao()?.名字 || "";
+          const result = await openSelectZuofaDialog(this.dialog, {
+            data: {
+              xinghaoOptions: await this.lrsjStatus.getXinghaoOptions(),
+              menjiaoOptions: await this.lrsjStatus.getMenjiaoOptions(),
+              excludeXinghaos: [xinghaoName],
+              excludeZuofas: [zuofa.名字],
+              key: "算料数据",
+              multiple: true,
+              fenlei: this.fenleiName()
+            }
+          });
+          if (result && result.items.length > 0) {
+            const names = zuofa.算料数据.map((v) => v.名字);
+            for (const item of result.items) {
+              const fromItem = item.data as 算料数据;
+              const toItem = cloneDeep(fromItem);
+              toItem.vid = this.getMenjiaoId();
+              toItem.名字 = getCopyName(names, toItem.名字);
+              updateMenjiaoData(toItem);
+              zuofa.算料数据.push(toItem);
+              names.push(toItem.名字);
+              for (const key1 of menjiaoCadTypes) {
+                const fromData = fromItem[key1];
+                const toData = toItem[key1];
+                const [包边方向, 开启] = key1.split("+");
+                const fromParams: SuanliaoDataParams = {
+                  选项: {
+                    型号: item.型号,
+                    产品分类: item.产品分类,
+                    工艺做法: item.工艺做法 || "",
+                    包边方向,
+                    开启,
+                    门铰锁边铰边: fromItem.名字
+                  }
+                };
+                const toParams: SuanliaoDataParams = {
+                  选项: {
+                    型号: xinghaoName,
+                    产品分类: this.fenleiName(),
+                    工艺做法: zuofa.名字,
+                    包边方向,
+                    开启,
+                    门铰锁边铰边: toItem.名字
+                  }
+                };
+                await copySuanliaoData(this.http, fromData, toData, fromParams, toParams);
+              }
+            }
+            await this.updateMenjiao();
+          }
+        }
         break;
     }
   }

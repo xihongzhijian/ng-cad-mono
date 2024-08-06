@@ -85,5 +85,12 @@
         }
       </div>
     }
+    @if (suanliaoDataInfo(); as info) {
+      <div class="toolbar vertical">
+        @for (name of suanliaoDataBtnNames; track $index) {
+          <button mat-raised-button color="primary" (click)="clickSuanliaoDataBtnName(name)">{{ name }}</button>
+        }
+      </div>
+    }
   </div>
 </ng-scrollbar>

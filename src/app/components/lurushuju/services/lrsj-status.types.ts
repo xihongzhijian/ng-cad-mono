@@ -40,7 +40,11 @@ export class XinghaoDataList<T> {
 }
 
 export interface SuanliaoDataInfo {
-  fenlei: string;
-  zuofa: string;
+  fenleiName: string;
+  zuofaName: string;
   suanliaoData: 算料数据;
+}
+
+export interface MenshanOption extends OptionsDataData {
+  zuchenghuajian?: string;
 }

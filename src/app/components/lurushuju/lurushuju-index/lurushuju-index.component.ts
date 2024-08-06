@@ -68,6 +68,7 @@ export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
         session.remove(this._infoKey);
       }
     });
+    this.status.fetchCad数据要求List();
   }
   async ngAfterViewInit() {
     const info = session.load<LrsjPieceInfo>(this._infoKey);

@@ -1,14 +1,21 @@
 import {computed, effect, inject, Injectable, signal, untracked} from "@angular/core";
 import {session, splitOptions} from "@app/app.common";
+import {SuanliaogongshiInfo} from "@app/modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
+import {BancaiListData} from "@app/modules/http/services/cad-data.service.types";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {AppStatusService} from "@app/services/app-status.service";
+import {MrbcjfzHuajian} from "@app/views/mrbcjfz/mrbcjfz.types";
+import {filterHuajian} from "@app/views/mrbcjfz/mrbcjfz.utils";
 import {ObjectOf, queryString} from "@lucilor/utils";
 import {cloneDeep, isEqual} from "lodash";
+import {lastValueFrom, Subject, take} from "rxjs";
 import {LrsjPieceInfos} from "../lrsj-pieces/lrsj-pieces.types";
 import {defaultFenleis} from "../lrsj-pieces/lrsj-pieces.utils";
-import {getXinghao, updateXinghaoFenleis, Xinghao, XinghaoRaw, 工艺做法, 算料数据} from "../xinghao-data";
+import {SuanliaoDataBtnName} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.types";
+import {getXinghao, updateXinghaoFenleis, xiaoguotuKeys, Xinghao, XinghaoRaw, 工艺做法, 算料数据, 算料数据2} from "../xinghao-data";
 import {
+  MenshanOption,
   OptionsAll,
   OptionsAll2,
   SuanliaoDataInfo,
@@ -32,6 +39,9 @@ export class LrsjStatusService {
   xinghao = computed(() => this._xinghao());
   suanliaoDataInfo = signal<SuanliaoDataInfo | null>(null);
   editMode = signal(false);
+  varNames = signal<NonNullable<SuanliaogongshiInfo["varNames"]>>({});
+  xinghaozhuanyongCadCount = signal(0);
+  triggerSuanliaoDataBtn = signal<{name: SuanliaoDataBtnName} | null>(null);
 
   private _xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
   xinghaoFilterStr = signal(session.load<string>(this._xinghaoFilterStrKey) || "");
@@ -58,6 +68,7 @@ export class LrsjStatusService {
       session.save(this._xinghaoFilterStrKey, str);
       untracked(() => this.filterXinghaos());
     });
+    effect(() => this.refreshHuajians(), {allowSignalWrites: true});
   }
 
   private _dataFetched: ObjectOf<any> = {};
@@ -85,20 +96,46 @@ export class LrsjStatusService {
     zuofas: computed(() => ({show: !!this.xinghao() && !this.suanliaoDataInfo()})),
     suanliaoData: computed(() => ({show: !!this.suanliaoDataInfo()}))
   };
-  gotoXinghaos() {
+  async gotoXinghaos() {
+    if (!(await this.beforeSuanliaoDataLeave())) {
+      return;
+    }
     this.updateXinghao(null);
     this.suanliaoDataInfo.set(null);
   }
-  gotoZuofas(xinghao: Xinghao | null) {
+  async gotoZuofas(xinghao: Xinghao | null) {
+    if (!(await this.beforeSuanliaoDataLeave())) {
+      return;
+    }
     this.updateXinghao(xinghao);
     this.suanliaoDataInfo.set(null);
   }
-  gotoSuanliaoData(fenlei: string, zuofa: string, suanliaoData: 算料数据, xinghao?: Xinghao) {
+  async gotoSuanliaoData(fenleiName: string, zuofaName: string, suanliaoData: 算料数据, xinghao?: Xinghao) {
+    if (!(await this.beforeSuanliaoDataLeave())) {
+      return;
+    }
     if (xinghao) {
       this.gotoZuofas(xinghao);
     }
-    suanliaoData.产品分类 = fenlei;
-    this.suanliaoDataInfo.set({fenlei, zuofa, suanliaoData});
+    suanliaoData.产品分类 = fenleiName;
+    this.suanliaoDataInfo.set({fenleiName, zuofaName, suanliaoData});
+  }
+  suanliaoDataSubmit = new Subject<void>();
+  async beforeSuanliaoDataLeave() {
+    const info = this.pieceInfos.suanliaoData();
+    if (!info.show) {
+      return true;
+    }
+    const btn = await this.message.button({content: "是否保存数据？", buttons: ["保存", "不保存"]});
+    if (btn === "保存") {
+      this.triggerSuanliaoDataBtn.set({name: "保存"});
+      await lastValueFrom(this.suanliaoDataSubmit.pipe(take(1)));
+      return true;
+    } else if (btn === "不保存") {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   async getXinghao(name: string) {
@@ -151,7 +188,7 @@ export class LrsjStatusService {
     this.updateXinghao({...xinghao});
   }
 
-  async submitZuofa(fenlei: string, zuofa: 工艺做法 | string, fields: (keyof 工艺做法)[]) {
+  async submitZuofa(fenleiName: string, zuofa: 工艺做法 | string, fields: (keyof 工艺做法)[]) {
     const xinghao = this.xinghao();
     if (!xinghao) {
       return;
@@ -159,7 +196,7 @@ export class LrsjStatusService {
     const data: Partial<工艺做法> = {};
     const 型号 = xinghao.名字;
     if (typeof zuofa === "string") {
-      const zuofa2 = xinghao.产品分类[fenlei].find((v) => v.名字 === zuofa);
+      const zuofa2 = xinghao.产品分类[fenleiName].find((v) => v.名字 === zuofa);
       if (!zuofa2) {
         return;
       }
@@ -172,7 +209,11 @@ export class LrsjStatusService {
     for (const field of fields) {
       data[field] = zuofa[field] as any;
     }
-    const response = await this.http.post("shuju/api/editGongyi", {型号, 产品分类: fenlei, updateDatas: {[名字]: data}}, {spinner: false});
+    const response = await this.http.post(
+      "shuju/api/editGongyi",
+      {型号, 产品分类: fenleiName, updateDatas: {[名字]: data}},
+      {spinner: false}
+    );
     if (response?.code === 0) {
       Object.assign(zuofa, data);
       this.updateXinghao(xinghao);
@@ -275,5 +316,84 @@ export class LrsjStatusService {
       const jPrev = this.xinghaoMenchuangs.item()?.gongyis?.index();
       this.activeXinghaoGingyi.set({i: iPrev || 0, j: jPrev || 0, refresh: true});
     }
+  }
+
+  menshanOptions = signal<MenshanOption[]>([]);
+  private _isMenshanOptionsFetched = signal(false);
+  async refreshMenshanOptions(force?: boolean) {
+    if (!force && this._isMenshanOptionsFetched()) {
+      return;
+    }
+    const menshans =
+      (
+        await this.http.getOptions<MenshanOption>({
+          name: "p_menshan",
+          fields: ["zuchenghuajian"]
+        })
+      )?.data || [];
+    this.menshanOptions.set(menshans);
+    this._isMenshanOptionsFetched.set(true);
+  }
+
+  bancaiList = signal<BancaiListData | null>(null);
+  private _isBancaiListFetched = signal(false);
+  async refreshBancaiList(force?: boolean) {
+    if (!force && this._isBancaiListFetched()) {
+      return;
+    }
+    const bancaiList = await this.http.getBancaiList(6);
+    this.bancaiList.set(bancaiList);
+    this._isBancaiListFetched.set(true);
+  }
+
+  private _huajiansCache: ObjectOf<MrbcjfzHuajian[]> = {};
+  huajians = signal<MrbcjfzHuajian[]>([]);
+  getHuajianIds(menshanOptions: MenshanOption[]) {
+    const huajianIds = new Set<number>();
+    for (const optionRaw of menshanOptions) {
+      if (typeof optionRaw.zuchenghuajian === "string") {
+        for (const v of optionRaw.zuchenghuajian.split("*")) {
+          if (v) {
+            huajianIds.add(Number(v));
+          }
+        }
+      }
+    }
+    return huajianIds;
+  }
+  async refreshHuajians() {
+    const huajianIds = this.getHuajianIds(this.menshanOptions());
+    if (huajianIds.size > 0) {
+      const ids = Array.from(huajianIds);
+      const cacheKey = ids.join(",");
+      if (this._huajiansCache[cacheKey]) {
+        this.huajians.set(this._huajiansCache[cacheKey]);
+      } else {
+        const huajians = await this.http.queryMySql<MrbcjfzHuajian>(
+          {
+            table: "p_huajian",
+            fields: ["vid", "mingzi", "xiaotu", "shihuajian"],
+            filter: {where_in: {vid: ids}}
+          },
+          {spinner: false}
+        );
+        this.huajians.set(huajians);
+        this._huajiansCache[cacheKey] = huajians;
+      }
+    } else {
+      this.huajians.set([]);
+    }
+  }
+  filterHuajians(data: 算料数据2) {
+    const xiaoguotuValues = new Set<string>();
+    for (const key of xiaoguotuKeys) {
+      const value = data[key];
+      if (typeof value === "string" && value) {
+        xiaoguotuValues.add(value);
+      }
+    }
+    const menshanOptions = this.menshanOptions().filter((v) => xiaoguotuValues.has(v.name));
+    const huajianIds = this.getHuajianIds(menshanOptions);
+    return this.huajians().filter((v) => huajianIds.has(v.vid) && filterHuajian(v));
   }
 }
