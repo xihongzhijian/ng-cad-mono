@@ -89,6 +89,7 @@ export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
       {name: "添加", color: "primary"},
       {name: "编辑", color: this.lrsjStatus.editMode() ? "accent" : "primary"},
       {name: "复制做法", color: "primary", style: {display: this.lrsjStatus.xinghao() ? "" : "none"}},
+      {name: "返回", color: "primary", style: {display: this.lrsjStatus.canGoBack() ? "" : "none"}},
       {name: ""},
       {name: "通用数据", color: "primary"},
       {name: "通用公式", color: "primary"},
@@ -112,6 +113,9 @@ export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
       case "复制做法":
         await this.copyZuofa();
         return;
+      case "返回":
+        this.lrsjStatus.goBack();
+        return;
       case "通用数据":
         await openTongyongshujuDialog(this.dialog, {data: {}});
         return;
@@ -134,7 +138,7 @@ export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
       case "测试":
         break;
     }
-    await this.message.alert("未实现");
+    await this.message.alert("?");
   }
   async openZxpj(isXinghao: boolean) {
     const xinghao = this.lrsjStatus.xinghao()?.名字;

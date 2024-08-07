@@ -137,6 +137,18 @@ export class LrsjStatusService {
       return false;
     }
   }
+  canGoBack = computed(() => {
+    const infos = this.pieceInfos;
+    return !infos.xinghaos().show;
+  });
+  async goBack() {
+    const infos = this.pieceInfos;
+    if (infos.suanliaoData().show) {
+      await this.gotoZuofas(this.xinghao());
+    } else if (infos.zuofas().show) {
+      await this.gotoXinghaos();
+    }
+  }
 
   async getXinghao(name: string) {
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/getXinghao", {名字: name});
