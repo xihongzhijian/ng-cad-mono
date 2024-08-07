@@ -162,6 +162,9 @@
       .mdc-button {
         padding: 0;
         --mdc-text-button-container-height: auto;
+        .mat-mdc-button-touch-target {
+          height: auto;
+        }
       }
     }
 

@@ -59,10 +59,8 @@
   .name {
     width: 100%;
     justify-content: flex-start;
-  }
-
-  .mdc-button {
-    padding: 0;
-    --mdc-text-button-container-height: auto;
+    &.active {
+      background: lightgray;
+    }
   }
 }

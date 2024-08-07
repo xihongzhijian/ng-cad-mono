@@ -352,6 +352,7 @@ export const getMenjiaoOptionInputInfo = (data: any, key: string, n: number, opt
           data.门扇厚度 = [diff[0]];
           valueBefore = diff;
         }
+        updateMenjiaoData(data);
       };
     }
   });

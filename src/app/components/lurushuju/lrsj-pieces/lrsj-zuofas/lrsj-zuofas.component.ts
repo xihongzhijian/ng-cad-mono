@@ -91,7 +91,10 @@ export class LrsjZuofasComponent extends LrsjPiece {
     if (typeof 工艺做法弹窗 === "string") {
       for (const str of 工艺做法弹窗.split(";")) {
         const [fenlei, zuofaName] = str.split(":");
-        await this.openZuofa(fenlei, zuofaName);
+        const zuofa = this.xinghao()?.产品分类[fenlei]?.find((v) => v.名字 === zuofaName);
+        if (zuofa) {
+          this.openZuofa(fenlei, zuofa);
+        }
       }
     }
     if (产品分类 && 工艺做法 && 算料数据) {
@@ -114,12 +117,12 @@ export class LrsjZuofasComponent extends LrsjPiece {
     return getFilepathUrl(url);
   }
 
-  async addZuofa(产品分类: string) {
+  async addZuofa(fenleiName: string) {
     const xinghao = this.xinghao();
     if (!xinghao) {
       return;
     }
-    const names = xinghao.产品分类[产品分类].map((gongyi) => gongyi.名字);
+    const names = xinghao.产品分类[fenleiName].map((gongyi) => gongyi.名字);
     const 名字 = await this.message.prompt({
       type: "string",
       label: "",
@@ -138,25 +141,26 @@ export class LrsjZuofasComponent extends LrsjPiece {
       return;
     }
     const 型号 = xinghao.名字;
-    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/addGongyi", {名字, 型号, 产品分类});
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/addGongyi", {名字, 型号, fenleiName});
     await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw?.产品分类);
-    this.openZuofa(产品分类, 名字);
+    this.openZuofa(fenleiName, 名字);
   }
-  async removeZuofa(产品分类: string, 名字: string) {
+  async removeZuofa(fenleiName: string, zuofa: 工艺做法) {
     const xinghao = this.xinghao();
     if (!xinghao || !(await this.message.confirm("确定删除选中的工艺做法吗？"))) {
       return;
     }
     const 型号 = xinghao.名字;
-    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/removeGongyi", {名字, 型号, 产品分类});
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/removeGongyi", {名字: zuofa.名字, 型号, 产品分类: fenleiName});
     await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw?.产品分类);
   }
-  async copyZuofa(产品分类: string, 名字: string) {
+  async copyZuofa(fenleiName: string, zuofa: 工艺做法) {
     const xinghao = this.xinghao();
     if (!xinghao) {
       return;
     }
-    const names = xinghao.产品分类[产品分类].map((gongyi) => gongyi.名字);
+    const zuofaName = zuofa.名字;
+    const names = xinghao.产品分类[fenleiName].map((v) => v.名字);
     let 复制名字 = await this.message.prompt({
       type: "string",
       label: "复制工艺做法",
@@ -166,7 +170,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
         if (names.includes(value)) {
           return {名字已存在: true};
         }
-        if (value === 名字) {
+        if (value === zuofaName) {
           return {不能与原名字相同: true};
         }
         return null;
@@ -176,29 +180,25 @@ export class LrsjZuofasComponent extends LrsjPiece {
       return;
     }
     if (!复制名字) {
-      复制名字 = getCopyName(names, 名字);
+      复制名字 = getCopyName(names, zuofaName);
     }
     const 型号 = xinghao.名字;
-    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/copyGongyi", {名字, 复制名字, 型号, 产品分类});
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/copyGongyi", {名字: zuofaName, 复制名字, 型号, fenleiName});
     await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw?.产品分类);
   }
-  async editZuofa(产品分类: string, 名字: string) {
+  async editZuofa(fenleiName: string, zuofa: 工艺做法) {
     const xinghao = this.xinghao();
     if (!xinghao) {
       return;
     }
-    const gongyis = xinghao.产品分类[产品分类];
-    const data0 = gongyis.find((gongyi) => gongyi.名字 === 名字);
-    if (!data0) {
-      return;
-    }
-    const data = cloneDeep(data0);
+    const zuofas = xinghao.产品分类[fenleiName];
+    const zuofaNew = cloneDeep(zuofa);
     const form: InputInfo<Partial<工艺做法>>[] = [
-      {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
+      {type: "string", label: "名字", model: {data: zuofaNew, key: "名字"}, validators: Validators.required},
       {
         type: "image",
         label: "图片",
-        value: data.图片,
+        value: zuofaNew.图片,
         prefix: filePathUrl,
         clearable: true,
         onChange: async (val, info) => {
@@ -206,55 +206,52 @@ export class LrsjZuofasComponent extends LrsjPiece {
             const result = await this.http.uploadImage(val);
             if (result?.url) {
               info.value = result.url;
-              data.图片 = result.url;
+              zuofaNew.图片 = result.url;
             }
           } else {
             info.value = "";
-            data.图片 = "";
+            zuofaNew.图片 = "";
           }
         }
       },
-      {type: "boolean", label: "停用", model: {data, key: "停用"}},
-      {type: "number", label: "排序", model: {data, key: "排序"}},
-      {type: "boolean", label: "录入完成", model: {data, key: "录入完成"}},
-      {type: "boolean", label: "默认值", model: {data, key: "默认值"}}
+      {type: "boolean", label: "停用", model: {data: zuofaNew, key: "停用"}},
+      {type: "number", label: "排序", model: {data: zuofaNew, key: "排序"}},
+      {type: "boolean", label: "录入完成", model: {data: zuofaNew, key: "录入完成"}},
+      {type: "boolean", label: "默认值", model: {data: zuofaNew, key: "默认值"}}
     ];
     const result = await this.message.form(form);
     if (result) {
-      const updateDatas: ObjectOf<typeof result> = {[名字]: result};
+      const updateDatas: ObjectOf<typeof result> = {[zuofa.名字]: result};
       if (result.默认值) {
-        for (const gongyi of gongyis) {
-          if (gongyi.名字 !== 名字) {
-            gongyi.默认值 = false;
-            updateDatas[gongyi.名字] = {默认值: false};
+        for (const zuofa of zuofas) {
+          if (zuofa.名字 !== zuofaNew.名字) {
+            zuofa.默认值 = false;
+            updateDatas[zuofa.名字] = {默认值: false};
           }
         }
       }
       const 型号 = xinghao.名字;
-      const success = await this.http.post<boolean>("shuju/api/editGongyi", {型号, 产品分类, updateDatas});
+      const success = await this.http.post<boolean>("shuju/api/editGongyi", {型号, 产品分类: fenleiName, updateDatas});
       if (success) {
-        const mingziOld = data0.名字;
-        const mingziNew = data.名字;
+        const mingziOld = zuofa.名字;
+        const mingziNew = zuofaNew.名字;
         if (mingziOld !== mingziNew) {
-          const params = {xinghao: 型号, fenlei: 产品分类, mingziOld, mingziNew};
+          const params = {xinghao: 型号, fenlei: fenleiName, mingziOld, mingziNew};
           await this.http.getData("shuju/api/onGongyiNameChange", params);
         }
-        const paixu1 = data0.排序;
-        const paixu2 = data.排序;
-        Object.assign(data0, result);
+        const paixu1 = zuofa.排序;
+        const paixu2 = zuofaNew.排序;
+        Object.assign(zuofa, result);
         if (paixu1 !== paixu2) {
-          sortZuofas(gongyis);
+          sortZuofas(zuofas);
           await this.lrsjStatus.setXinghao({产品分类: xinghao.产品分类}, true);
         }
         this.lrsjStatus.refreshXinghao(false);
       }
     }
   }
-  async openZuofa(fenleiName: string, zuofaName: string) {
-    let zuofa = this.xinghao()?.产品分类[fenleiName].find((v) => v.名字 === zuofaName);
-    if (!zuofa) {
-      return;
-    }
+  async openZuofa(fenleiName: string, zuofa: 工艺做法) {
+    const zuofaName = zuofa.名字;
     zuofa = getZuofa(zuofa, await this.lrsjStatus.getZuofaOptions());
     const infos = this.zuofaInfos().slice();
     const i = infos.findIndex((v) => v.fenleiName === fenleiName && v.zuofa.名字 === zuofaName);
@@ -269,8 +266,8 @@ export class LrsjZuofasComponent extends LrsjPiece {
     this.zuofaInfos.set(infos);
     this.emitSaveInfo();
   }
-  gotoSuanliaoData(fenlei: string, zuofa: string, suanliaoData: 算料数据) {
-    this.lrsjStatus.gotoSuanliaoData(fenlei, zuofa, suanliaoData);
+  gotoSuanliaoData(fenleiName: string, zuofaName: string, suanliaoData: 算料数据) {
+    this.lrsjStatus.gotoSuanliaoData(fenleiName, zuofaName, suanliaoData);
   }
 
   onFocusFenleiZuofa() {
@@ -283,6 +280,12 @@ export class LrsjZuofasComponent extends LrsjPiece {
     let el: Element | null;
     if (typeof j === "number") {
       el = scrollbar.viewport.nativeElement.querySelector(`[data-ij="${i},${j}"]`);
+      const xinghao = this.xinghao();
+      if (xinghao) {
+        const fenleiName = xinghao.显示产品分类[i];
+        const zuofa = xinghao.产品分类[fenleiName][j];
+        this.openZuofa(fenleiName, zuofa);
+      }
     } else {
       el = scrollbar.viewport.nativeElement.querySelector(`[data-i="${i}"]`);
     }

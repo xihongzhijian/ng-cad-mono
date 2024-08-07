@@ -201,6 +201,15 @@ export class LrsjStatusService {
         return;
       }
       zuofa = zuofa2;
+    } else {
+      const zuofaName = zuofa.名字;
+      const zuofas = xinghao.产品分类[fenleiName];
+      const i = zuofas.findIndex((v) => v.名字 === zuofaName);
+      if (i >= 0) {
+        zuofas[i] = zuofa;
+      } else {
+        zuofas.push(zuofa);
+      }
     }
     if (!Array.isArray(fields) || fields.length === 0) {
       return;

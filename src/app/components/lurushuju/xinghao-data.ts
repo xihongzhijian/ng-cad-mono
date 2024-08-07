@@ -36,11 +36,11 @@ export const updateXinghaoFenleis = (
       xinghao.产品分类[fenlei] = [];
     }
     sortZuofas(xinghao.产品分类[fenlei]);
-    for (const gongyi of xinghao.产品分类[fenlei]) {
-      if (!Array.isArray(gongyi.算料数据)) {
-        gongyi.算料数据 = [];
+    for (const zuofa of xinghao.产品分类[fenlei]) {
+      if (!Array.isArray(zuofa.算料数据)) {
+        zuofa.算料数据 = [];
       }
-      for (const slsj of gongyi.算料数据) {
+      for (const slsj of zuofa.算料数据) {
         update算料数据(slsj, 选项要求Options);
       }
     }

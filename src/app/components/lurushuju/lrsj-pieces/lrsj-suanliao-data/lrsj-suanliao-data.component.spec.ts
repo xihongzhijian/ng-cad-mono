@@ -1,4 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {LrsjSuanliaoDataComponent} from "./lrsj-suanliao-data.component";
 
@@ -9,7 +10,7 @@ describe("LrsjSuanliaoDataComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LrsjSuanliaoDataComponent],
-      providers: [provideRouter([])]
+      providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LrsjSuanliaoDataComponent);

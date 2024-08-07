@@ -149,7 +149,7 @@ export class LurushujuNavComponent {
   async clickFenleiZuofa(i: number, j?: number) {
     const show = this.lrsjStatus.pieceInfos.zuofas().show;
     if (!show) {
-      this.lrsjStatus.gotoZuofas(this.lrsjStatus.xinghao());
+      await this.lrsjStatus.gotoZuofas(this.lrsjStatus.xinghao());
       await timeout(0);
     }
     this.lrsjStatus.focusFenleiZuofa.set({i, j});

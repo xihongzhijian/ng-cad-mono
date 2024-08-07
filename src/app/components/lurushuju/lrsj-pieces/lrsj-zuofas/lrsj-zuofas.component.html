@@ -21,13 +21,13 @@
                 @if (zuofa["默认值"]) {
                   <div class="img is-default"></div>
                 }
-                <app-image [src]="getFilepathUrl(zuofa['图片'])" (click)="openZuofa(fenlei, zuofa['名字'])"> </app-image>
-                <div class="name" (click)="openZuofa(fenlei, zuofa['名字'])">{{ zuofa["名字"] }}</div>
+                <app-image [src]="getFilepathUrl(zuofa['图片'])" (click)="openZuofa(fenlei, zuofa)"> </app-image>
+                <div class="name" (click)="openZuofa(fenlei, zuofa)">{{ zuofa["名字"] }}</div>
                 @if (editMode()) {
                   <div class="toolbar center">
-                    <button mat-button color="primary" (click)="editZuofa(fenlei, zuofa['名字'])">编辑</button>
-                    <button mat-button color="primary" (click)="copyZuofa(fenlei, zuofa['名字'])">复制</button>
-                    <button mat-button color="primary" (click)="removeZuofa(fenlei, zuofa['名字'])">删除</button>
+                    <button mat-button color="primary" (click)="editZuofa(fenlei, zuofa)">编辑</button>
+                    <button mat-button color="primary" (click)="copyZuofa(fenlei, zuofa)">复制</button>
+                    <button mat-button color="primary" (click)="removeZuofa(fenlei, zuofa)">删除</button>
                   </div>
                 }
               </div>

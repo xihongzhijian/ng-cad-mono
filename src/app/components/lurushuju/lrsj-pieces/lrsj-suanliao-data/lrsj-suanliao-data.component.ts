@@ -163,21 +163,25 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   }
 
   getOptionInputInfo2(data: any, key: string, n: number): InputInfoSelect {
-    return {
-      ...getMenjiaoOptionInputInfo(data, key, n, this.menjiaoOptions),
-      style: getInfoStyle(n),
-      onChange: () => {
-        this.suanliaoData.update((v) => ({...v}));
-      }
+    const info = getMenjiaoOptionInputInfo(data, key, n, this.menjiaoOptions);
+    info.style = getInfoStyle(n);
+    const onChange = info.onChange;
+    info.onChange = (val: any, info: any) => {
+      onChange?.(val, info);
+      this.suanliaoData.update((v) => ({...v}));
     };
+    if (info.optionsDialog) {
+      const dialogOnChange = info.optionsDialog.onChange;
+      info.optionsDialog.onChange = (val) => {
+        dialogOnChange?.(val);
+        this.suanliaoData.update((v) => ({...v}));
+      };
+    }
+    return info;
   }
   suanliaoData = signal(get算料数据());
   form = computed(() => {
-    const suanliaoDataInfo = this.suanliaoDataInfo();
-    if (!suanliaoDataInfo) {
-      return [];
-    }
-    const {suanliaoData: data} = suanliaoDataInfo;
+    const data = this.suanliaoData();
 
     const getMenfengInputInfo = (value: (typeof 门缝配置输入)[number]): InputInfo => {
       return {
@@ -246,6 +250,9 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         type: "string",
         label: "名字",
         model: {data, key: "名字"},
+        onChange: () => {
+          this.suanliaoData.update((v) => ({...v}));
+        },
         validators: [
           Validators.required,
           (control) => {
@@ -579,6 +586,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       }
     }
     updateMenjiaoData(this.suanliaoData);
+    await this.validate();
   }
 
   async selectShiyituCad(key1: MenjiaoCadType | CadItemComponent<MenjiaoShiyituCadItemInfo>) {
@@ -833,7 +841,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           const params = {xinghao: xinghaoName, fenlei: fenleiName, gongyi: zuofaName, mingziOld, mingziNew};
           const result = await this.http.getData("shuju/api/onMenjiaoNameChange", params);
           if (result) {
-            for (const item of Object.values(this.key1Infos)) {
+            for (const item of Object.values(this.key1Infos())) {
               item.suanliaoDataParams.选项.门铰锁边铰边 = mingziNew;
             }
             this.suanliaoDataInfo.set({...suanliaoDataInfo, suanliaoData: data});
@@ -852,7 +860,12 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
               }
             }
           }
-          zuofa.算料数据[zuofaIndex] = data;
+          const suanliaoDataIndex = zuofa.算料数据.findIndex((v) => v.vid === dataOld.vid);
+          if (suanliaoDataIndex >= 0) {
+            zuofa.算料数据[suanliaoDataIndex] = data;
+          } else {
+            zuofa.算料数据.push(data);
+          }
           await this.lrsjStatus.submitZuofa(fenleiName, zuofa, ["算料数据"]);
         }
       }
