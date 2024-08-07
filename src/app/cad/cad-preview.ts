@@ -70,7 +70,7 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
   return cad;
 };
 
-export interface CadPreviewParams extends CadPreviewRawParams {}
+export type CadPreviewParams = CadPreviewRawParams;
 export const getCadPreview = async (collection: CadCollection, data: CadData, params: CadPreviewParams = {}) => {
   const cad = await getCadPreviewRaw(collection, data, params);
   const url = await cad.toDataURL();

@@ -19,7 +19,7 @@ export class MsbjInfo {
     let peizhishuju: MsbjPeizhishuju | null = null;
     try {
       peizhishuju = JSON.parse(rawData.peizhishuju as any);
-    } catch (error) {}
+    } catch {}
     if (!peizhishuju) {
       peizhishuju = {模块节点: []};
     }
@@ -35,7 +35,7 @@ export class MsbjInfo {
     let rectInfos1: MsbjRectInfoRaw[] | null = null;
     try {
       rectInfos1 = window.node2rect(JSON.parse(this.rawData.node || ""), data);
-    } catch (error) {}
+    } catch {}
     peizhishuju.模块节点 = rectInfos1 || [];
   }
 }

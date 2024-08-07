@@ -146,7 +146,7 @@ export class ExportComponent implements OnInit {
           let sourceCad: CadData;
           try {
             sourceCad = new CadData(response.data.cad);
-          } catch (error) {
+          } catch {
             finish("error", "CAD数据错误");
             return;
           }

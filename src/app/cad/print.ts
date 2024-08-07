@@ -176,7 +176,7 @@ const setImageUrl = async (cadImage: CadImage, url: string) => {
       cadImage.url = getImageDataUrl(image);
       cadImage.sourceSize = new Point(image.width, image.height);
       imgMap[url2] = cadImage.url;
-    } catch (error) {
+    } catch {
       imgMap[url2] = "";
     }
   }
@@ -692,16 +692,26 @@ const getUnfoldCadViewers = async (
       }
     } else {
       const qrcodeText = offsetStrs.join(";");
-      await QRCode.toCanvas(qrcodeEl, qrcodeText, {width: qrcodeWidth, margin: 0});
-      const img = new CadImage();
-      img.objectFit = "contain";
-      img.anchor.set(0.5, 1);
-      img.targetSize = new Point(qrcodeEl.width - imgPadding[1] - imgPadding[3], qrcodeEl.height - imgPadding[0] - imgPadding[2]);
-      img.url = qrcodeEl.toDataURL();
-      img.position.set(boxRect.x, y);
-      unfoldCad.entities.add(img);
-      await unfoldCadViewer.render(img);
-      y += img.boundingRect.height + imgPadding[0];
+      if (qrcodeText) {
+        let qrcodeSuccess = true;
+        try {
+          await QRCode.toCanvas(qrcodeEl, qrcodeText, {width: qrcodeWidth, margin: 0});
+        } catch (error) {
+          console.warn("生成二维码出错", error);
+          qrcodeSuccess = false;
+        }
+        if (qrcodeSuccess) {
+          const img = new CadImage();
+          img.objectFit = "contain";
+          img.anchor.set(0.5, 1);
+          img.targetSize = new Point(qrcodeEl.width - imgPadding[1] - imgPadding[3], qrcodeEl.height - imgPadding[0] - imgPadding[2]);
+          img.url = qrcodeEl.toDataURL();
+          img.position.set(boxRect.x, y);
+          unfoldCad.entities.add(img);
+          await unfoldCadViewer.render(img);
+          y += img.boundingRect.height + imgPadding[0];
+        }
+      }
     }
 
     const zhankaiText = getCadCalcZhankaiText(cad, calcZhankai, materialResult, bancai, params.projectConfig.getRaw(), projectName);

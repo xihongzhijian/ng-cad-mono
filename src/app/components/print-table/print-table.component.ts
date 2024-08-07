@@ -179,7 +179,7 @@ export class PrintTableComponent implements OnInit {
           const field = "铣孔";
           try {
             xikongData = JSON.parse(item[field]);
-          } catch (e) {
+          } catch {
             const content = `${field}=${JSON.stringify(item[field])}`;
             this.message.error({title: "数据格式错误", content});
           }

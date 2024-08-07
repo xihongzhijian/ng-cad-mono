@@ -126,7 +126,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
         this.colorBg = "white";
       }
       this.colorValue = value;
-    } catch (error) {
+    } catch {
       this.colorValue = "black";
       this.colorBg = "white";
     }

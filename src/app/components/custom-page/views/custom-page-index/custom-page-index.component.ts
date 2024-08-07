@@ -367,7 +367,7 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
       return;
     }
     event.preventDefault();
-    // eslint-disable-next-line deprecation/deprecation
+
     event.returnValue = "";
   }
 

@@ -978,7 +978,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       } else {
         this.colorBg = "white";
       }
-    } catch (error) {
+    } catch {
       this.colorBg = "white";
     }
   }
