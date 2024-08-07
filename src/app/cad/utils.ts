@@ -293,7 +293,6 @@ export const suanliaodanZoomOut = (data: CadData) => {
     }
   }
   data.updateComponents();
-  ``;
 };
 
 export const getCadTotalLength = (data: CadData) => {

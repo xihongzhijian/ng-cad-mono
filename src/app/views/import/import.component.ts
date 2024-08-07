@@ -406,7 +406,6 @@ export class ImportComponent extends Utils() implements OnInit {
       let uniqCode = data.info.唯一码;
       if (!uniqCode) {
         if (addUniqCode) {
-          this.status.isAdmin$;
           if (isXinghao) {
             v.data.info.唯一码 = CadPortable.getUniqCode(v.data, this.importCache, this.status.user$.value);
           } else {

@@ -14,7 +14,7 @@ export class MrbcjfzXinghaoInfo {
   ) {
     try {
       this.默认板材 = JSON.parse(raw.morenbancai || "");
-    } catch (error) {}
+    } catch {}
     this.update();
   }
 

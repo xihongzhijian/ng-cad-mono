@@ -105,7 +105,7 @@ export class Cad数据要求 {
     let 导入配置Raw: ObjectOf<any> | undefined;
     try {
       导入配置Raw = JSON.parse(raw.daorucadpeizhi);
-    } catch (error) {}
+    } catch {}
     if (isTypeOf(导入配置Raw, "object")) {
       for (const key in 导入配置Raw) {
         if (!importComponentConfigNames.includes(key as any)) {

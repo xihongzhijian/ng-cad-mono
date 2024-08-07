@@ -359,7 +359,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     let data: T[] | undefined;
     try {
       data = JSON.parse(text);
-    } catch (error) {
+    } catch {
       this.message.alert("读取文件失败");
     }
     if (Array.isArray(data)) {
@@ -478,7 +478,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (typeof value === "string") {
       try {
         id = JSON.parse(value).id;
-      } catch (error) {
+      } catch {
         id = "";
       }
     } else if (value instanceof CadData) {
@@ -556,7 +556,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       let cadData: CadData | undefined;
       try {
         cadData = new CadData(JSON.parse(item[column.field] as string));
-      } catch (error) {}
+      } catch {}
       if (cadData) {
         const data: OpenCadOptions = {data: cadData, isLocal: true, center: true};
         const result = await openCadEditorDialog(this.dialog, {data});

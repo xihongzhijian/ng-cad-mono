@@ -146,7 +146,7 @@ export const replaceRemoteHost = (urlStr: string) => {
   let url: URL;
   try {
     url = new URL(urlStr);
-  } catch (error) {
+  } catch {
     return urlStr;
   }
   const remoteUrl = new URL(remoteHost);

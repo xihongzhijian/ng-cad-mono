@@ -176,7 +176,7 @@ const setImageUrl = async (cadImage: CadImage, url: string) => {
       cadImage.url = getImageDataUrl(image);
       cadImage.sourceSize = new Point(image.width, image.height);
       imgMap[url2] = cadImage.url;
-    } catch (error) {
+    } catch {
       imgMap[url2] = "";
     }
   }

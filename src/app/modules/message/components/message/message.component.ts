@@ -149,7 +149,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (jsonEditorContainer && data.type === "json") {
       this.jsonEditor = new JSONEditor({
         target: jsonEditorContainer.nativeElement,
-        props: {mode: Mode.text, ...data.options}
+        props: {mode: Mode.tree, ...data.options}
       });
       this.jsonEditor.set({json: data.json});
     }

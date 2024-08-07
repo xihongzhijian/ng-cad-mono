@@ -28,6 +28,7 @@ import {PageStatusService} from "../../services/page-status.service";
 import {InputGroup} from "./page-component-config2.types";
 import {getCommonInputs, getFormInputs, getImageInputs, getTextInputs, mergeGroups} from "./page-component-config2.utils";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 pageComponentInfos; // ? 虽然没用，但删除了会报错
 
 @Component({

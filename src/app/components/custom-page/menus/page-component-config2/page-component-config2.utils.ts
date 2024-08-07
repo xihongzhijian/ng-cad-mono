@@ -51,7 +51,7 @@ const getInputInfoPart = <T>(
   if (isColor) {
     try {
       value = new Color(value);
-    } catch (error) {
+    } catch {
       value = new Color();
     }
   }

@@ -38,7 +38,7 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
         this.colorBg = "white";
       }
       this.colorValue = value;
-    } catch (error) {
+    } catch {
       this.colorValue = "black";
       this.colorBg = "white";
     }

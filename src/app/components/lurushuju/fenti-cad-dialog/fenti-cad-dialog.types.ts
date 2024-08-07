@@ -10,7 +10,7 @@ export interface FentiCadDialogInput {
   gongshis?: 算料公式[];
 }
 
-export interface FentiCadDialogOutput {}
+export type FentiCadDialogOutput = ObjectOf<never>;
 
 export type FentiCadData = ObjectOf<HoutaiCad | null | undefined>;
 
