@@ -1,19 +1,19 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
-import {LurushujuNavComponent} from "./lurushuju-nav.component";
+import {LrsjSuanliaoCadsComponent} from "./lrsj-suanliao-cads.component";
 
-describe("LurushujuNavComponent", () => {
-  let component: LurushujuNavComponent;
-  let fixture: ComponentFixture<LurushujuNavComponent>;
+describe("LrsjSuanliaoCadsComponent", () => {
+  let component: LrsjSuanliaoCadsComponent;
+  let fixture: ComponentFixture<LrsjSuanliaoCadsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LurushujuNavComponent],
+      imports: [LrsjSuanliaoCadsComponent],
       providers: [provideAnimations(), provideRouter([])]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(LurushujuNavComponent);
+    fixture = TestBed.createComponent(LrsjSuanliaoCadsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

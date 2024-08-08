@@ -41,13 +41,13 @@ export class SelectZuofaDialogComponent {
   searchFormMenjiao = signal({名字: "", 开启: "", 门铰: "", 门扇厚度: ""});
   displayMenjiaoKeys: (keyof 算料数据)[] = ["开启", "门铰", "门扇厚度"];
   inputInfos = computed<InputInfo[]>(() => {
-    const xinghaoMenchuangs = this.lrsjStatus.xinghaoMenchuangs;
+    const xinghaoMenchuangs = this.lrsjStatus.xinghaoMenchuangs();
     const {fenlei, xinghaoOptions: options} = this.data || {};
     const data = this.searchForm();
     const xinghaoOptions: InputInfoOption<string>[] = [];
-    for (const menchuang of xinghaoMenchuangs.items()) {
-      for (const gongyi of menchuang.gongyis?.items() || []) {
-        for (const xinghao of gongyi.xinghaos?.items() || []) {
+    for (const menchuang of xinghaoMenchuangs.items) {
+      for (const gongyi of menchuang.gongyis?.items || []) {
+        for (const xinghao of gongyi.xinghaos?.items || []) {
           xinghaoOptions.push({value: xinghao.mingzi, img: xinghao.tupian});
         }
       }

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, output, signal, untracked} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, HostBinding, inject} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatTooltipModule} from "@angular/material/tooltip";
@@ -12,7 +12,6 @@ import {AppStatusService} from "@app/services/app-status.service";
 import {environment} from "@env";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {ObjectOf} from "packages/utils/lib";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
 import {XinghaoData} from "../../services/lrsj-status.types";
 import {getXinghaoData} from "../../services/lrsj-status.utils";
@@ -28,7 +27,7 @@ import {defaultFenleis, getGroupStyle, getInfoStyle, getOptions} from "../lrsj-p
   styleUrl: "./lrsj-xinghaos.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
+export class LrsjXinghaosComponent extends LrsjPiece {
   private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
@@ -39,67 +38,11 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
   xinghaoMenchuangs = this.lrsjStatus.xinghaoMenchuangs;
   xinghao = this.lrsjStatus.xinghao;
   editMode = this.lrsjStatus.editMode;
-  saveInfo = output();
 
   production = environment.production;
 
   constructor() {
     super();
-    effect(() => {
-      const activeXinghaoGingyi = this.lrsjStatus.activeXinghaoGingyi();
-      if (activeXinghaoGingyi) {
-        const {i, j, refresh} = activeXinghaoGingyi;
-        untracked(() => this.clickXinghaoGongyi(i, j, refresh));
-      }
-    });
-    effect(() => {
-      const pieceInfo = this.lrsjStatus.pieceInfos.xinghaos();
-      if (!pieceInfo.show) {
-        this.emitSaveInfo();
-      }
-    });
-  }
-
-  async ngOnInit() {
-    await this.lrsjStatus.getXinghaos();
-    this.isReadyForInfo.next(true);
-  }
-
-  getInfo() {
-    const menchuang = this.xinghaoMenchuangs.item();
-    const info: ObjectOf<any> = {};
-    if (menchuang) {
-      info.门窗 = menchuang.mingzi;
-    }
-    const gongyi = menchuang?.gongyis?.item();
-    if (gongyi) {
-      info.工艺 = gongyi.mingzi;
-    }
-    const xinghao = this.xinghao();
-    if (xinghao) {
-      info.型号 = xinghao.名字;
-    }
-    return info;
-  }
-  async setInfo(info: ObjectOf<any>) {
-    const {门窗, 工艺, 型号} = info;
-    let i: number | undefined;
-    let j: number | undefined;
-    if (门窗) {
-      i = this.xinghaoMenchuangs.items().findIndex((v) => v.mingzi === 门窗);
-    }
-    if (工艺 && typeof i === "number") {
-      const gongyis = this.xinghaoMenchuangs.items()[i]?.gongyis;
-      if (gongyis) {
-        j = gongyis.items().findIndex((v) => v.mingzi === 工艺);
-      }
-    }
-    if (typeof i === "number" && typeof j === "number") {
-      this.clickXinghaoGongyi(i, j);
-    }
-    if (型号) {
-      this.gotoZuofas(型号);
-    }
   }
 
   filterInputInfo: InputInfo<this> = {
@@ -112,23 +55,11 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
     }, 500),
     style: {width: "200px"}
   };
-  clickXinghaoGongyi(i: number, j: number, refresh?: boolean) {
-    const menchuangs = this.xinghaoMenchuangs;
-    const iPrev = menchuangs.index();
-    menchuangs.index.set(i);
-    const gongyis = menchuangs.items()[i]?.gongyis;
-    if (!gongyis) {
-      return;
-    }
-    const jPrev = gongyis.index();
-    gongyis.index.set(j);
-    if (iPrev !== i || jPrev !== j || refresh) {
-      this.xinghaos.set(gongyis.item()?.xinghaos?.items() || []);
-    }
-    this.emitSaveInfo();
-  }
 
-  xinghaos = signal<XinghaoData[]>([]);
+  xinghaos = computed(() => {
+    const xinghaoMenchuangs = this.xinghaoMenchuangs();
+    return xinghaoMenchuangs.item?.gongyis?.item?.xinghaos?.items || [];
+  });
   async getXinghaoItem(xinghao?: XinghaoData) {
     const data: XinghaoData = xinghao ? cloneDeep(xinghao) : getXinghaoData();
     if (!data.算料单模板) {
@@ -137,8 +68,8 @@ export class LrsjXinghaosComponent extends LrsjPiece implements OnInit {
     if (typeof data.是否需要激光开料 !== "boolean") {
       data.是否需要激光开料 = this.lrsjStatus.isKailiao();
     }
-    const menchuang = this.xinghaoMenchuangs.item();
-    const gongyi = menchuang?.gongyis?.item();
+    const menchuang = this.xinghaoMenchuangs().item;
+    const gongyi = menchuang?.gongyis?.item;
     if (!data.menchuang && menchuang) {
       data.menchuang = menchuang.mingzi;
     }

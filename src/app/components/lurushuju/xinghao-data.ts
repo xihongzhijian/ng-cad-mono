@@ -271,6 +271,7 @@ export interface 算料数据 {
 
 export const menjiaoCadTypes = ["包边在外+外开", "包边在外+内开", "包边在内+外开", "包边在内+内开"] as const;
 export type MenjiaoCadType = (typeof menjiaoCadTypes)[number];
+export const isMenjiaoCadType = (value: string): value is MenjiaoCadType => menjiaoCadTypes.includes(value as MenjiaoCadType);
 export const 企料分体CadKeys = ["分体1", "分体2"] as const;
 export type 企料分体CadKey = (typeof 企料分体CadKeys)[number];
 

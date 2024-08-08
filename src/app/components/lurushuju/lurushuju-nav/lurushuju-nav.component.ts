@@ -37,8 +37,8 @@ export class LurushujuNavComponent {
   focusFenleiZuofa = this.lrsjStatus.focusFenleiZuofa;
   suanliaoDataInfo = this.lrsjStatus.suanliaoDataInfo;
   production = environment.production;
-  menchuangName = computed(() => this.xinghaoMenchuangs.item()?.mingzi);
-  gongyiName = computed(() => this.xinghaoMenchuangs.item()?.gongyis?.item()?.mingzi);
+  menchuangName = computed(() => this.xinghaoMenchuangs().item?.mingzi);
+  gongyiName = computed(() => this.xinghaoMenchuangs().item?.gongyis?.item?.mingzi);
 
   async getXinghaoMenchaung(menchuang?: XinghaoMenchuang) {
     const data = menchuang ? cloneDeep({...menchuang, gongyis: undefined}) : getXinghaoMenchuang();
@@ -63,7 +63,7 @@ export class LurushujuNavComponent {
     }
   }
   async editXinghaoMenchaung(i: number) {
-    const data0 = this.xinghaoMenchuangs.items()[i];
+    const data0 = this.xinghaoMenchuangs().items[i];
     const data1 = await this.getXinghaoMenchaung(data0);
     if (!data1) {
       return;
@@ -75,8 +75,8 @@ export class LurushujuNavComponent {
     }
   }
   async removeXinghaoMenchaung(i: number) {
-    const data = this.xinghaoMenchuangs.items()[i];
-    if (data.gongyis && data.gongyis.items().length > 0) {
+    const data = this.xinghaoMenchuangs().items[i];
+    if (data.gongyis && data.gongyis.items.length > 0) {
       this.message.error("门窗存在工艺时不能删除");
       return;
     }
@@ -105,13 +105,13 @@ export class LurushujuNavComponent {
   async addXinghaoGongyi(i: number) {
     const data = await this.getXinghaoGongyi();
     if (data) {
-      data.menchuang = this.xinghaoMenchuangs.items()[i].vid;
+      data.menchuang = this.xinghaoMenchuangs().items[i].vid;
       await this.http.tableInsert({table: "p_gongyi", data});
       await this.lrsjStatus.getXinghaos();
     }
   }
   async editXinghaoGongyi(i: number, j: number) {
-    const data0 = this.xinghaoMenchuangs.items()[i].gongyis?.items()[j];
+    const data0 = this.xinghaoMenchuangs().items[i].gongyis?.items[j];
     const data1 = await this.getXinghaoGongyi(data0);
     if (!data0 || !data1) {
       return;
@@ -123,7 +123,7 @@ export class LurushujuNavComponent {
     }
   }
   async removeXinghaoGongyi(i: number, j: number) {
-    const data = this.xinghaoMenchuangs.items()[i].gongyis?.items()[j];
+    const data = this.xinghaoMenchuangs().items[i].gongyis?.items[j];
     if (!data) {
       return;
     }
@@ -139,7 +139,7 @@ export class LurushujuNavComponent {
   }
 
   clickXinghaoGongyi(i: number, j: number) {
-    this.lrsjStatus.activeXinghaoGingyi.set({i, j});
+    this.lrsjStatus.activateXinghaoGongyi(i, j);
   }
 
   gotoXinghaos() {
@@ -147,9 +147,9 @@ export class LurushujuNavComponent {
   }
 
   async clickFenleiZuofa(i: number, j?: number) {
-    const show = this.lrsjStatus.pieceInfos.zuofas().show;
+    const show = this.pieceInfos().zuofas.show;
     if (!show) {
-      await this.lrsjStatus.gotoZuofas(this.lrsjStatus.xinghao());
+      await this.lrsjStatus.gotoZuofas(this.xinghao());
       await timeout(0);
     }
     this.lrsjStatus.focusFenleiZuofa.set({i, j});

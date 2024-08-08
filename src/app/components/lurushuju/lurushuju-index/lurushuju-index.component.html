@@ -25,14 +25,10 @@
   </div>
   <mat-divider vertical></mat-divider>
   <div class="lrsj-right">
-    <app-lrsj-xinghaos
-      #lrsjPiece
-      class="lrsj-piece"
-      [class.hidden]="!pieceInfos.xinghaos().show"
-      (saveInfo)="saveInfo()"
-    ></app-lrsj-xinghaos>
-    <app-lrsj-zuofas #lrsjPiece class="lrsj-piece" [class.hidden]="!pieceInfos.zuofas().show" (saveInfo)="saveInfo()"></app-lrsj-zuofas>
-    <app-lrsj-suanliao-data #lrsjPiece class="lrsj-piece" [class.hidden]="!pieceInfos.suanliaoData().show"></app-lrsj-suanliao-data>
+    <app-lrsj-xinghaos class="lrsj-piece" [class.hidden]="!pieceInfos().xinghaos.show"></app-lrsj-xinghaos>
+    <app-lrsj-zuofas class="lrsj-piece" [class.hidden]="!pieceInfos().zuofas.show"></app-lrsj-zuofas>
+    <app-lrsj-suanliao-data class="lrsj-piece" [class.hidden]="!pieceInfos().suanliaoData.show"></app-lrsj-suanliao-data>
+    <app-lrsj-suanliao-cads class="lrsj-piece" [class.hidden]="!pieceInfos().suanliaoCads.show"></app-lrsj-suanliao-cads>
   </div>
 </div>
 

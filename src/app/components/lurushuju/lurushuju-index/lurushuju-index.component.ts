@@ -1,9 +1,9 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, computed, HostBinding, inject, OnDestroy, viewChildren} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
-import {getBooleanStr, getCopyName, session, setGlobal} from "@app/app.common";
+import {getBooleanStr, getCopyName, setGlobal} from "@app/app.common";
 import {AboutComponent} from "@app/components/about/about.component";
 import {openZixuanpeijianDialog} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.types";
@@ -15,8 +15,7 @@ import {AppStatusService} from "@app/services/app-status.service";
 import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {Subject, takeUntil} from "rxjs";
-import {LrsjPiece, LrsjPieceInfo} from "../lrsj-pieces/lrsj-piece";
+import {LrsjSuanliaoCadsComponent} from "../lrsj-pieces/lrsj-suanliao-cads/lrsj-suanliao-cads.component";
 import {LrsjSuanliaoDataComponent} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.component";
 import {LrsjXinghaosComponent} from "../lrsj-pieces/lrsj-xinghaos/lrsj-xinghaos.component";
 import {LrsjZuofasComponent} from "../lrsj-pieces/lrsj-zuofas/lrsj-zuofas.component";
@@ -33,6 +32,7 @@ import {ToolbarBtn} from "./lurushuju-index.types";
     AboutComponent,
     FloatingDialogModule,
     ImageComponent,
+    LrsjSuanliaoCadsComponent,
     LrsjSuanliaoDataComponent,
     LrsjXinghaosComponent,
     LrsjZuofasComponent,
@@ -46,7 +46,7 @@ import {ToolbarBtn} from "./lurushuju-index.types";
   styleUrl: "./lurushuju-index.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
+export class LurushujuIndexComponent {
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
@@ -55,31 +55,15 @@ export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
 
   @HostBinding("class") class = ["ng-page"];
 
-  destoryed$ = new Subject<void>();
   pieceInfos = this.lrsjStatus.pieceInfos;
 
-  pieces = viewChildren<LrsjPiece>("lrsjPiece");
+  lrsjXinghaos = viewChild(LrsjXinghaosComponent);
+  lrsjZuofas = viewChild(LrsjZuofasComponent);
+  lrsjSuanliaoData = viewChild(LrsjSuanliaoDataComponent);
+  lrsjSuanliaoCads = viewChild(LrsjSuanliaoCadsComponent);
 
   constructor() {
     setGlobal("lrsj", this);
-    this.status.changeProject$.pipe(takeUntil(this.destoryed$)).subscribe(() => {
-      const info = session.load<LrsjPieceInfo>(this._infoKey) || {};
-      if (info && !info.changeProject) {
-        session.remove(this._infoKey);
-      }
-    });
-    this.status.fetchCad数据要求List();
-  }
-  async ngAfterViewInit() {
-    const info = session.load<LrsjPieceInfo>(this._infoKey);
-    if (info) {
-      session.remove(this._infoKey);
-      await this.setInfo(info);
-    }
-  }
-  ngOnDestroy() {
-    this.destoryed$.next();
-    this.destoryed$.complete();
   }
 
   toolbarBtns = computed<ToolbarBtn[]>(() => {
@@ -224,42 +208,8 @@ export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
     return btns;
   });
 
-  private _infoKey = "lurushujuInfo";
-  getInfo() {
-    const pieces = this.pieces();
-    const info: LrsjPieceInfo = {项目: this.status.project};
-    for (const piece of pieces) {
-      for (const [k, v] of Object.entries(piece.getInfo())) {
-        if (v) {
-          info[k] = v;
-        }
-      }
-    }
-    return info;
-  }
-  async setInfo(info: LrsjPieceInfo) {
-    const 项目 = info.项目;
-    if (!项目) {
-      return;
-    }
-    if (this.status.project !== 项目) {
-      if (await this.message.confirm("页面信息的项目不同，是否切换项目？")) {
-        session.save(this._infoKey, {...info, changeProject: true});
-        this.status.changeProject(项目);
-      }
-      return;
-    }
-    this.dialog.closeAll();
-    const pieces = this.pieces();
-    return Promise.all(
-      pieces.map(async (piece) => {
-        await piece.readyForInfo();
-        await piece.setInfo(info);
-      })
-    );
-  }
   copyInfo() {
-    const info = this.getInfo();
+    const info = this.lrsjStatus.info();
     const text = Object.entries(info)
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n");
@@ -281,16 +231,7 @@ export class LurushujuIndexComponent implements AfterViewInit, OnDestroy {
         }
         return acc;
       }, {});
-      if (!info.项目) {
-        await this.message.snack("请确保复制了正确的信息");
-        return;
-      }
-      await this.setInfo(info);
-    }
-  }
-  saveInfo() {
-    if (!environment.production) {
-      session.save(this._infoKey, this.getInfo());
+      await this.lrsjStatus.setInfo(info);
     }
   }
 }

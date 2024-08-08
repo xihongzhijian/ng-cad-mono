@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, output, signal, viewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
@@ -14,7 +14,7 @@ import {cloneDeep} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
 import {getZuofa, sortZuofas, XinghaoRaw, 工艺做法, 算料数据} from "../../xinghao-data";
-import {LrsjPiece, LrsjPieceInfo} from "../lrsj-piece";
+import {LrsjPiece} from "../lrsj-piece";
 import {LrsjZuofaComponent} from "../lrsj-zuofa/lrsj-zuofa.component";
 import {ZuofaInfo} from "./lrsj-zuofas.types";
 
@@ -35,82 +35,23 @@ export class LrsjZuofasComponent extends LrsjPiece {
 
   xinghao = this.lrsjStatus.xinghao;
   editMode = this.lrsjStatus.editMode;
-  saveInfo = output();
 
-  menchuangName = computed(() => this.lrsjStatus.xinghaoMenchuangs.item()?.mingzi);
-  gongyiName = computed(() => this.lrsjStatus.xinghaoMenchuangs.item()?.gongyis?.item()?.mingzi);
   zuofaInfos = signal<ZuofaInfo[]>([]);
 
   scrollbar = viewChild.required<NgScrollbar>("scrollbar");
 
   constructor() {
     super();
-    effect(() => {
-      const xinghao = this.xinghao();
-      this.isReadyForInfo.next(!!xinghao);
-    });
     effect(
       () => {
-        const pieceInfo = this.lrsjStatus.pieceInfos.zuofas();
+        const pieceInfo = this.lrsjStatus.pieceInfos().zuofas;
         if (!pieceInfo.show) {
           this.zuofaInfos.set([]);
-          this.emitSaveInfo();
         }
       },
       {allowSignalWrites: true}
     );
     effect(() => this.onFocusFenleiZuofa(), {allowSignalWrites: true});
-  }
-
-  getInfo() {
-    const obj: ObjectOf<string[]> = {};
-    for (const info of this.zuofaInfos()) {
-      const {fenleiName, zuofa} = info;
-      if (!obj[fenleiName]) {
-        obj[fenleiName] = [];
-      }
-      obj[fenleiName].push(zuofa.名字);
-    }
-    const info: LrsjPieceInfo = {};
-    const zuofaInfos = this.zuofaInfos();
-    if (zuofaInfos.length > 0) {
-      info.工艺做法弹窗 = this.zuofaInfos()
-        .map(({fenleiName, zuofa}) => `${fenleiName}:${zuofa.名字}`)
-        .join(";");
-    }
-    const suanliaoDataInfo = this.lrsjStatus.suanliaoDataInfo();
-    if (suanliaoDataInfo) {
-      info.产品分类 = suanliaoDataInfo.fenleiName;
-      info.工艺做法 = suanliaoDataInfo.zuofaName;
-      info.算料数据 = suanliaoDataInfo.suanliaoData.名字;
-    }
-    return info;
-  }
-  async setInfo(info: LrsjPieceInfo) {
-    const {工艺做法弹窗, 产品分类, 工艺做法, 算料数据} = info;
-    if (typeof 工艺做法弹窗 === "string") {
-      for (const str of 工艺做法弹窗.split(";")) {
-        const [fenlei, zuofaName] = str.split(":");
-        const zuofa = this.xinghao()?.产品分类[fenlei]?.find((v) => v.名字 === zuofaName);
-        if (zuofa) {
-          this.openZuofa(fenlei, zuofa);
-        }
-      }
-    }
-    if (产品分类 && 工艺做法 && 算料数据) {
-      const xinghao = this.xinghao();
-      const zuofa = xinghao?.产品分类?.[产品分类]?.find((v) => v.名字 === 工艺做法);
-      const suanliaoData = zuofa?.算料数据?.find((v) => v.名字 === 算料数据);
-      if (suanliaoData) {
-        this.gotoSuanliaoData(产品分类, 工艺做法, suanliaoData);
-      }
-    }
-  }
-
-  exitXinghao() {
-    this.lrsjStatus.updateXinghao(null);
-    this.zuofaInfos.set([]);
-    this.emitSaveInfo();
   }
 
   getFilepathUrl(url: string) {
@@ -259,12 +200,10 @@ export class LrsjZuofasComponent extends LrsjPiece {
       infos.push({fenleiName, zuofa, position: signal({x: 0, y: 0})});
     }
     this.zuofaInfos.set(infos);
-    this.emitSaveInfo();
   }
   closeZuofa(i: number) {
     const infos = this.zuofaInfos().filter((_, j) => j !== i);
     this.zuofaInfos.set(infos);
-    this.emitSaveInfo();
   }
   gotoSuanliaoData(fenleiName: string, zuofaName: string, suanliaoData: 算料数据) {
     this.lrsjStatus.gotoSuanliaoData(fenleiName, zuofaName, suanliaoData);

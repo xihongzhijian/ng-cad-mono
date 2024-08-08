@@ -59,7 +59,7 @@ import {
   门缝配置,
   门缝配置输入
 } from "../../xinghao-data";
-import {LrsjPiece, LrsjPieceInfo} from "../lrsj-piece";
+import {LrsjPiece} from "../lrsj-piece";
 import {getGroupStyle, getInfoStyle} from "../lrsj-pieces.utils";
 import {MenjiaoCadItemInfo, MenjiaoShiyituCadItemInfo} from "./lrsj-suanliao-data.types";
 import {
@@ -105,8 +105,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   xinghaozhuanyongCadCount = this.lrsjStatus.xinghaozhuanyongCadCount;
   isKailiao = this.lrsjStatus.isKailiao;
   saveInfo = output();
-  menchuangName = computed(() => this.lrsjStatus.xinghaoMenchuangs.item()?.mingzi);
-  gongyiName = computed(() => this.lrsjStatus.xinghaoMenchuangs.item()?.gongyis?.item()?.mingzi);
   production = environment.production;
   cadWidth = 300;
   cadHeight = 150;
@@ -124,12 +122,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
 
   constructor() {
     super();
-    effect(() => {
-      const pieceInfo = this.lrsjStatus.pieceInfos.suanliaoData();
-      if (!pieceInfo.show) {
-        this.emitSaveInfo();
-      }
-    });
     effect(
       () => {
         const suanliaoDataInfo = this.suanliaoDataInfo();
@@ -152,14 +144,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     this.menjiaoOptions = await this.lrsjStatus.getMenjiaoOptions();
     await this.lrsjStatus.refreshMenshanOptions();
     await this.lrsjStatus.refreshBancaiList();
-    this.isReadyForInfo.next(true);
-  }
-
-  getInfo(): LrsjPieceInfo {
-    return {};
-  }
-  async setInfo(info: LrsjPieceInfo) {
-    console.log(info);
   }
 
   getOptionInputInfo2(data: any, key: string, n: number): InputInfoSelect {
@@ -679,11 +663,11 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     };
     return {inputData};
   });
-  async editSuanliaoCads(key1: MenjiaoCadType | null) {
+  async gotoSuanliaoCads(key1: MenjiaoCadType | null) {
     if (!key1) {
       return;
     }
-    this.message.alert("打开算料公式CAD配置");
+    await this.lrsjStatus.gotoSuanliaoCads(key1);
   }
   async copy(key1: MenjiaoCadType) {
     const data = this.suanliaoData();
@@ -940,7 +924,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         break;
       case "算料公式":
       case "CAD配置":
-        this.editSuanliaoCads(this.currKey1());
+        this.gotoSuanliaoCads(this.currKey1());
         break;
       default:
         this.message.alert("?");

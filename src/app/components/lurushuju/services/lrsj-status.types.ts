@@ -1,7 +1,6 @@
-import {computed, signal} from "@angular/core";
 import {OptionsDataData, TableDataBase2} from "@app/modules/http/services/cad-data.service.types";
 import {ObjectOf} from "@lucilor/utils";
-import {算料数据} from "../xinghao-data";
+import {MenjiaoCadType, 算料数据} from "../xinghao-data";
 
 export type OptionsAll = ObjectOf<OptionsDataData[]>;
 export type OptionsAll2 = ObjectOf<{options: OptionsDataData[]; disabled?: boolean; multiple?: boolean}>;
@@ -25,18 +24,22 @@ export interface XinghaoGongyi extends TableDataBase2 {
 }
 export class XinghaoDataList<T> {
   constructor(
-    public items = signal<T[]>([]),
-    public count = signal<number>(0),
-    public index = signal<number | null>(null)
+    public items: T[] = [],
+    public count = 0,
+    public index: number | null = null
   ) {}
 
-  item = computed(() => {
-    const i = this.index();
+  get item() {
+    const i = this.index;
     if (typeof i === "number") {
-      return this.items()[i] || null;
+      return this.items[i];
     }
     return null;
-  });
+  }
+
+  clone() {
+    return new XinghaoDataList<T>(this.items, this.count, this.index);
+  }
 }
 
 export interface SuanliaoDataInfo {
@@ -44,7 +47,22 @@ export interface SuanliaoDataInfo {
   zuofaName: string;
   suanliaoData: 算料数据;
 }
+export interface SuanliaoCadsInfo {
+  key1: MenjiaoCadType;
+}
 
 export interface MenshanOption extends OptionsDataData {
   zuchenghuajian?: string;
+}
+
+export interface LrsjInfo {
+  项目?: string;
+  门窗?: string;
+  工艺?: string;
+  型号?: string;
+  产品分类?: string;
+  工艺做法?: string;
+  算料数据?: string;
+  包边方向?: string;
+  changeProject?: boolean;
 }

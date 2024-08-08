@@ -46,14 +46,14 @@
       </div>
     } @else {
       <div class="menchaungs">
-        @for (menchuang of xinghaoMenchuangs.items(); track i; let i = $index) {
+        @for (menchuang of xinghaoMenchuangs().items; track i; let i = $index) {
           @if (menchuang.gongyis) {
-            <div class="item" [class.active]="xinghaoMenchuangs.index() === i">
+            <div class="item" [class.active]="xinghaoMenchuangs().index === i">
               <div class="menchuang-header flex-column">
                 <div class="name">
                   <span>{{ menchuang.mingzi }}</span>
                   @if (!production) {
-                    <span>&nbsp;({{ menchuang.gongyis.count() }})</span>
+                    <span>&nbsp;({{ menchuang.gongyis.count }})</span>
                   }
                 </div>
                 @if (editMode()) {
@@ -65,18 +65,18 @@
                 }
               </div>
               <div class="gongyis">
-                @for (gongyi of menchuang.gongyis.items(); track j; let j = $index) {
+                @for (gongyi of menchuang.gongyis.items; track j; let j = $index) {
                   @if (gongyi.xinghaos) {
-                    <div class="item" [class.active]="xinghaoMenchuangs.index() === i && menchuang.gongyis.index() === j">
+                    <div class="item" [class.active]="xinghaoMenchuangs().index === i && menchuang.gongyis.index === j">
                       <div class="gongyi-header flex-row">
                         <div class="name flex-110 link" (click)="clickXinghaoGongyi(i, j)">
                           <span>{{ gongyi.mingzi }}</span>
                           @if (!production) {
-                            <span>&nbsp;({{ gongyi.xinghaos.count() }})</span>
+                            <span>&nbsp;({{ gongyi.xinghaos.count }})</span>
                           }
                         </div>
-                        @if (xinghaoFilterStr() && gongyi.xinghaos.count() > 0) {
-                          <div class="error">搜索到{{ gongyi.xinghaos.count() }}个型号</div>
+                        @if (xinghaoFilterStr() && gongyi.xinghaos.count > 0) {
+                          <div class="error">搜索到{{ gongyi.xinghaos.count }}个型号</div>
                         }
                         @if (editMode()) {
                           <div class="toolbar compact">
