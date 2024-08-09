@@ -931,10 +931,10 @@ export const step3FetchData = async (
   noCache = false
 ) => {
   let responseData: {cads: CadData[]} | null = null;
-  const {getAll, typePrefix, xinghao} = lingsanOptions || {};
-  const cacheKey = "_lingsanCadsCache_" + md5(JSON.stringify({getAll, typePrefix, xinghao}));
+  const {getAll, useTypePrefix, xinghao} = lingsanOptions || {};
+  const cacheKey = "_lingsanCadsCache_" + md5(JSON.stringify({getAll, useTypePrefix, xinghao}));
   if (noCache || !(window as any)[cacheKey]) {
-    responseData = await http.getData("ngcad/getLingsanCads", {getAll, typePrefix, xinghao});
+    responseData = await http.getData("ngcad/getLingsanCads", {getAll, useTypePrefix, xinghao});
     (window as any)[cacheKey] = responseData;
   } else {
     responseData = (window as any)[cacheKey];

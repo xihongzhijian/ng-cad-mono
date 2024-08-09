@@ -663,7 +663,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (this.step !== step) {
       return;
     }
-    const step3Data = await step3FetchData(this.http, {getAll: true, typePrefix: true, xinghao: this.xinghaoName});
+    const step3Data = await step3FetchData(this.http, {getAll: true, useTypePrefix: true, xinghao: this.xinghaoName});
     this.xinghaozhuanyongCadCount = step3Data?.cads.length || 0;
     await Promise.all([this.getXinghaosIfNotFetched(), this.getXinghaoOptionsAllIfNotFetched()]);
     if (!this.xinghao) {
@@ -1558,7 +1558,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
       stepFixed: true,
       noValidateCads: true,
       readonly: true,
-      lingsanOptions: isXinghao ? {getAll: true, typePrefix: true, xinghao: this.xinghaoName} : {getAll: true}
+      lingsanOptions: isXinghao ? {getAll: true, useTypePrefix: true, xinghao: this.xinghaoName} : {getAll: true}
     };
     await openZixuanpeijianDialog(this.dialog, {data});
   }
