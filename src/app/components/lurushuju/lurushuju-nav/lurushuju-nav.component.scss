@@ -1,6 +1,11 @@
 .nav {
+  display: flex;
+  flex-direction: column;
   > * {
     width: 100%;
+    &:not(:last-child) {
+      margin-bottom: 10px;
+    }
   }
   .toolbar.vertical {
     width: auto;

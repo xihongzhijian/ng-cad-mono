@@ -76,6 +76,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     if (!data.gongyi && gongyi) {
       data.gongyi = gongyi.mingzi;
     }
+    data.tingyong = !!data.tingyong;
     const isAdd = !xinghao;
 
     const data2: XinghaoRaw = {

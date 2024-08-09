@@ -7,6 +7,9 @@
     @for (xinghao of xinghaos(); track $index) {
       @if (!xinghao.hidden) {
         <div class="item">
+          @if (xinghao.tingyong) {
+            <div class="img disabled"></div>
+          }
           <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="gotoZuofas(xinghao.mingzi)"></app-image>
           <div class="name" [matTooltip]="xinghao.mingzi">{{ xinghao.mingzi }}</div>
           @if (editMode()) {
