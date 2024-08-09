@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, signal, viewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, signal, untracked, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -205,13 +205,8 @@ export class LrsjZuofasComponent extends LrsjPiece {
     this.zuofaInfos.set(infos);
   }
 
-  onFocusFenleiZuofa() {
-    const focusFenleiZuofa = this.lrsjStatus.focusFenleiZuofa();
-    if (!focusFenleiZuofa) {
-      return;
-    }
+  onFocusFenleiZuofa(i: number, j?: number) {
     const scrollbar = this.scrollbar();
-    const {i, j} = focusFenleiZuofa;
     let el: Element | null;
     if (typeof j === "number") {
       el = scrollbar.viewport.nativeElement.querySelector(`[data-ij="${i},${j}"]`);
@@ -228,7 +223,14 @@ export class LrsjZuofasComponent extends LrsjPiece {
       scrollbar.scrollToElement(el);
     }
   }
-  onFocusFenleiZuofaEff = effect(() => this.onFocusFenleiZuofa(), {allowSignalWrites: true});
+  onFocusFenleiZuofaEff = effect(() => {
+    const focusFenleiZuofa = this.lrsjStatus.focusFenleiZuofa();
+    if (!focusFenleiZuofa) {
+      return;
+    }
+    const {i, j} = focusFenleiZuofa;
+    untracked(() => this.onFocusFenleiZuofa(i, j));
+  });
   scrollToFenlei(i: number) {
     this.lrsjStatus.focusFenleiZuofa.set({i});
   }
