@@ -1,5 +1,6 @@
 import {Route} from "@angular/router";
 import {CustomPageIndexComponent} from "@app/components/custom-page/views/custom-page-index/custom-page-index.component";
+import {LvxingcaiyouhuaComponent} from "@app/views/lvxingcaiyouhua/lvxingcaiyouhua.component";
 import {RefreshCadImgsComponent} from "@app/views/refresh-cad-imgs/refresh-cad-imgs.component";
 import {WorkSpaceComponent} from "@app/views/work-space/work-space.component";
 import {LurushujuIndexComponent} from "@components/lurushuju/lurushuju-index/lurushuju-index.component";
@@ -63,5 +64,6 @@ export const routesInfo: (Route & {path: string})[] = [
   },
   {path: "print-table", component: PrintTableComponent, title: "打印表格"},
   {path: "订单异常", component: DingdanyichangComponent, title: "订单异常"},
-  {path: "refresh-cad-imgs", component: RefreshCadImgsComponent, title: "刷新cad图片"}
+  {path: "refresh-cad-imgs", component: RefreshCadImgsComponent, title: "刷新cad图片"},
+  {path: "铝型材优化", component: LvxingcaiyouhuaComponent, title: "铝型材优化"}
 ];
