@@ -67,7 +67,7 @@ export interface ZixuanpeijianInput {
   step1Data?: Step1Data;
   noValidateCads?: boolean;
   readonly?: boolean;
-  lingsanOptions?: {getAll?: boolean; typePrefix?: boolean; xinghao?: string};
+  lingsanOptions?: {getAll?: boolean; useTypePrefix?: boolean; xinghao?: string};
   lingsanCadType?: string;
   gongshis?: 算料公式[];
 }

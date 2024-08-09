@@ -150,7 +150,7 @@ export class LurushujuIndexComponent {
       stepFixed: true,
       noValidateCads: true,
       readonly: true,
-      lingsanOptions: isXinghao && xinghao ? {getAll: true, typePrefix: true, xinghao} : {getAll: true}
+      lingsanOptions: isXinghao && xinghao ? {getAll: true, useTypePrefix: true, xinghao} : {getAll: true}
     };
     await openZixuanpeijianDialog(this.dialog, {data});
   }

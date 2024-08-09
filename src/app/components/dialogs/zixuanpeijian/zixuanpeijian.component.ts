@@ -419,7 +419,8 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   async step3Fetch(noUpdateInputInfos = false, noCache = false, preserveImgs = false) {
-    const responseData = await step3FetchData(this.http, this.data?.lingsanOptions, noCache);
+    const lingsanOptions = this.data?.lingsanOptions;
+    const responseData = await step3FetchData(this.http, lingsanOptions, noCache);
     if (responseData) {
       this.lingsanCads = {};
       for (const v of responseData.cads) {
@@ -431,7 +432,10 @@ export class ZixuanpeijianComponent implements OnInit {
         }
         this.lingsanCads[type]?.push(item);
       }
-      const responseData2 = await this.http.getData<LingsanTypesData>("ngcad/getLingsanTypes", {allTypes: Object.keys(this.lingsanCads)});
+      const responseData2 = await this.http.getData<LingsanTypesData>("ngcad/getLingsanTypes", {
+        allTypes: Object.keys(this.lingsanCads),
+        ...lingsanOptions
+      });
       this.lingsanTypesTables = responseData2?.tables || [];
       this.lingsanTypesDataSource.data = responseData2?.typesMap || [];
       const {noValidateCads} = this.data || {};
