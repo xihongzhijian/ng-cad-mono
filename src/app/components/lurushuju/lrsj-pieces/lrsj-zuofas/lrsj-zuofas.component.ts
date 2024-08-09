@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
+import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {filePathUrl, getCopyName, getFilepathUrl} from "@app/app.common";
@@ -12,9 +13,11 @@ import {MessageService} from "@app/modules/message/services/message.service";
 import {ObjectOf} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
+import {openSelectZuofaDialog} from "../../select-zuofa-dialog/select-zuofa-dialog.component";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
-import {getZuofa, sortZuofas, XinghaoRaw, 工艺做法, 算料数据} from "../../xinghao-data";
+import {getZuofa, sortZuofas, XinghaoRaw, 工艺做法} from "../../xinghao-data";
 import {LrsjPiece} from "../lrsj-piece";
+import {updateMenjiaoData} from "../lrsj-suanliao-data/lrsj-suanliao-data.utils";
 import {LrsjZuofaComponent} from "../lrsj-zuofa/lrsj-zuofa.component";
 import {ZuofaInfo} from "./lrsj-zuofas.types";
 
@@ -27,6 +30,7 @@ import {ZuofaInfo} from "./lrsj-zuofas.types";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LrsjZuofasComponent extends LrsjPiece {
+  private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
@@ -37,22 +41,17 @@ export class LrsjZuofasComponent extends LrsjPiece {
   editMode = this.lrsjStatus.editMode;
 
   zuofaInfos = signal<ZuofaInfo[]>([]);
+  zuofaInfosEff = effect(
+    () => {
+      const pieceInfo = this.lrsjStatus.pieceInfos().zuofas;
+      if (!pieceInfo.show) {
+        this.zuofaInfos.set([]);
+      }
+    },
+    {allowSignalWrites: true}
+  );
 
   scrollbar = viewChild.required<NgScrollbar>("scrollbar");
-
-  constructor() {
-    super();
-    effect(
-      () => {
-        const pieceInfo = this.lrsjStatus.pieceInfos().zuofas;
-        if (!pieceInfo.show) {
-          this.zuofaInfos.set([]);
-        }
-      },
-      {allowSignalWrites: true}
-    );
-    effect(() => this.onFocusFenleiZuofa(), {allowSignalWrites: true});
-  }
 
   getFilepathUrl(url: string) {
     return getFilepathUrl(url);
@@ -205,9 +204,6 @@ export class LrsjZuofasComponent extends LrsjPiece {
     const infos = this.zuofaInfos().filter((_, j) => j !== i);
     this.zuofaInfos.set(infos);
   }
-  gotoSuanliaoData(fenleiName: string, zuofaName: string, suanliaoData: 算料数据) {
-    this.lrsjStatus.gotoSuanliaoData(fenleiName, zuofaName, suanliaoData);
-  }
 
   onFocusFenleiZuofa() {
     const focusFenleiZuofa = this.lrsjStatus.focusFenleiZuofa();
@@ -232,10 +228,60 @@ export class LrsjZuofasComponent extends LrsjPiece {
       scrollbar.scrollToElement(el);
     }
   }
+  onFocusFenleiZuofaEff = effect(() => this.onFocusFenleiZuofa(), {allowSignalWrites: true});
   scrollToFenlei(i: number) {
     this.lrsjStatus.focusFenleiZuofa.set({i});
   }
   scrollToZuofa(i: number, j: number) {
     this.lrsjStatus.focusFenleiZuofa.set({i, j});
+  }
+
+  async copyZuofaFromOthers() {
+    const xinghao = this.lrsjStatus.xinghao();
+    if (!xinghao) {
+      return;
+    }
+    const xinghaoOptions = await this.lrsjStatus.getXinghaoOptions();
+    const result = await openSelectZuofaDialog(this.dialog, {
+      data: {xinghaoOptions, multiple: true}
+    });
+    if (!result) {
+      return;
+    }
+    const targetFenlei = await this.message.prompt<string>({
+      type: "select",
+      label: "复制到哪个分类",
+      options: xinghao.显示产品分类,
+      hint: "若留空则复制到对应分类"
+    });
+    if (typeof targetFenlei !== "string") {
+      return;
+    }
+    let successCount = 0;
+    const 型号2 = xinghao.名字;
+    const gongyiNames: ObjectOf<string[]> = {};
+    for (const item of result.items) {
+      const {型号, 产品分类, 名字} = item;
+      const 产品分类2 = targetFenlei || 产品分类;
+      if (!gongyiNames[产品分类2]) {
+        gongyiNames[产品分类2] = xinghao.产品分类[产品分类2].map((v) => v.名字);
+      }
+      const 复制名字 = getCopyName(gongyiNames[产品分类2], item.名字);
+      const success = await this.http.getData<boolean>("shuju/api/copyGongyi", {名字, 复制名字, 型号, 型号2, 产品分类, 产品分类2});
+      if (success) {
+        gongyiNames[产品分类2].push(复制名字);
+        successCount++;
+      }
+    }
+    if (successCount > 0) {
+      const xinghao2 = await this.lrsjStatus.refreshXinghao(true);
+      const data = xinghao2?.产品分类[targetFenlei]?.at(-1);
+      if (data) {
+        for (const menjiaoData of data.算料数据) {
+          updateMenjiaoData(menjiaoData);
+        }
+        await this.lrsjStatus.submitZuofa(targetFenlei, data, ["算料数据"]);
+      }
+    }
   }
 }

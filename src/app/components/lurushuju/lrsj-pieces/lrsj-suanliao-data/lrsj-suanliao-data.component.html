@@ -88,14 +88,12 @@
                   <app-suanliao-tables [class]="key1" [suanliaoDataParams]="key1Info.suanliaoDataParams"></app-suanliao-tables>
                 }
               </div>
+              <app-mrbcjfz [inputData]="key1Info.mrbjfzInputData"></app-mrbcjfz>
             </div>
           </mat-tab>
         }
       }
     </mat-tab-group>
-    @if (mrbcjfzInput(); as mrbcjfzInput) {
-      <app-mrbcjfz [inputData]="mrbcjfzInput.inputData"></app-mrbcjfz>
-    }
   </ng-scrollbar>
 </div>
 

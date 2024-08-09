@@ -10,7 +10,17 @@
 }
 .lrsj-right {
   flex: 1 1 0;
+  position: relative;
 }
 .lrsj-piece {
   display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: white;
+}
+app-lrsj-suanliao-data.hidden:has(+ app-lrsj-suanliao-cads:not(.hidden)),
+app-lrsj-suanliao-data:not(.hidden) + app-lrsj-suanliao-cads.hidden {
+  display: flex !important;
+  z-index: -1;
 }

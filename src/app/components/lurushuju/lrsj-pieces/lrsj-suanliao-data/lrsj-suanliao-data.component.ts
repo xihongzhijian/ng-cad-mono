@@ -10,6 +10,7 @@ import {
   OnInit,
   output,
   signal,
+  untracked,
   viewChild,
   viewChildren
 } from "@angular/core";
@@ -20,6 +21,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {filterCad} from "@app/cad/cad-shujuyaoqiu";
 import {openCadListDialog} from "@app/components/dialogs/cad-list/cad-list.component";
+import {openMrbcjfzDialog} from "@app/components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {SuanliaogongshiInfo} from "@app/modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
@@ -35,17 +37,17 @@ import {MrbcjfzComponent} from "@app/views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzInputData} from "@app/views/mrbcjfz/mrbcjfz.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf} from "@lucilor/utils";
+import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
 import {filterCad as filterCad2} from "@views/mrbcjfz/mrbcjfz.utils";
 import {cloneDeep, debounce, isEmpty} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
+import {firstValueFrom} from "rxjs";
 import {CadItemComponent} from "../../cad-item/cad-item.component";
 import {CadItemButton} from "../../cad-item/cad-item.types";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
 import {OptionsAll2} from "../../services/lrsj-status.types";
 import {SuanliaoTablesComponent} from "../../suanliao-tables/suanliao-tables.component";
 import {
-  get算料数据,
   MenjiaoCadType,
   menjiaoCadTypes,
   SuanliaoDataParams,
@@ -61,7 +63,8 @@ import {
 } from "../../xinghao-data";
 import {LrsjPiece} from "../lrsj-piece";
 import {getGroupStyle, getInfoStyle} from "../lrsj-pieces.utils";
-import {MenjiaoCadItemInfo, MenjiaoShiyituCadItemInfo} from "./lrsj-suanliao-data.types";
+import {LrsjSuanliaoCadsComponent} from "../lrsj-suanliao-cads/lrsj-suanliao-cads.component";
+import {MenjiaoCadItemInfo, MenjiaoShiyituCadItemInfo, SuanliaoDataBtnName} from "./lrsj-suanliao-data.types";
 import {
   copySuanliaoData,
   getCadSearch,
@@ -84,7 +87,8 @@ import {
     NgScrollbarModule,
     NgTemplateOutlet,
     SuanliaoTablesComponent,
-    TypedTemplateDirective
+    TypedTemplateDirective,
+    LrsjSuanliaoCadsComponent
   ],
   templateUrl: "./lrsj-suanliao-data.component.html",
   styleUrl: "./lrsj-suanliao-data.component.scss",
@@ -103,8 +107,10 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   xinghao = this.lrsjStatus.xinghao;
   suanliaoDataInfo = this.lrsjStatus.suanliaoDataInfo;
   xinghaozhuanyongCadCount = this.lrsjStatus.xinghaozhuanyongCadCount;
+  suanliaoData = this.lrsjStatus.suanliaoDataNew;
   isKailiao = this.lrsjStatus.isKailiao;
   saveInfo = output();
+
   production = environment.production;
   cadWidth = 300;
   cadHeight = 150;
@@ -118,27 +124,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   suanliaoTablesList = viewChildren(SuanliaoTablesComponent);
   inputs = viewChildren(InputComponent);
   inputScrollbar = viewChild<NgScrollbar>("inputScrollbar");
-  mrbcjfz = viewChild(MrbcjfzComponent);
-
-  constructor() {
-    super();
-    effect(
-      () => {
-        const suanliaoDataInfo = this.suanliaoDataInfo();
-        if (suanliaoDataInfo) {
-          const data = cloneDeep(suanliaoDataInfo.suanliaoData);
-          updateMenjiaoData(data);
-          this.suanliaoData.set(data);
-        }
-      },
-      {allowSignalWrites: true}
-    );
-    effect(() => this.onTriggerSuanliaoDataBtn());
-    effect(() => {
-      this.mrbcjfzInput();
-      this.mrbcjfz()?.refresh();
-    });
-  }
+  mrbcjfzs = viewChildren(MrbcjfzComponent);
 
   async ngOnInit() {
     this.menjiaoOptions = await this.lrsjStatus.getMenjiaoOptions();
@@ -163,7 +149,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     }
     return info;
   }
-  suanliaoData = signal(get算料数据());
   form = computed(() => {
     const data = this.suanliaoData();
 
@@ -299,6 +284,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       suanliaogongshiInfo: SuanliaogongshiInfo;
       inputs: InputInfo[];
       title: string;
+      mrbjfzInputData: MrbcjfzInputData;
     }> = {};
     const xinghao = this.lrsjStatus.xinghao();
     if (!xinghao) {
@@ -386,7 +372,8 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           varNames
         },
         inputs,
-        title: this.getMenjiaoCadTabLabel(key1)
+        title: this.getMenjiaoCadTabLabel(key1),
+        mrbjfzInputData: this.getMrbcjfzInputData(key1)
       };
       // if (component.parentInfo.isZhijianUser) { // TODO
       // eslint-disable-next-line no-constant-condition
@@ -431,6 +418,23 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       label += "（有数据）";
     }
     return label;
+  }
+  getMrbcjfzInputData(key1: MenjiaoCadType): MrbcjfzInputData {
+    const data = this.suanliaoData();
+    const morenbancai = cloneDeep(data[key1].板材分组);
+    const cads = data[key1].算料CAD.map((v) => new CadData(v.json)).filter((v) => filterCad2(v, {skipTpyeCheck: true}));
+    const huajians = this.lrsjStatus.filterHuajians(data[key1]);
+    const bancaiList = this.lrsjStatus.bancaiList();
+    return {
+      xinghao: this.xinghao()?.名字 || "",
+      morenbancai,
+      cads,
+      huajians,
+      bancaiList: bancaiList || undefined,
+      isLocal: true,
+      noScroll: true,
+      noToolbar: true
+    };
   }
 
   cadItemButtons = computed(() => {
@@ -642,27 +646,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     return undefined;
   }
 
-  mrbcjfzInput = computed(() => {
-    const key1 = this.currKey1();
-    if (!key1) {
-      return null;
-    }
-    const data = this.suanliaoData();
-    const morenbancai = cloneDeep(data[key1].板材分组);
-    const cads = data[key1].算料CAD.map((v) => new CadData(v.json)).filter((v) => filterCad2(v, {skipTpyeCheck: true}));
-    const huajians = this.lrsjStatus.filterHuajians(data[key1]);
-    const inputData: MrbcjfzInputData = {
-      xinghao: this.lrsjStatus.xinghao()?.名字 || "",
-      morenbancai,
-      cads,
-      huajians,
-      bancaiList: this.lrsjStatus.bancaiList() || undefined,
-      isLocal: true,
-      noScroll: true,
-      noToolbar: true
-    };
-    return {inputData};
-  });
   async gotoSuanliaoCads(key1: MenjiaoCadType | null) {
     if (!key1) {
       return;
@@ -734,23 +717,31 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   }
 
   getEmptyErrors() {
-    return {bcfz: false, others: false, key1: {} as Partial<Record<MenjiaoCadType, string>>};
+    return {others: false, key1: {} as Partial<Record<MenjiaoCadType, string>>};
   }
   errors = signal(this.getEmptyErrors());
-  key1Errors = signal<ObjectOf<{msg: string; missingCads: string[]} | undefined>>({});
+  key1Errors = signal<ObjectOf<{msg: string; missingCads: string[]; bcfz: string[]} | undefined>>({});
   async validate() {
+    this.lrsjStatus.suanliaoCadsValidateStart$.next();
+    const cadsErrors = await firstValueFrom(this.lrsjStatus.suanliaoCadsValidateEnd$);
+    console.log(cadsErrors);
+    if (cadsErrors.length > 0) {
+      return false;
+    }
+
     const errors = this.getEmptyErrors();
     const {errors: inputErrors} = await validateForm(this.inputs());
     const data = this.suanliaoData();
     const key1Infos = this.key1Infos();
     const key1Errors: ReturnType<typeof this.key1Errors> = {};
+    const mrbcjfzs = this.mrbcjfzs();
 
     const key1ErrorsList = await Promise.all(
-      menjiaoCadTypes.map(async (key1) => {
+      menjiaoCadTypes.map(async (key1, i) => {
         if (!key1Infos[key1]) {
           return null;
         }
-        key1Errors[key1] = {msg: "", missingCads: []};
+        key1Errors[key1] = {msg: "", missingCads: [], bcfz: []};
         const menjiaoCadInfos = getMenjiaoCadInfos(data);
         const value = data[key1];
         if (menjiaoCadInfos[key1].isEmpty) {
@@ -782,10 +773,22 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           errors2.push("选择" + missingCads.join("、"));
           errors.others = true;
         }
-        const mrbcjfzErrors = this.mrbcjfz()?.checkSubmit();
+        const mrbcjfz = mrbcjfzs[i];
+        let mrbcjfzErrors: string[] | undefined;
+        if (mrbcjfz) {
+          mrbcjfzErrors = mrbcjfz.checkSubmit();
+          data[key1].板材分组 = mrbcjfz.xinghao.默认板材;
+        } else {
+          const mrbcjfzResult = await openMrbcjfzDialog(this.dialog, {
+            width: "0",
+            height: "0",
+            data: {id: -1, table: "", inputData: this.getMrbcjfzInputData(key1), dryRun: true}
+          });
+          mrbcjfzErrors = mrbcjfzResult?.errors;
+        }
         if (mrbcjfzErrors && mrbcjfzErrors.length > 0) {
           errors2.push("检查板材分组");
-          errors.bcfz = true;
+          key1Errors[key1].bcfz = mrbcjfzErrors;
         }
         if (errors2.length > 0) {
           const error = `请${errors2.join("并")}`;
@@ -799,6 +802,33 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       })
     );
     this.key1Errors.set(key1Errors);
+    this.errors.set(errors);
+    this.suanliaoData.update((v) => ({...v}));
+
+    const msgs: string[] = [];
+    if (errors.others) {
+      msgs.push("无法保存，输入不完整，请补充");
+    }
+    const key1Keys = keysOf(errors.key1);
+    if (key1Keys.length > 0) {
+      for (const key of key1Keys) {
+        msgs.push(`【${key}】${errors.key1[key]}`);
+        const bcfzErrors = key1Errors[key]?.bcfz;
+        if (bcfzErrors && bcfzErrors.length > 0) {
+          msgs.push(...bcfzErrors);
+        }
+      }
+      const index = menjiaoCadTypes.indexOf(key1Keys[0]);
+      if (index >= 0) {
+        this.menjiaoCadTabIndex.set(index);
+        setTimeout(() => {
+          this.onTriggerBtn("板材分组");
+        }, 0);
+      }
+    }
+    if (msgs.length > 0) {
+      this.message.error(msgs.join("<br>"));
+    }
 
     if (!isEmpty(inputErrors)) {
       errors.others = true;
@@ -807,77 +837,58 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     if (key1ErrorsList.some((v) => !isEmpty(v))) {
       return false;
     }
-    this.errors.set(errors);
     return true;
   }
   async submit() {
-    if (await this.validate()) {
-      const data = this.suanliaoData();
-      const xinghao = this.xinghao();
-      const suanliaoDataInfo = this.suanliaoDataInfo();
-      let refreshSuanliaoTables = false;
-      if (xinghao && suanliaoDataInfo) {
-        const {fenleiName, zuofaName, suanliaoData: dataOld} = suanliaoDataInfo;
-        const mingziOld = dataOld.名字;
-        const mingziNew = data.名字;
-        const xinghaoName = xinghao.名字;
-        if (mingziOld && mingziOld !== mingziNew) {
-          const params = {xinghao: xinghaoName, fenlei: fenleiName, gongyi: zuofaName, mingziOld, mingziNew};
-          const result = await this.http.getData("shuju/api/onMenjiaoNameChange", params);
-          if (result) {
-            for (const item of Object.values(this.key1Infos())) {
-              item.suanliaoDataParams.选项.门铰锁边铰边 = mingziNew;
-            }
-            this.suanliaoDataInfo.set({...suanliaoDataInfo, suanliaoData: data});
-            refreshSuanliaoTables = true;
-          } else {
-            return false;
-          }
-        }
-        const zuofaIndex = xinghao.产品分类[fenleiName].findIndex((v) => v.名字 === zuofaName);
-        if (zuofaIndex >= 0) {
-          const zuofa = xinghao.产品分类[fenleiName][zuofaIndex];
-          if (data.默认值) {
-            for (const [i, item] of zuofa.算料数据.entries()) {
-              if (i !== zuofaIndex) {
-                item.默认值 = false;
-              }
-            }
-          }
-          const suanliaoDataIndex = zuofa.算料数据.findIndex((v) => v.vid === dataOld.vid);
-          if (suanliaoDataIndex >= 0) {
-            zuofa.算料数据[suanliaoDataIndex] = data;
-          } else {
-            zuofa.算料数据.push(data);
-          }
-          await this.lrsjStatus.submitZuofa(fenleiName, zuofa, ["算料数据"]);
-        }
-      }
-      if (refreshSuanliaoTables) {
-        this.suanliaoTablesList().forEach((v) => v.update());
-      }
-      this.lrsjStatus.suanliaoDataSubmit.next();
-    } else {
-      const errors = this.errors();
-      const msgs: string[] = [];
-      if (errors.bcfz && !errors.others) {
-        msgs.push("无法保存，输入不完整，请打开板材分组");
-      } else {
-        msgs.push("无法保存，输入不完整，请补充");
-      }
-      const key1Keys = keysOf(errors.key1);
-      if (key1Keys.length > 0) {
-        for (const key of key1Keys) {
-          msgs.push(`【${key}】${errors.key1[key]}`);
-        }
-        const index = menjiaoCadTypes.indexOf(key1Keys[0]);
-        if (index >= 0) {
-          this.menjiaoCadTabIndex.set(index);
-        }
-      }
-      this.message.error(msgs.join("<br>"));
+    if (!(await this.validate())) {
+      return;
     }
-    return false;
+    const data = this.suanliaoData();
+    const xinghao = this.xinghao();
+    const suanliaoDataInfo = this.suanliaoDataInfo();
+    let refreshSuanliaoTables = false;
+    const dataOld = this.lrsjStatus.suanliaoDataOld();
+    if (xinghao && suanliaoDataInfo && dataOld) {
+      const {fenleiName, zuofaName} = suanliaoDataInfo;
+      const mingziOld = dataOld.名字;
+      const mingziNew = data.名字;
+      const xinghaoName = xinghao.名字;
+      if (mingziOld && mingziOld !== mingziNew) {
+        const params = {xinghao: xinghaoName, fenlei: fenleiName, gongyi: zuofaName, mingziOld, mingziNew};
+        const result = await this.http.getData("shuju/api/onMenjiaoNameChange", params);
+        if (result) {
+          for (const item of Object.values(this.key1Infos())) {
+            item.suanliaoDataParams.选项.门铰锁边铰边 = mingziNew;
+          }
+          this.suanliaoDataInfo.set({...suanliaoDataInfo});
+          refreshSuanliaoTables = true;
+        } else {
+          return;
+        }
+      }
+      const zuofaIndex = xinghao.产品分类[fenleiName].findIndex((v) => v.名字 === zuofaName);
+      if (zuofaIndex >= 0) {
+        const zuofa = xinghao.产品分类[fenleiName][zuofaIndex];
+        if (data.默认值) {
+          for (const [i, item] of zuofa.算料数据.entries()) {
+            if (i !== zuofaIndex) {
+              item.默认值 = false;
+            }
+          }
+        }
+        const suanliaoDataIndex = zuofa.算料数据.findIndex((v) => v.vid === dataOld.vid);
+        if (suanliaoDataIndex >= 0) {
+          zuofa.算料数据[suanliaoDataIndex] = data;
+        } else {
+          zuofa.算料数据.push(data);
+        }
+        await this.lrsjStatus.submitZuofa(fenleiName, zuofa, ["算料数据"]);
+      }
+    }
+    if (refreshSuanliaoTables) {
+      this.suanliaoTablesList().forEach((v) => v.update());
+    }
+    this.lrsjStatus.suanliaoDataSubmit.next();
   }
 
   currKey1 = signal<MenjiaoCadType | null>(null);
@@ -901,11 +912,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     this.loadedKey1s.set([...loadedKey1s]);
   }
 
-  onTriggerSuanliaoDataBtn() {
-    const name = this.lrsjStatus.triggerSuanliaoDataBtn()?.name;
-    if (typeof name !== "string") {
-      return;
-    }
+  onTriggerBtn(name: SuanliaoDataBtnName) {
     switch (name) {
       case "保存":
         this.submit();
@@ -922,7 +929,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       case "板材分组":
         this.scrollToElement("app-mrbcjfz");
         break;
-      case "算料公式":
       case "CAD配置":
         this.gotoSuanliaoCads(this.currKey1());
         break;
@@ -930,7 +936,25 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         this.message.alert("?");
     }
   }
-  scrollToElement(selector: string) {
+  onTriggerBtnEff = effect(() => {
+    const name = this.lrsjStatus.triggerSuanliaoDataBtn()?.name;
+    if (typeof name !== "string") {
+      return;
+    }
+    untracked(() => this.onTriggerBtn(name));
+  });
+  async scrollToElement(selector: string) {
+    const show = this.lrsjStatus.pieceInfos().suanliaoData.show;
+    if (!show) {
+      const suanliaoCadsInfo = this.lrsjStatus.suanliaoDataInfo();
+      if (suanliaoCadsInfo) {
+        const {fenleiName, zuofaName, suanliaoDataIndex} = suanliaoCadsInfo;
+        await this.lrsjStatus.gotoSuanliaoData(fenleiName, zuofaName, suanliaoDataIndex);
+        await timeout(0);
+      } else {
+        return;
+      }
+    }
     const el = this.el.nativeElement.querySelector(selector);
     if (el) {
       this.inputScrollbar()?.scrollToElement(el);

@@ -1,11 +1,13 @@
 <div class="toolbar" #toolbar>
   @for (btn of toolbarBtns(); track $index) {
-    @if (btn.name) {
-      <button mat-raised-button [class]="btn.class" [style]="btn.style" [color]="btn.color" (click)="onToolbarBtnClick(btn)">
-        {{ btn.name }}
-      </button>
-    } @else {
-      <mat-divider vertical class="placeholder large" [class]="btn.class" [style]="btn.style"></mat-divider>
+    @if (!btn.hidden) {
+      @if (btn.name) {
+        <button mat-raised-button [class]="btn.class" [style]="btn.style" [color]="btn.color" (click)="onToolbarBtnClick(btn)">
+          {{ btn.name }}
+        </button>
+      } @else {
+        <mat-divider vertical class="placeholder large" [class]="btn.class" [style]="btn.style"></mat-divider>
+      }
     }
   }
   <button mat-raised-button color="primary" [matMenuTriggerFor]="links">更多</button>

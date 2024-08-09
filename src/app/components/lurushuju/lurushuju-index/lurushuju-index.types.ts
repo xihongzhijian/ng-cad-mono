@@ -5,5 +5,6 @@ export interface ToolbarBtn {
   color?: string;
   class?: string[];
   style?: Properties;
+  hidden?: boolean;
   onClick?: () => void;
 }

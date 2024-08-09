@@ -1,6 +1,6 @@
 import {OptionsDataData, TableDataBase2} from "@app/modules/http/services/cad-data.service.types";
 import {ObjectOf} from "@lucilor/utils";
-import {MenjiaoCadType, 算料数据} from "../xinghao-data";
+import {MenjiaoCadType} from "../xinghao-data";
 
 export type OptionsAll = ObjectOf<OptionsDataData[]>;
 export type OptionsAll2 = ObjectOf<{options: OptionsDataData[]; disabled?: boolean; multiple?: boolean}>;
@@ -45,7 +45,7 @@ export class XinghaoDataList<T> {
 export interface SuanliaoDataInfo {
   fenleiName: string;
   zuofaName: string;
-  suanliaoData: 算料数据;
+  suanliaoDataIndex: number;
 }
 export interface SuanliaoCadsInfo {
   key1: MenjiaoCadType;
@@ -62,7 +62,7 @@ export interface LrsjInfo {
   型号?: string;
   产品分类?: string;
   工艺做法?: string;
-  算料数据?: string;
+  门铰锁边铰边?: string;
   包边方向?: string;
   changeProject?: boolean;
 }

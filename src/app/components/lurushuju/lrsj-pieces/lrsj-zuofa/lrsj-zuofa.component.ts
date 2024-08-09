@@ -40,7 +40,7 @@ export class LrsjZuofaComponent {
 
   fenleiName = input.required<string>();
   zuofa = model.required<工艺做法>();
-  enterSuanliaoData = output<算料数据>();
+  gotoSuanliaoData = output<算料数据>();
 
   tabs = signal<ZuofaTab[]>([{name: "算料数据"}, {name: "下单选项输入配置"}]);
 
@@ -280,9 +280,9 @@ export class LrsjZuofaComponent {
           const result = await this.message.form(form);
           if (result) {
             updateMenjiaoData(data);
-            zuofa.算料数据.push(data);
+            const index = zuofa.算料数据.push(data);
             await this.updateMenjiao();
-            this.lrsjStatus.gotoSuanliaoData(this.fenleiName(), zuofa.名字, data);
+            this.lrsjStatus.gotoSuanliaoData(this.fenleiName(), zuofa.名字, index);
           }
         }
         break;
@@ -348,7 +348,7 @@ export class LrsjZuofaComponent {
     const {button, item: fromItem, rowIdx} = event;
     switch (button.event) {
       case "编辑":
-        this.enterSuanliaoData.emit(fromItem);
+        this.lrsjStatus.gotoSuanliaoData(this.fenleiName(), zuofa.名字, rowIdx);
         break;
       case "编辑排序":
         {

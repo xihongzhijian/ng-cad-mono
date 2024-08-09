@@ -11,14 +11,5 @@ export interface MenjiaoShiyituCadItemInfo {
   index: number;
 }
 
-export const suanliaoDataBtnNames = [
-  "保存",
-  "选项信息",
-  "门缝参数",
-  "包边+企料数据",
-  "板材分组",
-  "算料公式",
-  "模块布局",
-  "CAD配置"
-] as const;
+export const suanliaoDataBtnNames = ["保存", "选项信息", "门缝参数", "包边+企料数据", "板材分组", "CAD配置", "模块布局"] as const;
 export type SuanliaoDataBtnName = (typeof suanliaoDataBtnNames)[number];

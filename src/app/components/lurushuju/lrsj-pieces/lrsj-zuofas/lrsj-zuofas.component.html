@@ -56,11 +56,7 @@
   >
     <ng-container appFloatingDialogTitle>工艺做法：{{ info.zuofa["名字"] }}</ng-container>
     <ng-container appFloatingDialogBody>
-      <app-lrsj-zuofa
-        [fenleiName]="info.fenleiName"
-        [(zuofa)]="info.zuofa"
-        (enterSuanliaoData)="gotoSuanliaoData(info.fenleiName, info.zuofa['名字'], $event)"
-      ></app-lrsj-zuofa>
+      <app-lrsj-zuofa [fenleiName]="info.fenleiName" [(zuofa)]="info.zuofa"></app-lrsj-zuofa>
     </ng-container>
   </app-floating-dialog>
 }

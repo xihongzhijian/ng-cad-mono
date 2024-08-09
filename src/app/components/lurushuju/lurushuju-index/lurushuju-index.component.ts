@@ -3,7 +3,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
-import {getBooleanStr, getCopyName, setGlobal} from "@app/app.common";
+import {getBooleanStr, setGlobal} from "@app/app.common";
 import {AboutComponent} from "@app/components/about/about.component";
 import {openZixuanpeijianDialog} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.types";
@@ -20,7 +20,6 @@ import {LrsjSuanliaoDataComponent} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-
 import {LrsjXinghaosComponent} from "../lrsj-pieces/lrsj-xinghaos/lrsj-xinghaos.component";
 import {LrsjZuofasComponent} from "../lrsj-pieces/lrsj-zuofas/lrsj-zuofas.component";
 import {LurushujuNavComponent} from "../lurushuju-nav/lurushuju-nav.component";
-import {openSelectZuofaDialog} from "../select-zuofa-dialog/select-zuofa-dialog.component";
 import {LrsjStatusService} from "../services/lrsj-status.service";
 import {openTongyongshujuDialog} from "../tongyongshuju-dialog/tongyongshuju-dialog.component";
 import {ToolbarBtn} from "./lurushuju-index.types";
@@ -67,12 +66,14 @@ export class LurushujuIndexComponent {
   }
 
   toolbarBtns = computed<ToolbarBtn[]>(() => {
+    const xinghao = this.lrsjStatus.xinghao();
+    const pieceInfos = this.lrsjStatus.pieceInfos();
     return [
       {name: "关闭", color: "primary"},
       {name: ""},
       {name: "添加", color: "primary"},
       {name: "编辑", color: this.lrsjStatus.editMode() ? "accent" : "primary"},
-      {name: "复制做法", color: "primary", style: {display: this.lrsjStatus.xinghao() ? "" : "none"}},
+      {name: "复制做法", color: "primary", hidden: !pieceInfos.zuofas.show},
       {name: "返回", color: "primary", style: {display: this.lrsjStatus.canGoBack() ? "" : "none"}},
       {name: ""},
       {name: "通用数据", color: "primary"},
@@ -81,11 +82,16 @@ export class LurushujuIndexComponent {
       {name: ""},
       {name: "配件库", color: "primary"},
       {name: "模块库", color: "primary"},
+      {name: "从其他做法复制", color: "primary", hidden: !pieceInfos.suanliaoCads.show},
+      {name: "", class: [""]},
+      {name: "型号专用公式", color: "primary", hidden: !xinghao},
+      {name: "型号专用CAD", color: "primary", hidden: !xinghao},
       {name: "", class: ["flex-110"]},
       {name: "测试", color: "primary"}
     ];
   });
   async onToolbarBtnClick(btn: ToolbarBtn) {
+    const pieceInfos = this.lrsjStatus.pieceInfos();
     switch (btn.name) {
       case "关闭":
         break;
@@ -95,7 +101,7 @@ export class LurushujuIndexComponent {
         this.lrsjStatus.editMode.update((v) => !v);
         return;
       case "复制做法":
-        await this.copyZuofa();
+        await this.lrsjZuofas()?.copyZuofaFromOthers();
         return;
       case "返回":
         this.lrsjStatus.goBack();
@@ -115,10 +121,23 @@ export class LurushujuIndexComponent {
       case "示意图":
         break;
       case "配件库":
-        await this.openZxpj(false);
+        if (pieceInfos.suanliaoCads.show) {
+          this.lrsjSuanliaoCads()?.selectSuanliaoCads();
+        } else {
+          this.openZxpj(false);
+        }
         return;
       case "模块库":
         break;
+      case "从其他做法复制":
+        await this.lrsjSuanliaoCads()?.copyCadsFromOthers();
+        return;
+      case "型号专用公式":
+        await this.xinghaoZhuanyongGongshi();
+        return;
+      case "型号专用CAD":
+        this.openZxpj(true);
+        return;
       case "测试":
         break;
     }
@@ -135,53 +154,16 @@ export class LurushujuIndexComponent {
     };
     await openZixuanpeijianDialog(this.dialog, {data});
   }
-  async copyZuofa() {
-    const xinghao = this.lrsjStatus.xinghao();
-    if (!xinghao) {
+  async xinghaoZhuanyongGongshi() {
+    const xinghaoName = this.lrsjStatus.xinghao()?.名字;
+    if (!xinghaoName) {
       return;
     }
-    const xinghaoOptions = await this.lrsjStatus.getXinghaoOptions();
-    const result = await openSelectZuofaDialog(this.dialog, {
-      data: {xinghaoOptions, multiple: true}
-    });
-    if (!result) {
-      return;
-    }
-    const targetFenlei = await this.message.prompt<string>({
-      type: "select",
-      label: "复制到哪个分类",
-      options: xinghao.显示产品分类,
-      hint: "若留空则复制到对应分类"
-    });
-    if (typeof targetFenlei !== "string") {
-      return;
-    }
-    let successCount = 0;
-    const 型号2 = xinghao.名字;
-    const gongyiNames: ObjectOf<string[]> = {};
-    for (const item of result.items) {
-      const {型号, 产品分类, 名字} = item;
-      const 产品分类2 = targetFenlei || 产品分类;
-      if (!gongyiNames[产品分类2]) {
-        gongyiNames[产品分类2] = xinghao.产品分类[产品分类2].map((v) => v.名字);
-      }
-      const 复制名字 = getCopyName(gongyiNames[产品分类2], item.名字);
-      const success = await this.http.getData<boolean>("shuju/api/copyGongyi", {名字, 复制名字, 型号, 型号2, 产品分类, 产品分类2});
-      if (success) {
-        gongyiNames[产品分类2].push(复制名字);
-        successCount++;
-      }
-    }
-    if (successCount > 0) {
-      const xinghao2 = await this.lrsjStatus.refreshXinghao(true);
-      const data = xinghao2?.产品分类[targetFenlei]?.at(-1);
-      if (data) {
-        // TODO
-        // for (const menjiaoData of data.算料数据) {
-        //   updateMenjiaoData(menjiaoData);
-        // }
-        await this.lrsjStatus.submitZuofa(targetFenlei, data, ["算料数据"]);
-      }
+    const search2 = {分类: "型号专用公式", "选项.型号": xinghaoName};
+    const extraData = {分类: "型号专用公式", 选项: {型号: xinghaoName}};
+    const url = await this.http.getShortUrl("算料公式", {search2, extraData});
+    if (url) {
+      window.open(url);
     }
   }
 

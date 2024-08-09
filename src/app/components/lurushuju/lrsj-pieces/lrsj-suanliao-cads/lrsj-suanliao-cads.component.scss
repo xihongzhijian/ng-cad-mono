@@ -1,0 +1,17 @@
+app-suanliaogongshi {
+  width: 425px;
+}
+
+.cads {
+  flex-wrap: wrap;
+
+  ::ng-deep {
+    .name-error .name button:nth-child(1) {
+      color: red;
+    }
+  }
+}
+
+app-suanliao-tables {
+  height: 100%;
+}

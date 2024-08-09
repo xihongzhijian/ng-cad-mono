@@ -14,8 +14,10 @@ import {lastValueFrom, Subject, take, takeUntil} from "rxjs";
 import {LrsjPieceInfos} from "../lrsj-pieces/lrsj-pieces.types";
 import {defaultFenleis} from "../lrsj-pieces/lrsj-pieces.utils";
 import {SuanliaoDataBtnName} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.types";
+import {updateMenjiaoData} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.utils";
 import {
   getXinghao,
+  get算料数据,
   isMenjiaoCadType,
   MenjiaoCadType,
   updateXinghaoFenleis,
@@ -23,7 +25,6 @@ import {
   Xinghao,
   XinghaoRaw,
   工艺做法,
-  算料数据,
   算料数据2
 } from "../xinghao-data";
 import {
@@ -55,9 +56,16 @@ export class LrsjStatusService implements OnDestroy {
   varNames = signal<NonNullable<SuanliaogongshiInfo["varNames"]>>({});
   xinghaozhuanyongCadCount = signal(0);
   triggerSuanliaoDataBtn = signal<{name: SuanliaoDataBtnName} | null>(null);
+  suanliaoCadsValidateStart$ = new Subject<void>();
+  suanliaoCadsValidateEnd$ = new Subject<string[]>();
 
   private _xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
   xinghaoFilterStr = signal(session.load<string>(this._xinghaoFilterStrKey) || "");
+  xinghaoFilterStrEff = effect(() => {
+    const str = this.xinghaoFilterStr();
+    session.save(this._xinghaoFilterStrKey, str);
+    untracked(() => this.filterXinghaos());
+  });
   focusFenleiZuofa = signal<{i: number; j?: number} | null>(null);
 
   isKailiao = computed(() => {
@@ -77,13 +85,6 @@ export class LrsjStatusService implements OnDestroy {
   private _destoryed$ = new Subject<void>();
 
   constructor() {
-    effect(() => {
-      const str = this.xinghaoFilterStr();
-      session.save(this._xinghaoFilterStrKey, str);
-      untracked(() => this.filterXinghaos());
-    });
-    effect(() => this.refreshHuajians(), {allowSignalWrites: true});
-    effect(() => this.saveInfo());
     this.status.changeProject$.pipe(takeUntil(this._destoryed$)).subscribe(() => {
       const info = session.load<LrsjInfo>(this._infoKey) || {};
       if (info && !info.changeProject) {
@@ -126,6 +127,36 @@ export class LrsjStatusService implements OnDestroy {
 
   suanliaoDataInfo = signal<SuanliaoDataInfo | null>(null);
   suanliaoCadsInfo = signal<SuanliaoCadsInfo | null>(null);
+  suanliaoDataOld = computed(() => {
+    const xinghao = this.xinghao();
+    const suanliaoDataInfo = this.suanliaoDataInfo();
+    if (!xinghao || !suanliaoDataInfo) {
+      return null;
+    }
+    const {fenleiName, zuofaName, suanliaoDataIndex} = suanliaoDataInfo;
+    const zuofas = xinghao.产品分类[fenleiName];
+    if (!zuofas) {
+      return null;
+    }
+    const zuofa = zuofas.find((v) => v.名字 === zuofaName);
+    if (!zuofa) {
+      return null;
+    }
+    return zuofa.算料数据[suanliaoDataIndex];
+  });
+  suanliaoDataNew = signal(get算料数据());
+  suanliaoDataNewEff = effect(
+    () => {
+      const suanliaoDataInfo = this.suanliaoDataInfo();
+      const suanliaoDataOld = this.suanliaoDataOld();
+      if (suanliaoDataInfo && suanliaoDataOld) {
+        const data = cloneDeep(suanliaoDataOld);
+        updateMenjiaoData(data);
+        this.suanliaoDataNew.set(data);
+      }
+    },
+    {allowSignalWrites: true}
+  );
   pieceInfos = computed(() => {
     const xinghao = !!this.xinghao();
     const suanliaoDataInfo = !!this.suanliaoDataInfo();
@@ -154,12 +185,14 @@ export class LrsjStatusService implements OnDestroy {
     this.suanliaoDataInfo.set(null);
     this.suanliaoCadsInfo.set(null);
   }
-  async gotoSuanliaoData(fenleiName: string, zuofaName: string, suanliaoData: 算料数据) {
+  async gotoSuanliaoData(fenleiName: string, zuofaName: string, suanliaoDataIndex: number) {
     if (!(await this.beforePieceLeave("suanliaoData"))) {
       return;
     }
-    suanliaoData.产品分类 = fenleiName;
-    this.suanliaoDataInfo.set({fenleiName, zuofaName, suanliaoData});
+    const pieceInfos = this.pieceInfos();
+    if (!pieceInfos.suanliaoCads.show) {
+      this.suanliaoDataInfo.set({fenleiName, zuofaName, suanliaoDataIndex});
+    }
     this.suanliaoCadsInfo.set(null);
   }
   async gotoSuanliaoCads(key1: MenjiaoCadType) {
@@ -191,6 +224,12 @@ export class LrsjStatusService implements OnDestroy {
   });
   async goBack() {
     const infos = this.pieceInfos();
+    if (infos.suanliaoCads.show) {
+      const suanliaoDataInfo = this.suanliaoDataInfo();
+      if (suanliaoDataInfo) {
+        await this.gotoSuanliaoData(suanliaoDataInfo.fenleiName, suanliaoDataInfo.zuofaName, suanliaoDataInfo.suanliaoDataIndex);
+      }
+    }
     if (infos.suanliaoData.show) {
       await this.gotoZuofas(this.xinghao());
     } else if (infos.zuofas.show) {
@@ -215,9 +254,10 @@ export class LrsjStatusService implements OnDestroy {
     }
     const suanliaoDataInfo = this.suanliaoDataInfo();
     if (suanliaoDataInfo) {
+      const suanliaoData = this.suanliaoDataNew();
       info.产品分类 = suanliaoDataInfo.fenleiName;
       info.工艺做法 = suanliaoDataInfo.zuofaName;
-      info.算料数据 = suanliaoDataInfo.suanliaoData.名字;
+      info.门铰锁边铰边 = suanliaoData.名字;
     }
     const suanliaoCadsInfo = this.suanliaoCadsInfo();
     if (suanliaoCadsInfo) {
@@ -267,15 +307,15 @@ export class LrsjStatusService implements OnDestroy {
     if (!xinghao) {
       return;
     }
-    const {产品分类, 工艺做法, 算料数据} = info;
-    if (产品分类 && 工艺做法 && 算料数据) {
+    const {产品分类, 工艺做法, 门铰锁边铰边} = info;
+    if (产品分类 && 工艺做法 && 门铰锁边铰边) {
       const zuofas = xinghao.产品分类[产品分类];
       if (zuofas) {
         const zuofa = zuofas.find((v) => v.名字 === 工艺做法);
         if (zuofa) {
-          const suanliaoData = zuofa.算料数据.find((v) => v.名字 === 算料数据);
-          if (suanliaoData) {
-            this.gotoSuanliaoData(产品分类, 工艺做法, suanliaoData);
+          const suanliaoDataIndex = zuofa.算料数据.findIndex((v) => v.名字 === 门铰锁边铰边);
+          if (suanliaoDataIndex >= 0) {
+            this.gotoSuanliaoData(产品分类, 工艺做法, suanliaoDataIndex);
           }
         }
       }
@@ -291,6 +331,7 @@ export class LrsjStatusService implements OnDestroy {
       session.save(this._infoKey, this.info());
     }
   }
+  saveInfoEff = effect(() => this.saveInfo());
   async loadInfo() {
     const info = session.load<LrsjInfo>(this._infoKey);
     if (info) {
@@ -566,6 +607,7 @@ export class LrsjStatusService implements OnDestroy {
       this.huajians.set([]);
     }
   }
+  refreshHuajiansEff = effect(() => this.refreshHuajians(), {allowSignalWrites: true});
   filterHuajians(data: 算料数据2) {
     const xiaoguotuValues = new Set<string>();
     for (const key of xiaoguotuKeys) {
