@@ -165,28 +165,20 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       };
     };
     const optionKeys: (keyof 算料数据)[] = ["门铰", "门扇厚度", "锁边", "铰边"];
-    const form1Group2: InputInfo[] = [];
     const form1Group: InputInfo[] = [
       {
         type: "group",
         label: "",
-        style: getInfoStyle(2),
+        style: getInfoStyle(3),
         groupStyle: getGroupStyle({flexDirection: "column", height: "100%"}),
         infos: [
           {
             type: "group",
             label: "选项",
-            infos: optionKeys.map((v) => this.getOptionInputInfo2(data, v, 2)),
+            infos: optionKeys.map((v) => this.getOptionInputInfo2(data, v, optionKeys.length)),
             groupStyle: getGroupStyle()
           }
         ]
-      },
-      {
-        type: "group",
-        label: "",
-        infos: form1Group2,
-        style: getInfoStyle(2),
-        groupStyle: getGroupStyle({flexDirection: "column"})
       }
     ];
     const 选项要求Form: InputInfo[] = [];
@@ -254,7 +246,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         type: "group",
         label: "门缝配置",
         infos: 门缝配置输入.map(getMenfengInputInfo),
-        style: {marginBottom: "5px"},
+        style: getInfoStyle(3),
         groupStyle: getGroupStyle()
       }
     ];
@@ -267,14 +259,15 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
             type: "boolean",
             label: "关闭碰撞检查",
             model: {data, key: "关闭碰撞检查"},
-            style: getInfoStyle(2),
+            style: getInfoStyle(1),
             validators: Validators.required
           }
         ],
+        style: getInfoStyle(3),
         groupStyle: getGroupStyle()
       }
     ];
-    form1Group2.push(...form2, ...form3);
+    form1Group.push(...form2, ...form3);
     return form1;
   });
   key1Infos = computed(() => {

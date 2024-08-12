@@ -40,22 +40,29 @@ export class LrsjZuofasComponent extends LrsjPiece {
   xinghao = this.lrsjStatus.xinghao;
   editMode = this.lrsjStatus.editMode;
 
-  zuofaInfos = signal<ZuofaInfo[]>([]);
-  zuofaInfosEff = effect(
-    () => {
-      const pieceInfo = this.lrsjStatus.pieceInfos().zuofas;
-      if (!pieceInfo.show) {
-        this.zuofaInfos.set([]);
-      }
-    },
-    {allowSignalWrites: true}
-  );
-
   scrollbar = viewChild.required<NgScrollbar>("scrollbar");
 
   getFilepathUrl(url: string) {
     return getFilepathUrl(url);
   }
+
+  private _zuofaInfosPrev: ZuofaInfo[] | null = null;
+  zuofaInfos = signal<ZuofaInfo[]>([]);
+  zuofaInfosEff = effect(
+    () => {
+      const pieceInfo = this.lrsjStatus.pieceInfos().zuofas;
+      if (pieceInfo.show) {
+        if (this._zuofaInfosPrev) {
+          this.zuofaInfos.set(this._zuofaInfosPrev);
+          this._zuofaInfosPrev = null;
+        }
+      } else {
+        this._zuofaInfosPrev = untracked(() => this.zuofaInfos());
+        this.zuofaInfos.set([]);
+      }
+    },
+    {allowSignalWrites: true}
+  );
 
   async addZuofa(fenleiName: string) {
     const xinghao = this.xinghao();

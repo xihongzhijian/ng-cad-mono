@@ -151,6 +151,7 @@ export class LrsjStatusService implements OnDestroy {
       const suanliaoDataOld = this.suanliaoDataOld();
       if (suanliaoDataInfo && suanliaoDataOld) {
         const data = cloneDeep(suanliaoDataOld);
+        data.产品分类 = suanliaoDataInfo.fenleiName;
         updateMenjiaoData(data);
         this.suanliaoDataNew.set(data);
       }
@@ -436,9 +437,10 @@ export class LrsjStatusService implements OnDestroy {
     const fields = ["vid", "mingzi"];
     const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields});
     const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields: [...fields, "menchuang"]});
+    const xinghaoMenchuangsPrev = this.xinghaoMenchuangs();
+    const iPrev = xinghaoMenchuangsPrev.index;
+    const jPrev = xinghaoMenchuangsPrev.item?.gongyis?.index;
     const xinghaoMenchuangs = new XinghaoDataList<XinghaoMenchuang>();
-    const iPrev = xinghaoMenchuangs.index;
-    const jPrev = xinghaoMenchuangs.item?.gongyis?.index;
     for (const menchuang of menchuangs) {
       const xinghaoMenchuang = getXinghaoMenchuang(menchuang);
       xinghaoMenchuang.gongyis = new XinghaoDataList();

@@ -1,4 +1,5 @@
 .产品分类 {
+  width: 100%;
   display: flex;
   flex-direction: column;
   cursor: unset;
@@ -6,7 +7,6 @@
   .header {
     display: flex;
     flex-direction: column;
-    height: 100%;
 
     .title {
       width: 142px;

@@ -44,8 +44,6 @@ export class LrsjZuofaComponent {
 
   tabs = signal<ZuofaTab[]>([{name: "算料数据"}, {name: "下单选项输入配置"}]);
 
-  constructor() {}
-
   async submitZuofa(fields: (keyof 工艺做法)[]) {
     const fenlei = this.fenleiName();
     const zuofa = this.zuofa();
@@ -279,8 +277,9 @@ export class LrsjZuofaComponent {
           ];
           const result = await this.message.form(form);
           if (result) {
+            data.产品分类 = this.fenleiName();
             updateMenjiaoData(data);
-            const index = zuofa.算料数据.push(data);
+            const index = zuofa.算料数据.push(data) - 1;
             await this.updateMenjiao();
             this.lrsjStatus.gotoSuanliaoData(this.fenleiName(), zuofa.名字, index);
           }

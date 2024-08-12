@@ -1,10 +1,7 @@
 @if (xinghao(); as xinghao) {
   <ng-scrollbar #scrollbar>
-    <div class="items">
+    <div class="flex-column">
       @for (fenlei of xinghao["显示产品分类"]; track i; let i = $index) {
-        @if (i > 0) {
-          <mat-divider></mat-divider>
-        }
         <div class="产品分类" [attr.data-i]="i">
           @if (i > 0) {
             <mat-divider></mat-divider>
