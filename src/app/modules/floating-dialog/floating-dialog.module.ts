@@ -6,7 +6,6 @@ import {FloatingDialogBodyDirective} from "./directives/floating-dialog-body.dir
 import {FloatingDialogTitleDirective} from "./directives/floating-dialog-title.directive";
 
 @NgModule({
-  declarations: [],
   imports: [CommonModule, FloatingDialogBodyDirective, FloatingDialogComponent, FloatingDialogTitleDirective, FloatingDialogTraysComponent],
   exports: [FloatingDialogBodyDirective, FloatingDialogComponent, FloatingDialogTitleDirective, FloatingDialogTraysComponent]
 })

@@ -244,7 +244,7 @@ export class LrsjZuofaComponent {
   }
   getMenjiaoId() {
     const zuofa = this.zuofa();
-    const numVids = zuofa.算料数据.map((v) => Number(v.vid)).filter((v) => !isNaN(v)) || [];
+    const numVids = zuofa.算料数据.map((v) => Number(v.vid)).filter((v) => !Number.isNaN(v)) || [];
     if (numVids.length > 0) {
       const numMax = Math.max(...numVids);
       return String(numMax + 1);

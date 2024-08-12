@@ -19,6 +19,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {ContextMenuModule} from "@app/modules/context-menu/context-menu.module";
+import {ObjectOf} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {uniqueId} from "lodash";
 import {FloatingDialogsManagerService} from "../../services/floating-dialogs-manager.service";
@@ -81,7 +82,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
     }
     return value;
   }
-  style = computed<Properties>(() => {
+  style = computed(() => {
     if (this.maximized()) {
       const limits = this.manager.limits();
       let top = 0;
@@ -105,17 +106,9 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
       return {top: `${top}px`, left: `${left}px`, width: `${width}px`, height: `${height}px`};
     }
     const style: Properties = {};
-    const size = this.size();
-    if (size.x > 0) {
-      style.width = `${size.x}px`;
-    } else {
-      style.width = this.getPxStr(this.width());
-    }
-    if (size.y > 0) {
-      style.height = `${size.y}px`;
-    } else {
-      style.height = this.getPxStr(this.height());
-    }
+    const {x: sizeX, y: sizeY} = this.size();
+    style.width = sizeX > 0 ? `${sizeX}px` : this.getPxStr(this.width());
+    style.height = sizeY > 0 ? `${sizeY}px` : this.getPxStr(this.height());
     style.top = this.getPxStr(this.top());
     style.left = this.getPxStr(this.left());
     return style;
@@ -217,37 +210,32 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
     const {x: sizeX, y: sizeY} = this._sizeBefore();
     const {x: posX, y: posY} = this._positionBefore();
     const {x: dx, y: dy} = event.distance;
-    switch (handle.name) {
-      case "top":
+    const handlers: ObjectOf<() => void> = {
+      top: () => {
         this.size.update(({x}) => ({x, y: sizeY - dy}));
         this.position.update(({x}) => ({x, y: posY + dy}));
-        break;
-      case "left":
+      },
+      left: () => {
         this.size.update(({y}) => ({x: sizeX - dx, y}));
         this.position.update(({y}) => ({x: posX + dx, y}));
-        break;
-      case "right":
-        this.size.update(({y}) => ({x: sizeX + dx, y}));
-        break;
-      case "bottom":
-        this.size.update(({x}) => ({x, y: sizeY + dy}));
-        break;
-      case "top-left":
+      },
+      right: () => this.size.update(({y}) => ({x: sizeX + dx, y})),
+      bottom: () => this.size.update(({x}) => ({x, y: sizeY + dy})),
+      "top-left": () => {
         this.size.set({x: sizeX - dx, y: sizeY - dy});
         this.position.set({x: posX + dx, y: posY + dy});
-        break;
-      case "top-right":
+      },
+      "top-right": () => {
         this.size.set({x: sizeX + dx, y: sizeY - dy});
         this.position.set({x: posX, y: posY + dy});
-        break;
-      case "bottom-left":
+      },
+      "bottom-left": () => {
         this.size.set({x: sizeX - dx, y: sizeY + dy});
         this.position.set({x: posX + dx, y: posY});
-        break;
-      case "bottom-right":
-        this.size.set({x: sizeX + dx, y: sizeY + dy});
-        break;
-    }
+      },
+      "bottom-right": () => this.size.set({x: sizeX + dx, y: sizeY + dy})
+    };
+    handlers[handle.name]?.();
     event.source.reset();
   }
 }
