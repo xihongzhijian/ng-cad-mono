@@ -1,7 +1,8 @@
+import {ContextMenuTriggerDirective} from "./context-menu-trigger.directive";
+
 describe("ContextMenuTriggerDirective", () => {
   it("should create an instance", () => {
-    // fixme: https://angular.dev/errors/NG0203
-    const directive = true; // new ContextMenuTriggerDirective();
+    const directive = new ContextMenuTriggerDirective();
     expect(directive).toBeTruthy();
   });
 });

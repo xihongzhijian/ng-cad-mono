@@ -1,4 +1,4 @@
-import {Directive, HostListener, input, output} from "@angular/core";
+import {Directive, EventEmitter, HostListener, Input, Output} from "@angular/core";
 import {ContextMenuComponent} from "../components/context-menu/context-menu.component";
 
 @Directive({
@@ -6,13 +6,13 @@ import {ContextMenuComponent} from "../components/context-menu/context-menu.comp
   standalone: true
 })
 export class ContextMenuTriggerDirective {
-  appContextMenuTrigger = input.required<ContextMenuComponent>();
-  onContextMenuEvt = output<PointerEvent>({alias: "onContextMenu"});
+  @Input() appContextMenuTrigger!: ContextMenuComponent;
+  @Output() contextMenuEvt = new EventEmitter<PointerEvent>();
 
   @HostListener("contextmenu", ["$event"])
   onContextMenu(event: PointerEvent) {
     event.preventDefault();
-    this.onContextMenuEvt.emit(event);
-    this.appContextMenuTrigger().onContextMenu(event);
+    this.contextMenuEvt.emit(event);
+    this.appContextMenuTrigger.onContextMenu(event);
   }
 }
