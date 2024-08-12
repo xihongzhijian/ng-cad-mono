@@ -70,7 +70,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
       return;
     }
     const names = xinghao.产品分类[fenleiName].map((gongyi) => gongyi.名字);
-    const 名字 = await this.message.prompt({
+    const 名字 = await this.message.prompt<string, string>({
       type: "string",
       label: "",
       validators: (control) => {
@@ -88,9 +88,12 @@ export class LrsjZuofasComponent extends LrsjPiece {
       return;
     }
     const 型号 = xinghao.名字;
-    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/addGongyi", {名字, 型号, fenleiName});
-    await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw?.产品分类);
-    this.openZuofa(fenleiName, 名字);
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/addGongyi", {名字, 型号, 产品分类: fenleiName});
+    const zuofa = xinghaoRaw?.产品分类?.[fenleiName]?.find((v) => v.名字 === 名字);
+    if (zuofa) {
+      await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw?.产品分类);
+      this.openZuofa(fenleiName, zuofa);
+    }
   }
   async removeZuofa(fenleiName: string, zuofa: 工艺做法) {
     const xinghao = this.xinghao();
