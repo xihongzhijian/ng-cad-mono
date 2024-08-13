@@ -2,11 +2,11 @@ import {WritableSignal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {InputInfo, InputInfoSelect} from "@app/modules/input/components/input.types";
-import {convertOptions} from "@app/modules/input/components/input.utils";
+import {getGroupStyle, getInputStyle} from "@app/modules/input/components/input.utils";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {difference} from "lodash";
 import {OptionsAll2} from "../../services/lrsj-status.types";
 import {
@@ -24,7 +24,7 @@ import {
   门缝配置,
   门缝配置输入
 } from "../../xinghao-data";
-import {getGroupStyle, getInfoStyle, getOptionInputInfo} from "../lrsj-pieces.utils";
+import {getOptionInputInfo} from "../lrsj-pieces.utils";
 
 export const updateMenjiaoData = (dataSignal: WritableSignal<算料数据> | 算料数据) => {
   const data = typeof dataSignal === "function" ? dataSignal() : dataSignal;
@@ -300,8 +300,13 @@ export const copySuanliaoData = async (
   return true;
 };
 
-export const getMenjiaoOptionInputInfo = (data: any, key: string, n: number, optionsAll: OptionsAll2): InputInfoSelect => {
-  return getOptionInputInfo(optionsAll, key, (info) => {
+export const getMenjiaoOptionInputInfo = (
+  data: any,
+  key: string,
+  options: OptionsAll2,
+  onOptionsChange: (options: OptionsDataData[]) => void
+): InputInfoSelect => {
+  return getOptionInputInfo(options, key, (info) => {
     info.model = {data, key};
     if (!info.readonly && !info.disabled) {
       info.validators = Validators.required;
@@ -309,7 +314,7 @@ export const getMenjiaoOptionInputInfo = (data: any, key: string, n: number, opt
     info.onChange = () => {
       updateMenjiaoData(data);
     };
-    info.style = getInfoStyle(n);
+    info.style = getInputStyle(true);
     const dialogKeys = ["门铰"];
     const openInNewTabKeys = ["门扇厚度", "锁边", "铰边"];
     if (dialogKeys.includes(key)) {
@@ -329,7 +334,7 @@ export const getMenjiaoOptionInputInfo = (data: any, key: string, n: number, opt
       info.openInNewTab = {
         optionKey: key,
         onOptionsChange: (options) => {
-          info.options = convertOptions(options.data);
+          onOptionsChange(options.data);
         }
       };
     }
@@ -364,14 +369,13 @@ export const getMenfengInputs = (data: 算料数据): InputInfo<门缝配置> =>
       label: value.name,
       model: {data: data.门缝配置, key: value.name},
       validators: Validators.required,
-      style: getInfoStyle(4)
+      style: getInputStyle(true)
     };
   };
   return {
     type: "group",
     label: "门缝配置",
     infos: 门缝配置输入.map(getMenfengInputInfo),
-    style: {marginBottom: "5px"},
     groupStyle: getGroupStyle()
   };
 };

@@ -7,6 +7,7 @@ import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
 import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoGroup, InputInfoSelect} from "@app/modules/input/components/input.types";
+import {getGroupStyle, getInputStyle} from "@app/modules/input/components/input.utils";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {AppStatusService} from "@app/services/app-status.service";
 import {environment} from "@env";
@@ -17,7 +18,7 @@ import {XinghaoData} from "../../services/lrsj-status.types";
 import {getXinghaoData} from "../../services/lrsj-status.utils";
 import {XinghaoRaw} from "../../xinghao-data";
 import {LrsjPiece} from "../lrsj-piece";
-import {defaultFenleis, getGroupStyle, getInfoStyle, getOptions} from "../lrsj-pieces.utils";
+import {defaultFenleis, getOptions} from "../lrsj-pieces.utils";
 
 @Component({
   selector: "app-lrsj-xinghaos",
@@ -157,7 +158,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     const result = await this.message.form(form);
     if (result) {
       if (refreshOptions) {
-        this.lrsjStatus.deleteDataCache("xinghaoOptionsAll");
+        this.lrsjStatus.fetchXinghaoOptions(true);
       }
       data.menchuang = data2.所属门窗 || "";
       data.gongyi = data2.所属工艺 || "";
@@ -264,8 +265,8 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         type: "group",
         label: "",
         infos: [
-          await this.getOptionInput(data, "门窗", "menchuang", true, {style: getInfoStyle(2)}),
-          await this.getOptionInput(data, "工艺", "gongyi", true, {style: getInfoStyle(2)})
+          await this.getOptionInput(data, "门窗", "menchuang", true, {style: getInputStyle(true)}),
+          await this.getOptionInput(data, "工艺", "gongyi", true, {style: getInputStyle(true)})
         ],
         groupStyle: getGroupStyle()
       },
@@ -300,7 +301,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
   }
 
   async getOptions(key: string) {
-    const xinghaoOptionsAll = await this.lrsjStatus.getXinghaoOptions();
+    const xinghaoOptionsAll = await this.lrsjStatus.fetchXinghaoOptions();
     return getOptions(xinghaoOptionsAll, key, (option) => {
       if (key === "产品分类") {
         option.disabled = defaultFenleis.includes(option.value);

@@ -40,6 +40,25 @@ export class LurushujuNavComponent {
   menchuangName = computed(() => this.xinghaoMenchuangs().item?.mingzi);
   gongyiName = computed(() => this.xinghaoMenchuangs().item?.gongyis?.item?.mingzi);
 
+  fenleiInfos = computed(() => {
+    const infos: {name: string; active: boolean; zuofas: {name: string; active: boolean}[]}[] = [];
+    const xinghao = this.xinghao();
+    const {fenleiName: activeFenleiName, zuofaName: activeZuofaName} = this.suanliaoDataInfo() || {};
+    if (!xinghao) {
+      return infos;
+    }
+    for (const fenleiName of xinghao.显示产品分类) {
+      const zuofas = xinghao.产品分类[fenleiName] || [];
+      const isFenleiActive = fenleiName === activeFenleiName;
+      infos.push({
+        name: fenleiName,
+        active: isFenleiActive,
+        zuofas: zuofas.map((v) => ({name: v.名字, active: isFenleiActive && v.名字 === activeZuofaName}))
+      });
+    }
+    return infos;
+  });
+
   async getXinghaoMenchaung(menchuang?: XinghaoMenchuang) {
     const data = menchuang ? cloneDeep({...menchuang, gongyis: undefined}) : getXinghaoMenchuang();
     const form: InputInfo<typeof data>[] = [

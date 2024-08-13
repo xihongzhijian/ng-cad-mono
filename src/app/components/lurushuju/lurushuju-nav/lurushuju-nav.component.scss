@@ -9,6 +9,9 @@
   }
   .toolbar.vertical {
     width: auto;
+    > .mdc-button {
+      width: calc(100% - 10px);
+    }
   }
 }
 

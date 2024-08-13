@@ -21,7 +21,7 @@
                   @if (!production) {
                     <ng-container [ngTemplateOutlet]="btns"></ng-container>
                   }
-                  <div class="flex-row">
+                  <div class="flex-row" style="flex-wrap: wrap">
                     @for (info of key1Info.inputs; track $index) {
                       <app-input [info]="info"></app-input>
                     }

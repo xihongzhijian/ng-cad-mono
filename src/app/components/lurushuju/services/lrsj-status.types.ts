@@ -66,3 +66,6 @@ export interface LrsjInfo {
   包边方向?: string;
   changeProject?: boolean;
 }
+
+export const dataCacheKeys = ["xinghaoOptions", "gongyiOptions", "menjiaoOptions"] as const;
+export type DataCacheKey = (typeof dataCacheKeys)[number];

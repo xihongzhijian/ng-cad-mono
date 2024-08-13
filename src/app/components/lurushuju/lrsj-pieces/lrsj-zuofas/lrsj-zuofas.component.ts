@@ -50,9 +50,9 @@ export class LrsjZuofasComponent extends LrsjPiece {
   zuofaInfos = signal<ZuofaInfo[]>([]);
   zuofaInfosEff = effect(
     () => {
-      const pieceInfo = this.lrsjStatus.pieceInfos().zuofas;
-      if (pieceInfo.show) {
-        if (this._zuofaInfosPrev) {
+      const {show, restoreZuofas} = this.lrsjStatus.pieceInfos().zuofas;
+      if (show) {
+        if (restoreZuofas && this._zuofaInfosPrev) {
           this.zuofaInfos.set(this._zuofaInfosPrev);
           this._zuofaInfosPrev = null;
         }
@@ -202,7 +202,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
   }
   async openZuofa(fenleiName: string, zuofa: 工艺做法) {
     const zuofaName = zuofa.名字;
-    zuofa = getZuofa(zuofa, await this.lrsjStatus.getZuofaOptions());
+    zuofa = getZuofa(zuofa, await this.lrsjStatus.fetchZuofaOptions());
     const infos = this.zuofaInfos().slice();
     const i = infos.findIndex((v) => v.fenleiName === fenleiName && v.zuofa.名字 === zuofaName);
     if (i < 0) {
@@ -253,9 +253,8 @@ export class LrsjZuofasComponent extends LrsjPiece {
     if (!xinghao) {
       return;
     }
-    const xinghaoOptions = await this.lrsjStatus.getXinghaoOptions();
     const result = await openSelectZuofaDialog(this.dialog, {
-      data: {xinghaoOptions, multiple: true}
+      data: {multiple: true}
     });
     if (!result) {
       return;

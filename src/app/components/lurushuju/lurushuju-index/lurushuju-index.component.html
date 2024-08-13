@@ -12,7 +12,7 @@
   }
   <button mat-raised-button color="primary" [matMenuTriggerFor]="links">更多</button>
   <mat-menu #links="matMenu">
-    <button mat-menu-item><app-about></app-about></button>
+    <button mat-menu-item (click)="showChangelog()"><app-about appClickStop></app-about></button>
     <ng-scrollbar>
       @for (btn of moreBtns(); track $index) {
         <button mat-menu-item (click)="btn.onClick()">{{ btn.name }}</button>

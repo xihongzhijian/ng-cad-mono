@@ -29,7 +29,7 @@ import {HoutaiCad} from "@app/modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@app/modules/input/components/input.component";
 import {InputInfo, InputInfoSelect} from "@app/modules/input/components/input.types";
-import {convertOptions} from "@app/modules/input/components/input.utils";
+import {convertOptions, getGroupStyle, getInputStyle} from "@app/modules/input/components/input.utils";
 import {validateForm} from "@app/modules/message/components/message/message.utils";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {AppStatusService} from "@app/services/app-status.service";
@@ -39,13 +39,13 @@ import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
 import {filterCad as filterCad2} from "@views/mrbcjfz/mrbcjfz.utils";
+import {Properties} from "csstype";
 import {cloneDeep, debounce, isEmpty} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {firstValueFrom} from "rxjs";
 import {CadItemComponent} from "../../cad-item/cad-item.component";
 import {CadItemButton} from "../../cad-item/cad-item.types";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
-import {OptionsAll2} from "../../services/lrsj-status.types";
 import {SuanliaoTablesComponent} from "../../suanliao-tables/suanliao-tables.component";
 import {
   MenjiaoCadType,
@@ -62,7 +62,6 @@ import {
   门缝配置输入
 } from "../../xinghao-data";
 import {LrsjPiece} from "../lrsj-piece";
-import {getGroupStyle, getInfoStyle} from "../lrsj-pieces.utils";
 import {LrsjSuanliaoCadsComponent} from "../lrsj-suanliao-cads/lrsj-suanliao-cads.component";
 import {MenjiaoCadItemInfo, MenjiaoShiyituCadItemInfo, SuanliaoDataBtnName} from "./lrsj-suanliao-data.types";
 import {
@@ -109,12 +108,12 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   xinghaozhuanyongCadCount = this.lrsjStatus.xinghaozhuanyongCadCount;
   suanliaoData = this.lrsjStatus.suanliaoDataNew;
   isKailiao = this.lrsjStatus.isKailiao;
+  menjiaoOptions = this.lrsjStatus.menjiaoOptions;
   saveInfo = output();
 
   production = environment.production;
   cadWidth = 300;
   cadHeight = 150;
-  menjiaoOptions: OptionsAll2 = {};
   menjiaoCadTypes = menjiaoCadTypes;
   peiheKeys = 配合框组合;
   qiliaoKeys = 企料组合;
@@ -127,14 +126,20 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   mrbcjfzs = viewChildren(MrbcjfzComponent);
 
   async ngOnInit() {
-    this.menjiaoOptions = await this.lrsjStatus.getMenjiaoOptions();
     await this.lrsjStatus.refreshMenshanOptions();
     await this.lrsjStatus.refreshBancaiList();
   }
 
-  getOptionInputInfo2(data: any, key: string, n: number): InputInfoSelect {
-    const info = getMenjiaoOptionInputInfo(data, key, n, this.menjiaoOptions);
-    info.style = getInfoStyle(n);
+  onShow = effect(() => {
+    const show = this.lrsjStatus.pieceInfos().suanliaoData.show;
+    if (show) {
+      untracked(() => this.validate(false));
+    }
+  });
+
+  getOptionInputInfo2(data: any, key: string, isInGroup: boolean, otherStyle?: Properties): InputInfoSelect {
+    const info = getMenjiaoOptionInputInfo(data, key, this.menjiaoOptions(), () => this.lrsjStatus.fetchMenjiaoOptions(true));
+    info.style = getInputStyle(isInGroup, otherStyle);
     const onChange = info.onChange;
     info.onChange = (val: any, info: any) => {
       onChange?.(val, info);
@@ -161,30 +166,42 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           this.suanliaoData.update((v) => ({...v}));
         },
         validators: Validators.required,
-        style: getInfoStyle(4)
+        style: getInputStyle(true, {width: "65px", flex: "1 0 auto"})
       };
     };
     const optionKeys: (keyof 算料数据)[] = ["门铰", "门扇厚度", "锁边", "铰边"];
     const form1Group: InputInfo[] = [
       {
         type: "group",
-        label: "",
-        style: getInfoStyle(3),
-        groupStyle: getGroupStyle({flexDirection: "column", height: "100%"}),
-        infos: [
-          {
-            type: "group",
-            label: "选项",
-            infos: optionKeys.map((v) => this.getOptionInputInfo2(data, v, optionKeys.length)),
-            groupStyle: getGroupStyle()
+        label: "选项",
+        style: getInputStyle(true, {width: "auto", flex: "1 0 auto"}),
+        groupStyle: getGroupStyle(),
+        infos: optionKeys.map((v) => {
+          const info = this.getOptionInputInfo2(data, v, true);
+          let w: number;
+          switch (v) {
+            case "门铰":
+              w = 160;
+              break;
+            case "门扇厚度":
+              w = 105;
+              break;
+            case "锁边":
+            case "铰边":
+              w = 175;
+              break;
+            default:
+              w = 0;
           }
-        ]
+          info.style = {...info.style, width: `${w}px`, flex: `1 0 auto`};
+          return info;
+        })
       }
     ];
     const 选项要求Form: InputInfo[] = [];
     for (const key in data.选项要求) {
       const value = data.选项要求[key];
-      const info = this.getOptionInputInfo2(data, key, 4);
+      const info = this.getOptionInputInfo2(data, key, true);
       选项要求Form.push(info);
       delete info.model;
       info.value = value.map((v) => v.mingzi);
@@ -246,7 +263,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         type: "group",
         label: "门缝配置",
         infos: 门缝配置输入.map(getMenfengInputInfo),
-        style: getInfoStyle(3),
+        style: getInputStyle(true, {width: "auto", flex: "1 0 auto"}),
         groupStyle: getGroupStyle()
       }
     ];
@@ -259,11 +276,11 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
             type: "boolean",
             label: "关闭碰撞检查",
             model: {data, key: "关闭碰撞检查"},
-            style: getInfoStyle(1),
+            style: getInputStyle(true, {width: "100px", flex: "1 0 auto"}),
             validators: Validators.required
           }
         ],
-        style: getInfoStyle(3),
+        style: getInputStyle(true, {width: "auto", flex: "1 0 auto"}),
         groupStyle: getGroupStyle()
       }
     ];
@@ -313,7 +330,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
 
       const inputs = [
         {
-          ...this.getOptionInputInfo2(data[key1] as any, "双开门扇宽生成方式", 1.5),
+          ...this.getOptionInputInfo2(data[key1] as any, "双开门扇宽生成方式", true, {flex: "0 0 250px"}),
           onChange: () => {
             if (锁扇蓝线宽比铰扇蓝线宽大(key1)) {
               setInputHidden(inputs[1], false);
@@ -331,7 +348,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           type: "number",
           label: "锁扇铰扇蓝线宽固定差值",
           model: {data: data[key1], key: "锁扇铰扇蓝线宽固定差值"},
-          style: getInfoStyle(3)
+          style: getInputStyle(true, {flex: "0 0 180px"})
         }
       ] as InputInfo<(typeof data)[typeof key1]>[];
       if (!使用双开门扇宽生成方式()) {
@@ -385,7 +402,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
                 this.suanliaoData.update((v) => ({...v}));
               }
             },
-            style: getInfoStyle(6)
+            style: getInputStyle(true)
           };
         });
       }
@@ -548,7 +565,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       }
       data[key1][key2][key3].cad = getHoutaiCad(cadData, {houtaiId});
       updateMenjiaoData(this.suanliaoData);
-      await this.validate();
+      await this.validate(false);
     }
   }
   async selectCad(component: CadItemComponent<MenjiaoCadItemInfo>) {
@@ -567,7 +584,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       }
     }
     updateMenjiaoData(this.suanliaoData);
-    await this.validate();
+    await this.validate(false);
   }
 
   async selectShiyituCad(key1: MenjiaoCadType | CadItemComponent<MenjiaoShiyituCadItemInfo>) {
@@ -714,10 +731,9 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   }
   errors = signal(this.getEmptyErrors());
   key1Errors = signal<ObjectOf<{msg: string; missingCads: string[]; bcfz: string[]} | undefined>>({});
-  async validate() {
-    this.lrsjStatus.suanliaoCadsValidateStart$.next();
+  async validate(alert: boolean) {
+    this.lrsjStatus.suanliaoCadsValidateStart$.next({alert});
     const cadsErrors = await firstValueFrom(this.lrsjStatus.suanliaoCadsValidateEnd$);
-    console.log(cadsErrors);
     if (cadsErrors.length > 0) {
       return false;
     }
@@ -798,29 +814,36 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     this.errors.set(errors);
     this.suanliaoData.update((v) => ({...v}));
 
-    const msgs: string[] = [];
-    if (errors.others) {
-      msgs.push("无法保存，输入不完整，请补充");
-    }
-    const key1Keys = keysOf(errors.key1);
-    if (key1Keys.length > 0) {
-      for (const key of key1Keys) {
-        msgs.push(`【${key}】${errors.key1[key]}`);
-        const bcfzErrors = key1Errors[key]?.bcfz;
-        if (bcfzErrors && bcfzErrors.length > 0) {
-          msgs.push(...bcfzErrors);
+    if (alert) {
+      const msgs: string[] = [];
+      if (errors.others) {
+        msgs.push("无法保存，输入不完整，请补充");
+      }
+      const key1Keys = keysOf(errors.key1);
+      if (key1Keys.length > 0) {
+        for (const key of key1Keys) {
+          msgs.push(`【${key}】${errors.key1[key]}`);
+          const bcfzErrors = key1Errors[key]?.bcfz;
+          if (bcfzErrors && bcfzErrors.length > 0) {
+            msgs.push(...bcfzErrors);
+          }
+        }
+        const index = menjiaoCadTypes.indexOf(key1Keys[0]);
+        if (index >= 0) {
+          this.menjiaoCadTabIndex.set(index);
+          const {missingCads, bcfz} = key1Errors[menjiaoCadTypes[index]] || {};
+          setTimeout(() => {
+            if (!isEmpty(missingCads)) {
+              this.onTriggerBtn("包边+企料数据");
+            } else if (bcfz) {
+              this.onTriggerBtn("板材分组");
+            }
+          }, 0);
         }
       }
-      const index = menjiaoCadTypes.indexOf(key1Keys[0]);
-      if (index >= 0) {
-        this.menjiaoCadTabIndex.set(index);
-        setTimeout(() => {
-          this.onTriggerBtn("板材分组");
-        }, 0);
+      if (msgs.length > 0) {
+        this.message.error(msgs.join("<br>"));
       }
-    }
-    if (msgs.length > 0) {
-      this.message.error(msgs.join("<br>"));
     }
 
     if (!isEmpty(inputErrors)) {
@@ -833,7 +856,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     return true;
   }
   async submit() {
-    if (!(await this.validate())) {
+    if (!(await this.validate(true))) {
       return;
     }
     const data = this.suanliaoData();

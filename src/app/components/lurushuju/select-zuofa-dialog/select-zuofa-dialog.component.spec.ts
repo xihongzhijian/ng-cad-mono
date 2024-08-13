@@ -5,7 +5,7 @@ import {provideRouter} from "@angular/router";
 import {SelectZuofaDialogComponent} from "./select-zuofa-dialog.component";
 import {SelectZuofaInput} from "./select-zuofa-dialog.types";
 
-const data: SelectZuofaInput = {xinghaoOptions: {}};
+const data: SelectZuofaInput = {};
 describe("SelectZuofaDialogComponent", () => {
   let component: SelectZuofaDialogComponent;
   let fixture: ComponentFixture<SelectZuofaDialogComponent>;

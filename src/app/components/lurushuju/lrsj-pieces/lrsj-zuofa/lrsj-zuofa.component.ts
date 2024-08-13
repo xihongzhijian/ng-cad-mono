@@ -54,7 +54,7 @@ export class LrsjZuofaComponent {
   async getXuanxiangItem(data0?: 选项) {
     const data: 选项 = {名字: "", 可选项: [], ...data0};
     const names = this.xuanxiangTable().data.map((v) => v.名字);
-    const zuofaOptionsAll = await this.lrsjStatus.getZuofaOptions();
+    const zuofaOptionsAll = await this.lrsjStatus.fetchZuofaOptions();
     const form: InputInfo<typeof data>[] = [
       {
         type: "select",
@@ -258,7 +258,7 @@ export class LrsjZuofaComponent {
         {
           const data = get算料数据();
           const keys: (keyof 算料数据)[] = ["门铰", "门扇厚度", "锁边", "铰边"];
-          const menjiaoOptions = await this.lrsjStatus.getMenjiaoOptions();
+          const menjiaoOptions = await this.lrsjStatus.fetchMenjiaoOptions();
           const form: InputInfo[] = [
             {
               type: "string",
@@ -272,7 +272,7 @@ export class LrsjZuofaComponent {
                 return null;
               }
             },
-            ...keys.map((k) => getMenjiaoOptionInputInfo(data, k, 1, menjiaoOptions)),
+            ...keys.map((k) => getMenjiaoOptionInputInfo(data, k, menjiaoOptions, () => this.lrsjStatus.fetchMenjiaoOptions(true))),
             getMenfengInputs(data)
           ];
           const result = await this.message.form(form);
@@ -290,8 +290,6 @@ export class LrsjZuofaComponent {
           const xinghaoName = this.lrsjStatus.xinghao()?.名字 || "";
           const result = await openSelectZuofaDialog(this.dialog, {
             data: {
-              xinghaoOptions: await this.lrsjStatus.getXinghaoOptions(),
-              menjiaoOptions: await this.lrsjStatus.getMenjiaoOptions(),
               excludeXinghaos: [xinghaoName],
               excludeZuofas: [zuofa.名字],
               key: "算料数据",

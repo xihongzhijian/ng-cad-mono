@@ -7,6 +7,7 @@ import {getBooleanStr, setGlobal} from "@app/app.common";
 import {AboutComponent} from "@app/components/about/about.component";
 import {openZixuanpeijianDialog} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {ClickStopPropagationDirective} from "@app/modules/directives/click-stop-propagation.directive";
 import {FloatingDialogModule} from "@app/modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
@@ -29,6 +30,7 @@ import {ToolbarBtn} from "./lurushuju-index.types";
   standalone: true,
   imports: [
     AboutComponent,
+    ClickStopPropagationDirective,
     FloatingDialogModule,
     ImageComponent,
     LrsjSuanliaoCadsComponent,
@@ -215,5 +217,10 @@ export class LurushujuIndexComponent {
       }, {});
       await this.lrsjStatus.setInfo(info);
     }
+  }
+
+  aboutComponent = viewChild(AboutComponent);
+  showChangelog() {
+    this.aboutComponent()?.showChangelog();
   }
 }

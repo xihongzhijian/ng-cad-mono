@@ -38,8 +38,8 @@
           @for (str of item.info; track $index) {
             <div class="text">{{ str }}</div>
           }
-          @if (data?.menjiaoOptions) {
-            @for (key of displayMenjiaoKeys; track $index) {
+          @for (key of displayMenjiaoKeys; track $index) {
+            @if (item.data.data) {
               <div class="text">{{ key }}：{{ item.data.data[key] }}</div>
             }
           }

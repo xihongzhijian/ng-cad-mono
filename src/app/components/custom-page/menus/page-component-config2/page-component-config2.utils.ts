@@ -1,10 +1,10 @@
 import {getFilepathUrl} from "@app/app.common";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {InputInfo, InputInfoGroup, InputInfoNumber, InputInfoOption, InputInfoSelect} from "@app/modules/input/components/input.types";
+import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "@app/modules/input/components/input.utils";
 import {isTypeOf, selectFiles} from "@lucilor/utils";
 import Color from "color";
 import {DataType, Property} from "csstype";
-import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "../../models/input-info-utils";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
 import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentImage} from "../../models/page-components/page-component-image";

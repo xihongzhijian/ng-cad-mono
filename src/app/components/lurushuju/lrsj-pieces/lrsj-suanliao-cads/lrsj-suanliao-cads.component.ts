@@ -79,8 +79,8 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
 
   constructor() {
     super();
-    this.lrsjStatus.suanliaoCadsValidateStart$.subscribe(async () => {
-      const result = await this.validate();
+    this.lrsjStatus.suanliaoCadsValidateStart$.subscribe(async ({alert}) => {
+      const result = await this.validate(alert);
       this.lrsjStatus.suanliaoCadsValidateEnd$.next(result);
     });
   }
@@ -329,8 +329,6 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     }
     const result = await openSelectZuofaDialog(this.dialog, {
       data: {
-        xinghaoOptions: await this.lrsjStatus.getXinghaoOptions(),
-        menjiaoOptions: await this.lrsjStatus.getMenjiaoOptions(),
         key: "算料数据",
         fenlei: suanliaoDataInfo.fenleiName
       }
@@ -410,7 +408,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     }
   }
 
-  async validate() {
+  async validate(alert: boolean) {
     const cadItems = this.cadItems();
     const errors: string[] = [];
     for (const item of cadItems) {
@@ -421,24 +419,25 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
       }
     }
 
-    await timeout(0);
-    const targetY = window.innerHeight / 2;
-    const errorElInfos: {el: HTMLElement; y: number; order: number}[] = [];
-    this.el.nativeElement.querySelectorAll<HTMLElement>(".error, .name-error").forEach((el) => {
-      const {top, bottom} = el.getBoundingClientRect();
-      errorElInfos.push({el, y: (top + bottom) / 2, order: Math.abs((top + bottom) / 2 - targetY)});
-    });
-    errorElInfos.sort((a, b) => a.order - b.order);
-    const scrollbar = this.cadsScrollbar();
-    if (errorElInfos.length > 0 && scrollbar) {
-      const dy = errorElInfos[0].y - targetY;
-      if (dy !== 0) {
-        scrollbar.scrollTo({top: scrollbar.nativeElement.scrollTop + dy});
+    if (alert) {
+      await timeout(0);
+      const targetY = window.innerHeight / 2;
+      const errorElInfos: {el: HTMLElement; y: number; order: number}[] = [];
+      this.el.nativeElement.querySelectorAll<HTMLElement>(".error, .name-error").forEach((el) => {
+        const {top, bottom} = el.getBoundingClientRect();
+        errorElInfos.push({el, y: (top + bottom) / 2, order: Math.abs((top + bottom) / 2 - targetY)});
+      });
+      errorElInfos.sort((a, b) => a.order - b.order);
+      const scrollbar = this.cadsScrollbar();
+      if (errorElInfos.length > 0 && scrollbar) {
+        const dy = errorElInfos[0].y - targetY;
+        if (dy !== 0) {
+          scrollbar.scrollTo({top: scrollbar.nativeElement.scrollTop + dy});
+        }
       }
-    }
-
-    if (errors.length > 0) {
-      this.message.error(errors.join("<br>"));
+      if (errors.length > 0) {
+        this.message.error(errors.join("<br>"));
+      }
     }
     return errors;
   }

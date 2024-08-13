@@ -1,6 +1,5 @@
 import {InputInfoOption, InputInfoSelect} from "@app/modules/input/components/input.types";
 import {convertOptions} from "@app/modules/input/components/input.utils";
-import {Properties} from "csstype";
 import {OptionsAll, OptionsAll2} from "../services/lrsj-status.types";
 
 export const defaultFenleis = ["单门", "子母对开", "双开"];
@@ -41,13 +40,4 @@ export const getOptionInputInfo = (
   }
 
   return info;
-};
-
-export const getGroupStyle = (style?: Properties): Properties => {
-  return {display: "flex", flexWrap: "wrap", ...style};
-};
-export const getInfoStyle = (n: number, style?: Properties): Properties => {
-  const percent = 100 / n;
-  const margin = 5;
-  return {width: `calc(${percent}% - ${margin * 2}px)`, margin: `${margin}px`, ...style};
 };

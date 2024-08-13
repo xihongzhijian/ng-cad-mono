@@ -56,7 +56,7 @@ export class LrsjStatusService implements OnDestroy {
   varNames = signal<NonNullable<SuanliaogongshiInfo["varNames"]>>({});
   xinghaozhuanyongCadCount = signal(0);
   triggerSuanliaoDataBtn = signal<{name: SuanliaoDataBtnName} | null>(null);
-  suanliaoCadsValidateStart$ = new Subject<void>();
+  suanliaoCadsValidateStart$ = new Subject<{alert: boolean}>();
   suanliaoCadsValidateEnd$ = new Subject<string[]>();
 
   private _xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
@@ -105,24 +105,73 @@ export class LrsjStatusService implements OnDestroy {
     this._destoryed$.complete();
   }
 
-  private _dataFetched: ObjectOf<any> = {};
-  private async _getDataIfNotFetched<T>(key: string, api: string, force?: boolean) {
-    if (force || !this._dataFetched[key]) {
-      this._dataFetched[key] = await this.http.getData<T>("shuju/api/" + api);
+  private _xinghaoOptions = signal<OptionsAll>({});
+  private _isXinghaoOptionsFetched = false;
+  xinghaoOptions = computed(() => {
+    const options = this._xinghaoOptions();
+    const isFetched = this._isXinghaoOptionsFetched;
+    if (!isFetched) {
+      untracked(() => this.fetchXinghaoOptions());
     }
-    return this._dataFetched[key] as T | null;
-  }
-  deleteDataCache = (key: string) => {
-    delete this._dataFetched[key];
+    return options;
+  });
+  fetchXinghaoOptions = async (force?: boolean) => {
+    if (!force && this._isXinghaoOptionsFetched) {
+      return this._xinghaoOptions();
+    }
+    const options = await this.http.getData<OptionsAll>("shuju/api/getXinghaoOption");
+    if (options) {
+      this._isXinghaoOptionsFetched = true;
+      this._xinghaoOptions.set(options);
+      return options;
+    }
+    return {};
   };
-  getXinghaoOptions = async (force?: boolean) => {
-    return (await this._getDataIfNotFetched<OptionsAll>("xinghaoOptionsAll", "getXinghaoOption", force)) || {};
+
+  private _zuofaOptions = signal<OptionsAll>({});
+  private _isZuofaOptionsFetched = false;
+  zuofaOptions = computed(() => {
+    const options = this._zuofaOptions();
+    const isFetched = this._isZuofaOptionsFetched;
+    if (!isFetched) {
+      untracked(() => this.fetchZuofaOptions());
+    }
+    return options;
+  });
+  fetchZuofaOptions = async (force?: boolean) => {
+    if (!force && this._isZuofaOptionsFetched) {
+      return this._zuofaOptions();
+    }
+    const options = await this.http.getData<OptionsAll>("shuju/api/getGongyizuofaOption");
+    if (options) {
+      this._isZuofaOptionsFetched = true;
+      this._zuofaOptions.set(options);
+      return options;
+    }
+    return {};
   };
-  getZuofaOptions = async (force?: boolean) => {
-    return (await this._getDataIfNotFetched<OptionsAll>("gongyiOptionsAll", "getGongyizuofaOption", force)) || {};
-  };
-  getMenjiaoOptions = async (force?: boolean) => {
-    return (await this._getDataIfNotFetched<OptionsAll2>("menjiaoOptionsAll", "getMenjiaoOptions", force)) || {};
+
+  private _menjiaoOptions = signal<OptionsAll2>({});
+  private _isMenjiaoOptionsFetched = false;
+  menjiaoOptions = computed(() => {
+    const options = this._menjiaoOptions();
+    const isFetched = this._isMenjiaoOptionsFetched;
+    if (!isFetched) {
+      untracked(() => this.fetchMenjiaoOptions());
+    }
+    return options;
+  });
+  fetchMenjiaoOptions = async (force?: boolean) => {
+    if (!force && this._isMenjiaoOptionsFetched) {
+      return this._menjiaoOptions();
+    }
+    const options = await this.http.getData<OptionsAll2>("shuju/api/getMenjiaoOptions");
+    if (options) {
+      this._isMenjiaoOptionsFetched = true;
+      this._menjiaoOptions.set(options);
+      return options;
+    }
+    return {};
   };
 
   suanliaoDataInfo = signal<SuanliaoDataInfo | null>(null);
@@ -158,16 +207,24 @@ export class LrsjStatusService implements OnDestroy {
     },
     {allowSignalWrites: true}
   );
+  private _pieceInfosPrev: LrsjPieceInfos | null = null;
   pieceInfos = computed(() => {
     const xinghao = !!this.xinghao();
     const suanliaoDataInfo = !!this.suanliaoDataInfo();
     const suanliaoCadsInfo = !!this.suanliaoCadsInfo();
     const infos: LrsjPieceInfos = {
       xinghaos: {show: !xinghao},
-      zuofas: {show: xinghao && !suanliaoDataInfo},
+      zuofas: {show: xinghao && !suanliaoDataInfo, restoreZuofas: false},
       suanliaoData: {show: suanliaoDataInfo && !suanliaoCadsInfo},
       suanliaoCads: {show: suanliaoDataInfo && suanliaoCadsInfo}
     };
+    const infosPrev = this._pieceInfosPrev;
+    if (infosPrev) {
+      if (infosPrev.suanliaoData.show || infosPrev.suanliaoCads.show) {
+        infos.zuofas.restoreZuofas = true;
+      }
+    }
+    this._pieceInfosPrev = infos;
     return infos;
   });
   async gotoXinghaos() {
@@ -368,10 +425,10 @@ export class LrsjStatusService implements OnDestroy {
   async updateXinghao(xinghao: Xinghao | null) {
     if (xinghao) {
       const fenleisBefore = cloneDeep(xinghao.产品分类);
-      const xinghaoOptionsAll = await this.getXinghaoOptions();
-      const menjiaoOptionsAll = await this.getMenjiaoOptions();
-      const allFenleis = xinghaoOptionsAll.产品分类.map((v) => v.name);
-      const 选项要求 = menjiaoOptionsAll.选项要求?.options || [];
+      const xinghaoOptions = await this.fetchXinghaoOptions();
+      const menjiaoOptions = await this.fetchMenjiaoOptions();
+      const allFenleis = xinghaoOptions.产品分类.map((v) => v.name);
+      const 选项要求 = menjiaoOptions.选项要求?.options || [];
       updateXinghaoFenleis(xinghao, allFenleis, defaultFenleis, 选项要求);
       this._xinghao.set(xinghao);
       const fenleisAfter = xinghao.产品分类;

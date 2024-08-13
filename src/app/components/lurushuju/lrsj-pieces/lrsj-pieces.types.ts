@@ -4,7 +4,7 @@ export interface LrsjPieceInfo {
 
 export interface LrsjPieceInfos {
   xinghaos: LrsjPieceInfo;
-  zuofas: LrsjPieceInfo;
+  zuofas: LrsjPieceInfo & {restoreZuofas: boolean};
   suanliaoData: LrsjPieceInfo;
   suanliaoCads: LrsjPieceInfo;
 }

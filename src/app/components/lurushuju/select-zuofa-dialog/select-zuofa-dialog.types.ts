@@ -1,9 +1,6 @@
-import {OptionsAll, OptionsAll2} from "../services/lrsj-status.types";
 import {工艺做法} from "../xinghao-data";
 
 export interface SelectZuofaInput {
-  xinghaoOptions: OptionsAll;
-  menjiaoOptions?: OptionsAll2;
   excludeXinghaos?: string[];
   excludeZuofas?: string[];
   key?: keyof 工艺做法;
