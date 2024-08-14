@@ -5,7 +5,7 @@
       class="tray"
       [color]="dialog.active() ? 'primary' : ''"
       [appContextMenuTrigger]="contextMenu"
-      (onContextMenu)="onContextMenu(i)"
+      (contextMenu)="onContextMenu(i)"
       (click)="clickTray(dialog)"
     >
       {{ dialog.name() }}

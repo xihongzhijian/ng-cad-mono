@@ -8,7 +8,7 @@
       <div
         class="cad-image"
         [appContextMenuTrigger]="contextMenu"
-        (onContextMenu)="onContextMenu(main.data, 'main')"
+        (contextMenu)="onContextMenu(main.data, 'main')"
         [matTooltip]="main.data.name"
         [matTooltipPosition]="'above'"
       >
@@ -60,7 +60,7 @@
   }
 </ng-scrollbar>
 
-<app-context-menu #contextMenu="">
+<app-context-menu #contextMenu>
   @if (contextMenuCad?.field === "main") {
     <button mat-menu-item (click)="editComponents()">选择装配CAD</button>
     <mat-divider></mat-divider>

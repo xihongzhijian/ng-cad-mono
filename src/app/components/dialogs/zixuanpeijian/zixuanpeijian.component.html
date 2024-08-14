@@ -315,7 +315,7 @@
         <div
           [id]="'cad-viewer-' + type + '-' + i + '-' + j"
           [appContextMenuTrigger]="contextMenu"
-          (onContextMenu)="onContextMenu(i, j)"
+          (contextMenu)="onContextMenu(i, j)"
         ></div>
         <!-- TODO: isLocal -->
         <div class="floating-titles" style="display: none">

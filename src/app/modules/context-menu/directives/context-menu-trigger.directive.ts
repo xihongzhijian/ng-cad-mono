@@ -7,12 +7,12 @@ import {ContextMenuComponent} from "../components/context-menu/context-menu.comp
 })
 export class ContextMenuTriggerDirective {
   @Input() appContextMenuTrigger!: ContextMenuComponent;
-  @Output() contextMenuEvt = new EventEmitter<PointerEvent>();
+  @Output() contextMenu = new EventEmitter<PointerEvent>();
 
   @HostListener("contextmenu", ["$event"])
   onContextMenu(event: PointerEvent) {
     event.preventDefault();
-    this.contextMenuEvt.emit(event);
+    this.contextMenu.emit(event);
     this.appContextMenuTrigger.onContextMenu(event);
   }
 }
