@@ -162,7 +162,7 @@ export const getMokuaiTitle = (
 
 export const getStep1Data = async (
   http: CadDataService,
-  httpOptions: HttpOptions,
+  httpOptions?: HttpOptions,
   params?: {code: string; type: string} | {mokuaiIds: string[]}
 ) => {
   return await http.getData<Step1Data>("ngcad/getZixuanpeijianTypesInfo", params, httpOptions);

@@ -1,0 +1,71 @@
+:host {
+  padding: 5px;
+}
+
+.item-infos {
+  margin: 20px 0 10px 0;
+  > * {
+    width: 0;
+
+    &:not(:last-child) {
+      margin-right: 10px;
+    }
+  }
+
+  .title {
+    font-size: 1em;
+    font-weight: bold;
+  }
+
+  .item-basic {
+    flex: 0 1 250px;
+    --item-height: 100%;
+  }
+
+  .item-bancai {
+    flex: 0 1 250px;
+  }
+
+  .item-others {
+    flex: 1 0 400px;
+
+    .box {
+      padding: 3px;
+      box-sizing: border-box;
+      border: var(--border);
+      height: 0;
+      flex: 1 1 0;
+    }
+
+    .mokuai-gongneng {
+      flex: 0 0 40%;
+
+      .inputs {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -5px;
+
+        app-input {
+          flex: 0 0 50%;
+          padding-right: 5px;
+          box-sizing: border-box;
+        }
+      }
+    }
+  }
+}
+
+.item-cads {
+  .title {
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+
+  .cads-all {
+    width: 70%;
+  }
+
+  .cads-selected {
+    flex: 1 1 0;
+  }
+}

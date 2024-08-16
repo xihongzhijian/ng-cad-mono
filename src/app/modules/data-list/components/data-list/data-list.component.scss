@@ -1,0 +1,36 @@
+:host {
+  padding: 10px;
+}
+
+.nav {
+  mat-tree {
+    width: 100%;
+  }
+  mat-tree-node {
+    > .toolbar {
+      width: 100%;
+    }
+  }
+
+  .nav-title {
+    flex: 1 1 0;
+    justify-content: flex-start;
+  }
+  .nav-edit {
+    width: auto;
+    flex: 0 0 auto;
+  }
+}
+
+::ng-deep {
+  .data-items {
+    --item-width: 360px;
+    --item-image-height: 180px;
+
+    .data-item {
+      &.active {
+        border: 1px solid red;
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+<mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" preserveContent animationDuration="0" [(selectedIndex)]="pageIndex">
+  <mat-tab></mat-tab>
+  @for (page of pages(); track $index) {
+    <mat-tab [label]="page.name">
+      <ng-template matTabContent>
+        @switch (page.name) {
+          @case ("布局") {}
+          @case ("配件CAD") {
+            <app-mokuai-cads></app-mokuai-cads>
+          }
+          @case ("模块库") {
+            <app-mokuaiku></app-mokuaiku>
+          }
+        }
+      </ng-template>
+    </mat-tab>
+  }
+</mat-tab-group>

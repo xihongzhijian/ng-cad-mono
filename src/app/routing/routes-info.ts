@@ -1,4 +1,5 @@
 import {Route} from "@angular/router";
+import {BujumokuaiIndexComponent} from "@app/components/bujumokuai/bujumokuai-index/bujumokuai-index.component";
 import {CustomPageIndexComponent} from "@app/components/custom-page/views/custom-page-index/custom-page-index.component";
 import {LvxingcaiyouhuaComponent} from "@app/views/lvxingcaiyouhua/lvxingcaiyouhua.component";
 import {RefreshCadImgsComponent} from "@app/views/refresh-cad-imgs/refresh-cad-imgs.component";
@@ -32,6 +33,7 @@ import {XinghaoOverviewComponent} from "@views/xinghao-overview/xinghao-overview
 export const routesInfo: (Route & {path: string})[] = [
   {path: "index", component: IndexComponent},
   {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"},
+  {path: "布局模块", component: BujumokuaiIndexComponent, title: "布局模块"},
   {path: "work-space", component: WorkSpaceComponent, title: "我的工作台"},
   {path: "custom-page", component: CustomPageIndexComponent, title: "自定义报表"},
   {path: "print-cad", component: PrintCadComponent, title: "打印CAD"},

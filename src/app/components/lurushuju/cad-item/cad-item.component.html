@@ -36,6 +36,7 @@
           @if (isOnline) {
             <app-cad-image
               class="link"
+              [collection]="isOnline.collection || 'cad'"
               [id]="cadId"
               [data]="cadData"
               [width]="cadWidth"

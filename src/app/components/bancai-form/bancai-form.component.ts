@@ -1,7 +1,8 @@
-import {Component, Input} from "@angular/core";
+import {Component, Input, viewChildren} from "@angular/core";
+import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {joinOptions} from "@app/app.common";
-import {MrbcjfzXinghaoInfo} from "@app/views/mrbcjfz/mrbcjfz.utils";
+import {validateForm} from "@app/modules/message/components/message/message.utils";
 import {openBancaiListDialog} from "@components/dialogs/bancai-list/bancai-list.component";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -15,8 +16,7 @@ import {InputComponent} from "../../modules/input/components/input.component";
   imports: [InputComponent]
 })
 export class BancaiFormComponent {
-  @Input({required: true}) xinghao!: MrbcjfzXinghaoInfo;
-  @Input({required: true}) key!: string;
+  @Input() extraInputInfos?: InputInfo[][];
   private _data: BancaiFormData = {bancai: "", cailiao: "", houdu: ""};
   @Input()
   get data() {
@@ -41,6 +41,8 @@ export class BancaiFormComponent {
   }
   inputInfos: InputInfo<BancaiFormData>[][] = [];
 
+  inputComponents = viewChildren(InputComponent);
+
   constructor(private dialog: MatDialog) {}
 
   update() {
@@ -60,7 +62,7 @@ export class BancaiFormComponent {
       }
     }
     this.inputInfos = [
-      this.xinghao?.inputInfos[this.key]?.[0] || [],
+      ...(this.extraInputInfos || []),
       [
         {
           type: "string",
@@ -81,19 +83,22 @@ export class BancaiFormComponent {
                 }
               }
             }
-          ]
+          ],
+          validators: Validators.required
         },
         {
           type: "select",
           label: "材料",
           model: {key: "cailiao", data: this.data},
-          options: checkedItem?.cailiaoList || []
+          options: checkedItem?.cailiaoList || [],
+          validators: Validators.required
         },
         {
           type: "select",
           label: "厚度",
           model: {key: "houdu", data: this.data},
-          options: checkedItem?.houduList || []
+          options: checkedItem?.houduList || [],
+          validators: Validators.required
         }
       ],
       [
@@ -137,6 +142,10 @@ export class BancaiFormComponent {
         }
       ]
     ];
+  }
+
+  async validate() {
+    return await validateForm(this.inputComponents());
   }
 }
 

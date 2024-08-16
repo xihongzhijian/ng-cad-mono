@@ -1,0 +1,57 @@
+<div class="toolbar">
+  <button mat-raised-button color="primary">配件CAD</button>
+  <div class="flex-110"></div>
+  <button mat-raised-button color="primary">另存为</button>
+  <button mat-raised-button color="primary" (click)="submit()">保存</button>
+  <button mat-raised-button color="primary" (click)="close()">关闭</button>
+</div>
+<div class="item-infos flex-row flex-110">
+  <div class="item-basic flex-column">
+    <div class="item">
+      <app-image [src]="item().xiaoguotu" [prefix]="imgPrefix()"></app-image>
+    </div>
+  </div>
+  <div class="item-bancai flex-column">
+    <div class="toolbar">
+      <div>板材分组</div>
+      @if (morenbancaiInputInfos().length < 1) {
+        <button mat-icon-button color="primary" (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
+      }
+    </div>
+    <ng-scrollbar>
+      @for (info of morenbancaiInputInfos(); track $index) {
+        <app-input [info]="info"></app-input>
+      }
+    </ng-scrollbar>
+  </div>
+  <div class="item-others flex-column">
+    <div class="mokuai-gongneng flex-column">
+      <div class="title">模块功能</div>
+      <div class="box">
+        <ng-scrollbar>
+          @for (item of mokuaiInputInfos(); track $index) {
+            <div class="inputs">
+              @for (info of item.infos; track $index) {
+                <app-input [info]="info"></app-input>
+              }
+            </div>
+          }
+        </ng-scrollbar>
+      </div>
+    </div>
+    <div class="mokuai-gongshi flex-column flex-110">
+      <div class="title">模块公式</div>
+      <app-formulas-editor #slgs class="box" [formulas]="item().suanliaogongshi" noFormulasText></app-formulas-editor>
+    </div>
+  </div>
+</div>
+<div class="item-cads border flex-row flex-110">
+  <div class="cads-all flex-column">
+    <div class="title">模块的所有配件CAD</div>
+    <div class="items no-items-per-row flex-110"></div>
+  </div>
+  <mat-divider vertical></mat-divider>
+  <div class="cads-selected flex-column">
+    <div class="title">选中的配件CAD</div>
+  </div>
+</div>

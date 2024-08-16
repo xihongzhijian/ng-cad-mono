@@ -120,6 +120,9 @@ export class ImageComponent {
       return "";
     }
     if (prefix && !/^(\/)|(http)/.test(url)) {
+      if (!prefix.endsWith("/")) {
+        prefix += "/";
+      }
       return prefix + url;
     }
     return url;

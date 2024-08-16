@@ -1,6 +1,7 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {KeyValuePipe} from "@angular/common";
 import {
+  booleanAttribute,
   Component,
   ElementRef,
   EventEmitter,
@@ -48,8 +49,9 @@ export class FormulasEditorComponent implements OnChanges {
   @Input() formulasText = "";
   @Input() varNames?: {names?: ObjectOf<string[]>; width?: number};
   @Input() extraInputInfos?: InputInfo[];
-  @Input() required?: boolean;
-  @Input() compact?: {minRows: number; maxRows: number};
+  @Input({transform: booleanAttribute}) required?: boolean;
+  @Input() compact?: {minRows?: number; maxRows?: number};
+  @Input({transform: booleanAttribute}) noFormulasText?: boolean;
   @Output() formulasChange = new EventEmitter<Formulas | null>();
   formulaList: [string, string][] = [];
   formulaListInputInfos: InputInfo[][] = [];

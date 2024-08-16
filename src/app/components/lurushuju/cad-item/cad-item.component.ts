@@ -49,7 +49,7 @@ import {isEmpty} from "lodash";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
 import {算料公式} from "../xinghao-data";
-import {CadItemButton, CadItemSelectable, typeOptions} from "./cad-item.types";
+import {CadItemButton, CadItemIsOnlineInfo, CadItemSelectable, typeOptions} from "./cad-item.types";
 
 @Component({
   selector: "app-cad-item",
@@ -84,12 +84,12 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input() buttons2: CadItemButton<T>[] = [];
   @Input({required: true}) customInfo!: T;
   @Input({required: true}) yaoqiu: Cad数据要求 | undefined;
-  @Input({required: true}) gongshis: 算料公式[] | null | undefined;
+  @Input() gongshis: 算料公式[] | null | undefined;
   @Input() fentiDialogInput?: FentiCadDialogInput;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
   @Input() showMuban?: boolean;
-  @Input() isOnline?: {collection?: CadCollection; isFetched?: boolean; afterFetch?: (component: CadItemComponent<T>) => void};
+  @Input() isOnline?: CadItemIsOnlineInfo<T>;
   @Input() selectable?: CadItemSelectable<T>;
   @Input() events?: {
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
@@ -228,6 +228,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     const cadData = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     const result = await openCadEditorDialog(this.dialog, {
       data: {
+        collection: isOnline?.collection,
         data: cadData,
         center: true,
         isLocal: !isOnline,

@@ -1,0 +1,22 @@
+<app-data-list [navDataName]="navDataName()" [itemsAll]="cadsAll()" [(items)]="cads" [(activeItemType)]="activeCadType">
+  <div class="toolbar" appDataListToolbar>
+    <button mat-raised-button [color]="cadsEditMode() ? 'accent' : 'primary'" (click)="toggleCadsEditMode()">编辑</button>
+    <button mat-raised-button color="primary" (click)="addCad()">添加</button>
+    <button mat-raised-button color="primary">导入</button>
+    <button mat-raised-button color="primary">导出</button>
+  </div>
+  <div class="data-items items no-items-per-row" appDataListItems>
+    @for (cad of cads(); track i; let i = $index) {
+      <div class="data-item item link">
+        <app-cad-item
+          [cad]="cad"
+          [yaoqiu]="cadYaoqiu()"
+          [buttons]="cadItemButtons()"
+          [customInfo]="{index: i}"
+          [isOnline]="cadsIsOnline[cad.id]"
+          (afterEditCad)="afterEditCad()"
+        ></app-cad-item>
+      </div>
+    }
+  </div>
+</app-data-list>

@@ -358,8 +358,8 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
           houduList: info.可选厚度
         },
         bancaiList: this.bancaiList,
-        xinghao: this.xinghao,
-        key
+        key,
+        extraInputInfos: [this.xinghao.inputInfos[key][0]]
       }
     });
     if (result) {

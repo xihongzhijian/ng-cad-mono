@@ -12,13 +12,15 @@
           </div>
         }
 
-        <div class="formulas-input">
-          <app-input [info]="formulasInputInfo"></app-input>
-          <div class="btn-group" style="margin-top: -10px">
-            <button mat-raised-button color="primary" (click)="addFormulas()">批量添加</button>
-            <button mat-raised-button color="primary" (click)="test(submitFormulas(parseFormulas()))">测试</button>
+        @if (!noFormulasText) {
+          <div class="formulas-input">
+            <app-input [info]="formulasInputInfo"></app-input>
+            <div class="btn-group" style="margin-top: -10px">
+              <button mat-raised-button color="primary" (click)="addFormulas()">批量添加</button>
+              <button mat-raised-button color="primary" (click)="test(submitFormulas(parseFormulas()))">测试</button>
+            </div>
           </div>
-        </div>
+        }
 
         <div class="flex-column flex-110">
           <div class="btn-group">

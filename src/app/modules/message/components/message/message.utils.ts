@@ -54,9 +54,11 @@ export const validateForm = async (inputs: InputComponent[] | readonly InputComp
     const key = input.info.name || input.info.label;
     values[key] = input.value;
   }
-  let errorMsg = "数据有误，请检查";
+  let errorMsg = "";
   if (hasValidatorRequired && !hasValidatorOther) {
     errorMsg = "输入不完整，请补充";
+  } else if (hasValidatorOther) {
+    errorMsg = "数据有误，请检查";
   }
   return {errors, values, errorMsg};
 };

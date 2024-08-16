@@ -12,14 +12,16 @@
   [cdkDragFreeDragPosition]="position()"
   (cdkDragEnded)="onDragEnded($event)"
 >
-  <div class="title toolbar" cdkDragHandle [appContextMenuTrigger]="contextMenu">
-    <div class="text long"><ng-content select="[appFloatingDialogTitle]"></ng-content></div>
-    @for (btn of titleBtns(); track $index) {
-      <button mat-icon-button color="primary" (click)="btn.action()">
-        <mat-icon>{{ btn.icon }}</mat-icon>
-      </button>
-    }
-  </div>
+  @if (!noTitle()) {
+    <div class="title toolbar" cdkDragHandle [appContextMenuTrigger]="contextMenu">
+      <div class="text long"><ng-content select="[appFloatingDialogTitle]"></ng-content></div>
+      @for (btn of titleBtns(); track $index) {
+        <button mat-icon-button color="primary" (click)="btn.action()">
+          <mat-icon>{{ btn.icon }}</mat-icon>
+        </button>
+      }
+    </div>
+  }
   <div class="body hidden-if-empty flex-110 flex-column">
     <ng-content select="[appFloatingDialogBody]"></ng-content>
     <ng-content></ng-content>

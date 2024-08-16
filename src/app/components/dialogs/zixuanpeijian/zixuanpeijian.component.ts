@@ -1099,7 +1099,7 @@ export class ZixuanpeijianComponent implements OnInit {
       counts[type] = count;
     }
     let currNode: TypesMapNode | undefined;
-    let firstVisibleNode: TypesMapNode | undefined;
+    let firstNonEmptyNode: TypesMapNode | undefined;
     const setCount = (node: TypesMapNode) => {
       let count = 0;
       if (node.children.length > 0) {
@@ -1119,8 +1119,8 @@ export class ZixuanpeijianComponent implements OnInit {
       if (node.name === this.lingsanCadType) {
         currNode = node;
       }
-      if (!firstVisibleNode && !node.hidden) {
-        firstVisibleNode = node;
+      if (!firstNonEmptyNode && count > 0) {
+        firstNonEmptyNode = node;
       }
     };
     const nodes = this.lingsanTypesDataSource.data.slice();
@@ -1131,8 +1131,8 @@ export class ZixuanpeijianComponent implements OnInit {
     session.save(this.searchLingsanValueKey, needle);
     if (currNode && !currNode.hidden) {
       this.setLingsanCadType(currNode.name);
-    } else if (firstVisibleNode) {
-      this.setLingsanCadType(firstVisibleNode.name);
+    } else if (firstNonEmptyNode) {
+      this.setLingsanCadType(firstNonEmptyNode.name);
     }
   }
   filterLingsanTypes() {

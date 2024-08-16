@@ -1,6 +1,7 @@
 import {CdkDrag, CdkDragEnd, CdkDragHandle, CdkDragMove, Point} from "@angular/cdk/drag-drop";
 import {NgTemplateOutlet} from "@angular/common";
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -37,11 +38,12 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   private manager = inject(FloatingDialogsManagerService);
 
   id = uniqueId("floatingDialog");
-  name = input.required<string>();
+  name = input<string>("");
   width = model<string | number>("auto");
   height = model<string | number>("auto");
   top = input<string | number | null>(0);
   left = input<string | number | null>(0);
+  noTitle = input<boolean, boolean | string>(false, {transform: booleanAttribute});
   size = model<Readonly<Point>>({x: 0, y: 0});
   position = model<Readonly<Point>>({x: 0, y: 0});
   active = model<boolean>(false);
@@ -69,9 +71,15 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.beActive();
     this.manager.dialogs.update((dialogs) => [...dialogs, this]);
+    window.addEventListener("resize", this.onWindowResize.bind(this));
   }
   ngOnDestroy() {
     this.manager.dialogs.update((dialogs) => dialogs.filter((dialog) => dialog !== this));
+    window.removeEventListener("resize", this.onWindowResize.bind(this));
+  }
+  private _windowResizeNum = signal(0);
+  onWindowResize() {
+    this._windowResizeNum.update((v) => v + 1);
   }
 
   getPxStr(value: string | number | null) {
@@ -84,6 +92,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   }
   style = computed(() => {
     if (this.maximized()) {
+      this._windowResizeNum();
       const limits = this.manager.limits();
       let top = 0;
       let left = 0;

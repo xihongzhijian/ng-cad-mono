@@ -315,6 +315,10 @@ export const getCadInfoInputs = (
   return result;
 };
 
+/**
+ * @param items 修改属性
+ * @param items2 选中要求
+ */
 export const getCadInfoInputs2 = (
   items: Cad数据要求Item[] | null | undefined,
   items2: Cad数据要求Item[] | null | undefined,
