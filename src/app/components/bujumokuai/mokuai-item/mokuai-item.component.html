@@ -38,6 +38,11 @@
           }
         </ng-scrollbar>
       </div>
+      <div class="inputs inputs-2">
+        @for (info of mokuaiInputInfos2(); track $index) {
+          <app-input [info]="info"></app-input>
+        }
+      </div>
     </div>
     <div class="mokuai-gongshi flex-column flex-110">
       <div class="title">模块公式</div>
@@ -48,10 +53,29 @@
 <div class="item-cads border flex-row flex-110">
   <div class="cads-all flex-column">
     <div class="title">模块的所有配件CAD</div>
-    <div class="items no-items-per-row flex-110"></div>
+    <ng-scrollbar>
+      <div class="items no-items-per-row flex-110">
+        @for (cad of mokuaiCadsAll(); track $index) {
+          <div class="item link" (click)="selectCad(cad)">
+            <app-cad-image [id]="cad.id"></app-cad-image>
+            <div class="name">{{ cad.name }}</div>
+          </div>
+        }
+      </div>
+    </ng-scrollbar>
   </div>
   <mat-divider vertical></mat-divider>
   <div class="cads-selected flex-column">
     <div class="title">选中的配件CAD</div>
+    <ng-scrollbar>
+      <div class="items no-items-per-row flex-110">
+        @for (cad of mokuaiCadsSelected(); track $index) {
+          <div class="item link" (click)="unselectCad(cad)">
+            <app-cad-image [id]="cad.id"></app-cad-image>
+            <div class="name">{{ cad.name }}</div>
+          </div>
+        }
+      </div>
+    </ng-scrollbar>
   </div>
 </div>

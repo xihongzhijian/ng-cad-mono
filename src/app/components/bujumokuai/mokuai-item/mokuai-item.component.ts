@@ -1,9 +1,22 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, output, signal, viewChild} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostBinding,
+  inject,
+  input,
+  OnInit,
+  output,
+  signal,
+  viewChild
+} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
+import {CadImageComponent} from "@app/components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@app/components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {FormulasEditorComponent} from "@app/components/formulas-editor/formulas-editor.component";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
@@ -14,6 +27,7 @@ import {InputInfo} from "@app/modules/input/components/input.types";
 import {MessageService} from "@app/modules/message/services/message.service";
 import {MrbcjfzInfo} from "@app/views/mrbcjfz/mrbcjfz.types";
 import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@app/views/mrbcjfz/mrbcjfz.utils";
+import {CadData} from "@lucilor/cad-viewer";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {MokuaiItem} from "./mokuai-item.types";
@@ -22,12 +36,21 @@ import {getEmptyMokuaiItem} from "./mokuai-item.utils";
 @Component({
   selector: "app-mokuai-item",
   standalone: true,
-  imports: [FormulasEditorComponent, ImageComponent, InputComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule],
+  imports: [
+    CadImageComponent,
+    FormulasEditorComponent,
+    ImageComponent,
+    InputComponent,
+    MatButtonModule,
+    MatDividerModule,
+    MatIconModule,
+    NgScrollbarModule
+  ],
   templateUrl: "./mokuai-item.component.html",
   styleUrl: "./mokuai-item.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MokuaiItemComponent {
+export class MokuaiItemComponent implements OnInit {
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
@@ -39,6 +62,10 @@ export class MokuaiItemComponent {
   imgPrefix = input<string>("");
   closeOut = output({alias: "close"});
   submitOut = output({alias: "submit"});
+
+  ngOnInit() {
+    this.getMokuaiCads();
+  }
 
   item = signal<MokuaiItem>(getEmptyMokuaiItem());
   itemEff = effect(() => this.item.set(cloneDeep(this.itemIn())), {allowSignalWrites: true});
@@ -166,6 +193,37 @@ export class MokuaiItemComponent {
     infos.push({type: "xuanxiang", infos: getInfos(item.xuanxiangshuru, "选项输入")});
     return infos;
   });
+  mokuaiInputInfos2 = computed(() => {
+    const infos: InputInfo[] = [
+      {type: "select", label: "花件压条", appearance: "list", options: ["D1", "D2", "无"]},
+      {type: "select", label: "竖压条", appearance: "list", options: ["有", "无"]}
+    ];
+    return infos;
+  });
+
+  mokuaiCadsAll = signal<CadData[]>([]);
+  mokuaiCadsSelected = signal<CadData[]>([]);
+  async getMokuaiCads() {
+    const fields = ["json.id", "json.name", "json.type"];
+    const result = await this.http.getCad({collection: "peijianku", fields});
+    this.mokuaiCadsAll.set(result.cads);
+    this.mokuaiCadsSelected.update((v) => v.filter((v2) => result.cads.find((v3) => v2.id === v3.id)));
+  }
+  selectCad(cad: CadData) {
+    const cads = this.mokuaiCadsSelected().slice();
+    if (!cads.find((v) => v.id === cad.id)) {
+      cads.push(cad);
+      this.mokuaiCadsSelected.set(cads);
+    }
+  }
+  unselectCad(cad: CadData) {
+    const cads = this.mokuaiCadsSelected().slice();
+    const index = cads.findIndex((v) => v.id === cad.id);
+    if (index >= 0) {
+      cads.splice(index, 1);
+      this.mokuaiCadsSelected.set(cads);
+    }
+  }
 
   close() {
     this.closeOut.emit();

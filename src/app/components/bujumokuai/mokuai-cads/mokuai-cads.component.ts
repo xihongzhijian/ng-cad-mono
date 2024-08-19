@@ -8,6 +8,7 @@ import {openCadEditorDialog} from "@app/components/dialogs/cad-editor-dialog/cad
 import {CadItemComponent} from "@app/components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton, CadItemIsOnlineInfo} from "@app/components/lurushuju/cad-item/cad-item.types";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {DataListNavNode} from "@app/modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@app/modules/data-list/data-list.module";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
@@ -36,7 +37,7 @@ export class MokuaiCadsComponent implements OnInit {
   navDataName = signal("配件库分类");
   cadsAll = signal<CadData[]>([]);
   cads = signal<CadData[]>([]);
-  activeCadType = signal("");
+  activeNavNode = signal<DataListNavNode | null>(null);
   collection: CadCollection = "peijianku";
   cadYaoqiu = signal<Cad数据要求 | undefined>(undefined);
   cadsIsOnline: ObjectOf<CadItemIsOnlineInfo<MokuaiCadItemInfo>> = {};
@@ -103,7 +104,7 @@ export class MokuaiCadsComponent implements OnInit {
     } else {
       data = new CadData();
     }
-    const type = this.activeCadType();
+    const type = this.activeNavNode()?.name;
     if (type) {
       data.type = type;
     }

@@ -98,6 +98,7 @@ export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoSelectBase<T = any, K = string> extends InputInfoBase<T> {
   type: "select";
+  appearance?: "select" | "list";
   options: Value<InputInfoOptions<K>>;
   optionsDialog?: OptionsDialog;
   openInNewTab?: {optionKey: string; onOptionsChange: (options: OptionsData) => void};

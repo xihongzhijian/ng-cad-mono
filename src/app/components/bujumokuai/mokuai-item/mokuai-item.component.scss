@@ -51,11 +51,18 @@
           box-sizing: border-box;
         }
       }
+      .inputs-2 {
+        app-input {
+          flex: 0 0 auto;
+        }
+      }
     }
   }
 }
 
 .item-cads {
+  --item-width: 200px;
+
   .title {
     font-size: 1.2em;
     font-weight: bold;

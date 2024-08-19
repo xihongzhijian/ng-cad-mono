@@ -1,4 +1,4 @@
-<app-data-list [navDataName]="navDataName" [itemsAll]="mokuaiItemsAll()" [(items)]="mokuaiItems" [(activeItemType)]="mokuaiActiveItemType">
+<app-data-list [navDataName]="navDataName" [itemsAll]="mokuaiItemsAll()" [(items)]="mokuaiItems" [(activeNavNode)]="mokuaiActiveNavNode">
   <div class="toolbar" appDataListToolbar>
     <button mat-raised-button [color]="mokuaiEditMode() ? 'accent' : 'primary'" (click)="toggleMokuaiEditMode()">编辑</button>
     <button mat-raised-button color="primary" (click)="addMukuaiItem()">添加</button>

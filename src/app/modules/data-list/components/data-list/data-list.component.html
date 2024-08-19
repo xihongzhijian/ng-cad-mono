@@ -33,7 +33,7 @@
           <button
             mat-button
             class="nav-title"
-            [color]="activeItemType() === node.name ? 'primary' : ''"
+            [color]="activeNavNode()?.id === node.id ? 'primary' : ''"
             [attr.data-id]="node.id"
             (click)="clickNavNode(node)"
           >

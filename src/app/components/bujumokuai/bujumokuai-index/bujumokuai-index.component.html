@@ -1,4 +1,11 @@
-<mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" preserveContent animationDuration="0" [(selectedIndex)]="pageIndex">
+<mat-tab-group
+  class="hide-first-tab"
+  mat-stretch-tabs="false"
+  mat-align-tabs="start"
+  preserveContent
+  animationDuration="0"
+  [(selectedIndex)]="pageIndex"
+>
   <mat-tab></mat-tab>
   @for (page of pages(); track $index) {
     <mat-tab [label]="page.name">

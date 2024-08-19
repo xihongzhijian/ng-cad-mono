@@ -34,7 +34,14 @@ import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom} from "rxjs";
 import {v4} from "uuid";
 import {DataListItem, DataListNavData} from "./data-list.types";
-import {DataListNavNode, getDataListNavNodeList, sortDataListNavNodeList, updateDataListNavNodeList} from "./data-list.utils";
+import {
+  DataListNavNode,
+  findActiveDataListNavNode,
+  getDataListNavNodeList,
+  getDataListNavNodePath,
+  sortDataListNavNodeList,
+  updateDataListNavNodeList
+} from "./data-list.utils";
 
 @Component({
   selector: "app-data-list",
@@ -63,7 +70,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   navDataName = input.required<string>();
   itemsAll = input<T[]>([]);
   items = model<T[]>([]);
-  activeItemType = model<string>();
+  activeNavNode = model<DataListNavNode | null>(null);
   navEditMode = model(false);
 
   production = environment.production;
@@ -84,7 +91,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   private _navDataId = "";
   navDataSource = new MatTreeNestedDataSource<DataListNavNode>();
   navTreeControl = new NestedTreeControl<DataListNavNode>(({children}) => children);
-  navNodehasChild = (_: number, node: DataListNavNode) => !!node.children && node.children.length > 0;
+  navNodehasChild = (_: number, node: DataListNavNode) => node.hasChild();
   navNodeTrackBy = (_: number, node: DataListNavNode) => node.id;
   navNodesHideEmpty = signal(false);
   navShowCount = signal(true);
@@ -143,6 +150,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     sortDataListNavNodeList(data);
     updateDataListNavNodeList(data, this.itemsAll());
     this.navDataSource.data = data;
+    this.updateActiveNavNode();
     await this.http.mongodbUpdate(this._navCollection, {_id: this._navDataId, data: data.map((node) => node.export())});
   }
   filterNavNodes() {
@@ -161,6 +169,15 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     filter(nodes);
     this.navDataSource.data = [];
     this.navDataSource.data = nodes;
+  }
+  updateActiveNavNode(type = this.activeNavNode()?.name) {
+    if (!type) {
+      return;
+    }
+    const node = findActiveDataListNavNode(this.navDataSource.data, type);
+    if (node) {
+      this.activeNavNode.set(node);
+    }
   }
 
   async getNavNodeItem(data?: DataListNavNode) {
@@ -194,6 +211,9 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       this.navDataSource.data.push(node);
     }
     await this.setNavNodes();
+    setTimeout(() => {
+      this.navTreeControl.expand(node);
+    }, 0);
   }
   async editNavNode(node: DataListNavNode) {
     const node2 = await this.getNavNodeItem(node);
@@ -228,10 +248,10 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     await this.setNavNodes();
   }
   clickNavNode(node: DataListNavNode) {
-    if (this.navNodehasChild(0, node)) {
+    if (node.hasChild()) {
       this.navTreeControl.toggle(node);
     } else {
-      this.activeItemType.set(node.name);
+      this.activeNavNode.set(node);
     }
   }
 
@@ -257,29 +277,19 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     this.filterItems();
   }
 
-  activeItemTypeEff = effect(() => {
-    const type = this.activeItemType();
-    untracked(() => this._onActiveItemTypeChange(type));
+  activeNavNodeEff = effect(() => {
+    const node = this.activeNavNode();
+    untracked(() => this._onActiveNavNodeChange(node));
   });
-  private async _onActiveItemTypeChange(type: string | undefined) {
+  private async _onActiveNavNodeChange(activeNode: DataListNavNode | null) {
     await this.untilInited();
     this.filterItems();
+    if (!activeNode) {
+      return;
+    }
     const treeEl = this.navNodesTreeEl()?.nativeElement;
-    const getPath = (nodes: DataListNavNode[], path: DataListNavNode[] = []): DataListNavNode[] => {
-      for (const node of nodes) {
-        if (node.name === type) {
-          return [...path, node];
-        }
-        if (node.children && node.children.length > 0) {
-          const path2 = getPath(node.children, [...path, node]);
-          if (path2.length > path.length + 1) {
-            return path2;
-          }
-        }
-      }
-      return path;
-    };
-    const path = getPath(this.navDataSource.data);
+    const type = activeNode.name;
+    const path = getDataListNavNodePath(this.navDataSource.data, type);
     for (const [i, node] of path.entries()) {
       this.navTreeControl.expand(node);
       if (i === path.length - 1) {
@@ -292,7 +302,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   }
 
   filterItems() {
-    const type = this.activeItemType();
+    const type = this.activeNavNode()?.name;
     const counts: ObjectOf<number> = {};
     const itemsAll = this.itemsAll();
     const needle = this.itemQuery();
@@ -329,11 +339,13 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       } else {
         node.hidden = false;
       }
-      if (node.name === type) {
-        currNode = node;
-      }
-      if (!firstNonEmptyNode && count > 0) {
-        firstNonEmptyNode = node;
+      if (!node.hasChild()) {
+        if (node.name === type) {
+          currNode = node;
+        }
+        if (!firstNonEmptyNode && count > 0) {
+          firstNonEmptyNode = node;
+        }
       }
     };
     const nodes = this.navDataSource.data.slice();
@@ -342,9 +354,9 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
     this.navDataSource.data = nodes;
     if (currNode && !currNode.hidden) {
-      this.activeItemType.set(currNode.name);
+      this.activeNavNode.set(currNode);
     } else if (firstNonEmptyNode) {
-      this.activeItemType.set(firstNonEmptyNode.name);
+      this.activeNavNode.set(firstNonEmptyNode);
     }
   }
 }

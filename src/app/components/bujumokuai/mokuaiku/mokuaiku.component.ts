@@ -7,6 +7,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTreeModule} from "@angular/material/tree";
 import {filePathUrl, getCopyName, session, setGlobal} from "@app/app.common";
 import {DataListComponent} from "@app/modules/data-list/components/data-list/data-list.component";
+import {DataListNavNode} from "@app/modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@app/modules/data-list/data-list.module";
 import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
 import {FloatingDialogModule} from "@app/modules/floating-dialog/floating-dialog.module";
@@ -64,7 +65,7 @@ export class MokuaikuComponent implements OnInit {
   }
 
   navDataName = "模块库分类";
-  mokuaiActiveItemType = signal("");
+  mokuaiActiveNavNode = signal<DataListNavNode | null>(null);
   mokuaiActiveItem = signal<MokuaiItem | null>(null);
   mokuaiItemsAll = signal<MokuaiItem[]>([]);
   mokuaiItems = signal<MokuaiItem[]>([]);
@@ -86,7 +87,7 @@ export class MokuaikuComponent implements OnInit {
   }
   submitMokuaiItem() {}
   async getMukuaiItem(item?: MokuaiItem, itemOverride?: Partial<MokuaiItem>) {
-    const type = this.mokuaiActiveItemType();
+    const type = this.mokuaiActiveNavNode()?.name;
     const data: Partial<MokuaiItem> = item ? cloneDeep(item) : {name: "", type, order: 0};
     if (itemOverride) {
       Object.assign(data, itemOverride);
@@ -141,7 +142,7 @@ export class MokuaikuComponent implements OnInit {
       if (item3) {
         await this.getMokuaiItems();
         if (item2.type) {
-          this.mokuaiActiveItemType.set(item2.type);
+          this.dataList()?.updateActiveNavNode(item2.type);
         }
         const item4 = this.mokuaiItemsAll().find((v) => v.id === item3.id);
         if (item4) {
@@ -198,7 +199,7 @@ export class MokuaikuComponent implements OnInit {
     return {
       navQuery: dataList?.navQuery() || "",
       navEditMode: dataList?.navEditMode() || false,
-      mokuaiActiveItemType: this.mokuaiActiveItemType(),
+      mokuaiActiveItemType: this.mokuaiActiveNavNode(),
       mokuaiEditMode: this.mokuaiEditMode(),
       mokuaiItemQuery: dataList?.itemQuery() || "",
       currMokuaiItem: this.currMokuaiItem()?.id
@@ -209,11 +210,12 @@ export class MokuaikuComponent implements OnInit {
     if (dataList) {
       dataList.navQuery.set(info.navQuery);
       dataList.navEditMode.set(info.navEditMode);
-      if (info.mokuaiActiveItemType && this.mokuaiActiveItemType() !== info.mokuaiActiveItemType) {
-        this.mokuaiActiveItemType.set(info.mokuaiActiveItemType);
+      if (info.mokuaiActiveItemType && this.mokuaiActiveNavNode() !== info.mokuaiActiveItemType) {
+        this.mokuaiActiveNavNode.set(info.mokuaiActiveItemType);
       }
       dataList.itemQuery.set(info.mokuaiItemQuery);
     }
+    this.mokuaiEditMode.set(info.mokuaiEditMode);
     const item = this.mokuaiItemsAll().find((v) => v.id === info.currMokuaiItem);
     if (item) {
       this.enterMokuaiItem(item);
