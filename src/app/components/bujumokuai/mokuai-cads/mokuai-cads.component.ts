@@ -1,13 +1,12 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, OnInit, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {setGlobal} from "@app/app.common";
-import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
-import {CadCollection} from "@app/cad/collections";
 import {openCadEditorDialog} from "@app/components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadItemComponent} from "@app/components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton, CadItemIsOnlineInfo} from "@app/components/lurushuju/cad-item/cad-item.types";
 import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {DataListComponent} from "@app/modules/data-list/components/data-list/data-list.component";
 import {DataListNavNode} from "@app/modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@app/modules/data-list/data-list.module";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
@@ -16,6 +15,7 @@ import {MessageService} from "@app/modules/message/services/message.service";
 import {AppStatusService} from "@app/services/app-status.service";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
+import {BjmkStatusService} from "../services/bjmk-status.service";
 import {MokuaiCadItemInfo} from "./mokuai-cads.types";
 
 @Component({
@@ -27,6 +27,7 @@ import {MokuaiCadItemInfo} from "./mokuai-cads.types";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MokuaiCadsComponent implements OnInit {
+  private bjmkStatus = inject(BjmkStatusService);
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
@@ -34,12 +35,13 @@ export class MokuaiCadsComponent implements OnInit {
 
   @HostBinding("class") class = "ng-page";
 
+  cadsAll = this.bjmkStatus.cads;
+  collection = this.bjmkStatus.collection;
+  cadYaoqiu = this.bjmkStatus.cadYaoqiu;
+
   navDataName = signal("配件库分类");
-  cadsAll = signal<CadData[]>([]);
   cads = signal<CadData[]>([]);
   activeNavNode = signal<DataListNavNode | null>(null);
-  collection: CadCollection = "peijianku";
-  cadYaoqiu = signal<Cad数据要求 | undefined>(undefined);
   cadsIsOnline: ObjectOf<CadItemIsOnlineInfo<MokuaiCadItemInfo>> = {};
   cadItemButtons = computed(() => {
     const buttons: CadItemButton<MokuaiCadItemInfo>[] = [
@@ -49,32 +51,18 @@ export class MokuaiCadsComponent implements OnInit {
     return buttons;
   });
 
+  dataList = viewChild(DataListComponent);
+
   constructor() {
     setGlobal("mkcads", this);
   }
 
   async ngOnInit() {
-    await this.getCadYaoqiu();
-    await this.getCadsAll();
+    await this.bjmkStatus.fetchCads();
   }
 
-  async getCadYaoqiu() {
-    await this.status.fetchCad数据要求List();
-    const yaoqiu = this.status.getCad数据要求("配件库");
-    this.cadYaoqiu.set(yaoqiu);
-  }
-  async getCadsAll() {
-    const yaoqiu = this.cadYaoqiu();
-    const fields = new Set<string>(["json.id", "json.name", "json.type"]);
-    if (yaoqiu) {
-      for (const item of yaoqiu.CAD弹窗修改属性) {
-        if (item.cadKey) {
-          fields.add(`json.${item.cadKey}`);
-        }
-      }
-    }
-    const cads = (await this.http.getCad({collection: this.collection, fields: Array.from(fields)})).cads;
-    this.cadsAll.set(cads);
+  cadsAllEff = effect(() => {
+    const cads = this.cadsAll();
     const cadsIsOnlineOld = this.cadsIsOnline;
     const cadsIsOnline: typeof this.cadsIsOnline = {};
     this.cadsIsOnline = cadsIsOnline;
@@ -86,7 +74,7 @@ export class MokuaiCadsComponent implements OnInit {
         afterFetch: () => (cadsIsOnline[id].isFetched = true)
       };
     }
-  }
+  });
 
   cadsEditMode = signal(false);
   toggleCadsEditMode() {
@@ -120,7 +108,7 @@ export class MokuaiCadsComponent implements OnInit {
     if (data) {
       const id = await this.http.mongodbInsert(this.collection, getHoutaiCad(data));
       if (id) {
-        await this.getCadsAll();
+        await this.bjmkStatus.fetchCads(true);
       }
     }
   }
@@ -139,7 +127,7 @@ export class MokuaiCadsComponent implements OnInit {
         await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
       }
     }
-    await this.getCadsAll();
+    await this.bjmkStatus.fetchCads(true);
   }
   async removeCad(component: CadItemComponent<MokuaiCadItemInfo>) {
     const {index} = component.customInfo;
@@ -149,10 +137,11 @@ export class MokuaiCadsComponent implements OnInit {
     }
     const result = await this.http.mongodbDelete(this.collection, {id: cad.id});
     if (result) {
-      await this.getCadsAll();
+      await this.bjmkStatus.fetchCads(true);
     }
   }
   afterEditCad() {
     this.cads.update((v) => [...v]);
+    this.bjmkStatus.refreshCads();
   }
 }

@@ -22,6 +22,7 @@ import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {MokuaiItemComponent} from "../mokuai-item/mokuai-item.component";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
+import {BjmkStatusService} from "../services/bjmk-status.service";
 
 @Component({
   selector: "app-mokuaiku",
@@ -45,6 +46,7 @@ import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MokuaikuComponent implements OnInit {
+  private bjmkStatus = inject(BjmkStatusService);
   private http = inject(CadDataService);
   private message = inject(MessageService);
 
@@ -57,7 +59,7 @@ export class MokuaikuComponent implements OnInit {
   }
 
   async ngOnInit() {
-    await this.getMokuaiItems();
+    await this.bjmkStatus.fetchMokuais();
     this._saveInfoLock.set(true);
     if (!this.production) {
       this.loadInfo();
@@ -67,14 +69,10 @@ export class MokuaikuComponent implements OnInit {
   navDataName = "模块库分类";
   mokuaiActiveNavNode = signal<DataListNavNode | null>(null);
   mokuaiActiveItem = signal<MokuaiItem | null>(null);
-  mokuaiItemsAll = signal<MokuaiItem[]>([]);
-  mokuaiItems = signal<MokuaiItem[]>([]);
+  mokuaisAll = this.bjmkStatus.mokuais;
+  mokuais = signal<MokuaiItem[]>([]);
   imgPrefix = signal(filePathUrl);
   dataList = viewChild(DataListComponent);
-  async getMokuaiItems() {
-    const mokuaiItemsAll = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais")) || [];
-    this.mokuaiItemsAll.set(mokuaiItemsAll);
-  }
 
   mokuaiEditMode = signal(false);
   toggleMokuaiEditMode() {
@@ -92,7 +90,7 @@ export class MokuaikuComponent implements OnInit {
     if (itemOverride) {
       Object.assign(data, itemOverride);
     }
-    const allNames = new Set(this.mokuaiItemsAll().map((v) => v.name));
+    const allNames = new Set(this.mokuaisAll().map((v) => v.name));
     if (item) {
       allNames.delete(item.name);
     }
@@ -140,11 +138,11 @@ export class MokuaikuComponent implements OnInit {
       delete item2.id;
       const item3 = await this.http.getData<MokuaiItem>("ngcad/addPeijianmokuai", {item: item2});
       if (item3) {
-        await this.getMokuaiItems();
+        await this.bjmkStatus.fetchMokuais(true);
         if (item2.type) {
           this.dataList()?.updateActiveNavNode(item2.type);
         }
-        const item4 = this.mokuaiItemsAll().find((v) => v.id === item3.id);
+        const item4 = this.mokuaisAll().find((v) => v.id === item3.id);
         if (item4) {
           this.enterMokuaiItem(item4);
         }
@@ -156,12 +154,12 @@ export class MokuaikuComponent implements OnInit {
     if (item2) {
       const item3 = await this.http.getData<MokuaiItem>("ngcad/editPeijianmokuai", {item: item2});
       if (item3) {
-        await this.getMokuaiItems();
+        await this.bjmkStatus.fetchMokuais(true);
       }
     }
   }
   async copyMokuaiItem(item: MokuaiItem) {
-    const names = this.mokuaiItemsAll().map((v) => v.name);
+    const names = this.mokuaisAll().map((v) => v.name);
     const item2 = await this.getMukuaiItem(item, {name: getCopyName(names, item.name)});
     if (item2) {
       await this.addMukuaiItem(item2);
@@ -173,7 +171,7 @@ export class MokuaikuComponent implements OnInit {
     }
     const result = await this.http.getData<boolean>("ngcad/removePeijianmokuai", {item});
     if (result) {
-      await this.getMokuaiItems();
+      await this.bjmkStatus.fetchMokuais(true);
     }
   }
   clickMokuaiItem(item: MokuaiItem) {
@@ -216,7 +214,7 @@ export class MokuaikuComponent implements OnInit {
       dataList.itemQuery.set(info.mokuaiItemQuery);
     }
     this.mokuaiEditMode.set(info.mokuaiEditMode);
-    const item = this.mokuaiItemsAll().find((v) => v.id === info.currMokuaiItem);
+    const item = this.mokuaisAll().find((v) => v.id === info.currMokuaiItem);
     if (item) {
       this.enterMokuaiItem(item);
     }

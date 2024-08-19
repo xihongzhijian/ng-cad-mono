@@ -82,6 +82,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input({required: true}) cad: HoutaiCad | CadData = new CadData();
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input() buttons2: CadItemButton<T>[] = [];
+  @Input() hideButtons = false;
   @Input({required: true}) customInfo!: T;
   @Input({required: true}) yaoqiu: Cad数据要求 | undefined;
   @Input() gongshis: 算料公式[] | null | undefined;

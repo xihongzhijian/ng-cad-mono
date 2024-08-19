@@ -1,4 +1,4 @@
-<app-data-list [navDataName]="navDataName" [itemsAll]="mokuaiItemsAll()" [(items)]="mokuaiItems" [(activeNavNode)]="mokuaiActiveNavNode">
+<app-data-list [navDataName]="navDataName" [itemsAll]="mokuaisAll()" [(items)]="mokuais" [(activeNavNode)]="mokuaiActiveNavNode">
   <div class="toolbar" appDataListToolbar>
     <button mat-raised-button [color]="mokuaiEditMode() ? 'accent' : 'primary'" (click)="toggleMokuaiEditMode()">编辑</button>
     <button mat-raised-button color="primary" (click)="addMukuaiItem()">添加</button>
@@ -6,7 +6,7 @@
     <button mat-raised-button color="primary">导出</button>
   </div>
   <div class="data-items items no-items-per-row" appDataListItems>
-    @for (item of mokuaiItems(); track $index) {
+    @for (item of mokuais(); track $index) {
       <div class="data-item item link" [class.active]="mokuaiActiveItem()?.id === item.id" (click)="clickMokuaiItem(item)">
         <app-image [src]="item.xiaoguotu" [prefix]="imgPrefix()"></app-image>
         <div class="name">{{ item.name }}</div>

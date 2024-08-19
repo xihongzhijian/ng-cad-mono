@@ -52,10 +52,13 @@
 </div>
 <div class="item-cads border flex-row flex-110">
   <div class="cads-all flex-column">
-    <div class="title">模块的所有配件CAD</div>
+    <div class="toolbar">
+      <div class="title">模块的所有配件CAD</div>
+      <button mat-raised-button color="primary" (click)="selectCadsAll()">选择CAD</button>
+    </div>
     <ng-scrollbar>
       <div class="items no-items-per-row flex-110">
-        @for (cad of mokuaiCadsAll(); track $index) {
+        @for (cad of cadsAll(); track $index) {
           <div class="item link" (click)="selectCad(cad)">
             <app-cad-image [id]="cad.id"></app-cad-image>
             <div class="name">{{ cad.name }}</div>
@@ -69,7 +72,7 @@
     <div class="title">选中的配件CAD</div>
     <ng-scrollbar>
       <div class="items no-items-per-row flex-110">
-        @for (cad of mokuaiCadsSelected(); track $index) {
+        @for (cad of cadsSelected(); track $index) {
           <div class="item link" (click)="unselectCad(cad)">
             <app-cad-image [id]="cad.id"></app-cad-image>
             <div class="name">{{ cad.name }}</div>

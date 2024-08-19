@@ -12,6 +12,7 @@
           [cad]="cad"
           [yaoqiu]="cadYaoqiu()"
           [buttons]="cadItemButtons()"
+          [hideButtons]="!cadsEditMode()"
           [customInfo]="{index: i}"
           [isOnline]="cadsIsOnline[cad.id]"
           (afterEditCad)="afterEditCad()"

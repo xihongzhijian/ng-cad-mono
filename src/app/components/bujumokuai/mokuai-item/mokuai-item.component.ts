@@ -18,8 +18,8 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {CadImageComponent} from "@app/components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@app/components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
+import {openCadListDialog} from "@app/components/dialogs/cad-list/cad-list.component";
 import {FormulasEditorComponent} from "@app/components/formulas-editor/formulas-editor.component";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {BancaiListData} from "@app/modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@app/modules/image/components/image/image.component";
 import {InputComponent} from "@app/modules/input/components/input.component";
@@ -30,6 +30,7 @@ import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@app
 import {CadData} from "@lucilor/cad-viewer";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {BjmkStatusService} from "../services/bjmk-status.service";
 import {MokuaiItem} from "./mokuai-item.types";
 import {getEmptyMokuaiItem} from "./mokuai-item.utils";
 
@@ -51,8 +52,8 @@ import {getEmptyMokuaiItem} from "./mokuai-item.utils";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MokuaiItemComponent implements OnInit {
+  private bjmkStatus = inject(BjmkStatusService);
   private dialog = inject(MatDialog);
-  private http = inject(CadDataService);
   private message = inject(MessageService);
 
   @HostBinding("class") class = ["ng-page"];
@@ -63,8 +64,8 @@ export class MokuaiItemComponent implements OnInit {
   closeOut = output({alias: "close"});
   submitOut = output({alias: "submit"});
 
-  ngOnInit() {
-    this.getMokuaiCads();
+  async ngOnInit() {
+    await this.bjmkStatus.fetchCads();
   }
 
   item = signal<MokuaiItem>(getEmptyMokuaiItem());
@@ -201,27 +202,41 @@ export class MokuaiItemComponent implements OnInit {
     return infos;
   });
 
-  mokuaiCadsAll = signal<CadData[]>([]);
-  mokuaiCadsSelected = signal<CadData[]>([]);
-  async getMokuaiCads() {
-    const fields = ["json.id", "json.name", "json.type"];
-    const result = await this.http.getCad({collection: "peijianku", fields});
-    this.mokuaiCadsAll.set(result.cads);
-    this.mokuaiCadsSelected.update((v) => v.filter((v2) => result.cads.find((v3) => v2.id === v3.id)));
+  cadsAll = signal<CadData[]>([]);
+  cadsSelected = signal<CadData[]>([]);
+  cadsAllEff = effect(
+    () => {
+      const cadsAll = this.cadsAll();
+      this.cadsSelected.update((v) => v.filter((v2) => cadsAll.find((v3) => v2.id === v3.id)));
+    },
+    {allowSignalWrites: true}
+  );
+  async selectCadsAll() {
+    const result = await openCadListDialog(this.dialog, {
+      data: {
+        selectMode: "multiple",
+        collection: this.bjmkStatus.collection,
+        source: this.bjmkStatus.cads(),
+        checkedItems: this.cadsAll().map((v) => v.id)
+      }
+    });
+    if (result) {
+      this.cadsAll.set(result);
+    }
   }
   selectCad(cad: CadData) {
-    const cads = this.mokuaiCadsSelected().slice();
+    const cads = this.cadsSelected().slice();
     if (!cads.find((v) => v.id === cad.id)) {
       cads.push(cad);
-      this.mokuaiCadsSelected.set(cads);
+      this.cadsSelected.set(cads);
     }
   }
   unselectCad(cad: CadData) {
-    const cads = this.mokuaiCadsSelected().slice();
+    const cads = this.cadsSelected().slice();
     const index = cads.findIndex((v) => v.id === cad.id);
     if (index >= 0) {
       cads.splice(index, 1);
-      this.mokuaiCadsSelected.set(cads);
+      this.cadsSelected.set(cads);
     }
   }
 

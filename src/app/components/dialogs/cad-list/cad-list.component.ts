@@ -299,11 +299,13 @@ export class CadListComponent implements AfterViewInit {
       return;
     }
     const {checkedItems: ids, data} = this;
-    const {collection, raw, vars} = data;
+    const {collection, raw, vars, source} = data;
     const yaoqiuItems = data.yaoqiu?.选中CAD要求 || [];
     let cads: (CadData | HoutaiCad)[] = [];
     if (ids.length > 0) {
-      if (raw) {
+      if (source) {
+        cads = source.filter((v) => ids.includes(v.id));
+      } else if (raw) {
         const result = await this.http.getCadRaw({ids, collection});
         cads = result?.data || [];
       } else {

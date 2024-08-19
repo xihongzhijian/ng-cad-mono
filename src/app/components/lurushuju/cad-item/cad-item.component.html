@@ -63,20 +63,22 @@
         }
       </div>
     </div>
-    <div class="toolbar compact">
-      @if (cadViewer) {
-        <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="centerCad()">居中</button>
-      }
-      <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="editCad()">编辑</button>
-      @for (button of buttons; track $index) {
-        <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="button.onClick(this)">
-          {{ button.name }}
+    @if (!hideButtons) {
+      <div class="toolbar compact">
+        @if (cadViewer) {
+          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="centerCad()">居中</button>
+        }
+        <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="editCad()">编辑</button>
+        @for (button of buttons; track $index) {
+          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="button.onClick(this)">
+            {{ button.name }}
+          </button>
+        }
+        <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="toggleShowLineLength()">
+          隐藏线长数字
         </button>
-      }
-      <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="toggleShowLineLength()">
-        隐藏线长数字
-      </button>
-    </div>
+      </div>
+    }
     <div class="cad-info item link" style="align-items: flex-start" (click)="selectable?.onChange(this)" (dblclick)="editCadForm()">
       @for (item of yaoqiu?.["CAD弹窗修改属性"]; track $index) {
         @if (item.key !== "名字") {
