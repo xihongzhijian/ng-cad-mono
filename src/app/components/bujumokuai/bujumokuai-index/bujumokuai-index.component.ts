@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, injec
 import {MatButtonModule} from "@angular/material/button";
 import {MatTabsModule} from "@angular/material/tabs";
 import {ActivatedRoute, Router} from "@angular/router";
+import {BujuComponent} from "../buju/buju.component";
 import {MokuaiCadsComponent} from "../mokuai-cads/mokuai-cads.component";
 import {MokuaikuComponent} from "../mokuaiku/mokuaiku.component";
 import {BjmkPages} from "./bujumokuai-index.types";
@@ -9,7 +10,7 @@ import {BjmkPages} from "./bujumokuai-index.types";
 @Component({
   selector: "app-bujumokuai-index",
   standalone: true,
-  imports: [MatButtonModule, MatTabsModule, MokuaiCadsComponent, MokuaikuComponent],
+  imports: [BujuComponent, MatButtonModule, MatTabsModule, MokuaiCadsComponent, MokuaikuComponent],
   templateUrl: "./bujumokuai-index.component.html",
   styleUrl: "./bujumokuai-index.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush

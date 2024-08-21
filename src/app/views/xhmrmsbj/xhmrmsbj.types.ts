@@ -2,9 +2,9 @@ import {Formulas} from "@app/utils/calc";
 import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {MsbjPeizhishuju} from "@components/msbj-rects/msbj-rects.types";
-import {ObjectOf} from "@lucilor/utils";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MsbjInfo} from "@views/msbj/msbj.types";
+import {cloneDeep} from "lodash";
 
 export interface XhmrmsbjTableData extends TableDataBase {
   peizhishuju?: string;
@@ -15,10 +15,10 @@ export interface XhmrmsbjTableData extends TableDataBase {
 export class XhmrmsbjData {
   vid: number;
   name: string;
-  menshanbujuInfos: ObjectOf<XhmrmsbjInfo>;
+  menshanbujuInfos: Partial<Record<MenshanKey, XhmrmsbjInfo>>;
   铰扇跟随锁扇?: boolean;
 
-  constructor(data: XhmrmsbjTableData, menshanKeys: string[], typesInfo: ZixuanpeijianTypesInfo, msbjs: MsbjInfo[]) {
+  constructor(data: XhmrmsbjTableData, menshanKeys: readonly MenshanKey[], typesInfo: ZixuanpeijianTypesInfo, msbjs: MsbjInfo[]) {
     this.vid = data.vid;
     this.name = data.mingzi;
     this.铰扇跟随锁扇 = data.jiaoshanbujuhesuoshanxiangtong === 1;
@@ -31,8 +31,8 @@ export class XhmrmsbjData {
       info = {};
     }
     for (const key of menshanKeys) {
-      this.menshanbujuInfos[key] = info[key] || {};
-      const item = this.menshanbujuInfos[key];
+      const item = (info[key] || {}) as XhmrmsbjInfo;
+      this.menshanbujuInfos[key] = item;
       if (!item.选中布局数据) {
         const msbj = msbjs.find((v) => v.vid === item.选中布局);
         if (msbj) {
@@ -92,8 +92,8 @@ export class XhmrmsbjData {
   }
 
   export() {
-    for (const key in this.menshanbujuInfos) {
-      for (const node of this.menshanbujuInfos[key].模块节点 || []) {
+    for (const info of Object.values(this.menshanbujuInfos)) {
+      for (const node of info.模块节点 || []) {
         for (const mokuai of node.可选模块) {
           if (mokuai.info?.isDefault) {
             node.选中模块 = mokuai;
@@ -108,6 +108,10 @@ export class XhmrmsbjData {
       peizhishuju: JSON.stringify(this.menshanbujuInfos)
     };
     return data;
+  }
+
+  clone() {
+    return cloneDeep(this);
   }
 }
 
@@ -128,3 +132,6 @@ export interface XhmrmsbjInfoMokuaiNode {
 
 export const xhmrmsbjTabNames = ["锁边铰边", "门扇模块", "子件更换"] as const;
 export type XhmrmsbjTabName = (typeof xhmrmsbjTabNames)[number];
+
+export const menshanKeys = ["锁扇正面", "锁扇背面", "铰扇正面", "铰扇背面", "小扇正面", "小扇背面"] as const;
+export type MenshanKey = (typeof menshanKeys)[number];

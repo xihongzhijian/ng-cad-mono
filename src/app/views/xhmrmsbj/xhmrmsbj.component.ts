@@ -12,6 +12,7 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute} from "@angular/router";
 import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
@@ -24,9 +25,9 @@ import {
   isMokuaiItemEqual
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {GenerateRectsEndEvent, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjRectInfo, MsbjSelectRectEvent} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
-import {ObjectOf, Point, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
+import {keysOf, ObjectOf, Point, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList, TableDataBase, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -44,7 +45,7 @@ import {BehaviorSubject, filter, firstValueFrom} from "rxjs";
 import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {InputComponent} from "../../modules/input/components/input.component";
-import {XhmrmsbjData, XhmrmsbjInfo, XhmrmsbjTableData, XhmrmsbjTabName, xhmrmsbjTabNames} from "./xhmrmsbj.types";
+import {MenshanKey, menshanKeys, XhmrmsbjData, XhmrmsbjInfo, XhmrmsbjTableData, XhmrmsbjTabName, xhmrmsbjTabNames} from "./xhmrmsbj.types";
 
 const table = "p_xinghaomorenmenshanbuju";
 @Component({
@@ -82,12 +83,16 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   mokuais: ZixuanpeijianMokuaiItem[] = [];
   xinghao: MrbcjfzXinghaoInfo | null = null;
   bancaiList: BancaiList[] = [];
-  activeMenshanKey: string | null = null;
+  activeMenshanKey: MenshanKey | null = null;
   activeMsbj: MsbjInfo | null = null;
   activeRectInfo: MsbjRectInfo | null = null;
   urlPrefix = remoteFilePath;
   get activeMsbjInfo() {
-    return this.data?.menshanbujuInfos[this.activeMenshanKey || ""];
+    const key = this.activeMenshanKey;
+    if (key) {
+      return this.data?.menshanbujuInfos[key];
+    }
+    return undefined;
   }
   get activeMokuaiNode() {
     return this.activeMsbjInfo?.模块节点?.find((v) => v.层id === this.activeRectInfo?.raw.vid);
@@ -113,7 +118,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   activeTabName: XhmrmsbjTabName = "门扇模块";
   mokuaiInputInfos: InputInfo[] = [];
   isMrbcjfzInfoEmpty1 = isMrbcjfzInfoEmpty1;
-  menshanKeys = ["锁扇正面", "锁扇背面", "铰扇正面", "铰扇背面", "小扇正面", "小扇背面"];
+  menshanKeys = menshanKeys;
   materialResult: Formulas = {};
   houtaiUrl = "";
   user: ObjectOf<any> | null = null;
@@ -221,9 +226,10 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const data = this.data;
     if (data) {
       if (data.铰扇跟随锁扇) {
-        for (const key in data.menshanbujuInfos) {
+        for (const key of keysOf(data.menshanbujuInfos)) {
           if (key.includes("铰扇")) {
-            data.menshanbujuInfos[key] = cloneDeep(data.menshanbujuInfos[key.replace("铰扇", "锁扇")]);
+            const key2 = key.replace("铰扇", "锁扇") as MenshanKey;
+            data.menshanbujuInfos[key] = cloneDeep(data.menshanbujuInfos[key2]);
           }
         }
       }
@@ -262,7 +268,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return Object.entries(morenbancai).every(([k, v]) => this.isMrbcjfzInfoEmpty1(k, v) || v.默认对应板材分组);
   }
 
-  async selectMenshanKey(key: string) {
+  async selectMenshanKey(key: MenshanKey | string) {
     const msbj = this.activeMsbj;
     const msbjInfo = this.activeMsbjInfo;
     if (msbj && msbjInfo) {
@@ -296,7 +302,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
     }
     if (this.activeMenshanKey !== key) {
-      this.activeMenshanKey = key;
+      this.activeMenshanKey = key as MenshanKey;
       await this.setActiveMsbj(this.activeMsbjInfo);
       await this.suanliao();
     }
@@ -331,7 +337,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     await this.updateMokuaidaxiaoResults();
   }
 
-  async refreshMokuaidaxiaoResults(menshanKey: string) {
+  async refreshMokuaidaxiaoResults(menshanKey: MenshanKey) {
     const msbjInfo = this.data?.menshanbujuInfos[menshanKey];
     if (!msbjInfo) {
       throw new Error("没有门扇布局");
@@ -368,7 +374,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!menshanweizhi || !infos) {
       return;
     }
-    const {选中布局数据} = infos[menshanweizhi];
+    const {选中布局数据} = infos[menshanweizhi] || {};
     const checkedVids: number[] = [];
     if (选中布局数据?.vid) {
       checkedVids.push(选中布局数据.vid);
@@ -378,7 +384,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     });
     if (result?.options[0]) {
       const msbj = this.msbjs.find((v) => v.vid === result.options[0].vid);
-      if (msbj) {
+      if (msbj && infos[menshanweizhi]) {
         infos[menshanweizhi].选中布局 = msbj.vid;
         infos[menshanweizhi].选中布局数据 = {
           vid: msbj.vid,
@@ -405,7 +411,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  selectRect(info: MsbjRectInfo | null) {
+  selectRect({info}: MsbjSelectRectEvent) {
     if (isEqual(this.activeRectInfo, info)) {
       return;
     }
@@ -518,8 +524,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             const isShuchubianliang = varNames.includes(v[0]);
             const updateMenshanKeys = new Set<string>();
             if (data && activeMenshanKey) {
-              for (const key in data.menshanbujuInfos) {
-                for (const node2 of data.menshanbujuInfos[key].模块节点 || []) {
+              for (const key of keysOf(data.menshanbujuInfos)) {
+                for (const node2 of data.menshanbujuInfos[key]?.模块节点 || []) {
                   const mokuai2 = node2.选中模块;
                   if (mokuai2) {
                     const isCurrent = key === activeMenshanKey && node?.层名字 === node2.层名字;
@@ -567,8 +573,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const duplicates2: {mokuais: ZixuanpeijianMokuaiItem[]; keys: string[]}[] = [];
     const msbjInfos: {menshanKey: string; msbjInfo: XhmrmsbjInfo}[] = [];
     const mokuaisWithoutBancai: {menshanKey: string; layerName: string; mokuai: ZixuanpeijianMokuaiItem}[] = [];
-    for (const menshanKey in dataInfo.menshanbujuInfos) {
-      msbjInfos.push({menshanKey, msbjInfo: dataInfo.menshanbujuInfos[menshanKey]});
+    for (const menshanKey of keysOf(dataInfo.menshanbujuInfos)) {
+      const msbjInfo = dataInfo.menshanbujuInfos[menshanKey];
+      if (msbjInfo) {
+        msbjInfos.push({menshanKey, msbjInfo});
+      }
     }
     for (let i = 0; i < msbjInfos.length; i++) {
       const {menshanKey, msbjInfo} = msbjInfos[i];
@@ -837,7 +846,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       await timeout(0);
       const rectContainer0 = container.getBoundingClientRect();
       const rectContainer = new Rectangle([rectContainer0.left, rectContainer0.top], [rectContainer0.right, rectContainer0.bottom]);
-      const padding = this.msbjRectsComponent?.padding || [0, 0, 0, 0];
+      const padding = getTrbl(this.msbjRectsComponent?.padding);
       rectContainer.min.add(new Point(padding[3], padding[0]));
       rectContainer.max.sub(new Point(padding[1], padding[2]));
       const els: HTMLDivElement[] = [];

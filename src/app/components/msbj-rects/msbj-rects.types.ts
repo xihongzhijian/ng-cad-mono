@@ -24,6 +24,8 @@ export interface MsbjPeizhishuju {
 
 export type GongshiObj = ObjectOf<any>;
 
+export type MsbjSelectRectEvent = {info: MsbjRectInfo | null};
+
 export class MsbjRectInfo {
   id: string;
   rect: Rectangle;

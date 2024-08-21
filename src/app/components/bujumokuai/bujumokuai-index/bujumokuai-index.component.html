@@ -11,7 +11,9 @@
     <mat-tab [label]="page.name">
       <ng-template matTabContent>
         @switch (page.name) {
-          @case ("布局") {}
+          @case ("布局") {
+            <app-buju></app-buju>
+          }
           @case ("配件CAD") {
             <app-mokuai-cads></app-mokuai-cads>
           }

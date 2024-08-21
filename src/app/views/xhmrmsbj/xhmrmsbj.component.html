@@ -51,7 +51,7 @@
         <mat-divider class="placeholder"></mat-divider>
         <ng-scrollbar>
           <div class="flex-column menshan-options">
-            @for (item of data?.menshanbujuInfos | keyvalue: returnZero; track item) {
+            @for (item of data?.menshanbujuInfos | keyvalue: returnZero; track $index) {
               @if (!data?.["铰扇跟随锁扇"] || !item.key.includes("铰扇")) {
                 <div
                   class="flex-column menshan-option"
@@ -59,8 +59,8 @@
                   (click)="selectMenshanKey(item.key)"
                 >
                   <div style="font-weight: bold">{{ item.key }}</div>
-                  @if (item.value["选中布局数据"]) {
-                    <div>布局：{{ item.value["选中布局数据"].name }}</div>
+                  @if (item.value?.["选中布局数据"]; as data) {
+                    <div>布局：{{ data.name }}</div>
                   }
                 </div>
               }

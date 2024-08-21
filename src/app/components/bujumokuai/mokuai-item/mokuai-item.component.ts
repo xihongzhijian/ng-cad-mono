@@ -184,10 +184,7 @@ export class MokuaiItemComponent implements OnInit {
       arr.map<InputInfo>((v) => ({
         type: "string",
         label: `${type}-${v[0]}`,
-        model: {key: "1", data: v},
-        onChange: async () => {
-          console.log(this.item());
-        }
+        model: {key: "1", data: v}
       }));
     const infos: {type: string; infos: InputInfo[]}[] = [];
     infos.push({type: "gongshi", infos: getInfos(item.gongshishuru, "公式输入")});

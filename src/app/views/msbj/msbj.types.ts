@@ -7,6 +7,7 @@ import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 export class MsbjInfo {
   vid: number;
   name: string;
+  xiaoguotu?: string;
   peizhishuju: MsbjPeizhishuju;
 
   constructor(
@@ -15,6 +16,7 @@ export class MsbjInfo {
   ) {
     this.vid = rawData.vid;
     this.name = rawData.mingzi;
+    this.xiaoguotu = rawData.xiaoguotu;
 
     let peizhishuju: MsbjPeizhishuju | null = null;
     try {
@@ -48,6 +50,7 @@ export interface MsbjData extends TableDataBase {
   peizhishuju?: string;
   node?: string;
   menshanweizhi?: string;
+  xiaoguotu?: string;
 }
 
 export interface Node2rectData {

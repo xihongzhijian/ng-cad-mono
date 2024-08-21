@@ -5,7 +5,7 @@ import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjRectInfo, MsbjSelectRectEvent} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -70,7 +70,7 @@ export class MsbjComponent implements AfterViewInit {
     this.msbjRects?.generateRects(opts);
   }
 
-  setCurrRectInfo(info: MsbjRectInfo | null) {
+  setCurrRectInfo({info}: MsbjSelectRectEvent) {
     const {nameInputInfo} = this;
     if (info?.raw.isBuju) {
       nameInputInfo.model = {data: info, key: "name"};
