@@ -1,4 +1,4 @@
-<mat-tab-group>
+<mat-tab-group class="flex-110" dynamicHeight>
   @for (tab of tabs(); track $index) {
     @if (!tab.hidden) {
       <mat-tab [label]="tab.name">
