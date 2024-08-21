@@ -91,7 +91,10 @@ export class XhmrmsbjData {
     }
   }
 
-  export() {
+  export(): XhmrmsbjTableData {
+    return {vid: this.vid, ...this.exportWithoutVid()};
+  }
+  exportWithoutVid() {
     for (const info of Object.values(this.menshanbujuInfos)) {
       for (const node of info.模块节点 || []) {
         for (const mokuai of node.可选模块) {
@@ -101,8 +104,7 @@ export class XhmrmsbjData {
         }
       }
     }
-    const data: XhmrmsbjTableData = {
-      vid: this.vid,
+    const data: Omit<XhmrmsbjTableData, "vid"> = {
       mingzi: this.name,
       jiaoshanbujuhesuoshanxiangtong: this.铰扇跟随锁扇 ? 1 : 0,
       peizhishuju: JSON.stringify(this.menshanbujuInfos)

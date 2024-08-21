@@ -547,7 +547,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         );
         result = response?.code === 0;
       } else {
-        result = await this.http.tableUpdate({table, data}, {spinner: this.loaderId});
+        result = !!(await this.http.tableUpdate({table, data}, {spinner: this.loaderId}));
       }
     }
     this.dataSubmit.emit({data: this.xinghao, errors, submit2});

@@ -17,11 +17,13 @@ import {MrbcjfzInfo, MrbcjfzXinghao} from "@app/views/mrbcjfz/mrbcjfz.types";
 import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@app/views/mrbcjfz/mrbcjfz.utils";
 import {MsbjData, MsbjInfo, Node2rectData} from "@app/views/msbj/msbj.types";
 import {MenshanKey, menshanKeys, XhmrmsbjData, XhmrmsbjTableData} from "@app/views/xhmrmsbj/xhmrmsbj.types";
+import {environment} from "@env";
 import {queryString} from "@lucilor/utils";
 import {debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 
+const table = "p_xinghaomorenmenshanbuju";
 @Component({
   selector: "app-buju",
   standalone: true,
@@ -50,9 +52,12 @@ export class BujuComponent implements OnInit {
   msbjRects = viewChild(MsbjRectsComponent);
   isFromOrder = signal(false);
   imgPrefix = filePathUrl;
-  async getData() {
+  async getData(noCache?: boolean) {
     const xinghaoKey = "bujuXinghaoXinghao";
-    let xinghao = session.load<TableDataBase>(xinghaoKey);
+    let xinghao: TableDataBase | null = null;
+    if (!noCache && !environment.production) {
+      xinghao = session.load<TableDataBase>(xinghaoKey);
+    }
     if (!xinghao) {
       const result = await openCadOptionsDialog(this.dialog, {data: {name: "p_xinghao"}});
       if (!result?.options[0]) {
@@ -277,4 +282,15 @@ export class BujuComponent implements OnInit {
     const query = this.mokuaiQuery();
     return this.bjmkStatus.mokuais().filter((v) => queryString(query, v.name));
   });
+
+  async save() {
+    const data = this.bujuData()?.export();
+    if (!data) {
+      return;
+    }
+    await this.http.tableUpdate({table, data});
+  }
+  async saveAs() {
+    this.message.alert("未实现");
+  }
 }

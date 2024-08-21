@@ -4,7 +4,7 @@ import {imgCadEmpty, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {dataURLtoBlob, downloadByUrl, DownloadOptions, isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
+import {dataURLtoBlob, downloadByUrl, DownloadOptions, isTypeOf, ObjectOf} from "@lucilor/utils";
 import {
   BancaiCad,
   BancaiList,
@@ -299,28 +299,19 @@ export class CadDataService extends HttpService {
   }
 
   async tableUpdate<T extends TableDataBase = TableDataBase>(params: TableUpdateParams<T>, options?: HttpOptions) {
-    const data = params.data;
     const getParams2 = (params1: TableUpdateParams<T>) => {
       const params2: ObjectOf<any> = {...params1};
       params2.tableData = params2.data;
+      params2.isMultiFields = true;
       delete params2.data;
       return params2;
     };
-    const fields = keysOf(data).filter((v) => v !== "vid" && data[v] !== undefined);
-    const results = await Promise.all(
-      fields.map(async (field) => {
-        const data2 = {vid: data.vid, [field]: data[field]} as any;
-        const params2 = getParams2({...params, data: data2});
-        const response = await this.post<void>("jichu/jichu/table_update", params2, options);
-        return response?.code === 0;
-      })
-    );
-    return results.every(Boolean);
+    const params2 = getParams2(params);
+    return await this.getData<T>("jichu/jichu/table_update", params2, options);
   }
 
   async tableDelete(params: TableDeleteParams, options?: HttpOptions) {
-    const response = await this.post<void>("jichu/jichu/table_delete", params, options);
-    return response?.code === 0;
+    return await this.getData<boolean>("jichu/jichu/table_delete", params, options);
   }
 
   async tableUploadFile<T extends TableDataBase = TableDataBase>(params: TableUploadFile<T>, options?: HttpOptions) {

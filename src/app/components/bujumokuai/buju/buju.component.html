@@ -24,8 +24,8 @@
   <mat-divider vertical></mat-divider>
   <div class="flex-column flex-110">
     <div class="toolbar right">
-      <button mat-raised-button color="primary">保存</button>
-      <button mat-raised-button color="primary">另存为</button>
+      <button mat-raised-button color="primary" (click)="save()">保存</button>
+      <button mat-raised-button color="primary" (click)="saveAs()">另存为</button>
     </div>
     <div class="buju-infos flex-row flex-110">
       <div class="buju-basic flex-row">
@@ -77,27 +77,33 @@
         </div>
       </div>
     </div>
-    <div class="buju-mokuais flex-column flex-110">
+    <div class="buju-bottom flex-column flex-110">
       <div class="title">模块选择</div>
-      <div class="box flex-column flex-110">
-        <div class="toolbar">
-          <app-input class="flex-110" [info]="mokuaiQueryInputInfo()"></app-input>
-        </div>
-        <ng-scrollbar>
-          <div class="items no-items-per-row">
-            @for (mokuai of mokuais(); track $index) {
-              <div class="item">
-                <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix"></app-image>
-                <div class="mingzi">{{ mokuai.name }}</div>
-                <div class="toolbar compact center">
-                  <button mat-button color="primary">编辑</button>
-                  <button mat-button color="primary">复制</button>
-                  <button mat-button color="primary">删除</button>
-                </div>
-              </div>
-            }
+      <div class="box flex-row">
+        <div class="buju-mokuais flex-column">
+          <div class="toolbar">
+            <app-input class="flex-110" [info]="mokuaiQueryInputInfo()"></app-input>
           </div>
-        </ng-scrollbar>
+          <ng-scrollbar>
+            <div class="items no-items-per-row">
+              @for (mokuai of mokuais(); track $index) {
+                <div class="item">
+                  <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix"></app-image>
+                  <div class="mingzi">{{ mokuai.name }}</div>
+                  <div class="toolbar compact center">
+                    <button mat-button color="primary">编辑</button>
+                    <button mat-button color="primary">复制</button>
+                    <button mat-button color="primary">删除</button>
+                  </div>
+                </div>
+              }
+            </div>
+          </ng-scrollbar>
+        </div>
+        <mat-divider vertical></mat-divider>
+        <div class="buji-xinghao-cads flex-column flex-110">
+          <div class="title">型号CAD</div>
+        </div>
       </div>
     </div>
   </div>

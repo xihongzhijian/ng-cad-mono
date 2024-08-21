@@ -36,7 +36,7 @@
 }
 
 .buju-infos {
-  margin: 20px 0 10px 0;
+  margin: 0px 0 10px 0;
   > * {
     width: 0;
 
@@ -69,7 +69,7 @@
   .buju-bancais {
     .buju-bancai-text {
       font-size: var(--mat-option-label-text-size);
-      padding-right: 72px;
+      padding-right: 80px;
       box-sizing: border-box;
     }
 
@@ -79,7 +79,10 @@
   }
 }
 
-.buju-mokuais {
+.buju-bottom {
   --item-width: 200px;
   --item-image-height: 100px;
+}
+.buju-mokuais {
+  width: 66.66%;
 }
