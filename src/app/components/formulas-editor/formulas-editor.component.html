@@ -29,7 +29,7 @@
             <button mat-raised-button color="primary" (click)="test(submitFormulas())">测试</button>
           </div>
           <div class="formulas-list" cdkDropList [cdkDropListData]="formulaList" (cdkDropListDropped)="dropFormula($event)">
-            @for (formula of formulaList; track formula; let i = $index) {
+            @for (formula of formulaList; track i; let i = $index) {
               <div class="formula" cdkDrag cdkDragLockAxis="y">
                 <div class="drag-placeholder" cdkDragHandle></div>
                 <button mat-icon-button color="primary" (click)="addFormula(i + 1)">

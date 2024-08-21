@@ -5,7 +5,7 @@ import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {MsbjRectInfo, MsbjSelectRectEvent} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjSelectRectEvent} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";

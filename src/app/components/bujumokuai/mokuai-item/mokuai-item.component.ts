@@ -28,11 +28,11 @@ import {MessageService} from "@app/modules/message/services/message.service";
 import {MrbcjfzInfo} from "@app/views/mrbcjfz/mrbcjfz.types";
 import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@app/views/mrbcjfz/mrbcjfz.utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {cloneDeep} from "lodash";
+import {keysOf, ObjectOf} from "@lucilor/utils";
+import {cloneDeep, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 import {MokuaiItem} from "./mokuai-item.types";
-import {getEmptyMokuaiItem} from "./mokuai-item.utils";
 
 @Component({
   selector: "app-mokuai-item",
@@ -58,22 +58,20 @@ export class MokuaiItemComponent implements OnInit {
 
   @HostBinding("class") class = ["ng-page"];
 
-  itemIn = input.required<MokuaiItem>({alias: "item"});
+  mokuaiIn = input.required<MokuaiItem>({alias: "mokuai"});
   bancaiListData = input.required<BancaiListData | null>();
   imgPrefix = input<string>("");
   closeOut = output({alias: "close"});
-  submitOut = output({alias: "submit"});
 
   async ngOnInit() {
     await this.bjmkStatus.fetchCads();
   }
 
-  item = signal<MokuaiItem>(getEmptyMokuaiItem());
-  itemEff = effect(() => this.item.set(cloneDeep(this.itemIn())), {allowSignalWrites: true});
+  mokuai = computed(() => cloneDeep(this.mokuaiIn()));
   morenbancais = signal<{key: string; val: MrbcjfzInfo}[]>([]);
   morenbancaisEff = effect(
     () => {
-      const morenbancai = this.item().morenbancai || {};
+      const morenbancai = this.mokuai().morenbancai || {};
       this.morenbancais.set(Object.entries(morenbancai).map(([key, val]) => ({key, val})));
     },
     {allowSignalWrites: true}
@@ -179,7 +177,7 @@ export class MokuaiItemComponent implements OnInit {
   }
 
   mokuaiInputInfos = computed(() => {
-    const item = this.item();
+    const mokuai = this.mokuai();
     const getInfos = (arr: string[][], type: string) =>
       arr.map<InputInfo>((v) => ({
         type: "string",
@@ -187,8 +185,8 @@ export class MokuaiItemComponent implements OnInit {
         model: {key: "1", data: v}
       }));
     const infos: {type: string; infos: InputInfo[]}[] = [];
-    infos.push({type: "gongshi", infos: getInfos(item.gongshishuru, "公式输入")});
-    infos.push({type: "xuanxiang", infos: getInfos(item.xuanxiangshuru, "选项输入")});
+    infos.push({type: "gongshi", infos: getInfos(mokuai.gongshishuru, "公式输入")});
+    infos.push({type: "xuanxiang", infos: getInfos(mokuai.xuanxiangshuru, "选项输入")});
     return infos;
   });
   mokuaiInputInfos2 = computed(() => {
@@ -241,8 +239,29 @@ export class MokuaiItemComponent implements OnInit {
     this.closeOut.emit();
   }
   slgsComponent = viewChild<FormulasEditorComponent>("slgs");
-  async submit() {
-    this.submitOut.emit();
-    console.log(this.slgsComponent()?.submitFormulas());
+  updateMokaui() {
+    const mokuai = this.mokuai();
+    mokuai.morenbancai = this.morenbancais().reduce<ObjectOf<MrbcjfzInfo>>((acc, {key, val}) => {
+      acc[key] = val;
+      return acc;
+    }, {});
+    mokuai.suanliaogongshi = this.slgsComponent()?.submitFormulas() || {};
+    return mokuai;
+  }
+  async save() {
+    const mokuai = this.updateMokaui();
+    const mokuaiOld = this.mokuaiIn();
+    const itemNew: Partial<MokuaiItem> = {id: mokuai.id, name: mokuai.name};
+    for (const key of keysOf(mokuai)) {
+      const val = mokuai[key];
+      const valOld = mokuaiOld[key];
+      if (!isEqual(val, valOld)) {
+        itemNew[key] = val as any;
+      }
+    }
+    await this.bjmkStatus.editMokuai(itemNew, true);
+  }
+  async saveAs() {
+    await this.bjmkStatus.copyMokuai(this.updateMokaui());
   }
 }

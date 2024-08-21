@@ -1,23 +1,23 @@
 <app-data-list [navDataName]="navDataName" [itemsAll]="mokuaisAll()" [(items)]="mokuais" [(activeNavNode)]="mokuaiActiveNavNode">
   <div class="toolbar" appDataListToolbar>
     <button mat-raised-button [color]="mokuaiEditMode() ? 'accent' : 'primary'" (click)="toggleMokuaiEditMode()">编辑</button>
-    <button mat-raised-button color="primary" (click)="addMukuaiItem()">添加</button>
+    <button mat-raised-button color="primary" (click)="addMukuai()">添加</button>
     <button mat-raised-button color="primary">导入</button>
     <button mat-raised-button color="primary">导出</button>
   </div>
   <div class="data-items items no-items-per-row" appDataListItems>
-    @for (item of mokuais(); track $index) {
-      <div class="data-item item link" [class.active]="mokuaiActiveItem()?.id === item.id" (click)="clickMokuaiItem(item)">
-        <app-image [src]="item.xiaoguotu" [prefix]="imgPrefix()"></app-image>
-        <div class="name">{{ item.name }}</div>
+    @for (mokuai of mokuais(); track $index) {
+      <div class="data-item item link" [class.active]="mokuaiActiveItem()?.id === mokuai.id" (click)="clickMokuaiItem(mokuai)">
+        <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()"></app-image>
+        <div class="name">{{ mokuai.name }}</div>
         @if (mokuaiEditMode()) {
           <div class="toolbar compact center">
             @if (!production) {
-              <button mat-button color="primary" (click)="editMokuaiItem(item)">编辑</button>
+              <button mat-button color="primary" (click)="editMokuai(mokuai)">编辑</button>
             }
-            <button mat-button color="primary" (click)="enterMokuaiItem(item)">编辑</button>
-            <button mat-button color="primary" (click)="copyMokuaiItem(item)">复制</button>
-            <button mat-button color="primary" (click)="removeMokuaiItem(item)">删除</button>
+            <button mat-button color="primary" (click)="enterMokuai(mokuai)">编辑</button>
+            <button mat-button color="primary" (click)="copyMokuai(mokuai)">复制</button>
+            <button mat-button color="primary" (click)="removeMokuai(mokuai)">删除</button>
           </div>
         }
       </div>
@@ -25,14 +25,13 @@
   </div>
 </app-data-list>
 
-@if (currMokuaiItem(); as item) {
+@if (currMokuai(); as mokuai) {
   <app-floating-dialog [maximized]="true" noTitle>
     <app-mokuai-item
-      [item]="item"
+      [mokuai]="mokuai"
       [bancaiListData]="bancaiListData()"
       [imgPrefix]="imgPrefix()"
-      (close)="closeMokuaiItem()"
-      (submit)="submitMokuaiItem()"
+      (close)="closeMokuai()"
     ></app-mokuai-item>
   </app-floating-dialog>
 }
