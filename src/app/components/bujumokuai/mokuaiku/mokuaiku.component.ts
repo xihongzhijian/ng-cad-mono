@@ -87,9 +87,21 @@ export class MokuaikuComponent implements OnInit {
   }
 
   currMokuai = signal<MokuaiItem | null>(null);
+  async enterMokuai(item: MokuaiItem) {
+    if (!this.bancaiListData()) {
+      await this.getBancaiListData();
+    }
+    this.currMokuai.set(cloneDeep(item));
+  }
   closeMokuai() {
+    const currMokuai = this.currMokuai();
+    const type = this.mokuaiActiveNavNode()?.name;
+    if (type && currMokuai && type !== currMokuai.type) {
+      this.dataList()?.updateActiveNavNode(currMokuai.type);
+    }
     this.currMokuai.set(null);
   }
+
   async addMukuai(mokuai?: Partial<MokuaiItem>) {
     const mokuai2 = await this.bjmkStatus.addMukuai(mokuai);
     if (mokuai2) {
@@ -111,12 +123,6 @@ export class MokuaikuComponent implements OnInit {
   }
   clickMokuaiItem(item: MokuaiItem) {
     this.mokuaiActiveItem.set(item);
-  }
-  async enterMokuai(item: MokuaiItem) {
-    if (!this.bancaiListData()) {
-      await this.getBancaiListData();
-    }
-    this.currMokuai.set(cloneDeep(item));
   }
 
   bancaiListData = signal<BancaiListData | null>(null);

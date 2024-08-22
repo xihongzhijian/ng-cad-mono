@@ -196,12 +196,19 @@ export class BujuComponent implements OnInit {
         options: this.msbjs().map(({vid, name, xiaoguotu}) => ({vid, name, img: xiaoguotu || "", disabled: false}))
       }
     });
-    const msbj = result?.options[0] as MsbjInfo | undefined;
-    if (msbj) {
-      info.选中布局 = msbj.vid;
-      info.选中布局数据 = {vid: msbj.vid, name: msbj.name, 模块大小关系: msbj.peizhishuju.模块大小关系};
-      this.updateBujuData();
+    const vid = result?.options[0]?.vid;
+    if (!vid) {
+      return;
     }
+    const rawDataList = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju", filter: {where: {vid}}});
+    const rawData = rawDataList[0];
+    if (!rawData) {
+      return;
+    }
+    const msbj = new MsbjInfo(rawData, this.getNode2rectData());
+    info.选中布局 = msbj.vid;
+    info.选中布局数据 = {vid: msbj.vid, name: msbj.name, 模块大小关系: msbj.peizhishuju.模块大小关系};
+    this.updateBujuData();
   }
 
   showMokuais = signal(false);

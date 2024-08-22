@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, viewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, OnDestroy, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatMenuModule} from "@angular/material/menu";
 import {ContextMenuModule} from "@app/modules/context-menu/context-menu.module";
@@ -14,7 +14,7 @@ import {FloatingDialogComponent} from "../floating-dialog/floating-dialog.compon
   styleUrl: "./floating-dialog-trays.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FloatingDialogTraysComponent {
+export class FloatingDialogTraysComponent implements OnDestroy {
   private manager = inject(FloatingDialogsManagerService);
 
   limits = input<FloatingDialogLimits>({});
@@ -25,6 +25,10 @@ export class FloatingDialogTraysComponent {
 
   constructor() {
     effect(() => this.manager.limits.update(this.limits), {allowSignalWrites: true});
+  }
+
+  ngOnDestroy() {
+    this.manager.limits.set({});
   }
 
   contextMenuBtns = computed(() => {

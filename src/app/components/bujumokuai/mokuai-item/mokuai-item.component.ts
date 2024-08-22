@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   effect,
@@ -53,6 +54,7 @@ import {MokuaiItem} from "./mokuai-item.types";
 })
 export class MokuaiItemComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);
+  private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
   private message = inject(MessageService);
 
@@ -68,6 +70,13 @@ export class MokuaiItemComponent implements OnInit {
   }
 
   mokuai = computed(() => cloneDeep(this.mokuaiIn()));
+  async editMokuai() {
+    const mokuai = this.mokuai();
+    const mokuai2 = await this.bjmkStatus.getMokuaiWithForm(mokuai);
+    Object.assign(mokuai, mokuai2);
+    this.cd.markForCheck();
+  }
+
   morenbancais = signal<{key: string; val: MrbcjfzInfo}[]>([]);
   morenbancaisEff = effect(
     () => {
@@ -252,6 +261,7 @@ export class MokuaiItemComponent implements OnInit {
     const mokuai = this.updateMokaui();
     const mokuaiOld = this.mokuaiIn();
     const itemNew: Partial<MokuaiItem> = {id: mokuai.id, name: mokuai.name};
+    console.log(mokuai, mokuaiOld);
     for (const key of keysOf(mokuai)) {
       const val = mokuai[key];
       const valOld = mokuaiOld[key];

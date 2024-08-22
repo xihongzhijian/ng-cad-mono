@@ -274,6 +274,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   private async _onItemsAllChange(itemsAll: T[]) {
     await this.untilInited();
     updateDataListNavNodeList(this.navDataSource.data, itemsAll);
+    this.filterNavNodes();
     this.filterItems();
   }
 
