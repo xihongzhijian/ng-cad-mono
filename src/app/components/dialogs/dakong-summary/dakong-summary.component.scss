@@ -26,16 +26,13 @@
     }
 
     .row {
+      display: flex;
       &:not(:last-child) {
         border-bottom: var(--border);
       }
-      display: flex;
     }
 
     .cell {
-      &:not(:last-child) {
-        border-right: var(--border);
-      }
       padding: 2px;
       flex: 1 1 0;
       display: flex;
@@ -43,6 +40,9 @@
       align-items: center;
       text-align: center;
       overflow: hidden;
+      &:not(:last-child) {
+        border-right: var(--border);
+      }
 
       > * {
         text-overflow: ellipsis;
