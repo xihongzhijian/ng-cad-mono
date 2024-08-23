@@ -189,8 +189,18 @@
     color: red;
   }
 
+  .primary {
+    color: var(--primary-color);
+  }
+  .accent {
+    color: var(--accent-color);
+  }
+
   .link {
     cursor: pointer;
+    &.text {
+      text-decoration: underline;
+    }
   }
 
   mat-tab-group.flex-110 {
