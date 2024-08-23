@@ -32,11 +32,28 @@ export class MsbjInfo {
 
   updateRectsInfo(data?: Node2rectData) {
     const peizhishuju = this.peizhishuju;
+    const namesMap = new Map<number, string>();
+    for (const node of peizhishuju.模块节点) {
+      if (!node.isBuju || !node.选项名称) {
+        continue;
+      }
+      namesMap.set(node.vid, node.选项名称);
+    }
     let rectInfos1: MsbjRectInfoRaw[] | null = null;
     try {
       rectInfos1 = window.node2rect(JSON.parse(this.rawData.node || ""), data);
     } catch {}
-    peizhishuju.模块节点 = rectInfos1 || [];
+    if (rectInfos1) {
+      for (const info of rectInfos1) {
+        const name = namesMap.get(info.vid);
+        if (name) {
+          info.选项名称 = name;
+        }
+      }
+    } else {
+      rectInfos1 = [];
+    }
+    peizhishuju.模块节点 = rectInfos1;
   }
 }
 
