@@ -19,6 +19,7 @@ import {MrbcjfzInfo, MrbcjfzXinghao} from "@app/views/mrbcjfz/mrbcjfz.types";
 import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@app/views/mrbcjfz/mrbcjfz.utils";
 import {MsbjData, MsbjInfo, Node2rectData} from "@app/views/msbj/msbj.types";
 import {MenshanKey, menshanKeys, XhmrmsbjData, XhmrmsbjTableData} from "@app/views/xhmrmsbj/xhmrmsbj.types";
+import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, queryString} from "@lucilor/utils";
@@ -286,6 +287,22 @@ export class BujuComponent implements OnInit {
     infos.push({type: "xuanxiang", infos: getInfos(mokuai.xuanxiangshuru, "选项输入")});
     return infos;
   });
+
+  async editMokuaidaxiao() {
+    const msbjInfo = this.activeMsbjInfo();
+    const 选中布局数据 = msbjInfo?.选中布局数据;
+    if (!选中布局数据) {
+      return;
+    }
+    const msbj = this.activeMsbj();
+    const result = await this.message.json(选中布局数据.模块大小关系, {
+      defaultJson: msbj?.peizhishuju.模块大小关系 ?? mokuaidaxiaoData,
+      btnTexts: {reset: "重置为默认模块大小"}
+    });
+    if (result) {
+      选中布局数据.模块大小关系 = result;
+    }
+  }
 
   mokuaiQuery = signal("");
   mokuaiQueryInputInfo = computed<InputInfo>(() => ({
