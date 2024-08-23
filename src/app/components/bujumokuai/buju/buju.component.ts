@@ -3,8 +3,10 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {filePathUrl, session, setGlobal} from "@app/app.common";
+import {getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {openCadOptionsDialog} from "@app/components/dialogs/cad-options/cad-options.component";
 import {getStep1Data} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.utils";
+import {CadItemIsOnlineInfo} from "@app/components/lurushuju/cad-item/cad-item.types";
 import {MsbjRectsComponent} from "@app/components/msbj-rects/msbj-rects.component";
 import {MsbjRectInfo, MsbjSelectRectEvent} from "@app/components/msbj-rects/msbj-rects.types";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
@@ -18,16 +20,18 @@ import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@app/views/mrbcjfz/mrbcjf
 import {MsbjData, MsbjInfo, Node2rectData} from "@app/views/msbj/msbj.types";
 import {MenshanKey, menshanKeys, XhmrmsbjData, XhmrmsbjTableData} from "@app/views/xhmrmsbj/xhmrmsbj.types";
 import {environment} from "@env";
-import {queryString} from "@lucilor/utils";
+import {CadData} from "@lucilor/cad-viewer";
+import {ObjectOf, queryString} from "@lucilor/utils";
 import {debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 
 const table = "p_xinghaomorenmenshanbuju";
 @Component({
   selector: "app-buju",
   standalone: true,
-  imports: [ImageComponent, InputComponent, MatButtonModule, MatDividerModule, MsbjRectsComponent, NgScrollbarModule],
+  imports: [ImageComponent, InputComponent, MatButtonModule, MatDividerModule, MsbjRectsComponent, NgScrollbarModule, CadItemComponent],
   templateUrl: "./buju.component.html",
   styleUrl: "./buju.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -74,6 +78,7 @@ export class BujuComponent implements OnInit {
       this.message.error("找不到型号：" + xinghao.mingzi);
       return;
     }
+
     const table2 = "p_xinghaomorenmenshanbuju";
     const data2 = await this.http.queryMySql<XhmrmsbjTableData>({table: table2, filter: {where: {mingzi: xinghao.mingzi}}});
     const menshanbujus = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
@@ -85,6 +90,10 @@ export class BujuComponent implements OnInit {
     } else {
       this.message.error("找不到型号默认门扇布局：" + xinghao.mingzi);
     }
+
+    const fields = getCadQueryFields(this.xinghaoCadYaoqiu());
+    const cadsResult = await this.http.getCad({collection: "cad", fields, options: {型号: xinghao.mingzi}});
+    this.xinghaoCadsAll.set(cadsResult.cads);
   }
   getNode2rectData() {
     const result: Node2rectData = {
@@ -288,6 +297,36 @@ export class BujuComponent implements OnInit {
   mokuais = computed(() => {
     const query = this.mokuaiQuery();
     return this.bjmkStatus.mokuais().filter((v) => queryString(query, v.name));
+  });
+
+  xinghaoCadsAll = signal<CadData[]>([]);
+  xinghaoCadYaoqiu = this.bjmkStatus.xinghaoCadYaoqiu;
+  xinghaoCadQuery = signal("");
+  xinghaoCadQueryInputInfo = computed<InputInfo>(() => ({
+    type: "string",
+    label: "搜索",
+    value: this.xinghaoCadQuery(),
+    onInput: debounce((v) => this.xinghaoCadQuery.set(v), 200)
+  }));
+  xinghaoCads = computed(() => {
+    const query = this.xinghaoCadQuery();
+    return this.xinghaoCadsAll().filter((v) => queryString(query, v.name));
+  });
+
+  xinghaoCadsIsOnline: ObjectOf<CadItemIsOnlineInfo<any>> = {};
+  xinghaoCadsIsOnlineEff = effect(() => {
+    const cads = this.xinghaoCadsAll();
+    const cadsIsOnlineOld = this.xinghaoCadsIsOnline;
+    const cadsIsOnline: typeof this.xinghaoCadsIsOnline = {};
+    this.xinghaoCadsIsOnline = cadsIsOnline;
+    for (const cad of cads) {
+      const id = cad.id;
+      cadsIsOnline[id] = cadsIsOnlineOld[id] ?? {
+        collection: "cad",
+        isFetched: false,
+        afterFetch: () => (cadsIsOnline[id].isFetched = true)
+      };
+    }
   });
 
   async save() {

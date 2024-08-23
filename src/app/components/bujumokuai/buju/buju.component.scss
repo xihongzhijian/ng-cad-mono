@@ -66,6 +66,10 @@
     }
   }
 
+  .buju-details {
+    flex: 1 1 500px;
+  }
+
   .buju-bancais {
     .buju-bancai-text {
       font-size: var(--mat-option-label-text-size);

@@ -579,7 +579,7 @@ export class AppStatusService {
     this.cad数据要求List = cad数据要求Raws.map((v) => new Cad数据要求(v));
     this.isCad数据要求ListFetched = true;
   }
-  getCad数据要求(name: string) {
+  getCad数据要求(name: string | CadData) {
     let result = this.cad数据要求List.find((v) => v.CAD分类 === name);
     if (!result) {
       result = this.cad数据要求List.find((v) => v.CAD分类 === "配件库");

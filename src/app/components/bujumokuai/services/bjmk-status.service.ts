@@ -1,7 +1,7 @@
 import {computed, inject, Injectable, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {filePathUrl, getCopyName} from "@app/app.common";
-import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {Cad数据要求, getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {InputInfo} from "@app/modules/input/components/input.types";
@@ -23,11 +23,11 @@ export class BjmkStatusService {
   imgPrefix = signal(filePathUrl);
 
   cadYaoqiu = signal<Cad数据要求 | undefined>(undefined);
-  async fetchCadYaoqiu() {
+  xinghaoCadYaoqiu = signal<Cad数据要求 | undefined>(undefined);
+  async fetchCadYaoqius() {
     await this.status.fetchCad数据要求List();
-    const yaoqiu = this.status.getCad数据要求("配件库");
-    this.cadYaoqiu.set(yaoqiu);
-    return yaoqiu;
+    this.cadYaoqiu.set(this.status.getCad数据要求("配件库"));
+    this.xinghaoCadYaoqiu.set(this.status.getCad数据要求("型号CAD"));
   }
 
   collection: CadCollection = "peijianku";
@@ -38,16 +38,10 @@ export class BjmkStatusService {
     if (!force && this._cadsCache) {
       return this._cadsCache;
     }
-    const yaoqiu = await this.fetchCadYaoqiu();
-    const fields = new Set<string>(["json.id", "json.name", "json.type"]);
-    if (yaoqiu) {
-      for (const item of yaoqiu.CAD弹窗修改属性) {
-        if (item.cadKey) {
-          fields.add(`json.${item.cadKey}`);
-        }
-      }
-    }
-    const result = await this.http.getCad({collection: this.collection, fields: Array.from(fields)});
+    await this.fetchCadYaoqius();
+    const yaoqiu = this.cadYaoqiu();
+    const fields = getCadQueryFields(yaoqiu);
+    const result = await this.http.getCad({collection: this.collection, fields});
     const cads = result.cads;
     this._cads.set(cads);
     this._cadsCache = cads;
