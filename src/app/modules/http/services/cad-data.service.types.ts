@@ -160,7 +160,6 @@ export interface MongodbDataBase {
 export interface BancaiListData {
   bancais: BancaiList[];
   bancaiKeys: string[];
-  bancaiKeysNonClear: string[];
   bancaiKeysRequired: string[];
   qiliaos: string[];
 }
