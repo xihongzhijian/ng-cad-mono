@@ -1,9 +1,9 @@
 :host {
-  display: flex;
-  flex-direction: column;
   padding: 10px;
-  box-sizing: border-box;
-  height: 100%;
+}
+
+.error {
+  color: black;
 }
 
 .filter-form {
@@ -58,10 +58,6 @@
       }
       .error {
         color: red;
-      }
-      .link {
-        cursor: pointer;
-        text-decoration: underline;
       }
     }
   }
