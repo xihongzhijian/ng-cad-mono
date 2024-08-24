@@ -34,7 +34,6 @@ export class MsbjComponent implements AfterViewInit {
 
   production = environment.production;
   table = signal("");
-  id = signal("");
   msbjInfo = signal<MsbjInfo | null>(null);
   dataField: keyof Omit<MsbjData, keyof TableDataBase> = "peizhishuju";
   fenleiListDataType!: {$implicit: MsbjFenlei[]; class: string};
@@ -46,11 +45,10 @@ export class MsbjComponent implements AfterViewInit {
   }
 
   async ngAfterViewInit() {
-    const {table, id, field} = this.route.snapshot.queryParams;
+    const {table = "", id = "", field} = this.route.snapshot.queryParams;
     this.table.set(table || "");
-    this.id.set(id || "");
     this.dataField = field === "peizhishuju" ? field : "menshanbujumorenfenlei";
-    const msbjData = await this.http.queryMySql<MsbjData>({table, filter: {where: {vid: this.id}}});
+    const msbjData = await this.http.queryMySql<MsbjData>({table, filter: {where: {vid: id}}});
     if (msbjData[0]) {
       this.msbjInfo.set(new MsbjInfo(msbjData[0]));
       const getCadResult = await this.http.getCad({collection: "cad", search: {"选项.门扇布局": msbjData[0].mingzi}});
