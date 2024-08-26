@@ -20,6 +20,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal, XiaodaohangStructure} from "@app/app.common";
+import {CadCollection} from "@app/cad/collections";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {CadData} from "@lucilor/cad-viewer";
@@ -86,6 +87,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
 
   @Input() id = 0;
   @Input() table = "";
+  @Input() collection?: CadCollection;
   @Input() closeable = false;
   @Input() inputData?: MrbcjfzInputData;
   @Input() forceSubmit? = false;
@@ -147,6 +149,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     }
     this._refreshLock$.next(true);
     let {id, table} = this;
+    const {collection} = this;
     if (this.inputData) {
       this.isFromOrder = true;
       const noScroll = !!this.inputData.noScroll;
@@ -240,7 +243,11 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         this.huajians[vid] = {id: vid, data: huajian, selected: huajianIds2.includes(vid)};
       }
     } else {
-      const data = await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {table, id}, {spinner: this.loaderId});
+      const data = await this.http.getData<MrbcjfzResponseData>(
+        "peijian/xinghao/bancaifenzuIndex",
+        {table, id, collection},
+        {spinner: this.loaderId}
+      );
       if (data) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, data.xinghao);
         this.bancaiKeys = data.bancaiKeys;

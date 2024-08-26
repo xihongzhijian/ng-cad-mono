@@ -11,15 +11,11 @@ import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {SuanliaoCalcError} from "@views/suanliao/suanliao.types";
 import {XhmrmsbjInfo} from "@views/xhmrmsbj/xhmrmsbj.types";
 
-export interface ZixuanpeijianTypesInfoItem {
+export interface ZixuanpeijianTypesInfoItemBase {
   id: number;
   weiyima: string;
   xiaoguotu: string;
-  gongshishuru: string[][];
-  xuanxiangshuru: string[][];
-  shuchuwenben: string[][];
   suanliaogongshi: Formulas;
-  shuchubianliang: string[];
   xinghaozhuanyong: string[];
   mokuaishuoming: string;
   unique: boolean;
@@ -30,6 +26,12 @@ export interface ZixuanpeijianTypesInfoItem {
   ceshishuju?: Formulas;
   calcVars?: {keys: string[]; result?: Formulas};
   zhizuoren?: string;
+}
+export interface ZixuanpeijianTypesInfoItem extends ZixuanpeijianTypesInfoItemBase {
+  gongshishuru: string[][];
+  xuanxiangshuru: string[][];
+  shuchubianliang: string[];
+  shuchuwenben: string[][];
 }
 export type ZixuanpeijianTypesInfo = ObjectOf<ObjectOf<ZixuanpeijianTypesInfoItem>>;
 

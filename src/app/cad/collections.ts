@@ -12,7 +12,7 @@ export const cadCollections = [
   "kailiaokongweipeizhi",
   "suanliaoceshishuju",
   "ngcadNavs",
-  "peijianku"
+  "peijianCad"
 ] as const;
 
 export type CadCollection = (typeof cadCollections)[number];

@@ -30,7 +30,7 @@ export class BjmkStatusService {
     this.xinghaoCadYaoqiu.set(this.status.getCad数据要求("型号CAD"));
   }
 
-  collection: CadCollection = "peijianku";
+  collection: CadCollection = "peijianCad";
   private _cads = signal<CadData[]>([]);
   private _cadsCache: CadData[] | null = null;
   cads = computed<CadData[]>(() => this._cads());
@@ -62,6 +62,14 @@ export class BjmkStatusService {
     this._mokuais.set(mokuais);
     this._mokuaisCache = mokuais;
     return mokuais;
+  }
+  refreshMokuais(updateMokuais?: MokuaiItem[]) {
+    const mokuais: MokuaiItem[] = [];
+    for (const mokuai of this._mokuais()) {
+      const mokuai2 = updateMokuais?.find((v) => v.id === mokuai.id);
+      mokuais.push(mokuai2 || mokuai);
+    }
+    this._mokuais.set(mokuais);
   }
 
   async getMokuaiWithForm(mokuai?: Partial<MokuaiItem>, mokuaiOverride?: Partial<MokuaiItem>) {

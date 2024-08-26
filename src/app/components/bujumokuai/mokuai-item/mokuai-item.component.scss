@@ -18,43 +18,33 @@
   }
 
   .item-basic {
-    flex: 0 1 250px;
+    flex: 0 0 250px;
     --item-height: 100%;
   }
 
   .item-bancai {
-    flex: 0 1 250px;
+    flex: 0 0 250px;
   }
 
-  .item-others {
-    flex: 1 0 400px;
+  .box {
+    padding: 3px;
+    box-sizing: border-box;
+    border: var(--border);
+    height: 0;
+    flex: 1 1 0;
+  }
 
-    .box {
-      padding: 3px;
-      box-sizing: border-box;
-      border: var(--border);
-      height: 0;
-      flex: 1 1 0;
-    }
+  .mokuai-gongneng {
+    flex: 0 0 250px;
 
-    .mokuai-gongneng {
-      flex: 0 0 40%;
+    .inputs {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      margin-right: -5px;
 
-      .inputs {
-        display: flex;
-        flex-wrap: wrap;
-        margin-right: -5px;
-
-        app-input {
-          flex: 0 0 50%;
-          padding-right: 5px;
-          box-sizing: border-box;
-        }
-      }
-      .inputs-2 {
-        app-input {
-          flex: 0 0 auto;
-        }
+      app-input {
+        width: 100%;
       }
     }
   }
@@ -68,11 +58,23 @@
     font-weight: bold;
   }
 
-  .cads-all {
-    width: 70%;
+  .cads {
+    flex: 1 1 0;
+
+    .item {
+      padding: 3px;
+      &.active {
+        border: 1px solid red;
+      }
+    }
   }
 
-  .cads-selected {
-    flex: 1 1 0;
+  .active-cad {
+    --item-width: 360px;
+    flex: 0 0 auto;
+
+    .dummy-cad-item {
+      width: var(--item-width);
+    }
   }
 }

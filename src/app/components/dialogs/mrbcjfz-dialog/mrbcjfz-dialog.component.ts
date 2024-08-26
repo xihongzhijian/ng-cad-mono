@@ -1,5 +1,6 @@
 import {Component, Inject, ViewChild} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {CadCollection} from "@app/cad/collections";
 import {timeout} from "@lucilor/utils";
 import {MrbcjfzDataSubmitEvent, MrbcjfzInputData} from "@views/mrbcjfz/mrbcjfz.types";
 import {MrbcjfzComponent} from "../../../views/mrbcjfz/mrbcjfz.component";
@@ -44,6 +45,7 @@ export class MrbcjfzDialogComponent {
 export interface MrbcjfzDialogInput {
   id: number;
   table: string;
+  collection?: CadCollection;
   inputData?: MrbcjfzInputData;
   dryRun?: boolean;
 }

@@ -886,7 +886,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       fields,
       options,
       openInNewTab: optionsDialog.openInNewTab,
-      noImage: optionsDialog.noImage,
       nameField: optionsDialog.nameField,
       info: optionsDialog.info
     };

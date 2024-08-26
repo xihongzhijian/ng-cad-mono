@@ -206,7 +206,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       delete info.model;
       info.value = value.map((v) => v.mingzi);
       info.optionsDialog = {
-        noImage: true,
         defaultValue: {value: value.find((v) => v.morenzhi)?.mingzi || ""},
         optionKey: key,
         useLocalOptions: true,

@@ -319,7 +319,6 @@ export const getMenjiaoOptionInputInfo = (
     const openInNewTabKeys = ["门扇厚度", "锁边", "铰边"];
     if (dialogKeys.includes(key)) {
       info.optionsDialog = {
-        noImage: true,
         defaultValue: {value: data.选项默认值[key] || "", required: true},
         optionKey: key,
         useLocalOptions: true,

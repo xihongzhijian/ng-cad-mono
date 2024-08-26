@@ -1,6 +1,4 @@
-<div class="toolbar">
-  <button mat-raised-button color="primary">配件CAD</button>
-  <div class="flex-110"></div>
+<div class="toolbar right">
   <button mat-raised-button color="primary" (click)="saveAs()">另存为</button>
   <button mat-raised-button color="primary" (click)="save()">保存</button>
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
@@ -13,7 +11,8 @@
   </div>
   <div class="item-bancai flex-column">
     <div class="toolbar">
-      <div>板材分组</div>
+      <div class="title">板材分组</div>
+      <button mat-raised-button color="primary" (click)="openMrbcjfz()">编辑</button>
       @if (morenbancaiInputInfos().length < 1) {
         <button mat-icon-button color="primary" (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
       }
@@ -24,42 +23,38 @@
       }
     </ng-scrollbar>
   </div>
-  <div class="item-others flex-column">
-    <div class="mokuai-gongneng flex-column">
-      <div class="title">模块功能</div>
-      <div class="box">
-        <ng-scrollbar>
-          @for (item of mokuaiInputInfos(); track $index) {
-            <div class="inputs">
-              @for (info of item.infos; track $index) {
-                <app-input [info]="info"></app-input>
-              }
-            </div>
+  <div class="mokuai-gongneng flex-column">
+    <div class="title">模块功能</div>
+    <div class="box">
+      <ng-scrollbar>
+        <div class="flex-column">
+          @for (info of mokuaiInputInfos(); track $index) {
+            <app-input [info]="info"></app-input>
           }
-        </ng-scrollbar>
-      </div>
-      <div class="inputs inputs-2">
-        @for (info of mokuaiInputInfos2(); track $index) {
-          <app-input [info]="info"></app-input>
-        }
-      </div>
+        </div>
+      </ng-scrollbar>
     </div>
-    <div class="mokuai-gongshi flex-column flex-110">
-      <div class="title">模块公式</div>
-      <app-formulas-editor #slgs class="box" [formulas]="mokuai().suanliaogongshi" noFormulasText></app-formulas-editor>
+    <div class="inputs">
+      @for (info of mokuaiInputInfos2(); track $index) {
+        <app-input [info]="info"></app-input>
+      }
     </div>
+  </div>
+  <div class="mokuai-gongshi flex-column flex-110">
+    <div class="title">模块公式</div>
+    <app-formulas-editor #slgs class="box" [formulas]="mokuai().suanliaogongshi" noFormulasText></app-formulas-editor>
   </div>
 </div>
 <div class="item-cads border flex-row flex-110">
-  <div class="cads-all flex-column">
+  <div class="cads flex-column">
     <div class="toolbar">
       <div class="title">模块的所有配件CAD</div>
-      <button mat-raised-button color="primary" (click)="selectCadsAll()">选择CAD</button>
+      <button mat-raised-button color="primary" (click)="selectCads()">选择CAD</button>
     </div>
     <ng-scrollbar>
       <div class="items no-items-per-row flex-110">
-        @for (cad of cadsAll(); track $index) {
-          <div class="item link" (click)="selectCad(cad)">
+        @for (cad of cads(); track $index) {
+          <div class="item link" [class.active]="activeCad()?.id === cad.id" (click)="clickCad(cad)">
             <app-cad-image [id]="cad.id"></app-cad-image>
             <div class="name">{{ cad.name }}</div>
           </div>
@@ -68,17 +63,14 @@
     </ng-scrollbar>
   </div>
   <mat-divider vertical></mat-divider>
-  <div class="cads-selected flex-column">
+  <div class="active-cad flex-column">
     <div class="title">选中的配件CAD</div>
     <ng-scrollbar>
-      <div class="items no-items-per-row flex-110">
-        @for (cad of cadsSelected(); track $index) {
-          <div class="item link" (click)="unselectCad(cad)">
-            <app-cad-image [id]="cad.id"></app-cad-image>
-            <div class="name">{{ cad.name }}</div>
-          </div>
-        }
-      </div>
+      @if (activeCad(); as cad) {
+        <app-cad-item [cad]="cad" [buttons]="[]" [customInfo]="{}" [yaoqiu]="cadYaoqiu()" [isOnline]="cadsIsOnline[cad.id]"></app-cad-item>
+      } @else {
+        <div class="dummy-cad-item"></div>
+      }
     </ng-scrollbar>
   </div>
 </div>

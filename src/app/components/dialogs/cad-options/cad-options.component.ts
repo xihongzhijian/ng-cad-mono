@@ -69,6 +69,7 @@ export class CadOptionsComponent implements AfterViewInit {
   filePathUrl = filePathUrl;
   @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
   showPaginator = true;
+  noImage = false;
 
   constructor(
     public dialogRef: MatDialogRef<CadOptionsComponent, CadOptionsOutput>,
@@ -210,6 +211,7 @@ export class CadOptionsComponent implements AfterViewInit {
       }
       return {...v, checked};
     });
+    this.noImage = this.pageData.every((v) => !v.img);
     return data;
   }
 
@@ -291,7 +293,6 @@ export interface CadOptionsInput {
   nameField?: string;
   options?: OptionsDataData[];
   defaultValue?: {value?: string; required?: boolean};
-  noImage?: boolean;
   openInNewTab?: boolean;
   useLocalOptions?: boolean;
   info?: ObjectOf<any>;

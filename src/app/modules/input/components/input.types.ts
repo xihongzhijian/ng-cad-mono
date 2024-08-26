@@ -210,7 +210,6 @@ export interface OptionsDialog {
   optionsUseId?: boolean;
   optionField?: string;
   defaultValue?: CadOptionsInput["defaultValue"];
-  noImage?: CadOptionsInput["noImage"];
   openInNewTab?: CadOptionsInput["openInNewTab"];
   useLocalOptions?: CadOptionsInput["useLocalOptions"];
   nameField?: CadOptionsInput["nameField"];

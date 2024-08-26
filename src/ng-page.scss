@@ -124,6 +124,9 @@
         width: 100%;
       }
     }
+    &.no-wrap {
+      flex-wrap: nowrap;
+    }
 
     .text {
       overflow: hidden;

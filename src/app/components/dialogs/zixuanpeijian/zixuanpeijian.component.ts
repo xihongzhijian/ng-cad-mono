@@ -1204,7 +1204,6 @@ export class ZixuanpeijianComponent implements OnInit {
         multiple: true,
         optionsDialog: {
           useLocalOptions: true,
-          noImage: true,
           openInNewTab: true,
           onChange: (val) => {
             data[field] = val.options.map((v) => v.vid).join("*");
