@@ -1,12 +1,19 @@
 <div class="toolbar">
-  <app-input [info]="filterInputInfo" style="flex: 1 1 0"></app-input>
-  @if (zidingyiIndex >= 0) {
+  <app-input class="flex-110" [info]="filterInputInfo()"></app-input>
+  @if (zidingyiIndex() >= 0) {
     <button mat-raised-button color="primary" (click)="selectAll()">全选</button>
+  }
+</div>
+<div class="toolbar">
+  @for (type of bancaiTypes(); track $index) {
+    <button mat-raised-button [color]="activeBancaiType() === type ? 'accent' : 'primary'" (click)="activeBancaiType.set(type)">
+      {{ type }}
+    </button>
   }
 </div>
 <ng-scrollbar>
   <div class="bancai-list items">
-    @for (item of list; track item; let i = $index) {
+    @for (item of list(); track $index) {
       @if (!item.hidden) {
         <div class="item">
           <mat-checkbox class="text long" [matTooltip]="item.bancai.mingzi" [checked]="item.checked" (change)="onCheckboxChange(item)">
