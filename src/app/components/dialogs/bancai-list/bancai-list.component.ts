@@ -139,14 +139,20 @@ export class BancaiListComponent {
 
   selectAll() {
     const type = this.activeBancaiType();
-    const list = this.list().filter((v) => this.isBancaiInType(v.bancai, type));
     const checkedItems = this.checkedItems();
-    const names1 = checkedItems.map((v) => v.mingzi);
-    const names2 = list.map((v) => v.bancai.mingzi);
+    const list1 = this.list().filter((v) => this.isBancaiInType(v.bancai, type));
+    const list2 = this.checkedItems().filter((v) => this.isBancaiInType(v, type));
+    const names1 = list2.map((v) => v.mingzi);
+    const names2 = list1.map((v) => v.bancai.mingzi);
     if (isEqual(names1, names2)) {
-      this.checkedItems.set([]);
+      this.checkedItems.set(checkedItems.filter((v) => !names2.includes(v.mingzi)));
     } else {
-      this.checkedItems.set(list.map((v) => v.bancai));
+      for (const item of list1) {
+        if (!list2.find((v) => v.mingzi === item.bancai.mingzi)) {
+          checkedItems.push(item.bancai);
+        }
+      }
+      this.checkedItems.set([...checkedItems]);
     }
   }
 }
