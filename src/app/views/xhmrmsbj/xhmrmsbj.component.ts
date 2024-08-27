@@ -1,5 +1,5 @@
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {Component, ElementRef, HostBinding, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatOptionModule} from "@angular/material/core";
@@ -127,6 +127,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   production = environment.production;
   @ViewChild(MsbjRectsComponent) msbjRectsComponent?: MsbjRectsComponent;
   @ViewChild("xiaoguotuContainer", {read: ElementRef}) xiaoguotuContainer?: ElementRef<HTMLDivElement>;
+  @HostBinding("class") class = "ng-page";
 
   private _ignoreXiaoguotuKey = "xhmrmsbjIgnoreXiaoguotu";
   private _ignoreXiaoguotu = session.load(this._ignoreXiaoguotuKey) ?? false;

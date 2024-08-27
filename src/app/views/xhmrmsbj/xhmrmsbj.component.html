@@ -151,19 +151,32 @@
 <ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai let-isActive="isActive">
   <div class="flex-column mokuai" [class]="{active: isActive}">
     <div class="flex-column" (click)="selectMokuai(mokuai)">
-      <app-image class="mokuai-xiaoguotu" [src]="mokuai?.xiaoguotu" [prefix]="urlPrefix"></app-image>
+      <div class="toolbar mokuai-top">
+        @if (!isFromOrder) {
+          <div class="default-sign" [class]="{active: mokuai?.info?.isDefault}" (click)="setDefaultMokuai(mokuai)">默认</div>
+        }
+        <div class="flex-110"></div>
+        <button mat-icon-button color="primary" (click)="mokuaiImage.showBigPic()">
+          <mat-icon>zoom_in</mat-icon>
+        </button>
+        @if (isActive && isFromOrder) {
+          <button mat-icon-button class="active-sign" (click)="selectMokuai(mokuai)"><mat-icon>check</mat-icon></button>
+        }
+      </div>
+      <app-image
+        #mokuaiImage
+        class="mokuai-xiaoguotu"
+        [src]="mokuai?.xiaoguotu"
+        [bigPicSrc]="mokuai?.xiaoguotu"
+        bigPicClickShowDisabled
+        [prefix]="urlPrefix"
+      ></app-image>
       <div class="flex-row" style="align-items: center">
         <div class="title center flex-110">{{ getMokuaiTitle2(mokuai) }}</div>
         @if (!isFromOrder) {
           <button mat-icon-button color="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
         }
       </div>
-      @if (isActive && isFromOrder) {
-        <mat-icon class="active-sign" (click)="selectMokuai(mokuai)">check</mat-icon>
-      }
     </div>
-    @if (!isFromOrder) {
-      <div class="default-sign" [class]="{active: mokuai?.info?.isDefault}" (click)="setDefaultMokuai(mokuai)">默认</div>
-    }
   </div>
 </ng-template>
