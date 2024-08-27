@@ -8,7 +8,9 @@
     </button>
   }
   <div class="flex-110"></div>
-  <button mat-raised-button color="primary" (click)="selectAll()">全选当前分组</button>
+  @if (data.multi) {
+    <button mat-raised-button color="primary" (click)="selectAll()">全选当前分组</button>
+  }
 </div>
 <ng-scrollbar>
   <div class="bancai-list items">
