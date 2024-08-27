@@ -1,4 +1,4 @@
-import {Component, Inject, viewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, Inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
 import {InputInfo} from "@app/modules/input/components/input.types";
@@ -15,17 +15,19 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./bancai-form-dialog.component.html",
   styleUrls: ["./bancai-form-dialog.component.scss"],
   standalone: true,
-  imports: [BancaiFormComponent, MatButtonModule, MatDialogActions, MatDialogTitle]
+  imports: [BancaiFormComponent, MatButtonModule, MatDialogActions, MatDialogTitle],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BancaiFormDialogComponent {
+  private message = inject(MessageService);
+
   prod = environment.production;
 
   bancaiForm = viewChild(BancaiFormComponent);
 
   constructor(
     public dialogRef: MatDialogRef<BancaiFormDialogComponent, BancaiFormOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: BancaiFormInput,
-    private message: MessageService
+    @Inject(MAT_DIALOG_DATA) public data: BancaiFormInput
   ) {}
 
   async submit() {

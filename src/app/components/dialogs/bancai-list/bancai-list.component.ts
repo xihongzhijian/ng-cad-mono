@@ -1,4 +1,4 @@
-import {Component, HostBinding, Inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, Inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -17,59 +17,103 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./bancai-list.component.html",
   styleUrls: ["./bancai-list.component.scss"],
   standalone: true,
-  imports: [InputComponent, MatButtonModule, NgScrollbar, MatCheckboxModule, MatTooltipModule]
+  imports: [InputComponent, MatButtonModule, NgScrollbar, MatCheckboxModule, MatTooltipModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BancaiListComponent {
   @HostBinding("class") class = "ng-page";
-
-  filterText = "";
-  filterInputInfo: InputInfo = {
-    type: "string",
-    label: "搜索",
-    model: {key: "filterText", data: this},
-    autoFocus: true,
-    onInput: debounce(() => {
-      this.filterList();
-      this.saveFilterText();
-    }, 500)
-  };
-  list: {bancai: BancaiList; hidden: boolean; checked: boolean}[] = [];
-  zidingyi = "";
-  zidingyiIndex = -1;
 
   constructor(
     public dialogRef: MatDialogRef<BancaiListComponent, BancaiListOutput>,
     @Inject(MAT_DIALOG_DATA) public data: BancaiListInput
   ) {
     const {checkedItems} = this.data || {};
-    let list = this.data.list;
     if (checkedItems) {
       if (!this.data.multi) {
         const checkedItem = checkedItems[0];
         if (checkedItem) {
-          this.zidingyi = checkedItem.zidingyi || "";
+          this.zidingyi.set(checkedItem.zidingyi || "");
         }
       }
     }
-    const checkedItemNames = checkedItems?.map((v) => v.mingzi) || [];
-    if (this.data.multi) {
-      list = [{mingzi: "全部", cailiaoList: [], houduList: [], guigeList: []}, ...list];
-    }
-    this.list = list.map((bancai) => ({bancai, hidden: false, checked: checkedItemNames.includes(bancai.mingzi)}));
-    this.loadFilterText();
-    this.filterList();
+    this.checkedItems.set(checkedItems || []);
     setGlobal("bancai", this);
   }
 
+  filterText = signal(session.load("bancaiListSearchText") || "");
+  filterTextEff = effect(() => session.save("bancaiListSearchText", this.filterText()));
+  filterInputInfo = computed<InputInfo>(() => ({
+    type: "string",
+    label: "搜索",
+    autoFocus: true,
+    value: this.filterText(),
+    onInput: debounce((val) => this.filterText.set(val), 200)
+  }));
+
+  bancaiTypes = computed(() => {
+    const typesSet = new Set<string>();
+    let hasEmptyType = false;
+    for (const item of this.list()) {
+      const bancaileixing = item.bancai.bancaileixing;
+      if (bancaileixing) {
+        typesSet.add(bancaileixing);
+      } else {
+        hasEmptyType = true;
+      }
+    }
+    const types = ["全部"].concat(Array.from(typesSet));
+    if (hasEmptyType && typesSet.size > 0) {
+      types.splice(1, 0, "未分组");
+    }
+    return types;
+  });
+  activeBancaiType = signal("全部");
+
+  checkedItems = signal<BancaiList[]>([]);
+  list = computed(() => {
+    const checkedItemNames = this.checkedItems()?.map((v) => v.mingzi) || [];
+    let list = this.data.list;
+    if (this.data.multi) {
+      list = [{mingzi: "全部", cailiaoList: [], houduList: [], guigeList: []}, ...list];
+    }
+    const text = this.filterText();
+    const type = this.activeBancaiType();
+    return list.map<BancaiListItem>((bancai) => {
+      let hidden = !queryString(text, bancai.mingzi);
+      if (type !== "全部") {
+        if (bancai.bancaileixing) {
+          if (bancai.bancaileixing !== type) {
+            hidden = true;
+          }
+        } else {
+          if (type !== "未分组") {
+            hidden = true;
+          }
+        }
+      }
+      return {bancai, hidden, checked: checkedItemNames.includes(bancai.mingzi)};
+    });
+  });
+
+  zidingyi = signal("");
+  zidingyiIndex = computed(() => {
+    for (const [i, item] of this.list().entries()) {
+      if (!item.hidden && item.bancai.mingzi === "自定义") {
+        return i;
+      }
+    }
+    return -1;
+  });
+
   submit() {
     const bancais: BancaiList[] = [];
-    for (const item of this.list) {
+    for (const item of this.list()) {
       if (!item.checked) {
         continue;
       }
       const bancai = item.bancai;
       if (bancai.mingzi === "自定义") {
-        bancai.zidingyi = this.zidingyi;
+        bancai.zidingyi = this.zidingyi();
       }
       bancais.push(bancai);
     }
@@ -80,38 +124,23 @@ export class BancaiListComponent {
     this.dialogRef.close();
   }
 
-  filterList() {
-    const text = this.filterText;
-    this.zidingyiIndex = -1;
-    for (const [i, item] of this.list.entries()) {
-      item.hidden = !queryString(text, item.bancai.mingzi);
-      if (!item.hidden && item.bancai.mingzi === "自定义") {
-        this.zidingyiIndex = i;
+  async onCheckboxChange(item: BancaiListItem) {
+    const checkedItems = this.checkedItems().slice();
+    const item2 = checkedItems.find((v) => v.mingzi === item.bancai.mingzi);
+    if (this.data.multi) {
+      if (item2) {
+        checkedItems.splice(checkedItems.indexOf(item2), 1);
+      } else {
+        checkedItems.push(item.bancai);
       }
+      this.checkedItems.set(checkedItems);
+    } else {
+      this.checkedItems.set(item2 ? [] : [item.bancai]);
     }
-  }
-
-  saveFilterText() {
-    session.save("bancaiListSearchText", this.filterText);
-  }
-
-  loadFilterText() {
-    this.filterText = session.load("bancaiListSearchText") || "";
-  }
-
-  async onCheckboxChange(item: BancaiListComponent["list"][number]) {
-    const checked = item.checked;
-    if (!this.data.multi) {
-      this.list.forEach((v) => (v.checked = false));
-    }
-    item.checked = !checked;
   }
 
   selectAll() {
-    const allChecked = this.list.every((v) => v.checked);
-    for (const item of this.list) {
-      item.checked = !allChecked;
-    }
+    this.checkedItems.set(this.list().map((v) => v.bancai));
   }
 }
 
@@ -127,3 +156,9 @@ export interface BancaiListInput {
 }
 
 export type BancaiListOutput = BancaiList[];
+
+export interface BancaiListItem {
+  bancai: BancaiList;
+  hidden: boolean;
+  checked: boolean;
+}

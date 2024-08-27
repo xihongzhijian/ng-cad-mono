@@ -1,4 +1,4 @@
-import {Component, Input, viewChildren} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, inject, input, model, untracked, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {joinOptions} from "@app/app.common";
@@ -13,61 +13,51 @@ import {InputComponent} from "../../modules/input/components/input.component";
   templateUrl: "./bancai-form.component.html",
   styleUrls: ["./bancai-form.component.scss"],
   standalone: true,
-  imports: [InputComponent]
+  imports: [InputComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BancaiFormComponent {
-  @Input() extraInputInfos?: InputInfo[][];
-  private _data: BancaiFormData = {bancai: "", cailiao: "", houdu: ""};
-  @Input()
-  get data() {
-    return this._data;
-  }
-  set data(value) {
-    this._data = value;
-    setTimeout(() => {
-      this.update();
-    }, 0);
-  }
-  private _bancaiList: BancaiList[] = [];
-  @Input()
-  get bancaiList() {
-    return this._bancaiList;
-  }
-  set bancaiList(value) {
-    this._bancaiList = value;
-    setTimeout(() => {
-      this.update();
-    }, 0);
-  }
-  inputInfos: InputInfo<BancaiFormData>[][] = [];
+  private dialog = inject(MatDialog);
 
-  inputComponents = viewChildren(InputComponent);
+  bancaiListIn = input.required<BancaiList[]>({alias: "bancaiList"});
+  extraInputInfos = input<InputInfo[][]>();
+  data = model<BancaiFormData>({bancai: "", cailiao: "", houdu: ""});
 
-  constructor(private dialog: MatDialog) {}
-
-  update() {
-    const bancaiList = this.bancaiList.filter((v) => !["同框色", "同扇色", "同背封板"].includes(v.mingzi));
-    const checkedItem = bancaiList.find((v) => v.mingzi === this.data.bancai);
-    if (checkedItem) {
-      this.data.bancai = checkedItem.mingzi;
-      if (checkedItem.cailiaoList.length === 1) {
-        this.data.cailiao = checkedItem.cailiaoList[0];
-      } else if (!checkedItem.cailiaoList.includes(this.data.cailiao)) {
-        this.data.cailiao = "";
+  bancaiList = computed(() => this.bancaiListIn().filter((v) => !["同框色", "同扇色", "同背封板"].includes(v.mingzi)));
+  checkedItem = computed(() => this.bancaiList().find((v) => v.mingzi === this.data().bancai));
+  dataEff = effect(
+    () => {
+      const data = {...untracked(() => this.data())};
+      const checkedItem = this.checkedItem();
+      if (checkedItem) {
+        data.bancai = checkedItem.mingzi;
+        if (checkedItem.cailiaoList.length === 1) {
+          data.cailiao = checkedItem.cailiaoList[0];
+        } else if (!checkedItem.cailiaoList.includes(data.cailiao)) {
+          data.cailiao = "";
+        }
+        if (checkedItem.houduList.length === 1) {
+          data.houdu = checkedItem.houduList[0];
+        } else if (!checkedItem.houduList.includes(data.houdu)) {
+          data.houdu = "";
+        }
       }
-      if (checkedItem.houduList.length === 1) {
-        this.data.houdu = checkedItem.houduList[0];
-      } else if (!checkedItem.houduList.includes(this.data.houdu)) {
-        this.data.houdu = "";
-      }
-    }
-    this.inputInfos = [
-      ...(this.extraInputInfos || []),
+      this.data.set(data);
+    },
+    {allowSignalWrites: true}
+  );
+
+  inputInfos = computed(() => {
+    const data = {...this.data()};
+    const bancaiList = this.bancaiList();
+    const checkedItem = this.checkedItem();
+    const infos: InputInfo<BancaiFormData>[][] = [
+      ...(this.extraInputInfos() || []),
       [
         {
           type: "string",
           label: "板材",
-          value: this.data.bancai,
+          value: data.bancai,
           readonly: true,
           suffixIcons: [
             {
@@ -78,8 +68,8 @@ export class BancaiFormComponent {
                   data: {list: bancaiList, checkedItems: checkedItem ? [checkedItem] : undefined}
                 });
                 if (result) {
-                  this.data.bancai = result[0]?.mingzi;
-                  this.update();
+                  data.bancai = result[0]?.mingzi;
+                  this.data.set(data);
                 }
               }
             }
@@ -105,22 +95,22 @@ export class BancaiFormComponent {
         {
           type: "string",
           label: "可选板材",
-          value: joinOptions(this.data.bancaiList),
+          value: joinOptions(data.bancaiList),
           readonly: true,
           suffixIcons: [
             {
               name: "list",
               isDefault: true,
               onClick: async () => {
-                const bancaiListNames = this.data.bancaiList || [];
+                const bancaiListNames = data.bancaiList || [];
                 const checkedItems = bancaiList.filter((v) => bancaiListNames.includes(v.mingzi));
                 if (bancaiListNames.includes("全部")) {
                   checkedItems.push({mingzi: "全部", cailiaoList: [], guigeList: [], houduList: []});
                 }
                 const result = await openBancaiListDialog(this.dialog, {data: {list: bancaiList, checkedItems, multi: true}});
                 if (result) {
-                  this.data.bancaiList = result.map((v) => v.mingzi);
-                  this.update();
+                  data.bancaiList = result.map((v) => v.mingzi);
+                  this.data.set(data);
                 }
               }
             }
@@ -142,8 +132,10 @@ export class BancaiFormComponent {
         }
       ]
     ];
-  }
+    return infos;
+  });
 
+  inputComponents = viewChildren(InputComponent);
   async validate() {
     return await validateForm(this.inputComponents());
   }

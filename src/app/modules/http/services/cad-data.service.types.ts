@@ -69,6 +69,7 @@ export interface BancaiList {
   houduList: string[];
   guigeList: number[][];
   zidingyi?: string;
+  bancaileixing?: string;
 }
 export interface BancaiCad {
   id: string;

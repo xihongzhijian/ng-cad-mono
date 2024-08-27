@@ -1,4 +1,4 @@
-@for (group of inputInfos; track group) {
+@for (group of inputInfos(); track $index) {
   <div class="row">
     @for (info of group; track $index) {
       <app-input [info]="info"></app-input>
