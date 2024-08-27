@@ -7,7 +7,7 @@ import {session, setGlobal} from "@app/app.common";
 import {queryString} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
-import {debounce} from "lodash";
+import {debounce, isEqual} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -70,6 +70,15 @@ export class BancaiListComponent {
   activeBancaiType = signal("全部");
 
   checkedItems = signal<BancaiList[]>([]);
+  isBancaiInType(bancai: BancaiList, type: string) {
+    if (type === "全部") {
+      return true;
+    }
+    if (type === "未分组") {
+      return !bancai.bancaileixing;
+    }
+    return bancai.bancaileixing === type;
+  }
   list = computed(() => {
     const checkedItemNames = this.checkedItems()?.map((v) => v.mingzi) || [];
     let list = this.data.list;
@@ -79,18 +88,7 @@ export class BancaiListComponent {
     const text = this.filterText();
     const type = this.activeBancaiType();
     return list.map<BancaiListItem>((bancai) => {
-      let hidden = !queryString(text, bancai.mingzi);
-      if (type !== "全部") {
-        if (bancai.bancaileixing) {
-          if (bancai.bancaileixing !== type) {
-            hidden = true;
-          }
-        } else {
-          if (type !== "未分组") {
-            hidden = true;
-          }
-        }
-      }
+      const hidden = !queryString(text, bancai.mingzi) || !this.isBancaiInType(bancai, type);
       return {bancai, hidden, checked: checkedItemNames.includes(bancai.mingzi)};
     });
   });
@@ -140,7 +138,16 @@ export class BancaiListComponent {
   }
 
   selectAll() {
-    this.checkedItems.set(this.list().map((v) => v.bancai));
+    const type = this.activeBancaiType();
+    const list = this.list().filter((v) => this.isBancaiInType(v.bancai, type));
+    const checkedItems = this.checkedItems();
+    const names1 = checkedItems.map((v) => v.mingzi);
+    const names2 = list.map((v) => v.bancai.mingzi);
+    if (isEqual(names1, names2)) {
+      this.checkedItems.set([]);
+    } else {
+      this.checkedItems.set(list.map((v) => v.bancai));
+    }
   }
 }
 
