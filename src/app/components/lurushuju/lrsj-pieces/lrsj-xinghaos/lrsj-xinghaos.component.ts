@@ -1,6 +1,7 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, inject} from "@angular/core";
-import {Validators} from "@angular/forms";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, signal} from "@angular/core";
+import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, getCopyName, joinOptions, splitOptions} from "@app/app.common";
 import {CadDataService} from "@app/modules/http/services/cad-data.service";
@@ -23,7 +24,7 @@ import {defaultFenleis, getOptions} from "../lrsj-pieces.utils";
 @Component({
   selector: "app-lrsj-xinghaos",
   standalone: true,
-  imports: [ImageComponent, InputComponent, MatButtonModule, MatTooltipModule, NgScrollbarModule],
+  imports: [FormsModule, ImageComponent, InputComponent, MatButtonModule, MatCheckboxModule, MatTooltipModule, NgScrollbarModule],
   templateUrl: "./lrsj-xinghaos.component.html",
   styleUrl: "./lrsj-xinghaos.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -61,6 +62,36 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     const xinghaoMenchuangs = this.xinghaoMenchuangs();
     return xinghaoMenchuangs.item?.gongyis?.item?.xinghaos?.items || [];
   });
+  xinghaoSelectedIndexs = signal<number[]>([]);
+  xinghaoSelectedIndexsEff = effect(
+    () => {
+      this.xinghaos();
+      this.xinghaoSelectedIndexs.set([]);
+    },
+    {allowSignalWrites: true}
+  );
+  xinghaosSelected = computed(() => {
+    const xinghaos = this.xinghaos();
+    const indexs = this.xinghaoSelectedIndexs();
+    return xinghaos.filter((_, i) => indexs.includes(i));
+  });
+  toggleXinghaoSelected(index: number) {
+    const indexs = this.xinghaoSelectedIndexs();
+    if (indexs.includes(index)) {
+      this.xinghaoSelectedIndexs.set(indexs.filter((i) => i !== index));
+    } else {
+      this.xinghaoSelectedIndexs.set([...indexs, index]);
+    }
+  }
+  selectAllXinghaos() {
+    const indexs = this.xinghaoSelectedIndexs();
+    if (indexs.length === this.xinghaos().length) {
+      this.xinghaoSelectedIndexs.set([]);
+    } else {
+      this.xinghaoSelectedIndexs.set(this.xinghaos().map((_, i) => i));
+    }
+  }
+
   async getXinghaoItem(xinghao?: XinghaoData) {
     const data: XinghaoData = xinghao ? cloneDeep(xinghao) : getXinghaoData();
     if (!data.算料单模板) {
@@ -331,5 +362,34 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     }
     Object.assign(info, others);
     return info;
+  }
+
+  async selectXinghaosGongyi() {
+    const xinghaos = this.xinghaosSelected();
+    if (!xinghaos.length) {
+      await this.message.alert("请先选择型号");
+      return;
+    }
+    const menchuang = this.xinghaoMenchuangs().item;
+    const gongyi = menchuang?.gongyis?.item;
+    if (!menchuang || !gongyi) {
+      return;
+    }
+    const data = {menchuang: menchuang.mingzi, gongyi: gongyi.mingzi, xinghaos: xinghaos.map((v) => v.vid)};
+    const form = [await this.getOptionInput(data, "门窗", "menchuang", true), await this.getOptionInput(data, "工艺", "gongyi", true)];
+    const result = await this.message.form(form, {
+      beforeClose: async ({type}) => {
+        if (type === "submit") {
+          return await this.message.confirm("修改后选中型号全部会被修改且不可恢复");
+        }
+        return true;
+      }
+    });
+    if (result) {
+      const result2 = await this.http.getData<boolean>("shuju/api/selectXinghaosGongyi", data);
+      if (result2) {
+        await this.lrsjStatus.getXinghaos();
+      }
+    }
   }
 }

@@ -498,13 +498,24 @@ export class LrsjStatusService implements OnDestroy {
     const iPrev = xinghaoMenchuangsPrev.index;
     const jPrev = xinghaoMenchuangsPrev.item?.gongyis?.index;
     const xinghaoMenchuangs = new XinghaoDataList<XinghaoMenchuang>();
+    const map: ObjectOf<ObjectOf<true>> = {};
+    for (const xinghao of xinghaos || []) {
+      for (const menchuangName of xinghao.menchuang.split("*")) {
+        if (!map[menchuangName]) {
+          map[menchuangName] = {};
+        }
+        for (const gongyiName of xinghao.gongyi.split("*")) {
+          map[menchuangName][gongyiName] = true;
+        }
+      }
+    }
     for (const menchuang of menchuangs) {
       const xinghaoMenchuang = getXinghaoMenchuang(menchuang);
       xinghaoMenchuang.gongyis = new XinghaoDataList();
       xinghaoMenchuangs.items.push(xinghaoMenchuang);
+      const xiayijigongyi = (menchuang.xiayijigongyi?.split("*") || []).map(Number);
       for (const gongyi of gongyis) {
-        const menchuangIds = splitOptions(String(gongyi.menchuang)).map(Number);
-        if (!menchuangIds.includes(menchuang.vid)) {
+        if (!(gongyi.mingzi in (map[menchuang.mingzi] || {})) && !xiayijigongyi.includes(gongyi.vid)) {
           continue;
         }
         const xinghaoGongyi = getXinghaoGongyi(gongyi);

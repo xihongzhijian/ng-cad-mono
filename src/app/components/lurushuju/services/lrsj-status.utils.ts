@@ -14,7 +14,6 @@ export const getXinghaoGongyi = (raw?: Partial<XinghaoGongyi>): XinghaoGongyi =>
     vid: 0,
     mingzi: "",
     paixu: 0,
-    menchuang: 0,
     ...raw,
     tingyong: !!raw?.tingyong
   };

@@ -16,10 +16,10 @@ export interface XinghaoData extends TableDataBase2 {
 }
 
 export interface XinghaoMenchuang extends TableDataBase2 {
+  xiayijigongyi?: string;
   gongyis?: XinghaoDataList<XinghaoGongyi>;
 }
 export interface XinghaoGongyi extends TableDataBase2 {
-  menchuang: number;
   xinghaos?: XinghaoDataList<XinghaoData>;
 }
 export class XinghaoDataList<T> {

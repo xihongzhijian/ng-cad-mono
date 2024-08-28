@@ -124,9 +124,20 @@ export class LurushujuNavComponent {
   async addXinghaoGongyi(i: number) {
     const data = await this.getXinghaoGongyi();
     if (data) {
-      data.menchuang = this.xinghaoMenchuangs().items[i].vid;
-      await this.http.tableInsert({table: "p_gongyi", data});
-      await this.lrsjStatus.getXinghaos();
+      const menchuang = this.xinghaoMenchuangs().items[i];
+      const id = await this.http.tableInsert({table: "p_gongyi", data});
+      if (id) {
+        if (menchuang.xiayijigongyi) {
+          menchuang.xiayijigongyi += `*${id}`;
+        } else {
+          menchuang.xiayijigongyi = String(id);
+        }
+        await this.http.tableUpdate<XinghaoMenchuang>({
+          table: "p_menchuang",
+          data: {vid: menchuang.vid, xiayijigongyi: menchuang.xiayijigongyi}
+        });
+        await this.lrsjStatus.getXinghaos();
+      }
     }
   }
   async editXinghaoGongyi(i: number, j: number) {
