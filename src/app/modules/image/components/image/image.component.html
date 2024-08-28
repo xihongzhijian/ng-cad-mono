@@ -1,4 +1,4 @@
-<div class="img-container" [class.small-pic]="bigPicSrc()" (click)="showBigPic()">
+<div class="img-container" [class.small-pic]="bigPicSrc() && !bigPicClickShowDisabled()" (click)="clickImgContainer()">
   @if (loading()) {
     <img
       [src]="loadingSrc()"
@@ -41,7 +41,7 @@
 </div>
 
 @if (currBigPicSrc(); as currBigPicSrc) {
-  <div #bigPicDiv class="big-pic" [class]="bigPicClass()" style="display: none" (click)="hideBigPic()">
+  <div #bigPicDiv class="big-pic" style="display: none" (click)="hideBigPic()">
     @if (bigPicVisible()) {
       <img [src]="currBigPicSrc" @toggle />
     }

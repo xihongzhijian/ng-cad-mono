@@ -1,5 +1,6 @@
 import {animate, style, transition, trigger} from "@angular/animations";
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -13,6 +14,8 @@ import {
   signal,
   viewChild
 } from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
+import {MatIconModule} from "@angular/material/icon";
 import {timeout} from "@lucilor/utils";
 import {Property} from "csstype";
 import {ImageEvent} from "./image.component.types";
@@ -26,20 +29,12 @@ const imgLoading = "assets/images/loading.gif";
   styleUrls: ["./image.component.scss"],
   animations: [
     trigger("toggle", [
-      transition(":enter", [
-        style({transform: "scale(0)", opacity: 0}),
-        animate("0.3s", style({transform: "scale(1.2)", opacity: 1})),
-        animate("0.1s", style({transform: "scale(1)"}))
-      ]),
-      transition(":leave", [
-        style({transform: "scale(1)", opacity: 1}),
-        animate("0.1s", style({transform: "scale(1.2)"})),
-        animate("0.3s", style({transform: "scale(0)", opacity: 0}))
-      ])
+      transition(":enter", [style({transform: "scale(0)", opacity: 0}), animate("0.3s", style({transform: "scale(1)", opacity: 1}))]),
+      transition(":leave", [style({transform: "scale(1)", opacity: 1}), animate("0.3s", style({transform: "scale(0)", opacity: 0}))])
     ])
   ],
   standalone: true,
-  imports: [],
+  imports: [MatButtonModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ImageComponent {
@@ -50,6 +45,7 @@ export class ImageComponent {
 
   src = input.required<string | undefined>();
   bigPicSrc = input<string>();
+  bigPicClickShowDisabled = input(false, {transform: booleanAttribute});
   prefix = input<string>();
   control = input<boolean>();
   loadingSrc = input<string>(imgLoading);
@@ -61,10 +57,6 @@ export class ImageComponent {
 
   loading = signal(false);
   error = signal(false);
-  bigPicVisible = signal(false);
-  bigPicClass = signal(["big-pic"]);
-
-  bigPicDiv = viewChild<ElementRef<HTMLDivElement>>("bigPicDiv");
 
   constructor() {
     effect(() => {
@@ -109,12 +101,6 @@ export class ImageComponent {
     const prefix = this.prefix();
     return this.getUrl(src, prefix);
   });
-  currBigPicSrc = computed(() => {
-    const bigPicSrc = this.bigPicSrc();
-    const prefix = this.prefix();
-    return this.getUrl(bigPicSrc, prefix);
-  });
-
   getUrl(url: string | undefined, prefix: string | undefined) {
     if (!url) {
       return "";
@@ -133,7 +119,6 @@ export class ImageComponent {
     this.imgLoad.emit({event});
     this.imgEnd.emit({event});
   }
-
   onError(event: Event) {
     this.loading.set(false);
     this.error.set(true);
@@ -141,33 +126,39 @@ export class ImageComponent {
     this.imgEnd.emit({event});
   }
 
+  currBigPicSrc = computed(() => {
+    const bigPicSrc = this.bigPicSrc();
+    const prefix = this.prefix();
+    return this.getUrl(bigPicSrc, prefix);
+  });
+  bigPicDiv = viewChild<ElementRef<HTMLDivElement>>("bigPicDiv");
+  bigPicVisible = signal(false);
   async showBigPic() {
     const bigPicSrc = this.bigPicSrc();
     const bigPicDiv = this.bigPicDiv();
     if (bigPicSrc && bigPicDiv) {
       const el = bigPicDiv.nativeElement;
       document.body.append(el);
-      this.bigPicClass.set([...Array.from(this.elRef.nativeElement.classList), "big-pic"]);
+      bigPicDiv.nativeElement.style.display = "flex";
       await timeout();
       this.bigPicVisible.set(true);
     }
   }
-
   async hideBigPic() {
     const bigPicSrc = this.bigPicSrc();
     const bigPicDiv = this.bigPicDiv();
     if (bigPicSrc && bigPicDiv) {
       this.bigPicVisible.set(false);
-      await timeout(400);
+      await timeout(300);
       const el = bigPicDiv.nativeElement;
       this.elRef.nativeElement.append(el);
+      bigPicDiv.nativeElement.style.display = "none";
     }
   }
 
   private _getDomMatrix(el: HTMLElement) {
     return new DOMMatrix(getComputedStyle(el).transform);
   }
-
   onWheel(event: WheelEvent) {
     if (!this.control()) {
       return;
@@ -183,7 +174,6 @@ export class ImageComponent {
     img.style.transform = matrix.toString();
     img.style.transformOrigin = `${offsetX}% ${offsetY}%`;
   }
-
   onPointerDown(event: PointerEvent) {
     if (!this.control()) {
       return;
@@ -197,7 +187,6 @@ export class ImageComponent {
     const matrix = this._getDomMatrix(img);
     matrix.translateSelf(event.clientX - lastX, event.clientY - lastY);
   }
-
   onPointerMove(event: PointerEvent) {
     if (!this.control()) {
       return;
@@ -215,7 +204,6 @@ export class ImageComponent {
     img.setAttribute("x", event.clientX.toString());
     img.setAttribute("y", event.clientY.toString());
   }
-
   onPointerUp(event: PointerEvent) {
     if (!this.control()) {
       return;
@@ -224,5 +212,11 @@ export class ImageComponent {
     const img = event.target as HTMLImageElement;
     img.removeAttribute("x");
     img.removeAttribute("y");
+  }
+
+  clickImgContainer() {
+    if (!this.bigPicClickShowDisabled()) {
+      this.showBigPic();
+    }
   }
 }
