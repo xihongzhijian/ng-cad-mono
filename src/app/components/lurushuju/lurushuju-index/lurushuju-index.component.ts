@@ -1,7 +1,8 @@
 import {CdkDrag} from "@angular/cdk/drag-drop";
 import {AfterViewInit, Component, ElementRef, HostBinding, OnInit, ViewChild} from "@angular/core";
-import {Validators} from "@angular/forms";
+import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
@@ -103,9 +104,11 @@ import {
   imports: [
     AboutComponent,
     CdkDrag,
+    FormsModule,
     ImageComponent,
     InputComponent,
     MatButtonModule,
+    MatCheckboxModule,
     MatDividerModule,
     MatIconModule,
     MatMenuModule,
@@ -228,18 +231,29 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   async getXinghaos() {
     const xinghaos = await this.http.getData<XinghaoData[]>("shuju/api/getXinghaos");
     const fields = ["vid", "mingzi"];
-    const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields});
-    const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields: [...fields, "menchuang"]});
+    const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields: [...fields, "xiayijigongyi"]});
+    const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields: [...fields]});
     const iPrev = this.xinghaoMenchuangs.index;
     const jPrev = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1]?.gongyis?.index;
+    const map: ObjectOf<ObjectOf<true>> = {};
+    for (const xinghao of xinghaos || []) {
+      for (const menchuangName of xinghao.menchuang.split("*")) {
+        if (!map[menchuangName]) {
+          map[menchuangName] = {};
+        }
+        for (const gongyiName of xinghao.gongyi.split("*")) {
+          map[menchuangName][gongyiName] = true;
+        }
+      }
+    }
     this.xinghaoMenchuangs.items = [];
     for (const menchuang of menchuangs) {
       const xinghaoMenchuang = getXinghaoMenchuang(menchuang);
       xinghaoMenchuang.gongyis = {items: [], count: 0};
       this.xinghaoMenchuangs.items.push(xinghaoMenchuang);
+      const xiayijigongyi = (menchuang.xiayijigongyi?.split("*") || []).map(Number);
       for (const gongyi of gongyis) {
-        const menchuangIds = splitOptions(String(gongyi.menchuang)).map(Number);
-        if (!menchuangIds.includes(menchuang.vid)) {
+        if (!(gongyi.mingzi in (map[menchuang.mingzi] || {})) && !xiayijigongyi.includes(gongyi.vid)) {
           continue;
         }
         const xinghaoGongyi = getXinghaoGongyi(gongyi);
@@ -360,8 +374,6 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     if (!data.gongyi && gongyi) {
       data.gongyi = gongyi.mingzi;
     }
-    const isAdd = !xinghao;
-
     const data2: XinghaoRaw = {
       名字: data.mingzi,
       所属门窗: data.menchuang,
@@ -376,7 +388,9 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const getOptionInput = (key: string, label: string, multiple?: boolean, options?: {hidden?: boolean}) => {
       const info = this.getOptionInput(data2, key, label, multiple, options);
       if (info.optionsDialog) {
-        info.optionsDialog.onChange = () => {
+        const onChange = info.optionsDialog.onChange;
+        info.optionsDialog.onChange = (val) => {
+          onChange?.(val);
           refreshOptions = true;
         };
       }
@@ -419,8 +433,8 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
           }
         }
       },
-      getOptionInput("门窗", "所属门窗", true, {hidden: isAdd}),
-      getOptionInput("工艺", "所属工艺", true, {hidden: isAdd}),
+      getOptionInput("门窗", "所属门窗", true),
+      getOptionInput("工艺", "所属工艺", true),
       getOptionInput("订单流程", "订单流程"),
       {
         type: "select",
@@ -567,6 +581,44 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     const success = await this.http.getData<boolean>("shuju/api/removeXinghao", {name});
     if (success) {
       await this.getXinghaos();
+    }
+  }
+
+  selectAllXinghaos() {
+    const xinghaos = this.xinghaos;
+    if (xinghaos.every((v) => v.selected)) {
+      xinghaos.forEach((v) => (v.selected = false));
+    } else {
+      xinghaos.forEach((v) => (v.selected = true));
+    }
+  }
+
+  async selectXinghaosGongyi() {
+    const xinghaos = this.xinghaos.filter((v) => v.selected);
+    if (!xinghaos.length) {
+      await this.message.alert("请先选择型号");
+      return;
+    }
+    const menchuang = this.xinghaoMenchuangs.items[this.xinghaoMenchuangs.index ?? -1];
+    const gongyi = menchuang?.gongyis?.items[menchuang?.gongyis.index ?? -1];
+    if (!menchuang || !gongyi) {
+      return;
+    }
+    const data = {menchuang: menchuang.mingzi, gongyi: gongyi.mingzi, xinghaos: xinghaos.map((v) => v.vid)};
+    const form = [this.getOptionInput(data, "门窗", "menchuang", true), this.getOptionInput(data, "工艺", "gongyi", true)];
+    const result = await this.message.form(form, {
+      beforeClose: async ({type}) => {
+        if (type === "submit") {
+          return await this.message.confirm("修改后选中型号全部会被修改且不可恢复");
+        }
+        return true;
+      }
+    });
+    if (result) {
+      const result2 = await this.http.getData<boolean>("shuju/api/selectXinghaosGongyi", data);
+      if (result2) {
+        await this.getXinghaos();
+      }
     }
   }
 
@@ -1799,9 +1851,20 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
   async addXinghaoGongyi(i: number) {
     const data = await this.getXinghaoGongyi();
     if (data) {
-      data.menchuang = this.xinghaoMenchuangs.items[i].vid;
-      await this.http.tableInsert({table: "p_gongyi", data});
-      await this.getXinghaos();
+      const menchuang = this.xinghaoMenchuangs.items[i];
+      const id = await this.http.tableInsert({table: "p_gongyi", data});
+      if (id) {
+        if (menchuang.xiayijigongyi) {
+          menchuang.xiayijigongyi += `*${id}`;
+        } else {
+          menchuang.xiayijigongyi = String(id);
+        }
+        await this.http.tableUpdate<XinghaoMenchuang>({
+          table: "p_menchuang",
+          data: {vid: menchuang.vid, xiayijigongyi: menchuang.xiayijigongyi}
+        });
+        await this.getXinghaos();
+      }
     }
   }
   async editXinghaoGongyi(i: number, j: number) {

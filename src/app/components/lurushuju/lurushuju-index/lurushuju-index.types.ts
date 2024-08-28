@@ -6,6 +6,7 @@ import {LurushujuIndexComponent} from "./lurushuju-index.component";
 export interface XinghaoData extends TableDataBase2 {
   tupian?: string;
   hidden?: boolean;
+  selected?: boolean;
   menchuang: string;
   gongyi: string;
   dingdanliucheng?: string;
@@ -35,10 +36,10 @@ export type ShuruTableData = 输入 & {操作?: string} & SortedItem;
 export type MenjiaoData = 算料数据 & {操作?: string};
 
 export interface XinghaoMenchuang extends TableDataBase2 {
+  xiayijigongyi?: string;
   gongyis?: XinghaoGongyis;
 }
 export interface XinghaoGongyi extends TableDataBase2 {
-  menchuang: number;
   xinghaos?: XinghaoXinghaos;
 }
 export interface XinghaoDataList<T> {

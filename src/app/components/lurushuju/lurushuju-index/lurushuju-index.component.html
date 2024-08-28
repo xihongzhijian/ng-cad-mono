@@ -88,6 +88,8 @@
   <mat-divider vertical></mat-divider>
   <div class="item flex-110">
     <div class="toolbar">
+      <button mat-raised-button color="primary" (click)="selectAllXinghaos()">全选</button>
+      <button mat-raised-button color="primary" (click)="selectXinghaosGongyi()">批量选择工艺</button>
       <button mat-raised-button color="primary" (click)="addXinghao()">新建型号</button>
       <app-input style="width: 200px" [info]="filterInputInfo"></app-input>
     </div>
@@ -97,7 +99,10 @@
           @if (!xinghao.hidden) {
             <div class="item">
               <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="enterXinghao(xinghao)"></app-image>
-              <div class="name" [matTooltip]="xinghao.mingzi">{{ xinghao.mingzi }}</div>
+              <div class="name" [matTooltip]="xinghao.mingzi">
+                <mat-checkbox [(ngModel)]="xinghao.selected"></mat-checkbox>
+                <span (click)="xinghao.selected = !xinghao.selected">{{ xinghao.mingzi }}</span>
+              </div>
               <div class="toolbar center">
                 <button mat-button color="primary" (click)="editXinghao(xinghao)">编辑</button>
                 <button mat-button color="primary" (click)="copyXinghao(xinghao)">复制</button>
@@ -131,7 +136,7 @@
               <div class="name title">{{ fenlei }}</div>
             </div>
             <div class="工艺做法 items no-items-per-row">
-              @for (gongyi of xinghao["产品分类"][fenlei]; track gongyi) {
+              @for (gongyi of xinghao["产品分类"][fenlei]; track $index) {
                 <div class="item link">
                   <app-image [src]="getFilepathUrl(gongyi['图片'])" (click)="enterGongyi(fenlei, gongyi['名字'])"> </app-image>
                   <div class="name" (click)="enterGongyi(fenlei, gongyi['名字'])">{{ gongyi["名字"] }}</div>

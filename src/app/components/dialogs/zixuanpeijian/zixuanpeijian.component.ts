@@ -1254,10 +1254,10 @@ export class ZixuanpeijianComponent extends ContextMenu() implements OnInit {
     if (!data) {
       return;
     }
-    const record = await this.http.tableInsert({table: table2.name, data});
-    if (node && record && table.column) {
+    const id = await this.http.tableInsert({table: table2.name, data});
+    if (node && id && table.column) {
       const ids = node.children.map((v) => v.id);
-      ids.push(record.vid);
+      ids.push(id);
       await this.http.tableUpdate({table: table.name, data: {vid: node.id, [table.column.field]: ids.join("*")}});
     }
     this.step3Refresh(true, false);
