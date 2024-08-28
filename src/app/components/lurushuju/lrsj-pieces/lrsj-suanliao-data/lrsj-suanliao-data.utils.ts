@@ -1,12 +1,12 @@
 import {WritableSignal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
-import {InputInfo, InputInfoSelect} from "@app/modules/input/components/input.types";
-import {getGroupStyle, getInputStyle} from "@app/modules/input/components/input.utils";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
+import {getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
 import {difference} from "lodash";
 import {OptionsAll2} from "../../services/lrsj-status.types";
 import {

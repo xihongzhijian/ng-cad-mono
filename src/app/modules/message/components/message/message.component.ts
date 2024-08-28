@@ -26,7 +26,7 @@ import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {JSONContent, JSONEditor, Mode} from "vanilla-jsoneditor";
-import {ButtonMessageData, MessageData, MessageDataMap, MessageOutput} from "./message.types";
+import {ButtonMessageData, MessageBeforeCloseEvent, MessageData, MessageDataMap, MessageOutput} from "./message.types";
 import {validateForm} from "./message.utils";
 
 @Component({
@@ -176,21 +176,35 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
+  async close(type: MessageBeforeCloseEvent["type"], data?: any) {
+    const beforeClose = this.data.beforeClose;
+    if (typeof beforeClose === "function") {
+      let result = beforeClose({type});
+      if (result instanceof Promise) {
+        result = await result;
+      }
+      if (!result) {
+        return;
+      }
+    }
+    this.dialogRef.close(data);
+  }
   async submit(button?: ButtonMessageData["buttons"][number]) {
     const type = this.data.type;
+    const closeType: MessageBeforeCloseEvent["type"] = "submit";
     if (type === "confirm") {
-      this.dialogRef.close(true);
+      await this.close(closeType, true);
     } else if (type === "form") {
       const {errors, values, errorMsg} = await validateForm(this.formInputs?.toArray() || []);
       if (isEmpty(errors)) {
-        this.dialogRef.close(values);
+        await this.close(closeType, values);
       } else {
         this.message.error(errorMsg);
       }
     } else if (type === "editor") {
-      this.dialogRef.close(this.data.content);
+      await this.close(closeType, this.data.content);
     } else if (type === "button" && button) {
-      this.dialogRef.close(typeof button === "string" ? button : button.value);
+      await this.close(closeType, typeof button === "string" ? button : button.value);
     } else if (type === "json" && this.jsonEditor) {
       const editor = this.jsonEditor;
       const errors = editor.validate();
@@ -200,24 +214,24 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
         const result = editor.get();
         const isJSONContent = (v: any): v is JSONContent => v.json;
         if (isJSONContent(result)) {
-          this.dialogRef.close(result.json as any);
+          await this.close(closeType, result.json as any);
         } else {
-          this.dialogRef.close(JSON.parse(result.text));
+          await this.close(closeType, JSON.parse(result.text));
         }
       }
     } else {
-      this.dialogRef.close(null);
+      await this.close(closeType, null);
     }
   }
-
-  cancel() {
+  async cancel() {
     const type = this.data.type;
+    const closeType: MessageBeforeCloseEvent["type"] = "cancel";
     if (type === "confirm") {
-      this.dialogRef.close(false);
+      await this.close(closeType, false);
     } else if (type === "button") {
-      this.dialogRef.close(this.data.btnTexts?.cancel);
+      await this.close(closeType, this.data.btnTexts?.cancel);
     } else {
-      this.dialogRef.close();
+      await this.close(closeType);
     }
   }
 

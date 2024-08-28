@@ -1,6 +1,6 @@
 import {getArrayString} from "@app/app.common";
-import {TableRenderInfo} from "@app/modules/table/components/table/table.types";
 import {ObjectOf} from "@lucilor/utils";
+import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {MenjiaoData, ShuruTableData, XuanxiangTableData} from "./lrsj-zuofa.types";
 
 export const getXuanxiangTable = (data: XuanxiangTableData[]): TableRenderInfo<XuanxiangTableData> => {

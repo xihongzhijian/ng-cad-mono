@@ -2,10 +2,10 @@ import {ChangeDetectionStrategy, Component, computed, effect, inject, input, mod
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {joinOptions} from "@app/app.common";
-import {validateForm} from "@app/modules/message/components/message/message.utils";
 import {openBancaiListDialog} from "@components/dialogs/bancai-list/bancai-list.component";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
+import {validateForm} from "@modules/message/components/message/message.utils";
 import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({

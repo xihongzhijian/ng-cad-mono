@@ -1,8 +1,8 @@
 import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
-import {InputComponent} from "@app/modules/input/components/input.component";
-import {InputInfo, InputInfoColor, InputInfoNumber, InputInfoSelect} from "@app/modules/input/components/input.types";
-import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "@app/modules/input/components/input.utils";
 import {trblItems} from "@app/utils/trbl";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo, InputInfoColor, InputInfoNumber, InputInfoSelect} from "@modules/input/components/input.types";
+import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "@modules/input/components/input.utils";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageConfig} from "../../models/page";

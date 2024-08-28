@@ -1,6 +1,6 @@
 import {session} from "@app/app.common";
-import {OptionsDataData} from "@app/modules/http/services/cad-data.service.types";
 import {ObjectOf} from "@lucilor/utils";
+import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {Properties} from "csstype";
 import {uniq} from "lodash";

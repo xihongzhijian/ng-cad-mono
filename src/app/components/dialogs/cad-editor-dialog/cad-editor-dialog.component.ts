@@ -1,10 +1,10 @@
 import {Component, forwardRef, Inject, OnInit, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {OpenCadOptions} from "@app/services/app-status.types";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadEditorComponent} from "@modules/cad-editor/components/cad-editor/cad-editor.component";
 import {AppStatusService} from "@services/app-status.service";
+import {OpenCadOptions} from "@services/app-status.types";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({

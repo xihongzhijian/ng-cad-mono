@@ -1,4 +1,4 @@
-import {InputInfo} from "@app/modules/input/components/input.types";
+import {InputInfo} from "@modules/input/components/input.types";
 import {cloneDeep} from "lodash";
 import {WorkSpaceData, WorkSpaceFavoriteItem, WorkSpaceFavoriteType} from "./work-space.types";
 

@@ -1,9 +1,9 @@
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
-import {算料公式} from "@app/components/lurushuju/xinghao-data";
-import {HoutaiCad} from "@app/modules/http/services/cad-data.service.types";
+import {算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 
 export const selectModes = ["single", "multiple", "none"] as const;
 

@@ -6,16 +6,16 @@ import {setGlobal} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {generateLineTexts2} from "@app/cad/utils";
-import {ProgressBarComponent, ProgressBarStatus} from "@app/components/progress-bar/progress-bar.component";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {HoutaiCad} from "@app/modules/http/services/cad-data.service.types";
-import {HttpOptions} from "@app/modules/http/services/http.service.types";
-import {InputComponent} from "@app/modules/input/components/input.component";
-import {InputInfo, InputInfoOption} from "@app/modules/input/components/input.types";
-import {MessageService} from "@app/modules/message/services/message.service";
+import {ProgressBarComponent, ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {ProgressBar} from "@lucilor/utils";
+import {CadDataService} from "@modules/http/services/cad-data.service";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {HttpOptions} from "@modules/http/services/http.service.types";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
+import {MessageService} from "@modules/message/services/message.service";
 import {CollecionQuery, LrsjQuery, RefreshCadImgsQueryConfig, RefreshCadImgsRefreshConfig} from "./refresh-cad-imgs.types";
 
 @Component({

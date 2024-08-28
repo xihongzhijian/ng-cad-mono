@@ -1,9 +1,9 @@
 import {ValidationErrors} from "@angular/forms";
 import {CadCollection} from "@app/cad/collections";
-import {SuanliaoDataParams, 算料公式} from "@app/components/lurushuju/xinghao-data";
-import {SuanliaogongshiInfo} from "@app/modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
-import {TableDataBase} from "@app/modules/http/services/cad-data.service.types";
+import {SuanliaoDataParams, 算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
+import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
+import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 
 export interface Loader {
   id: string;

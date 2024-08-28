@@ -1,5 +1,4 @@
 import {remoteHost} from "@app/app.common";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {Formulas} from "@app/utils/calc";
 import {ProjectConfig} from "@app/utils/project-config";
 import {getCalcZhankaiText} from "@app/utils/zhankai";
@@ -25,6 +24,7 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, ObjectOf, Point} from "@lucilor/utils";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {difference, isEmpty} from "lodash";
@@ -37,14 +37,12 @@ export const maxLineLength = 130 as const;
 
 export const 激光开料标记线类型 = ["短直线", "直角三角形", "等腰三角形"] as const;
 
-const cadSkipTypes = [
-  "铰企料",
+const cadTypes1 = [
+  "锁企料",
   "中锁料",
   "中铰料",
   "小锁料",
   "扇锁企料",
-  "中铰料",
-  "中锁料",
   "铰企料",
   "包边正面",
   "锁框",
@@ -55,6 +53,10 @@ const cadSkipTypes = [
   "算料单示意图",
   "______算料单示意图"
 ];
+
+const cadTypes2 = ["锁企料", "中锁料", "中铰料", "小锁料", "扇锁企料", "铰企料"];
+
+const cadTypes3 = ["锁企料", "中锁料", "中铰料", "小锁料", "扇锁企料", "铰企料", "包边正面", "锁框", "铰框", "顶框", "底框", "中横框"];
 
 export const prepareCadViewer = async (cad: CadViewer) => {
   let url = "n/static/fonts/xhzj_sp.ttf";
@@ -137,11 +139,18 @@ export const validateLines = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOL
   if (isShiyitu(data) || ["企料算料", "孔"].includes(data.type)) {
     return result;
   }
-  const typeCheck = cadSkipTypes.includes(data.type);
+  const typeCheck = cadTypes1.includes(data.type);
+  let has自动识别上下折 = false;
+  if (cadTypes2.includes(data.type)) {
+    has自动识别上下折 = !!data.entities.find((e) => e instanceof CadLineLike && e.双向折弯附加值.includes("上下折程序自动识别"));
+  }
   const lines = sortLines(data, tol);
   result.errorLines = lines;
   const [min, max] = LINE_LIMIT;
-  const groupMaxLength = data.shuangxiangzhewan ? 2 : 1;
+  let groupMaxLength = data.shuangxiangzhewan ? 2 : 1;
+  if (cadTypes3.includes(data.type)) {
+    groupMaxLength = 1;
+  }
   const addInfoError = (e: CadLineLike, error: string) => {
     if (noInfo) {
       return;
@@ -186,7 +195,7 @@ export const validateLines = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOL
   }
   if (lines.length < 1) {
     result.errors.push("没有线");
-  } else if (typeCheck && lines.length > groupMaxLength) {
+  } else if (typeCheck && lines.length > groupMaxLength && !has自动识别上下折) {
     result.errors.push("CAD分成了多段或线重叠");
     for (let i = 0; i < lines.length - 1; i++) {
       const currGroup = lines[i];
@@ -776,7 +785,7 @@ export const uploadAndReplaceCad = async (file: File, data: CadData, isMain: boo
 };
 
 export const autoShuangxiangzhewan = (data: CadData, tolerance?: number) => {
-  if (cadSkipTypes.includes(data.type)) {
+  if (cadTypes1.includes(data.type)) {
     return;
   }
   const lines = sortLines(data, tolerance);

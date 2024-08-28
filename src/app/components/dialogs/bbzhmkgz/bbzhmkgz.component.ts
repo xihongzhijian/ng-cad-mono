@@ -2,10 +2,10 @@ import {KeyValuePipe} from "@angular/common";
 import {Component, forwardRef, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
-import {BatchUploadChecker} from "@app/views/import/import.utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {BatchUploadChecker} from "@views/import/import.utils";
 import {InputComponent} from "../../../modules/input/components/input.component";
 import {getOpenDialogFunc} from "../dialog.common";
 

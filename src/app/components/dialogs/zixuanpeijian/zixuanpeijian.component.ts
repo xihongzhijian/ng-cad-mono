@@ -15,27 +15,27 @@ import {getNameWithSuffix, imgCadEmpty, remoteFilePath, session, setGlobal} from
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {setDimensionText, uploadAndReplaceCad} from "@app/cad/utils";
-import {CadItemComponent} from "@app/components/lurushuju/cad-item/cad-item.component";
-import {CadItemButton} from "@app/components/lurushuju/cad-item/cad-item.types";
-import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {ContextMenuModule} from "@app/modules/context-menu/context-menu.module";
-import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
-import {convertOptions} from "@app/modules/input/components/input.utils";
 import {toFixed} from "@app/utils/func";
-import {openExportPage} from "@app/views/export/export.utils";
-import {ImportCache} from "@app/views/import/import.types";
-import {openImportPage} from "@app/views/import/import.utils";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
+import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
+import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {Debounce} from "@decorators/debounce";
 import {environment} from "@env";
 import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, setLinesLength} from "@lucilor/cad-viewer";
 import {getElementVisiblePercentage, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
+import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputInfo} from "@modules/input/components/input.types";
+import {convertOptions} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
+import {openExportPage} from "@views/export/export.utils";
+import {ImportCache} from "@views/import/import.types";
+import {openImportPage} from "@views/import/import.utils";
 import {cloneDeep, debounce, uniq, uniqueId} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject} from "rxjs";
@@ -1243,10 +1243,10 @@ export class ZixuanpeijianComponent implements OnInit {
     if (!data) {
       return;
     }
-    const record = await this.http.tableInsert({table: table2.name, data});
-    if (node && record && table.column) {
+    const id = await this.http.tableInsert({table: table2.name, data});
+    if (node && id && table.column) {
       const ids = node.children.map((v) => v.id);
-      ids.push(record.vid);
+      ids.push(id);
       await this.http.tableUpdate({table: table.name, data: {vid: node.id, [table.column.field]: ids.join("*")}});
     }
     this.step3Refresh(true, false);

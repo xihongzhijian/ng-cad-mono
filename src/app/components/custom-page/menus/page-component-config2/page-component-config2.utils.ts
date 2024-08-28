@@ -1,9 +1,9 @@
 import {getFilepathUrl} from "@app/app.common";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {InputInfo, InputInfoGroup, InputInfoNumber, InputInfoOption, InputInfoSelect} from "@app/modules/input/components/input.types";
-import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "@app/modules/input/components/input.utils";
 import {trblItems} from "@app/utils/trbl";
 import {isTypeOf, selectFiles} from "@lucilor/utils";
+import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputInfo, InputInfoGroup, InputInfoNumber, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "@modules/input/components/input.utils";
 import Color from "color";
 import {DataType, Property} from "csstype";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";

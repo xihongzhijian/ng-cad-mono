@@ -8,6 +8,10 @@ export interface BaseMessageData {
   disableCancel?: boolean;
   titleClass?: string;
   contentClass?: string;
+  beforeClose?: (event: MessageBeforeCloseEvent) => boolean | Promise<boolean>;
+}
+export interface MessageBeforeCloseEvent {
+  type: "submit" | "cancel";
 }
 
 export interface AlertBaseMessageData {

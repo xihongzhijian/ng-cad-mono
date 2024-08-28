@@ -3,6 +3,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import bancaifenzuIndexData from "@assets/json/bancaifenzuIndex.json";
+import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {BancaiFormDialogComponent, BancaiFormInput} from "./bancai-form-dialog.component";
 
 const data: BancaiFormInput = {

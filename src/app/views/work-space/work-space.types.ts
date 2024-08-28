@@ -1,4 +1,4 @@
-import {OptionsDataData} from "@app/modules/http/services/cad-data.service.types";
+import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 
 export interface WorkSpaceData {
   user?: number;

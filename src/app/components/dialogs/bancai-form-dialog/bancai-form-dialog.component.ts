@@ -1,10 +1,10 @@
 import {ChangeDetectionStrategy, Component, inject, Inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
-import {InputInfo} from "@app/modules/input/components/input.types";
 import {BancaiFormData} from "@components/bancai-form/bancai-form.component";
 import {environment} from "@env";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {random} from "lodash";
 import {BancaiFormComponent} from "../../bancai-form/bancai-form.component";

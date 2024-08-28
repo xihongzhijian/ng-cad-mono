@@ -86,7 +86,7 @@
             <div class="flex-column flex-110">
               <ng-scrollbar>
                 <div class="mokuai-inputs flex-row">
-                  @for (info of mokuaiInputInfos; track info) {
+                  @for (info of mokuaiInputInfos; track $index) {
                     <app-input [info]="info"></app-input>
                   }
                 </div>
@@ -150,7 +150,7 @@
 
 <ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai let-isActive="isActive">
   <div class="flex-column mokuai" [class]="{active: isActive}">
-    <div class="flex-column" (click)="selectMokuai(mokuai)">
+    <div class="flex-column">
       <div class="toolbar mokuai-top">
         @if (!isFromOrder) {
           <div class="default-sign" [class]="{active: mokuai?.info?.isDefault}" (click)="setDefaultMokuai(mokuai)">默认</div>
@@ -170,9 +170,10 @@
         [bigPicSrc]="mokuai?.xiaoguotu"
         bigPicClickShowDisabled
         [prefix]="urlPrefix"
+        (click)="selectMokuai(mokuai)"
       ></app-image>
       <div class="flex-row" style="align-items: center">
-        <div class="title center flex-110">{{ getMokuaiTitle2(mokuai) }}</div>
+        <div class="title center flex-110" (click)="selectMokuai(mokuai)">{{ getMokuaiTitle2(mokuai) }}</div>
         @if (!isFromOrder) {
           <button mat-icon-button color="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
         }

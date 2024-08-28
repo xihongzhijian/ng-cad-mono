@@ -1,20 +1,21 @@
 import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
 import {getBooleanStr, setGlobal} from "@app/app.common";
-import {AboutComponent} from "@app/components/about/about.component";
-import {openZixuanpeijianDialog} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.component";
-import {ZixuanpeijianInput} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.types";
-import {ClickStopPropagationDirective} from "@app/modules/directives/click-stop-propagation.directive";
-import {FloatingDialogModule} from "@app/modules/floating-dialog/floating-dialog.module";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {ImageComponent} from "@app/modules/image/components/image/image.component";
-import {MessageService} from "@app/modules/message/services/message.service";
-import {AppStatusService} from "@app/services/app-status.service";
+import {AboutComponent} from "@components/about/about.component";
+import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
+import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {CadDataService} from "@modules/http/services/cad-data.service";
+import {ImageComponent} from "@modules/image/components/image/image.component";
+import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {LrsjSuanliaoCadsComponent} from "../lrsj-pieces/lrsj-suanliao-cads/lrsj-suanliao-cads.component";
 import {LrsjSuanliaoDataComponent} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.component";
@@ -39,6 +40,7 @@ import {ToolbarBtn} from "./lurushuju-index.types";
     LrsjZuofasComponent,
     LurushujuNavComponent,
     MatButtonModule,
+    MatCheckboxModule,
     MatDividerModule,
     MatMenuModule,
     NgScrollbarModule
