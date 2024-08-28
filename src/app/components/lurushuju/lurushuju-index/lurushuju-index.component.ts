@@ -1908,6 +1908,7 @@ export class LurushujuIndexComponent extends Subscribed() implements OnInit, Aft
     gongyis.index = j;
     if (iPrev !== i || jPrev !== j || refresh) {
       const xinghaos = gongyis.items[j]?.xinghaos;
+      this.xinghaos.forEach((v) => (v.selected = false));
       this.xinghaos = xinghaos?.items || [];
     }
   }
