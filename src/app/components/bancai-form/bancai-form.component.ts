@@ -51,6 +51,7 @@ export class BancaiFormComponent {
     const data = {...this.data()};
     const bancaiList = this.bancaiList();
     const checkedItem = this.checkedItem();
+    const onChange = () => this.data.set(data);
     const infos: InputInfo<BancaiFormData>[][] = [
       this.xinghao()?.inputInfos[this.key()]?.[0] || [],
       [
@@ -78,13 +79,15 @@ export class BancaiFormComponent {
         {
           type: "select",
           label: "材料",
-          model: {key: "cailiao", data: this.data},
+          model: {key: "cailiao", data},
+          onChange,
           options: checkedItem?.cailiaoList || []
         },
         {
           type: "select",
           label: "厚度",
-          model: {key: "houdu", data: this.data},
+          model: {key: "houdu", data},
+          onChange,
           options: checkedItem?.houduList || []
         }
       ],
@@ -116,14 +119,16 @@ export class BancaiFormComponent {
         {
           type: "select",
           label: "可选材料",
-          model: {key: "cailiaoList", data: this.data},
+          model: {key: "cailiaoList", data},
+          onChange,
           options: checkedItem?.cailiaoList || [],
           multiple: true
         },
         {
           type: "select",
           label: "可选厚度",
-          model: {key: "houduList", data: this.data},
+          model: {key: "houduList", data},
+          onChange,
           options: checkedItem?.houduList || [],
           multiple: true
         }
