@@ -1,7 +1,7 @@
 import {getArrayString} from "@app/app.common";
-import {convertOptions} from "@app/modules/input/components/input.utils";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {convertOptions} from "@modules/input/components/input.utils";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {
   MenjiaoData,

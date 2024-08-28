@@ -1,9 +1,9 @@
 import {inject} from "@angular/core";
 import {addJs, session} from "@app/app.common";
 import {addCadInfoError, CadInfo, CadInfoError} from "@app/cad/portable";
-import {MessageService} from "@app/modules/message/services/message.service";
-import {AppStatusService} from "@app/services/app-status.service";
 import {ObjectOf} from "@lucilor/utils";
+import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import {ImportCache} from "./import.types";
 
 export const openImportPage = (status: AppStatusService, data: ImportCache) => {

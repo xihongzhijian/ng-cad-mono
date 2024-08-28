@@ -1,7 +1,5 @@
 import {getValueString, replaceChars} from "@app/app.common";
-import {AppUser} from "@app/services/app-status.types";
 import {ProjectConfig} from "@app/utils/project-config";
-import {ImportCache} from "@app/views/import/import.types";
 import {
   CadArc,
   CadCircle,
@@ -21,6 +19,8 @@ import {
 } from "@lucilor/cad-viewer";
 import {keysOf, Line, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {AppUser} from "@services/app-status.types";
+import {ImportCache} from "@views/import/import.types";
 import {difference, intersection, isEqual, uniqueId} from "lodash";
 import {autoShuangxiangzhewan, generateLineTexts2, isShiyitu, showIntersections} from "./utils";
 

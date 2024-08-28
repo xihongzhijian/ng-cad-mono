@@ -1,5 +1,5 @@
 import {session} from "@app/app.common";
-import {InputInfo, InputInfoBoolean, InputInfoNumber, InputInfoString} from "@app/modules/input/components/input.types";
+import {InputInfo, InputInfoBoolean, InputInfoNumber, InputInfoString} from "@modules/input/components/input.types";
 import {Properties} from "csstype";
 import {uniq} from "lodash";
 

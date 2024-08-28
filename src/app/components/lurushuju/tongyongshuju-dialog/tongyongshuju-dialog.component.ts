@@ -5,12 +5,12 @@ import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog
 import {MatDividerModule} from "@angular/material/divider";
 import {setGlobal} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
-import {openCadListDialog} from "@app/components/dialogs/cad-list/cad-list.component";
-import {CadListInput} from "@app/components/dialogs/cad-list/cad-list.types";
-import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
+import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
+import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {AppStatusService} from "@services/app-status.service";

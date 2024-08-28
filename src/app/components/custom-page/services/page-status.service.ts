@@ -1,7 +1,7 @@
 import {computed, effect, inject, Injectable, signal, untracked} from "@angular/core";
 import {getCopyName, KeyEventItem, session, setGlobal} from "@app/app.common";
-import {MessageService} from "@app/modules/message/services/message.service";
 import {isBetween} from "@lucilor/utils";
+import {MessageService} from "@modules/message/services/message.service";
 import {Subject} from "rxjs";
 import {Page, PageConfig} from "../models/page";
 import {PageComponentTypeAny} from "../models/page-component-infos";

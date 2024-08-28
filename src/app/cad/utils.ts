@@ -1,5 +1,4 @@
 import {remoteHost} from "@app/app.common";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
 import {Formulas} from "@app/utils/calc";
 import {ProjectConfig} from "@app/utils/project-config";
 import {getCalcZhankaiText} from "@app/utils/zhankai";
@@ -25,6 +24,7 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, ObjectOf, Point} from "@lucilor/utils";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {difference, isEmpty} from "lodash";

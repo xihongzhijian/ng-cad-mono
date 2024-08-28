@@ -5,11 +5,11 @@ import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, signal, 
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {getFilepathUrl, setGlobal} from "@app/app.common";
-import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {ImageComponent} from "@app/modules/image/components/image/image.component";
-import {ImageEvent} from "@app/modules/image/components/image/image.component.types";
 import {Angle, ObjectOf, Point, selectFiles} from "@lucilor/utils";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
+import {CadDataService} from "@modules/http/services/cad-data.service";
+import {ImageComponent} from "@modules/image/components/image/image.component";
+import {ImageEvent} from "@modules/image/components/image/image.component.types";
 import {Properties} from "csstype";
 import {debounce, isEqual} from "lodash";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";

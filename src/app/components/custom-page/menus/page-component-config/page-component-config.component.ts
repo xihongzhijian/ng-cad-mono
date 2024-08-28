@@ -5,8 +5,8 @@ import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {getInsertName} from "@app/app.common";
-import {ClickStopPropagationDirective} from "@app/modules/directives/click-stop-propagation.directive";
-import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
 import {

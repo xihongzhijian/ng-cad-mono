@@ -12,7 +12,6 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectChange, MatSelectModule} from "@angular/material/select";
 import {cadLineOptions} from "@app/cad/options";
 import {autoFixLine, generateLineTexts2, getLineLengthTextSize, isLengthTextSizeSetKey, validColors} from "@app/cad/utils";
-import {CadPoints} from "@app/services/app-status.types";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
   CadEntities,
@@ -31,6 +30,7 @@ import {Point} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {CadPoints} from "@services/app-status.types";
 import {CadStatusCutLine, CadStatusDrawLine, CadStatusIntersection, CadStatusMoveLines} from "@services/cad-status";
 import Color from "color";
 import {debounce, uniq} from "lodash";

@@ -1,10 +1,10 @@
 import {getValueString} from "@app/app.common";
-import {cadFields} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {HoutaiCad, TableDataBase} from "@app/modules/http/services/cad-data.service.types";
-import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
-import {importComponentConfigNames} from "@app/views/import/import.types";
 import {CadData, CadLineLike, CadZhankai, intersectionKeysTranslate} from "@lucilor/cad-viewer";
 import {downloadByUrl, isTypeOf, keysOf, ObjectOf, queryString} from "@lucilor/utils";
+import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {HoutaiCad, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
+import {importComponentConfigNames} from "@views/import/import.types";
 
 export interface Cad数据要求Raw extends TableDataBase {
   cadtanchuangxiugaishuxing: string;

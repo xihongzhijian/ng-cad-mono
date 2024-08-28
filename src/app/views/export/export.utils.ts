@@ -1,5 +1,5 @@
 import {session} from "@app/app.common";
-import {AppStatusService} from "@app/services/app-status.service";
+import {AppStatusService} from "@services/app-status.service";
 import {ExportCache} from "./export.types";
 
 export const openExportPage = (status: AppStatusService, data: ExportCache) => {

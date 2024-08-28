@@ -1,8 +1,8 @@
 import {XiaodaohangColumn} from "@app/app.common";
-import {算料公式} from "@app/components/lurushuju/xinghao-data";
 import {Formulas} from "@app/utils/calc";
 import {KailiaocanshuData} from "@components/klcs/klcs.component";
 import {KlkwpzSource} from "@components/klkwpz/klkwpz";
+import {算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData, CadMtext, CadViewerConfig} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";

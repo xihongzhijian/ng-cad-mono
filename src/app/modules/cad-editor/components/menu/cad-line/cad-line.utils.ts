@@ -1,10 +1,10 @@
 import {CadCollection} from "@app/cad/collections";
-import {算料公式} from "@app/components/lurushuju/xinghao-data";
-import {InputInfo} from "@app/modules/input/components/input.types";
-import {MessageService} from "@app/modules/message/services/message.service";
-import {AppStatusService} from "@app/services/app-status.service";
+import {算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData, CadLine, CadLineLike, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
+import {InputInfo} from "@modules/input/components/input.types";
+import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
 import {getData} from "../cad-info/cad-info.utils";
 

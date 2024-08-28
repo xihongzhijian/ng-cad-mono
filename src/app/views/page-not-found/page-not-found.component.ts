@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from "@angul
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute, Router} from "@angular/router";
 import {PathResolveData} from "@app/routing/path-resolver";
-import {AppStatusService} from "@app/services/app-status.service";
+import {AppStatusService} from "@services/app-status.service";
 
 @Component({
   selector: "app-page-not-found",
