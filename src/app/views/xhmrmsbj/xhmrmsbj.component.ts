@@ -270,14 +270,15 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       for (const rectInfo of msbj.peizhishuju.模块节点) {
         const node = msbjInfo.模块节点?.find((v) => v.层id === rectInfo.vid);
         const 选中模块 = node?.选中模块;
+        const prefix = `【${key}】的【${rectInfo.name}】节点`;
         if (rectInfo.isBuju && !选中模块) {
-          await this.message.error("布局中存在未选中的模块");
+          this.message.error(prefix + "存在未选中的模块");
           return;
         }
         if (!this.isFromOrder) {
           const 默认模块 = node?.可选模块.find((v) => v.info?.isDefault);
           if (rectInfo.isBuju && !默认模块) {
-            await this.message.error("布局中存在未设置默认模块的模块");
+            this.message.error(prefix + "存在未设置默认模块的模块");
             return;
           }
         }
@@ -394,12 +395,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   selectRectBefore() {
     const node = this.activeMokuaiNode;
     if (node) {
+      const key = this.activeMenshanKey;
+      const prefix = `【${key}】的【${node.层名字}】节点`;
       if (!node.选中模块) {
-        this.message.error("请先选择模块");
+        this.message.error(prefix + "请先选择模块");
         return false;
       }
       if (!this.isFromOrder && !node.可选模块.find((v) => v.info?.isDefault)) {
-        this.message.error("请先选择默认模块");
+        this.message.error(prefix + "请先选择默认模块");
         return false;
       }
     }
