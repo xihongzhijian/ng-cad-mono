@@ -492,8 +492,8 @@ export class LrsjStatusService implements OnDestroy {
   async getXinghaos() {
     const xinghaos = await this.http.getData<XinghaoData[]>("shuju/api/getXinghaos");
     const fields = ["vid", "mingzi"];
-    const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields});
-    const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields: [...fields, "menchuang"]});
+    const menchuangs = await this.http.queryMySql<XinghaoMenchuang>({table: "p_menchuang", fields: [...fields, "xiayijigongyi"]});
+    const gongyis = await this.http.queryMySql<XinghaoGongyi>({table: "p_gongyi", fields});
     const xinghaoMenchuangsPrev = this.xinghaoMenchuangs();
     const iPrev = xinghaoMenchuangsPrev.index;
     const jPrev = xinghaoMenchuangsPrev.item?.gongyis?.index;
