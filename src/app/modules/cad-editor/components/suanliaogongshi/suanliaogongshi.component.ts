@@ -1,5 +1,5 @@
 import {KeyValue, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
-import {Component, EventEmitter, HostBinding, Input, OnChanges, Output, QueryList, SimpleChanges, ViewChildren} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, model, output, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -20,7 +20,7 @@ import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/tabl
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
-import {getSortedItems, 算料公式, 输入} from "../../../../components/lurushuju/xinghao-data";
+import {getSortedItems, 算料公式, 输入, 输入下单用途} from "../../../../components/lurushuju/xinghao-data";
 import {openSuanliaogongshiDialog} from "../dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
 import {SuanliaogongshiInfo} from "./suanliaogongshi.types";
 
@@ -35,39 +35,47 @@ import {SuanliaogongshiInfo} from "./suanliaogongshi.types";
     MatDividerModule,
     MatTooltipModule,
     NgScrollbarModule,
-    TableComponent,
-    NgTemplateOutlet
+    NgTemplateOutlet,
+    TableComponent
   ],
   templateUrl: "./suanliaogongshi.component.html",
-  styleUrl: "./suanliaogongshi.component.scss"
+  styleUrl: "./suanliaogongshi.component.scss",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SuanliaogongshiComponent implements OnChanges {
+export class SuanliaogongshiComponent {
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+
   @HostBinding("class") class = "ng-page";
 
-  @Input({required: true}) info: SuanliaogongshiInfo = {data: {}};
-  @Input() noScroll = false;
-  @Output() slgsChange = new EventEmitter<void>();
+  info = model.required<SuanliaogongshiInfo>();
+  noScroll = input(false);
+  slgsChange = output();
 
-  gongshiInfo: {formulas?: Formulas}[] = [];
-  shuruTable: TableRenderInfo<ShuruTableData>;
-  @ViewChildren("gongshiEditor") gongshiEditors?: QueryList<FormulasEditorComponent>;
+  gongshiInfo = signal<{formulas?: Formulas}[]>([]);
+  gongshiInfoEff = effect(
+    () => {
+      const info = this.info();
+      this.gongshiInfo.set((info.data.算料公式 || []).map(() => ({})));
+    },
+    {allowSignalWrites: true}
+  );
 
-  constructor(
-    private message: MessageService,
-    private dialog: MatDialog,
-    private http: CadDataService
-  ) {
-    this.shuruTable = {
-      title: "输入数据",
+  shuruTable = computed(() => {
+    const info = this.info();
+    const tableInfo: TableRenderInfo<ShuruTableData> = {
+      title: "输入显示",
       subTitle: "注意：有输入时，相同名字的公式无效",
       subTitleStyle: {color: "red"},
       noCheckBox: true,
       columns: [
         {type: "string", field: "名字"},
+        {type: "string", field: "下单用途", getString: (value) => `${value.下单用途 || ""}<br><br>${value.可以修改 ? "可改" : "不可改"}`},
         {type: "string", field: "默认值"},
         {type: "string", field: "取值范围"},
-        {type: "boolean", field: "可以修改"},
-        {type: "number", field: "排序"},
+        {type: "string", field: "生效条件"},
+        {type: "number", field: "排序", hidden: !info.isFromSelf},
         {
           type: "button",
           field: "操作",
@@ -77,36 +85,17 @@ export class SuanliaogongshiComponent implements OnChanges {
           ]
         }
       ],
-      data: [],
+      data: getSortedItems(info.data.输入数据 || []),
       toolbarButtons: {
         extra: [
           {event: "添加", color: "primary"},
-          {event: "全部", color: "primary"}
+          {event: "全部", color: "primary", hidden: info.isFromSelf}
         ],
         inlineTitle: true
       }
     };
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.info) {
-      this.gongshiInfo = [];
-      if (this.info.data.算料公式) {
-        this.gongshiInfo = this.info.data.算料公式.map(() => ({}));
-      }
-      if (this.info.data.输入数据) {
-        this.shuruTable.data = getSortedItems(this.info.data.输入数据);
-        const colPaixu = this.shuruTable.columns.find((v) => v.field === "排序");
-        if (colPaixu) {
-          colPaixu.hidden = !this.info.isFromSelf;
-        }
-        const toolbarBtnQuanbu = this.shuruTable.toolbarButtons?.extra?.find((v) => v.event === "全部");
-        if (toolbarBtnQuanbu) {
-          toolbarBtnQuanbu.hidden = this.info.isFromSelf;
-        }
-      }
-    }
-  }
+    return tableInfo;
+  });
 
   returnZero() {
     return 0;
@@ -125,7 +114,7 @@ export class SuanliaogongshiComponent implements OnChanges {
     const result = await openEditFormulasDialog(this.dialog, {
       data: {
         formulas: data.公式,
-        varNames: this.info.varNames,
+        varNames: this.info().varNames,
         extraInputInfos: [
           {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
           {type: "object", label: "选项", model: {data, key: "选项"}, optionsDialog: {}, optionMultiple: true},
@@ -150,20 +139,22 @@ export class SuanliaogongshiComponent implements OnChanges {
   }
 
   async addGongshi() {
-    const data = this.info.data;
+    const info = this.info();
+    const data = info.data;
     if (!data.算料公式) {
       return;
     }
     const item = await this.getGongshiItem();
     if (item) {
       data.算料公式.push(item);
-      this.gongshiInfo.push({});
+      this.info.set({...info});
       this.slgsChange.emit();
     }
   }
 
   async editGongshi(index: number) {
-    const data = this.info.data;
+    const info = this.info();
+    const data = info.data;
     if (!data.算料公式) {
       return;
     }
@@ -171,12 +162,14 @@ export class SuanliaogongshiComponent implements OnChanges {
     if (item) {
       this.justifyGongshi(item);
       data.算料公式[index] = item;
+      this.info.set({...info});
       this.slgsChange.emit();
     }
   }
 
   async copyGongshi(index: number) {
-    const data = this.info.data;
+    const info = this.info();
+    const data = info.data;
     if (!data.算料公式) {
       return;
     }
@@ -188,12 +181,13 @@ export class SuanliaogongshiComponent implements OnChanges {
     const names = data.算料公式.map((v) => v.名字);
     item.名字 = getCopyName(names, item.名字);
     data.算料公式.push(item);
-    this.gongshiInfo.push({});
+    this.info.set({...info});
     this.slgsChange.emit();
   }
 
   async removeGongshi(index: number) {
-    const data = this.info.data;
+    const info = this.info();
+    const data = info.data;
     if (!data.算料公式) {
       return;
     }
@@ -201,28 +195,31 @@ export class SuanliaogongshiComponent implements OnChanges {
       return;
     }
     data.算料公式.splice(index, 1);
-    this.gongshiInfo.splice(index, 1);
+    this.info.set({...info});
     this.slgsChange.emit();
   }
 
   editGongshiStart(index: number) {
-    const info = this.gongshiInfo[index];
-    info.formulas = cloneDeep(this.info.data.算料公式?.[index].公式);
+    const info = this.gongshiInfo()[index];
+    info.formulas = cloneDeep(this.info().data.算料公式?.[index].公式);
+    this.gongshiInfo.update((v) => [...v]);
   }
 
   editGongshiEnd(index: number, formulas: Formulas | null, close = false) {
-    const info = this.gongshiInfo[index];
-    if (formulas && this.info.data.算料公式) {
-      this.info.data.算料公式[index].公式 = formulas;
+    const info = this.info();
+    const gongshiInfo = this.gongshiInfo()[index];
+    if (formulas && info.data.算料公式) {
+      info.data.算料公式[index].公式 = formulas;
       this.slgsChange.emit();
     }
     if (close) {
-      delete info.formulas;
+      delete gongshiInfo.formulas;
+      this.gongshiInfo.update((v) => [...v]);
     }
   }
 
   async viewAllGonshis() {
-    const useData = this.info.data.算料公式 || [];
+    const useData = this.info().data.算料公式 || [];
     const url = await this.http.getShortUrl("算料公式", {useData, noToolbar: true});
     if (url) {
       window.open(url);
@@ -230,7 +227,7 @@ export class SuanliaogongshiComponent implements OnChanges {
   }
 
   async importGonshis() {
-    const data = this.info.data;
+    const data = this.info().data;
     if (!(await this.message.confirm("确定导入吗？"))) {
       return;
     }
@@ -253,6 +250,7 @@ export class SuanliaogongshiComponent implements OnChanges {
           this.justifyGongshi(item);
           data.算料公式.push(item);
         }
+        this.info.update((v) => ({...v}));
         this.slgsChange.emit();
       } else {
         this.message.error("算料公式数据有误");
@@ -262,7 +260,7 @@ export class SuanliaogongshiComponent implements OnChanges {
   }
 
   exportGongshis() {
-    const data = this.info.data;
+    const data = this.info().data;
     downloadByString(JSON.stringify(data.算料公式), {filename: "算料公式.json"});
   }
 
@@ -272,6 +270,9 @@ export class SuanliaogongshiComponent implements OnChanges {
 
   async getShuruItem(data0?: 输入) {
     const data: 输入 = {名字: "", 默认值: "", 取值范围: "", 可以修改: true, ...data0};
+    if (!输入下单用途.includes(data.下单用途 as any)) {
+      data.下单用途 = "输入";
+    }
     const form: InputInfo<typeof data>[] = [
       {
         type: "string",
@@ -281,13 +282,15 @@ export class SuanliaogongshiComponent implements OnChanges {
           Validators.required,
           (control) => {
             const value = control.value;
-            if ((!data0 || data0.名字 !== value) && this.info.data.输入数据?.some((v) => v.名字 === value)) {
+            if ((!data0 || data0.名字 !== value) && this.info().data.输入数据?.some((v) => v.名字 === value)) {
               return {名字已存在: true};
             }
             return null;
           }
         ]
       },
+      {type: "select", label: "下单用途", model: {data, key: "下单用途"}, options: 输入下单用途.slice()},
+      {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}},
       {
         type: "string",
         label: "默认值",
@@ -309,14 +312,14 @@ export class SuanliaogongshiComponent implements OnChanges {
           }
         ]
       },
-      {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}},
+      {type: "string", label: "生效条件", model: {data, key: "生效条件"}},
       {type: "number", label: "排序", model: {data, key: "排序"}}
     ];
     return await this.message.form<typeof data, typeof data>(form);
   }
 
   async onShuruToolbar(event: ToolbarButtonEvent) {
-    const data = this.info.data;
+    const data = this.info().data;
     if (!data.输入数据) {
       return;
     }
@@ -326,7 +329,7 @@ export class SuanliaogongshiComponent implements OnChanges {
           const item = await this.getShuruItem();
           if (item) {
             data.输入数据.push(item);
-            this.shuruTable.data = getSortedItems(data.输入数据);
+            this.info.update((v) => ({...v}));
           }
         }
         break;
@@ -335,14 +338,14 @@ export class SuanliaogongshiComponent implements OnChanges {
           await openSuanliaogongshiDialog(this.dialog, {
             data: {info: {...this.info, data: {输入数据: data.输入数据}, isFromSelf: true}}
           });
-          this.shuruTable.data = getSortedItems(data.输入数据);
+          this.info.update((v) => ({...v}));
         }
         break;
     }
   }
 
   async onShuruRow(event: RowButtonEvent<ShuruTableData>) {
-    const data = this.info.data;
+    const data = this.info().data;
     if (!data.输入数据) {
       return;
     }
@@ -354,14 +357,14 @@ export class SuanliaogongshiComponent implements OnChanges {
           const item3 = await this.getShuruItem(item2);
           if (item3) {
             data.输入数据[item.originalIndex] = item3;
-            this.shuruTable.data = getSortedItems(data.输入数据);
+            this.info.update((v) => ({...v}));
           }
         }
         break;
       case "删除":
         if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
           data.输入数据.splice(item.originalIndex, 1);
-          this.shuruTable.data = getSortedItems(data.输入数据);
+          this.info.update((v) => ({...v}));
         }
         break;
     }
