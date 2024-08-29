@@ -467,6 +467,9 @@ export class CadViewer extends EventEmitter {
             ndigits = 0;
             switch (parent.圆弧显示) {
               case "半径":
+                length = parent.radius;
+                prefix = "";
+                break;
               case "R+半径":
                 length = parent.radius;
                 prefix = "R";
