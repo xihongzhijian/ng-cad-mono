@@ -70,13 +70,13 @@ export class MsbjComponent implements AfterViewInit {
     const infos: InputInfo[] = [
       {
         type: "string",
-        label: "名字",
+        label: "节点名字",
         readonly: true,
         value: rectInfo?.name || ""
       },
       {
         type: "string",
-        label: "选项名称",
+        label: "节点对应下单选项名称",
         readonly: !isBuju,
         model: isBuju ? {data: rectInfo, key: "选项名称"} : undefined,
         onInput: (val) => {
