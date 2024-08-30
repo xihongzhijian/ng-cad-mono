@@ -1,6 +1,9 @@
-<div class="title">门扇布局配置</div>
 <div class="content flex-row flex-110">
   <div class="rect-container flex-column">
+    <div class="title flex-row">
+      <span>门扇布局配置</span>
+      <span class="flex-110" style="text-align: center">{{ msbjInfo()?.name }}</span>
+    </div>
     <div class="rect-area flex-column">
       <div class="btn-group">
         <button mat-raised-button color="primary" (click)="submit()">提交</button>
@@ -17,9 +20,6 @@
       </div>
       <app-msbj-rects [rectInfos]="msbjInfo()?.peizhishuju?.['模块节点']" (selectRect)="selectRect($event)"></app-msbj-rects>
     </div>
-    <div class="flex-110" (click)="currRectInfo.set(null)">
-      <div class="title center">{{ msbjInfo()?.name }}</div>
-    </div>
   </div>
   <div class="fenlei-container flex-column flex-110" cdkDropListGroup>
     @for (info of inputInfos(); track $index) {
@@ -27,7 +27,7 @@
     }
     <div class="daxiaoguanxi flex-column">
       <div class="btn-group">
-        <div class="title">模块大小关系</div>
+        <div class="title">默认模块大小关系</div>
         <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">编辑</button>
       </div>
     </div>
