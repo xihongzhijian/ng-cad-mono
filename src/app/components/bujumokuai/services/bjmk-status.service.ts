@@ -5,6 +5,7 @@ import {Cad数据要求, getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -172,6 +173,9 @@ export class BjmkStatusService {
   async copyMokuai(mokuai: MokuaiItem) {
     const names = this.mokuais().map((v) => v.name);
     const item2 = await this.getMokuaiWithForm(mokuai, {name: getCopyName(names, mokuai.name)});
+    if (item2?.cads) {
+      item2.cads = item2.cads.map((v) => getHoutaiCad(new CadData(v.json).clone(true)));
+    }
     if (item2) {
       return await this.addMukuai(item2);
     }
