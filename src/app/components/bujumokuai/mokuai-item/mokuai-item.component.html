@@ -13,9 +13,9 @@
     <div class="toolbar">
       <div class="title">板材分组</div>
       <button mat-raised-button color="primary" (click)="openMrbcjfz()">编辑</button>
-      @if (morenbancaiInputInfos().length < 1) {
+      <!-- @if (morenbancaiInputInfos().length < 1) {
         <button mat-icon-button color="primary" (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
-      }
+      } -->
     </div>
     <ng-scrollbar>
       @for (info of morenbancaiInputInfos(); track $index) {
@@ -53,10 +53,10 @@
     </div>
     <ng-scrollbar>
       <div class="items no-items-per-row flex-110">
-        @for (cad of mokuai().cads; track $index) {
-          <div class="item link" [class.active]="activeCad()?._id === cad._id" (click)="clickCad(cad)">
-            <app-cad-image [id]="cad.json.info.imgId" isImgId></app-cad-image>
-            <div class="name">{{ cad["名字"] }}</div>
+        @for (cad of selectedCads(); track $index) {
+          <div class="item link" [class.active]="activeCad()?.id === cad.id" (click)="clickCad(cad)">
+            <app-cad-image id="" [data]="cad"></app-cad-image>
+            <div class="name">{{ cad.name }}</div>
           </div>
         }
       </div>

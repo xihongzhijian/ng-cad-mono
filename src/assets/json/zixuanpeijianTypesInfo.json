@@ -1,6 +1,24 @@
 {
   "prefix": "",
   "typesInfo": {
+    "empty": {
+      "empty": {
+        "id": 0,
+        "weiyima": "0",
+        "xiaoguotu": "",
+        "gongshishuru": [],
+        "xuanxiangshuru": [],
+        "suanliaogongshi": {},
+        "shuchubianliang": [],
+        "shuchuwenben": [],
+        "xinghaozhuanyong": [],
+        "mokuaishuoming": "",
+        "unique": false,
+        "shuruzongkuan": false,
+        "shuruzonggao": false,
+        "morenbancai": null
+      }
+    },
     "a": {
       "b": {
         "id": 147,

@@ -25,7 +25,7 @@ import {FormulasEditorComponent} from "@components/formulas-editor/formulas-edit
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
-import {BancaiListData, HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {BancaiListData} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -246,13 +246,13 @@ export class MokuaiItemComponent implements OnInit {
     return infos;
   });
 
-  activeCad = signal<HoutaiCad | null>(null);
+  activeCad = signal<CadData | null>(null);
   activeCadEff = effect(
     () => {
-      const cads = this.mokuai().cads || [];
+      const cads = this.selectedCads();
       const activeCad = untracked(() => this.activeCad());
       if (activeCad) {
-        this.activeCad.set(cads.find((v) => v._id === activeCad._id) || null);
+        this.activeCad.set(cads.find((v) => v.id === activeCad.id) || null);
       }
     },
     {allowSignalWrites: true}
@@ -262,6 +262,13 @@ export class MokuaiItemComponent implements OnInit {
   }
   showCadsDialog = signal(false);
   selectedCads = signal<CadData[]>([]);
+  selectedCadsEff = effect(
+    () => {
+      const cads = this.mokuai().cads || [];
+      this.selectedCads.set(cads.map((v) => new CadData(v.json)));
+    },
+    {allowSignalWrites: true}
+  );
   selectCads$ = new Subject<MokuaiCadsComponent | null>();
   async selectCads() {
     const mokuai = this.mokuai();
@@ -278,7 +285,7 @@ export class MokuaiItemComponent implements OnInit {
     this.showCadsDialog.set(false);
     this.selectCads$.next(mokuaiCads);
   }
-  clickCad(cad: HoutaiCad) {
+  clickCad(cad: CadData) {
     this.activeCad.set(cad);
   }
 

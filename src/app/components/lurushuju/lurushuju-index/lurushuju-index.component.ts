@@ -4,6 +4,7 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
+import {Router} from "@angular/router";
 import {getBooleanStr, setGlobal} from "@app/app.common";
 import {AboutComponent} from "@components/about/about.component";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
@@ -54,6 +55,7 @@ export class LurushujuIndexComponent {
   private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
+  private router = inject(Router);
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = ["ng-page"];
@@ -132,7 +134,15 @@ export class LurushujuIndexComponent {
         }
         return;
       case "模块库":
-        break;
+        {
+          const app = (window.top as any)?.app;
+          if (app) {
+            app.openTabToNext("模块库");
+          } else {
+            this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库"}});
+          }
+        }
+        return;
       case "从其他做法复制":
         await this.lrsjSuanliaoCads()?.copyCadsFromOthers();
         return;
