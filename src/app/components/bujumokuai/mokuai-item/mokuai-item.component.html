@@ -53,10 +53,10 @@
     </div>
     <ng-scrollbar>
       <div class="items no-items-per-row flex-110">
-        @for (cad of cads(); track $index) {
-          <div class="item link" [class.active]="activeCad()?.id === cad.id" (click)="clickCad(cad)">
-            <app-cad-image [id]="cad.id"></app-cad-image>
-            <div class="name">{{ cad.name }}</div>
+        @for (cad of mokuai().cads; track $index) {
+          <div class="item link" [class.active]="activeCad()?._id === cad._id" (click)="clickCad(cad)">
+            <app-cad-image [id]="cad.json.info.imgId" isImgId></app-cad-image>
+            <div class="name">{{ cad["名字"] }}</div>
           </div>
         }
       </div>
@@ -67,10 +67,29 @@
     <div class="title">选中的配件CAD</div>
     <ng-scrollbar>
       @if (activeCad(); as cad) {
-        <app-cad-item [cad]="cad" [buttons]="[]" [customInfo]="{}" [yaoqiu]="cadYaoqiu()" [isOnline]="cadsIsOnline[cad.id]"></app-cad-item>
+        <app-cad-item
+          [cad]="cad"
+          [buttons]="[]"
+          [customInfo]="{}"
+          [yaoqiu]="cadYaoqiu()"
+          showCadViewer
+          (afterEditCad)="afterEditCad()"
+        ></app-cad-item>
       } @else {
         <div class="dummy-cad-item"></div>
       }
     </ng-scrollbar>
   </div>
 </div>
+
+@if (showCadsDialog()) {
+  <app-floating-dialog [maximized]="true" noTitle>
+    <div class="flex-column" appFloatingDialogBody>
+      <app-mokuai-cads #mokuaiCads selectable [(selectedCads)]="selectedCads"></app-mokuai-cads>
+      <div class="toolbar center">
+        <button mat-raised-button color="primary" (click)="closeCadsDialog(mokuaiCads)">确定</button>
+        <button mat-raised-button color="primary" (click)="closeCadsDialog(null)">取消</button>
+      </div>
+    </div>
+  </app-floating-dialog>
+}

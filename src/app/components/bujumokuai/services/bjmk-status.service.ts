@@ -1,13 +1,13 @@
-import {computed, inject, Injectable, signal} from "@angular/core";
+import {computed, effect, inject, Injectable, signal, untracked} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {filePathUrl, getCopyName} from "@app/app.common";
 import {Cad数据要求, getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {InputInfo} from "@app/modules/input/components/input.types";
-import {MessageService} from "@app/modules/message/services/message.service";
-import {AppStatusService} from "@app/services/app-status.service";
 import {CadData} from "@lucilor/cad-viewer";
+import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputInfo} from "@modules/input/components/input.types";
+import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
 import {getEmptyMokuaiItem} from "../mokuai-item/mokuai-item.utils";
@@ -54,14 +54,39 @@ export class BjmkStatusService {
   private _mokuais = signal<MokuaiItem[]>([]);
   private _mokuaisCache: MokuaiItem[] | null = null;
   mokuais = computed<MokuaiItem[]>(() => this._mokuais());
+  currMokuai = signal<MokuaiItem | null>(null);
+  mokuaisAllEff = effect(
+    () => {
+      const mokuais = this.mokuais();
+      const currMokuai = untracked(() => this.currMokuai());
+      if (currMokuai) {
+        const currMokuai2 = mokuais.find((v) => v.id === currMokuai.id) || null;
+        this.currMokuai.set(currMokuai2);
+      }
+    },
+    {allowSignalWrites: true}
+  );
   async fetchMokuais(force?: boolean) {
     if (!force && this._mokuaisCache) {
       return this._mokuaisCache;
     }
-    const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais")) || [];
+    const focusMokuaiIds: number[] = [];
+    const mokuai = this.currMokuai();
+    if (mokuai) {
+      focusMokuaiIds.push(mokuai.id);
+    }
+    const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {focusMokuaiIds})) || [];
     this._mokuais.set(mokuais);
     this._mokuaisCache = mokuais;
     return mokuais;
+  }
+  async fetchMokuai(id: number) {
+    let mokuai2: MokuaiItem | null = null;
+    const ids = [id];
+    const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {mokuaiIds: ids, focusMokuaiIds: ids})) || [];
+    mokuai2 = mokuais[0] || null;
+    this.currMokuai.set(mokuai2);
+    return mokuai2;
   }
   refreshMokuais(updateMokuais?: MokuaiItem[]) {
     const mokuais: MokuaiItem[] = [];

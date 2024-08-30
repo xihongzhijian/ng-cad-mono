@@ -1,21 +1,20 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, signal, untracked, viewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTreeModule} from "@angular/material/tree";
 import {session, setGlobal} from "@app/app.common";
-import {DataListComponent} from "@app/modules/data-list/components/data-list/data-list.component";
-import {DataListNavNode} from "@app/modules/data-list/components/data-list/data-list.utils";
-import {DataListModule} from "@app/modules/data-list/data-list.module";
-import {TypedTemplateDirective} from "@app/modules/directives/typed-template.directive";
-import {FloatingDialogModule} from "@app/modules/floating-dialog/floating-dialog.module";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {BancaiListData} from "@app/modules/http/services/cad-data.service.types";
-import {ImageComponent} from "@app/modules/image/components/image/image.component";
-import {InputComponent} from "@app/modules/input/components/input.component";
 import {environment} from "@env";
-import {cloneDeep} from "lodash";
+import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
+import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
+import {DataListModule} from "@modules/data-list/data-list.module";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {CadDataService} from "@modules/http/services/cad-data.service";
+import {BancaiListData} from "@modules/http/services/cad-data.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
+import {InputComponent} from "@modules/input/components/input.component";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {MokuaiItemComponent} from "../mokuai-item/mokuai-item.component";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
@@ -69,29 +68,18 @@ export class MokuaikuComponent implements OnInit {
   mokuais = signal<MokuaiItem[]>([]);
   imgPrefix = this.bjmkStatus.imgPrefix;
   dataList = viewChild(DataListComponent);
-  mokuaisAllEff = effect(
-    () => {
-      const mokuais = this.mokuaisAll();
-      const currMokuai = untracked(() => this.currMokuai());
-      if (currMokuai) {
-        const currMokuai2 = mokuais.find((v) => v.id === currMokuai.id) || null;
-        this.currMokuai.set(currMokuai2);
-      }
-    },
-    {allowSignalWrites: true}
-  );
 
   mokuaiEditMode = signal(false);
   toggleMokuaiEditMode() {
     this.mokuaiEditMode.update((v) => !v);
   }
 
-  currMokuai = signal<MokuaiItem | null>(null);
+  currMokuai = this.bjmkStatus.currMokuai;
   async enterMokuai(item: MokuaiItem) {
     if (!this.bancaiListData()) {
       await this.getBancaiListData();
     }
-    this.currMokuai.set(cloneDeep(item));
+    this.currMokuai.set(await this.bjmkStatus.fetchMokuai(item.id));
   }
   closeMokuai() {
     const currMokuai = this.currMokuai();

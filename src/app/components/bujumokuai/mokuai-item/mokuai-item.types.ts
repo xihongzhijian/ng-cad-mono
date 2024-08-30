@@ -1,4 +1,5 @@
-import {ZixuanpeijianTypesInfoItemBase} from "@app/components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {ZixuanpeijianTypesInfoItemBase} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 
 export interface MokuaiItem extends ZixuanpeijianTypesInfoItemBase {
   name: string;
@@ -10,5 +11,6 @@ export interface MokuaiItem extends ZixuanpeijianTypesInfoItemBase {
   shuchuwenben: string;
   menjiao?: string[];
   kaiqi?: string[];
+  cads?: HoutaiCad[];
   hidden?: boolean;
 }

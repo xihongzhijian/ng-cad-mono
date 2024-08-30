@@ -1,4 +1,4 @@
-import {Component, EventEmitter, HostBinding, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
+import {booleanAttribute, Component, EventEmitter, HostBinding, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
 import {imgCadEmpty} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
@@ -42,7 +42,7 @@ export class CadImageComponent implements OnChanges {
   @Input() collection: CadCollection = "cad";
   @Input() width?: number;
   @Input() height?: number;
-  @Input() isImgId?: boolean;
+  @Input({transform: booleanAttribute}) isImgId?: boolean;
   @Input() backgroundColor = "black";
   @Input() paramsGetter?: () => CadPreviewParams;
   @Output() dataInfoChange = new EventEmitter<DataInfoChnageEvent>();

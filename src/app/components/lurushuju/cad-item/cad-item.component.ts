@@ -1,5 +1,6 @@
 import {KeyValuePipe} from "@angular/common";
 import {
+  booleanAttribute,
   Component,
   ElementRef,
   EventEmitter,
@@ -97,6 +98,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
   };
   @Input() validators?: {zhankai?: boolean; name?: (data: CadData) => ValidationErrors | null};
+  @Input({transform: booleanAttribute}) showCadViewer = false;
   @Output() afterEditCad = new EventEmitter<void>();
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
@@ -104,7 +106,6 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @ViewChildren(forwardRef(() => InputComponent)) inputComponents?: QueryList<InputComponent>;
   cadViewer?: CadViewer;
   mubanViewer?: CadViewer;
-  showCadViewer = false;
   showMubanViewer = false;
   cadData?: CadData;
   mubanData?: CadData;

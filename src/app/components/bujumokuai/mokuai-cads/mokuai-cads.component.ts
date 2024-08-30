@@ -1,27 +1,45 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostBinding,
+  inject,
+  input,
+  model,
+  OnInit,
+  signal,
+  viewChild
+} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
-import {setGlobal} from "@app/app.common";
-import {openCadEditorDialog} from "@app/components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
-import {CadItemComponent} from "@app/components/lurushuju/cad-item/cad-item.component";
-import {CadItemButton, CadItemIsOnlineInfo} from "@app/components/lurushuju/cad-item/cad-item.types";
-import {getCadInfoInputs2} from "@app/modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {DataListComponent} from "@app/modules/data-list/components/data-list/data-list.component";
-import {DataListNavNode} from "@app/modules/data-list/components/data-list/data-list.utils";
-import {DataListModule} from "@app/modules/data-list/data-list.module";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {getHoutaiCad} from "@app/modules/http/services/cad-data.service.utils";
-import {MessageService} from "@app/modules/message/services/message.service";
-import {AppStatusService} from "@app/services/app-status.service";
+import {MatIconModule} from "@angular/material/icon";
+import {MatTooltipModule} from "@angular/material/tooltip";
+import {getNameWithSuffix, setGlobal} from "@app/app.common";
+import {setCadData} from "@app/cad/cad-shujuyaoqiu";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
+import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
+import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
+import {CadItemButton, CadItemIsOnlineInfo} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
+import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
+import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
+import {DataListModule} from "@modules/data-list/data-list.module";
+import {CadDataService} from "@modules/http/services/cad-data.service";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
+import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
+import {NgScrollbarModule} from "ngx-scrollbar";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 import {MokuaiCadItemInfo} from "./mokuai-cads.types";
 
 @Component({
   selector: "app-mokuai-cads",
   standalone: true,
-  imports: [CadItemComponent, DataListModule, MatButtonModule],
+  imports: [CadImageComponent, CadItemComponent, DataListModule, MatButtonModule, MatIconModule, MatTooltipModule, NgScrollbarModule],
   templateUrl: "./mokuai-cads.component.html",
   styleUrl: "./mokuai-cads.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -34,6 +52,9 @@ export class MokuaiCadsComponent implements OnInit {
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = "ng-page";
+
+  selectable = input(false, {transform: booleanAttribute});
+  selectedCads = model<CadData[]>([]);
 
   cadsAll = this.bjmkStatus.cads;
   collection = this.bjmkStatus.collection;
@@ -143,5 +164,33 @@ export class MokuaiCadsComponent implements OnInit {
   afterEditCad() {
     this.cads.update((v) => [...v]);
     this.bjmkStatus.refreshCads();
+  }
+  clickCad(i: number) {
+    this.selectCad(i);
+  }
+
+  private _cadsCache: ObjectOf<CadData> = {};
+  async selectCad(i: number) {
+    let cad0 = this.cads()[i];
+    if (this._cadsCache[cad0.id]) {
+      cad0 = this._cadsCache[cad0.id];
+    } else {
+      cad0 = (await this.http.getCad({collection: this.bjmkStatus.collection, id: cad0.id})).cads[0];
+      this._cadsCache[cad0.id] = cad0;
+    }
+    if (!cad0) {
+      return;
+    }
+    const cad = cad0.clone(true);
+    cad.info.imgId = await this.http.getMongoId();
+    const yaoqiu = this.bjmkStatus.cadYaoqiu();
+    const yaoqiuItems = yaoqiu?.选中CAD要求 || [];
+    setCadData(cad, yaoqiuItems);
+    const names = this.selectedCads().map((v) => v.name);
+    cad.name = getNameWithSuffix(names, cad.name, "_", 1);
+    this.selectedCads.update((v) => [...v, cad]);
+  }
+  unselectCad(i: number) {
+    this.selectedCads.update((v) => v.filter((_, index) => index !== i));
   }
 }

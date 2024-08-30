@@ -1,4 +1,4 @@
-import {MongodbDataBase} from "@app/modules/http/services/cad-data.service.types";
+import {MongodbDataBase} from "@modules/http/services/cad-data.service.types";
 
 export interface DataListNavNodeRaw {
   id: string;

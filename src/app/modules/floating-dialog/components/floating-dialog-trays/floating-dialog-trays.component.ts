@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, OnDestroy, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatMenuModule} from "@angular/material/menu";
-import {ContextMenuModule} from "@app/modules/context-menu/context-menu.module";
+import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {FloatingDialogsManagerService} from "../../services/floating-dialogs-manager.service";
 import {FloatingDialogLimits} from "../../services/floating-dialogs-manager.types";
 import {FloatingDialogComponent} from "../floating-dialog/floating-dialog.component";

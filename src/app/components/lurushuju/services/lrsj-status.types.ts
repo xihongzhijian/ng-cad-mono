@@ -1,5 +1,5 @@
-import {OptionsDataData, TableDataBase2} from "@app/modules/http/services/cad-data.service.types";
 import {ObjectOf} from "@lucilor/utils";
+import {OptionsDataData, TableDataBase2} from "@modules/http/services/cad-data.service.types";
 import {MenjiaoCadType} from "../xinghao-data";
 
 export type OptionsAll = ObjectOf<OptionsDataData[]>;

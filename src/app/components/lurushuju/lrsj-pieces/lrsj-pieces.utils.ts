@@ -1,5 +1,5 @@
-import {InputInfoOption, InputInfoSelect} from "@app/modules/input/components/input.types";
-import {convertOptions} from "@app/modules/input/components/input.utils";
+import {InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {convertOptions} from "@modules/input/components/input.utils";
 import {OptionsAll, OptionsAll2} from "../services/lrsj-status.types";
 
 export const defaultFenleis = ["单门", "子母对开", "双开"];

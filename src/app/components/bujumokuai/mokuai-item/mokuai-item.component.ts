@@ -10,6 +10,7 @@ import {
   OnInit,
   output,
   signal,
+  untracked,
   viewChild
 } from "@angular/core";
 import {Validators} from "@angular/forms";
@@ -17,24 +18,26 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
-import {CadImageComponent} from "@app/components/cad-image/cad-image.component";
-import {openBancaiFormDialog} from "@app/components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
-import {openCadListDialog} from "@app/components/dialogs/cad-list/cad-list.component";
-import {openMrbcjfzDialog} from "@app/components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
-import {FormulasEditorComponent} from "@app/components/formulas-editor/formulas-editor.component";
-import {CadItemIsOnlineInfo} from "@app/components/lurushuju/cad-item/cad-item.types";
-import {BancaiListData} from "@app/modules/http/services/cad-data.service.types";
-import {ImageComponent} from "@app/modules/image/components/image/image.component";
-import {InputComponent} from "@app/modules/input/components/input.component";
-import {InputInfo} from "@app/modules/input/components/input.types";
-import {MessageService} from "@app/modules/message/services/message.service";
-import {MrbcjfzInfo} from "@app/views/mrbcjfz/mrbcjfz.types";
-import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@app/views/mrbcjfz/mrbcjfz.utils";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
+import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
+import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
+import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
+import {BancaiListData, HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
+import {ImageComponent} from "@modules/image/components/image/image.component";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
+import {MessageService} from "@modules/message/services/message.service";
+import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
+import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {firstValueFrom, Subject} from "rxjs";
 import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
+import {MokuaiCadsComponent} from "../mokuai-cads/mokuai-cads.component";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 import {MokuaiItem} from "./mokuai-item.types";
 import {getEmptyMokuaiItem} from "./mokuai-item.utils";
@@ -45,12 +48,14 @@ import {getEmptyMokuaiItem} from "./mokuai-item.utils";
   imports: [
     CadImageComponent,
     CadItemComponent,
+    FloatingDialogModule,
     FormulasEditorComponent,
     ImageComponent,
     InputComponent,
     MatButtonModule,
     MatDividerModule,
     MatIconModule,
+    MokuaiCadsComponent,
     NgScrollbarModule
   ],
   templateUrl: "./mokuai-item.component.html",
@@ -241,37 +246,39 @@ export class MokuaiItemComponent implements OnInit {
     return infos;
   });
 
-  cads = signal<CadData[]>([]);
-  activeCad = signal<CadData | null>(null);
-  cadsIsOnline: ObjectOf<CadItemIsOnlineInfo<any>> = {};
-  CadsIsOnlineEff = effect(() => {
-    const cads = this.cads();
-    const cadsIsOnlineOld = this.cadsIsOnline;
-    const cadsIsOnline: typeof this.cadsIsOnline = {};
-    this.cadsIsOnline = cadsIsOnline;
-    for (const cad of cads) {
-      const id = cad.id;
-      cadsIsOnline[id] = cadsIsOnlineOld[id] ?? {
-        collection: this.bjmkStatus.collection,
-        isFetched: false,
-        afterFetch: () => (cadsIsOnline[id].isFetched = true)
-      };
-    }
-  });
-  async selectCads() {
-    const result = await openCadListDialog(this.dialog, {
-      data: {
-        selectMode: "multiple",
-        collection: this.bjmkStatus.collection,
-        source: this.bjmkStatus.cads(),
-        checkedItems: this.cads().map((v) => v.id)
+  activeCad = signal<HoutaiCad | null>(null);
+  activeCadEff = effect(
+    () => {
+      const cads = this.mokuai().cads || [];
+      const activeCad = untracked(() => this.activeCad());
+      if (activeCad) {
+        this.activeCad.set(cads.find((v) => v._id === activeCad._id) || null);
       }
-    });
-    if (result) {
-      this.cads.set(result);
-    }
+    },
+    {allowSignalWrites: true}
+  );
+  afterEditCad() {
+    this.cd.markForCheck();
   }
-  clickCad(cad: CadData) {
+  showCadsDialog = signal(false);
+  selectedCads = signal<CadData[]>([]);
+  selectCads$ = new Subject<MokuaiCadsComponent | null>();
+  async selectCads() {
+    const mokuai = this.mokuai();
+    this.selectedCads.set((mokuai.cads || []).map((v) => new CadData(v.json)));
+    this.showCadsDialog.set(true);
+    const component = await firstValueFrom(this.selectCads$);
+    if (!component) {
+      return;
+    }
+    const cads = this.selectedCads().map((v) => getHoutaiCad(v));
+    this.mokuai.update((v) => ({...v, cads}));
+  }
+  closeCadsDialog(mokuaiCads: MokuaiCadsComponent | null) {
+    this.showCadsDialog.set(false);
+    this.selectCads$.next(mokuaiCads);
+  }
+  clickCad(cad: HoutaiCad) {
     this.activeCad.set(cad);
   }
 
@@ -291,15 +298,15 @@ export class MokuaiItemComponent implements OnInit {
   async save() {
     const mokuai = this.updateMokaui();
     const mokuaiOld = this.mokuaiIn();
-    const itemNew: Partial<MokuaiItem> = {id: mokuai.id, name: mokuai.name};
+    const mokuaiNew: Partial<MokuaiItem> = {id: mokuai.id, name: mokuai.name};
     for (const key of keysOf(mokuai)) {
       const val = mokuai[key];
       const valOld = mokuaiOld[key];
       if (!isEqual(val, valOld)) {
-        itemNew[key] = val as any;
+        mokuaiNew[key] = val as any;
       }
     }
-    await this.bjmkStatus.editMokuai(itemNew, true);
+    await this.bjmkStatus.editMokuai(mokuaiNew, true);
   }
   async saveAs() {
     await this.bjmkStatus.copyMokuai(this.updateMokaui());

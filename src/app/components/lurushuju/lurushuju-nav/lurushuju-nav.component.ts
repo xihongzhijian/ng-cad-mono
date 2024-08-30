@@ -1,12 +1,12 @@
 import {ChangeDetectionStrategy, Component, computed, HostBinding, inject} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {CadDataService} from "@app/modules/http/services/cad-data.service";
-import {getTableUpdateData} from "@app/modules/http/services/cad-data.service.utils";
-import {InputInfo} from "@app/modules/input/components/input.types";
-import {MessageService} from "@app/modules/message/services/message.service";
 import {environment} from "@env";
 import {timeout} from "@lucilor/utils";
+import {CadDataService} from "@modules/http/services/cad-data.service";
+import {getTableUpdateData} from "@modules/http/services/cad-data.service.utils";
+import {InputInfo} from "@modules/input/components/input.types";
+import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {SuanliaoDataBtnName, suanliaoDataBtnNames} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.types";

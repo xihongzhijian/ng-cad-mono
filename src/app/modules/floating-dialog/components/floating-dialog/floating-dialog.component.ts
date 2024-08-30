@@ -19,8 +19,8 @@ import {
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
-import {ContextMenuModule} from "@app/modules/context-menu/context-menu.module";
 import {ObjectOf} from "@lucilor/utils";
+import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {Properties} from "csstype";
 import {uniqueId} from "lodash";
 import {FloatingDialogsManagerService} from "../../services/floating-dialogs-manager.service";
@@ -43,7 +43,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   height = model<string | number>("auto");
   top = input<string | number | null>(0);
   left = input<string | number | null>(0);
-  noTitle = input<boolean, boolean | string>(false, {transform: booleanAttribute});
+  noTitle = input(false, {transform: booleanAttribute});
   size = model<Readonly<Point>>({x: 0, y: 0});
   position = model<Readonly<Point>>({x: 0, y: 0});
   active = model<boolean>(false);
