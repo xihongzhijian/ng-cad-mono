@@ -189,4 +189,8 @@ export class LurushujuNavComponent {
   clickSuanliaoDataBtnName(name: SuanliaoDataBtnName) {
     this.lrsjStatus.triggerSuanliaoDataBtn.set({name});
   }
+
+  selectFenleis() {
+    this.lrsjStatus.selectFenleis();
+  }
 }

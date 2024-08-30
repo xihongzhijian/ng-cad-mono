@@ -39,6 +39,9 @@
           </div>
         }
       </div>
+      <div class="toolbar">
+        <button mat-raised-button color="primary" (click)="selectFenleis()">增加产品分类</button>
+      </div>
     } @else {
       <div class="menchaungs">
         @for (menchuang of xinghaoMenchuangs().items; track i; let i = $index) {

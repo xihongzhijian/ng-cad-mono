@@ -12,7 +12,7 @@ import {filterHuajian} from "@views/mrbcjfz/mrbcjfz.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {lastValueFrom, Subject, take, takeUntil} from "rxjs";
 import {LrsjPieceInfos} from "../lrsj-pieces/lrsj-pieces.types";
-import {defaultFenleis} from "../lrsj-pieces/lrsj-pieces.utils";
+import {defaultFenleis, getOptions} from "../lrsj-pieces/lrsj-pieces.utils";
 import {SuanliaoDataBtnName} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.types";
 import {updateMenjiaoData} from "../lrsj-pieces/lrsj-suanliao-data/lrsj-suanliao-data.utils";
 import {
@@ -689,5 +689,39 @@ export class LrsjStatusService implements OnDestroy {
     const menshanOptions = this.menshanOptions().filter((v) => xiaoguotuValues.has(v.name));
     const huajianIds = this.getHuajianIds(menshanOptions);
     return this.huajians().filter((v) => huajianIds.has(v.vid) && filterHuajian(v));
+  }
+
+  async selectFenleis() {
+    const xinghao = this.xinghao();
+    if (!xinghao) {
+      return;
+    }
+    const result = await this.message.prompt<any, string[]>({
+      type: "select",
+      label: "产品分类",
+      value: xinghao.显示产品分类,
+      options: getOptions(this.xinghaoOptions(), "产品分类", (option) => {
+        if (defaultFenleis.includes(option.value)) {
+          option.disabled = true;
+        }
+      }),
+      multiple: true
+    });
+    if (!result) {
+      return;
+    }
+    const data: Partial<Xinghao> = {显示产品分类: result};
+    let updateFenlei = false;
+    for (const name of result) {
+      if (!Array.isArray(xinghao.产品分类[name])) {
+        xinghao.产品分类[name] = [];
+        updateFenlei = true;
+      }
+    }
+    if (updateFenlei) {
+      data.产品分类 = xinghao.产品分类;
+    }
+    await this.setXinghao(data);
+    await this.refreshXinghao(true);
   }
 }
