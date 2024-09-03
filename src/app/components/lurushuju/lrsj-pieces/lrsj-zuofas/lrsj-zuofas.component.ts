@@ -133,8 +133,10 @@ export class LrsjZuofasComponent extends LrsjPiece {
       复制名字 = getCopyName(names, zuofaName);
     }
     const 型号 = xinghao.名字;
-    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/copyGongyi", {名字: zuofaName, 复制名字, 型号, fenleiName});
-    await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw?.产品分类);
+    const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/copyGongyi", {名字: zuofaName, 复制名字, 型号, 产品分类: fenleiName});
+    if (xinghaoRaw) {
+      await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw.产品分类);
+    }
   }
   async editZuofa(fenleiName: string, zuofa: 工艺做法) {
     const xinghao = this.xinghao();

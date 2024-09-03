@@ -109,7 +109,6 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       data.gongyi = gongyi.mingzi;
     }
     data.tingyong = !!data.tingyong;
-    const isAdd = !xinghao;
 
     const data2: XinghaoRaw = {
       名字: data.mingzi,
@@ -125,7 +124,9 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     const getOptionInput = async (key: string, label: string, multiple?: boolean, options?: {hidden?: boolean}) => {
       const info = await this.getOptionInput(data2, key, label, multiple, options);
       if (info.optionsDialog) {
-        info.optionsDialog.onChange = () => {
+        const onChange = info.optionsDialog.onChange;
+        info.optionsDialog.onChange = (val) => {
+          onChange?.(val);
           refreshOptions = true;
         };
       }
@@ -168,8 +169,8 @@ export class LrsjXinghaosComponent extends LrsjPiece {
           }
         }
       },
-      await getOptionInput("门窗", "所属门窗", true, {hidden: isAdd}),
-      await getOptionInput("工艺", "所属工艺", true, {hidden: isAdd}),
+      await getOptionInput("门窗", "所属门窗", true),
+      await getOptionInput("工艺", "所属工艺", true),
       await getOptionInput("订单流程", "订单流程"),
       {
         type: "select",
