@@ -61,10 +61,10 @@ export class CalcService {
   }
 
   private getErrorFormusStr(errorFormulas: Formulas, vars: Formulas, errorMsg?: CalcCustomErrorMsg) {
-    const {code, title, prefix, suffix} = errorMsg || {};
-    let str = `${prefix || ""}<h3>${title || ""}错误！请检查：${code || ""}<br/>1、<span style="color:red">公式匹配</span>是否正确；`;
-    str += `2、<span style="color:red">公式书写</span>是否正确！</h3><br/><br/>`;
-    str += suffix || "";
+    const {code = "", title = "", prefix = "", suffix = "", title2 = "错误！请检查："} = errorMsg || {};
+    let str = `${prefix}<h2>${title}${title2}${code}<br/>1、<span style="color:red">公式匹配</span>是否正确；`;
+    str += `2、<span style="color:red">公式书写</span>是否正确！</h2><br/><br/>`;
+    str += suffix;
 
     if (vars && vars["正在计算CAD名字"]) {
       str += `CAD：${vars["正在计算CAD名字"]}<br/><br/>`;
@@ -106,6 +106,7 @@ export class CalcService {
 export interface CalcCustomErrorMsg {
   code?: string;
   title?: string;
+  title2?: string;
   prefix?: string;
   suffix?: string;
   // data?: any;
