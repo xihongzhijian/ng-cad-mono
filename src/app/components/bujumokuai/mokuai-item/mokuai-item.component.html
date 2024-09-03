@@ -13,7 +13,7 @@
     <div class="item-bancai flex-column">
       <div class="toolbar">
         <div class="title">板材分组</div>
-        <button mat-raised-button color="primary" (click)="openMrbcjfz()">编辑</button>
+        <button mat-raised-button color="primary" (click)="editMrbcjfz()">编辑</button>
         <!-- @if (morenbancaiInputInfos().length < 1) {
           <button mat-icon-button color="primary" (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
         } -->
@@ -73,3 +73,16 @@
     </div>
   </app-floating-dialog>
 }
+
+<app-floating-dialog [maximized]="true" [minimized]="!showMrbcjfzDialog()" noTitle>
+  <div class="flex-column" appFloatingDialogBody>
+    <app-mrbcjfz
+      #mrbcjfz
+      class="flex-110"
+      closeable
+      [inputData]="mrbcjfzInputData()"
+      (dataSubmit)="onMrbcjfSubmit($event)"
+      (dataClose)="onMrbcjfClose()"
+    ></app-mrbcjfz>
+  </div>
+</app-floating-dialog>

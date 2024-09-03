@@ -19,7 +19,6 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
-import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
@@ -31,7 +30,8 @@ import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
+import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
+import {MrbcjfzDataSubmitEvent, MrbcjfzInfo, MrbcjfzResponseData} from "@views/mrbcjfz/mrbcjfz.types";
 import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -56,6 +56,7 @@ import {getEmptyMokuaiItem} from "./mokuai-item.utils";
     MatDividerModule,
     MatIconModule,
     MokuaiCadsComponent,
+    MrbcjfzComponent,
     NgScrollbarModule
   ],
   templateUrl: "./mokuai-item.component.html",
@@ -201,27 +202,48 @@ export class MokuaiItemComponent implements OnInit {
     morenbancais.splice(i, 1);
     this.morenbancais.set(morenbancais);
   }
-  async openMrbcjfz(dryRun = false) {
+
+  showMrbcjfzDialog = signal(false);
+  private _mrbcjfzResponseData = signal<MrbcjfzResponseData | null>(null);
+  private _mrbcjfzDialogClose$ = new Subject<MrbcjfzDataSubmitEvent | null>();
+  mrbcjfzComponent = viewChild<MrbcjfzComponent>("mrbcjfz");
+  mrbcjfzInputData = computed(() => {
     const mokuai = this.mokuai();
-    const result = await openMrbcjfzDialog(this.dialog, {
-      data: {
-        id: mokuai.id,
-        table: "p_peijianmokuai",
-        collection: this.bjmkStatus.collection,
-        mokuaiName: mokuai.name,
-        cadWidth: this.cadWidth(),
-        cadHeight: this.cadHeight(),
-        dryRun,
-        onCadChange: async () => {
-          const mokuai2 = await this.bjmkStatus.fetchMokuai(mokuai.id);
-          this.bjmkStatus.refreshMokuais([mokuai2]);
-        }
-      }
-    });
-    if (result && !dryRun) {
-      await this.bjmkStatus.fetchMokuais(true);
+    const data = this._mrbcjfzResponseData();
+    return {
+      xinghao: mokuai.name,
+      morenbancai: mokuai.morenbancai || {},
+      cads: this.selectedCads(),
+      huajians: data?.huajians
+    };
+  });
+  async openMrbcjfzDialog() {
+    const mokuai = this.mokuai();
+    if (!this._mrbcjfzResponseData()) {
+      this._mrbcjfzResponseData.set(
+        await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {
+          table: "p_peijianmokuai",
+          id: mokuai.id,
+          collection: this.bjmkStatus.collection
+        })
+      );
     }
-    return result;
+    this.showMrbcjfzDialog.set(true);
+    return await firstValueFrom(this._mrbcjfzDialogClose$);
+  }
+  onMrbcjfSubmit(event: MrbcjfzDataSubmitEvent) {
+    this._mrbcjfzDialogClose$.next(event);
+    this.showMrbcjfzDialog.set(false);
+  }
+  onMrbcjfClose() {
+    this._mrbcjfzDialogClose$.next(null);
+    this.showMrbcjfzDialog.set(false);
+  }
+  async editMrbcjfz() {
+    const result = await this.openMrbcjfzDialog();
+    if (result) {
+      this.mokuai.update((v) => ({...v, morenbancai: result.data.默认板材}));
+    }
   }
 
   mokuaiInputInfos = computed(() => {
@@ -305,10 +327,10 @@ export class MokuaiItemComponent implements OnInit {
   async updateMokaui() {
     const mokuai = this.mokuai();
     const errors: string[] = [];
-    const result = await this.openMrbcjfz(true);
-    if (result) {
-      if (result.errors.length > 0) {
-        errors.push(...result.errors.map((v) => `板材分组：${v}`));
+    const mrbcjfzErrors = this.mrbcjfzComponent()?.checkSubmit();
+    if (mrbcjfzErrors) {
+      if (mrbcjfzErrors.length > 0) {
+        errors.push(...mrbcjfzErrors.map((v) => `板材分组：${v}`));
       } else {
         mokuai.morenbancai = this.morenbancais().reduce<ObjectOf<MrbcjfzInfo>>((acc, {key, val}) => {
           acc[key] = val;

@@ -1,6 +1,7 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
+  booleanAttribute,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -89,7 +90,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   @Input() id = 0;
   @Input() table = "";
   @Input() collection?: CadCollection;
-  @Input() closeable = false;
+  @Input({transform: booleanAttribute}) closeable = false;
   @Input() inputData?: MrbcjfzInputData;
   @Input() forceSubmit? = false;
   @Input() mokuaiName?: string;
