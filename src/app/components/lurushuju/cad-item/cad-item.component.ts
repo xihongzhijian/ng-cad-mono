@@ -496,7 +496,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     }
     if (showCadViewer) {
       await this.onlineFetch();
-    } else {
+    } else if (this.isOnline) {
       if (cad instanceof CadData) {
         cad.info.incomplete = true;
       } else {
@@ -526,6 +526,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
           await this.http.setCad({collection: collection, cadData: data, force: true}, true);
           await this.http.setCadImg(data.id, url, {silent: true});
         }
+        this.afterEditCad.emit();
       });
     }
   }
@@ -680,7 +681,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   }
 
   isCadInfoVisible(item: Cad数据要求Item) {
-    if (item.key === "展开信息") {
+    if (["展开信息", "激光开料CAD模板"].includes(item.key)) {
       return true;
     }
     return !!item.cadKey;
@@ -699,6 +700,11 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       if (zhankai) {
         return `${zhankai.zhankaikuan || ""} × ${zhankai.zhankaigao || ""} = ${zhankai.shuliang || ""}`;
       }
+    } else if (item.key === "激光开料CAD模板") {
+      const zhankai = this.zhankai;
+      if (zhankai) {
+        return zhankai.kailiaomuban;
+      }
     }
     return "";
   }
@@ -711,9 +717,12 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
 
   onCadInfoChange(event: DataInfoChnageEvent) {
     const {cad} = this;
-    if (!(cad instanceof CadData)) {
+    if (cad instanceof CadData) {
+      cad.info = event.info;
+    } else {
       cad.json.info = event.info;
     }
+    this.afterEditCad.emit();
   }
 
   async onMubanImageClick() {

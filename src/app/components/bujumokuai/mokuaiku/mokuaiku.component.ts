@@ -91,7 +91,7 @@ export class MokuaikuComponent implements OnInit {
   }
 
   async addMukuai(mokuai?: Partial<MokuaiItem>) {
-    const mokuai2 = await this.bjmkStatus.addMukuai(mokuai);
+    const mokuai2 = await this.bjmkStatus.addMukuai(mokuai, {type: this.mokuaiActiveNavNode()?.name});
     if (mokuai2) {
       await this.bjmkStatus.fetchMokuais(true);
       if (mokuai2.type) {

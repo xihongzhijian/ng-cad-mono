@@ -7,6 +7,10 @@
         <button mat-stroked-button color="primary" (click)="addNavNode()">添加1级</button>
       }
     </div>
+    <div class="toolbar">
+      <button mat-stroked-button color="primary" (click)="importNavNodes()">导入</button>
+      <button mat-stroked-button color="primary" (click)="exportNavNodes()">导出</button>
+    </div>
     <ng-scrollbar #navNodesScrollbar>
       <mat-tree #navNodesTree [dataSource]="navDataSource" [treeControl]="navTreeControl" [trackBy]="navNodeTrackBy">
         <mat-tree-node *matTreeNodeDef="let node" [class.hidden]="node.hidden || node.hidden2">
@@ -38,11 +42,14 @@
             (click)="clickNavNode(node)"
           >
             {{ node.name }}
-            @if (navShowCount() && (!production || navQuery())) {
-              ({{ node.itemCount }}个)
-            }
             @if (navEditMode()) {
               (排序{{ node.order }})
+            } @else {
+              @if (itemQuery()) {
+                <span style="color: red">(搜到{{ node.itemCount }}个)</span>
+              } @else {
+                ({{ node.itemCount }}个)
+              }
             }
           </button>
         </ng-template>

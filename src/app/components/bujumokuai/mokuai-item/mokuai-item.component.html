@@ -3,89 +3,69 @@
   <button mat-raised-button color="primary" (click)="save()">保存</button>
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
 </div>
-<div class="item-infos flex-row flex-110">
-  <div class="item-basic flex-column">
-    <div class="item">
-      <app-image class="link" [src]="mokuai().xiaoguotu" [prefix]="imgPrefix()" (click)="editMokuai()"></app-image>
+<ng-scrollbar>
+  <div class="item-infos flex-row flex-110">
+    <div class="item-basic flex-column">
+      <div class="item">
+        <app-image class="link" [src]="mokuai().xiaoguotu" [prefix]="imgPrefix()" (click)="editMokuai()"></app-image>
+      </div>
     </div>
-  </div>
-  <div class="item-bancai flex-column">
-    <div class="toolbar">
-      <div class="title">板材分组</div>
-      <button mat-raised-button color="primary" (click)="openMrbcjfz()">编辑</button>
-      <!-- @if (morenbancaiInputInfos().length < 1) {
-        <button mat-icon-button color="primary" (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
-      } -->
-    </div>
-    <ng-scrollbar>
+    <div class="item-bancai flex-column">
+      <div class="toolbar">
+        <div class="title">板材分组</div>
+        <button mat-raised-button color="primary" (click)="openMrbcjfz()">编辑</button>
+        <!-- @if (morenbancaiInputInfos().length < 1) {
+          <button mat-icon-button color="primary" (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
+        } -->
+      </div>
       @for (info of morenbancaiInputInfos(); track $index) {
         <app-input [info]="info"></app-input>
       }
-    </ng-scrollbar>
-  </div>
-  <div class="mokuai-gongneng flex-column">
-    <div class="title">模块功能</div>
-    <div class="box">
-      <ng-scrollbar>
+    </div>
+    <div class="mokuai-gongneng flex-column">
+      <div class="title">模块功能</div>
+      <div class="box">
         <div class="flex-column">
           @for (info of mokuaiInputInfos(); track $index) {
             <app-input [info]="info"></app-input>
           }
         </div>
-      </ng-scrollbar>
-    </div>
-    <div class="inputs">
-      @for (info of mokuaiInputInfos2(); track $index) {
-        <app-input [info]="info"></app-input>
-      }
+      </div>
     </div>
   </div>
-  <div class="mokuai-gongshi flex-column flex-110">
-    <div class="title">模块公式</div>
-    <app-formulas-editor #slgs class="box" [formulas]="mokuai().suanliaogongshi" noFormulasText></app-formulas-editor>
-  </div>
-</div>
-<div class="item-cads border flex-row flex-110">
-  <div class="cads flex-column">
-    <div class="toolbar">
-      <div class="title">模块的所有配件CAD</div>
-      <button mat-raised-button color="primary" (click)="selectCads()">选择CAD</button>
+  <div class="item-cads border flex-row flex-110">
+    <div class="mokuai-gongshi flex-column flex-110">
+      <div class="title">模块公式</div>
+      <app-formulas-editor #slgs class="box flex-110" [formulas]="mokuai().suanliaogongshi" noFormulasText noScroll></app-formulas-editor>
     </div>
-    <ng-scrollbar>
+    <mat-divider vertical></mat-divider>
+    <div class="cads flex-column">
+      <div class="toolbar">
+        <div class="title">模块的所有配件CAD</div>
+        <button mat-raised-button color="primary" (click)="selectCads()">选择CAD</button>
+      </div>
       <div class="items no-items-per-row flex-110">
         @for (cad of selectedCads(); track $index) {
-          <div class="item link" [class.active]="activeCad()?.id === cad.id" (click)="clickCad(cad)">
-            <app-cad-image id="" [data]="cad"></app-cad-image>
-            <div class="name">{{ cad.name }}</div>
-          </div>
+          <app-cad-item
+            class="item"
+            [cad]="cad"
+            [buttons]="[]"
+            [customInfo]="{}"
+            [yaoqiu]="cadYaoqiu()"
+            [cadWidth]="cadWidth()"
+            [cadHeight]="cadHeight()"
+            (afterEditCad)="afterEditCad()"
+          ></app-cad-item>
         }
       </div>
-    </ng-scrollbar>
+    </div>
   </div>
-  <mat-divider vertical></mat-divider>
-  <div class="active-cad flex-column">
-    <div class="title">选中的配件CAD</div>
-    <ng-scrollbar>
-      @if (activeCad(); as cad) {
-        <app-cad-item
-          [cad]="cad"
-          [buttons]="[]"
-          [customInfo]="{}"
-          [yaoqiu]="cadYaoqiu()"
-          showCadViewer
-          (afterEditCad)="afterEditCad()"
-        ></app-cad-item>
-      } @else {
-        <div class="dummy-cad-item"></div>
-      }
-    </ng-scrollbar>
-  </div>
-</div>
+</ng-scrollbar>
 
 @if (showCadsDialog()) {
   <app-floating-dialog [maximized]="true" noTitle>
     <div class="flex-column" appFloatingDialogBody>
-      <app-mokuai-cads #mokuaiCads selectable [(selectedCads)]="selectedCads"></app-mokuai-cads>
+      <app-mokuai-cads #mokuaiCads class="flex-110" selectable [(selectedCads)]="selectedCads"></app-mokuai-cads>
       <div class="toolbar center">
         <button mat-raised-button color="primary" (click)="closeCadsDialog(mokuaiCads)">确定</button>
         <button mat-raised-button color="primary" (click)="closeCadsDialog(null)">取消</button>

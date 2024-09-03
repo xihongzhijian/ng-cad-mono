@@ -22,7 +22,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTreeModule, MatTreeNestedDataSource} from "@angular/material/tree";
 import {CadCollection} from "@app/cad/collections";
 import {environment} from "@env";
-import {getElementVisiblePercentage, ObjectOf, queryStringList} from "@lucilor/utils";
+import {downloadByString, getElementVisiblePercentage, ObjectOf, queryStringList, selectFiles} from "@lucilor/utils";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -33,7 +33,7 @@ import {cloneDeep, debounce} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom} from "rxjs";
 import {v4} from "uuid";
-import {DataListItem, DataListNavData} from "./data-list.types";
+import {DataListItem, DataListNavData, DataListNavNodeRaw} from "./data-list.types";
 import {
   DataListNavNode,
   findActiveDataListNavNode,
@@ -68,6 +68,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   @HostBinding("class") class = "ng-page";
 
   navDataName = input.required<string>();
+  navDataTitle = input.required<string>();
   itemsAll = input<T[]>([]);
   items = model<T[]>([]);
   activeNavNode = model<DataListNavNode | null>(null);
@@ -93,8 +94,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   navTreeControl = new NestedTreeControl<DataListNavNode>(({children}) => children);
   navNodehasChild = (_: number, node: DataListNavNode) => node.hasChild();
   navNodeTrackBy = (_: number, node: DataListNavNode) => node.id;
-  navNodesHideEmpty = signal(false);
-  navShowCount = signal(true);
+  navNodesHideEmpty = computed(() => !!this.itemQuery());
   navQuery = signal("");
   navQueryInputInfo = computed<InputInfo>(() => ({
     type: "string",
@@ -112,7 +112,6 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
 
   toggleNavEditMode() {
     this.navEditMode.update((v) => !v);
-    this.navShowCount.set(!this.navEditMode());
   }
 
   async getNavNodes() {
@@ -359,5 +358,28 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     } else if (firstNonEmptyNode) {
       this.activeNavNode.set(firstNonEmptyNode);
     }
+  }
+
+  async importNavNodes() {
+    const files = await selectFiles({accept: ".json"});
+    const file = files?.[0];
+    if (!file) {
+      return;
+    }
+    let nodes: DataListNavNodeRaw[];
+    try {
+      nodes = JSON.parse(await file.text());
+    } catch (error) {
+      console.error(error);
+      this.message.error("文件格式错误");
+      return;
+    }
+    const dataList = getDataListNavNodeList(nodes);
+    this.navDataSource.data = dataList;
+    this.setNavNodes();
+  }
+  async exportNavNodes() {
+    const nodes = this.navDataSource.data.map((node) => node.export());
+    downloadByString(JSON.stringify(nodes), {filename: `${this.navDataTitle()}.json`});
   }
 }

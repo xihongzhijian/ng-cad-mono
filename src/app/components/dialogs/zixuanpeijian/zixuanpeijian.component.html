@@ -172,11 +172,14 @@
           </div>
           <ng-template #nodeTitle [appTypedTemplate]="{$implicit: lingsanTypesDataSource.data[0]}" let-node>
             {{ node.label || node.name }}
-            @if (lingsanTypesShowCount && !lingsanTypesEditMode && (!production || searchLingsanValue)) {
-              ({{ node.cadCount }}个)
-            }
             @if (lingsanTypesEditMode) {
               (排序{{ node.order }})
+            } @else {
+              @if (searchLingsanValue) {
+                <span style="color: red">(搜到{{ node.cadCount }}个)</span>
+              } @else {
+                ({{ node.cadCount }}个)
+              }
             }
           </ng-template>
           <ng-template #nodeEdit [appTypedTemplate]="{$implicit: lingsanTypesDataSource.data[0]}" let-node>

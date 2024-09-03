@@ -1,4 +1,11 @@
-<app-data-list class="flex-110" [navDataName]="navDataName()" [itemsAll]="cadsAll()" [(items)]="cads" [(activeNavNode)]="activeNavNode">
+<app-data-list
+  class="flex-110"
+  [navDataName]="navDataName()"
+  navDataTitle="配件库分类"
+  [itemsAll]="cadsAll()"
+  [(items)]="cads"
+  [(activeNavNode)]="activeNavNode"
+>
   <div class="toolbar" appDataListToolbar>
     <button mat-raised-button [color]="cadsEditMode() ? 'accent' : 'primary'" (click)="toggleCadsEditMode()">编辑</button>
     <button mat-raised-button color="primary" (click)="addCad()">添加</button>
@@ -24,7 +31,7 @@
 </app-data-list>
 
 @if (selectable()) {
-  <ng-scrollbar class="selected-cads">
+  <ng-scrollbar #selectedCadsScrollbar class="selected-cads">
     <div class="data-items items no-items-per-row">
       @for (cad of selectedCads(); track i; let i = $index) {
         <div class="data-item item link">

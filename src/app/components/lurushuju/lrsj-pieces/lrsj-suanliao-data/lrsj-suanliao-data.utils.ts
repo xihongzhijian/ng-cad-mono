@@ -314,7 +314,7 @@ export const getMenjiaoOptionInputInfo = (
     info.onChange = () => {
       updateMenjiaoData(data);
     };
-    info.style = getInputStyle(true);
+    info.style = getInputStyle(false);
     const dialogKeys = ["门铰"];
     const openInNewTabKeys = ["门扇厚度", "锁边", "铰边"];
     if (dialogKeys.includes(key)) {

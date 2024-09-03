@@ -87,10 +87,10 @@
         [cdkDropListData]="xinghao['默认板材'][key].CAD"
         (cdkDropListDropped)="dropListItem($event, key, 'CAD')"
       >
-        @for (id of xinghao["默认板材"][key].CAD; track id) {
+        @for (id of xinghao["默认板材"][key].CAD; track $index) {
           @if (cads[id]) {
             <div class="item flex-column" cdkDrag (click)="selectListItem(cads[id], 'CAD', key)">
-              <app-cad-image [id]="id" [data]="cads[id].data"></app-cad-image>
+              <app-cad-image [id]="id" [data]="cads[id].data" [width]="cadWidth" [height]="cadHeight"></app-cad-image>
               <div class="title center">
                 {{ cads[id].data.name }}
                 <button mat-icon-button color="primary" appClickStop (click)="openCad(cads[id])">
@@ -130,7 +130,7 @@
     @for (item of cads | keyvalue: returnZero; track item.key) {
       @if (!item.value.selected) {
         <div class="item flex-column" (click)="selectListItem(item.value, 'CAD')">
-          <app-cad-image [id]="item.value.id" [data]="item.value.data"></app-cad-image>
+          <app-cad-image [id]="item.value.id" [data]="item.value.data" [width]="cadWidth" [height]="cadHeight"></app-cad-image>
           <div class="title center">
             {{ item.value.data.name }}
             <button mat-icon-button color="primary" appClickStop (click)="openCad(item.value)">

@@ -37,14 +37,18 @@ export class DataListNavNode {
       this.children = undefined;
     }
   }
-  export(): DataListNavNodeRaw {
-    return {
+  export() {
+    const data: DataListNavNodeRaw = {
       id: this.id,
       name: this.name,
       order: this.order,
       createTime: this.createTime,
       children: this.children?.map((child) => child.export())
     };
+    if (this.order !== 0) {
+      data.order = this.order;
+    }
+    return data;
   }
 }
 

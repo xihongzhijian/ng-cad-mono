@@ -4,6 +4,7 @@ import {SuanliaoDataParams, 算料公式} from "@components/lurushuju/xinghao-da
 import {CadData} from "@lucilor/cad-viewer";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {ObjectOf} from "packages/utils/lib";
 
 export interface Loader {
   id: string;
@@ -31,6 +32,7 @@ export interface OpenCadOptions {
   extraData?: Partial<CadData>;
   gongshis?: 算料公式[] | null;
   validator?: (data: CadData) => ValidationErrors | null;
+  query?: ObjectOf<string>;
 }
 
 export interface AppUser extends TableDataBase {

@@ -692,15 +692,21 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     if (mokuais) {
       const mokuais2 = mokuais;
+      const kexuanBefore = mokuaiNode.可选模块;
       mokuaiNode.可选模块 = mokuaiNode.可选模块.filter((v) => mokuais2.find((v2) => v.id === v2.id));
+      const kexuan = mokuaiNode.可选模块;
       for (const item of mokuais2) {
-        if (!mokuaiNode.可选模块.find((v) => v.id === item.id)) {
-          mokuaiNode.可选模块.push(item);
+        if (!kexuan.find((v) => v.id === item.id)) {
+          kexuan.push(item);
         }
         const 选中模块 = mokuaiNode.选中模块;
-        if (选中模块 && !mokuaiNode.可选模块.find((v) => v.id === 选中模块.id)) {
+        if (选中模块 && !kexuan.find((v) => v.id === 选中模块.id)) {
           delete mokuaiNode.选中模块;
         }
+      }
+      if (kexuanBefore.length < 1 && kexuan.length > 0 && !kexuan.find((v) => v.info?.isDefault)) {
+        this.setDefaultMokuai(kexuan[0]);
+        this.selectMokuai(kexuan[0]);
       }
     }
   }

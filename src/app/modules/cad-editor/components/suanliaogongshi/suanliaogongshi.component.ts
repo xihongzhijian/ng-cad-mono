@@ -10,6 +10,7 @@ import {getCopyName} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
+import {FormulasChangeEvent} from "@components/formulas-editor/formulas-editor.types";
 import {ShuruTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {downloadByString, isTypeOf, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -205,11 +206,11 @@ export class SuanliaogongshiComponent {
     this.gongshiInfo.update((v) => [...v]);
   }
 
-  editGongshiEnd(index: number, formulas: Formulas | null, close = false) {
+  editGongshiEnd(index: number, event: FormulasChangeEvent | null, close = false) {
     const info = this.info();
     const gongshiInfo = this.gongshiInfo()[index];
-    if (formulas && info.data.算料公式) {
-      info.data.算料公式[index].公式 = formulas;
+    if (event && event.errors.length < 1 && info.data.算料公式) {
+      info.data.算料公式[index].公式 = event.formulas;
       this.slgsChange.emit();
     }
     if (close) {

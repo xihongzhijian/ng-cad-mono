@@ -142,7 +142,6 @@ export class ZixuanpeijianComponent implements OnInit {
   lingsanTypesDataSource = new MatTreeNestedDataSource<TypesMapNode>();
   lingsanTypesTreeControl = new NestedTreeControl<TypesMapNode>((node) => node.children);
   lingsanTypesEditMode = false;
-  lingsanTypesShowCount = true;
   hasChild = (_: number, node: TypesMapNode) => !!node.children && node.children.length > 0;
   searchLingsanValueKey = "zixuanpeijian-searchLingsanValue";
   searchLingsanValue = session.load<string>(this.searchLingsanValueKey) || "";

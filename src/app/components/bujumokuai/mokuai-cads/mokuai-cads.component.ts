@@ -1,6 +1,7 @@
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   effect,
@@ -32,7 +33,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {NgScrollbarModule} from "ngx-scrollbar";
+import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 import {MokuaiCadItemInfo} from "./mokuai-cads.types";
 
@@ -46,6 +47,7 @@ import {MokuaiCadItemInfo} from "./mokuai-cads.types";
 })
 export class MokuaiCadsComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);
+  private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
@@ -73,6 +75,7 @@ export class MokuaiCadsComponent implements OnInit {
   });
 
   dataList = viewChild(DataListComponent);
+  selectedCadsScrollbar = viewChild<NgScrollbar>("selectedCadsScrollbar");
 
   constructor() {
     setGlobal("mkcads", this);
@@ -169,26 +172,34 @@ export class MokuaiCadsComponent implements OnInit {
     this.selectCad(i);
   }
 
-  private _cadsCache: ObjectOf<CadData> = {};
   async selectCad(i: number) {
-    let cad0 = this.cads()[i];
-    if (this._cadsCache[cad0.id]) {
-      cad0 = this._cadsCache[cad0.id];
-    } else {
+    const cads = this.cads();
+    let cad0 = cads[i];
+    if (!this.cadsIsOnline[cad0.id].isFetched) {
       cad0 = (await this.http.getCad({collection: this.bjmkStatus.collection, id: cad0.id})).cads[0];
-      this._cadsCache[cad0.id] = cad0;
-    }
-    if (!cad0) {
-      return;
+      if (cad0) {
+        cads[i] = cad0;
+        this.cads.update((v) => [...v]);
+        this.cadsIsOnline[cad0.id].isFetched = true;
+      } else {
+        return;
+      }
     }
     const cad = cad0.clone(true);
-    cad.info.imgId = await this.http.getMongoId();
+    cad.info.isLocal = true;
+    delete cad.info.imgId;
+    delete cad.info.incomplete;
+    delete cad.info.isOnline;
     const yaoqiu = this.bjmkStatus.cadYaoqiu();
     const yaoqiuItems = yaoqiu?.选中CAD要求 || [];
     setCadData(cad, yaoqiuItems);
     const names = this.selectedCads().map((v) => v.name);
     cad.name = getNameWithSuffix(names, cad.name, "_", 1);
     this.selectedCads.update((v) => [...v, cad]);
+    setTimeout(() => {
+      this.selectedCadsScrollbar()?.scrollTo({bottom: 0});
+      this.cd.markForCheck();
+    }, 0);
   }
   unselectCad(i: number) {
     this.selectedCads.update((v) => v.filter((_, index) => index !== i));

@@ -5,7 +5,11 @@
   [inputData]="data.inputData"
   [closeable]="true"
   [forceSubmit]="data.dryRun"
+  [mokuaiName]="data.mokuaiName"
+  [cadWidth]="data.cadWidth"
+  [cadHeight]="data.cadHeight"
   (dataSubmit)="submit($event)"
   (dataClose)="close()"
   (refreshAfter)="refreshAfter()"
+  (cadChange)="onCadChange($event)"
 ></app-mrbcjfz>

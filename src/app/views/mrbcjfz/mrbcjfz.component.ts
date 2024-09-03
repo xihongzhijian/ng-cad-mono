@@ -23,6 +23,7 @@ import {setGlobal, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
+import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -91,9 +92,13 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   @Input() closeable = false;
   @Input() inputData?: MrbcjfzInputData;
   @Input() forceSubmit? = false;
+  @Input() mokuaiName?: string;
+  @Input() cadWidth?: number;
+  @Input() cadHeight?: number;
   @Output() dataSubmit = new EventEmitter<MrbcjfzDataSubmitEvent>();
   @Output() dataClose = new EventEmitter<void>();
   @Output() refreshAfter = new EventEmitter<void>();
+  @Output() cadChange = new EventEmitter<CadData>();
   xinghao: MrbcjfzXinghaoInfo = new MrbcjfzXinghaoInfo(this.table, {vid: 0, mingzi: ""});
   cads: ObjectOf<MrbcjfzCadInfo> = {};
   huajians: ObjectOf<MrbcjfzHuajianInfo> = {};
@@ -551,8 +556,19 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     this.dataClose.emit();
   }
 
-  openCad(item: MrbcjfzListItem) {
-    this.status.openCadInNewTab(item.id, "cad");
+  async openCad(item: MrbcjfzListItem) {
+    const {mokuaiName} = this;
+    if (mokuaiName) {
+      const data0 = this.cads[item.id].data;
+      const data = data0.clone();
+      const result = await openCadEditorDialog(this.dialog, {data: {data, query: {模块: mokuaiName}}});
+      if (result?.isSaved) {
+        Object.assign(data0, data);
+        this.cadChange.emit(data0);
+      }
+    } else {
+      this.status.openCadInNewTab(item.id, "cad");
+    }
   }
 
   async getData() {

@@ -1,4 +1,10 @@
-<app-data-list [navDataName]="navDataName" [itemsAll]="mokuaisAll()" [(items)]="mokuais" [(activeNavNode)]="mokuaiActiveNavNode">
+<app-data-list
+  [navDataName]="navDataName"
+  navDataTitle="模块库分类"
+  [itemsAll]="mokuaisAll()"
+  [(items)]="mokuais"
+  [(activeNavNode)]="mokuaiActiveNavNode"
+>
   <div class="toolbar" appDataListToolbar>
     <button mat-raised-button [color]="mokuaiEditMode() ? 'accent' : 'primary'" (click)="toggleMokuaiEditMode()">编辑</button>
     <button mat-raised-button color="primary" (click)="addMukuai()">添加</button>
@@ -8,14 +14,11 @@
   <div class="data-items items no-items-per-row" appDataListItems>
     @for (mokuai of mokuais(); track $index) {
       <div class="data-item item link" [class.active]="mokuaiActiveItem()?.id === mokuai.id" (click)="clickMokuaiItem(mokuai)">
-        <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()"></app-image>
+        <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()" (click)="enterMokuai(mokuai)"></app-image>
         <div class="name">{{ mokuai.name }}</div>
         @if (mokuaiEditMode()) {
           <div class="toolbar compact center">
-            @if (!production) {
-              <button mat-button color="primary" (click)="editMokuai(mokuai)">编辑</button>
-            }
-            <button mat-button color="primary" (click)="enterMokuai(mokuai)">编辑</button>
+            <button mat-button color="primary" (click)="editMokuai(mokuai)">编辑</button>
             <button mat-button color="primary" (click)="copyMokuai(mokuai)">复制</button>
             <button mat-button color="primary" (click)="removeMokuai(mokuai)">删除</button>
           </div>

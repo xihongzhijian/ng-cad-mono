@@ -1,5 +1,5 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {KeyValuePipe} from "@angular/common";
+import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   booleanAttribute,
   Component,
@@ -26,6 +26,7 @@ import {CalcService} from "@services/calc.service";
 import {isEmpty} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
+import {FormulasChangeEvent} from "./formulas-editor.types";
 
 @Component({
   selector: "app-formulas-editor",
@@ -40,7 +41,8 @@ import {InputComponent} from "../../modules/input/components/input.component";
     KeyValuePipe,
     MatButtonModule,
     MatIconModule,
-    NgScrollbar
+    NgScrollbar,
+    NgTemplateOutlet
   ]
 })
 export class FormulasEditorComponent implements OnChanges {
@@ -52,7 +54,8 @@ export class FormulasEditorComponent implements OnChanges {
   @Input({transform: booleanAttribute}) required?: boolean;
   @Input() compact?: {minRows?: number; maxRows?: number};
   @Input({transform: booleanAttribute}) noFormulasText?: boolean;
-  @Output() formulasChange = new EventEmitter<Formulas | null>();
+  @Input({transform: booleanAttribute}) noScroll?: boolean;
+  @Output() formulasChange = new EventEmitter<FormulasChangeEvent>();
   formulaList: [string, string][] = [];
   formulaListInputInfos: InputInfo[][] = [];
   formulasInputInfo: InputInfo;
@@ -180,30 +183,27 @@ export class FormulasEditorComponent implements OnChanges {
   }
 
   submitFormulas(formulaList = this.formulaList, silent?: boolean) {
-    const errors: string[] = [];
+    const errorsSet = new Set<string>();
     if (this.required && formulaList.length < 1) {
-      errors.push("公式不能为空");
+      errorsSet.add("公式不能为空");
     }
     this.justifyFormulas(formulaList);
-    for (const arr of formulaList) {
-      const errors2 = this.validateVarName(arr[0]);
-      if (!isEmpty(errors2)) {
-        errors.push(`公式 ${arr[0]} = ${arr[1]} 有错：${Object.keys(errors2).join(", ")}`);
+    const inputs = this.inputs || [];
+    for (const input of inputs) {
+      const errors2 = input.validateValue();
+      for (const key in errors2) {
+        errorsSet.add(key);
       }
     }
-    const inputs = this.inputs || [];
-    if (inputs.some((v) => !isEmpty(v.validateValue()))) {
-      errors.push("输入数据有误");
-    }
-    if (errors.length) {
+    const errors = Array.from(errorsSet);
+    if (errors.length > 0) {
       if (!silent) {
         this.message.error(errors.join("<br>"));
       }
-      return null;
     }
-    const result: Formulas = {};
+    const result: FormulasChangeEvent = {formulas: {}, errors};
     for (const arr of formulaList) {
-      result[arr[0]] = arr[1];
+      result.formulas[arr[0]] = arr[1];
     }
     return result;
   }
@@ -227,11 +227,11 @@ export class FormulasEditorComponent implements OnChanges {
     this.updateFormulas();
   }
 
-  async test(formulas: Formulas | null | undefined) {
-    if (!formulas) {
+  async test(event: FormulasChangeEvent) {
+    if (event.errors.length > 0) {
       return;
     }
-    const result = await this.calc.calcFormulas(formulas, this.vars);
+    const result = await this.calc.calcFormulas(event.formulas, this.vars);
     if (result) {
       this.testResult = result;
       await timeout(200);

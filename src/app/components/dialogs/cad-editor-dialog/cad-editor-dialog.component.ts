@@ -64,8 +64,8 @@ export class CadEditorDialogComponent extends Subscribed() implements OnInit {
 }
 
 export const openCadEditorDialog = getOpenDialogFunc<CadEditorDialogComponent, CadEditorInput, CadEditorOutput>(CadEditorDialogComponent, {
-  width: "100%",
-  height: "100%",
+  width: "calc(100% - 50px)",
+  height: "calc(100% - 50px)",
   disableClose: true
 });
 

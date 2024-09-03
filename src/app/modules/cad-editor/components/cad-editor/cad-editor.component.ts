@@ -387,7 +387,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   }
 
   async save() {
-    const {extraData} = this.params || {};
+    const {extraData, query} = this.params || {};
     const data = this.status.cad.data;
     if (extraData) {
       Object.assign(data, extraData);
@@ -395,7 +395,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     if (!(await this.validate())) {
       return;
     }
-    await this.status.saveCad(this.spinnerId);
+    await this.status.saveCad(this.spinnerId, query);
   }
 
   async refresh() {

@@ -26,10 +26,10 @@ export class EditFormulasDialogComponent {
       return;
     }
     const result = this.formulasEditor.submitFormulas();
-    if (!result) {
+    if (result.errors.length > 0) {
       return;
     }
-    this.dialogRef.close(result);
+    this.dialogRef.close(result.formulas);
   }
 
   cancel() {

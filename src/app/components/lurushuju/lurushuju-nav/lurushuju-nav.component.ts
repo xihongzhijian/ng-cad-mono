@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, HostBinding, inject} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {environment} from "@env";
 import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getTableUpdateData} from "@modules/http/services/cad-data.service.utils";
@@ -36,7 +35,6 @@ export class LurushujuNavComponent {
   pieceInfos = this.lrsjStatus.pieceInfos;
   focusFenleiZuofa = this.lrsjStatus.focusFenleiZuofa;
   suanliaoDataInfo = this.lrsjStatus.suanliaoDataInfo;
-  production = environment.production;
   menchuangName = computed(() => this.xinghaoMenchuangs().item?.mingzi);
   gongyiName = computed(() => this.xinghaoMenchuangs().item?.gongyis?.item?.mingzi);
 

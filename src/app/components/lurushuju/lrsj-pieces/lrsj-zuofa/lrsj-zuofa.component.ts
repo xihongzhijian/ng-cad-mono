@@ -1,11 +1,10 @@
 import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, input, model, output, signal} from "@angular/core";
-import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {MatTabsModule} from "@angular/material/tabs";
 import {getCopyName} from "@app/app.common";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
@@ -20,7 +19,7 @@ import {
   updateMenjiaoData
 } from "../lrsj-suanliao-data/lrsj-suanliao-data.utils";
 import {ShuruTableData, XuanxiangTableData, ZuofaTab} from "./lrsj-zuofa.types";
-import {getMenjiaoTable, getShuruTable, getXuanxiangTable} from "./lrsj-zuofa.utils";
+import {getMenjiaoTable, getShuruItem, getShuruTable, getXuanxiangItem, getXuanxiangTable} from "./lrsj-zuofa.utils";
 
 @Component({
   selector: "app-lrsj-zuofa",
@@ -52,54 +51,8 @@ export class LrsjZuofaComponent {
 
   xuanxiangTable = computed(() => getXuanxiangTable(this.zuofa().选项数据));
   async getXuanxiangItem(data0?: 选项) {
-    const data: 选项 = {名字: "", 可选项: [], ...data0};
-    const names = this.xuanxiangTable().data.map((v) => v.名字);
     const zuofaOptionsAll = await this.lrsjStatus.fetchZuofaOptions();
-    const form: InputInfo<typeof data>[] = [
-      {
-        type: "select",
-        label: "名字",
-        model: {data, key: "名字"},
-        disabled: !!data0,
-        options: Object.keys(zuofaOptionsAll).map<InputInfoOption>((v) => {
-          return {value: v, disabled: names.includes(v)};
-        }),
-        validators: Validators.required,
-        onChange: () => {
-          const info = form[1] as InputInfoSelect;
-          if (Array.isArray(info.value)) {
-            info.value.length = 0;
-          }
-          if (info.optionsDialog) {
-            info.optionsDialog.optionKey = data.名字;
-          }
-        }
-      },
-      {
-        type: "select",
-        label: "可选项",
-        value: data.可选项.map((v) => v.mingzi),
-        options: [],
-        multiple: true,
-        validators: Validators.required,
-        optionsDialog: {
-          optionKey: data.名字,
-          openInNewTab: true,
-          defaultValue: {value: data.可选项.find((v) => v.morenzhi)?.mingzi, required: true},
-          onChange: (val) => {
-            data.可选项 = val.options.map((v) => {
-              const item: 选项["可选项"][number] = {...v};
-              if (item.mingzi === val.defaultValue) {
-                item.morenzhi = true;
-              }
-              return item;
-            });
-          }
-        }
-      }
-    ];
-    const result = await this.message.form(form);
-    return result ? data : null;
+    return await getXuanxiangItem(this.message, zuofaOptionsAll, this.xuanxiangTable().data, data0);
   }
   async updateXuanxiang() {
     const zuofa = this.zuofa();
@@ -148,49 +101,8 @@ export class LrsjZuofaComponent {
     return getShuruTable(getSortedItems(this.zuofa().输入数据));
   });
   async getShuruItem(data0?: 输入) {
-    const data: 输入 = {名字: "", 默认值: "", 取值范围: "", 可以修改: true, ...data0};
     const zuofa = this.zuofa();
-    const form: InputInfo<typeof data>[] = [
-      {
-        type: "string",
-        label: "名字",
-        model: {data, key: "名字"},
-        validators: [
-          Validators.required,
-          (control) => {
-            const value = control.value;
-            if ((!data0 || data0.名字 !== value) && zuofa.输入数据.some((v) => v.名字 === value)) {
-              return {名字已存在: true};
-            }
-            return null;
-          }
-        ]
-      },
-      {
-        type: "string",
-        label: "默认值",
-        model: {data, key: "默认值"},
-        validators: Validators.required
-      },
-      {
-        type: "string",
-        label: "取值范围",
-        model: {data, key: "取值范围"},
-        validators: [
-          Validators.required,
-          (control) => {
-            const value = control.value;
-            if (!/^\d+(.\d+)?-\d+(.\d+)?$/.test(value)) {
-              return {取值范围不符合格式: true};
-            }
-            return null;
-          }
-        ]
-      },
-      {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}},
-      {type: "number", label: "排序", model: {data, key: "排序"}}
-    ];
-    return await this.message.form<typeof data, typeof data>(form);
+    return await getShuruItem(this.message, zuofa.输入数据, data0);
   }
   async updateShuru() {
     const zuofa = this.zuofa();

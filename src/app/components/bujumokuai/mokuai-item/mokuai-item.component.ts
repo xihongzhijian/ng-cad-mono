@@ -10,7 +10,6 @@ import {
   OnInit,
   output,
   signal,
-  untracked,
   viewChild
 } from "@angular/core";
 import {Validators} from "@angular/forms";
@@ -25,7 +24,8 @@ import {FormulasEditorComponent} from "@components/formulas-editor/formulas-edit
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
-import {BancaiListData} from "@modules/http/services/cad-data.service.types";
+import {CadDataService} from "@modules/http/services/cad-data.service";
+import {BancaiListData, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -66,6 +66,7 @@ export class MokuaiItemComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);
   private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
   private message = inject(MessageService);
 
   @HostBinding("class") class = ["ng-page"];
@@ -103,7 +104,9 @@ export class MokuaiItemComponent implements OnInit {
     const infos: InputInfo[] = [];
     for (const [i, {key, val}] of this.morenbancais().entries()) {
       let str = "";
-      if (!isMrbcjfzInfoEmpty2(key, val)) {
+      if (isMrbcjfzInfoEmpty2(key, val)) {
+        continue;
+      } else {
         const {默认开料材料, 默认开料板材, 默认开料板材厚度} = val;
         str = `${默认开料材料}/${默认开料板材}/${默认开料板材厚度}`;
       }
@@ -198,13 +201,27 @@ export class MokuaiItemComponent implements OnInit {
     morenbancais.splice(i, 1);
     this.morenbancais.set(morenbancais);
   }
-  async openMrbcjfz() {
+  async openMrbcjfz(dryRun = false) {
+    const mokuai = this.mokuai();
     const result = await openMrbcjfzDialog(this.dialog, {
-      data: {id: this.mokuai().id, table: "p_peijianmokuai", collection: this.bjmkStatus.collection}
+      data: {
+        id: mokuai.id,
+        table: "p_peijianmokuai",
+        collection: this.bjmkStatus.collection,
+        mokuaiName: mokuai.name,
+        cadWidth: this.cadWidth(),
+        cadHeight: this.cadHeight(),
+        dryRun,
+        onCadChange: async () => {
+          const mokuai2 = await this.bjmkStatus.fetchMokuai(mokuai.id);
+          this.bjmkStatus.refreshMokuais([mokuai2]);
+        }
+      }
     });
-    if (result) {
+    if (result && !dryRun) {
       await this.bjmkStatus.fetchMokuais(true);
     }
+    return result;
   }
 
   mokuaiInputInfos = computed(() => {
@@ -233,31 +250,17 @@ export class MokuaiItemComponent implements OnInit {
       getSelectInputInfo("开启", "kaiqi", "p_kaiqi"),
       getStringInputInfo("公式输入", "gongshishuru"),
       getStringInputInfo("选项输入", "xuanxiangshuru"),
-      getStringInputInfo("输出变量", "shuchubianliang"),
-      getStringInputInfo("输出文本", "shuchuwenben")
-    ];
-    return infos;
-  });
-  mokuaiInputInfos2 = computed(() => {
-    const infos: InputInfo[] = [
-      {type: "select", label: "花件压条", appearance: "list", options: ["D1", "D2", "无"]},
-      {type: "select", label: "竖压条", appearance: "list", options: ["有", "无"]}
+      getStringInputInfo("输出变量", "shuchubianliang")
     ];
     return infos;
   });
 
-  activeCad = signal<CadData | null>(null);
-  activeCadEff = effect(
-    () => {
-      const cads = this.selectedCads();
-      const activeCad = untracked(() => this.activeCad());
-      if (activeCad) {
-        this.activeCad.set(cads.find((v) => v.id === activeCad.id) || null);
-      }
-    },
-    {allowSignalWrites: true}
-  );
+  cadWidth = signal(200);
+  cadHeight = signal(100);
   afterEditCad() {
+    const mokuai = this.mokuai();
+    console.log(this.selectedCads().map((v) => v.info));
+    mokuai.cads = this.selectedCads().map((v) => getHoutaiCad(v));
     this.cd.markForCheck();
   }
   showCadsDialog = signal(false);
@@ -272,38 +275,67 @@ export class MokuaiItemComponent implements OnInit {
   selectCads$ = new Subject<MokuaiCadsComponent | null>();
   async selectCads() {
     const mokuai = this.mokuai();
-    this.selectedCads.set((mokuai.cads || []).map((v) => new CadData(v.json)));
+    const cadsBefore = (mokuai.cads || []).map((v) => new CadData(v.json));
+    this.selectedCads.set(cadsBefore);
     this.showCadsDialog.set(true);
     const component = await firstValueFrom(this.selectCads$);
     if (!component) {
+      this.selectedCads.set(cadsBefore);
       return;
     }
-    const cads = this.selectedCads().map((v) => getHoutaiCad(v));
+    const cads: HoutaiCad[] = [];
+    for (const cad of this.selectedCads()) {
+      delete cad.info.isLocal;
+      if (!cad.info.imgId) {
+        cad.info.imgId = await this.http.getMongoId();
+      }
+      cads.push(getHoutaiCad(cad));
+    }
     this.mokuai.update((v) => ({...v, cads}));
   }
   closeCadsDialog(mokuaiCads: MokuaiCadsComponent | null) {
     this.showCadsDialog.set(false);
     this.selectCads$.next(mokuaiCads);
   }
-  clickCad(cad: CadData) {
-    this.activeCad.set(cad);
-  }
 
   close() {
     this.closeOut.emit();
   }
   slgsComponent = viewChild<FormulasEditorComponent>("slgs");
-  updateMokaui() {
+  async updateMokaui() {
     const mokuai = this.mokuai();
-    mokuai.morenbancai = this.morenbancais().reduce<ObjectOf<MrbcjfzInfo>>((acc, {key, val}) => {
-      acc[key] = val;
-      return acc;
-    }, {});
-    mokuai.suanliaogongshi = this.slgsComponent()?.submitFormulas() || {};
+    const errors: string[] = [];
+    const result = await this.openMrbcjfz(true);
+    if (result) {
+      if (result.errors.length > 0) {
+        errors.push(...result.errors.map((v) => `板材分组：${v}`));
+      } else {
+        mokuai.morenbancai = this.morenbancais().reduce<ObjectOf<MrbcjfzInfo>>((acc, {key, val}) => {
+          acc[key] = val;
+          return acc;
+        }, {});
+      }
+    }
+    const slgsComponent = this.slgsComponent();
+    if (slgsComponent) {
+      const formulasResult = slgsComponent.submitFormulas(slgsComponent.formulaList, true);
+      if (formulasResult.errors.length > 0) {
+        errors.push(...formulasResult.errors.map((v) => `模块公式：${v}`));
+      } else {
+        mokuai.suanliaogongshi = formulasResult.formulas;
+      }
+    }
+    if (errors.length > 0) {
+      await this.message.error(errors.join("<br>"));
+      return null;
+    }
     return mokuai;
   }
   async save() {
-    const mokuai = this.updateMokaui();
+    const mokuai = await this.updateMokaui();
+    if (!mokuai) {
+      return;
+    }
     const mokuaiOld = this.mokuaiIn();
     const mokuaiNew: Partial<MokuaiItem> = {id: mokuai.id, name: mokuai.name};
     for (const key of keysOf(mokuai)) {
@@ -316,6 +348,10 @@ export class MokuaiItemComponent implements OnInit {
     await this.bjmkStatus.editMokuai(mokuaiNew, true);
   }
   async saveAs() {
-    await this.bjmkStatus.copyMokuai(this.updateMokaui());
+    const mokuai = await this.updateMokaui();
+    if (!mokuai) {
+      return;
+    }
+    await this.bjmkStatus.copyMokuai(mokuai);
   }
 }

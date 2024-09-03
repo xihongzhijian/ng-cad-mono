@@ -141,10 +141,10 @@ export class BjmkStatusService {
     }
     return null;
   }
-  async addMukuai(mokuai?: Partial<MokuaiItem>) {
+  async addMukuai(mokuai?: Partial<MokuaiItem>, mokuaiOverride?: Partial<MokuaiItem>) {
     let mokuai2: Partial<MokuaiItem> | undefined | null = mokuai;
     if (!mokuai2) {
-      mokuai2 = await this.getMokuaiWithForm();
+      mokuai2 = await this.getMokuaiWithForm(undefined, mokuaiOverride);
     }
     if (mokuai2) {
       delete mokuai2.id;

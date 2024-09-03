@@ -82,6 +82,17 @@ export const getCadInfoInputs = (
     () => {
       return getData(data)[key];
     };
+  const getZhankai = () => {
+    const data2 = getData(data);
+    if (!data2.zhankai) {
+      data2.zhankai = [];
+    }
+    if (!data2.zhankai[0]) {
+      data2.zhankai[0] = new CadZhankai({name: data.name});
+    }
+    const zhankai = data2.zhankai.at(0);
+    return zhankai;
+  };
   const gongshiOptions = status.getGongshiOptions(gongshis);
   for (const key of keys) {
     if (result.some((v) => v.label === key)) {
@@ -246,17 +257,6 @@ export const getCadInfoInputs = (
         break;
       case "展开信息":
         {
-          const getter = () => {
-            const data2 = getData(data);
-            if (!data2.zhankai) {
-              data2.zhankai = [];
-            }
-            if (!data2.zhankai[0]) {
-              data2.zhankai[0] = new CadZhankai({name: data.name});
-            }
-            const zhankai = data2.zhankai[0];
-            return zhankai;
-          };
           const style: InputInfo["style"] = {flex: "1 1 0", width: 0, margin: "2px"};
           info = {
             type: "group",
@@ -268,7 +268,7 @@ export const getCadInfoInputs = (
                 label: "宽",
                 style,
                 options: gongshiOptions,
-                model: {data: getter, key: "zhankaikuan"},
+                model: {data: getZhankai, key: "zhankaikuan"},
                 validators: Validators.required
               },
               {
@@ -276,10 +276,53 @@ export const getCadInfoInputs = (
                 label: "高",
                 style,
                 options: gongshiOptions,
-                model: {data: getter, key: "zhankaigao"},
+                model: {data: getZhankai, key: "zhankaigao"},
                 validators: Validators.required
               },
-              {type: "string", label: "数量", style, model: {data: getter, key: "shuliang"}, validators: Validators.required}
+              {type: "string", label: "数量", style, model: {data: getZhankai, key: "shuliang"}, validators: Validators.required}
+            ]
+          };
+        }
+        break;
+      case "激光开料CAD模板":
+        {
+          const style: InputInfo["style"] = {flex: "1 1 0", width: 0, margin: "2px"};
+          info = {
+            type: "group",
+            label: key,
+            groupStyle: {display: "flex"},
+            infos: [
+              {
+                type: "string",
+                label: key,
+                style,
+                readonly: true,
+                model: {data: getZhankai(), key: "kailiaomuban"},
+                suffixIcons: [
+                  {name: "open_in_new", onClick: () => status.openCadInNewTab(getZhankai()?.kailiaomuban || "", "kailiaocadmuban")},
+                  {
+                    name: "list",
+                    onClick: async () => {
+                      const zhankai = getZhankai();
+                      if (!zhankai) {
+                        return;
+                      }
+                      const kailiaomuban = zhankai.kailiaomuban;
+                      const checkedItems: string[] = [];
+                      if (kailiaomuban) {
+                        checkedItems.push(kailiaomuban);
+                      }
+                      const result = await openCadListDialog(dialog, {
+                        data: {selectMode: "single", collection: "kailiaocadmuban", checkedItems}
+                      });
+                      const id = result?.[0]?.id;
+                      if (id) {
+                        zhankai.kailiaomuban = id;
+                      }
+                    }
+                  }
+                ]
+              }
             ]
           };
         }

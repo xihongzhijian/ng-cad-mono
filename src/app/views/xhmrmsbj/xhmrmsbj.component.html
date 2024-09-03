@@ -1,23 +1,18 @@
 <div class="flex-row" style="justify-content: space-between">
   <div class="flex-row">
-    <div class="btn-group">
-      @for (name of tabNames; track name) {
+    <div class="toolbar">
+      @for (name of tabNames; track $index) {
         <button mat-raised-button [color]="name === activeTabName ? 'accent' : 'primary'" (click)="setTabName(name)">
           {{ name }}
         </button>
       }
     </div>
     <mat-divider vertical></mat-divider>
-    <div class="btn-group">
+    <div class="toolbar">
       @if (!isFromOrder) {
         <button mat-raised-button color="primary" (click)="setMsbj()">更换布局</button>
-        @if (activeRectInfo) {
-          <button mat-raised-button color="primary" (click)="setKexuanmokuai()">设置可选模块</button>
-        }
-        <button mat-raised-button color="primary" (click)="openMrbcjfzDialog()">默认板材及分组</button>
       }
       <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
-      <div>型号：{{ xinghao?.raw?.mingzi }}</div>
       @if (isFromOrder) {
         <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
         <button mat-raised-button color="primary" (click)="refreshMokuaidaxiao()">更新模块大小配置</button>
@@ -31,8 +26,7 @@
     <div class="btn-group">
       @switch (activeTabName) {
         @case ("门扇模块") {
-          <button mat-stroked-button color="primary" (click)="submit()">保存型号默认门扇布局</button>
-          <button mat-stroked-button color="primary">另存为新型号默认门扇布局</button>
+          <button mat-raised-button color="primary" (click)="submit()">保存</button>
         }
       }
     </div>
@@ -69,7 +63,8 @@
         </ng-scrollbar>
       </div>
       <mat-divider vertical></mat-divider>
-      <div class="flex-110 flex-column">
+      <div class="flex-110 flex-column" style="position: relative">
+        <div class="xinghao-name title">{{ xinghao?.raw?.mingzi }}</div>
         <div class="flex-row flex-110">
           <div class="flex-column flex-110">
             <app-msbj-rects
@@ -95,6 +90,12 @@
           </div>
         </div>
         <div class="flex-column flex-110">
+          @if (activeMokuaiNode?.["层名字"]; as nodeName) {
+            <div class="toolbar">
+              <div class="title">{{ nodeName }}位置可选模块</div>
+              <button mat-raised-button color="primary" (click)="setKexuanmokuai()">编辑</button>
+            </div>
+          }
           <ng-scrollbar>
             <div class="flex-row" style="flex-wrap: wrap" [style]="{display: showMokuais ? 'flex' : 'none'}">
               @for (mokuai of activeMokuaiNode?.["可选模块"]; track mokuai) {
@@ -107,6 +108,10 @@
       <mat-divider vertical></mat-divider>
       <div class="flex-column">
         @if (xinghao) {
+          <div class="toolbar">
+            <div class="title">型号板材分组</div>
+            <button mat-raised-button color="primary" (click)="openMrbcjfzDialog()">编辑</button>
+          </div>
           <div class="xinghao-info flex-column">
             @for (item of xinghao["默认板材"] | keyvalue: returnZero; track item) {
               @if (xinghao.getBancaiTitle(item.key)) {

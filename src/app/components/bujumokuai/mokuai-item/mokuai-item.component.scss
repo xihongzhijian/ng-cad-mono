@@ -30,29 +30,14 @@
     padding: 3px;
     box-sizing: border-box;
     border: var(--border);
-    height: 0;
-    flex: 1 1 0;
   }
 
   .mokuai-gongneng {
     flex: 0 0 250px;
-
-    .inputs {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: wrap;
-      margin-right: -5px;
-
-      app-input {
-        width: 100%;
-      }
-    }
   }
 }
 
 .item-cads {
-  --item-width: 200px;
-
   .title {
     font-size: 1.2em;
     font-weight: bold;
@@ -66,15 +51,6 @@
       &.active {
         border: 1px solid red;
       }
-    }
-  }
-
-  .active-cad {
-    --item-width: 360px;
-    flex: 0 0 auto;
-
-    .dummy-cad-item {
-      width: var(--item-width);
     }
   }
 }
