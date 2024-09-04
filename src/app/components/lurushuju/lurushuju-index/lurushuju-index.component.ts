@@ -4,7 +4,6 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
-import {Router} from "@angular/router";
 import {getBooleanStr, setGlobal} from "@app/app.common";
 import {AboutComponent} from "@components/about/about.component";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
@@ -55,7 +54,6 @@ export class LurushujuIndexComponent {
   private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
-  private router = inject(Router);
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = ["ng-page"];
@@ -75,7 +73,11 @@ export class LurushujuIndexComponent {
     const xinghao = this.lrsjStatus.xinghao();
     const pieceInfos = this.lrsjStatus.pieceInfos();
     return [
-      {name: "关闭", color: "primary"},
+      {
+        name: "开启模块做数据",
+        color: this.lrsjStatus.按模块做数据() ? "accent" : "primary",
+        hidden: !this.status.projectConfig.getBoolean("新做数据可以按模块做数据")
+      },
       {name: ""},
       {name: "添加", color: "primary"},
       {name: "编辑", color: this.lrsjStatus.editMode() ? "accent" : "primary"},
@@ -99,8 +101,12 @@ export class LurushujuIndexComponent {
   async onToolbarBtnClick(btn: ToolbarBtn) {
     const pieceInfos = this.lrsjStatus.pieceInfos();
     switch (btn.name) {
-      case "关闭":
-        break;
+      case "开启模块做数据":
+        {
+          this.lrsjStatus.按模块做数据.update((v) => !v);
+          await this.message.alert(this.lrsjStatus.按模块做数据() ? "已切换按模块做数据" : "按配件做数据");
+        }
+        return;
       case "添加":
         break;
       case "编辑":

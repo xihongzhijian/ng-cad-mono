@@ -7,6 +7,7 @@ import {
   computed,
   effect,
   ElementRef,
+  HostBinding,
   inject,
   input,
   model,
@@ -35,7 +36,10 @@ import {ResizeHandle} from "./floating-dialog.types";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FloatingDialogComponent implements OnInit, OnDestroy {
+  private el = inject<ElementRef<HTMLElement>>(ElementRef);
   private manager = inject(FloatingDialogsManagerService);
+
+  @HostBinding("class") class: string[] = [];
 
   id = uniqueId("floatingDialog");
   name = input<string>("");
@@ -43,6 +47,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   height = model<string | number>("auto");
   top = input<string | number | null>(0);
   left = input<string | number | null>(0);
+  styleIn = input<Properties>({}, {alias: "style"});
   noTitle = input(false, {transform: booleanAttribute});
   size = model<Readonly<Point>>({x: 0, y: 0});
   position = model<Readonly<Point>>({x: 0, y: 0});
@@ -55,27 +60,57 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   dialogEl = viewChild.required<ElementRef<HTMLElement>>("dialogEl");
   contextMenu = viewChild.required<MatMenuTrigger>("contextMenu");
 
-  constructor() {
-    effect(
-      () => {
-        const minimized = this.minimized();
-        if (minimized) {
-          this.active.set(false);
-        }
-        this.manager.dialogs.update((v) => [...v]);
-      },
-      {allowSignalWrites: true}
-    );
-  }
+  minimizedEff = effect(
+    () => {
+      const minimized = this.minimized();
+      if (minimized) {
+        this.active.set(false);
+      }
+      this.manager.dialogs.update((v) => [...v]);
+    },
+    {allowSignalWrites: true}
+  );
+  maximizedEff = effect(() => {
+    if (this.maximized()) {
+      if (!this.class.includes("backdrop")) {
+        this.class = [...this.class, "backdrop"];
+      }
+    } else {
+      if (this.class.includes("backdrop")) {
+        this.class = this.class.filter((v) => v !== "backdrop");
+      }
+    }
+  });
 
+  private _parentEl = signal<HTMLElement | null>(null);
+  zIndexOffset = signal(0);
   ngOnInit() {
     this.beActive();
     this.manager.dialogs.update((dialogs) => [...dialogs, this]);
     window.addEventListener("resize", this.onWindowResize.bind(this));
+    const el = this.el.nativeElement;
+    this._parentEl.set(el.parentElement);
+    const siblings = document.querySelectorAll("body > app-floating-dialog");
+    let zIndexOffsetMax = -1;
+    siblings.forEach((v) => {
+      const zIndexOffset = Number(getComputedStyle(v).getPropertyValue("--z-index-offset"));
+      if (isNaN(zIndexOffset)) {
+        return;
+      }
+      if (zIndexOffset > zIndexOffsetMax) {
+        zIndexOffsetMax = zIndexOffset;
+      }
+    });
+    if (zIndexOffsetMax >= 0) {
+      this.zIndexOffset.set(zIndexOffsetMax + 1);
+    }
+    document.body.appendChild(el);
   }
   ngOnDestroy() {
     this.manager.dialogs.update((dialogs) => dialogs.filter((dialog) => dialog !== this));
     window.removeEventListener("resize", this.onWindowResize.bind(this));
+    const el = this.el.nativeElement;
+    this._parentEl()?.appendChild(el);
   }
   private _windowResizeNum = signal(0);
   onWindowResize() {
@@ -91,36 +126,41 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
     return value;
   }
   style = computed(() => {
+    const style: Properties = {};
     if (this.maximized()) {
       this._windowResizeNum();
-      const limits = this.manager.limits();
-      let top = 0;
-      let left = 0;
-      let right = window.innerWidth;
-      let bottom = window.innerHeight;
-      if (limits.top) {
-        top = limits.top.getBoundingClientRect().bottom;
-      }
-      if (limits.left) {
-        left = limits.left.getBoundingClientRect().right;
-      }
-      if (limits.right) {
-        right = limits.right.getBoundingClientRect().left;
-      }
-      if (limits.bottom) {
-        bottom = limits.bottom.getBoundingClientRect().top;
-      }
+      const margin = 50;
+      const top = margin;
+      const left = margin;
+      const right = window.innerWidth - margin;
+      const bottom = window.innerHeight - margin;
+      // const limits = this.manager.limits();
+      // if (limits.top) {
+      //   top = limits.top.getBoundingClientRect().bottom;
+      // }
+      // if (limits.left) {
+      //   left = limits.left.getBoundingClientRect().right;
+      // }
+      // if (limits.right) {
+      //   right = limits.right.getBoundingClientRect().left;
+      // }
+      // if (limits.bottom) {
+      //   bottom = limits.bottom.getBoundingClientRect().top;
+      // }
       const width = right - left;
       const height = bottom - top;
-      return {top: `${top}px`, left: `${left}px`, width: `${width}px`, height: `${height}px`};
+      style.top = `${top}px`;
+      style.left = `${left}px`;
+      style.width = `${width}px`;
+      style.height = `${height}px`;
+    } else {
+      const {x: sizeX, y: sizeY} = this.size();
+      style.width = sizeX > 0 ? `${sizeX}px` : this.getPxStr(this.width());
+      style.height = sizeY > 0 ? `${sizeY}px` : this.getPxStr(this.height());
+      style.top = this.getPxStr(this.top());
+      style.left = this.getPxStr(this.left());
     }
-    const style: Properties = {};
-    const {x: sizeX, y: sizeY} = this.size();
-    style.width = sizeX > 0 ? `${sizeX}px` : this.getPxStr(this.width());
-    style.height = sizeY > 0 ? `${sizeY}px` : this.getPxStr(this.height());
-    style.top = this.getPxStr(this.top());
-    style.left = this.getPxStr(this.left());
-    return style;
+    return {...style, ...this.styleIn()};
   });
 
   titleBtns = computed(() => {

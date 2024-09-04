@@ -1,6 +1,8 @@
 :host {
   padding: 20px;
   --active-color: lightgray;
+  --cad-image-width: 200px;
+  --cad-image-height: 100px;
   &.no-scroll {
     height: auto;
   }

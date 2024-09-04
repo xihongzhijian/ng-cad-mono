@@ -12,7 +12,7 @@
           @if (xinghao.tingyong) {
             <div class="img disabled"></div>
           }
-          <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="gotoZuofas(xinghao.mingzi)"></app-image>
+          <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="gotoZuofas(xinghao)"></app-image>
           <div class="name" [matTooltip]="xinghao.mingzi">
             <mat-checkbox [checked]="xinghaoSelectedIndexs().includes(i)" (change)="toggleXinghaoSelected(i)"></mat-checkbox>
             <span (click)="toggleXinghaoSelected(i)">{{ xinghao.mingzi }}</span>
@@ -29,3 +29,9 @@
     }
   </div>
 </ng-scrollbar>
+
+@if (showXhmrmsbj(); as data) {
+  <app-floating-dialog [maximized]="true" noTitle>
+    <app-xhmrmsbj [xinghaoId]="data.id" closable (close)="closeXhmrmsbj()"></app-xhmrmsbj>
+  </app-floating-dialog>
+}

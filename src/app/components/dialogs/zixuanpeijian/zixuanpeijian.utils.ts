@@ -163,7 +163,7 @@ export const getMokuaiTitle = (
 export const getStep1Data = async (
   http: CadDataService,
   httpOptions?: HttpOptions,
-  params?: {code: string; type: string} | {mokuaiIds: string[]}
+  params?: {code: string; type: string} | {mokuaiIds: number[]}
 ) => {
   return await http.getData<Step1Data>("ngcad/getZixuanpeijianTypesInfo", params, httpOptions);
 };
@@ -202,56 +202,67 @@ export const getZixuanpeijianCads = async (
   return undefined;
 };
 
+export const updateMokuaiItem = (
+  item: ZixuanpeijianMokuaiItem,
+  item2: ZixuanpeijianMokuaiItem | ZixuanpeijianTypesInfoItem,
+  useSlgs = false,
+  others?: {type1: string; type2: string}
+) => {
+  if (!isMokuaiItemEqual(item, item2)) {
+    return;
+  }
+  if (others) {
+    item.type1 = others.type1;
+    item.type2 = others.type2;
+  }
+  const {gongshishuru, xuanxiangshuru, suanliaogongshi, morenbancai} = item;
+  Object.assign(item, item2);
+  if (useSlgs) {
+    const getValue = (key: string, value: string) => {
+      if (!value && suanliaogongshi && key in suanliaogongshi) {
+        return String(suanliaogongshi[key]);
+      }
+      return value;
+    };
+    item.totalWidth = getValue("总宽", item.totalWidth);
+    item.totalHeight = getValue("总高", item.totalHeight);
+  }
+  for (const v of item.gongshishuru) {
+    if (!v[1]) {
+      v[1] = gongshishuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
+    }
+  }
+  for (const v of item.xuanxiangshuru) {
+    if (!v[1]) {
+      v[1] = xuanxiangshuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
+    }
+  }
+  if (morenbancai) {
+    if (!item.morenbancai) {
+      item.morenbancai = {};
+    }
+    for (const key in morenbancai) {
+      if (isMrbcjfzInfoEmpty1(key, morenbancai[key])) {
+        morenbancai[key].默认对应板材分组 = "";
+      }
+    }
+    for (const key in item.morenbancai) {
+      if (isMrbcjfzInfoEmpty1(key, item.morenbancai[key])) {
+        item.morenbancai[key].默认对应板材分组 = "";
+        item.morenbancai[key].选中板材分组 = "";
+      } else if (morenbancai[key]) {
+        item.morenbancai[key].默认对应板材分组 = morenbancai[key].默认对应板材分组;
+        item.morenbancai[key].选中板材分组 = morenbancai[key].选中板材分组;
+      }
+    }
+  }
+};
 export const updateMokuaiItems = (items: ZixuanpeijianMokuaiItem[], typesInfo: ZixuanpeijianTypesInfo, useSlgs = false) => {
   for (const type1 in typesInfo) {
     for (const type2 in typesInfo[type1]) {
       const info = cloneDeep(typesInfo[type1][type2]);
       for (const item of items) {
-        if (isMokuaiItemEqual(item, info)) {
-          item.type1 = type1;
-          item.type2 = type2;
-          const {gongshishuru, xuanxiangshuru, suanliaogongshi, morenbancai} = item;
-          Object.assign(item, info);
-          if (useSlgs) {
-            const getValue = (key: string, value: string) => {
-              if (!value && suanliaogongshi && key in suanliaogongshi) {
-                return String(suanliaogongshi[key]);
-              }
-              return value;
-            };
-            item.totalWidth = getValue("总宽", item.totalWidth);
-            item.totalHeight = getValue("总高", item.totalHeight);
-          }
-          for (const v of item.gongshishuru) {
-            if (!v[1]) {
-              v[1] = gongshishuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
-            }
-          }
-          for (const v of item.xuanxiangshuru) {
-            if (!v[1]) {
-              v[1] = xuanxiangshuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
-            }
-          }
-          if (morenbancai) {
-            if (!item.morenbancai) {
-              item.morenbancai = {};
-            }
-            for (const key in morenbancai) {
-              if (isMrbcjfzInfoEmpty1(key, morenbancai[key])) {
-                morenbancai[key].默认对应板材分组 = "";
-              }
-            }
-            for (const key in item.morenbancai) {
-              if (isMrbcjfzInfoEmpty1(key, item.morenbancai[key])) {
-                item.morenbancai[key].默认对应板材分组 = "";
-                item.morenbancai[key].选中板材分组 = "";
-              } else if (morenbancai[key]) {
-                item.morenbancai[key].默认对应板材分组 = morenbancai[key].默认对应板材分组;
-                item.morenbancai[key].选中板材分组 = morenbancai[key].选中板材分组;
-              }
-            }
-          }
-        }
+        updateMokuaiItem(item, info, useSlgs, {type1, type2});
       }
     }
   }

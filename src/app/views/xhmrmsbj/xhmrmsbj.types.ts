@@ -137,3 +137,7 @@ export type XhmrmsbjTabName = (typeof xhmrmsbjTabNames)[number];
 
 export const menshanKeys = ["锁扇正面", "锁扇背面", "铰扇正面", "铰扇背面", "小扇正面", "小扇背面"] as const;
 export type MenshanKey = (typeof menshanKeys)[number];
+
+export interface XhmrmsbjCloseEvent {
+  isSubmited: boolean;
+}

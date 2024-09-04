@@ -12,9 +12,10 @@
   .items {
     display: flex;
     flex-wrap: wrap;
+    --item-margin: 2px;
 
     &:not(.no-items-per-row) > .item {
-      width: calc(100% / var(--items-per-row, 1) - 4px);
+      width: calc(100% / var(--items-per-row, 1) - var(--item-margin) * 2);
     }
     .no-items-per-row {
       // placeholder
@@ -25,7 +26,7 @@
   .item {
     width: var(--item-width, auto);
     height: var(--item-height, auto);
-    margin: 2px;
+    margin: var(--item-margin);
     display: flex;
     flex-direction: column;
     align-items: center;

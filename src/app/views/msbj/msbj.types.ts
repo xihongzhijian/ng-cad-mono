@@ -79,6 +79,10 @@ export interface Node2rectData {
 
 export const node2rectDataMsdxKeys = ["锁扇正面总宽", "锁扇背面总宽", "铰扇正面总宽", "铰扇背面总宽", "包框高"];
 
+export interface MsbjCloseEvent {
+  isSubmited: boolean;
+}
+
 declare global {
   interface Window {
     node2rect(node: any, data?: Node2rectData): MsbjRectInfoRaw[];

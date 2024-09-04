@@ -174,7 +174,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       {
         type: "group",
         label: "选项",
-        style: getInputStyle(true, {width: "auto", flex: "1 0 auto"}),
+        style: getInputStyle(true, {width: "auto", flex: "0 0 auto"}),
         groupStyle: getGroupStyle(),
         infos: optionKeys.map((v) => {
           const info = this.getOptionInputInfo2(data, v, true);
@@ -184,16 +184,16 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
               w = 160;
               break;
             case "门扇厚度":
-              w = 105;
+              w = 150;
               break;
             case "锁边":
             case "铰边":
-              w = 175;
+              w = 180;
               break;
             default:
               w = 0;
           }
-          info.style = {...info.style, width: `${w}px`, flex: `1 0 auto`};
+          info.style = {...info.style, width: `${w}px`, flex: `0 0 auto`};
           return info;
         })
       }
@@ -262,28 +262,11 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         type: "group",
         label: "门缝配置",
         infos: 门缝配置输入.map(getMenfengInputInfo),
-        style: getInputStyle(true, {width: "auto", flex: "1 0 auto"}),
+        style: getInputStyle(true, {width: "auto", flex: "0 0 360px"}),
         groupStyle: getGroupStyle()
       }
     ];
-    const form3: InputInfo[] = [
-      {
-        type: "group",
-        label: "其他",
-        infos: [
-          {
-            type: "boolean",
-            label: "关闭碰撞检查",
-            model: {data, key: "关闭碰撞检查"},
-            style: getInputStyle(true, {width: "100px", flex: "1 0 auto"}),
-            validators: Validators.required
-          }
-        ],
-        style: getInputStyle(true, {width: "auto", flex: "1 0 auto"}),
-        groupStyle: getGroupStyle()
-      }
-    ];
-    form1Group.push(...form2, ...form3);
+    form1Group.push(...form2);
     return form1;
   });
   key1Infos = computed(() => {

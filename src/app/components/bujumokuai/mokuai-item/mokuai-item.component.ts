@@ -21,7 +21,7 @@ import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {CadData} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf} from "@lucilor/utils";
+import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -31,7 +31,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
-import {MrbcjfzDataSubmitEvent, MrbcjfzInfo, MrbcjfzResponseData} from "@views/mrbcjfz/mrbcjfz.types";
+import {MrbcjfzDataSubmitEvent, MrbcjfzInfo, MrbcjfzInputData, MrbcjfzResponseData} from "@views/mrbcjfz/mrbcjfz.types";
 import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -39,7 +39,7 @@ import {firstValueFrom, Subject} from "rxjs";
 import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
 import {MokuaiCadsComponent} from "../mokuai-cads/mokuai-cads.component";
 import {BjmkStatusService} from "../services/bjmk-status.service";
-import {MokuaiItem} from "./mokuai-item.types";
+import {MokuaiItem, MokuaiItemCloseEvent} from "./mokuai-item.types";
 import {getEmptyMokuaiItem} from "./mokuai-item.utils";
 
 @Component({
@@ -78,7 +78,7 @@ export class MokuaiItemComponent implements OnInit {
   mokuaiIn = input.required<MokuaiItem>({alias: "mokuai"});
   bancaiListData = input.required<BancaiListData | null>();
   imgPrefix = input<string>("");
-  closeOut = output({alias: "close"});
+  closeOut = output<MokuaiItemCloseEvent>({alias: "close"});
 
   async ngOnInit() {
     await this.bjmkStatus.fetchCads();
@@ -210,24 +210,35 @@ export class MokuaiItemComponent implements OnInit {
   mrbcjfzInputData = computed(() => {
     const mokuai = this.mokuai();
     const data = this._mrbcjfzResponseData();
-    return {
+    const morenbancai = mokuai.morenbancai || {};
+    const inputData: MrbcjfzInputData = {
       xinghao: mokuai.name,
-      morenbancai: mokuai.morenbancai || {},
-      cads: this.selectedCads(),
-      huajians: data?.huajians
+      morenbancai,
+      cads: this.selectedCads()
     };
-  });
-  async openMrbcjfzDialog() {
-    const mokuai = this.mokuai();
-    if (!this._mrbcjfzResponseData()) {
-      this._mrbcjfzResponseData.set(
-        await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {
-          table: "p_peijianmokuai",
-          id: mokuai.id,
-          collection: this.bjmkStatus.collection
-        })
-      );
+    if (data) {
+      inputData.huajians = data.huajians;
+      inputData.bancaiList = {
+        bancais: data.bancaiList,
+        bancaiKeys: data.bancaiKeys,
+        bancaiKeysRequired: data.bancaiKeysRequired,
+        qiliaos: data.qiliaos
+      };
     }
+    return inputData;
+  });
+  private async _fetchMrbcjfzResponseData() {
+    const mokuai = this.mokuai();
+    this._mrbcjfzResponseData.set(
+      await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {
+        table: "p_peijianmokuai",
+        id: mokuai.id,
+        collection: this.bjmkStatus.collection
+      })
+    );
+  }
+  async openMrbcjfzDialog() {
+    await this._fetchMrbcjfzResponseData();
     this.showMrbcjfzDialog.set(true);
     return await firstValueFrom(this._mrbcjfzDialogClose$);
   }
@@ -320,13 +331,16 @@ export class MokuaiItemComponent implements OnInit {
     this.selectCads$.next(mokuaiCads);
   }
 
+  isSaved = signal(false);
   close() {
-    this.closeOut.emit();
+    this.closeOut.emit({isSaved: this.isSaved()});
   }
   slgsComponent = viewChild<FormulasEditorComponent>("slgs");
   async updateMokaui() {
     const mokuai = this.mokuai();
     const errors: string[] = [];
+    await this._fetchMrbcjfzResponseData();
+    await timeout(0);
     const mrbcjfzErrors = this.mrbcjfzComponent()?.checkSubmit();
     if (mrbcjfzErrors) {
       if (mrbcjfzErrors.length > 0) {
@@ -368,6 +382,7 @@ export class MokuaiItemComponent implements OnInit {
       }
     }
     await this.bjmkStatus.editMokuai(mokuaiNew, true);
+    this.isSaved.set(true);
   }
   async saveAs() {
     const mokuai = await this.updateMokaui();

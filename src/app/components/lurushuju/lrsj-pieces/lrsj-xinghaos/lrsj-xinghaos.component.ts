@@ -5,6 +5,7 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, getCopyName, joinOptions, splitOptions} from "@app/app.common";
 import {environment} from "@env";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -12,6 +13,7 @@ import {InputInfo, InputInfoGroup, InputInfoSelect} from "@modules/input/compone
 import {getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
@@ -24,7 +26,17 @@ import {defaultFenleis, getOptions} from "../lrsj-pieces.utils";
 @Component({
   selector: "app-lrsj-xinghaos",
   standalone: true,
-  imports: [FormsModule, ImageComponent, InputComponent, MatButtonModule, MatCheckboxModule, MatTooltipModule, NgScrollbarModule],
+  imports: [
+    FloatingDialogModule,
+    FormsModule,
+    ImageComponent,
+    InputComponent,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatTooltipModule,
+    NgScrollbarModule,
+    XhmrmsbjComponent
+  ],
   templateUrl: "./lrsj-xinghaos.component.html",
   styleUrl: "./lrsj-xinghaos.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -208,7 +220,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       result.mingziOld = result.data.mingzi;
       await this.editXinghaoByResult(result, xinghao);
       await this.lrsjStatus.getXinghaos();
-      this.gotoZuofas(xinghao.mingzi);
+      this.gotoZuofas(xinghao);
     }
   }
   async editXinghao(xinghao: XinghaoData) {
@@ -327,9 +339,17 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       await this.lrsjStatus.getXinghaos();
     }
   }
-  async gotoZuofas(xinghaoName: string) {
-    const xinghao = await this.lrsjStatus.getXinghao(xinghaoName);
-    this.lrsjStatus.gotoZuofas(xinghao);
+  showXhmrmsbj = signal<{id: number} | null>(null);
+  async gotoZuofas(xinghao0: XinghaoData) {
+    if (this.lrsjStatus.按模块做数据()) {
+      this.showXhmrmsbj.set({id: xinghao0.vid});
+    } else {
+      const xinghao = await this.lrsjStatus.getXinghao(xinghao0.mingzi);
+      this.lrsjStatus.gotoZuofas(xinghao);
+    }
+  }
+  closeXhmrmsbj() {
+    this.showXhmrmsbj.set(null);
   }
 
   async getOptions(key: string) {

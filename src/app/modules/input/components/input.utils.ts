@@ -56,12 +56,13 @@ export const getGroupStyle = (): Properties => {
 };
 
 export const getInputStyle = (isInGroup: boolean, others?: Properties) => {
-  const result: Properties = {boxSizing: "border-box", ...others};
+  const result: Properties = {boxSizing: "border-box"};
   if (isInGroup) {
     result.flex = "1 1 0";
     result.width = "0";
     result.marginRight = "5px";
   }
+  Object.assign(result, others);
   return result;
 };
 

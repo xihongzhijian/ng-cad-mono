@@ -478,7 +478,7 @@ export class DingdanbiaoqianComponent implements OnInit {
   async updateMokuais() {
     const {cadsRowNum, cadsColNum} = this;
     const params = this.route.snapshot.queryParams;
-    const mokuaiIds = ((params.ids as string) || "").split(",").filter(Boolean);
+    const mokuaiIds = ((params.ids as string) || "").split(",").filter(Boolean).map(Number);
     if (mokuaiIds.length <= 0) {
       return;
     }

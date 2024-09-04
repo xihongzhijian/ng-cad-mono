@@ -85,7 +85,7 @@ export class BjmkStatusService {
     let mokuai2: MokuaiItem | null = null;
     const ids = [id];
     const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {mokuaiIds: ids, focusMokuaiIds: ids})) || [];
-    mokuai2 = mokuais[0] || null;
+    mokuai2 = mokuais.at(0) || null;
     return mokuai2;
   }
   refreshMokuais(updateMokuais?: MokuaiItem[]) {

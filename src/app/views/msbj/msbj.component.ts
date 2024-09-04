@@ -1,5 +1,16 @@
 import {CdkDragDrop, CdkDropListGroup, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
-import {AfterViewInit, ChangeDetectionStrategy, Component, computed, inject, signal, viewChild} from "@angular/core";
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild
+} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
@@ -16,7 +27,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
-import {MsbjData, MsbjFenlei, MsbjInfo} from "./msbj.types";
+import {MsbjCloseEvent, MsbjData, MsbjFenlei, MsbjInfo} from "./msbj.types";
 
 @Component({
   selector: "app-msbj",
@@ -26,16 +37,22 @@ import {MsbjData, MsbjFenlei, MsbjInfo} from "./msbj.types";
   imports: [CadImageComponent, CdkDropListGroup, InputComponent, MatButtonModule, MsbjRectsComponent, NgScrollbar],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MsbjComponent implements AfterViewInit {
+export class MsbjComponent {
   private http = inject(CadDataService);
   private message = inject(MessageService);
   private route = inject(ActivatedRoute);
   private status = inject(AppStatusService);
 
+  tableIn = input("", {alias: "table"});
+  idIn = input(0, {alias: "id"});
+  dataFieldIn = input("", {alias: "dataField"});
+  closable = input(false, {transform: booleanAttribute});
+  closeOut = output<MsbjCloseEvent>({alias: "close"});
+
   production = environment.production;
   table = signal("");
   msbjInfo = signal<MsbjInfo | null>(null);
-  dataField: keyof Omit<MsbjData, keyof TableDataBase> = "peizhishuju";
+  dataField = signal<keyof Omit<MsbjData, keyof TableDataBase>>("peizhishuju");
   fenleiListDataType!: {$implicit: MsbjFenlei[]; class: string};
   cads = signal<{data: CadData}[]>([]);
   msbjRects = viewChild(MsbjRectsComponent);
@@ -44,10 +61,17 @@ export class MsbjComponent implements AfterViewInit {
     setGlobal("msbj", this);
   }
 
-  async ngAfterViewInit() {
-    const {table = "", id = "", field} = this.route.snapshot.queryParams;
-    this.table.set(table || "");
-    this.dataField = field === "peizhishuju" ? field : "menshanbujumorenfenlei";
+  refreshEff = effect(() => this.refresh(), {allowSignalWrites: true});
+  async refresh() {
+    const {table: table0 = "", id: id0 = "", field: field0} = this.route.snapshot.queryParams;
+    const id = this.idIn() || Number(id0);
+    if (!(id > 0)) {
+      return;
+    }
+    const field = this.dataFieldIn() || field0 || "peizhishuju";
+    const table = this.tableIn() || table0 || "p_menshanbuju";
+    this.table.set(table);
+    this.dataField.set(field === "peizhishuju" ? field : "menshanbujumorenfenlei");
     const msbjData = await this.http.queryMySql<MsbjData>({table, filter: {where: {vid: id}}});
     if (msbjData[0]) {
       this.msbjInfo.set(new MsbjInfo(msbjData[0]));
@@ -129,6 +153,7 @@ export class MsbjComponent implements AfterViewInit {
     this.updateCurrRectInfo();
   }
 
+  isSubmited = signal(false);
   async submit() {
     const msbjInfo = this.msbjInfo();
     if (!msbjInfo) {
@@ -163,8 +188,9 @@ export class MsbjComponent implements AfterViewInit {
     }
 
     msbjInfo.peizhishuju.模块节点 = rectInfos;
-    data[this.dataField] = JSON.stringify(msbjInfo.peizhishuju);
+    data[this.dataField()] = JSON.stringify(msbjInfo.peizhishuju);
     await this.http.tableUpdate({table, data});
+    this.isSubmited.set(true);
   }
 
   async editMokuaidaxiao() {
@@ -180,5 +206,15 @@ export class MsbjComponent implements AfterViewInit {
 
   openCad(data: CadData) {
     this.status.openCadInNewTab(data.id, "cad");
+  }
+
+  async close(submit = false) {
+    if (submit) {
+      await this.submit();
+    }
+    if (!this.closable()) {
+      return;
+    }
+    this.closeOut.emit({isSubmited: this.isSubmited()});
   }
 }

@@ -1,5 +1,18 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostBinding,
+  inject,
+  input,
+  OnInit,
+  output,
+  signal,
+  viewChild
+} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
@@ -19,6 +32,7 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {MokuaiItemComponent} from "../mokuai-item/mokuai-item.component";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
 import {BjmkStatusService} from "../services/bjmk-status.service";
+import {MokuaikuCloseEvent} from "./mokuaiku.types";
 
 @Component({
   selector: "app-mokuaiku",
@@ -46,6 +60,10 @@ export class MokuaikuComponent implements OnInit {
   private http = inject(CadDataService);
 
   @HostBinding("class") class = ["ng-page"];
+
+  selectable = input(false, {transform: booleanAttribute});
+  selectedMokuaiIdsIn = input<number[]>([], {alias: "selectedMokuaiIds"});
+  closeOut = output<MokuaikuCloseEvent>({alias: "close"});
 
   production = environment.production;
 
@@ -162,5 +180,33 @@ export class MokuaikuComponent implements OnInit {
     if (info) {
       this.setInfo(info);
     }
+  }
+
+  selectedMokuaiIdsInEff = effect(() => this.selectedMokuaiIds.set(this.selectedMokuaiIdsIn()), {allowSignalWrites: true});
+  selectedMokuaiIds = signal<number[]>([]);
+  selectedMokuais = computed(() => {
+    const ids = this.selectedMokuaiIds();
+    const mokuais = this.bjmkStatus.mokuais();
+    const selectedMokuais: MokuaiItem[] = [];
+    for (const id of ids) {
+      const mokuai = mokuais.find((v) => v.id === id);
+      if (mokuai) {
+        selectedMokuais.push(mokuai);
+      }
+    }
+    return selectedMokuais;
+  });
+  close(submit = false) {
+    if (!this.selectable()) {
+      return;
+    }
+    const selectedMokuais = submit ? this.selectedMokuais() : null;
+    this.closeOut.emit({selectedMokuais});
+  }
+  selectedMokuai(mokuai: MokuaiItem) {
+    this.selectedMokuaiIds.update((v) => [...v, mokuai.id]);
+  }
+  unselectedMokuai(mokuai: MokuaiItem) {
+    this.selectedMokuaiIds.update((v) => v.filter((v2) => v2 !== mokuai.id));
   }
 }

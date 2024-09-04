@@ -58,6 +58,7 @@ export class LrsjStatusService implements OnDestroy {
   triggerSuanliaoDataBtn = signal<{name: SuanliaoDataBtnName} | null>(null);
   suanliaoCadsValidateStart$ = new Subject<{alert: boolean}>();
   suanliaoCadsValidateEnd$ = new Subject<string[]>();
+  按模块做数据 = signal(false);
 
   private _xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
   xinghaoFilterStr = signal(session.load<string>(this._xinghaoFilterStrKey) || "");
