@@ -1,4 +1,5 @@
 <div class="toolbar btn-group">
+  <div class="title">门扇铰位配置：{{ name }}</div>
   <button mat-raised-button color="primary" (click)="submit()">提交</button>
 </div>
 <ng-scrollbar>
@@ -7,12 +8,12 @@
       <div class="form">
         <div class="title">做{{ item.key }}个铰时</div>
         <mat-checkbox [(ngModel)]="item.value.disabled">不做{{ item.key }}个铰</mat-checkbox>
-        @for (itemItem of item.value.items; track itemItem; let i = $index) {
+        @for (itemItem of item.value.items; track i; let i = $index) {
           <div class="items">
             <div>铰位{{ i + 1 }}中⼼Y距离</div>
             <mat-form-field style="width: 150px">
               <mat-select [(ngModel)]="itemItem.anchor" [disabled]="item.value.disabled">
-                @for (option of jiaoweiAnchorOptions; track option) {
+                @for (option of getJiaoweiAnchorOptions(item.value); track $index) {
                   <mat-option [value]="option">{{ option }}</mat-option>
                 }
               </mat-select>

@@ -598,8 +598,12 @@ export const calcZxpj = async (
       const mokuaiVarsCurr = getMokuaiVarsCurr(门扇名字, 模块名字);
       const vars1 = {...materialResult, ...shuchubianliang, ...lingsanVars, ...mokuaiVarsCurr};
       vars1.门扇布局 = v.item.info?.门扇布局?.name || "";
-      const result1Msg = `计算模块（${getMokuaiTitle(v.item)}）`;
-      const result1 = await calc.calcFormulas(formulas1, vars1, alertError ? {title: result1Msg} : undefined);
+      const result1Msg = `【${门扇名字}】模块【${模块名字}】计算`;
+      const result1 = await calc.calcFormulas(
+        formulas1,
+        vars1,
+        alertError ? {title: result1Msg, title2: "错误，请检查模块大小、算料公式"} : undefined
+      );
       // console.log({formulas1, vars1, result1});
       if (!result1?.fulfilled) {
         if (alertError) {

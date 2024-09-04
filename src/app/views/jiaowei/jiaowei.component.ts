@@ -13,7 +13,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbar} from "ngx-scrollbar";
-import {Jiaowei, jiaoweiAnchorOptions, JiaoweiTableData} from "./jiaowei";
+import {Jiaowei, jiaoweiAnchorOptions, JiaoweiDataItem, JiaoweiTableData} from "./jiaowei";
 
 const table = "p_menjiao" as const;
 
@@ -35,8 +35,8 @@ const table = "p_menjiao" as const;
   ]
 })
 export class JiaoweiComponent implements OnInit {
+  name = "";
   jiaowei = new Jiaowei();
-  jiaoweiAnchorOptions = jiaoweiAnchorOptions;
 
   constructor(
     private http: CadDataService,
@@ -50,6 +50,7 @@ export class JiaoweiComponent implements OnInit {
     const data = await this.http.queryMySql<JiaoweiTableData>({table, filter: {where: {vid: id}}});
     try {
       if (data[0]?.jiaowei) {
+        this.name = data[0].mingzi;
         this.jiaowei.import(JSON.parse(data[0].jiaowei || ""));
       }
     } catch (error) {
@@ -68,5 +69,12 @@ export class JiaoweiComponent implements OnInit {
     const data: TableUpdateParams<JiaoweiTableData>["data"] = {vid: id};
     data.jiaowei = JSON.stringify(this.jiaowei.export());
     this.http.tableUpdate({table, data});
+  }
+
+  getJiaoweiAnchorOptions(item: JiaoweiDataItem) {
+    if (item.items.length <= 3) {
+      return jiaoweiAnchorOptions.filter((v) => v !== "剩余平分");
+    }
+    return jiaoweiAnchorOptions;
   }
 }
