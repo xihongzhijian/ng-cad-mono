@@ -26,8 +26,8 @@ export class Jiaowei {
       result.不做 = !!disabled;
       if (!disabled) {
         for (const [i, item] of items.entries()) {
-          result[`铰位${i + 1}中⼼Y距离基准`] = item.anchor;
-          result[`铰位${i + 1}中⼼Y距离`] = item.distance;
+          result[`铰位${i + 1}中心Y距离基准`] = item.anchor;
+          result[`铰位${i + 1}中心Y距离`] = item.distance;
         }
       }
       return result;
@@ -92,8 +92,8 @@ export class Jiaowei {
         return;
     }
     for (const [i, item] of dataItem.items.entries()) {
-      const anchor = sourceItem[`铰位${i + 1}中⼼Y距离基准`];
-      const distance = sourceItem[`铰位${i + 1}中⼼Y距离`];
+      const anchor = sourceItem[`铰位${i + 1}中心Y距离基准`];
+      const distance = sourceItem[`铰位${i + 1}中心Y距离`];
       if (anchor) {
         item.anchor = anchor;
       }
