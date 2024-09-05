@@ -210,20 +210,14 @@ export class MokuaiItemComponent implements OnInit {
   mrbcjfzInputData = computed(() => {
     const mokuai = this.mokuai();
     const data = this._mrbcjfzResponseData();
-    const morenbancai = mokuai.morenbancai || {};
+    const morenbancai = cloneDeep(mokuai.morenbancai || {});
     const inputData: MrbcjfzInputData = {
       xinghao: mokuai.name,
       morenbancai,
       cads: this.selectedCads()
     };
     if (data) {
-      inputData.huajians = data.huajians;
-      inputData.bancaiList = {
-        bancais: data.bancaiList,
-        bancaiKeys: data.bancaiKeys,
-        bancaiKeysRequired: data.bancaiKeysRequired,
-        qiliaos: data.qiliaos
-      };
+      inputData.resData = data;
     }
     return inputData;
   });
@@ -243,8 +237,12 @@ export class MokuaiItemComponent implements OnInit {
     return await firstValueFrom(this._mrbcjfzDialogClose$);
   }
   onMrbcjfSubmit(event: MrbcjfzDataSubmitEvent) {
-    this._mrbcjfzDialogClose$.next(event);
-    this.showMrbcjfzDialog.set(false);
+    if (event.close) {
+      this._mrbcjfzDialogClose$.next(event);
+      this.showMrbcjfzDialog.set(false);
+    } else {
+      this.mokuai.update((v) => ({...v, morenbancai: event.data.默认板材}));
+    }
   }
   onMrbcjfClose() {
     this._mrbcjfzDialogClose$.next(null);

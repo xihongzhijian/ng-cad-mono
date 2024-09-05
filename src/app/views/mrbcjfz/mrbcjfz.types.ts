@@ -94,10 +94,11 @@ export interface MrbcjfzInputData {
   bancaiList?: BancaiListData;
   noScroll?: boolean;
   noToolbar?: boolean;
+  resData?: MrbcjfzResponseData;
 }
 
 export interface MrbcjfzDataSubmitEvent {
   data: MrbcjfzXinghaoInfo;
   errors: string[];
-  submit2?: boolean;
+  close?: boolean;
 }

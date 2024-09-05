@@ -7,7 +7,7 @@
     <mat-divider class="placeholder large"></mat-divider>
     @if (inputData || !isFromOrder) {
       @if (inputData) {
-        <button mat-raised-button color="primary" (click)="submit(true)">保存并关闭</button>
+        <button mat-raised-button color="primary" (click)="submit(true)">提交并关闭</button>
       }
       <button mat-raised-button color="primary" (click)="submit()">提交</button>
       @if (closeable) {

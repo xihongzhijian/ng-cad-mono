@@ -45,23 +45,25 @@
       }
     </div>
   </app-data-list>
-  <mat-divider vertical></mat-divider>
-  <div class="flex-column">
-    <div class="title">可选模块</div>
-    <ng-scrollbar>
-      <div class="selected-mokuais items flex-110">
-        @for (mokuai of selectedMokuais(); track $index) {
-          <div class="item">
-            <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()" (click)="enterMokuai(mokuai)"></app-image>
-            <div class="name toolbar center">
-              <button mat-icon-button color="primary" (click)="unselectedMokuai(mokuai)"><mat-icon>remove_circle</mat-icon></button>
-              <div>{{ mokuai.name }}</div>
+  @if (selectable()) {
+    <mat-divider vertical></mat-divider>
+    <div class="flex-column">
+      <div class="title">可选模块</div>
+      <ng-scrollbar>
+        <div class="selected-mokuais items flex-110">
+          @for (mokuai of selectedMokuais(); track $index) {
+            <div class="item">
+              <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()" (click)="enterMokuai(mokuai)"></app-image>
+              <div class="name toolbar center">
+                <button mat-icon-button color="primary" (click)="unselectedMokuai(mokuai)"><mat-icon>remove_circle</mat-icon></button>
+                <div>{{ mokuai.name }}</div>
+              </div>
             </div>
-          </div>
-        }
-      </div>
-    </ng-scrollbar>
-  </div>
+          }
+        </div>
+      </ng-scrollbar>
+    </div>
+  }
 </div>
 
 @if (currMokuai(); as mokuai) {

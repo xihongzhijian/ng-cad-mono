@@ -156,16 +156,22 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     this._refreshLock$.next(true);
     let {id, table} = this;
     const {collection} = this;
+    let resData: MrbcjfzResponseData | undefined;
     if (this.inputData) {
-      this.isFromOrder = true;
-      const noScroll = !!this.inputData.noScroll;
-      this.noScroll = noScroll;
-      if (noScroll) {
-        if (!this.class.includes("no-scroll")) {
-          this.class = [...this.class, "no-scroll"];
-        }
+      if (this.inputData.resData) {
+        this.isFromOrder = false;
+        resData = this.inputData.resData;
       } else {
-        this.class = this.class.filter((v) => v !== "no-scroll");
+        this.isFromOrder = true;
+        const noScroll = !!this.inputData.noScroll;
+        this.noScroll = noScroll;
+        if (noScroll) {
+          if (!this.class.includes("no-scroll")) {
+            this.class = [...this.class, "no-scroll"];
+          }
+        } else {
+          this.class = this.class.filter((v) => v !== "no-scroll");
+        }
       }
     } else {
       const params = this.route.snapshot.queryParams;
@@ -249,13 +255,18 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         this.huajians[vid] = {id: vid, data: huajian, selected: huajianIds2.includes(vid)};
       }
     } else {
-      const data = await this.http.getData<MrbcjfzResponseData>(
-        "peijian/xinghao/bancaifenzuIndex",
-        {table, id, collection},
-        {spinner: this.loaderId}
-      );
+      const data =
+        resData ||
+        (await this.http.getData<MrbcjfzResponseData>(
+          "peijian/xinghao/bancaifenzuIndex",
+          {table, id, collection},
+          {spinner: this.loaderId}
+        ));
       if (data) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, data.xinghao);
+        if (this.inputData) {
+          this.xinghao.默认板材 = this.inputData.morenbancai;
+        }
         this.bancaiKeys = data.bancaiKeys;
         this.bancaiKeysRequired = data.bancaiKeysRequired;
         this.xiaodaohangStructure = data.xiaodaohangStructure;
@@ -519,7 +530,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     return errorMsg;
   }
 
-  async submit(submit2?: boolean) {
+  async submit(close?: boolean) {
     const {xinghao, table, isFromOrder} = this;
     let result = false;
     if (!xinghao) {
@@ -549,7 +560,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         result = !!(await this.http.tableUpdate({table, data}, {spinner: this.loaderId}));
       }
     }
-    this.dataSubmit.emit({data: this.xinghao, errors, submit2});
+    this.dataSubmit.emit({data: this.xinghao, errors, close});
     return result;
   }
 
