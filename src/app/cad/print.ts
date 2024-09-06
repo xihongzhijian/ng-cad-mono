@@ -19,7 +19,7 @@ import {
   setLinesLength
 } from "@lucilor/cad-viewer";
 import {getImageDataUrl, isBetween, isNearZero, isTypeOf, loadImage, Matrix, ObjectOf, Point, Rectangle, timeout} from "@lucilor/utils";
-import {cloneDeep, intersection} from "lodash";
+import {cloneDeep} from "lodash";
 import {createPdf} from "pdfmake/build/pdfmake";
 import QRCode from "qrcode";
 import {getCadPreview} from "./cad-preview";
@@ -1022,14 +1022,6 @@ export const printCads = async (params: PrintCadsParams) => {
           for (const e of Object.values(result.lines)) {
             if (e) {
               ids.push(e.id);
-            }
-          }
-          for (const e of data.entities.dimension) {
-            if (e instanceof CadDimensionLinear) {
-              if (intersection([e.entity1.id, e.entity2.id], ids).length > 0) {
-                e.visible = false;
-                cad.render(e);
-              }
             }
           }
         }
