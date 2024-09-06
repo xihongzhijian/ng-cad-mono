@@ -2,24 +2,27 @@ import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from 
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   booleanAttribute,
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   ElementRef,
-  EventEmitter,
   forwardRef,
-  Input,
-  OnChanges,
-  Output,
-  QueryList,
-  SimpleChanges,
-  ViewChild,
-  ViewChildren
+  inject,
+  input,
+  model,
+  signal,
+  viewChild,
+  viewChildren
 } from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {replaceChars, setGlobal} from "@app/app.common";
 import {CalcResult, Formulas} from "@app/utils/calc";
-import {ObjectOf, timeout} from "@lucilor/utils";
+import {VarNamesComponent} from "@components/var-names/var-names.component";
+import {VarNames} from "@components/var-names/var-names.types";
+import {timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
@@ -42,73 +45,78 @@ import {FormulasChangeEvent} from "./formulas-editor.types";
     MatButtonModule,
     MatIconModule,
     NgScrollbar,
-    NgTemplateOutlet
-  ]
+    NgTemplateOutlet,
+    VarNamesComponent
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FormulasEditorComponent implements OnChanges {
-  @Input() formulas?: Formulas;
-  @Input() vars?: Formulas;
-  @Input() formulasText = "";
-  @Input() varNames?: {names?: ObjectOf<string[]>; width?: number};
-  @Input() extraInputInfos?: InputInfo[];
-  @Input({transform: booleanAttribute}) required?: boolean;
-  @Input() compact?: {minRows?: number; maxRows?: number};
-  @Input({transform: booleanAttribute}) noFormulasText?: boolean;
-  @Input({transform: booleanAttribute}) noScroll?: boolean;
-  @Output() formulasChange = new EventEmitter<FormulasChangeEvent>();
-  formulaList: [string, string][] = [];
-  formulaListInputInfos: InputInfo[][] = [];
-  formulasInputInfo: InputInfo;
-  testResult: CalcResult | null = null;
-  @ViewChild("testResultEl", {read: ElementRef}) testResultEl?: ElementRef<HTMLDivElement>;
-  @ViewChildren(forwardRef(() => InputComponent)) inputs?: QueryList<InputComponent>;
+export class FormulasEditorComponent {
+  private calc = inject(CalcService);
+  private message = inject(MessageService);
 
-  constructor(
-    private message: MessageService,
-    private calc: CalcService
-  ) {
+  formulas = model<Formulas>({}, {alias: "formulas"});
+  formulasTextIn = input("", {alias: "formulasText"});
+  vars = input<Formulas>({});
+  varNames = input<VarNames>([]);
+  menshanweizhi = input("");
+  extraInputInfos = input<InputInfo[]>([]);
+  required = input(false, {transform: booleanAttribute});
+  noFormulasText = input(false, {transform: booleanAttribute});
+  noScroll = input(false, {transform: booleanAttribute});
+  compact = input<{minRows?: number; maxRows?: number}>();
+
+  constructor() {
     setGlobal("formulasEditor", this);
-    this.formulasInputInfo = {type: "string", label: ""};
-    this.updateFormulasInfo();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.formulas) {
-      this.updateFormulas(this.formulas);
-    }
-    if (changes.compact) {
-      this.updateFormulasInfo();
-    }
-  }
-
-  updateFormulasInfo() {
-    this.formulasInputInfo = {
+  formulaList = computed(() => Object.entries(this.formulas()).map(([k, v]) => [k, String(v)]));
+  formulaListInputInfos = computed(() => {
+    const list = this.formulaList();
+    const onChange = () => {
+      this.parseFormulaList(list);
+    };
+    return list.map<InputInfo[]>((arr) => [
+      {type: "string", label: "", model: {key: "0", data: arr}, onChange, validators: () => this.validateVarName(arr[0], list)},
+      {type: "string", label: "", textarea: {autosize: {minRows: 1, maxRows: 5}}, model: {key: "1", data: arr}, onChange}
+    ]);
+  });
+  formulasText = signal("");
+  formulasTextEff = effect(
+    () => {
+      const text = this.formulasTextIn();
+      if (this.compact() && !text) {
+        this.formulasText.set(this.stringifyFormulaList());
+      } else {
+        this.formulasText.set(text);
+      }
+    },
+    {allowSignalWrites: true}
+  );
+  formulasInputInfo = computed(() => {
+    const compact = this.compact();
+    const info: InputInfo = {
       type: "string",
       label: "",
-      textarea: {autosize: {minRows: this.compact?.minRows, maxRows: this.compact?.maxRows}},
-      model: {key: "formulasText", data: this},
-      onChange: () => this.onFormulasTextChange()
+      textarea: {autosize: {minRows: compact?.minRows, maxRows: compact?.maxRows}},
+      value: this.formulasText(),
+      onChange: (val) => {
+        this.formulasText.set(val);
+        if (compact) {
+          const list = this.parseFormulasText();
+          if (list) {
+            this.parseFormulaList(list);
+          }
+        }
+      }
     };
-  }
+    return info;
+  });
 
-  updateFormulas(formulas?: Formulas, lock = false) {
-    if (formulas) {
-      this.formulaList = Object.entries(formulas).map(([k, v]) => [k, String(v)]);
-    }
-    this.formulaListInputInfos = this.formulaList.map<InputInfo[]>((arr) => [
-      {type: "string", label: "", model: {key: "0", data: arr}, validators: () => this.validateVarName(arr[0])},
-      {type: "string", label: "", textarea: {autosize: {minRows: 1, maxRows: 5}}, model: {key: "1", data: arr}}
-    ]);
-    if (!lock && this.compact) {
-      this.formulasText = this.stringifyFormulas();
-    }
-  }
-
-  parseFormulas() {
-    const formulas = this.formulasText
+  parseFormulasText() {
+    const list = this.formulasText()
       .split(/；|;|\n/)
       .filter((v) => v)
-      .map<(typeof this.formulaList)[number]>((v) => {
+      .map<string[]>((v) => {
         v = replaceChars(v);
         const index1 = v.indexOf("=");
         const index2 = v.indexOf(":");
@@ -126,44 +134,54 @@ export class FormulasEditorComponent implements OnChanges {
         return ["", ""];
       })
       .filter((v) => v);
-    this.justifyFormulas(formulas);
+    this.justifyFormulas(list);
 
     const errorMsgs: string[] = [];
-    const formulas2: typeof formulas = [];
-    for (const arr of formulas) {
-      const errors = this.validateVarName(arr[0]);
+    const list2: typeof list = [];
+    for (const arr of list) {
+      const errors = this.validateVarName(arr[0], list);
       if (isEmpty(errors)) {
-        formulas2.push(arr);
+        list2.push(arr);
       } else {
         errorMsgs.push(`公式 ${arr[0]} = ${arr[1]} 有错：${Object.keys(errors).join(", ")}`);
       }
     }
-    if (errorMsgs.length) {
+    if (errorMsgs.length > 0) {
       this.message.error(errorMsgs.join("<br>"));
+      return null;
+    } else {
+      return list2;
     }
-    return formulas2;
+  }
+  parseFormulaList(list: string[][]) {
+    const formulas: Formulas = {};
+    for (const arr of list) {
+      formulas[arr[0]] = arr[1];
+    }
+    this.formulas.set(formulas);
   }
 
-  stringifyFormulas() {
-    return this.formulaList.map((v) => `${v[0]} = ${v[1]}`).join("\n\n");
+  stringifyFormulaList() {
+    return this.formulaList()
+      .map((v) => `${v[0]} = ${v[1]}`)
+      .join("\n\n");
   }
 
   addFormulas() {
-    const formulas = this.parseFormulas();
-    if (formulas.length > 0) {
-      this.formulaList.push(...formulas);
-      this.updateFormulas();
+    const list = this.parseFormulasText();
+    if (list) {
+      this.parseFormulaList(this.formulaList().concat(list));
     }
   }
 
-  validateVarName(varName: string, formulas = this.formulaList): ValidationErrors | null {
+  validateVarName(varName: string, formulaList: string[][]): ValidationErrors | null {
     if (!varName) {
       return {公式名不能为空: true};
     }
     if (!isNaN(Number(varName))) {
       return {公式名不能是纯数字: true};
     }
-    const varNames = formulas.filter((v) => v[0] === varName);
+    const varNames = formulaList.filter((v) => v[0] === varName);
     if (varNames.length > 1) {
       return {公式名重复: true};
     }
@@ -172,8 +190,7 @@ export class FormulasEditorComponent implements OnChanges {
     }
     return null;
   }
-
-  justifyFormulas(formulaList = this.formulaList) {
+  justifyFormulas(formulaList: string[][]) {
     for (const arr of formulaList) {
       arr[0] = replaceChars(arr[0]).toUpperCase();
       arr[1] = replaceChars(arr[1]).toUpperCase();
@@ -182,13 +199,14 @@ export class FormulasEditorComponent implements OnChanges {
     }
   }
 
-  submitFormulas(formulaList = this.formulaList, silent?: boolean) {
+  inputs = viewChildren(InputComponent);
+  submitFormulas(formulaList = this.formulaList(), silent?: boolean) {
     const errorsSet = new Set<string>();
-    if (this.required && formulaList.length < 1) {
+    if (this.required() && formulaList.length < 1) {
       errorsSet.add("公式不能为空");
     }
     this.justifyFormulas(formulaList);
-    const inputs = this.inputs || [];
+    const inputs = this.inputs();
     for (const input of inputs) {
       const errors2 = input.validateValue();
       for (const key in errors2) {
@@ -209,58 +227,46 @@ export class FormulasEditorComponent implements OnChanges {
   }
 
   addFormula(i?: number) {
+    const list = this.formulaList().slice();
     if (typeof i === "number") {
-      this.formulaList.splice(i, 0, ["", ""]);
+      list.splice(i, 0, ["", ""]);
     } else {
-      this.formulaList.push(["", ""]);
+      list.push(["", ""]);
     }
-    this.updateFormulas();
+    this.parseFormulaList(list);
   }
-
   removeFormula(i: number) {
-    this.formulaList.splice(i, 1);
-    this.updateFormulas();
+    const list = this.formulaList().slice();
+    list.splice(i, 1);
+    this.parseFormulaList(list);
   }
-
   dropFormula(event: CdkDragDrop<typeof this.formulaList>) {
-    moveItemInArray(this.formulaList, event.previousIndex, event.currentIndex);
-    this.updateFormulas();
+    const list = this.formulaList().slice();
+    moveItemInArray(list, event.previousIndex, event.currentIndex);
+    this.parseFormulaList(list);
   }
 
-  async test(event: FormulasChangeEvent) {
-    if (event.errors.length > 0) {
+  testResult = signal<CalcResult | null>(null);
+  testResultEl = viewChild<ElementRef<HTMLElement>>("testResultEl");
+  async test(parseText: boolean) {
+    const list = parseText ? this.parseFormulasText() : this.formulaList();
+    if (!list) {
       return;
     }
-    const result = await this.calc.calcFormulas(event.formulas, this.vars);
+    const submitResult = this.submitFormulas(list);
+    if (submitResult.errors.length > 0) {
+      return;
+    }
+    const result = await this.calc.calcFormulas(submitResult.formulas, this.vars());
     if (result) {
-      this.testResult = result;
+      this.testResult.set(result);
       await timeout(200);
-      this.message.alert({title: "计算结果", content: this.testResultEl?.nativeElement.innerHTML});
-      this.testResult = null;
+      this.message.alert({title: "计算结果", content: this.testResultEl()?.nativeElement.innerHTML});
+      this.testResult.set(null);
     }
   }
 
   returnZero() {
     return 0;
-  }
-
-  clickVarName(name: string) {
-    this.message.copyText(name);
-  }
-
-  openDoc() {
-    window.open("https://www.kdocs.cn/l/ckbuWeJhOajS");
-  }
-
-  onFormulasTextChange() {
-    if (!this.compact) {
-      return;
-    }
-    const formulas = this.parseFormulas();
-    if (formulas.length > 0) {
-      this.formulaList = formulas;
-      this.updateFormulas(undefined, true);
-    }
-    this.formulasChange.emit(this.submitFormulas(this.formulaList, true));
   }
 }

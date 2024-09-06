@@ -3,24 +3,22 @@ import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialo
 import {isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {MsbjPeizhishuju} from "@components/msbj-rects/msbj-rects.types";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
-import {MsbjInfo} from "@views/msbj/msbj.types";
+import {MsbjInfo, ZuoshujuData} from "@views/msbj/msbj.utils";
 import {cloneDeep} from "lodash";
 
 export interface XhmrmsbjTableData extends TableDataBase {
   peizhishuju?: string;
   xinghao?: string;
   jiaoshanbujuhesuoshanxiangtong?: number;
+  zuoshujubanben?: string;
 }
 
-export class XhmrmsbjData {
-  vid: number;
-  name: string;
+export class XhmrmsbjData extends ZuoshujuData {
   menshanbujuInfos: Partial<Record<MenshanKey, XhmrmsbjInfo>>;
   铰扇跟随锁扇?: boolean;
 
   constructor(data: XhmrmsbjTableData, menshanKeys: readonly MenshanKey[], typesInfo: ZixuanpeijianTypesInfo, msbjs: MsbjInfo[]) {
-    this.vid = data.vid;
-    this.name = data.mingzi;
+    super(data);
     this.铰扇跟随锁扇 = data.jiaoshanbujuhesuoshanxiangtong === 1;
     let info: any = null;
     this.menshanbujuInfos = {};
@@ -36,7 +34,12 @@ export class XhmrmsbjData {
       if (!item.选中布局数据) {
         const msbj = msbjs.find((v) => v.vid === item.选中布局);
         if (msbj) {
-          item.选中布局数据 = {vid: msbj.vid, name: msbj.name, 模块大小关系: msbj.peizhishuju.模块大小关系};
+          item.选中布局数据 = {
+            vid: msbj.vid,
+            name: msbj.name,
+            模块大小关系: msbj.peizhishuju.模块大小关系,
+            模块大小配置: msbj.peizhishuju.模块大小配置
+          };
         }
       }
       const 模块节点 = item.模块节点 || [];
@@ -119,7 +122,12 @@ export class XhmrmsbjData {
 
 export interface XhmrmsbjInfo {
   选中布局?: number;
-  选中布局数据?: {vid: number; name: string; 模块大小关系: MsbjPeizhishuju["模块大小关系"]};
+  选中布局数据?: {
+    vid: number;
+    name: string;
+    模块大小关系: MsbjPeizhishuju["模块大小关系"];
+    模块大小配置: MsbjPeizhishuju["模块大小配置"];
+  };
   模块大小输入?: Formulas;
   模块大小输出?: Formulas;
   模块节点?: XhmrmsbjInfoMokuaiNode[];

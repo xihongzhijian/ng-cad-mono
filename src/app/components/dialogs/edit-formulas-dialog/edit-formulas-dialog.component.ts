@@ -43,11 +43,11 @@ export const openEditFormulasDialog = getOpenDialogFunc<EditFormulasDialogCompon
 );
 
 export interface EditFormulasInput {
-  formulas?: Formulas;
-  formulasText?: FormulasEditorComponent["formulasText"];
-  varNames?: FormulasEditorComponent["varNames"];
-  extraInputInfos?: FormulasEditorComponent["extraInputInfos"];
-  required?: boolean;
+  formulas?: ReturnType<FormulasEditorComponent["formulas"]>;
+  formulasText?: ReturnType<FormulasEditorComponent["formulasText"]>;
+  varNames?: ReturnType<FormulasEditorComponent["varNames"]>;
+  extraInputInfos?: ReturnType<FormulasEditorComponent["extraInputInfos"]>;
+  required?: ReturnType<FormulasEditorComponent["required"]>;
 }
 
 export type EditFormulasOutput = Formulas;

@@ -11,14 +11,14 @@ import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/tabl
 import {cloneDeep} from "lodash";
 import {openSelectZuofaDialog} from "../../select-zuofa-dialog/select-zuofa-dialog.component";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
-import {getSortedItems, get算料数据, menjiaoCadTypes, SuanliaoDataParams, 工艺做法, 算料数据, 输入, 选项} from "../../xinghao-data";
+import {get算料数据, menjiaoCadTypes, SuanliaoDataParams, 工艺做法, 算料数据, 输入, 选项} from "../../xinghao-data";
 import {
   copySuanliaoData,
   getMenfengInputs,
   getMenjiaoOptionInputInfo,
   updateMenjiaoData
 } from "../lrsj-suanliao-data/lrsj-suanliao-data.utils";
-import {ShuruTableData, XuanxiangTableData, ZuofaTab} from "./lrsj-zuofa.types";
+import {ShuruTableDataSorted, XuanxiangTableData, ZuofaTab} from "./lrsj-zuofa.types";
 import {getMenjiaoTable, getShuruItem, getShuruTable, getXuanxiangItem, getXuanxiangTable} from "./lrsj-zuofa.utils";
 
 @Component({
@@ -98,7 +98,7 @@ export class LrsjZuofaComponent {
   }
 
   shuruTable = computed(() => {
-    return getShuruTable(getSortedItems(this.zuofa().输入数据));
+    return getShuruTable(this.zuofa().输入数据);
   });
   async getShuruItem(data0?: 输入) {
     const zuofa = this.zuofa();
@@ -123,7 +123,7 @@ export class LrsjZuofaComponent {
         break;
     }
   }
-  async onShuruRow(event: RowButtonEvent<ShuruTableData>) {
+  async onShuruRow(event: RowButtonEvent<ShuruTableDataSorted>) {
     const zuofa = this.zuofa();
     const {button, item} = event;
     switch (button.event) {

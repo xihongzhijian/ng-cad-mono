@@ -25,7 +25,8 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
-import {MsbjData, MsbjInfo} from "@views/msbj/msbj.types";
+import {MsbjData} from "@views/msbj/msbj.types";
+import {MsbjInfo} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {
   SuanliaoInput,

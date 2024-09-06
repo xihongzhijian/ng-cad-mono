@@ -1,7 +1,13 @@
-@if (compact) {
-  <app-input [info]="formulasInputInfo"></app-input>
+@if (compact()) {
+  @if (noScroll()) {
+    <ng-container [ngTemplateOutlet]="compactContent"></ng-container>
+  } @else {
+    <ng-scrollbar>
+      <ng-container [ngTemplateOutlet]="compactContent"></ng-container>
+    </ng-scrollbar>
+  }
 } @else {
-  @if (noScroll) {
+  @if (noScroll()) {
     <ng-container [ngTemplateOutlet]="content"></ng-container>
   } @else {
     <ng-scrollbar>
@@ -10,23 +16,27 @@
   }
 }
 
+<ng-template #compactContent>
+  <app-input [info]="formulasInputInfo()"></app-input>
+</ng-template>
+
 <ng-template #content>
   <div class="content flex-row">
     <div class="flex-110">
-      @if (extraInputInfos) {
+      @if (extraInputInfos()) {
         <div class="toolbar extra-input-infos">
-          @for (info of extraInputInfos; track $index) {
+          @for (info of extraInputInfos(); track $index) {
             <app-input #extraInput [info]="info"></app-input>
           }
         </div>
       }
 
-      @if (!noFormulasText) {
+      @if (!noFormulasText()) {
         <div class="formulas-input">
-          <app-input [info]="formulasInputInfo"></app-input>
+          <app-input [info]="formulasInputInfo()"></app-input>
           <div class="btn-group" style="margin-top: -10px">
             <button mat-raised-button color="primary" (click)="addFormulas()">批量添加</button>
-            <button mat-raised-button color="primary" (click)="test(submitFormulas(parseFormulas()))">测试</button>
+            <button mat-raised-button color="primary" (click)="test(true)">测试</button>
           </div>
         </div>
       }
@@ -35,10 +45,10 @@
         <div class="btn-group">
           <div>公式</div>
           <button mat-raised-button color="primary" (click)="addFormula()">添加</button>
-          <button mat-raised-button color="primary" (click)="test(submitFormulas())">测试</button>
+          <button mat-raised-button color="primary" (click)="test(false)">测试</button>
         </div>
         <div class="formulas-list" cdkDropList [cdkDropListData]="formulaList" (cdkDropListDropped)="dropFormula($event)">
-          @for (formula of formulaList; track i; let i = $index) {
+          @for (formula of formulaList(); track i; let i = $index) {
             <div class="formula" cdkDrag cdkDragLockAxis="y">
               <div class="drag-placeholder" cdkDragHandle></div>
               <button mat-icon-button color="primary" (click)="addFormula(i + 1)">
@@ -47,9 +57,9 @@
               <button mat-icon-button color="primary" (click)="removeFormula(i)">
                 <mat-icon>remove_circle</mat-icon>
               </button>
-              <app-input class="key" [info]="formulaListInputInfos[i][0]"></app-input>
+              <app-input class="key" [info]="formulaListInputInfos()[i][0]"></app-input>
               <span class="eq"> = </span>
-              <app-input class="value" [info]="formulaListInputInfos[i][1]"></app-input>
+              <app-input class="value" [info]="formulaListInputInfos()[i][1]"></app-input>
               <div class="drag-placeholder" cdkDragHandle></div>
             </div>
           }
@@ -57,31 +67,11 @@
       </div>
     </div>
 
-    @if (varNames) {
-      <div class="var-names-groups flex-column" [style.--var-width.px]="varNames.width">
-        <div class="toolbar">
-          <div class="title">系统变量</div>
-          <button mat-raised-button color="primary" (click)="openDoc()">
-            帮助文档
-            <mat-icon>open_in_new</mat-icon>
-          </button>
-        </div>
-        @for (item of varNames.names | keyvalue: returnZero; track item.key) {
-          <div class="var-names-group flex-column">
-            <div class="name">{{ item.key }}</div>
-            <div class="var-names toolbar">
-              @for (name of item.value; track $index) {
-                <button mat-button color="primary" (click)="clickVarName(name)">{{ name }}</button>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    }
+    <app-var-names [varNames]="varNames()" [namesPerRow]="2"></app-var-names>
   </div>
 </ng-template>
 
-@if (testResult) {
+@if (testResult(); as testResult) {
   <div #testResultEl style="display: none">
     <div style="font-size: 18px; overflow: hidden">
       <div style="margin-bottom: 15px">

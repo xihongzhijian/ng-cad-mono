@@ -196,3 +196,14 @@
     <app-mokuaiku #mokuaiku selectable [selectedMokuaiIds]="openedMokuaiku.ids" (close)="closeMokuaiku($event)"></app-mokuaiku>
   </app-floating-dialog>
 }
+
+@if (openedMkdcpz(); as openedMkdcpz) {
+  <app-floating-dialog [maximized]="true" noTitle>
+    <app-mkdxpz-editor
+      [data]="openedMkdcpz.data"
+      [menshanweizhi]="openedMkdcpz.menshanweizhi"
+      closable
+      (close)="closeMkdcpz($event)"
+    ></app-mkdxpz-editor>
+  </app-floating-dialog>
+}

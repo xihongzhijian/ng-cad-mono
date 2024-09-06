@@ -21,7 +21,8 @@ import {InputInfo, InputInfoOption} from "@modules/input/components/input.types"
 import {MessageService} from "@modules/message/services/message.service";
 import {MrbcjfzInfo, MrbcjfzXinghao} from "@views/mrbcjfz/mrbcjfz.types";
 import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
-import {MsbjData, MsbjInfo, Node2rectData} from "@views/msbj/msbj.types";
+import {MsbjData, Node2rectData} from "@views/msbj/msbj.types";
+import {MsbjInfo} from "@views/msbj/msbj.utils";
 import {MenshanKey, menshanKeys, XhmrmsbjData, XhmrmsbjTableData} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -217,7 +218,12 @@ export class BujuComponent implements OnInit {
     }
     const msbj = new MsbjInfo(rawData, this.getNode2rectData());
     info.选中布局 = msbj.vid;
-    info.选中布局数据 = {vid: msbj.vid, name: msbj.name, 模块大小关系: msbj.peizhishuju.模块大小关系};
+    info.选中布局数据 = {
+      vid: msbj.vid,
+      name: msbj.name,
+      模块大小关系: msbj.peizhishuju.模块大小关系,
+      模块大小配置: msbj.peizhishuju.模块大小配置
+    };
     this.updateBujuData();
   }
 

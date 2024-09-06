@@ -39,8 +39,10 @@ import {
   isMokuaiItemEqual,
   updateMokuaiItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
+import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
+import {MkdxpzEditorCloseEvent} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {GenerateRectsEndEvent, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {MsbjRectInfo, MsbjSelectRectEvent} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjRectInfo, MsbjSelectRectEvent, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
 import {keysOf, ObjectOf, Point, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
@@ -53,7 +55,8 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {MrbcjfzInfo, MrbcjfzXinghao} from "@views/mrbcjfz/mrbcjfz.types";
 import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MsbjComponent} from "@views/msbj/msbj.component";
-import {MsbjCloseEvent, MsbjData, MsbjInfo, Node2rectData, node2rectDataMsdxKeys} from "@views/msbj/msbj.types";
+import {MsbjCloseEvent, MsbjData, Node2rectData, node2rectDataMsdxKeys} from "@views/msbj/msbj.types";
+import {getEmpty模块大小配置, justify模块大小配置, MsbjInfo} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {cloneDeep, intersection, isEqual} from "lodash";
@@ -92,6 +95,7 @@ const table = "p_xinghaomorenmenshanbuju";
     MatDividerModule,
     MatIconModule,
     MatSlideToggleModule,
+    MkdxpzEditorComponent,
     MokuaiItemComponent,
     MokuaikuComponent,
     MsbjComponent,
@@ -445,7 +449,8 @@ export class XhmrmsbjComponent implements OnDestroy {
         infos[menshanweizhi].选中布局数据 = {
           vid: msbj.vid,
           name: msbj.name,
-          模块大小关系: msbj.peizhishuju.模块大小关系
+          模块大小关系: msbj.peizhishuju.模块大小关系,
+          模块大小配置: msbj.peizhishuju.模块大小配置
         };
       } else {
         delete infos[menshanweizhi].选中布局;
@@ -842,6 +847,11 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
 
   async editMokuaidaxiao() {
+    const data = this.data();
+    if (data?.isVersion2024) {
+      await this.editMkdcpz();
+      return;
+    }
     const msbjInfo = this.activeMsbjInfo();
     if (!msbjInfo) {
       return;
@@ -1110,5 +1120,28 @@ export class XhmrmsbjComponent implements OnDestroy {
       }
     }
     return mokuais;
+  }
+
+  openedMkdcpz = signal<{data: 模块大小配置; msbjInfo: XhmrmsbjInfo; menshanweizhi: string} | null>(null);
+  openMkdcpz() {
+    const msbjInfo = this.activeMsbjInfo();
+    const 选中布局数据 = msbjInfo?.选中布局数据;
+    if (!选中布局数据) {
+      return;
+    }
+    const data = cloneDeep(选中布局数据.模块大小配置 || getEmpty模块大小配置());
+    justify模块大小配置(data, msbjInfo.模块节点?.map((v) => v.层名字) || []);
+    this.openedMkdcpz.set({data, msbjInfo, menshanweizhi: this.activeMenshanKey() || ""});
+  }
+  async editMkdcpz() {
+    this.openMkdcpz();
+  }
+  closeMkdcpz({data}: MkdxpzEditorCloseEvent) {
+    const 选中布局数据 = this.openedMkdcpz()?.msbjInfo.选中布局数据;
+    if (data && 选中布局数据) {
+      选中布局数据.模块大小配置 = data;
+      this.refreshData();
+    }
+    this.openedMkdcpz.set(null);
   }
 }

@@ -6,9 +6,9 @@
 <app-formulas-editor
   class="flex-110"
   #formulasEditor
-  [formulas]="data?.formulas"
+  [formulas]="data?.formulas || {}"
   [formulasText]="data?.formulasText || ''"
-  [varNames]="data?.varNames"
-  [extraInputInfos]="data?.extraInputInfos"
+  [varNames]="data?.varNames || []"
+  [extraInputInfos]="data?.extraInputInfos || []"
   [required]="data?.required"
 ></app-formulas-editor>

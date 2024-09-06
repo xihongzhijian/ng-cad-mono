@@ -38,31 +38,6 @@
   }
 }
 
-.var-names-groups {
-  width: calc(2 * var(--var-width) + 10px);
-
-  .var-names-group {
-    width: 100%;
-
-    &:not(:last-child) {
-      border-bottom: var(--border);
-      margin-bottom: 10px;
-    }
-
-    .name {
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-  }
-
-  .var-names {
-    flex-wrap: wrap;
-    > * {
-      width: var(--var-width);
-    }
-  }
-}
-
 .extra-input-infos {
   app-input {
     flex: 1 1 0;

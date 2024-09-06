@@ -6,5 +6,6 @@ export interface ZuofaTab {
 }
 
 export type XuanxiangTableData = 选项 & {操作?: string};
-export type ShuruTableData = 输入 & {操作?: string} & SortedItem;
+export type ShuruTableData = 输入 & {操作?: string};
+export type ShuruTableDataSorted = 输入 & {操作?: string} & SortedItem;
 export type MenjiaoData = 算料数据 & {操作?: string};

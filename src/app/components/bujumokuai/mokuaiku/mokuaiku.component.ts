@@ -28,6 +28,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
+import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {MokuaiItemComponent} from "../mokuai-item/mokuai-item.component";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
@@ -58,6 +59,7 @@ import {MokuaikuCloseEvent} from "./mokuaiku.types";
 export class MokuaikuComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);
   private http = inject(CadDataService);
+  private message = inject(MessageService);
 
   @HostBinding("class") class = ["ng-page"];
 
@@ -204,7 +206,11 @@ export class MokuaikuComponent implements OnInit {
     this.closeOut.emit({selectedMokuais});
   }
   selectedMokuai(mokuai: MokuaiItem) {
-    this.selectedMokuaiIds.update((v) => [...v, mokuai.id]);
+    if (this.selectedMokuaiIds().includes(mokuai.id)) {
+      this.message.snack("已经选择过了");
+    } else {
+      this.selectedMokuaiIds.update((v) => [...v, mokuai.id]);
+    }
   }
   unselectedMokuai(mokuai: MokuaiItem) {
     this.selectedMokuaiIds.update((v) => v.filter((v2) => v2 !== mokuai.id));

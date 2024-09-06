@@ -352,7 +352,7 @@ export class MokuaiItemComponent implements OnInit {
     }
     const slgsComponent = this.slgsComponent();
     if (slgsComponent) {
-      const formulasResult = slgsComponent.submitFormulas(slgsComponent.formulaList, true);
+      const formulasResult = slgsComponent.submitFormulas(slgsComponent.formulaList(), true);
       if (formulasResult.errors.length > 0) {
         errors.push(...formulasResult.errors.map((v) => `模块公式：${v}`));
       } else {

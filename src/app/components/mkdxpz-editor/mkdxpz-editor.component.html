@@ -1,0 +1,21 @@
+@if (closable()) {
+  <div class="toolbar right">
+    <button mat-flat-button color="primary" (click)="close(true)">确定</button>
+    <button mat-flat-button color="primary" (click)="close()">取消</button>
+  </div>
+}
+<div class="flex-row flex-110">
+  <app-var-names [varNames]="varNames()" [menshanweizhi]="menshanweizhi()"></app-var-names>
+  <mat-divider vertical></mat-divider>
+  <div class="slgs flex-column">
+    <div class="title">算料公式</div>
+    <app-formulas-editor class="flex-110" [(formulas)]="formulas" [compact]="{minRows: 5}"></app-formulas-editor>
+  </div>
+  <mat-divider vertical></mat-divider>
+  <app-table
+    class="flex-110"
+    [info]="shuruTable()"
+    (toolbarButtonClick)="onShuruToolbar($event)"
+    (rowButtonClick)="onShuruRow($event)"
+  ></app-table>
+</div>

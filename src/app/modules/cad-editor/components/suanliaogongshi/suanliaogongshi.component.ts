@@ -1,5 +1,17 @@
 import {KeyValue, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, model, output, signal} from "@angular/core";
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostBinding,
+  inject,
+  input,
+  model,
+  output,
+  signal
+} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -10,8 +22,7 @@ import {getCopyName} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
-import {FormulasChangeEvent} from "@components/formulas-editor/formulas-editor.types";
-import {ShuruTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
+import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {downloadByString, isTypeOf, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -23,7 +34,7 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
 import {getSortedItems, 算料公式, 输入, 输入下单用途} from "../../../../components/lurushuju/xinghao-data";
 import {openSuanliaogongshiDialog} from "../dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
-import {SuanliaogongshiInfo} from "./suanliaogongshi.types";
+import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.types";
 
 @Component({
   selector: "app-suanliaogongshi",
@@ -51,7 +62,9 @@ export class SuanliaogongshiComponent {
   @HostBinding("class") class = "ng-page";
 
   info = model.required<SuanliaogongshiInfo>();
-  noScroll = input(false);
+  noScroll = input(false, {transform: booleanAttribute});
+  closable = input(false, {transform: booleanAttribute});
+  closeOut = output<SuanliaogongshiCloseEvent>({alias: "close"});
   slgsChange = output();
 
   gongshiInfo = signal<{formulas?: Formulas}[]>([]);
@@ -65,7 +78,7 @@ export class SuanliaogongshiComponent {
 
   shuruTable = computed(() => {
     const info = this.info();
-    const tableInfo: TableRenderInfo<ShuruTableData> = {
+    const tableInfo: TableRenderInfo<ShuruTableDataSorted> = {
       title: "输入显示",
       subTitle: "注意：有输入时，相同名字的公式无效",
       subTitleStyle: {color: "red"},
@@ -206,11 +219,11 @@ export class SuanliaogongshiComponent {
     this.gongshiInfo.update((v) => [...v]);
   }
 
-  editGongshiEnd(index: number, event: FormulasChangeEvent | null, close = false) {
+  editGongshiEnd(index: number, formulas: Formulas | null, close = false) {
     const info = this.info();
     const gongshiInfo = this.gongshiInfo()[index];
-    if (event && event.errors.length < 1 && info.data.算料公式) {
-      info.data.算料公式[index].公式 = event.formulas;
+    if (formulas && info.data.算料公式) {
+      info.data.算料公式[index].公式 = formulas;
       this.slgsChange.emit();
     }
     if (close) {
@@ -229,20 +242,24 @@ export class SuanliaogongshiComponent {
 
   async importGonshis() {
     const data = this.info().data;
-    if (!(await this.message.confirm("确定导入吗？"))) {
-      return;
-    }
     const files = await selectFiles({accept: ".json"});
     const file = files?.[0];
     if (!file) {
       return;
     }
     const reader = new FileReader();
-    reader.addEventListener("load", () => {
+    reader.addEventListener("load", async () => {
       let data2: any;
       try {
         data2 = JSON.parse(reader.result as string);
-      } catch {}
+      } catch (error) {
+        console.error(error);
+        this.message.error("导入数据有误");
+        return;
+      }
+      if (!(await this.message.confirm("确定导入吗？"))) {
+        return;
+      }
       if (Array.isArray(data2)) {
         if (!Array.isArray(data.算料公式)) {
           data.算料公式 = [];
@@ -345,7 +362,7 @@ export class SuanliaogongshiComponent {
     }
   }
 
-  async onShuruRow(event: RowButtonEvent<ShuruTableData>) {
+  async onShuruRow(event: RowButtonEvent<ShuruTableDataSorted>) {
     const data = this.info().data;
     if (!data.输入数据) {
       return;
@@ -369,5 +386,9 @@ export class SuanliaogongshiComponent {
         }
         break;
     }
+  }
+
+  close(submit = false) {
+    this.closeOut.emit({submit});
   }
 }

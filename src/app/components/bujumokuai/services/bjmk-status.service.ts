@@ -3,6 +3,8 @@ import {Validators} from "@angular/forms";
 import {filePathUrl, getCopyName} from "@app/app.common";
 import {Cad数据要求, getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
+import {VarNames} from "@components/var-names/var-names.types";
+import {getVarNames} from "@components/var-names/var-names.utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -22,6 +24,13 @@ export class BjmkStatusService {
   private status = inject(AppStatusService);
 
   imgPrefix = signal(filePathUrl);
+  varNames = signal<VarNames>([]);
+
+  constructor() {
+    (async () => {
+      this.varNames.set(await getVarNames(this.http, "门扇布局用"));
+    })();
+  }
 
   cadYaoqiu = signal<Cad数据要求 | undefined>(undefined);
   xinghaoCadYaoqiu = signal<Cad数据要求 | undefined>(undefined);

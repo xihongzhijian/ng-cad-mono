@@ -1,12 +1,12 @@
 import {Validators} from "@angular/forms";
 import {getArrayString} from "@app/app.common";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
-import {输入, 输入下单用途, 选项} from "@components/lurushuju/xinghao-data";
+import {getSortedItems, 输入, 输入下单用途, 选项} from "@components/lurushuju/xinghao-data";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
-import {MenjiaoData, ShuruTableData, XuanxiangTableData} from "./lrsj-zuofa.types";
+import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} from "./lrsj-zuofa.types";
 
 export const getXuanxiangTable = (data: XuanxiangTableData[]): TableRenderInfo<XuanxiangTableData> => {
   return {
@@ -84,7 +84,7 @@ export const getXuanxiangItem = async (message: MessageService, options: Options
   return result ? data : null;
 };
 
-export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTableData> => {
+export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTableDataSorted> => {
   return {
     title: "输入显示",
     noCheckBox: true,
@@ -103,7 +103,7 @@ export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTabl
         ]
       }
     ],
-    data,
+    data: getSortedItems(data),
     toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
   };
 };

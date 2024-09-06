@@ -1,8 +1,9 @@
 import {computed, effect, inject, Injectable, OnDestroy, signal, untracked} from "@angular/core";
 import {session, splitOptions} from "@app/app.common";
+import {VarNames} from "@components/var-names/var-names.types";
+import {getVarNames} from "@components/var-names/var-names.utils";
 import {environment} from "@env";
 import {ObjectOf, queryString} from "@lucilor/utils";
-import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -53,7 +54,7 @@ export class LrsjStatusService implements OnDestroy {
   private _xinghao = signal<Xinghao | null>(null);
   xinghao = computed(() => this._xinghao());
   editMode = signal(false);
-  varNames = signal<NonNullable<SuanliaogongshiInfo["varNames"]>>({});
+  varNames = signal<VarNames>([]);
   xinghaozhuanyongCadCount = signal(0);
   triggerSuanliaoDataBtn = signal<{name: SuanliaoDataBtnName} | null>(null);
   suanliaoCadsValidateStart$ = new Subject<{alert: boolean}>();
@@ -97,6 +98,7 @@ export class LrsjStatusService implements OnDestroy {
       await this.status.fetchCad数据要求List();
       await this.getXinghaos();
       await this.loadInfo();
+      this.varNames.set(await getVarNames(this.http));
       this._inited.set(true);
     })();
   }
