@@ -9,19 +9,25 @@
     @if (!isFromOrder()) {
       <button mat-raised-button color="primary" (click)="setMsbj()">更换布局</button>
     }
-    <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
+    @if (canEditMokuaidaxiao()) {
+      <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
+    }
     @if (isFromOrder()) {
       <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
-      <button mat-raised-button color="primary" (click)="refreshMokuaidaxiao()">更新模块大小配置</button>
+      @if (canEditMokuaidaxiao()) {
+        <button mat-raised-button color="primary" (click)="refreshMokuaidaxiao()">更新模块大小配置</button>
+      }
       @if (isZhijian()) {
         <button mat-raised-button color="primary" (click)="openHoutaiUrl()">查看型号默认门扇布局</button>
       }
-    }
-    @switch (activeTabName()) {
-      @case ("门扇模块") {
-        <button mat-raised-button color="primary" (click)="submit()">保存</button>
-        @if (closable()) {
-          <button mat-raised-button color="primary" (click)="close()">关闭</button>
+      <div class="title">{{ xinghao()?.raw?.mingzi }}</div>
+    } @else {
+      @switch (activeTabName()) {
+        @case ("门扇模块") {
+          <button mat-raised-button color="primary" (click)="submit()">保存</button>
+          @if (closable()) {
+            <button mat-raised-button color="primary" (click)="close()">关闭</button>
+          }
         }
       }
     }
@@ -49,7 +55,11 @@
                 >
                   <div style="font-weight: bold">{{ item.key }}</div>
                   @if (item.value?.["选中布局数据"]; as data) {
-                    <div class="link text" appClickStop (click)="openMsbj()">布局：{{ data.name }}</div>
+                    @if (isFromOrder()) {
+                      <div>布局：{{ data.name }}</div>
+                    } @else {
+                      <div class="link text" appClickStop (click)="openMsbj()">布局：{{ data.name }}</div>
+                    }
                   }
                 </div>
               }
@@ -59,7 +69,9 @@
       </div>
       <mat-divider vertical></mat-divider>
       <div class="flex-110 flex-column" style="position: relative">
-        <div class="xinghao-name title">{{ xinghao()?.raw?.mingzi }}</div>
+        @if (!isFromOrder()) {
+          <div class="xinghao-name title">{{ xinghao()?.raw?.mingzi }}</div>
+        }
         <div class="flex-row flex-110">
           <div class="flex-column flex-110">
             <app-msbj-rects
@@ -70,18 +82,23 @@
             ></app-msbj-rects>
           </div>
           @if (isFromOrder()) {
+            @if (!canEditMokuaidaxiao()) {
+              <div class="mkdxpz-formulas">
+                <ng-scrollbar>
+                  <app-formulas [formulaInfos]="mkdxpzFormulaInfos()"></app-formulas>
+                </ng-scrollbar>
+              </div>
+            }
             <div class="xiaoguotu flex-110" #xiaoguotuContainer></div>
           }
-          <div class="flex-110 flex-row">
-            <div class="flex-column flex-110">
-              <ng-scrollbar>
-                <div class="mokuai-inputs flex-row">
-                  @for (info of mokuaiInputInfos(); track $index) {
-                    <app-input [info]="info"></app-input>
-                  }
-                </div>
-              </ng-scrollbar>
-            </div>
+          <div class="mokuai-inputs">
+            <ng-scrollbar>
+              <div class="items">
+                @for (info of mokuaiInputInfos(); track $index) {
+                  <app-input class="item" [info]="info"></app-input>
+                }
+              </div>
+            </ng-scrollbar>
           </div>
         </div>
         <div class="flex-column flex-110">
@@ -165,8 +182,10 @@
         (click)="selectMokuai(mokuai)"
       ></app-image>
       <div class="flex-row" style="align-items: center">
-        <div class="title center flex-110 link text" (click)="openMokuai(mokuai)">{{ getMokuaiTitle2(mokuai) }}</div>
-        @if (!isFromOrder()) {
+        @if (isFromOrder()) {
+          <div class="title center flex-110">{{ getMokuaiTitle2(mokuai) }}</div>
+        } @else {
+          <div class="title center flex-110 link text" (click)="openMokuai(mokuai)">{{ getMokuaiTitle2(mokuai) }}</div>
           <button mat-icon-button color="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
         }
       </div>

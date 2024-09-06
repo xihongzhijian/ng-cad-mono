@@ -199,7 +199,7 @@ export class FormulasEditorComponent {
     }
   }
 
-  inputs = viewChildren(InputComponent);
+  inputs = viewChildren(forwardRef(() => InputComponent));
   submitFormulas(formulaList = this.formulaList(), silent?: boolean) {
     const errorsSet = new Set<string>();
     if (this.required() && formulaList.length < 1) {

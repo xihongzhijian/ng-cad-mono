@@ -37,8 +37,10 @@ import {
   getMokuaiTitle,
   getStep1Data,
   isMokuaiItemEqual,
+  replaceMenshanName,
   updateMokuaiItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
+import {FormulasComponent} from "@components/formulas/formulas.component";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {GenerateRectsEndEvent, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
@@ -52,13 +54,14 @@ import {BancaiListData, TableDataBase, TableUpdateParams} from "@modules/http/se
 import {InputInfo, InputInfoOptions} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {CalcService} from "@services/calc.service";
 import {MrbcjfzInfo, MrbcjfzXinghao} from "@views/mrbcjfz/mrbcjfz.types";
 import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MsbjComponent} from "@views/msbj/msbj.component";
 import {MsbjCloseEvent, MsbjData, Node2rectData, node2rectDataMsdxKeys} from "@views/msbj/msbj.types";
 import {getEmpty模块大小配置, justify模块大小配置, MsbjInfo} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
-import {openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
+import {getFormulaInfos, openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {cloneDeep, intersection, isEqual} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -88,6 +91,7 @@ const table = "p_xinghaomorenmenshanbuju";
     ClickStopPropagationDirective,
     FloatingDialogModule,
     FormsModule,
+    FormulasComponent,
     ImageComponent,
     InputComponent,
     KeyValuePipe,
@@ -108,6 +112,7 @@ const table = "p_xinghaomorenmenshanbuju";
 })
 export class XhmrmsbjComponent implements OnDestroy {
   private bjmkStatus = inject(BjmkStatusService);
+  private calc = inject(CalcService);
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
@@ -264,7 +269,13 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     this.data.set(
       new XhmrmsbjData(
-        {vid: 1, mingzi: "1", peizhishuju: JSON.stringify(型号选中门扇布局), jiaoshanbujuhesuoshanxiangtong: 铰扇跟随锁扇 ? 1 : 0},
+        {
+          vid: 1,
+          mingzi: "1",
+          peizhishuju: JSON.stringify(型号选中门扇布局),
+          jiaoshanbujuhesuoshanxiangtong: 铰扇跟随锁扇 ? 1 : 0,
+          zuoshujubanben: materialResult.做数据版本
+        },
         menshanKeys,
         this.step1Data.typesInfo,
         this.msbjs()
@@ -846,6 +857,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     return this.msbjs().find((v) => v.vid === id);
   }
 
+  canEditMokuaidaxiao = computed(() => !this.isFromOrder() || !this.activeMsbj()?.isVersion2024);
   async editMokuaidaxiao() {
     const data = this.data();
     if (data?.isVersion2024) {
@@ -939,6 +951,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.spinner.hide(this.spinner.defaultLoaderId);
     this.suanliaoLock$.next(false);
     this.genXiaoguotu();
+    this.fetchLastSuanliao();
   }
 
   async genXiaoguotu() {
@@ -997,10 +1010,11 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.genXiaoguotuLock$.next(false);
   }
 
-  async getLastSuanliao() {
+  lastSuanliao = signal<LastSuanliao | null>(null);
+  async fetchLastSuanliao() {
     this.wmm.postMessage("getLastSuanliaoStart");
     const data = await this.wmm.waitForMessage<LastSuanliao | null>("getLastSuanliaoEnd");
-    return data;
+    this.lastSuanliao.set(data);
   }
 
   async updateOrder() {
@@ -1014,8 +1028,8 @@ export class XhmrmsbjComponent implements OnDestroy {
     return data;
   }
 
-  async openMokuais() {
-    const lastSuanliao = await this.getLastSuanliao();
+  openMokuais() {
+    const lastSuanliao = this.lastSuanliao();
     if (!lastSuanliao) {
       return;
     }
@@ -1143,5 +1157,31 @@ export class XhmrmsbjComponent implements OnDestroy {
       this.refreshData();
     }
     this.openedMkdcpz.set(null);
+  }
+
+  mkdxpzFormulaInfos = computed(() => {
+    const mkdxpz = this.activeMsbjInfo()?.选中布局数据?.模块大小配置;
+    if (!mkdxpz) {
+      return [];
+    }
+    const formulas = {...mkdxpz.算料公式};
+    const key = this.activeMenshanKey();
+    replaceMenshanName(key, formulas);
+    const materialResult = this.lastSuanliao()?.output?.materialResult || {};
+    const calcResult = this.calc.calc.calcFormulas(formulas, materialResult);
+    const onChange = () => {
+      this.setMkdxpz(formulas);
+    };
+    return getFormulaInfos(this.calc, formulas, calcResult.succeed, {shurus: mkdxpz.输入显示, onChange});
+  });
+  async setMkdxpz(formulas: Formulas) {
+    const mkdxpz = this.activeMsbjInfo()?.选中布局数据?.模块大小配置;
+    if (!mkdxpz) {
+      return;
+    }
+    mkdxpz.算料公式 = formulas;
+    this.wmm.postMessage("setMkdxpzStart", {mkdxpz, menshan: this.activeMenshanKey()});
+    await this.wmm.waitForMessage("setMkdxpzEnd");
+    this.wmm.postMessage("requestData");
   }
 }

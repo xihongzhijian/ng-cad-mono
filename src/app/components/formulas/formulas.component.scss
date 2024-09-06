@@ -2,9 +2,11 @@
   .formula {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     white-space: nowrap;
     color: black;
     padding: 3px 0;
+    align-items: center;
 
     .formula-key {
       text-align: right;
@@ -28,6 +30,10 @@
     }
     .formula-neq + .formula-value {
       color: red;
+    }
+
+    app-input {
+      width: 100px;
     }
   }
 }

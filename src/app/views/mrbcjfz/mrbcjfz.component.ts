@@ -530,7 +530,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     return errorMsg;
   }
 
-  async submit(close?: boolean) {
+  async submit() {
     const {xinghao, table, isFromOrder} = this;
     let result = false;
     if (!xinghao) {
@@ -560,7 +560,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         result = !!(await this.http.tableUpdate({table, data}, {spinner: this.loaderId}));
       }
     }
-    this.dataSubmit.emit({data: this.xinghao, errors, close});
+    this.dataSubmit.emit({data: this.xinghao, errors});
     return result;
   }
 

@@ -9,8 +9,9 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {getMokuaiTitle} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulaInfo} from "@components/formulas/formulas.component";
+import {输入} from "@components/lurushuju/xinghao-data";
 import {CadData, toFixedTrim} from "@lucilor/cad-viewer";
-import {isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
+import {isBetween, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CalcService} from "@services/calc.service";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import csstype from "csstype";
@@ -89,11 +90,11 @@ export class XhmrmsbjMokuaisComponent {
           xuanzhongMokuaiInfo.nodes.push({
             layer: node.层名字,
             mokuai,
-            formulaInfos: this.getFormulaInfos(suanliaogongshi, formulas2)
+            formulaInfos: getFormulaInfos(this.calc, suanliaogongshi, formulas2)
           });
         }
       }
-      mkdxFormulaInfos.formulaInfos = this.getFormulaInfos(mokuaidaxiaoResult);
+      mkdxFormulaInfos.formulaInfos = getFormulaInfos(this.calc, mokuaidaxiaoResult);
       this.mkdxFormulaInfos.push(mkdxFormulaInfos);
       this.xuanzhongMokuaiInfos.push(xuanzhongMokuaiInfo);
     }
@@ -109,46 +110,6 @@ export class XhmrmsbjMokuaisComponent {
         section1El.style.width = width + "px";
       }
     }
-  }
-
-  getFormulaInfos(formulas: Formulas, formulas2?: Formulas) {
-    const infos: FormulaInfo[] = [];
-    const getValues = (val: string | number) => {
-      const values: FormulaInfo["values"] = [];
-      if (typeof val === "number") {
-        values.push({eq: true, name: toFixedTrim(val, 2)});
-      } else if (typeof val === "string") {
-        val = val.trim();
-        values.push({eq: true, name: val});
-        const val2 = this.calc.calc.replaceVars(val, formulas2);
-        if (val !== val2) {
-          values.push({eq: true, name: val2});
-        }
-      }
-      return values;
-    };
-    for (const [key, value] of Object.entries(formulas)) {
-      const keys: FormulaInfo["keys"] = [{eq: true, name: key}];
-      const values: FormulaInfo["values"] = getValues(value);
-      if (formulas2 && key in formulas2) {
-        const valuePrev = values.at(-1)?.name;
-        const value2 = getValues(formulas2[key]).filter((v) => v.name !== valuePrev);
-        if (value2.length > 0) {
-          const valueNext = value2[0].name;
-          let calcResult = this.calc.calc.calcExpress(`(${valuePrev}) === (${valueNext})`);
-          if (calcResult.value !== true) {
-            calcResult = this.calc.calc.calcExpress(`(\`${valuePrev}\`) === (\`${valueNext}\`)`);
-          }
-          if (calcResult.value !== true) {
-            calcResult = this.calc.calc.calcExpress(`(eval(\`${valuePrev}\`)) === (\`${valueNext}\`)`);
-          }
-          value2[0].eq = calcResult.value === true;
-          values.push(...value2);
-        }
-      }
-      infos.push({keys, values});
-    }
-    return infos;
   }
 
   close() {
@@ -180,3 +141,80 @@ export interface XhmrmsbjXuanzhongMokuaiInfo {
     formulaInfos: FormulaInfo[];
   }[];
 }
+
+export const getFormulaInfos = (
+  calc: CalcService,
+  formulas: Formulas,
+  formulas2?: Formulas,
+  input?: {shurus: 输入[]; onChange: (val: number) => void}
+) => {
+  const infos: FormulaInfo[] = [];
+  const getValues = (val: string | number) => {
+    const values: FormulaInfo["values"] = [];
+    if (typeof val === "number") {
+      values.push({eq: true, name: toFixedTrim(val, 2)});
+    } else if (typeof val === "string") {
+      val = val.trim();
+      values.push({eq: true, name: val});
+      const val2 = calc.calc.replaceVars(val, formulas2);
+      if (val !== val2) {
+        values.push({eq: true, name: val2});
+      }
+    }
+    return values;
+  };
+  for (const [key, value] of Object.entries(formulas)) {
+    const keys: FormulaInfo["keys"] = [{eq: true, name: key}];
+    const values: FormulaInfo["values"] = getValues(value);
+    if (formulas2 && key in formulas2) {
+      const valuePrev = values.at(-1)?.name;
+      const value2 = getValues(formulas2[key]).filter((v) => v.name !== valuePrev);
+      if (value2.length > 0) {
+        const valueNext = value2[0].name;
+        let calcResult = calc.calc.calcExpress(`(${valuePrev}) === (${valueNext})`);
+        if (calcResult.value !== true) {
+          calcResult = calc.calc.calcExpress(`(\`${valuePrev}\`) === (\`${valueNext}\`)`);
+        }
+        if (calcResult.value !== true) {
+          calcResult = calc.calc.calcExpress(`(eval(\`${valuePrev}\`)) === (\`${valueNext}\`)`);
+        }
+        value2[0].eq = calcResult.value === true;
+        values.push(...value2);
+      }
+    }
+    const valueLast = values.at(-1);
+    if (valueLast && input) {
+      const shuru = input.shurus.find((v) => v.名字 === key && v.下单用途 === "输入");
+      if (shuru) {
+        const range = shuru.取值范围?.split("-").map((v) => parseFloat(v)) || [];
+        const getNum = (n: any, defaultVal: number) => {
+          if (typeof n === "number" && !isNaN(n)) {
+            return n;
+          }
+          return defaultVal;
+        };
+        if (["undefined", "null", ""].includes(String(formulas[key]))) {
+          formulas[key] = shuru.默认值;
+        }
+        const min = getNum(range[0], -Infinity);
+        const max = getNum(range[1], Infinity);
+        valueLast.inputInfo = {
+          type: "number",
+          label: "",
+          model: {key, data: formulas},
+          readonly: !shuru.可以修改,
+          validators: (control) => {
+            const val = control.value;
+            if (!isBetween(val, min, max)) {
+              return {超出取值范围: true};
+            }
+            return null;
+          },
+          onChange: (val) => input.onChange(val)
+        };
+      }
+    }
+    infos.push({keys, values});
+  }
+  return infos;
+};

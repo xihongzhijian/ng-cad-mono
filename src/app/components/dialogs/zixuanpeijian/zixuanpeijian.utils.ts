@@ -340,15 +340,6 @@ export const calcZxpj = async (
   const duplicateXxsr: ObjectOf<Set<string>> = {};
   const dimensionNamesMap: ObjectOf<{item: ZixuanpeijianCadItem}[]> = {};
   const varsGlobal: Formulas = {};
-  const gongshiCalcResult = await calc.calcFormulas(gongshi, materialResult);
-  if (!gongshiCalcResult) {
-    return {
-      fulfilled: false,
-      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult}}
-    };
-  }
-  calc.calc.mergeFormulas(materialResult, gongshiCalcResult.succeedTrim);
-  calc.calc.mergeFormulas(materialResult, inputResult);
 
   const gongshiKeys = Object.keys(gongshi);
   const inputResultKeys = Object.keys(inputResult);
@@ -548,21 +539,6 @@ export const calcZxpj = async (
       }
     }
   }
-
-  const replaceMenshanName = (门扇名字: string | undefined | null, formulas: Formulas) => {
-    if (!门扇名字) {
-      return;
-    }
-    for (const key in formulas) {
-      if (key.includes("当前扇")) {
-        formulas[key] = key.replaceAll("当前扇", 门扇名字);
-      }
-      const value = formulas[key];
-      if (typeof value === "string" && value.includes("当前扇")) {
-        formulas[key] = value.replaceAll("当前扇", 门扇名字);
-      }
-    }
-  };
 
   const getMokuaiVarsCurr = (门扇名字: string, 模块名字: string) => {
     const result = {...mokuaiVars[门扇名字]};
@@ -955,4 +931,19 @@ export const step3FetchData = async (
     responseData = (window as any)[cacheKey];
   }
   return responseData;
+};
+
+export const replaceMenshanName = (门扇名字: string | undefined | null, formulas: Formulas) => {
+  if (!门扇名字) {
+    return;
+  }
+  for (const key of Object.keys(formulas)) {
+    if (key.includes("当前扇")) {
+      formulas[key] = key.replaceAll("当前扇", 门扇名字);
+    }
+    const value = formulas[key];
+    if (typeof value === "string" && value.includes("当前扇")) {
+      formulas[key] = value.replaceAll("当前扇", 门扇名字);
+    }
+  }
 };

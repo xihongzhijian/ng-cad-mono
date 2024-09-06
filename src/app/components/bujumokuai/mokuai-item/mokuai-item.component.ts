@@ -237,12 +237,8 @@ export class MokuaiItemComponent implements OnInit {
     return await firstValueFrom(this._mrbcjfzDialogClose$);
   }
   onMrbcjfSubmit(event: MrbcjfzDataSubmitEvent) {
-    if (event.close) {
-      this._mrbcjfzDialogClose$.next(event);
-      this.showMrbcjfzDialog.set(false);
-    } else {
-      this.mokuai.update((v) => ({...v, morenbancai: event.data.默认板材}));
-    }
+    this._mrbcjfzDialogClose$.next(event);
+    this.showMrbcjfzDialog.set(false);
   }
   onMrbcjfClose() {
     this._mrbcjfzDialogClose$.next(null);

@@ -7,11 +7,12 @@
     <mat-divider class="placeholder large"></mat-divider>
     @if (inputData || !isFromOrder) {
       @if (inputData) {
-        <button mat-raised-button color="primary" (click)="submit(true)">提交并关闭</button>
+        <button mat-raised-button color="primary" (click)="submit()">确定</button>
+      } @else {
+        <button mat-raised-button color="primary" (click)="submit()">提交</button>
       }
-      <button mat-raised-button color="primary" (click)="submit()">提交</button>
       @if (closeable) {
-        <button mat-raised-button color="primary" (click)="close()">关闭</button>
+        <button mat-raised-button color="primary" (click)="close()">取消</button>
       }
     }
   </div>
@@ -81,7 +82,7 @@
         }
       </div>
       <div
-        class="item-list flex-row"
+        class="items no-items-per-row flex-row"
         cdkDropList
         cdkDropListOrientation="horizontal"
         [cdkDropListData]="xinghao['默认板材'][key].CAD"
@@ -89,10 +90,10 @@
       >
         @for (id of xinghao["默认板材"][key].CAD; track $index) {
           @if (cads[id]) {
-            <div class="item flex-column" cdkDrag (click)="selectListItem(cads[id], 'CAD', key)">
+            <div class="item" cdkDrag (click)="selectListItem(cads[id], 'CAD', key)">
               <app-cad-image [id]="id" [data]="cads[id].data" [width]="cadWidth" [height]="cadHeight"></app-cad-image>
-              <div class="title center">
-                {{ cads[id].data.name }}
+              <div class="toolbar center">
+                <div>{{ cads[id].data.name }}</div>
                 <button mat-icon-button color="primary" appClickStop (click)="openCad(cads[id])">
                   <mat-icon>open_in_new</mat-icon>
                 </button>
@@ -101,23 +102,21 @@
           }
         }
       </div>
-      <div class="item-list flex-row">
-        @for (id of xinghao["默认板材"][key]["企料"]; track id) {
+      <div class="items no-items-per-row flex-row">
+        @for (id of xinghao["默认板材"][key]["企料"]; track $index) {
           @if (qiliaos[id]) {
-            <div class="item flex-column" (click)="selectListItem(qiliaos[id], '企料', key)">
-              <div class="title center">
-                {{ qiliaos[id].name }}
-              </div>
+            <div class="item" (click)="selectListItem(qiliaos[id], '企料', key)">
+              <div class="name center">{{ qiliaos[id].name }}</div>
             </div>
           }
         }
       </div>
-      <div class="item-list flex-row">
-        @for (id of xinghao["默认板材"][key]["花件"]; track id) {
+      <div class="items no-items-per-row flex-row">
+        @for (id of xinghao["默认板材"][key]["花件"]; track $index) {
           @if (huajians[id]) {
-            <div class="item flex-column" (click)="selectListItem(huajians[id], '花件', key)">
+            <div class="item" (click)="selectListItem(huajians[id], '花件', key)">
               <app-image [src]="huajians[id].data.xiaotu"></app-image>
-              <div class="title center">{{ huajians[id].data.mingzi }}</div>
+              <div class="name center">{{ huajians[id].data.mingzi }}</div>
             </div>
           }
         }
@@ -126,13 +125,13 @@
   }
 </ng-template>
 <ng-template #content2>
-  <div class="item-list flex-row">
-    @for (item of cads | keyvalue: returnZero; track item.key) {
+  <div class="items no-items-per-row">
+    @for (item of cads | keyvalue: returnZero; track $index) {
       @if (!item.value.selected) {
-        <div class="item flex-column" (click)="selectListItem(item.value, 'CAD')">
+        <div class="item" (click)="selectListItem(item.value, 'CAD')">
           <app-cad-image [id]="item.value.id" [data]="item.value.data" [width]="cadWidth" [height]="cadHeight"></app-cad-image>
-          <div class="title center">
-            {{ item.value.data.name }}
+          <div class="toolbar center">
+            <div>{{ item.value.data.name }}</div>
             <button mat-icon-button color="primary" appClickStop (click)="openCad(item.value)">
               <mat-icon>open_in_new</mat-icon>
             </button>
@@ -143,23 +142,23 @@
   </div>
 </ng-template>
 <ng-template #content3>
-  <div class="item-list flex-row">
-    @for (item of qiliaos | keyvalue: returnZero; track item.key) {
+  <div class="items no-items-per-row">
+    @for (item of qiliaos | keyvalue: returnZero; track $index) {
       @if (!item.value.selected) {
-        <div class="item flex-column" (click)="selectListItem(item.value, '企料')">
-          <div class="title center">{{ item.value.name }}</div>
+        <div class="item" (click)="selectListItem(item.value, '企料')">
+          <div class="name center">{{ item.value.name }}</div>
         </div>
       }
     }
   </div>
 </ng-template>
 <ng-template #content4>
-  <div class="item-list flex-row">
+  <div class="items no-items-per-row">
     @for (item of huajians | keyvalue: returnZero; track item.key) {
       @if (!item.value.selected) {
-        <div class="item flex-column" (click)="selectListItem(item.value, '花件')">
+        <div class="item" (click)="selectListItem(item.value, '花件')">
           <app-image [src]="item.value.data.xiaotu"></app-image>
-          <div class="title center">{{ item.value.data.mingzi }}</div>
+          <div class="name center">{{ item.value.data.mingzi }}</div>
         </div>
       }
     }
