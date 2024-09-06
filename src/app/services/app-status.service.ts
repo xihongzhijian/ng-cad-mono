@@ -198,6 +198,36 @@ export class AppStatusService {
     }
   }
 
+  async tryMoveCad() {
+    const data = this.cad.data;
+    const line = data.entities.line[0];
+    const threshold = 1e5;
+    if (!line) {
+      return;
+    }
+    let dx = 0;
+    let dy = 0;
+    if (Math.abs(line.minX) > threshold) {
+      dx = -line.minX;
+    } else if (Math.abs(line.maxX) > threshold) {
+      dx = -line.maxX;
+    }
+    if (Math.abs(line.minY) > threshold) {
+      dy = -line.minY;
+    } else if (Math.abs(line.maxY) > threshold) {
+      dy = -line.maxY;
+    }
+    if (dx !== 0 || dy !== 0) {
+      data.transform({translate: [dx, dy]}, true);
+    }
+  }
+  async moveCadToOrigin() {
+    const data = this.cad.data;
+    const rect = data.getBoundingRect();
+    data.transform({translate: [-rect.left, -rect.bottom]}, true);
+    await this.cad.render();
+    this.cad.center();
+  }
   async openCad(opts: OpenCadOptions = {}) {
     const timerName = "openCad";
     timer.start(timerName);
@@ -208,6 +238,7 @@ export class AppStatusService {
     if (data) {
       cad.data = data;
     }
+    this.tryMoveCad();
     const isLocal = opts.isLocal || cad.data.info.isLocal || false;
     const newConfig: Partial<AppConfig> = {};
     if (collection && this.collection$.value !== collection) {

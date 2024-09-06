@@ -27,7 +27,7 @@ export class RSA {
     });
     try {
       return JSON.parse(str) as T;
-    } catch (error) {
+    } catch {
       console.warn(`JSON parse error: ${str}.`);
       return null;
     }

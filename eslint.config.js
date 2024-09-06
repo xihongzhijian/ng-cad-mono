@@ -52,7 +52,10 @@ export default [
       "/lib",
       "/dist",
       "/test",
-      "src/assets/json"
+      "src/assets/json",
+      "packages/*/dist",
+      "packages/*/lib",
+      "**/vite.config.ts"
     ]
   },
   {
@@ -88,7 +91,7 @@ export default [
       sourceType: "script",
 
       parserOptions: {
-        project: ["tsconfig.json", "scripts/tsconfig.scripts.json", "cypress/tsconfig.json"],
+        project: ["tsconfig.json", "scripts/tsconfig.scripts.json", "cypress/tsconfig.json", "packages/*/tsconfig.json"],
         createDefaultProgram: true
       }
     },

@@ -24,7 +24,7 @@ export const getImageDataUrl = (img: HTMLImageElement) => {
 export const svgToBase64 = (svg: SVGElement) => {
   let str = new XMLSerializer().serializeToString(svg);
   // FIXME: window.unescape is deprecated
-  // eslint-disable-next-line deprecation/deprecation
+
   str = unescape(encodeURIComponent(str));
   return "data:image/svg+xml;base64," + window.btoa(str);
 };

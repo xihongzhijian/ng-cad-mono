@@ -14,7 +14,8 @@ export const cadLineFields = {
   公式: "gongshi",
   显示线长: "显示线长",
   关联变化公式: "guanlianbianhuagongshi",
-  双向折弯附加值: "双向折弯附加值"
+  双向折弯附加值: "双向折弯附加值",
+  线长字体大小: "lengthTextSize"
 } as const;
 
 export const getLine = (data: CadLineLike | (() => CadLineLike)) => (typeof data === "function" ? data() : data);
@@ -43,6 +44,9 @@ export const getCadLineInputs = (
       case "关联变化公式":
       case "双向折弯附加值":
         info = {type: "string", label: key, model: {data: line, key: cadLineFields[key]}};
+        break;
+      case "线长字体大小":
+        info = {type: "number", label: key, model: {data: line, key: cadLineFields[key]}};
         break;
       case "公式":
         info = {type: "string", label: key, options: gongshiOptions, model: {data: line, key: cadLineFields[key]}};
@@ -128,7 +132,7 @@ export const openCadLineForm = async (
   if (result) {
     for (const key of keysOf(cadLineFields)) {
       const key2 = cadLineFields[key];
-      line[key2] = line2[key2] as any;
+      (line as any)[key2] = line2[key2];
     }
     let toChange = [line];
     if (isLine && result.线长 !== lineLength) {

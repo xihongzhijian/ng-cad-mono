@@ -28,13 +28,13 @@ export abstract class CustomStorage {
     let data = null;
     try {
       data = JSON.parse(this.storage.getItem(this._field) || "null");
-    } catch (error) {
+    } catch {
       return null;
     }
     if (data && data[key]) {
       try {
         return JSON.parse(data[key]);
-      } catch (error) {
+      } catch {
         console.warn(`JSON parse error: loading from storage: ${data[key]}.`);
         return null;
       }
