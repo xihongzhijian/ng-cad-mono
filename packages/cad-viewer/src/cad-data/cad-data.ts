@@ -563,9 +563,7 @@ export class CadData {
     connections.forEach((c) => {
       try {
         this.assembleComponents(c);
-      } catch (error) {
-        // console.warn(error);
-      }
+      } catch {}
     });
     this.partners.forEach((v) => v.updateComponents());
     this.components.data.forEach((v) => v.updateComponents());
