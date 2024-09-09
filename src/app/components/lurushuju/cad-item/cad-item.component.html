@@ -31,37 +31,37 @@
 <div class="cads">
   <div class="cad item">
     <div class="toolbar">
-      <div #cadContainer class="cad-container flex-row">
-        @if (!showCadViewer) {
-          @if (isOnline) {
-            <app-cad-image
-              class="link"
-              [collection]="isOnline.collection || 'cad'"
-              [id]="cadId"
-              [data]="cadData"
-              [width]="cadWidth"
-              [height]="cadHeight"
-              [paramsGetter]="getCadPreviewParams"
-              [style.width.px]="cadWidth"
-              (click)="selectable?.onChange(this)"
-              (dblclick)="onCadImageClick()"
-              (dataInfoChange)="onCadInfoChange($event)"
-            ></app-cad-image>
-          } @else {
-            <app-cad-image
-              class="link"
-              [id]="''"
-              [data]="cadData"
-              [width]="cadWidth"
-              [height]="cadHeight"
-              [paramsGetter]="getCadPreviewParams"
-              [style.width.px]="cadWidth"
-              (dblclick)="onCadImageClick()"
-              (dataInfoChange)="onCadInfoChange($event)"
-            ></app-cad-image>
-          }
+      @if (showCadViewer) {
+        <div #cadContainer class="cad-container flex-row"></div>
+      } @else {
+        @if (isOnline) {
+          <app-cad-image
+            class="link"
+            [collection]="isOnline.collection || 'cad'"
+            [id]="cadId"
+            [data]="cadData"
+            [width]="cadWidth"
+            [height]="cadHeight"
+            [paramsGetter]="getCadPreviewParams"
+            [style.width.px]="cadWidth"
+            (click)="selectable?.onChange(this)"
+            (dblclick)="onCadImageClick()"
+            (dataInfoChange)="onCadInfoChange($event)"
+          ></app-cad-image>
+        } @else {
+          <app-cad-image
+            class="link"
+            [id]="''"
+            [data]="cadData"
+            [width]="cadWidth"
+            [height]="cadHeight"
+            [paramsGetter]="getCadPreviewParams"
+            [style.width.px]="cadWidth"
+            (dblclick)="onCadImageClick()"
+            (dataInfoChange)="onCadInfoChange($event)"
+          ></app-cad-image>
         }
-      </div>
+      }
     </div>
     @if (!hideButtons) {
       <div class="toolbar compact">

@@ -15,6 +15,7 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getNameWithSuffix, setGlobal} from "@app/app.common";
@@ -40,7 +41,16 @@ import {MokuaiCadItemInfo} from "./mokuai-cads.types";
 @Component({
   selector: "app-mokuai-cads",
   standalone: true,
-  imports: [CadImageComponent, CadItemComponent, DataListModule, MatButtonModule, MatIconModule, MatTooltipModule, NgScrollbarModule],
+  imports: [
+    CadImageComponent,
+    CadItemComponent,
+    DataListModule,
+    MatButtonModule,
+    MatDividerModule,
+    MatIconModule,
+    MatTooltipModule,
+    NgScrollbarModule
+  ],
   templateUrl: "./mokuai-cads.component.html",
   styleUrl: "./mokuai-cads.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -101,6 +111,13 @@ export class MokuaiCadsComponent implements OnInit {
   });
 
   cadsEditMode = signal(false);
+  cadItemEditable = computed(() => {
+    if (this.selectable()) {
+      return this.cadsEditMode();
+    } else {
+      return true;
+    }
+  });
   toggleCadsEditMode() {
     this.cadsEditMode.update((v) => !v);
   }
@@ -169,7 +186,9 @@ export class MokuaiCadsComponent implements OnInit {
     this.bjmkStatus.refreshCads();
   }
   clickCad(i: number) {
-    this.selectCad(i);
+    if (this.selectable() && !this.cadItemEditable()) {
+      this.selectCad(i);
+    }
   }
 
   async selectCad(i: number) {
