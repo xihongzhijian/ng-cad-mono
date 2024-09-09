@@ -31,7 +31,6 @@ import {DataInfoChnageEvent} from "@components/cad-image/cad-image.types";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai} from "@lucilor/cad-viewer";
 import {ObjectOf, selectFiles, timeout} from "@lucilor/utils";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {openCadLineForm} from "@modules/cad-editor/components/menu/cad-line/cad-line.utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
@@ -46,10 +45,11 @@ import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
 import csstype from "csstype";
 import {isEmpty} from "lodash";
+import {Subscription} from "rxjs";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
 import {算料公式} from "../xinghao-data";
-import {CadItemButton, CadItemSelectable, typeOptions} from "./cad-item.types";
+import {CadItemButton, CadItemIsOnlineInfo, CadItemSelectable, typeOptions} from "./cad-item.types";
 
 @Component({
   selector: "app-cad-item",
@@ -66,7 +66,7 @@ import {CadItemButton, CadItemSelectable, typeOptions} from "./cad-item.types";
   templateUrl: "./cad-item.component.html",
   styleUrl: "./cad-item.component.scss"
 })
-export class CadItemComponent<T = undefined> extends Subscribed() implements OnChanges, OnInit, OnDestroy {
+export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDestroy {
   @Input() cadWidth = 360;
   @Input() cadHeight = 180;
 
@@ -82,15 +82,17 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @Input({required: true}) cad: HoutaiCad | CadData = new CadData();
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input() buttons2: CadItemButton<T>[] = [];
+  @Input() hideButtons = false;
   @Input({required: true}) customInfo!: T;
   @Input({required: true}) yaoqiu: Cad数据要求 | undefined;
-  @Input({required: true}) gongshis: 算料公式[] | null | undefined;
+  @Input() gongshis: 算料公式[] | null | undefined;
   @Input() fentiDialogInput?: FentiCadDialogInput;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
   @Input() showMuban?: boolean;
-  @Input() isOnline?: {collection?: CadCollection; isFetched?: boolean; afterFetch?: (component: CadItemComponent<T>) => void};
+  @Input() isOnline?: CadItemIsOnlineInfo<T>;
   @Input() selectable?: CadItemSelectable<T>;
+  @Input() editDisabled?: boolean;
   @Input() events?: {
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
@@ -103,22 +105,20 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   @ViewChildren(forwardRef(() => InputComponent)) inputComponents?: QueryList<InputComponent>;
   cadViewer?: CadViewer;
   mubanViewer?: CadViewer;
-  showCadViewer = false;
   showMubanViewer = false;
   cadData?: CadData;
   mubanData?: CadData;
   mubanInputs: InputInfo[][] = [];
   errorMsgs: ObjectOf<string> = {};
   isOnlineFetched = false;
+  showCadViewer = false;
 
   constructor(
     private message: MessageService,
     private dialog: MatDialog,
     private http: CadDataService,
     private status: AppStatusService
-  ) {
-    super();
-  }
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.cad) {
@@ -128,14 +128,15 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     }
   }
 
+  private _afterEditCadSubscription?: Subscription;
   ngOnInit() {
-    this.subscribe(this.afterEditCad, () => {
+    this._afterEditCadSubscription = this.afterEditCad.subscribe(() => {
       this.validate();
     });
   }
 
   ngOnDestroy() {
-    super.ngOnDestroy();
+    this._afterEditCadSubscription?.unsubscribe();
     this.cadViewer?.destroy();
     this.mubanViewer?.destroy();
   }
@@ -215,6 +216,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       } else {
         Object.assign(this.cad, data);
       }
+      this.afterEditCad.emit();
       isOnline.afterFetch?.(this);
     }
   }
@@ -228,6 +230,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     const cadData = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     const result = await openCadEditorDialog(this.dialog, {
       data: {
+        collection: isOnline?.collection,
         data: cadData,
         center: true,
         isLocal: !isOnline,
@@ -255,6 +258,9 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   }
 
   async editCadForm() {
+    if (this.editDisabled) {
+      return;
+    }
     const {cad, isOnline, yaoqiu} = this;
     if (!cad) {
       return;
@@ -426,6 +432,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
 
   async update() {
     delete this.mubanData;
+    this.showCadViewer = false;
     await this.initCadViewer();
     await this.initMubanViewer();
   }
@@ -487,13 +494,13 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
 
   async initCadViewer() {
     this.cadViewer?.destroy();
-    const {cad, cadContainer, showCadViewer} = this;
-    if (!cad || !cadContainer) {
+    const {cad, showCadViewer} = this;
+    if (!cad) {
       return;
     }
     if (showCadViewer) {
       await this.onlineFetch();
-    } else {
+    } else if (this.isOnline) {
       if (cad instanceof CadData) {
         cad.info.incomplete = true;
       } else {
@@ -503,7 +510,8 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     this.cadData = data;
     generateLineTexts2(data);
-    if (showCadViewer) {
+    const cadContainer = this.cadContainer;
+    if (showCadViewer && cadContainer) {
       const containerEl = cadContainer.nativeElement;
       const collection: CadCollection = "cad";
       this.cadViewer = this.initCadViewer0(collection, data, containerEl, async (data) => {
@@ -523,6 +531,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
           await this.http.setCad({collection: collection, cadData: data, force: true}, true);
           await this.http.setCadImg(data.id, url, {silent: true});
         }
+        this.afterEditCad.emit();
       });
     }
   }
@@ -677,7 +686,7 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
   }
 
   isCadInfoVisible(item: Cad数据要求Item) {
-    if (item.key === "展开信息") {
+    if (["展开信息", "激光开料CAD模板"].includes(item.key)) {
       return true;
     }
     return !!item.cadKey;
@@ -696,11 +705,19 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
       if (zhankai) {
         return `${zhankai.zhankaikuan || ""} × ${zhankai.zhankaigao || ""} = ${zhankai.shuliang || ""}`;
       }
+    } else if (item.key === "激光开料CAD模板") {
+      const zhankai = this.zhankai;
+      if (zhankai) {
+        return zhankai.kailiaomuban;
+      }
     }
     return "";
   }
 
   async onCadImageClick() {
+    if (this.editDisabled) {
+      return;
+    }
     this.showCadViewer = true;
     await timeout(0);
     await this.initCadViewer();
@@ -708,9 +725,12 @@ export class CadItemComponent<T = undefined> extends Subscribed() implements OnC
 
   onCadInfoChange(event: DataInfoChnageEvent) {
     const {cad} = this;
-    if (!(cad instanceof CadData)) {
+    if (cad instanceof CadData) {
+      cad.info = event.info;
+    } else {
       cad.json.info = event.info;
     }
+    this.afterEditCad.emit();
   }
 
   async onMubanImageClick() {

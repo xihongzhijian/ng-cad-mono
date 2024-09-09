@@ -27,6 +27,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
+import {MatListModule, MatSelectionListChange} from "@angular/material/list";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectModule} from "@angular/material/select";
@@ -83,6 +84,7 @@ import {getValue, parseObjectString} from "./input.utils";
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    MatListModule,
     MatMenuModule,
     MatOptionModule,
     MatRadioModule,
@@ -884,7 +886,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       fields,
       options,
       openInNewTab: optionsDialog.openInNewTab,
-      noImage: optionsDialog.noImage,
       nameField: optionsDialog.nameField,
       info: optionsDialog.info
     };
@@ -1135,6 +1136,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   parseObjectString(mode: Parameters<typeof parseObjectString>[2]) {
     parseObjectString(this.objectString, this.value, mode);
+  }
+
+  onListSelectionChange(event: MatSelectionListChange) {
+    const values = event.options.map((v) => v.value);
+    const info = this.info;
+    if (info.type === "select") {
+      this.onChange(info.multiple ? values : values[0]);
+    }
   }
 }
 

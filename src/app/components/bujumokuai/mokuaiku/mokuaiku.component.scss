@@ -1,0 +1,17 @@
+.data-items {
+  --item-width: 210px;
+  --item-height: 350px;
+  .item {
+    position: relative;
+  }
+}
+
+.selected-mokuais {
+  width: 460px;
+  --items-per-row: 2;
+  --item-height: 350px;
+
+  .item {
+    --item-margin: 10px;
+  }
+}

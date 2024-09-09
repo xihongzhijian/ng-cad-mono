@@ -1,11 +1,12 @@
 import {Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild} from "@angular/core";
 import {setGlobal} from "@app/app.common";
+import {getTrbl, TrblLike} from "@app/utils/trbl";
 import {Debounce} from "@decorators/debounce";
 import {ObjectOf, Rectangle, timeout} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {cloneDeep, random} from "lodash";
 import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
-import {MsbjRectInfo, MsbjRectInfoRaw} from "./msbj-rects.types";
+import {MsbjRectInfo, MsbjRectInfoRaw, MsbjSelectRectEvent} from "./msbj-rects.types";
 
 @Component({
   selector: "app-msbj-rects",
@@ -32,10 +33,10 @@ export class MsbjRectsComponent {
   rectInfosAbsolute: MsbjRectInfo[] = [];
   rectInfosRelative: MsbjRectInfo[] = [];
   currRectInfo: MsbjRectInfo | null = null;
-  padding = [10, 10, 10, 10] as const;
   @ViewChild("rectOuter") rectOuter?: ElementRef<HTMLDivElement>;
   private _rectColors: ObjectOf<string> = {};
 
+  @Input() padding: TrblLike = 0;
   private _rectInfos?: MsbjRectInfoRaw[];
   @Input()
   get rectInfos() {
@@ -46,7 +47,7 @@ export class MsbjRectsComponent {
     this.generateRects({resetColors: true});
   }
   @Input() selectRectBefore?: (info: MsbjRectInfo | null) => boolean;
-  @Output() selectRect = new EventEmitter<MsbjRectInfo | null>();
+  @Output() selectRect = new EventEmitter<MsbjSelectRectEvent>();
   @Output() generateRectsStart = new EventEmitter<void>();
   @Output() generateRectsEnd = new EventEmitter<GenerateRectsEndEvent>();
 
@@ -81,7 +82,7 @@ export class MsbjRectsComponent {
       this.currRectInfo = null;
     }
     if (!silent) {
-      this.selectRect.emit(info);
+      this.selectRect.emit({info});
     }
   }
 
@@ -146,7 +147,7 @@ export class MsbjRectsComponent {
     });
     const el = this.rectOuter?.nativeElement;
     if (el) {
-      const padding = this.padding.slice();
+      const padding = getTrbl(this.padding);
       el.style.padding = "0";
       el.style.opacity = "0";
       await timeout(0);

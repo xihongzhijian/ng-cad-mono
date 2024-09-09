@@ -1,4 +1,4 @@
-import {Component, EventEmitter, HostBinding, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
+import {booleanAttribute, Component, EventEmitter, HostBinding, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
 import {imgCadEmpty} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
@@ -42,7 +42,7 @@ export class CadImageComponent implements OnChanges {
   @Input() collection: CadCollection = "cad";
   @Input() width?: number;
   @Input() height?: number;
-  @Input() isImgId?: boolean;
+  @Input({transform: booleanAttribute}) isImgId?: boolean;
   @Input() backgroundColor = "black";
   @Input() paramsGetter?: () => CadPreviewParams;
   @Output() dataInfoChange = new EventEmitter<DataInfoChnageEvent>();
@@ -131,10 +131,12 @@ export class CadImageComponent implements OnChanges {
         }
       } else {
         url = await this.getPreview(data);
-        data.info.imgId = await this.http.getMongoId({spinner: false});
-        await this.http.setCadImg(data.info.imgId, url, {spinner: false});
-        url = this.getImgUrl(data.info.imgId, true);
-        this.dataInfoChange.emit({info: data.info});
+        if (!data.info.isLocal) {
+          data.info.imgId = await this.http.getMongoId({spinner: false});
+          await this.http.setCadImg(data.info.imgId, url, {spinner: false});
+          url = this.getImgUrl(data.info.imgId, true);
+          this.dataInfoChange.emit({info: data.info});
+        }
       }
     }
     if (!url) {
@@ -161,7 +163,7 @@ export class CadImageComponent implements OnChanges {
     }
     try {
       const {collection, id} = this;
-      if (!data || data.info.incomplete) {
+      if ((!data || data.info.incomplete) && id) {
         const cadsResult = await this.http.getCad({collection, id}, {silent: true});
         if (cadsResult.cads[0]) {
           data = cadsResult.cads[0];

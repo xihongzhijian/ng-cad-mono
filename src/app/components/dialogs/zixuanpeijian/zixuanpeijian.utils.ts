@@ -162,8 +162,8 @@ export const getMokuaiTitle = (
 
 export const getStep1Data = async (
   http: CadDataService,
-  httpOptions: HttpOptions,
-  params?: {code: string; type: string} | {mokuaiIds: string[]}
+  httpOptions?: HttpOptions,
+  params?: {code: string; type: string} | {mokuaiIds: number[]}
 ) => {
   return await http.getData<Step1Data>("ngcad/getZixuanpeijianTypesInfo", params, httpOptions);
 };
@@ -202,56 +202,67 @@ export const getZixuanpeijianCads = async (
   return undefined;
 };
 
+export const updateMokuaiItem = (
+  item: ZixuanpeijianMokuaiItem,
+  item2: ZixuanpeijianMokuaiItem | ZixuanpeijianTypesInfoItem,
+  useSlgs = false,
+  others?: {type1: string; type2: string}
+) => {
+  if (!isMokuaiItemEqual(item, item2)) {
+    return;
+  }
+  if (others) {
+    item.type1 = others.type1;
+    item.type2 = others.type2;
+  }
+  const {gongshishuru, xuanxiangshuru, suanliaogongshi, morenbancai} = item;
+  Object.assign(item, item2);
+  if (useSlgs) {
+    const getValue = (key: string, value: string) => {
+      if (!value && suanliaogongshi && key in suanliaogongshi) {
+        return String(suanliaogongshi[key]);
+      }
+      return value;
+    };
+    item.totalWidth = getValue("总宽", item.totalWidth);
+    item.totalHeight = getValue("总高", item.totalHeight);
+  }
+  for (const v of item.gongshishuru) {
+    if (!v[1]) {
+      v[1] = gongshishuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
+    }
+  }
+  for (const v of item.xuanxiangshuru) {
+    if (!v[1]) {
+      v[1] = xuanxiangshuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
+    }
+  }
+  if (morenbancai) {
+    if (!item.morenbancai) {
+      item.morenbancai = {};
+    }
+    for (const key in morenbancai) {
+      if (isMrbcjfzInfoEmpty1(key, morenbancai[key])) {
+        morenbancai[key].默认对应板材分组 = "";
+      }
+    }
+    for (const key in item.morenbancai) {
+      if (isMrbcjfzInfoEmpty1(key, item.morenbancai[key])) {
+        item.morenbancai[key].默认对应板材分组 = "";
+        item.morenbancai[key].选中板材分组 = "";
+      } else if (morenbancai[key]) {
+        item.morenbancai[key].默认对应板材分组 = morenbancai[key].默认对应板材分组;
+        item.morenbancai[key].选中板材分组 = morenbancai[key].选中板材分组;
+      }
+    }
+  }
+};
 export const updateMokuaiItems = (items: ZixuanpeijianMokuaiItem[], typesInfo: ZixuanpeijianTypesInfo, useSlgs = false) => {
   for (const type1 in typesInfo) {
     for (const type2 in typesInfo[type1]) {
       const info = cloneDeep(typesInfo[type1][type2]);
       for (const item of items) {
-        if (isMokuaiItemEqual(item, info)) {
-          item.type1 = type1;
-          item.type2 = type2;
-          const {gongshishuru, xuanxiangshuru, suanliaogongshi, morenbancai} = item;
-          Object.assign(item, info);
-          if (useSlgs) {
-            const getValue = (key: string, value: string) => {
-              if (!value && suanliaogongshi && key in suanliaogongshi) {
-                return String(suanliaogongshi[key]);
-              }
-              return value;
-            };
-            item.totalWidth = getValue("总宽", item.totalWidth);
-            item.totalHeight = getValue("总高", item.totalHeight);
-          }
-          for (const v of item.gongshishuru) {
-            if (!v[1]) {
-              v[1] = gongshishuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
-            }
-          }
-          for (const v of item.xuanxiangshuru) {
-            if (!v[1]) {
-              v[1] = xuanxiangshuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
-            }
-          }
-          if (morenbancai) {
-            if (!item.morenbancai) {
-              item.morenbancai = {};
-            }
-            for (const key in morenbancai) {
-              if (isMrbcjfzInfoEmpty1(key, morenbancai[key])) {
-                morenbancai[key].默认对应板材分组 = "";
-              }
-            }
-            for (const key in item.morenbancai) {
-              if (isMrbcjfzInfoEmpty1(key, item.morenbancai[key])) {
-                item.morenbancai[key].默认对应板材分组 = "";
-                item.morenbancai[key].选中板材分组 = "";
-              } else if (morenbancai[key]) {
-                item.morenbancai[key].默认对应板材分组 = morenbancai[key].默认对应板材分组;
-                item.morenbancai[key].选中板材分组 = morenbancai[key].选中板材分组;
-              }
-            }
-          }
-        }
+        updateMokuaiItem(item, info, useSlgs, {type1, type2});
       }
     }
   }
@@ -329,15 +340,6 @@ export const calcZxpj = async (
   const duplicateXxsr: ObjectOf<Set<string>> = {};
   const dimensionNamesMap: ObjectOf<{item: ZixuanpeijianCadItem}[]> = {};
   const varsGlobal: Formulas = {};
-  const gongshiCalcResult = await calc.calcFormulas(gongshi, materialResult);
-  if (!gongshiCalcResult) {
-    return {
-      fulfilled: false,
-      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult}}
-    };
-  }
-  calc.calc.mergeFormulas(materialResult, gongshiCalcResult.succeedTrim);
-  calc.calc.mergeFormulas(materialResult, inputResult);
 
   const gongshiKeys = Object.keys(gongshi);
   const inputResultKeys = Object.keys(inputResult);
@@ -537,21 +539,6 @@ export const calcZxpj = async (
       }
     }
   }
-
-  const replaceMenshanName = (门扇名字: string | undefined | null, formulas: Formulas) => {
-    if (!门扇名字) {
-      return;
-    }
-    for (const key in formulas) {
-      if (key.includes("当前扇")) {
-        formulas[key] = key.replaceAll("当前扇", 门扇名字);
-      }
-      const value = formulas[key];
-      if (typeof value === "string" && value.includes("当前扇")) {
-        formulas[key] = value.replaceAll("当前扇", 门扇名字);
-      }
-    }
-  };
 
   const getMokuaiVarsCurr = (门扇名字: string, 模块名字: string) => {
     const result = {...mokuaiVars[门扇名字]};
@@ -944,4 +931,19 @@ export const step3FetchData = async (
     responseData = (window as any)[cacheKey];
   }
   return responseData;
+};
+
+export const replaceMenshanName = (门扇名字: string | undefined | null, formulas: Formulas) => {
+  if (!门扇名字) {
+    return;
+  }
+  for (const key of Object.keys(formulas)) {
+    if (key.includes("当前扇")) {
+      formulas[key] = key.replaceAll("当前扇", 门扇名字);
+    }
+    const value = formulas[key];
+    if (typeof value === "string" && value.includes("当前扇")) {
+      formulas[key] = value.replaceAll("当前扇", 门扇名字);
+    }
+  }
 };

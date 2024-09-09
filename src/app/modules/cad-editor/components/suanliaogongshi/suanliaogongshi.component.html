@@ -1,4 +1,4 @@
-@if (info.data["算料公式"]) {
+@if (info().data["算料公式"]; as slgs) {
   <div class="gongshis flex-column">
     <div class="toolbar">
       <div class="title">算料公式</div>
@@ -7,7 +7,7 @@
       <button mat-stroked-button color="primary" (click)="importGonshis()">导入</button>
       <button mat-stroked-button color="primary" (click)="exportGongshis()">导出</button>
     </div>
-    @if (noScroll) {
+    @if (noScroll()) {
       <ng-container *ngTemplateOutlet="content"></ng-container>
     } @else {
       <ng-scrollbar>
@@ -16,14 +16,14 @@
     }
     <ng-template #content>
       <div class="items no-items-per-row">
-        @for (gongshi of info.data["算料公式"]; track gongshi; let i = $index) {
+        @for (gongshi of slgs; track i; let i = $index) {
           @if (i > 0) {
             <mat-divider></mat-divider>
           }
           <div class="gongshi-card item">
             <div class="toolbar compact">
               <div class="gongshi-name text long">{{ gongshi["名字"] }}</div>
-              @if (gongshiInfo.at(i)?.formulas) {
+              @if (gongshiInfo().at(i)?.formulas) {
                 <button mat-button color="primary" (click)="editGongshiEnd(i, null, true)">关闭编辑</button>
               } @else {
                 <button mat-button color="primary" (click)="editGongshiStart(i)">直接编辑</button>
@@ -33,10 +33,10 @@
               <button mat-button color="primary" (click)="removeGongshi(i)">删除</button>
             </div>
             <div class="gongshi-items">
-              @if (gongshiInfo.at(i)?.formulas) {
+              @if (gongshiInfo().at(i)?.formulas; as formulas) {
                 <app-formulas-editor
-                  [formulas]="gongshiInfo[i].formulas"
-                  [compact]="{minRows: 5, maxRows: 20}"
+                  [formulas]="formulas"
+                  [compact]="{minRows: 5}"
                   (formulasChange)="editGongshiEnd(i, $event)"
                 ></app-formulas-editor>
               } @else {
@@ -51,11 +51,11 @@
     </ng-template>
   </div>
 }
-@if (info.data["输入数据"]) {
+@if (info().data["输入数据"]) {
   <div class="shurushuju flex-column">
     <app-table
       class="flex-110"
-      [info]="shuruTable"
+      [info]="shuruTable()"
       (toolbarButtonClick)="onShuruToolbar($event)"
       (rowButtonClick)="onShuruRow($event)"
     ></app-table>

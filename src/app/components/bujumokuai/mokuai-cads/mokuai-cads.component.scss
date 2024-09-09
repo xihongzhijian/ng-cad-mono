@@ -1,0 +1,20 @@
+:host {
+  flex-direction: row;
+}
+
+.selected-cads {
+  flex: 0 0 auto;
+
+  .data-items {
+    --cad-image-width: 300px;
+    --cad-image-height: 150px;
+    --item-width: var(--cad-image-width);
+    flex-direction: column;
+  }
+}
+
+.selected-cads {
+  .title {
+    min-width: 300px;
+  }
+}

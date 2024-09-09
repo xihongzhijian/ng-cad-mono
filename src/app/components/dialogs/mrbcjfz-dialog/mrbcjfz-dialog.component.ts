@@ -1,5 +1,7 @@
 import {Component, Inject, ViewChild} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {CadCollection} from "@app/cad/collections";
+import {CadData} from "@lucilor/cad-viewer";
 import {timeout} from "@lucilor/utils";
 import {MrbcjfzDataSubmitEvent, MrbcjfzInputData} from "@views/mrbcjfz/mrbcjfz.types";
 import {MrbcjfzComponent} from "../../../views/mrbcjfz/mrbcjfz.component";
@@ -39,13 +41,22 @@ export class MrbcjfzDialogComponent {
     }
     this.dialogRef.close({data: this.mrbcjfz.xinghao, errors: this.mrbcjfz.checkSubmit()});
   }
+
+  onCadChange(data: CadData) {
+    this.data.onCadChange?.(data);
+  }
 }
 
 export interface MrbcjfzDialogInput {
   id: number;
   table: string;
+  collection?: CadCollection;
   inputData?: MrbcjfzInputData;
   dryRun?: boolean;
+  mokuaiName?: string;
+  cadWidth?: number;
+  cadHeight?: number;
+  onCadChange?: (data: CadData) => void;
 }
 
 export type MrbcjfzDialogOutput = MrbcjfzDataSubmitEvent;

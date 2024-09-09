@@ -1,5 +1,5 @@
+import {Trbl} from "@app/utils/trbl";
 import {cloneDeep} from "lodash";
-import {Trbl} from "../page.utils";
 import {PageComponentTextBase} from "./page-component-text-base";
 
 export class PageComponentForm extends PageComponentTextBase {

@@ -13,7 +13,7 @@ import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/pag
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {imgCadEmpty} from "@app/app.common";
-import {setCadData, validateCad} from "@app/cad/cad-shujuyaoqiu";
+import {getCadQueryFields, setCadData, validateCad} from "@app/cad/cad-shujuyaoqiu";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
@@ -178,15 +178,7 @@ export class CadListComponent implements AfterViewInit {
         await this.status.fetchCad数据要求List();
         this.data.yaoqiu = this.status.getCad数据要求("配件库");
       }
-      const keys: (keyof CadData)[] = ["id", "name", "options", "conditions", "type", "type2"];
-      for (const {cadKey, key} of this.data.yaoqiu?.CAD弹窗修改属性 || []) {
-        if (cadKey && !keys.includes(cadKey)) {
-          keys.push(cadKey);
-        } else if (key === "展开信息") {
-          keys.push("zhankai");
-        }
-      }
-      params.fields = keys.map((v) => `json.${v}`);
+      params.fields = getCadQueryFields(this.data.yaoqiu);
       if (this.showCheckedOnly) {
         params.ids = this.checkedItems.slice();
       }
@@ -299,11 +291,13 @@ export class CadListComponent implements AfterViewInit {
       return;
     }
     const {checkedItems: ids, data} = this;
-    const {collection, raw, vars} = data;
+    const {collection, raw, vars, source} = data;
     const yaoqiuItems = data.yaoqiu?.选中CAD要求 || [];
     let cads: (CadData | HoutaiCad)[] = [];
     if (ids.length > 0) {
-      if (raw) {
+      if (source) {
+        cads = source.filter((v) => ids.includes(v.id));
+      } else if (raw) {
         const result = await this.http.getCadRaw({ids, collection});
         cads = result?.data || [];
       } else {

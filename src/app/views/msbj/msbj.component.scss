@@ -11,7 +11,7 @@
 
 .rect-container {
   position: relative;
-  width: 50%;
+  width: 40%;
 
   .rect-area {
     height: var(--rect-area-height);
@@ -40,6 +40,7 @@
 
 .fenlei-container {
   display: flex;
+  overflow: hidden;
 
   .fenlei-lists > :not(:last-child) {
     margin-right: 10px;
@@ -69,6 +70,9 @@
   }
 }
 
+.cads-container {
+  height: 200px;
+}
 .cads {
   flex-wrap: wrap;
 

@@ -13,7 +13,7 @@ const data: SuanliaoTestInput = {
       {名字: "测试用例2", 时间: 0, 测试数据: {a: 2}, 测试正确: true}
     ]
   }),
-  varNames: {names: {test: ["1"]}, width: 0},
+  varNames: [{nameGroups: [{groupName: "test", varNames: ["1"]}], width: 100}],
   suanliaoDataParams: {
     选项: {
       型号: "1",

@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, input, model, untracked} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, inject, input, model, untracked, viewChildren} from "@angular/core";
+import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {joinOptions} from "@app/app.common";
 import {openBancaiListDialog} from "@components/dialogs/bancai-list/bancai-list.component";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
-import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
+import {validateForm} from "@modules/message/components/message/message.utils";
 import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
@@ -18,9 +19,8 @@ import {InputComponent} from "../../modules/input/components/input.component";
 export class BancaiFormComponent {
   private dialog = inject(MatDialog);
 
-  xinghao = input.required<MrbcjfzXinghaoInfo>();
-  key = input.required<string>();
   bancaiListIn = input.required<BancaiList[]>({alias: "bancaiList"});
+  extraInputInfos = input<InputInfo[][]>();
   data = model<BancaiFormData>({bancai: "", cailiao: "", houdu: ""});
 
   bancaiList = computed(() => this.bancaiListIn().filter((v) => !["同框色", "同扇色", "同背封板"].includes(v.mingzi)));
@@ -53,7 +53,7 @@ export class BancaiFormComponent {
     const checkedItem = this.checkedItem();
     const onChange = () => this.data.set(data);
     const infos: InputInfo<BancaiFormData>[][] = [
-      this.xinghao()?.inputInfos[this.key()]?.[0] || [],
+      ...(this.extraInputInfos() || []),
       [
         {
           type: "string",
@@ -74,21 +74,24 @@ export class BancaiFormComponent {
                 }
               }
             }
-          ]
+          ],
+          validators: Validators.required
         },
         {
           type: "select",
           label: "材料",
           model: {key: "cailiao", data},
           onChange,
-          options: checkedItem?.cailiaoList || []
+          options: checkedItem?.cailiaoList || [],
+          validators: Validators.required
         },
         {
           type: "select",
           label: "厚度",
           model: {key: "houdu", data},
           onChange,
-          options: checkedItem?.houduList || []
+          options: checkedItem?.houduList || [],
+          validators: Validators.required
         }
       ],
       [
@@ -136,6 +139,11 @@ export class BancaiFormComponent {
     ];
     return infos;
   });
+
+  inputComponents = viewChildren(InputComponent);
+  async validate() {
+    return await validateForm(this.inputComponents());
+  }
 }
 
 export interface BancaiFormData {

@@ -1,0 +1,59 @@
+<app-data-list
+  class="flex-110"
+  [navDataName]="navDataName()"
+  navDataTitle="配件库分类"
+  [itemsAll]="cadsAll()"
+  [(items)]="cads"
+  [(activeNavNode)]="activeNavNode"
+>
+  <div class="toolbar" appDataListToolbar>
+    <button mat-raised-button [color]="cadsEditMode() ? 'accent' : 'primary'" (click)="toggleCadsEditMode()">编辑</button>
+    <button mat-raised-button color="primary" (click)="addCad()">添加</button>
+    <button mat-raised-button color="primary">导入</button>
+    <button mat-raised-button color="primary">导出</button>
+  </div>
+  <div class="data-items items no-items-per-row" appDataListItems>
+    @for (cad of cads(); track i; let i = $index) {
+      <div class="data-item item link">
+        <app-cad-item
+          [cad]="cad"
+          [yaoqiu]="cadYaoqiu()"
+          [buttons]="cadItemButtons()"
+          [hideButtons]="!cadsEditMode()"
+          [customInfo]="{index: i}"
+          [isOnline]="cadsIsOnline[cad.id]"
+          [editDisabled]="!cadItemEditable()"
+          (afterEditCad)="afterEditCad()"
+          (click)="clickCad(i)"
+        ></app-cad-item>
+      </div>
+    }
+  </div>
+</app-data-list>
+
+@if (selectable()) {
+  <mat-divider vertical></mat-divider>
+  <div class="selected-cads item">
+    <div class="title">已选配件</div>
+    @if (cadsEditMode()) {
+      <div class="error">现在是编辑状态，不可以选择配件</div>
+    }
+    <ng-scrollbar #selectedCadsScrollbar class="selected-cads">
+      <div class="data-items items no-items-per-row">
+        @for (cad of selectedCads(); track i; let i = $index) {
+          <div class="data-item item link">
+            <app-cad-image id="" [data]="cad"></app-cad-image>
+            <div class="toolbar">
+              <button mat-icon-button color="primary" (click)="unselectCad(i)">
+                <mat-icon>remove_circle</mat-icon>
+              </button>
+              <div class="text long" [matTooltip]="cad.name" matTooltipPosition="above">
+                {{ cad.name }}
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </ng-scrollbar>
+  </div>
+}

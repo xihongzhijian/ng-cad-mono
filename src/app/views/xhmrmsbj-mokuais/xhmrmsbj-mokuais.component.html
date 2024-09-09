@@ -1,7 +1,7 @@
 <div class="flex-row flex-110">
   <div #section1 class="section">
     <ng-scrollbar>
-      @for (info of mkdxFormulaInfos; track info; let i = $index) {
+      @for (info of mkdxFormulaInfos; track i; let i = $index) {
         <div class="flex-column">
           <div class="title">{{ info.name }}</div>
           <app-formulas [formulaInfos]="info.formulaInfos" [formulaStyles]="formulaStyles" (updated)="updateSection1()"></app-formulas>
@@ -15,7 +15,7 @@
   <mat-divider vertical></mat-divider>
   <div class="section flex-110">
     <ng-scrollbar>
-      @for (info of xuanzhongMokuaiInfos; track info; let i = $index) {
+      @for (info of xuanzhongMokuaiInfos; track i; let i = $index) {
         <div class="flex-column">
           <div class="title">{{ info.name }}选中模块</div>
           @for (node of info.nodes; track node) {

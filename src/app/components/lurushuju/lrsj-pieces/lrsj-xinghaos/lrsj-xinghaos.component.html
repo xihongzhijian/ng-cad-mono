@@ -1,0 +1,37 @@
+<div class="toolbar">
+  <button mat-raised-button color="primary" (click)="selectAllXinghaos()">全选</button>
+  <button mat-raised-button color="primary" (click)="selectXinghaosGongyi()">批量选择工艺</button>
+  <button mat-raised-button color="primary" (click)="addXinghao()">新建型号</button>
+  <app-input [info]="filterInputInfo"></app-input>
+</div>
+<ng-scrollbar style="width: 100%">
+  <div class="xinghaos items no-items-per-row">
+    @for (xinghao of xinghaos(); track i; let i = $index) {
+      @if (!xinghao.hidden) {
+        <div class="item">
+          @if (xinghao.tingyong) {
+            <div class="img disabled"></div>
+          }
+          <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="gotoZuofas(xinghao)"></app-image>
+          <div class="name" [matTooltip]="xinghao.mingzi">
+            <mat-checkbox [checked]="xinghaoSelectedIndexs().includes(i)" (change)="toggleXinghaoSelected(i)"></mat-checkbox>
+            <span (click)="toggleXinghaoSelected(i)">{{ xinghao.mingzi }}</span>
+          </div>
+          @if (editMode()) {
+            <div class="toolbar center">
+              <button mat-button color="primary" (click)="editXinghao(xinghao)">编辑</button>
+              <button mat-button color="primary" (click)="copyXinghao(xinghao)">复制</button>
+              <button mat-button color="primary" (click)="removeXinghao(xinghao)">删除</button>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</ng-scrollbar>
+
+@if (showXhmrmsbj(); as data) {
+  <app-floating-dialog [maximized]="true" noTitle>
+    <app-xhmrmsbj [xinghaoId]="data.id" closable (close)="closeXhmrmsbj()"></app-xhmrmsbj>
+  </app-floating-dialog>
+}

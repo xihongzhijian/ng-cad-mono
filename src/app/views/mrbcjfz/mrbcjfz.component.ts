@@ -1,6 +1,8 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {KeyValuePipe} from "@angular/common";
+import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
+  booleanAttribute,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   HostBinding,
@@ -19,8 +21,10 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal, XiaodaohangStructure} from "@app/app.common";
+import {CadCollection} from "@app/cad/collections";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
+import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -76,20 +80,26 @@ import {
     MatDividerModule,
     MatIconModule,
     NgScrollbar,
+    NgTemplateOutlet,
     SpinnerComponent
   ]
 })
 export class MrbcjfzComponent implements OnInit, OnChanges {
-  @HostBinding("class") class = "ng-page";
+  @HostBinding("class") class = ["ng-page"];
 
   @Input() id = 0;
   @Input() table = "";
-  @Input() closeable = false;
+  @Input() collection?: CadCollection;
+  @Input({transform: booleanAttribute}) closeable = false;
   @Input() inputData?: MrbcjfzInputData;
   @Input() forceSubmit? = false;
+  @Input() mokuaiName?: string;
+  @Input() cadWidth?: number;
+  @Input() cadHeight?: number;
   @Output() dataSubmit = new EventEmitter<MrbcjfzDataSubmitEvent>();
   @Output() dataClose = new EventEmitter<void>();
   @Output() refreshAfter = new EventEmitter<void>();
+  @Output() cadChange = new EventEmitter<CadData>();
   xinghao: MrbcjfzXinghaoInfo = new MrbcjfzXinghaoInfo(this.table, {vid: 0, mingzi: ""});
   cads: ObjectOf<MrbcjfzCadInfo> = {};
   huajians: ObjectOf<MrbcjfzHuajianInfo> = {};
@@ -100,6 +110,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
   activeBancaiKey: string | null = null;
   xiaodaohangStructure: XiaodaohangStructure | null = null;
   isFromOrder = false;
+  noScroll = false;
   private _isInited = false;
   private _refreshLock$ = new BehaviorSubject<boolean>(false);
   wmm = new WindowMessageManager("默认板材及分组", this, window.parent);
@@ -118,7 +129,8 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     private http: CadDataService,
     private dialog: MatDialog,
     private status: AppStatusService,
-    private message: MessageService
+    private message: MessageService,
+    private cd: ChangeDetectorRef
   ) {
     setGlobal("mrbcjfz", this);
   }
@@ -143,8 +155,24 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     }
     this._refreshLock$.next(true);
     let {id, table} = this;
+    const {collection} = this;
+    let resData: MrbcjfzResponseData | undefined;
     if (this.inputData) {
-      this.isFromOrder = true;
+      if (this.inputData.resData) {
+        this.isFromOrder = false;
+        resData = this.inputData.resData;
+      } else {
+        this.isFromOrder = true;
+        const noScroll = !!this.inputData.noScroll;
+        this.noScroll = noScroll;
+        if (noScroll) {
+          if (!this.class.includes("no-scroll")) {
+            this.class = [...this.class, "no-scroll"];
+          }
+        } else {
+          this.class = this.class.filter((v) => v !== "no-scroll");
+        }
+      }
     } else {
       const params = this.route.snapshot.queryParams;
       if (!id || !table) {
@@ -227,9 +255,18 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         this.huajians[vid] = {id: vid, data: huajian, selected: huajianIds2.includes(vid)};
       }
     } else {
-      const data = await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {table, id}, {spinner: this.loaderId});
+      const data =
+        resData ||
+        (await this.http.getData<MrbcjfzResponseData>(
+          "peijian/xinghao/bancaifenzuIndex",
+          {table, id, collection},
+          {spinner: this.loaderId}
+        ));
       if (data) {
         this.xinghao = new MrbcjfzXinghaoInfo(this.table, data.xinghao);
+        if (this.inputData) {
+          this.xinghao.默认板材 = this.inputData.morenbancai;
+        }
         this.bancaiKeys = data.bancaiKeys;
         this.bancaiKeysRequired = data.bancaiKeysRequired;
         this.xiaodaohangStructure = data.xiaodaohangStructure;
@@ -244,6 +281,12 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
             cadsToRemove.push(item);
           }
         });
+        const cads = this.inputData?.cads;
+        if (Array.isArray(cads)) {
+          for (const cad of cads) {
+            this.cads[cad.id] = {id: cad.id, data: cad};
+          }
+        }
         this.huajians = {};
         const huajiansToRemove: MrbcjfzHuajianInfo[] = [];
         data.huajians.map((v) => {
@@ -341,8 +384,8 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
           houduList: info.可选厚度
         },
         bancaiList: this.bancaiList,
-        xinghao: this.xinghao,
-        key
+        key,
+        extraInputInfos: [this.xinghao.inputInfos[key][0]]
       }
     });
     if (result) {
@@ -353,6 +396,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       info.可选材料 = result.cailiaoList || [];
       info.可选厚度 = result.houduList || [];
     }
+    this.cd.markForCheck();
   }
 
   async emptyBancaiForm(key: string) {
@@ -379,6 +423,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       this.selectBancaiKey(this.activeBancaiKey);
     }
     this.updateListItems();
+    this.cd.markForCheck();
   }
 
   validateBancai(key: string, info: MrbcjfzInfo) {
@@ -491,7 +536,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     return errorMsg;
   }
 
-  async submit(submit2?: boolean) {
+  async submit() {
     const {xinghao, table, isFromOrder} = this;
     let result = false;
     if (!xinghao) {
@@ -518,10 +563,10 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         );
         result = response?.code === 0;
       } else {
-        result = await this.http.tableUpdate({table, data}, {spinner: this.loaderId});
+        result = !!(await this.http.tableUpdate({table, data}, {spinner: this.loaderId}));
       }
     }
-    this.dataSubmit.emit({data: this.xinghao, errors, submit2});
+    this.dataSubmit.emit({data: this.xinghao, errors});
     return result;
   }
 
@@ -529,8 +574,19 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     this.dataClose.emit();
   }
 
-  openCad(item: MrbcjfzListItem) {
-    this.status.openCadInNewTab(item.id, "cad");
+  async openCad(item: MrbcjfzListItem) {
+    const {mokuaiName} = this;
+    if (mokuaiName) {
+      const data0 = this.cads[item.id].data;
+      const data = data0.clone();
+      const result = await openCadEditorDialog(this.dialog, {data: {data, query: {模块: mokuaiName}}});
+      if (result?.isSaved) {
+        Object.assign(data0, data);
+        this.cadChange.emit(data0);
+      }
+    } else {
+      this.status.openCadInNewTab(item.id, "cad");
+    }
   }
 
   async getData() {

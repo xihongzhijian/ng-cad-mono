@@ -1,4 +1,5 @@
 import {Route} from "@angular/router";
+import {BujumokuaiIndexComponent} from "@components/bujumokuai/bujumokuai-index/bujumokuai-index.component";
 import {CustomPageIndexComponent} from "@components/custom-page/views/custom-page-index/custom-page-index.component";
 import {LurushujuIndexComponent} from "@components/lurushuju/lurushuju-index/lurushuju-index.component";
 import {PrintTableComponent} from "@components/print-table/print-table.component";
@@ -32,6 +33,7 @@ import {XinghaoOverviewComponent} from "@views/xinghao-overview/xinghao-overview
 export const routesInfo: (Route & {path: string})[] = [
   {path: "index", component: IndexComponent},
   {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"},
+  {path: "布局模块", component: BujumokuaiIndexComponent, title: "布局模块"},
   {path: "work-space", component: WorkSpaceComponent, title: "我的工作台"},
   {path: "custom-page", component: CustomPageIndexComponent, title: "自定义报表"},
   {path: "print-cad", component: PrintCadComponent, title: "打印CAD"},

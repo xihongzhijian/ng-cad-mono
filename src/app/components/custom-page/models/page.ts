@@ -1,3 +1,4 @@
+import {Trbl} from "@app/utils/trbl";
 import {isTypeOf, Point} from "@lucilor/utils";
 import Color from "color";
 import {Properties, Property} from "csstype";
@@ -6,7 +7,6 @@ import {PageOrientation} from "pdfmake/interfaces";
 import {v4} from "uuid";
 import {pageComponentInfos, PageComponentType, PageComponentTypeAny} from "./page-component-infos";
 import {PageSizeName, PageSizeNameCustom, pageSizes} from "./page-size";
-import {Trbl} from "./page.utils";
 
 export class Page {
   id = v4();

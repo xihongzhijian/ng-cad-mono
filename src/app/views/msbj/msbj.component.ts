@@ -1,41 +1,74 @@
 import {CdkDragDrop, CdkDropListGroup, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
-import {AfterViewInit, ChangeDetectionStrategy, Component, computed, inject, signal, viewChild} from "@angular/core";
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostBinding,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild
+} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
+import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjRectInfo, MsbjSelectRectEvent, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableDataBase, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {cloneDeep} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
-import {MsbjData, MsbjFenlei, MsbjInfo} from "./msbj.types";
+import {MsbjCloseEvent, MsbjData, MsbjFenlei} from "./msbj.types";
+import {getEmpty模块大小配置, MsbjInfo} from "./msbj.utils";
 
 @Component({
   selector: "app-msbj",
   templateUrl: "./msbj.component.html",
   styleUrls: ["./msbj.component.scss"],
   standalone: true,
-  imports: [CadImageComponent, CdkDropListGroup, InputComponent, MatButtonModule, MsbjRectsComponent, NgScrollbar],
+  imports: [
+    CadImageComponent,
+    CdkDropListGroup,
+    FloatingDialogModule,
+    InputComponent,
+    MatButtonModule,
+    MkdxpzEditorComponent,
+    MsbjRectsComponent,
+    NgScrollbar
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MsbjComponent implements AfterViewInit {
+export class MsbjComponent {
   private http = inject(CadDataService);
   private message = inject(MessageService);
   private route = inject(ActivatedRoute);
   private status = inject(AppStatusService);
 
+  @HostBinding("class") class = "ng-page";
+
+  tableIn = input("", {alias: "table"});
+  idIn = input(0, {alias: "id"});
+  dataFieldIn = input("", {alias: "dataField"});
+  closable = input(false, {transform: booleanAttribute});
+  closeOut = output<MsbjCloseEvent>({alias: "close"});
+
   production = environment.production;
   table = signal("");
   msbjInfo = signal<MsbjInfo | null>(null);
-  dataField: keyof Omit<MsbjData, keyof TableDataBase> = "peizhishuju";
+  dataField = signal<keyof Omit<MsbjData, keyof TableDataBase>>("peizhishuju");
   fenleiListDataType!: {$implicit: MsbjFenlei[]; class: string};
   cads = signal<{data: CadData}[]>([]);
   msbjRects = viewChild(MsbjRectsComponent);
@@ -44,15 +77,26 @@ export class MsbjComponent implements AfterViewInit {
     setGlobal("msbj", this);
   }
 
-  async ngAfterViewInit() {
-    const {table = "", id = "", field} = this.route.snapshot.queryParams;
-    this.table.set(table || "");
-    this.dataField = field === "peizhishuju" ? field : "menshanbujumorenfenlei";
+  refreshEff = effect(() => this.refresh(), {allowSignalWrites: true});
+  async refresh() {
+    const {table: table0 = "", id: id0 = "", field: field0} = this.route.snapshot.queryParams;
+    const id = this.idIn() || Number(id0);
+    if (!(id > 0)) {
+      return;
+    }
+    const field = this.dataFieldIn() || field0 || "peizhishuju";
+    const table = this.tableIn() || table0 || "p_menshanbuju";
+    this.table.set(table);
+    this.dataField.set(field === "peizhishuju" ? field : "menshanbujumorenfenlei");
     const msbjData = await this.http.queryMySql<MsbjData>({table, filter: {where: {vid: id}}});
     if (msbjData[0]) {
       this.msbjInfo.set(new MsbjInfo(msbjData[0]));
-      const getCadResult = await this.http.getCad({collection: "cad", search: {"选项.门扇布局": msbjData[0].mingzi}});
-      this.cads.set(getCadResult.cads.map<ReturnType<MsbjComponent["cads"]>[number]>((data) => ({data})));
+      if (this.msbjInfo()?.isVersion2024) {
+        this.cads.set([]);
+      } else {
+        const getCadResult = await this.http.getCad({collection: "cad", options: {门扇布局: msbjData[0].mingzi}});
+        this.cads.set(getCadResult.cads.map<ReturnType<MsbjComponent["cads"]>[number]>((data) => ({data})));
+      }
     } else {
       this.msbjInfo.set(null);
       this.cads.set([]);
@@ -64,6 +108,20 @@ export class MsbjComponent implements AfterViewInit {
   }
 
   currRectInfo = signal<MsbjRectInfo | null>(null);
+  selectRect(event: MsbjSelectRectEvent) {
+    this.currRectInfo.set(event.info);
+  }
+  private _generateRectsEnd = 0;
+  generateRectsEnd() {
+    const msbjInfo = this.msbjInfo();
+    if (!msbjInfo) {
+      return;
+    }
+    if (this._generateRectsEnd++ < 1) {
+      msbjInfo.justify();
+      this.msbjInfo.set(cloneDeep(msbjInfo));
+    }
+  }
   inputInfos = computed(() => {
     const rectInfo = this.currRectInfo();
     const isBuju = rectInfo?.raw.isBuju;
@@ -126,6 +184,7 @@ export class MsbjComponent implements AfterViewInit {
     this.updateCurrRectInfo();
   }
 
+  isSubmited = signal(false);
   async submit() {
     const msbjInfo = this.msbjInfo();
     if (!msbjInfo) {
@@ -160,8 +219,9 @@ export class MsbjComponent implements AfterViewInit {
     }
 
     msbjInfo.peizhishuju.模块节点 = rectInfos;
-    data[this.dataField] = JSON.stringify(msbjInfo.peizhishuju);
+    data[this.dataField()] = JSON.stringify(msbjInfo.peizhishuju);
     await this.http.tableUpdate({table, data});
+    this.isSubmited.set(true);
   }
 
   async editMokuaidaxiao() {
@@ -177,5 +237,34 @@ export class MsbjComponent implements AfterViewInit {
 
   openCad(data: CadData) {
     this.status.openCadInNewTab(data.id, "cad");
+  }
+
+  async close(submit = false) {
+    if (submit) {
+      await this.submit();
+    }
+    if (!this.closable()) {
+      return;
+    }
+    this.closeOut.emit({isSubmited: this.isSubmited()});
+  }
+
+  mkdxpz = signal<模块大小配置>(getEmpty模块大小配置());
+  mkdxpzEff = effect(
+    () => {
+      let mkdxpz = this.msbjInfo()?.peizhishuju.模块大小配置;
+      if (!mkdxpz) {
+        mkdxpz = getEmpty模块大小配置();
+      }
+      this.mkdxpz.set(mkdxpz);
+    },
+    {allowSignalWrites: true}
+  );
+  onMkdxpzChange(mkdxpz: 模块大小配置) {
+    const info = this.msbjInfo();
+    if (info) {
+      info.peizhishuju.模块大小配置 = mkdxpz;
+      // this.msbjInfo.set(cloneDeep(info));
+    }
   }
 }

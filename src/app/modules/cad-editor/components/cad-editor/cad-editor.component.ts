@@ -15,7 +15,7 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
-import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
+import {MatMenuModule} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
@@ -24,10 +24,10 @@ import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/sua
 import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {queryString} from "@lucilor/utils";
-import {ContextMenu} from "@mixins/context-menu.mixin";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadConsoleComponent} from "@modules/cad-console/components/cad-console/cad-console.component";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
+import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -93,6 +93,7 @@ import {SuanliaogongshiComponent} from "../suanliaogongshi/suanliaogongshi.compo
     CadPointsComponent,
     CadSplitComponent,
     CdkDrag,
+    ContextMenuModule,
     forwardRef(() => InputComponent),
     MatButtonModule,
     MatIconModule,
@@ -107,7 +108,7 @@ import {SuanliaogongshiComponent} from "../suanliaogongshi/suanliaogongshi.compo
     ToolbarComponent
   ]
 })
-export class CadEditorComponent extends ContextMenu(Subscribed()) implements AfterViewInit, OnDestroy {
+export class CadEditorComponent extends Subscribed() implements AfterViewInit, OnDestroy {
   private _params?: OpenCadOptions;
   @Input()
   get params() {
@@ -153,7 +154,6 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     return this.status.cadStatus.name;
   }
 
-  @ViewChild(MatMenuTrigger) contextMenu!: MatMenuTrigger;
   @ViewChild("cadContainer", {read: ElementRef}) cadContainer!: ElementRef<HTMLElement>;
   @ViewChild(CadConsoleComponent) cadConsoleComponent!: CadConsoleComponent;
   @ViewChild(MatTabGroup) infoTabs!: MatTabGroup;
@@ -387,7 +387,7 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
   }
 
   async save() {
-    const {extraData} = this.params || {};
+    const {extraData, query} = this.params || {};
     const data = this.status.cad.data;
     if (extraData) {
       Object.assign(data, extraData);
@@ -395,7 +395,7 @@ export class CadEditorComponent extends ContextMenu(Subscribed()) implements Aft
     if (!(await this.validate())) {
       return;
     }
-    await this.status.saveCad(this.spinnerId);
+    await this.status.saveCad(this.spinnerId, query);
   }
 
   async refresh() {

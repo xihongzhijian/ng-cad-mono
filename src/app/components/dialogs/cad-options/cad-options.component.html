@@ -32,7 +32,7 @@
             </button>
           }
         </div>
-        @if (!data.noImage) {
+        @if (!noImage) {
           <app-image [src]="item.img" [prefix]="filePathUrl"></app-image>
         }
         <div class="option-name toolbar center">

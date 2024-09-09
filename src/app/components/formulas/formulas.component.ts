@@ -4,6 +4,8 @@ import {ViewChildren} from "@angular/core";
 import {Input} from "@angular/core";
 import {Component} from "@angular/core";
 import {timeout} from "@lucilor/utils";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
 import csstype from "csstype";
 import {lastValueFrom, Subject} from "rxjs";
 
@@ -12,7 +14,7 @@ import {lastValueFrom, Subject} from "rxjs";
   templateUrl: "./formulas.component.html",
   styleUrls: ["./formulas.component.scss"],
   standalone: true,
-  imports: []
+  imports: [InputComponent]
 })
 export class FormulasComponent implements AfterViewInit {
   private _formulaInfos: FormulaInfo[] = [];
@@ -75,5 +77,5 @@ export class FormulasComponent implements AfterViewInit {
 
 export interface FormulaInfo {
   keys: {eq: boolean; name: string}[];
-  values: {eq: boolean; name: string}[];
+  values: {eq: boolean; name: string; inputInfo?: InputInfo}[];
 }

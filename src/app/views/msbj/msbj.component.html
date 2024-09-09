@@ -1,45 +1,60 @@
 <div class="content flex-row flex-110">
   <div class="rect-container flex-column">
-    <div class="title flex-row">
-      <span>门扇布局配置</span>
-      <span class="flex-110" style="text-align: center">{{ msbjInfo()?.name }}</span>
-    </div>
-    <div class="rect-area flex-column">
-      <div class="btn-group">
-        <button mat-raised-button color="primary" (click)="submit()">提交</button>
-        @if (!production) {
-          <button mat-raised-button color="primary" (click)="generateRects({resetColors: true})">重新生成矩形</button>
-          <!-- <div>颜色范围</div>
+    <div class="toolbar title flex-row">
+      <span>门扇布局【{{ msbjInfo()?.name }}】配置</span>
+      <button mat-raised-button color="primary" (click)="submit()">提交</button>
+      @if (closable()) {
+        <button mat-raised-button color="primary" (click)="close(true)">提交并关闭</button>
+        <button mat-raised-button color="primary" (click)="close()">关闭</button>
+      }
+      @if (!production) {
+        <button mat-raised-button color="primary" (click)="generateRects({resetColors: true})">重新生成矩形</button>
+        <!-- <div>颜色范围</div>
           <div class="flex-row" style="height: 64px; align-items: flex-end">
             <mat-slider [min]="0" [max]="255" discrete style="width: 300px">
               <input [(ngModel)]="rgbMin" matSliderStartThumb />
               <input [(ngModel)]="rgbMax" matSliderEndThumb />
             </mat-slider>
           </div> -->
-        }
-      </div>
-      <app-msbj-rects [rectInfos]="msbjInfo()?.peizhishuju?.['模块节点']" (selectRect)="currRectInfo.set($event)"></app-msbj-rects>
+      }
+    </div>
+    <div class="rect-area flex-column">
+      <app-msbj-rects
+        [rectInfos]="msbjInfo()?.peizhishuju?.['模块节点']"
+        (selectRect)="selectRect($event)"
+        (generateRectsEnd)="generateRectsEnd()"
+      ></app-msbj-rects>
     </div>
   </div>
   <div class="fenlei-container flex-column flex-110" cdkDropListGroup>
     @for (info of inputInfos(); track $index) {
       <app-input [info]="info"></app-input>
     }
-    <div class="daxiaoguanxi flex-column">
-      <div class="btn-group">
+    <div class="daxiaoguanxi flex-column flex-110">
+      <div class="toolbar">
         <div class="title">默认模块大小关系</div>
-        <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">编辑</button>
-      </div>
-    </div>
-    <ng-scrollbar>
-      <div class="cads flex-row">
-        @for (cad of cads(); track $index) {
-          <div class="cad flex-column">
-            <div class="title center">{{ cad.data.name }}</div>
-            <app-cad-image [id]="cad.data.id" [data]="cad.data" (click)="openCad(cad.data)"></app-cad-image>
-          </div>
+        @if (!msbjInfo()?.isVersion2024) {
+          <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">编辑</button>
         }
       </div>
-    </ng-scrollbar>
+      @if (msbjInfo()?.isVersion2024) {
+        <app-mkdxpz-editor class="flex-110" [data]="mkdxpz()" (dataChange)="onMkdxpzChange($event)"></app-mkdxpz-editor>
+      }
+    </div>
+    @if (!msbjInfo()?.isVersion2024) {
+      <div class="cads-container flex-column">
+        <div class="title">CAD</div>
+        <ng-scrollbar>
+          <div class="cads flex-row">
+            @for (cad of cads(); track $index) {
+              <div class="cad flex-column">
+                <div class="title center">{{ cad.data.name }}</div>
+                <app-cad-image [id]="cad.data.id" [data]="cad.data" (click)="openCad(cad.data)"></app-cad-image>
+              </div>
+            }
+          </div>
+        </ng-scrollbar>
+      </div>
+    }
   </div>
 </div>

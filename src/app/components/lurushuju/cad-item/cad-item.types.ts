@@ -1,3 +1,4 @@
+import {CadCollection} from "@app/cad/collections";
 import {CadItemComponent} from "./cad-item.component";
 
 export interface CadItemButton<T> {
@@ -10,4 +11,10 @@ export const typeOptions = ["按开料模板公式展开", "自动展开+模板"
 export interface CadItemSelectable<T> {
   selected: boolean | undefined;
   onChange: (component: CadItemComponent<T>) => void;
+}
+
+export interface CadItemIsOnlineInfo<T> {
+  collection?: CadCollection;
+  isFetched?: boolean;
+  afterFetch?: (component: CadItemComponent<T>) => void;
 }

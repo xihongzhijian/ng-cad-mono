@@ -1,7 +1,7 @@
+import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoSelect, InputInfoString} from "@modules/input/components/input.types";
 import {difference, isEqual} from "lodash";
-import {CadData} from "packages/cad-viewer/lib";
 import {MrbcjfzHuajian, MrbcjfzInfo, MrbcjfzInfoShowItem, mrbcjfzInfoShowItems, mrbcjfzMsxzItems, MrbcjfzXinghao} from "./mrbcjfz.types";
 
 export class MrbcjfzXinghaoInfo {

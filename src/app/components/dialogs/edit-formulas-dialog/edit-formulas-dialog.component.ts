@@ -26,10 +26,10 @@ export class EditFormulasDialogComponent {
       return;
     }
     const result = this.formulasEditor.submitFormulas();
-    if (!result) {
+    if (result.errors.length > 0) {
       return;
     }
-    this.dialogRef.close(result);
+    this.dialogRef.close(result.formulas);
   }
 
   cancel() {
@@ -43,11 +43,11 @@ export const openEditFormulasDialog = getOpenDialogFunc<EditFormulasDialogCompon
 );
 
 export interface EditFormulasInput {
-  formulas?: Formulas;
-  formulasText?: FormulasEditorComponent["formulasText"];
-  varNames?: FormulasEditorComponent["varNames"];
-  extraInputInfos?: FormulasEditorComponent["extraInputInfos"];
-  required?: boolean;
+  formulas?: ReturnType<FormulasEditorComponent["formulas"]>;
+  formulasText?: ReturnType<FormulasEditorComponent["formulasText"]>;
+  varNames?: ReturnType<FormulasEditorComponent["varNames"]>;
+  extraInputInfos?: ReturnType<FormulasEditorComponent["extraInputInfos"]>;
+  required?: ReturnType<FormulasEditorComponent["required"]>;
 }
 
 export type EditFormulasOutput = Formulas;

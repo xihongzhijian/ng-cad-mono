@@ -1,10 +1,9 @@
-import {ActivatedRoute} from "@angular/router";
 import {Formulas} from "@app/utils/calc";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {HoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {isArray, uniq} from "lodash";
-import {OptionsAll} from "./lurushuju-index/lurushuju-index.types";
+import {OptionsAll} from "./services/lrsj-status.types";
 
 export const getXinghao = (raw: XinghaoRaw | null | undefined) => {
   const result: Xinghao = {名字: "", 产品分类: {}, 显示产品分类: [], ...raw};
@@ -35,19 +34,19 @@ export const updateXinghaoFenleis = (
     if (!Array.isArray(xinghao.产品分类[fenlei])) {
       xinghao.产品分类[fenlei] = [];
     }
-    sortGongyis(xinghao.产品分类[fenlei]);
-    for (const gongyi of xinghao.产品分类[fenlei]) {
-      if (!Array.isArray(gongyi.算料数据)) {
-        gongyi.算料数据 = [];
+    sortZuofas(xinghao.产品分类[fenlei]);
+    for (const zuofa of xinghao.产品分类[fenlei]) {
+      if (!Array.isArray(zuofa.算料数据)) {
+        zuofa.算料数据 = [];
       }
-      for (const slsj of gongyi.算料数据) {
+      for (const slsj of zuofa.算料数据) {
         update算料数据(slsj, 选项要求Options);
       }
     }
   }
 };
 
-export const getGongyi = (raw: 工艺做法 | null | undefined, 选项数据选项: OptionsAll) => {
+export const getZuofa = (raw: 工艺做法 | null | undefined, 选项数据选项: OptionsAll) => {
   const result: 工艺做法 = {
     tableId: -1,
     名字: "",
@@ -73,8 +72,8 @@ export const getGongyi = (raw: 工艺做法 | null | undefined, 选项数据选�
   return result;
 };
 
-export const sortGongyis = (gongyis: 工艺做法[]) => {
-  return gongyis.sort((a, b) => (a.排序 || 0) - (b.排序 || 0));
+export const sortZuofas = (zuofas: 工艺做法[]) => {
+  return zuofas.sort((a, b) => (a.排序 || 0) - (b.排序 || 0));
 };
 
 export const get算料数据 = (raw?: Partial<算料数据> | null) => {
@@ -94,7 +93,7 @@ export const get算料数据 = (raw?: Partial<算料数据> | null) => {
     选项默认值: {},
     门缝配置: {},
     选项要求: {},
-    关闭碰撞检查: false,
+    关闭碰撞检查: true,
     ...raw,
     "包边在外+外开": get算料数据2(raw?.["包边在外+外开"]),
     "包边在外+内开": get算料数据2(raw?.["包边在外+内开"]),
@@ -176,7 +175,11 @@ export interface 输入 {
   可以修改: boolean;
   取值范围: string;
   排序?: number;
+  下单用途?: 输入下单用途;
+  生效条件?: string;
 }
+export const 输入下单用途 = ["输入", "显示计算结果"] as const;
+export type 输入下单用途 = (typeof 输入下单用途)[number];
 
 export type 花件玻璃信息 = ObjectOf<any>;
 
@@ -271,6 +274,7 @@ export interface 算料数据 {
 
 export const menjiaoCadTypes = ["包边在外+外开", "包边在外+内开", "包边在内+外开", "包边在内+内开"] as const;
 export type MenjiaoCadType = (typeof menjiaoCadTypes)[number];
+export const isMenjiaoCadType = (value: string): value is MenjiaoCadType => menjiaoCadTypes.includes(value as MenjiaoCadType);
 export const 企料分体CadKeys = ["分体1", "分体2"] as const;
 export type 企料分体CadKey = (typeof 企料分体CadKeys)[number];
 
@@ -385,19 +389,6 @@ export const 孔位CAD名字对应关系: ObjectOf<string> = {
   锁框: "锁包边",
   铰框: "铰包边",
   顶框: "顶包边"
-};
-
-export const getXinghaoQuery = (route: ActivatedRoute) => {
-  const keys = ["型号", "产品分类", "工艺做法", "门铰锁边铰边", "包边方向", "开启"];
-  const result: ObjectOf<string> = {};
-  for (const key of keys) {
-    const value = route.snapshot.queryParams[key];
-    if (!value) {
-      return null;
-    }
-    result[key] = value;
-  }
-  return result;
 };
 
 export interface SortableItem {

@@ -1,6 +1,12 @@
 :host {
   padding: 20px;
   --active-color: lightgray;
+  --cad-image-width: 200px;
+  --cad-image-height: 100px;
+  --item-image-height: 100px;
+  &.no-scroll {
+    height: auto;
+  }
 }
 
 .bancai {
@@ -36,29 +42,6 @@
 
   .error {
     margin: 3px 0;
-  }
-}
-
-.item-list {
-  flex-wrap: wrap;
-
-  .item {
-    &.active {
-      background-color: var(--active-color);
-    }
-
-    app-image {
-      height: 120px;
-    }
-
-    .title {
-      font-size: 15px;
-      display: flex;
-      align-items: center;
-      .mat-mdc-icon-button {
-        padding: 0;
-      }
-    }
   }
 }
 

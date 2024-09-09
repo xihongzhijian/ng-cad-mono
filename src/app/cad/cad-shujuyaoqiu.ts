@@ -323,3 +323,28 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[], va
     });
   }
 };
+
+export const getCadQueryFields = (yaoqiu?: Cad数据要求 | null) => {
+  const fields = new Set<string>([
+    "_id",
+    "名字",
+    "分类",
+    "分类2",
+    "选项",
+    "条件",
+    "json.id",
+    "json.name",
+    "json.type",
+    "json.type2",
+    "json.options",
+    "json.conditions"
+  ]);
+  for (const item of yaoqiu?.CAD弹窗修改属性 || []) {
+    if (item.cadKey) {
+      fields.add(`json.${item.cadKey}`);
+    } else if (item.key === "展开信息") {
+      fields.add("json.zhankai");
+    }
+  }
+  return Array.from(fields);
+};

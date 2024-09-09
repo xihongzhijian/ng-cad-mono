@@ -1,7 +1,7 @@
 <div class="formulas">
-  @for (info of formulaInfos; track info) {
+  @for (info of formulaInfos; track $index) {
     <div #formula class="formula" [style]="formulaStyles">
-      @for (key of info.keys; track key; let i = $index) {
+      @for (key of info.keys; track i; let i = $index) {
         @if (key.eq && i > 0) {
           <div class="formula-eq"></div>
         }
@@ -10,14 +10,18 @@
         }
         <div class="formula-key" [style]="keyStyles">{{ key.name }}</div>
       }
-      @for (value of info.values; track value) {
+      @for (value of info.values; track $index) {
         @if (value.eq) {
           <div class="formula-eq"></div>
         }
         @if (!value.eq) {
           <div class="formula-neq"></div>
         }
-        <div class="formula-value" [style]="valueStyles">{{ value.name }}</div>
+        @if (value.inputInfo; as info) {
+          <app-input [info]="info"></app-input>
+        } @else {
+          <div class="formula-value" [style]="valueStyles">{{ value.name }}</div>
+        }
       }
     </div>
   }

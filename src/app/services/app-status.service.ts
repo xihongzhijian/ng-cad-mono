@@ -19,7 +19,7 @@ import {
   validateLines
 } from "@app/cad/utils";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
-import {getXinghaoQuery, 算料公式} from "@components/lurushuju/xinghao-data";
+import {算料公式} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {
   CadData,
@@ -40,7 +40,7 @@ import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
-import {clamp, differenceWith} from "lodash";
+import {clamp, differenceWith, isEmpty} from "lodash";
 import {BehaviorSubject, Subject} from "rxjs";
 import {local, remoteHost, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
@@ -331,7 +331,7 @@ export class AppStatusService {
     return data2;
   }
 
-  async saveCad(loaderId?: string): Promise<CadData | null> {
+  async saveCad(loaderId?: string, query?: OpenCadOptions["query"]): Promise<CadData | null> {
     this.saveCadStart$.next();
     this.saveCadLocked$.next(true);
     await timeout(100); // 等待input事件触发
@@ -384,9 +384,9 @@ export class AppStatusService {
     }
     const {hideLineLength} = this.config.getConfig();
     spinner.show(loaderId, {text: `正在保存CAD: ${data.name}`});
-    const xinghaoQuery = getXinghaoQuery(this.route);
-    if (xinghaoQuery) {
-      const params: ObjectOf<any> = {...xinghaoQuery, id: data.id, data: getHoutaiCad(data)};
+    const cadQuery = query || this.getCadQuery();
+    if (cadQuery) {
+      const params: ObjectOf<any> = {...cadQuery, id: data.id, data: getHoutaiCad(data)};
       const resData2 = await this.http.getData<HoutaiCad>("shuju/api/getOrSetCad", params);
       resData = resData2 ? new CadData(resData2.json) : null;
     } else {
@@ -525,10 +525,16 @@ export class AppStatusService {
     if (!id) {
       return;
     }
-    const params = {project: this.project, collection, id};
-    open("index?" + new URLSearchParams(params).toString());
+    const params = {collection, id};
+    this.openInNewTab(["index"], {queryParams: params});
   }
-
+  openMokuaiCadInNewTab(id: string, mokuaiName: string) {
+    if (!id) {
+      return;
+    }
+    const params = {模块: mokuaiName, id};
+    this.openInNewTab(["index"], {queryParams: params});
+  }
   openInNewTab(commands: any[], navigationExtras?: UrlCreationOptions | undefined) {
     if (!navigationExtras) {
       navigationExtras = {};
@@ -610,7 +616,7 @@ export class AppStatusService {
     this.cad数据要求List = cad数据要求Raws.map((v) => new Cad数据要求(v));
     this.isCad数据要求ListFetched = true;
   }
-  getCad数据要求(name: string) {
+  getCad数据要求(name: string | CadData) {
     let result = this.cad数据要求List.find((v) => v.CAD分类 === name);
     if (!result) {
       result = this.cad数据要求List.find((v) => v.CAD分类 === "配件库");
@@ -661,5 +667,25 @@ export class AppStatusService {
   }
   getXuanxiangOptions() {
     return this._xuanxiangOptions || [];
+  }
+
+  getCadQuery() {
+    const keyGroups = [["型号", "产品分类", "工艺做法", "门铰锁边铰边", "包边方向", "开启"], ["模块"]];
+    const queryParams = this.route.snapshot.queryParams;
+    for (const keys of keyGroups) {
+      const result: ObjectOf<string> = {};
+      for (const key of keys) {
+        const value = queryParams[key];
+        if (!value) {
+          continue;
+        }
+        result[key] = value;
+      }
+      if (isEmpty(result)) {
+        continue;
+      }
+      return result;
+    }
+    return null;
   }
 }

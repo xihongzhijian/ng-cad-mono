@@ -1,15 +1,15 @@
 import {getFilepathUrl} from "@app/app.common";
+import {trblItems} from "@app/utils/trbl";
 import {isTypeOf, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo, InputInfoGroup, InputInfoNumber, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "@modules/input/components/input.utils";
 import Color from "color";
 import {DataType, Property} from "csstype";
-import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "../../models/input-info-utils";
 import {pageComponentInfos, PageComponentTypeAny} from "../../models/page-component-infos";
 import {PageComponentForm} from "../../models/page-components/page-component-form";
 import {PageComponentImage} from "../../models/page-components/page-component-image";
 import {PageComponentTextBase} from "../../models/page-components/page-component-text-base";
-import {trblItems} from "../../models/page.utils";
 import {InputGroup} from "./page-component-config2.types";
 
 export const mergeGroups = (groups1: InputGroup[], groups2: InputGroup[]) => {

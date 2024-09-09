@@ -13,11 +13,13 @@
 }
 
 .name {
-  --mdc-text-button-label-text-size: 18px;
-  --mdc-text-button-container-height: auto;
-  --mat-icon-size: 14px;
-  --mdc-icon-button-icon-size: 14px;
   width: 100%;
+  .name-btn {
+    --mdc-text-button-label-text-size: 18px;
+    --mdc-text-button-container-height: auto;
+    --mat-icon-size: 14px;
+    --mdc-icon-button-icon-size: 14px;
+  }
 }
 
 .cads {
@@ -55,6 +57,7 @@
 
     .value {
       white-space: pre-wrap;
+      word-break: break-all;
     }
   }
 

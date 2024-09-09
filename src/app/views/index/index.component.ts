@@ -1,6 +1,5 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
-import {getXinghaoQuery} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {log} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -52,9 +51,9 @@ export class IndexComponent implements OnInit {
       if (errorMessage) {
         await this.message.alert(errorMessage);
       }
-      const xinghaoQuery = getXinghaoQuery(this.route);
-      if (xinghaoQuery) {
-        const data = await this.http.getData<HoutaiCad>("shuju/api/getOrSetCad", {...xinghaoQuery, id});
+      const cadQuery = this.status.getCadQuery();
+      if (cadQuery) {
+        const data = await this.http.getData<HoutaiCad>("shuju/api/getOrSetCad", {...cadQuery, id});
         if (data) {
           this.params = {data: new CadData(data.json), collection, center: true};
         }

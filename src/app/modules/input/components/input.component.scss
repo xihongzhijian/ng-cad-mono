@@ -1,4 +1,37 @@
 :host {
+  &.select {
+    display: flex;
+    padding: 5px 0;
+
+    .label {
+      flex: 0 0 auto;
+      margin-right: 5px;
+      font-size: var(--mdc-list-list-item-label-text-size);
+    }
+
+    mat-selection-list {
+      display: flex;
+      flex-wrap: wrap;
+      flex: 1 1 0;
+      padding: 0;
+
+      mat-list-option {
+        width: auto;
+        padding-left: 0;
+        flex-direction: row-reverse;
+        height: auto;
+        margin-right: 5px;
+      }
+
+      ::ng-deep {
+        .mdc-list-item--with-trailing-radio .mdc-list-item__end {
+          margin-left: 0;
+          margin-right: 3px;
+          --mdc-radio-state-layer-size: 20px;
+        }
+      }
+    }
+  }
   &.color {
     input {
       transition: 0.3s;

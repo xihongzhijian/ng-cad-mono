@@ -4,12 +4,12 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {session, timer} from "@app/app.common";
+import {downloadByString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {downloadByString, selectFiles} from "packages/utils/lib";
 import {Mode} from "vanilla-jsoneditor";
 import {calc, getNum, InputData, OutputData, 优化结果} from "./lvxingcaiyouhua.utils";
 
