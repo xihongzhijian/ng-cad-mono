@@ -682,12 +682,12 @@ export const getLineLengthTextSize = (line: CadLineLike) => {
   const length = line.length;
   if (length > 54) {
     size = 35;
-  } else if (length > 30) {
+  } else if (length >= 15) {
     size = 30;
-  } else if (length > 20) {
-    size = 24;
+  } else if (length >= 10) {
+    size = 25;
   } else {
-    size = 18;
+    size = 20;
   }
   return size;
 };
