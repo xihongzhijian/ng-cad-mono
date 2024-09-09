@@ -20,7 +20,7 @@
       @if (isZhijian()) {
         <button mat-raised-button color="primary" (click)="openHoutaiUrl()">查看型号默认门扇布局</button>
       }
-      <div class="title">{{ xinghao()?.raw?.mingzi }}</div>
+      <div class="title link text" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
     } @else {
       @switch (activeTabName()) {
         @case ("门扇模块") {
@@ -55,11 +55,7 @@
                 >
                   <div style="font-weight: bold">{{ item.key }}</div>
                   @if (item.value?.["选中布局数据"]; as data) {
-                    @if (isFromOrder()) {
-                      <div>布局：{{ data.name }}</div>
-                    } @else {
-                      <div class="link text" appClickStop (click)="openMsbj()">布局：{{ data.name }}</div>
-                    }
+                    <div class="link text" appClickStop (click)="openMsbj()">布局：{{ data.name }}</div>
                   }
                 </div>
               }
@@ -182,12 +178,8 @@
         (click)="selectMokuai(mokuai)"
       ></app-image>
       <div class="flex-row" style="align-items: center">
-        @if (isFromOrder()) {
-          <div class="title center flex-110">{{ getMokuaiTitle2(mokuai) }}</div>
-        } @else {
-          <div class="title center flex-110 link text" (click)="openMokuai(mokuai)">{{ getMokuaiTitle2(mokuai) }}</div>
-          <button mat-icon-button color="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
-        }
+        <div class="title center flex-110 link text" (click)="openMokuai(mokuai)">{{ getMokuaiTitle2(mokuai) }}</div>
+        <button mat-icon-button color="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
       </div>
     </div>
   </div>

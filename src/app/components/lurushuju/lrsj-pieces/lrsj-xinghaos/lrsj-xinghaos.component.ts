@@ -135,12 +135,16 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     let refreshOptions = false;
     const getOptionInput = async (key: string, label: string, multiple?: boolean, options?: {hidden?: boolean}) => {
       const info = await this.getOptionInput(data2, key, label, multiple, options);
-      if (info.optionsDialog) {
-        const onChange = info.optionsDialog.onChange;
-        info.optionsDialog.onChange = (val) => {
-          onChange?.(val);
-          refreshOptions = true;
-        };
+      if (key === "订单流程") {
+        delete info.optionsDialog;
+      } else {
+        if (info.optionsDialog) {
+          const onChange = info.optionsDialog.onChange;
+          info.optionsDialog.onChange = (val) => {
+            onChange?.(val);
+            refreshOptions = true;
+          };
+        }
       }
       return info;
     };

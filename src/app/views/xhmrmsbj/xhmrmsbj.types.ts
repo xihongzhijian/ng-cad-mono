@@ -140,7 +140,7 @@ export interface XhmrmsbjInfoMokuaiNode {
   选中模块?: ZixuanpeijianMokuaiItem;
 }
 
-export const xhmrmsbjTabNames = ["锁边铰边", "门扇模块", "子件更换"] as const;
+export const xhmrmsbjTabNames = ["锁边铰边", "门扇模块"] as const;
 export type XhmrmsbjTabName = (typeof xhmrmsbjTabNames)[number];
 
 export const menshanKeys = ["锁扇正面", "锁扇背面", "铰扇正面", "铰扇背面", "小扇正面", "小扇背面"] as const;

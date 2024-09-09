@@ -92,7 +92,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   @Input() showMuban?: boolean;
   @Input() isOnline?: CadItemIsOnlineInfo<T>;
   @Input() selectable?: CadItemSelectable<T>;
-  @Input() editable?: boolean;
+  @Input() editDisabled?: boolean;
   @Input() events?: {
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
@@ -258,7 +258,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async editCadForm() {
-    if (!this.editable) {
+    if (this.editDisabled) {
       return;
     }
     const {cad, isOnline, yaoqiu} = this;
@@ -715,7 +715,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async onCadImageClick() {
-    if (!this.editable) {
+    if (this.editDisabled) {
       return;
     }
     this.showCadViewer = true;

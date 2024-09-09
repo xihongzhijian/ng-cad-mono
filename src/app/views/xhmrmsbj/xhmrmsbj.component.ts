@@ -54,6 +54,7 @@ import {BancaiListData, TableDataBase, TableUpdateParams} from "@modules/http/se
 import {InputInfo, InputInfoOptions} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {MrbcjfzInfo, MrbcjfzXinghao} from "@views/mrbcjfz/mrbcjfz.types";
 import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
@@ -118,6 +119,7 @@ export class XhmrmsbjComponent implements OnDestroy {
   private message = inject(MessageService);
   private route = inject(ActivatedRoute);
   private spinner = inject(SpinnerService);
+  private status = inject(AppStatusService);
 
   @HostBinding("class") class = "ng-page";
 
@@ -270,7 +272,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.data.set(
       new XhmrmsbjData(
         {
-          vid: 1,
+          vid: id,
           mingzi: "1",
           peizhishuju: JSON.stringify(型号选中门扇布局),
           jiaoshanbujuhesuoshanxiangtong: 铰扇跟随锁扇 ? 1 : 0,
@@ -567,7 +569,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     if (mokuai) {
       const node = this.activeMokuaiNode();
       const keyMap = {总宽: "totalWidth", 总高: "totalHeight"} as const;
-      if (node) {
+      if (node && !this.data()?.isVersion2024) {
         const name = node.层名字;
         for (const key in keyMap) {
           const key3 = name + key;
@@ -1070,7 +1072,11 @@ export class XhmrmsbjComponent implements OnDestroy {
     if (!msbj) {
       return;
     }
-    this.openedMsbj.set(msbj);
+    if (this.isFromOrder()) {
+      this.status.openInNewTab(["/门扇布局"], {queryParams: {id: msbj.vid}});
+    } else {
+      this.openedMsbj.set(msbj);
+    }
   }
   closeMsbj({isSubmited}: MsbjCloseEvent) {
     this.openedMsbj.set(null);
@@ -1086,7 +1092,12 @@ export class XhmrmsbjComponent implements OnDestroy {
       return;
     }
     const mokuai2 = await this.bjmkStatus.fetchMokuai(mokuai.id);
-    if (mokuai2) {
+    if (!mokuai2) {
+      return;
+    }
+    if (this.isFromOrder()) {
+      this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: mokuai2.id}});
+    } else {
       this.openedMokuai.set({mokuai0: mokuai, mokuai: mokuai2, bancaiListData});
     }
   }
@@ -1183,5 +1194,13 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.wmm.postMessage("setMkdxpzStart", {mkdxpz, menshan: this.activeMenshanKey()});
     await this.wmm.waitForMessage("setMkdxpzEnd");
     this.wmm.postMessage("requestData");
+  }
+
+  openXhmrmsbj() {
+    const data = this.data();
+    if (!data || !this.isFromOrder()) {
+      return;
+    }
+    this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: data.vid}});
   }
 }

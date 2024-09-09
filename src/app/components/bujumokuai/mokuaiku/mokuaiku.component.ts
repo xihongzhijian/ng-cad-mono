@@ -17,6 +17,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTreeModule} from "@angular/material/tree";
+import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal} from "@app/app.common";
 import {environment} from "@env";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
@@ -60,6 +61,7 @@ export class MokuaikuComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);
   private http = inject(CadDataService);
   private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
 
   @HostBinding("class") class = ["ng-page"];
 
@@ -79,6 +81,16 @@ export class MokuaikuComponent implements OnInit {
     if (!this.production) {
       this.loadInfo();
     }
+    this.route.queryParams.subscribe((params) => {
+      const {mokuaiId} = params;
+      if (mokuaiId) {
+        const mokuai = this.bjmkStatus.mokuais().find((v) => v.id === +mokuaiId);
+        if (mokuai) {
+          this.dataList()?.updateActiveNavNode(mokuai?.type);
+          this.enterMokuai(mokuai);
+        }
+      }
+    });
   }
 
   navDataName = "模块库分类";

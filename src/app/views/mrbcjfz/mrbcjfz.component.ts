@@ -281,6 +281,12 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
             cadsToRemove.push(item);
           }
         });
+        const cads = this.inputData?.cads;
+        if (Array.isArray(cads)) {
+          for (const cad of cads) {
+            this.cads[cad.id] = {id: cad.id, data: cad};
+          }
+        }
         this.huajians = {};
         const huajiansToRemove: MrbcjfzHuajianInfo[] = [];
         data.huajians.map((v) => {

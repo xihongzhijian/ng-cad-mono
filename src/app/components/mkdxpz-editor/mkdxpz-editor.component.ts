@@ -45,22 +45,7 @@ export class MkdxpzEditorComponent {
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<MkdxpzEditorCloseEvent>({alias: "close"});
 
-  varNames = computed(() => {
-    const varNames = this.bjmkStatus.varNames();
-    const varNameItem = this.bjmkStatus.varNames().find((v) => v.门扇位置 === this.menshanweizhi());
-    const data = this.data();
-    if (varNameItem) {
-      const group = varNameItem.nameGroups?.[0];
-      if (group) {
-        for (const name in data.算料公式) {
-          if (!group.varNames.includes(name)) {
-            group.varNames.push(name);
-          }
-        }
-      }
-    }
-    return varNames;
-  });
+  varNames = this.bjmkStatus.varNames;
 
   formulas = signal<Formulas>({});
   formulasInEff = effect(() => this.formulas.set(this.data().算料公式), {allowSignalWrites: true});

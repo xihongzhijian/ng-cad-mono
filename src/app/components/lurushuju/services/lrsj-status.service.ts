@@ -1,11 +1,11 @@
 import {computed, effect, inject, Injectable, OnDestroy, signal, untracked} from "@angular/core";
-import {session, splitOptions} from "@app/app.common";
+import {getFilepathUrl, session, splitOptions} from "@app/app.common";
 import {VarNames} from "@components/var-names/var-names.types";
 import {getVarNames} from "@components/var-names/var-names.utils";
 import {environment} from "@env";
 import {ObjectOf, queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {BancaiListData} from "@modules/http/services/cad-data.service.types";
+import {BancaiListData, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
@@ -665,14 +665,21 @@ export class LrsjStatusService implements OnDestroy {
       if (this._huajiansCache[cacheKey]) {
         this.huajians.set(this._huajiansCache[cacheKey]);
       } else {
-        const huajians = await this.http.queryMySql<MrbcjfzHuajian>(
-          {
-            table: "p_huajian",
-            fields: ["vid", "mingzi", "xiaotu", "shihuajian"],
-            filter: {where_in: {vid: ids}}
-          },
-          {spinner: false}
-        );
+        const result = await this.http.getOptions<
+          OptionsDataData & {shihuajian?: number; bangdingqianbankuanshicad?: string; bangdinghoubankuanshicad?: string}
+        >({
+          name: "花件",
+          filter: {where_in: {vid: ids}},
+          fields: ["shihuajian", "bangdingqianbankuanshicad", "bangdinghoubankuanshicad"]
+        });
+        const huajians = (result?.data || []).map<MrbcjfzHuajian>((v) => ({
+          vid: v.vid,
+          mingzi: v.name,
+          xiaotu: getFilepathUrl(v.img),
+          shihuajian: v.shihuajian,
+          bangdingqianbankuanshicad: v.bangdingqianbankuanshicad,
+          bangdinghoubankuanshicad: v.bangdinghoubankuanshicad
+        }));
         this.huajians.set(huajians);
         this._huajiansCache[cacheKey] = huajians;
       }

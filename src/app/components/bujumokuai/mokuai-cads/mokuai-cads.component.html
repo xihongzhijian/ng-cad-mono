@@ -22,7 +22,7 @@
           [hideButtons]="!cadsEditMode()"
           [customInfo]="{index: i}"
           [isOnline]="cadsIsOnline[cad.id]"
-          [editable]="cadItemEditable()"
+          [editDisabled]="!cadItemEditable()"
           (afterEditCad)="afterEditCad()"
           (click)="clickCad(i)"
         ></app-cad-item>
