@@ -11,6 +11,7 @@ import {
   input,
   model,
   OnInit,
+  output,
   signal,
   untracked,
   viewChild
@@ -33,12 +34,13 @@ import {cloneDeep, debounce} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom} from "rxjs";
 import {v4} from "uuid";
-import {DataListItem, DataListNavData, DataListNavNodeRaw} from "./data-list.types";
+import {DataListItem, DataListNavData, DataListNavNameChangeEvent, DataListNavNodeRaw} from "./data-list.types";
 import {
   DataListNavNode,
   findActiveDataListNavNode,
   getDataListNavNodeList,
   getDataListNavNodePath,
+  getDataListNavNodesFlat,
   sortDataListNavNodeList,
   updateDataListNavNodeList
 } from "./data-list.utils";
@@ -73,6 +75,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   items = model<T[]>([]);
   activeNavNode = model<DataListNavNode | null>(null);
   navEditMode = model(false);
+  navNameChange = output<DataListNavNameChangeEvent>();
 
   production = environment.production;
   _inited$ = new BehaviorSubject(false);
@@ -149,7 +152,11 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     sortDataListNavNodeList(data);
     updateDataListNavNodeList(data, this.itemsAll());
     this.navDataSource.data = data;
-    this.updateActiveNavNode();
+    const activeNavNode = this.activeNavNode();
+    if (activeNavNode) {
+      this.activeNavNode.set(null);
+      this.updateActiveNavNode(activeNavNode.name);
+    }
     await this.http.mongodbUpdate(this._navCollection, {_id: this._navDataId, data: data.map((node) => node.export())});
   }
   filterNavNodes() {
@@ -180,13 +187,34 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   }
 
   async getNavNodeItem(data?: DataListNavNode) {
+    const id = data ? data.id : null;
     if (data) {
       data = cloneDeep(data);
     } else {
       data = new DataListNavNode({id: v4(), name: "", children: []});
     }
+    const names: string[] = [];
+    for (const node of getDataListNavNodesFlat(this.navDataSource.data)) {
+      if (!id || node.id !== id) {
+        names.push(node.name);
+      }
+    }
     const form: InputInfo<DataListNavNode>[] = [
-      {type: "string", label: "名字", model: {data, key: "name"}, validators: Validators.required},
+      {
+        type: "string",
+        label: "名字",
+        model: {data, key: "name"},
+        validators: [
+          Validators.required,
+          (control) => {
+            const val = control.value;
+            if (names.includes(val)) {
+              return {名字不能重复: true};
+            }
+            return null;
+          }
+        ]
+      },
       {type: "number", label: "排序", model: {data, key: "order"}}
     ];
     const result = await this.message.form(form);
@@ -217,8 +245,13 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   async editNavNode(node: DataListNavNode) {
     const node2 = await this.getNavNodeItem(node);
     if (node2) {
+      const nameOld = node.name;
       Object.assign(node, node2);
+      const nameNew = node.name;
       await this.setNavNodes();
+      if (nameOld !== nameNew) {
+        this.navNameChange.emit({before: nameOld, after: nameNew});
+      }
     }
   }
   async removeNavNode(node: DataListNavNode) {

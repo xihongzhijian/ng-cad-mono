@@ -33,7 +33,7 @@ import {XinghaoOverviewComponent} from "@views/xinghao-overview/xinghao-overview
 export const routesInfo: (Route & {path: string})[] = [
   {path: "index", component: IndexComponent},
   {path: "录入数据", component: LurushujuIndexComponent, title: "录入数据"},
-  {path: "布局模块", component: BujumokuaiIndexComponent, title: "布局模块"},
+  {path: "布局模块", component: BujumokuaiIndexComponent, title: "模块库"},
   {path: "work-space", component: WorkSpaceComponent, title: "我的工作台"},
   {path: "custom-page", component: CustomPageIndexComponent, title: "自定义报表"},
   {path: "print-cad", component: PrintCadComponent, title: "打印CAD"},

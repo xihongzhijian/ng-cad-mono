@@ -1,5 +1,5 @@
 import {CdkDrag} from "@angular/cdk/drag-drop";
-import {Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
@@ -16,21 +16,37 @@ import {routesInfo} from "./routing/routes-info";
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
   standalone: true,
-  imports: [RouterOutlet, SpinnerComponent, CdkDrag, MatIconModule, MatMenuModule, MessageTestComponent]
+  imports: [RouterOutlet, SpinnerComponent, CdkDrag, MatIconModule, MatMenuModule, MessageTestComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
+  private dialog = inject(MatDialog);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private status = inject(AppStatusService);
+
   title = "ng-cad2";
   loaderText = "";
   isProd = environment.production;
-  routesInfo = routesInfo;
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private status: AppStatusService,
-    private message: MessageService,
-    private dialog: MatDialog
-  ) {}
+  routesInfo = computed(() =>
+    routesInfo.map((routeInfo) => {
+      const {title, path} = routeInfo;
+      let title2 = "";
+      if (typeof title === "function") {
+        const title3 = (title as ResolveFn<string>)(this.route.snapshot, this.router.routerState.snapshot);
+        if (typeof title3 === "string") {
+          title2 = title3;
+        }
+      } else {
+        title2 = title || path;
+      }
+      if (!title2) {
+        title2 = path;
+      }
+      return {...routeInfo, title2};
+    })
+  );
 
   getRouteTitle(routeInfo: (typeof routesInfo)[number]) {
     const {title, path} = routeInfo;
@@ -68,7 +84,7 @@ export class AppComponent {
     }
   }
 
-  navigate(routeInfo: (typeof this.routesInfo)[number]) {
+  navigate(routeInfo: (typeof routesInfo)[number]) {
     this.dialog.closeAll();
     this.router.navigate([routeInfo.path], {queryParamsHandling: "merge"});
   }

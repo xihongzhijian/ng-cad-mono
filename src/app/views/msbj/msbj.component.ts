@@ -8,6 +8,7 @@ import {
   HostBinding,
   inject,
   input,
+  model,
   output,
   signal,
   viewChild
@@ -62,6 +63,7 @@ export class MsbjComponent {
   tableIn = input("", {alias: "table"});
   idIn = input(0, {alias: "id"});
   dataFieldIn = input("", {alias: "dataField"});
+  msbjInfoModel = model(null as MsbjInfo | null, {alias: "msbjInfo"});
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<MsbjCloseEvent>({alias: "close"});
 
@@ -79,22 +81,31 @@ export class MsbjComponent {
 
   refreshEff = effect(() => this.refresh(), {allowSignalWrites: true});
   async refresh() {
-    const {table: table0 = "", id: id0 = "", field: field0} = this.route.snapshot.queryParams;
-    const id = this.idIn() || Number(id0);
-    if (!(id > 0)) {
-      return;
+    let msbjInfo: MsbjInfo | null = null;
+    const msbjInfoIn = this.msbjInfoModel();
+    if (msbjInfoIn) {
+      msbjInfo = msbjInfoIn;
+    } else {
+      const {table: table0 = "", id: id0 = "", field: field0} = this.route.snapshot.queryParams;
+      const id = this.idIn() || Number(id0);
+      if (!(id > 0)) {
+        return;
+      }
+      const field = this.dataFieldIn() || field0 || "peizhishuju";
+      const table = this.tableIn() || table0 || "p_menshanbuju";
+      this.table.set(table);
+      this.dataField.set(field === "peizhishuju" ? field : "menshanbujumorenfenlei");
+      const msbjData = await this.http.queryMySql<MsbjData>({table, filter: {where: {vid: id}}});
+      if (msbjData[0]) {
+        msbjInfo = new MsbjInfo(msbjData[0]);
+      }
     }
-    const field = this.dataFieldIn() || field0 || "peizhishuju";
-    const table = this.tableIn() || table0 || "p_menshanbuju";
-    this.table.set(table);
-    this.dataField.set(field === "peizhishuju" ? field : "menshanbujumorenfenlei");
-    const msbjData = await this.http.queryMySql<MsbjData>({table, filter: {where: {vid: id}}});
-    if (msbjData[0]) {
-      this.msbjInfo.set(new MsbjInfo(msbjData[0]));
-      if (this.msbjInfo()?.isVersion2024) {
+    if (msbjInfo) {
+      this.msbjInfo.set(msbjInfo);
+      if (msbjInfo.isVersion2024) {
         this.cads.set([]);
       } else {
-        const getCadResult = await this.http.getCad({collection: "cad", options: {门扇布局: msbjData[0].mingzi}});
+        const getCadResult = await this.http.getCad({collection: "cad", options: {门扇布局: msbjInfo.name}});
         this.cads.set(getCadResult.cads.map<ReturnType<MsbjComponent["cads"]>[number]>((data) => ({data})));
       }
     } else {
@@ -220,6 +231,7 @@ export class MsbjComponent {
 
     msbjInfo.peizhishuju.模块节点 = rectInfos;
     data[this.dataField()] = JSON.stringify(msbjInfo.peizhishuju);
+    this.msbjInfo.set(cloneDeep(msbjInfo));
     await this.http.tableUpdate({table, data});
     this.isSubmited.set(true);
   }

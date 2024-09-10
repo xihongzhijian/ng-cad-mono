@@ -1,131 +1,16 @@
-<div class="flex-row flex-110">
-  <div class="flex-column">
-    @for (info of menshanInputInfos(); track $index) {
-      <app-input [info]="info"></app-input>
+<ng-scrollbar>
+  <div class="items no-items-per-row">
+    @for (msbj of msbjs(); track $index) {
+      <div class="item link" (click)="openMsbj(msbj)">
+        <app-image [src]="msbj.xiaoguotu" [prefix]="imgPrefix"></app-image>
+        <div class="text short" [matTooltip]="msbj.name">{{ msbj.name }}</div>
+      </div>
     }
-    <mat-divider class="placeholder"></mat-divider>
-    <ng-scrollbar>
-      <div class="menshan-options flex-column">
-        @for (item of menshanbujuInfos(); track $index) {
-          <div
-            class="menshan-option flex-column"
-            [class]="{active: activeMenshanKey() === item.key}"
-            (click)="activeMenshanKey.set(item.key)"
-          >
-            <div style="font-weight: bold">{{ item.key }}</div>
-            @if (item.value["选中布局数据"]) {
-              <div>布局：{{ item.value["选中布局数据"].name }}</div>
-            }
-          </div>
-        }
-      </div>
-    </ng-scrollbar>
   </div>
-  <mat-divider vertical></mat-divider>
-  <div class="flex-column flex-110">
-    <div class="toolbar right">
-      <button mat-raised-button color="primary" (click)="save()">保存</button>
-      <button mat-raised-button color="primary" (click)="saveAs()">另存为</button>
-    </div>
-    <div class="buju-infos flex-row flex-110">
-      <div class="buju-basic flex-row">
-        <div class="item flex-110">
-          <app-msbj-rects [rectInfos]="activeMsbjRectInfos()" (selectRect)="selectRect($event)"></app-msbj-rects>
-          <div class="toolbar center">
-            <button mat-raised-button color="primary" (click)="selectMsbj()">更换布局</button>
-          </div>
-        </div>
-        <div class="item flex-110">
-          @if (activeMsbj()?.xiaoguotu; as src) {
-            <app-image [src]="src" [prefix]="imgPrefix"></app-image>
-          }
-          <div class="toolbar center">
-            <button mat-raised-button disabled style="opacity: 0">更换布局</button>
-          </div>
-        </div>
-      </div>
-      <div class="buju-details flex-column">
-        <div class="flex-row flex-110">
-          <div class="buju-bancais item">
-            @for (bancai of xinghaoBancais(); track $index) {
-              <div class="buju-bancai-text text long">{{ bancai.title }}</div>
-            }
-            <ng-scrollbar style="width: 100%">
-              @for (info of xinghaoBcfzInputInfos(); track $index) {
-                <app-input [info]="info"></app-input>
-              }
-            </ng-scrollbar>
-          </div>
-          <div class="flex-column flex-110">
-            <div class="title">模块功能</div>
-            <div class="box flex-column flex-110">
-              <ng-scrollbar>
-                @for (group of mokuaiInputInfos(); track $index) {
-                  <div class="inputs">
-                    @for (info of group.infos; track $index) {
-                      <app-input [info]="info"></app-input>
-                    }
-                  </div>
-                }
-              </ng-scrollbar>
-            </div>
-          </div>
-        </div>
-        <div class="flex-column flex-110">
-          <div class="title center">模块大小</div>
-          <div class="box flex-110">
-            <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">编辑</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="buju-bottom flex-column flex-110">
-      <div class="title">模块选择</div>
-      <div class="box flex-row">
-        <div class="buju-mokuais flex-column">
-          <div class="toolbar">
-            <app-input class="flex-110" [info]="mokuaiQueryInputInfo()"></app-input>
-          </div>
-          <ng-scrollbar>
-            <div class="items no-items-per-row">
-              @for (mokuai of mokuais(); track $index) {
-                <div class="item">
-                  <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix"></app-image>
-                  <div class="mingzi">{{ mokuai.name }}</div>
-                  <div class="toolbar compact center">
-                    <button mat-button color="primary">编辑</button>
-                    <button mat-button color="primary">复制</button>
-                    <button mat-button color="primary">删除</button>
-                  </div>
-                </div>
-              }
-            </div>
-          </ng-scrollbar>
-        </div>
-        <mat-divider vertical></mat-divider>
-        <div class="buji-xinghao-cads flex-column flex-110">
-          <div class="title">型号CAD</div>
-          <div class="toolbar">
-            <app-input class="flex-110" [info]="xinghaoCadQueryInputInfo()"></app-input>
-          </div>
-          <ng-scrollbar>
-            <div class="xinghao-cads items no-items-per-row">
-              @for (cad of xinghaoCads(); track $index) {
-                <app-cad-item
-                  class="item"
-                  [cad]="cad"
-                  [buttons]="[]"
-                  [customInfo]="{}"
-                  [yaoqiu]="xinghaoCadYaoqiu()"
-                  [cadWidth]="200"
-                  [cadHeight]="100"
-                  [isOnline]="xinghaoCadsIsOnline[cad.id]"
-                ></app-cad-item>
-              }
-            </div>
-          </ng-scrollbar>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+</ng-scrollbar>
+
+@if (openedMsbj(); as openedMsbj) {
+  <app-floating-dialog [maximized]="true" noTitle>
+    <app-msbj [msbjInfo]="openedMsbj" closable (close)="closeMsbj($event)"></app-msbj>
+  </app-floating-dialog>
+}

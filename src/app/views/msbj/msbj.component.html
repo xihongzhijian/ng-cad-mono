@@ -2,10 +2,11 @@
   <div class="rect-container flex-column">
     <div class="toolbar title flex-row">
       <span>门扇布局【{{ msbjInfo()?.name }}】配置</span>
-      <button mat-raised-button color="primary" (click)="submit()">提交</button>
       @if (closable()) {
-        <button mat-raised-button color="primary" (click)="close(true)">提交并关闭</button>
-        <button mat-raised-button color="primary" (click)="close()">关闭</button>
+        <button mat-raised-button color="primary" (click)="close(true)">确定</button>
+        <button mat-raised-button color="primary" (click)="close()">取消</button>
+      } @else {
+        <button mat-raised-button color="primary" (click)="submit()">提交</button>
       }
       @if (!production) {
         <button mat-raised-button color="primary" (click)="generateRects({resetColors: true})">重新生成矩形</button>

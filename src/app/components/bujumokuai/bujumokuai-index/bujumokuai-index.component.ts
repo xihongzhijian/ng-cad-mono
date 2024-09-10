@@ -5,7 +5,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {BujuComponent} from "../buju/buju.component";
 import {MokuaiCadsComponent} from "../mokuai-cads/mokuai-cads.component";
 import {MokuaikuComponent} from "../mokuaiku/mokuaiku.component";
-import {BjmkPages} from "./bujumokuai-index.types";
+import {bjmkPageNames, BjmkPages} from "./bujumokuai-index.types";
 
 @Component({
   selector: "app-bujumokuai-index",
@@ -31,7 +31,7 @@ export class BujumokuaiIndexComponent implements OnInit {
     });
   }
 
-  pages = signal<BjmkPages[]>([{name: "布局"}, {name: "配件CAD"}, {name: "模块库"}]);
+  pages = signal<BjmkPages[]>(bjmkPageNames.map((name) => ({name})));
   pageIndex = signal<number>(0);
   page = computed(() => this.pages()[this.pageIndex() - 1]);
   pageIndexEff = effect(() => {

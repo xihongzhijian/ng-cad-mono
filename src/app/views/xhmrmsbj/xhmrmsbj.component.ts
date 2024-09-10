@@ -127,13 +127,13 @@ export class XhmrmsbjComponent implements OnDestroy {
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<XhmrmsbjCloseEvent>({alias: "close"});
 
+  msbjs = this.bjmkStatus.msbjs;
   table = signal("");
   id = signal(-1);
   isFromOrder = signal(false);
   tableData = signal<XhmrmsbjTableData | null>(null);
   data = signal<XhmrmsbjData | null>(null);
   fenleis: TableDataBase[] = [];
-  msbjs = signal<MsbjInfo[]>([]);
   step1Data: Step1Data = {options: {}, typesInfo: {}};
   mokuais: ZixuanpeijianMokuaiItem[] = [];
   xinghao = signal<MrbcjfzXinghaoInfo | null>(null);
@@ -231,7 +231,7 @@ export class XhmrmsbjComponent implements OnDestroy {
       this.isFromOrder.set(true);
     }
     this.fenleis = await this.http.queryMySql<TableDataBase>({table: "p_gongnengfenlei", fields: ["vid", "mingzi"]});
-    await this.fetchMsbjs();
+    await this.bjmkStatus.fetchMsbjs(true);
     this.bancaiListData = await this.http.getBancaiList();
     if (!this.isFromOrder()) {
       const tableData = this.tableData();
@@ -256,11 +256,6 @@ export class XhmrmsbjComponent implements OnDestroy {
 
   refreshData() {
     this.data.update((v) => (v ? v.clone() : null));
-  }
-
-  async fetchMsbjs() {
-    const menshanbujus = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
-    this.msbjs.set(menshanbujus.map((item) => new MsbjInfo(item, this.getNode2rectData())));
   }
 
   async requestData(data: any) {
@@ -1079,9 +1074,10 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
   }
   closeMsbj({isSubmited}: MsbjCloseEvent) {
+    const openedMsbj = this.openedMsbj();
     this.openedMsbj.set(null);
-    if (isSubmited) {
-      this.fetchMsbjs();
+    if (isSubmited && openedMsbj) {
+      this.bjmkStatus.refreshMsbjs([openedMsbj]);
     }
   }
 

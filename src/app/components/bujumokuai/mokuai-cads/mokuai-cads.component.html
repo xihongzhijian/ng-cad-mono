@@ -5,6 +5,7 @@
   [itemsAll]="cadsAll()"
   [(items)]="cads"
   [(activeNavNode)]="activeNavNode"
+  (navNameChange)="onNavNameChange($event)"
 >
   <div class="toolbar" appDataListToolbar>
     <button mat-raised-button [color]="cadsEditMode() ? 'accent' : 'primary'" (click)="toggleCadsEditMode()">编辑</button>

@@ -21,6 +21,7 @@ import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal} from "@app/app.common";
 import {environment} from "@env";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
+import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@modules/data-list/data-list.module";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
@@ -100,6 +101,18 @@ export class MokuaikuComponent implements OnInit {
   mokuais = signal<MokuaiItem[]>([]);
   imgPrefix = this.bjmkStatus.imgPrefix;
   dataList = viewChild(DataListComponent);
+  async onNavNameChange({before, after}: DataListNavNameChangeEvent) {
+    const success = await this.http.updateItemType("p_peijianmokuai", "fenlei", before, after);
+    if (!success) {
+      return;
+    }
+    for (const mokuai of this.mokuaisAll()) {
+      if (mokuai.type === before) {
+        mokuai.type = after;
+      }
+    }
+    this.bjmkStatus.refreshMokuais();
+  }
 
   mokuaiEditMode = signal(false);
   toggleMokuaiEditMode() {

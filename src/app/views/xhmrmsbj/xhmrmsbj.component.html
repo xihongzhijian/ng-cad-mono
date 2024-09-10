@@ -34,6 +34,9 @@
   </div>
 </div>
 @switch (activeTabName()) {
+  @case ("锁边铰边") {
+    锁边铰边
+  }
   @case ("门扇模块") {
     <div class="flex-row flex-110">
       <div class="flex-column">
@@ -68,7 +71,7 @@
         @if (!isFromOrder()) {
           <div class="xinghao-name title">{{ xinghao()?.raw?.mingzi }}</div>
         }
-        <div class="flex-row flex-110">
+        <div class="flex-row flex-110" style="max-height: 320px">
           <div class="flex-column flex-110">
             <app-msbj-rects
               [rectInfos]="activeMsbj()?.peizhishuju?.['模块节点']"
@@ -187,7 +190,7 @@
 
 @if (openedMsbj(); as openedMsbj) {
   <app-floating-dialog [maximized]="true" noTitle>
-    <app-msbj #msbj [id]="openedMsbj.vid" closable (close)="closeMsbj($event)"></app-msbj>
+    <app-msbj #msbj [msbjInfo]="openedMsbj" closable (close)="closeMsbj($event)"></app-msbj>
   </app-floating-dialog>
 }
 

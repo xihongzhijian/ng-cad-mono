@@ -11,6 +11,7 @@
     [itemsAll]="mokuaisAll()"
     [(items)]="mokuais"
     [(activeNavNode)]="mokuaiActiveNavNode"
+    (navNameChange)="onNavNameChange($event)"
   >
     <div class="toolbar" appDataListToolbar>
       <button mat-raised-button [color]="mokuaiEditMode() ? 'accent' : 'primary'" (click)="toggleMokuaiEditMode()">编辑</button>

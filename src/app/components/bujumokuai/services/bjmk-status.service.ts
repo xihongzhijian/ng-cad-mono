@@ -11,6 +11,8 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {MsbjData} from "@views/msbj/msbj.types";
+import {MsbjInfo} from "@views/msbj/msbj.utils";
 import {cloneDeep} from "lodash";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
 import {getEmptyMokuaiItem} from "../mokuai-item/mokuai-item.utils";
@@ -57,8 +59,13 @@ export class BjmkStatusService {
     this._cadsCache = cads;
     return cads;
   }
-  refreshCads() {
-    this._cads.update((v) => [...v]);
+  refreshCads(updateCads?: CadData[]) {
+    const cads: CadData[] = [];
+    for (const cad of this._cads()) {
+      const cad2 = updateCads?.find((v) => v.id === cad.id);
+      cads.push(cad2 || cad);
+    }
+    this._cads.set(cads);
   }
 
   private _mokuais = signal<MokuaiItem[]>([]);
@@ -198,5 +205,27 @@ export class BjmkStatusService {
       await this.fetchMokuais(true);
     }
     return result;
+  }
+
+  private _msbjs = signal<MsbjInfo[]>([]);
+  private _msbjsCache: MsbjInfo[] | null = null;
+  msbjs = computed(() => this._msbjs());
+  async fetchMsbjs(force?: boolean) {
+    if (!force && this._msbjsCache) {
+      return this._msbjsCache;
+    }
+    const result = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
+    const msbjs = result.map((v) => new MsbjInfo(v));
+    this._msbjs.set(msbjs);
+    this._msbjsCache = msbjs;
+    return msbjs;
+  }
+  refreshMsbjs(updateMsbjs?: MsbjInfo[]) {
+    const msbjs: MsbjInfo[] = [];
+    for (const msbj of this._msbjs()) {
+      const msbj2 = updateMsbjs?.find((v) => v.vid === msbj.vid);
+      msbjs.push(msbj2 || msbj);
+    }
+    this._msbjs.set(msbjs);
   }
 }

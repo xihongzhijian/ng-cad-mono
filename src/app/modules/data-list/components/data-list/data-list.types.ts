@@ -18,3 +18,8 @@ export interface DataListItem {
   name: string;
   type: string;
 }
+
+export interface DataListNavNameChangeEvent {
+  before: string;
+  after: string;
+}

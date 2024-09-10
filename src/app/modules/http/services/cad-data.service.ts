@@ -406,4 +406,8 @@ export class CadDataService extends HttpService {
   async getMongoId(options?: HttpOptions) {
     return await this.getData<string>("ngcad/getMongoId", {}, options);
   }
+
+  async updateItemType(table: string, field: string, typeOld: string, typeNew: string, options?: HttpOptions) {
+    return await this.getData<boolean>("ngcad/updateItemType", {table, field, typeOld, typeNew}, options);
+  }
 }

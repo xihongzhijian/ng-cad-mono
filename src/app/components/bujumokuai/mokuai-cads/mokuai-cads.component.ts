@@ -28,6 +28,7 @@ import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
+import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@modules/data-list/data-list.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -83,6 +84,18 @@ export class MokuaiCadsComponent implements OnInit {
     ];
     return buttons;
   });
+  async onNavNameChange({before, after}: DataListNavNameChangeEvent) {
+    const success = await this.http.updateItemType(this.bjmkStatus.collection, "分类", before, after);
+    if (!success) {
+      return;
+    }
+    for (const cad of this.cads()) {
+      if (cad.type === before) {
+        cad.type = after;
+      }
+    }
+    this.bjmkStatus.refreshCads();
+  }
 
   dataList = viewChild(DataListComponent);
   selectedCadsScrollbar = viewChild<NgScrollbar>("selectedCadsScrollbar");

@@ -164,3 +164,12 @@ export const getDataListNavNodePath = (nodes: DataListNavNode[], type: string, p
   }
   return path;
 };
+
+export const getDataListNavNodesFlat = function* (nodes: DataListNavNode[]): Generator<DataListNavNode> {
+  for (const node of nodes) {
+    yield node;
+    if (node.children) {
+      yield* getDataListNavNodesFlat(node.children);
+    }
+  }
+};
