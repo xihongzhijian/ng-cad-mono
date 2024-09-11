@@ -270,7 +270,9 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
         }
         const {type2, suanliaogongshi, gongshishuru} = 选中模块;
         for (const [k, v] of gongshishuru) {
-          suanliaogongshi[k] = v;
+          if (v) {
+            suanliaogongshi[k] = v;
+          }
         }
         const calcResult = await this.calc.calcFormulas(suanliaogongshi, vars);
         const title = [menshanKey, type2].join("-");
