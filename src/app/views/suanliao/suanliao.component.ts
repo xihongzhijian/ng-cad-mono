@@ -125,9 +125,9 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       const formulas: ObjectOf<string> = {};
       const {模块大小关系, 模块大小配置} = 选中布局数据 || {};
       if (模块大小配置) {
-        const mokauiFormulas = {...模块大小配置.算料公式};
+        const mokauiFormulas = {...模块大小配置.算料公式, ...模块大小配置.vars};
         replaceMenshanName(门扇, mokauiFormulas);
-        const mokuaiVarsResult = await this.calc.calcFormulas(mokauiFormulas, materialResult, {title: "计算模块大小配置"});
+        const mokuaiVarsResult = await this.calc.calcFormulas(mokauiFormulas, materialResult, {title: `【${门扇}】计算模块大小配置`});
         Object.assign(formulas, mokauiFormulas);
         mokuaiVars[门扇] = mokuaiVarsResult?.succeedTrim || {};
         if (!mokuaiVarsResult?.fulfilled) {

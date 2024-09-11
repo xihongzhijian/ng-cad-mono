@@ -29,6 +29,7 @@ export type GongshiObj = ObjectOf<any>;
 export interface 模块大小配置 {
   算料公式: Formulas;
   输入显示: 输入[];
+  vars?: Formulas;
 }
 
 export type MsbjSelectRectEvent = {info: MsbjRectInfo | null};

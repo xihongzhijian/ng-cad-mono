@@ -427,15 +427,20 @@ export class XhmrmsbjComponent implements OnDestroy {
         return;
       }
       if (msbjInfo.选中布局数据) {
-        const gongshiObj = msbjInfo.选中布局数据.模块大小关系 || {};
-        if (!gongshiObj.门扇调整) {
-          gongshiObj.门扇调整 = Object.values(gongshiObj)[0];
+        const {模块大小关系, 模块大小配置} = msbjInfo.选中布局数据;
+        if (模块大小配置) {
+          this.mokuaidaxiaoResults.update((v) => ({...v, [menshanKey]: 模块大小配置.vars || {}}));
+        } else if (模块大小关系) {
+          const gongshiObj = msbjInfo.选中布局数据.模块大小关系 || {};
+          if (!gongshiObj.门扇调整) {
+            gongshiObj.门扇调整 = Object.values(gongshiObj)[0];
+          }
+          if (!gongshiObj.配置) {
+            gongshiObj.配置 = {};
+          }
+          const {values} = await this.refreshMokuaidaxiaoResults(menshanKey);
+          this.mokuaidaxiaoResults.update((v) => ({...v, [menshanKey]: values}));
         }
-        if (!gongshiObj.配置) {
-          gongshiObj.配置 = {};
-        }
-        const {values} = await this.refreshMokuaidaxiaoResults(menshanKey);
-        this.mokuaidaxiaoResults.update((v) => ({...v, [menshanKey]: values}));
       }
     }
   }
