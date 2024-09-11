@@ -429,7 +429,7 @@ export class XhmrmsbjComponent implements OnDestroy {
       if (msbjInfo.选中布局数据) {
         const {模块大小关系, 模块大小配置} = msbjInfo.选中布局数据;
         if (模块大小配置) {
-          this.mokuaidaxiaoResults.update((v) => ({...v, [menshanKey]: 模块大小配置.vars || {}}));
+          this.mokuaidaxiaoResults.update((v) => ({...v, [menshanKey]: msbjInfo.模块大小输出 || {}}));
         } else if (模块大小关系) {
           const gongshiObj = msbjInfo.选中布局数据.模块大小关系 || {};
           if (!gongshiObj.门扇调整) {
