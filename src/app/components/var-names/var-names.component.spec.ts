@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {provideRouter} from "@angular/router";
 import {VarNamesComponent} from "./var-names.component";
-import {VarNames} from "./var-names.types";
+import {VarNameItem} from "./var-names.types";
 
 describe("VarNamesComponent", () => {
   let component: VarNamesComponent;
@@ -16,8 +16,8 @@ describe("VarNamesComponent", () => {
     fixture = TestBed.createComponent(VarNamesComponent);
     component = fixture.componentInstance;
     const ref = fixture.componentRef;
-    const varNames: VarNames = [{nameGroups: [{groupName: "test", varNames: ["a"]}], width: 100}];
-    ref.setInput("varNames", varNames);
+    const varNameItem: VarNameItem = {nameGroups: [{groupName: "test", varNames: ["a"]}], width: 100};
+    ref.setInput("varNameItem", varNameItem);
     fixture.detectChanges();
   });
 

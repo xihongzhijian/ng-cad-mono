@@ -346,7 +346,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         setInputHidden(inputs[0], false);
         setInputHidden(inputs[1], false);
       }
-      const varNames = this.lrsjStatus.varNames();
+      const varNameItem = this.lrsjStatus.varNames().at(0) || {};
       key1Infos[key1] = {
         xiaoguotuInputs: [],
         suanliaoDataParams: {
@@ -361,7 +361,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         },
         suanliaogongshiInfo: {
           data: {算料公式: data[key1].算料公式, 输入数据: data[key1].输入数据},
-          varNames
+          varNameItem
         },
         inputs,
         title: this.getMenjiaoCadTabLabel(key1),

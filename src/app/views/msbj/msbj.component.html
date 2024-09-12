@@ -38,7 +38,12 @@
         }
       </div>
       @if (msbjInfo()?.isVersion2024) {
-        <app-mkdxpz-editor class="flex-110" [data]="mkdxpz()" (dataChange)="onMkdxpzChange($event)"></app-mkdxpz-editor>
+        <app-mkdxpz-editor
+          class="flex-110"
+          [data]="mkdxpz()"
+          [varNameItem]="varNameItem()"
+          (dataChange)="onMkdxpzChange($event)"
+        ></app-mkdxpz-editor>
       }
     </div>
     @if (!msbjInfo()?.isVersion2024) {

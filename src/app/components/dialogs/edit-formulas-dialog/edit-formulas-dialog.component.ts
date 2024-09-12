@@ -45,7 +45,7 @@ export const openEditFormulasDialog = getOpenDialogFunc<EditFormulasDialogCompon
 export interface EditFormulasInput {
   formulas?: ReturnType<FormulasEditorComponent["formulas"]>;
   formulasText?: ReturnType<FormulasEditorComponent["formulasText"]>;
-  varNames?: ReturnType<FormulasEditorComponent["varNames"]>;
+  varNameItem?: ReturnType<FormulasEditorComponent["varNameItem"]>;
   extraInputInfos?: ReturnType<FormulasEditorComponent["extraInputInfos"]>;
   required?: ReturnType<FormulasEditorComponent["required"]>;
 }

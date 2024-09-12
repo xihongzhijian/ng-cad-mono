@@ -67,7 +67,9 @@
       </div>
     </div>
 
-    <app-var-names [varNames]="varNames()" [namesPerRow]="2"></app-var-names>
+    @if (varNameItem(); as item) {
+      <app-var-names [varNameItem]="item" [namesPerRow]="2"></app-var-names>
+    }
   </div>
 </ng-template>
 

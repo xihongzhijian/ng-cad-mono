@@ -16,6 +16,7 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
+import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
@@ -52,6 +53,7 @@ import {getEmpty模块大小配置, MsbjInfo} from "./msbj.utils";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MsbjComponent {
+  private bjmkStatus = inject(BjmkStatusService);
   private http = inject(CadDataService);
   private message = inject(MessageService);
   private route = inject(ActivatedRoute);
@@ -250,6 +252,7 @@ export class MsbjComponent {
   }
 
   mkdxpz = signal<模块大小配置>(getEmpty模块大小配置());
+  varNameItem = computed(() => this.bjmkStatus.varNames().at(0) || {});
   mkdxpzEff = effect(
     () => {
       let mkdxpz = this.msbjInfo()?.peizhishuju.模块大小配置;

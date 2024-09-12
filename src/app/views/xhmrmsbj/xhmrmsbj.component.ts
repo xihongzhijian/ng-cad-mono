@@ -45,6 +45,7 @@ import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.com
 import {MkdxpzEditorCloseEvent} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {GenerateRectsEndEvent, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {MsbjRectInfo, MsbjSelectRectEvent, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
+import {VarNameItem} from "@components/var-names/var-names.types";
 import {environment} from "@env";
 import {keysOf, ObjectOf, Point, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
@@ -1152,16 +1153,37 @@ export class XhmrmsbjComponent implements OnDestroy {
     return mokuais;
   }
 
-  openedMkdcpz = signal<{data: 模块大小配置; msbjInfo: XhmrmsbjInfo; menshanweizhi: string} | null>(null);
+  openedMkdcpz = signal<{data: 模块大小配置; msbjInfo: XhmrmsbjInfo; varNameItem: VarNameItem} | null>(null);
   openMkdcpz() {
     const msbjInfo = this.activeMsbjInfo();
     const 选中布局数据 = msbjInfo?.选中布局数据;
     if (!选中布局数据) {
       return;
     }
+    const activeKey = this.activeMenshanKey();
+    const varNameItem = this.bjmkStatus.varNames().find((v) => v.门扇位置 === activeKey) || {};
+    if (!Array.isArray(varNameItem.nameGroups)) {
+      varNameItem.nameGroups = [];
+    }
+    for (const key in this.data()?.menshanbujuInfos || {}) {
+      for (const node of msbjInfo.模块节点 || []) {
+        const varNames = new Set<string>();
+        for (const mokuai of node.可选模块) {
+          for (const v of mokuai.gongshishuru) {
+            varNames.add(v[0]);
+          }
+          for (const v of mokuai.shuchubianliang) {
+            varNames.add(v);
+          }
+        }
+        if (varNames.size > 0) {
+          varNameItem.nameGroups.push({groupName: `${key}${node.层名字}可选模块`, varNames: Array.from(varNames)});
+        }
+      }
+    }
     const data = cloneDeep(选中布局数据.模块大小配置 || getEmpty模块大小配置());
     justify模块大小配置(data, msbjInfo.模块节点?.map((v) => v.层名字) || []);
-    this.openedMkdcpz.set({data, msbjInfo, menshanweizhi: this.activeMenshanKey() || ""});
+    this.openedMkdcpz.set({data, msbjInfo, varNameItem});
   }
   async editMkdcpz() {
     this.openMkdcpz();
