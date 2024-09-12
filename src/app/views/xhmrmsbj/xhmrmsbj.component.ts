@@ -1119,7 +1119,6 @@ export class XhmrmsbjComponent implements OnDestroy {
         this.refreshData();
       }
     }
-    console.log(this.bjmkStatus.mokuais().find((v) => v.id === openedMokuai.mokuai.id));
   }
 
   openedMokuaiku = signal<{ids: number[]} | null>(null);
@@ -1150,6 +1149,9 @@ export class XhmrmsbjComponent implements OnDestroy {
       }
     }
     return mokuais;
+  }
+  openMokuaikuInNew() {
+    this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库"}});
   }
 
   openedMkdcpz = signal<{data: 模块大小配置; msbjInfo: XhmrmsbjInfo; varNameItem: VarNameItem} | null>(null);

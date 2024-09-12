@@ -556,8 +556,8 @@ export const calcZxpj = async (
     }
   }
 
-  const getMokuaiVarsCurr = (门扇名字: string, 模块名字: string) => {
-    const result = {...mokuaiVars[门扇名字]};
+  const getMokuaiVarsCurr = (formulas: Formulas, 模块名字: string) => {
+    const result = {...formulas};
     const keys = ["总宽", "总高"];
     for (const key of keys) {
       const key2 = 模块名字 + key;
@@ -585,9 +585,10 @@ export const calcZxpj = async (
       const info = v.item.info || {};
       const 门扇名字 = info.门扇名字 || "";
       const 模块名字 = info.模块名字 || "";
-      const formulas1 = {...v.formulas, ...v.dimensionVars, ...mokuaiGongshis[门扇名字]};
+      const mokuaiGongshisCurr = getMokuaiVarsCurr(mokuaiGongshis[门扇名字], 模块名字);
+      const formulas1 = {...v.formulas, ...v.dimensionVars, ...mokuaiGongshisCurr};
       replaceMenshanName(门扇名字, formulas1);
-      const mokuaiVarsCurr = getMokuaiVarsCurr(门扇名字, 模块名字);
+      const mokuaiVarsCurr = getMokuaiVarsCurr(mokuaiVars[门扇名字], 模块名字);
       const vars1 = {...materialResult, ...shuchubianliang, ...lingsanVars, ...mokuaiVarsCurr};
       vars1.门扇布局 = v.item.info?.门扇布局?.name || "";
       const result1Msg = `【${门扇名字}】模块【${模块名字}】计算`;
@@ -676,7 +677,7 @@ export const calcZxpj = async (
 
     const zhankais: [number, CadZhankai][] = [];
     const {门扇名字, 模块名字} = info;
-    vars2 = {...vars2, ...getMokuaiVarsCurr(门扇名字 || "", 模块名字 || "")};
+    vars2 = {...vars2, ...getMokuaiVarsCurr(mokuaiVars[门扇名字 || ""], 模块名字 || "")};
     for (const [i, zhankai] of data.zhankai.entries()) {
       let enabled = true;
       let title = `计算展开条件`;

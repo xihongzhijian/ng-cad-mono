@@ -4,13 +4,13 @@ import {Component, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {Formulas} from "@app/utils/calc";
+import {Formulas, toFixed} from "@app/utils/calc";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
-import {getMokuaiTitle} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
+import {getMokuaiTitle, replaceMenshanName} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulaInfo} from "@components/formulas/formulas.component";
 import {输入} from "@components/lurushuju/xinghao-data";
-import {CadData, toFixedTrim} from "@lucilor/cad-viewer";
+import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CalcService} from "@services/calc.service";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
@@ -82,6 +82,11 @@ export class XhmrmsbjMokuaisComponent {
             formulas2.门扇布局 = mokuai2.info?.门扇布局?.name || "";
           }
           Object.assign(formulas2, mokuaidaxiaoResult);
+          const gongshi = value.选中布局数据?.模块大小配置?.算料公式 || {};
+          replaceMenshanName(key, gongshi);
+          Object.assign(suanliaogongshi, gongshi);
+          const gongshiResult = this.calc.calc.calcFormulas(gongshi, formulas2);
+          Object.assign(formulas2, gongshiResult.succeedTrim);
           for (const key2 of ["总宽", "总高"]) {
             const key3 = node.层名字 + key2;
             if (key3 in formulas2) {
@@ -153,7 +158,7 @@ export const getFormulaInfos = (
   const getValues = (val: string | number) => {
     const values: FormulaInfo["values"] = [];
     if (typeof val === "number") {
-      values.push({eq: true, name: toFixedTrim(val, 2)});
+      values.push({eq: true, name: toFixed(val, 2)});
     } else if (typeof val === "string") {
       val = val.trim();
       const valReplaced = val.replaceAll(/^(.*)扇.面蓝线宽/g, "$1扇蓝线宽");
@@ -173,12 +178,12 @@ export const getFormulaInfos = (
       const value2 = getValues(formulas2[key]).filter((v) => v.name !== valuePrev);
       if (value2.length > 0) {
         const valueNext = value2[0].name;
-        let calcResult = calc.calc.calcExpress(`(${valuePrev}) === (${valueNext})`);
+        let calcResult = calc.calc.calcExpress(`(${valuePrev}) === (${valueNext})`, formulas2);
         if (calcResult.value !== true) {
-          calcResult = calc.calc.calcExpress(`(\`${valuePrev}\`) === (\`${valueNext}\`)`);
+          calcResult = calc.calc.calcExpress(`(\`${valuePrev}\`) === (\`${valueNext}\`)`, formulas2);
         }
         if (calcResult.value !== true) {
-          calcResult = calc.calc.calcExpress(`(eval(\`${valuePrev}\`)) === (\`${valueNext}\`)`);
+          calcResult = calc.calc.calcExpress(`(eval(\`${valuePrev}\`)) === (\`${valueNext}\`)`, formulas2);
         }
         value2[0].eq = calcResult.value === true;
         values.push(...value2);
