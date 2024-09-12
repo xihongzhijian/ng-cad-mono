@@ -4,12 +4,12 @@
 
 <ng-scrollbar>
   <div class="forms">
-    @for (form of forms; track form; let i = $index) {
+    @for (form of forms; track i; let i = $index) {
       @if (!form.hidden) {
         <div class="form sub-form-field">
-          @for (row of form.infos; track row) {
+          @for (row of form.infos; track $index) {
             <div class="row">
-              @for (info of row; track info) {
+              @for (info of row; track $index) {
                 <app-input [info]="info"></app-input>
               }
             </div>

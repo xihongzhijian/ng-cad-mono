@@ -4,7 +4,7 @@
 </div>
 <ng-scrollbar>
   <div class="forms">
-    @for (item of jiaowei.data | keyvalue; track item) {
+    @for (item of jiaowei.data | keyvalue; track $index) {
       <div class="form">
         <div class="title">做{{ item.key }}个铰时</div>
         <mat-checkbox [(ngModel)]="item.value.disabled">不做{{ item.key }}个铰</mat-checkbox>

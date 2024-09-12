@@ -23,7 +23,7 @@
     <div class="btn-group">
       <button mat-raised-button color="primary" (click)="clearConnections()">清空</button>
     </div>
-    @for (c of connections; track c; let i = $index) {
+    @for (c of connections; track i; let i = $index) {
       <div class="connection">
         <p>名字: {{ c.names[0] }} &harr; {{ c.names[1] }}</p>
         <p>方向: {{ c.axis }}</p>

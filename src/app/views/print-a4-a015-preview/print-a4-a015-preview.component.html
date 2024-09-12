@@ -1,11 +1,11 @@
 <ng-scrollbar>
-  @for (page of data; track page; let i = $index) {
+  @for (page of data; track i; let i = $index) {
     <div class="page">
-      @for (card of page; track card; let j = $index) {
+      @for (card of page; track j; let j = $index) {
         <div class="card" [style.margin-top]="getTop(j)" [style.margin-left]="getLeft(j)">
           @if (card.type === "说明") {
             <div class="desc-left">
-              @for (t of card.text; track t) {
+              @for (t of card.text; track $index) {
                 <div>{{ t }}</div>
               }
             </div>
@@ -24,7 +24,7 @@
             <app-image class="qrcode" [src]="card.codeText"></app-image>
             <div class="code">{{ card.code }}</div>
             <div class="desc-right">
-              @for (t of card.text; track t) {
+              @for (t of card.text; track $index) {
                 <div>{{ t }}</div>
               }
             </div>

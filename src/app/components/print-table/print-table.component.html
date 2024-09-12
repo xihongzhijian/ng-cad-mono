@@ -1,7 +1,7 @@
 <div class="content">
   <div class="title center">{{ title }}</div>
   <div class="table-container flex-column flex-110">
-    @for (tableInfo of tableInfos; track tableInfo) {
+    @for (tableInfo of tableInfos; track $index) {
       <app-table [info]="tableInfo" (rowButtonClick)="onRowButtonClick(tableInfo, $event)"></app-table>
     }
   </div>

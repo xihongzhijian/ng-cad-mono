@@ -26,7 +26,7 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
 import {MsbjData} from "@views/msbj/msbj.types";
-import {MsbjInfo} from "@views/msbj/msbj.utils";
+import {isVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {
   SuanliaoInput,
@@ -177,7 +177,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       gongshi,
       inputResult,
       mokuaiVars,
-      mokuaiGongshis
+      mokuaiGongshis,
+      ignoreCadDimensions: isVersion2024(materialResult.做数据版本)
     });
     if (!calcZxpjResult.fulfilled) {
       result.data.error = calcZxpjResult.error;

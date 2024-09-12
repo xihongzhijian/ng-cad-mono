@@ -3,7 +3,7 @@
     <mat-form-field>
       <mat-label>替换类型</mat-label>
       <mat-select formControlName="replacer">
-        @for (r of replacers; track r) {
+        @for (r of replacers; track $index) {
           <mat-option [value]="r">
             {{ r.type }}
           </mat-option>
@@ -58,7 +58,7 @@
   </div>
   <ng-scrollbar>
     <div class="to-be-replaced-list">
-      @for (item of toBeReplacedList; track item) {
+      @for (item of toBeReplacedList; track $index) {
         <mat-card>
           <mat-card-header>
             <mat-card-title>
@@ -71,7 +71,7 @@
           </mat-card-header>
           <mat-card-content>
             <span class="matched-text">匹配到的文本（{{ item.matchedTexts.length }}个）：</span>
-            @for (text of item.matchedTexts; track text) {
+            @for (text of item.matchedTexts; track $index) {
               <span class="matched-text">{{ text }}</span>
             }
           </mat-card-content>

@@ -72,7 +72,7 @@
       <ng-container *ngTemplateOutlet="formBtns"></ng-container>
     }
     @case ("button") {
-      @for (button of cast("button", data).buttons; track button) {
+      @for (button of cast("button", data).buttons; track $index) {
         <button mat-raised-button color="primary" (click)="submit(button)">
           {{ getButtonLabel(button) }}
         </button>

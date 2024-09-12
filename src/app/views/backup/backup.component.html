@@ -33,7 +33,7 @@
 </form>
 <ng-scrollbar>
   <div class="cads">
-    @for (item of data; track item; let i = $index) {
+    @for (item of data; track i; let i = $index) {
       <mat-card class="cad">
         <mat-card-header>
           <mat-card-title>{{ item.data.name }}</mat-card-title>

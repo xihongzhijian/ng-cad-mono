@@ -40,7 +40,7 @@
                   (formulasChange)="editGongshiEnd(i, $event)"
                 ></app-formulas-editor>
               } @else {
-                @for (item of gongshi["公式"] | keyvalue: returnZero; track item.key) {
+                @for (item of gongshi["公式"] | keyvalue: returnZero; track $index) {
                   <div class="gongshi-item text-ellipsis" [matTooltip]="getGongshiStr(item)">{{ getGongshiStr(item) }}</div>
                 }
               }

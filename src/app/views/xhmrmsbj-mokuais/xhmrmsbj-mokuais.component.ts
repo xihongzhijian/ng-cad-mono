@@ -155,7 +155,8 @@ export const getFormulaInfos = (
       values.push({eq: true, name: toFixedTrim(val, 2)});
     } else if (typeof val === "string") {
       val = val.trim();
-      values.push({eq: true, name: val});
+      const valReplaced = val.replaceAll(/^(.*)扇.面蓝线宽/g, "$1扇蓝线宽");
+      values.push({eq: true, name: valReplaced});
       const val2 = calc.calc.replaceVars(val, formulas2);
       if (val !== val2) {
         values.push({eq: true, name: val2});

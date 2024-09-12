@@ -1,5 +1,5 @@
 <mat-accordion multi>
-  @for (bancai of bancais; track bancai) {
+  @for (bancai of bancais; track $index) {
     <mat-expansion-panel [(expanded)]="bancai.expanded" [style]="{'page-break-after': bancai.pageBreakAfter}" class="page">
       <mat-expansion-panel-header>
         <mat-panel-title>{{ bancai["厚度"] }}, {{ bancai["材料"] }}, {{ bancai["板材"] }}</mat-panel-title>

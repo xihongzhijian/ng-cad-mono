@@ -1,6 +1,6 @@
 <ng-scrollbar>
   <div class="cards">
-    @for (item of data; track item; let i = $index) {
+    @for (item of data; track i; let i = $index) {
       <mat-card class="card">
         <div class="zhankai-form">
           <div class="btn-group">
@@ -80,7 +80,7 @@
                 </button>
               </div>
             }
-            @for (c of " ".repeat(item.conditions.length).split(""); track c; let j = $index) {
+            @for (c of " ".repeat(item.conditions.length).split(""); track j; let j = $index) {
               <mat-form-field>
                 <input matInput type="text" [value]="item.conditions[j]" appReplaceFullChars [arr]="item.conditions" [index]="j" />
                 <button mat-icon-button matSuffix color="primary" (click)="arrayAdd(item.conditions, '', j + 1)">
@@ -101,7 +101,7 @@
                 </button>
               </div>
             }
-            @for (key of keysOf(item.neibugongshi); track key) {
+            @for (key of keysOf(item.neibugongshi); track $index) {
               <div>
                 <mat-form-field style="width: 30%">
                   <mat-label>内部公式-键</mat-label>
@@ -132,7 +132,7 @@
                 </button>
               </div>
             }
-            @for (item2 of item.flip; track item2; let j = $index) {
+            @for (item2 of item.flip; track j; let j = $index) {
               <div class="sub-form-field-item">
                 <mat-form-field>
                   <mat-label>{{ keysMap.kaiqi }}</mat-label>
@@ -151,7 +151,7 @@
                 <mat-form-field>
                   <mat-label>{{ keysMap.flip }}</mat-label>
                   <mat-select [(ngModel)]="item2.fanzhuanfangshi">
-                    @for (option of flipOptions; track option) {
+                    @for (option of flipOptions; track $index) {
                       <mat-option [value]="option.value">
                         {{ option.name }}
                       </mat-option>
@@ -177,7 +177,7 @@
               </button>
             </div>
             <div class="sub-form-field-item">
-              @for (key of keysOf(item.flipChai); track key) {
+              @for (key of keysOf(item.flipChai); track $index) {
                 <div>
                   <mat-form-field class="halfwidth">
                     <mat-label>序号</mat-label>
@@ -189,7 +189,7 @@
                   <mat-form-field class="halfwidth">
                     <mat-label>翻转</mat-label>
                     <mat-select [(ngModel)]="item.flipChai[key]">
-                      @for (option of flipOptions; track option) {
+                      @for (option of flipOptions; track $index) {
                         <mat-option [value]="option.value">
                           {{ option.name }}
                         </mat-option>

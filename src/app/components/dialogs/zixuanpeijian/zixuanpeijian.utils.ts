@@ -311,6 +311,7 @@ export interface CalcZxpjOptions {
   inputResult?: Formulas;
   mokuaiVars?: ObjectOf<Formulas>;
   mokuaiGongshis?: ObjectOf<Formulas>;
+  ignoreCadDimensions?: boolean;
 }
 export const calcZxpj = async (
   dialog: MatDialog,
@@ -330,6 +331,7 @@ export const calcZxpj = async (
     inputResult: {},
     mokuaiVars: {},
     mokuaiGongshis: {},
+    ignoreCadDimensions: false,
     ...options
   };
   const {fractionDigits, changeLinesLength, calcVars, useCeshishuju, gongshi, inputResult, mokuaiVars, mokuaiGongshis} = optionsAll;
@@ -436,6 +438,9 @@ export const calcZxpj = async (
   }
   const duplicateDimVars: ObjectOf<{vars: Set<string>; cads: ZixuanpeijianCadItem[]}> = {};
   const getCadDimensionVars = (items: ZixuanpeijianCadItem[], mokuai?: ZixuanpeijianMokuaiItem) => {
+    if (optionsAll.ignoreCadDimensions) {
+      return {};
+    }
     const vars: Formulas = {};
     const duplicateVars = new Set<string>();
     const duplicateCads: ZixuanpeijianCadItem[] = [];
