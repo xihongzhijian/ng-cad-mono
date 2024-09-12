@@ -24,6 +24,7 @@ import {
   QueryMongodbParams,
   QueryMysqlParams,
   SetCadParams,
+  TableCopyParams,
   TableDataBase,
   TableDeleteFile,
   TableDeleteParams,
@@ -297,7 +298,6 @@ export class CadDataService extends HttpService {
   async tableInsert<T extends TableDataBase = TableDataBase>(params: TableInsertParams<T>, options?: HttpOptions) {
     return await this.getData<number>("jichu/jichu/table_insert", params, options);
   }
-
   async tableUpdate<T extends TableDataBase = TableDataBase>(params: TableUpdateParams<T>, options?: HttpOptions) {
     const getParams2 = (params1: TableUpdateParams<T>) => {
       const params2: ObjectOf<any> = {...params1};
@@ -309,9 +309,11 @@ export class CadDataService extends HttpService {
     const params2 = getParams2(params);
     return await this.getData<T>("jichu/jichu/table_update", params2, options);
   }
-
   async tableDelete(params: TableDeleteParams, options?: HttpOptions) {
     return await this.getData<boolean>("jichu/jichu/table_delete", params, options);
+  }
+  async tableCopy(params: TableCopyParams, options?: HttpOptions) {
+    return await this.getData<boolean>("jichu/jichu/table_copy", params, options);
   }
 
   async tableUploadFile<T extends TableDataBase = TableDataBase>(params: TableUploadFile<T>, options?: HttpOptions) {
