@@ -25,3 +25,7 @@ export interface MokuaiItemCustomData {
 export interface MokuaiItemCloseEvent {
   isSaved: boolean;
 }
+
+export interface MokuaiItemCadInfo {
+  index: number;
+}

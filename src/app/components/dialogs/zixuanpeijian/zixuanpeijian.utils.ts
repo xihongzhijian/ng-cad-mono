@@ -310,6 +310,8 @@ export interface CalcZxpjOptions {
   gongshi?: Formulas;
   inputResult?: Formulas;
   mokuaiVars?: ObjectOf<Formulas>;
+  mokuaiGongshis?: ObjectOf<Formulas>;
+  ignoreCadDimensions?: boolean;
 }
 export const calcZxpj = async (
   dialog: MatDialog,
@@ -328,9 +330,11 @@ export const calcZxpj = async (
     gongshi: {},
     inputResult: {},
     mokuaiVars: {},
+    mokuaiGongshis: {},
+    ignoreCadDimensions: false,
     ...options
   };
-  const {fractionDigits, changeLinesLength, calcVars, useCeshishuju, gongshi, inputResult, mokuaiVars} = optionsAll;
+  const {fractionDigits, changeLinesLength, calcVars, useCeshishuju, gongshi, inputResult, mokuaiVars, mokuaiGongshis} = optionsAll;
   const shuchubianliang: Formulas = {};
   const duplicateScbl: {
     item: ZixuanpeijianMokuaiItem;
@@ -340,6 +344,15 @@ export const calcZxpj = async (
   const duplicateXxsr: ObjectOf<Set<string>> = {};
   const dimensionNamesMap: ObjectOf<{item: ZixuanpeijianCadItem}[]> = {};
   const varsGlobal: Formulas = {};
+  const gongshiCalcResult = await calc.calcFormulas(gongshi, materialResult);
+  if (!gongshiCalcResult) {
+    return {
+      fulfilled: false,
+      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult}}
+    };
+  }
+  calc.calc.mergeFormulas(materialResult, gongshiCalcResult.succeedTrim);
+  calc.calc.mergeFormulas(materialResult, inputResult);
 
   const gongshiKeys = Object.keys(gongshi);
   const inputResultKeys = Object.keys(inputResult);
@@ -425,6 +438,9 @@ export const calcZxpj = async (
   }
   const duplicateDimVars: ObjectOf<{vars: Set<string>; cads: ZixuanpeijianCadItem[]}> = {};
   const getCadDimensionVars = (items: ZixuanpeijianCadItem[], mokuai?: ZixuanpeijianMokuaiItem) => {
+    if (optionsAll.ignoreCadDimensions) {
+      return {};
+    }
     const vars: Formulas = {};
     const duplicateVars = new Set<string>();
     const duplicateCads: ZixuanpeijianCadItem[] = [];
@@ -566,10 +582,10 @@ export const calcZxpj = async (
       if (calc1Count > 1 && isEmpty(v.error)) {
         continue;
       }
-      const formulas1 = {...v.formulas, ...v.dimensionVars};
       const info = v.item.info || {};
       const 门扇名字 = info.门扇名字 || "";
       const 模块名字 = info.模块名字 || "";
+      const formulas1 = {...v.formulas, ...v.dimensionVars, ...mokuaiGongshis[门扇名字]};
       replaceMenshanName(门扇名字, formulas1);
       const mokuaiVarsCurr = getMokuaiVarsCurr(门扇名字, 模块名字);
       const vars1 = {...materialResult, ...shuchubianliang, ...lingsanVars, ...mokuaiVarsCurr};
@@ -580,7 +596,7 @@ export const calcZxpj = async (
         vars1,
         alertError ? {title: result1Msg, title2: "错误，请检查模块大小、算料公式"} : undefined
       );
-      // console.log({formulas1, vars1, result1});
+      // console.log({门扇名字, 模块名字, formulas1, vars1, result1});
       if (!result1?.fulfilled) {
         if (alertError) {
           return {fulfilled: false, error: {message: result1Msg + "出错", calc: {formulas: formulas1, vars: vars1, result: result1}}};

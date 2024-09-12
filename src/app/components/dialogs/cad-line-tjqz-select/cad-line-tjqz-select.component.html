@@ -5,7 +5,7 @@
       <input matInput type="text" [(ngModel)]="data.value.value" [name]="data.value.key" />
     </mat-form-field>
   }
-  @for (item of data.options; track item) {
+  @for (item of data.options; track $index) {
     <mat-form-field>
       <mat-label>{{ item.key }}</mat-label>
       <input matInput type="text" [(ngModel)]="item.value" [name]="item.key" />

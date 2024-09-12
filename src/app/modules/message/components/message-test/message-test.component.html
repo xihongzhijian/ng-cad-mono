@@ -1,4 +1,4 @@
-@for (btn of btns | keyvalue: returnZero; track btn) {
+@for (btn of btns | keyvalue: returnZero; track $index) {
   <button mat-raised-button color="primary" (click)="openMessage(btn.key, btn.value)">
     {{ btn.key }}
   </button>

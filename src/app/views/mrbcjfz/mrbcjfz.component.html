@@ -154,7 +154,7 @@
 </ng-template>
 <ng-template #content4>
   <div class="items no-items-per-row">
-    @for (item of huajians | keyvalue: returnZero; track item.key) {
+    @for (item of huajians | keyvalue: returnZero; track $index) {
       @if (!item.value.selected) {
         <div class="item" (click)="selectListItem(item.value, '花件')">
           <app-image [src]="item.value.data.xiaotu"></app-image>

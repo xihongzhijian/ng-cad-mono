@@ -1,13 +1,13 @@
 <div>
-  @for (info of inputInfos; track info) {
+  @for (info of inputInfos; track $index) {
     <app-input [info]="info"></app-input>
   }
 </div>
 
 @if (useJsonEditor) {
-  @for (group of inputInfos2; track group; let i = $index) {
+  @for (group of inputInfos2; track i; let i = $index) {
     <div class="qiezhongkong-item">
-      @for (info of group; track info) {
+      @for (info of group; track $index) {
         <app-input [info]="info" [class]="info.label"></app-input>
       }
     </div>
@@ -18,14 +18,14 @@
       @if (inputInfos2.length < 1) {
         <button mat-raised-button color="primary" (click)="addQiezhongkongItem(0)">新增</button>
       }
-      @for (group of inputInfos2; track group; let i = $index) {
+      @for (group of inputInfos2; track i; let i = $index) {
         <div class="qiezhongkong-item">
           <div class="btn-group">
             <button mat-raised-button color="primary" (click)="addQiezhongkongItem(i)">新增</button>
             <button mat-raised-button color="primary" (click)="copyQiezhongkongItem(i)">复制</button>
             <button mat-raised-button color="primary" (click)="removeQiezhongkongItem(i)">删除</button>
           </div>
-          @for (info of group; track info) {
+          @for (info of group; track $index) {
             <app-input [info]="info" [class]="info.label"></app-input>
           }
         </div>
@@ -39,14 +39,14 @@
       @if (inputInfos2.length < 1) {
         <button mat-raised-button color="primary" (click)="addQiezhongkongItem(0)">新增</button>
       }
-      @for (group of inputInfos2; track group; let i = $index) {
+      @for (group of inputInfos2; track i; let i = $index) {
         <div class="qiezhongkong-item">
           <div class="btn-group">
             <button mat-raised-button color="primary" (click)="addQiezhongkongItem(i)">新增</button>
             <button mat-raised-button color="primary" (click)="copyQiezhongkongItem(i)">复制</button>
             <button mat-raised-button color="primary" (click)="removeQiezhongkongItem(i)">删除</button>
           </div>
-          @for (info of group; track info) {
+          @for (info of group; track $index) {
             <app-input [info]="info" [class]="info.label"></app-input>
           }
         </div>

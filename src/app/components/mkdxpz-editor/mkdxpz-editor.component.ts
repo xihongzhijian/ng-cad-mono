@@ -14,13 +14,13 @@ import {
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {Formulas} from "@app/utils/calc";
-import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {getShuruItem, getShuruTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {输入} from "@components/lurushuju/xinghao-data";
 import {模块大小配置} from "@components/msbj-rects/msbj-rects.types";
 import {VarNamesComponent} from "@components/var-names/var-names.component";
+import {VarNameItem} from "@components/var-names/var-names.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
@@ -35,17 +35,14 @@ import {MkdxpzEditorCloseEvent} from "./mkdxpz-editor.types";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MkdxpzEditorComponent {
-  private bjmkStatus = inject(BjmkStatusService);
   private message = inject(MessageService);
 
   @HostBinding("class") class = "ng-page";
 
   data = model.required<模块大小配置>();
-  menshanweizhi = input<string>("门扇布局");
+  varNameItem = model.required<VarNameItem>();
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<MkdxpzEditorCloseEvent>({alias: "close"});
-
-  varNames = this.bjmkStatus.varNames;
 
   formulas = signal<Formulas>({});
   formulasInEff = effect(() => this.formulas.set(this.data().算料公式), {allowSignalWrites: true});

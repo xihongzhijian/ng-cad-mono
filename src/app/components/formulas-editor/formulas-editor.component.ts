@@ -21,7 +21,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {replaceChars, setGlobal} from "@app/app.common";
 import {CalcResult, Formulas} from "@app/utils/calc";
 import {VarNamesComponent} from "@components/var-names/var-names.component";
-import {VarNames} from "@components/var-names/var-names.types";
+import {VarNameItem} from "@components/var-names/var-names.types";
 import {timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -57,7 +57,7 @@ export class FormulasEditorComponent {
   formulas = model<Formulas>({}, {alias: "formulas"});
   formulasTextIn = input("", {alias: "formulasText"});
   vars = input<Formulas>({});
-  varNames = input<VarNames>([]);
+  varNameItem = input<VarNameItem>();
   menshanweizhi = input("");
   extraInputInfos = input<InputInfo[]>([]);
   required = input(false, {transform: booleanAttribute});

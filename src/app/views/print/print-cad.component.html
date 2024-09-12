@@ -14,7 +14,7 @@
         <mat-label>字体</mat-label>
         <input type="text" matInput [(ngModel)]="fontFamily" [matAutocomplete]="auto" />
         <mat-autocomplete #auto="matAutocomplete">
-          @for (font of fonts; track font) {
+          @for (font of fonts; track $index) {
             <mat-option [value]="font">{{ font }}</mat-option>
           }
         </mat-autocomplete>

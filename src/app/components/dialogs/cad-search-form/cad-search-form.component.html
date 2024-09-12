@@ -1,5 +1,5 @@
 <ng-scrollbar>
-  @for (group of data; track group) {
+  @for (group of data; track $index) {
     <mat-card>
       <mat-card-header>
         <mat-card-title>
@@ -7,7 +7,7 @@
         </mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        @for (item of group.items; track item) {
+        @for (item of group.items; track $index) {
           <mat-form-field>
             <mat-label>{{ item.label }}</mat-label>
             <input
@@ -18,7 +18,7 @@
               (input)="options$[item.label].change$.emit(form[item.label])"
             />
             <mat-autocomplete #auto="matAutocomplete">
-              @for (option of options$[item.label].options$ | async; track option) {
+              @for (option of options$[item.label].options$ | async; track $index) {
                 <mat-option [value]="option">
                   {{ option }}
                 </mat-option>

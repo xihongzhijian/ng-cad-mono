@@ -128,7 +128,7 @@ export class SuanliaogongshiComponent {
     const result = await openEditFormulasDialog(this.dialog, {
       data: {
         formulas: data.公式,
-        varNames: this.info().varNames,
+        varNameItem: this.info().varNameItem,
         extraInputInfos: [
           {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
           {type: "object", label: "选项", model: {data, key: "选项"}, optionsDialog: {}, optionMultiple: true},

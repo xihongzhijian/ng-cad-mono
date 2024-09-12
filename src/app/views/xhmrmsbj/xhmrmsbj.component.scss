@@ -67,7 +67,7 @@
   --mdc-typography-body1-font-size: 14px;
 }
 .xinghao-info {
-  font-size: var(--mdc-typography-body1-font-size);
+  font-size: var(--mat-select-trigger-text-size);
   > div {
     padding: 5px 72px 5px 0;
   }
@@ -96,13 +96,6 @@
   > * {
     z-index: 1;
   }
-}
-
-.xinghao-name {
-  position: absolute;
-  top: 50px;
-  z-index: 2;
-  background: white;
 }
 
 .mkdxpz-formulas {

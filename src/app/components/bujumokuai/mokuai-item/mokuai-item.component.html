@@ -34,7 +34,7 @@
     </div>
   </div>
   <div class="item-cads border flex-row flex-110">
-    <div class="mokuai-gongshi flex-column flex-110">
+    <div class="mokuai-gongshi flex-column">
       <div class="title">模块公式</div>
       <app-formulas-editor #slgs class="box flex-110" [formulas]="mokuai().suanliaogongshi" noFormulasText noScroll></app-formulas-editor>
     </div>
@@ -45,15 +45,13 @@
         <button mat-raised-button color="primary" (click)="selectCads()">选择CAD</button>
       </div>
       <div class="items no-items-per-row flex-110">
-        @for (cad of selectedCads(); track $index) {
+        @for (cad of selectedCads(); track i; let i = $index) {
           <app-cad-item
             class="item"
             [cad]="cad"
-            [buttons]="[]"
-            [customInfo]="{}"
+            [buttons]="cadButtons()"
+            [customInfo]="{index: i}"
             [yaoqiu]="cadYaoqiu()"
-            [cadWidth]="cadWidth()"
-            [cadHeight]="cadHeight()"
             (afterEditCad)="afterEditCad()"
           ></app-cad-item>
         }

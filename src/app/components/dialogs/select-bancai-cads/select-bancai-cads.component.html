@@ -2,7 +2,7 @@
   <mat-slide-toggle [(ngModel)]="noPaiban">激光开料不排版</mat-slide-toggle>
 }
 <ng-scrollbar>
-  @for (order of data.orders; track order; let i = $index) {
+  @for (order of data.orders; track $index; let i = $index) {
     <div class="order">
       @if (i > 0) {
         <mat-divider></mat-divider>
@@ -10,13 +10,13 @@
       @if (order.cads.length > 0) {
         <div class="title">{{ order.code }}</div>
       }
-      @for (group of order.cads; track group) {
+      @for (group of order.cads; track $index) {
         <div class="cads">
           @if (group[0]) {
             <div class="title">{{ group[0].bancai.mingzi }}({{ group[0].bancai.guige?.join(" × ") }})</div>
           }
           <div class="cad-group">
-            @for (cad of group; track cad) {
+            @for (cad of group; track $index) {
               <div class="cad">
                 <mat-checkbox [(ngModel)]="cad.checked" [disabled]="!data.editDisabled && cad.disabled">
                   <span [class.disabled]="cad.disabled">{{ cad.name }}</span>

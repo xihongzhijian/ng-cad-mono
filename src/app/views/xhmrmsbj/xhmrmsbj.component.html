@@ -6,12 +6,6 @@
       </button>
     }
     <mat-divider vertical></mat-divider>
-    @if (!isFromOrder()) {
-      <button mat-raised-button color="primary" (click)="setMsbj()">更换布局</button>
-    }
-    @if (canEditMokuaidaxiao()) {
-      <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
-    }
     @if (isFromOrder()) {
       <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
       @if (canEditMokuaidaxiao()) {
@@ -20,10 +14,15 @@
       @if (isZhijian()) {
         <button mat-raised-button color="primary" (click)="openHoutaiUrl()">查看型号默认门扇布局</button>
       }
-      <div class="title link text" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
     } @else {
       @switch (activeTabName()) {
         @case ("门扇模块") {
+          @if (!isFromOrder()) {
+            <button mat-raised-button color="primary" (click)="setMsbj()">更换布局</button>
+          }
+          @if (canEditMokuaidaxiao()) {
+            <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
+          }
           <button mat-raised-button color="primary" (click)="submit()">保存</button>
           @if (closable()) {
             <button mat-raised-button color="primary" (click)="close()">关闭</button>
@@ -31,6 +30,7 @@
         }
       }
     }
+    <div class="title link text" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
   </div>
 </div>
 @switch (activeTabName()) {
@@ -68,9 +68,6 @@
       </div>
       <mat-divider vertical></mat-divider>
       <div class="flex-110 flex-column" style="position: relative">
-        @if (!isFromOrder()) {
-          <div class="xinghao-name title">{{ xinghao()?.raw?.mingzi }}</div>
-        }
         <div class="flex-row flex-110" style="max-height: 320px">
           <div class="flex-column flex-110">
             <app-msbj-rects
@@ -128,7 +125,7 @@
             }
           </div>
           <div class="xinghao-info flex-column">
-            @for (item of xinghao["默认板材"] | keyvalue: returnZero; track item) {
+            @for (item of xinghao["默认板材"] | keyvalue: returnZero; track $index) {
               @if (xinghao.getBancaiTitle(item.key)) {
                 <div>{{ item.value["板材分组别名"] || item.key }}: {{ xinghao.getBancaiTitle(item.key) }}</div>
               }
@@ -140,7 +137,7 @@
           <div class="xinghao-bancai flex-110 flex-column">
             @if (activeMokuaiNode()?.["选中模块"]; as mokuai) {
               <div class="toolbar">
-                <div class="title">【{{ mokuai.type2 }}】的板材分组</div>
+                <div class="title">选中模块板材分组</div>
               </div>
             }
             <!-- 板材选择 -->
@@ -181,7 +178,11 @@
         (click)="selectMokuai(mokuai)"
       ></app-image>
       <div class="flex-row" style="align-items: center">
-        <div class="title center flex-110 link text" (click)="openMokuai(mokuai)">{{ getMokuaiTitle2(mokuai) }}</div>
+        @if (data()?.isVersion2024) {
+          <div class="title center flex-110 link text" (click)="openMokuai(mokuai)">{{ getMokuaiTitle2(mokuai) }}</div>
+        } @else {
+          <div class="title center flex-110">{{ getMokuaiTitle2(mokuai) }}</div>
+        }
         <button mat-icon-button color="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
       </div>
     </div>
@@ -215,7 +216,7 @@
   <app-floating-dialog [maximized]="true" noTitle>
     <app-mkdxpz-editor
       [data]="openedMkdcpz.data"
-      [menshanweizhi]="openedMkdcpz.menshanweizhi"
+      [varNameItem]="openedMkdcpz.varNameItem"
       closable
       (close)="closeMkdcpz($event)"
     ></app-mkdxpz-editor>

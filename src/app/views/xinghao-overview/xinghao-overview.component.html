@@ -12,7 +12,7 @@
   [cdkDropListData]="data.sections"
   (cdkDropListDropped)="onItemDrop($event)"
 >
-  @for (section of data.sections; track section; let i = $index) {
+  @for (section of data.sections; track i; let i = $index) {
     @if (i > 0) {
       <mat-divider vertical></mat-divider>
     }
@@ -31,7 +31,7 @@
       </div>
       <ng-scrollbar>
         <div class="items flex-column" cdkDropList [cdkDropListData]="section.items" (cdkDropListDropped)="onItemDrop($event)">
-          @for (item of section.items; track item; let j = $index) {
+          @for (item of section.items; track j; let j = $index) {
             @if (j > 0) {
               <mat-divider></mat-divider>
             }

@@ -125,19 +125,20 @@ export interface TableUpdateParams<T extends TableDataBase = TableDataBase> {
   table: string;
   data: {vid: number} & Omit<Partial<T>, "vid">;
 }
-
 export interface TableDeleteParams {
   table: string;
   vids: number[];
 }
-
+export interface TableCopyParams<T extends TableDataBase = TableDataBase> {
+  table: string;
+  items: Partial<T>[];
+}
 export interface TableUploadFile<T extends TableDataBase = TableDataBase> {
   table: string;
   vid: number;
   field: keyof T;
   file: File;
 }
-
 export interface TableDeleteFile<T extends TableDataBase = TableDataBase> {
   table: string;
   vid: number;

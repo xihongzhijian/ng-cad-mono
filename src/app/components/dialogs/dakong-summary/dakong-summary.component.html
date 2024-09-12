@@ -25,7 +25,7 @@
             <div [class]="['cell', col.field]">{{ col.name }}</div>
           }
         </div>
-        @for (item of info.data; track item) {
+        @for (item of info.data; track $index) {
           @if (!item.hidden) {
             <div class="row">
               @for (col of tableColumns(); track $index) {

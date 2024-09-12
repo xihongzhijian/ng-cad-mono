@@ -21,7 +21,7 @@
       <button mat-flat-button (click)="getDakongSummary()">最近一次孔位开料结果</button>
     </div>
     <mat-menu #downloadHistoryList="matMenu">
-      @for (item of downloadHistory; track item) {
+      @for (item of downloadHistory; track $index) {
         <button mat-menu-item (click)="downloadDxf(item.name, true)">
           {{ item.date }}
         </button>
@@ -37,11 +37,11 @@
 <ng-scrollbar>
   @if (isShowXikong) {
     <div [class]="{'xingkong-strings': true, formatted: xikongOptions.codeFormat, wrap: xikongOptions.autoWrap}">
-      @for (group of xikongStrings; track group) {
+      @for (group of xikongStrings; track $index) {
         <div class="group">
-          @for (item of group; track item) {
+          @for (item of group; track $index) {
             <div class="item">
-              @for (value of item; track value) {
+              @for (value of item; track $index) {
                 <div class="value-tag">
                   <span>&lt;</span>
                   <span class="tag">{{ value[0] }}</span>
@@ -61,7 +61,7 @@
 
   @if (!isShowXikong) {
     <div class="bancai-infos flex-column">
-      @for (info of orderBancaiInfos; track info; let i = $index) {
+      @for (info of orderBancaiInfos; track i; let i = $index) {
         <div class="bancai-info flex-column">
           @if (i > 0) {
             <mat-divider></mat-divider>
@@ -76,9 +76,9 @@
               <button mat-flat-button [disabled]="!info.kailiaocanshuzhiUrl" (click)="open(info.kailiaocanshuzhiUrl)">开料参数</button>
             </div>
           </div>
-          @for (bancaiInfo of info.bancaiInfos; track bancaiInfo; let j = $index) {
+          @for (bancaiInfo of info.bancaiInfos; track j; let j = $index) {
             <div class="bancai-info-row flex-row">
-              @for (inputInfo of bancaiInfo.inputInfos; track inputInfo) {
+              @for (inputInfo of bancaiInfo.inputInfos; track $index) {
                 <app-input #bancaiInfoInput class="flex-110" [info]="inputInfo"></app-input>
               }
               <div>

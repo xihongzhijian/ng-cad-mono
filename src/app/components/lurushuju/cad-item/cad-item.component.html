@@ -95,7 +95,7 @@
     </div>
     @if (fentiDialogInput) {
       <div class="fenti-cads toolbar">
-        @for (item of fentiDialogInput.data | keyvalue: returnZero; track item.key) {
+        @for (item of fentiDialogInput.data | keyvalue: returnZero; track $index) {
           <div class="fenti-cad toolbar">
             <div>{{ item.key }}:</div>
             @if (item.value) {

@@ -18,7 +18,7 @@
       @for (info of xuanzhongMokuaiInfos; track i; let i = $index) {
         <div class="flex-column">
           <div class="title">{{ info.name }}选中模块</div>
-          @for (node of info.nodes; track node) {
+          @for (node of info.nodes; track $index) {
             <div>
               <div class="title flex-row">
                 <div>层名字：{{ node.layer }}</div>

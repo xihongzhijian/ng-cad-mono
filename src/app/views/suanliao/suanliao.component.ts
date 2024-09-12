@@ -15,7 +15,6 @@ import {
   calcZxpj,
   CalcZxpjOptions,
   getStep1Data,
-  replaceMenshanName,
   updateMokuaiItems
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {CadData} from "@lucilor/cad-viewer";
@@ -27,7 +26,7 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
 import {MsbjData} from "@views/msbj/msbj.types";
-import {MsbjInfo} from "@views/msbj/msbj.utils";
+import {isVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {
   SuanliaoInput,
@@ -95,13 +94,6 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       return result;
     };
 
-    const gongshiCalcResult = await this.calc.calcFormulas(gongshi, materialResult, {title: "计算算料公式"});
-    if (!gongshiCalcResult) {
-      return finish();
-    }
-    this.calc.calc.mergeFormulas(materialResult, gongshiCalcResult.succeedTrim);
-    this.calc.calc.mergeFormulas(materialResult, inputResult);
-
     const getCadItem = (data: any, info2?: Partial<ZixuanpeijianInfo>) => {
       const item: ZixuanpeijianCadItem = {
         data: new CadData(data),
@@ -117,31 +109,18 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     };
     const mokuais: ZixuanpeijianMokuaiItem[] = [];
     const mokuaiVars: ObjectOf<Formulas> = {};
+    const mokuaiGongshis: ObjectOf<Formulas> = {};
     for (const 门扇 of bujuNames) {
       if (!型号选中门扇布局[门扇]) {
         continue;
       }
       const {选中布局数据, 模块节点, 模块大小输出} = 型号选中门扇布局[门扇];
-      const formulas: ObjectOf<string> = {};
-      const {模块大小关系, 模块大小配置} = 选中布局数据 || {};
+      const {模块大小配置} = 选中布局数据 || {};
       if (模块大小配置) {
-        const mokauiFormulas = {...模块大小配置.算料公式};
-        replaceMenshanName(门扇, mokauiFormulas);
-        const mokuaiVarsResult = await this.calc.calcFormulas(mokauiFormulas, materialResult, {title: "计算模块大小配置"});
-        Object.assign(formulas, mokauiFormulas);
-        mokuaiVars[门扇] = mokuaiVarsResult?.succeedTrim || {};
-        if (!mokuaiVarsResult?.fulfilled) {
-          return finish();
-        }
-      } else if (模块大小关系) {
-        for (const v of Object.values<any>(模块大小关系.门扇调整 || {})) {
-          const 公式: string = v.公式;
-          const [value, key] = 公式.split("=").map((v2) => v2.trim());
-          if (value && key) {
-            formulas[key] = value;
-          }
-        }
-        mokuaiVars[门扇] = 模块大小输出 || {};
+        mokuaiGongshis[门扇] = {...模块大小配置.算料公式};
+        mokuaiVars[门扇] = {...模块大小配置.算料公式, ...模块大小输出};
+      } else {
+        mokuaiVars[门扇] = {...模块大小输出};
       }
       if (Array.isArray(模块节点)) {
         for (const node of 模块节点) {
@@ -197,7 +176,9 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       calcVars,
       gongshi,
       inputResult,
-      mokuaiVars
+      mokuaiVars,
+      mokuaiGongshis,
+      ignoreCadDimensions: isVersion2024(materialResult.做数据版本)
     });
     if (!calcZxpjResult.fulfilled) {
       result.data.error = calcZxpjResult.error;
@@ -270,7 +251,9 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
         }
         const {type2, suanliaogongshi, gongshishuru} = 选中模块;
         for (const [k, v] of gongshishuru) {
-          suanliaogongshi[k] = v;
+          if (v) {
+            suanliaogongshi[k] = v;
+          }
         }
         const calcResult = await this.calc.calcFormulas(suanliaogongshi, vars);
         const title = [menshanKey, type2].join("-");
