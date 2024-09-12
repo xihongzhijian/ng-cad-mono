@@ -5,6 +5,9 @@
         {{ name }}
       </button>
     }
+    @if (!isFromOrder() || isZhijian()) {
+      <button mat-raised-button color="primary" (click)="openMokuaikuInNew()">模块库</button>
+    }
     <mat-divider vertical></mat-divider>
     @if (isFromOrder()) {
       <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>

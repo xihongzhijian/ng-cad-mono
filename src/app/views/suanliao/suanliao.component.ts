@@ -118,10 +118,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       const {模块大小配置} = 选中布局数据 || {};
       if (模块大小配置) {
         mokuaiGongshis[门扇] = {...模块大小配置.算料公式};
-        mokuaiVars[门扇] = {...模块大小配置.算料公式, ...模块大小输出};
-      } else {
-        mokuaiVars[门扇] = {...模块大小输出};
       }
+      mokuaiVars[门扇] = {...模块大小输出};
       if (Array.isArray(模块节点)) {
         for (const node of 模块节点) {
           const {选中模块, 层名字, 层id} = node;
