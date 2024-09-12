@@ -46,6 +46,7 @@ import {MkdxpzEditorCloseEvent} from "@components/mkdxpz-editor/mkdxpz-editor.ty
 import {GenerateRectsEndEvent, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {MsbjRectInfo, MsbjSelectRectEvent, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
 import {VarNameItem} from "@components/var-names/var-names.types";
+import {XhmrmsbjSbjbComponent} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.component";
 import {environment} from "@env";
 import {keysOf, ObjectOf, Point, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
@@ -108,7 +109,8 @@ const table = "p_xinghaomorenmenshanbuju";
     MsbjRectsComponent,
     NgScrollbar,
     NgTemplateOutlet,
-    TypedTemplateDirective
+    TypedTemplateDirective,
+    XhmrmsbjSbjbComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -782,9 +784,10 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
   }
 
-  activeTabName = signal<XhmrmsbjTabName>("门扇模块");
+  private _activeTabNameKey = "xhmrmsbjActiveTabName";
+  activeTabName = signal<XhmrmsbjTabName>(session.load(this._activeTabNameKey) || "门扇模块");
   activeTabNameEff = effect(() => {
-    this.activeTabName();
+    session.save(this._activeTabNameKey, this.activeTabName());
     setTimeout(() => {
       this.msbjRectsComponent()?.generateRects();
     }, 0);

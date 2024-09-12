@@ -795,11 +795,17 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  onClick(params?: {key: string}) {
+  async onClick(params?: {key: string}) {
     const {type, suffixIcons} = this.info;
     const defaultSuffixIcon = suffixIcons?.find((v) => v.isDefault);
     if (defaultSuffixIcon) {
-      defaultSuffixIcon?.onClick?.();
+      let result = defaultSuffixIcon?.onClick?.();
+      if (result instanceof Promise) {
+        result = await result;
+      }
+      if (result?.isValueChanged) {
+        this.validateValue();
+      }
     } else if (type === "select") {
       this.selectOptions(this.model.key);
     } else if (type === "object" && params?.key) {

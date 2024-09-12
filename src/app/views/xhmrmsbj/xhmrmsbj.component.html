@@ -35,7 +35,9 @@
 </div>
 @switch (activeTabName()) {
   @case ("锁边铰边") {
-    锁边铰边
+    @if (xinghao(); as xinghao) {
+      <app-xhmrmsbj-sbjb [xinghaoName]="xinghao.raw.mingzi"></app-xhmrmsbj-sbjb>
+    }
   }
   @case ("门扇模块") {
     <div class="flex-row flex-110">

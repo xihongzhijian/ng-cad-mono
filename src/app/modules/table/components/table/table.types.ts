@@ -131,7 +131,7 @@ export interface CellEvent<T> {
   rowIdx: number;
 }
 
-export type ItemGetter<T> = ((rowIdx: number) => T) | ((rowIdx: number) => Promise<T>);
+export type ItemGetter<T> = ((rowIdx: number) => T | null) | ((rowIdx: number) => Promise<T | null>);
 
 export type DataTransformer<T> = (type: "import" | "export", data: T[]) => any;
 

@@ -55,6 +55,7 @@
             [data]="cadData"
             [width]="cadWidth"
             [height]="cadHeight"
+            [isLocal]="isLocal"
             [paramsGetter]="getCadPreviewParams"
             [style.width.px]="cadWidth"
             (dblclick)="onCadImageClick()"
@@ -68,7 +69,9 @@
         @if (cadViewer) {
           <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="centerCad()">居中</button>
         }
-        <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="editCad()">编辑</button>
+        @if (!editDisabled) {
+          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="editCad()">编辑</button>
+        }
         @for (button of buttons; track $index) {
           <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="button.onClick(this)">
             {{ button.name }}

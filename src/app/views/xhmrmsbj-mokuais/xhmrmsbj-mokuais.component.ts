@@ -45,6 +45,7 @@ export class XhmrmsbjMokuaisComponent {
     this.mkdxFormulaInfos = [];
     this.xuanzhongMokuaiInfos = [];
     const {lastSuanliao, mokuaidaxiaoResults} = this.data.data;
+    console.log(lastSuanliao, mokuaidaxiaoResults);
     const {input, output} = lastSuanliao;
     for (const key of input.bujuNames) {
       const value = input.型号选中门扇布局[key];

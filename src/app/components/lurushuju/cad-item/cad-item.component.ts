@@ -1,5 +1,6 @@
 import {KeyValuePipe} from "@angular/common";
 import {
+  booleanAttribute,
   Component,
   ElementRef,
   EventEmitter,
@@ -84,15 +85,16 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   @Input() buttons2: CadItemButton<T>[] = [];
   @Input() hideButtons = false;
   @Input({required: true}) customInfo!: T;
-  @Input({required: true}) yaoqiu: Cad数据要求 | undefined;
+  @Input({required: true}) yaoqiu: Cad数据要求 | undefined | null;
   @Input() gongshis: 算料公式[] | null | undefined;
   @Input() fentiDialogInput?: FentiCadDialogInput;
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
   @Input() showMuban?: boolean;
   @Input() isOnline?: CadItemIsOnlineInfo<T>;
+  @Input({transform: booleanAttribute}) isLocal?: boolean;
   @Input() selectable?: CadItemSelectable<T>;
-  @Input() editDisabled?: boolean;
+  @Input({transform: booleanAttribute}) editDisabled?: boolean;
   @Input() events?: {
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
@@ -233,7 +235,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         collection: isOnline?.collection,
         data: cadData,
         center: true,
-        isLocal: !isOnline,
+        isLocal: this.isLocal || !isOnline,
         gongshis: this.gongshis,
         validator: (data) => {
           return {...this.validateZhankai(data), ...this.validateName(data)};

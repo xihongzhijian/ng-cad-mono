@@ -161,7 +161,7 @@ export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoButtonInfo {
   name: string;
-  onClick?: () => void;
+  onClick?: () => Promise<{isValueChanged?: boolean} | void | null> | {isValueChanged?: boolean} | void | null;
   color?: "" | "primary" | "accent" | "warn";
   isDefault?: boolean;
 }

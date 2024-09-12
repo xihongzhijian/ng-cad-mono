@@ -42,6 +42,7 @@ export class CadImageComponent implements OnChanges {
   @Input() collection: CadCollection = "cad";
   @Input() width?: number;
   @Input() height?: number;
+  @Input({transform: booleanAttribute}) isLocal?: boolean;
   @Input({transform: booleanAttribute}) isImgId?: boolean;
   @Input() backgroundColor = "black";
   @Input() paramsGetter?: () => CadPreviewParams;
@@ -131,7 +132,7 @@ export class CadImageComponent implements OnChanges {
         }
       } else {
         url = await this.getPreview(data);
-        if (!data.info.isLocal) {
+        if (!data.info.isLocal && !this.isLocal) {
           data.info.imgId = await this.http.getMongoId({spinner: false});
           await this.http.setCadImg(data.info.imgId, url, {spinner: false});
           url = this.getImgUrl(data.info.imgId, true);
