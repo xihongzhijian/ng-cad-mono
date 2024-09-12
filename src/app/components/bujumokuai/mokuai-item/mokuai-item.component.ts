@@ -20,6 +20,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
+import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -39,7 +40,7 @@ import {firstValueFrom, Subject} from "rxjs";
 import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
 import {MokuaiCadsComponent} from "../mokuai-cads/mokuai-cads.component";
 import {BjmkStatusService} from "../services/bjmk-status.service";
-import {MokuaiItem, MokuaiItemCloseEvent} from "./mokuai-item.types";
+import {MokuaiItem, MokuaiItemCadInfo, MokuaiItemCloseEvent} from "./mokuai-item.types";
 import {getEmptyMokuaiItem} from "./mokuai-item.utils";
 
 @Component({
@@ -72,7 +73,6 @@ export class MokuaiItemComponent implements OnInit {
 
   @HostBinding("class") class = ["ng-page"];
 
-  cadYaoqiu = this.bjmkStatus.cadYaoqiu;
   collection = this.bjmkStatus.collection;
 
   mokuaiIn = input.required<MokuaiItem>({alias: "mokuai"});
@@ -282,8 +282,11 @@ export class MokuaiItemComponent implements OnInit {
     return infos;
   });
 
-  cadWidth = signal(200);
-  cadHeight = signal(100);
+  cadYaoqiu = this.bjmkStatus.cadYaoqiu;
+  cadButtons = computed(() => {
+    const buttons: CadItemButton<MokuaiItemCadInfo>[] = [{name: "删除", onClick: ({customInfo}) => this.unselectCad(customInfo.index)}];
+    return buttons;
+  });
   afterEditCad() {
     const mokuai = this.mokuai();
     console.log(this.selectedCads().map((v) => v.info));
@@ -318,6 +321,14 @@ export class MokuaiItemComponent implements OnInit {
       }
       cads.push(getHoutaiCad(cad));
     }
+    this.mokuai.update((v) => ({...v, cads}));
+  }
+  async unselectCad(i: number) {
+    if (!(await this.message.confirm("是否确定删除？"))) {
+      return;
+    }
+    const cads = this.mokuai().cads || [];
+    cads.splice(i, 1);
     this.mokuai.update((v) => ({...v, cads}));
   }
   closeCadsDialog(mokuaiCads: MokuaiCadsComponent | null) {

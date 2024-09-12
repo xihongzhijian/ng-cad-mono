@@ -23,7 +23,7 @@ export class BujumokuaiIndexComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
-      const {page: pageName} = params;
+      const {page: pageName = "模块库"} = params;
       const i = this.pages().findIndex((v) => v.name === pageName);
       if (i >= 0) {
         this.pageIndex.set(i + 1);
