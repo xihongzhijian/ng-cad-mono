@@ -79,13 +79,13 @@ export class MokuaiItemComponent implements OnInit {
 
   mokuaiIn = input.required<MokuaiItem>({alias: "mokuai"});
   bancaiListData = input.required<BancaiListData | null>();
-  imgPrefix = input<string>("");
   closeOut = output<MokuaiItemCloseEvent>({alias: "close"});
 
   async ngOnInit() {
     await this.bjmkStatus.fetchCads();
   }
 
+  imgPrefix = this.bjmkStatus.imgPrefix;
   mokuai = signal<MokuaiItem>(getEmptyMokuaiItem());
   mokuaiEff = effect(() => this.mokuai.set(cloneDeep(this.mokuaiIn())), {allowSignalWrites: true});
   async editMokuai() {

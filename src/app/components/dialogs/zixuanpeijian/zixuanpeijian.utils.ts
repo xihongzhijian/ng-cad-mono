@@ -910,7 +910,13 @@ export const calcZxpj = async (
       }
     }
   }
-  return {fulfilled: true, 门扇布局大小: mokuaiVars};
+  const 模块公式输入: Formulas = {};
+  for (const mokuai of mokuais) {
+    for (const [k, v] of mokuai.gongshishuru) {
+      模块公式输入[k] = varsGlobal[k] ?? v;
+    }
+  }
+  return {fulfilled: true, 门扇布局大小: mokuaiVars, 模块公式输入};
 };
 
 export const getFromulasFromString = (str: string | undefined | null): Formulas => {

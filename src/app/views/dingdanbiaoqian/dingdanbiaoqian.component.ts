@@ -556,14 +556,7 @@ export class DingdanbiaoqianComponent implements OnInit {
     this.mokuais.set(mokuais);
     this.urlPrefix.set(remoteFilePath);
     const orders: Order[] = [];
-    const calcResults: CalcZxpjResult[] = [];
     for (const [i, mokuai] of mokuais.entries()) {
-      const calcResult = await calcZxpj(this.dialog, this.message, this.calc, {}, [mokuai], [], {useCeshishuju: true});
-      calcResults.push(calcResult);
-      // if (!calcResult.fulfilled) {
-      //   this.editMokuaiFormulas(i);
-      // }
-
       const order: Order = {
         code: getMokuaiTitle(mokuai),
         cads: mokuai.cads.map((v) => {
@@ -594,10 +587,19 @@ export class DingdanbiaoqianComponent implements OnInit {
       order.mokuaiInfo = mokuaiInfo;
       orders.push(order);
     }
-    this.calcResults.set(calcResults);
     this.orders.set(orders);
+    await this.calcMokuais();
     await this.splitOrders();
     await this.updateImgs(true);
+  }
+  async calcMokuais() {
+    const mokuais = this.mokuais();
+    const calcResults: CalcZxpjResult[] = [];
+    for (const mokuai of mokuais) {
+      const calcResult = await calcZxpj(this.dialog, this.message, this.calc, {}, [mokuai], [], {useCeshishuju: true});
+      calcResults.push(calcResult);
+    }
+    this.calcResults.set(calcResults);
   }
 
   print() {
@@ -713,12 +715,20 @@ export class DingdanbiaoqianComponent implements OnInit {
   }
 
   openCad(cad: Order["cads"][number], order: Order) {
-    const mokuai = this.mokuais()[order.mokuaiInfo?.index || 0];
-    if (isVersion2024(mokuai.zuoshujubanben)) {
-      this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: mokuai.id}});
-    } else {
+    if (!this.isMokuaiVersion2024(order)) {
       this.status.openCadInNewTab(cad.houtaiId, "cad");
     }
+  }
+  isMokuaiVersion2024(order: Order) {
+    const mokuai = this.mokuais().at(order.mokuaiInfo?.index || 0);
+    return isVersion2024(mokuai?.zuoshujubanben);
+  }
+  openMokuai(order: Order) {
+    const mokuai = this.mokuais().at(order.mokuaiInfo?.index || 0);
+    if (!mokuai) {
+      return;
+    }
+    this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: mokuai.id}});
   }
 
   isArray(v: any) {

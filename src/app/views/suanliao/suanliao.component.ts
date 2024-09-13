@@ -84,6 +84,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
         materialResultDiff,
         配件模块CAD: [],
         门扇布局CAD: [],
+        模块公式输入: {},
         fulfilled: false
       }
     };

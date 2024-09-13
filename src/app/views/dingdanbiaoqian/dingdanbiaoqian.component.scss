@@ -34,6 +34,7 @@
 
   :not(.out-of-page) {
     font-family: "宋体";
+    overflow: hidden;
   }
 }
 @media print {

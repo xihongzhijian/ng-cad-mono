@@ -93,7 +93,11 @@
                   @if (info.title) {
                     <span>{{ info.title }}：</span>
                   }
-                  <span>{{ info.value }}</span>
+                  @if (isMokuaiVersion2024(order)) {
+                    <span style="text-decoration: underline; cursor: pointer" (click)="openMokuai(order)">{{ info.value }}</span>
+                  } @else {
+                    <span>{{ info.value }}</span>
+                  }
                 </div>
               }
               <div class="flex-110 flex-row">
@@ -109,7 +113,7 @@
                           <button
                             class="no-print"
                             mat-raised-button
-                            [color]="calcResults()[order.mokuaiInfo.index].fulfilled ? 'primary' : 'accent'"
+                            [color]="calcResults().at(order.mokuaiInfo.index)?.fulfilled ? 'primary' : 'accent'"
                             (click)="editMokuaiFormulas(order.mokuaiInfo.index)"
                           >
                             编辑
@@ -216,6 +220,9 @@
 </ng-template>
 
 <div class="btn-group toolbar no-print">
+  @if (type() === "配件模块") {
+    <button mat-raised-button color="primary" (click)="calcMokuais()">计算</button>
+  }
   <button mat-raised-button color="primary" (click)="print()">打印</button>
   @if (!production) {
     <button mat-raised-button color="primary" (click)="clearHttpCache()">clearHttpCache</button>

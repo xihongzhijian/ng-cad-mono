@@ -37,6 +37,7 @@
                 <app-formulas-editor
                   [formulas]="formulas"
                   [compact]="{minRows: 5}"
+                  noScroll
                   (formulasChange)="editGongshiEnd(i, $event)"
                 ></app-formulas-editor>
               } @else {
