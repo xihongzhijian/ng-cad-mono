@@ -26,6 +26,7 @@ export interface ZixuanpeijianTypesInfoItemBase {
   ceshishuju?: Formulas;
   calcVars?: {keys: string[]; result?: Formulas};
   zhizuoren?: string;
+  zuoshujubanben?: string;
 }
 export interface ZixuanpeijianTypesInfoItem extends ZixuanpeijianTypesInfoItemBase {
   gongshishuru: string[][];

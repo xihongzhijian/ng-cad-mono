@@ -130,10 +130,7 @@ export const exportZixuanpeijian = (source: ZixuanpeijianData) => {
   return result;
 };
 
-export const getMokuaiTitle = (
-  item: ZixuanpeijianMokuaiItem | undefined | null,
-  opts?: {门扇名字?: string; 层名字?: string; type1As?: string}
-) => {
+export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null, opts?: {门扇名字?: string; 层名字?: string}) => {
   if (!item) {
     return "";
   }
@@ -143,7 +140,6 @@ export const getMokuaiTitle = (
   }
   const arr: string[] = [];
   let {门扇名字, 层名字} = opts || {};
-  const {type1As} = opts || {};
   if (!门扇名字) {
     门扇名字 = info?.门扇名字;
   }
@@ -151,13 +147,13 @@ export const getMokuaiTitle = (
     层名字 = info?.模块名字;
   }
   if (typeof 门扇名字 === "string" && 门扇名字) {
-    arr.push(门扇名字);
+    arr.push(`【${门扇名字}】`);
   }
   if (typeof 层名字 === "string" && 层名字) {
-    arr.push(层名字);
+    arr.push(`节点【${层名字}】`);
   }
-  arr.push(`${type1As || type1}【${type2}】`);
-  return arr.join(" - ");
+  arr.push(`模块【${type2}】`);
+  return arr.join("");
 };
 
 export const getStep1Data = async (
@@ -171,7 +167,7 @@ export const getStep1Data = async (
 export const getZixuanpeijianCads = async (
   http: CadDataService,
   httpOptions: HttpOptions,
-  typesInfo: ObjectOf<ObjectOf<1>>,
+  typesInfo: ObjectOf<ObjectOf<{id: number}>>,
   materialResult: Formulas = {}
 ) => {
   const data = await http.getData<{cads: ObjectOf<ObjectOf<any[]>>; bancais: BancaiList[]}>(
@@ -591,7 +587,7 @@ export const calcZxpj = async (
       const mokuaiVarsCurr = getMokuaiVarsCurr(mokuaiVars[门扇名字], 模块名字);
       const vars1 = {...materialResult, ...shuchubianliang, ...lingsanVars, ...mokuaiVarsCurr};
       vars1.门扇布局 = v.item.info?.门扇布局?.name || "";
-      const result1Msg = `【${门扇名字}】模块【${模块名字}】计算`;
+      const result1Msg = `${getMokuaiTitle(v.item)}计算`;
       const result1 = await calc.calcFormulas(
         formulas1,
         vars1,

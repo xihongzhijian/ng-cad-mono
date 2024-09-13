@@ -70,3 +70,9 @@ export interface FormItem {
 }
 
 export type DdbqType = "标签贴纸" | "质检标签" | "配件模块" | "合格证" | "流程指令卡" | "生产流程单";
+
+export interface DdbqConfig {
+  showCadSmallImg: boolean;
+  showCadLargeImg: boolean;
+  showBarcode: boolean;
+}
