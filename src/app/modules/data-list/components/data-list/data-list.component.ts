@@ -195,7 +195,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
     const names: string[] = [];
     for (const node of getDataListNavNodesFlat(this.navDataSource.data)) {
-      if (!id || node.id !== id) {
+      if (!id || (node.id !== id && !node.readonly)) {
         names.push(node.name);
       }
     }
