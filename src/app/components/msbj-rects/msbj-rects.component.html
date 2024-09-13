@@ -3,13 +3,14 @@
     @for (info of rectInfosRelative; track $index) {
       <div
         [id]="info.raw.vid"
-        class="rect flex-row"
+        class="rect flex-column"
         [class]="{'is-buju': info.raw.isBuju, active: info.id === currRectInfo?.id}"
         [style]="getRectStyle(info)"
         (click)="setCurrRectInfo(info)"
         appClickStop
       >
         <div class="title">{{ info.name }}</div>
+        <div class="title small">{{ info["选项名称"] }}</div>
       </div>
     }
   </div>
