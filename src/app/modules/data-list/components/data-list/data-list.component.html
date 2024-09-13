@@ -71,7 +71,7 @@
       <app-input class="flex-110" [info]="itemQueryInputInfo()"></app-input>
       <ng-content select="[appDataListToolbar]"></ng-content>
     </div>
-    <ng-scrollbar>
+    <ng-scrollbar #itemsScrollbar>
       <ng-content select="[appDataListItems]"></ng-content>
     </ng-scrollbar>
   </div>

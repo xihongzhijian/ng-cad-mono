@@ -21,7 +21,12 @@
     </div>
     <div class="data-items items no-items-per-row" appDataListItems>
       @for (mokuai of mokuais(); track $index) {
-        <div class="data-item item link" [class.active]="mokuaiActiveItem()?.id === mokuai.id" (click)="clickMokuaiItem(mokuai)">
+        <div
+          class="data-item item link"
+          [attr.data-id]="mokuai.id"
+          [class.active]="mokuaiActiveItem()?.id === mokuai.id"
+          (click)="clickMokuaiItem(mokuai)"
+        >
           @if (selectable()) {
             <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()" (click)="selectedMokuai(mokuai)"></app-image>
             <div class="name toolbar center">

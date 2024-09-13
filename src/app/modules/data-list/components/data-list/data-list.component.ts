@@ -41,6 +41,7 @@ import {
   getDataListNavNodeList,
   getDataListNavNodePath,
   getDataListNavNodesFlat,
+  sortDataListItems,
   sortDataListNavNodeList,
   updateDataListNavNodeList
 } from "./data-list.utils";
@@ -71,7 +72,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
 
   navDataName = input.required<string>();
   navDataTitle = input.required<string>();
-  itemsAll = input<T[]>([]);
+  itemsAllIn = input<T[]>([], {alias: "itemsAll"});
   items = model<T[]>([]);
   activeNavNode = model<DataListNavNode | null>(null);
   navEditMode = model(false);
@@ -299,15 +300,35 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }, 200)
   }));
 
-  itemsAllEff = effect(() => {
-    const itemsAll = this.itemsAll();
-    untracked(() => this._onItemsAllChange(itemsAll));
-  });
+  itemsAll = signal<T[]>([]);
+  itemsAllEff = effect(
+    () => {
+      const itemsAll = sortDataListItems(this.itemsAllIn());
+      this.itemsAll.set(itemsAll);
+      untracked(() => this._onItemsAllChange(itemsAll));
+    },
+    {allowSignalWrites: true}
+  );
   private async _onItemsAllChange(itemsAll: T[]) {
     await this.untilInited();
     updateDataListNavNodeList(this.navDataSource.data, itemsAll);
     this.filterNavNodes();
     this.filterItems();
+  }
+
+  itemsScrollbar = viewChild<NgScrollbar>("itemsScrollbar");
+  scrollToItem(selector: string) {
+    const scrollbar = this.itemsScrollbar();
+    if (!scrollbar) {
+      return;
+    }
+    const el = scrollbar.nativeElement.querySelector(selector);
+    if (el instanceof HTMLElement) {
+      scrollbar.scrollToElement(el);
+    }
+  }
+  getItemIndex(compareFn: (item: T) => boolean) {
+    return this.itemsAll().findIndex((item) => compareFn(item));
   }
 
   activeNavNodeEff = effect(() => {

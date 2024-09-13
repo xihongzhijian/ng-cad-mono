@@ -1,3 +1,4 @@
+import {ObjectOf} from "@lucilor/utils";
 import {isEqual} from "lodash";
 import {v4} from "uuid";
 import {DataListItem, DataListNavNodeRaw} from "./data-list.types";
@@ -172,4 +173,37 @@ export const getDataListNavNodesFlat = function* (nodes: DataListNavNode[]): Gen
       yield* getDataListNavNodesFlat(node.children);
     }
   }
+};
+
+export const sortDataListItems = <T extends DataListItem>(items: T[]) => {
+  const sortedItems: T[] = [];
+  type GroupItem = {item: T; index: number};
+  const groups: ObjectOf<GroupItem[]> = {};
+  const reg = /\d+$/;
+  for (const item of items) {
+    const name0 = item.name;
+    if (typeof name0 !== "string") {
+      continue;
+    }
+    const match = name0.match(reg);
+    const index = match?.[0] ? Number(match[0]) : 0;
+    const name = name0.replace(reg, "");
+    if (!name) {
+      sortedItems.push(item);
+      continue;
+    }
+    const groupItem: GroupItem = {item, index};
+    if (groups[name]) {
+      groups[name].push(groupItem);
+    } else {
+      groups[name] = [groupItem];
+    }
+  }
+  for (const group of Object.values(groups)) {
+    group.sort((a, b) => a.index - b.index);
+    for (const groupItem of group) {
+      sortedItems.push(groupItem.item);
+    }
+  }
+  return sortedItems;
 };

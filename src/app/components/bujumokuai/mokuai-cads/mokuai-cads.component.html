@@ -17,6 +17,7 @@
     @for (cad of cads(); track i; let i = $index) {
       <div class="data-item item link">
         <app-cad-item
+          [attr.data-id]="cad.id"
           [cad]="cad"
           [yaoqiu]="cadYaoqiu()"
           [buttons]="cadItemButtons()"
@@ -24,7 +25,7 @@
           [customInfo]="{index: i}"
           [isOnline]="cadsIsOnline[cad.id]"
           [editDisabled]="!cadItemEditable()"
-          (afterEditCad)="afterEditCad()"
+          (afterEditCad)="afterEditCad(cad.id)"
           (click)="clickCad(i)"
         ></app-cad-item>
       </div>

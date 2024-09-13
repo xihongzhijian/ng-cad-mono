@@ -20,6 +20,7 @@ import {MatTreeModule} from "@angular/material/tree";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal} from "@app/app.common";
 import {environment} from "@env";
+import {timeout} from "@lucilor/utils";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
 import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
@@ -146,7 +147,14 @@ export class MokuaikuComponent implements OnInit {
     }
   }
   async editMokuai(mokuai: MokuaiItem) {
+    const dataList = this.dataList();
+    const i = dataList?.getItemIndex((v) => v.id === mokuai.id) ?? -1;
     await this.bjmkStatus.editMokuai(mokuai);
+    await timeout(0);
+    const j = dataList?.getItemIndex((v) => v.id === mokuai.id) ?? -1;
+    if (i >= 0 && j >= 0 && i !== j) {
+      this.dataList()?.scrollToItem(`[data-id="${mokuai.id}"]`);
+    }
   }
   async copyMokuai(item: MokuaiItem) {
     await this.bjmkStatus.copyMokuai(item);

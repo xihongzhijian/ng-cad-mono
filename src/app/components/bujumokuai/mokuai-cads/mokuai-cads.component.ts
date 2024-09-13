@@ -25,7 +25,7 @@ import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-edi
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton, CadItemIsOnlineInfo} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf} from "@lucilor/utils";
+import {ObjectOf, timeout} from "@lucilor/utils";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
 import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
@@ -194,9 +194,16 @@ export class MokuaiCadsComponent implements OnInit {
       await this.bjmkStatus.fetchCads(true);
     }
   }
-  afterEditCad() {
+  async afterEditCad(id: string) {
+    const dataList = this.dataList();
+    const i = dataList?.getItemIndex((v) => v.id === id) ?? -1;
     this.cads.update((v) => [...v]);
     this.bjmkStatus.refreshCads();
+    await timeout(0);
+    const j = dataList?.getItemIndex((v) => v.id === id) ?? -1;
+    if (i >= 0 && j >= 0 && i !== j) {
+      this.dataList()?.scrollToItem(`[data-id="${id}"]`);
+    }
   }
   clickCad(i: number) {
     if (this.selectable() && !this.cadItemEditable()) {
