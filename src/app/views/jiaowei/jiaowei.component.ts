@@ -71,10 +71,11 @@ export class JiaoweiComponent implements OnInit {
     this.http.tableUpdate({table, data});
   }
 
-  getJiaoweiAnchorOptions(item: JiaoweiDataItem) {
-    if (item.items.length <= 3) {
-      return jiaoweiAnchorOptions.filter((v) => v !== "剩余平分");
+  getJiaoweiAnchorOptions(item: JiaoweiDataItem, i: number) {
+    const total = item.items.length;
+    if (total > 3 && i < total - 1) {
+      return jiaoweiAnchorOptions;
     }
-    return jiaoweiAnchorOptions;
+    return jiaoweiAnchorOptions.filter((v) => v !== "剩余平分");
   }
 }

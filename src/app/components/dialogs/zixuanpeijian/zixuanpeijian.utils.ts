@@ -609,6 +609,9 @@ export const calcZxpj = async (
       for (const key in mokuaiVars[门扇名字]) {
         mokuaiVars[门扇名字][key] = result1.succeed[key];
       }
+      for (const key in mokuaiGongshis[门扇名字]) {
+        mokuaiVars[门扇名字][key] = result1.succeed[key];
+      }
       const missingKeys: string[] = [];
       for (const vv of v.item.shuchubianliang) {
         if (vv in result1.succeedTrim) {

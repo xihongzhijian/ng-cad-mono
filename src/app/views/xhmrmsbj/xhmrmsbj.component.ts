@@ -1167,8 +1167,9 @@ export class XhmrmsbjComponent implements OnDestroy {
     if (!Array.isArray(varNameItem.nameGroups)) {
       varNameItem.nameGroups = [];
     }
-    for (const key in this.data()?.menshanbujuInfos || {}) {
-      for (const node of msbjInfo.模块节点 || []) {
+    const menshanbujuInfos = this.data()?.menshanbujuInfos || {};
+    for (const key of keysOf(menshanbujuInfos)) {
+      for (const node of menshanbujuInfos[key]?.模块节点 || []) {
         const varNames = new Set<string>();
         for (const mokuai of node.可选模块) {
           for (const v of mokuai.gongshishuru) {

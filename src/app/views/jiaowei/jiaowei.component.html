@@ -13,7 +13,7 @@
             <div>铰位{{ i + 1 }}中⼼Y距离</div>
             <mat-form-field style="width: 150px">
               <mat-select [(ngModel)]="itemItem.anchor" [disabled]="item.value.disabled">
-                @for (option of getJiaoweiAnchorOptions(item.value); track $index) {
+                @for (option of getJiaoweiAnchorOptions(item.value, i); track $index) {
                   <mat-option [value]="option">{{ option }}</mat-option>
                 }
               </mat-select>
