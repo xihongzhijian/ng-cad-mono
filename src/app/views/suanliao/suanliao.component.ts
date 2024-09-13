@@ -84,6 +84,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
         materialResultDiff,
         配件模块CAD: [],
         门扇布局CAD: [],
+        模块公式输入: {},
         fulfilled: false
       }
     };
@@ -118,6 +119,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       const {模块大小配置} = 选中布局数据 || {};
       if (模块大小配置) {
         mokuaiGongshis[门扇] = {...模块大小配置.算料公式};
+      } else {
+        mokuaiGongshis[门扇] = {};
       }
       mokuaiVars[门扇] = {...模块大小输出};
       if (Array.isArray(模块节点)) {

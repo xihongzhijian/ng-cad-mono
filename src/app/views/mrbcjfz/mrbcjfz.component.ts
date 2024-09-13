@@ -333,28 +333,9 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
             info.花件.push(huajianId);
           }
         }
-        const errorMsgs: string[] = [];
-        if (cadsRemoved.length > 0) {
-          errorMsgs.push(`删除了以下${cadsRemoved.length}个无效cad: <br>${cadsRemoved.join("，")}`);
-        }
-        if (huajiansRemoved.length > 0) {
-          errorMsgs.push(`删除了以下${huajiansRemoved.length}个无效花件: <br>${huajiansRemoved.join("，")}`);
-        }
         this.bancaiList = data.bancaiList;
         this.updateXinghao();
         this.updateListItems();
-
-        if (errorMsgs.length > 0) {
-          errorMsgs.push("<br><b>需要提交保存后才生效</b>");
-          const result = await this.message.button({
-            content: errorMsgs.join("<br>"),
-            buttons: ["立刻提交"],
-            btnTexts: {cancel: "稍后提交"}
-          });
-          if (result === "立刻提交") {
-            await this.submit();
-          }
-        }
       }
     }
     this.refreshAfter.emit();

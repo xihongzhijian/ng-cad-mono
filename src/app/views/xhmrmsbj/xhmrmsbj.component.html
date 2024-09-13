@@ -90,7 +90,9 @@
                 </ng-scrollbar>
               </div>
             }
-            <div class="xiaoguotu flex-110" #xiaoguotuContainer></div>
+            @if (!disableXiaoguotu()) {
+              <div class="xiaoguotu flex-110" #xiaoguotuContainer></div>
+            }
           }
           <div class="mokuai-inputs">
             <ng-scrollbar>

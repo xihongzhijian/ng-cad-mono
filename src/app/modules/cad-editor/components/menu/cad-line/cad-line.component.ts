@@ -18,7 +18,6 @@ import {
   CadEventCallBack,
   CadLine,
   CadLineLike,
-  CadViewerConfig,
   Defaults,
   lineweight2linewidth,
   linewidth2lineweight,
@@ -143,12 +142,9 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
   }
 
   ngOnInit() {
-    let prevSelectMode: CadViewerConfig["selectMode"];
     this.subscribe(this.status.cadStatusEnter$, (cadStatus) => {
       const cad = this.status.cad;
       if (cadStatus instanceof CadStatusDrawLine) {
-        prevSelectMode = cad.getConfig("selectMode");
-        cad.setConfig("selectMode", "none");
         cad.traverse((e) => {
           e.info.prevSelectable = e.selectable;
           e.selectable = false;
@@ -180,7 +176,6 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
           e.selectable = e.info.prevSelectable ?? true;
           delete e.info.prevSelectable;
         });
-        cad.setConfig("selectMode", prevSelectMode);
         this.lineDrawing = null;
         this.status.setCadPoints();
       } else if (cadStatus instanceof CadStatusMoveLines) {

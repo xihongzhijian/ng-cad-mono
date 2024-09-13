@@ -26,6 +26,7 @@ export interface ZixuanpeijianTypesInfoItemBase {
   ceshishuju?: Formulas;
   calcVars?: {keys: string[]; result?: Formulas};
   zhizuoren?: string;
+  zuoshujubanben?: string;
 }
 export interface ZixuanpeijianTypesInfoItem extends ZixuanpeijianTypesInfoItemBase {
   gongshishuru: string[][];
@@ -159,6 +160,7 @@ export interface CalcZxpjResult {
   fulfilled: boolean;
   门扇布局大小?: ObjectOf<Formulas>;
   error?: SuanliaoCalcError;
+  模块公式输入?: Formulas;
 }
 
 export interface LingsanCadItemInfo {

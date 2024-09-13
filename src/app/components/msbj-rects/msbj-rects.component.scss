@@ -21,5 +21,12 @@
     &.active {
       border: 2px solid red;
     }
+
+    .title {
+      &.small {
+        font-size: 14px;
+        writing-mode: vertical-lr;
+      }
+    }
   }
 }

@@ -31,6 +31,7 @@ import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzDataSubmitEvent, MrbcjfzInfo, MrbcjfzInputData, MrbcjfzResponseData} from "@views/mrbcjfz/mrbcjfz.types";
 import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
@@ -70,6 +71,7 @@ export class MokuaiItemComponent implements OnInit {
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
+  private status = inject(AppStatusService);
 
   @HostBinding("class") class = ["ng-page"];
 
@@ -77,13 +79,13 @@ export class MokuaiItemComponent implements OnInit {
 
   mokuaiIn = input.required<MokuaiItem>({alias: "mokuai"});
   bancaiListData = input.required<BancaiListData | null>();
-  imgPrefix = input<string>("");
   closeOut = output<MokuaiItemCloseEvent>({alias: "close"});
 
   async ngOnInit() {
     await this.bjmkStatus.fetchCads();
   }
 
+  imgPrefix = this.bjmkStatus.imgPrefix;
   mokuai = signal<MokuaiItem>(getEmptyMokuaiItem());
   mokuaiEff = effect(() => this.mokuai.set(cloneDeep(this.mokuaiIn())), {allowSignalWrites: true});
   async editMokuai() {
@@ -395,5 +397,9 @@ export class MokuaiItemComponent implements OnInit {
       return;
     }
     await this.bjmkStatus.copyMokuai(mokuai);
+  }
+  openDdbq() {
+    const mokuai = this.mokuai();
+    this.status.openInNewTab(["/dingdanbiaoqian"], {queryParams: {ids: mokuai.id, type: "配件模块"}});
   }
 }

@@ -44,7 +44,7 @@ describe("DingdanbiaoqianComponent", () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(DingdanbiaoqianComponent);
     component = fixture.componentInstance;
-    component.orders = orders;
+    component.orders.set(orders);
     fixture.detectChanges();
   });
 

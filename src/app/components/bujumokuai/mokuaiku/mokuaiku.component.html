@@ -70,11 +70,6 @@
 
 @if (currMokuai(); as mokuai) {
   <app-floating-dialog [maximized]="true" noTitle>
-    <app-mokuai-item
-      [mokuai]="mokuai"
-      [bancaiListData]="bancaiListData()"
-      [imgPrefix]="imgPrefix()"
-      (close)="closeMokuai()"
-    ></app-mokuai-item>
+    <app-mokuai-item [mokuai]="mokuai" [bancaiListData]="bancaiListData()" (close)="closeMokuai()"></app-mokuai-item>
   </app-floating-dialog>
 }

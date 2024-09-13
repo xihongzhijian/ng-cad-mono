@@ -1,11 +1,11 @@
 <div class="pages flex-column">
-  @for (order of orders; track i; let i = $index) {
+  @for (order of orders(); track i; let i = $index) {
     <div class="page flex-row" [style]="order.style">
       @if (order.info) {
         <div class="info">
           @for (section of order.info; track $index) {
             <div class="section">
-              @for (row of sectionConfig.rows; track $index) {
+              @for (row of sectionConfig().rows; track $index) {
                 <div class="row">
                   @for (cell of row.cells; track $index) {
                     <div class="cell border" [class]="cell.class || ''">
@@ -86,14 +86,18 @@
         </div>
       } @else {
         <div class="flex-row flex-110">
-          @if (type === "配件模块" && order.mokuaiInfo) {
+          @if (type() === "配件模块" && order.mokuaiInfo) {
             <div class="配件模块 flex-column out-of-page">
               @for (info of order.mokuaiInfo.details; track $index) {
                 <div>
                   @if (info.title) {
                     <span>{{ info.title }}：</span>
                   }
-                  <span>{{ info.value }}</span>
+                  @if (isMokuaiVersion2024(order)) {
+                    <span style="text-decoration: underline; cursor: pointer" (click)="openMokuai(order)">{{ info.value }}</span>
+                  } @else {
+                    <span>{{ info.value }}</span>
+                  }
                 </div>
               }
               <div class="flex-110 flex-row">
@@ -109,7 +113,7 @@
                           <button
                             class="no-print"
                             mat-raised-button
-                            [color]="calcResults[order.mokuaiInfo.index].fulfilled ? 'primary' : 'accent'"
+                            [color]="calcResults().at(order.mokuaiInfo.index)?.fulfilled ? 'primary' : 'accent'"
                             (click)="editMokuaiFormulas(order.mokuaiInfo.index)"
                           >
                             编辑
@@ -121,7 +125,7 @@
                   }
                 </div>
                 <div class="image-container flex-column">
-                  <app-image [src]="mokuais[order.mokuaiInfo.index].xiaoguotu" [prefix]="urlPrefix"></app-image>
+                  <app-image [src]="mokuais()[order.mokuaiInfo.index].xiaoguotu" [prefix]="urlPrefix()"></app-image>
                 </div>
               </div>
             </div>
@@ -136,15 +140,15 @@
                     </div>
                   }
                 </div>
-                @if (config.showBarcode) {
+                @if (config().showBarcode) {
                   <div>
                     <svg class="barcode" [attr.jsbarcode-value]="cad.data.info.groupId"></svg>
                   </div>
                 }
                 <div class="cad-image flex-110 flex-column" [style]="cad.imgStyle">
                   <div class="cad-image-inner">
-                    <app-image class="img" [src]="cad.img" [bigPicSrc]="cad.imgLarge" (click)="openCad(cad)"></app-image>
-                    @if (!config.showBarcode) {
+                    <app-image class="img" [src]="cad.img" [bigPicSrc]="cad.imgLarge" (click)="openCad(cad, order)"></app-image>
+                    @if (!config().showBarcode) {
                       <div class="排版编号">{{ cad.data.info.groupId }}</div>
                     }
                   </div>
@@ -152,7 +156,7 @@
                 <div class="cad-info flex-column">
                   @for (zhankai of cad.zhankai; track $index) {
                     <div class="cad-size flex-row">
-                      @if (isLvxingcai) {
+                      @if (isLvxingcai()) {
                         <span>长{{ zhankai.height }}mm</span>
                       } @else {
                         <span class="highlight">{{ zhankai.width }}</span>
@@ -176,8 +180,8 @@
 </div>
 
 <div class="forms">
-  @for (form of forms; track $index) {
-    <div class="form" [class]="type">
+  @for (form of forms(); track $index) {
+    <div class="form" [class]="type()">
       @if (form.title) {
         <div class="title">{{ form.title }}</div>
       }
@@ -193,7 +197,7 @@
   }
 </div>
 
-<ng-template #formItem let-form [appTypedTemplate]="{$implicit: forms[0]}">
+<ng-template #formItem let-form [appTypedTemplate]="{$implicit: forms()[0]}">
   @for (row of form.rows; track $index) {
     <div class="row">
       @for (item of row; track $index) {
@@ -216,10 +220,14 @@
 </ng-template>
 
 <div class="btn-group toolbar no-print">
+  @if (type() === "配件模块") {
+    <button mat-raised-button color="primary" (click)="calcMokuais()">计算</button>
+  }
   <button mat-raised-button color="primary" (click)="print()">打印</button>
   @if (!production) {
     <button mat-raised-button color="primary" (click)="clearHttpCache()">clearHttpCache</button>
-    <mat-slide-toggle [(ngModel)]="config.showCadSmallImg" (change)="onConfigChange()">渲染小图</mat-slide-toggle>
-    <mat-slide-toggle [(ngModel)]="config.showCadLargeImg" (change)="onConfigChange()">渲染大图</mat-slide-toggle>
+    @for (info of configInputInfos(); track $index) {
+      <app-input [info]="info"></app-input>
+    }
   }
 </div>

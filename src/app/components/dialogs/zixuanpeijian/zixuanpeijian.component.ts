@@ -255,13 +255,13 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   async step2Fetch(updateInputInfos = true) {
-    const typesInfo: ObjectOf<ObjectOf<1>> = {};
-    this.result.模块.forEach(({type1, type2}) => {
+    const typesInfo: Parameters<typeof getZixuanpeijianCads>[2] = {};
+    this.result.模块.forEach(({type1, type2, id}) => {
       if (!typesInfo[type1]) {
         typesInfo[type1] = {};
       }
       if (!typesInfo[type1][type2]) {
-        typesInfo[type1][type2] = 1;
+        typesInfo[type1][type2] = {id};
       }
     });
     const zxpjCads = await getZixuanpeijianCads(this.http, {spinner: this.spinnerId}, typesInfo, this.materialResult);

@@ -195,12 +195,6 @@ export class XhmrmsbjComponent implements OnDestroy {
   msbjRectsComponent = viewChild(MsbjRectsComponent);
   xiaoguotuContainer = viewChild<ElementRef<HTMLDivElement>>("xiaoguotuContainer");
 
-  private _ignoreXiaoguotuKey = "xhmrmsbjIgnoreXiaoguotu";
-  ignoreXiaoguotu = signal(session.load<boolean>(this._ignoreXiaoguotuKey) ?? false);
-  ignoreXiaoguotuEff = effect(() => {
-    session.save(this._ignoreXiaoguotuKey, this.ignoreXiaoguotu());
-  });
-
   constructor() {
     setGlobal("xhmrmsbj", this);
     effect(() => this.refresh(), {allowSignalWrites: true});
@@ -960,8 +954,14 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.fetchLastSuanliao();
   }
 
+  private _ignoreXiaoguotuKey = "xhmrmsbjIgnoreXiaoguotu";
+  ignoreXiaoguotu = signal(session.load<boolean>(this._ignoreXiaoguotuKey) ?? false);
+  ignoreXiaoguotuEff = effect(() => {
+    session.save(this._ignoreXiaoguotuKey, this.ignoreXiaoguotu());
+  });
+  disableXiaoguotu = computed(() => !this.isFromOrder() || this.data()?.isVersion2024);
   async genXiaoguotu() {
-    if (!this.isFromOrder() || this.ignoreXiaoguotu()) {
+    if (this.ignoreXiaoguotu() || this.disableXiaoguotu()) {
       return;
     }
     if (this.genXiaoguotuLock$.value) {
@@ -1166,8 +1166,9 @@ export class XhmrmsbjComponent implements OnDestroy {
     if (!Array.isArray(varNameItem.nameGroups)) {
       varNameItem.nameGroups = [];
     }
-    for (const key in this.data()?.menshanbujuInfos || {}) {
-      for (const node of msbjInfo.模块节点 || []) {
+    const menshanbujuInfos = this.data()?.menshanbujuInfos || {};
+    for (const key of keysOf(menshanbujuInfos)) {
+      for (const node of menshanbujuInfos[key]?.模块节点 || []) {
         const varNames = new Set<string>();
         for (const mokuai of node.可选模块) {
           for (const v of mokuai.gongshishuru) {

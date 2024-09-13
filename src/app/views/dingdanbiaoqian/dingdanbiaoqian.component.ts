@@ -1,10 +1,20 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+  viewChild,
+  viewChildren
+} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute} from "@angular/router";
 import {getOrderBarcode, imgCadEmpty, imgEmpty, imgLoading, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
@@ -26,16 +36,19 @@ import {CadData, CadLine, CadViewer, CadViewerConfig, Defaults, setLinesLength} 
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HttpOptions} from "@modules/http/services/http.service.types";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
+import {isVersion2024} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEmpty} from "lodash";
 import {DateTime} from "luxon";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
 import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
-import {DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig} from "./dingdanbiaoqian.types";
+import {DdbqConfig, DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig} from "./dingdanbiaoqian.types";
 
 @Component({
   selector: "app-dingdanbiaoqian",
@@ -46,32 +59,38 @@ import {DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig} from "./din
     FormsModule,
     FormulasComponent,
     ImageComponent,
+    InputComponent,
     MatButtonModule,
     MatDividerModule,
-    MatSlideToggleModule,
     NgTemplateOutlet,
     TypedTemplateDirective
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DingdanbiaoqianComponent implements OnInit {
-  orders: Order[] = [];
-  cadsSize = [0, 0];
-  get cadsRowNum() {
-    return this.type === "配件模块" ? 3 : 4;
-  }
-  get cadsColNum() {
-    return this.type === "配件模块" ? 4 : 5;
-  }
+  private calc = inject(CalcService);
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private spinner = inject(SpinnerService);
+  private status = inject(AppStatusService);
+
+  type = signal<DdbqType | null>(null);
+  cadsRowNum = computed(() => (this.type() === "配件模块" ? 3 : 4));
+  cadsColNum = computed(() => (this.type() === "配件模块" ? 4 : 5));
+  cadsSize = signal<[number, number]>([0, 0]);
   pageSize = [1122, 792] as const;
   pagePadding = [17, 17, 5, 17] as const;
-  get cadSize() {
-    const w = Math.floor(this.cadsSize[0] / this.cadsColNum);
-    const h = Math.floor(this.cadsSize[1] / this.cadsRowNum);
+  cadSize = computed(() => {
+    const size = this.cadsSize();
+    const w = Math.floor(size[0] / this.cadsColNum());
+    const h = Math.floor(size[1] / this.cadsRowNum());
     return [w, h] as const;
-  }
+  });
   开启锁向示意图Size = [207, 280] as const;
   配合框Size = [150, 90] as const;
-  sectionConfig: SectionConfig = {
+  sectionConfig = signal<SectionConfig>({
     rows: [
       {
         cells: [
@@ -99,70 +118,77 @@ export class DingdanbiaoqianComponent implements OnInit {
         ]
       }
     ]
-  };
+  });
   production = environment.production;
-  materialResult: Formulas = {};
-  type: DdbqType | null = null;
-  forms: Form[] = [];
-  mokuais: ZixuanpeijianMokuaiItem[] = [];
   fractionDigits = 1;
-  urlPrefix = "";
-  calcResults: CalcZxpjResult[] = [];
-  remoteFilePath = remoteFilePath;
-  isLvxingcai = false;
-  @ViewChildren("barcode") barcodeEls?: QueryList<ElementRef<HTMLDivElement>>;
-  @ViewChild("cadsEl") cadsEl?: ElementRef<HTMLDivElement>;
 
-  private _configKey = "订单标签配置";
-  private _httpCacheKey = "订单标签请求数据";
-  enableCache = !environment.production;
-  config = {
-    showCadSmallImg: true,
-    showCadLargeImg: false,
-    showBarcode: false
-  };
+  barcodeEls = viewChildren<ElementRef<HTMLDivElement>>("barcode");
+  cadsEl = viewChild<ElementRef<HTMLDivElement>>("cadsEl");
 
-  constructor(
-    private route: ActivatedRoute,
-    private http: CadDataService,
-    private status: AppStatusService,
-    private spinner: SpinnerService,
-    private message: MessageService,
-    private calc: CalcService,
-    private dialog: MatDialog
-  ) {
+  constructor() {
     setGlobal("ddbq", this);
   }
 
   ngOnInit() {
     setTimeout(() => this.getOrders(), 0);
-    this._loadConfig();
     setGlobal("ddbq", this);
-    const {type, showBarcode} = this.route.snapshot.queryParams;
-    if (type) {
-      this.type = type;
-    }
-    if (showBarcode) {
-      this.config.showBarcode = true;
-    }
+    this.route.queryParams.subscribe(({type, showBarcode}) => {
+      if (type) {
+        this.type.set(type);
+      }
+      if (showBarcode) {
+        this.setConfig("showBarcode", true);
+      }
+    });
   }
 
-  private _saveConfig() {
-    session.save<DingdanbiaoqianComponent["config"]>(this._configKey, this.config);
-  }
-
-  private _loadConfig() {
-    const config = session.load<DingdanbiaoqianComponent["config"]>(this._configKey);
-    if (config) {
-      this.config = config;
+  private _configKey = "订单标签配置";
+  config = signal(
+    session.load<DdbqConfig>(this._configKey) || {
+      showCadSmallImg: true,
+      showCadLargeImg: false,
+      showBarcode: false
     }
+  );
+  configEff = effect(() => {
+    session.save(this._configKey, this.config());
+  });
+  setConfig<T extends keyof DdbqConfig>(key: T, value: DdbqConfig[T]) {
+    this.config.update((v) => ({...v, [key]: value}));
   }
+  configInputInfos = computed(() => {
+    const config = this.config();
+    const infos: InputInfo[] = [
+      {
+        type: "boolean",
+        label: "渲染小图",
+        appearance: "switch",
+        value: config.showCadSmallImg,
+        onChange: (val) => this.setConfig("showCadSmallImg", val)
+      },
+      {
+        type: "boolean",
+        label: "渲染大图",
+        appearance: "switch",
+        value: config.showCadLargeImg,
+        onChange: (val) => this.setConfig("showCadLargeImg", val)
+      }
+    ];
+    return infos;
+  });
 
+  private _httpCacheKey = "订单标签请求数据";
+  enableCache = signal(!environment.production);
+  orders = signal<Order[]>([]);
+  materialResult = signal<Formulas>({});
+  forms = signal<Form[]>([]);
+  isLvxingcai = signal(false);
   async getOrders() {
     const url = "order/order/dingdanbiaoqian";
     const params = this.route.snapshot.queryParams;
-    const {type, enableCache} = this;
-    this.isLvxingcai = !!params.铝型材;
+    const type = this.type();
+    const enableCache = this.enableCache();
+    this.isLvxingcai.set(!!params.铝型材);
     if (type === "配件模块") {
       await this.updateMokuais();
       return;
@@ -182,8 +208,10 @@ export class DingdanbiaoqianComponent implements OnInit {
       }
     }
     if (ddbqData) {
-      const {cadsRowNum, cadsColNum, 开启锁向示意图Size, 配合框Size} = this;
-      this.orders = ddbqData.map<Order>((order) => {
+      const cadsRowNum = this.cadsRowNum();
+      const cadsColNum = this.cadsColNum();
+      const {开启锁向示意图Size, 配合框Size} = this;
+      const orders = ddbqData.map<Order>((order) => {
         const maxLength = 80;
         const orderCads = order.cads || [];
         const cads = orderCads.map<Order["cads"][0]>((cad) => {
@@ -205,7 +233,7 @@ export class DingdanbiaoqianComponent implements OnInit {
             setShuangxiangLineRects(shuangxiangCads, shuangxiangRects);
           }
 
-          const isLarge = this.config.showBarcode || !!data.info.isLarge;
+          const isLarge = this.config().showBarcode || !!data.info.isLarge;
           return {
             houtaiId: cad.houtaiId,
             data,
@@ -218,7 +246,7 @@ export class DingdanbiaoqianComponent implements OnInit {
             imgStyle: {}
           };
         });
-        this.sectionConfig.rows.forEach((row) => {
+        this.sectionConfig().rows.forEach((row) => {
           row.cells.forEach(({key, isBoolean}) => {
             if (isBoolean && order.materialResult) {
               order.materialResult[key] = order.materialResult[key] ? "✔" : "✖";
@@ -245,21 +273,21 @@ export class DingdanbiaoqianComponent implements OnInit {
           forms: order.forms
         };
       });
-      document.title = `${this.orders[0].code}_${DateTime.now().toFormat("yyyyMMdd")}`;
+      this.orders.set(orders);
+      document.title = `${orders[0].code}_${DateTime.now().toFormat("yyyyMMdd")}`;
       await this.splitOrders();
       const barcodeResult = getOrderBarcode(".barcode", {displayValue: false, margin: 0, width: 2, height: 30});
       if (barcodeResult.error) {
         console.warn(barcodeResult.error);
         this.message.alert("生成条形码出错：" + barcodeResult.error);
         if (this.production) {
-          this.orders = [];
+          this.orders.set([]);
           return;
         }
       }
       await this.updateImgs(false);
     }
   }
-
   async updateImgs(configForPrint: boolean) {
     const {开启锁向示意图Size, 配合框Size} = this;
     this.spinner.show(this.spinner.defaultLoaderId, {text: "生成中..."});
@@ -290,7 +318,7 @@ export class DingdanbiaoqianComponent implements OnInit {
       }
       return await getCadPreview(collection, data, previewParams2);
     };
-    const {showCadSmallImg, showCadLargeImg} = this.config;
+    const {showCadSmallImg, showCadLargeImg} = this.config();
     const imgLargeSize = [innerWidth * 0.85, innerHeight * 0.85] as [number, number];
     const setData = (data: CadData, materialResult: Formulas = {}) => {
       for (const e of data.entities.dimension) {
@@ -304,7 +332,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         }
       }
     };
-    for (const {cads, 开启锁向示意图, 配合框, materialResult} of this.orders) {
+    for (const {cads, 开启锁向示意图, 配合框, materialResult} of this.orders()) {
       if (开启锁向示意图) {
         开启锁向示意图.data.type = "";
         开启锁向示意图.data.type2 = "";
@@ -338,8 +366,8 @@ export class DingdanbiaoqianComponent implements OnInit {
         }
       }
       for (const cad of cads) {
-        const imgWidth = this.cadSize[0] - 16;
-        const imgHeight = this.cadSize[1] - 16 - (cad.zhankai?.length || 0) * 38;
+        const imgWidth = this.cadSize()[0] - 16;
+        const imgHeight = this.cadSize()[1] - 16 - (cad.zhankai?.length || 0) * 38;
         cad.imgSize = [imgWidth, imgHeight];
         setData(cad.data, materialResult);
       }
@@ -356,10 +384,10 @@ export class DingdanbiaoqianComponent implements OnInit {
         await Promise.all(cads.map(async (v) => delete v.imgLarge));
       }
     }
+    this.orders.update((v) => [...v]);
     this.spinner.hide(this.spinner.defaultLoaderId);
     tmpCadViewer?.destroy();
   }
-
   takeEmptyPosition(positions: Order["positions"], isLarge: boolean) {
     const result = {position: null as number[] | null, isFull: false};
     let i = 0;
@@ -390,19 +418,18 @@ export class DingdanbiaoqianComponent implements OnInit {
     result.isFull = i === positions.length && j === positions[i - 1].length;
     return result;
   }
-
   async splitOrders() {
-    const orders = this.orders.slice();
-    this.orders = [];
-    const type = this.type;
+    const orders = this.orders().slice();
+    const orders2: typeof orders = [];
+    const type = this.type();
     const cadsToSet: Parameters<DingdanbiaoqianComponent["setCad"]>[] = [];
-    this.forms = [];
+    const forms: Form[] = [];
     orders.forEach((order) => {
       const cads = order.cads;
       order.cads = [];
       const pushOrder = () => {
         const o = cloneDeep(order);
-        this.orders.push(o);
+        orders2.push(o);
         return o;
       };
       switch (type) {
@@ -459,24 +486,31 @@ export class DingdanbiaoqianComponent implements OnInit {
         case "质检标签":
         case "合格证":
         case "流程指令卡":
-          this.forms.push(...(order.forms || []));
+          forms.push(...(order.forms || []));
           break;
         default:
           this.message.alert("未知类型：" + type);
           break;
       }
     });
-    this.orders.forEach((order) => this.setPage(order));
+    orders2.forEach((order) => this.setPage(order));
+    this.orders.set(orders2);
+    this.forms.set(forms);
     await timeout(0);
-    const cadsElRect = this.cadsEl?.nativeElement.getBoundingClientRect();
+    const cadsElRect = this.cadsEl()?.nativeElement.getBoundingClientRect();
     if (cadsElRect) {
-      this.cadsSize = [cadsElRect.width, cadsElRect.height];
+      this.cadsSize.set([cadsElRect.width, cadsElRect.height]);
     }
     cadsToSet.forEach((v) => this.setCad(...v));
   }
 
+  mokuais = signal<ZixuanpeijianMokuaiItem[]>([]);
+  urlPrefix = signal("");
+  calcResults = signal<CalcZxpjResult[]>([]);
+  remoteFilePath = remoteFilePath;
   async updateMokuais() {
-    const {cadsRowNum, cadsColNum} = this;
+    const cadsRowNum = this.cadsRowNum();
+    const cadsColNum = this.cadsColNum();
     const params = this.route.snapshot.queryParams;
     const mokuaiIds = ((params.ids as string) || "").split(",").filter(Boolean).map(Number);
     if (mokuaiIds.length <= 0) {
@@ -488,11 +522,11 @@ export class DingdanbiaoqianComponent implements OnInit {
       return;
     }
     const typesInfo = step1Data.typesInfo;
-    const typesInfo2: ObjectOf<ObjectOf<1>> = {};
+    const typesInfo2: Parameters<typeof getZixuanpeijianCads>[2] = {};
     for (const type1 in typesInfo) {
       typesInfo2[type1] = {};
       for (const type2 in typesInfo[type1]) {
-        typesInfo2[type1][type2] = 1;
+        typesInfo2[type1][type2] = {id: typesInfo[type1][type2].id};
       }
     }
     const cads = (await getZixuanpeijianCads(this.http, httpOptions, typesInfo2))?.cads;
@@ -519,17 +553,10 @@ export class DingdanbiaoqianComponent implements OnInit {
         mokuais.push(item);
       }
     }
-    this.mokuais = mokuais;
-    this.urlPrefix = remoteFilePath;
-    this.orders = [];
-    this.calcResults = [];
+    this.mokuais.set(mokuais);
+    this.urlPrefix.set(remoteFilePath);
+    const orders: Order[] = [];
     for (const [i, mokuai] of mokuais.entries()) {
-      const calcResult = await calcZxpj(this.dialog, this.message, this.calc, {}, [mokuai], [], {useCeshishuju: true});
-      this.calcResults.push(calcResult);
-      // if (!calcResult.fulfilled) {
-      //   this.editMokuaiFormulas(i);
-      // }
-
       const order: Order = {
         code: getMokuaiTitle(mokuai),
         cads: mokuai.cads.map((v) => {
@@ -558,10 +585,21 @@ export class DingdanbiaoqianComponent implements OnInit {
         mokuaiInfo.details.push({value: `制作人：${mokuai.zhizuoren}`});
       }
       order.mokuaiInfo = mokuaiInfo;
-      this.orders.push(order);
+      orders.push(order);
     }
+    this.orders.set(orders);
+    await this.calcMokuais();
     await this.splitOrders();
     await this.updateImgs(true);
+  }
+  async calcMokuais() {
+    const mokuais = this.mokuais();
+    const calcResults: CalcZxpjResult[] = [];
+    for (const mokuai of mokuais) {
+      const calcResult = await calcZxpj(this.dialog, this.message, this.calc, {}, [mokuai], [], {useCeshishuju: true});
+      calcResults.push(calcResult);
+    }
+    this.calcResults.set(calcResults);
   }
 
   print() {
@@ -569,7 +607,7 @@ export class DingdanbiaoqianComponent implements OnInit {
   }
 
   setCad(cad: Order["cads"][0], position: number[]) {
-    const {cadSize} = this;
+    const cadSize = this.cadSize();
     const {isLarge} = cad;
     const top = position[0] * cadSize[1] + position[0] * -1;
     const left = position[1] * cadSize[0] + position[1] * -1;
@@ -593,10 +631,6 @@ export class DingdanbiaoqianComponent implements OnInit {
     };
   }
 
-  onConfigChange() {
-    this._saveConfig();
-  }
-
   getValue(section: ObjectOf<string | number>, cell: SectionCell) {
     const value = String(section[cell.key] || "");
     if ((cell.key || cell.label) === "页厚" && value === "0") {
@@ -611,7 +645,7 @@ export class DingdanbiaoqianComponent implements OnInit {
 
   getMokuaiFormulaInfos(mokuaiIndex: number) {
     const formulaInfos: NonNullable<Order["mokuaiInfo"]>["formulaInfos"] = [];
-    const mokuai = this.mokuais[mokuaiIndex];
+    const mokuai = this.mokuais()[mokuaiIndex];
     if (!mokuai) {
       return formulaInfos;
     }
@@ -644,11 +678,11 @@ export class DingdanbiaoqianComponent implements OnInit {
   }
 
   async editMokuaiFormulas(mokuaiIndex: number) {
-    const mokuai = this.mokuais[mokuaiIndex];
+    const mokuai = this.mokuais()[mokuaiIndex];
     if (!mokuai) {
       return;
     }
-    const calcResult = this.calcResults[mokuaiIndex];
+    const calcResult = this.calcResults()[mokuaiIndex];
     let formulasText = "";
     if (calcResult && !calcResult.fulfilled) {
       const errorTrim = calcResult.error?.calc?.result?.errorTrim;
@@ -659,7 +693,6 @@ export class DingdanbiaoqianComponent implements OnInit {
     formulasText = formulasText.replace(/\n$/, "");
     const result = await openEditFormulasDialog(this.dialog, {data: {formulas: mokuai.ceshishuju, formulasText}});
     if (result) {
-      this.spinner.show(this.spinner.defaultLoaderId);
       const gongshiData = Object.entries(result).map(([k, v]) => [k, v]);
       const response = await this.http.post("peijian/Houtaisuanliao/edit_gongshi", {
         xiaodaohang: "配件模块",
@@ -670,7 +703,6 @@ export class DingdanbiaoqianComponent implements OnInit {
       if (response?.code === 0) {
         await this.updateMokuais();
       }
-      this.spinner.hide(this.spinner.defaultLoaderId);
     }
   }
 
@@ -682,8 +714,21 @@ export class DingdanbiaoqianComponent implements OnInit {
     return 0;
   }
 
-  openCad(cad: Order["cads"][number]) {
-    this.status.openCadInNewTab(cad.houtaiId, "cad");
+  openCad(cad: Order["cads"][number], order: Order) {
+    if (!this.isMokuaiVersion2024(order)) {
+      this.status.openCadInNewTab(cad.houtaiId, "cad");
+    }
+  }
+  isMokuaiVersion2024(order: Order) {
+    const mokuai = this.mokuais().at(order.mokuaiInfo?.index || 0);
+    return isVersion2024(mokuai?.zuoshujubanben);
+  }
+  openMokuai(order: Order) {
+    const mokuai = this.mokuais().at(order.mokuaiInfo?.index || 0);
+    if (!mokuai) {
+      return;
+    }
+    this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: mokuai.id}});
   }
 
   isArray(v: any) {
