@@ -50,5 +50,5 @@ workflows:
   test:
     jobs:
       - lint
-      # - unit-test
+      - unit-test
       # - e2e
