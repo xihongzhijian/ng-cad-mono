@@ -3829,7 +3829,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     typescript: "npm:~5.5.4"
     uuid: "npm:^10.0.0"
-    vite: "npm:^5.4.4"
+    vite: "npm:^5.4.6"
     vite-plugin-css-injected-by-js: "npm:^3.5.1"
     vite-plugin-dts: "npm:^4.2.1"
   languageName: unknown
@@ -3850,7 +3850,7 @@ __metadata:
     md5: "npm:^2.3.0"
     pinyin-pro: "npm:^3.24.2"
     typescript: "npm:~5.5.4"
-    vite: "npm:^5.4.4"
+    vite: "npm:^5.4.6"
     vite-plugin-dts: "npm:^4.2.1"
   languageName: unknown
   linkType: soft
@@ -15592,9 +15592,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^5.4.4":
-  version: 5.4.4
-  resolution: "vite@npm:5.4.4"
+"vite@npm:^5.4.6":
+  version: 5.4.6
+  resolution: "vite@npm:5.4.6"
   dependencies:
     esbuild: "npm:^0.21.3"
     fsevents: "npm:~2.3.3"
@@ -15631,7 +15631,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/2752e7dd5584ea7cc057742e8f5cbf2f2bd3a2bceb8794fbd3d52f1e88d362b5ac7f1c70be7a3d01b3d768320c8a8ad0df287fd72f253bf040423c36c67a3e89
+  checksum: 10c0/5f87be3a10e970eaf9ac52dfab39cf9fff583036685252fb64570b6d7bfa749f6d221fb78058f5ef4b5664c180d45a8e7a7ff68d7f3770e69e24c7c68b958bde
   languageName: node
   linkType: hard
 
