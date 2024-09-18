@@ -41,6 +41,7 @@ import {
   updateMokuaiItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasComponent} from "@components/formulas/formulas.component";
+import {算料单模板Options} from "@components/lurushuju/xinghao-data";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {GenerateRectsEndEvent, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
@@ -180,7 +181,6 @@ export class XhmrmsbjComponent implements OnDestroy {
   );
   showMokuais = signal(false);
   mokuaiTemplateType!: {$implicit: ZixuanpeijianMokuaiItem; isActive?: boolean};
-  tabNames = xhmrmsbjTabNames;
   menshanKeys = menshanKeys;
   materialResult = signal<Formulas>({});
   houtaiUrl = "";
@@ -685,7 +685,9 @@ export class XhmrmsbjComponent implements OnDestroy {
     if (!data) {
       return [];
     }
-    const infos: InputInfo<typeof data>[] = [{type: "string", label: "算料单模板", model: {data, key: "算料单模板"}}];
+    const infos: InputInfo<typeof data>[] = [
+      {type: "select", label: "算料单模板", model: {data, key: "算料单模板"}, options: 算料单模板Options.slice()}
+    ];
     return infos;
   });
 
@@ -791,6 +793,13 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
   }
 
+  tabNames = computed(() => {
+    let names = xhmrmsbjTabNames.slice();
+    if (this.isFromOrder()) {
+      names = names.filter((v) => v !== "锁边铰边");
+    }
+    return names;
+  });
   private _activeTabNameKey = "xhmrmsbjActiveTabName";
   activeTabName = signal<XhmrmsbjTabName>(session.load(this._activeTabNameKey) || "门扇模块");
   activeTabNameEff = effect(() => {

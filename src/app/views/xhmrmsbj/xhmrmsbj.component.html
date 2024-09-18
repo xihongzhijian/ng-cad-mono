@@ -1,6 +1,6 @@
 <div class="flex-row">
   <div class="toolbar">
-    @for (name of tabNames; track $index) {
+    @for (name of tabNames(); track $index) {
       <button mat-raised-button [color]="name === activeTabName() ? 'accent' : 'primary'" (click)="activeTabName.set(name)">
         {{ name }}
       </button>
@@ -9,7 +9,7 @@
       <button mat-raised-button color="primary" (click)="openMokuaikuInNew()">模块库</button>
       <button mat-raised-button color="primary" (click)="openPeijiankuInNew()">配件库</button>
     }
-    <div class="divider"></div>
+    <mat-divider vertical class="large placeholder"></mat-divider>
     @if (isFromOrder()) {
       <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
       @if (canEditMokuaidaxiao()) {
@@ -30,7 +30,7 @@
           @if (canEditMokuaidaxiao()) {
             <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
           }
-          <div class="divider"></div>
+          <mat-divider vertical class="large placeholder"></mat-divider>
         }
       }
       <button mat-raised-button color="primary" (click)="submit()">保存</button>
@@ -41,135 +41,131 @@
     <div class="title link text" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
   </div>
 </div>
-@switch (activeTabName()) {
-  @case ("锁边铰边") {
-    @if (xinghao(); as xinghao) {
-      <app-xhmrmsbj-sbjb [xinghaoName]="xinghao.raw.mingzi"></app-xhmrmsbj-sbjb>
-    }
+@if (!isFromOrder()) {
+  @if (xinghao(); as xinghao) {
+    <app-xhmrmsbj-sbjb [class.hidden]="activeTabName() !== '锁边铰边'" [xinghaoName]="xinghao.raw.mingzi"></app-xhmrmsbj-sbjb>
   }
-  @case ("门扇模块") {
-    <div class="flex-row flex-110">
-      <div class="flex-column">
-        @if (data(); as data) {
-          <mat-slide-toggle [(ngModel)]="data['铰扇跟随锁扇']">铰扇布局和锁扇相同</mat-slide-toggle>
-        }
-        @if (isFromOrder() && !production) {
-          <mat-slide-toggle [(ngModel)]="ignoreXiaoguotu">ignoreXiaoguotu</mat-slide-toggle>
-        }
-        <mat-divider class="placeholder"></mat-divider>
-        <ng-scrollbar>
-          <div class="flex-column menshan-options">
-            @for (item of data()?.menshanbujuInfos | keyvalue: returnZero; track $index) {
-              @if (!data()?.["铰扇跟随锁扇"] || !item.key.includes("铰扇")) {
-                <div
-                  class="flex-column menshan-option"
-                  [class]="{active: activeMenshanKey() === item.key}"
-                  (click)="selectMenshanKey(item.key)"
-                >
-                  <div style="font-weight: bold">{{ item.key }}</div>
-                  @if (item.value?.["选中布局数据"]; as data) {
-                    <div class="link text" appClickStop (click)="openMsbj()">布局：{{ data.name }}</div>
-                  }
-                </div>
+}
+<div class="flex-row flex-110" [class.hidden]="activeTabName() !== '门扇模块'">
+  <div class="flex-column">
+    @if (data(); as data) {
+      <mat-slide-toggle [(ngModel)]="data['铰扇跟随锁扇']">铰扇布局和锁扇相同</mat-slide-toggle>
+    }
+    @if (isFromOrder() && !production) {
+      <mat-slide-toggle [(ngModel)]="ignoreXiaoguotu">ignoreXiaoguotu</mat-slide-toggle>
+    }
+    <mat-divider class="placeholder"></mat-divider>
+    <ng-scrollbar>
+      <div class="flex-column menshan-options">
+        @for (item of data()?.menshanbujuInfos | keyvalue: returnZero; track $index) {
+          @if (!data()?.["铰扇跟随锁扇"] || !item.key.includes("铰扇")) {
+            <div
+              class="flex-column menshan-option"
+              [class]="{active: activeMenshanKey() === item.key}"
+              (click)="selectMenshanKey(item.key)"
+            >
+              <div style="font-weight: bold">{{ item.key }}</div>
+              @if (item.value?.["选中布局数据"]; as data) {
+                <div class="link text" appClickStop (click)="openMsbj()">布局：{{ data.name }}</div>
               }
+            </div>
+          }
+        }
+      </div>
+    </ng-scrollbar>
+  </div>
+  <mat-divider vertical></mat-divider>
+  <div class="flex-110 flex-column" style="position: relative">
+    <div class="flex-row flex-110" style="max-height: 320px">
+      <div class="flex-column flex-110">
+        <app-msbj-rects
+          [rectInfos]="activeMsbj()?.peizhishuju?.['模块节点']"
+          [selectRectBefore]="selectRectBefore.bind(this)"
+          (selectRect)="selectRect($event)"
+          (generateRectsEnd)="generateRectsEnd($event)"
+        ></app-msbj-rects>
+      </div>
+      @if (isFromOrder()) {
+        @if (!canEditMokuaidaxiao()) {
+          <div class="mkdxpz-formulas">
+            <ng-scrollbar>
+              <app-formulas [formulaInfos]="mkdxpzFormulaInfos()"></app-formulas>
+            </ng-scrollbar>
+          </div>
+        }
+        @if (!disableXiaoguotu()) {
+          <div class="xiaoguotu flex-110" #xiaoguotuContainer></div>
+        }
+      }
+      <div class="mokuai-inputs">
+        <ng-scrollbar>
+          <div class="items">
+            @for (info of mokuaiInputInfos(); track $index) {
+              <app-input class="item" [info]="info"></app-input>
             }
           </div>
         </ng-scrollbar>
       </div>
-      <mat-divider vertical></mat-divider>
-      <div class="flex-110 flex-column" style="position: relative">
-        <div class="flex-row flex-110" style="max-height: 320px">
-          <div class="flex-column flex-110">
-            <app-msbj-rects
-              [rectInfos]="activeMsbj()?.peizhishuju?.['模块节点']"
-              [selectRectBefore]="selectRectBefore.bind(this)"
-              (selectRect)="selectRect($event)"
-              (generateRectsEnd)="generateRectsEnd($event)"
-            ></app-msbj-rects>
-          </div>
-          @if (isFromOrder()) {
-            @if (!canEditMokuaidaxiao()) {
-              <div class="mkdxpz-formulas">
-                <ng-scrollbar>
-                  <app-formulas [formulaInfos]="mkdxpzFormulaInfos()"></app-formulas>
-                </ng-scrollbar>
-              </div>
-            }
-            @if (!disableXiaoguotu()) {
-              <div class="xiaoguotu flex-110" #xiaoguotuContainer></div>
-            }
-          }
-          <div class="mokuai-inputs">
-            <ng-scrollbar>
-              <div class="items">
-                @for (info of mokuaiInputInfos(); track $index) {
-                  <app-input class="item" [info]="info"></app-input>
-                }
-              </div>
-            </ng-scrollbar>
-          </div>
-        </div>
-        <div class="flex-column flex-110">
-          @if (activeMokuaiNode()?.["层名字"]; as nodeName) {
-            <div class="toolbar">
-              <div class="title">{{ nodeName }}位置可选模块</div>
-              @if (!isFromOrder()) {
-                <button mat-raised-button color="primary" (click)="setKexuanmokuai()">编辑</button>
-              }
-            </div>
-          }
-          <ng-scrollbar>
-            <div class="flex-row" style="flex-wrap: wrap" [style]="{display: showMokuais() ? 'flex' : 'none'}">
-              @for (mokuai of activeMokuaiNode()?.["可选模块"]; track $index) {
-                <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai, isActive: isMokuaiActive(mokuai)}"> </ng-template>
-              }
-            </div>
-          </ng-scrollbar>
-        </div>
-      </div>
-      <mat-divider vertical></mat-divider>
-      <div class="flex-column">
-        @if (xinghao(); as xinghao) {
-          <div class="toolbar">
-            <div class="title">型号板材分组</div>
-            @if (!isFromOrder()) {
-              <button mat-raised-button color="primary" (click)="openMrbcjfzDialog()">编辑</button>
-            }
-          </div>
-          <div class="xinghao-info flex-column">
-            @for (item of xinghao["默认板材"] | keyvalue: returnZero; track $index) {
-              @if (xinghao.getBancaiTitle(item.key)) {
-                <div>{{ item.value["板材分组别名"] || item.key }}: {{ xinghao.getBancaiTitle(item.key) }}</div>
-              }
-            }
-          </div>
-        }
-        @if (xinghao(); as xinghao) {
-          <div class="xinghao-bancai flex-110 flex-column">
-            @if (activeMokuaiNode()?.["选中模块"]; as mokuai) {
-              <mat-divider></mat-divider>
-              <div class="toolbar">
-                <div class="title">选中模块板材分组</div>
-              </div>
-            }
-            <!-- 板材选择 -->
-            <ng-scrollbar>
-              @for (info of bancaiInputInfos(); track $index) {
-                <app-input [info]="info"></app-input>
-              }
-              @if (xhmrbsbjInputInfos().length > 0) {
-                <mat-divider></mat-divider>
-                @for (info of xhmrbsbjInputInfos(); track $index) {
-                  <app-input [info]="info"></app-input>
-                }
-              }
-            </ng-scrollbar>
-          </div>
-        }
-      </div>
     </div>
-  }
-}
+    <div class="flex-column flex-110">
+      @if (activeMokuaiNode()?.["层名字"]; as nodeName) {
+        <div class="toolbar">
+          <div class="title">{{ nodeName }}位置可选模块</div>
+          @if (!isFromOrder()) {
+            <button mat-raised-button color="primary" (click)="setKexuanmokuai()">编辑</button>
+          }
+        </div>
+      }
+      <ng-scrollbar>
+        <div class="flex-row" style="flex-wrap: wrap" [style]="{display: showMokuais() ? 'flex' : 'none'}">
+          @for (mokuai of activeMokuaiNode()?.["可选模块"]; track $index) {
+            <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai, isActive: isMokuaiActive(mokuai)}"> </ng-template>
+          }
+        </div>
+      </ng-scrollbar>
+    </div>
+  </div>
+  <mat-divider vertical></mat-divider>
+  <div class="flex-column">
+    @if (xinghao(); as xinghao) {
+      <div class="toolbar">
+        <div class="title">型号板材分组</div>
+        @if (!isFromOrder()) {
+          <button mat-raised-button color="primary" (click)="openMrbcjfzDialog()">编辑</button>
+        }
+      </div>
+      <div class="xinghao-info flex-column">
+        @for (item of xinghao["默认板材"] | keyvalue: returnZero; track $index) {
+          @if (xinghao.getBancaiTitle(item.key)) {
+            <div>{{ item.value["板材分组别名"] || item.key }}: {{ xinghao.getBancaiTitle(item.key) }}</div>
+          }
+        }
+      </div>
+    }
+    @if (xinghao(); as xinghao) {
+      <div class="xinghao-bancai flex-110 flex-column">
+        @if (activeMokuaiNode()?.["选中模块"]; as mokuai) {
+          <mat-divider></mat-divider>
+          <div class="toolbar">
+            <div class="title">选中模块板材分组</div>
+          </div>
+        }
+        <!-- 板材选择 -->
+        <ng-scrollbar>
+          @for (info of bancaiInputInfos(); track $index) {
+            <app-input [info]="info"></app-input>
+          }
+          @if (xhmrbsbjInputInfos().length > 0) {
+            <mat-divider></mat-divider>
+            @for (info of xhmrbsbjInputInfos(); track $index) {
+              <app-input [info]="info"></app-input>
+            }
+          }
+        </ng-scrollbar>
+      </div>
+    }
+  </div>
+</div>
 
 <ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai let-isActive="isActive">
   <div class="flex-column mokuai" [class]="{active: isActive}">

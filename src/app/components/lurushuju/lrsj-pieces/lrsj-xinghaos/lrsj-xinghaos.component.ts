@@ -19,7 +19,7 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
 import {XinghaoData} from "../../services/lrsj-status.types";
 import {getXinghaoData} from "../../services/lrsj-status.utils";
-import {XinghaoRaw} from "../../xinghao-data";
+import {XinghaoRaw, 算料单模板Options} from "../../xinghao-data";
 import {LrsjPiece} from "../lrsj-piece";
 import {defaultFenleis, getOptions} from "../lrsj-pieces.utils";
 
@@ -192,7 +192,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         type: "select",
         label: "算料单模板",
         model: {data: data2, key: "算料单模板"},
-        options: ["自动排版模板", "手动装配配件模板", "混合模板"]
+        options: 算料单模板Options.slice()
       },
       {
         type: "boolean",

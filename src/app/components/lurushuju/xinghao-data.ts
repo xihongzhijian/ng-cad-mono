@@ -401,3 +401,5 @@ export const getSortedItems = <T extends SortableItem>(items: T[]) => {
   const result = items.map<T & SortedItem>((v, i) => ({...v, originalIndex: i}));
   return result.sort((a, b) => (a.排序 || 0) - (b.排序 || 0));
 };
+
+export const 算料单模板Options = ["自动排版模板", "手动装配配件模板", "混合模板"] as const;

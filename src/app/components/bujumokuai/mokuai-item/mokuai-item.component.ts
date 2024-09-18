@@ -291,7 +291,6 @@ export class MokuaiItemComponent implements OnInit {
   });
   afterEditCad() {
     const mokuai = this.mokuai();
-    console.log(this.selectedCads().map((v) => v.info));
     mokuai.cads = this.selectedCads().map((v) => getHoutaiCad(v));
     this.cd.markForCheck();
   }
@@ -341,7 +340,11 @@ export class MokuaiItemComponent implements OnInit {
     if (!(await this.message.confirm("导入会替换当前的CAD，是否继续？"))) {
       return;
     }
-    await this.message.importData((data: ObjectOf<any>[]) => this.selectedCads.set(data.map((v) => new CadData(v))), "模块CAD");
+    await this.message.importData((data: ObjectOf<any>[]) => {
+      const cads = data.map((v) => getHoutaiCad(new CadData(v).clone(true)));
+      this.mokuai.update((v) => ({...v, cads}));
+      this.selectedCads.set(data.map((v) => new CadData(v)));
+    }, "模块CAD");
   }
   exportCads() {
     this.message.exportData(
