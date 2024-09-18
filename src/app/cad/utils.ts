@@ -643,7 +643,25 @@ export const openCadDimensionForm = async (
 ) => {
   const dimension2 = dimension.clone();
   const form: InputInfo<typeof dimension>[] = [
-    {type: "string", label: "名字", model: {data: dimension2, key: "mingzi"}},
+    {
+      type: "group",
+      label: "",
+      groupStyle: {display: "flex"},
+      infos: [
+        {type: "string", label: "名字", model: {data: dimension2, key: "mingzi"}, style: {flex: "1 1 0"}},
+        {
+          type: "select",
+          label: "",
+          appearance: "list",
+          value: "无",
+          multiple: false,
+          options: ["阵列图形", "阵列个数:"],
+          onChange: (val) => {
+            dimension2.mingzi += val;
+          }
+        }
+      ]
+    },
     {type: "boolean", label: "删除标注", appearance: "radio", value: false},
     {type: "boolean", label: "隐藏尺寸线", appearance: "radio", value: !!dimension2.style.dimensionLine?.hidden},
     {
