@@ -144,10 +144,10 @@
             }
           </div>
         }
-        <mat-divider></mat-divider>
         @if (xinghao(); as xinghao) {
           <div class="xinghao-bancai flex-110 flex-column">
             @if (activeMokuaiNode()?.["选中模块"]; as mokuai) {
+              <mat-divider></mat-divider>
               <div class="toolbar">
                 <div class="title">选中模块板材分组</div>
               </div>
@@ -156,6 +156,12 @@
             <ng-scrollbar>
               @for (info of bancaiInputInfos(); track $index) {
                 <app-input [info]="info"></app-input>
+              }
+              @if (xhmrbsbjInputInfos().length > 0) {
+                <mat-divider></mat-divider>
+                @for (info of xhmrbsbjInputInfos(); track $index) {
+                  <app-input [info]="info"></app-input>
+                }
               }
             </ng-scrollbar>
           </div>

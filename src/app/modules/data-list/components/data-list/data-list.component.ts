@@ -184,6 +184,8 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     const id = data ? data.id : null;
     if (data) {
       data = cloneDeep(data);
+      const path = getDataListNavNodePath(this.navDataSource.data, data);
+      console.log(path.map((v) => v.name));
     } else {
       data = new DataListNavNode({id: v4(), name: "", children: []});
     }
@@ -335,8 +337,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       return;
     }
     const treeEl = this.navNodesTreeEl()?.nativeElement;
-    const type = activeNode.name;
-    const path = getDataListNavNodePath(this.navDataSource.data, type);
+    const path = getDataListNavNodePath(this.navDataSource.data, activeNode);
     for (const [i, node] of path.entries()) {
       this.navTreeControl.expand(node);
       if (i === path.length - 1) {

@@ -10,16 +10,19 @@ export interface XhmrmsbjTableData extends TableDataBase {
   peizhishuju?: string;
   xinghao?: string;
   jiaoshanbujuhesuoshanxiangtong?: number;
+  suanliaodanmuban?: string;
   zuoshujubanben?: string;
 }
 
 export class XhmrmsbjData extends ZuoshujuData {
   menshanbujuInfos: Partial<Record<MenshanKey, XhmrmsbjInfo>>;
   铰扇跟随锁扇?: boolean;
+  算料单模板?: string;
 
   constructor(data: XhmrmsbjTableData, menshanKeys: readonly MenshanKey[], typesInfo: ZixuanpeijianTypesInfo, msbjs: MsbjInfo[]) {
     super(data);
     this.铰扇跟随锁扇 = data.jiaoshanbujuhesuoshanxiangtong === 1;
+    this.算料单模板 = data.suanliaodanmuban;
     let info: any = null;
     this.menshanbujuInfos = {};
     try {
@@ -110,6 +113,7 @@ export class XhmrmsbjData extends ZuoshujuData {
     const data: Omit<XhmrmsbjTableData, "vid"> = {
       mingzi: this.name,
       jiaoshanbujuhesuoshanxiangtong: this.铰扇跟随锁扇 ? 1 : 0,
+      suanliaodanmuban: this.算料单模板,
       peizhishuju: JSON.stringify(this.menshanbujuInfos)
     };
     return data;

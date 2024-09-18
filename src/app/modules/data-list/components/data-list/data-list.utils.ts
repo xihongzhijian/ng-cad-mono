@@ -151,13 +151,17 @@ export const findActiveDataListNavNode = (list: DataListNavNode[], type: string)
   return findDataListNavNode(list, (node) => !node.hasChild() && node.name === type);
 };
 
-export const getDataListNavNodePath = (nodes: DataListNavNode[], type: string, path: DataListNavNode[] = []): DataListNavNode[] => {
-  for (const node of nodes) {
-    if (!node.hasChild() && node.name === type) {
-      return [...path, node];
+export const getDataListNavNodePath = (
+  nodes: DataListNavNode[],
+  node: DataListNavNode,
+  path: DataListNavNode[] = []
+): DataListNavNode[] => {
+  for (const node2 of nodes) {
+    if (node.id === node2.id) {
+      return [...path, node2];
     }
-    if (node.children && node.children.length > 0) {
-      const path2 = getDataListNavNodePath(node.children, type, [...path, node]);
+    if (node2.children && node2.children.length > 0) {
+      const path2 = getDataListNavNodePath(node2.children, node, [...path, node2]);
       if (path2.length > path.length + 1) {
         return path2;
       }

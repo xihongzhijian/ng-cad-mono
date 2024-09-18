@@ -680,6 +680,14 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     return infos;
   });
+  xhmrbsbjInputInfos = computed(() => {
+    const data = this.data();
+    if (!data) {
+      return [];
+    }
+    const infos: InputInfo<typeof data>[] = [{type: "string", label: "算料单模板", model: {data, key: "算料单模板"}}];
+    return infos;
+  });
 
   isSubmited = signal(false);
   async submit() {
