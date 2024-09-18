@@ -68,7 +68,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
   }
 
   async suanliaoStart(params: SuanliaoInput): Promise<SuanliaoOutputData> {
-    const {materialResult, gongshi, inputResult, 型号选中门扇布局, 配件模块CAD, 门扇布局CAD, bujuNames, varNames, silent} = params;
+    const {materialResult, gongshi, tongyongGongshi, inputResult, 型号选中门扇布局, 配件模块CAD, 门扇布局CAD, bujuNames, varNames, silent} =
+      params;
     const materialResultOld = cloneDeep(materialResult);
     let timerName: string | null = null;
     if (!silent) {
@@ -176,6 +177,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       changeLinesLength: false,
       calcVars,
       gongshi,
+      tongyongGongshi,
       inputResult,
       mokuaiVars,
       mokuaiGongshis,

@@ -8,6 +8,7 @@ import {XhmrmsbjInfo} from "@views/xhmrmsbj/xhmrmsbj.types";
 export interface SuanliaoInput {
   materialResult: Formulas;
   gongshi: Formulas;
+  tongyongGongshi: Formulas;
   inputResult: Formulas;
   型号选中门扇布局: ObjectOf<XhmrmsbjInfo>;
   配件模块CAD: ObjectOf<ObjectOf<any[]>>;

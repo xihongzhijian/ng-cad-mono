@@ -304,6 +304,7 @@ export interface CalcZxpjOptions {
   calcVars?: {keys: string[]; result?: Formulas};
   useCeshishuju?: boolean;
   gongshi?: Formulas;
+  tongyongGongshi?: Formulas;
   inputResult?: Formulas;
   mokuaiVars?: ObjectOf<Formulas>;
   mokuaiGongshis?: ObjectOf<Formulas>;
@@ -324,13 +325,15 @@ export const calcZxpj = async (
     calcVars: {keys: []},
     useCeshishuju: false,
     gongshi: {},
+    tongyongGongshi: {},
     inputResult: {},
     mokuaiVars: {},
     mokuaiGongshis: {},
     ignoreCadDimensions: false,
     ...options
   };
-  const {fractionDigits, changeLinesLength, calcVars, useCeshishuju, gongshi, inputResult, mokuaiVars, mokuaiGongshis} = optionsAll;
+  const {fractionDigits, changeLinesLength, calcVars, useCeshishuju, gongshi, tongyongGongshi, inputResult, mokuaiVars, mokuaiGongshis} =
+    optionsAll;
   const shuchubianliang: Formulas = {};
   const duplicateScbl: {
     item: ZixuanpeijianMokuaiItem;
@@ -347,6 +350,7 @@ export const calcZxpj = async (
       error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult}}
     };
   }
+  calc.calc.mergeFormulas(materialResult, tongyongGongshi);
   calc.calc.mergeFormulas(materialResult, gongshiCalcResult.succeedTrim);
   calc.calc.mergeFormulas(materialResult, inputResult);
 
