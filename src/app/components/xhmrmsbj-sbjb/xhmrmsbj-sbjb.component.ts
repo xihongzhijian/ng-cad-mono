@@ -70,7 +70,7 @@ export class XhmrmsbjSbjbComponent {
     if (!item) {
       return null;
     }
-    return getXhmrmsbjSbjbItemTableInfo(this.message, this.options, item.锁边铰边数据);
+    return getXhmrmsbjSbjbItemTableInfo(item.锁边铰边数据);
   });
   async onSbjbItemtableRow(event: RowButtonEvent<XhmrmsbjSbjbItemSbjb>) {
     const {item, rowIdx} = event;
@@ -102,6 +102,16 @@ export class XhmrmsbjSbjbComponent {
           }
         }
         break;
+    }
+  }
+  async addSbjbItemSbjb() {
+    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options);
+    if (item) {
+      const item2 = this.activeItem();
+      if (item2) {
+        item2.锁边铰边数据.push(item);
+        this.items.update((v) => [...v]);
+      }
     }
   }
 

@@ -6,16 +6,10 @@ import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {XhmrmsbjSbjbItemSbjb, XhmrmsbjSbjbItemSbjbItem} from "./xhmrmsbj-sbjb.types";
 
-export const getXhmrmsbjSbjbItemTableInfo = (
-  message: MessageService,
-  options: OptionsService,
-  data: XhmrmsbjSbjbItemSbjb[]
-): TableRenderInfo<XhmrmsbjSbjbItemSbjb> => {
+export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[]): TableRenderInfo<XhmrmsbjSbjbItemSbjb> => {
   return {
     data,
     noCheckBox: true,
-    toolbarButtons: {add: true},
-    newItem: async () => await getXhmrmsbjSbjbItemSbjbForm(message, options),
     columns: [
       {type: "string", field: "开启"},
       {type: "string", field: "门铰"},

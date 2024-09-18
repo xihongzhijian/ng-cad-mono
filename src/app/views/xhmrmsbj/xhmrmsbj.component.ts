@@ -194,6 +194,7 @@ export class XhmrmsbjComponent implements OnDestroy {
 
   msbjRectsComponent = viewChild(MsbjRectsComponent);
   xiaoguotuContainer = viewChild<ElementRef<HTMLDivElement>>("xiaoguotuContainer");
+  sbjb = viewChild(XhmrmsbjSbjbComponent);
 
   constructor() {
     setGlobal("xhmrmsbj", this);
@@ -682,6 +683,10 @@ export class XhmrmsbjComponent implements OnDestroy {
 
   isSubmited = signal(false);
   async submit() {
+    const tabName = this.activeTabName();
+    if (tabName === "锁边铰边") {
+      await this.sbjb()?.save();
+    }
     const dataInfo = this.data();
     const isFromOrder = this.isFromOrder();
     if (!dataInfo || isFromOrder) {
@@ -1157,6 +1162,9 @@ export class XhmrmsbjComponent implements OnDestroy {
   openMokuaikuInNew() {
     this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库"}});
   }
+  openPeijiankuInNew() {
+    this.status.openInNewTab(["/布局模块"], {queryParams: {page: "配件库"}});
+  }
 
   openedMkdcpz = signal<{data: 模块大小配置; msbjInfo: XhmrmsbjInfo; varNameItem: VarNameItem} | null>(null);
   openMkdcpz() {
@@ -1235,5 +1243,9 @@ export class XhmrmsbjComponent implements OnDestroy {
       return;
     }
     this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: data.vid}});
+  }
+
+  addSbjbItemSbjb() {
+    this.sbjb()?.addSbjbItemSbjb();
   }
 }

@@ -7,8 +7,9 @@
     }
     @if (!isFromOrder() || isZhijian()) {
       <button mat-raised-button color="primary" (click)="openMokuaikuInNew()">模块库</button>
+      <button mat-raised-button color="primary" (click)="openPeijiankuInNew()">配件库</button>
     }
-    <mat-divider vertical></mat-divider>
+    <div class="divider"></div>
     @if (isFromOrder()) {
       <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
       @if (canEditMokuaidaxiao()) {
@@ -19,6 +20,9 @@
       }
     } @else {
       @switch (activeTabName()) {
+        @case ("锁边铰边") {
+          <button mat-raised-button color="primary" (click)="addSbjbItemSbjb()">添加</button>
+        }
         @case ("门扇模块") {
           @if (!isFromOrder()) {
             <button mat-raised-button color="primary" (click)="setMsbj()">更换布局</button>
@@ -26,11 +30,12 @@
           @if (canEditMokuaidaxiao()) {
             <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
           }
-          <button mat-raised-button color="primary" (click)="submit()">保存</button>
-          @if (closable()) {
-            <button mat-raised-button color="primary" (click)="close()">关闭</button>
-          }
+          <div class="divider"></div>
         }
+      }
+      <button mat-raised-button color="primary" (click)="submit()">保存</button>
+      @if (closable()) {
+        <button mat-raised-button color="primary" (click)="close()">关闭</button>
       }
     }
     <div class="title link text" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>

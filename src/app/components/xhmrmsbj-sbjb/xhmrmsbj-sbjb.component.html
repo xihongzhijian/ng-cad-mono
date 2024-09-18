@@ -8,9 +8,6 @@
   </ng-scrollbar>
   <mat-divider vertical></mat-divider>
   <div class="flex-column flex-110">
-    <div class="toolbar right">
-      <button mat-raised-button color="primary" (click)="save()">保存</button>
-    </div>
     <div class="flex-column flex-110">
       @if (sbjbItemtableInfo(); as info) {
         <app-table class="flex-110" [info]="info" (rowButtonClick)="onSbjbItemtableRow($event)"></app-table>
