@@ -9,8 +9,8 @@ export const getOptions = (optionsAll: OptionsAll | undefined | null, key: strin
   if (!options) {
     return [];
   }
-  return options.map(({name}) => {
-    const option: InputInfoOption = {value: name};
+  return options.map(({name, label}) => {
+    const option: InputInfoOption = {value: name, label};
     if (typeof setter === "function") {
       setter(option);
     }

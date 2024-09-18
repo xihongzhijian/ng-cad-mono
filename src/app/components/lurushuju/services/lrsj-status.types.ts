@@ -1,11 +1,12 @@
 import {ObjectOf} from "@lucilor/utils";
 import {OptionsDataData, TableDataBase2} from "@modules/http/services/cad-data.service.types";
+import {ZuoshujuTableData} from "@views/msbj/msbj.types";
 import {MenjiaoCadType} from "../xinghao-data";
 
 export type OptionsAll = ObjectOf<OptionsDataData[]>;
 export type OptionsAll2 = ObjectOf<{options: OptionsDataData[]; disabled?: boolean; multiple?: boolean}>;
 
-export interface XinghaoData extends TableDataBase2 {
+export interface XinghaoData extends TableDataBase2, ZuoshujuTableData {
   tupian?: string;
   hidden?: boolean;
   menchuang: string;

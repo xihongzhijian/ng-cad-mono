@@ -73,12 +73,6 @@ export class LurushujuIndexComponent {
     const xinghao = this.lrsjStatus.xinghao();
     const pieceInfos = this.lrsjStatus.pieceInfos();
     return [
-      {
-        name: "开启模块做数据",
-        color: this.lrsjStatus.按模块做数据() ? "accent" : "primary",
-        hidden: !this.status.projectConfig.getBoolean("新做数据可以按模块做数据")
-      },
-      {name: ""},
       {name: "添加", color: "primary"},
       {name: "编辑", color: this.lrsjStatus.editMode() ? "accent" : "primary"},
       {name: "复制做法", color: "primary", hidden: !pieceInfos.zuofas.show},
@@ -101,12 +95,6 @@ export class LurushujuIndexComponent {
   async onToolbarBtnClick(btn: ToolbarBtn) {
     const pieceInfos = this.lrsjStatus.pieceInfos();
     switch (btn.name) {
-      case "开启模块做数据":
-        {
-          this.lrsjStatus.按模块做数据.update((v) => !v);
-          await this.message.alert(this.lrsjStatus.按模块做数据() ? "已切换按模块做数据" : "按配件做数据");
-        }
-        return;
       case "添加":
         break;
       case "编辑":

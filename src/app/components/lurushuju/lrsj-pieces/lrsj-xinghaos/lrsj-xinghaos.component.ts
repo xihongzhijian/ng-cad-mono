@@ -13,6 +13,7 @@ import {InputInfo, InputInfoGroup, InputInfoSelect} from "@modules/input/compone
 import {getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {isVersion2024} from "@views/msbj/msbj.utils";
 import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -121,23 +122,25 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       data.gongyi = gongyi.mingzi;
     }
     data.tingyong = !!data.tingyong;
+    if (xinghao && !data.zuoshujubanben) {
+      data.zuoshujubanben = " ";
+    }
 
     const data2: XinghaoRaw = {
       名字: data.mingzi,
       所属门窗: data.menchuang,
       所属工艺: data.gongyi,
       订单流程: data.dingdanliucheng,
+      做数据版本: data.zuoshujubanben,
       算料单模板: data.算料单模板,
       是否需要激光开料: data.是否需要激光开料
     };
     const mingziOld = data.mingzi;
     const names = this.xinghaos().map((xinghao) => xinghao.mingzi);
     let refreshOptions = false;
-    const getOptionInput = async (key: string, label: string, multiple?: boolean, options?: {hidden?: boolean}) => {
+    const getOptionInput = async (key: string, label: string, hasDialog?: boolean, multiple?: boolean, options?: Partial<InputInfo>) => {
       const info = await this.getOptionInput(data2, key, label, multiple, options);
-      if (key === "订单流程") {
-        delete info.optionsDialog;
-      } else {
+      if (hasDialog) {
         if (info.optionsDialog) {
           const onChange = info.optionsDialog.onChange;
           info.optionsDialog.onChange = (val) => {
@@ -145,6 +148,8 @@ export class LrsjXinghaosComponent extends LrsjPiece {
             refreshOptions = true;
           };
         }
+      } else {
+        delete info.optionsDialog;
       }
       return info;
     };
@@ -185,9 +190,10 @@ export class LrsjXinghaosComponent extends LrsjPiece {
           }
         }
       },
-      await getOptionInput("门窗", "所属门窗", true),
-      await getOptionInput("工艺", "所属工艺", true),
+      await getOptionInput("门窗", "所属门窗", true, true),
+      await getOptionInput("工艺", "所属工艺", true, true),
       await getOptionInput("订单流程", "订单流程"),
+      await getOptionInput("做数据版本", "做数据版本"),
       {
         type: "select",
         label: "算料单模板",
@@ -345,7 +351,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
   }
   showXhmrmsbj = signal<{id: number} | null>(null);
   async gotoZuofas(xinghao0: XinghaoData) {
-    if (this.lrsjStatus.按模块做数据()) {
+    if (isVersion2024(xinghao0.zuoshujubanben)) {
       this.showXhmrmsbj.set({id: xinghao0.vid});
     } else {
       const xinghao = await this.lrsjStatus.getXinghao(xinghao0.mingzi);

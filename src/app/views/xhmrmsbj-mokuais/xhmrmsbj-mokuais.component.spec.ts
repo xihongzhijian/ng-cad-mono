@@ -8,6 +8,7 @@ const data: XhmrmsbjMokuaisInput = {
       input: {
         materialResult: {},
         gongshi: {},
+        tongyongGongshi: {},
         inputResult: {},
         型号选中门扇布局: {},
         配件模块CAD: {},

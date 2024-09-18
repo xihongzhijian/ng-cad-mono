@@ -41,7 +41,6 @@ import {
   updateMokuaiItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasComponent} from "@components/formulas/formulas.component";
-import {算料单模板Options} from "@components/lurushuju/xinghao-data";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {GenerateRectsEndEvent, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
@@ -218,13 +217,31 @@ export class XhmrmsbjComponent implements OnDestroy {
     const {token} = params;
     const id = Number(params.id);
     const xinghaoId = this.xinghaoId();
+    const getXinghao = async (vid: string) => {
+      if (!vid) {
+        return null;
+      }
+      const xinghaos = await this.http.queryMySql<MrbcjfzXinghao>({
+        table: "p_xinghao",
+        filter: {where: {vid}}
+      });
+      return xinghaos.at(0) || null;
+    };
+    let xinghao: MrbcjfzXinghao | null = null;
     if (table && (id > 0 || xinghaoId > 0)) {
       this.table.set(table);
       this.id.set(id);
       this.isFromOrder.set(false);
       const where = xinghaoId > 0 ? {xinghao: xinghaoId} : {vid: id};
       const records = await this.http.queryMySql<XhmrmsbjTableData>({table, filter: {where}});
-      this.tableData.set(records?.[0] || null);
+      let record = records.at(0) || null;
+      if (!record && xinghaoId > 0) {
+        xinghao = await getXinghao(String(xinghaoId));
+        if (xinghao) {
+          record = await this.http.tableInsert<XhmrmsbjTableData>({table, data: {mingzi: xinghao.mingzi, xinghao: String(xinghaoId)}});
+        }
+      }
+      this.tableData.set(record);
     } else if (token) {
       this.isFromOrder.set(true);
     }
@@ -234,11 +251,8 @@ export class XhmrmsbjComponent implements OnDestroy {
     if (!this.isFromOrder()) {
       const tableData = this.tableData();
       this.data.set(tableData ? new XhmrmsbjData(tableData, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null);
-      const xinghaos = await this.http.queryMySql<MrbcjfzXinghao>({
-        table: "p_xinghao",
-        filter: {where: {vid: tableData?.xinghao}}
-      });
-      this.xinghao.set(xinghaos[0] ? new MrbcjfzXinghaoInfo(table, xinghaos[0]) : null);
+      xinghao = await getXinghao(tableData?.xinghao || "");
+      this.xinghao.set(xinghao ? new MrbcjfzXinghaoInfo(table, xinghao) : null);
     }
     await timeout(0);
     if (this.isFromOrder()) {
@@ -681,14 +695,15 @@ export class XhmrmsbjComponent implements OnDestroy {
     return infos;
   });
   xhmrbsbjInputInfos = computed(() => {
-    const data = this.data();
-    if (!data) {
-      return [];
-    }
-    const infos: InputInfo<typeof data>[] = [
-      {type: "select", label: "算料单模板", model: {data, key: "算料单模板"}, options: 算料单模板Options.slice()}
-    ];
-    return infos;
+    return [] as InputInfo[];
+    // const data = this.data();
+    // if (!data) {
+    //   return [];
+    // }
+    // const infos: InputInfo<typeof data>[] = [
+    //   {type: "select", label: "算料单模板", model: {data, key: "算料单模板"}, options: 算料单模板Options.slice()}
+    // ];
+    // return infos;
   });
 
   isSubmited = signal(false);

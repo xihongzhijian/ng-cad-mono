@@ -296,7 +296,7 @@ export class CadDataService extends HttpService {
   }
 
   async tableInsert<T extends TableDataBase = TableDataBase>(params: TableInsertParams<T>, options?: HttpOptions) {
-    return await this.getData<number>("jichu/jichu/table_insert", params, options);
+    return await this.getData<T>("jichu/jichu/table_insert", params, options);
   }
   async tableUpdate<T extends TableDataBase = TableDataBase>(params: TableUpdateParams<T>, options?: HttpOptions) {
     const getParams2 = (params1: TableUpdateParams<T>) => {
