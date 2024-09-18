@@ -55,4 +55,5 @@ export interface SuanliaoCalcError {
 export interface HoutaiData extends MongodbDataBase {
   选项?: ObjectOf<any>;
   条件?: any[];
+  分类?: string;
 }

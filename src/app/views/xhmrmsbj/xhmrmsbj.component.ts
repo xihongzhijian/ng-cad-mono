@@ -130,7 +130,7 @@ export class XhmrmsbjComponent implements OnDestroy {
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<XhmrmsbjCloseEvent>({alias: "close"});
 
-  msbjs = this.bjmkStatus.msbjs;
+  msbjs = this.bjmkStatus.msbjsManager.items;
   table = signal("");
   id = signal(-1);
   isFromOrder = signal(false);
@@ -228,7 +228,7 @@ export class XhmrmsbjComponent implements OnDestroy {
       this.isFromOrder.set(true);
     }
     this.fenleis = await this.http.queryMySql<TableDataBase>({table: "p_gongnengfenlei", fields: ["vid", "mingzi"]});
-    await this.bjmkStatus.fetchMsbjs(true);
+    await this.bjmkStatus.msbjsManager.fetch(true);
     this.bancaiListData = await this.http.getBancaiList();
     if (!this.isFromOrder()) {
       const tableData = this.tableData();
@@ -802,7 +802,11 @@ export class XhmrmsbjComponent implements OnDestroy {
       if (!mokuais2) {
         return;
       }
-      mokuais = await this.fetchMokuais(mokuais2.map((v) => v.id));
+      if (mokuais2.length > 0) {
+        mokuais = await this.fetchMokuais(mokuais2.map((v) => v.id));
+      } else {
+        mokuais = [];
+      }
     }
     if (mokuais) {
       mokuaiNode.可选模块 = mokuaiNode.可选模块.filter((v) => mokuais.find((v2) => v.id === v2.id));
@@ -1086,7 +1090,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     const openedMsbj = this.openedMsbj();
     this.openedMsbj.set(null);
     if (isSubmited && openedMsbj) {
-      this.bjmkStatus.refreshMsbjs([openedMsbj]);
+      this.bjmkStatus.msbjsManager.refresh({update: [openedMsbj]});
     }
   }
 

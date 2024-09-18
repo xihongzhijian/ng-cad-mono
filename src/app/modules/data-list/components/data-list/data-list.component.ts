@@ -120,20 +120,13 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
 
   async getNavNodes() {
     const name = this.navDataName();
-    let dataList = await this.http.queryMongodb<DataListNavData>({
+    const dataList = await this.http.queryMongodb<DataListNavData>({
       collection: this._navCollection,
       where: {名字: name}
     });
-    let data = dataList[0];
+    let data = dataList.at(0) || null;
     if (!data) {
-      const id = await this.http.mongodbInsert(this._navCollection, {名字: name, data: []});
-      if (id) {
-        dataList = await this.http.queryMongodb<DataListNavData>({
-          collection: this._navCollection,
-          where: {_id: id}
-        });
-        data = dataList[0];
-      }
+      data = await this.http.mongodbInsert<DataListNavData>(this._navCollection, {名字: name, data: []});
     }
     if (data) {
       this._navDataId = data._id;
@@ -158,7 +151,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       this.activeNavNode.set(null);
       this.updateActiveNavNode(activeNavNode.name);
     }
-    await this.http.mongodbUpdate(this._navCollection, {_id: this._navDataId, data: data.map((node) => node.export())});
+    await this.http.mongodbUpdate<DataListNavData>(this._navCollection, {_id: this._navDataId, data: data.map((node) => node.export())});
   }
   filterNavNodes() {
     const needle = this.navQuery();

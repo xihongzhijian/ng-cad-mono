@@ -8,8 +8,19 @@
   (navNameChange)="onNavNameChange($event)"
 >
   <div class="toolbar" appDataListToolbar>
-    <button mat-raised-button [color]="cadsEditMode() ? 'accent' : 'primary'" (click)="toggleCadsEditMode()">编辑</button>
+    <button mat-raised-button color="primary" (click)="refreshCads()">刷新</button>
     <button mat-raised-button color="primary" (click)="addCad()">添加</button>
+    <button mat-raised-button [color]="cadsEditMode() ? 'accent' : 'primary'" (click)="toggleCadsEditMode()">编辑</button>
+    <button mat-raised-button color="primary" (click)="removeCads()">批量删除</button>
+    @if (cadYaoqiu()?.["有帮助文档"]) {
+      <button mat-raised-button color="primary" (click)="cadYaoqiu()?.['打开帮助文档']()">帮助文档</button>
+    }
+    @if (cadYaoqiu()?.["有导入参考dxf模板"]) {
+      <button mat-raised-button color="primary" (click)="cadYaoqiu()?.['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
+    }
+    <button mat-raised-button color="primary" (click)="openImportPage(false)">导入CAD</button>
+    <button mat-raised-button color="primary" (click)="openImportPage(true)">保留分类导入CAD</button>
+    <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
     <button mat-raised-button color="primary">导入</button>
     <button mat-raised-button color="primary">导出</button>
   </div>
@@ -19,6 +30,7 @@
         <app-cad-item
           [attr.data-id]="cad.id"
           [cad]="cad"
+          [selectable]="cadsSelectInfo()[i]"
           [yaoqiu]="cadYaoqiu()"
           [buttons]="cadItemButtons()"
           [hideButtons]="!cadsEditMode()"

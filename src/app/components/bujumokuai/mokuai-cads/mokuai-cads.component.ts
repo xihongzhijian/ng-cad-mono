@@ -21,9 +21,8 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {getNameWithSuffix, setGlobal} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
-import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
-import {CadItemButton, CadItemIsOnlineInfo} from "@components/lurushuju/cad-item/cad-item.types";
+import {CadItemButton, CadItemIsOnlineInfo, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
@@ -32,9 +31,13 @@ import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-lis
 import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@modules/data-list/data-list.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {openExportPage} from "@views/export/export.utils";
+import {ImportCache} from "@views/import/import.types";
+import {openImportPage} from "@views/import/import.utils";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 import {MokuaiCadItemInfo} from "./mokuai-cads.types";
@@ -69,10 +72,6 @@ export class MokuaiCadsComponent implements OnInit {
   selectable = input(false, {transform: booleanAttribute});
   selectedCads = model<CadData[]>([]);
 
-  cadsAll = this.bjmkStatus.cads;
-  collection = this.bjmkStatus.collection;
-  cadYaoqiu = this.bjmkStatus.cadYaoqiu;
-
   navDataName = signal("配件库分类");
   cads = signal<CadData[]>([]);
   activeNavNode = signal<DataListNavNode | null>(null);
@@ -94,8 +93,35 @@ export class MokuaiCadsComponent implements OnInit {
         cad.type = after;
       }
     }
-    this.bjmkStatus.refreshCads();
+    this.bjmkStatus.cadsManager.refresh();
   }
+
+  selectedCadIndexs = signal<number[]>([]);
+  selectedCadIndexsEff = effect(
+    () => {
+      this.cads();
+      this.selectedCadIndexs.set([]);
+    },
+    {allowSignalWrites: true}
+  );
+  cadsSelectInfo = computed(() => {
+    const infos: CadItemSelectable<MokuaiCadItemInfo>[] = [];
+    const indexs = this.selectedCadIndexs();
+    for (const [i] of this.cads().entries()) {
+      infos.push({
+        selected: indexs.includes(i),
+        onChange: () => {
+          const indexs2 = this.selectedCadIndexs();
+          if (indexs2.includes(i)) {
+            this.selectedCadIndexs.set(indexs2.filter((v) => v !== i));
+          } else {
+            this.selectedCadIndexs.set([...indexs2, i]);
+          }
+        }
+      });
+    }
+    return infos;
+  });
 
   dataList = viewChild(DataListComponent);
   selectedCadsScrollbar = viewChild<NgScrollbar>("selectedCadsScrollbar");
@@ -105,7 +131,7 @@ export class MokuaiCadsComponent implements OnInit {
   }
 
   async ngOnInit() {
-    await this.bjmkStatus.fetchCads();
+    await this.bjmkStatus.cadsManager.fetch();
   }
 
   cadsAllEff = effect(() => {
@@ -135,6 +161,13 @@ export class MokuaiCadsComponent implements OnInit {
     this.cadsEditMode.update((v) => !v);
   }
 
+  cadsAll = this.bjmkStatus.cadsManager.items;
+  collection = this.bjmkStatus.collection;
+  cadYaoqiu = computed(() => {
+    const type = this.activeNavNode()?.name || "";
+    return this.status.getCad数据要求(type);
+  });
+  downloadApi = this.http.getUrl("ngcad/downloadFile");
   async getCadItem(data?: CadData) {
     const yaoqiu = this.cadYaoqiu();
     if (!yaoqiu) {
@@ -160,9 +193,9 @@ export class MokuaiCadsComponent implements OnInit {
   async addCad() {
     const data = await this.getCadItem();
     if (data) {
-      const id = await this.http.mongodbInsert(this.collection, getHoutaiCad(data));
-      if (id) {
-        await this.bjmkStatus.fetchCads(true);
+      const resData = await this.http.mongodbInsert<HoutaiCad>(this.collection, getHoutaiCad(data));
+      if (resData) {
+        this.bjmkStatus.cadsManager.refresh({add: [new CadData(resData.json)]});
       }
     }
   }
@@ -170,18 +203,11 @@ export class MokuaiCadsComponent implements OnInit {
     const {index} = component.customInfo;
     const cad = this.cads()[index];
     const collection = this.collection;
-    const ids = await this.http.mongodbCopy(collection, [cad.id]);
-    if (!ids?.[0]) {
-      return;
+    const items = await this.http.mongodbCopy<HoutaiCad>(collection, [cad.id]);
+    if (items?.[0]) {
+      const data = new CadData(items[0].json);
+      this.bjmkStatus.cadsManager.refresh({add: [data]});
     }
-    if (await this.message.confirm("是否编辑新的CAD？")) {
-      const {cads} = await this.http.getCad({collection, ids});
-      const data = cads[0];
-      if (data) {
-        await openCadEditorDialog(this.dialog, {data: {data, collection, center: true}});
-      }
-    }
-    await this.bjmkStatus.fetchCads(true);
   }
   async removeCad(component: CadItemComponent<MokuaiCadItemInfo>) {
     const {index} = component.customInfo;
@@ -191,14 +217,33 @@ export class MokuaiCadsComponent implements OnInit {
     }
     const result = await this.http.mongodbDelete(this.collection, {id: cad.id});
     if (result) {
-      await this.bjmkStatus.fetchCads(true);
+      this.bjmkStatus.cadsManager.refresh({remove: [cad]});
     }
+  }
+  async removeCads() {
+    const indexs = this.selectedCadIndexs();
+    if (indexs.length < 1) {
+      await this.message.alert("请先选择CAD");
+      return;
+    }
+    if (!(await this.message.confirm(`是否确定删除？`))) {
+      return;
+    }
+    const cads = indexs.map((i) => this.cads()[i]);
+    const ids = cads.map((v) => v.id);
+    const success = await this.http.mongodbDelete(this.bjmkStatus.collection, {ids});
+    if (success) {
+      this.bjmkStatus.cadsManager.refresh({remove: cads});
+    }
+  }
+  refreshCads() {
+    this.bjmkStatus.cadsManager.fetch(true);
   }
   async afterEditCad(id: string) {
     const dataList = this.dataList();
     const i = dataList?.getItemIndex((v) => v.id === id) ?? -1;
     this.cads.update((v) => [...v]);
-    this.bjmkStatus.refreshCads();
+    this.bjmkStatus.cadsManager.refresh();
     await timeout(0);
     const j = dataList?.getItemIndex((v) => v.id === id) ?? -1;
     if (i >= 0 && j >= 0 && i !== j) {
@@ -229,7 +274,7 @@ export class MokuaiCadsComponent implements OnInit {
     delete cad.info.imgId;
     delete cad.info.incomplete;
     delete cad.info.isOnline;
-    const yaoqiu = this.bjmkStatus.cadYaoqiu();
+    const yaoqiu = this.cadYaoqiu();
     const yaoqiuItems = yaoqiu?.选中CAD要求 || [];
     setCadData(cad, yaoqiuItems);
     const names = this.selectedCads().map((v) => v.name);
@@ -242,5 +287,32 @@ export class MokuaiCadsComponent implements OnInit {
   }
   unselectCad(i: number) {
     this.selectedCads.update((v) => v.filter((_, index) => index !== i));
+  }
+
+  async openImportPage(searchYaoqiu: boolean) {
+    const data: ImportCache = {lurushuju: true};
+    if (searchYaoqiu) {
+      data.searchYaoqiu = true;
+    } else {
+      data.yaoqiu = this.cadYaoqiu();
+    }
+    if (data.yaoqiu && !data.yaoqiu.新建CAD要求.some((v) => v.cadKey === "type")) {
+      data.yaoqiu.新建CAD要求.push({
+        cadKey: "type",
+        key: "分类",
+        readonly: true,
+        override: true,
+        value: this.activeNavNode()?.name || ""
+      });
+    }
+    openImportPage(this.status, data);
+    if (await this.message.newTabConfirm()) {
+      this.refreshCads();
+    }
+  }
+  openExportPage() {
+    const cads = this.cads();
+    const ids = cads.map((v) => v.id);
+    openExportPage(this.status, {search: {_id: {$in: ids}}, lurushuju: true});
   }
 }

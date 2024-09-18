@@ -39,6 +39,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzInputData} from "@views/mrbcjfz/mrbcjfz.types";
 import {filterCad as filterCad2} from "@views/mrbcjfz/mrbcjfz.utils";
+import {HoutaiData} from "@views/suanliao/suanliao.types";
 import {Properties} from "csstype";
 import {cloneDeep, debounce, isEmpty} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
@@ -497,7 +498,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   async addKlcs(component: CadItemComponent<MenjiaoCadItemInfo>) {
     const {key1} = component.customInfo;
     const suanliaoDataParams = this.key1Infos()[key1].suanliaoDataParams;
-    const response = await this.http.mongodbInsert("kailiaocanshu", {
+    const response = await this.http.mongodbInsert<HoutaiData>("kailiaocanshu", {
       ...suanliaoDataParams,
       名字: this.getTableCadName(component.cadName) + "中空参数",
       分类: "切中空"

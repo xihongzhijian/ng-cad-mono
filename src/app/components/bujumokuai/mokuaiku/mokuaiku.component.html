@@ -14,9 +14,11 @@
     (navNameChange)="onNavNameChange($event)"
   >
     <div class="toolbar" appDataListToolbar>
-      <button mat-raised-button [color]="mokuaiEditMode() ? 'accent' : 'primary'" (click)="toggleMokuaiEditMode()">编辑</button>
+      <button mat-raised-button color="primary" (click)="refreshMokuais()">刷新</button>
       <button mat-raised-button color="primary" (click)="addMukuai()">添加</button>
+      <button mat-raised-button [color]="mokuaiEditMode() ? 'accent' : 'primary'" (click)="toggleMokuaiEditMode()">编辑</button>
       <button mat-raised-button color="primary">导入</button>
+      <button mat-raised-button color="primary">导出</button>
       <button mat-raised-button color="primary">导出</button>
     </div>
     <div class="data-items items no-items-per-row" appDataListItems>

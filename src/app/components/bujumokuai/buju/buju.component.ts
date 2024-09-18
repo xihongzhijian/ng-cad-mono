@@ -2,10 +2,7 @@ import {ChangeDetectionStrategy, Component, HostBinding, inject, OnInit, signal}
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, setGlobal} from "@app/app.common";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
-import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
-import {MessageService} from "@modules/message/services/message.service";
-import {AppStatusService} from "@services/app-status.service";
 import {MsbjComponent} from "@views/msbj/msbj.component";
 import {MsbjCloseEvent} from "@views/msbj/msbj.types";
 import {MsbjInfo} from "@views/msbj/msbj.utils";
@@ -23,19 +20,16 @@ import {BjmkStatusService} from "../services/bjmk-status.service";
 })
 export class BujuComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);
-  private http = inject(CadDataService);
-  private message = inject(MessageService);
-  private status = inject(AppStatusService);
 
   @HostBinding("class") class = ["ng-page"];
 
   async ngOnInit() {
     setGlobal("buju", this);
-    await this.bjmkStatus.fetchMsbjs();
+    await this.bjmkStatus.msbjsManager.fetch();
   }
 
   bujuData = signal<XhmrmsbjData | null>(null);
-  msbjs = this.bjmkStatus.msbjs;
+  msbjs = this.bjmkStatus.msbjsManager.items;
   imgPrefix = filePathUrl;
 
   openedMsbj = signal<MsbjInfo | null>(null);
@@ -45,7 +39,7 @@ export class BujuComponent implements OnInit {
   closeMsbj({isSubmited}: MsbjCloseEvent) {
     const openedMsbj = this.openedMsbj();
     if (isSubmited && openedMsbj) {
-      this.bjmkStatus.refreshMsbjs([openedMsbj]);
+      this.bjmkStatus.msbjsManager.refresh({update: [openedMsbj]});
     }
     this.openedMsbj.set(null);
   }

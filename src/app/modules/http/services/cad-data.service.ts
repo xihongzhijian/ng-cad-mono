@@ -359,22 +359,34 @@ export class CadDataService extends HttpService {
     return await this.getData<UploadImageResult>("ngcad/uploadImage", {key: "file", file}, options);
   }
 
-  async mongodbInsert(collection: CadCollection, data: ObjectOf<any>, optionsInsert?: MongodbInsertOptions, options?: HttpOptions) {
-    return await this.getData<string>("ngcad/mongodbTableInsert", {collection, data, ...optionsInsert}, options);
+  async mongodbInsert<T extends MongodbDataBase>(
+    collection: CadCollection,
+    data: Omit<T, "_id">,
+    optionsInsert?: MongodbInsertOptions,
+    options?: HttpOptions
+  ) {
+    return await this.getData<T>("ngcad/mongodbTableInsert", {collection, data, ...optionsInsert}, options);
   }
-
-  async mongodbInsertMulti(collection: CadCollection, data: ObjectOf<any>[], optionsInsert?: MongodbInsertOptions, options?: HttpOptions) {
+  async mongodbInsertMulti<T extends MongodbDataBase>(
+    collection: CadCollection,
+    data: Omit<T, "_id">[],
+    optionsInsert?: MongodbInsertOptions,
+    options?: HttpOptions
+  ) {
     return await this.getData<string[]>("ngcad/mongodbTableInsertMulti", {collection, data, ...optionsInsert}, options);
   }
-
-  async mongodbUpdate(collection: CadCollection, data: ObjectOf<any>, extraData?: ObjectOf<any>, options?: HttpOptions) {
+  async mongodbUpdate<T extends MongodbDataBase>(
+    collection: CadCollection,
+    data: Partial<T> & {_id: string},
+    extraData?: Partial<T>,
+    options?: HttpOptions
+  ) {
     const response = await this.post("ngcad/mongodbTableUpdate", {collection, data, extraData}, options);
     if (response?.code === 0) {
       return true;
     }
     return false;
   }
-
   async mongodbDelete(collection: CadCollection, data: {id: string} | {ids: string[]} | {filter: ObjectOf<any>}, options?: HttpOptions) {
     const params: ObjectOf<any> = {collection};
     if ("id" in data) {
@@ -390,12 +402,16 @@ export class CadDataService extends HttpService {
     }
     return false;
   }
-
-  async mongodbCopy(collection: CadCollection, ids: string | string[], optionsCopy?: MongodbCopyOptions, options?: HttpOptions) {
+  async mongodbCopy<T extends MongodbDataBase>(
+    collection: CadCollection,
+    ids: string | string[],
+    optionsCopy?: MongodbCopyOptions,
+    options?: HttpOptions
+  ) {
     if (!Array.isArray(ids)) {
       ids = [ids];
     }
-    return await this.getData<string[]>("ngcad/mongodbTableCopy", {collection, vids: ids, ...optionsCopy}, options);
+    return await this.getData<T[]>("ngcad/mongodbTableCopy", {collection, vids: ids, ...optionsCopy}, options);
   }
 
   async getXiaodaohangStructure(xiaodaohang: string, options?: HttpOptions) {

@@ -1,8 +1,9 @@
-import {computed, effect, inject, Injectable, signal, untracked} from "@angular/core";
+import {effect, inject, Injectable, signal, untracked} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {filePathUrl, getCopyName} from "@app/app.common";
 import {Cad数据要求, getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
+import {ItemsManager} from "@app/utils/items-manager";
 import {VarNames} from "@components/var-names/var-names.types";
 import {getVarNames} from "@components/var-names/var-names.utils";
 import {CadData} from "@lucilor/cad-viewer";
@@ -43,38 +44,33 @@ export class BjmkStatusService {
   }
 
   collection: CadCollection = "peijianCad";
-  private _cads = signal<CadData[]>([]);
-  private _cadsCache: CadData[] | null = null;
-  cads = computed<CadData[]>(() => this._cads());
-  async fetchCads(force?: boolean) {
-    if (!force && this._cadsCache) {
-      return this._cadsCache;
-    }
-    await this.fetchCadYaoqius();
-    const yaoqiu = this.cadYaoqiu();
-    const fields = getCadQueryFields(yaoqiu);
-    const result = await this.http.getCad({collection: this.collection, fields});
-    const cads = result.cads;
-    this._cads.set(cads);
-    this._cadsCache = cads;
-    return cads;
-  }
-  refreshCads(updateCads?: CadData[]) {
-    const cads: CadData[] = [];
-    for (const cad of this._cads()) {
-      const cad2 = updateCads?.find((v) => v.id === cad.id);
-      cads.push(cad2 || cad);
-    }
-    this._cads.set(cads);
-  }
+  cadsManager = new ItemsManager(
+    async () => {
+      await this.fetchCadYaoqius();
+      const yaoqiu = this.cadYaoqiu();
+      const fields = getCadQueryFields(yaoqiu);
+      const result = await this.http.getCad({collection: this.collection, fields});
+      return result.cads;
+    },
+    (item1, item2) => item1.id === item2.id
+  );
 
-  private _mokuais = signal<MokuaiItem[]>([]);
-  private _mokuaisCache: MokuaiItem[] | null = null;
-  mokuais = computed<MokuaiItem[]>(() => this._mokuais());
+  mokuaisManager = new ItemsManager(
+    async () => {
+      const focusMokuaiIds: number[] = [];
+      const mokuai = this.currMokuai();
+      if (mokuai) {
+        focusMokuaiIds.push(mokuai.id);
+      }
+      const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {focusMokuaiIds})) || [];
+      return mokuais;
+    },
+    (item1, item2) => item1.id === item2.id
+  );
   currMokuai = signal<MokuaiItem | null>(null);
   mokuaisAllEff = effect(
     () => {
-      const mokuais = this.mokuais();
+      const mokuais = this.mokuaisManager.items();
       const currMokuai = untracked(() => this.currMokuai());
       if (currMokuai) {
         const currMokuai2 = mokuais.find((v) => v.id === currMokuai.id) || null;
@@ -83,20 +79,6 @@ export class BjmkStatusService {
     },
     {allowSignalWrites: true}
   );
-  async fetchMokuais(force?: boolean) {
-    if (!force && this._mokuaisCache) {
-      return this._mokuaisCache;
-    }
-    const focusMokuaiIds: number[] = [];
-    const mokuai = this.currMokuai();
-    if (mokuai) {
-      focusMokuaiIds.push(mokuai.id);
-    }
-    const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {focusMokuaiIds})) || [];
-    this._mokuais.set(mokuais);
-    this._mokuaisCache = mokuais;
-    return mokuais;
-  }
   async fetchMokuai(id: number) {
     let mokuai2: MokuaiItem | null = null;
     const ids = [id];
@@ -104,21 +86,13 @@ export class BjmkStatusService {
     mokuai2 = mokuais.at(0) || null;
     return mokuai2;
   }
-  refreshMokuais(updateMokuais?: MokuaiItem[]) {
-    const mokuais: MokuaiItem[] = [];
-    for (const mokuai of this._mokuais()) {
-      const mokuai2 = updateMokuais?.find((v) => v.id === mokuai.id);
-      mokuais.push(mokuai2 || mokuai);
-    }
-    this._mokuais.set(mokuais);
-  }
 
   async getMokuaiWithForm(mokuai?: Partial<MokuaiItem>, mokuaiOverride?: Partial<MokuaiItem>) {
     const data: Partial<MokuaiItem> = mokuai ? cloneDeep(mokuai) : getEmptyMokuaiItem();
     if (mokuaiOverride) {
       Object.assign(data, mokuaiOverride);
     }
-    const allNames = new Set(this.mokuais().map((v) => v.name));
+    const allNames = new Set(this.mokuaisManager.items().map((v) => v.name));
     if (mokuai?.name) {
       allNames.delete(mokuai.name);
     }
@@ -166,9 +140,9 @@ export class BjmkStatusService {
       delete mokuai2.id;
       let mokuai3 = await this.http.getData<MokuaiItem>("ngcad/addPeijianmokuai", {item: mokuai2});
       if (mokuai3) {
-        await this.fetchMokuais(true);
+        this.mokuaisManager.refresh({add: [mokuai3]});
       }
-      mokuai3 = this._mokuais().find((v) => v.id === mokuai3?.id) || null;
+      mokuai3 = this.mokuaisManager.items().find((v) => v.id === mokuai3?.id) || null;
       return mokuai3;
     }
     return null;
@@ -177,26 +151,27 @@ export class BjmkStatusService {
     const mokuai2 = noForm ? mokuai : await this.getMokuaiWithForm(mokuai);
     if (mokuai2) {
       let mokuai3 = await this.http.getData<MokuaiItem>("ngcad/editPeijianmokuai", {item: mokuai2});
+      console.log(mokuai3);
       if (mokuai3) {
-        await this.fetchMokuais(true);
+        this.mokuaisManager.refresh({update: [mokuai3]});
       }
-      mokuai3 = this._mokuais().find((v) => v.id === mokuai3?.id) || null;
+      mokuai3 = this.mokuaisManager.items().find((v) => v.id === mokuai3?.id) || null;
       return mokuai3;
     }
     return null;
   }
   async copyMokuai(mokuai: MokuaiItem) {
-    const names = this.mokuais().map((v) => v.name);
+    const names = this.mokuaisManager.items().map((v) => v.name);
     const mokuai2 = await this.getMokuaiWithForm(mokuai, {name: getCopyName(names, mokuai.name)});
     if (mokuai2?.cads) {
       mokuai2.cads = mokuai2.cads.map((v) => getHoutaiCad(new CadData(v.json).clone(true)));
     }
     if (mokuai2) {
-      const mokuai3 = await this.http.getData<Partial<MokuaiItem>>("ngcad/copyPeijianmokuai", {item: mokuai2});
+      const mokuai3 = await this.http.getData<MokuaiItem>("ngcad/copyPeijianmokuai", {item: mokuai2});
       if (mokuai3) {
-        await this.fetchMokuais(true);
+        this.mokuaisManager.refresh({add: [mokuai3]});
       }
-      return this._mokuais().find((v) => v.id === mokuai3?.id) || null;
+      return this.mokuaisManager.items().find((v) => v.id === mokuai3?.id) || null;
     }
     return null;
   }
@@ -206,30 +181,17 @@ export class BjmkStatusService {
     }
     const result = await this.http.getData<boolean>("ngcad/removePeijianmokuai", {item: mokuai});
     if (result) {
-      await this.fetchMokuais(true);
+      this.mokuaisManager.refresh({remove: [mokuai]});
     }
     return result;
   }
 
-  private _msbjs = signal<MsbjInfo[]>([]);
-  private _msbjsCache: MsbjInfo[] | null = null;
-  msbjs = computed(() => this._msbjs());
-  async fetchMsbjs(force?: boolean) {
-    if (!force && this._msbjsCache) {
-      return this._msbjsCache;
-    }
-    const result = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
-    const msbjs = result.map((v) => new MsbjInfo(v));
-    this._msbjs.set(msbjs);
-    this._msbjsCache = msbjs;
-    return msbjs;
-  }
-  refreshMsbjs(updateMsbjs?: MsbjInfo[]) {
-    const msbjs: MsbjInfo[] = [];
-    for (const msbj of this._msbjs()) {
-      const msbj2 = updateMsbjs?.find((v) => v.vid === msbj.vid);
-      msbjs.push(msbj2 || msbj);
-    }
-    this._msbjs.set(msbjs);
-  }
+  msbjsManager = new ItemsManager(
+    async () => {
+      const result = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
+      const msbjs = result.map((v) => new MsbjInfo(v));
+      return msbjs;
+    },
+    (item1, item2) => item1.vid === item2.vid
+  );
 }

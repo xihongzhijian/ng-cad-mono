@@ -82,7 +82,7 @@ export class MokuaiItemComponent implements OnInit {
   closeOut = output<MokuaiItemCloseEvent>({alias: "close"});
 
   async ngOnInit() {
-    await this.bjmkStatus.fetchCads();
+    await this.bjmkStatus.cadsManager.fetch();
   }
 
   imgPrefix = this.bjmkStatus.imgPrefix;

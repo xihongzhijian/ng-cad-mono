@@ -78,7 +78,7 @@ export class MokuaikuComponent implements OnInit {
   }
 
   async ngOnInit() {
-    await this.bjmkStatus.fetchMokuais();
+    await this.bjmkStatus.mokuaisManager.fetch();
     this._saveInfoLock.set(true);
     if (!this.production) {
       this.loadInfo();
@@ -86,7 +86,7 @@ export class MokuaikuComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const {mokuaiId} = params;
       if (mokuaiId) {
-        const mokuai = this.bjmkStatus.mokuais().find((v) => v.id === +mokuaiId);
+        const mokuai = this.bjmkStatus.mokuaisManager.items().find((v) => v.id === +mokuaiId);
         if (mokuai) {
           this.dataList()?.updateActiveNavNode(mokuai?.type);
           this.enterMokuai(mokuai);
@@ -98,7 +98,7 @@ export class MokuaikuComponent implements OnInit {
   navDataName = "模块库分类";
   mokuaiActiveNavNode = signal<DataListNavNode | null>(null);
   mokuaiActiveItem = signal<MokuaiItem | null>(null);
-  mokuaisAll = this.bjmkStatus.mokuais;
+  mokuaisAll = this.bjmkStatus.mokuaisManager.items;
   mokuais = signal<MokuaiItem[]>([]);
   imgPrefix = this.bjmkStatus.imgPrefix;
   dataList = viewChild(DataListComponent);
@@ -112,7 +112,7 @@ export class MokuaikuComponent implements OnInit {
         mokuai.type = after;
       }
     }
-    this.bjmkStatus.refreshMokuais();
+    this.bjmkStatus.mokuaisManager.refresh();
   }
 
   mokuaiEditMode = signal(false);
@@ -139,7 +139,6 @@ export class MokuaikuComponent implements OnInit {
   async addMukuai(mokuai?: Partial<MokuaiItem>) {
     const mokuai2 = await this.bjmkStatus.addMukuai(mokuai, {type: this.mokuaiActiveNavNode()?.name});
     if (mokuai2) {
-      await this.bjmkStatus.fetchMokuais(true);
       if (mokuai2.type) {
         this.dataList()?.updateActiveNavNode(mokuai2.type);
       }
@@ -161,6 +160,9 @@ export class MokuaikuComponent implements OnInit {
   }
   async removeMokuai(item: MokuaiItem) {
     await this.bjmkStatus.removeMokuai(item);
+  }
+  refreshMokuais() {
+    this.bjmkStatus.mokuaisManager.fetch(true);
   }
   clickMokuaiItem(item: MokuaiItem) {
     this.mokuaiActiveItem.set(item);
@@ -221,7 +223,7 @@ export class MokuaikuComponent implements OnInit {
   selectedMokuaiIds = signal<number[]>([]);
   selectedMokuais = computed(() => {
     const ids = this.selectedMokuaiIds();
-    const mokuais = this.bjmkStatus.mokuais();
+    const mokuais = this.bjmkStatus.mokuaisManager.items();
     const selectedMokuais: MokuaiItem[] = [];
     for (const id of ids) {
       const mokuai = mokuais.find((v) => v.id === id);

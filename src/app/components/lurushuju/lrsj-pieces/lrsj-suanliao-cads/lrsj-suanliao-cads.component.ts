@@ -29,6 +29,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
+import {HoutaiData} from "@views/suanliao/suanliao.types";
 import {debounce} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {CadItemComponent} from "../../cad-item/cad-item.component";
@@ -275,8 +276,8 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     if (!suanliaoTables) {
       return;
     }
-    const id = await this.http.mongodbInsert(suanliaoTables.klkwpzCollection, {...this.suanliaoDataParams(), 名字: component.cadName});
-    if (id) {
+    const resData = await this.http.mongodbInsert(suanliaoTables.klkwpzCollection, {...this.suanliaoDataParams(), 名字: component.cadName});
+    if (resData) {
       suanliaoTables.updateKlkwpzTable();
     }
   }
@@ -285,7 +286,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     if (!suanliaoTables) {
       return;
     }
-    const response = await this.http.mongodbInsert(suanliaoTables.klcsCollection, {
+    const response = await this.http.mongodbInsert<HoutaiData>(suanliaoTables.klcsCollection, {
       ...this.suanliaoDataParams(),
       名字: component.cadName + "中空参数",
       分类: "切中空"

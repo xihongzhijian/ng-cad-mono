@@ -17,7 +17,7 @@ import {getCadQueryFields, setCadData, validateCad} from "@app/cad/cad-shujuyaoq
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
-import {isBetween, isNumber, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
+import {isBetween, isNumber, queryStringList, timeout} from "@lucilor/utils";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -398,15 +398,13 @@ export class CadListComponent implements AfterViewInit {
       return;
     }
     const {collection} = this.data;
-    const data: ObjectOf<any> = getHoutaiCad(cadData);
-    delete data._id;
-    const id = await this.http.mongodbInsert(collection, data, {force: !!yaoqiu});
-    if (id) {
+    const data = getHoutaiCad(cadData);
+    const resData = await this.http.mongodbInsert(collection, data, {force: !!yaoqiu});
+    if (resData) {
       if (await this.message.confirm("是否编辑新的CAD？")) {
-        const {cads} = await this.http.getCad({collection, id});
-        const data = cads[0];
-        if (data) {
-          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true, gongshis}});
+        const data2 = new CadData(resData);
+        if (data2) {
+          await openCadEditorDialog(this.dialog, {data: {data: data2, collection, center: true, gongshis}});
         }
       }
       this.search();
@@ -420,15 +418,12 @@ export class CadListComponent implements AfterViewInit {
       return;
     }
     const {collection} = this.data;
-    const ids = await this.http.mongodbCopy(collection, [item.data._id]);
-    if (ids) {
+    const items = await this.http.mongodbCopy<HoutaiCad>(collection, [item.data._id]);
+    if (items?.[0]) {
       if (await this.message.confirm("是否编辑新的CAD？")) {
-        const {cads} = await this.http.getCad({collection, ids});
-        const data = cads[0];
-        if (data) {
-          const gongshis = this.data.gongshis;
-          await openCadEditorDialog(this.dialog, {data: {data, collection, center: true, gongshis}});
-        }
+        const data = new CadData(items[0].json);
+        const gongshis = this.data.gongshis;
+        await openCadEditorDialog(this.dialog, {data: {data, collection, center: true, gongshis}});
       }
       this.search();
     }

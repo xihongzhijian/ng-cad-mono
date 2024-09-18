@@ -11,10 +11,11 @@ import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.componen
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
 import {environment} from "@env";
-import {CadLine, CadMtext, sortLines} from "@lucilor/cad-viewer";
+import {CadData, CadLine, CadMtext, sortLines} from "@lucilor/cad-viewer";
 import {timeout} from "@lucilor/utils";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
@@ -338,13 +339,11 @@ export class ToolbarComponent {
   async copyCad() {
     const collection = this.status.collection$.getValue();
     const loaderId = this.spinner.defaultLoaderId;
-    const ids = await this.http.mongodbCopy(collection, [this.status.cad.data.id], {}, {spinner: loaderId});
-    if (ids) {
-      const yes = await this.message.confirm("是否跳转至新的CAD？");
-      if (yes) {
-        const cads2 = await this.http.getCad({ids, collection}, {spinner: loaderId});
+    const items = await this.http.mongodbCopy<HoutaiCad>(collection, [this.status.cad.data.id], {}, {spinner: loaderId});
+    if (items?.[0]) {
+      if (await this.message.confirm("是否跳转至新的CAD？")) {
         this.spinner.show(loaderId);
-        await this.status.openCad({data: cads2.cads[0], center: true});
+        await this.status.openCad({data: new CadData(items[0].json), center: true});
         this.spinner.hide(loaderId);
       }
     }
