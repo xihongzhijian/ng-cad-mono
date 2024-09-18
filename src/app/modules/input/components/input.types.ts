@@ -3,7 +3,7 @@ import {FloatLabelType} from "@angular/material/form-field";
 import {Formulas} from "@app/utils/calc";
 import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.component";
 import {EditFormulasInput} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
-import {ObjectOf} from "@lucilor/utils";
+import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {OptionsData} from "@modules/http/services/cad-data.service.types";
 import Color from "color";
 import {Properties} from "csstype";
@@ -161,7 +161,7 @@ export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoButtonInfo {
   name: string;
-  onClick?: () => Promise<{isValueChanged?: boolean} | void | null> | {isValueChanged?: boolean} | void | null;
+  onClick?: () => MaybePromise<{isValueChanged?: boolean} | void | null>;
   color?: "" | "primary" | "accent" | "warn";
   isDefault?: boolean;
 }

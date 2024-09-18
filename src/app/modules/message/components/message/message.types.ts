@@ -1,4 +1,4 @@
-import {ObjectOf} from "@lucilor/utils";
+import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {JSONEditorPropsOptional} from "vanilla-jsoneditor";
 
@@ -8,7 +8,7 @@ export interface BaseMessageData {
   disableCancel?: boolean;
   titleClass?: string;
   contentClass?: string;
-  beforeClose?: (event: MessageBeforeCloseEvent) => boolean | Promise<boolean>;
+  beforeClose?: (event: MessageBeforeCloseEvent) => MaybePromise<boolean>;
 }
 export interface MessageBeforeCloseEvent {
   type: "submit" | "cancel";

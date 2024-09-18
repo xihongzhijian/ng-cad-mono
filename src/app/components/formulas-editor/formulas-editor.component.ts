@@ -64,6 +64,7 @@ export class FormulasEditorComponent {
   noFormulasText = input(false, {transform: booleanAttribute});
   noScroll = input(false, {transform: booleanAttribute});
   compact = input<{minRows?: number; maxRows?: number}>();
+  dataName = input("公式");
 
   constructor() {
     setGlobal("formulasEditor", this);
@@ -268,5 +269,15 @@ export class FormulasEditorComponent {
 
   returnZero() {
     return 0;
+  }
+
+  async import() {
+    if (!(await this.message.confirm("导入会替换当前的公式，是否继续？"))) {
+      return;
+    }
+    await this.message.importData((data) => this.parseFormulaList(data), this.dataName());
+  }
+  export() {
+    this.message.exportData(this.formulaList(), this.dataName());
   }
 }

@@ -337,6 +337,18 @@ export class MokuaiItemComponent implements OnInit {
     this.showCadsDialog.set(false);
     this.selectCads$.next(mokuaiCads);
   }
+  async importCads() {
+    if (!(await this.message.confirm("导入会替换当前的CAD，是否继续？"))) {
+      return;
+    }
+    await this.message.importData((data: ObjectOf<any>[]) => this.selectedCads.set(data.map((v) => new CadData(v))), "模块CAD");
+  }
+  exportCads() {
+    this.message.exportData(
+      this.selectedCads().map((v) => v.export()),
+      "模块CAD"
+    );
+  }
 
   isSaved = signal(false);
   close() {

@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarConfig} from "@angular/material/snack-bar";
 import {DomSanitizer} from "@angular/platform-browser";
-import {ObjectOf, timeout} from "@lucilor/utils";
+import {downloadByString, MaybePromise, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
 import {MessageComponent} from "../components/message/message.component";
@@ -160,6 +160,40 @@ export class MessageService {
     } catch (e) {
       console.error(e);
       this.snack(errorText);
+    }
+  }
+
+  async importData<T = any>(
+    action: (data: T) => MaybePromise<void>,
+    title = "导入",
+    jsonOptions?: {reviver?: (this: any, key: string, value: any) => any}
+  ) {
+    const files = await selectFiles({accept: ".json"});
+    const file = files?.[0];
+    if (!file) {
+      return;
+    }
+    const {reviver} = jsonOptions || {};
+    try {
+      const data = JSON.parse(await file.text(), reviver);
+      const res = action(data);
+      if (res instanceof Promise) {
+        await res;
+      }
+      await this.snack(`${title}导入成功`);
+    } catch (e) {
+      console.error(e);
+      await this.snack(`${title}导入失败`);
+    }
+  }
+  async exportData<T = any>(data: T, title = "", jsonOptions?: {replacer?: (number | string)[] | null; space?: string | number}) {
+    const {replacer, space} = jsonOptions || {};
+    try {
+      const str = JSON.stringify(data, replacer, space);
+      downloadByString(str, {filename: `${title}.json`});
+    } catch (e) {
+      console.error(e);
+      await this.snack(`${title}导出失败`);
     }
   }
 }

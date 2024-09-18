@@ -15,3 +15,5 @@ export type RequiredPick<T, K extends keyof T> = {
 };
 
 export type RequiredKeys<T, K extends keyof T> = T & RequiredPick<T, K>;
+
+export type MaybePromise<T> = T | Promise<T>;

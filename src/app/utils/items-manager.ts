@@ -1,4 +1,5 @@
 import {computed, signal} from "@angular/core";
+import {MaybePromise} from "packages/utils/lib";
 
 export class ItemsManager<T> {
   private _items = signal<T[]>([]);
@@ -6,7 +7,7 @@ export class ItemsManager<T> {
   items = computed(() => this._items());
 
   constructor(
-    public fetchFn: () => T[] | Promise<T[]>,
+    public fetchFn: () => MaybePromise<T[]>,
     public compareFn: (item1: T, item2: T) => boolean
   ) {}
 

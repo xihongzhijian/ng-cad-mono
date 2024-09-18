@@ -39,13 +39,22 @@
   <div class="item-cads border flex-row flex-110">
     <div class="mokuai-gongshi flex-column">
       <div class="title">模块公式</div>
-      <app-formulas-editor #slgs class="box flex-110" [formulas]="mokuai().suanliaogongshi" noFormulasText noScroll></app-formulas-editor>
+      <app-formulas-editor
+        #slgs
+        class="box flex-110"
+        [formulas]="mokuai().suanliaogongshi"
+        noFormulasText
+        noScroll
+        dataName="模块公式"
+      ></app-formulas-editor>
     </div>
     <mat-divider vertical></mat-divider>
     <div class="cads flex-column">
       <div class="toolbar">
         <div class="title">模块的所有配件CAD</div>
         <button mat-raised-button color="primary" (click)="selectCads()">选择CAD</button>
+        <button mat-raised-button color="primary" (click)="importCads()">导入替换</button>
+        <button mat-raised-button color="primary" (click)="exportCads()">导出</button>
       </div>
       <div class="items no-items-per-row flex-110">
         @for (cad of selectedCads(); track i; let i = $index) {
