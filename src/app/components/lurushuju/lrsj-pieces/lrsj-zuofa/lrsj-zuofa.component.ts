@@ -51,7 +51,7 @@ export class LrsjZuofaComponent {
 
   xuanxiangTable = computed(() => getXuanxiangTable(this.zuofa().选项数据));
   async getXuanxiangItem(data0?: 选项) {
-    const zuofaOptionsAll = await this.lrsjStatus.fetchZuofaOptions();
+    const zuofaOptionsAll = await this.lrsjStatus.zuofaOptionsManager.fetch();
     return await getXuanxiangItem(this.message, zuofaOptionsAll, this.xuanxiangTable().data, data0);
   }
   async updateXuanxiang() {
@@ -170,7 +170,7 @@ export class LrsjZuofaComponent {
         {
           const data = get算料数据();
           const keys: (keyof 算料数据)[] = ["门铰", "门扇厚度", "锁边", "铰边"];
-          const menjiaoOptions = await this.lrsjStatus.fetchMenjiaoOptions();
+          const menjiaoOptions = await this.lrsjStatus.menjiaoOptionsManager.fetch();
           const form: InputInfo[] = [
             {
               type: "string",
@@ -184,7 +184,7 @@ export class LrsjZuofaComponent {
                 return null;
               }
             },
-            ...keys.map((k) => getMenjiaoOptionInputInfo(data, k, menjiaoOptions, () => this.lrsjStatus.fetchMenjiaoOptions(true))),
+            ...keys.map((k) => getMenjiaoOptionInputInfo(data, k, menjiaoOptions, () => this.lrsjStatus.menjiaoOptionsManager.fetch(true))),
             getMenfengInputs(data)
           ];
           const result = await this.message.form(form);
@@ -288,33 +288,35 @@ export class LrsjZuofaComponent {
           toItem.vid = this.getMenjiaoId();
           const names = zuofa.算料数据.map((v) => v.名字);
           toItem.名字 = getCopyName(names, toItem.名字);
-          // updateMenjiaoData(toItem);
-          // for (const key1 of menjiaoCadTypes) {
-          //   const fromData = fromItem[key1];
-          //   const toData = toItem[key1];
-          //   const [包边方向, 开启] = key1.split("+");
-          //   const fromParams: SuanliaoDataParams = {
-          //     选项: {
-          //       型号: this.xinghaoName,
-          //       产品分类: this.fenleiName,
-          //       工艺做法: zuofaName,
-          //       包边方向,
-          //       开启,
-          //       门铰锁边铰边: fromItem.名字
-          //     }
-          //   };
-          //   const toParams: SuanliaoDataParams = {
-          //     选项: {
-          //       型号: this.xinghaoName,
-          //       产品分类: this.fenleiName,
-          //       工艺做法: zuofaName,
-          //       包边方向,
-          //       开启,
-          //       门铰锁边铰边: toItem.名字
-          //     }
-          //   };
-          //   await copySuanliaoData(this.http, fromData, toData, fromParams, toParams);
-          // }
+          updateMenjiaoData(toItem);
+          for (const key1 of menjiaoCadTypes) {
+            const fromData = fromItem[key1];
+            const toData = toItem[key1];
+            const [包边方向, 开启] = key1.split("+");
+            const xinghaoName = this.lrsjStatus.xinghao()?.名字 || "";
+            const fenleiName = this.fenleiName();
+            const fromParams: SuanliaoDataParams = {
+              选项: {
+                型号: xinghaoName,
+                产品分类: fenleiName,
+                工艺做法: zuofa.名字,
+                包边方向,
+                开启,
+                门铰锁边铰边: fromItem.名字
+              }
+            };
+            const toParams: SuanliaoDataParams = {
+              选项: {
+                型号: xinghaoName,
+                产品分类: fenleiName,
+                工艺做法: zuofa.名字,
+                包边方向,
+                开启,
+                门铰锁边铰边: toItem.名字
+              }
+            };
+            await copySuanliaoData(this.http, fromData, toData, fromParams, toParams);
+          }
           zuofa.算料数据.push(toItem);
           await this.updateMenjiao();
         }

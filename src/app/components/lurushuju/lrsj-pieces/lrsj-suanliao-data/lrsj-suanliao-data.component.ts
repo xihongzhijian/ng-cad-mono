@@ -109,7 +109,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   xinghaozhuanyongCadCount = this.lrsjStatus.xinghaozhuanyongCadCount;
   suanliaoData = this.lrsjStatus.suanliaoDataNew;
   isKailiao = this.lrsjStatus.isKailiao;
-  menjiaoOptions = this.lrsjStatus.menjiaoOptions;
+  menjiaoOptions = this.lrsjStatus.menjiaoOptionsManager.data;
   saveInfo = output();
 
   production = environment.production;
@@ -139,7 +139,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   });
 
   getOptionInputInfo2(data: any, key: string, isInGroup: boolean, otherStyle?: Properties): InputInfoSelect {
-    const info = getMenjiaoOptionInputInfo(data, key, this.menjiaoOptions(), () => this.lrsjStatus.fetchMenjiaoOptions(true));
+    const info = getMenjiaoOptionInputInfo(data, key, this.menjiaoOptions(), () => this.lrsjStatus.menjiaoOptionsManager.fetch(true));
     info.style = getInputStyle(isInGroup, otherStyle);
     const onChange = info.onChange;
     info.onChange = (val: any, info: any) => {

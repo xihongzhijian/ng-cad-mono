@@ -212,7 +212,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     const result = await this.message.form(form);
     if (result) {
       if (refreshOptions) {
-        this.lrsjStatus.fetchXinghaoOptions(true);
+        this.lrsjStatus.xinghaoOptionsManager.fetch(true);
       }
       data.menchuang = data2.所属门窗 || "";
       data.gongyi = data2.所属工艺 || "";
@@ -363,7 +363,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
   }
 
   async getOptions(key: string) {
-    const xinghaoOptionsAll = await this.lrsjStatus.fetchXinghaoOptions();
+    const xinghaoOptionsAll = await this.lrsjStatus.xinghaoOptionsManager.fetch();
     return getOptions(xinghaoOptionsAll, key, (option) => {
       if (key === "产品分类") {
         option.disabled = defaultFenleis.includes(option.value);

@@ -32,7 +32,7 @@ export class SelectZuofaDialogComponent {
 
   @HostBinding("class") class = "ng-page";
 
-  menjiaoOptions = this.lrsjStatus.menjiaoOptions;
+  menjiaoOptions = this.lrsjStatus.menjiaoOptionsManager.data;
 
   constructor(
     public dialogRef: MatDialogRef<SelectZuofaDialogComponent, SelectZuofaOutput>,
@@ -45,7 +45,7 @@ export class SelectZuofaDialogComponent {
   inputInfos = computed<InputInfo[]>(() => {
     const xinghaoMenchuangs = this.lrsjStatus.xinghaoMenchuangs();
     const {fenlei} = this.data || {};
-    const options = this.lrsjStatus.xinghaoOptions();
+    const options = this.lrsjStatus.xinghaoOptionsManager.data();
     const data = this.searchForm();
     const xinghaoOptions: InputInfoOption<string>[] = [];
     for (const menchuang of xinghaoMenchuangs.items) {
@@ -78,7 +78,7 @@ export class SelectZuofaDialogComponent {
     ];
   });
   inputInfosMenjiao = computed<InputInfo[]>(() => {
-    const menjiaoOptions = this.lrsjStatus.menjiaoOptions();
+    const menjiaoOptions = this.lrsjStatus.menjiaoOptionsManager.data();
     const data2 = this.searchFormMenjiao();
     const getOptionInputInfo2 = (key: keyof typeof data2) => {
       return getOptionInputInfo(menjiaoOptions, key, (info) => {
@@ -108,7 +108,7 @@ export class SelectZuofaDialogComponent {
     if (fenlei) {
       params.产品分类 = fenlei;
     }
-    const menjiaoOptions = await this.lrsjStatus.fetchMenjiaoOptions();
+    const menjiaoOptions = await this.lrsjStatus.menjiaoOptionsManager.fetch();
     const items0 = await this.http.getData<SelectZuofaItemData[]>("shuju/api/getGongyis", params);
     const items: SelectZuofaItem[] = [];
     const searchFormMenjiao = this.searchFormMenjiao();

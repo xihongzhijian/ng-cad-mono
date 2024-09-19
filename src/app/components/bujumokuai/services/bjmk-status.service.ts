@@ -3,7 +3,9 @@ import {Validators} from "@angular/forms";
 import {filePathUrl, getCopyName} from "@app/app.common";
 import {Cad数据要求, getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
+import {FetchManager} from "@app/utils/fetch-manager";
 import {ItemsManager} from "@app/utils/items-manager";
+import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {VarNames} from "@components/var-names/var-names.types";
 import {getVarNames} from "@components/var-names/var-names.utils";
 import {CadData} from "@lucilor/cad-viewer";
@@ -151,7 +153,6 @@ export class BjmkStatusService {
     const mokuai2 = noForm ? mokuai : await this.getMokuaiWithForm(mokuai);
     if (mokuai2) {
       let mokuai3 = await this.http.getData<MokuaiItem>("ngcad/editPeijianmokuai", {item: mokuai2});
-      console.log(mokuai3);
       if (mokuai3) {
         this.mokuaisManager.refresh({update: [mokuai3]});
       }
@@ -194,4 +195,6 @@ export class BjmkStatusService {
     },
     (item1, item2) => item1.vid === item2.vid
   );
+
+  mokuaiOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll>("shuju/api/getMokuaiOption")) || {});
 }

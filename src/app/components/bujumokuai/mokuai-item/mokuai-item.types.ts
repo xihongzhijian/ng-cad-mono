@@ -18,8 +18,8 @@ export interface MokuaiItem extends ZixuanpeijianTypesInfoItemBase {
 }
 
 export interface MokuaiItemCustomData {
-  选项数据?: 选项[];
-  输入数据?: 输入[];
+  选项数据: 选项[];
+  输入数据: 输入[];
 }
 
 export interface MokuaiItemCloseEvent {

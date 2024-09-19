@@ -1,5 +1,6 @@
 import {computed, effect, inject, Injectable, OnDestroy, signal, untracked} from "@angular/core";
 import {getFilepathUrl, session, splitOptions} from "@app/app.common";
+import {FetchManager} from "@app/utils/fetch-manager";
 import {VarNames} from "@components/var-names/var-names.types";
 import {getVarNames} from "@components/var-names/var-names.utils";
 import {environment} from "@env";
@@ -107,74 +108,9 @@ export class LrsjStatusService implements OnDestroy {
     this._destoryed$.complete();
   }
 
-  private _xinghaoOptions = signal<OptionsAll>({});
-  private _isXinghaoOptionsFetched = false;
-  xinghaoOptions = computed(() => {
-    const options = this._xinghaoOptions();
-    const isFetched = this._isXinghaoOptionsFetched;
-    if (!isFetched) {
-      untracked(() => this.fetchXinghaoOptions());
-    }
-    return options;
-  });
-  fetchXinghaoOptions = async (force?: boolean) => {
-    if (!force && this._isXinghaoOptionsFetched) {
-      return this._xinghaoOptions();
-    }
-    const options = await this.http.getData<OptionsAll>("shuju/api/getXinghaoOption");
-    if (options) {
-      this._isXinghaoOptionsFetched = true;
-      this._xinghaoOptions.set(options);
-      return options;
-    }
-    return {};
-  };
-
-  private _zuofaOptions = signal<OptionsAll>({});
-  private _isZuofaOptionsFetched = false;
-  zuofaOptions = computed(() => {
-    const options = this._zuofaOptions();
-    const isFetched = this._isZuofaOptionsFetched;
-    if (!isFetched) {
-      untracked(() => this.fetchZuofaOptions());
-    }
-    return options;
-  });
-  fetchZuofaOptions = async (force?: boolean) => {
-    if (!force && this._isZuofaOptionsFetched) {
-      return this._zuofaOptions();
-    }
-    const options = await this.http.getData<OptionsAll>("shuju/api/getGongyizuofaOption");
-    if (options) {
-      this._isZuofaOptionsFetched = true;
-      this._zuofaOptions.set(options);
-      return options;
-    }
-    return {};
-  };
-
-  private _menjiaoOptions = signal<OptionsAll2>({});
-  private _isMenjiaoOptionsFetched = false;
-  menjiaoOptions = computed(() => {
-    const options = this._menjiaoOptions();
-    const isFetched = this._isMenjiaoOptionsFetched;
-    if (!isFetched) {
-      untracked(() => this.fetchMenjiaoOptions());
-    }
-    return options;
-  });
-  fetchMenjiaoOptions = async (force?: boolean) => {
-    if (!force && this._isMenjiaoOptionsFetched) {
-      return this._menjiaoOptions();
-    }
-    const options = await this.http.getData<OptionsAll2>("shuju/api/getMenjiaoOptions");
-    if (options) {
-      this._isMenjiaoOptionsFetched = true;
-      this._menjiaoOptions.set(options);
-      return options;
-    }
-    return {};
-  };
+  xinghaoOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll>("shuju/api/getXinghaoOption")) || {});
+  zuofaOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll>("shuju/api/getGongyizuofaOption")) || {});
+  menjiaoOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll2>("shuju/api/getMenjiaoOptions")) || {});
 
   suanliaoDataInfo = signal<SuanliaoDataInfo | null>(null);
   suanliaoCadsInfo = signal<SuanliaoCadsInfo | null>(null);
@@ -427,8 +363,8 @@ export class LrsjStatusService implements OnDestroy {
   async updateXinghao(xinghao: Xinghao | null) {
     if (xinghao) {
       const fenleisBefore = cloneDeep(xinghao.产品分类);
-      const xinghaoOptions = await this.fetchXinghaoOptions();
-      const menjiaoOptions = await this.fetchMenjiaoOptions();
+      const xinghaoOptions = await this.xinghaoOptionsManager.fetch();
+      const menjiaoOptions = await this.menjiaoOptionsManager.fetch();
       const allFenleis = xinghaoOptions.产品分类.map((v) => v.name);
       const 选项要求 = menjiaoOptions.选项要求?.options || [];
       updateXinghaoFenleis(xinghao, allFenleis, defaultFenleis, 选项要求);
@@ -709,7 +645,7 @@ export class LrsjStatusService implements OnDestroy {
       type: "select",
       label: "产品分类",
       value: xinghao.显示产品分类,
-      options: getOptions(this.xinghaoOptions(), "产品分类", (option) => {
+      options: getOptions(await this.xinghaoOptionsManager.fetch(), "产品分类", (option) => {
         if (defaultFenleis.includes(option.value)) {
           option.disabled = true;
         }

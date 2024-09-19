@@ -1,27 +1,18 @@
-import {computed, signal} from "@angular/core";
-import {MaybePromise} from "packages/utils/lib";
+import {computed} from "@angular/core";
+import {MaybePromise} from "@lucilor/utils";
+import {FetchManager} from "./fetch-manager";
 
 export class ItemsManager<T> {
-  private _items = signal<T[]>([]);
-  private _itemsCache: T[] | null = null;
-  items = computed(() => this._items());
-
   constructor(
     public fetchFn: () => MaybePromise<T[]>,
     public compareFn: (item1: T, item2: T) => boolean
   ) {}
 
+  private _fetchManager = new FetchManager([], this.fetchFn);
+  items = computed(() => this._fetchManager.data());
+
   async fetch(force?: boolean) {
-    if (!force && this._itemsCache) {
-      return this._itemsCache;
-    }
-    let items = this.fetchFn();
-    if (items instanceof Promise) {
-      items = await items;
-    }
-    this._items.set(items);
-    this._itemsCache = items;
-    return items;
+    return await this._fetchManager.fetch(force);
   }
 
   refresh(params: ItemsManagerRefreshParams<T> = {}) {
@@ -30,14 +21,14 @@ export class ItemsManager<T> {
     if (add) {
       items.push(...add);
     }
-    for (const item of this._items()) {
+    for (const item of this.items()) {
       if (remove?.find((v) => this.compareFn(item, v))) {
         continue;
       }
       const item2 = update?.find((v) => this.compareFn(item, v));
       items.push(item2 || item);
     }
-    this._items.set(items);
+    this._fetchManager.setData(items);
   }
 }
 

@@ -9,7 +9,6 @@ import {
   inject,
   input,
   model,
-  OnInit,
   signal,
   viewChild
 } from "@angular/core";
@@ -59,7 +58,7 @@ import {MokuaiCadItemInfo} from "./mokuai-cads.types";
   styleUrl: "./mokuai-cads.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MokuaiCadsComponent implements OnInit {
+export class MokuaiCadsComponent {
   private bjmkStatus = inject(BjmkStatusService);
   private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
@@ -128,10 +127,6 @@ export class MokuaiCadsComponent implements OnInit {
 
   constructor() {
     setGlobal("mkcads", this);
-  }
-
-  async ngOnInit() {
-    await this.bjmkStatus.cadsManager.fetch();
   }
 
   cadsAllEff = effect(() => {

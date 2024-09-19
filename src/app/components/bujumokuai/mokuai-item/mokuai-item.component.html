@@ -7,36 +7,50 @@
   <button mat-raised-button color="primary" (click)="close()">关闭</button>
 </div>
 <ng-scrollbar>
-  <div class="item-infos flex-row flex-110">
-    <div class="item-basic flex-column">
-      <div class="item">
-        <app-image class="link" [src]="mokuai().xiaoguotu" [prefix]="imgPrefix()" (click)="editMokuai()"></app-image>
-      </div>
-    </div>
-    <div class="item-bancai flex-column">
-      <div class="toolbar">
-        <div class="title">板材分组</div>
-        <button mat-raised-button color="primary" (click)="editMrbcjfz()">编辑</button>
-        <!-- @if (morenbancaiInputInfos().length < 1) {
-          <button mat-icon-button color="primary" (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
-        } -->
-      </div>
-      @for (info of morenbancaiInputInfos(); track $index) {
-        <app-input [info]="info"></app-input>
-      }
-    </div>
-    <div class="mokuai-gongneng flex-column">
-      <div class="title">模块功能</div>
-      <div class="box">
-        <div class="flex-column">
-          @for (info of mokuaiInputInfos(); track $index) {
-            <app-input [info]="info"></app-input>
-          }
+  <ng-scrollbar class="enable-x">
+    <div class="item-infos flex-row">
+      <div class="item-basic flex-column">
+        <div class="item">
+          <app-image class="link" [src]="mokuai().xiaoguotu" [prefix]="imgPrefix()" (click)="editMokuai()"></app-image>
         </div>
       </div>
+      <div class="item-bancai flex-column">
+        <div class="toolbar">
+          <div class="title">板材分组</div>
+          <button mat-raised-button color="primary" (click)="editMrbcjfz()">编辑</button>
+          <!-- @if (morenbancaiInputInfos().length < 1) {
+                <button mat-icon-button color="primary" (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
+              } -->
+        </div>
+        @for (info of morenbancaiInputInfos(); track $index) {
+          <app-input [info]="info"></app-input>
+        }
+      </div>
+      <div class="mokuai-gongneng flex-column">
+        <div class="title">模块功能</div>
+        <div class="box">
+          <div class="flex-column">
+            @for (info of mokuaiInputInfos(); track $index) {
+              <app-input [info]="info"></app-input>
+            }
+          </div>
+        </div>
+      </div>
+      <app-table
+        class="flex-110"
+        [info]="xuanxiangTable()"
+        (toolbarButtonClick)="onXuanxiangToolbar($event)"
+        (rowButtonClick)="onXuanxiangRow($event)"
+      ></app-table>
+      <app-table
+        class="flex-110"
+        [info]="shuruTable()"
+        (toolbarButtonClick)="onShuruToolbar($event)"
+        (rowButtonClick)="onShuruRow($event)"
+      ></app-table>
     </div>
-  </div>
-  <div class="item-cads border flex-row flex-110">
+  </ng-scrollbar>
+  <div class="item-cads border flex-row">
     <div class="mokuai-gongshi flex-column">
       <div class="title">模块公式</div>
       <app-formulas-editor

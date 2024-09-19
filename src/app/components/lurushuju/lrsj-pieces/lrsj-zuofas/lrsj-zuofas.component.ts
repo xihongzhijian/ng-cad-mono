@@ -204,7 +204,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
   }
   async openZuofa(fenleiName: string, zuofa: 工艺做法) {
     const zuofaName = zuofa.名字;
-    zuofa = getZuofa(zuofa, await this.lrsjStatus.fetchZuofaOptions());
+    zuofa = getZuofa(zuofa, await this.lrsjStatus.zuofaOptionsManager.fetch());
     const infos = this.zuofaInfos().slice();
     const i = infos.findIndex((v) => v.fenleiName === fenleiName && v.zuofa.名字 === zuofaName);
     if (i < 0) {

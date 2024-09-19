@@ -7,7 +7,6 @@ import {
   HostBinding,
   inject,
   input,
-  OnInit,
   output,
   signal,
   viewChild
@@ -21,6 +20,14 @@ import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
+import {ShuruTableDataSorted, XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
+import {
+  getShuruItem,
+  getShuruTable,
+  getXuanxiangItem,
+  getXuanxiangTable
+} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
+import {输入, 选项} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -31,6 +38,8 @@ import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {TableComponent} from "@modules/table/components/table/table.component";
+import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzDataSubmitEvent, MrbcjfzInfo, MrbcjfzInputData, MrbcjfzResponseData} from "@views/mrbcjfz/mrbcjfz.types";
@@ -41,8 +50,8 @@ import {firstValueFrom, Subject} from "rxjs";
 import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
 import {MokuaiCadsComponent} from "../mokuai-cads/mokuai-cads.component";
 import {BjmkStatusService} from "../services/bjmk-status.service";
-import {MokuaiItem, MokuaiItemCadInfo, MokuaiItemCloseEvent} from "./mokuai-item.types";
-import {getEmptyMokuaiItem} from "./mokuai-item.utils";
+import {MokuaiItem, MokuaiItemCadInfo, MokuaiItemCloseEvent, MokuaiItemCustomData} from "./mokuai-item.types";
+import {getEmptyMokuaiItem, getMokuaiCustomData} from "./mokuai-item.utils";
 
 @Component({
   selector: "app-mokuai-item",
@@ -59,13 +68,14 @@ import {getEmptyMokuaiItem} from "./mokuai-item.utils";
     MatIconModule,
     MokuaiCadsComponent,
     MrbcjfzComponent,
-    NgScrollbarModule
+    NgScrollbarModule,
+    TableComponent
   ],
   templateUrl: "./mokuai-item.component.html",
   styleUrl: "./mokuai-item.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MokuaiItemComponent implements OnInit {
+export class MokuaiItemComponent {
   private bjmkStatus = inject(BjmkStatusService);
   private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
@@ -80,10 +90,6 @@ export class MokuaiItemComponent implements OnInit {
   mokuaiIn = input.required<MokuaiItem>({alias: "mokuai"});
   bancaiListData = input.required<BancaiListData | null>();
   closeOut = output<MokuaiItemCloseEvent>({alias: "close"});
-
-  async ngOnInit() {
-    await this.bjmkStatus.cadsManager.fetch();
-  }
 
   imgPrefix = this.bjmkStatus.imgPrefix;
   mokuai = signal<MokuaiItem>(getEmptyMokuaiItem());
@@ -278,11 +284,116 @@ export class MokuaiItemComponent implements OnInit {
       getSelectInputInfo("门铰", "menjiao", "p_menjiao"),
       getSelectInputInfo("开启", "kaiqi", "p_kaiqi"),
       getStringInputInfo("公式输入", "gongshishuru"),
-      getStringInputInfo("选项输入", "xuanxiangshuru"),
+      // getStringInputInfo("选项输入", "xuanxiangshuru"),
       getStringInputInfo("输出变量", "shuchubianliang")
     ];
     return infos;
   });
+
+  mokuaiOptionsEff = effect(async () => {
+    const options = await this.bjmkStatus.mokuaiOptionsManager.fetch();
+    const customDataOld = this.mokuai().自定义数据;
+    const customDataNew = getMokuaiCustomData(customDataOld, options);
+    if (!isEqual(customDataOld, customDataNew)) {
+      this.forceUpdateKeys.add("自定义数据");
+      this.mokuai.update((v) => ({...v, 自定义数据: customDataNew}));
+    }
+  });
+  setMokuaiCustomData<T extends keyof MokuaiItemCustomData>(key: T, value: MokuaiItemCustomData[T]) {
+    const mokuai = this.mokuai();
+    if (!mokuai.自定义数据) {
+      mokuai.自定义数据 = {输入数据: [], 选项数据: []};
+    }
+    mokuai.自定义数据[key] = value;
+    this.mokuai.update((v) => ({...v}));
+  }
+
+  xuanxiangTable = computed(() => getXuanxiangTable(this.mokuai().自定义数据?.选项数据 || []));
+  async getXuanxiangItem(data0?: 选项) {
+    const optionsAll = await this.bjmkStatus.mokuaiOptionsManager.fetch();
+    return await getXuanxiangItem(this.message, optionsAll, this.xuanxiangTable().data, data0);
+  }
+  async onXuanxiangToolbar(event: ToolbarButtonEvent) {
+    switch (event.button.event) {
+      case "添加":
+        {
+          const item = await this.getXuanxiangItem();
+          if (item) {
+            const items = this.mokuai().自定义数据?.选项数据 || [];
+            items.push(item);
+            this.setMokuaiCustomData("选项数据", items);
+          }
+        }
+        break;
+    }
+  }
+  async onXuanxiangRow(event: RowButtonEvent<XuanxiangTableData>) {
+    const mokuai = this.mokuai();
+    const {button, item, rowIdx} = event;
+    const items = mokuai.自定义数据?.选项数据 || [];
+    switch (button.event) {
+      case "编辑":
+        {
+          const item2 = items[rowIdx];
+          const item3 = await this.getXuanxiangItem(item2);
+          if (item3) {
+            items[rowIdx] = item3;
+            this.setMokuaiCustomData("选项数据", items);
+          }
+        }
+        break;
+      case "清空数据":
+        if (await this.message.confirm(`确定清空【${item.名字}】的数据吗？`)) {
+          const item2 = items[rowIdx];
+          item2.可选项 = [];
+          this.setMokuaiCustomData("选项数据", items);
+        }
+        break;
+    }
+  }
+
+  shuruTable = computed(() => {
+    return getShuruTable(this.mokuai().自定义数据?.输入数据 || []);
+  });
+  async getShuruItem(data0?: 输入) {
+    return await getShuruItem(this.message, this.shuruTable().data, data0);
+  }
+  async onShuruToolbar(event: ToolbarButtonEvent) {
+    const items = this.mokuai().自定义数据?.输入数据 || [];
+    switch (event.button.event) {
+      case "添加":
+        {
+          const item = await this.getShuruItem();
+          if (item) {
+            items.push(item);
+            this.setMokuaiCustomData("输入数据", items);
+          }
+        }
+        break;
+    }
+  }
+  async onShuruRow(event: RowButtonEvent<ShuruTableDataSorted>) {
+    const items = this.mokuai().自定义数据?.输入数据 || [];
+    const {button, item} = event;
+    switch (button.event) {
+      case "编辑":
+        {
+          const item2 = items[item.originalIndex];
+          const item3 = await this.getShuruItem(item2);
+          if (item3) {
+            items[item.originalIndex] = item3;
+            this.setMokuaiCustomData("输入数据", items);
+          }
+        }
+        break;
+      case "删除":
+        if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
+          items.splice(item.originalIndex, 1);
+          this.setMokuaiCustomData("输入数据", items);
+        }
+        break;
+    }
+  }
 
   cadYaoqiu = this.bjmkStatus.cadYaoqiu;
   cadButtons = computed(() => {
@@ -358,6 +469,7 @@ export class MokuaiItemComponent implements OnInit {
     this.closeOut.emit({isSaved: this.isSaved()});
   }
   slgsComponent = viewChild<FormulasEditorComponent>("slgs");
+  forceUpdateKeys = new Set<keyof MokuaiItem>();
   async updateMokaui() {
     const mokuai = this.mokuai();
     const errors: string[] = [];
@@ -396,13 +508,15 @@ export class MokuaiItemComponent implements OnInit {
     }
     const mokuaiOld = this.mokuaiIn();
     const mokuaiNew: Partial<MokuaiItem> = {id: mokuai.id, name: mokuai.name};
+    const forceUpdateKeys = this.forceUpdateKeys;
     for (const key of keysOf(mokuai)) {
       const val = mokuai[key];
       const valOld = mokuaiOld[key];
-      if (!isEqual(val, valOld)) {
+      if (forceUpdateKeys.has(key) || !isEqual(val, valOld)) {
         mokuaiNew[key] = val as any;
       }
     }
+    forceUpdateKeys.clear();
     await this.bjmkStatus.editMokuai(mokuaiNew, true);
     this.isSaved.set(true);
   }
