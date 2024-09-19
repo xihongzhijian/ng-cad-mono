@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from "@angular/core";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -10,24 +10,25 @@ import {Properties} from "csstype";
   templateUrl: "./cad-points.component.html",
   styleUrls: ["./cad-points.component.scss"],
   standalone: true,
-  imports: []
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadPointsComponent extends Subscribed() implements OnInit {
-  points: CadPoints = [];
+  private config = inject(AppConfigService);
+  private status = inject(AppStatusService);
 
-  constructor(
-    private config: AppConfigService,
-    private status: AppStatusService
-  ) {
+  points = signal<CadPoints>([]);
+
+  constructor() {
     super();
   }
 
   ngOnInit() {
-    this.subscribe(this.status.cadPoints$, (points) => (this.points = points));
+    this.subscribe(this.status.cadPoints$, (points) => this.points.set(points));
   }
 
   onPointClick(index: number) {
-    const points = this.points;
+    const points = this.points();
     points[index].active = !points[index].active;
     this.status.cadPoints$.next(points);
   }
