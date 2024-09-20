@@ -1,9 +1,10 @@
 import {Matrix, ObjectOf, Point} from "@lucilor/utils";
 import {getVectorsFromArray, purgeObject} from "../../cad-utils";
+import {CadAxis} from "../cad-types";
 import {CadDimension, CadDimensionEntity} from "./cad-dimension";
 
 export class CadDimensionLinear extends CadDimension {
-  axis: "x" | "y";
+  axis: CadAxis;
   entity1: CadDimensionEntity;
   entity2: CadDimensionEntity;
   defPoints?: Point[];

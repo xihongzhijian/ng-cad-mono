@@ -6,12 +6,13 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {reservedDimNames} from "@app/cad/utils";
+import {reservedDimNames, showDimensionPoints} from "@app/cad/utils";
 import {
   CadData,
   CadDimension,
   CadDimensionLinear,
   CadDimensionType,
+  CadEntities,
   CadEntity,
   CadEventCallBack,
   CadLine,
@@ -51,10 +52,12 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     let prevConfig: Partial<AppConfig> = {};
     let prevSelectedComponents: CadData[] | null = null;
     let prevComponentsSelectable: boolean | null = null;
+    let prevSelectedEntities: CadEntities | null = null;
     this.subscribe(this.status.cadStatusEnter$, (cadStatus) => {
       if (cadStatus instanceof CadStatusEditDimension) {
         const index = cadStatus.index;
         const dimension = this.dimensions[index];
+        prevSelectedEntities = this.status.cad.selected();
         this.dimLineSelecting = index;
         prevConfig = this.config.setConfig({hideLineLength: true, lineGongshi: 0, selectMode: "single"}, {sync: false});
         prevSelectedComponents = this.status.components.selected$.value;
@@ -77,6 +80,10 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
           prevComponentsSelectable = null;
         }
         this.blur();
+        if (prevSelectedEntities) {
+          this.status.cad.select(prevSelectedEntities);
+          prevSelectedEntities = null;
+        }
       }
     });
 
@@ -85,7 +92,8 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     cad.on("entitiesselect", this._onEntitiesSelect);
     cad.on("entitiesadd", this._updateDimensions);
     cad.on("entitiesremove", this._updateDimensions);
-    cad.on("render", this._updateDimensions);
+    cad.on("zoom", this._onZoom);
+    // cad.on("render", this._updateDimensions);
   }
 
   ngOnDestroy() {
@@ -94,12 +102,9 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     cad.off("entitiesselect", this._onEntitiesSelect);
     cad.off("entitiesadd", this._updateDimensions);
     cad.off("entitiesremove", this._updateDimensions);
-    cad.off("render", this._updateDimensions);
+    cad.off("zoom", this._onZoom);
+    // cad.off("render", this._updateDimensions);
   }
-
-  private _updateDimensions = () => {
-    this.dimensions = this.status.cad.data.getAllEntities().dimension;
-  };
 
   private _onEntitiesSelect: CadEventCallBack<"entitiesselect"> = (entities) => {
     const cad = this.status.cad;
@@ -107,6 +112,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     const cadStatus = this.status.cadStatus;
     const dimensions = this.dimensions;
     const entity = entities.line[0];
+    let newIndex = -1;
     if (cadStatus instanceof CadStatusEditDimension && entity) {
       const dimension = dimensions[cadStatus.index];
       if (cadStatus.type === "linear") {
@@ -117,10 +123,8 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
           dimensionLinear = new CadDimensionLinear();
           dimensionLinear.setStyle({text: {size: Defaults.FONT_SIZE}});
           dimensionLinear.setColor(0x00ff00);
-          let newIndex = 0;
-          newIndex += data.entities.dimension.length;
           data.entities.add(dimensionLinear);
-          this.status.setCadStatus(new CadStatusEditDimension("linear", newIndex));
+          newIndex = data.entities.dimension.length - 1;
         }
         if (!dimensionLinear.entity1.id) {
           dimensionLinear.entity1 = {id: entity.id, location: "start"};
@@ -147,7 +151,23 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
       if (dimension) {
         this.focus(dimension);
         cad.render(dimension);
+      } else if (newIndex >= 0) {
+        this._updateDimensions();
+        this.status.setCadStatus(new CadStatusEditDimension("linear", newIndex));
       }
+    }
+  };
+  private _updateDimensions = () => {
+    this.dimensions = this.status.cad.data.getAllEntities().dimension;
+  };
+  private _onZoom: CadEventCallBack<"zoom"> = () => {
+    const cadStatus = this.status.cadStatus;
+    if (!(cadStatus instanceof CadStatusEditDimension)) {
+      return;
+    }
+    const dimension = this.dimensions[cadStatus.index];
+    if (dimension) {
+      showDimensionPoints(this.status, [dimension]);
     }
   };
 
@@ -226,6 +246,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
       }
     });
     this.status.blur(toBlur);
+    showDimensionPoints(this.status, [dimension]);
   }
 
   blur() {

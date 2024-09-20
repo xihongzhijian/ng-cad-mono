@@ -7,6 +7,7 @@ import {CadCircle, CadDimension, CadEntity, CadLine} from "./cad-entity";
 import {CadDimensionLinear} from "./cad-entity/cad-dimension-linear";
 import {CadLayer} from "./cad-layer";
 import {isLinesParallel} from "./cad-lines";
+import {CadAxis} from "./cad-types";
 
 export interface CadDataInfo {
   [key: string]: any;
@@ -650,7 +651,7 @@ export class CadData {
       lines.unshift(lines.pop() as string);
       ids.unshift(ids.pop() as string);
     }
-    let axis: "x" | "y" | undefined;
+    let axis: CadAxis | undefined;
     const getLine = (e: CadCircle, l: CadLine) => {
       const result = new CadLine();
       result.start = e.center.clone();
@@ -965,7 +966,7 @@ export class CadConnection {
   lines: string[];
   space: string;
   position: "absolute" | "relative";
-  axis: "x" | "y";
+  axis: CadAxis;
   value: number;
 
   constructor(data: any = {}) {

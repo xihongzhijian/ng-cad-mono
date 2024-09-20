@@ -1,6 +1,6 @@
 import {Angle, Arc, getTypeOf, Line, Matrix, Point} from "@lucilor/utils";
 import {Container, Element, Image, Path, PathArrayAlias, Circle as SvgCircle, Line as SvgLine, Text} from "@svgdotjs/svg.js";
-import {CadImage} from "./cad-data";
+import {CadAxis, CadImage} from "./cad-data";
 import {CadDimension} from "./cad-data/cad-entity/cad-dimension";
 import {CadDimensionStyle, FontStyle, LineStyle} from "./cad-data/cad-styles";
 
@@ -179,7 +179,7 @@ export const drawDimensionLinear = (
   draw: Container,
   points: Point[],
   text: string,
-  axis: "x" | "y",
+  axis: CadAxis,
   xiaoshuchuli: CadDimension["xiaoshuchuli"],
   style?: CadDimensionStyle,
   i = 0

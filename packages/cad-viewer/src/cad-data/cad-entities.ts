@@ -1,5 +1,6 @@
 import {getTypeOf, MatrixLike, ObjectOf, Rectangle} from "@lucilor/utils";
 import {v4} from "uuid";
+import {getDimensionLinePoint} from ".";
 import {mergeArray, separateArray} from "../cad-utils";
 import {CadData} from "./cad-data";
 import {
@@ -385,44 +386,8 @@ export class CadEntities {
       default:
         throw new Error("Invalid ref: " + ref);
     }
-    const getPoint = (e: CadLineLike, location: CadDimensionEntity["location"]) => {
-      const {start, end, middle, swapped} = e.clone();
-      if (location === "start") {
-        return swapped ? end : start;
-      } else if (location === "end") {
-        return swapped ? start : end;
-      } else if (location === "center") {
-        return middle;
-      } else if (location === "min") {
-        if (axis === "x") {
-          return start.y < end.y ? start : end;
-        } else if (axis === "y") {
-          return start.x < end.x ? start : end;
-        } else {
-          return middle;
-        }
-      } else if (location === "max") {
-        if (axis === "x") {
-          return start.y > end.y ? start : end;
-        } else if (axis === "y") {
-          return start.x > end.x ? start : end;
-        } else {
-          return middle;
-        }
-      } else if (location === "minX") {
-        return start.x < end.x ? start : end;
-      } else if (location === "maxX") {
-        return start.x > end.x ? start : end;
-      } else if (location === "minY") {
-        return start.y < end.y ? start : end;
-      } else if (location === "maxY") {
-        return start.y > end.y ? start : end;
-      } else {
-        return middle;
-      }
-    };
-    let p1 = getPoint(line1, entity1.location);
-    let p2 = getPoint(line2, entity2.location);
+    let p1 = getDimensionLinePoint(line1, entity1.location, axis);
+    let p2 = getDimensionLinePoint(line2, entity2.location, axis);
     if (!p1 || !p2) {
       return [];
     }

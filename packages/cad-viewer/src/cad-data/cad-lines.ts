@@ -1,5 +1,5 @@
 import {DEFAULT_TOLERANCE, Point} from "@lucilor/utils";
-import {CadArc, CadLine, CadLineLike, CadMtext} from "..";
+import {CadArc, CadAxis, CadDimensionEntity, CadLine, CadLineLike, CadMtext} from "..";
 import {getVectorFromArray} from "../cad-utils";
 import {CadData} from "./cad-data";
 import {CadEntities} from "./cad-entities";
@@ -359,4 +359,41 @@ export const isLinesParallel = (lines: CadLine[], accurary = 0) => {
     }
   }
   return true;
+};
+
+export const getDimensionLinePoint = (e: CadLineLike, location: CadDimensionEntity["location"], axis: CadAxis) => {
+  const {start, end, middle, swapped} = e.clone();
+  if (location === "start") {
+    return swapped ? end : start;
+  } else if (location === "end") {
+    return swapped ? start : end;
+  } else if (location === "center") {
+    return middle;
+  } else if (location === "min") {
+    if (axis === "x") {
+      return start.y < end.y ? start : end;
+    } else if (axis === "y") {
+      return start.x < end.x ? start : end;
+    } else {
+      return middle;
+    }
+  } else if (location === "max") {
+    if (axis === "x") {
+      return start.y > end.y ? start : end;
+    } else if (axis === "y") {
+      return start.x > end.x ? start : end;
+    } else {
+      return middle;
+    }
+  } else if (location === "minX") {
+    return start.x < end.x ? start : end;
+  } else if (location === "maxX") {
+    return start.x > end.x ? start : end;
+  } else if (location === "minY") {
+    return start.y < end.y ? start : end;
+  } else if (location === "maxY") {
+    return start.y > end.y ? start : end;
+  } else {
+    return middle;
+  }
 };

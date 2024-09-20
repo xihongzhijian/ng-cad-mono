@@ -12,3 +12,5 @@ export const entityTypesMap: Record<EntityTypeKey, EntityType> = (() => {
   });
   return map;
 })();
+
+export type CadAxis = "x" | "y";

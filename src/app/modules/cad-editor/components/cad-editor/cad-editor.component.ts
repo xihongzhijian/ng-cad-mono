@@ -19,10 +19,10 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
-import {openCadDimensionForm} from "@app/cad/utils";
+import {openCadDimensionForm, showDimensionPoints} from "@app/cad/utils";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
-import {CadDimensionLinear, CadEventCallBack, CadLineLike, CadMtext, PointsMap} from "@lucilor/cad-viewer";
+import {CadDimensionLinear, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {queryString} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadConsoleComponent} from "@modules/cad-console/components/cad-console/cad-console.component";
@@ -195,9 +195,11 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     cad.appendTo(this.cadContainer.nativeElement);
     cad.on("entitiescopy", this._onEntitiesCopy);
     cad.on("entitiespaste", this._onEntitiesPaste);
+    cad.on("entitiesremove", this._onEntitiesReomve);
     cad.on("entitydblclick", this._onEntityDblClick);
     cad.on("entitiesselect", this._onEntitySelect);
     cad.on("entitiesunselect", this._onEntityUnselect);
+    cad.on("zoom", this._onZoom);
     this._setCadPadding();
 
     this.subscribe(this.config.configChange$, ({newVal}) => {
@@ -262,9 +264,11 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     const cad = this.status.cad;
     cad.off("entitiescopy", this._onEntitiesCopy);
     cad.off("entitiespaste", this._onEntitiesPaste);
+    cad.off("entitiesremove", this._onEntitiesReomve);
     cad.off("entitydblclick", this._onEntityDblClick);
     cad.off("entitiesselect", this._onEntitySelect);
     cad.off("entitiesunselect", this._onEntityUnselect);
+    cad.off("zoom", this._onZoom);
   }
 
   private _onEntitiesCopy: CadEventCallBack<"entitiescopy"> = (entities) => {
@@ -277,6 +281,9 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   private _onEntitiesPaste: CadEventCallBack<"entitiespaste"> = (entities) => {
     entities.forEach((e) => (e.opacity = 1));
     this.status.cad.render(entities);
+  };
+  private _onEntitiesReomve: CadEventCallBack<"entitiesremove"> = () => {
+    this._updateDimPoints();
   };
   private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (event, entity) => {
     const collection = this.status.collection$.value;
@@ -296,17 +303,14 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   private _onEntityUnselect: CadEventCallBack<"entitiesunselect"> = () => {
     this._updateDimPoints();
   };
+  private _onZoom: CadEventCallBack<"zoom"> = () => {
+    this._updateDimPoints();
+  };
   private _updateDimPoints() {
     if (!(this.status.cadStatus instanceof CadStatusNormal)) {
       return;
     }
-    const points: PointsMap = [];
-    const cad = this.status.cad;
-    for (const e of cad.selected().dimension) {
-      const dimPoints = cad.data.getDimensionPoints(e).slice(0, 2);
-      points.push(...dimPoints.map((v) => ({point: v, lines: [], selected: false})));
-    }
-    this.status.setCadPoints(points);
+    showDimensionPoints(this.status, this.status.cad.selected().dimension);
   }
 
   private _setCadPadding() {
