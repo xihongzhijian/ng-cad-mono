@@ -48,7 +48,7 @@ import {MsbjRectInfo, 模块大小配置} from "@components/msbj-rects/msbj-rect
 import {VarNameItem} from "@components/var-names/var-names.types";
 import {XhmrmsbjSbjbComponent} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.component";
 import {environment} from "@env";
-import {keysOf, ObjectOf, Point, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
+import {keysOf, ObjectOf, Point, queryString, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -65,7 +65,7 @@ import {MsbjCloseEvent, MsbjData, Node2rectData, node2rectDataMsdxKeys} from "@v
 import {getEmpty模块大小配置, justify模块大小配置, MsbjInfo} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {getFormulaInfos, openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
-import {cloneDeep, intersection} from "lodash";
+import {cloneDeep, debounce, intersection} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, Subject} from "rxjs";
@@ -817,6 +817,24 @@ export class XhmrmsbjComponent implements OnDestroy {
       }
     }
   }
+
+  kexuanmokuaiQuery = signal("");
+  kexuanmokuaiSearchInputInfo = computed(() => {
+    const info: InputInfo = {
+      type: "string",
+      label: "搜索",
+      clearable: true,
+      value: this.kexuanmokuaiQuery(),
+      onInput: debounce((val: string) => this.kexuanmokuaiQuery.set(val), 100),
+      style: {width: "150px"}
+    };
+    return info;
+  });
+  kexuanmokuais = computed(() => {
+    const query = this.kexuanmokuaiQuery();
+    const mokuais = this.activeMokuaiNode()?.["可选模块"] || [];
+    return mokuais.filter(({type2}) => queryString(query, type2));
+  });
 
   getBancaixuanze(item: MrbcjfzInfo) {
     if (this.isFromOrder()) {

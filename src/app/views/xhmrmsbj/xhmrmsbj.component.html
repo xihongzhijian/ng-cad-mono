@@ -110,6 +110,7 @@
       @if (activeMokuaiNode()?.["层名字"]; as nodeName) {
         <div class="toolbar">
           <div class="title">{{ nodeName }}位置可选模块</div>
+          <app-input [info]="kexuanmokuaiSearchInputInfo()"></app-input>
           @if (!isFromOrder()) {
             <button mat-raised-button color="primary" (click)="setKexuanmokuai()">编辑</button>
           }
@@ -117,7 +118,7 @@
       }
       <ng-scrollbar>
         <div class="flex-row" style="flex-wrap: wrap">
-          @for (mokuai of activeMokuaiNode()?.["可选模块"]; track $index) {
+          @for (mokuai of kexuanmokuais(); track $index) {
             <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai, isActive: isMokuaiActive(mokuai)}"> </ng-template>
           }
         </div>
