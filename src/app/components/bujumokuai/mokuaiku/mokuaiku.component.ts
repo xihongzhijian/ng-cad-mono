@@ -240,14 +240,21 @@ export class MokuaikuComponent implements OnInit {
     const selectedMokuais = submit ? this.selectedMokuais() : null;
     this.closeOut.emit({selectedMokuais});
   }
-  selectedMokuai(mokuai: MokuaiItem) {
+  clickMokuai(mokuai: MokuaiItem) {
+    if (this.selectable()) {
+      this.selectMokuai(mokuai);
+    } else {
+      this.enterMokuai(mokuai);
+    }
+  }
+  selectMokuai(mokuai: MokuaiItem) {
     if (this.selectedMokuaiIds().includes(mokuai.id)) {
-      this.message.snack("已经选择过了");
+      this.unselectMokuai(mokuai);
     } else {
       this.selectedMokuaiIds.update((v) => [...v, mokuai.id]);
     }
   }
-  unselectedMokuai(mokuai: MokuaiItem) {
+  unselectMokuai(mokuai: MokuaiItem) {
     this.selectedMokuaiIds.update((v) => v.filter((v2) => v2 !== mokuai.id));
   }
 }

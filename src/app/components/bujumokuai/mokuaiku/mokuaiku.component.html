@@ -29,17 +29,28 @@
           [class.active]="mokuaiActiveItem()?.id === mokuai.id"
           (click)="clickMokuaiItem(mokuai)"
         >
+          <div class="float-top toolbar right">
+            <button mat-icon-button color="primary" (click)="mokuaiImage.showBigPic()">
+              <mat-icon>zoom_in</mat-icon>
+            </button>
+            @if (selectedMokuaiIds().includes(mokuai.id)) {
+              <div class="img selected" style="position: relative"></div>
+            }
+          </div>
+          <app-image
+            #mokuaiImage
+            [src]="mokuai.xiaoguotu"
+            [bigPicSrc]="mokuai.xiaoguotu"
+            bigPicClickShowDisabled
+            [prefix]="imgPrefix()"
+            (click)="clickMokuai(mokuai)"
+          ></app-image>
           @if (selectable()) {
-            <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()" (click)="selectedMokuai(mokuai)"></app-image>
             <div class="name toolbar center">
               <button mat-icon-button color="primary" (click)="enterMokuai(mokuai)"><mat-icon>edit</mat-icon></button>
               <div>{{ mokuai.name }}</div>
             </div>
-            @if (selectedMokuaiIds().includes(mokuai.id)) {
-              <div class="img selected"></div>
-            }
           } @else {
-            <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()" (click)="enterMokuai(mokuai)"></app-image>
             <div class="name">{{ mokuai.name }}</div>
           }
           @if (mokuaiEditMode()) {
@@ -63,7 +74,7 @@
             <div class="item">
               <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()"></app-image>
               <div class="name toolbar center">
-                <button mat-icon-button color="primary" (click)="unselectedMokuai(mokuai)"><mat-icon>remove_circle</mat-icon></button>
+                <button mat-icon-button color="primary" (click)="unselectMokuai(mokuai)"><mat-icon>remove_circle</mat-icon></button>
                 <button mat-icon-button color="primary" (click)="enterMokuai(mokuai)"><mat-icon>edit</mat-icon></button>
                 <div>{{ mokuai.name }}</div>
               </div>
