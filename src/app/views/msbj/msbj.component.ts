@@ -21,7 +21,7 @@ import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.ser
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {MsbjRectInfo, MsbjSelectRectEvent, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjRectInfo, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -120,10 +120,7 @@ export class MsbjComponent {
     this.msbjRects()?.generateRects(opts);
   }
 
-  currRectInfo = signal<MsbjRectInfo | null>(null);
-  selectRect(event: MsbjSelectRectEvent) {
-    this.currRectInfo.set(event.info);
-  }
+  activeRectInfo = signal<MsbjRectInfo | null>(null);
   private _generateRectsEnd = 0;
   generateRectsEnd() {
     const msbjInfo = this.msbjInfo();
@@ -136,7 +133,7 @@ export class MsbjComponent {
     }
   }
   inputInfos = computed(() => {
-    const rectInfo = this.currRectInfo();
+    const rectInfo = this.activeRectInfo();
     const isBuju = rectInfo?.raw.isBuju;
     const infos: InputInfo[] = [
       {
@@ -182,7 +179,7 @@ export class MsbjComponent {
   });
 
   updateCurrRectInfo() {
-    const currRectInfo = this.msbjRects()?.currRectInfo;
+    const currRectInfo = this.msbjRects()?.activeRectInfo;
     if (!currRectInfo) {
       return;
     }
@@ -205,7 +202,10 @@ export class MsbjComponent {
     }
     const table = this.table();
     const data: TableUpdateParams<MsbjData>["data"] = {vid: msbjInfo.vid};
-    const rectInfos = this.msbjRects()?.rectInfosRelative.map((v) => v.raw) || [];
+    const rectInfos =
+      this.msbjRects()
+        ?.rectInfosRelative()
+        .map((v) => v.raw) || [];
 
     const errors = new Set<string>();
     const namesInfo = new Map<string, {nodeNames: string[]; count: number}>();

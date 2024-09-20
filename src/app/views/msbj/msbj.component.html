@@ -21,8 +21,9 @@
     </div>
     <div class="rect-area flex-column">
       <app-msbj-rects
-        [rectInfos]="msbjInfo()?.peizhishuju?.['模块节点']"
-        (selectRect)="selectRect($event)"
+        [rectInfos]="msbjInfo()?.peizhishuju?.['模块节点'] || []"
+        [(activeRectInfo)]="activeRectInfo"
+        ignoreNonBuju
         (generateRectsEnd)="generateRectsEnd()"
       ></app-msbj-rects>
     </div>

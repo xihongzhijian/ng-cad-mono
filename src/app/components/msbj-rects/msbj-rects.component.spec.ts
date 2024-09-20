@@ -12,6 +12,8 @@ describe("MsbjRectsComponent", () => {
 
     fixture = TestBed.createComponent(MsbjRectsComponent);
     component = fixture.componentInstance;
+    const ref = fixture.componentRef;
+    ref.setInput("rectInfos", []);
     fixture.detectChanges();
   });
 

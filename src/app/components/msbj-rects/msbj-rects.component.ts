@@ -1,4 +1,16 @@
-import {Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild} from "@angular/core";
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  HostListener,
+  input,
+  model,
+  output,
+  signal,
+  viewChild
+} from "@angular/core";
 import {setGlobal} from "@app/app.common";
 import {getTrbl, TrblLike} from "@app/utils/trbl";
 import {Debounce} from "@decorators/debounce";
@@ -6,16 +18,24 @@ import {ObjectOf, Rectangle, timeout} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {cloneDeep, random} from "lodash";
 import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
-import {MsbjRectInfo, MsbjRectInfoRaw, MsbjSelectRectEvent} from "./msbj-rects.types";
+import {MsbjRectInfo, MsbjRectInfoRaw} from "./msbj-rects.types";
 
 @Component({
   selector: "app-msbj-rects",
   templateUrl: "./msbj-rects.component.html",
   styleUrls: ["./msbj-rects.component.scss"],
   standalone: true,
-  imports: [ClickStopPropagationDirective]
+  imports: [ClickStopPropagationDirective],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MsbjRectsComponent {
+  rectInfos = input.required<MsbjRectInfoRaw[]>();
+  padding = input<TrblLike>(0);
+  ignoreNonBuju = input(false, {transform: booleanAttribute});
+  generateRectsStart = output<void>();
+  generateRectsEnd = output<GenerateRectsEndEvent>();
+  activeRectInfo = model<MsbjRectInfo | null>(null);
+
   rgbMin = 200;
   rgbMax = 245;
   altColors = [
@@ -30,26 +50,7 @@ export class MsbjRectsComponent {
     "rgb(231, 212, 203)",
     "rgb(237, 229, 223)"
   ];
-  rectInfosAbsolute: MsbjRectInfo[] = [];
-  rectInfosRelative: MsbjRectInfo[] = [];
-  currRectInfo: MsbjRectInfo | null = null;
-  @ViewChild("rectOuter") rectOuter?: ElementRef<HTMLDivElement>;
   private _rectColors: ObjectOf<string> = {};
-
-  @Input() padding: TrblLike = 0;
-  private _rectInfos?: MsbjRectInfoRaw[];
-  @Input()
-  get rectInfos() {
-    return this._rectInfos;
-  }
-  set rectInfos(value) {
-    this._rectInfos = value;
-    this.generateRects({resetColors: true});
-  }
-  @Input() selectRectBefore?: (info: MsbjRectInfo | null) => boolean;
-  @Output() selectRect = new EventEmitter<MsbjSelectRectEvent>();
-  @Output() generateRectsStart = new EventEmitter<void>();
-  @Output() generateRectsEnd = new EventEmitter<GenerateRectsEndEvent>();
 
   constructor() {
     setGlobal("msbjRects", this);
@@ -61,45 +62,38 @@ export class MsbjRectsComponent {
     this.generateRects({isWindowResize: true});
   }
 
-  getRectStyle(info: MsbjRectInfo): Properties {
-    const {rect, bgColor} = info;
-    return {
+  getRectStyle(info: MsbjRectInfo) {
+    const {rect, bgColor, raw} = info;
+    const style: Properties = {
       left: `${rect.min.x * 100}%`,
       top: `${rect.min.y * 100}%`,
       width: `${Math.max(0, rect.width) * 100}%`,
       height: `${Math.max(0, rect.height) * 100}%`,
       backgroundColor: bgColor
     };
+    if (raw.isBuju || !this.ignoreNonBuju()) {
+      style.cursor = "pointer";
+    }
+    return style;
   }
 
-  setCurrRectInfo(info: MsbjRectInfo | null, silent?: boolean) {
-    if (this.selectRectBefore && !this.selectRectBefore(info)) {
-      return;
-    }
-    if (info?.raw.isBuju) {
-      this.currRectInfo = info;
-    } else {
-      this.currRectInfo = null;
-    }
-    if (!silent) {
-      this.selectRect.emit({info});
-    }
-  }
-
+  rectInfosAbsolute = signal<MsbjRectInfo[]>([]);
+  rectInfosRelative = signal<MsbjRectInfo[]>([]);
+  rectOuter = viewChild<ElementRef<HTMLDivElement>>("rectOuter");
   async generateRects(opts?: GenerateRectsOpts) {
     this.generateRectsStart.emit();
-    this.rectInfosAbsolute = [];
-    this.rectInfosRelative = [];
+    const rectInfosAbsolute: MsbjRectInfo[] = [];
+    const rectInfosRelative: MsbjRectInfo[] = [];
     const totalRect = Rectangle.min;
     const names = new Set<string>();
-    this.rectInfos?.forEach((infoRaw) => {
+    for (const infoRaw of this.rectInfos()) {
       const infoAbsolute = new MsbjRectInfo(infoRaw);
-      this.rectInfosAbsolute.push(infoAbsolute);
+      rectInfosAbsolute.push(infoAbsolute);
       totalRect.expandByRect(infoAbsolute.rect);
       if (infoAbsolute.name) {
         names.add(infoAbsolute.name);
       }
-    });
+    }
     const {resetColors, isWindowResize} = opts || {};
     const {width, height, left, bottom} = totalRect;
     if (resetColors) {
@@ -116,7 +110,7 @@ export class MsbjRectsComponent {
       return `rgb(${randRGB()}, ${randRGB()}, ${randRGB()})`;
     };
     let charCode = 65;
-    this.rectInfosAbsolute.forEach((infoAbsolute) => {
+    for (const infoAbsolute of rectInfosAbsolute) {
       const infoRelative = cloneDeep(infoAbsolute);
       const {min, max} = infoRelative.rect;
       min.set((min.x - left) / width, (min.y - bottom) / height);
@@ -143,11 +137,13 @@ export class MsbjRectsComponent {
           infoRelative.name = name;
         }
       }
-      this.rectInfosRelative.push(infoRelative);
-    });
-    const el = this.rectOuter?.nativeElement;
+      rectInfosRelative.push(infoRelative);
+    }
+    this.rectInfosAbsolute.set(rectInfosAbsolute);
+    this.rectInfosRelative.set(rectInfosRelative);
+    const el = this.rectOuter()?.nativeElement;
     if (el) {
-      const padding = getTrbl(this.padding);
+      const padding = getTrbl(this.padding());
       el.style.padding = "0";
       el.style.opacity = "0";
       await timeout(0);
@@ -168,6 +164,19 @@ export class MsbjRectsComponent {
       el.style.opacity = "1";
     }
     this.generateRectsEnd.emit({isWindowResize});
+  }
+  generateRectsEff = effect(
+    () => {
+      this.generateRects({resetColors: true});
+    },
+    {allowSignalWrites: true}
+  );
+
+  onRectClick(info: MsbjRectInfo | null) {
+    if (this.ignoreNonBuju() && !info?.raw.isBuju) {
+      return;
+    }
+    this.activeRectInfo.set(info);
   }
 }
 

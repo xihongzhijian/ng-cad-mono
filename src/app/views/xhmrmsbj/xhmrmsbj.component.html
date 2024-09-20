@@ -1,48 +1,46 @@
-<div class="flex-row">
-  <div class="toolbar">
-    @for (name of tabNames(); track $index) {
-      <button mat-raised-button [color]="name === activeTabName() ? 'accent' : 'primary'" (click)="activeTabName.set(name)">
-        {{ name }}
-      </button>
+<div class="toolbar">
+  @for (name of tabNames(); track $index) {
+    <button mat-raised-button [color]="name === activeTabName() ? 'accent' : 'primary'" (click)="activeTabName.set(name)">
+      {{ name }}
+    </button>
+  }
+  @if (!isFromOrder() || isZhijian()) {
+    <button mat-raised-button color="primary" (click)="openMokuaikuInNew()">模块库</button>
+    <button mat-raised-button color="primary" (click)="openPeijiankuInNew()">配件库</button>
+    <button mat-raised-button color="primary">算料单</button>
+  }
+  <mat-divider vertical class="large placeholder"></mat-divider>
+  @if (isFromOrder()) {
+    <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
+    @if (canEditMokuaidaxiao()) {
+      <button mat-raised-button color="primary" (click)="refreshMokuaidaxiao()">更新模块大小配置</button>
     }
-    @if (!isFromOrder() || isZhijian()) {
-      <button mat-raised-button color="primary" (click)="openMokuaikuInNew()">模块库</button>
-      <button mat-raised-button color="primary" (click)="openPeijiankuInNew()">配件库</button>
-      <button mat-raised-button color="primary">算料单</button>
+    @if (isZhijian()) {
+      <button mat-raised-button color="primary" (click)="openHoutaiUrl()">查看型号默认门扇布局</button>
     }
-    <mat-divider vertical class="large placeholder"></mat-divider>
-    @if (isFromOrder()) {
-      <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
-      @if (canEditMokuaidaxiao()) {
-        <button mat-raised-button color="primary" (click)="refreshMokuaidaxiao()">更新模块大小配置</button>
+  } @else {
+    @switch (activeTabName()) {
+      @case ("锁边铰边") {
+        <button mat-raised-button color="primary" (click)="addSbjbItemSbjb()">添加</button>
       }
-      @if (isZhijian()) {
-        <button mat-raised-button color="primary" (click)="openHoutaiUrl()">查看型号默认门扇布局</button>
-      }
-    } @else {
-      @switch (activeTabName()) {
-        @case ("锁边铰边") {
-          <button mat-raised-button color="primary" (click)="addSbjbItemSbjb()">添加</button>
+      @case ("门扇模块") {
+        @if (!isFromOrder()) {
+          <button mat-raised-button color="primary" (click)="setMsbj()">更换布局</button>
         }
-        @case ("门扇模块") {
-          @if (!isFromOrder()) {
-            <button mat-raised-button color="primary" (click)="setMsbj()">更换布局</button>
-          }
-          @if (canEditMokuaidaxiao()) {
-            <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
-          }
-          <mat-divider vertical class="large placeholder"></mat-divider>
+        @if (canEditMokuaidaxiao()) {
+          <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
         }
-      }
-      <button mat-raised-button color="primary" (click)="submit()">保存</button>
-      @if (closable()) {
-        <button mat-raised-button color="primary" (click)="close()">关闭</button>
+        <mat-divider vertical class="large placeholder"></mat-divider>
       }
     }
-    <div class="title link text" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
-  </div>
+    <button mat-raised-button color="primary" (click)="submit()">保存</button>
+    @if (closable()) {
+      <button mat-raised-button color="primary" (click)="close()">关闭</button>
+    }
+  }
+  <div class="title link text" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
 </div>
-@if (!isFromOrder()) {
+@if (!isFromOrder() && loadSbjb()) {
   @if (xinghao(); as xinghao) {
     <app-xhmrmsbj-sbjb [class.hidden]="activeTabName() !== '锁边铰边'" [xinghaoName]="xinghao.raw.mingzi"></app-xhmrmsbj-sbjb>
   }
@@ -80,10 +78,10 @@
     <div class="flex-row flex-110" style="max-height: 320px">
       <div class="flex-column flex-110">
         <app-msbj-rects
-          [rectInfos]="activeMsbj()?.peizhishuju?.['模块节点']"
-          [selectRectBefore]="selectRectBefore.bind(this)"
-          (selectRect)="selectRect($event)"
-          (generateRectsEnd)="generateRectsEnd($event)"
+          [rectInfos]="activeMsbj()?.peizhishuju?.['模块节点'] || []"
+          [(activeRectInfo)]="activeRectInfo"
+          ignoreNonBuju
+          (generateRectsEnd)="generateRectsEnd()"
         ></app-msbj-rects>
       </div>
       @if (isFromOrder()) {
@@ -118,7 +116,7 @@
         </div>
       }
       <ng-scrollbar>
-        <div class="flex-row" style="flex-wrap: wrap" [style]="{display: showMokuais() ? 'flex' : 'none'}">
+        <div class="flex-row" style="flex-wrap: wrap">
           @for (mokuai of activeMokuaiNode()?.["可选模块"]; track $index) {
             <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai, isActive: isMokuaiActive(mokuai)}"> </ng-template>
           }
@@ -231,6 +229,7 @@
   <app-floating-dialog [maximized]="true" noTitle>
     <app-mkdxpz-editor
       [data]="openedMkdcpz.data"
+      [title]="openedMkdcpz.title"
       [varNameItem]="openedMkdcpz.varNameItem"
       closable
       (close)="closeMkdcpz($event)"

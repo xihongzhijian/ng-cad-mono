@@ -1,5 +1,4 @@
-import {ElementRef} from "@angular/core";
-import {ViewChild, ViewChildren} from "@angular/core";
+import {ChangeDetectionStrategy, computed, ElementRef, HostBinding, inject, viewChild} from "@angular/core";
 import {Component, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
@@ -14,7 +13,7 @@ import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CalcService} from "@services/calc.service";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
-import csstype from "csstype";
+import {Properties} from "csstype";
 import {NgScrollbar} from "ngx-scrollbar";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
 
@@ -23,37 +22,35 @@ import {FormulasComponent} from "../../components/formulas/formulas.component";
   templateUrl: "./xhmrmsbj-mokuais.component.html",
   styleUrls: ["./xhmrmsbj-mokuais.component.scss"],
   standalone: true,
-  imports: [NgScrollbar, FormulasComponent, MatDividerModule, MatDialogActions, MatButtonModule]
+  imports: [NgScrollbar, FormulasComponent, MatDividerModule, MatDialogActions, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class XhmrmsbjMokuaisComponent {
-  @ViewChildren("mkdxFormula", {read: ElementRef}) mkdxFormulaRef?: ElementRef<HTMLDivElement>[];
-  mkdxFormulaInfos: XhmrmsbjMkdxFormulaInfo[] = [];
-  xuanzhongMokuaiInfos: XhmrmsbjXuanzhongMokuaiInfo[] = [];
+  private calc = inject(CalcService);
+
+  @HostBinding("class") class = "ng-page";
+
   getMokuaiTitle = getMokuaiTitle;
-  formulaStyles: csstype.Properties = {fontSize: "18px"};
-  @ViewChild("section1") section1?: ElementRef<HTMLDivElement>;
+  formulaStyles: Properties = {fontSize: "18px"};
+  section1 = viewChild<ElementRef<HTMLDivElement>>("section1");
 
   constructor(
     public dialogRef: MatDialogRef<XhmrmsbjMokuaisComponent, XhmrmsbjMokuaisOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: XhmrmsbjMokuaisInput,
-    private calc: CalcService
-  ) {
-    this.update();
-  }
+    @Inject(MAT_DIALOG_DATA) public data: XhmrmsbjMokuaisInput
+  ) {}
 
-  async update() {
-    this.mkdxFormulaInfos = [];
-    this.xuanzhongMokuaiInfos = [];
+  infos = computed(() => {
     const {lastSuanliao, mokuaidaxiaoResults} = this.data.data;
-    console.log(lastSuanliao, mokuaidaxiaoResults);
     const {input, output} = lastSuanliao;
+    const mkdxFormulaInfos: XhmrmsbjMkdxFormulaInfo[] = [];
+    const xuanzhongMokuaiInfos: XhmrmsbjXuanzhongMokuaiInfo[] = [];
     for (const key of input.bujuNames) {
       const value = input.型号选中门扇布局[key];
       if (!value) {
         continue;
       }
       const mokuaidaxiaoResult = mokuaidaxiaoResults[key] || {};
-      const mkdxFormulaInfos: XhmrmsbjMkdxFormulaInfo = {name: key, formulaInfos: []};
+      const mkdxFormulaInfo: XhmrmsbjMkdxFormulaInfo = {name: key, formulaInfos: []};
       const xuanzhongMokuaiInfo: XhmrmsbjXuanzhongMokuaiInfo = {name: key, nodes: []};
       for (const node of value.模块节点 || []) {
         const mokuai = node.选中模块;
@@ -100,15 +97,16 @@ export class XhmrmsbjMokuaisComponent {
           });
         }
       }
-      mkdxFormulaInfos.formulaInfos = getFormulaInfos(this.calc, mokuaidaxiaoResult);
-      this.mkdxFormulaInfos.push(mkdxFormulaInfos);
-      this.xuanzhongMokuaiInfos.push(xuanzhongMokuaiInfo);
+      mkdxFormulaInfo.formulaInfos = getFormulaInfos(this.calc, mokuaidaxiaoResult);
+      mkdxFormulaInfos.push(mkdxFormulaInfo);
+      xuanzhongMokuaiInfos.push(xuanzhongMokuaiInfo);
     }
-  }
+    return {mkdxFormulaInfos, xuanzhongMokuaiInfos};
+  });
 
   async updateSection1() {
     await timeout(0);
-    const section1El = this.section1?.nativeElement;
+    const section1El = this.section1()?.nativeElement;
     if (section1El) {
       const containerEl = section1El.querySelector(".flex-column");
       if (containerEl) {
@@ -125,6 +123,7 @@ export class XhmrmsbjMokuaisComponent {
 
 export interface XhmrmsbjMokuaisInput {
   data: {lastSuanliao: LastSuanliao; mokuaidaxiaoResults: ObjectOf<Formulas>};
+  openMokuai?: (mokaui: ZixuanpeijianMokuaiItem) => void;
 }
 
 export type XhmrmsbjMokuaisOutput = void;

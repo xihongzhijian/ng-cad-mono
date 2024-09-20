@@ -41,6 +41,7 @@ export class MkdxpzEditorComponent {
 
   data = model.required<模块大小配置>();
   varNameItem = model.required<VarNameItem>();
+  title = input("");
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<MkdxpzEditorCloseEvent>({alias: "close"});
 
