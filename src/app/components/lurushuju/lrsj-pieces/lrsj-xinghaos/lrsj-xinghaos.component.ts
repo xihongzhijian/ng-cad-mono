@@ -230,7 +230,10 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       result.mingziOld = result.data.mingzi;
       await this.editXinghaoByResult(result, xinghao);
       await this.lrsjStatus.getXinghaos();
-      this.gotoZuofas(xinghao);
+      const xinghao2 = this.lrsjStatus.findXinghao(xinghao.vid);
+      if (xinghao2) {
+        this.gotoZuofas(xinghao2);
+      }
     }
   }
   async editXinghao(xinghao: XinghaoData) {

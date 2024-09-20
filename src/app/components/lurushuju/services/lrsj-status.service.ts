@@ -487,6 +487,25 @@ export class LrsjStatusService implements OnDestroy {
     this.xinghaoMenchuangs.set(xinghaoMenchuangs);
     this.filterXinghaos();
   }
+  findXinghao(id: number) {
+    const xinghaoMenchuangs = this.xinghaoMenchuangs().clone();
+    for (const menchuang of xinghaoMenchuangs.items) {
+      if (!menchuang.gongyis) {
+        continue;
+      }
+      for (const gongyi of menchuang.gongyis.items) {
+        if (!gongyi.xinghaos) {
+          continue;
+        }
+        for (const xinghao of gongyi.xinghaos.items) {
+          if (xinghao.vid === id) {
+            return xinghao;
+          }
+        }
+      }
+    }
+    return null;
+  }
   filterXinghaos() {
     const str = this.xinghaoFilterStr();
     const xinghaoMenchuangs = this.xinghaoMenchuangs().clone();

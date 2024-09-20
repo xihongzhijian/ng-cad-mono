@@ -6,7 +6,7 @@ import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {XhmrmsbjSbjbItemSbjb, XhmrmsbjSbjbItemSbjbItem} from "./xhmrmsbj-sbjb.types";
 
-export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[]): TableRenderInfo<XhmrmsbjSbjbItemSbjb> => {
+export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string): TableRenderInfo<XhmrmsbjSbjbItemSbjb> => {
   return {
     data,
     noCheckBox: true,
@@ -18,6 +18,8 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[]): Tabl
       {type: "string", field: "包边方向"},
       {type: "string", field: "锁边", getString: (val) => val.锁边.名字},
       {type: "string", field: "铰边", getString: (val) => val.铰边.名字},
+      {type: "string", field: "锁框", hidden: !isXhmrmsbjSbjbItemSbjbHasSuokuang(fenlei)},
+      {type: "string", field: "铰框"},
       {type: "string", field: "顶框"},
       {
         type: "button",
@@ -42,10 +44,13 @@ export const getXhmrmsbjSbjbItemSbjb = (item?: Partial<XhmrmsbjSbjbItemSbjb>): X
   包边方向: "",
   锁边: getXhmrmsbjSbjbItemSbjbItem(item?.锁边),
   铰边: getXhmrmsbjSbjbItemSbjbItem(item?.铰边),
+  锁框: "",
+  铰框: "",
   顶框: "",
   CAD数据: [],
   ...item
 });
+export const isXhmrmsbjSbjbItemSbjbHasSuokuang = (fenlei: string) => ["单门", "子母连开"].includes(fenlei);
 export const getXhmrmsbjSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbItem>): XhmrmsbjSbjbItemSbjbItem => ({
   名字: "",
   默认正面宽: 0,
@@ -55,7 +60,12 @@ export const getXhmrmsbjSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbI
   ...item
 });
 
-export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, options: OptionsService, item?: XhmrmsbjSbjbItemSbjb) => {
+export const getXhmrmsbjSbjbItemSbjbForm = async (
+  message: MessageService,
+  options: OptionsService,
+  fenlei: string,
+  item?: XhmrmsbjSbjbItemSbjb
+) => {
   const data = getXhmrmsbjSbjbItemSbjb(cloneDeep(item));
   const getSelectInputInfo = async (key: keyof XhmrmsbjSbjbItemSbjb, multiple: boolean) =>
     ({
@@ -102,6 +112,8 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, optio
     await getSelectInputInfo("包边方向", false),
     getSbjbItemInfo("锁边"),
     getSbjbItemInfo("铰边"),
+    {...(await getSelectInputInfo("锁框", false)), hidden: !isXhmrmsbjSbjbItemSbjbHasSuokuang(fenlei)},
+    await getSelectInputInfo("铰框", false),
     getStringInputInfo("顶框")
   ];
   const result = await message.form(form);

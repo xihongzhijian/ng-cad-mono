@@ -34,6 +34,7 @@ export class BjmkStatusService {
   constructor() {
     (async () => {
       this.varNames.set(await getVarNames(this.http, "门扇布局用"));
+      await this.fetchCadYaoqius();
     })();
   }
 
@@ -48,7 +49,6 @@ export class BjmkStatusService {
   collection: CadCollection = "peijianCad";
   cadsManager = new ItemsManager(
     async () => {
-      await this.fetchCadYaoqius();
       const yaoqiu = this.cadYaoqiu();
       const fields = getCadQueryFields(yaoqiu);
       const result = await this.http.getCad({collection: this.collection, fields});

@@ -12,6 +12,8 @@ export interface XhmrmsbjSbjbItemSbjb {
   包边方向: string;
   锁边: XhmrmsbjSbjbItemSbjbItem;
   铰边: XhmrmsbjSbjbItemSbjbItem;
+  锁框: string;
+  铰框: string;
   顶框: string;
   CAD数据?: XhmrmsbjSbjbItemSbjbCad[];
 }

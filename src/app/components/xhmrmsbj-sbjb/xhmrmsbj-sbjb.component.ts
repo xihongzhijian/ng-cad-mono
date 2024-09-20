@@ -70,14 +70,15 @@ export class XhmrmsbjSbjbComponent {
     if (!item) {
       return null;
     }
-    return getXhmrmsbjSbjbItemTableInfo(item.锁边铰边数据);
+    return getXhmrmsbjSbjbItemTableInfo(item.锁边铰边数据, item.产品分类);
   });
   async onSbjbItemtableRow(event: RowButtonEvent<XhmrmsbjSbjbItemSbjb>) {
     const {item, rowIdx} = event;
+    const fenlei = this.activeItem()?.产品分类 || "";
     switch (event.button.event) {
       case "edit":
         {
-          const item2 = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options, item);
+          const item2 = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options, fenlei, item);
           if (item2) {
             Object.assign(item, item2);
             this.items.update((v) => [...v]);
@@ -105,7 +106,8 @@ export class XhmrmsbjSbjbComponent {
     }
   }
   async addSbjbItemSbjb() {
-    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options);
+    const fenlei = this.activeItem()?.产品分类 || "";
+    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options, fenlei);
     if (item) {
       const item2 = this.activeItem();
       if (item2) {
