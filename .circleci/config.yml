@@ -45,10 +45,18 @@ jobs:
       - cypress/run-tests:
           start-command: yarn start
           cypress-command: yarn dlx wait-on https://localhost:4200 && yarn cypress:run
+  build-app:
+    executor: default
+    steps:
+      - build
+      - run:
+          name: Build App
+          command: yarn build
 
 workflows:
   test:
     jobs:
       - lint
+      - build-app
       # - unit-test
       # - e2e
