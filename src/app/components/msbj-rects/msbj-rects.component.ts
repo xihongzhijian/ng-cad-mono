@@ -172,8 +172,8 @@ export class MsbjRectsComponent {
     {allowSignalWrites: true}
   );
 
-  onRectClick(info: MsbjRectInfo | null) {
-    if (this.ignoreNonBuju() && !info?.raw.isBuju) {
+  onRectClick(info: MsbjRectInfo) {
+    if (this.ignoreNonBuju() && !info.raw.isBuju) {
       return;
     }
     this.activeRectInfo.set(info);

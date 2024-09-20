@@ -49,7 +49,7 @@ export class MsbjInfo extends ZuoshujuData {
     const peizhishuju = this.peizhishuju;
     const namesMap = new Map<number, string>();
     for (const node of peizhishuju.模块节点) {
-      if (!node.isBuju || !node.选项名称) {
+      if (!node.选项名称) {
         continue;
       }
       namesMap.set(node.vid, node.选项名称);

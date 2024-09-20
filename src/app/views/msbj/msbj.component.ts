@@ -1,4 +1,3 @@
-import {CdkDragDrop, CdkDropListGroup, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -13,7 +12,7 @@ import {
   signal,
   viewChild
 } from "@angular/core";
-import {Validators} from "@angular/forms";
+import {ValidatorFn, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
@@ -21,7 +20,7 @@ import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.ser
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {MsbjRectInfo, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjRectInfo, MsbjRectInfoRaw, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -30,7 +29,7 @@ import {TableDataBase, TableUpdateParams} from "@modules/http/services/cad-data.
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {cloneDeep} from "lodash";
+import {cloneDeep, debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
 import {MsbjCloseEvent, MsbjData, MsbjFenlei} from "./msbj.types";
@@ -43,7 +42,6 @@ import {getEmpty模块大小配置, MsbjInfo} from "./msbj.utils";
   standalone: true,
   imports: [
     CadImageComponent,
-    CdkDropListGroup,
     FloatingDialogModule,
     InputComponent,
     MatButtonModule,
@@ -116,9 +114,18 @@ export class MsbjComponent {
     }
   }
 
-  generateRects(opts: GenerateRectsOpts) {
+  generateRects(opts?: GenerateRectsOpts) {
     this.msbjRects()?.generateRects(opts);
   }
+
+  rectInfos = signal<MsbjRectInfoRaw[]>([]);
+  rectInfosEff = effect(
+    () => {
+      const msbjInfo = this.msbjInfo();
+      this.rectInfos.set(msbjInfo?.peizhishuju?.["模块节点"] || []);
+    },
+    {allowSignalWrites: true}
+  );
 
   activeRectInfo = signal<MsbjRectInfo | null>(null);
   private _generateRectsEnd = 0;
@@ -135,6 +142,25 @@ export class MsbjComponent {
   inputInfos = computed(() => {
     const rectInfo = this.activeRectInfo();
     const isBuju = rectInfo?.raw.isBuju;
+    const validators: ValidatorFn[] = [];
+    if (rectInfo) {
+      if (isBuju) {
+        validators.push(Validators.required);
+      }
+      validators.push((control) => {
+        const rects = this.msbjInfo()?.peizhishuju.模块节点 || [];
+        const name = control.value;
+        for (const rect of rects) {
+          if (!rect.isBuju || rect.vid === rectInfo.raw.vid) {
+            continue;
+          }
+          if (name && rect.选项名称 === name) {
+            return {选项名称重复: true};
+          }
+        }
+        return null;
+      });
+    }
     const infos: InputInfo[] = [
       {
         type: "string",
@@ -145,54 +171,23 @@ export class MsbjComponent {
       {
         type: "string",
         label: "节点对应下单选项名称",
-        readonly: !isBuju,
-        model: isBuju ? {data: rectInfo, key: "选项名称"} : undefined,
-        onInput: (val) => {
-          if (isBuju) {
-            const rectInfo2 = this.msbjInfo()?.peizhishuju.模块节点.find((v) => v.vid === rectInfo.raw.vid);
+        readonly: !rectInfo,
+        model: rectInfo ? {data: rectInfo, key: "选项名称"} : undefined,
+        onInput: debounce((val: string) => {
+          const msbjInfo = this.msbjInfo();
+          if (rectInfo && msbjInfo) {
+            const rectInfo2 = msbjInfo.peizhishuju.模块节点.find((v) => v.vid === rectInfo.raw.vid);
             if (rectInfo2) {
               rectInfo2.选项名称 = val;
             }
+            this.rectInfos.update((v) => [...v]);
           }
-        },
-        validators: isBuju
-          ? [
-              Validators.required,
-              (control) => {
-                const rects = this.msbjInfo()?.peizhishuju.模块节点 || [];
-                const name = control.value;
-                for (const rect of rects) {
-                  if (!rect.isBuju || rect.vid === rectInfo.raw.vid) {
-                    continue;
-                  }
-                  if (name && rect.选项名称 === name) {
-                    return {选项名称重复: true};
-                  }
-                }
-                return null;
-              }
-            ]
-          : []
+        }, 200),
+        validators
       }
     ];
     return infos;
   });
-
-  updateCurrRectInfo() {
-    const currRectInfo = this.msbjRects()?.activeRectInfo;
-    if (!currRectInfo) {
-      return;
-    }
-  }
-
-  dropFenlei(event: CdkDragDrop<MsbjFenlei[]>) {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
-    }
-    this.updateCurrRectInfo();
-  }
 
   isSubmited = signal(false);
   async submit() {
