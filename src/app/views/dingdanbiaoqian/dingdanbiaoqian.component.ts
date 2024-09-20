@@ -509,8 +509,6 @@ export class DingdanbiaoqianComponent implements OnInit {
   calcResults = signal<CalcZxpjResult[]>([]);
   remoteFilePath = remoteFilePath;
   async updateMokuais() {
-    const cadsRowNum = this.cadsRowNum();
-    const cadsColNum = this.cadsColNum();
     const params = this.route.snapshot.queryParams;
     const mokuaiIds = ((params.ids as string) || "").split(",").filter(Boolean).map(Number);
     if (mokuaiIds.length <= 0) {
@@ -555,6 +553,19 @@ export class DingdanbiaoqianComponent implements OnInit {
     }
     this.mokuais.set(mokuais);
     this.urlPrefix.set(remoteFilePath);
+    await this.calcMokuais();
+  }
+  async calcMokuais() {
+    const mokuais = this.mokuais();
+    const calcResults: CalcZxpjResult[] = [];
+    for (const mokuai of mokuais) {
+      const calcResult = await calcZxpj(this.dialog, this.message, this.calc, {}, [mokuai], [], {useCeshishuju: true});
+      calcResults.push(calcResult);
+    }
+    this.calcResults.set(calcResults);
+
+    const cadsRowNum = this.cadsRowNum();
+    const cadsColNum = this.cadsColNum();
     const orders: Order[] = [];
     for (const [i, mokuai] of mokuais.entries()) {
       const order: Order = {
@@ -588,18 +599,8 @@ export class DingdanbiaoqianComponent implements OnInit {
       orders.push(order);
     }
     this.orders.set(orders);
-    await this.calcMokuais();
     await this.splitOrders();
     await this.updateImgs(true);
-  }
-  async calcMokuais() {
-    const mokuais = this.mokuais();
-    const calcResults: CalcZxpjResult[] = [];
-    for (const mokuai of mokuais) {
-      const calcResult = await calcZxpj(this.dialog, this.message, this.calc, {}, [mokuai], [], {useCeshishuju: true});
-      calcResults.push(calcResult);
-    }
-    this.calcResults.set(calcResults);
   }
 
   print() {
