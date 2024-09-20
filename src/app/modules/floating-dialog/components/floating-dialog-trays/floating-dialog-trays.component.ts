@@ -19,7 +19,6 @@ export class FloatingDialogTraysComponent implements OnDestroy {
 
   limits = input<FloatingDialogLimits>({});
 
-  dialogs = this.manager.dialogs;
   contextMenuData = null as {i: number} | null;
   traysEl = viewChild.required<ElementRef<HTMLElement>>("traysEl");
 
@@ -31,9 +30,11 @@ export class FloatingDialogTraysComponent implements OnDestroy {
     this.manager.limits.set({});
   }
 
+  dialogs = computed(() => this.manager.dialogs().filter((v) => !v.noTitle));
+
   contextMenuBtns = computed(() => {
     const btns: {name: string; action: () => void}[] = [];
-    const dialogs = this.manager.dialogs();
+    const dialogs = this.dialogs();
     if (dialogs.length > 1) {
       btns.push({
         name: "关闭其他窗口",
