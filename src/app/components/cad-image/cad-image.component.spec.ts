@@ -14,6 +14,8 @@ describe("CadImageComponent", () => {
 
     fixture = TestBed.createComponent(CadImageComponent);
     component = fixture.componentInstance;
+    const ref = fixture.componentRef;
+    ref.setInput("id", "test");
     fixture.detectChanges();
   });
 

@@ -1,4 +1,15 @@
-import {booleanAttribute, Component, EventEmitter, HostBinding, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostBinding,
+  inject,
+  input,
+  output,
+  signal
+} from "@angular/core";
 import {imgCadEmpty} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
@@ -16,60 +27,50 @@ import {DataInfoChnageEvent} from "./cad-image.types";
   standalone: true,
   imports: [ImageComponent],
   templateUrl: "./cad-image.component.html",
-  styleUrl: "./cad-image.component.scss"
+  styleUrl: "./cad-image.component.scss",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadImageComponent implements OnChanges {
+export class CadImageComponent {
+  private http = inject(CadDataService);
+  private status = inject(AppStatusService);
+
   @HostBinding("style.--cad-image-width") get widthStyle() {
-    if (typeof this.width === "number") {
-      return `${this.width}px`;
-    } else {
-      return "";
-    }
+    const width = this.width();
+    return typeof width === "number" ? `${width}px` : "";
   }
   @HostBinding("style.--cad-image-height") get heightStyle() {
-    if (typeof this.height === "number") {
-      return `${this.height}px`;
-    } else {
-      return "";
-    }
+    const height = this.height();
+    return typeof height === "number" ? `${height}px` : "";
   }
   @HostBinding("style.--cad-image-background-color") get backgroundColorStyle() {
-    return this.backgroundColor;
+    return this.backgroundColor();
   }
 
-  @Input({required: true}) id = "";
-  @Input() data?: CadData;
-  @Input() collection: CadCollection = "cad";
-  @Input() width?: number;
-  @Input() height?: number;
-  @Input({transform: booleanAttribute}) isLocal?: boolean;
-  @Input({transform: booleanAttribute}) isImgId?: boolean;
-  @Input() backgroundColor = "black";
-  @Input() paramsGetter?: () => CadPreviewParams;
-  @Output() dataInfoChange = new EventEmitter<DataInfoChnageEvent>();
+  id = input.required<string>();
+  dataIn = input<CadData | null | undefined>(null, {alias: "data"});
+  collection = input<CadCollection>("cad");
+  width = input<number>();
+  height = input<number>();
+  isLocal = input(false, {transform: booleanAttribute});
+  isImgId = input(false, {transform: booleanAttribute});
+  backgroundColor = input("black");
+  paramsGetter = input<() => CadPreviewParams>();
+  dataInfoChange = output<DataInfoChnageEvent>();
 
-  url = "";
+  url = signal("");
   imgCadEmpty = imgCadEmpty;
-
-  constructor(
-    private http: CadDataService,
-    private status: AppStatusService
-  ) {
-    if (!(this.data instanceof CadData)) {
-      if (getTypeOf(this.data) === "object") {
-        this.data = new CadData(this.data);
+  data = computed(() => {
+    const dataIn = this.dataIn();
+    if (dataIn instanceof CadData) {
+      return dataIn;
+    } else {
+      if (getTypeOf(dataIn) === "object") {
+        return new CadData(dataIn as any);
       } else {
-        this.data = undefined;
+        return null;
       }
     }
-    this.updateUrl();
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.id || changes.data) {
-      this.updateUrl();
-    }
-  }
+  });
 
   getImgUrl(id: string, force: boolean | number) {
     const params: ObjectOf<any> = {id};
@@ -84,26 +85,28 @@ export class CadImageComponent implements OnChanges {
   }
 
   async getPreview(data: CadData) {
-    const {collection} = this;
-    const params = this.paramsGetter?.() || {};
+    const collection = this.collection();
+    const params = this.paramsGetter()?.() || {};
     if (!params.config) {
       params.config = {};
     }
     if (params.config.width === undefined) {
-      params.config.width = this.width || 300;
+      params.config.width = this.width() || 300;
     }
     if (params.config.height === undefined) {
-      params.config.height = this.height || 150;
+      params.config.height = this.height() || 150;
     }
     if (params.config.backgroundColor === undefined) {
-      params.config.backgroundColor = this.backgroundColor;
+      params.config.backgroundColor = this.backgroundColor();
     }
     return await getCadPreview(collection, data, params);
   }
 
   async updateUrl() {
     let url = "";
-    const {id, data, isImgId} = this;
+    const id = this.id();
+    const data = this.data();
+    const isImgId = this.isImgId();
     let force: boolean | number = this.status.forceUpdateCadImg;
     const force2 = this.status.forceUpdateCadImg2;
     const toUpdate = this.status.cadImgToUpdate;
@@ -143,11 +146,12 @@ export class CadImageComponent implements OnChanges {
     if (!url) {
       url = imgCadEmpty;
     }
-    this.url = url;
+    this.url.set(url);
   }
+  updateUrlEff = effect(() => this.updateUrl(), {allowSignalWrites: true});
 
   async refreshCadPreview() {
-    let {data} = this;
+    let data = this.data();
     if (data?.info.isLocal) {
       return;
     }
@@ -163,7 +167,8 @@ export class CadImageComponent implements OnChanges {
       await timeout(0);
     }
     try {
-      const {collection, id} = this;
+      const id = this.id();
+      const collection = this.collection();
       if ((!data || data.info.incomplete) && id) {
         const cadsResult = await this.http.getCad({collection, id}, {silent: true});
         if (cadsResult.cads[0]) {
@@ -175,7 +180,7 @@ export class CadImageComponent implements OnChanges {
         const url = await this.getPreview(data);
         const id2 = data.info.imgId || id;
         await this.http.setCadImg(id2, url, {silent: true});
-        this.url = this.getImgUrl(id2, true);
+        this.url.set(this.getImgUrl(id2, true));
       }
     } catch (error) {
       console.error(error);
