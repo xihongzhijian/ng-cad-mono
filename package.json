@@ -87,7 +87,7 @@
     "@types/color": "^3.0.6",
     "@types/jasmine": "~5.1.4",
     "@types/jasminewd2": "~2.0.13",
-    "@types/lodash": "^4.17.7",
+    "@types/lodash": "^4.17.8",
     "@types/luxon": "^3.4.2",
     "@types/md5": "^2.3.5",
     "@types/minimist": "^1.2.5",
