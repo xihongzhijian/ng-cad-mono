@@ -695,12 +695,13 @@ export class XhmrmsbjComponent implements OnDestroy {
         errorXuanzhongMenshans.push({menshan: menshanKey, nodeNames: errorXuanzhongNodeNames});
       }
     }
-    let jumpTo: {门扇名字: string; 层名字: string} | null = null;
+    let jumpTo: {门扇名字: string; 层名字: string; mokuai?: ZixuanpeijianMokuaiItem} | null = null;
     if (duplicates1.length > 0) {
       const list = duplicates1.map(
         ({mokuai, keys, 门扇名字, 层名字}) => `${getMokuaiTitle(mokuai, {门扇名字, 层名字})}: ${keys.join("，")}`
       );
-      jumpTo = {门扇名字: duplicates1[0].门扇名字, 层名字: duplicates1[0].层名字};
+      const item = duplicates1[0];
+      jumpTo = {门扇名字: item.门扇名字, 层名字: item.层名字, mokuai: item.mokuai};
       await this.message.error({content: "模块输出变量与型号公式输入重复", details: list});
     }
     if (!jumpTo && errorXuanzhongMenshans.length > 0) {
@@ -718,7 +719,8 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     if (!jumpTo && mokuaisWithoutBancai.length > 0) {
       const details = mokuaisWithoutBancai.map((v) => getMokuaiTitle(v.mokuai, {门扇名字: v.menshanKey, 层名字: v.layerName}));
-      jumpTo = {门扇名字: mokuaisWithoutBancai[0].menshanKey, 层名字: mokuaisWithoutBancai[0].layerName};
+      const item = mokuaisWithoutBancai[0];
+      jumpTo = {门扇名字: item.menshanKey, 层名字: item.layerName, mokuai: item.mokuai};
       await this.message.error({content: "以下模块未设置默认板材分组", details});
     }
     if (jumpTo) {
@@ -727,6 +729,9 @@ export class XhmrmsbjComponent implements OnDestroy {
       if (msbjRectsComponent) {
         const rectInfo = msbjRectsComponent.rectInfosRelative().find((v) => v.name === jumpTo.层名字);
         this.activeRectInfo.set(rectInfo || null);
+      }
+      if (jumpTo.mokuai) {
+        this.selectMokuai(jumpTo.mokuai);
       }
       return;
     }
@@ -809,8 +814,10 @@ export class XhmrmsbjComponent implements OnDestroy {
       if (选中模块 && !kexuan.find((v) => v.id === 选中模块.id)) {
         delete mokuaiNode.选中模块;
       }
-      if (kexuan.length > 0 && !kexuan.find((v) => v.info?.isDefault)) {
-        this.setDefaultMokuai(kexuan[0]);
+      if (kexuan.length > 0) {
+        if (!kexuan.find((v) => v.info?.isDefault)) {
+          this.setDefaultMokuai(kexuan[0]);
+        }
         this.selectMokuai(kexuan[0]);
       } else {
         this.refreshData();

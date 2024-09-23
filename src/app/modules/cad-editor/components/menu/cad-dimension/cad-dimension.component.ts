@@ -86,14 +86,15 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
         }
       }
     });
+    this.subscribe(this.status.openCad$, () => {
+      this._updateDimensions();
+    });
 
-    this._updateDimensions();
     const cad = this.status.cad;
     cad.on("entitiesselect", this._onEntitiesSelect);
     cad.on("entitiesadd", this._updateDimensions);
     cad.on("entitiesremove", this._updateDimensions);
     cad.on("zoom", this._onZoom);
-    // cad.on("render", this._updateDimensions);
   }
 
   ngOnDestroy() {
@@ -103,7 +104,6 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     cad.off("entitiesadd", this._updateDimensions);
     cad.off("entitiesremove", this._updateDimensions);
     cad.off("zoom", this._onZoom);
-    // cad.off("render", this._updateDimensions);
   }
 
   private _onEntitiesSelect: CadEventCallBack<"entitiesselect"> = (entities) => {

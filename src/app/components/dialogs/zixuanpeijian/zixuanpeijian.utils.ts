@@ -733,7 +733,7 @@ export const calcZxpj = async (
       const result2Msg = `计算${mokuaiTitle}${data.name}线公式`;
       const result2 = await calc.calcFormulas(formulas2, vars2, {title: result2Msg});
       const calcLinesResult: Formulas = {};
-      console.log({formulas2, vars2, result2});
+      // console.log({formulas2, vars2, result2});
       if (!result2?.fulfilled) {
         console.log(result2);
         return {fulfilled: false, error: {message: result2Msg + "出错", calc: {formulas: formulas2, vars: vars2, result: result2}}};
