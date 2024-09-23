@@ -7,7 +7,7 @@ import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent} from "@modules/table/components/table/table.types";
+import {RowButtonEvent, RowSelectionChange} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
@@ -44,7 +44,8 @@ export class XhmrmsbjSbjbComponent {
     const cads: CadData[] = [];
     const item = this.activeItem();
     if (item) {
-      for (const item2 of item.锁边铰边数据) {
+      for (const i of this.activeSbjbItemIndexs()) {
+        const item2 = item.锁边铰边数据[i];
         for (const info of item2.CAD数据 || []) {
           const cad = new CadData(info.cad?.json);
           cad.name = info.name;
@@ -65,14 +66,15 @@ export class XhmrmsbjSbjbComponent {
     this.activeItemIndex.set(i);
   }
 
-  sbjbItemtableInfo = computed(() => {
+  activeSbjbItemIndexs = signal<number[]>([]);
+  sbjbItemTableInfo = computed(() => {
     const item = this.activeItem();
     if (!item) {
       return null;
     }
     return getXhmrmsbjSbjbItemTableInfo(item.锁边铰边数据, item.产品分类);
   });
-  async onSbjbItemtableRow(event: RowButtonEvent<XhmrmsbjSbjbItemSbjb>) {
+  async onSbjbItemTableRow(event: RowButtonEvent<XhmrmsbjSbjbItemSbjb>) {
     const {item, rowIdx} = event;
     const fenlei = this.activeItem()?.产品分类 || "";
     switch (event.button.event) {
@@ -104,6 +106,9 @@ export class XhmrmsbjSbjbComponent {
         }
         break;
     }
+  }
+  onSbjbItemTableRowSelect(event: RowSelectionChange) {
+    this.activeSbjbItemIndexs.set(event.indexs);
   }
   async addSbjbItemSbjb() {
     const fenlei = this.activeItem()?.产品分类 || "";

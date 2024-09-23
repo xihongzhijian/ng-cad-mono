@@ -36,7 +36,6 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
         ]
       }
     ],
-    noCheckBox: true,
     toolbarButtons: {
       extra: [
         {event: "编辑", color: "primary"},
@@ -61,7 +60,6 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
         ]
       }
     ],
-    noCheckBox: true,
     toolbarButtons: {
       extra: [
         {event: "编辑", color: "primary"},

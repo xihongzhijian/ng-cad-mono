@@ -9,7 +9,7 @@ import {XhmrmsbjSbjbItemSbjb, XhmrmsbjSbjbItemSbjbItem} from "./xhmrmsbj-sbjb.ty
 export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string): TableRenderInfo<XhmrmsbjSbjbItemSbjb> => {
   return {
     data,
-    noCheckBox: true,
+    rowSelection: {mode: "single", hideCheckBox: true, selectOnCellClick: true},
     columns: [
       {type: "string", field: "开启"},
       {type: "string", field: "门铰"},

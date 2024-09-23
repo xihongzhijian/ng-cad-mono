@@ -43,6 +43,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
 import csstype from "csstype";
 import {cloneDeep, debounce, intersection, isEqual} from "lodash";
+import {Subscription} from "rxjs";
 import {ImageComponent} from "../../../image/components/image/image.component";
 import {
   CellEvent,
@@ -50,6 +51,7 @@ import {
   InfoKey,
   ItemGetter,
   RowButtonEvent,
+  RowSelectionChange,
   TableErrorState,
   TableRenderInfo,
   ToolbarButtonEvent
@@ -82,13 +84,14 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   @Input() info: TableRenderInfo<T> = {data: [], columns: []};
   @Output() rowButtonClick = new EventEmitter<RowButtonEvent<T>>();
+  @Output() rowSelectionChange = new EventEmitter<RowSelectionChange>();
   @Output() cellFocus = new EventEmitter<CellEvent<T>>();
   @Output() cellBlur = new EventEmitter<CellEvent<T>>();
   @Output() cellChange = new EventEmitter<CellEvent<T>>();
   @Output() cellClick = new EventEmitter<CellEvent<T>>();
   @Output() toolbarButtonClick = new EventEmitter<ToolbarButtonEvent>();
 
-  selection = new SelectionModel<T>(true, []);
+  rowSelection: SelectionModel<number>;
   columnFields: (keyof T | "select")[] = [];
   @ViewChild(MatTable) table?: MatTable<T>;
   @ViewChild(MatSort) sort?: MatSort;
@@ -141,6 +144,18 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   ) {
     this.editing = {colIdx: -1, rowIdx: -1, value: ""};
     this.infoDiffer = this.differs.find(this.info).create();
+    this.rowSelection = this._initRowSelection();
+  }
+  private _rowSelectionSubscription?: Subscription;
+  private _initRowSelection() {
+    this._rowSelectionSubscription?.unsubscribe();
+    const rowSelection = this.info.rowSelection;
+    const model = new SelectionModel<number>(rowSelection?.mode === "multiple", []);
+    this._rowSelectionSubscription = model.changed.subscribe(() => {
+      this.rowSelectionChange.emit({indexs: model.selected});
+    });
+    this.rowSelection = model;
+    return model;
   }
 
   ngAfterViewInit() {
@@ -174,10 +189,16 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       changedKeys.push(v.key);
     });
 
-    if (intersection<InfoKey>(changedKeys, ["columns", "noCheckBox"]).length > 0) {
+    if (intersection<InfoKey>(changedKeys, ["columns", "rowSelection"]).length > 0) {
       this.columnFields = [...this.info.columns.filter((v) => !v.hidden).map((v) => v.field)];
-      if (!this.info.noCheckBox) {
-        this.columnFields.unshift("select");
+      const rowSelection = this.info.rowSelection;
+      if (rowSelection) {
+        if (changedKeys.includes("rowSelection")) {
+          this._initRowSelection();
+        }
+        if (!rowSelection.hideCheckBox) {
+          this.columnFields.unshift("select");
+        }
       }
     }
     if (intersection<InfoKey>(changedKeys, ["data", "validator", "isTree"]).length > 0) {
@@ -195,19 +216,23 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   isAllSelected() {
-    const {selection} = this;
-    const numSelected = selection.selected.length;
+    const {rowSelection} = this;
+    const numSelected = rowSelection.selected.length;
     const numRows = this.dataSource.data.length;
     return numSelected === numRows;
   }
 
   masterToggle() {
-    const {info, selection} = this;
+    const {info, rowSelection} = this;
     if (this.isAllSelected()) {
-      selection.clear();
+      rowSelection.clear();
     } else {
-      info.data.forEach((row) => selection.select(row));
+      info.data.forEach((_, i) => rowSelection.select(i));
     }
+  }
+  toggleRowSelection(rowIdx: number) {
+    this.rowSelection.toggle(rowIdx);
+    this.rowSelectionChange.emit({indexs: this.rowSelection.selected});
   }
 
   async addItem(rowIdx?: number) {
@@ -249,10 +274,10 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   async removeItem(index?: number) {
-    const {info, selection} = this;
+    const {info, rowSelection} = this;
     const {onlineMode, isTree, data} = info;
     if (onlineMode) {
-      const vids = selection.selected.map((v) => Number((v as any).vid));
+      const vids = rowSelection.selected.map((v) => Number((v as any).vid));
       if (vids.length < 1) {
         this.message.error("未选中任何数据");
         return;
@@ -271,13 +296,13 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         data.splice(index, 1);
       } else {
         const toRemove: number[] = [];
-        data.forEach((v, i) => {
-          if (selection.isSelected(v)) {
+        data.forEach((_, i) => {
+          if (rowSelection.isSelected(i)) {
             toRemove.unshift(i);
           }
         });
         toRemove.forEach((v) => data.splice(v, 1));
-        selection.clear();
+        rowSelection.clear();
       }
       this.dataSource.data = data;
     }
@@ -330,6 +355,10 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   async onCellClick(event: CellEvent<T>) {
+    const rowSelection = this.info.rowSelection;
+    if (rowSelection?.selectOnCellClick) {
+      this.rowSelection.select(event.rowIdx);
+    }
     this.cellClick.emit(event);
   }
 
@@ -338,14 +367,17 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   export() {
-    let selected = this.selection.selected;
-    if (selected.length < 1) {
-      selected = this.info.data;
+    const selectedIndexs = this.rowSelection.selected;
+    let selectedItems: T[];
+    if (selectedIndexs.length < 1) {
+      selectedItems = this.info.data;
+    } else {
+      selectedItems = selectedIndexs.map((v) => this.info.data[v]);
     }
     if (typeof this.info.dataTransformer === "function") {
-      selected = this.info.dataTransformer("export", selected);
+      selectedItems = this.info.dataTransformer("export", selectedItems);
     }
-    downloadByString(JSON.stringify(selected), {filename: (this.info.title ?? "table") + ".json"});
+    downloadByString(JSON.stringify(selectedItems), {filename: (this.info.title ?? "table") + ".json"});
   }
 
   async import() {
@@ -422,14 +454,17 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   getCheckBoxStyle() {
     const style: csstype.Properties = {};
-    const checkBoxSize = this.info.checkBoxSize ?? 50;
+    const checkBoxSize = 50;
     style.flex = `0 0 ${checkBoxSize}px`;
     return style;
   }
 
   getCellClass(column: ColumnInfo<T>, rowIdx: number) {
     const classes: string[] = ["column-type-" + column.type];
-    const active = this.info.activeRows?.includes(rowIdx);
+    let active = this.info.activeRows?.includes(rowIdx);
+    if (!active && this.rowSelection.isSelected(rowIdx)) {
+      active = true;
+    }
     if (active) {
       classes.push("active");
     }

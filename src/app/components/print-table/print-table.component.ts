@@ -147,7 +147,6 @@ export class PrintTableComponent implements OnInit {
         });
       }
       this.tableInfos.push({
-        noCheckBox: true,
         noScroll: true,
         columns: 表头列,
         data: []
@@ -160,7 +159,7 @@ export class PrintTableComponent implements OnInit {
           item.序号 = i + 1;
         }
       }
-      this.tableInfos.push({noCheckBox: true, noScroll: true, ...info});
+      this.tableInfos.push({noScroll: true, ...info});
     }
     this.xikongColWidths = data.铣孔信息列宽;
   }
@@ -189,7 +188,6 @@ export class PrintTableComponent implements OnInit {
           const xikongColWidths = this.xikongColWidths;
           this.xikongTableWidth = 10 + Object.values(xikongColWidths).reduce((a, b) => a + b, 0);
           this.xikongTableInfo = {
-            noCheckBox: true,
             filterable: {searchColumns: ["加工孔名字"]},
             columns: [
               {type: "number", field: "序号", width: `${xikongColWidths.序号}px`},

@@ -9,8 +9,13 @@
   <mat-divider vertical></mat-divider>
   <div class="flex-column flex-110">
     <div class="flex-column flex-110">
-      @if (sbjbItemtableInfo(); as info) {
-        <app-table class="flex-110" [info]="info" (rowButtonClick)="onSbjbItemtableRow($event)"></app-table>
+      @if (sbjbItemTableInfo(); as info) {
+        <app-table
+          class="flex-110"
+          [info]="info"
+          (rowButtonClick)="onSbjbItemTableRow($event)"
+          (rowSelectionChange)="onSbjbItemTableRowSelect($event)"
+        ></app-table>
       }
     </div>
     <ng-scrollbar>

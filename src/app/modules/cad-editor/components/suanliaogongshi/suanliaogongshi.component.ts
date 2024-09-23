@@ -82,7 +82,6 @@ export class SuanliaogongshiComponent {
       title: "输入显示",
       subTitle: "注意：有输入时，相同名字的公式无效",
       subTitleStyle: {color: "red"},
-      noCheckBox: true,
       columns: [
         {type: "string", field: "名字"},
         {type: "string", field: "下单用途", getString: (value) => `${value.下单用途 || ""}<br><br>${value.可以修改 ? "可改" : "不可改"}`},

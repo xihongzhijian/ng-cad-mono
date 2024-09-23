@@ -41,6 +41,7 @@ export class CadLineTjqzComponent {
   ) {
     this.infoLeft = {
       data: cloneDeep(data.tiaojianquzhi),
+      rowSelection: {mode: "multiple"},
       columns: [
         {field: "key", name: "名字", type: "string", editable: true},
         {field: "level", name: "优先级", type: "number", editable: true},
@@ -87,6 +88,7 @@ export class CadLineTjqzComponent {
     };
     this.infoRight = {
       data: [] as RawDataRight[],
+      rowSelection: {mode: "multiple"},
       columns: [
         {field: "name", name: "选项/范围", type: "string", editable: true},
         {field: "value", name: "取值", type: "string", editable: true},

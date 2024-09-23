@@ -11,7 +11,6 @@ import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} f
 export const getXuanxiangTable = (data: XuanxiangTableData[]): TableRenderInfo<XuanxiangTableData> => {
   return {
     title: "选项数据",
-    noCheckBox: true,
     columns: [
       {type: "string", field: "名字"},
       {
@@ -87,7 +86,6 @@ export const getXuanxiangItem = async (message: MessageService, options: Options
 export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTableDataSorted> => {
   return {
     title: "输入显示",
-    noCheckBox: true,
     columns: [
       {type: "string", field: "名字"},
       {type: "string", field: "下单用途", getString: (value) => `${value.下单用途 || ""}<br><br>${value.可以修改 ? "可改" : "不可改"}`},
@@ -159,7 +157,6 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
 
 export const getMenjiaoTable = (data: MenjiaoData[]): TableRenderInfo<MenjiaoData> => {
   return {
-    noCheckBox: true,
     columns: [
       {type: "string", field: "名字", width: "180px", name: "门铰锁边铰边"},
       {type: "string", field: "开启", width: "100px"},

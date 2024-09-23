@@ -11,11 +11,10 @@ export interface TableRenderInfo<T> {
   titleStyle?: csstype.Properties;
   subTitle?: string;
   subTitleStyle?: csstype.Properties;
-  noCheckBox?: boolean;
-  checkBoxSize?: number;
   editMode?: boolean;
   sortable?: boolean;
   filterable?: boolean | {searchColumns?: string[]};
+  rowSelection?: RowSelection;
   validator?: TableValidator<T>;
   activeRows?: number[];
   dataTransformer?: DataTransformer<T>;
@@ -33,6 +32,12 @@ export interface TableRenderInfo<T> {
   noScroll?: boolean;
   class?: string | string[];
   style?: csstype.Properties;
+}
+
+export interface RowSelection {
+  mode: "single" | "multiple";
+  hideCheckBox?: boolean;
+  selectOnCellClick?: boolean;
 }
 
 export interface TableButton {
@@ -123,6 +128,9 @@ export interface RowButtonEvent<T> {
   colIdx: number;
   rowIdx: number;
 }
+export interface RowSelectionChange {
+  indexs: number[];
+}
 
 export interface CellEvent<T> {
   column: ColumnInfo<T>;
@@ -133,6 +141,6 @@ export interface CellEvent<T> {
 
 export type ItemGetter<T> = ((rowIdx: number) => T | null) | ((rowIdx: number) => Promise<T | null>);
 
-export type DataTransformer<T> = (type: "import" | "export", data: T[]) => any;
+export type DataTransformer<T, K = any> = (type: "import" | "export", data: T[]) => K[];
 
 export type InfoKey<T = any> = keyof TableRenderInfo<T>;

@@ -38,7 +38,6 @@ export class BomGongyiluxianComponent implements OnInit {
     data: [],
     columns: [{type: "string", field: "mingzi", name: "名称"}],
     toolbarButtons: {editModeToggle: true},
-    noCheckBox: true,
     isTree: true,
     onlineMode: {tableName: this.table, refresh: () => this.refresh(true)}
   };
