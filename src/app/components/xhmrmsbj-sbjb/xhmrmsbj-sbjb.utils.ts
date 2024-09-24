@@ -6,10 +6,14 @@ import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {XhmrmsbjSbjbItemSbjb, XhmrmsbjSbjbItemSbjbItem} from "./xhmrmsbj-sbjb.types";
 
-export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string): TableRenderInfo<XhmrmsbjSbjbItemSbjb> => {
+export const getXhmrmsbjSbjbItemTableInfo = (
+  data: XhmrmsbjSbjbItemSbjb[],
+  fenlei: string,
+  activeRowIndex: number
+): TableRenderInfo<XhmrmsbjSbjbItemSbjb> => {
   return {
     data,
-    rowSelection: {mode: "single", hideCheckBox: true, selectOnCellClick: true},
+    rowSelection: {mode: "single", hideCheckBox: true, selectOnCellClick: true, initialSelected: [activeRowIndex]},
     columns: [
       {type: "string", field: "开启"},
       {type: "string", field: "门铰"},

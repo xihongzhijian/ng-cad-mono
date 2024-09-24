@@ -848,7 +848,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     let refreshSuanliaoTables = false;
     const dataOld = this.lrsjStatus.suanliaoDataOld();
     if (xinghao && suanliaoDataInfo && dataOld) {
-      const {fenleiName, zuofaName} = suanliaoDataInfo;
+      const {fenleiName, zuofaName, suanliaoDataIndex} = suanliaoDataInfo;
       const mingziOld = dataOld.名字;
       const mingziNew = data.名字;
       const xinghaoName = xinghao.名字;
@@ -875,7 +875,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
             }
           }
         }
-        const suanliaoDataIndex = zuofa.算料数据.findIndex((v) => v.vid === dataOld.vid);
         if (suanliaoDataIndex >= 0) {
           zuofa.算料数据[suanliaoDataIndex] = data;
         } else {

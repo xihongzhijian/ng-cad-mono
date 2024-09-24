@@ -38,6 +38,7 @@ export interface RowSelection {
   mode: "single" | "multiple";
   hideCheckBox?: boolean;
   selectOnCellClick?: boolean;
+  initialSelected?: number[];
 }
 
 export interface TableButton {

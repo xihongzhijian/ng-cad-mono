@@ -185,6 +185,9 @@ export class CadListComponent implements AfterViewInit {
       if (this.data.fixedSearch) {
         params.search = {...params.search, ...this.data.fixedSearch};
       }
+      if (this.data.yaoqiu?.选择CAD弹窗筛选数据要求) {
+        params.search = {...params.search, $where: this.data.yaoqiu.选择CAD弹窗筛选数据要求};
+      }
       result = await this.http.getCad(params);
     }
     this.length = result.total;

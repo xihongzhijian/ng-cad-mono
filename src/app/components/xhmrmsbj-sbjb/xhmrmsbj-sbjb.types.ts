@@ -26,5 +26,10 @@ export interface XhmrmsbjSbjbItemSbjbItem {
 }
 export interface XhmrmsbjSbjbItemSbjbCad {
   name: string;
+  fenlei?: string;
   cad: HoutaiCad;
+}
+
+export interface XhmrmsbjSbjbItemSbjbCadInfo {
+  index: number;
 }

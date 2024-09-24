@@ -195,6 +195,9 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       if (rowSelection) {
         if (changedKeys.includes("rowSelection")) {
           this._initRowSelection();
+          if (rowSelection.initialSelected) {
+            this.rowSelection.select(...rowSelection.initialSelected);
+          }
         }
         if (!rowSelection.hideCheckBox) {
           this.columnFields.unshift("select");

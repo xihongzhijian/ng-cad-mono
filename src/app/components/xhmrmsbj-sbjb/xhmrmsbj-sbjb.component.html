@@ -21,7 +21,17 @@
     <ng-scrollbar>
       <div class="items no-items-per-row flex-110">
         @for (cad of cads(); track $index) {
-          <app-cad-item [cad]="cad" [buttons]="[]" [customInfo]="{}" [yaoqiu]="cadYaoiu()" editDisabled isLocal></app-cad-item>
+          <app-cad-item
+            [cad]="cad"
+            [cadWidth]="300"
+            [cadHeight]="150"
+            [buttons]="[]"
+            [buttons2]="cadButtons2()"
+            [customInfo]="{index: $index}"
+            [yaoqiu]="cadYaoqius()[cad.name]"
+            editDisabled
+            isLocal
+          ></app-cad-item>
         }
       </div>
     </ng-scrollbar>
