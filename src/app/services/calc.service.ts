@@ -34,14 +34,20 @@ export class CalcService {
       if (error instanceof CalcSelfReferenceError) {
         let str = error.message + "<br><br>";
         str += `${error.varName}<span style='color:red'> => </span>${error.varValue}`;
-        await this.message.error(str);
+        if (errorMsg) {
+          await this.message.error(str);
+        }
       } else if (error instanceof CalcCircularReferenceError) {
         let str = error.message + "<br><br>";
         str += `${error.varName1}<span style='color:red'> => </span>${error.varValue1}<br>`;
         str += `${error.varName2}<span style='color:red'> => </span>${error.varValue2}`;
-        await this.message.error(str);
+        if (errorMsg) {
+          await this.message.error(str);
+        }
       } else {
-        await this.message.alert({content: error});
+        if (errorMsg) {
+          await this.message.alert({content: error});
+        }
         console.error(error);
       }
       return null;
