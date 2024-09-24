@@ -112,6 +112,23 @@ export class LrsjStatusService implements OnDestroy {
   zuofaOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll>("shuju/api/getGongyizuofaOption")) || {});
   menjiaoOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll2>("shuju/api/getMenjiaoOptions")) || {});
 
+  xinghaoSize = computed(() => {
+    const xinghao = this.xinghao();
+    if (!xinghao) {
+      return -1;
+    }
+    const getSize = <T>(data: T) => JSON.stringify(data).length;
+    let xinghaoSize = getSize(xinghao);
+    const suanliaoDataOld = this.suanliaoDataOld();
+    if (suanliaoDataOld) {
+      const suanliaoDataOldSize = getSize(suanliaoDataOld);
+      const suanliaoDataNewSize = getSize(this.suanliaoDataNew());
+      xinghaoSize = xinghaoSize - suanliaoDataOldSize + suanliaoDataNewSize;
+    }
+    return xinghaoSize;
+  });
+  isXinghaoSizeExceeded = computed(() => this.xinghaoSize() >= 16 * 1024 ** 2);
+
   suanliaoDataInfo = signal<SuanliaoDataInfo | null>(null);
   suanliaoCadsInfo = signal<SuanliaoCadsInfo | null>(null);
   suanliaoDataOld = computed(() => {
@@ -136,11 +153,15 @@ export class LrsjStatusService implements OnDestroy {
     () => {
       const suanliaoDataInfo = this.suanliaoDataInfo();
       const suanliaoDataOld = this.suanliaoDataOld();
-      if (suanliaoDataInfo && suanliaoDataOld) {
+      if (suanliaoDataOld) {
         const data = cloneDeep(suanliaoDataOld);
-        data.产品分类 = suanliaoDataInfo.fenleiName;
+        if (suanliaoDataInfo) {
+          data.产品分类 = suanliaoDataInfo.fenleiName;
+        }
         updateMenjiaoData(data);
         this.suanliaoDataNew.set(data);
+      } else {
+        this.suanliaoDataNew.set(get算料数据());
       }
     },
     {allowSignalWrites: true}
@@ -340,8 +361,15 @@ export class LrsjStatusService implements OnDestroy {
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/getXinghao", {名字: name});
     return getXinghao(xinghaoRaw);
   }
+  async validateXinghaoSize() {
+    if (!this.isXinghaoSizeExceeded()) {
+      return true;
+    }
+    await this.message.error("型号数据过大，无法保存");
+    return false;
+  }
   async setXinghao(data: Partial<Xinghao>, silent?: boolean, name = this.xinghao()?.名字) {
-    if (!name) {
+    if (!name || !(await this.validateXinghaoSize())) {
       return;
     }
     return await this.http.post("shuju/api/setXinghao", {名字: name, data, silent}, {spinner: false});
@@ -388,7 +416,7 @@ export class LrsjStatusService implements OnDestroy {
 
   async submitZuofa(fenleiName: string, zuofa: 工艺做法 | string, fields: (keyof 工艺做法)[]) {
     const xinghao = this.xinghao();
-    if (!xinghao) {
+    if (!xinghao || !(await this.validateXinghaoSize())) {
       return;
     }
     const data: Partial<工艺做法> = {};
@@ -423,7 +451,7 @@ export class LrsjStatusService implements OnDestroy {
     );
     if (response?.code === 0) {
       Object.assign(zuofa, data);
-      this.updateXinghao(xinghao);
+      this.updateXinghao({...xinghao});
     }
   }
 

@@ -9,7 +9,7 @@ import {AboutComponent} from "@components/about/about.component";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianInput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {environment} from "@env";
-import {ObjectOf} from "@lucilor/utils";
+import {getFileSize, ObjectOf} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -69,9 +69,16 @@ export class LurushujuIndexComponent {
     setGlobal("lrsj", this);
   }
 
+  xinghaoSizeText = computed(() => {
+    const size = this.lrsjStatus.xinghaoSize();
+    const sizeStr = getFileSize(size, {outputUnit: "MB"});
+    return size >= 0 ? `数据大小: ${sizeStr}` : "";
+  });
   toolbarBtns = computed<ToolbarBtn[]>(() => {
     const xinghao = this.lrsjStatus.xinghao();
     const pieceInfos = this.lrsjStatus.pieceInfos();
+    const xinghaoSizeText = this.xinghaoSizeText();
+    const xinghaoSizeClass = this.lrsjStatus.isXinghaoSizeExceeded() ? ["error"] : [];
     return [
       {name: "添加", color: "primary"},
       {name: "编辑", color: this.lrsjStatus.editMode() ? "accent" : "primary"},
@@ -89,6 +96,7 @@ export class LurushujuIndexComponent {
       {name: "型号专用公式", color: "primary", hidden: !xinghao},
       {name: "型号专用CAD", color: "primary", hidden: !xinghao},
       {name: "", class: ["flex-110"]},
+      {name: xinghaoSizeText, type: "text", class: xinghaoSizeClass, hidden: !xinghaoSizeText},
       {name: "测试", color: "primary"}
     ];
   });

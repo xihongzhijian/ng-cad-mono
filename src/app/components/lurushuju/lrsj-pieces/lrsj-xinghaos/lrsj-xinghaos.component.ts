@@ -243,6 +243,9 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     }
   }
   async editXinghaoByResult(result: NonNullable<Awaited<ReturnType<typeof this.getXinghaoItem>>>, xinghao: XinghaoData) {
+    if (!(await this.lrsjStatus.validateXinghaoSize())) {
+      return;
+    }
     const {data, data2, mingziOld} = result;
     data2.名字 = data.mingzi;
     const response = await this.http.post("shuju/api/editXinghao", {mingziOld, data: {...xinghao, ...data}});

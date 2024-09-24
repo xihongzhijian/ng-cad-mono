@@ -7,4 +7,5 @@ export interface ToolbarBtn {
   style?: Properties;
   hidden?: boolean;
   onClick?: () => void;
+  type?: "button" | "text";
 }

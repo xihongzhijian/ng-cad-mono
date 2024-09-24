@@ -2,9 +2,13 @@
   @for (btn of toolbarBtns(); track $index) {
     @if (!btn.hidden) {
       @if (btn.name) {
-        <button mat-raised-button [class]="btn.class" [style]="btn.style" [color]="btn.color" (click)="onToolbarBtnClick(btn)">
-          {{ btn.name }}
-        </button>
+        @if (btn.type === "text") {
+          <div [class]="btn.class" [style]="btn.style">{{ btn.name }}</div>
+        } @else {
+          <button mat-raised-button [class]="btn.class" [style]="btn.style" [color]="btn.color" (click)="onToolbarBtnClick(btn)">
+            {{ btn.name }}
+          </button>
+        }
       } @else {
         <mat-divider vertical class="placeholder large" [class]="btn.class" [style]="btn.style"></mat-divider>
       }
