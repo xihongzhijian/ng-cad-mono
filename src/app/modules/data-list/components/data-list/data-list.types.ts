@@ -17,6 +17,7 @@ export interface DataListItem {
   id: number | string;
   name: string;
   type: string;
+  order?: number;
 }
 
 export interface DataListNavNameChangeEvent {

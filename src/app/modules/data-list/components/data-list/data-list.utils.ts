@@ -184,7 +184,8 @@ export const sortDataListItems = <T extends DataListItem>(items: T[]) => {
   type GroupItem = {item: T; index: number};
   const groups: ObjectOf<GroupItem[]> = {};
   const reg = /\d+$/;
-  for (const item of items) {
+  const items2 = items.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  for (const item of items2) {
     const name0 = item.name;
     if (typeof name0 !== "string") {
       continue;
