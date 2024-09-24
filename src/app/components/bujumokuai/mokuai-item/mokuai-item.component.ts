@@ -16,6 +16,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
+import {getCopyName} from "@app/app.common";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
@@ -262,18 +263,18 @@ export class MokuaiItemComponent {
   mokuaiInputInfos = computed(() => {
     const mokuai = this.mokuai();
     const onChange = () => this.mokuai.update((v) => ({...v}));
-    const getSelectInputInfo = (label: string, key: keyof MokuaiItem, table: string): InputInfo => ({
-      type: "select",
-      label,
-      multiple: true,
-      options: [],
-      model: {key, data: mokuai},
-      optionsDialog: {
-        optionKey: table,
-        openInNewTab: true,
-        onChange
-      }
-    });
+    // const getSelectInputInfo = (label: string, key: keyof MokuaiItem, table: string): InputInfo => ({
+    //   type: "select",
+    //   label,
+    //   multiple: true,
+    //   options: [],
+    //   model: {key, data: mokuai},
+    //   optionsDialog: {
+    //     optionKey: table,
+    //     openInNewTab: true,
+    //     onChange
+    //   }
+    // });
     const getStringInputInfo = (label: string, key: keyof MokuaiItem): InputInfo => ({
       type: "string",
       label,
@@ -281,8 +282,8 @@ export class MokuaiItemComponent {
       onChange
     });
     const infos: InputInfo[] = [
-      getSelectInputInfo("门铰", "menjiao", "p_menjiao"),
-      getSelectInputInfo("开启", "kaiqi", "p_kaiqi"),
+      // getSelectInputInfo("门铰", "menjiao", "p_menjiao"),
+      // getSelectInputInfo("开启", "kaiqi", "p_kaiqi"),
       getStringInputInfo("公式输入", "gongshishuru"),
       // getStringInputInfo("选项输入", "xuanxiangshuru"),
       getStringInputInfo("输出变量", "shuchubianliang")
@@ -397,7 +398,10 @@ export class MokuaiItemComponent {
 
   cadYaoqiu = this.bjmkStatus.cadYaoqiu;
   cadButtons = computed(() => {
-    const buttons: CadItemButton<MokuaiItemCadInfo>[] = [{name: "删除", onClick: ({customInfo}) => this.unselectCad(customInfo.index)}];
+    const buttons: CadItemButton<MokuaiItemCadInfo>[] = [
+      {name: "复制", onClick: ({customInfo}) => this.copyCad(customInfo.index)},
+      {name: "删除", onClick: ({customInfo}) => this.unselectCad(customInfo.index)}
+    ];
     return buttons;
   });
   afterEditCad() {
@@ -441,6 +445,14 @@ export class MokuaiItemComponent {
     }
     const cads = this.mokuai().cads || [];
     cads.splice(i, 1);
+    this.mokuai.update((v) => ({...v, cads}));
+  }
+  copyCad(i: number) {
+    const cads = this.mokuai().cads || [];
+    const names = cads.map((v) => v.名字);
+    const cad = new CadData(cads[i].json).clone(true);
+    cad.name = getCopyName(names, cad.name);
+    cads.splice(i + 1, 0, getHoutaiCad(cad));
     this.mokuai.update((v) => ({...v, cads}));
   }
   closeCadsDialog(mokuaiCads: MokuaiCadsComponent | null) {
