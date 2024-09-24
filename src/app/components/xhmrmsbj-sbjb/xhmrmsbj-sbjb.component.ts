@@ -40,8 +40,8 @@ export class XhmrmsbjSbjbComponent {
   xinghaoName = input.required<string>();
 
   items = signal<XhmrmsbjSbjbItem[]>([]);
-  refreshItems(deep?: boolean) {
-    this.items.update((v) => (deep ? v.map((v2) => ({...v2, 锁边铰边数据: v2.锁边铰边数据.map((v3) => ({...v3}))})) : [...v]));
+  refreshItems() {
+    this.items.update((v) => v.map((v2) => ({...v2, 锁边铰边数据: v2.锁边铰边数据.map((v3) => ({...v3}))})));
   }
   activeItemIndex = signal<number>(0);
   activeItem = computed(() => this.items().at(this.activeItemIndex()));
@@ -92,7 +92,7 @@ export class XhmrmsbjSbjbComponent {
         item[name].名字 = cad2.name;
       }
       item.CAD数据[customInfo.index].cad = getHoutaiCad(cad2);
-      this.refreshItems(true);
+      this.refreshItems();
     }
   }
 
@@ -131,7 +131,7 @@ export class XhmrmsbjSbjbComponent {
           const item2 = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options, fenlei, item);
           if (item2) {
             Object.assign(item, item2);
-            this.refreshItems(true);
+            this.refreshItems();
           }
         }
         break;
