@@ -9,12 +9,14 @@ import {
   input,
   model,
   output,
-  signal
+  signal,
+  viewChild
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {Formulas} from "@app/utils/calc";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
+import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {getShuruItem, getShuruTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {输入} from "@components/lurushuju/xinghao-data";
@@ -42,6 +44,7 @@ export class MkdxpzEditorComponent {
   data = model.required<模块大小配置>();
   varNameItem = model.required<VarNameItem>();
   title = input("");
+  validator = input<FormulasValidatorFn>();
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<MkdxpzEditorCloseEvent>({alias: "close"});
 
@@ -95,7 +98,22 @@ export class MkdxpzEditorComponent {
     }
   }
 
-  close(submit = false) {
+  formulasEditor = viewChild(FormulasEditorComponent);
+  async validate() {
+    const formulasEditor = this.formulasEditor();
+    if (!formulasEditor) {
+      return [];
+    }
+    const errors = await formulasEditor.validate();
+    return errors;
+  }
+  async close(submit = false) {
+    if (submit) {
+      const errors = await this.validate();
+      if (errors.length > 0) {
+        return;
+      }
+    }
     const data = submit ? this.data() : null;
     this.closeOut.emit({data});
   }

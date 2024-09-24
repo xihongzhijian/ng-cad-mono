@@ -87,14 +87,19 @@ export const getEmpty模块大小配置 = (): 模块大小配置 => {
   return {算料公式: {}, 输入显示: []};
 };
 
+export const getNodeFormulasKeys = (nodeNames: string[]) => {
+  const names: string[] = [];
+  for (const name of nodeNames) {
+    names.push(...["总宽", "总高"].map((v) => `${name}${v}`));
+  }
+  return names;
+};
+
 export const justify模块大小配置 = (mkdxpz: 模块大小配置, nodeNames: string[]) => {
   const formulas = mkdxpz.算料公式;
   mkdxpz.算料公式 = {};
   nodeNames.sort();
-  for (const name of nodeNames) {
-    const names = ["总宽", "总高"].map((v) => `${name}${v}`);
-    for (const name of names) {
-      mkdxpz.算料公式[name] = formulas[name] || "";
-    }
+  for (const name of getNodeFormulasKeys(nodeNames)) {
+    mkdxpz.算料公式[name] = formulas[name] || "";
   }
 };

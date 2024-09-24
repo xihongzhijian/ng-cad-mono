@@ -21,11 +21,11 @@ export class EditFormulasDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data?: EditFormulasInput
   ) {}
 
-  submit() {
+  async submit() {
     if (!this.formulasEditor) {
       return;
     }
-    const result = this.formulasEditor.submitFormulas();
+    const result = await this.formulasEditor.submitFormulas();
     if (result.errors.length > 0) {
       return;
     }
@@ -47,7 +47,7 @@ export interface EditFormulasInput {
   formulasText?: ReturnType<FormulasEditorComponent["formulasText"]>;
   varNameItem?: ReturnType<FormulasEditorComponent["varNameItem"]>;
   extraInputInfos?: ReturnType<FormulasEditorComponent["extraInputInfos"]>;
-  required?: ReturnType<FormulasEditorComponent["required"]>;
+  validator?: ReturnType<FormulasEditorComponent["validator"]>;
 }
 
 export type EditFormulasOutput = Formulas;

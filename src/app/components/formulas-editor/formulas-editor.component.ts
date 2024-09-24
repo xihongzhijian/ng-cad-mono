@@ -26,10 +26,10 @@ import {timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
-import {isEmpty} from "lodash";
+import {debounce, isEmpty} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
-import {FormulasChangeEvent} from "./formulas-editor.types";
+import {FormulasChangeEvent, FormulasValidatorFn} from "./formulas-editor.types";
 
 @Component({
   selector: "app-formulas-editor",
@@ -60,7 +60,7 @@ export class FormulasEditorComponent {
   varNameItem = input<VarNameItem>();
   menshanweizhi = input("");
   extraInputInfos = input<InputInfo[]>([]);
-  required = input(false, {transform: booleanAttribute});
+  validator = input<FormulasValidatorFn>();
   noFormulasText = input(false, {transform: booleanAttribute});
   noScroll = input(false, {transform: booleanAttribute});
   compact = input<{minRows?: number; maxRows?: number}>();
@@ -100,7 +100,15 @@ export class FormulasEditorComponent {
       label: "",
       textarea: {autosize: {minRows: compact?.minRows, maxRows: compact?.maxRows}},
       value: this.formulasText(),
-      onChange: (val) => {
+      validators: () => {
+        const formulaList = this.formulaList();
+        const validator = this.validator();
+        if (validator) {
+          return validator(formulaList);
+        }
+        return null;
+      },
+      onInput: debounce((val) => {
         this.formulasText.set(val);
         if (compact) {
           const list = this.parseFormulasText();
@@ -108,7 +116,7 @@ export class FormulasEditorComponent {
             this.parseFormulaList(list);
           }
         }
-      }
+      }, 100)
     };
     return info;
   });
@@ -201,10 +209,14 @@ export class FormulasEditorComponent {
   }
 
   inputs = viewChildren(forwardRef(() => InputComponent));
-  submitFormulas(formulaList = this.formulaList(), silent?: boolean) {
+  async validate(formulaList = this.formulaList(), silent?: boolean) {
     const errorsSet = new Set<string>();
-    if (this.required() && formulaList.length < 1) {
-      errorsSet.add("公式不能为空");
+    const validator = this.validator();
+    if (validator) {
+      const errors = validator(formulaList);
+      for (const key in errors) {
+        errorsSet.add(key);
+      }
     }
     this.justifyFormulas(formulaList);
     const inputs = this.inputs();
@@ -217,9 +229,13 @@ export class FormulasEditorComponent {
     const errors = Array.from(errorsSet);
     if (errors.length > 0) {
       if (!silent) {
-        this.message.error(errors.join("<br>"));
+        await this.message.error(errors.join("<br>"));
       }
     }
+    return errors;
+  }
+  async submitFormulas(formulaList = this.formulaList(), silent?: boolean) {
+    const errors = await this.validate(formulaList, silent);
     const result: FormulasChangeEvent = {formulas: {}, errors};
     for (const arr of formulaList) {
       result.formulas[arr[0]] = arr[1];
@@ -254,7 +270,7 @@ export class FormulasEditorComponent {
     if (!list) {
       return;
     }
-    const submitResult = this.submitFormulas(list);
+    const submitResult = await this.submitFormulas(list);
     if (submitResult.errors.length > 0) {
       return;
     }

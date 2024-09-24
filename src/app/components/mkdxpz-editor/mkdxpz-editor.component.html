@@ -10,8 +10,8 @@
   <app-var-names [varNameItem]="varNameItem()"></app-var-names>
   <mat-divider vertical></mat-divider>
   <div class="slgs flex-column">
-    <div class="title">算料公式</div>
-    <app-formulas-editor class="flex-110" [(formulas)]="formulas" [compact]="{minRows: 5}"></app-formulas-editor>
+    <div class="title">模块大小公式</div>
+    <app-formulas-editor class="flex-110" [(formulas)]="formulas" [compact]="{minRows: 5}" [validator]="validator()"></app-formulas-editor>
   </div>
   <mat-divider vertical></mat-divider>
   <app-table
