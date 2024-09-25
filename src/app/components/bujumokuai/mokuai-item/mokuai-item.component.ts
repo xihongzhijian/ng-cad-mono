@@ -452,6 +452,7 @@ export class MokuaiItemComponent {
     const names = cads.map((v) => v.名字);
     const cad = new CadData(cads[i].json).clone(true);
     cad.name = getCopyName(names, cad.name);
+    cad.info.imgId = null;
     cads.splice(i + 1, 0, getHoutaiCad(cad));
     this.mokuai.update((v) => ({...v, cads}));
   }

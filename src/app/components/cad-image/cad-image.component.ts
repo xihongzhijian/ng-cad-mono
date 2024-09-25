@@ -51,7 +51,7 @@ export class CadImageComponent {
   collection = input<CadCollection>("cad");
   width = input<number>();
   height = input<number>();
-  isLocal = input(false, {transform: booleanAttribute});
+  isLocalIn = input(false, {transform: booleanAttribute, alias: "isLocal"});
   isImgId = input(false, {transform: booleanAttribute});
   backgroundColor = input("black");
   paramsGetter = input<() => CadPreviewParams>();
@@ -71,6 +71,7 @@ export class CadImageComponent {
       }
     }
   });
+  isLocal = computed(() => !!this.data()?.info.isLocal || this.isLocalIn());
 
   getImgUrl(id: string, force: boolean | number) {
     const params: ObjectOf<any> = {id};
@@ -108,10 +109,10 @@ export class CadImageComponent {
     const data = this.data();
     const isImgId = this.isImgId();
     let force: boolean | number = this.status.forceUpdateCadImg;
-    const force2 = this.status.forceUpdateCadImg2;
-    const toUpdate = this.status.cadImgToUpdate;
-    if (toUpdate[id]) {
-      force = toUpdate[id].t;
+    const force2 = this.status.forceUpdateCadImg;
+    const toUpdate = this.status.getCadImgToUpdate(id);
+    if (toUpdate) {
+      force = toUpdate.t;
     }
     const hasImgId = !!data?.info.imgId;
     if (id && !hasImgId) {
@@ -123,8 +124,11 @@ export class CadImageComponent {
       }
     } else if (data) {
       const {imgId, imgUpdate} = data.info;
-      if (imgId) {
-        if (imgUpdate || force || force2) {
+      const isLocal = this.isLocal();
+      if (isLocal) {
+        url = await this.getPreview(data);
+      } else if (imgId) {
+        if (imgUpdate || force) {
           delete data.info.imgUpdate;
           url = await this.getPreview(data);
           await this.http.setCadImg(imgId, url, {spinner: false});
@@ -135,12 +139,10 @@ export class CadImageComponent {
         }
       } else {
         url = await this.getPreview(data);
-        if (!data.info.isLocal && !this.isLocal) {
-          data.info.imgId = await this.http.getMongoId({spinner: false});
-          await this.http.setCadImg(data.info.imgId, url, {spinner: false});
-          url = this.getImgUrl(data.info.imgId, true);
-          this.dataInfoChange.emit({info: data.info});
-        }
+        data.info.imgId = await this.http.getMongoId({spinner: false});
+        await this.http.setCadImg(data.info.imgId, url, {spinner: false});
+        url = this.getImgUrl(data.info.imgId, true);
+        this.dataInfoChange.emit({info: data.info});
       }
     }
     if (!url) {
@@ -151,10 +153,10 @@ export class CadImageComponent {
   updateUrlEff = effect(() => this.updateUrl(), {allowSignalWrites: true});
 
   async refreshCadPreview() {
-    let data = this.data();
-    if (data?.info.isLocal) {
+    if (this.isLocal()) {
       return;
     }
+    let data = this.data();
     const lockNum = this.status.updateCadImglLock$.value + 1;
     this.status.updateCadImglLock$.next(lockNum);
     if (lockNum > 1) {

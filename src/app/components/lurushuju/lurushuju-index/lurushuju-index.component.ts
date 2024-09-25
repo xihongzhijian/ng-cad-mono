@@ -193,11 +193,11 @@ export class LurushujuIndexComponent {
       }
     ];
     if (!environment.production) {
-      const toggleforceUpdateCadImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.status.forceUpdateCadImg2)})`;
+      const toggleforceUpdateCadImgBtnName = () => `强制刷新CAD图片(${getBooleanStr(this.status.forceUpdateCadImg)})`;
       const toggleforceUpdateCadImgBtn: (typeof btns)[number] = {
         name: toggleforceUpdateCadImgBtnName(),
         onClick: () => {
-          this.status.forceUpdateCadImg2 = !this.status.forceUpdateCadImg2;
+          this.status.forceUpdateCadImg = !this.status.forceUpdateCadImg;
           toggleforceUpdateCadImgBtn.name = toggleforceUpdateCadImgBtnName();
         }
       };

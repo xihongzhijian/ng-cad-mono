@@ -26,7 +26,7 @@ import {timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
-import {debounce, isEmpty} from "lodash";
+import {isEmpty} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
 import {FormulasChangeEvent, FormulasValidatorFn} from "./formulas-editor.types";
@@ -100,15 +100,16 @@ export class FormulasEditorComponent {
       label: "",
       textarea: {autosize: {minRows: compact?.minRows, maxRows: compact?.maxRows}},
       value: this.formulasText(),
-      validators: () => {
-        const formulaList = this.formulaList();
+      validators: (control) => {
         const validator = this.validator();
         if (validator) {
+          const val = control.value;
+          const formulaList = this.parseFormulasText(val) || [];
           return validator(formulaList);
         }
         return null;
       },
-      onInput: debounce((val) => {
+      onChange: (val) => {
         this.formulasText.set(val);
         if (compact) {
           const list = this.parseFormulasText();
@@ -116,13 +117,13 @@ export class FormulasEditorComponent {
             this.parseFormulaList(list);
           }
         }
-      }, 100)
+      }
     };
     return info;
   });
 
-  parseFormulasText() {
-    const list = this.formulasText()
+  parseFormulasText(text = this.formulasText()) {
+    const list = text
       .split(/；|;|\n/)
       .filter((v) => v)
       .map<string[]>((v) => {

@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import {inject, Injectable, signal} from "@angular/core";
 import {ActivatedRoute, Params, Router, UrlCreationOptions} from "@angular/router";
 import {setCadData, unsetCadData} from "@app/cad/cad-data-transform";
 import {getCadPreview, updateCadPreviewImg} from "@app/cad/cad-preview";
@@ -61,6 +61,13 @@ const replaceMap: ObjectOf<CadData> = {合型板示意图};
   providedIn: "root"
 })
 export class AppStatusService {
+  private config = inject(AppConfigService);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private spinner = inject(SpinnerService);
+
   project = "";
   collection$ = new BehaviorSubject<CadCollection>("cad");
   cadTotalLength$ = new BehaviorSubject<number>(0);
@@ -87,19 +94,7 @@ export class AppStatusService {
   private _isZhewanLengthsFetched = false;
   projectConfig = new ProjectConfig();
 
-  forceUpdateCadImg = false;
-  forceUpdateCadImg2 = false;
-  updateCadImglLock$ = new BehaviorSubject<number>(0);
-  cadImgToUpdate: ObjectOf<{t: number}> = {};
-
-  constructor(
-    private config: AppConfigService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private http: CadDataService,
-    private message: MessageService,
-    private spinner: SpinnerService
-  ) {
+  constructor() {
     this.cad.setConfig(this.config.getConfig());
     this.config.configChange$.subscribe(({newVal}) => {
       const cad = this.cad;
@@ -133,7 +128,6 @@ export class AppStatusService {
   set refreshTimeStamp(value) {
     local.save("refreshTimeStamp", value);
   }
-
   async getUpdateTimeStamp() {
     const s = await this.http.getData<string>("ngcad/getUpdateTime", {beta: environment.beta}, {spinner: false});
     let n = Number(s);
@@ -143,7 +137,6 @@ export class AppStatusService {
     this.updateTimeStamp$.next(n);
     return n;
   }
-
   async setProject(queryParams: Params) {
     this.checkEnvBeta();
     const {project, action} = queryParams;
@@ -180,6 +173,23 @@ export class AppStatusService {
       }
     }
     return true;
+  }
+
+  forceUpdateCadImg = false;
+  updateCadImglLock$ = new BehaviorSubject<number>(0);
+  private _cadImgToUpdate = signal(new Map<string, {t: number}>());
+  getCadImgToUpdate(id: string) {
+    return this._cadImgToUpdate().get(id);
+  }
+  addCadImgToUpdate(id: string) {
+    const map = new Map(this._cadImgToUpdate());
+    map.set(id, {t: Date.now()});
+    this._cadImgToUpdate.set(map);
+  }
+  removeCadImgToUpdate(id: string) {
+    const map = new Map(this._cadImgToUpdate());
+    map.delete(id);
+    this._cadImgToUpdate.set(map);
   }
 
   setCadStatus(value: CadStatus, confirmed = false) {
@@ -402,7 +412,7 @@ export class AppStatusService {
         beforeOpen: async (data2) => {
           const url = await getCadPreview(collection, data2);
           await http.setCadImg(data2.id, url, {silent: true});
-          this.cadImgToUpdate[data2.id] = {t: Date.now()};
+          this.addCadImgToUpdate(data2.id);
         }
       });
       this.saveCadLocked$.next(false);

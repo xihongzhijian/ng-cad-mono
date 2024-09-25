@@ -413,7 +413,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   async refreshMuban() {
     await this.getMubanData();
     if (this.mubanData) {
-      this.status.cadImgToUpdate[this.mubanData.id] = {t: Date.now()};
+      this.status.addCadImgToUpdate(this.mubanData.id);
     }
     await this.initMubanViewer();
   }
@@ -768,7 +768,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         id = data.info.imgId;
       }
       await this.http.setCadImg(id, await getCadPreview("cad", data), {silent: true});
-      this.status.cadImgToUpdate[id] = {t: Date.now()};
+      this.status.addCadImgToUpdate(id);
       delete this.cadData;
       await timeout(200);
       await this.initCadViewer();

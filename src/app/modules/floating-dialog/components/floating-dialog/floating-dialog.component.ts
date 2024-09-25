@@ -90,10 +90,10 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
     window.addEventListener("resize", this.onWindowResize.bind(this));
     const el = this.el.nativeElement;
     this._parentEl.set(el.parentElement);
-    const siblings = document.querySelectorAll("body > app-floating-dialog");
+    const siblings = document.querySelectorAll("body > app-floating-dialog .floating-dialog-container");
     let zIndexOffsetMax = -1;
     siblings.forEach((v) => {
-      const zIndexOffset = Number(getComputedStyle(v).getPropertyValue("--z-index-offset"));
+      const zIndexOffset = Number(getComputedStyle(v).getPropertyValue("--offset-z-index"));
       if (isNaN(zIndexOffset)) {
         return;
       }

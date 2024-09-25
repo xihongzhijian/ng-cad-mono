@@ -608,14 +608,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   async onChange(value = this.value, isAutocomplete = false) {
     const info = this.info;
-    const errors = this.validateValue(value);
-    if (!isEmpty(errors)) {
-      return;
-    }
     this._validateValueLock = true;
     setTimeout(() => {
       this._validateValueLock = false;
     }, 100);
+    const errors = this.validateValue(value);
+    if (!isEmpty(errors)) {
+      return;
+    }
     switch (info.type) {
       case "string":
         {
