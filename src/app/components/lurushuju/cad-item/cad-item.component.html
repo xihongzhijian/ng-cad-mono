@@ -65,7 +65,7 @@
       }
     </div>
     @if (!hideButtons) {
-      <div class="toolbar compact">
+      <div class="toolbar compact hidden-if-empty">
         @if (cadViewer) {
           <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="centerCad()">居中</button>
         }
@@ -77,9 +77,11 @@
             {{ button.name }}
           </button>
         }
-        <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="toggleShowLineLength()">
-          隐藏线长数字
-        </button>
+        @if (!editDisabled) {
+          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="toggleShowLineLength()">
+            隐藏线长数字
+          </button>
+        }
       </div>
     }
     <div class="cad-info item link" style="align-items: flex-start" (click)="selectable?.onChange(this)" (dblclick)="editCadForm()">

@@ -20,6 +20,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getCopyName} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {getSortedItems} from "@app/utils/sort-items";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
@@ -32,7 +33,7 @@ import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/tabl
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
-import {getSortedItems, 算料公式, 输入, 输入下单用途} from "../../../../components/lurushuju/xinghao-data";
+import {算料公式, 输入, 输入下单用途} from "../../../../components/lurushuju/xinghao-data";
 import {openSuanliaogongshiDialog} from "../dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
 import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.types";
 
@@ -98,7 +99,7 @@ export class SuanliaogongshiComponent {
           ]
         }
       ],
-      data: getSortedItems(info.data.输入数据 || []),
+      data: getSortedItems(info.data.输入数据 || [], (v) => v.排序 ?? 0),
       toolbarButtons: {
         extra: [
           {event: "添加", color: "primary"},

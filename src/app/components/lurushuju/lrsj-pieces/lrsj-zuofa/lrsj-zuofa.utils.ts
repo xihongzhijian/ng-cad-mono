@@ -1,7 +1,8 @@
 import {Validators} from "@angular/forms";
 import {getArrayString} from "@app/app.common";
+import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
-import {getSortedItems, 输入, 输入下单用途, 选项} from "@components/lurushuju/xinghao-data";
+import {输入, 输入下单用途, 选项} from "@components/lurushuju/xinghao-data";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -101,7 +102,7 @@ export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTabl
         ]
       }
     ],
-    data: getSortedItems(data),
+    data: getSortedItems(data, (v) => v.排序 ?? 0),
     toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
   };
 };

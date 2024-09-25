@@ -17,7 +17,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {XhmrmsbjSbjbItem, XhmrmsbjSbjbItemSbjb, XhmrmsbjSbjbItemSbjbCadInfo} from "./xhmrmsbj-sbjb.types";
+import {XhmrmsbjSbjbItem, XhmrmsbjSbjbItemSbjbCadInfo, XhmrmsbjSbjbItemSbjbSorted} from "./xhmrmsbj-sbjb.types";
 import {getXhmrmsbjSbjbItemSbjbForm, getXhmrmsbjSbjbItemTableInfo} from "./xhmrmsbj-sbjb.utils";
 
 @Component({
@@ -122,35 +122,32 @@ export class XhmrmsbjSbjbComponent {
     }
     return getXhmrmsbjSbjbItemTableInfo(item.锁边铰边数据, item.产品分类, this.activeSbjbItemIndex());
   });
-  async onSbjbItemTableRow(event: RowButtonEvent<XhmrmsbjSbjbItemSbjb>) {
+  async onSbjbItemTableRow(event: RowButtonEvent<XhmrmsbjSbjbItemSbjbSorted>) {
+    const item2 = this.activeItem();
+    if (!item2) {
+      return;
+    }
     const {item, rowIdx} = event;
-    const fenlei = this.activeItem()?.产品分类 || "";
     switch (event.button.event) {
       case "edit":
         {
-          const item2 = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options, fenlei, item);
-          if (item2) {
-            Object.assign(item, item2);
+          const item3 = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options, item);
+          if (item3) {
+            item2.锁边铰边数据[rowIdx] = item3;
             this.refreshItems();
           }
         }
         break;
       case "delete":
         if (await this.message.confirm("确定删除吗？")) {
-          const item2 = this.activeItem();
-          if (item2) {
-            item2.锁边铰边数据.splice(rowIdx, 1);
-            this.refreshItems();
-          }
+          item2.锁边铰边数据.splice(rowIdx, 1);
+          this.refreshItems();
         }
         break;
       case "copy":
         {
-          const item2 = this.activeItem();
-          if (item2) {
-            item2.锁边铰边数据.push(cloneDeep(item));
-            this.refreshItems();
-          }
+          item2.锁边铰边数据.push(cloneDeep(item));
+          this.refreshItems();
         }
         break;
     }
@@ -159,8 +156,7 @@ export class XhmrmsbjSbjbComponent {
     this.activeSbjbItemIndex.set(event.indexs[0] ?? -1);
   }
   async addSbjbItemSbjb() {
-    const fenlei = this.activeItem()?.产品分类 || "";
-    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options, fenlei);
+    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options);
     if (item) {
       const item2 = this.activeItem();
       if (item2) {

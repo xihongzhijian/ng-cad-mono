@@ -108,12 +108,12 @@ export class MkdxpzEditorComponent {
     return errors;
   }
   async close(submit = false) {
-    if (submit) {
-      const errors = await this.validate();
-      if (errors.length > 0) {
-        return;
-      }
-    }
+    // if (submit) {
+    //   const errors = await this.validate();
+    //   if (errors.length > 0) {
+    //     return;
+    //   }
+    // }
     const data = submit ? this.data() : null;
     this.closeOut.emit({data});
   }

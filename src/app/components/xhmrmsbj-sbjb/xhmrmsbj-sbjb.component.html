@@ -2,7 +2,12 @@
   <ng-scrollbar style="flex: 0 0 auto; height: 100%">
     <div class="item-types border flex-column">
       @for (item of items(); track i; let i = $index) {
-        <div class="item-type link" [class.active]="activeItemIndex() === i" (click)="clickItem(i)">{{ item["产品分类"] }}</div>
+        <div class="item-type link" [class.active]="activeItemIndex() === i" (click)="clickItem(i)">
+          <span>{{ item["产品分类"] }}</span>
+          @if (item["锁边铰边数据"].length < 1) {
+            <span class="error">（没有数据）</span>
+          }
+        </div>
       }
     </div>
   </ng-scrollbar>

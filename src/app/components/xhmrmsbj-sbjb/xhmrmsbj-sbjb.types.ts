@@ -1,3 +1,4 @@
+import {SortedItem} from "@app/utils/sort-items";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 
 export interface XhmrmsbjSbjbItem {
@@ -12,11 +13,17 @@ export interface XhmrmsbjSbjbItemSbjb {
   包边方向: string;
   锁边: XhmrmsbjSbjbItemSbjbItem;
   铰边: XhmrmsbjSbjbItemSbjbItem;
-  锁框: string;
-  铰框: string;
-  顶框: string;
+  锁框?: string;
+  铰框?: string;
+  顶框?: string;
+  插销边?: string;
+  小扇铰边?: string;
   CAD数据?: XhmrmsbjSbjbItemSbjbCad[];
+  停用?: boolean;
+  排序?: number;
+  默认值?: boolean;
 }
+export type XhmrmsbjSbjbItemSbjbSorted = SortedItem<XhmrmsbjSbjbItemSbjb>;
 export interface XhmrmsbjSbjbItemSbjbItem {
   名字: string;
   默认正面宽: number;
@@ -33,3 +40,6 @@ export interface XhmrmsbjSbjbItemSbjbCad {
 export interface XhmrmsbjSbjbItemSbjbCadInfo {
   index: number;
 }
+
+export const xhmrmsbjSbjbItemOptionalKeys = ["锁框", "铰框", "顶框", "插销边", "小扇铰边"] as const;
+export type XhmrmsbjSbjbItemOptionalKey = (typeof xhmrmsbjSbjbItemOptionalKeys)[number];
