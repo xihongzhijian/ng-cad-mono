@@ -486,6 +486,25 @@ export class MokuaiItemComponent {
   async updateMokaui() {
     const mokuai = this.mokuai();
     const errors: string[] = [];
+
+    const slgsComponent = this.slgsComponent();
+    if (slgsComponent) {
+      const formulasResult = await slgsComponent.submitFormulas(slgsComponent.formulaList(), true);
+      if (formulasResult.errors.length > 0) {
+        errors.push(...formulasResult.errors.map((v) => `模块公式：${v}`));
+      } else {
+        mokuai.suanliaogongshi = formulasResult.formulas;
+      }
+    }
+
+    const outputKeys = mokuai.shuchubianliang.split("+");
+    const formulas = mokuai.suanliaogongshi;
+    const outputKeysMissing = outputKeys.filter((k) => !formulas[k] && !formulas[k.toUpperCase()]);
+    if (outputKeysMissing.length > 0) {
+      await this.message.error({content: "模块公式缺少以下输出变量", details: outputKeysMissing.join("、")});
+      return null;
+    }
+
     await this._fetchMrbcjfzResponseData();
     await timeout(0);
     const mrbcjfzErrors = this.mrbcjfzComponent()?.checkSubmit();
@@ -499,15 +518,7 @@ export class MokuaiItemComponent {
         }, {});
       }
     }
-    const slgsComponent = this.slgsComponent();
-    if (slgsComponent) {
-      const formulasResult = await slgsComponent.submitFormulas(slgsComponent.formulaList(), true);
-      if (formulasResult.errors.length > 0) {
-        errors.push(...formulasResult.errors.map((v) => `模块公式：${v}`));
-      } else {
-        mokuai.suanliaogongshi = formulasResult.formulas;
-      }
-    }
+
     if (errors.length > 0) {
       await this.message.error(errors.join("<br>"));
       return null;
