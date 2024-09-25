@@ -38,6 +38,6 @@ export class SelectCadsComponent implements OnInit {
       } else {
         console.log(result);
       }
-    } while (!environment.production);
+    } while (!environment.production && !environment.unitTest);
   }
 }

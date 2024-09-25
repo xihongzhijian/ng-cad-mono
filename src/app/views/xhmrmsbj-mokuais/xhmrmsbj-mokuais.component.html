@@ -23,11 +23,7 @@
               <div class="title flex-row">
                 <div>层名字：{{ node.layer }}</div>
                 <mat-divider class="placeholder" [vertical]="true"></mat-divider>
-                @if (data.openMokuai; as open) {
-                  <div class="link text" (click)="open(node.mokuai)">{{ getMokuaiTitle(node.mokuai) }}</div>
-                } @else {
-                  <div>{{ getMokuaiTitle(node.mokuai) }}</div>
-                }
+                <div [innerHTML]="getMokuaiTitle(node.mokuai)"></div>
               </div>
               <app-formulas [formulaInfos]="node.formulaInfos" [formulaStyles]="formulaStyles"></app-formulas>
             </div>

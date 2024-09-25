@@ -4,6 +4,7 @@ import {CalcZxpjResult, ZixuanpeijianCadItem} from "@components/dialogs/zixuanpe
 import {calcZxpj} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {matchHoutaiData} from "@views/suanliao/suanliao.utils";
 import {cloneDeep, difference} from "lodash";
@@ -80,7 +81,8 @@ export const calcTestCase = async (
   data: 算料数据2,
   dialog: MatDialog,
   message: MessageService,
-  calc: CalcService
+  calc: CalcService,
+  status: AppStatusService
 ) => {
   const result = {
     fulfilled: false,
@@ -133,7 +135,7 @@ export const calcTestCase = async (
       };
     });
     result.cads = cads;
-    result.zxpjResult = await calcZxpj(dialog, message, calc, calcResult.succeed, [], cads);
+    result.zxpjResult = await calcZxpj(dialog, message, calc, status, calcResult.succeed, [], cads);
   }
   if (result.cads) {
     info.cads = result.cads.map((v, i) => {

@@ -12,6 +12,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
 import {matchConditions} from "@views/suanliao/suanliao.utils";
@@ -130,16 +131,19 @@ export const exportZixuanpeijian = (source: ZixuanpeijianData) => {
   return result;
 };
 
-export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null, opts?: {门扇名字?: string; 层名字?: string}) => {
-  if (!item) {
-    return "";
-  }
+export interface GetMokuaiTitleOpts {
+  门扇名字?: string;
+  层名字?: string;
+  mokuaiNameShort?: boolean;
+}
+export const getMokuaiTitleBase = (item: ZixuanpeijianMokuaiItem, opts: GetMokuaiTitleOpts & {mokuaiUrl?: string} = {}) => {
   const {type1, type2, info} = item;
   if (!type1 && !type2) {
     return "";
   }
   const arr: string[] = [];
-  let {门扇名字, 层名字} = opts || {};
+  let {门扇名字, 层名字} = opts;
+  const {mokuaiNameShort, mokuaiUrl} = opts;
   if (!门扇名字) {
     门扇名字 = info?.门扇名字;
   }
@@ -152,8 +156,41 @@ export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null,
   if (typeof 层名字 === "string" && 层名字) {
     arr.push(`节点【${层名字}】`);
   }
-  arr.push(`模块【${type2}】`);
+  let mokuaiName = type2;
+  if (mokuaiUrl) {
+    const a = document.createElement("a");
+    a.target = "_blank";
+    a.href = mokuaiUrl;
+    a.style.color = "black";
+    a.textContent = mokuaiName;
+    mokuaiName = a.outerHTML;
+  }
+  if (!mokuaiNameShort) {
+    mokuaiName = `模块【${mokuaiName}】`;
+  }
+  arr.push(mokuaiName);
   return arr.join("");
+};
+export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null, opts?: GetMokuaiTitleOpts) => {
+  if (!item) {
+    return "";
+  }
+  return getMokuaiTitleBase(item, opts);
+};
+export const getMokuaiTitleWithUrl = (
+  status: AppStatusService,
+  isVersion2024: boolean,
+  item: ZixuanpeijianMokuaiItem | undefined | null,
+  opts?: GetMokuaiTitleOpts
+) => {
+  if (!item) {
+    return "";
+  }
+  if (!isVersion2024) {
+    return getMokuaiTitle(item, opts);
+  }
+  const mokuaiUrl = status.getUrl(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: item.id}});
+  return getMokuaiTitleBase(item, {...opts, mokuaiUrl});
 };
 
 export const getStep1Data = async (
@@ -308,12 +345,13 @@ export interface CalcZxpjOptions {
   inputResult?: Formulas;
   mokuaiVars?: ObjectOf<Formulas>;
   mokuaiGongshis?: ObjectOf<Formulas>;
-  ignoreCadDimensions?: boolean;
+  isVersion2024?: boolean;
 }
 export const calcZxpj = async (
   dialog: MatDialog,
   message: MessageService,
   calc: CalcService,
+  status: AppStatusService,
   materialResult: Formulas,
   mokuais: ZixuanpeijianMokuaiItem[],
   lingsans: ZixuanpeijianCadItem[],
@@ -329,11 +367,21 @@ export const calcZxpj = async (
     inputResult: {},
     mokuaiVars: {},
     mokuaiGongshis: {},
-    ignoreCadDimensions: false,
+    isVersion2024: false,
     ...options
   };
-  const {fractionDigits, changeLinesLength, calcVars, useCeshishuju, gongshi, tongyongGongshi, inputResult, mokuaiVars, mokuaiGongshis} =
-    optionsAll;
+  const {
+    fractionDigits,
+    changeLinesLength,
+    calcVars,
+    useCeshishuju,
+    gongshi,
+    tongyongGongshi,
+    inputResult,
+    mokuaiVars,
+    mokuaiGongshis,
+    isVersion2024
+  } = optionsAll;
   const shuchubianliang: Formulas = {};
   const duplicateScbl: {
     item: ZixuanpeijianMokuaiItem;
@@ -388,6 +436,8 @@ export const calcZxpj = async (
     }
   };
 
+  const getCalcMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null) => getMokuaiTitleWithUrl(status, isVersion2024, item);
+
   for (const [i, item1] of mokuais.entries()) {
     for (const [j, item2] of mokuais.entries()) {
       if (i === j) {
@@ -422,7 +472,7 @@ export const calcZxpj = async (
     }
     for (const group of item1.xuanxiangshuru) {
       if (group[0] in materialResult && materialResult[group[0]] !== "无") {
-        const title = getMokuaiTitle(item1);
+        const title = getCalcMokuaiTitle(item1);
         if (!duplicateXxsr[title]) {
           duplicateXxsr[title] = new Set();
         }
@@ -438,7 +488,7 @@ export const calcZxpj = async (
   }
   const duplicateDimVars: ObjectOf<{vars: Set<string>; cads: ZixuanpeijianCadItem[]}> = {};
   const getCadDimensionVars = (items: ZixuanpeijianCadItem[], mokuai?: ZixuanpeijianMokuaiItem) => {
-    if (optionsAll.ignoreCadDimensions) {
+    if (isVersion2024) {
       return {};
     }
     const vars: Formulas = {};
@@ -468,7 +518,7 @@ export const calcZxpj = async (
       }
       item.info.dimensionVars = vars2;
       if (mokuai && duplicateVars.size > 0) {
-        duplicateDimVars[getMokuaiTitle(mokuai)] = {vars: duplicateVars, cads: duplicateCads};
+        duplicateDimVars[getCalcMokuaiTitle(mokuai)] = {vars: duplicateVars, cads: duplicateCads};
       }
       Object.assign(vars, vars2);
     }
@@ -534,7 +584,7 @@ export const calcZxpj = async (
           if (!v.item) {
             return "";
           }
-          const title = getMokuaiTitle(v.item);
+          const title = getCalcMokuaiTitle(v.item);
           return `${title}: ${v.keys.join(", ")}`;
         })
         .filter(Boolean);
@@ -591,7 +641,7 @@ export const calcZxpj = async (
       const mokuaiVarsCurr = getMokuaiVarsCurr(mokuaiVars[门扇名字], 模块名字);
       const vars1 = {...materialResult, ...shuchubianliang, ...lingsanVars, ...mokuaiVarsCurr};
       vars1.门扇布局 = v.item.info?.门扇布局?.name || "";
-      const result1Msg = `${getMokuaiTitle(v.item)}计算`;
+      const result1Msg = `${getCalcMokuaiTitle(v.item)}计算`;
       const result1 = await calc.calcFormulas(
         formulas1,
         vars1,
@@ -638,7 +688,7 @@ export const calcZxpj = async (
         }
       }
       if (missingKeys.length > 0) {
-        const msg = `${getMokuaiTitle(v.item)}缺少输出变量`;
+        const msg = `${getCalcMokuaiTitle(v.item)}缺少输出变量:`;
         await message.error({content: msg, details: missingKeys.join(", ")});
         return {fulfilled: false, error: {message: msg, details: missingKeys}};
       }
@@ -662,7 +712,7 @@ export const calcZxpj = async (
       }
     }
     if (arr.length > 0) {
-      duplicateScblDetails.push(`${getMokuaiTitle(item.item)}：${arr.join(", ")}`);
+      duplicateScblDetails.push(`${getCalcMokuaiTitle(item.item)}：${arr.join(", ")}`);
     }
   }
   if (duplicateScblDetails.length > 0) {
@@ -685,7 +735,7 @@ export const calcZxpj = async (
       let enabled = true;
       let title = `计算展开条件`;
       if (mokuai) {
-        title += `（${getMokuaiTitle(mokuai)}）`;
+        title += `（${getCalcMokuaiTitle(mokuai)}）`;
       }
       const result = await matchConditions(zhankai.conditions, vars2, calc, {title});
       if (result.error) {
@@ -729,7 +779,7 @@ export const calcZxpj = async (
         }
       }
 
-      const mokuaiTitle = mokuai ? `（${getMokuaiTitle(mokuai)}）` : "";
+      const mokuaiTitle = mokuai ? `（${getCalcMokuaiTitle(mokuai)}）` : "";
       const result2Msg = `计算${mokuaiTitle}${data.name}线公式`;
       const result2 = await calc.calcFormulas(formulas2, vars2, {title: result2Msg});
       const calcLinesResult: Formulas = {};

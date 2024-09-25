@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
@@ -24,6 +24,7 @@ import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongsh
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {MsbjData} from "@views/msbj/msbj.types";
 import {isVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
@@ -40,19 +41,21 @@ import {
   selector: "app-suanliao",
   templateUrl: "./suanliao.component.html",
   styleUrls: ["./suanliao.component.scss"],
-  standalone: true
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SuanliaoComponent implements OnInit, OnDestroy {
+  private calc = inject(CalcService);
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
   msbjs: MsbjInfo[] = [];
   step1Data: Step1Data | null = null;
   wmm = new WindowMessageManager("算料", this, window.parent);
 
-  constructor(
-    private dialog: MatDialog,
-    private message: MessageService,
-    private calc: CalcService,
-    private http: CadDataService
-  ) {
+  constructor() {
     setGlobal("suanliao", this);
   }
 
@@ -173,7 +176,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     }
 
     const calcVars: NonNullable<CalcZxpjOptions["calcVars"]> = {keys: varNames || []};
-    const calcZxpjResult = await calcZxpj(this.dialog, this.message, this.calc, materialResult, mokuais, lingsans, {
+    const calcZxpjResult = await calcZxpj(this.dialog, this.message, this.calc, this.status, materialResult, mokuais, lingsans, {
       changeLinesLength: false,
       calcVars,
       gongshi,
@@ -181,7 +184,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       inputResult,
       mokuaiVars,
       mokuaiGongshis,
-      ignoreCadDimensions: isVersion2024(materialResult.做数据版本)
+      isVersion2024: isVersion2024(materialResult.做数据版本)
     });
     if (!calcZxpjResult.fulfilled) {
       result.data.error = calcZxpjResult.error;

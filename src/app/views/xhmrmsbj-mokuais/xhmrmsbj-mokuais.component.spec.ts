@@ -1,5 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {provideRouter} from "@angular/router";
 import {XhmrmsbjMokuaisComponent, XhmrmsbjMokuaisInput} from "./xhmrmsbj-mokuais.component";
 
 const data: XhmrmsbjMokuaisInput = {
@@ -25,7 +26,8 @@ const data: XhmrmsbjMokuaisInput = {
       }
     },
     mokuaidaxiaoResults: {}
-  }
+  },
+  isVersion2024: true
 };
 
 describe("XhmrmsbjMokuaisComponent", () => {
@@ -35,10 +37,7 @@ describe("XhmrmsbjMokuaisComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [XhmrmsbjMokuaisComponent],
-      providers: [
-        {provide: MAT_DIALOG_DATA, useValue: data},
-        {provide: MatDialogRef, useValue: {}}
-      ]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(XhmrmsbjMokuaisComponent);

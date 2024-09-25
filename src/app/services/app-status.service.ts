@@ -545,17 +545,20 @@ export class AppStatusService {
     const params = {模块: mokuaiName, id};
     this.openInNewTab(["index"], {queryParams: params});
   }
-  openInNewTab(commands: any[], navigationExtras?: UrlCreationOptions | undefined) {
+  getUrl(commands: any[], navigationExtras?: UrlCreationOptions | undefined) {
     if (!navigationExtras) {
       navigationExtras = {};
     }
     navigationExtras.queryParams = {...navigationExtras.queryParams, project: this.project};
     const url = this.router.createUrlTree(commands, navigationExtras).toString();
     if (environment.production) {
-      open(`${remoteHost}/static/ng-cad2${url}`);
+      return `${remoteHost}/static/ng-cad2${url}`;
     } else {
-      open(url);
+      return url;
     }
+  }
+  openInNewTab(commands: any[], navigationExtras?: UrlCreationOptions | undefined) {
+    open(this.getUrl(commands, navigationExtras));
   }
 
   async updateZhewanLengths() {

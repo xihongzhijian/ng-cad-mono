@@ -3,14 +3,16 @@ import {Component, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
+import {DomSanitizer} from "@angular/platform-browser";
 import {Formulas, toFixed} from "@app/utils/calc";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
-import {getMokuaiTitle, replaceMenshanName} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
+import {getMokuaiTitleWithUrl, replaceMenshanName} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulaInfo} from "@components/formulas/formulas.component";
 import {输入} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
+import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {Properties} from "csstype";
@@ -27,10 +29,11 @@ import {FormulasComponent} from "../../components/formulas/formulas.component";
 })
 export class XhmrmsbjMokuaisComponent {
   private calc = inject(CalcService);
+  private domSanitizer = inject(DomSanitizer);
+  private status = inject(AppStatusService);
 
   @HostBinding("class") class = "ng-page";
 
-  getMokuaiTitle = getMokuaiTitle;
   formulaStyles: Properties = {fontSize: "18px"};
   section1 = viewChild<ElementRef<HTMLDivElement>>("section1");
 
@@ -38,6 +41,11 @@ export class XhmrmsbjMokuaisComponent {
     public dialogRef: MatDialogRef<XhmrmsbjMokuaisComponent, XhmrmsbjMokuaisOutput>,
     @Inject(MAT_DIALOG_DATA) public data: XhmrmsbjMokuaisInput
   ) {}
+
+  getMokuaiTitle(mokuai: ZixuanpeijianMokuaiItem) {
+    const url = getMokuaiTitleWithUrl(this.status, this.data.isVersion2024, mokuai);
+    return this.domSanitizer.bypassSecurityTrustHtml(url);
+  }
 
   infos = computed(() => {
     const {lastSuanliao, mokuaidaxiaoResults} = this.data.data;
@@ -123,7 +131,7 @@ export class XhmrmsbjMokuaisComponent {
 
 export interface XhmrmsbjMokuaisInput {
   data: {lastSuanliao: LastSuanliao; mokuaidaxiaoResults: ObjectOf<Formulas>};
-  openMokuai?: (mokaui: ZixuanpeijianMokuaiItem) => void;
+  isVersion2024: boolean;
 }
 
 export type XhmrmsbjMokuaisOutput = void;

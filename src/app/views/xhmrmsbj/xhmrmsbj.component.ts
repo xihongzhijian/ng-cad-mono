@@ -20,6 +20,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
@@ -35,6 +36,7 @@ import {Step1Data, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeij
 import {
   getFromulasFromString,
   getMokuaiTitle,
+  getMokuaiTitleWithUrl,
   getStep1Data,
   isMokuaiItemEqual,
   replaceMenshanName,
@@ -119,6 +121,7 @@ export class XhmrmsbjComponent implements OnDestroy {
   private bjmkStatus = inject(BjmkStatusService);
   private calc = inject(CalcService);
   private dialog = inject(MatDialog);
+  private domSanitizer = inject(DomSanitizer);
   private http = inject(CadDataService);
   private message = inject(MessageService);
   private route = inject(ActivatedRoute);
@@ -1077,7 +1080,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     openXhmrmsbjMokuaisDialog(this.dialog, {
       data: {
         data: {lastSuanliao, mokuaidaxiaoResults},
-        openMokuai: this.data()?.isVersion2024 ? this.openMokuai.bind(this) : undefined
+        isVersion2024: !!this.data()?.isVersion2024
       }
     });
   }
@@ -1105,8 +1108,9 @@ export class XhmrmsbjComponent implements OnDestroy {
     return result;
   }
 
-  getMokuaiTitle2(mokuai: ZixuanpeijianMokuaiItem | null) {
-    return mokuai?.type2 || "";
+  getMokuaiTitle(mokuai: ZixuanpeijianMokuaiItem | null) {
+    const url = getMokuaiTitleWithUrl(this.status, !!this.data()?.isVersion2024, mokuai, {mokuaiNameShort: true});
+    return this.domSanitizer.bypassSecurityTrustHtml(url);
   }
 
   openedMsbj = signal<MsbjInfo | null>(null);
@@ -1130,22 +1134,6 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
 
   openedMokuai = signal<{mokuai0: ZixuanpeijianMokuaiItem; mokuai: MokuaiItem; bancaiListData: BancaiListData} | null>(null);
-  async openMokuai(mokuai: ZixuanpeijianMokuaiItem) {
-    const bancaiListData = this.bancaiListData;
-    if (!bancaiListData) {
-      return;
-    }
-    const mokuai2 = await this.bjmkStatus.fetchMokuai(mokuai.id);
-    if (!mokuai2) {
-      await this.message.error("该模块已被删除");
-      return;
-    }
-    if (this.isFromOrder()) {
-      this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: mokuai2.id}});
-    } else {
-      this.openedMokuai.set({mokuai0: mokuai, mokuai: mokuai2, bancaiListData});
-    }
-  }
   async closeMokuai({isSaved}: MokuaiItemCloseEvent) {
     const openedMokuai = this.openedMokuai();
     if (!openedMokuai) {

@@ -16,6 +16,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
+import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {cloneDeep, uniqueId} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -56,6 +57,7 @@ export class SuanliaoTestDialogComponent implements OnInit {
     private calc: CalcService,
     private spinner: SpinnerService,
     private http: CadDataService,
+    private status: AppStatusService,
     public dialogRef: MatDialogRef<SuanliaoTestDialogComponent, SuanliaoTestOutput>,
     @Inject(MAT_DIALOG_DATA) public data: SuanliaoTestInput
   ) {}
@@ -241,7 +243,7 @@ export class SuanliaoTestDialogComponent implements OnInit {
   async calcTestCase(i: number) {
     const testCase = this.data.data.测试用例[i];
     const info = this.infos[i];
-    const result = await calcTestCase(testCase, info, this.data.data, this.dialog, this.message, this.calc);
+    const result = await calcTestCase(testCase, info, this.data.data, this.dialog, this.message, this.calc, this.status);
     const data = {
       名字: testCase.名字,
       数据: {
