@@ -402,6 +402,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
             label: "刨坑深度",
             model: {data: data.info.刨坑深度, key: i},
             options: ["默认"],
+            suffixTexts: [{name: "mm"}],
             validators: () => {
               const val = data.info.刨坑深度[i];
               if (val === "默认") {

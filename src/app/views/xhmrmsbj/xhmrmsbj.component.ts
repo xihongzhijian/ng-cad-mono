@@ -14,7 +14,7 @@ import {
   signal,
   viewChild
 } from "@angular/core";
-import {FormsModule} from "@angular/forms";
+import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -24,6 +24,7 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {FetchManager} from "@app/utils/fetch-manager";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
 import {MokuaiItem, MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
@@ -44,6 +45,7 @@ import {
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {FormulasComponent} from "@components/formulas/formulas.component";
+import {算料公式} from "@components/lurushuju/xinghao-data";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
@@ -505,6 +507,10 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.refreshData();
   }
 
+  tongyongFormulas = new FetchManager({}, async () => {
+    const data = await this.http.queryMongodb<算料公式>({collection: "material", where: {name: "通用配置"}});
+    return data.at(0)?.公式 || {};
+  }).data;
   mokuaiInputInfos = computed(() => {
     const mokuai = this.activeMokuaiNode()?.选中模块;
     const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
@@ -533,15 +539,20 @@ export class XhmrmsbjComponent implements OnDestroy {
         }
         return "";
       };
+      const tongyongFormulas = this.tongyongFormulas();
       for (const v of arr) {
-        if (!v[1]) {
-          v[1] = getValue(materialResult, v[0]);
+        const list = [materialResult, mokuaidaxiaoResult, mokuai.suanliaogongshi, tongyongFormulas];
+        for (const formulas of list) {
+          if (v[1]) {
+            break;
+          }
+          v[1] = getValue(formulas, v[0]);
         }
-        v[1] = getValue(mokuaidaxiaoResult, v[0]) || v[1];
         infos.push({
           type: "string",
           label: v[0],
           model: {key: "1", data: v},
+          validators: Validators.required,
           onChange: async () => {
             const data = this.data();
             const activeMenshanKey = this.activeMenshanKey();
