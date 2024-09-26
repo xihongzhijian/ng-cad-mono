@@ -639,7 +639,7 @@ const getUnfoldCadViewers = async (
   const useQrcode = params.projectConfig.getBoolean("刨坑工单生成新代系统二维码");
   let isBarcodeFailed = false;
   const barcodeSize = [2, 40];
-  const qrcodeWidth = 60;
+  const qrcodeWidth = 60 + imgPadding[1] + imgPadding[3];
   await timeout(0);
 
   const addText = async (text: string, insert: [number, number], opts?: {anchor?: [number, number]; fontStyle?: FontStyle}) => {
@@ -700,11 +700,11 @@ const getUnfoldCadViewers = async (
           console.warn("生成二维码出错", error);
           qrcodeSuccess = false;
         }
-        if (qrcodeSuccess) {
+        if (qrcodeSuccess && qrcodeEl.width <= boxRect.width && qrcodeEl.height <= boxRect.height) {
           const img = new CadImage();
           img.objectFit = "contain";
           img.anchor.set(0.5, 1);
-          img.targetSize = new Point(qrcodeEl.width - imgPadding[1] - imgPadding[3], qrcodeEl.height - imgPadding[0] - imgPadding[2]);
+          img.targetSize = new Point(qrcodeEl.width, qrcodeEl.height);
           img.url = qrcodeEl.toDataURL();
           img.position.set(boxRect.x, y);
           unfoldCad.entities.add(img);
@@ -739,33 +739,42 @@ const getUnfoldCadViewers = async (
     imgRect.right -= imgPadding[1];
     imgRect.bottom = y + imgPadding[2];
     imgRect.left += imgPadding[3];
-    unfoldCad.entities.merge(cad.entities);
-    await unfoldCadViewer.render(cad.entities);
-    const cadRect = cad.getBoundingRect();
-    const dx = imgRect.x - cadRect.x;
-    const dy = imgRect.y - cadRect.y;
-    const scale = Math.min(1, imgRect.width / cadRect.width, imgRect.height / cadRect.height);
-    cad.transform({translate: [dx, dy], scale, origin: [cadRect.x, cadRect.y]}, true);
+    if (imgRect.width > 0 && imgRect.height > 0) {
+      unfoldCad.entities.merge(cad.entities);
+      await unfoldCadViewer.render(cad.entities);
+      const cadRect = cad.getBoundingRect();
+      const dx = imgRect.x - cadRect.x;
+      const dy = imgRect.y - cadRect.y;
+      const scale = Math.min(1, imgRect.width / cadRect.width, imgRect.height / cadRect.height);
+      cad.transform({translate: [dx, dy], scale, origin: [cadRect.x, cadRect.y]}, true);
 
-    const startLines = [];
-    cad.entities.forEach((e) => {
-      if (e instanceof CadLineLike && e.info.startLine) {
-        startLines.push(e);
-        const leader = new CadLeader();
-        leader.setColor("red");
-        const to = e.start.clone().add(-1, 1);
-        const from = to.clone().add(-10, 10);
-        leader.vertices = [to, from];
-        unfoldCad.entities.add(leader);
-        const text = new CadMtext();
-        text.insert.copy(from);
-        text.setColor("red");
-        text.text = "刨坑起点";
-        text.fontStyle.size = 8;
-        text.anchor.set(0.5, 1);
-        unfoldCad.entities.add(text);
-      }
-    });
+      const startLines = [];
+      cad.entities.forEach((e) => {
+        if (e instanceof CadLineLike && e.info.startLine) {
+          startLines.push(e);
+          const leader = new CadLeader();
+          leader.setColor("red");
+          const to = e.start.clone().add(-1, 1);
+          const from = to.clone().add(-10, 10);
+          leader.vertices = [to, from];
+          unfoldCad.entities.add(leader);
+          const text = new CadMtext();
+          text.insert.copy(from);
+          text.setColor("red");
+          text.text = "刨坑起点";
+          text.fontStyle.size = 8;
+          text.anchor.set(0.5, 1);
+          unfoldCad.entities.add(text);
+        }
+      });
+    } else {
+      const cadName = new CadMtext();
+      cadName.text = cad.name;
+      cadName.anchor.set(0.5, 1);
+      cadName.insert.set(boxRect.x, y);
+      cadName.fontStyle.size = 10;
+      unfoldCad.entities.add(cadName);
+    }
   }
   document.body.removeChild(barcodeEl);
 
