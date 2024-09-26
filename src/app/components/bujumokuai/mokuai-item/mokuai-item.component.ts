@@ -497,13 +497,13 @@ export class MokuaiItemComponent {
       }
     }
 
-    const outputKeys = mokuai.shuchubianliang.split("+");
-    const formulas = mokuai.suanliaogongshi;
-    const outputKeysMissing = outputKeys.filter((k) => !formulas[k] && !formulas[k.toUpperCase()]);
-    if (outputKeysMissing.length > 0) {
-      await this.message.error({content: "模块公式缺少以下输出变量", details: outputKeysMissing.join("、")});
-      return null;
-    }
+    // const outputKeys = mokuai.shuchubianliang.split("+");
+    // const formulas = mokuai.suanliaogongshi;
+    // const outputKeysMissing = outputKeys.filter((k) => !formulas[k] && !formulas[k.toUpperCase()]);
+    // if (outputKeysMissing.length > 0) {
+    //   await this.message.error({content: "模块公式缺少以下输出变量", details: outputKeysMissing.join("、")});
+    //   return null;
+    // }
 
     await this._fetchMrbcjfzResponseData();
     await timeout(0);

@@ -243,9 +243,11 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       }
     });
 
-    this._scrollbars.forEach((scrollbar) => {
-      scrollbar.viewport.nativeElement.addEventListener("scroll", this.onScrollChange);
-    });
+    setTimeout(() => {
+      this._scrollbars.forEach((scrollbar) => {
+        scrollbar.viewport.nativeElement.addEventListener("scroll", this.onScrollChange);
+      });
+    }, 0);
 
     this.subscribe(this.cadConsole.command$, (command) => {
       this.cadConsoleComponent.execute(command);

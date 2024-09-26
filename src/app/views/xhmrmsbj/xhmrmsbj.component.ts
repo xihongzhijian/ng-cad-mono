@@ -45,7 +45,6 @@ import {
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {FormulasComponent} from "@components/formulas/formulas.component";
-import {算料公式} from "@components/lurushuju/xinghao-data";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
@@ -508,8 +507,8 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
 
   tongyongFormulas = new FetchManager({}, async () => {
-    const data = await this.http.queryMongodb<算料公式>({collection: "material", where: {name: "通用配置"}});
-    return data.at(0)?.公式 || {};
+    const data = await this.http.getData<Formulas>("ngcad/getMokuaiTongyongPeizhi");
+    return data || {};
   }).data;
   mokuaiInputInfos = computed(() => {
     const mokuai = this.activeMokuaiNode()?.选中模块;
@@ -663,10 +662,13 @@ export class XhmrmsbjComponent implements OnDestroy {
     const errorXuanzhongMenshans: {menshan: string; nodeNames: string[]}[] = [];
     const errorMkdxpz: {menshan: string}[] = [];
     const varKeysXinghao = Object.keys(getFromulasFromString(this.xinghao()?.raw.gongshishuru));
-    const duplicates1: {mokuai: ZixuanpeijianMokuaiItem; keys: string[]; 门扇名字: string; 层名字: string}[] = [];
-    const duplicates2: {mokuais: ZixuanpeijianMokuaiItem[]; keys: string[]}[] = [];
     const msbjInfos: {menshanKey: string; msbjInfo: XhmrmsbjInfo}[] = [];
-    const mokuaisWithoutBancai: {menshanKey: string; layerName: string; mokuai: ZixuanpeijianMokuaiItem}[] = [];
+    const mokuaisErrorInfo: {
+      menshanKey: string;
+      layerName: string;
+      mokuai: ZixuanpeijianMokuaiItem;
+      errors: string[];
+    }[] = [];
     for (const menshanKey of keysOf(dataInfo.menshanbujuInfos)) {
       const msbjInfo = dataInfo.menshanbujuInfos[menshanKey];
       if (msbjInfo) {
@@ -692,25 +694,21 @@ export class XhmrmsbjComponent implements OnDestroy {
         for (const mokuai of node.可选模块) {
           const varKeysMokuai = mokuai.shuchubianliang;
           const keys1 = intersection(varKeysXinghao, varKeysMokuai);
+          const mokuaiErrors: string[] = [];
           if (keys1.length > 0) {
-            duplicates1.push({mokuai, keys: keys1, 门扇名字: menshanKey, 层名字: node.层名字});
-          }
-          for (let j = i + 1; j < msbjInfos.length; j++) {
-            for (const node2 of msbjInfos[i].msbjInfo.模块节点 || []) {
-              for (const mokuai2 of node2.可选模块) {
-                if (isMokuaiItemEqual(mokuai, mokuai2)) {
-                  continue;
-                }
-                const varKeysMokuai2 = mokuai2.shuchubianliang;
-                const keys2 = intersection(varKeysMokuai, varKeysMokuai2);
-                if (keys2.length > 0) {
-                  duplicates2.push({mokuais: [mokuai, mokuai2], keys: keys2});
-                }
-              }
-            }
+            mokuaiErrors.push("输出变量与型号公式输入重复");
           }
           if (!this.validateMorenbancai(mokuai.morenbancai)) {
-            mokuaisWithoutBancai.push({mokuai, menshanKey, layerName: node.层名字});
+            mokuaiErrors.push("未配置默认板材分组");
+          }
+          for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
+            if (!arr[1]) {
+              mokuaiErrors.push("公式输入和选项输入不能为空");
+              break;
+            }
+          }
+          if (mokuaiErrors.length > 0) {
+            mokuaisErrorInfo.push({menshanKey, layerName: node.层名字, mokuai, errors: mokuaiErrors});
           }
         }
       }
@@ -719,14 +717,6 @@ export class XhmrmsbjComponent implements OnDestroy {
       }
     }
     let jumpTo: {门扇名字: string; 层名字?: string; mokuai?: ZixuanpeijianMokuaiItem; mkdx?: boolean} | null = null;
-    if (duplicates1.length > 0) {
-      const list = duplicates1.map(
-        ({mokuai, keys, 门扇名字, 层名字}) => `${getMokuaiTitle(mokuai, {门扇名字, 层名字})}: ${keys.join("，")}`
-      );
-      const item = duplicates1[0];
-      jumpTo = {门扇名字: item.门扇名字, 层名字: item.层名字, mokuai: item.mokuai};
-      await this.message.error({content: "模块输出变量与型号公式输入重复", details: list});
-    }
     if (!jumpTo && errorXuanzhongMenshans.length > 0) {
       await this.message.error({
         content: "布局中存在未选中的模块",
@@ -748,11 +738,14 @@ export class XhmrmsbjComponent implements OnDestroy {
       const {menshan} = errorMkdxpz[0];
       jumpTo = {门扇名字: menshan, mkdx: true};
     }
-    if (!jumpTo && mokuaisWithoutBancai.length > 0) {
-      const details = mokuaisWithoutBancai.map((v) => getMokuaiTitle(v.mokuai, {门扇名字: v.menshanKey, 层名字: v.layerName}));
-      const item = mokuaisWithoutBancai[0];
+    if (!jumpTo && mokuaisErrorInfo.length > 0) {
+      const details = mokuaisErrorInfo.map((v) => {
+        const title = getMokuaiTitle(v.mokuai, {门扇名字: v.menshanKey, 层名字: v.layerName});
+        return `${title}：${v.errors.join("，")}`;
+      });
+      const item = mokuaisErrorInfo[0];
       jumpTo = {门扇名字: item.menshanKey, 层名字: item.layerName, mokuai: item.mokuai};
-      await this.message.error({content: "以下模块未设置默认板材分组", details});
+      await this.message.error({content: "以下模块有错", details});
     }
     if (jumpTo) {
       await this.selectMenshanKey(jumpTo.门扇名字);
