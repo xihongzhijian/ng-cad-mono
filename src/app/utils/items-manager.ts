@@ -8,11 +8,11 @@ export class ItemsManager<T> {
     public compareFn: (item1: T, item2: T) => boolean
   ) {}
 
-  private _fetchManager = new FetchManager([], this.fetchFn);
-  items = computed(() => this._fetchManager.data());
+  fetchManager = new FetchManager([], this.fetchFn);
+  items = computed(() => this.fetchManager.data());
 
   async fetch(force?: boolean) {
-    return await this._fetchManager.fetch(force);
+    return await this.fetchManager.fetch(force);
   }
 
   refresh(params: ItemsManagerRefreshParams<T> = {}) {
@@ -28,7 +28,7 @@ export class ItemsManager<T> {
       const item2 = update?.find((v) => this.compareFn(item, v));
       items.push(item2 || item);
     }
-    this._fetchManager.setData(items);
+    this.fetchManager.setData(items);
   }
 }
 

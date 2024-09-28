@@ -11,8 +11,9 @@ export class FetchManager<T> {
 
   private _data: WritableSignal<T>;
   private _isDataFetched = false;
+  noFetch = false;
   data = computed(() => {
-    if (!this._isDataFetched) {
+    if (!this._isDataFetched && !this.noFetch) {
       untracked(() => this.fetch());
     }
     return this._data();

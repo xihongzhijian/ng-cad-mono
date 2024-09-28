@@ -259,7 +259,7 @@ export class MsbjComponent {
   }
 
   mkdxpz = signal<模块大小配置>(getEmpty模块大小配置());
-  varNameItem = computed(() => this.bjmkStatus.varNames().at(0) || {});
+  varNameItem = computed(() => this.bjmkStatus.varNamesManager.data().at(0) || {});
   mkdxpzEff = effect(
     () => {
       let mkdxpz = this.msbjInfo()?.peizhishuju.模块大小配置;

@@ -14,7 +14,7 @@ import {
   signal,
   viewChild
 } from "@angular/core";
-import {FormsModule, Validators} from "@angular/forms";
+import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -56,7 +56,7 @@ import {keysOf, ObjectOf, Point, queryString, Rectangle, timeout, WindowMessageM
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {BancaiListData, TableDataBase, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
+import {BancaiListData, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputInfo, InputInfoOptions} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
@@ -83,6 +83,7 @@ import {
   XhmrmsbjCloseEvent,
   XhmrmsbjData,
   XhmrmsbjInfo,
+  XhmrmsbjRequestData,
   XhmrmsbjTableData,
   XhmrmsbjTabName,
   xhmrmsbjTabNames
@@ -135,17 +136,21 @@ export class XhmrmsbjComponent implements OnDestroy {
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<XhmrmsbjCloseEvent>({alias: "close"});
 
-  msbjs = this.bjmkStatus.msbjsManager.items;
+  msbjsCache = signal<MsbjInfo[]>([]);
+  msbjs = computed(() => {
+    if (this.isFromOrder()) {
+      return this.msbjsCache();
+    }
+    return this.bjmkStatus.msbjsManager.items();
+  });
   table = signal("");
   id = signal(-1);
   isFromOrder = signal(false);
   tableData = signal<XhmrmsbjTableData | null>(null);
   data = signal<XhmrmsbjData | null>(null);
-  fenleis: TableDataBase[] = [];
   step1Data: Step1Data = {options: {}, typesInfo: {}};
   mokuais: ZixuanpeijianMokuaiItem[] = [];
   xinghao = signal<MrbcjfzXinghaoInfo | null>(null);
-  bancaiListData: BancaiListData | null = null;
   activeMenshanKey = signal<MenshanKey | null>(null);
   activeMsbj = signal<MsbjInfo | null>(null);
   activeRectInfo = signal<MsbjRectInfo | null>(null);
@@ -184,15 +189,13 @@ export class XhmrmsbjComponent implements OnDestroy {
     {allowSignalWrites: true}
   );
   mokuaiTemplateType!: {$implicit: ZixuanpeijianMokuaiItem; isActive?: boolean};
-  menshanKeys = menshanKeys;
+  menshanKeys: MenshanKey[] = menshanKeys.slice();
   materialResult = signal<Formulas>({});
   houtaiUrl = "";
-  user = signal<ObjectOf<any> | null>(null);
   mokuaidaxiaoResults = signal<ObjectOf<Formulas>>({});
   wmm = new WindowMessageManager("门扇模块", this, window.parent);
   suanliaoLock$ = new BehaviorSubject(false);
   genXiaoguotuLock$ = new BehaviorSubject(false);
-  isZhijian = computed(() => this.user()?.经销商名字 === "至简软件");
   production = environment.production;
   loadSbjb = signal(false);
 
@@ -206,18 +209,6 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
 
   async refresh() {
-    const step1Data = await getStep1Data(this.http, {});
-    this.mokuais = [];
-    if (step1Data) {
-      this.step1Data = step1Data;
-      for (const type1 in step1Data.typesInfo) {
-        for (const type2 in step1Data.typesInfo[type1]) {
-          const info = step1Data.typesInfo[type1][type2];
-          this.mokuais.push({...info, type1, type2, totalWidth: "", totalHeight: "", cads: []});
-        }
-      }
-    }
-
     const params = this.route.snapshot.queryParams;
     const {token} = params;
     const id = Number(params.id);
@@ -250,10 +241,8 @@ export class XhmrmsbjComponent implements OnDestroy {
     } else if (token) {
       this.isFromOrder.set(true);
     }
-    this.fenleis = await this.http.queryMySql<TableDataBase>({table: "p_gongnengfenlei", fields: ["vid", "mingzi"]});
-    await this.bjmkStatus.msbjsManager.fetch(true);
-    this.bancaiListData = await this.http.getBancaiList();
     if (!this.isFromOrder()) {
+      await this.bjmkStatus.msbjsManager.fetch(true);
       const tableData = this.tableData();
       this.data.set(tableData ? new XhmrmsbjData(tableData, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null);
       xinghao = await getXinghao(tableData?.xinghao || "");
@@ -261,8 +250,19 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     await timeout(0);
     if (this.isFromOrder()) {
-      this.wmm.postMessage("requestData");
+      this.wmm.postMessage("requestDataStart");
     } else {
+      const step1Data = await getStep1Data(this.http);
+      this.mokuais = [];
+      if (step1Data) {
+        this.step1Data = step1Data;
+        for (const type1 in step1Data.typesInfo) {
+          for (const type2 in step1Data.typesInfo[type1]) {
+            const info = step1Data.typesInfo[type1][type2];
+            this.mokuais.push({...info, type1, type2, totalWidth: "", totalHeight: "", cads: []});
+          }
+        }
+      }
       await this.selectMenshanKey(this.menshanKeys[0]);
     }
   }
@@ -275,39 +275,57 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.data.update((v) => (v ? v.clone() : null));
   }
 
-  async requestData(data: any) {
+  user = signal<XhmrmsbjRequestData["user"]>(null);
+  isZhijian = computed(() => this.user()?.经销商名字 === "至简软件");
+  opts = signal<XhmrmsbjRequestData["opts"]>(undefined);
+  isFloatingDialog = computed(() => !!this.opts()?.浮动弹窗);
+  async requestDataEnd(data: XhmrmsbjRequestData) {
     const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys, 铰扇跟随锁扇} = data;
-    const {houtaiUrl, id, user, localServerUrl} = data;
+    const {houtaiUrl, id, user, localServerUrl, menshanbujus, peijianmokuais} = data;
     if (typeof localServerUrl === "string") {
       this.urlPrefix = localServerUrl;
     }
-    this.data.set(
-      new XhmrmsbjData(
-        {
-          vid: id,
-          mingzi: "1",
-          peizhishuju: JSON.stringify(型号选中门扇布局),
-          jiaoshanbujuhesuoshanxiangtong: 铰扇跟随锁扇 ? 1 : 0,
-          zuoshujubanben: materialResult.做数据版本
-        },
-        menshanKeys,
-        this.step1Data.typesInfo,
-        this.msbjs()
-      )
+    this.msbjsCache.set(
+      menshanbujus.map((v) => {
+        const result = new MsbjInfo(v, this.getNode2rectData());
+        result.peizhishuju = v.peizhishuju as any;
+        return result;
+      })
     );
+    this.mokuais = peijianmokuais;
+    const data2 = new XhmrmsbjData(
+      {
+        vid: id,
+        mingzi: "1",
+        jiaoshanbujuhesuoshanxiangtong: 铰扇跟随锁扇 ? 1 : 0,
+        zuoshujubanben: String(materialResult.做数据版本)
+      },
+      menshanKeys,
+      this.step1Data.typesInfo,
+      this.msbjs()
+    );
+    data2.menshanbujuInfos = 型号选中门扇布局;
+    this.data.set(data2);
     this.materialResult.set(materialResult);
     this.houtaiUrl = houtaiUrl;
     this.id.set(id);
-    this.user = user;
+    this.user.set(user);
+    this.opts.set(data.opts);
     this.menshanKeys = menshanKeys;
-    this.xinghao.set(
-      new MrbcjfzXinghaoInfo(this.table(), {vid: 1, mingzi: materialResult.型号, morenbancai: JSON.stringify(型号选中板材)})
-    );
-    await this.selectMenshanKey(this.activeMenshanKey() || this.menshanKeys[0]);
+    const xinghao = new MrbcjfzXinghaoInfo(this.table(), {vid: 1, mingzi: String(materialResult.型号)});
+    xinghao.默认板材 = 型号选中板材;
+    this.xinghao.set(xinghao);
+    const 浮动弹窗 = data.opts?.浮动弹窗;
+    if (浮动弹窗 && !浮动弹窗.consumed) {
+      await this.selectMenshanKey(浮动弹窗.门扇名字);
+      this.selectMsbjRect(浮动弹窗.节点名字);
+    } else {
+      await this.selectMenshanKey(this.activeMenshanKey() || this.menshanKeys[0]);
+    }
   }
 
-  submitData() {
-    const result = {action: "submitData", data: {} as any};
+  submitDataStart() {
+    const result = {action: "submitDataEnd", data: {} as any};
     const data = this.data();
     if (data) {
       if (data.铰扇跟随锁扇) {
@@ -320,8 +338,7 @@ export class XhmrmsbjComponent implements OnDestroy {
       }
       result.data = {
         型号选中门扇布局: data.menshanbujuInfos,
-        铰扇跟随锁扇: data.铰扇跟随锁扇,
-        门扇布局: this.msbjs()
+        铰扇跟随锁扇: data.铰扇跟随锁扇
       };
     }
     return result;
@@ -387,6 +404,14 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
 
     await this.updateMokuaidaxiaoResults();
+  }
+
+  selectMsbjRect(name: string) {
+    const msbjRectsComponent = this.msbjRectsComponent();
+    if (msbjRectsComponent && name) {
+      const rectInfo = msbjRectsComponent.rectInfosRelative().find((v) => v.name === name);
+      this.activeRectInfo.set(rectInfo || null);
+    }
   }
 
   async refreshMokuaidaxiaoResults(menshanKey: MenshanKey) {
@@ -510,10 +535,34 @@ export class XhmrmsbjComponent implements OnDestroy {
     const data = await this.http.getData<Formulas>("ngcad/getMokuaiTongyongPeizhi");
     return data || {};
   }).data;
+  getValueInfo(mokuai: ZixuanpeijianMokuaiItem, key: string, value: string) {
+    const materialResult = this.materialResult();
+    const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
+    const tongyongFormulas = this.tongyongFormulas();
+    const list: [string, Formulas][] = [
+      ["算料结果值", materialResult],
+      ["模块大小关系值", mokuaidaxiaoResult],
+      ["模块公式值", mokuai.suanliaogongshi],
+      ["通用公式值", tongyongFormulas]
+    ];
+    for (const [type, formulas] of list) {
+      if (value && value === String(formulas[key])) {
+        return {value, type};
+      }
+      if (!value) {
+        const n = Number(formulas[key]);
+        if (isNaN(n)) {
+          continue;
+        }
+        const value2 = String(n);
+        return {value: value2, type};
+      }
+    }
+    return {value, type: "输入值"};
+  }
   mokuaiInputInfos = computed(() => {
     const mokuai = this.activeMokuaiNode()?.选中模块;
     const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
-    const materialResult = this.materialResult();
     const infos: InputInfo[] = [];
     if (mokuai) {
       const node = this.activeMokuaiNode();
@@ -531,28 +580,26 @@ export class XhmrmsbjComponent implements OnDestroy {
         }
       }
       const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
-      const getValue = (vars: Formulas, k: string) => {
-        const v = Number(vars[k]);
-        if (!isNaN(v)) {
-          return String(v);
-        }
-        return "";
-      };
-      const tongyongFormulas = this.tongyongFormulas();
       for (const v of arr) {
-        const list = [materialResult, mokuaidaxiaoResult, mokuai.suanliaogongshi, tongyongFormulas];
-        for (const formulas of list) {
-          if (v[1]) {
-            break;
-          }
-          v[1] = getValue(formulas, v[0]);
-        }
+        const valueInfo = this.getValueInfo(mokuai, v[0], v[1]);
+        v[1] = valueInfo.value;
         infos.push({
           type: "string",
           label: v[0],
           model: {key: "1", data: v},
-          validators: Validators.required,
-          onChange: async () => {
+          validators: (control) => {
+            const valueInfo2 = this.getValueInfo(mokuai, v[0], control.value);
+            if (!valueInfo2.value) {
+              return {required: true};
+            }
+            return null;
+          },
+          hint: valueInfo.type,
+          onChange: async (val, info) => {
+            const valueInfo2 = this.getValueInfo(mokuai, v[0], val);
+            v[1] = valueInfo2.value;
+            info.hint = valueInfo2.type;
+
             const data = this.data();
             const activeMenshanKey = this.activeMenshanKey();
             const varNames = (await this.getVarNames()).concat(mokuai.shuchubianliang);
@@ -749,10 +796,8 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     if (jumpTo) {
       await this.selectMenshanKey(jumpTo.门扇名字);
-      const msbjRectsComponent = this.msbjRectsComponent();
-      if (msbjRectsComponent && jumpTo.层名字) {
-        const rectInfo = msbjRectsComponent.rectInfosRelative().find((v) => v.name === jumpTo.层名字);
-        this.activeRectInfo.set(rectInfo || null);
+      if (jumpTo.层名字) {
+        this.selectMsbjRect(jumpTo.层名字);
       }
       if (jumpTo.mokuai) {
         await this.selectMokuai(jumpTo.mokuai);
@@ -860,7 +905,7 @@ export class XhmrmsbjComponent implements OnDestroy {
       clearable: true,
       value: this.kexuanmokuaiQuery(),
       onInput: debounce((val: string) => this.kexuanmokuaiQuery.set(val), 100),
-      style: {width: "150px"}
+      style: {width: "150px", maxWidth: "100%"}
     };
     return info;
   });
@@ -973,7 +1018,7 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
 
   async suanliao() {
-    if (!this.isFromOrder()) {
+    if (!this.isFromOrder() || this.isFloatingDialog()) {
       return;
     }
     if (this.suanliaoLock$.value) {
@@ -983,10 +1028,10 @@ export class XhmrmsbjComponent implements OnDestroy {
     const timerName = "模块算料";
     timer.start(timerName);
     this.spinner.show(this.spinner.defaultLoaderId, {text: timerName});
-    this.wmm.postMessage("suanliaoStart", this.submitData().data);
+    this.wmm.postMessage("suanliaoStart", this.submitDataStart().data);
     const data = await this.wmm.waitForMessage("suanliaoEnd");
-    await this.requestData(data);
-    this.activeMsbj()?.updateRectsInfo(this.getNode2rectData());
+    await this.requestDataEnd(data);
+    // this.activeMsbj()?.updateRectsInfo(this.getNode2rectData());
     await this.updateMokuaidaxiaoResults();
     timer.end(timerName, timerName);
     this.spinner.hide(this.spinner.defaultLoaderId);
@@ -1000,7 +1045,7 @@ export class XhmrmsbjComponent implements OnDestroy {
   ignoreXiaoguotuEff = effect(() => {
     session.save(this._ignoreXiaoguotuKey, this.ignoreXiaoguotu());
   });
-  disableXiaoguotu = computed(() => !this.isFromOrder() || this.data()?.isVersion2024);
+  disableXiaoguotu = computed(() => true);
   async genXiaoguotu() {
     if (this.ignoreXiaoguotu() || this.disableXiaoguotu()) {
       return;
@@ -1075,8 +1120,12 @@ export class XhmrmsbjComponent implements OnDestroy {
     return data;
   }
 
-  openMokuais() {
-    const lastSuanliao = this.lastSuanliao();
+  async openMokuais() {
+    let lastSuanliao = this.lastSuanliao();
+    if (!lastSuanliao) {
+      await this.fetchLastSuanliao();
+      lastSuanliao = this.lastSuanliao();
+    }
     if (!lastSuanliao) {
       return;
     }
@@ -1112,9 +1161,13 @@ export class XhmrmsbjComponent implements OnDestroy {
     return result;
   }
 
-  getMokuaiTitle(mokuai: ZixuanpeijianMokuaiItem | null) {
-    const url = getMokuaiTitleWithUrl(this.status, !!this.data()?.isVersion2024, mokuai, {mokuaiNameShort: true});
-    return this.domSanitizer.bypassSecurityTrustHtml(url);
+  getMokuaiTitle(mokuai: ZixuanpeijianMokuaiItem | null, withUrl: boolean) {
+    if (withUrl) {
+      const url = getMokuaiTitleWithUrl(this.status, !!this.data()?.isVersion2024, mokuai, {mokuaiNameShort: true});
+      return this.domSanitizer.bypassSecurityTrustHtml(url);
+    } else {
+      return getMokuaiTitle(mokuai, {mokuaiNameShort: true});
+    }
   }
 
   openedMsbj = signal<MsbjInfo | null>(null);
@@ -1138,6 +1191,23 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
 
   openedMokuai = signal<{mokuai0: ZixuanpeijianMokuaiItem; mokuai: MokuaiItem; bancaiListData: BancaiListData} | null>(null);
+  bancaiListDataManager = new FetchManager(null, () => this.http.getBancaiList());
+  async openMokuai(mokuai: ZixuanpeijianMokuaiItem) {
+    const bancaiListData = await this.bancaiListDataManager.fetch();
+    if (!bancaiListData) {
+      return;
+    }
+    const mokuai2 = await this.bjmkStatus.fetchMokuai(mokuai.id);
+    if (!mokuai2) {
+      await this.message.error("该模块已被删除");
+      return;
+    }
+    if (this.isFromOrder()) {
+      this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: mokuai2.id}});
+    } else {
+      this.openedMokuai.set({mokuai0: mokuai, mokuai: mokuai2, bancaiListData});
+    }
+  }
   async closeMokuai({isSaved}: MokuaiItemCloseEvent) {
     const openedMokuai = this.openedMokuai();
     if (!openedMokuai) {
@@ -1145,9 +1215,28 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     this.openedMokuai.set(null);
     if (isSaved) {
+      const mokuai0 = openedMokuai.mokuai0;
       const mokuai = (await this.fetchMokuais([openedMokuai.mokuai.id]))[0];
+      const map: ObjectOf<string> = {};
+      const arr0 = mokuai0.gongshishuru.concat(mokuai0.xuanxiangshuru);
+      for (const [k, v] of arr0) {
+        const {value, type} = this.getValueInfo(mokuai0, k, v);
+        if (type === "模块公式值" && !(k in map)) {
+          map[k] = value;
+        }
+      }
       if (mokuai) {
-        updateMokuaiItem(openedMokuai.mokuai0, mokuai);
+        updateMokuaiItem(mokuai0, mokuai);
+        for (const k in map) {
+          const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
+          const item = arr.find(([k2]) => k2 === k);
+          if (item) {
+            const v2 = String(mokuai.suanliaogongshi[k]);
+            if (v2) {
+              item[1] = v2;
+            }
+          }
+        }
         this.refreshData();
       }
     }
@@ -1203,14 +1292,15 @@ export class XhmrmsbjComponent implements OnDestroy {
     return null;
   };
   openedMkdcpz = signal<{data: 模块大小配置; msbjInfo: XhmrmsbjInfo; varNameItem: VarNameItem; title: string} | null>(null);
-  openMkdxpz() {
+  async openMkdxpz() {
     const msbjInfo = this.activeMsbjInfo();
     const 选中布局数据 = msbjInfo?.选中布局数据;
     if (!选中布局数据) {
       return;
     }
     const activeKey = this.activeMenshanKey();
-    const varNameItem = this.bjmkStatus.varNames().find((v) => v.门扇位置 === activeKey) || {};
+    const varNames = await this.bjmkStatus.varNamesManager.fetch();
+    const varNameItem = varNames.find((v) => v.门扇位置 === activeKey) || {};
     if (!Array.isArray(varNameItem.nameGroups)) {
       varNameItem.nameGroups = [];
     }
@@ -1271,7 +1361,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     mkdxpz.算料公式 = formulas;
     this.wmm.postMessage("setMkdxpzStart", {mkdxpz, menshan: this.activeMenshanKey()});
     await this.wmm.waitForMessage("setMkdxpzEnd");
-    this.wmm.postMessage("requestData");
+    this.wmm.postMessage("requestDataStart");
   }
 
   openXhmrmsbj() {

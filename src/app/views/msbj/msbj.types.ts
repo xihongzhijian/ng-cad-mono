@@ -1,5 +1,5 @@
 import {Formulas} from "@app/utils/calc";
-import {MsbjRectInfoRaw} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjPeizhishuju, MsbjRectInfoRaw} from "@components/msbj-rects/msbj-rects.types";
 import {ObjectOf} from "@lucilor/utils";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 
@@ -11,7 +11,7 @@ export interface ZuoshujuTableData extends TableDataBase {
   zuoshujubanben?: string;
 }
 export interface MsbjData extends ZuoshujuTableData {
-  peizhishuju?: string;
+  peizhishuju?: string | MsbjPeizhishuju;
   node?: string;
   menshanweizhi?: string;
   xiaoguotu?: string;

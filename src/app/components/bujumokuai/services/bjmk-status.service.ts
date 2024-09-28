@@ -1,7 +1,7 @@
 import {effect, inject, Injectable, signal, untracked} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {filePathUrl, getCopyName} from "@app/app.common";
-import {Cad数据要求, getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
+import {getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {FetchManager} from "@app/utils/fetch-manager";
 import {ItemsManager} from "@app/utils/items-manager";
@@ -29,22 +29,17 @@ export class BjmkStatusService {
   private status = inject(AppStatusService);
 
   imgPrefix = signal(filePathUrl);
-  varNames = signal<VarNames>([]);
 
-  constructor() {
-    (async () => {
-      this.varNames.set(await getVarNames(this.http, "门扇布局用"));
-      await this.fetchCadYaoqius();
-    })();
-  }
+  varNamesManager = new FetchManager<VarNames>([], async () => getVarNames(this.http, "门扇布局用"));
 
-  cadYaoqiu = signal<Cad数据要求 | undefined>(undefined);
-  xinghaoCadYaoqiu = signal<Cad数据要求 | undefined>(undefined);
-  async fetchCadYaoqius() {
+  cadYaoqiu = new FetchManager(null, async () => {
     await this.status.fetchCad数据要求List();
-    this.cadYaoqiu.set(this.status.getCad数据要求("配件库"));
-    this.xinghaoCadYaoqiu.set(this.status.getCad数据要求("型号CAD"));
-  }
+    return this.status.getCad数据要求("配件库");
+  }).data;
+  xinghaoCadYaoqiu = new FetchManager(null, async () => {
+    await this.status.fetchCad数据要求List();
+    return this.status.getCad数据要求("型号CAD");
+  }).data;
 
   collection: CadCollection = "peijianCad";
   cadsManager = new ItemsManager(
@@ -72,7 +67,10 @@ export class BjmkStatusService {
   currMokuai = signal<MokuaiItem | null>(null);
   mokuaisAllEff = effect(
     () => {
+      const noFetch = this.mokuaisManager.fetchManager.noFetch;
+      this.mokuaisManager.fetchManager.noFetch = true;
       const mokuais = this.mokuaisManager.items();
+      this.mokuaisManager.fetchManager.noFetch = noFetch;
       const currMokuai = untracked(() => this.currMokuai());
       if (currMokuai) {
         const currMokuai2 = mokuais.find((v) => v.id === currMokuai.id) || null;

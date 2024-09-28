@@ -3,6 +3,8 @@ import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialo
 import {isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {MsbjPeizhishuju} from "@components/msbj-rects/msbj-rects.types";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
+import {MsbjData} from "@views/msbj/msbj.types";
 import {MsbjInfo, ZuoshujuData} from "@views/msbj/msbj.utils";
 import {cloneDeep} from "lodash";
 
@@ -152,4 +154,22 @@ export type MenshanKey = (typeof menshanKeys)[number];
 
 export interface XhmrmsbjCloseEvent {
   isSubmited: boolean;
+}
+
+export interface XhmrmsbjRequestData {
+  型号选中门扇布局: XhmrmsbjData["menshanbujuInfos"];
+  型号选中板材: MrbcjfzXinghaoInfo["默认板材"];
+  铰扇跟随锁扇?: boolean;
+  materialResult: Formulas;
+  menshanKeys: MenshanKey[];
+  houtaiUrl: string;
+  id: number;
+  user: {经销商名字: string} | null;
+  localServerUrl: string;
+  opts?: XhmrmsbjRequestDataOpts;
+  menshanbujus: MsbjData[];
+  peijianmokuais: ZixuanpeijianMokuaiItem[];
+}
+export interface XhmrmsbjRequestDataOpts {
+  浮动弹窗?: {门扇名字: string; 节点名字: string; consumed: boolean};
 }

@@ -1,6 +1,18 @@
 :host {
-  padding: 20px;
+  padding: 10px;
   --title-size: 1.2rem;
+  --mkdxpz-formulas-width: 300px;
+}
+
+.msbj-rects-container {
+  width: 200px;
+  height: 320px;
+  padding: 5px;
+  &.as-hidden {
+    position: absolute;
+    opacity: 0;
+    left: -999px;
+  }
 }
 
 .menshan-options {
@@ -24,7 +36,7 @@
 }
 
 .mokuai {
-  width: 20%;
+  width: 100px;
   padding: 5px;
   box-sizing: border-box;
   cursor: pointer;
@@ -74,8 +86,12 @@
 }
 
 .mokuai-inputs {
-  width: 230px;
+  width: var(--mkdxpz-formulas-width);
   --items-per-row: 2;
+  &.small {
+    width: 110px;
+    --items-per-row: 1;
+  }
 }
 
 .bancaixuanze-item {
@@ -99,7 +115,7 @@
 }
 
 .mkdxpz-formulas {
-  width: 230px;
+  width: var(--mkdxpz-formulas-width);
   box-sizing: border-box;
   padding: 3px;
 }
