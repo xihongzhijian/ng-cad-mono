@@ -27,7 +27,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {MsbjData} from "@views/msbj/msbj.types";
-import {isVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
+import {isVersion2024 as getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {
   SuanliaoInput,
@@ -152,13 +152,9 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
       mokuai.calcVars = {keys: Object.keys(mokuai.suanliaogongshi)};
       mokuai.cads = [];
-      const {门扇名字} = mokuai.info || {};
       if (配件模块CAD[type1] && 配件模块CAD[type1][type2]) {
         for (const v of 配件模块CAD[type1][type2]) {
-          const types: string[] = v.type2 ? v.type2.split("*") : [];
-          if (types.length < 1 || !门扇名字 || types.includes(门扇名字)) {
-            mokuai.cads.push(getCadItem(v, mokuai.info));
-          }
+          mokuai.cads.push(getCadItem(v, mokuai.info));
         }
       }
     }
@@ -175,7 +171,11 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
     }
 
-    const calcVars: NonNullable<CalcZxpjOptions["calcVars"]> = {keys: varNames || []};
+    const isVersion2024 = getIsVersion2024(materialResult.做数据版本);
+    const calcVars: NonNullable<CalcZxpjOptions["calcVars"]> = {keys: []};
+    if (varNames && !isVersion2024) {
+      calcVars.keys = varNames;
+    }
     const calcZxpjResult = await calcZxpj(this.dialog, this.message, this.calc, this.status, materialResult, mokuais, lingsans, {
       changeLinesLength: false,
       calcVars,
@@ -184,7 +184,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       inputResult,
       mokuaiVars,
       mokuaiGongshis,
-      isVersion2024: isVersion2024(materialResult.做数据版本)
+      isVersion2024
     });
     if (!calcZxpjResult.fulfilled) {
       result.data.error = calcZxpjResult.error;

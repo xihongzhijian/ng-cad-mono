@@ -151,6 +151,7 @@ export class XhmrmsbjComponent implements OnDestroy {
   step1Data: Step1Data = {options: {}, typesInfo: {}};
   mokuais: ZixuanpeijianMokuaiItem[] = [];
   xinghao = signal<MrbcjfzXinghaoInfo | null>(null);
+  xinghaoVars = computed(() => getFromulasFromString(this.xinghao()?.raw.gongshishuru));
   activeMenshanKey = signal<MenshanKey | null>(null);
   activeMsbj = signal<MsbjInfo | null>(null);
   activeRectInfo = signal<MsbjRectInfo | null>(null);
@@ -554,6 +555,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     const list: [string, Formulas][] = [
       ["算料结果值", materialResult],
       ["模块大小关系值", mokuaidaxiaoResult],
+      ["型号输入值", this.xinghaoVars()],
       ["模块公式值", mokuai.suanliaogongshi],
       ["通用公式值", tongyongFormulas]
     ];
@@ -562,6 +564,9 @@ export class XhmrmsbjComponent implements OnDestroy {
         return {value, type};
       }
       if (!value) {
+        if (formulas[key] === undefined) {
+          continue;
+        }
         const n = Number(formulas[key]);
         if (isNaN(n)) {
           continue;
@@ -720,8 +725,13 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     const errorXuanzhongMenshans: {menshan: string; nodeNames: string[]}[] = [];
     const errorMkdxpz: {menshan: string}[] = [];
-    const varKeysXinghao = Object.keys(getFromulasFromString(this.xinghao()?.raw.gongshishuru));
+    const varKeysXinghao = Object.keys(this.xinghaoVars());
     const msbjInfos: {menshanKey: string; msbjInfo: XhmrmsbjInfo}[] = [];
+    const nodeVarsErrorInfo: {
+      menshanKey: string;
+      layerName: string;
+      duplicateHint: string;
+    }[] = [];
     const mokuaisErrorInfo: {
       menshanKey: string;
       layerName: string;
@@ -744,13 +754,43 @@ export class XhmrmsbjComponent implements OnDestroy {
           errorMkdxpz.push({menshan: menshanKey});
         }
       }
-      for (const node of msbjInfo.模块节点 || []) {
+      const nodes = msbjInfo.模块节点 || [];
+      for (const [j, node1] of nodes.entries()) {
+        const 选中模块1 = node1.选中模块;
         if (!dataInfo.铰扇跟随锁扇 || !menshanKey.includes("铰扇")) {
-          if (!node.选中模块) {
-            errorXuanzhongNodeNames.push(node.层名字);
+          if (!选中模块1) {
+            errorXuanzhongNodeNames.push(node1.层名字);
           }
         }
-        for (const mokuai of node.可选模块) {
+        if (选中模块1) {
+          const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");
+          for (let k = j + 1; k < nodes.length; k++) {
+            const node2 = nodes[k];
+            const 选中模块2 = node2.选中模块;
+            if (!选中模块2) {
+              continue;
+            }
+            const dupVars1 = intersection(选中模块1.shuchubianliang, 选中模块2.shuchubianliang);
+            if (dupVars1.length > 0) {
+              nodeVarsErrorInfo.push({
+                menshanKey,
+                layerName: node1.层名字,
+                duplicateHint: `${node1.层名字}模块的输出变量${getNamesStr(dupVars1)}与${node2.层名字}模块的输出变量${getNamesStr(dupVars1)}重名`
+              });
+              continue;
+            }
+            const slgsKeys = Object.keys(选中模块2.suanliaogongshi);
+            const dupVars2 = intersection(slgsKeys, 选中模块1.shuchubianliang);
+            if (dupVars2.length > 0) {
+              nodeVarsErrorInfo.push({
+                menshanKey,
+                layerName: node2.层名字,
+                duplicateHint: `${node2.层名字}模块的变量${getNamesStr(dupVars2)}与${node1.层名字}模块的输出变量${getNamesStr(dupVars2)}重名`
+              });
+            }
+          }
+        }
+        for (const mokuai of node1.可选模块) {
           const varKeysMokuai = mokuai.shuchubianliang;
           const keys1 = intersection(varKeysXinghao, varKeysMokuai);
           const mokuaiErrors: string[] = [];
@@ -767,7 +807,7 @@ export class XhmrmsbjComponent implements OnDestroy {
             }
           }
           if (mokuaiErrors.length > 0) {
-            mokuaisErrorInfo.push({menshanKey, layerName: node.层名字, mokuai, errors: mokuaiErrors});
+            mokuaisErrorInfo.push({menshanKey, layerName: node1.层名字, mokuai, errors: mokuaiErrors});
           }
         }
       }
@@ -788,6 +828,14 @@ export class XhmrmsbjComponent implements OnDestroy {
       });
       const {menshan, nodeNames} = errorXuanzhongMenshans[0];
       jumpTo = {门扇名字: menshan, 层名字: nodeNames[0]};
+    }
+    if (!jumpTo && nodeVarsErrorInfo.length > 0) {
+      const info0 = nodeVarsErrorInfo[0];
+      jumpTo = {门扇名字: info0.menshanKey, 层名字: info0.layerName};
+      const details = nodeVarsErrorInfo.map((info) => {
+        return `【${info.menshanKey}】${info.duplicateHint}`;
+      });
+      await this.message.error({content: "以下变量重名，请修改", details});
     }
     if (!jumpTo && errorMkdxpz.length > 0) {
       await this.message.error({
@@ -1229,23 +1277,26 @@ export class XhmrmsbjComponent implements OnDestroy {
     if (isSaved) {
       const mokuai0 = openedMokuai.mokuai0;
       const mokuai = (await this.fetchMokuais([openedMokuai.mokuai.id]))[0];
-      const map: ObjectOf<string> = {};
+      const slgsKeys = new Set<string>();
       const arr0 = mokuai0.gongshishuru.concat(mokuai0.xuanxiangshuru);
       for (const [k, v] of arr0) {
-        const {value, type} = this.getValueInfo(mokuai0, k, v);
-        if (type === "模块公式值" && !(k in map)) {
-          map[k] = value;
+        const {type} = this.getValueInfo(mokuai0, k, v);
+        if (["模块公式值", "通用公式值"].includes(type)) {
+          slgsKeys.add(k);
         }
       }
       if (mokuai) {
         updateMokuaiItem(mokuai0, mokuai);
-        for (const k in map) {
-          const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
-          const item = arr.find(([k2]) => k2 === k);
-          if (item) {
-            const v2 = String(mokuai.suanliaogongshi[k]);
-            if (v2) {
-              item[1] = v2;
+        for (const arr of mokuai0.gongshishuru.concat(mokuai0.xuanxiangshuru)) {
+          const k = arr[0];
+          if (slgsKeys.has(k)) {
+            if (mokuai0.suanliaogongshi[k] === undefined) {
+              arr[1] = "";
+            } else {
+              const val = String(mokuai0.suanliaogongshi[k]);
+              if (val) {
+                arr[1] = val;
+              }
             }
           }
         }
@@ -1363,7 +1414,8 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
 
   mkdxpzFormulaInfos = computed(() => {
-    const mkdxpz = this.activeMsbjInfo()?.选中布局数据?.模块大小配置;
+    const msbjInfo = this.activeMsbjInfo();
+    const mkdxpz = msbjInfo?.选中布局数据?.模块大小配置;
     if (!mkdxpz) {
       return [];
     }
@@ -1371,7 +1423,11 @@ export class XhmrmsbjComponent implements OnDestroy {
     const key = this.activeMenshanKey();
     replaceMenshanName(key, formulas);
     const materialResult = this.lastSuanliao()?.output?.materialResult || {};
-    const calcResult = this.calc.calc.calcFormulas(formulas, materialResult);
+    const vars = {...materialResult, ...msbjInfo.模块大小输出};
+    for (const key in formulas) {
+      delete vars[key];
+    }
+    const calcResult = this.calc.calc.calcFormulas(formulas, vars);
     const onChange = () => {
       this.setMkdxpz(formulas);
     };

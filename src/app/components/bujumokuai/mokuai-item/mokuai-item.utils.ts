@@ -4,7 +4,17 @@ import {MokuaiItem, MokuaiItemCustomData} from "./mokuai-item.types";
 
 export const getEmptyMokuaiItem = (): MokuaiItem => {
   const item = zixuanpeijianTypesInfo.typesInfo.empty.empty;
-  return {...item, name: "", type: "", order: 0, gongshishuru: "", xuanxiangshuru: "", shuchubianliang: "", shuchuwenben: ""};
+  return {
+    ...item,
+    name: "",
+    type: "",
+    order: 0,
+    gongshishuru: "",
+    xuanxiangshuru: "",
+    shuchubianliang: "",
+    xiaoguotushiyongbianliang: "",
+    shuchuwenben: ""
+  };
 };
 
 export const getMokuaiCustomData = (raw: MokuaiItemCustomData | null | undefined, 选项数据选项: OptionsAll) => {

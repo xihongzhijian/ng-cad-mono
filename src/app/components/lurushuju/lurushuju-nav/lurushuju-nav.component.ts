@@ -123,12 +123,12 @@ export class LurushujuNavComponent {
     const data = await this.getXinghaoGongyi();
     if (data) {
       const menchuang = this.xinghaoMenchuangs().items[i];
-      const id = await this.http.tableInsert({table: "p_gongyi", data});
-      if (id) {
+      const resData = await this.http.tableInsert({table: "p_gongyi", data});
+      if (resData) {
         if (menchuang.xiayijigongyi) {
-          menchuang.xiayijigongyi += `*${id}`;
+          menchuang.xiayijigongyi += `*${resData.vid}`;
         } else {
-          menchuang.xiayijigongyi = String(id);
+          menchuang.xiayijigongyi = String(resData.vid);
         }
         await this.http.tableUpdate<XinghaoMenchuang>({
           table: "p_menchuang",

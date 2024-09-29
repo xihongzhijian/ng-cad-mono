@@ -1,13 +1,13 @@
 :host {
   padding: 10px;
   --title-size: 1.2rem;
-  --mkdxpz-formulas-width: 300px;
+  --mkdxpz-formulas-width: 290px;
 }
 
 .msbj-rects-container {
-  width: 200px;
-  height: 320px;
-  padding: 5px;
+  flex: 0 1 300px;
+  max-height: 620px;
+  padding: 50px 5px;
   &.as-hidden {
     position: absolute;
     opacity: 0;
@@ -15,8 +15,13 @@
   }
 }
 
+.kexuanmokuais-container {
+  flex: 1 0 100px;
+}
+
 .menshan-options {
   border: var(--border);
+  width: 160px;
 
   .menshan-option {
     justify-content: center;

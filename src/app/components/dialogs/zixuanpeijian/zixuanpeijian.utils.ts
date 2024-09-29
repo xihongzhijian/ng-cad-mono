@@ -545,14 +545,16 @@ export const calcZxpj = async (
     if (useCeshishuju && item.ceshishuju) {
       calc.calc.mergeFormulas(formulas, item.ceshishuju);
     }
-    for (const group of item.gongshishuru) {
-      if (group[0] && group[1]) {
-        formulas[group[0]] = group[1];
+    if (!isVersion2024) {
+      for (const group of item.gongshishuru) {
+        if (group[0] && group[1]) {
+          formulas[group[0]] = group[1];
+        }
       }
-    }
-    for (const group of item.xuanxiangshuru) {
-      if (group[0] && group[1]) {
-        formulas[group[0]] = `'${group[1]}'`;
+      for (const group of item.xuanxiangshuru) {
+        if (group[0] && group[1]) {
+          formulas[group[0]] = `'${group[1]}'`;
+        }
       }
     }
     const dimensionVars = getCadDimensionVars(item.cads);
@@ -687,7 +689,7 @@ export const calcZxpj = async (
           shuchubianliang[vv] = result1.succeedTrim[vv];
         }
       }
-      if (missingKeys.length > 0) {
+      if (missingKeys.length > 0 && !isVersion2024) {
         const msg = `${getCalcMokuaiTitle(v.item)}缺少输出变量:`;
         await message.error({content: msg, details: missingKeys.join(", ")});
         return {fulfilled: false, error: {message: msg, details: missingKeys}};
@@ -958,13 +960,6 @@ export const calcZxpj = async (
     };
   }
   calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);
-  for (const key1 in mokuaiVars) {
-    for (const key2 in mokuaiVars[key1]) {
-      if (key2 in materialResult) {
-        mokuaiVars[key1][key2] = materialResult[key2];
-      }
-    }
-  }
   const 模块公式输入: Formulas = {};
   for (const mokuai of mokuais) {
     for (const [k, v] of mokuai.gongshishuru) {

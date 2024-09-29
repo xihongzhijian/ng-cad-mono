@@ -263,30 +263,17 @@ export class MokuaiItemComponent {
   mokuaiInputInfos = computed(() => {
     const mokuai = this.mokuai();
     const onChange = () => this.mokuai.update((v) => ({...v}));
-    // const getSelectInputInfo = (label: string, key: keyof MokuaiItem, table: string): InputInfo => ({
-    //   type: "select",
-    //   label,
-    //   multiple: true,
-    //   options: [],
-    //   model: {key, data: mokuai},
-    //   optionsDialog: {
-    //     optionKey: table,
-    //     openInNewTab: true,
-    //     onChange
-    //   }
-    // });
-    const getStringInputInfo = (label: string, key: keyof MokuaiItem): InputInfo => ({
+    const getTextInputInfo = (label: string, key: keyof MokuaiItem): InputInfo => ({
       type: "string",
+      textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
       model: {key, data: mokuai},
       onChange
     });
     const infos: InputInfo[] = [
-      // getSelectInputInfo("门铰", "menjiao", "p_menjiao"),
-      // getSelectInputInfo("开启", "kaiqi", "p_kaiqi"),
-      getStringInputInfo("公式输入", "gongshishuru"),
-      // getStringInputInfo("选项输入", "xuanxiangshuru"),
-      getStringInputInfo("输出变量", "shuchubianliang")
+      getTextInputInfo("公式输入", "gongshishuru"),
+      getTextInputInfo("输出变量", "shuchubianliang"),
+      getTextInputInfo("效果图使用变量", "xiaoguotushiyongbianliang")
     ];
     return infos;
   });
@@ -496,14 +483,6 @@ export class MokuaiItemComponent {
         mokuai.suanliaogongshi = formulasResult.formulas;
       }
     }
-
-    // const outputKeys = mokuai.shuchubianliang.split("+");
-    // const formulas = mokuai.suanliaogongshi;
-    // const outputKeysMissing = outputKeys.filter((k) => !formulas[k] && !formulas[k.toUpperCase()]);
-    // if (outputKeysMissing.length > 0) {
-    //   await this.message.error({content: "模块公式缺少以下输出变量", details: outputKeysMissing.join("、")});
-    //   return null;
-    // }
 
     await this._fetchMrbcjfzResponseData();
     await timeout(0);

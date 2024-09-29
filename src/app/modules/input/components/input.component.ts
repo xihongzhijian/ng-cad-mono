@@ -612,10 +612,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     setTimeout(() => {
       this._validateValueLock = false;
     }, 100);
-    const errors = this.validateValue(value);
-    if (!isEmpty(errors)) {
-      return;
-    }
+    this.validateValue(value);
     switch (info.type) {
       case "string":
         {
