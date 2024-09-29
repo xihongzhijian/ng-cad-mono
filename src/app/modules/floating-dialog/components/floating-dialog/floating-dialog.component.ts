@@ -102,7 +102,9 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
       }
     });
     if (zIndexOffsetMax >= 0) {
-      this.zIndexOffset.set(zIndexOffsetMax + 1);
+      const zIndexOffset = zIndexOffsetMax + 1;
+      this.zIndexOffset.set(zIndexOffset);
+      document.body.style.setProperty("--floating-dialog-offset-z-index", `${zIndexOffset}`);
     }
     document.body.appendChild(el);
   }

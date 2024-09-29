@@ -144,7 +144,7 @@ mat-divider {
 }
 
 .cdk-overlay-container {
-  z-index: var(--top-z-index);
+  z-index: calc(var(--top-z-index) + var(--floating-dialog-offset-z-index, 0));
 }
 
 .cdk-drag-preview {
