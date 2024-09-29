@@ -64,12 +64,20 @@ export class MsbjRectsComponent {
 
   getRectStyle(info: MsbjRectInfo) {
     const {rect, bgColor, raw} = info;
+    let order = 0;
+    if (raw.isBuju) {
+      order++;
+    }
+    if (typeof raw.排序 === "number") {
+      order += raw.排序;
+    }
     const style: Properties = {
       left: `${rect.min.x * 100}%`,
       top: `${rect.min.y * 100}%`,
       width: `${Math.max(0, rect.width) * 100}%`,
       height: `${Math.max(0, rect.height) * 100}%`,
-      backgroundColor: bgColor
+      backgroundColor: bgColor,
+      zIndex: order
     };
     if (raw.isBuju || !this.ignoreNonBuju()) {
       style.cursor = "pointer";

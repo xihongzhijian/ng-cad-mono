@@ -344,7 +344,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       }
       this.cellChange.emit({column, item, colIdx, rowIdx});
     }
-    this.cellChange.emit({column, item, colIdx, rowIdx});
   }
 
   onCellFocus(_event: FocusEvent, colIdx: number, rowIdx: number, item: T) {

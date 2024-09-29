@@ -19,8 +19,9 @@ import {setGlobal} from "@app/app.common";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
+import {MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {MsbjRectInfo, MsbjRectInfoRaw, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjRectInfo, MsbjRectInfoRaw} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -258,22 +259,22 @@ export class MsbjComponent {
     this.closeOut.emit({isSubmited: this.isSubmited()});
   }
 
-  mkdxpz = signal<模块大小配置>(getEmpty模块大小配置());
+  mkdxpz = signal<MkdxpzEditorData>({});
   varNameItem = computed(() => this.bjmkStatus.varNamesManager.data().at(0) || {});
   mkdxpzEff = effect(
     () => {
-      let mkdxpz = this.msbjInfo()?.peizhishuju.模块大小配置;
-      if (!mkdxpz) {
-        mkdxpz = getEmpty模块大小配置();
+      let dxpz = this.msbjInfo()?.peizhishuju.模块大小配置;
+      if (!dxpz) {
+        dxpz = getEmpty模块大小配置();
       }
-      this.mkdxpz.set(mkdxpz);
+      this.mkdxpz.set({dxpz});
     },
     {allowSignalWrites: true}
   );
-  onMkdxpzChange(mkdxpz: 模块大小配置) {
+  onMkdxpzChange(data: MkdxpzEditorData) {
     const info = this.msbjInfo();
-    if (info) {
-      info.peizhishuju.模块大小配置 = mkdxpz;
+    if (info && data.dxpz) {
+      info.peizhishuju.模块大小配置 = data.dxpz;
       // this.msbjInfo.set(cloneDeep(info));
     }
   }

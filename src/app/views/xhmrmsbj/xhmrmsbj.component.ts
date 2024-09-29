@@ -46,9 +46,9 @@ import {
 import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {FormulasComponent} from "@components/formulas/formulas.component";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
-import {MkdxpzEditorCloseEvent} from "@components/mkdxpz-editor/mkdxpz-editor.types";
+import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
-import {MsbjRectInfo, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
+import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
 import {VarNameItem} from "@components/var-names/var-names.types";
 import {XhmrmsbjSbjbComponent} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.component";
 import {environment} from "@env";
@@ -155,6 +155,18 @@ export class XhmrmsbjComponent implements OnDestroy {
   activeMsbj = signal<MsbjInfo | null>(null);
   activeRectInfo = signal<MsbjRectInfo | null>(null);
   urlPrefix = remoteFilePath;
+  rectInfos = computed(() => {
+    const infos = this.activeMsbj()?.peizhishuju?.["模块节点"] || [];
+    const nodes = this.activeMsbjInfo()?.模块节点 || [];
+    for (const info of infos) {
+      const node = nodes.find((v) => v.层id === info.vid);
+      if (node) {
+        info.name = node.层名字;
+        info.排序 = node.排序;
+      }
+    }
+    return infos;
+  });
   activeMsbjInfo = computed(() => {
     const key = this.activeMenshanKey();
     const data = this.data();
@@ -1291,7 +1303,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     return null;
   };
-  openedMkdcpz = signal<{data: 模块大小配置; msbjInfo: XhmrmsbjInfo; varNameItem: VarNameItem; title: string} | null>(null);
+  openedMkdcpz = signal<{data: MkdxpzEditorData; msbjInfo: XhmrmsbjInfo; varNameItem: VarNameItem; title: string} | null>(null);
   async openMkdxpz() {
     const msbjInfo = this.activeMsbjInfo();
     const 选中布局数据 = msbjInfo?.选中布局数据;
@@ -1321,8 +1333,10 @@ export class XhmrmsbjComponent implements OnDestroy {
         }
       }
     }
-    const data = cloneDeep(选中布局数据.模块大小配置 || getEmpty模块大小配置());
-    justify模块大小配置(data, msbjInfo.模块节点?.map((v) => v.层名字) || []);
+    const dxpz = 选中布局数据.模块大小配置 || getEmpty模块大小配置();
+    const nodes = msbjInfo.模块节点 || [];
+    justify模块大小配置(dxpz, nodes.map((v) => v.层名字) || []);
+    const data: MkdxpzEditorData = {dxpz, nodes};
     const title = `【${activeKey}】模块大小配置`;
     this.openedMkdcpz.set({data, msbjInfo, varNameItem, title});
   }
@@ -1331,8 +1345,18 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
   closeMkdcpz({data}: MkdxpzEditorCloseEvent) {
     const 选中布局数据 = this.openedMkdcpz()?.msbjInfo.选中布局数据;
-    if (data && 选中布局数据) {
-      选中布局数据.模块大小配置 = data;
+    const {dxpz, nodes} = data || {};
+    let changed = false;
+    if (dxpz && 选中布局数据) {
+      选中布局数据.模块大小配置 = dxpz;
+      changed = true;
+    }
+    const msbjInfo = this.openedMkdcpz()?.msbjInfo;
+    if (msbjInfo && nodes) {
+      msbjInfo.模块节点 = nodes;
+      changed = true;
+    }
+    if (changed) {
       this.refreshData();
     }
     this.openedMkdcpz.set(null);

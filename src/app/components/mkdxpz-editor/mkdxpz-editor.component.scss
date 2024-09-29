@@ -3,5 +3,9 @@ app-var-names {
 }
 
 .slgs {
-  width: 660px;
+  flex: 0 1 660px;
+}
+
+.nodes-table {
+  flex: 0 1 150px;
 }

@@ -20,13 +20,14 @@ import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.t
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {getShuruItem, getShuruTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {输入} from "@components/lurushuju/xinghao-data";
-import {模块大小配置} from "@components/msbj-rects/msbj-rects.types";
 import {VarNamesComponent} from "@components/var-names/var-names.component";
 import {VarNameItem} from "@components/var-names/var-names.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
-import {MkdxpzEditorCloseEvent} from "./mkdxpz-editor.types";
+import {cloneDeep} from "lodash";
+import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "./mkdxpz-editor.types";
+import {getNodesTable} from "./mkdxpz-editor.utils";
 
 @Component({
   selector: "app-mkdxpz-editor",
@@ -41,21 +42,42 @@ export class MkdxpzEditorComponent {
 
   @HostBinding("class") class = "ng-page";
 
-  data = model.required<模块大小配置>();
+  dataIn = model.required<MkdxpzEditorData>({alias: "data"});
   varNameItem = model.required<VarNameItem>();
   title = input("");
   validator = input<FormulasValidatorFn>();
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<MkdxpzEditorCloseEvent>({alias: "close"});
 
-  formulas = signal<Formulas>({});
-  formulasInEff = effect(() => this.formulas.set(this.data().算料公式), {allowSignalWrites: true});
-  formulasOutEff = effect(() => this.data.update((v) => ({...v, 算料公式: this.formulas()})), {allowSignalWrites: true});
+  data = signal<MkdxpzEditorData>({});
+  dataEff = effect(() => this.data.set(cloneDeep(this.dataIn())), {allowSignalWrites: true});
 
-  shuruTable = computed(() => getShuruTable(this.data().输入显示));
+  formulas = signal<Formulas>({});
+  formulasInEff = effect(() => this.formulas.set(this.data().dxpz?.算料公式 || {}), {allowSignalWrites: true});
+  formulasOutEff = effect(
+    () =>
+      this.data.update((data) => {
+        if (data.dxpz) {
+          data.dxpz = {...data.dxpz, 算料公式: this.formulas()};
+        }
+        return data;
+      }),
+    {allowSignalWrites: true}
+  );
+
+  nodesTable = computed(() => {
+    const nodes = this.data().nodes;
+    if (nodes) {
+      return getNodesTable(nodes);
+    } else {
+      return null;
+    }
+  });
+
+  shuruTable = computed(() => getShuruTable(this.data().dxpz?.输入显示 || []));
   async getShuruItem(data0?: 输入) {
     const data = this.data();
-    return await getShuruItem(this.message, data.输入显示, data0);
+    return await getShuruItem(this.message, data.dxpz?.输入显示 || [], data0);
   }
   async updateShuru() {
     const data = this.data();
@@ -63,12 +85,16 @@ export class MkdxpzEditorComponent {
   }
   async onShuruToolbar(event: ToolbarButtonEvent) {
     const data = this.data();
+    const arr = data.dxpz?.输入显示;
+    if (!arr) {
+      return;
+    }
     switch (event.button.event) {
       case "添加":
         {
           const item = await this.getShuruItem();
           if (item) {
-            data.输入显示.push(item);
+            arr.push(item);
             await this.updateShuru();
           }
         }
@@ -78,20 +104,24 @@ export class MkdxpzEditorComponent {
   async onShuruRow(event: RowButtonEvent<ShuruTableDataSorted>) {
     const data = this.data();
     const {button, item} = event;
+    const arr = data.dxpz?.输入显示;
+    if (!arr) {
+      return;
+    }
     switch (button.event) {
       case "编辑":
         {
-          const item2 = data.输入显示[item.originalIndex];
+          const item2 = arr[item.originalIndex];
           const item3 = await this.getShuruItem(item2);
           if (item3) {
-            data.输入显示[item.originalIndex] = item3;
+            arr[item.originalIndex] = item3;
             await this.updateShuru();
           }
         }
         break;
       case "删除":
         if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          data.输入显示.splice(item.originalIndex, 1);
+          arr.splice(item.originalIndex, 1);
           await this.updateShuru();
         }
         break;

@@ -81,7 +81,7 @@
   <div class="flex-110 flex-row" style="position: relative">
     <div class="msbj-rects-container flex-column flex-110" [class.as-hidden]="isFloatingDialog()">
       <app-msbj-rects
-        [rectInfos]="activeMsbj()?.peizhishuju?.['模块节点'] || []"
+        [rectInfos]="rectInfos()"
         [(activeRectInfo)]="activeRectInfo"
         ignoreNonBuju
         (generateRectsEnd)="generateRectsEnd()"

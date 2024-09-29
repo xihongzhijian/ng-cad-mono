@@ -7,6 +7,7 @@ export interface MsbjRectInfoRaw {
   vid: number;
   name?: string;
   选项名称?: string;
+  排序?: number;
   isBuju: boolean;
   rect: {
     origin: {
