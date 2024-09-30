@@ -3847,7 +3847,7 @@ __metadata:
     uuid: "npm:^10.0.0"
     vite: "npm:^5.4.8"
     vite-plugin-css-injected-by-js: "npm:^3.5.1"
-    vite-plugin-dts: "npm:^4.2.2"
+    vite-plugin-dts: "npm:^4.2.3"
   languageName: unknown
   linkType: soft
 
@@ -3867,7 +3867,7 @@ __metadata:
     pinyin-pro: "npm:^3.25.0"
     typescript: "npm:~5.5.4"
     vite: "npm:^5.4.8"
-    vite-plugin-dts: "npm:^4.2.2"
+    vite-plugin-dts: "npm:^4.2.3"
   languageName: unknown
   linkType: soft
 
@@ -15349,9 +15349,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-dts@npm:^4.2.2":
-  version: 4.2.2
-  resolution: "vite-plugin-dts@npm:4.2.2"
+"vite-plugin-dts@npm:^4.2.3":
+  version: 4.2.3
+  resolution: "vite-plugin-dts@npm:4.2.3"
   dependencies:
     "@microsoft/api-extractor": "npm:7.47.7"
     "@rollup/pluginutils": "npm:^5.1.0"
@@ -15368,7 +15368,7 @@ __metadata:
   peerDependenciesMeta:
     vite:
       optional: true
-  checksum: 10c0/eb5ce7d38b50ebc1643b0c9995aa15c2b09a5e81e5b799d14bcf992389973ac913a9566e05da736eb5110abc9381503f45f33d8adb1d490b96d98053471613e1
+  checksum: 10c0/3ca857660c83a7bc4051f451047e8840074c60d472a34aa9bc27be3bb29f19d5a51e7723423e266ea9b8cf456e60bdb80d25eba31ac9021240bac5ff10705a7e
   languageName: node
   linkType: hard
 

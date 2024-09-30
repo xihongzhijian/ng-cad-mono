@@ -37,7 +37,7 @@
     "typescript": "~5.5.4",
     "vite": "^5.4.8",
     "vite-plugin-css-injected-by-js": "^3.5.1",
-    "vite-plugin-dts": "^4.2.2"
+    "vite-plugin-dts": "^4.2.3"
   },
   "dependencies": {
     "@lucilor/utils": "workspace:^",
