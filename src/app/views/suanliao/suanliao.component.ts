@@ -5,7 +5,13 @@ import {Formulas} from "@app/utils/calc";
 import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openDrawCadDialog} from "@components/dialogs/draw-cad/draw-cad.component";
 import {ZixuanpeijianCadItem, ZixuanpeijianInfo, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
-import {calcCadItemZhankai, calcZxpj, CalcZxpjOptions, updateMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
+import {
+  calcCadItemZhankai,
+  calcZxpj,
+  CalcZxpjOptions,
+  updateMokuaiItem,
+  updateMokuaiItems
+} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, WindowMessageManager} from "@lucilor/utils";
 import {openSuanliaogongshiDialog} from "@modules/cad-editor/components/dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
@@ -55,7 +61,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
 
   async suanliaoStart(params: SuanliaoInput): Promise<SuanliaoOutputData> {
     const {materialResult, gongshi, tongyongGongshi, inputResult, 型号选中门扇布局, 配件模块CAD, 门扇布局CAD} = params;
-    const {bujuNames, varNames, cachedMokuais = [], silent} = params;
+    const {bujuNames, varNames, step1Data, silent} = params;
     const materialResultOld = cloneDeep(materialResult);
     let timerName: string | null = null;
     if (!silent) {
@@ -113,19 +119,14 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       if (Array.isArray(模块节点)) {
         for (const node of 模块节点) {
           const {选中模块, 层名字, 层id} = node;
+          const mokuaisToUpdate = [...node.可选模块];
           if (选中模块) {
             const info: Partial<ZixuanpeijianInfo> = {门扇名字: 门扇, 门扇布局: 选中布局数据, 模块名字: 层名字, 层id};
             选中模块.info = info;
             mokuais.push(选中模块);
-            for (const mokuai2 of cachedMokuais) {
-              updateMokuaiItem(选中模块, mokuai2);
-            }
+            mokuaisToUpdate.push(选中模块);
           }
-          for (const mokuai of node.可选模块 || []) {
-            for (const mokuai2 of cachedMokuais) {
-              updateMokuaiItem(mokuai, mokuai2);
-            }
-          }
+          updateMokuaiItems(mokuaisToUpdate, step1Data?.typesInfo || {});
         }
       }
     }

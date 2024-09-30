@@ -1,5 +1,5 @@
 import {Formulas} from "@app/utils/calc";
-import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {Step1Data, ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {MsbjPeizhishuju} from "@components/msbj-rects/msbj-rects.types";
 import {ObjectOf} from "@lucilor/utils";
@@ -171,7 +171,7 @@ export interface XhmrmsbjRequestData {
   localServerUrl: string;
   opts?: XhmrmsbjRequestDataOpts;
   menshanbujus: MsbjData[];
-  peijianmokuais: ZixuanpeijianMokuaiItem[];
+  step1Data: Step1Data;
 }
 export interface XhmrmsbjRequestDataOpts {
   浮动弹窗?: {门扇名字: string; 节点名字: string; consumed: boolean};

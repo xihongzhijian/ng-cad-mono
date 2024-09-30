@@ -1,5 +1,10 @@
 import {CalcResult, Formulas} from "@app/utils/calc";
-import {CalcZxpjResult, ZixuanpeijianCadItem, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {
+  CalcZxpjResult,
+  Step1Data,
+  ZixuanpeijianCadItem,
+  ZixuanpeijianMokuaiItem
+} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {MongodbDataBase} from "@modules/http/services/cad-data.service.types";
@@ -15,7 +20,7 @@ export interface SuanliaoInput {
   门扇布局CAD: any[];
   bujuNames: string[];
   varNames: string[];
-  cachedMokuais?: ZixuanpeijianMokuaiItem[];
+  step1Data?: Step1Data;
   silent?: boolean;
 }
 

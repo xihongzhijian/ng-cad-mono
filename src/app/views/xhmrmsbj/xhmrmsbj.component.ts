@@ -33,7 +33,7 @@ import {MokuaikuCloseEvent} from "@components/bujumokuai/mokuaiku/mokuaiku.types
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
-import {Step1Data, ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {Step1Data, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {
   getFromulasFromString,
   getMokuaiTitle,
@@ -256,16 +256,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     if (!this.isFromOrder()) {
       const step1Data = await getStep1Data(this.http);
-      this.mokuais = [];
-      if (step1Data) {
-        this.step1Data = step1Data;
-        for (const type1 in step1Data.typesInfo) {
-          for (const type2 in step1Data.typesInfo[type1]) {
-            const info = step1Data.typesInfo[type1][type2];
-            this.mokuais.push({...info, type1, type2, totalWidth: "", totalHeight: "", cads: []});
-          }
-        }
-      }
+      this.setStep1Data(step1Data);
       await this.bjmkStatus.msbjsManager.fetch(true);
       const tableData = this.tableData();
       const data = tableData ? new XhmrmsbjData(tableData, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null;
@@ -285,6 +276,20 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.wmm.destroy();
   }
 
+  setStep1Data(step1Data: Step1Data | null) {
+    this.mokuais = [];
+    if (!step1Data) {
+      return;
+    }
+    this.step1Data = step1Data;
+    for (const type1 in step1Data.typesInfo) {
+      for (const type2 in step1Data.typesInfo[type1]) {
+        const info = step1Data.typesInfo[type1][type2];
+        this.mokuais.push({...info, type1, type2, totalWidth: "", totalHeight: "", cads: []});
+      }
+    }
+  }
+
   refreshData() {
     this.data.update((v) => (v ? v.clone() : null));
   }
@@ -295,7 +300,7 @@ export class XhmrmsbjComponent implements OnDestroy {
   isFloatingDialog = computed(() => !!this.opts()?.浮动弹窗);
   async requestDataEnd(data: XhmrmsbjRequestData) {
     const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys, 铰扇跟随锁扇} = data;
-    const {houtaiUrl, id, user, localServerUrl, menshanbujus, peijianmokuais} = data;
+    const {houtaiUrl, id, user, localServerUrl, menshanbujus, step1Data} = data;
     if (typeof localServerUrl === "string") {
       this.urlPrefix = localServerUrl;
     }
@@ -306,17 +311,7 @@ export class XhmrmsbjComponent implements OnDestroy {
         return result;
       })
     );
-    this.mokuais = peijianmokuais;
-    const typesInfo: ZixuanpeijianTypesInfo = {};
-    for (const mokuai of this.mokuais) {
-      const type1 = mokuai.type1;
-      const type2 = mokuai.type2;
-      if (!typesInfo[type1]) {
-        typesInfo[type1] = {};
-      }
-      typesInfo[type1][type2] = mokuai;
-    }
-    this.step1Data.typesInfo = typesInfo;
+    this.setStep1Data(step1Data);
     const data2 = new XhmrmsbjData(
       {
         vid: id,
