@@ -545,16 +545,14 @@ export const calcZxpj = async (
     if (useCeshishuju && item.ceshishuju) {
       calc.calc.mergeFormulas(formulas, item.ceshishuju);
     }
-    if (!isVersion2024) {
-      for (const group of item.gongshishuru) {
-        if (group[0] && group[1]) {
-          formulas[group[0]] = group[1];
-        }
+    for (const group of item.gongshishuru) {
+      if (group[0] && group[1]) {
+        formulas[group[0]] = group[1];
       }
-      for (const group of item.xuanxiangshuru) {
-        if (group[0] && group[1]) {
-          formulas[group[0]] = `'${group[1]}'`;
-        }
+    }
+    for (const group of item.xuanxiangshuru) {
+      if (group[0] && group[1]) {
+        formulas[group[0]] = `'${group[1]}'`;
       }
     }
     const dimensionVars = getCadDimensionVars(item.cads);

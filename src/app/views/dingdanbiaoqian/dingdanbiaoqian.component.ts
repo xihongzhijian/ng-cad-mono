@@ -42,7 +42,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
-import {isVersion2024} from "@views/msbj/msbj.utils";
+import {getIsVersion2024} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEmpty} from "lodash";
 import {DateTime} from "luxon";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
@@ -722,7 +722,7 @@ export class DingdanbiaoqianComponent implements OnInit {
   }
   isMokuaiVersion2024(order: Order) {
     const mokuai = this.mokuais().at(order.mokuaiInfo?.index || 0);
-    return isVersion2024(mokuai?.zuoshujubanben);
+    return getIsVersion2024(mokuai?.zuoshujubanben);
   }
   openMokuai(order: Order) {
     const mokuai = this.mokuais().at(order.mokuaiInfo?.index || 0);

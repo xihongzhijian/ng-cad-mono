@@ -15,6 +15,7 @@ export interface SuanliaoInput {
   门扇布局CAD: any[];
   bujuNames: string[];
   varNames: string[];
+  cachedMokuais?: ZixuanpeijianMokuaiItem[];
   silent?: boolean;
 }
 
@@ -28,6 +29,7 @@ export interface SuanliaoOutput extends CalcZxpjResult {
   materialResultDiff: Formulas;
   配件模块CAD: ZixuanpeijianMokuaiItem[];
   门扇布局CAD: ZixuanpeijianCadItem[];
+  效果图使用变量?: ObjectOf<ObjectOf<Formulas>>;
 }
 
 export interface 根据输入值计算选中配件模块无依赖的公式结果输入 {

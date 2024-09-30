@@ -3,7 +3,7 @@ import {XhmrmsbjInfoMokuaiNode} from "@views/xhmrmsbj/xhmrmsbj.types";
 
 export const getNodesTable = (nodes: XhmrmsbjInfoMokuaiNode[]) => {
   const info: TableRenderInfo<XhmrmsbjInfoMokuaiNode> = {
-    title: "效果图图层排序",
+    title: "模块效果图图层排序（排序小的在下面）",
     editMode: true,
     data: nodes,
     columns: [

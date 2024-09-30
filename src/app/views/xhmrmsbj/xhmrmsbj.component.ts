@@ -33,7 +33,7 @@ import {MokuaikuCloseEvent} from "@components/bujumokuai/mokuaiku/mokuaiku.types
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
-import {Step1Data, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {Step1Data, ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {
   getFromulasFromString,
   getMokuaiTitle,
@@ -52,7 +52,7 @@ import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
 import {VarNameItem} from "@components/var-names/var-names.types";
 import {XhmrmsbjSbjbComponent} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.component";
 import {environment} from "@env";
-import {keysOf, ObjectOf, Point, queryString, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
+import {getElementVisiblePercentage, keysOf, ObjectOf, Point, queryString, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -255,16 +255,6 @@ export class XhmrmsbjComponent implements OnDestroy {
       this.isFromOrder.set(true);
     }
     if (!this.isFromOrder()) {
-      await this.bjmkStatus.msbjsManager.fetch(true);
-      const tableData = this.tableData();
-      this.data.set(tableData ? new XhmrmsbjData(tableData, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null);
-      xinghao = await getXinghao(tableData?.xinghao || "");
-      this.xinghao.set(xinghao ? new MrbcjfzXinghaoInfo(table, xinghao) : null);
-    }
-    await timeout(0);
-    if (this.isFromOrder()) {
-      this.wmm.postMessage("requestDataStart");
-    } else {
       const step1Data = await getStep1Data(this.http);
       this.mokuais = [];
       if (step1Data) {
@@ -276,6 +266,17 @@ export class XhmrmsbjComponent implements OnDestroy {
           }
         }
       }
+      await this.bjmkStatus.msbjsManager.fetch(true);
+      const tableData = this.tableData();
+      const data = tableData ? new XhmrmsbjData(tableData, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null;
+      this.data.set(data);
+      xinghao = await getXinghao(tableData?.xinghao || "");
+      this.xinghao.set(xinghao ? new MrbcjfzXinghaoInfo(table, xinghao) : null);
+    }
+    await timeout(0);
+    if (this.isFromOrder()) {
+      this.wmm.postMessage("requestDataStart");
+    } else {
       await this.selectMenshanKey(this.menshanKeys[0]);
     }
   }
@@ -306,10 +307,21 @@ export class XhmrmsbjComponent implements OnDestroy {
       })
     );
     this.mokuais = peijianmokuais;
+    const typesInfo: ZixuanpeijianTypesInfo = {};
+    for (const mokuai of this.mokuais) {
+      const type1 = mokuai.type1;
+      const type2 = mokuai.type2;
+      if (!typesInfo[type1]) {
+        typesInfo[type1] = {};
+      }
+      typesInfo[type1][type2] = mokuai;
+    }
+    this.step1Data.typesInfo = typesInfo;
     const data2 = new XhmrmsbjData(
       {
         vid: id,
         mingzi: "1",
+        peizhishuju: JSON.stringify(型号选中门扇布局),
         jiaoshanbujuhesuoshanxiangtong: 铰扇跟随锁扇 ? 1 : 0,
         zuoshujubanben: String(materialResult.做数据版本)
       },
@@ -317,7 +329,6 @@ export class XhmrmsbjComponent implements OnDestroy {
       this.step1Data.typesInfo,
       this.msbjs()
     );
-    data2.menshanbujuInfos = 型号选中门扇布局;
     this.data.set(data2);
     this.materialResult.set(materialResult);
     this.houtaiUrl = houtaiUrl;
@@ -509,6 +520,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
   }
 
+  kexuanmokuaisScrollbar = viewChild<NgScrollbar>("kexuanmokuaisScrollbar");
   async selectMokuai(mokuai: ZixuanpeijianMokuaiItem | null | undefined) {
     const mokuaiNode = this.activeMokuaiNode();
     const rectInfo = this.activeRectInfo();
@@ -519,6 +531,13 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.data()?.setSelectedMokuai(mokuaiNode, mokuai, this.isFromOrder());
     this.refreshData();
     const mokuaiCurr = mokuaiNode.选中模块;
+    const scrollbar = this.kexuanmokuaisScrollbar();
+    if (scrollbar && mokuaiCurr) {
+      const mokuaiEl = scrollbar.nativeElement.querySelector(`[data-id="${mokuaiCurr.weiyima}"]`);
+      if (mokuaiEl instanceof HTMLElement && getElementVisiblePercentage(mokuaiEl, scrollbar.nativeElement) <= 0.1) {
+        scrollbar.scrollToElement(mokuaiEl);
+      }
+    }
     if (!mokuaiPrev || !mokuaiCurr || !isMokuaiItemEqual(mokuaiPrev, mokuaiCurr)) {
       await this.suanliao();
     }
@@ -578,13 +597,13 @@ export class XhmrmsbjComponent implements OnDestroy {
     return {value, type: "输入值"};
   }
   mokuaiInputInfos = computed(() => {
-    const mokuai = this.activeMokuaiNode()?.选中模块;
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
     const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
     const infos: InputInfo[] = [];
     if (mokuai) {
-      const node = this.activeMokuaiNode();
       const keyMap = {总宽: "totalWidth", 总高: "totalHeight"} as const;
-      if (node && !this.data()?.isVersion2024) {
+      if (!this.data()?.isVersion2024) {
         const name = node.层名字;
         for (const key in keyMap) {
           const key3 = name + key;
@@ -619,7 +638,10 @@ export class XhmrmsbjComponent implements OnDestroy {
 
             const data = this.data();
             const activeMenshanKey = this.activeMenshanKey();
-            const varNames = (await this.getVarNames()).concat(mokuai.shuchubianliang);
+            const varNames = mokuai.shuchubianliang;
+            if (this.isFromOrder()) {
+              varNames.push(...(await this.getVarNames()));
+            }
             const isShuchubianliang = varNames.includes(v[0]);
             const updateMenshanKeys = new Set<string>();
             if (data && activeMenshanKey) {
@@ -650,7 +672,7 @@ export class XhmrmsbjComponent implements OnDestroy {
                 }
               }
             }
-            if (updateMenshanKeys.size > 0) {
+            if (updateMenshanKeys.size > 0 && this.isFromOrder()) {
               await this.updateOrder();
             }
             await this.suanliao();
@@ -755,6 +777,7 @@ export class XhmrmsbjComponent implements OnDestroy {
         }
       }
       const nodes = msbjInfo.模块节点 || [];
+      const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");
       for (const [j, node1] of nodes.entries()) {
         const 选中模块1 = node1.选中模块;
         if (!dataInfo.铰扇跟随锁扇 || !menshanKey.includes("铰扇")) {
@@ -763,7 +786,6 @@ export class XhmrmsbjComponent implements OnDestroy {
           }
         }
         if (选中模块1) {
-          const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");
           for (let k = j + 1; k < nodes.length; k++) {
             const node2 = nodes[k];
             const 选中模块2 = node2.选中模块;
@@ -800,11 +822,16 @@ export class XhmrmsbjComponent implements OnDestroy {
           if (!this.validateMorenbancai(mokuai.morenbancai)) {
             mokuaiErrors.push("未配置默认板材分组");
           }
+          const missingVars: string[] = [];
           for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
+            const valueInfo = this.getValueInfo(mokuai, arr[0], arr[1]);
+            arr[1] = valueInfo.value;
             if (!arr[1]) {
-              mokuaiErrors.push("公式输入和选项输入不能为空");
-              break;
+              missingVars.push(arr[0]);
             }
+          }
+          if (missingVars.length > 0) {
+            mokuaiErrors.push(`模块输入${getNamesStr(missingVars)}不能为空`);
           }
           if (mokuaiErrors.length > 0) {
             mokuaisErrorInfo.push({menshanKey, layerName: node1.层名字, mokuai, errors: mokuaiErrors});
@@ -1175,6 +1202,9 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
 
   async getVarNames() {
+    if (this.data()?.isVersion2024) {
+      return [];
+    }
     this.wmm.postMessage("getVarNamesStart");
     const data = await this.wmm.waitForMessage<string[]>("getVarNamesEnd");
     return data;
@@ -1423,11 +1453,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     const key = this.activeMenshanKey();
     replaceMenshanName(key, formulas);
     const materialResult = this.lastSuanliao()?.output?.materialResult || {};
-    const vars = {...materialResult, ...msbjInfo.模块大小输出};
-    for (const key in formulas) {
-      delete vars[key];
-    }
-    const calcResult = this.calc.calc.calcFormulas(formulas, vars);
+    const calcResult = this.calc.calc.calcFormulas(formulas, materialResult);
     const onChange = () => {
       this.setMkdxpz(formulas);
     };

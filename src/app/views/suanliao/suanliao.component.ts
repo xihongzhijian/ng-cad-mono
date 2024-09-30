@@ -4,19 +4,8 @@ import {setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openDrawCadDialog} from "@components/dialogs/draw-cad/draw-cad.component";
-import {
-  Step1Data,
-  ZixuanpeijianCadItem,
-  ZixuanpeijianInfo,
-  ZixuanpeijianMokuaiItem
-} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
-import {
-  calcCadItemZhankai,
-  calcZxpj,
-  CalcZxpjOptions,
-  getStep1Data,
-  updateMokuaiItems
-} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
+import {ZixuanpeijianCadItem, ZixuanpeijianInfo, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {calcCadItemZhankai, calcZxpj, CalcZxpjOptions, updateMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, WindowMessageManager} from "@lucilor/utils";
 import {openSuanliaogongshiDialog} from "@modules/cad-editor/components/dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
@@ -26,8 +15,7 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
-import {MsbjData} from "@views/msbj/msbj.types";
-import {isVersion2024 as getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
+import {getIsVersion2024} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {
   SuanliaoInput,
@@ -51,18 +39,13 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
-  msbjs: MsbjInfo[] = [];
-  step1Data: Step1Data | null = null;
   wmm = new WindowMessageManager("算料", this, window.parent);
 
   constructor() {
     setGlobal("suanliao", this);
   }
 
-  async ngOnInit() {
-    const menshanbujus = await this.http.queryMySql<MsbjData>({table: "p_menshanbuju"});
-    this.msbjs = menshanbujus.map((item) => new MsbjInfo(item));
-    this.step1Data = await getStep1Data(this.http, {});
+  ngOnInit() {
     this.wmm.postMessage("suanliaoReady");
   }
 
@@ -71,8 +54,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
   }
 
   async suanliaoStart(params: SuanliaoInput): Promise<SuanliaoOutputData> {
-    const {materialResult, gongshi, tongyongGongshi, inputResult, 型号选中门扇布局, 配件模块CAD, 门扇布局CAD, bujuNames, varNames, silent} =
-      params;
+    const {materialResult, gongshi, tongyongGongshi, inputResult, 型号选中门扇布局, 配件模块CAD, 门扇布局CAD} = params;
+    const {bujuNames, varNames, cachedMokuais = [], silent} = params;
     const materialResultOld = cloneDeep(materialResult);
     let timerName: string | null = null;
     if (!silent) {
@@ -134,14 +117,19 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
             const info: Partial<ZixuanpeijianInfo> = {门扇名字: 门扇, 门扇布局: 选中布局数据, 模块名字: 层名字, 层id};
             选中模块.info = info;
             mokuais.push(选中模块);
+            for (const mokuai2 of cachedMokuais) {
+              updateMokuaiItem(选中模块, mokuai2);
+            }
+          }
+          for (const mokuai of node.可选模块 || []) {
+            for (const mokuai2 of cachedMokuais) {
+              updateMokuaiItem(mokuai, mokuai2);
+            }
           }
         }
       }
     }
 
-    if (this.step1Data) {
-      updateMokuaiItems(mokuais, this.step1Data.typesInfo);
-    }
     for (const mokuai of mokuais) {
       const {type1, type2} = mokuai;
       mokuai.shuruzongkuan = false;
@@ -203,6 +191,20 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     });
     result.data.配件模块CAD = mokuais.map((v) => ({...v, cads: v.cads.map(getCadItem2)})) as any;
     result.data.门扇布局CAD = lingsans.map(getCadItem2) as any;
+    result.data.效果图使用变量 = {};
+    const 效果图使用变量 = result.data.效果图使用变量;
+    for (const name of bujuNames) {
+      效果图使用变量[name] = {};
+      const vars = {...result.data.materialResult, ...result.data.门扇布局大小?.[name]};
+      for (const node of 型号选中门扇布局[name].模块节点 || []) {
+        效果图使用变量[name][node.层名字] = {};
+        for (const key of node.选中模块?.xiaoguotushiyongbianliang || []) {
+          if (key in vars) {
+            效果图使用变量[name][node.层名字][key] = vars[key];
+          }
+        }
+      }
+    }
     result.data.fulfilled = true;
     for (const key in materialResult) {
       const value1 = materialResult[key];
@@ -233,17 +235,14 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     return {action: "openGongshiEnd", data: result};
   }
 
-  updateMokuaiItemsStart(data: any) {
-    const result = {action: "updateMokuaiItemsEnd", data: data.items};
-    if (this.step1Data) {
-      updateMokuaiItems(data.items, this.step1Data.typesInfo);
+  updateMokuaiItemsStart(data: {mokuais: ZixuanpeijianMokuaiItem[]; mokuais2: ZixuanpeijianMokuaiItem[]}) {
+    const {mokuais, mokuais2} = data;
+    for (const mokuai of mokuais) {
+      for (const mokuai2 of mokuais2) {
+        updateMokuaiItem(mokuai, mokuai2);
+      }
     }
-    return result;
-  }
-
-  getMsbjsStart() {
-    const result = {action: "getMsbjsEnd", data: this.msbjs};
-    return result;
+    return {mokuais};
   }
 
   async 根据输入值计算选中配件模块无依赖的公式结果开始(data: 根据输入值计算选中配件模块无依赖的公式结果输入) {

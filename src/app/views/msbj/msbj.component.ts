@@ -69,7 +69,7 @@ export class MsbjComponent {
   closeOut = output<MsbjCloseEvent>({alias: "close"});
 
   production = environment.production;
-  table = signal("");
+  table = signal("p_menshanbuju");
   msbjInfo = signal<MsbjInfo | null>(null);
   dataField = signal<keyof Omit<MsbjData, keyof TableDataBase>>("peizhishuju");
   fenleiListDataType!: {$implicit: MsbjFenlei[]; class: string};

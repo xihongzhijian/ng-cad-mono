@@ -13,7 +13,7 @@ import {InputInfo, InputInfoGroup, InputInfoSelect} from "@modules/input/compone
 import {getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {isVersion2024} from "@views/msbj/msbj.utils";
+import {getIsVersion2024} from "@views/msbj/msbj.utils";
 import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -357,7 +357,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
   }
   showXhmrmsbj = signal<{id: number} | null>(null);
   async gotoZuofas(xinghao0: XinghaoData) {
-    if (isVersion2024(xinghao0.zuoshujubanben)) {
+    if (getIsVersion2024(xinghao0.zuoshujubanben)) {
       this.showXhmrmsbj.set({id: xinghao0.vid});
     } else {
       const xinghao = await this.lrsjStatus.getXinghao(xinghao0.mingzi);

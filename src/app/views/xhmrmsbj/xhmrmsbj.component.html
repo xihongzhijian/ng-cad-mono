@@ -103,7 +103,7 @@
           }
         </div>
       }
-      <ng-scrollbar>
+      <ng-scrollbar #kexuanmokuaisScrollbar>
         <div class="flex-row" style="flex-wrap: wrap">
           @for (mokuai of kexuanmokuais(); track $index) {
             <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai, isActive: isMokuaiActive(mokuai)}"> </ng-template>
@@ -112,8 +112,8 @@
       </ng-scrollbar>
     </div>
     <mat-divider vertical></mat-divider>
-    <div class="flex-column">
-      <ng-scrollbar>
+    <div class="scrollbar-container">
+      <ng-scrollbar class="enable-x">
         @if (isFromOrder()) {
           @if (!canEditMokuaidaxiao() && !isFloatingDialog()) {
             <div class="mkdxpz-formulas flex-column">
@@ -186,7 +186,7 @@
 </div>
 
 <ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai let-isActive="isActive">
-  <div class="flex-column mokuai" [class]="{active: isActive}">
+  <div class="flex-column mokuai" [class]="{active: isActive}" [attr.data-id]="mokuai.weiyima">
     <div class="flex-column">
       <div class="toolbar mokuai-top">
         @if (!isFromOrder()) {

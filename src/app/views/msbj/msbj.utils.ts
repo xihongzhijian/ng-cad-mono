@@ -2,7 +2,7 @@ import mokuaidaixiaoData from "@assets/json/mokuaidaxiao.json";
 import {MsbjPeizhishuju, MsbjRectInfoRaw, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
 import {MsbjData, Node2rectData, ZuoshujuTableData} from "./msbj.types";
 
-export const isVersion2024 = (version: any) => version === "模块版本2024";
+export const getIsVersion2024 = (version: any) => version === "模块版本2024";
 
 export class ZuoshujuData {
   vid: number;
@@ -10,7 +10,7 @@ export class ZuoshujuData {
   zuoshujubanben?: string;
 
   get isVersion2024() {
-    return isVersion2024(this.zuoshujubanben);
+    return getIsVersion2024(this.zuoshujubanben);
   }
 
   constructor(data: ZuoshujuTableData) {
