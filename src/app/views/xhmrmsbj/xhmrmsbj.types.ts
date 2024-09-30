@@ -2,6 +2,7 @@ import {Formulas} from "@app/utils/calc";
 import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {MsbjPeizhishuju} from "@components/msbj-rects/msbj-rects.types";
+import {ObjectOf} from "@lucilor/utils";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MsbjData} from "@views/msbj/msbj.types";
@@ -145,6 +146,7 @@ export interface XhmrmsbjInfoMokuaiNode {
   可选模块: ZixuanpeijianMokuaiItem[];
   选中模块?: ZixuanpeijianMokuaiItem;
   排序?: number;
+  输入值?: ObjectOf<string>;
 }
 
 export const xhmrmsbjTabNames = ["锁边铰边", "门扇模块"] as const;

@@ -69,7 +69,7 @@ import {MsbjCloseEvent, MsbjData, Node2rectData, node2rectDataMsdxKeys} from "@v
 import {getEmpty模块大小配置, getNodeFormulasKeys, justify模块大小配置, MsbjInfo} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {getFormulaInfos, openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
-import {cloneDeep, debounce, intersection} from "lodash";
+import {cloneDeep, debounce, difference, intersection} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, Subject} from "rxjs";
@@ -568,6 +568,10 @@ export class XhmrmsbjComponent implements OnDestroy {
     return data || {};
   }).data;
   getValueInfo(mokuai: ZixuanpeijianMokuaiItem, key: string, value: string) {
+    const node = this.activeMokuaiNode();
+    if (key in (node?.输入值 || {})) {
+      return {value, type: "输入值"};
+    }
     const materialResult = this.materialResult();
     const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
     const tongyongFormulas = this.tongyongFormulas();
@@ -594,7 +598,7 @@ export class XhmrmsbjComponent implements OnDestroy {
         return {value: value2, type};
       }
     }
-    return {value, type: "输入值"};
+    return {value: "", type: "输入值"};
   }
   mokuaiInputInfos = computed(() => {
     const node = this.activeMokuaiNode();
@@ -623,6 +627,7 @@ export class XhmrmsbjComponent implements OnDestroy {
           type: "string",
           label: v[0],
           model: {key: "1", data: v},
+          clearable: true,
           validators: (control) => {
             const valueInfo2 = this.getValueInfo(mokuai, v[0], control.value);
             if (!valueInfo2.value) {
@@ -632,6 +637,21 @@ export class XhmrmsbjComponent implements OnDestroy {
           },
           hint: valueInfo.type,
           onChange: async (val, info) => {
+            if (!node.输入值) {
+              node.输入值 = {};
+            }
+            const keysToDelete = difference(
+              Object.keys(node.输入值),
+              arr.map((v) => v[0])
+            );
+            for (const key of keysToDelete) {
+              delete node.输入值[key];
+            }
+            if (val) {
+              node.输入值[v[0]] = val;
+            } else {
+              delete node.输入值[v[0]];
+            }
             const valueInfo2 = this.getValueInfo(mokuai, v[0], val);
             v[1] = valueInfo2.value;
             info.hint = valueInfo2.type;
@@ -658,13 +678,13 @@ export class XhmrmsbjComponent implements OnDestroy {
                         }
                       }
                     }
-                    const msbjInfo = data.menshanbujuInfos[key];
-                    if (msbjInfo && (isShuchubianliang || isCurrent)) {
-                      if (v[0] in (msbjInfo.模块大小输出 || {})) {
-                        if (!msbjInfo.模块大小输入) {
-                          msbjInfo.模块大小输入 = {};
+                    const msbjInfo2 = data.menshanbujuInfos[key];
+                    if (msbjInfo2 && (isShuchubianliang || isCurrent)) {
+                      if (v[0] in (msbjInfo2.模块大小输出 || {})) {
+                        if (!msbjInfo2.模块大小输入) {
+                          msbjInfo2.模块大小输入 = {};
                         }
-                        msbjInfo.模块大小输入[v[0]] = v[1];
+                        msbjInfo2.模块大小输入[v[0]] = v[1];
                         updateMenshanKeys.add(key);
                       }
                     }
@@ -672,6 +692,7 @@ export class XhmrmsbjComponent implements OnDestroy {
                 }
               }
             }
+
             if (updateMenshanKeys.size > 0 && this.isFromOrder()) {
               await this.updateOrder();
             }
