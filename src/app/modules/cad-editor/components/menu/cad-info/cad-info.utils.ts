@@ -63,7 +63,8 @@ export const cadFields = {
   企料包边类型: "企料包边类型",
   指定封口厚度: "指定封口厚度",
   拼接料拼接时垂直翻转: "拼接料拼接时垂直翻转",
-  拉码碰撞判断: "拉码碰撞判断"
+  拉码碰撞判断: "拉码碰撞判断",
+  装配示意图自动拼接锁边铰边: "装配示意图自动拼接锁边铰边"
 } as const;
 
 export const getData = (data: CadData | (() => CadData)) => (typeof data === "function" ? data() : data);
@@ -154,6 +155,7 @@ export const getCadInfoInputs = (
       case "属于门框门扇":
       case "企料包边类型":
       case "指定板材分组":
+      case "装配示意图自动拼接锁边铰边":
         info = {type: "select", label: key, model: {data, key: cadFields[key]}, options: cadOptions[cadFields[key]].values.slice()};
         break;
       case "选项":

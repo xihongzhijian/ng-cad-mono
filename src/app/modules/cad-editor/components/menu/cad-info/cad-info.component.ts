@@ -139,7 +139,8 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
         "拼接料拼接时垂直翻转",
         "正面线到见光线展开模板",
         "指定板材分组",
-        "拉码碰撞判断"
+        "拉码碰撞判断",
+        "装配示意图自动拼接锁边铰边"
       ],
       () => this.data,
       this.dialog,

@@ -1,3 +1,4 @@
+export * from "./cad-data.types";
 export * from "./cad-data";
 export * from "./cad-entities";
 export * from "./cad-entity";

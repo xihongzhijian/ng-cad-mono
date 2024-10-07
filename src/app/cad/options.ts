@@ -58,7 +58,8 @@ export const cadOptions = {
     ],
     defaultValue: ""
   },
-  算料单展开显示位置: {values: ["CAD上面", "CAD下面", "CAD中间", "CAD左边", "CAD右边"], defaultValue: "CAD下面"}
+  算料单展开显示位置: {values: ["CAD上面", "CAD下面", "CAD中间", "CAD左边", "CAD右边"], defaultValue: "CAD下面"},
+  装配示意图自动拼接锁边铰边: {values: ["都拼接", "只拼接锁边", "只拼接铰边", "不拼接"], defaultValue: "都拼接"}
 } as const;
 
 export const cadLineOptions = {
