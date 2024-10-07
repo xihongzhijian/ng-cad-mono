@@ -199,7 +199,7 @@ export const getCadInfoInputs = (
         };
         break;
       case "唯一码":
-        info = {type: "string", label: key, model: {data: attrGetter("info"), key}};
+        info = {type: "string", label: key, readonly: true, model: {data: attrGetter("info"), key}};
         break;
       case "激光开料是否翻转":
       case "激光开料打标":

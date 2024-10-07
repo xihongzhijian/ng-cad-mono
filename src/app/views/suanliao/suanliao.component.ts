@@ -251,12 +251,19 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     const result: 根据输入值计算选中配件模块无依赖的公式结果输出 = {成功: {}, 失败: {}};
     for (const menshanKey in 型号选中门扇布局) {
       const {模块节点} = 型号选中门扇布局[menshanKey];
-      for (const {选中模块} of 模块节点 || []) {
+      for (const {选中模块, 输入值} of 模块节点 || []) {
         if (!选中模块) {
           continue;
         }
         const {type2, suanliaogongshi, gongshishuru} = 选中模块;
-        for (const [k, v] of gongshishuru) {
+        for (const arr of gongshishuru) {
+          const k = arr[0];
+          let v: string;
+          if (输入值) {
+            v = 输入值[k];
+          } else {
+            v = arr[1];
+          }
           if (v) {
             suanliaogongshi[k] = v;
           }

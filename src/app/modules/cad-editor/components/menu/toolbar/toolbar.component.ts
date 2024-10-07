@@ -199,7 +199,7 @@ export class ToolbarComponent {
   async setPointSize() {
     const pointSize = this.config.getConfig("pointSize");
     const n = await this.message.prompt({value: pointSize, type: "number", label: "选取点大小"});
-    if (!isNaN(n)) {
+    if (n !== null && !isNaN(n)) {
       this.config.setConfig("pointSize", n);
     }
   }

@@ -23,6 +23,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {difference, isEmpty} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
+import {v4} from "uuid";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
 import {ImportCache, ImportComponentConfig, ImportComponentConfigName, importComponentConfigNames} from "./import.types";
@@ -417,10 +418,12 @@ export class ImportComponent extends Utils() implements OnInit {
             if (唯一码) {
               v.data.info.唯一码 = 唯一码;
             } else {
-              v.errors.push("无法生成唯一码");
+              v.data.info.唯一码 = v4();
             }
           }
           uniqCode = v.data.info.唯一码;
+        } else {
+          v.data.info.唯一码 = v4();
         }
       }
       if (!uniqCode) {

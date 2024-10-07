@@ -172,6 +172,7 @@ export interface XhmrmsbjRequestData {
   opts?: XhmrmsbjRequestDataOpts;
   menshanbujus: MsbjData[];
   step1Data: Step1Data;
+  模块通用配置: Formulas;
 }
 export interface XhmrmsbjRequestDataOpts {
   浮动弹窗?: {门扇名字: string; 节点名字: string; consumed: boolean};

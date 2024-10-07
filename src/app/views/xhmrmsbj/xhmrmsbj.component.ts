@@ -300,7 +300,7 @@ export class XhmrmsbjComponent implements OnDestroy {
   isFloatingDialog = computed(() => !!this.opts()?.浮动弹窗);
   async requestDataEnd(data: XhmrmsbjRequestData) {
     const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys, 铰扇跟随锁扇} = data;
-    const {houtaiUrl, id, user, localServerUrl, menshanbujus, step1Data} = data;
+    const {houtaiUrl, id, user, localServerUrl, menshanbujus, step1Data, 模块通用配置} = data;
     if (typeof localServerUrl === "string") {
       this.urlPrefix = localServerUrl;
     }
@@ -331,6 +331,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.user.set(user);
     this.opts.set(data.opts);
     this.menshanKeys = menshanKeys;
+    this.tongyongFormulasCache = 模块通用配置 || null;
     const xinghao = new MrbcjfzXinghaoInfo(this.table(), {vid: 1, mingzi: String(materialResult.型号)});
     xinghao.默认板材 = 型号选中板材;
     this.xinghao.set(xinghao);
@@ -558,7 +559,11 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.refreshData();
   }
 
+  tongyongFormulasCache: Formulas | null = null;
   tongyongFormulas = new FetchManager({}, async () => {
+    if (this.tongyongFormulasCache) {
+      return this.tongyongFormulasCache;
+    }
     const data = await this.http.getData<Formulas>("ngcad/getMokuaiTongyongPeizhi");
     return data || {};
   }).data;
@@ -577,20 +582,22 @@ export class XhmrmsbjComponent implements OnDestroy {
       ["模块公式值", mokuai.suanliaogongshi],
       ["通用公式值", tongyongFormulas]
     ];
-    for (const [type, formulas] of list) {
-      if (value && value === String(formulas[key])) {
-        return {value, type};
-      }
-      if (!value) {
-        if (formulas[key] === undefined) {
-          continue;
+    for (const val of [value, ""]) {
+      for (const [type, formulas] of list) {
+        if (val && val === String(formulas[key])) {
+          return {value, type};
         }
-        const n = Number(formulas[key]);
-        if (isNaN(n)) {
-          continue;
+        if (!val) {
+          if (formulas[key] === undefined) {
+            continue;
+          }
+          const n = Number(formulas[key]);
+          if (isNaN(n)) {
+            continue;
+          }
+          const val2 = String(n);
+          return {value: val2, type};
         }
-        const value2 = String(n);
-        return {value: value2, type};
       }
     }
     return {value: "", type: "输入值"};

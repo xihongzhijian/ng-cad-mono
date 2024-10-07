@@ -10,7 +10,7 @@
   <app-var-names [varNameItem]="varNameItem()"></app-var-names>
   <mat-divider vertical></mat-divider>
   <div class="slgs flex-column">
-    <div class="title">模块大小公式</div>
+    <div class="title">模块大小公式（只用于模块大小计算）</div>
     <app-formulas-editor class="flex-110" [(formulas)]="formulas" [compact]="{minRows: 5}" [validator]="validator()"></app-formulas-editor>
   </div>
   @if (nodesTable(); as info) {
