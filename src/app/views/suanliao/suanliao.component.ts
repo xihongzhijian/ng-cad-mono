@@ -131,6 +131,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
     }
 
+    const isVersion2024 = getIsVersion2024(materialResult.做数据版本);
+
     for (const mokuai of mokuais) {
       const {type1, type2} = mokuai;
       mokuai.shuruzongkuan = false;
@@ -141,9 +143,17 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
       mokuai.calcVars = {keys: Object.keys(mokuai.suanliaogongshi)};
       mokuai.cads = [];
+      const {门扇名字} = mokuai.info || {};
       if (配件模块CAD[type1] && 配件模块CAD[type1][type2]) {
         for (const v of 配件模块CAD[type1][type2]) {
-          mokuai.cads.push(getCadItem(v, mokuai.info));
+          if (isVersion2024) {
+            mokuai.cads.push(getCadItem(v, mokuai.info));
+          } else {
+            const types: string[] = v.type2 ? v.type2.split("*") : [];
+            if (types.length < 1 || !门扇名字 || types.includes(门扇名字)) {
+              mokuai.cads.push(getCadItem(v, mokuai.info));
+            }
+          }
         }
       }
     }
@@ -160,7 +170,6 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
     }
 
-    const isVersion2024 = getIsVersion2024(materialResult.做数据版本);
     const calcVars: NonNullable<CalcZxpjOptions["calcVars"]> = {keys: []};
     if (varNames && !isVersion2024) {
       calcVars.keys = varNames;
