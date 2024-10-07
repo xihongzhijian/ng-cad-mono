@@ -761,7 +761,13 @@ export class XhmrmsbjComponent implements OnDestroy {
   async submit() {
     const tabName = this.activeTabName();
     if (tabName === "锁边铰边") {
-      await this.sbjb()?.save();
+      const sbjb = this.sbjb();
+      if (sbjb) {
+        const success = await sbjb.save();
+        if (!success) {
+          return;
+        }
+      }
     }
     const dataInfo = this.data();
     const isFromOrder = this.isFromOrder();
@@ -1392,6 +1398,12 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
   openPeijiankuInNew() {
     this.status.openInNewTab(["/布局模块"], {queryParams: {page: "配件库"}});
+  }
+  async openMenfengcanshu() {
+    const url = await this.http.getShortUrl("门缝参数");
+    if (url) {
+      open(url);
+    }
   }
 
   mkdcpzValidator: FormulasValidatorFn = (formulasList) => {

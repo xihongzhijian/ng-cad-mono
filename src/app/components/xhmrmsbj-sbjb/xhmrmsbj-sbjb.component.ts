@@ -1,8 +1,20 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, signal} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  HostBinding,
+  inject,
+  input,
+  signal,
+  viewChild
+} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {getSortedItems} from "@app/utils/sort-items";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
@@ -17,7 +29,14 @@ import {AppStatusService} from "@services/app-status.service";
 import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {XhmrmsbjSbjbItem, XhmrmsbjSbjbItemSbjbCadInfo, XhmrmsbjSbjbItemSbjbSorted} from "./xhmrmsbj-sbjb.types";
+import {
+  XhmrmsbjSbjbItem,
+  xhmrmsbjSbjbItemCadKeys,
+  XhmrmsbjSbjbItemOptionalKey,
+  xhmrmsbjSbjbItemOptionalKeys,
+  XhmrmsbjSbjbItemSbjbCadInfo,
+  XhmrmsbjSbjbItemSbjbSorted
+} from "./xhmrmsbj-sbjb.types";
 import {getXhmrmsbjSbjbItemSbjbForm, getXhmrmsbjSbjbItemTableInfo} from "./xhmrmsbj-sbjb.utils";
 
 @Component({
@@ -86,8 +105,9 @@ export class XhmrmsbjSbjbComponent {
     });
     const cad2 = result?.[0];
     if (cad2) {
-      if (name === "锁框" || name === "铰框" || name === "顶框") {
-        item[name] = cad2.name;
+      const name2 = name as XhmrmsbjSbjbItemOptionalKey;
+      if (xhmrmsbjSbjbItemOptionalKeys.includes(name2)) {
+        item[name2] = cad2.name;
       } else if (name === "锁边" || name === "铰边") {
         item[name].名字 = cad2.name;
       }
@@ -114,7 +134,13 @@ export class XhmrmsbjSbjbComponent {
     },
     {allowSignalWrites: true}
   );
-  activeSbjbItem = computed(() => this.activeItem()?.锁边铰边数据[this.activeSbjbItemIndex()]);
+  activeSbjbItem = computed(() => {
+    const tableItem = this.sbjbItemTableInfo()?.data[this.activeSbjbItemIndex()];
+    if (tableItem) {
+      return this.activeItem()?.锁边铰边数据?.[tableItem.originalIndex] || null;
+    }
+    return null;
+  });
   sbjbItemTableInfo = computed(() => {
     const item = this.activeItem();
     if (!item) {
@@ -127,13 +153,22 @@ export class XhmrmsbjSbjbComponent {
     if (!item2) {
       return;
     }
-    const {item, rowIdx} = event;
+    const {item} = event;
+    const rowIdx = item.originalIndex;
     switch (event.button.event) {
       case "edit":
         {
           const item3 = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options, item);
           if (item3) {
             item2.锁边铰边数据[rowIdx] = item3;
+            if (item3.默认值) {
+              for (const [i, item4] of item2.锁边铰边数据.entries()) {
+                if (i === rowIdx) {
+                  continue;
+                }
+                delete item4.默认值;
+              }
+            }
             this.refreshItems();
           }
         }
@@ -160,15 +195,77 @@ export class XhmrmsbjSbjbComponent {
     if (item) {
       const item2 = this.activeItem();
       if (item2) {
-        item2.锁边铰边数据.push(item);
+        if (item.默认值) {
+          for (const item3 of item2.锁边铰边数据) {
+            delete item3.默认值;
+          }
+        }
+        item.CAD数据 = [];
+        for (const name of xhmrmsbjSbjbItemCadKeys[item2.产品分类] || []) {
+          item.CAD数据.push({name, cad: getHoutaiCad(new CadData({name}))});
+        }
+        item2.锁边铰边数据.unshift(item);
         this.refreshItems();
       }
     }
   }
 
+  sbjbItemTableContainer = viewChild<ElementRef<HTMLElement>>("sbjbItemTableContainer");
+  async validate() {
+    const items = this.items();
+    const errItems: {i: number; j: number; errKeys: string[]}[] = [];
+    for (const [i, item] of items.entries()) {
+      const items2 = getSortedItems(item.锁边铰边数据, (v) => v.排序 ?? 0);
+      for (const [j, item2] of items2.entries()) {
+        const errKeys: string[] = [];
+        for (const key of xhmrmsbjSbjbItemCadKeys[item.产品分类] || []) {
+          if (key === "锁边" || key === "铰边") {
+            if (!item2[key].名字) {
+              errKeys.push(key);
+            }
+          } else if (!item2[key]) {
+            errKeys.push(key);
+          }
+        }
+        if (errKeys.length > 0) {
+          errItems.push({i, j, errKeys});
+        }
+      }
+    }
+    if (errItems.length > 0) {
+      await this.message.error({
+        content: "数据有误",
+        details: errItems.map(({i, errKeys}) => {
+          const item = items[i];
+          const str = errKeys.map((v) => `【${v}】`).join("");
+          return `${item.产品分类}: 缺少选项${str}`;
+        })
+      });
+      const errItem = errItems[0];
+      this.activeItemIndex.set(errItem.i);
+      setTimeout(() => {
+        this.activeSbjbItemIndex.set(errItem.j);
+        const sbjbItemTableContainer = this.sbjbItemTableContainer()?.nativeElement;
+        if (sbjbItemTableContainer) {
+          const row = sbjbItemTableContainer.querySelectorAll("app-table mat-table mat-row")[errItem.j];
+          console.log(row);
+          if (row) {
+            row.scrollIntoView({block: "center"});
+          }
+        }
+      }, 0);
+      return false;
+    }
+    return true;
+  }
   async save() {
+    const isValid = await this.validate();
+    if (!isValid) {
+      return false;
+    }
     const items0 = this.items();
     const items = items0.map((item) => ({...item, 锁边铰边数据: item.锁边铰边数据.map((v) => ({...v, CAD数据: undefined}))}));
     await this.http.getData("shuju/api/saveSuobianjiaobianData", {xinghao: this.xinghaoName(), data: items});
+    return true;
   }
 }

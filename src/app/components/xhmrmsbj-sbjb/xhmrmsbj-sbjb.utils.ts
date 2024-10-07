@@ -91,18 +91,23 @@ export const getXhmrmsbjSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbI
 
 export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, options: OptionsService, item?: XhmrmsbjSbjbItemSbjb) => {
   const data = getXhmrmsbjSbjbItemSbjb(cloneDeep(item));
-  const getSelectInputInfo = async (key: keyof XhmrmsbjSbjbItemSbjb, multiple: boolean) =>
-    ({
+  const getSelectInputInfo = async (key: keyof XhmrmsbjSbjbItemSbjb, multiple: boolean, required?: boolean) => {
+    const info: InputInfo<typeof data> = {
       type: "select",
       label: key,
       model: {data, key},
       multiple,
       options: await options.fetchInputInfoOptions({name: key})
-    }) satisfies InputInfo<typeof data>;
+    };
+    if (required) {
+      info.validators = Validators.required;
+    }
+    return info;
+  };
   const form: InputInfo[] = [
-    await getSelectInputInfo("开启", true),
-    await getSelectInputInfo("门铰", true),
-    await getSelectInputInfo("门扇厚度", true),
+    await getSelectInputInfo("开启", true, true),
+    await getSelectInputInfo("门铰", true, true),
+    await getSelectInputInfo("门扇厚度", true, true),
     {type: "string", label: "条件", model: {data, key: "条件"}},
     await getSelectInputInfo("包边方向", false),
     {type: "boolean", label: "停用", model: {data, key: "停用"}},

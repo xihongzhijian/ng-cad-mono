@@ -1,5 +1,8 @@
 import {SortedItem} from "@app/utils/sort-items";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {ObjectOf} from "packages/utils/lib";
+
+export type XhmrmsbjSbjbResponseData = XhmrmsbjSbjbItem[];
 
 export interface XhmrmsbjSbjbItem {
   产品分类: string;
@@ -43,3 +46,9 @@ export interface XhmrmsbjSbjbItemSbjbCadInfo {
 
 export const xhmrmsbjSbjbItemOptionalKeys = ["锁框", "铰框", "顶框", "插销边", "小扇铰边"] as const;
 export type XhmrmsbjSbjbItemOptionalKey = (typeof xhmrmsbjSbjbItemOptionalKeys)[number];
+
+export const xhmrmsbjSbjbItemCadKeys: ObjectOf<("锁边" | "铰边" | XhmrmsbjSbjbItemOptionalKey)[]> = {
+  单门: ["铰框", "铰边", "锁边", "锁框", "顶框"],
+  子母对开: ["铰框", "小扇铰边", "插销边", "锁边", "铰边", "铰框", "顶框"],
+  双开: ["铰框", "铰边", "插销边", "锁边", "铰边", "铰框", "顶框"]
+};
