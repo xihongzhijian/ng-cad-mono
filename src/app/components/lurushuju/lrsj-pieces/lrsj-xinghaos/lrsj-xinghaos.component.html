@@ -2,7 +2,9 @@
   <button mat-raised-button color="primary" (click)="selectAllXinghaos()">全选</button>
   <button mat-raised-button color="primary" (click)="selectXinghaosGongyi()">批量选择工艺</button>
   <button mat-raised-button color="primary" (click)="addXinghao()">新建型号</button>
-  <app-input [info]="filterInputInfo"></app-input>
+  @for (info of xinghaoFilterForm(); track $index) {
+    <app-input [info]="info"></app-input>
+  }
 </div>
 <ng-scrollbar style="width: 100%">
   <div class="xinghaos items no-items-per-row">

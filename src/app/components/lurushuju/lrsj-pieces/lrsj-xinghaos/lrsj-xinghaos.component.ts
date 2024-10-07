@@ -18,7 +18,7 @@ import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
-import {XinghaoData} from "../../services/lrsj-status.types";
+import {OptionsAll, XinghaoData} from "../../services/lrsj-status.types";
 import {getXinghaoData} from "../../services/lrsj-status.utils";
 import {XinghaoRaw, 算料单模板Options} from "../../xinghao-data";
 import {LrsjPiece} from "../lrsj-piece";
@@ -60,16 +60,32 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     super();
   }
 
-  filterInputInfo: InputInfo<this> = {
-    type: "string",
-    label: "搜索型号",
-    clearable: true,
-    value: this.lrsjStatus.xinghaoFilterStr(),
-    onInput: debounce((val) => {
-      this.lrsjStatus.xinghaoFilterStr.set(val);
-    }, 500),
-    style: {width: "200px"}
-  };
+  xinghaoFilterForm = computed(() => {
+    const data = {...this.lrsjStatus.xinghaoFilter()};
+    const update = () => this.lrsjStatus.xinghaoFilter.set(data);
+    const zuoshujubanbenOptions = this.getOptions0(this.lrsjStatus.xinghaoOptionsManager.data(), "做数据版本");
+    zuoshujubanbenOptions.unshift({label: "全部", value: ""});
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "string",
+        label: "搜索型号",
+        clearable: true,
+        model: {data, key: "name"},
+        onInput: debounce(() => update(), 500),
+        style: {width: "200px"}
+      },
+      {
+        type: "select",
+        label: "做数据版本",
+        clearable: true,
+        model: {data, key: "zuoshujubanben"},
+        options: zuoshujubanbenOptions,
+        onChange: () => update(),
+        style: {width: "220px"}
+      }
+    ];
+    return form;
+  });
 
   xinghaos = computed(() => {
     const xinghaoMenchuangs = this.xinghaoMenchuangs();
@@ -368,13 +384,16 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     this.showXhmrmsbj.set(null);
   }
 
-  async getOptions(key: string) {
-    const xinghaoOptionsAll = await this.lrsjStatus.xinghaoOptionsManager.fetch();
-    return getOptions(xinghaoOptionsAll, key, (option) => {
+  getOptions0(optionsAll: OptionsAll, key: string) {
+    return getOptions(optionsAll, key, (option) => {
       if (key === "产品分类") {
         option.disabled = defaultFenleis.includes(option.value);
       }
     });
+  }
+  async getOptions(key: string) {
+    const xinghaoOptionsAll = await this.lrsjStatus.xinghaoOptionsManager.fetch();
+    return this.getOptions0(xinghaoOptionsAll, key);
   }
   async getOptionInput(data: any, key1: string, key2: string, multiple?: boolean, others?: Partial<InputInfo>) {
     const info: InputInfoSelect = {

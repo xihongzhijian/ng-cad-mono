@@ -11,6 +11,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
 import {filterHuajian} from "@views/mrbcjfz/mrbcjfz.utils";
+import {getIsVersion2024} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {lastValueFrom, Subject, take, takeUntil} from "rxjs";
 import {LrsjPieceInfos} from "../lrsj-pieces/lrsj-pieces.types";
@@ -61,12 +62,16 @@ export class LrsjStatusService implements OnDestroy {
   suanliaoCadsValidateStart$ = new Subject<{alert: boolean}>();
   suanliaoCadsValidateEnd$ = new Subject<string[]>();
 
-  private _xinghaoFilterStrKey = "lurushujuXinghaoFilterStr";
-  xinghaoFilterStr = signal(session.load<string>(this._xinghaoFilterStrKey) || "");
-  xinghaoFilterStrEff = effect(() => {
-    const str = this.xinghaoFilterStr();
-    session.save(this._xinghaoFilterStrKey, str);
+  private _xinghaoFilterKey = "lurushujuXinghaoFilter";
+  xinghaoFilter = signal<{name?: string; zuoshujubanben?: string}>(session.load(this._xinghaoFilterKey) || {});
+  xinghaoFilterEff = effect(() => {
+    const filter = this.xinghaoFilter();
+    session.save(this._xinghaoFilterKey, filter);
     untracked(() => this.filterXinghaos());
+  });
+  isXinghaoFilterEmpty = computed(() => {
+    const filter = this.xinghaoFilter();
+    return !filter.name && !filter.zuoshujubanben;
   });
   focusFenleiZuofa = signal<{i: number; j?: number} | null>(null);
 
@@ -535,7 +540,7 @@ export class LrsjStatusService implements OnDestroy {
     return null;
   }
   filterXinghaos() {
-    const str = this.xinghaoFilterStr();
+    const filter = this.xinghaoFilter();
     const xinghaoMenchuangs = this.xinghaoMenchuangs().clone();
     if (xinghaoMenchuangs.items.length < 1) {
       return;
@@ -555,7 +560,18 @@ export class LrsjStatusService implements OnDestroy {
         const xinghaos = gongyi.xinghaos;
         let xinghaoCount = 0;
         for (const xinghao of xinghaos.items) {
-          xinghao.hidden = !queryString(str, xinghao.mingzi);
+          xinghao.hidden = false;
+          if (filter.name && !xinghao.hidden) {
+            xinghao.hidden = !queryString(filter.name, xinghao.mingzi);
+          }
+          if (filter.zuoshujubanben && !xinghao.hidden) {
+            const isVersion2024 = getIsVersion2024(xinghao.zuoshujubanben);
+            if (getIsVersion2024(filter.zuoshujubanben)) {
+              xinghao.hidden = !isVersion2024;
+            } else {
+              xinghao.hidden = isVersion2024;
+            }
+          }
           if (!xinghao.hidden) {
             xinghaoCount++;
             gongyiCount++;
@@ -571,7 +587,7 @@ export class LrsjStatusService implements OnDestroy {
     }
     xinghaoMenchuangs.count = menchuangCount;
     this.xinghaoMenchuangs.set(xinghaoMenchuangs);
-    if (str) {
+    if (!this.isXinghaoFilterEmpty()) {
       const foundCount = foundGongyis.length;
       if (foundCount < 1) {
         this.message.snack("搜索不到数据");

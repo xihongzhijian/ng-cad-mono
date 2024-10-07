@@ -31,7 +31,7 @@ export class LurushujuNavComponent {
   xinghaoMenchuangs = this.lrsjStatus.xinghaoMenchuangs;
   editMode = this.lrsjStatus.editMode;
   xinghao = this.lrsjStatus.xinghao;
-  xinghaoFilterStr = this.lrsjStatus.xinghaoFilterStr;
+  isXinghaoFilterEmpty = this.lrsjStatus.isXinghaoFilterEmpty;
   pieceInfos = this.lrsjStatus.pieceInfos;
   focusFenleiZuofa = this.lrsjStatus.focusFenleiZuofa;
   suanliaoDataInfo = this.lrsjStatus.suanliaoDataInfo;
