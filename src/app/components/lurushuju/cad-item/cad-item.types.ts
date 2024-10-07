@@ -1,4 +1,3 @@
-import {CadCollection} from "@app/cad/collections";
 import {CadItemComponent} from "./cad-item.component";
 
 export interface CadItemButton<T> {
@@ -14,7 +13,6 @@ export interface CadItemSelectable<T> {
 }
 
 export interface CadItemIsOnlineInfo<T> {
-  collection?: CadCollection;
   isFetched?: boolean;
   afterFetch?: (component: CadItemComponent<T>) => void;
 }

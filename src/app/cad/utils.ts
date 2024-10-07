@@ -131,7 +131,7 @@ export const filterCadEntitiesToSave = (data: CadData) => {
 
 export const LINE_LIMIT = [0.01, 0.1] as const;
 export const validColors = ["#ffffff", "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#00ffff"] as const;
-export const validateLines = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOLERANCE) => {
+export const validateLines = (collection: CadCollection, data: CadData, noInfo?: boolean, tol = DEFAULT_TOLERANCE) => {
   const result: ValidateResult = {errors: [], errorLines: []};
   data.entities.forEach((e) => {
     if (e instanceof CadLineLike) {
@@ -141,7 +141,7 @@ export const validateLines = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOL
   if (isShiyitu(data) || ["企料算料", "孔"].includes(data.type)) {
     return result;
   }
-  const typeCheck = cadTypes1.includes(data.type);
+  const typeCheck = cadTypes1.includes(data.type) || collection === "peijianCad";
   let has自动识别上下折 = false;
   if (cadTypes2.includes(data.type)) {
     has自动识别上下折 = !!data.entities.find((e) => e instanceof CadLineLike && e.双向折弯附加值.includes("上下折程序自动识别"));
@@ -198,7 +198,11 @@ export const validateLines = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOL
   if (lines.length < 1) {
     result.errors.push("没有线");
   } else if (typeCheck && lines.length > groupMaxLength && !has自动识别上下折) {
-    result.errors.push("CAD分成了多段或线重叠");
+    if (data.shuangxiangzhewan) {
+      result.errors.push("CAD是双向折弯，分成了3段以上或线重叠");
+    } else {
+      result.errors.push("CAD不是双向折弯，分成了多段或线重叠");
+    }
     for (let i = 0; i < lines.length - 1; i++) {
       const currGroup = lines[i];
       const nextGroup = lines[i + 1];
@@ -228,7 +232,12 @@ export const validateLines = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOL
   return result;
 };
 
-export const validateCad = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOLERANCE) => {
+export const isCadCollectionOfCad = (collection: CadCollection) => {
+  const collections: CadCollection[] = ["cad", "peijianCad"];
+  return collections.includes(collection);
+};
+
+export const validateCad = (collection: CadCollection, data: CadData, noInfo?: boolean, tol = DEFAULT_TOLERANCE) => {
   const result: ValidateResult = {errors: [], errorLines: []};
   const entities = data.getAllEntities();
   const idsAll = entities.toArray().map((e) => e.id);
@@ -241,7 +250,7 @@ export const validateCad = (data: CadData, noInfo?: boolean, tol = DEFAULT_TOLER
   if (!isEmpty(data.blocks) || data.entities.insert.length > 0) {
     result.errors.push("不能包含块");
   }
-  const linesResult = validateLines(data, noInfo, tol);
+  const linesResult = validateLines(collection, data, noInfo, tol);
   for (const key in result) {
     (result as any)[key].push(...(linesResult as any)[key]);
   }
@@ -704,10 +713,8 @@ export const getLineLengthTextSize = (line: CadLineLike) => {
     size = 35;
   } else if (length >= 15) {
     size = 30;
-  } else if (length >= 10) {
-    size = 25;
   } else {
-    size = 20;
+    size = 25;
   }
   return size;
 };

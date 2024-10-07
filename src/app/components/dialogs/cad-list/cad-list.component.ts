@@ -450,7 +450,7 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async openImportPage() {
-    openImportPage(this.status, {yaoqiu: this.data.yaoqiu, lurushuju: true});
+    openImportPage(this.status, {collection: this.data.collection, yaoqiu: this.data.yaoqiu, lurushuju: true});
     if (await this.message.newTabConfirm()) {
       this.search();
     }

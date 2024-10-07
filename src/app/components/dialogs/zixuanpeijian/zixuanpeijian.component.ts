@@ -1443,7 +1443,7 @@ export class ZixuanpeijianComponent implements OnInit {
 
   async openImportPage(searchYaoqiu: boolean) {
     const {xinghao} = this.data?.lingsanOptions || {};
-    const data: ImportCache = {xinghao, lurushuju: true};
+    const data: ImportCache = {collection: "cad", xinghao, lurushuju: true};
     if (searchYaoqiu) {
       data.searchYaoqiu = true;
     } else {

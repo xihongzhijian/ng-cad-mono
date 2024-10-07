@@ -59,9 +59,10 @@
           [cad]="item.data"
           [buttons]="cadItemButtons"
           [customInfo]="{index: i}"
+          [collection]="data.collection"
           [yaoqiu]="data.yaoqiu"
           [gongshis]="data.gongshis"
-          [isOnline]="{collection: data.collection, isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
+          [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
           [selectable]="getItemSelectable(item)"
         ></app-cad-item>
       }

@@ -136,11 +136,16 @@ export class MokuaiCadsComponent {
     this.cadsIsOnline = cadsIsOnline;
     for (const cad of cads) {
       const id = cad.id;
-      cadsIsOnline[id] = cadsIsOnlineOld[id] ?? {
-        collection: this.collection,
-        isFetched: false,
-        afterFetch: () => (cadsIsOnline[id].isFetched = true)
-      };
+      if (cadsIsOnlineOld[id]) {
+        cadsIsOnline[id] = cadsIsOnlineOld[id];
+      } else {
+        cadsIsOnline[id] = {
+          isFetched: false,
+          afterFetch: () => {
+            cadsIsOnline[id].isFetched = true;
+          }
+        };
+      }
     }
   });
 
@@ -285,7 +290,7 @@ export class MokuaiCadsComponent {
   }
 
   async openImportPage(searchYaoqiu: boolean) {
-    const data: ImportCache = {lurushuju: true};
+    const data: ImportCache = {collection: "peijianCad", lurushuju: true};
     if (searchYaoqiu) {
       data.searchYaoqiu = true;
     } else {

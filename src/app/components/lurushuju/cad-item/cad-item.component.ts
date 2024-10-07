@@ -7,6 +7,7 @@ import {
   forwardRef,
   HostBinding,
   HostListener,
+  input,
   Input,
   OnChanges,
   OnDestroy,
@@ -84,6 +85,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input() buttons2: CadItemButton<T>[] = [];
   @Input() hideButtons = false;
+  collection = input<CadCollection>("cad");
   @Input({required: true}) customInfo!: T;
   @Input({required: true}) yaoqiu: Cad数据要求 | undefined | null;
   @Input() gongshis: 算料公式[] | null | undefined;
@@ -201,7 +203,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (!isOnline || isOnline.isFetched) {
       return;
     }
-    const params: QueryMongodbParams = {collection: isOnline.collection || "cad", where: {_id: this.cadId}};
+    const params: QueryMongodbParams = {collection: this.collection(), where: {_id: this.cadId}};
     if (compact && yaoqiu) {
       const fields: string[] = [];
       for (const {cadKey} of yaoqiu.CAD弹窗修改属性) {
@@ -233,7 +235,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     const cadData = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     const result = await openCadEditorDialog(this.dialog, {
       data: {
-        collection: isOnline?.collection,
+        collection: this.collection(),
         data: cadData,
         center: true,
         isLocal: this.isLocal || !isOnline,
@@ -301,7 +303,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         Object.assign(cad, getHoutaiCad(data));
       }
       if (isOnline) {
-        await this.http.setCad({collection: isOnline.collection || "cad", cadData: data, force: true}, true);
+        await this.http.setCad({collection: this.collection(), cadData: data, force: true}, true);
       }
       await this.initCadViewer();
       this.afterEditCad.emit();
@@ -759,8 +761,9 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         }
       });
       const isOnline = this.isOnline;
+      const collection = this.collection();
       if (isOnline) {
-        await this.http.setCad({collection: isOnline.collection || "cad", cadData: data, force: true}, true);
+        await this.http.setCad({collection, cadData: data, force: true}, true);
       }
       generateLineTexts2(data);
       let id = data.id;

@@ -10,6 +10,7 @@ import {
   generateLineTexts2,
   getCadTotalLength,
   getLineLengthTextSize,
+  isCadCollectionOfCad,
   prepareCadViewer,
   removeIntersections,
   showIntersections,
@@ -168,7 +169,7 @@ export class AppStatusService {
       this.setProject$.next();
 
       {
-        const data = await this.http.getData<ProjectConfigRaw>("ngcad/getProjectConfig", {spinner: false});
+        const data = await this.http.getData<ProjectConfigRaw>("ngcad/getProjectConfig", {}, {spinner: false});
         this.projectConfig.setRaw(data || {});
       }
     }
@@ -294,8 +295,8 @@ export class AppStatusService {
         data.对应计算条数的配件[""] = "";
       }
       suanliaodanZoomIn(data);
-      if (collection === "cad") {
-        validateLines(data);
+      if (isCadCollectionOfCad(collection)) {
+        validateLines(collection, data);
       }
       this.generateLineTexts();
       await updatePreview(data, "pre");
@@ -342,8 +343,6 @@ export class AppStatusService {
   }
 
   async saveCad(loaderId?: string, query?: OpenCadOptions["query"]): Promise<CadData | null> {
-    this.saveCadStart$.next();
-    this.saveCadLocked$.next(true);
     await timeout(100); // 等待input事件触发
     const {http, message, spinner} = this;
     const collection = this.collection$.value;
@@ -382,6 +381,9 @@ export class AppStatusService {
         return null;
       }
     }
+
+    this.saveCadStart$.next();
+    this.saveCadLocked$.next(true);
     data = this.closeCad();
     const isLocal = this.openCad$.value.isLocal;
     if (isLocal) {
@@ -478,13 +480,14 @@ export class AppStatusService {
 
   validate(force?: boolean) {
     const noInfo = !this.config.getConfig("validateLines");
-    if (this.collection$.value !== "cad") {
+    const collection = this.collection$.value;
+    if (!isCadCollectionOfCad(collection)) {
       return null;
     }
     if (!force && noInfo) {
       return null;
     }
-    const result = validateCad(this.cad.data, noInfo);
+    const result = validateCad(collection, this.cad.data, noInfo);
     this.cad.render();
     return result;
   }
@@ -661,7 +664,7 @@ export class AppStatusService {
     if (this._isInputOptionsFetched) {
       return;
     }
-    const result = await this.http.getData<ObjectOf<string[]>>("shuju/api/getInputNames", {spinner: false});
+    const result = await this.http.getData<ObjectOf<string[]>>("shuju/api/getInputNames", {}, {spinner: false});
     if (!result || !isTypeOf(result, "object")) {
       return;
     }

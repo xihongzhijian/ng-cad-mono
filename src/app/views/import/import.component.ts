@@ -5,6 +5,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
+import {CadCollection} from "@app/cad/collections";
 import {CadInfo, CadInfoError, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
 import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
@@ -57,6 +58,7 @@ export class ImportComponent extends Utils() implements OnInit {
     downloadSourceCad: "downloadSourceCad"
   };
   msg = "";
+  collection: CadCollection = "cad";
   cads: CadInfo[] = [];
   slgses: SlgsInfo[] = [];
   xinghaoInfo: XinghaoInfo | undefined;
@@ -130,6 +132,9 @@ export class ImportComponent extends Utils() implements OnInit {
         Object.assign(this.importConfigNormal, this.importCache.yaoqiu.导入配置);
       }
       this.compactPage = !!this.importCache?.lurushuju;
+      if (this.importCache) {
+        this.collection = this.importCache.collection || "cad";
+      }
     }
 
     const normalHiddenKeys: ImportComponentConfigName[] = [];
@@ -295,7 +300,7 @@ export class ImportComponent extends Utils() implements OnInit {
       const xinghao = cads[0].data.options.型号;
       const uniqCodes = cads.map((v) => v.data.info.唯一码);
       const oldCadsRaw = await this.http.queryMongodb<HoutaiCad>({
-        collection: "cad",
+        collection: this.collection,
         where: {"选项.型号": xinghao, 分类: "算料", 名字: {$regex: "^((?!分体|上下包边).)*$"}}
       });
       const oldSlgsRaw = await this.http.queryMongodb({collection: "material", where: {"选项.型号": xinghao}});
@@ -325,7 +330,7 @@ export class ImportComponent extends Utils() implements OnInit {
       }
       const result = await this.http.setCad(
         {
-          collection: "cad",
+          collection: this.collection,
           cadData: cads[i].data,
           force: true,
           importConfig: {pruneLines}
@@ -657,7 +662,7 @@ export class ImportComponent extends Utils() implements OnInit {
         cad.errors.push("存在没有id的线");
       }
     }
-    cad.errors = cad.errors.concat(validateLines(data).errors);
+    cad.errors = cad.errors.concat(validateLines(this.collection, data).errors);
     cad.errors = cad.errors.concat(await this._validateOptions(data.options, httpOptions));
     cad.errors = cad.errors.concat(await this._validateOptions(data.对应计算条数的配件, httpOptions));
 

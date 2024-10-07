@@ -35,6 +35,7 @@
           [buttons]="cadItemButtons()"
           [hideButtons]="!cadsEditMode()"
           [customInfo]="{index: i}"
+          [collection]="collection"
           [isOnline]="cadsIsOnline[cad.id]"
           [editDisabled]="!cadItemEditable()"
           (afterEditCad)="afterEditCad(cad.id)"
