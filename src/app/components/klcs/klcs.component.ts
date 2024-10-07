@@ -9,7 +9,7 @@ import {MessageData} from "@modules/message/components/message/message.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, isObject, uniq} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {JSONContent, JSONEditor, TextContent} from "vanilla-jsoneditor";
+import {createJSONEditor, JSONContent, TextContent} from "vanilla-jsoneditor";
 import {InputComponent} from "../../modules/input/components/input.component";
 
 @Component({
@@ -32,7 +32,7 @@ export class KlcsComponent implements OnInit, AfterViewInit {
   @Input() cadId?: string;
   inputInfos: InputInfo[] = [];
   inputInfos2: InputInfo[][] = [];
-  jsonEditor: JSONEditor | null = null;
+  jsonEditor: ReturnType<typeof createJSONEditor> | null = null;
   @ViewChild("jsonEditorContainer") jsonEditorContainer?: ElementRef<HTMLDivElement>;
   useJsonEditor = false;
   cadData?: CadData;
@@ -243,7 +243,7 @@ export class KlcsComponent implements OnInit, AfterViewInit {
     if (this.useJsonEditor) {
       if (!this.jsonEditor) {
         if (this.jsonEditorContainer) {
-          this.jsonEditor = new JSONEditor({target: this.jsonEditorContainer.nativeElement});
+          this.jsonEditor = createJSONEditor({target: this.jsonEditorContainer.nativeElement, props: {}});
         }
       }
       if (this.jsonEditor) {

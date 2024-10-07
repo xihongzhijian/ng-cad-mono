@@ -25,7 +25,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {JSONContent, JSONEditor, Mode} from "vanilla-jsoneditor";
+import {createJSONEditor, JSONContent, Mode} from "vanilla-jsoneditor";
 import {ButtonMessageData, MessageBeforeCloseEvent, MessageData, MessageDataMap, MessageOutput} from "./message.types";
 import {validateForm} from "./message.utils";
 
@@ -55,7 +55,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   iframeSrc: SafeResourceUrl = "";
   page = 0;
   inputsBackup: InputInfo[] = [];
-  jsonEditor: JSONEditor | null = null;
+  jsonEditor: ReturnType<typeof createJSONEditor> | null = null;
   @ViewChild(QuillEditorComponent) editor?: QuillViewComponent;
   @ViewChild("iframe") iframe?: ElementRef<HTMLIFrameElement>;
   @ViewChildren("formInput") formInputs?: QueryList<InputComponent>;
@@ -147,7 +147,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     const {jsonEditorContainer, data} = this;
     if (jsonEditorContainer && data.type === "json") {
-      this.jsonEditor = new JSONEditor({
+      this.jsonEditor = createJSONEditor({
         target: jsonEditorContainer.nativeElement,
         props: {mode: Mode.tree, ...data.options}
       });
