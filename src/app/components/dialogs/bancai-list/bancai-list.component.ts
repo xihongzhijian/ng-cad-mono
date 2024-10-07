@@ -46,6 +46,7 @@ export class BancaiListComponent {
     type: "string",
     label: "搜索",
     autoFocus: true,
+    clearable: true,
     value: this.filterText(),
     onInput: debounce((val) => this.filterText.set(val), 200)
   }));
@@ -138,21 +139,14 @@ export class BancaiListComponent {
   }
 
   selectAll() {
-    const type = this.activeBancaiType();
-    const checkedItems = this.checkedItems();
-    const list1 = this.list().filter((v) => this.isBancaiInType(v.bancai, type));
-    const list2 = this.checkedItems().filter((v) => this.isBancaiInType(v, type));
+    const list1 = this.list().filter((v) => !v.hidden);
+    const list2 = this.checkedItems();
     const names1 = new Set(list2.map((v) => v.mingzi));
     const names2 = new Set(list1.map((v) => v.bancai.mingzi));
     if (isEqual(names1, names2)) {
-      this.checkedItems.set(checkedItems.filter((v) => !names2.has(v.mingzi)));
+      this.checkedItems.set([]);
     } else {
-      for (const item of list1) {
-        if (!list2.find((v) => v.mingzi === item.bancai.mingzi)) {
-          checkedItems.push(item.bancai);
-        }
-      }
-      this.checkedItems.set([...checkedItems]);
+      this.checkedItems.set(list1.map((v) => v.bancai));
     }
   }
 }
