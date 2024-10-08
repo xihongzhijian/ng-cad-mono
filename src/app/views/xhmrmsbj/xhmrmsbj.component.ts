@@ -1249,12 +1249,16 @@ export class XhmrmsbjComponent implements OnDestroy {
       return;
     }
     const mokuaidaxiaoResults = this.mokuaidaxiaoResults();
-    openXhmrmsbjMokuaisDialog(this.dialog, {
+    await openXhmrmsbjMokuaisDialog(this.dialog, {
       data: {
         data: {lastSuanliao, mokuaidaxiaoResults},
         isVersion2024: !!this.data()?.isVersion2024
       }
     });
+  }
+  async openMokuaisStart() {
+    await this.openMokuais();
+    return {action: "openMokuaisEnd"};
   }
 
   openHoutaiUrl() {
