@@ -298,7 +298,7 @@ export class XhmrmsbjComponent implements OnDestroy {
   isZhijian = computed(() => this.user()?.经销商名字 === "至简软件");
   opts = signal<XhmrmsbjRequestData["opts"]>(undefined);
   isFloatingDialog = computed(() => !!this.opts()?.浮动弹窗);
-  async requestDataEnd(data: XhmrmsbjRequestData) {
+  async requestDataEnd(data: XhmrmsbjRequestData, noSuanliao = false) {
     const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys, 铰扇跟随锁扇} = data;
     const {houtaiUrl, id, user, localServerUrl, menshanbujus, step1Data, 模块通用配置} = data;
     if (typeof localServerUrl === "string") {
@@ -341,6 +341,9 @@ export class XhmrmsbjComponent implements OnDestroy {
       this.selectMsbjRect(浮动弹窗.节点名字);
     } else {
       await this.selectMenshanKey(this.activeMenshanKey() || this.menshanKeys[0]);
+    }
+    if (!noSuanliao) {
+      await this.suanliao();
     }
   }
 
@@ -394,7 +397,6 @@ export class XhmrmsbjComponent implements OnDestroy {
     if (this.activeMenshanKey() !== key) {
       this.activeMenshanKey.set(key as MenshanKey);
       await this.setActiveMsbj(this.activeMsbjInfo());
-      await this.suanliao();
     }
   }
 
@@ -1146,7 +1148,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.spinner.show(this.spinner.defaultLoaderId, {text: timerName});
     this.wmm.postMessage("suanliaoStart", this.submitDataStart().data);
     const data = await this.wmm.waitForMessage("suanliaoEnd");
-    await this.requestDataEnd(data);
+    await this.requestDataEnd(data, true);
     // this.activeMsbj()?.updateRectsInfo(this.getNode2rectData());
     await this.updateMokuaidaxiaoResults();
     timer.end(timerName, timerName);

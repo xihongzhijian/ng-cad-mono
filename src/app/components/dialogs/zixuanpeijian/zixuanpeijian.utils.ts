@@ -391,15 +391,10 @@ export const calcZxpj = async (
   const duplicateXxsr: ObjectOf<Set<string>> = {};
   const dimensionNamesMap: ObjectOf<{item: ZixuanpeijianCadItem}[]> = {};
   const varsGlobal: Formulas = {};
+  const tongyongGongshiCalcResult = await calc.calcFormulas(tongyongGongshi, materialResult);
   const gongshiCalcResult = await calc.calcFormulas(gongshi, materialResult);
-  if (!gongshiCalcResult) {
-    return {
-      fulfilled: false,
-      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult}}
-    };
-  }
-  calc.calc.mergeFormulas(materialResult, tongyongGongshi);
-  calc.calc.mergeFormulas(materialResult, gongshiCalcResult.succeedTrim);
+  calc.calc.mergeFormulas(materialResult, tongyongGongshiCalcResult?.succeedTrim || {});
+  calc.calc.mergeFormulas(materialResult, gongshiCalcResult?.succeedTrim || {});
   calc.calc.mergeFormulas(materialResult, inputResult);
 
   const gongshiKeys = Object.keys(gongshi);
