@@ -18,7 +18,6 @@ import {
   findAllAdjacentLines,
   generateLineTexts,
   generatePointsMap,
-  getDimensionLinePoint,
   getLinesDistance,
   intersectionKeys,
   intersectionKeysTranslate,
@@ -28,7 +27,6 @@ import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, 
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {AppStatusService} from "@services/app-status.service";
 import {difference, isEmpty} from "lodash";
 import {CadCollection} from "./collections";
 import {cadDimensionOptions} from "./options";
@@ -831,22 +829,4 @@ export const autoShuangxiangzhewan = (data: CadData, tolerance?: number) => {
   if (intersectionCount === 1) {
     data.shuangxiangzhewan = true;
   }
-};
-
-export const showDimensionPoints = (status: AppStatusService, dimensions: CadDimension[]) => {
-  const points: Point[] = [];
-  const cad = status.cad;
-  for (const dimension of dimensions) {
-    if (!(dimension instanceof CadDimensionLinear)) {
-      continue;
-    }
-    for (const info of [dimension.entity1, dimension.entity2]) {
-      const line = cad.data.findEntity(info.id);
-      if (!(line instanceof CadLineLike)) {
-        continue;
-      }
-      points.push(getDimensionLinePoint(line, info.location, dimension.axis));
-    }
-  }
-  status.setCadPoints(points.map((v) => ({point: v, lines: [], selected: false})));
 };

@@ -19,7 +19,7 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
-import {openCadDimensionForm, showDimensionPoints} from "@app/cad/utils";
+import {openCadDimensionForm} from "@app/cad/utils";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
@@ -200,6 +200,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     cad.on("entitiesselect", this._onEntitySelect);
     cad.on("entitiesunselect", this._onEntityUnselect);
     cad.on("zoom", this._onZoom);
+    cad.on("moveentities", this._onMoveEntities);
     this._setCadPadding();
 
     this.subscribe(this.config.configChange$, ({newVal}) => {
@@ -271,6 +272,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     cad.off("entitiesselect", this._onEntitySelect);
     cad.off("entitiesunselect", this._onEntityUnselect);
     cad.off("zoom", this._onZoom);
+    cad.off("moveentities", this._onMoveEntities);
   }
 
   private _onEntitiesCopy: CadEventCallBack<"entitiescopy"> = (entities) => {
@@ -308,11 +310,14 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   private _onZoom: CadEventCallBack<"zoom"> = () => {
     this._updateDimPoints();
   };
+  private _onMoveEntities: CadEventCallBack<"moveentities"> = () => {
+    this._updateDimPoints();
+  };
   private _updateDimPoints() {
     if (!(this.status.cadStatus instanceof CadStatusNormal)) {
       return;
     }
-    showDimensionPoints(this.status, this.status.cad.selected().dimension);
+    this.status.highlightDimensions();
   }
 
   private _setCadPadding() {

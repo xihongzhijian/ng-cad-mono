@@ -25,6 +25,8 @@ import {算料公式} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {
   CadData,
+  CadDimension,
+  CadDimensionLinear,
   CadEntities,
   CadEntity,
   CadHatch,
@@ -33,10 +35,11 @@ import {
   CadMtext,
   CadViewer,
   generatePointsMap,
+  getDimensionLinePoint,
   PointsMap,
   setLinesLength
 } from "@lucilor/cad-viewer";
-import {FileSizeOptions, getFileSize, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
+import {FileSizeOptions, getFileSize, isTypeOf, ObjectOf, Point, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -73,9 +76,6 @@ export class AppStatusService {
   project = "";
   collection$ = new BehaviorSubject<CadCollection>("cad");
   cadTotalLength$ = new BehaviorSubject<number>(0);
-  cadStatus = new CadStatusNormal();
-  cadStatusEnter$ = new BehaviorSubject<CadStatus>(new CadStatusNormal());
-  cadStatusExit$ = new BehaviorSubject<CadStatus>(new CadStatusNormal());
   cad = new CadViewer(setCadData(new CadData({name: "新建CAD", info: {isLocal: true}}), this.project, "cad", this.config.getConfig()));
   components = {
     selected$: new BehaviorSubject<CadData[]>([]),
@@ -194,13 +194,18 @@ export class AppStatusService {
     this._cadImgToUpdate.set(map);
   }
 
+  cadStatus = new CadStatusNormal();
+  cadStatusEnter$ = new BehaviorSubject<CadStatus>(new CadStatusNormal());
+  cadStatusExit$ = new BehaviorSubject<CadStatus>(new CadStatusNormal());
   setCadStatus(value: CadStatus, confirmed = false) {
-    this.cadStatus.confirmed = confirmed;
+    const status = this.cadStatus;
+    status.confirmed = confirmed;
+    status.exitInProgress = true;
     this.cadStatusExit$.next(this.cadStatus);
     this.cadStatus = value;
+    status.exitInProgress = false;
     this.cadStatusEnter$.next(value);
   }
-
   toggleCadStatus(cadStatus: CadStatus) {
     const {name, index} = this.cadStatus;
     if (name === cadStatus.name && index === cadStatus.index) {
@@ -509,7 +514,7 @@ export class AppStatusService {
     document.title = this.cad.data.name || "无题";
   }
 
-  focus(entities?: CadEntities | CadEntity[], opt?: {selected?: boolean | ((e: CadEntity) => boolean | null)}) {
+  focus(entities?: CadEntities | CadEntity[], opt?: {selected?: boolean | ((e: CadEntity) => boolean)}) {
     entities = entities ?? this.cad.data.getAllEntities();
     const selected = opt?.selected ?? false;
     entities.forEach((e) => {
@@ -701,5 +706,36 @@ export class AppStatusService {
       return result;
     }
     return null;
+  }
+
+  private _highlightDimensionsSelectedPrev: CadDimension[] = [];
+  highlightDimensions(dimensions?: CadDimension[]) {
+    const points: Point[] = [];
+    const cad = this.cad;
+    if (!dimensions) {
+      dimensions = cad.data.getAllEntities().dimension;
+    }
+    const selectedPrev = this._highlightDimensionsSelectedPrev;
+    const selectedCurr: typeof selectedPrev = [];
+    this._highlightDimensionsSelectedPrev = selectedCurr;
+    for (const dimension of dimensions) {
+      if (!(dimension instanceof CadDimensionLinear)) {
+        continue;
+      }
+      for (const info of [dimension.entity1, dimension.entity2]) {
+        const line = cad.data.findEntity(info.id);
+        if (!(line instanceof CadLineLike)) {
+          continue;
+        }
+        if (dimension.selected) {
+          line.selected = true;
+          points.push(getDimensionLinePoint(line, info.location, dimension.axis));
+          selectedCurr.push(dimension);
+        } else if (selectedPrev.includes(dimension)) {
+          line.selected = false;
+        }
+      }
+    }
+    this.setCadPoints(points.map((v) => ({point: v, lines: [], selected: false})));
   }
 }

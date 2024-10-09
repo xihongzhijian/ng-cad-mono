@@ -8,6 +8,7 @@ export abstract class CadStatus {
   canConfirm = false;
   confirmWithEnter = false;
   confirmed = false;
+  exitInProgress = false;
 
   constructor(index?: number) {
     if (typeof index === "number") {

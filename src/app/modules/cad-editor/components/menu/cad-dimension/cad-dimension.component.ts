@@ -6,7 +6,7 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {reservedDimNames, showDimensionPoints} from "@app/cad/utils";
+import {reservedDimNames} from "@app/cad/utils";
 import {
   CadData,
   CadDimension,
@@ -113,7 +113,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     const dimensions = this.dimensions;
     const entity = entities.line[0];
     let newIndex = -1;
-    if (cadStatus instanceof CadStatusEditDimension && entity) {
+    if (cadStatus instanceof CadStatusEditDimension && !cadStatus.exitInProgress && entity) {
       const dimension = dimensions[cadStatus.index];
       if (cadStatus.type === "linear") {
         let dimensionLinear: CadDimensionLinear | undefined;
@@ -167,7 +167,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     }
     const dimension = this.dimensions[cadStatus.index];
     if (dimension) {
-      showDimensionPoints(this.status, [dimension]);
+      this.status.highlightDimensions([dimension]);
     }
   };
 
@@ -178,6 +178,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
       const dimension2 = await openCadDimensionFormDialog(this.dialog, {data: {data: dimension}, disableClose: true});
       if (dimension2) {
         await this.status.cad.render(dimension2);
+        this.status.highlightDimensions([dimension2]);
       }
     }
   }
@@ -223,15 +224,24 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
   }
 
   focus(dimension?: CadDimension) {
-    if (!dimension || !(dimension instanceof CadDimensionLinear)) {
-      return;
-    }
-    const toFocus: CadEntity[] = [];
+    // if (!dimension || !(dimension instanceof CadDimensionLinear)) {
+    //   console.log("11");
+    //   return;
+    // }
+    const toFocus: CadEntity[] = dimension ? [dimension] : [];
     const toBlur: CadEntity[] = [];
-    const {entity1, entity2} = dimension;
-    const ids = [entity1?.id, entity2?.id];
+    const ids: string[] = [];
+    const isLinear = dimension instanceof CadDimensionLinear;
+    if (isLinear) {
+      if (dimension.entity1?.id) {
+        ids.push(dimension.entity1.id);
+      }
+      if (dimension.entity2?.id) {
+        ids.push(dimension.entity2.id);
+      }
+    }
     this.status.cad.data.getAllEntities().forEach((e) => {
-      if (e instanceof CadLine || e.id === dimension.id) {
+      if (e instanceof CadLine || (isLinear && e.id === dimension.id)) {
         toFocus.push(e);
       } else {
         toBlur.push(e);
@@ -241,12 +251,13 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
       selected: (e) => {
         if (e instanceof CadLine) {
           return ids.includes(e.id);
+        } else {
+          return true;
         }
-        return null;
       }
     });
     this.status.blur(toBlur);
-    showDimensionPoints(this.status, [dimension]);
+    this.status.highlightDimensions(dimension ? [dimension] : []);
   }
 
   blur() {
