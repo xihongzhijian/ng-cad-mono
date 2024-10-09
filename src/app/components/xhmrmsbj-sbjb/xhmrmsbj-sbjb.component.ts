@@ -10,6 +10,7 @@ import {
   signal,
   viewChild
 } from "@angular/core";
+import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -21,7 +22,9 @@ import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, RowSelectionChange} from "@modules/table/components/table/table.types";
@@ -101,7 +104,7 @@ export class XhmrmsbjSbjbComponent {
     const name = cad.type;
     const yaoqiu = this.cadYaoqius()[name];
     const result = await openCadListDialog(this.dialog, {
-      data: {collection: "peijianCad", selectMode: "single", yaoqiu, checkedItems: [cad.id]}
+      data: {collection: "peijianCad", selectMode: "single", yaoqiu, checkedItems: [cad.id], addCadFn: () => this.addSbjbItemSbjbCad(name)}
     });
     const cad2 = result?.[0];
     if (cad2) {
@@ -114,6 +117,38 @@ export class XhmrmsbjSbjbComponent {
       item.CAD数据[customInfo.index].cad = getHoutaiCad(cad2);
       this.refreshItems();
     }
+  }
+  async addSbjbItemSbjbCad(name: string) {
+    const table = name;
+    const items = await this.http.queryMySql({table, fields: ["mingzi"]});
+    const itemNames = items.map((v) => v.mingzi);
+    const data = {mingzi: ""};
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "string",
+        label: "名字",
+        model: {data, key: "mingzi"},
+        validators: [
+          Validators.required,
+          (control) => {
+            const val = control.value;
+            if (itemNames.includes(val)) {
+              return {名字不能重复: true};
+            }
+            return null;
+          }
+        ]
+      }
+    ];
+    const result = await this.message.form(form);
+    if (!result) {
+      return null;
+    }
+    const resData = await this.http.getData<{cad: HoutaiCad}>("shuju/api/addSuobianjiaobianData", {table, data, type: name});
+    if (!resData) {
+      return null;
+    }
+    return new CadData(resData.cad.json);
   }
 
   fetchDataEff = effect(() => this.fetchData(), {allowSignalWrites: true});

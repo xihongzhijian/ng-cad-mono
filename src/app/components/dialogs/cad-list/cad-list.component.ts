@@ -390,7 +390,14 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async addCad() {
-    const {addCadData, yaoqiu, gongshis} = this.data;
+    const {addCadFn, addCadData, yaoqiu, gongshis} = this.data;
+    if (typeof addCadFn === "function") {
+      const res = await addCadFn();
+      if (res) {
+        this.search();
+      }
+      return;
+    }
     const cadData = new CadData(addCadData);
     const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
     const yaoqiuItems2 = yaoqiu?.选中CAD要求 || [];
