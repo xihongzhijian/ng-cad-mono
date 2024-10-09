@@ -9,7 +9,7 @@ export interface XhmrmsbjSbjbItem {
   锁边铰边数据: XhmrmsbjSbjbItemSbjb[];
 }
 export interface XhmrmsbjSbjbItemSbjb {
-  开启: string[];
+  开启: string;
   门铰: string[];
   门扇厚度: string[];
   条件: string;

@@ -211,7 +211,7 @@ export class CadOptionsComponent implements AfterViewInit {
       }
       return {...v, checked};
     });
-    this.noImage = this.pageData.every((v) => !v.img);
+    this.noImage = this.data.noImage || this.pageData.every((v) => !v.img);
     return data;
   }
 
@@ -296,6 +296,7 @@ export interface CadOptionsInput {
   openInNewTab?: boolean;
   useLocalOptions?: boolean;
   info?: ObjectOf<any>;
+  noImage?: boolean;
 }
 
 export interface CadOptionsOutput {

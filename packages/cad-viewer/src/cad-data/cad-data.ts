@@ -133,7 +133,7 @@ export class CadData {
   板材绑定选项 = "";
   算料单线长显示的最小长度: number | null = null;
   检查企料厚度 = true;
-  对应门扇厚度 = 0;
+  对应门扇厚度: number | null = null;
   跟随CAD开料板材: string | null = null;
   算料特殊要求: string | null = null;
   正面宽差值 = 0;

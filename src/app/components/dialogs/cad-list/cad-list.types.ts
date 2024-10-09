@@ -4,6 +4,7 @@ import {算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {CadListComponent} from "./cad-list.component";
 
 export const selectModes = ["single", "multiple", "none"] as const;
 
@@ -27,6 +28,7 @@ export interface CadListInput {
   yaoqiu?: Cad数据要求;
   gongshis?: 算料公式[];
   vars?: ObjectOf<string>;
+  toolbarBtns?: {name: string; onClick?: (component: CadListComponent) => void}[];
 }
 
 export type CadListOutput = CadData[];

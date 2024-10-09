@@ -87,7 +87,6 @@ export class LurushujuIndexComponent {
       {name: ""},
       {name: "通用数据", color: "primary"},
       {name: "通用公式", color: "primary"},
-      {name: "示意图", color: "primary"},
       {name: ""},
       {name: "配件库", color: "primary"},
       {name: "模块库", color: "primary"},
@@ -126,8 +125,6 @@ export class LurushujuIndexComponent {
           }
         }
         return;
-      case "示意图":
-        break;
       case "配件库":
         if (pieceInfos.suanliaoCads.show) {
           this.lrsjSuanliaoCads()?.selectSuanliaoCads();

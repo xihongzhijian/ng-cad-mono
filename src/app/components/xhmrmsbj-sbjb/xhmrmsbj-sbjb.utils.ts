@@ -1,6 +1,6 @@
 import {Validators} from "@angular/forms";
 import {getSortedItems} from "@app/utils/sort-items";
-import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {OptionsService} from "@services/options.service";
@@ -40,8 +40,8 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
       {type: "string", field: "开启"},
       {type: "string", field: "门铰"},
       {type: "string", field: "门扇厚度"},
-      {type: "string", field: "条件"},
       {type: "string", field: "包边方向"},
+      {type: "string", field: "条件"},
       {type: "string", field: "锁边", getString: (val) => val.锁边.名字},
       {type: "string", field: "铰边", getString: (val) => val.铰边.名字},
       ...optionalCols,
@@ -66,7 +66,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
 };
 
 export const getXhmrmsbjSbjbItemSbjb = (item?: Partial<XhmrmsbjSbjbItemSbjb>): XhmrmsbjSbjbItemSbjb => ({
-  开启: [],
+  开启: "",
   门铰: [],
   门扇厚度: [],
   条件: "",
@@ -91,8 +91,8 @@ export const getXhmrmsbjSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbI
 
 export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, options: OptionsService, item?: XhmrmsbjSbjbItemSbjb) => {
   const data = getXhmrmsbjSbjbItemSbjb(cloneDeep(item));
-  const getSelectInputInfo = async (key: keyof XhmrmsbjSbjbItemSbjb, multiple: boolean, required?: boolean) => {
-    const info: InputInfo<typeof data> = {
+  const getSelectInputInfo = async (key: keyof XhmrmsbjSbjbItemSbjb, multiple: boolean, required?: boolean, optionsDialog?: boolean) => {
+    const info: InputInfoSelect<typeof data> = {
       type: "select",
       label: key,
       model: {data, key},
@@ -102,12 +102,15 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, optio
     if (required) {
       info.validators = Validators.required;
     }
+    if (optionsDialog) {
+      info.optionsDialog = {noImage: true};
+    }
     return info;
   };
   const form: InputInfo[] = [
-    await getSelectInputInfo("开启", true, true),
-    await getSelectInputInfo("门铰", true, true),
-    await getSelectInputInfo("门扇厚度", true, true),
+    await getSelectInputInfo("开启", false, true),
+    await getSelectInputInfo("门铰", true, true, true),
+    await getSelectInputInfo("门扇厚度", true, true, true),
     {type: "string", label: "条件", model: {data, key: "条件"}},
     await getSelectInputInfo("包边方向", false),
     {type: "boolean", label: "停用", model: {data, key: "停用"}},

@@ -14,17 +14,17 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {Cad数据要求, setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
+import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
-import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, RowSelectionChange} from "@modules/table/components/table/table.types";
@@ -117,17 +117,32 @@ export class XhmrmsbjSbjbComponent {
         collection: "peijianCad",
         selectMode: "single",
         yaoqiu,
+        options: {开启: item.开启},
         checkedItems: cad ? [cad.id] : [],
-        addCadFn: () => this.addSbjbItemSbjbCad(type)
+        addCadFn: () => this.addSbjbItemSbjbCad(type),
+        toolbarBtns: [
+          {
+            name: "后台编辑",
+            onClick: async (component) => {
+              const url = await this.http.getShortUrl(type);
+              if (url) {
+                open(url);
+                if (await this.message.newTabConfirm()) {
+                  component.search();
+                }
+              }
+            }
+          }
+        ]
       }
     });
     const cad2 = result?.[0];
     if (cad2) {
       const name2 = type as XhmrmsbjSbjbItemOptionalKey;
       if (xhmrmsbjSbjbItemOptionalKeys.includes(name2)) {
-        item[name2] = cad2.name;
+        item[name2] = cad2.options[name2];
       } else if (type === "锁边" || type === "铰边") {
-        item[type].名字 = cad2.name;
+        item[type].名字 = cad2.options[name2];
       }
       item.CAD数据[index].cad = getHoutaiCad(cad2);
       this.refreshItems();
@@ -137,29 +152,33 @@ export class XhmrmsbjSbjbComponent {
     const table = type;
     const items = await this.http.queryMySql({table, fields: ["mingzi"]});
     const itemNames = items.map((v) => v.mingzi);
-    const data = {mingzi: ""};
-    const form: InputInfo<typeof data>[] = [
-      {
-        type: "string",
-        label: "名字",
-        model: {data, key: "mingzi"},
-        validators: [
-          Validators.required,
-          (control) => {
-            const val = control.value;
-            if (itemNames.includes(val)) {
-              return {名字不能重复: true};
-            }
-            return null;
+    const yaoqiu = this.cadYaoqius()[type];
+    const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
+    const yaoqiuItems2 = yaoqiu?.选中CAD要求 || [];
+    const cadData = new CadData();
+    setCadData(cadData, yaoqiuItems);
+    const form = getCadInfoInputs2(yaoqiuItems, yaoqiuItems2, cadData, this.dialog, this.status, true, []);
+    const nameInput = form.find((v) => v.model?.key === "name");
+    if (nameInput) {
+      nameInput.validators = [
+        Validators.required,
+        (control) => {
+          const val = control.value;
+          if (itemNames.includes(val)) {
+            return {名字不能重复: true};
           }
-        ]
-      }
-    ];
+          return null;
+        }
+      ];
+    }
+    cadData.type = type;
     const result = await this.message.form(form);
     if (!result) {
       return null;
     }
-    const resData = await this.http.getData<{cad: HoutaiCad}>("shuju/api/addSuobianjiaobianData", {table, data, type});
+    cadData.options[type] = cadData.name;
+    const data = getHoutaiCad(cadData);
+    const resData = await this.http.getData<{cad: HoutaiCad}>("shuju/api/addSuobianjiaobianData", {table, data});
     if (!resData) {
       return null;
     }

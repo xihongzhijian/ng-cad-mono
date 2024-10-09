@@ -1,28 +1,38 @@
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
-import {AfterViewInit, Component, forwardRef, HostBinding, Inject, ViewChild, viewChildren} from "@angular/core";
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  forwardRef,
+  HostBinding,
+  inject,
+  Inject,
+  signal,
+  viewChild,
+  viewChildren
+} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
-import {MatOptionModule} from "@angular/material/core";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
-import {MatInputModule} from "@angular/material/input";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
-import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {imgCadEmpty} from "@app/app.common";
 import {getCadQueryFields, setCadData, validateCad} from "@app/cad/cad-shujuyaoqiu";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
-import {isBetween, isNumber, queryStringList, timeout} from "@lucilor/utils";
+import {isBetween, isNumber, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {HttpOptions} from "@modules/http/services/http.service.types";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {openExportPage} from "@views/export/export.utils";
@@ -44,77 +54,73 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
   imports: [
     FormsModule,
     forwardRef(() => CadItemComponent),
+    InputComponent,
     KeyValuePipe,
     MatButtonModule,
     MatCheckboxModule,
     MatDividerModule,
-    MatFormFieldModule,
     MatIconModule,
-    MatInputModule,
-    MatOptionModule,
     MatPaginatorModule,
-    MatSelectModule,
     MatSlideToggleModule,
     NgScrollbar,
     NgTemplateOutlet,
     SpinnerComponent,
     TypedTemplateDirective
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadListComponent implements AfterViewInit {
+  private http = inject(CadDataService);
+  private dialog = inject(MatDialog);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
   @HostBinding("class") class = "ng-page";
-  length = 0;
-  pageSizeOptions = [1, 10, 20, 50, 100];
-  pageSize = 20;
-  pageData: CadListPageItem[] = [];
-  tableData: any = [];
-  displayedColumns = ["select", "mingzi", "wenjian", "create_time", "modify_time"];
+  length = signal(0);
+  pageSizeOptions = signal([1, 10, 20, 50, 100]);
+  pageSize = signal(20);
+  pageData = signal<CadListPageItem[]>([]);
   width = 300;
   height = 150;
-  searchField = "名字";
-  searchNameInput = "";
-  checkedIndexForce = false;
-  checkedItems: string[] = [];
-  checkedColumns: any[] = [];
-  checkedInOtherPages = false;
-  showCheckedOnly = false;
+  checkedItems = signal<string[]>([]);
+  checkedInOtherPages = signal(false);
+  showCheckedOnly = signal(false);
   loaderId = "cadList";
   loaderIdSubmit = "cadListSubmit";
   cadDataType!: CadData;
   imgCadEmpty = imgCadEmpty;
-  cadItemButtons: CadItemButton<CadListItemInfo>[];
+  cadItemButtons = signal<CadItemButton<CadListItemInfo>[]>([]);
   downloadApi = this.http.getUrl("ngcad/downloadFile");
-  multiDeleting = false;
-  @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
+  multiDeleting = signal(false);
 
+  paginator = viewChild(MatPaginator);
   cadItems = viewChildren<CadItemComponent>("cadItem");
 
   constructor(
     public dialogRef: MatDialogRef<CadListComponent, CadListOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadListInput,
-    private http: CadDataService,
-    private dialog: MatDialog,
-    private message: MessageService,
-    private status: AppStatusService
+    @Inject(MAT_DIALOG_DATA) public data: CadListInput
   ) {
     if (!data) {
       this.data = {selectMode: "single", collection: "cad"};
     }
     if (typeof data?.pageSize === "number") {
-      this.pageSize = data.pageSize;
+      this.pageSize.set(data.pageSize);
     }
     if (!selectModes.includes(this.data.selectMode)) {
       this.data.selectMode = "single";
     }
-    this.cadItemButtons = [
+    if (this.data.options) {
+      this.searchOptions.set(this.data.options);
+    }
+    this.cadItemButtons.set([
       {name: "复制", onClick: this.copyCad.bind(this)},
       {name: "删除", onClick: this.deleteCad.bind(this)}
-    ];
+    ]);
   }
 
   async ngAfterViewInit() {
     if (Array.isArray(this.data.checkedItems)) {
-      this.checkedItems = this.data.checkedItems.slice();
+      this.checkedItems.set(this.data.checkedItems.slice());
     }
     this.data.qiliao = this.data.qiliao === true;
     await timeout(0);
@@ -129,45 +135,101 @@ export class CadListComponent implements AfterViewInit {
   syncCheckedItems() {
     const toRemove: string[] = [];
     let checkedNum = 0;
-    this.pageData.forEach((v) => {
-      const index = this.checkedItems.indexOf(v.data._id);
-      if (v.checked) {
-        if (index === -1) {
-          this.checkedItems.push(v.data._id);
-        } else {
-          this.checkedItems[index] = v.data._id;
+    const checkedItems = this.checkedItems().slice();
+    this.pageData.update((v) =>
+      v.map((v2) => {
+        const index = checkedItems.indexOf(v2.data._id);
+        if (v2.checked) {
+          if (index === -1) {
+            checkedItems.push(v2.data._id);
+          } else {
+            checkedItems[index] = v2.data._id;
+          }
+          checkedNum++;
+        } else if (index > -1) {
+          toRemove.push(v2.data._id);
         }
-        checkedNum++;
-      } else if (index > -1) {
-        toRemove.push(v.data._id);
-      }
-    });
-    this.checkedItems = difference(this.checkedItems, toRemove, [""]);
-    this.checkedInOtherPages = checkedNum < this.checkedItems.length;
+        return {...v2};
+      })
+    );
+    this.checkedItems.set(difference(checkedItems, toRemove, [""]));
+    this.checkedInOtherPages.set(checkedNum < this.checkedItems.length);
   }
 
+  searchField = signal("名字");
+  searchNameInput = signal("");
+  searchForm1 = computed(() => {
+    const form: InputInfo[] = [
+      {
+        type: "select",
+        label: "搜索类型",
+        multiple: false,
+        hidden: !!this.data.source,
+        options: [{value: "_id", label: "ID"}, "名字", "选项", "条件"],
+        value: this.searchField(),
+        onChange: (val) => this.searchField.set(val),
+        style: {flex: "0 1 100px", width: 0}
+      },
+      {
+        type: "string",
+        label: "搜索CAD",
+        value: this.searchNameInput(),
+        onChange: (val) => {
+          this.searchNameInput.set(val);
+          this.search();
+        },
+        suffixIcons: [{name: "search", onClick: () => this.search()}],
+        hint: "按回车开始搜索",
+        style: {flex: "0 1 150px", width: 0}
+      }
+    ];
+    return form;
+  });
+  searchOptions = signal<ObjectOf<string>>({开启: ""});
+  searchForm2 = computed(() => {
+    const data = {...this.searchOptions()};
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "select",
+        label: "选项筛选：开启",
+        multiple: false,
+        options: [{value: "", label: "全部"}, "外开", "内开"],
+        model: {data, key: "开启"},
+        onChange: () => {
+          this.searchOptions.set(data);
+          this.search();
+        },
+        style: {flex: "0 1 150px", width: 0}
+      }
+    ];
+    return form;
+  });
   async getData(page: number, options: CadData["options"] = {}, matchType: "and" | "or" = "and") {
-    if (!this.paginator) {
+    const paginator = this.paginator();
+    if (!paginator) {
       return null;
     }
-    const limit = this.paginator.pageSize;
+    const limit = paginator.pageSize;
     let result: Awaited<ReturnType<CadDataService["getCad"]>>;
-    this.pageData.length = 0;
-    this.length = 0;
+    const pageData: ReturnType<typeof this.pageData> = [];
+    this.length.set(0);
     const {collection, standaloneSearch} = this.data;
+    const searchField = this.searchField();
+    const searchNameInput = this.searchNameInput();
+    const searchOptions = this.searchOptions();
     if (this.data.source) {
       let cadsAll = this.data.source;
-      if (this.searchNameInput) {
-        cadsAll = cadsAll.filter((v) => queryStringList(this.searchNameInput, [v.name, v.id]));
+      if (searchNameInput) {
+        cadsAll = cadsAll.filter((v) => queryStringList(searchNameInput, [v.name, v.id]));
       }
       const total = cadsAll.length;
       const cads = cadsAll.slice((page - 1) * limit, page * limit);
       result = {cads, total};
     } else {
       const search = {...this.data.search};
-      if (!standaloneSearch || this.searchNameInput) {
-        if (!search[this.searchField] || this.searchNameInput) {
-          search[this.searchField] = this.searchNameInput;
+      if (!standaloneSearch || searchNameInput) {
+        if (!search[searchField] || searchNameInput) {
+          search[searchField] = searchNameInput;
         }
       }
       const params: GetCadParams = {collection, page, limit, search};
@@ -179,8 +241,8 @@ export class CadListComponent implements AfterViewInit {
         this.data.yaoqiu = this.status.getCadYaoqiu("配件库");
       }
       params.fields = getCadQueryFields(this.data.yaoqiu);
-      if (this.showCheckedOnly) {
-        params.ids = this.checkedItems.slice();
+      if (this.showCheckedOnly()) {
+        params.ids = this.checkedItems().slice();
       }
       if (this.data.fixedSearch) {
         params.search = {...params.search, ...this.data.fixedSearch};
@@ -188,64 +250,67 @@ export class CadListComponent implements AfterViewInit {
       if (this.data.yaoqiu?.选择CAD弹窗筛选数据要求) {
         params.search = {...params.search, $where: this.data.yaoqiu.选择CAD弹窗筛选数据要求};
       }
+      const searchOptions2 = {...searchOptions};
+      for (const key of Object.keys(searchOptions2)) {
+        if (!searchOptions2[key]) {
+          delete searchOptions2[key];
+        }
+      }
+      if (Object.keys(searchOptions2).length > 0) {
+        params.options = searchOptions2;
+        params.optionsMatchLoose = true;
+      }
       result = await this.http.getCad(params);
     }
-    this.length = result.total;
+    this.length.set(result.total);
     result.cads.forEach((d) => {
-      const checked = this.checkedItems.find((v) => v === d.id) ? true : false;
-      this.pageData.push({data: getHoutaiCad(d), checked});
+      const checked = this.checkedItems().find((v) => v === d.id) ? true : false;
+      pageData.push({data: getHoutaiCad(d), checked});
     });
+    this.pageData.set(pageData);
     this.syncCheckedItems();
     return result;
   }
 
-  async search(withOption = false, matchType: "and" | "or" = "and") {
-    if (!this.paginator) {
+  async search(matchType: "and" | "or" = "and") {
+    const paginator = this.paginator();
+    if (!paginator) {
       return;
     }
-    this.paginator.pageIndex = 0;
-    const options = withOption ? this.data.options : {};
-    await this.getData(this.paginator.pageIndex + 1, options, matchType);
+    paginator.pageIndex = 0;
+    await this.getData(paginator.pageIndex + 1, {}, matchType);
   }
 
   async advancedSearch() {
-    if (!this.paginator) {
+    const paginator = this.paginator();
+    if (!paginator) {
       return;
     }
     const result = await openCadSearchFormDialog(this.dialog, {});
     if (result) {
-      this.paginator.pageIndex = 0;
-      this.getData(this.paginator.pageIndex + 1, result);
-    }
-  }
-
-  searchKeydown(event: KeyboardEvent) {
-    if (event.key === "Enter") {
-      this.search();
+      paginator.pageIndex = 0;
+      this.getData(paginator.pageIndex + 1, result);
     }
   }
 
   toggleSelectAll() {
     if (this.allChecked()) {
-      this.pageData.forEach((v) => (v.checked = false));
-      this.checkedItems.length = 0;
+      this.pageData.update((v) => v.map((v2) => ({...v2, checked: false})));
+      this.checkedItems.set([]);
     } else {
-      this.pageData.forEach((v) => (v.checked = true));
+      this.pageData.update((v) => v.map((v2) => ({...v2, checked: true})));
       this.syncCheckedItems();
     }
   }
 
-  allChecked() {
-    return !this.pageData.every((v) => !v.checked);
-  }
-
-  partiallyChecked() {
-    if (this.checkedInOtherPages) {
+  allChecked = computed(() => this.pageData().every((v) => !v.checked));
+  partiallyChecked = computed(() => {
+    if (this.checkedInOtherPages()) {
       return true;
     }
-    const ckeckedNum = this.pageData.filter((v) => v.checked).length;
+    const ckeckedNum = this.pageData().filter((v) => v.checked).length;
     return ckeckedNum > 0 && ckeckedNum < this.pageData.length;
-  }
+  });
 
   checkLimit(count: number) {
     const limit = this.data.checkedItemsLimit;
@@ -293,7 +358,8 @@ export class CadListComponent implements AfterViewInit {
       this.message.error(checkLimitResult.message);
       return;
     }
-    const {checkedItems: ids, data} = this;
+    const ids = this.checkedItems();
+    const {data} = this;
     const {collection, raw, vars, source} = data;
     const yaoqiuItems = data.yaoqiu?.选中CAD要求 || [];
     let cads: (CadData | HoutaiCad)[] = [];
@@ -361,24 +427,31 @@ export class CadListComponent implements AfterViewInit {
   }
 
   toggleShowCheckedOnly(evnet: MatSlideToggleChange) {
-    this.showCheckedOnly = evnet.checked;
+    this.showCheckedOnly.set(evnet.checked);
     this.search();
   }
 
   clickItem(i: number) {
     const {selectMode} = this.data;
     if (selectMode === "multiple") {
-      const item = this.pageData[i];
-      item.checked = !item.checked;
+      this.pageData.update((v) =>
+        v.map((v2, j) => {
+          if (i === j) {
+            return {...v2, checked: !v2.checked};
+          }
+          return v2;
+        })
+      );
     } else if (selectMode === "single") {
-      this.checkedItems.length = 0;
-      for (const [j, item] of this.pageData.entries()) {
-        if (i === j) {
-          item.checked = !item.checked;
-        } else {
-          item.checked = false;
-        }
-      }
+      this.checkedItems.set([]);
+      this.pageData.update((v) =>
+        v.map((v2, j) => {
+          if (i === j) {
+            return {...v2, checked: !v2.checked};
+          }
+          return {...v2, checked: false};
+        })
+      );
     } else {
       return;
     }
@@ -423,7 +496,7 @@ export class CadListComponent implements AfterViewInit {
 
   async copyCad(component: CadItemComponent<CadListItemInfo>) {
     const {index: i} = component.customInfo;
-    const item = this.pageData[i];
+    const item = this.pageData()[i];
     if (!(await this.message.confirm(`是否确定复制【${item.data.名字}】？`))) {
       return;
     }
@@ -441,7 +514,7 @@ export class CadListComponent implements AfterViewInit {
 
   async deleteCad(component: CadItemComponent<CadListItemInfo>) {
     const {index: i} = component.customInfo;
-    const item = this.pageData[i];
+    const item = this.pageData()[i];
     if (!(await this.message.confirm(`是否确定删除【${item.data.名字}】？`))) {
       return;
     }
@@ -464,12 +537,12 @@ export class CadListComponent implements AfterViewInit {
   }
 
   openExportPage() {
-    const ids = this.checkedItems.slice();
+    const ids = this.checkedItems().slice();
     openExportPage(this.status, {ids, search: this.data.search, lurushuju: true});
   }
 
   getItemSelectable(item: CadListPageItem): CadItemComponent<CadListItemInfo>["selectable"] {
-    if (this.multiDeleting) {
+    if (this.multiDeleting()) {
       return {selected: item.toDelete, onChange: this.onSelectChange.bind(this)};
     } else if (this.data.selectMode !== "none") {
       return {selected: item.checked, onChange: this.onSelectChange.bind(this)};
@@ -480,24 +553,37 @@ export class CadListComponent implements AfterViewInit {
   onSelectChange(component: CadItemComponent<CadListItemInfo>) {
     const {index: i} = component.customInfo;
     const {selectMode} = this.data;
-    const {multiDeleting} = this;
+    const multiDeleting = this.multiDeleting();
     let needsSync = false;
     if (multiDeleting) {
-      const item = this.pageData[i];
-      item.toDelete = !item.toDelete;
+      this.pageData.update((v) =>
+        v.map((v2, j) => {
+          if (i === j) {
+            return {...v2, toDelete: !v2.toDelete};
+          }
+          return v2;
+        })
+      );
     } else if (selectMode === "multiple" || multiDeleting) {
-      const item = this.pageData[i];
-      item.checked = !item.checked;
+      this.pageData.update((v) =>
+        v.map((v2, j) => {
+          if (i === j) {
+            return {...v2, checked: !v2.checked};
+          }
+          return v2;
+        })
+      );
       needsSync = true;
     } else if (selectMode === "single") {
-      this.checkedItems.length = 0;
-      for (const [j, item] of this.pageData.entries()) {
-        if (i === j) {
-          item.checked = !item.checked;
-        } else {
-          item.checked = false;
-        }
-      }
+      this.checkedItems.set([]);
+      this.pageData.update((v) =>
+        v.map((v2, j) => {
+          if (i === j) {
+            return {...v2, checked: !v2.checked};
+          }
+          return {...v2, checked: false};
+        })
+      );
       needsSync = true;
     }
     if (needsSync) {
@@ -506,24 +592,22 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async toggleMultiDeleting() {
-    if (this.multiDeleting) {
-      const ids = this.pageData.filter((v) => v.toDelete).map((v) => v.data._id);
+    const data = this.pageData();
+    if (this.multiDeleting()) {
+      const ids = data.filter((v) => v.toDelete).map((v) => v.data._id);
       if (ids.length > 0 && (await this.message.confirm(`是否删除${ids.length}个选中的cad？`))) {
         if (await this.http.mongodbDelete(this.data.collection, {ids})) {
           await this.search();
         }
       }
     }
-    this.multiDeleting = !this.multiDeleting;
-    for (const item of this.pageData) {
-      delete item.toDelete;
-    }
+    this.multiDeleting.update((v) => !v);
+    this.pageData.update((v) => v.map((v2) => ({...v2, toDelete: false})));
   }
 
   afterFetch(component: CadItemComponent<CadListItemInfo>) {
     const {index: i} = component.customInfo;
-    const item = this.pageData[i];
-    item.isFetched = true;
+    this.pageData.update((v) => v.map((v2, j) => (i === j ? {...v2, isFetched: true} : v2)));
   }
 }
 

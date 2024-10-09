@@ -13,6 +13,7 @@ export interface GetCadParams {
   qiliao?: boolean;
   options?: CadData["options"];
   optionsMatchType?: "and" | "or";
+  optionsMatchLoose?: boolean;
   sync?: boolean;
   restore?: boolean;
   fields?: string[] | ObjectOf<boolean>;

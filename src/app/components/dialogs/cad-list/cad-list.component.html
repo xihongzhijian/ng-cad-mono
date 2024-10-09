@@ -1,24 +1,9 @@
 <div class="toolbar">
-  @if (data.source) {
-    <div class="flex-110">
-      <ng-container [ngTemplateOutlet]="searchInput"></ng-container>
-    </div>
-  } @else {
-    <mat-form-field style="flex: 0 1 150px">
-      <mat-label>搜索类型</mat-label>
-      <mat-select name="search-field" [(ngModel)]="searchField">
-        <mat-option value="_id">ID</mat-option>
-        <mat-option value="名字">名字</mat-option>
-        <mat-option value="选项">选项</mat-option>
-        <mat-option value="条件">条件</mat-option>
-      </mat-select>
-    </mat-form-field>
-    <ng-container [ngTemplateOutlet]="searchInput"></ng-container>
-    <button mat-raised-button [color]="multiDeleting ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
-    @if (data.options) {
-      <button mat-raised-button color="primary" (click)="search(true, 'and')">父级搜索</button>
-      <button mat-raised-button color="primary" (click)="search(true, 'or')">父级搜索2</button>
-    }
+  @for (info of searchForm1(); track $index) {
+    <app-input [info]="info"></app-input>
+  }
+  @if (!data.source) {
+    <button mat-raised-button [color]="multiDeleting() ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
     <button mat-raised-button color="primary" (click)="advancedSearch()">高级搜索</button>
     <button mat-raised-button color="primary" (click)="search()">刷新</button>
     <button mat-raised-button color="primary" (click)="addCad()">添加</button>
@@ -31,6 +16,9 @@
     <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
     <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
   }
+  @for (btn of data.toolbarBtns; track $index) {
+    <button mat-raised-button color="primary" (click)="btn.onClick?.(this)">{{ btn.name }}</button>
+  }
   <mat-divider vertical class="placeholder large"></mat-divider>
   <div class="spinner-container">
     <button mat-raised-button color="primary" (click)="submit()">确定</button>
@@ -39,25 +27,28 @@
   <button mat-raised-button color="primary" (click)="close()">取消</button>
 </div>
 <div class="toolbar">
-  <mat-slide-toggle [checked]="showCheckedOnly" (change)="toggleShowCheckedOnly($event)">
+  <mat-slide-toggle [checked]="showCheckedOnly()" (change)="toggleShowCheckedOnly($event)">
     <span>只显示已选</span>
-    @if (checkedInOtherPages) {
+    @if (checkedInOtherPages()) {
       <span>（其他页已选）</span>
     }
   </mat-slide-toggle>
   @if (data.selectMode === "multiple") {
     <mat-checkbox [checked]="allChecked()" [indeterminate]="partiallyChecked()" (change)="toggleSelectAll()">全选</mat-checkbox>
   }
+  @for (info of searchForm2(); track $index) {
+    <app-input [info]="info"></app-input>
+  }
 </div>
 
 <div class="flex-110 flex-column">
   <ng-scrollbar>
     <div class="cads items no-items-per-row add-empty-msg">
-      @for (item of pageData; track i; let i = $index) {
+      @for (item of pageData(); track i; let i = $index) {
         <app-cad-item
           #cadItem
           [cad]="item.data"
-          [buttons]="cadItemButtons"
+          [buttons]="cadItemButtons()"
           [customInfo]="{index: i}"
           [collection]="data.collection"
           [yaoqiu]="data.yaoqiu"
@@ -74,21 +65,10 @@
 <div class="toolbar">
   <mat-paginator
     #paginator
-    [length]="length"
-    [pageSize]="pageSize"
-    [pageSizeOptions]="pageSizeOptions"
+    [length]="length()"
+    [pageSize]="pageSize()"
+    [pageSizeOptions]="pageSizeOptions()"
     [showFirstLastButtons]="true"
     (page)="changePage($event)"
   ></mat-paginator>
 </div>
-
-<ng-template #searchInput let-data [appTypedTemplate]="{$implicit: cadDataType}">
-  <mat-form-field>
-    <mat-label>搜索CAD</mat-label>
-    <input name="search-value" matInput type="search" (keydown)="searchKeydown($event)" [(ngModel)]="searchNameInput" />
-    <button mat-icon-button color="primary" type="submit" matSuffix (click)="search()">
-      <mat-icon>search</mat-icon>
-    </button>
-    <mat-hint>按回车开始搜索</mat-hint>
-  </mat-form-field>
-</ng-template>
