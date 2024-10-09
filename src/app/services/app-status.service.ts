@@ -19,6 +19,7 @@ import {
   validateCad,
   validateLines
 } from "@app/cad/utils";
+import {FetchManager} from "@app/utils/fetch-manager";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
@@ -622,20 +623,17 @@ export class AppStatusService {
     }, 0);
   }
 
-  cad数据要求List: Cad数据要求[] = [];
-  isCad数据要求ListFetched = false;
-  async fetchCad数据要求List(forced?: boolean) {
-    if (!forced && this.isCad数据要求ListFetched) {
-      return;
+  cadYaoqiusManager = new FetchManager([], async () => {
+    const cadYoqiusRaw = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu"});
+    return cadYoqiusRaw.map((v) => new Cad数据要求(v));
+  });
+  getCadYaoqiu(name: string | CadData) {
+    if (name instanceof CadData) {
+      name = name.name;
     }
-    const cad数据要求Raws = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu"});
-    this.cad数据要求List = cad数据要求Raws.map((v) => new Cad数据要求(v));
-    this.isCad数据要求ListFetched = true;
-  }
-  getCad数据要求(name: string | CadData) {
-    let result = this.cad数据要求List.find((v) => v.CAD分类 === name);
+    let result = this.cadYaoqiusManager.data().find((v) => v.CAD分类 === name);
     if (!result) {
-      result = this.cad数据要求List.find((v) => v.CAD分类 === "配件库");
+      result = this.cadYaoqiusManager.data().find((v) => v.CAD分类 === "配件库");
     }
     return result;
   }

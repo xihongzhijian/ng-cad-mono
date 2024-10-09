@@ -72,9 +72,12 @@ export class XhmrmsbjSbjbComponent {
   cadHeight = 150;
   cadYaoqius = computed(() => {
     const yaoqius: ObjectOf<Cad数据要求 | undefined> = {};
-    const item = this.activeSbjbItem();
-    for (const info of item?.CAD数据 || []) {
-      yaoqius[info.name] = this.status.getCad数据要求(info.name);
+    const item = this.activeItem();
+    if (item) {
+      const keys = xhmrmsbjSbjbItemCadKeys[item.产品分类] || [];
+      for (const key of keys) {
+        yaoqius[key] = this.status.getCadYaoqiu(key);
+      }
     }
     return yaoqius;
   });
@@ -167,7 +170,7 @@ export class XhmrmsbjSbjbComponent {
   async fetchData() {
     const items = await this.http.getData<XhmrmsbjSbjbItem[]>("shuju/api/getsuobianjiaobianData", {xinghao: this.xinghaoName()});
     this.items.set(items || []);
-    await this.status.fetchCad数据要求List();
+    await this.status.cadYaoqiusManager.fetch();
   }
   clickItem(i: number) {
     this.activeItemIndex.set(i);

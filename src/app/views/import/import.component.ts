@@ -448,8 +448,8 @@ export class ImportComponent extends Utils() implements OnInit {
       const {xinghao, searchYaoqiu} = this.importCache || {};
       let yaoqiu = this.importCache?.yaoqiu;
       if (!yaoqiu && searchYaoqiu) {
-        await this.status.fetchCad数据要求List();
-        yaoqiu = this.status.getCad数据要求(data.type);
+        await this.status.cadYaoqiusManager.fetch();
+        yaoqiu = this.status.getCadYaoqiu(data.type);
       }
       if (yaoqiu) {
         setCadData(data, yaoqiu.新建CAD要求);

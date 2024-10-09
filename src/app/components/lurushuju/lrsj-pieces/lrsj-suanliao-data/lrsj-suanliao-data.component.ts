@@ -457,7 +457,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         label: "搜索",
         onInput: debounce((val) => {
           const hiddenShiyitus: number[] = [];
-          const yaoqiu = this.status.getCad数据要求("算料单示意图");
+          const yaoqiu = this.status.getCadYaoqiu("算料单示意图");
           if (yaoqiu) {
             for (const [i, cad] of this.suanliaoData()[key1].示意图CAD.算料单示意图.entries()) {
               if (!filterCad(val, cad, yaoqiu)) {
@@ -509,7 +509,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   }
 
   getCadshujuyaoqiu(type: string) {
-    return this.status.getCad数据要求(type);
+    return this.status.getCadYaoqiu(type);
   }
   async selectCad0(info: typeof this.emptyCadTemplateType) {
     const data = this.suanliaoData();
@@ -580,7 +580,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     }
     const suanliaoData = this.suanliaoData();
     const data = suanliaoData[key1].示意图CAD;
-    const yaoqiu = this.status.getCad数据要求("算料单示意图");
+    const yaoqiu = this.status.getCadYaoqiu("算料单示意图");
     if (!yaoqiu) {
       return;
     }

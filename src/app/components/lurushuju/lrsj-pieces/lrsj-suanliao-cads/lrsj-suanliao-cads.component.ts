@@ -160,7 +160,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
   filterCads(val: string) {
     const hiddenCads: number[] = [];
     for (const [i, cad] of this.data()?.算料CAD?.entries() || []) {
-      const yaoqiu = this.status.getCad数据要求(cad.分类);
+      const yaoqiu = this.status.getCadYaoqiu(cad.分类);
       if (yaoqiu && !filterCad(val, cad, yaoqiu)) {
         hiddenCads.push(i);
       }
@@ -176,7 +176,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     const data = this.data();
     const hiddenCads = this.hiddenCads();
     const cadsInfos = (data?.算料CAD || []).map((cad, i) => {
-      const yaoqiu = this.status.getCad数据要求(cad.分类);
+      const yaoqiu = this.status.getCadYaoqiu(cad.分类);
       const hidden = hiddenCads.includes(i);
       return {cad, i, yaoqiu, hidden};
     });

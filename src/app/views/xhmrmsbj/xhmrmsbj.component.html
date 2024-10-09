@@ -16,6 +16,7 @@
     @if (isFromOrder()) {
       <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
       @if (canEditMokuaidaxiao()) {
+        <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
         <button mat-raised-button color="primary" (click)="refreshMokuaidaxiao()">更新模块大小配置</button>
       }
       @if (isZhijian()) {

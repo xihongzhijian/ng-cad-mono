@@ -175,8 +175,8 @@ export class CadListComponent implements AfterViewInit {
       params.options = options;
       params.optionsMatchType = matchType;
       if (!this.data.yaoqiu) {
-        await this.status.fetchCad数据要求List();
-        this.data.yaoqiu = this.status.getCad数据要求("配件库");
+        await this.status.cadYaoqiusManager.fetch();
+        this.data.yaoqiu = this.status.getCadYaoqiu("配件库");
       }
       params.fields = getCadQueryFields(this.data.yaoqiu);
       if (this.showCheckedOnly) {

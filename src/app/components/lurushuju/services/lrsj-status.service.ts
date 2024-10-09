@@ -100,7 +100,7 @@ export class LrsjStatusService implements OnDestroy {
     });
 
     (async () => {
-      await this.status.fetchCad数据要求List();
+      await this.status.cadYaoqiusManager.fetch();
       await this.getXinghaos();
       await this.loadInfo();
       this.varNames.set(await getVarNames(this.http));

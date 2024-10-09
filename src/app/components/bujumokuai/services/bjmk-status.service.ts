@@ -33,12 +33,12 @@ export class BjmkStatusService {
   varNamesManager = new FetchManager<VarNames>([], async () => getVarNames(this.http, "门扇布局用"));
 
   cadYaoqiu = new FetchManager(null, async () => {
-    await this.status.fetchCad数据要求List();
-    return this.status.getCad数据要求("配件库");
+    await this.status.cadYaoqiusManager.fetch();
+    return this.status.getCadYaoqiu("配件库");
   }).data;
   xinghaoCadYaoqiu = new FetchManager(null, async () => {
-    await this.status.fetchCad数据要求List();
-    return this.status.getCad数据要求("型号CAD");
+    await this.status.cadYaoqiusManager.fetch();
+    return this.status.getCadYaoqiu("型号CAD");
   }).data;
 
   collection: CadCollection = "peijianCad";

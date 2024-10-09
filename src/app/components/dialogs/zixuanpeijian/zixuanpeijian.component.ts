@@ -468,7 +468,7 @@ export class ZixuanpeijianComponent implements OnInit {
     if (noUpdateInputInfos) {
       this._updateInputInfos();
     }
-    this.status.fetchCad数据要求List();
+    this.status.cadYaoqiusManager.fetch();
     this._step3Fetched = true;
     this.filterLingsanItems();
   }
@@ -478,7 +478,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   getLingsanYaoqiu() {
-    return this.status.getCad数据要求(this.lingsanCadType || "分类为空");
+    return this.status.getCadYaoqiu(this.lingsanCadType || "分类为空");
   }
 
   async step3Add() {
@@ -1438,7 +1438,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   getCadYaoqiu() {
-    return this.status.getCad数据要求(this.lingsanCadType);
+    return this.status.getCadYaoqiu(this.lingsanCadType);
   }
 
   async openImportPage(searchYaoqiu: boolean) {

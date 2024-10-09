@@ -230,7 +230,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   getShujuyaoqiu(item: TongyongshujuData) {
-    return this.status.getCad数据要求(item.cadyaoqiu);
+    return this.status.getCadYaoqiu(item.cadyaoqiu);
   }
 
   async addCadFromList() {

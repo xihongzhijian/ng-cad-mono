@@ -165,7 +165,7 @@ export class MokuaiCadsComponent {
   collection = this.bjmkStatus.collection;
   cadYaoqiu = computed(() => {
     const type = this.activeNavNode()?.name || "";
-    return this.status.getCad数据要求(type);
+    return this.status.getCadYaoqiu(type);
   });
   downloadApi = this.http.getUrl("ngcad/downloadFile");
   async getCadItem(data?: CadData) {
