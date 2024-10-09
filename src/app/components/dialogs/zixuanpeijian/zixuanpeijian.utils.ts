@@ -154,7 +154,7 @@ export const getMokuaiTitleBase = (item: ZixuanpeijianMokuaiItem, opts: GetMokua
     arr.push(`【${门扇名字}】`);
   }
   if (typeof 层名字 === "string" && 层名字) {
-    arr.push(`节点【${层名字}】`);
+    arr.push(`${层名字}位置`);
   }
   let mokuaiName = type2;
   if (mokuaiUrl) {
