@@ -231,6 +231,10 @@
   font-size: 18px;
   align-items: flex-start;
 
+  > .name {
+    margin-bottom: 10px !important;
+  }
+
   .box {
     display: flex;
     justify-content: center;

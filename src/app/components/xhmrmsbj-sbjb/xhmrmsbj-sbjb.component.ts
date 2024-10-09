@@ -68,6 +68,8 @@ export class XhmrmsbjSbjbComponent {
   activeItemIndex = signal<number>(0);
   activeItem = computed(() => this.items().at(this.activeItemIndex()));
 
+  cadWidth = 300;
+  cadHeight = 150;
   cadYaoqius = computed(() => {
     const yaoqius: ObjectOf<Cad数据要求 | undefined> = {};
     const item = this.activeSbjbItem();
@@ -76,23 +78,27 @@ export class XhmrmsbjSbjbComponent {
     }
     return yaoqius;
   });
-  cads = computed(() => {
-    const cads: CadData[] = [];
+  cadInfos = computed(() => {
+    const infos: {cad: CadData | null; type: string}[] = [];
     const item = this.activeSbjbItem();
     if (item) {
-      for (const info of item.CAD数据 || []) {
-        const cad = new CadData(info.cad?.json);
-        cad.type = info.fenlei || info.name;
-        cads.push(cad);
+      for (const {name, fenlei, cad} of item.CAD数据 || []) {
+        const info: (typeof infos)[0] = {cad: null, type: fenlei || name};
+        if (cad) {
+          info.cad = new CadData(cad.json);
+        }
+        infos.push(info);
       }
     }
-    return cads;
+    return infos;
   });
   cadButtons2 = computed(() => {
-    const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] = [{name: "选择", onClick: this.selectSbjbItemSbjbCad.bind(this)}];
+    const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] = [
+      {name: "选择", onClick: ({customInfo}) => this.selectSbjbItemSbjbCad(customInfo.index)}
+    ];
     return buttons;
   });
-  async selectSbjbItemSbjbCad({customInfo}: CadItemComponent<XhmrmsbjSbjbItemSbjbCadInfo>) {
+  async selectSbjbItemSbjbCad(index: number) {
     const item = this.activeSbjbItem();
     if (!item) {
       return;
@@ -100,26 +106,32 @@ export class XhmrmsbjSbjbComponent {
     if (!Array.isArray(item.CAD数据)) {
       item.CAD数据 = [];
     }
-    const cad = this.cads()[customInfo.index];
-    const name = cad.type;
-    const yaoqiu = this.cadYaoqius()[name];
+    const cadInfo = this.cadInfos()[index];
+    const {cad, type} = cadInfo;
+    const yaoqiu = this.cadYaoqius()[type];
     const result = await openCadListDialog(this.dialog, {
-      data: {collection: "peijianCad", selectMode: "single", yaoqiu, checkedItems: [cad.id], addCadFn: () => this.addSbjbItemSbjbCad(name)}
+      data: {
+        collection: "peijianCad",
+        selectMode: "single",
+        yaoqiu,
+        checkedItems: cad ? [cad.id] : [],
+        addCadFn: () => this.addSbjbItemSbjbCad(type)
+      }
     });
     const cad2 = result?.[0];
     if (cad2) {
-      const name2 = name as XhmrmsbjSbjbItemOptionalKey;
+      const name2 = type as XhmrmsbjSbjbItemOptionalKey;
       if (xhmrmsbjSbjbItemOptionalKeys.includes(name2)) {
         item[name2] = cad2.name;
-      } else if (name === "锁边" || name === "铰边") {
-        item[name].名字 = cad2.name;
+      } else if (type === "锁边" || type === "铰边") {
+        item[type].名字 = cad2.name;
       }
-      item.CAD数据[customInfo.index].cad = getHoutaiCad(cad2);
+      item.CAD数据[index].cad = getHoutaiCad(cad2);
       this.refreshItems();
     }
   }
-  async addSbjbItemSbjbCad(name: string) {
-    const table = name;
+  async addSbjbItemSbjbCad(type: string) {
+    const table = type;
     const items = await this.http.queryMySql({table, fields: ["mingzi"]});
     const itemNames = items.map((v) => v.mingzi);
     const data = {mingzi: ""};
@@ -144,7 +156,7 @@ export class XhmrmsbjSbjbComponent {
     if (!result) {
       return null;
     }
-    const resData = await this.http.getData<{cad: HoutaiCad}>("shuju/api/addSuobianjiaobianData", {table, data, type: name});
+    const resData = await this.http.getData<{cad: HoutaiCad}>("shuju/api/addSuobianjiaobianData", {table, data, type});
     if (!resData) {
       return null;
     }
@@ -237,7 +249,7 @@ export class XhmrmsbjSbjbComponent {
         }
         item.CAD数据 = [];
         for (const name of xhmrmsbjSbjbItemCadKeys[item2.产品分类] || []) {
-          item.CAD数据.push({name, cad: getHoutaiCad(new CadData({name}))});
+          item.CAD数据.push({name});
         }
         item2.锁边铰边数据.unshift(item);
         this.refreshItems();
