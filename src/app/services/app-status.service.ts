@@ -632,9 +632,13 @@ export class AppStatusService {
     const cadYoqiusRaw = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu"});
     return cadYoqiusRaw.map((v) => new Cad数据要求(v));
   });
+  cadYaoqiuNamesMap: ObjectOf<string> = {小扇铰边: "铰边"};
   getCadYaoqiu(name: string | CadData) {
     if (name instanceof CadData) {
       name = name.name;
+    }
+    if (this.cadYaoqiuNamesMap[name]) {
+      name = this.cadYaoqiuNamesMap[name];
     }
     let result = this.cadYaoqiusManager.data().find((v) => v.CAD分类 === name);
     if (!result) {

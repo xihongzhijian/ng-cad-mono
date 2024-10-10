@@ -164,8 +164,8 @@ export class MessageService {
   }
 
   async importData<T = any>(
-    action: (data: T) => MaybePromise<void>,
-    title = "导入",
+    action: (data: T) => MaybePromise<void | boolean>,
+    title = "",
     jsonOptions?: {reviver?: (this: any, key: string, value: any) => any}
   ) {
     const files = await selectFiles({accept: ".json"});
@@ -180,7 +180,9 @@ export class MessageService {
       if (res instanceof Promise) {
         await res;
       }
-      await this.snack(`${title}导入成功`);
+      if (res !== false) {
+        await this.snack(`${title}导入成功`);
+      }
     } catch (e) {
       console.error(e);
       await this.snack(`${title}导入失败`);

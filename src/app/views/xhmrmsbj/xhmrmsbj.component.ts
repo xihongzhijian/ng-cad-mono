@@ -1518,8 +1518,4 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
     this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: data.vid}});
   }
-
-  addSbjbItemSbjb() {
-    this.sbjb()?.addSbjbItemSbjb();
-  }
 }

@@ -25,7 +25,9 @@
     } @else {
       @switch (activeTabName()) {
         @case ("锁边铰边") {
-          <button mat-raised-button color="primary" (click)="addSbjbItemSbjb()">添加</button>
+          <button mat-raised-button color="primary" (click)="sbjb()?.addSbjbItemSbjb()">添加</button>
+          <button mat-raised-button color="primary" (click)="sbjb()?.import()">导入</button>
+          <button mat-raised-button color="primary" (click)="sbjb()?.export()">导出</button>
         }
         @case ("门扇模块") {
           @if (!isFromOrder()) {

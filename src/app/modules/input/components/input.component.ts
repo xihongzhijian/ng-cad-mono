@@ -1146,7 +1146,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const values = event.options.map((v) => v.value);
     const info = this.info;
     if (info.type === "select") {
-      this.onChange(info.multiple ? values : values[0]);
+      const value = info.multiple ? values : values[0];
+      this.value = value;
+      this.onChange(value);
     }
   }
 }

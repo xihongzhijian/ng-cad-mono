@@ -1,11 +1,12 @@
 import {Validators} from "@angular/forms";
 import {getSortedItems} from "@app/utils/sort-items";
-import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {
+  XhmrmsbjSbjbItem,
   XhmrmsbjSbjbItemOptionalKey,
   xhmrmsbjSbjbItemOptionalKeys,
   XhmrmsbjSbjbItemSbjb,
@@ -132,3 +133,14 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, i
   const result = await message.form(form);
   return result ? data : null;
 };
+
+export const getXhmrmsbjSbjbItemOptions = (items: XhmrmsbjSbjbItem[]) =>
+  items.map<InputInfoOption>((item) => {
+    let label = item.产品分类;
+    let disabled = false;
+    if (!item.锁边铰边数据 || item.锁边铰边数据.length < 1) {
+      label += "（没有数据）";
+      disabled = true;
+    }
+    return {label, value: item, disabled};
+  });

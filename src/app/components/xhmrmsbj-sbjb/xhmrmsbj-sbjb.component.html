@@ -7,6 +7,7 @@
           @if (item["锁边铰边数据"].length < 1) {
             <span class="error">（没有数据）</span>
           }
+          <button mat-stroked-button color="primary" appClickStop (click)="copySbjbItems(item)">复制</button>
         </div>
       }
     </div>

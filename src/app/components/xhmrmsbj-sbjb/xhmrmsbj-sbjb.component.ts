@@ -22,30 +22,35 @@ import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, RowSelectionChange} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
+import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   XhmrmsbjSbjbItem,
   xhmrmsbjSbjbItemCadKeys,
+  XhmrmsbjSbjbItemCopyMode,
+  xhmrmsbjSbjbItemCopyModes,
   XhmrmsbjSbjbItemOptionalKey,
   xhmrmsbjSbjbItemOptionalKeys,
   XhmrmsbjSbjbItemSbjbCadInfo,
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
-import {getXhmrmsbjSbjbItemSbjbForm, getXhmrmsbjSbjbItemTableInfo} from "./xhmrmsbj-sbjb.utils";
+import {getXhmrmsbjSbjbItemOptions, getXhmrmsbjSbjbItemSbjbForm, getXhmrmsbjSbjbItemTableInfo} from "./xhmrmsbj-sbjb.utils";
 
 @Component({
   selector: "app-xhmrmsbj-sbjb",
   standalone: true,
-  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, TableComponent],
+  imports: [CadItemComponent, ClickStopPropagationDirective, MatButtonModule, MatDividerModule, NgScrollbarModule, TableComponent],
   templateUrl: "./xhmrmsbj-sbjb.component.html",
   styleUrl: "./xhmrmsbj-sbjb.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -124,7 +129,7 @@ export class XhmrmsbjSbjbComponent {
           {
             name: "后台编辑",
             onClick: async (component) => {
-              const url = await this.http.getShortUrl(type);
+              const url = await this.http.getShortUrl(type, {search: {shujufenlei: type}});
               if (url) {
                 open(url);
                 if (await this.message.newTabConfirm()) {
@@ -139,10 +144,11 @@ export class XhmrmsbjSbjbComponent {
     const cad2 = result?.[0];
     if (cad2) {
       const name2 = type as XhmrmsbjSbjbItemOptionalKey;
+      const type2 = this.status.cadYaoqiuNamesMap[type] || type;
       if (xhmrmsbjSbjbItemOptionalKeys.includes(name2)) {
-        item[name2] = cad2.options[name2];
+        item[name2] = cad2.options[type2];
       } else if (type === "锁边" || type === "铰边") {
-        item[type].名字 = cad2.options[name2];
+        item[type].名字 = cad2.options[type2];
       }
       item.CAD数据[index].cad = getHoutaiCad(cad2);
       this.refreshItems();
@@ -279,6 +285,98 @@ export class XhmrmsbjSbjbComponent {
     }
   }
 
+  async copySbjbItems(to: XhmrmsbjSbjbItem) {
+    const items = this.items().filter((v) => v !== to);
+    const itemOptions = getXhmrmsbjSbjbItemOptions(items);
+    const data: {from: XhmrmsbjSbjbItem | null; mode: XhmrmsbjSbjbItemCopyMode} = {from: null, mode: "添加到原有数据"};
+    const form: InputInfo<typeof data>[] = [
+      {type: "select", label: "从哪里复制", options: itemOptions, model: {data, key: "from"}, validators: Validators.required},
+      {
+        type: "select",
+        label: "复制方式",
+        options: xhmrmsbjSbjbItemCopyModes.slice(),
+        model: {data, key: "mode"},
+        validators: Validators.required
+      }
+    ];
+    const result = await this.message.form(form);
+    const {from, mode} = data;
+    if (!result || !from) {
+      return;
+    }
+    const fromItems = cloneDeep(from.锁边铰边数据);
+    if (mode === "全部替换") {
+      to.锁边铰边数据 = fromItems;
+    } else {
+      to.锁边铰边数据.push(...fromItems);
+    }
+    this.refreshItems();
+  }
+
+  import() {
+    this.message.importData(async (items: XhmrmsbjSbjbItem[]) => {
+      const itemOptions = getXhmrmsbjSbjbItemOptions(items);
+      const data: {from: XhmrmsbjSbjbItem[]; mode: XhmrmsbjSbjbItemCopyMode} = {from: [], mode: "添加到原有数据"};
+      const form: InputInfo<typeof data>[] = [
+        {
+          type: "select",
+          label: "选择产品分类",
+          multiple: true,
+          options: itemOptions,
+          appearance: "list",
+          model: {data, key: "from"},
+          validators: Validators.required
+        },
+        {
+          type: "select",
+          label: "导入方式",
+          options: xhmrmsbjSbjbItemCopyModes.slice(),
+          model: {data, key: "mode"},
+          validators: Validators.required
+        }
+      ];
+      const result = await this.message.form(form);
+      const {from, mode} = data;
+      if (!result || from.length < 1) {
+        return false;
+      }
+      for (const item of data.from) {
+        const item2 = this.items().find((v) => v.产品分类 === item.产品分类);
+        if (item2) {
+          if (mode === "全部替换") {
+            item2.锁边铰边数据 = item.锁边铰边数据;
+          } else {
+            item2.锁边铰边数据.push(...item.锁边铰边数据);
+          }
+        }
+      }
+      this.refreshItems();
+      return true;
+    });
+  }
+  async export() {
+    const items = this.items();
+    const itemOptions = getXhmrmsbjSbjbItemOptions(items);
+    const data = {from: Array<XhmrmsbjSbjbItem>()};
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "select",
+        label: "选择产品分类",
+        multiple: true,
+        options: itemOptions,
+        appearance: "list",
+        model: {data, key: "from"},
+        validators: Validators.required
+      }
+    ];
+    const result = await this.message.form(form);
+    if (!result) {
+      return;
+    }
+    const title = [this.xinghaoName(), "锁边铰边", DateTime.now().toFormat("yyyyMMdd")].join("_");
+    await this.message.exportData(data.from, title);
+  }
+
   sbjbItemTableContainer = viewChild<ElementRef<HTMLElement>>("sbjbItemTableContainer");
   async validate() {
     const items = this.items();
@@ -317,7 +415,6 @@ export class XhmrmsbjSbjbComponent {
         const sbjbItemTableContainer = this.sbjbItemTableContainer()?.nativeElement;
         if (sbjbItemTableContainer) {
           const row = sbjbItemTableContainer.querySelectorAll("app-table mat-table mat-row")[errItem.j];
-          console.log(row);
           if (row) {
             row.scrollIntoView({block: "center"});
           }
