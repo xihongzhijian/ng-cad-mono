@@ -93,6 +93,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   @Input() mubanExtraData: Partial<CadData> = {};
   @Input() openCadOptions?: OpenCadOptions;
   @Input() showMuban?: boolean;
+  @Input() titlePrefix?: string;
   @Input() isOnline?: CadItemIsOnlineInfo<T>;
   @Input({transform: booleanAttribute}) isLocal?: boolean;
   @Input() selectable?: CadItemSelectable<T>;
@@ -151,6 +152,9 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
   get cadName() {
     return this.cad instanceof CadData ? this.cad.name : this.cad.名字;
+  }
+  get cadTitle() {
+    return `${this.titlePrefix || ""}${this.cadName}`;
   }
   get mubanId() {
     if (this.cad instanceof CadData) {
