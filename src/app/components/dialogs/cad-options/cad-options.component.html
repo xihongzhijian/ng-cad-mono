@@ -1,8 +1,7 @@
 <div class="btn-group">
   <app-input class="flex-110" [info]="searchInputInfo"></app-input>
   @if (data.multi) {
-    <button mat-raised-button color="primary" (click)="selectAll()">当前页全选</button>
-    <button mat-raised-button color="primary" (click)="selectReverse()">当前页反选</button>
+    <button mat-raised-button color="primary" (click)="selectAll()">全选当前数据</button>
   }
   @if (data.name) {
     <button mat-raised-button color="primary" (click)="search(true, true)">刷新</button>

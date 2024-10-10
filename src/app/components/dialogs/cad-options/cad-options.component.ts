@@ -233,16 +233,12 @@ export class CadOptionsComponent implements AfterViewInit {
   }
 
   selectAll() {
+    const isAllSelected = this.pageData.every((v) => v.checked);
     for (const item of this.pageData) {
-      if (!item.checked) {
+      const shouldChange = isAllSelected ? item.checked : !item.checked;
+      if (shouldChange) {
         this.onCheckboxChange(item);
       }
-    }
-  }
-
-  selectReverse() {
-    for (const item of this.pageData) {
-      this.onCheckboxChange(item);
     }
   }
 
