@@ -36,13 +36,13 @@
               [buttons2]="cadButtons2()"
               [customInfo]="{index: $index}"
               [yaoqiu]="cadYaoqius()[cad.name]"
-              [titlePrefix]="info.type + '：'"
+              [titlePrefix]="info.title + '：'"
               editDisabled
               [isOnline]="{isFetched: true}"
             ></app-cad-item>
           } @else {
             <div class="empty-cad item link" (click)="selectSbjbItemSbjbCad($index)">
-              <div class="name">{{ info.type }}</div>
+              <div class="name">{{ info.title }}</div>
               <div class="box border" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}">
                 <span class="error">请选择</span>
               </div>

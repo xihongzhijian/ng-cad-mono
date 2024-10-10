@@ -16,11 +16,11 @@ export interface XhmrmsbjSbjbItemSbjb {
   包边方向: string;
   锁边: XhmrmsbjSbjbItemSbjbItem;
   铰边: XhmrmsbjSbjbItemSbjbItem;
+  插销边: XhmrmsbjSbjbItemSbjbItem;
+  小扇铰边: XhmrmsbjSbjbItemSbjbItem;
   锁框?: string;
   铰框?: string;
   顶框?: string;
-  插销边?: string;
-  小扇铰边?: string;
   CAD数据?: XhmrmsbjSbjbItemSbjbCad[];
   停用?: boolean;
   排序?: number;
@@ -36,7 +36,7 @@ export interface XhmrmsbjSbjbItemSbjbItem {
 }
 export interface XhmrmsbjSbjbItemSbjbCad {
   name: string;
-  fenlei?: string;
+  title: string;
   cad?: HoutaiCad | null;
 }
 
@@ -44,13 +44,14 @@ export interface XhmrmsbjSbjbItemSbjbCadInfo {
   index: number;
 }
 
-export const xhmrmsbjSbjbItemOptionalKeys = ["锁框", "铰框", "顶框", "插销边", "小扇铰边"] as const;
-export type XhmrmsbjSbjbItemOptionalKey = (typeof xhmrmsbjSbjbItemOptionalKeys)[number];
-
-export const xhmrmsbjSbjbItemOptionalKeys2 = ["锁边", "铰边", "锁框", "铰框", "顶框", "插销边", "小扇铰边"] as const;
+export const xhmrmsbjSbjbItemOptionalKeys1 = ["锁框", "铰框", "顶框"] as const;
+export type XhmrmsbjSbjbItemOptionalKey1 = (typeof xhmrmsbjSbjbItemOptionalKeys1)[number];
+export const xhmrmsbjSbjbItemOptionalKeys2 = ["锁边", "铰边", "插销边", "小扇铰边"] as const;
 export type XhmrmsbjSbjbItemOptionalKey2 = (typeof xhmrmsbjSbjbItemOptionalKeys2)[number];
+// export const xhmrmsbjSbjbItemOptionalKeys3 = ["锁边", "铰边", "锁框", "铰框", "顶框", "插销边", "小扇铰边"] as const;
+export type XhmrmsbjSbjbItemOptionalKey3 = XhmrmsbjSbjbItemOptionalKey1 | XhmrmsbjSbjbItemOptionalKey2;
 
-export const xhmrmsbjSbjbItemCadKeys: ObjectOf<XhmrmsbjSbjbItemOptionalKey2[]> = {
+export const xhmrmsbjSbjbItemCadKeys: ObjectOf<XhmrmsbjSbjbItemOptionalKey3[]> = {
   单门: ["铰框", "铰边", "锁边", "锁框", "顶框"],
   子母对开: ["铰框", "小扇铰边", "插销边", "锁边", "铰边", "铰框", "顶框"],
   双开: ["铰框", "铰边", "插销边", "锁边", "铰边", "铰框", "顶框"]

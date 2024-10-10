@@ -40,8 +40,11 @@ import {
   xhmrmsbjSbjbItemCadKeys,
   XhmrmsbjSbjbItemCopyMode,
   xhmrmsbjSbjbItemCopyModes,
-  XhmrmsbjSbjbItemOptionalKey,
-  xhmrmsbjSbjbItemOptionalKeys,
+  XhmrmsbjSbjbItemOptionalKey1,
+  XhmrmsbjSbjbItemOptionalKey2,
+  xhmrmsbjSbjbItemOptionalKeys1,
+  xhmrmsbjSbjbItemOptionalKeys2,
+  XhmrmsbjSbjbItemSbjbCad,
   XhmrmsbjSbjbItemSbjbCadInfo,
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
@@ -87,13 +90,13 @@ export class XhmrmsbjSbjbComponent {
     return yaoqius;
   });
   cadInfos = computed(() => {
-    const infos: {cad: CadData | null; type: string}[] = [];
+    const infos: (Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> & {cad: CadData | null})[] = [];
     const item = this.activeSbjbItem();
     if (item) {
-      for (const {name, fenlei, cad} of item.CAD数据 || []) {
-        const info: (typeof infos)[0] = {cad: null, type: fenlei || name};
-        if (cad) {
-          info.cad = new CadData(cad.json);
+      for (const item2 of item.CAD数据 || []) {
+        const info: (typeof infos)[0] = {...item2, cad: null};
+        if (item2.cad) {
+          info.cad = new CadData(item2.cad.json);
         }
         infos.push(info);
       }
@@ -115,8 +118,8 @@ export class XhmrmsbjSbjbComponent {
       item.CAD数据 = [];
     }
     const cadInfo = this.cadInfos()[index];
-    const {cad, type} = cadInfo;
-    const yaoqiu = this.cadYaoqius()[type];
+    const {cad, name, title} = cadInfo;
+    const yaoqiu = this.cadYaoqius()[name];
     const result = await openCadListDialog(this.dialog, {
       data: {
         collection: "peijianCad",
@@ -124,12 +127,12 @@ export class XhmrmsbjSbjbComponent {
         yaoqiu,
         options: {开启: item.开启},
         checkedItems: cad ? [cad.id] : [],
-        addCadFn: () => this.addSbjbItemSbjbCad(type),
+        addCadFn: () => this.addSbjbItemSbjbCad(name),
         toolbarBtns: [
           {
             name: "后台编辑",
             onClick: async (component) => {
-              const url = await this.http.getShortUrl(type, {search: {shujufenlei: type}});
+              const url = await this.http.getShortUrl(name, {search: {shujufenlei: name}});
               if (url) {
                 open(url);
                 if (await this.message.newTabConfirm()) {
@@ -143,12 +146,12 @@ export class XhmrmsbjSbjbComponent {
     });
     const cad2 = result?.[0];
     if (cad2) {
-      const name2 = type as XhmrmsbjSbjbItemOptionalKey;
-      const type2 = this.status.cadYaoqiuNamesMap[type] || type;
-      if (xhmrmsbjSbjbItemOptionalKeys.includes(name2)) {
-        item[name2] = cad2.options[type2];
-      } else if (type === "锁边" || type === "铰边") {
-        item[type].名字 = cad2.options[type2];
+      const title2 = title as XhmrmsbjSbjbItemOptionalKey1;
+      const title3 = title as XhmrmsbjSbjbItemOptionalKey2;
+      if (xhmrmsbjSbjbItemOptionalKeys1.includes(title2)) {
+        item[title2] = cad2.options[name];
+      } else if (xhmrmsbjSbjbItemOptionalKeys2.includes(title3)) {
+        item[title3].名字 = cad2.options[name];
       }
       item.CAD数据[index].cad = getHoutaiCad(cad2);
       this.refreshItems();
@@ -276,8 +279,9 @@ export class XhmrmsbjSbjbComponent {
           }
         }
         item.CAD数据 = [];
-        for (const name of xhmrmsbjSbjbItemCadKeys[item2.产品分类] || []) {
-          item.CAD数据.push({name});
+        for (const title of xhmrmsbjSbjbItemCadKeys[item2.产品分类] || []) {
+          const name = title === "小扇铰边" ? "铰边" : title;
+          item.CAD数据.push({name, title});
         }
         item2.锁边铰边数据.unshift(item);
         this.refreshItems();

@@ -1004,12 +1004,18 @@ export class XhmrmsbjComponent implements OnDestroy {
       if (选中模块 && !kexuan.find((v) => v.id === 选中模块.id)) {
         delete mokuaiNode.选中模块;
       }
+      let refresh = true;
       if (kexuan.length > 0) {
         if (!kexuan.find((v) => v.info?.isDefault)) {
           this.setDefaultMokuai(kexuan[0]);
+          refresh = false;
         }
-        this.selectMokuai(kexuan[0]);
-      } else {
+        if (!mokuaiNode.选中模块) {
+          this.selectMokuai(kexuan[0]);
+          refresh = false;
+        }
+      }
+      if (refresh) {
         this.refreshData();
       }
     }
@@ -1351,16 +1357,32 @@ export class XhmrmsbjComponent implements OnDestroy {
         }
       }
       if (mokuai) {
-        updateMokuaiItem(mokuai0, mokuai);
-        for (const arr of mokuai0.gongshishuru.concat(mokuai0.xuanxiangshuru)) {
-          const k = arr[0];
-          if (slgsKeys.has(k)) {
-            if (mokuai0.suanliaogongshi[k] === undefined) {
-              arr[1] = "";
-            } else {
-              const val = String(mokuai0.suanliaogongshi[k]);
-              if (val) {
-                arr[1] = val;
+        const menshanbujuInfos = this.data()?.menshanbujuInfos || {};
+        for (const key of keysOf(menshanbujuInfos)) {
+          const msbjInfo = menshanbujuInfos[key];
+          if (msbjInfo) {
+            for (const node of msbjInfo.模块节点 || []) {
+              const mokuais = [...node.可选模块];
+              if (node.选中模块) {
+                mokuais.push(node.选中模块);
+              }
+              for (const mokuai2 of mokuais) {
+                const isUpdated = updateMokuaiItem(mokuai2, mokuai);
+                if (isUpdated) {
+                  for (const arr of mokuai2.gongshishuru.concat(mokuai2.xuanxiangshuru)) {
+                    const k = arr[0];
+                    if (slgsKeys.has(k)) {
+                      if (mokuai2.suanliaogongshi[k] === undefined) {
+                        arr[1] = "";
+                      } else {
+                        const val = String(mokuai2.suanliaogongshi[k]);
+                        if (val) {
+                          arr[1] = val;
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }

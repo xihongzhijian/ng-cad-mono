@@ -242,7 +242,7 @@ export const updateMokuaiItem = (
   others?: {type1: string; type2: string}
 ) => {
   if (!isMokuaiItemEqual(item, item2)) {
-    return;
+    return false;
   }
   if (others) {
     item.type1 = others.type1;
@@ -289,6 +289,7 @@ export const updateMokuaiItem = (
       }
     }
   }
+  return true;
 };
 export const updateMokuaiItems = (items: ZixuanpeijianMokuaiItem[], typesInfo: ZixuanpeijianTypesInfo, useSlgs = false) => {
   for (const type1 in typesInfo) {

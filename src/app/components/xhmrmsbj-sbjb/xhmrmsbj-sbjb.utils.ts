@@ -7,28 +7,36 @@ import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {
   XhmrmsbjSbjbItem,
-  XhmrmsbjSbjbItemOptionalKey,
-  xhmrmsbjSbjbItemOptionalKeys,
+  XhmrmsbjSbjbItemOptionalKey3,
+  xhmrmsbjSbjbItemOptionalKeys1,
+  xhmrmsbjSbjbItemOptionalKeys2,
   XhmrmsbjSbjbItemSbjb,
   XhmrmsbjSbjbItemSbjbItem,
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
 
-export const getXhmrmsbjSbjbItemOptionalKeys = (fenlei: string): XhmrmsbjSbjbItemOptionalKey[] => {
+export const getXhmrmsbjSbjbItemOptionalKeys = (fenlei: string): XhmrmsbjSbjbItemOptionalKey3[] => {
   switch (fenlei) {
     case "子母对开":
-      return ["铰框", "顶框", "插销边", "小扇铰边"];
+      return ["锁边", "铰边", "铰框", "顶框", "插销边", "小扇铰边"];
     case "双开":
-      return ["铰框", "顶框", "插销边"];
+      return ["锁边", "铰边", "铰框", "顶框", "插销边"];
     default:
-      return ["锁框", "铰框", "顶框"];
+      return ["锁边", "铰边", "锁框", "铰框", "顶框"];
   }
 };
 
 export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string, activeRowIndex: number) => {
   const optionalKeys = getXhmrmsbjSbjbItemOptionalKeys(fenlei);
-  const optionalCols = xhmrmsbjSbjbItemOptionalKeys.map((key) => {
+  const optionalCols1 = xhmrmsbjSbjbItemOptionalKeys1.map((key) => {
     const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key};
+    if (!optionalKeys.includes(key)) {
+      col.hidden = true;
+    }
+    return col;
+  });
+  const optionalCols2 = xhmrmsbjSbjbItemOptionalKeys2.map((key) => {
+    const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key, getString: (val) => val[key].名字};
     if (!optionalKeys.includes(key)) {
       col.hidden = true;
     }
@@ -43,9 +51,8 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
       {type: "string", field: "门扇厚度"},
       {type: "string", field: "包边方向"},
       {type: "string", field: "条件"},
-      {type: "string", field: "锁边", getString: (val) => val.锁边.名字},
-      {type: "string", field: "铰边", getString: (val) => val.铰边.名字},
-      ...optionalCols,
+      ...optionalCols2,
+      ...optionalCols1,
       {type: "boolean", field: "停用"},
       {type: "number", field: "排序"},
       {type: "boolean", field: "默认值"},
@@ -74,6 +81,8 @@ export const getXhmrmsbjSbjbItemSbjb = (item?: Partial<XhmrmsbjSbjbItemSbjb>): X
   包边方向: "",
   锁边: getXhmrmsbjSbjbItemSbjbItem(item?.锁边),
   铰边: getXhmrmsbjSbjbItemSbjbItem(item?.铰边),
+  插销边: getXhmrmsbjSbjbItemSbjbItem(item?.插销边),
+  小扇铰边: getXhmrmsbjSbjbItemSbjbItem(item?.小扇铰边),
   锁框: "",
   铰框: "",
   顶框: "",
