@@ -21,6 +21,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTreeModule, MatTreeNestedDataSource} from "@angular/material/tree";
+import {session} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {environment} from "@env";
 import {downloadByString, getElementVisiblePercentage, ObjectOf, queryStringList, selectFiles} from "@lucilor/utils";
@@ -41,6 +42,7 @@ import {
   getDataListNavNodeList,
   getDataListNavNodePath,
   getDataListNavNodesFlat,
+  moveDataListNavNode,
   sortDataListItems,
   sortDataListNavNodeList,
   updateDataListNavNodeList
@@ -75,7 +77,6 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   itemsAllIn = input<T[]>([], {alias: "itemsAll"});
   items = model<T[]>([]);
   activeNavNode = model<DataListNavNode | null>(null);
-  navEditMode = model(false);
   navNameChange = output<DataListNavNameChangeEvent>();
 
   production = environment.production;
@@ -114,6 +115,11 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   navNodesTreeEl = viewChild<string, ElementRef<HTMLElement>>("navNodesTree", {read: ElementRef});
   navNodesScrollbar = viewChild<NgScrollbar>("navNodesScrollbar");
 
+  private _navEditModeKey = "dataListNavEditMode";
+  navEditMode = model<boolean>(session.load(this._navEditModeKey) || false);
+  navEditModeEff = effect(() => {
+    session.save(this._navEditModeKey, this.navEditMode());
+  });
   toggleNavEditMode() {
     this.navEditMode.update((v) => !v);
   }
@@ -180,24 +186,57 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
 
-  async getNavNodeItem(data?: DataListNavNode) {
+  async getNavNodeItem(data?: DataListNavNode, to?: DataListNavNode | null) {
     const id = data ? data.id : null;
     if (data) {
       data = cloneDeep(data);
-      const path = getDataListNavNodePath(this.navDataSource.data, data);
-      console.log(path.map((v) => v.name));
     } else {
       data = new DataListNavNode({id: v4(), name: "", children: []});
     }
     const names: string[] = [];
-    for (const node of getDataListNavNodesFlat(this.navDataSource.data)) {
+    const nodes = this.navDataSource.data;
+    for (const node of getDataListNavNodesFlat(nodes)) {
       if (id && node.id === id) {
         continue;
       }
-      if (!node.readonly) {
+      if (!node.isVirtual) {
         names.push(node.name);
       }
     }
+
+    const pathOptions: string[] = [];
+    const pathMap = new Map<string, DataListNavNode | null>();
+    const stringifyPath = (path: DataListNavNode[]) => path.map((v) => v.name).join("/");
+    const getNodePathInfos = function* (node: DataListNavNode, parentPath: DataListNavNode[] = []): Generator<{path: DataListNavNode[]}> {
+      if (data && node.id === data.id) {
+        return;
+      }
+      const path = [...parentPath, node];
+      yield {path};
+      if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+          yield* getNodePathInfos(child, path);
+        }
+      }
+    };
+    for (const node of nodes) {
+      if (node.isVirtual) {
+        continue;
+      }
+      for (const info of getNodePathInfos(node)) {
+        const node2 = info.path.at(-1);
+        if (node2) {
+          const name = stringifyPath(info.path);
+          pathOptions.push(name);
+          pathMap.set(name, node2);
+        }
+      }
+    }
+    const path2 = getDataListNavNodePath(nodes, data).slice(0, -1);
+    const from = path2.at(-1) || null;
+    const path = stringifyPath(path2);
+    to = from;
+
     const form: InputInfo<DataListNavNode>[] = [
       {
         type: "string",
@@ -214,27 +253,31 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
           }
         ]
       },
+      {
+        type: "select",
+        label: "上一级分类",
+        clearable: true,
+        options: pathOptions,
+        multiple: false,
+        optionsDialog: {useLocalOptions: true},
+        value: path,
+        onChange: (val) => {
+          to = pathMap.get(val);
+        }
+      },
       {type: "number", label: "排序", model: {data, key: "order"}}
     ];
     const result = await this.message.form(form);
     if (result) {
+      moveDataListNavNode(nodes, data, from, to);
       return data;
     }
     return null;
   }
   async addNavNode(nodeParent?: DataListNavNode) {
-    const node = await this.getNavNodeItem();
+    const node = await this.getNavNodeItem(undefined, nodeParent);
     if (!node) {
       return;
-    }
-    if (nodeParent) {
-      if (!Array.isArray(nodeParent.children)) {
-        nodeParent.children = [];
-      }
-      node.level = nodeParent.level + 1;
-      nodeParent.children.push(node);
-    } else {
-      this.navDataSource.data.push(node);
     }
     await this.setNavNodes();
     setTimeout(() => {

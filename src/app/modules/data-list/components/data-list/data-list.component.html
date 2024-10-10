@@ -54,11 +54,17 @@
           </button>
         </ng-template>
         <ng-template #nodeEdit [appTypedTemplate]="{$implicit: navDataSource.data[0]}" let-node>
-          @if (navEditMode() && !node.readonly) {
+          @if (navEditMode()) {
             <div class="nav-edit toolbar compact">
-              <button mat-button color="primary" (click)="addNavNode(node)">添加{{ node.level + 2 }}级</button>
-              <button mat-button color="primary" (click)="editNavNode(node)">编辑</button>
-              <button mat-button color="primary" (click)="removeNavNode(node)">删除</button>
+              @if (node.isVirtual) {
+                @if (!node.hasChild()) {
+                  <button mat-button color="primary" (click)="editNavNode(node)">编辑</button>
+                }
+              } @else {
+                <button mat-button color="primary" (click)="addNavNode(node)">添加{{ node.level + 2 }}级</button>
+                <button mat-button color="primary" (click)="editNavNode(node)">编辑</button>
+                <button mat-button color="primary" (click)="removeNavNode(node)">删除</button>
+              }
             </div>
           }
         </ng-template>

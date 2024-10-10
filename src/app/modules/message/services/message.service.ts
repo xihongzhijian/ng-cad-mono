@@ -176,9 +176,9 @@ export class MessageService {
     const {reviver} = jsonOptions || {};
     try {
       const data = JSON.parse(await file.text(), reviver);
-      const res = action(data);
+      let res = action(data);
       if (res instanceof Promise) {
-        await res;
+        res = await res;
       }
       if (res !== false) {
         await this.snack(`${title}导入成功`);

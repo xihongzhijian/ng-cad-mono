@@ -87,12 +87,13 @@ export class MokuaiCadsComponent {
     if (!success) {
       return;
     }
-    for (const cad of this.cads()) {
+    const cads = this.cadsAll().filter((v) => v.type === before);
+    for (const cad of cads) {
       if (cad.type === before) {
         cad.type = after;
       }
     }
-    this.bjmkStatus.cadsManager.refresh();
+    this.bjmkStatus.cadsManager.refresh({update: cads});
   }
 
   selectedCadIndexs = signal<number[]>([]);

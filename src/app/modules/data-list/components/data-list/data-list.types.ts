@@ -7,7 +7,7 @@ export interface DataListNavNodeRaw {
   order?: number;
   children?: DataListNavNodeRaw[];
   level?: number;
-  readonly?: boolean;
+  isVirtual?: boolean;
 }
 export interface DataListNavData extends MongodbDataBase {
   data?: DataListNavNodeRaw[];

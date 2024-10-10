@@ -14,7 +14,7 @@ export class DataListNavNode {
   itemCount = 0;
   hidden?: boolean;
   hidden2?: boolean;
-  readonly?: boolean;
+  isVirtual?: boolean;
 
   constructor(data: DataListNavNodeRaw) {
     this.import(data);
@@ -23,6 +23,9 @@ export class DataListNavNode {
   hasChild() {
     return this.children && this.children.length > 0;
   }
+  isLeaf() {
+    return !this.hasChild() && this.itemCount > 0;
+  }
 
   import(data: DataListNavNodeRaw) {
     this.id = data.id;
@@ -30,7 +33,7 @@ export class DataListNavNode {
     this.order = typeof data.order === "number" ? data.order : 0;
     this.createTime = typeof data.createTime === "number" ? data.createTime : Date.now();
     this.level = typeof data.level === "number" ? data.level : 0;
-    this.readonly = data.readonly;
+    this.isVirtual = data.isVirtual;
     if (Array.isArray(data.children)) {
       this.children = data.children.map((child) => new DataListNavNode({...child, level: this.level + 1}));
       sortDataListNavNodeList(this.children);
@@ -50,6 +53,13 @@ export class DataListNavNode {
       data.order = this.order;
     }
     return data;
+  }
+  clone(resetId = false) {
+    const result = new DataListNavNode(this.export());
+    if (resetId) {
+      result.id = v4();
+    }
+    return result;
   }
 }
 
@@ -112,12 +122,12 @@ export const updateDataListNavNodeList = (list: DataListNavNode[], items: DataLi
       list.push(node);
       updateNavNodes = true;
     }
-    node.readonly = true;
+    node.isVirtual = true;
     if (updateNavNodes) {
-      node.children = Array.from(typesToAdd).map((name) => new DataListNavNode({id: v4(), name, readonly: true}));
+      node.children = Array.from(typesToAdd).map((name) => new DataListNavNode({id: v4(), name, isVirtual: true}));
     } else {
       for (const child of node.children || []) {
-        child.readonly = true;
+        child.isVirtual = true;
       }
     }
   } else {
@@ -176,6 +186,68 @@ export const getDataListNavNodesFlat = function* (nodes: DataListNavNode[]): Gen
     if (node.children) {
       yield* getDataListNavNodesFlat(node.children);
     }
+  }
+};
+
+export const moveDataListNavNode = (
+  nodes: DataListNavNode[],
+  node: DataListNavNode,
+  from: DataListNavNode | null,
+  to: DataListNavNode | null
+) => {
+  const removeNode = (parent: DataListNavNode[] | DataListNavNode, ...children: DataListNavNode[]) => {
+    if (parent instanceof DataListNavNode) {
+      if (!parent.children) {
+        return;
+      }
+      parent = parent.children;
+    }
+    const ids = children.map((v) => v.id);
+    const indexs = parent.map((v, i) => (ids.includes(v.id) ? i : -1)).filter((v) => v !== -1);
+    for (const [j, index] of indexs.entries()) {
+      parent.splice(index - j, 1);
+    }
+  };
+  const addNode = (parent: DataListNavNode[] | DataListNavNode, ...children: DataListNavNode[]) => {
+    const level = parent instanceof DataListNavNode ? parent.level + 1 : 0;
+    if (parent instanceof DataListNavNode) {
+      if (!parent.children) {
+        parent.children = [];
+      }
+      parent = parent.children;
+    }
+    for (const child of children) {
+      child.level = level;
+      delete child.isVirtual;
+      if (!parent.some((v) => v.id === child.id)) {
+        parent.push(child);
+      }
+    }
+  };
+
+  if (from !== to) {
+    if (from) {
+      removeNode(from, node);
+    } else {
+      removeNode(nodes, node);
+    }
+  }
+  if (to) {
+    if (to.isLeaf()) {
+      const toPath = getDataListNavNodePath(nodes, to);
+      const to2 = toPath.at(-2);
+      if (to2) {
+        const to3 = to.clone(true);
+        to3.name += "_软件生成";
+        addNode(to3, to, node);
+        removeNode(to2, node);
+        addNode(to2, to3);
+      }
+    } else {
+      addNode(to, node);
+    }
+  } else {
+    addNode(nodes, node);
   }
 };
 
