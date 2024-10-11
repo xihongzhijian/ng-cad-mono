@@ -64,23 +64,22 @@
       <mat-divider class="placeholder"></mat-divider>
       <ng-scrollbar>
         <div class="flex-column menshan-options">
-          @for (item of data()?.menshanbujuInfos | keyvalue: returnZero; track $index) {
-            @if (!data()?.["铰扇跟随锁扇"] || !item.key.includes("铰扇")) {
-              <div
-                class="flex-column menshan-option"
-                [class]="{active: activeMenshanKey() === item.key}"
-                (click)="selectMenshanKey(item.key)"
-              >
-                <div style="font-weight: bold">{{ item.key }}</div>
-                @if (item.value?.["选中布局数据"]; as data2) {
-                  @if (data()?.isVersion2024) {
-                    <div class="link text" appClickStop (click)="openMsbj()">布局：{{ data2.name }}</div>
-                  } @else {
-                    <div>布局：{{ data2.name }}</div>
-                  }
+          @for (item of menshanbujuItems(); track $index) {
+            <div
+              class="flex-column menshan-option"
+              [class]="{active: activeMenshanKey() === item.key}"
+              (click)="selectMenshanKey(item.key)"
+            >
+              <div style="font-weight: bold">{{ item.key }}</div>
+              @if (item.info["选中布局数据"]; as data2) {
+                @if (data()?.isVersion2024) {
+                  <div class="link text" appClickStop (click)="openMsbj()">布局：{{ data2.name }}</div>
+                } @else {
+                  <div>布局：{{ data2.name }}</div>
                 }
-              </div>
-            }
+              }
+              <button mat-stroked-button color="primary" (click)="copyMsbjInfo(item.info)">复制</button>
+            </div>
           }
         </div>
       </ng-scrollbar>

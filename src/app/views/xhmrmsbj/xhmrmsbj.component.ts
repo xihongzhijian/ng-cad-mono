@@ -14,7 +14,7 @@ import {
   signal,
   viewChild
 } from "@angular/core";
-import {FormsModule} from "@angular/forms";
+import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -671,6 +671,10 @@ export class XhmrmsbjComponent implements OnDestroy {
                       for (const v2 of arr2) {
                         if (v2[0] === v[0]) {
                           v2[1] = v[1];
+                          if (!node2.输入值) {
+                            node2.输入值 = {};
+                          }
+                          node2.输入值[v[0]] = v[1];
                         }
                       }
                     }
@@ -1532,5 +1536,49 @@ export class XhmrmsbjComponent implements OnDestroy {
       return;
     }
     this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: data.vid}});
+  }
+
+  menshanbujuItems = computed(() => {
+    const items: {key: string; info: XhmrmsbjInfo}[] = [];
+    const data = this.data();
+    if (!data) {
+      return items;
+    }
+    const menshanbujuInfos = data.menshanbujuInfos;
+    for (const key of keysOf(menshanbujuInfos)) {
+      const info = menshanbujuInfos[key];
+      if (!info) {
+        continue;
+      }
+      if (data.铰扇跟随锁扇 && key.includes("铰扇")) {
+        continue;
+      }
+      items.push({key, info});
+    }
+    return items;
+  });
+  async copyMsbjInfo(to: XhmrmsbjInfo) {
+    const itemOptions: InputInfoOptions = [];
+    for (const {key, info} of this.menshanbujuItems()) {
+      if (info === to) {
+        continue;
+      }
+      if (!info.选中布局数据 || !info.模块节点 || info.模块节点.length < 1) {
+        itemOptions.push({label: key + "（没有数据）", value: info, disabled: true});
+      } else {
+        itemOptions.push({label: key, value: info});
+      }
+    }
+    const data: {from: XhmrmsbjInfo | null} = {from: null};
+    const form: InputInfo<typeof data>[] = [
+      {type: "select", label: "从哪里复制", options: itemOptions, model: {data, key: "from"}, validators: Validators.required}
+    ];
+    const result = await this.message.form(form);
+    const {from} = data;
+    if (!result || !from) {
+      return;
+    }
+    Object.assign(to, cloneDeep(from));
+    this.refreshData();
   }
 }

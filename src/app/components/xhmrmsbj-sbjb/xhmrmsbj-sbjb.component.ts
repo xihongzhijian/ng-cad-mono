@@ -22,7 +22,6 @@ import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -53,7 +52,7 @@ import {getXhmrmsbjSbjbItemOptions, getXhmrmsbjSbjbItemSbjbForm, getXhmrmsbjSbjb
 @Component({
   selector: "app-xhmrmsbj-sbjb",
   standalone: true,
-  imports: [CadItemComponent, ClickStopPropagationDirective, MatButtonModule, MatDividerModule, NgScrollbarModule, TableComponent],
+  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, TableComponent],
   templateUrl: "./xhmrmsbj-sbjb.component.html",
   styleUrl: "./xhmrmsbj-sbjb.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
