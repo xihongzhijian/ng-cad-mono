@@ -158,14 +158,6 @@ export class XhmrmsbjComponent implements OnDestroy {
   urlPrefix = remoteFilePath;
   rectInfos = computed(() => {
     const infos = this.activeMsbj()?.peizhishuju?.["模块节点"] || [];
-    const nodes = this.activeMsbjInfo()?.模块节点 || [];
-    for (const info of infos) {
-      const node = nodes.find((v) => v.层id === info.vid);
-      if (node) {
-        info.name = node.层名字;
-        info.排序 = node.排序;
-      }
-    }
     return infos;
   });
   activeMsbjInfo = computed(() => {
@@ -1369,18 +1361,19 @@ export class XhmrmsbjComponent implements OnDestroy {
               for (const mokuai2 of mokuais) {
                 const isUpdated = updateMokuaiItem(mokuai2, mokuai);
                 if (isUpdated) {
-                  for (const arr of mokuai2.gongshishuru.concat(mokuai2.xuanxiangshuru)) {
-                    const k = arr[0];
-                    if (slgsKeys.has(k)) {
-                      if (mokuai2.suanliaogongshi[k] === undefined) {
-                        arr[1] = "";
-                      } else {
-                        const val = String(mokuai2.suanliaogongshi[k]);
-                        if (val) {
-                          arr[1] = val;
-                        }
+                  const arrs = mokuai2.gongshishuru.concat(mokuai2.xuanxiangshuru);
+                  const keys = arrs.map((v) => v[0]);
+                  if (node.输入值) {
+                    for (const key of Object.keys(node.输入值)) {
+                      if (!keys.includes(key)) {
+                        delete node.输入值[key];
                       }
                     }
+                  }
+                  for (const arr of arrs) {
+                    const k = arr[0];
+                    const {value} = this.getValueInfo(mokuai2, k, arr[1]);
+                    arr[1] = value;
                   }
                 }
               }
