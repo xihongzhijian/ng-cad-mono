@@ -28,6 +28,7 @@ export interface CadListInput {
   yaoqiu?: Cad数据要求;
   gongshis?: 算料公式[];
   vars?: ObjectOf<string>;
+  title?: string;
   toolbarBtns?: {name: string; onClick?: (component: CadListComponent) => void}[];
 }
 

@@ -56,7 +56,7 @@
   @if (!isFloatingDialog()) {
     <div class="flex-column">
       @if (data(); as data) {
-        <mat-slide-toggle [(ngModel)]="data['铰扇跟随锁扇']">铰扇布局和锁扇相同</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="data['铰扇跟随锁扇']" (change)="refreshData(true)">铰扇布局和锁扇相同</mat-slide-toggle>
       }
       @if (isFromOrder() && !production) {
         <mat-slide-toggle [(ngModel)]="ignoreXiaoguotu">ignoreXiaoguotu</mat-slide-toggle>
@@ -68,7 +68,7 @@
             <div
               class="flex-column menshan-option"
               [class]="{active: activeMenshanKey() === item.key}"
-              (click)="selectMenshanKey(item.key)"
+              (click)="activeMenshanKey.set(item.key)"
             >
               <div style="font-weight: bold">{{ item.key }}</div>
               @if (item.info["选中布局数据"]; as data2) {

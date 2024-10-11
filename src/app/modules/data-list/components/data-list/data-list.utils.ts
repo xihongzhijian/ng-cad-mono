@@ -240,7 +240,7 @@ export const moveDataListNavNode = (
         const to3 = to.clone(true);
         to3.name += "_软件生成";
         addNode(to3, to, node);
-        removeNode(to2, node);
+        removeNode(to2, to);
         addNode(to2, to3);
       }
     } else {

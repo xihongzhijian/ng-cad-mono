@@ -1,7 +1,16 @@
 <div class="content flex-row flex-110">
   <div class="rect-container flex-column">
-    <div class="toolbar title flex-row">
-      <span>门扇布局【{{ msbjInfo()?.name }}】配置</span>
+    <div class="title">门扇布局【{{ msbjInfo()?.name }}】配置</div>
+    <div class="rect-area flex-column">
+      <app-msbj-rects
+        [rectInfos]="rectInfos()"
+        [(activeRectInfo)]="activeRectInfo"
+        (generateRectsEnd)="generateRectsEnd()"
+      ></app-msbj-rects>
+    </div>
+  </div>
+  <div class="fenlei-container flex-column flex-110" cdkDropListGroup>
+    <div class="toolbar">
       @if (closable()) {
         <button mat-raised-button color="primary" (click)="close(true)">确定</button>
         <button mat-raised-button color="primary" (click)="close()">取消</button>
@@ -19,48 +28,8 @@
           </div> -->
       }
     </div>
-    <div class="rect-area flex-column">
-      <app-msbj-rects
-        [rectInfos]="rectInfos()"
-        [(activeRectInfo)]="activeRectInfo"
-        (generateRectsEnd)="generateRectsEnd()"
-      ></app-msbj-rects>
-    </div>
-  </div>
-  <div class="fenlei-container flex-column flex-110" cdkDropListGroup>
     @for (info of inputInfos(); track $index) {
       <app-input [info]="info"></app-input>
-    }
-    <div class="daxiaoguanxi flex-column flex-110">
-      <div class="toolbar">
-        <div class="title">默认模块大小关系</div>
-        @if (!msbjInfo()?.isVersion2024) {
-          <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">编辑</button>
-        }
-      </div>
-      @if (msbjInfo()?.isVersion2024) {
-        <app-mkdxpz-editor
-          class="flex-110"
-          [data]="mkdxpz()"
-          [varNameItem]="varNameItem()"
-          (dataChange)="onMkdxpzChange($event)"
-        ></app-mkdxpz-editor>
-      }
-    </div>
-    @if (!msbjInfo()?.isVersion2024) {
-      <div class="cads-container flex-column">
-        <div class="title">CAD</div>
-        <ng-scrollbar>
-          <div class="cads flex-row">
-            @for (cad of cads(); track $index) {
-              <div class="cad flex-column">
-                <div class="title center">{{ cad.data.name }}</div>
-                <app-cad-image [id]="cad.data.id" [data]="cad.data" (click)="openCad(cad.data)"></app-cad-image>
-              </div>
-            }
-          </div>
-        </ng-scrollbar>
-      </div>
     }
   </div>
 </div>

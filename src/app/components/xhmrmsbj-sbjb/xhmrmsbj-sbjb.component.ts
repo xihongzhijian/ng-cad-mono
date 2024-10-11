@@ -127,6 +127,7 @@ export class XhmrmsbjSbjbComponent {
         options: {开启: item.开启},
         checkedItems: cad ? [cad.id] : [],
         addCadFn: () => this.addSbjbItemSbjbCad(name),
+        title,
         toolbarBtns: [
           {
             name: "后台编辑",
@@ -156,11 +157,11 @@ export class XhmrmsbjSbjbComponent {
       this.refreshItems();
     }
   }
-  async addSbjbItemSbjbCad(type: string) {
-    const table = type;
-    const items = await this.http.queryMySql({table, fields: ["mingzi"]});
+  async addSbjbItemSbjbCad(name: string) {
+    const table = name;
+    const items = await this.http.queryMySql({table, fields: ["mingzi"], filter: {where: {shujufenlei: name}}});
     const itemNames = items.map((v) => v.mingzi);
-    const yaoqiu = this.cadYaoqius()[type];
+    const yaoqiu = this.cadYaoqius()[name];
     const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
     const yaoqiuItems2 = yaoqiu?.选中CAD要求 || [];
     const cadData = new CadData();
@@ -179,12 +180,12 @@ export class XhmrmsbjSbjbComponent {
         }
       ];
     }
-    cadData.type = type;
+    cadData.type = name;
     const result = await this.message.form(form);
     if (!result) {
       return null;
     }
-    cadData.options[type] = cadData.name;
+    cadData.options[name] = cadData.name;
     const data = getHoutaiCad(cadData);
     const resData = await this.http.getData<{cad: HoutaiCad}>("shuju/api/addSuobianjiaobianData", {table, data});
     if (!resData) {

@@ -1,9 +1,8 @@
 import {Injectable} from "@angular/core";
-import {ObjectOf} from "@lucilor/utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {isEmpty} from "lodash";
 import {setGlobal} from "../app.common";
-import {Calc, CalcCircularReferenceError, CalcSelfReferenceError, Formulas} from "../utils/calc";
+import {Calc, CalcCircularReferenceError, CalcResult, CalcSelfReferenceError, Formulas} from "../utils/calc";
 
 @Injectable({
   providedIn: "root"
@@ -18,16 +17,9 @@ export class CalcService {
   async calcFormulas(formulas: Formulas, vars: Formulas = {}, errorMsg?: CalcCustomErrorMsg) {
     try {
       const result = Calc.calcFormulas(formulas, vars);
-      let error;
-      if (isEmpty(result.errorTrim)) {
-        error = result.error;
-      } else {
-        error = result.errorTrim;
-      }
-      if (errorMsg && !isEmpty(error)) {
-        const errorStr = this.getErrorFormusStr(error, vars, errorMsg);
+      const errorStr = this.getErrorFormusStr(result, errorMsg);
+      if (errorStr) {
         await this.message.error(errorStr);
-        // console.warn({formulas, vars, result, errorMsg});
       }
       return result;
     } catch (error) {
@@ -66,37 +58,32 @@ export class CalcService {
     return result.succeedTrim.result;
   }
 
-  private getErrorFormusStr(errorFormulas: Formulas, vars: Formulas, errorMsg?: CalcCustomErrorMsg) {
-    const {code = "", title = "", prefix = "", suffix = "", title2 = "错误！请检查："} = errorMsg || {};
+  private getErrorFormusStr(result: CalcResult, errorMsg?: CalcCustomErrorMsg) {
+    if (result.fulfilled || !errorMsg) {
+      return "";
+    }
+    const {code = "", title = "", prefix = "", suffix = "", title2 = "错误！请检查："} = errorMsg;
     let str = `${prefix}<h2>${title}${title2}${code}<br/>1、<span style="color:red">公式匹配</span>是否正确；`;
     str += `2、<span style="color:red">公式书写</span>是否正确！</h2><br/><br/>`;
     str += suffix;
+
+    const vars = result.succeed;
+    const errorFormulas = isEmpty(result.errorTrim) ? result.error : result.errorTrim;
 
     if (vars && vars["正在计算CAD名字"]) {
       str += `CAD：${vars["正在计算CAD名字"]}<br/><br/>`;
     }
 
-    const error1: ObjectOf<string> = {};
-
     for (const key in errorFormulas) {
-      if (Object.prototype.hasOwnProperty.call(errorFormulas, key)) {
-        const value = errorFormulas[key];
-        error1[key] = Calc.replaceVars(value.toString(), vars);
-      }
-    }
+      const value = errorFormulas[key];
+      const calcRes = Calc.replaceVars(value.toString(), vars);
 
-    for (const k in errorFormulas) {
-      if (Object.prototype.hasOwnProperty.call(errorFormulas, k)) {
-        const v = errorFormulas[k];
-        const calcV = Object.prototype.hasOwnProperty.call(vars, k) ? vars[k] : "";
-
-        // 算料公式报错
-        str += `公式: <span style="color:red"> ${k} = ${v}</span>, 计算结果: <span style="color:red">${error1[k]}</span>`;
-        if (calcV) {
-          str += ` = ${calcV}<br/>`;
-        } else {
-          str += "<br/>";
-        }
+      const calcV = key in vars ? vars[key] : "";
+      str += `公式: <span style="color:red"> ${key} = ${value}</span>, 计算结果: <span style="color:red">${calcRes}</span>`;
+      if (calcV) {
+        str += ` = ${calcV}<br/>`;
+      } else {
+        str += "<br/>";
       }
     }
 

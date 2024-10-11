@@ -7,7 +7,7 @@ import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MsbjData} from "@views/msbj/msbj.types";
 import {MsbjInfo, ZuoshujuData} from "@views/msbj/msbj.utils";
-import {cloneDeep} from "lodash";
+import {clone, cloneDeep} from "lodash";
 
 export interface XhmrmsbjTableData extends TableDataBase {
   peizhishuju?: string;
@@ -122,8 +122,8 @@ export class XhmrmsbjData extends ZuoshujuData {
     return data;
   }
 
-  clone() {
-    return cloneDeep(this);
+  clone(deep: boolean) {
+    return deep ? cloneDeep(this) : clone(this);
   }
 }
 
@@ -175,5 +175,5 @@ export interface XhmrmsbjRequestData {
   模块通用配置: Formulas;
 }
 export interface XhmrmsbjRequestDataOpts {
-  浮动弹窗?: {门扇名字: string; 节点名字: string; consumed: boolean};
+  浮动弹窗?: {门扇名字: MenshanKey; 节点名字: string; consumed: boolean};
 }

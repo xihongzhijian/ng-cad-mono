@@ -54,7 +54,7 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
   imports: [
     FormsModule,
     forwardRef(() => CadItemComponent),
-    InputComponent,
+    forwardRef(() => InputComponent),
     KeyValuePipe,
     MatButtonModule,
     MatCheckboxModule,
@@ -153,7 +153,7 @@ export class CadListComponent implements AfterViewInit {
       })
     );
     this.checkedItems.set(difference(checkedItems, toRemove, [""]));
-    this.checkedInOtherPages.set(checkedNum < this.checkedItems.length);
+    this.checkedInOtherPages.set(checkedNum < this.checkedItems().length);
   }
 
   searchField = signal("名字");
@@ -315,7 +315,7 @@ export class CadListComponent implements AfterViewInit {
   checkLimit(count: number) {
     const limit = this.data.checkedItemsLimit;
     const result = {valid: false, message: ""};
-    if (isNumber(limit) && this.checkedItems.length !== limit) {
+    if (isNumber(limit) && count !== limit) {
       result.message = `请选择${limit}个cad`;
       return result;
     }
@@ -353,12 +353,12 @@ export class CadListComponent implements AfterViewInit {
 
   async submit() {
     this.syncCheckedItems();
-    const checkLimitResult = this.checkLimit(this.checkedItems.length);
+    const ids = this.checkedItems();
+    const checkLimitResult = this.checkLimit(ids.length);
     if (!checkLimitResult.valid) {
       this.message.error(checkLimitResult.message);
       return;
     }
-    const ids = this.checkedItems();
     const {data} = this;
     const {collection, raw, vars, source} = data;
     const yaoqiuItems = data.yaoqiu?.选中CAD要求 || [];

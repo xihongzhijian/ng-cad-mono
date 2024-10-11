@@ -4,7 +4,6 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
-import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, queryString, timeout} from "@lucilor/utils";
@@ -35,7 +34,6 @@ import {getOpenDialogFunc} from "../dialog.common";
     MatDialogActions,
     MatIconModule,
     MatPaginatorModule,
-    MatTooltipModule,
     NgScrollbar,
     SpinnerComponent
   ]

@@ -18,13 +18,11 @@ import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
-import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {MsbjRectInfo, MsbjRectInfoRaw} from "@components/msbj-rects/msbj-rects.types";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
-import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableDataBase, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -41,15 +39,7 @@ import {getEmpty模块大小配置, MsbjInfo} from "./msbj.utils";
   templateUrl: "./msbj.component.html",
   styleUrls: ["./msbj.component.scss"],
   standalone: true,
-  imports: [
-    CadImageComponent,
-    FloatingDialogModule,
-    InputComponent,
-    MatButtonModule,
-    MkdxpzEditorComponent,
-    MsbjRectsComponent,
-    NgScrollbar
-  ],
+  imports: [CadImageComponent, InputComponent, MatButtonModule, MsbjRectsComponent, NgScrollbar],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MsbjComponent {
@@ -177,8 +167,8 @@ export class MsbjComponent {
         onInput: debounce((val: string) => {
           const msbjInfo = this.msbjInfo();
           if (rectInfo && msbjInfo) {
-            const rectInfo2 = msbjInfo.peizhishuju.模块节点.find((v) => v.vid === rectInfo.raw.vid);
-            if (rectInfo2) {
+            const rectInfos2 = msbjInfo.peizhishuju.模块节点.filter((v) => v.vid === rectInfo.raw.vid);
+            for (const rectInfo2 of rectInfos2) {
               rectInfo2.选项名称 = val;
             }
             this.rectInfos.update((v) => [...v]);

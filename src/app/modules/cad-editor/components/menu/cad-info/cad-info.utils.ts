@@ -1,7 +1,7 @@
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {Cad数据要求Item} from "@app/cad/cad-shujuyaoqiu";
-import {cadOptions} from "@app/cad/options";
+import {cadOptionOptions, cadOptions} from "@app/cad/options";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
@@ -381,9 +381,13 @@ export const getCadInfoInputs2 = (
         type: "select",
         label: key2,
         model: {data: () => getData(data).options, key: key2},
-        options: [],
-        optionsDialog: {optionKey: key2, openInNewTab: true}
+        options: []
       };
+      if (key2 in cadOptionOptions) {
+        info.options = cadOptionOptions[key2].values.slice();
+      } else {
+        info.optionsDialog = {optionKey: key2, openInNewTab: true};
+      }
     } else {
       info = getCadInfoInputs([key], data, dialog, status, parseOptionString, gongshis)[0];
       if (key === "选项" && info.type === "object") {

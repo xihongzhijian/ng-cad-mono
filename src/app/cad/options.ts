@@ -1,3 +1,5 @@
+import {ObjectOf} from "packages/utils/lib";
+
 export const cadOptions = {
   bancaihoudufangxiang: {
     values: [
@@ -70,3 +72,9 @@ export const cadLineOptions = {
 export const cadDimensionOptions = {
   xiaoshuchuli: {values: ["四舍五入", "舍去小数", "小数进一", "保留一位", "保留两位"], defaultValue: "四舍五入"}
 } as const;
+
+export const cadOptionOptions: ObjectOf<{values: string[]; defaultValue: string}> = {
+  开启: {values: ["外开", "内开"], defaultValue: ""},
+  包边方向: {values: ["包边在外", "包边在内"], defaultValue: ""},
+  锁向: {values: ["左锁", "右锁"], defaultValue: ""}
+};

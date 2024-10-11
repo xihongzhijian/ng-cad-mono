@@ -235,7 +235,9 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     const path2 = getDataListNavNodePath(nodes, data).slice(0, -1);
     const from = path2.at(-1) || null;
     const path = stringifyPath(path2);
-    to = from;
+    if (!to) {
+      to = from;
+    }
 
     const form: InputInfo<DataListNavNode>[] = [
       {
@@ -270,6 +272,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     const result = await this.message.form(form);
     if (result) {
       moveDataListNavNode(nodes, data, from, to);
+      this.activeNavNode.set(data);
       return data;
     }
     return null;

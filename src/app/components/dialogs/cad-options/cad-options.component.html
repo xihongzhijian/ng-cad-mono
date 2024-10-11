@@ -34,10 +34,10 @@
         @if (!noImage) {
           <app-image [src]="item.img" [prefix]="filePathUrl"></app-image>
         }
-        <div class="option-name toolbar center">
+        <div class="option-name toolbar">
           <div class="toolbar">
             <mat-checkbox [checked]="item.checked" [disabled]="item.disabled && !item.checked"> </mat-checkbox>
-            <div class="text long" [matTooltip]="item.name" [matTooltipPosition]="'above'">{{ item.label || item.name }}</div>
+            <div class="flex-110">{{ item.label || item.name }}</div>
           </div>
         </div>
       </div>

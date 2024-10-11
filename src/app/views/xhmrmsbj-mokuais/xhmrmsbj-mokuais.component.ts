@@ -94,7 +94,7 @@ export class XhmrmsbjMokuaisComponent {
           const gongshi = value.选中布局数据?.模块大小配置?.算料公式 || {};
           replaceMenshanName(key, gongshi);
           Object.assign(suanliaogongshi, gongshi);
-          const gongshiResult = this.calc.calc.calcFormulas(gongshi, formulas2);
+          const gongshiResult = this.calc.calc.calcFormulas(suanliaogongshi, formulas2);
           Object.assign(formulas2, gongshiResult.succeedTrim);
           for (const key2 of ["总宽", "总高"]) {
             const key3 = node.层名字 + key2;

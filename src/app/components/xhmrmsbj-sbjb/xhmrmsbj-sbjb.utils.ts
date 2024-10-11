@@ -107,6 +107,7 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, optio
       label: key,
       model: {data, key},
       multiple,
+      clearable: true,
       options: await options.fetchInputInfoOptions({name: key})
     };
     if (required) {

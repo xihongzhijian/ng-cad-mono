@@ -1,4 +1,7 @@
 <div class="toolbar">
+  @if (data.title; as title) {
+    <div class="title">{{ title }}</div>
+  }
   @for (info of searchForm1(); track $index) {
     <app-input [info]="info"></app-input>
   }
