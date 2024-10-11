@@ -254,7 +254,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       this.cadConsoleComponent.execute(command);
     });
     this.subscribe(this.status.cadStatusEnter$, () => {
-      this._updateDimPoints();
+      this._highlightDimensions();
     });
     setTimeout(() => {
       this._isViewInited = true;
@@ -287,7 +287,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     this.status.cad.render(entities);
   };
   private _onEntitiesReomve: CadEventCallBack<"entitiesremove"> = () => {
-    this._updateDimPoints();
+    this._highlightDimensions();
   };
   private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (event, entity) => {
     const collection = this.status.collection$.value;
@@ -302,18 +302,18 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     }
   };
   private _onEntitySelect: CadEventCallBack<"entitiesselect"> = () => {
-    this._updateDimPoints();
+    this._highlightDimensions();
   };
   private _onEntityUnselect: CadEventCallBack<"entitiesunselect"> = () => {
-    this._updateDimPoints();
+    this._highlightDimensions();
   };
   private _onZoom: CadEventCallBack<"zoom"> = () => {
-    this._updateDimPoints();
+    this._highlightDimensions();
   };
   private _onMoveEntities: CadEventCallBack<"moveentities"> = () => {
-    this._updateDimPoints();
+    this._highlightDimensions();
   };
-  private _updateDimPoints() {
+  private _highlightDimensions() {
     if (!(this.status.cadStatus instanceof CadStatusNormal)) {
       return;
     }

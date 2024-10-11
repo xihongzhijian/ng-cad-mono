@@ -1,15 +1,15 @@
 <form>
   <button hidden></button>
-  @for (d of dimensions; track i; let i = $index) {
+  @for (d of dimensions(); track i; let i = $index) {
     <div>
       <mat-form-field>
-        <mat-label>标注名字</mat-label>
+        <mat-label [class.active]="d.selected">标注名字</mat-label>
         <input
           matInput
           type="text"
           [value]="getDimensionName(d, i)"
-          (focus)="dimNameFocus = i"
-          (blur)="dimNameFocus = -1"
+          (focus)="dimNameFocus.set(i)"
+          (blur)="dimNameFocus.set(-1)"
           (input)="setDimensionName($event, d)"
           name="dimensionName"
         />
@@ -18,7 +18,7 @@
         </button>
         <mat-hint [align]="'start'">
           <button mat-raised-button color="primary" (click)="editDimension(i)">编辑</button>
-          <button mat-raised-button [color]="dimLineSelecting === i ? 'accent' : 'primary'" (click)="selectDimLine(i)">选线</button>
+          <button mat-raised-button [color]="dimLineSelecting() === i ? 'accent' : 'primary'" (click)="selectDimLine(i)">选线</button>
           <label>隐藏尺寸线</label>
           <mat-slide-toggle [checked]="getHideDimLines(i)" (change)="setHideDimLines($event, i)"></mat-slide-toggle>
         </mat-hint>
@@ -26,6 +26,8 @@
     </div>
   }
   <div class="btn-group">
-    <button mat-raised-button [color]="dimLineSelecting === -1 ? 'accent' : 'primary'" (click)="addDimensionLinear()">添加线性标注</button>
+    <button mat-raised-button [color]="dimLineSelecting() === -1 ? 'accent' : 'primary'" (click)="addDimensionLinear()">
+      添加线性标注
+    </button>
   </div>
 </form>
