@@ -1148,7 +1148,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   onListSelectionChange(event: MatSelectionListChange) {
-    const values = event.options.map((v) => v.value);
+    const values = event.source.selectedOptions.selected.map((v) => v.value);
     const info = this.info;
     if (info.type === "select") {
       const value = info.multiple ? values : values[0];

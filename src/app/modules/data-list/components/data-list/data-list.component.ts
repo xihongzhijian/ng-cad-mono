@@ -304,6 +304,10 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       await this.message.error(`【${node.name}】下面有子节点，不能删除`);
       return;
     }
+    if (node.itemCount > 0) {
+      await this.message.error(`【${node.name}】下面有数据，不能删除`);
+      return;
+    }
     if (!(await this.message.confirm(`是否确定删除【${node.name}】?`))) {
       return;
     }
@@ -333,16 +337,19 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   }
 
   itemQuery = signal("");
-  itemQueryInputInfo = computed<InputInfo>(() => ({
-    type: "string",
-    label: "搜索",
-    clearable: true,
-    value: this.itemQuery(),
-    onInput: debounce((val) => {
-      this.itemQuery.set(val);
-      this.filterItems();
-    }, 200)
-  }));
+  itemQueryInputInfo = computed(() => {
+    const info: InputInfo = {
+      type: "string",
+      label: "搜索",
+      clearable: true,
+      value: this.itemQuery(),
+      onInput: debounce((val) => {
+        this.itemQuery.set(val);
+        this.filterItems();
+      }, 200)
+    };
+    return info;
+  });
 
   itemsAll = signal<T[]>([]);
   itemsAllEff = effect(

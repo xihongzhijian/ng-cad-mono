@@ -84,6 +84,7 @@ import {
   XhmrmsbjCloseEvent,
   XhmrmsbjData,
   XhmrmsbjInfo,
+  XhmrmsbjInfoMokuaiNode,
   XhmrmsbjRequestData,
   XhmrmsbjTableData,
   XhmrmsbjTabName,
@@ -569,9 +570,8 @@ export class XhmrmsbjComponent implements OnDestroy {
     const data = await this.http.getData<Formulas>("ngcad/getMokuaiTongyongPeizhi");
     return data || {};
   }).data;
-  getValueInfo(mokuai: ZixuanpeijianMokuaiItem, key: string, value: string) {
-    const node = this.activeMokuaiNode();
-    if (key in (node?.输入值 || {})) {
+  getValueInfo(node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, key: string, value: string) {
+    if (key in (node.输入值 || {})) {
       return {value, type: "输入值"};
     }
     const materialResult = this.materialResult();
@@ -625,7 +625,7 @@ export class XhmrmsbjComponent implements OnDestroy {
       }
       const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
       for (const v of arr) {
-        const valueInfo = this.getValueInfo(mokuai, v[0], v[1]);
+        const valueInfo = this.getValueInfo(node, mokuai, v[0], v[1]);
         v[1] = valueInfo.value;
         infos.push({
           type: "string",
@@ -633,7 +633,7 @@ export class XhmrmsbjComponent implements OnDestroy {
           model: {key: "1", data: v},
           clearable: true,
           validators: (control) => {
-            const valueInfo2 = this.getValueInfo(mokuai, v[0], control.value);
+            const valueInfo2 = this.getValueInfo(node, mokuai, v[0], control.value);
             if (!valueInfo2.value) {
               return {required: true};
             }
@@ -656,7 +656,7 @@ export class XhmrmsbjComponent implements OnDestroy {
             } else {
               delete node.输入值[v[0]];
             }
-            const valueInfo2 = this.getValueInfo(mokuai, v[0], val);
+            const valueInfo2 = this.getValueInfo(node, mokuai, v[0], val);
             v[1] = valueInfo2.value;
             info.hint = valueInfo2.type;
 
@@ -859,7 +859,7 @@ export class XhmrmsbjComponent implements OnDestroy {
           }
           const missingVars: string[] = [];
           for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
-            const valueInfo = this.getValueInfo(mokuai, arr[0], arr[1]);
+            const valueInfo = this.getValueInfo(node1, mokuai, arr[0], arr[1]);
             arr[1] = valueInfo.value;
             if (!arr[1]) {
               missingVars.push(arr[0]);
@@ -930,7 +930,8 @@ export class XhmrmsbjComponent implements OnDestroy {
       return;
     }
     const data: TableUpdateParams<MsbjData>["data"] = dataInfo.export();
-    delete data.mingzi;
+    console.log(data);
+    // delete data.mingzi;
     await this.http.tableUpdate({table, data});
     this.isSubmited.set(true);
   }
@@ -1349,13 +1350,14 @@ export class XhmrmsbjComponent implements OnDestroy {
       return;
     }
     this.openedMokuai.set(null);
-    if (isSaved) {
+    const node = this.activeMokuaiNode();
+    if (isSaved && node) {
       const mokuai0 = openedMokuai.mokuai0;
       const mokuai = (await this.fetchMokuais([openedMokuai.mokuai.id]))[0];
       const slgsKeys = new Set<string>();
       const arr0 = mokuai0.gongshishuru.concat(mokuai0.xuanxiangshuru);
       for (const [k, v] of arr0) {
-        const {type} = this.getValueInfo(mokuai0, k, v);
+        const {type} = this.getValueInfo(node, mokuai0, k, v);
         if (["模块公式值", "通用公式值"].includes(type)) {
           slgsKeys.add(k);
         }
@@ -1384,7 +1386,7 @@ export class XhmrmsbjComponent implements OnDestroy {
                   }
                   for (const arr of arrs) {
                     const k = arr[0];
-                    const {value} = this.getValueInfo(mokuai2, k, arr[1]);
+                    const {value} = this.getValueInfo(node, mokuai2, k, arr[1]);
                     arr[1] = value;
                   }
                 }

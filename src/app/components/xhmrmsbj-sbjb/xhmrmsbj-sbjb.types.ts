@@ -57,5 +57,5 @@ export const xhmrmsbjSbjbItemCadKeys: ObjectOf<XhmrmsbjSbjbItemOptionalKey3[]> =
   双开: ["铰框", "铰边", "插销边", "锁边", "铰边", "铰框", "顶框"]
 };
 
-export const xhmrmsbjSbjbItemCopyModes = ["全部替换", "添加到原有数据"] as const;
+export const xhmrmsbjSbjbItemCopyModes = ["清空原有数据并全部替换为新数据", "添加到原有数据"] as const;
 export type XhmrmsbjSbjbItemCopyMode = (typeof xhmrmsbjSbjbItemCopyModes)[number];

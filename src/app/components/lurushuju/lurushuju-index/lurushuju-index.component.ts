@@ -95,6 +95,7 @@ export class LurushujuIndexComponent {
       {name: "型号专用公式", color: "primary", hidden: !xinghao},
       {name: "型号专用CAD", color: "primary", hidden: !xinghao},
       {name: "", class: ["flex-110"]},
+      {name: environment.beta ? "测试版" : "正式版", type: "text"},
       {name: xinghaoSizeText, type: "text", class: xinghaoSizeClass, hidden: !xinghaoSizeText},
       {name: "测试", color: "primary"}
     ];

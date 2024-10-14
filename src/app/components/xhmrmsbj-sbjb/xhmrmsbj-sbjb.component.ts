@@ -309,7 +309,7 @@ export class XhmrmsbjSbjbComponent {
       return;
     }
     const fromItems = cloneDeep(from.锁边铰边数据);
-    if (mode === "全部替换") {
+    if (mode === "清空原有数据并全部替换为新数据") {
       to.锁边铰边数据 = fromItems;
     } else {
       to.锁边铰边数据.push(...fromItems);
@@ -324,7 +324,7 @@ export class XhmrmsbjSbjbComponent {
       const form: InputInfo<typeof data>[] = [
         {
           type: "select",
-          label: "选择产品分类",
+          label: "选择导入哪些产品分类",
           multiple: true,
           options: itemOptions,
           appearance: "list",
@@ -347,7 +347,7 @@ export class XhmrmsbjSbjbComponent {
       for (const item of data.from) {
         const item2 = this.items().find((v) => v.产品分类 === item.产品分类);
         if (item2) {
-          if (mode === "全部替换") {
+          if (mode === "清空原有数据并全部替换为新数据") {
             item2.锁边铰边数据 = item.锁边铰边数据;
           } else {
             item2.锁边铰边数据.push(...item.锁边铰边数据);
@@ -362,10 +362,11 @@ export class XhmrmsbjSbjbComponent {
     const items = this.items();
     const itemOptions = getXhmrmsbjSbjbItemOptions(items);
     const data = {from: Array<XhmrmsbjSbjbItem>()};
+    const indexMap = new Map(items.map((v, i) => [v.产品分类, i]));
     const form: InputInfo<typeof data>[] = [
       {
         type: "select",
-        label: "选择产品分类",
+        label: "选择导出哪些产品分类",
         multiple: true,
         options: itemOptions,
         appearance: "list",
@@ -377,6 +378,7 @@ export class XhmrmsbjSbjbComponent {
     if (!result) {
       return;
     }
+    data.from.sort((a, b) => (indexMap.get(a.产品分类) ?? 0) - (indexMap.get(b.产品分类) ?? 0));
     const title = [this.xinghaoName(), "锁边铰边", DateTime.now().toFormat("yyyyMMdd")].join("_");
     await this.message.exportData(data.from, title);
   }
