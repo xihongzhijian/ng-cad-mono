@@ -485,9 +485,10 @@ export class ZixuanpeijianComponent implements OnInit {
     const yaoqiu = this.getLingsanYaoqiu();
     const cadData = new CadData({type: this.lingsanCadType});
     const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
-    const yaoqiuItems2 = yaoqiu?.选中CAD要求 || [];
     setCadData(cadData, yaoqiuItems);
-    const form = getCadInfoInputs2(yaoqiuItems, yaoqiuItems2, cadData, this.dialog, this.status, true, this.data?.gongshis);
+    const {collection} = this;
+    const gongshis = this.data?.gongshis;
+    const form = await getCadInfoInputs2(yaoqiu, "add", collection, cadData, this.http, this.dialog, this.status, true, gongshis);
     const result = await this.message.form<typeof data>(form);
     if (!result) {
       return;
@@ -501,7 +502,6 @@ export class ZixuanpeijianComponent implements OnInit {
       cadData.options.型号 = xinghao;
     }
     const data = getHoutaiCad(cadData);
-    const {collection} = this;
     const resData = await this.http.mongodbInsert(collection, data, {force: !!yaoqiu});
     if (resData) {
       if (await this.message.confirm("是否编辑新的CAD？")) {

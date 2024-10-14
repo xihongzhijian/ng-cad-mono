@@ -2,7 +2,7 @@ import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
-import {MaybePromise, ObjectOf} from "@lucilor/utils";
+import {ObjectOf} from "@lucilor/utils";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {CadListComponent} from "./cad-list.component";
 
@@ -24,7 +24,8 @@ export interface CadListInput {
   source?: CadData[];
   raw?: boolean;
   addCadData?: Partial<CadData>;
-  addCadFn?: () => MaybePromise<CadData | null>;
+  beforeEditCad?: (data: HoutaiCad) => void;
+  afterEditCad?: (data: HoutaiCad) => void;
   yaoqiu?: Cad数据要求;
   gongshis?: 算料公式[];
   vars?: ObjectOf<string>;

@@ -1,6 +1,8 @@
+import {CadCollection} from "@app/cad/collections";
 import {SortedItem} from "@app/utils/sort-items";
+import {CadData} from "@lucilor/cad-viewer";
+import {ObjectOf} from "@lucilor/utils";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
-import {ObjectOf} from "packages/utils/lib";
 
 export type XhmrmsbjSbjbResponseData = XhmrmsbjSbjbItem[];
 
@@ -48,7 +50,7 @@ export const xhmrmsbjSbjbItemOptionalKeys1 = ["锁框", "铰框", "顶框"] as c
 export type XhmrmsbjSbjbItemOptionalKey1 = (typeof xhmrmsbjSbjbItemOptionalKeys1)[number];
 export const xhmrmsbjSbjbItemOptionalKeys2 = ["锁边", "铰边", "插销边", "小扇铰边"] as const;
 export type XhmrmsbjSbjbItemOptionalKey2 = (typeof xhmrmsbjSbjbItemOptionalKeys2)[number];
-// export const xhmrmsbjSbjbItemOptionalKeys3 = ["锁边", "铰边", "锁框", "铰框", "顶框", "插销边", "小扇铰边"] as const;
+export const xhmrmsbjSbjbItemOptionalKeys3 = [...xhmrmsbjSbjbItemOptionalKeys1, ...xhmrmsbjSbjbItemOptionalKeys2] as const;
 export type XhmrmsbjSbjbItemOptionalKey3 = XhmrmsbjSbjbItemOptionalKey1 | XhmrmsbjSbjbItemOptionalKey2;
 
 export const xhmrmsbjSbjbItemCadKeys: ObjectOf<XhmrmsbjSbjbItemOptionalKey3[]> = {
@@ -59,3 +61,12 @@ export const xhmrmsbjSbjbItemCadKeys: ObjectOf<XhmrmsbjSbjbItemOptionalKey3[]> =
 
 export const xhmrmsbjSbjbItemCopyModes = ["清空原有数据并全部替换为新数据", "添加到原有数据"] as const;
 export type XhmrmsbjSbjbItemCopyMode = (typeof xhmrmsbjSbjbItemCopyModes)[number];
+
+export const isSbjbCad = (collection: CadCollection, cad: CadData) => {
+  const collections: CadCollection[] = ["peijianCad"];
+  if (!collections.includes(collection)) {
+    return false;
+  }
+  const type = cad.type as XhmrmsbjSbjbItemOptionalKey3;
+  return xhmrmsbjSbjbItemOptionalKeys3.includes(type);
+};

@@ -14,14 +14,13 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {Cad数据要求, setCadData} from "@app/cad/cad-shujuyaoqiu";
+import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
-import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -39,15 +38,17 @@ import {
   xhmrmsbjSbjbItemCadKeys,
   XhmrmsbjSbjbItemCopyMode,
   xhmrmsbjSbjbItemCopyModes,
-  XhmrmsbjSbjbItemOptionalKey1,
-  XhmrmsbjSbjbItemOptionalKey2,
-  xhmrmsbjSbjbItemOptionalKeys1,
-  xhmrmsbjSbjbItemOptionalKeys2,
   XhmrmsbjSbjbItemSbjbCad,
   XhmrmsbjSbjbItemSbjbCadInfo,
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
-import {getXhmrmsbjSbjbItemOptions, getXhmrmsbjSbjbItemSbjbForm, getXhmrmsbjSbjbItemTableInfo} from "./xhmrmsbj-sbjb.utils";
+import {
+  getXhmrmsbjSbjbItemOptions,
+  getXhmrmsbjSbjbItemSbjbForm,
+  getXhmrmsbjSbjbItemTableInfo,
+  isXhmrmsbjSbjbItemOptionalKeys1,
+  isXhmrmsbjSbjbItemOptionalKeys2
+} from "./xhmrmsbj-sbjb.utils";
 
 @Component({
   selector: "app-xhmrmsbj-sbjb",
@@ -119,6 +120,7 @@ export class XhmrmsbjSbjbComponent {
     const cadInfo = this.cadInfos()[index];
     const {cad, name, title} = cadInfo;
     const yaoqiu = this.cadYaoqius()[name];
+    const cadNamesMap = new Map<string, {nameBefore: string; data: HoutaiCad}>();
     const result = await openCadListDialog(this.dialog, {
       data: {
         collection: "peijianCad",
@@ -126,7 +128,11 @@ export class XhmrmsbjSbjbComponent {
         yaoqiu,
         options: {开启: item.开启},
         checkedItems: cad ? [cad.id] : [],
-        addCadFn: () => this.addSbjbItemSbjbCad(name),
+        beforeEditCad: (data) => {
+          if (!cadNamesMap.has(data._id)) {
+            cadNamesMap.set(data._id, {nameBefore: data.名字, data});
+          }
+        },
         title,
         toolbarBtns: [
           {
@@ -145,53 +151,45 @@ export class XhmrmsbjSbjbComponent {
       }
     });
     const cad2 = result?.[0];
+    let needsRefresh = false;
+    cadNamesMap.forEach(({nameBefore, data}) => {
+      if (nameBefore === data.名字) {
+        return;
+      }
+      const type = data.分类;
+      const isKeys1 = isXhmrmsbjSbjbItemOptionalKeys1(type);
+      const isKeys2 = isXhmrmsbjSbjbItemOptionalKeys2(type);
+      if (!isKeys1 && !isKeys2) {
+        return;
+      }
+      for (const item of this.items()) {
+        for (const item2 of item.锁边铰边数据) {
+          if (isKeys1 && item2[type] === nameBefore) {
+            item2[type] = data.名字;
+            needsRefresh = true;
+            if (Array.isArray(item2.CAD数据)) {
+              for (let i = 0; i < item2.CAD数据.length; i++) {
+                if (item2.CAD数据[i].name === type) {
+                  item2.CAD数据[i].cad = cloneDeep(data);
+                }
+              }
+            }
+          }
+        }
+      }
+    });
     if (cad2) {
-      const title2 = title as XhmrmsbjSbjbItemOptionalKey1;
-      const title3 = title as XhmrmsbjSbjbItemOptionalKey2;
-      if (xhmrmsbjSbjbItemOptionalKeys1.includes(title2)) {
-        item[title2] = cad2.options[name];
-      } else if (xhmrmsbjSbjbItemOptionalKeys2.includes(title3)) {
-        item[title3].名字 = cad2.options[name];
+      if (isXhmrmsbjSbjbItemOptionalKeys1(title)) {
+        item[title] = cad2.name;
+      } else if (isXhmrmsbjSbjbItemOptionalKeys2(title)) {
+        item[title].名字 = cad2.name;
       }
       item.CAD数据[index].cad = getHoutaiCad(cad2);
+      needsRefresh = true;
+    }
+    if (needsRefresh) {
       this.refreshItems();
     }
-  }
-  async addSbjbItemSbjbCad(name: string) {
-    const table = name;
-    const items = await this.http.queryMySql({table, fields: ["mingzi"], filter: {where: {shujufenlei: name}}});
-    const itemNames = items.map((v) => v.mingzi);
-    const yaoqiu = this.cadYaoqius()[name];
-    const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
-    const yaoqiuItems2 = yaoqiu?.选中CAD要求 || [];
-    const cadData = new CadData();
-    setCadData(cadData, yaoqiuItems);
-    const form = getCadInfoInputs2(yaoqiuItems, yaoqiuItems2, cadData, this.dialog, this.status, true, []);
-    const nameInput = form.find((v) => v.model?.key === "name");
-    if (nameInput) {
-      nameInput.validators = [
-        Validators.required,
-        (control) => {
-          const val = control.value;
-          if (itemNames.includes(val)) {
-            return {名字不能重复: true};
-          }
-          return null;
-        }
-      ];
-    }
-    cadData.type = name;
-    const result = await this.message.form(form);
-    if (!result) {
-      return null;
-    }
-    cadData.options[name] = cadData.name;
-    const data = getHoutaiCad(cadData);
-    const resData = await this.http.getData<{cad: HoutaiCad}>("shuju/api/addSuobianjiaobianData", {table, data});
-    if (!resData) {
-      return null;
-    }
-    return new CadData(resData.cad.json);
   }
 
   fetchDataEff = effect(() => this.fetchData(), {allowSignalWrites: true});

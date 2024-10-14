@@ -395,8 +395,7 @@ export class CadListComponent implements AfterViewInit {
       const toEdit = getInvalidCad();
       if (toEdit.length > 0) {
         for (const {cad, i} of toEdit) {
-          const yaoqiuItems2 = data.yaoqiu?.CAD弹窗修改属性 || [];
-          const form = getCadInfoInputs2(yaoqiuItems2, yaoqiuItems, cad, this.dialog, this.status, true, []);
+          const form = await getCadInfoInputs2(data.yaoqiu, "set", collection, cad, this.http, this.dialog, this.status, true, []);
           let title = "编辑CAD";
           const name = cad.name;
           if (name) {
@@ -462,33 +461,29 @@ export class CadListComponent implements AfterViewInit {
     return 0;
   }
 
+  beforeEditCad(data: HoutaiCad) {
+    this.data.beforeEditCad?.(data);
+  }
+  afterEditCad(data: HoutaiCad) {
+    this.data.afterEditCad?.(data);
+  }
+
   async addCad() {
-    const {addCadFn, addCadData, yaoqiu, gongshis} = this.data;
-    if (typeof addCadFn === "function") {
-      const res = await addCadFn();
-      if (res) {
-        this.search();
-      }
-      return;
-    }
+    const {addCadData, yaoqiu, gongshis, collection} = this.data;
     const cadData = new CadData(addCadData);
-    const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
-    const yaoqiuItems2 = yaoqiu?.选中CAD要求 || [];
-    setCadData(cadData, yaoqiuItems);
-    const form = getCadInfoInputs2(yaoqiuItems, yaoqiuItems2, cadData, this.dialog, this.status, true, gongshis);
+    setCadData(cadData, yaoqiu?.新建CAD要求);
+    const form = await getCadInfoInputs2(yaoqiu, "add", collection, cadData, this.http, this.dialog, this.status, true, gongshis);
+
     const result = await this.message.form(form);
     if (!result) {
       return;
     }
-    const {collection} = this.data;
     const data = getHoutaiCad(cadData);
     const resData = await this.http.mongodbInsert(collection, data, {force: !!yaoqiu});
     if (resData) {
+      const data2 = new CadData(resData);
       if (await this.message.confirm("是否编辑新的CAD？")) {
-        const data2 = new CadData(resData);
-        if (data2) {
-          await openCadEditorDialog(this.dialog, {data: {data: data2, collection, center: true, gongshis}});
-        }
+        await openCadEditorDialog(this.dialog, {data: {data: data2, collection, center: true, gongshis}});
       }
       this.search();
     }

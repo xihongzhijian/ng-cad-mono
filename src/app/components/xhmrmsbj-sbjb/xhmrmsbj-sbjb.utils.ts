@@ -7,9 +7,12 @@ import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {
   XhmrmsbjSbjbItem,
+  XhmrmsbjSbjbItemOptionalKey1,
+  XhmrmsbjSbjbItemOptionalKey2,
   XhmrmsbjSbjbItemOptionalKey3,
   xhmrmsbjSbjbItemOptionalKeys1,
   xhmrmsbjSbjbItemOptionalKeys2,
+  xhmrmsbjSbjbItemOptionalKeys3,
   XhmrmsbjSbjbItemSbjb,
   XhmrmsbjSbjbItemSbjbItem,
   XhmrmsbjSbjbItemSbjbSorted
@@ -24,6 +27,16 @@ export const getXhmrmsbjSbjbItemOptionalKeys = (fenlei: string): XhmrmsbjSbjbIte
     default:
       return ["锁边", "铰边", "锁框", "铰框", "顶框"];
   }
+};
+
+export const isXhmrmsbjSbjbItemOptionalKeys1 = (key: string): key is XhmrmsbjSbjbItemOptionalKey1 => {
+  return xhmrmsbjSbjbItemOptionalKeys1.includes(key as XhmrmsbjSbjbItemOptionalKey1);
+};
+export const isXhmrmsbjSbjbItemOptionalKeys2 = (key: string): key is XhmrmsbjSbjbItemOptionalKey2 => {
+  return xhmrmsbjSbjbItemOptionalKeys2.includes(key as XhmrmsbjSbjbItemOptionalKey2);
+};
+export const isXhmrmsbjSbjbItemOptionalKeys3 = (key: string): key is XhmrmsbjSbjbItemOptionalKey3 => {
+  return xhmrmsbjSbjbItemOptionalKeys3.includes(key as XhmrmsbjSbjbItemOptionalKey3);
 };
 
 export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string, activeRowIndex: number) => {

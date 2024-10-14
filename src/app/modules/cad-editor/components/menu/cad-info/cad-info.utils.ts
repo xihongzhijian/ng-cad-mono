@@ -1,11 +1,14 @@
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
-import {Cad数据要求Item} from "@app/cad/cad-shujuyaoqiu";
+import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {CadCollection} from "@app/cad/collections";
 import {cadOptionOptions, cadOptions} from "@app/cad/options";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {算料公式} from "@components/lurushuju/xinghao-data";
+import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {environment} from "@env";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
 import {openCadDataAttrsDialog} from "../../dialogs/cad-data-attrs/cad-data-attrs.component";
@@ -360,21 +363,24 @@ export const getCadInfoInputs = (
   return result;
 };
 
-/**
- * @param items 修改属性
- * @param items2 选中要求
- */
-export const getCadInfoInputs2 = (
-  items: Cad数据要求Item[] | null | undefined,
-  items2: Cad数据要求Item[] | null | undefined,
+export const getCadInfoInputs2 = async (
+  yaoqiu: Cad数据要求 | null | undefined,
+  type: "add" | "set",
+  collection: CadCollection,
   data: CadData | (() => CadData),
+  http: CadDataService,
   dialog: MatDialog,
   status: AppStatusService,
   parseOptionString: boolean,
   gongshis: 算料公式[] | null | undefined
 ) => {
+  const items = (type === "add" ? yaoqiu?.新建CAD要求 : yaoqiu?.CAD弹窗修改属性) || [];
+  const items2 = yaoqiu?.选中CAD要求 || [];
   const result: InputInfo[] = [];
-  for (const {key, value, cadKey, key2, readonly, required} of items || []) {
+  const cad = getData(data);
+  const isSbjb = isSbjbCad(collection, cad);
+  const requiredOptionItems = items2.filter((v) => v.key === "选项" && v.key2 && v.required);
+  for (const {key, value, cadKey, key2, readonly, required} of items) {
     let info: InputInfo;
     if (key === "选项" && key2) {
       info = {
@@ -391,7 +397,6 @@ export const getCadInfoInputs2 = (
     } else {
       info = getCadInfoInputs([key], data, dialog, status, parseOptionString, gongshis)[0];
       if (key === "选项" && info.type === "object") {
-        const requiredOptionItems = items2?.filter((v) => v.key === "选项" && v.key2 && v.required);
         const requiredKeys: string[] = [];
         for (const {key2} of requiredOptionItems || []) {
           if (key2) {
@@ -431,6 +436,25 @@ export const getCadInfoInputs2 = (
         } else {
           (data as any)[cadKey] = value;
         }
+      }
+    }
+    if (isSbjb) {
+      if (cadKey === "name") {
+        const items = await http.queryMySql({table: cad.type, fields: ["mingzi"], filter: {where: {shujufenlei: cadKey}}});
+        let itemNames = items.map((v) => v.mingzi);
+        if (type === "set") {
+          itemNames = itemNames.filter((v) => v !== cad.name);
+        }
+        info.validators = [
+          Validators.required,
+          (control) => {
+            const val = control.value;
+            if (itemNames.includes(val)) {
+              return {名字不能重复: true};
+            }
+            return null;
+          }
+        ];
       }
     }
     result.push(info);

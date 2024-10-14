@@ -169,14 +169,14 @@ export class MokuaiCadsComponent {
     return this.status.getCadYaoqiu(type);
   });
   downloadApi = this.http.getUrl("ngcad/downloadFile");
-  async getCadItem(data?: CadData) {
+  async getCadItem(data0?: CadData) {
     const yaoqiu = this.cadYaoqiu();
     if (!yaoqiu) {
       return null;
     }
-    const {CAD弹窗修改属性: items, 选中CAD要求: items2} = yaoqiu;
-    if (data) {
-      data = data.clone(true);
+    let data: CadData;
+    if (data0) {
+      data = data0.clone(true);
     } else {
       data = new CadData();
     }
@@ -184,7 +184,8 @@ export class MokuaiCadsComponent {
     if (type) {
       data.type = type;
     }
-    const form = getCadInfoInputs2(items, items2, data, this.dialog, this.status, true, null);
+    const collection = this.collection;
+    const form = await getCadInfoInputs2(yaoqiu, data0 ? "set" : "add", collection, data, this.http, this.dialog, this.status, true, null);
     const result = await this.message.form(form);
     if (result) {
       return data;

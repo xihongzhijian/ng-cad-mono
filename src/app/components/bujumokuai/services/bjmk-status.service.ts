@@ -32,10 +32,11 @@ export class BjmkStatusService {
 
   varNamesManager = new FetchManager<VarNames>([], async () => getVarNames(this.http, "门扇布局用"));
 
-  cadYaoqiu = new FetchManager(null, async () => {
+  cadYaoqiuManager = new FetchManager(null, async () => {
     await this.status.cadYaoqiusManager.fetch();
     return this.status.getCadYaoqiu("配件库");
-  }).data;
+  });
+  cadYaoqiu = this.cadYaoqiuManager.data;
   xinghaoCadYaoqiu = new FetchManager(null, async () => {
     await this.status.cadYaoqiusManager.fetch();
     return this.status.getCadYaoqiu("型号CAD");
@@ -44,7 +45,7 @@ export class BjmkStatusService {
   collection: CadCollection = "peijianCad";
   cadsManager = new ItemsManager(
     async () => {
-      const yaoqiu = this.cadYaoqiu();
+      const yaoqiu = await this.cadYaoqiuManager.fetch();
       const fields = getCadQueryFields(yaoqiu);
       const result = await this.http.getCad({collection: this.collection, fields});
       return result.cads;

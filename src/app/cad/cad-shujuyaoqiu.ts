@@ -190,7 +190,7 @@ export const validateCad = (data: CadData, yaoqiuItems: Cad数据要求Item[]) =
   return true;
 };
 
-export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[], vars?: ObjectOf<string>) => {
+export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[] = [], vars?: ObjectOf<string>) => {
   const dataAny = data as any;
   const toRemoveMap: ObjectOf<{keys2: string[]}> = {};
   const toReserveMap: typeof toRemoveMap = {};
@@ -325,6 +325,7 @@ export const setCadData = (data: CadData, yaoqiuItems: Cad数据要求Item[], va
 };
 
 export const getCadQueryFields = (yaoqiu?: Cad数据要求 | null) => {
+  return {"json.entities": false};
   const fields = new Set<string>([
     "_id",
     "名字",

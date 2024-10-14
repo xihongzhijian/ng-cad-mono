@@ -103,6 +103,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
   };
   @Input() validators?: {zhankai?: boolean; name?: (data: CadData) => ValidationErrors | null};
+  @Output() beforeEditCad = new EventEmitter<void>();
   @Output() afterEditCad = new EventEmitter<void>();
 
   @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
@@ -207,6 +208,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (!isOnline || isOnline.isFetched) {
       return;
     }
+    this.beforeEditCad.emit();
     const params: QueryMongodbParams = {collection: this.collection(), where: {_id: this.cadId}};
     if (compact && yaoqiu) {
       const fields: string[] = [];
@@ -235,6 +237,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (!cad) {
       return;
     }
+    this.beforeEditCad.emit();
     await this.onlineFetch();
     const cadData = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     const result = await openCadEditorDialog(this.dialog, {
@@ -281,9 +284,8 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     } else {
       data = new CadData(cad.json);
     }
-    const items = yaoqiu?.CAD弹窗修改属性 || [];
-    const item2 = yaoqiu?.选中CAD要求 || [];
-    const form = getCadInfoInputs2(items, item2, data, this.dialog, this.status, true, this.gongshis);
+    this.beforeEditCad.emit();
+    const form = await getCadInfoInputs2(yaoqiu, "set", this.collection(), data, this.http, this.dialog, this.status, true, this.gongshis);
     const nameInput = form.find((v) => v.label === "名字");
     if (nameInput) {
       const {name} = this.validators || {};
@@ -524,6 +526,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       const containerEl = cadContainer.nativeElement;
       const collection: CadCollection = "cad";
       this.cadViewer = this.initCadViewer0(collection, data, containerEl, async (data) => {
+        this.beforeEditCad.emit();
         if (!this.isOnline) {
           data.info.imgUpdate = true;
         }
@@ -537,7 +540,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         }
         if (this.isOnline) {
           const url = await getCadPreview(collection, data);
-          await this.http.setCad({collection: collection, cadData: data, force: true}, true);
+          await this.http.setCad({collection, cadData: data, force: true}, true);
           await this.http.setCadImg(data.id, url, {silent: true});
         }
         this.afterEditCad.emit();
@@ -734,6 +737,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
 
   onCadInfoChange(event: DataInfoChnageEvent) {
     const {cad} = this;
+    this.beforeEditCad.emit();
     if (cad instanceof CadData) {
       cad.info = event.info;
     } else {
