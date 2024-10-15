@@ -1307,16 +1307,19 @@ export class XhmrmsbjComponent implements OnDestroy {
     }
   }
 
+  canOpenMsbj = computed(() => !!this.data()?.isVersion2024);
   openedMsbj = signal<MsbjInfo | null>(null);
-  openMsbj() {
-    const msbj = this.activeMsbj();
-    if (!msbj) {
+  openMsbj(id: number) {
+    if (!this.canOpenMsbj()) {
       return;
     }
     if (this.isFromOrder()) {
-      this.status.openInNewTab(["/门扇布局"], {queryParams: {id: msbj.vid}});
+      this.status.openInNewTab(["/门扇布局"], {queryParams: {id}});
     } else {
-      this.openedMsbj.set(msbj);
+      const msbj = this.msbjs().find((v) => v.vid === id);
+      if (msbj) {
+        this.openedMsbj.set(msbj);
+      }
     }
   }
   closeMsbj({isSubmited}: MsbjCloseEvent) {
@@ -1541,9 +1544,10 @@ export class XhmrmsbjComponent implements OnDestroy {
     this.wmm.postMessage("requestDataStart");
   }
 
+  canOpenXhmrmsbj = computed(() => this.isFromOrder());
   openXhmrmsbj() {
     const data = this.data();
-    if (!data || !this.isFromOrder()) {
+    if (!data || !this.canOpenXhmrmsbj()) {
       return;
     }
     this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: data.vid}});

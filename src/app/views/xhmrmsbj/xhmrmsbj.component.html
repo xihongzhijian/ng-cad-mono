@@ -44,7 +44,7 @@
         <button mat-raised-button color="primary" (click)="close()">关闭</button>
       }
     }
-    <div class="title link text" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
+    <div class="title" [class]="canOpenXhmrmsbj() ? 'link text' : ''" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
   </div>
 }
 @if (!isFromOrder() && loadSbjb()) {
@@ -72,11 +72,7 @@
             >
               <div style="font-weight: bold">{{ item.key }}</div>
               @if (item.info["选中布局数据"]; as data2) {
-                @if (data()?.isVersion2024) {
-                  <div class="link text" appClickStop (click)="openMsbj()">布局：{{ data2.name }}</div>
-                } @else {
-                  <div>布局：{{ data2.name }}</div>
-                }
+                <div [class]="canOpenMsbj() ? 'link text' : ''" appClickStop (click)="openMsbj(data2.vid)">布局：{{ data2.name }}</div>
               }
               <button mat-stroked-button color="primary" (click)="copyMsbjInfo(item.info)">复制</button>
             </div>
