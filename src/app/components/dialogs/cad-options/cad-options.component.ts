@@ -285,11 +285,12 @@ export class CadOptionsComponent implements AfterViewInit {
   onCheckboxChange(item: CadOptionsPageDataItem) {
     const {multi} = this.data;
     if (multi) {
-      this.pageData.update((v) => v.map((v2) => ({...v2, checked: !v2.checked})));
+      this.pageData.update((v) => v.map((v2) => ({...v2, checked: v2 === item ? !v2.checked : v2.checked})));
     } else {
       this.pageData.update((v) => v.map((v2) => ({...v2, checked: v2 === item ? !v2.checked : false})));
     }
     const {checkedIdsCurr} = this;
+    item.checked = !item.checked;
     if (item.checked) {
       if (!multi) {
         checkedIdsCurr.clear();

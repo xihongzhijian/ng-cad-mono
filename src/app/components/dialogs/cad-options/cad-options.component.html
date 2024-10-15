@@ -13,16 +13,18 @@
     </button>
   }
 </div>
-<div class="toolbar hidden-if-empty">
-  <button mat-raised-button [color]="activeOptionTypes().length < 1 ? 'accent' : 'primary'" (click)="toggleActiveOptionType(null)">
-    全部
-  </button>
-  @for (type of optionTypesManager.data(); track $index) {
-    <button mat-raised-button [color]="activeOptionTypes().includes(type) ? 'accent' : 'primary'" (click)="toggleActiveOptionType(type)">
-      {{ type }}
+@if (data.typeFiltering) {
+  <div class="toolbar">
+    <button mat-raised-button [color]="activeOptionTypes().length < 1 ? 'accent' : 'primary'" (click)="toggleActiveOptionType(null)">
+      全部
     </button>
-  }
-</div>
+    @for (type of optionTypesManager.data(); track $index) {
+      <button mat-raised-button [color]="activeOptionTypes().includes(type) ? 'accent' : 'primary'" (click)="toggleActiveOptionType(type)">
+        {{ type }}
+      </button>
+    }
+  </div>
+}
 
 <ng-scrollbar>
   <app-spinner [id]="loaderIds.optionsLoader"></app-spinner>
