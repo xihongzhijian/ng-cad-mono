@@ -17,6 +17,7 @@ export interface XhmrmsbjSbjbItemSbjb {
   条件: string;
   包边方向: string;
   限定可选锁体: string[];
+  双开门扇宽生成方式?: string;
   锁边?: XhmrmsbjSbjbItemSbjbItem;
   铰边?: XhmrmsbjSbjbItemSbjbItem;
   插销边?: XhmrmsbjSbjbItemSbjbItem;

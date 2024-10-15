@@ -2,7 +2,7 @@ import {Validators} from "@angular/forms";
 import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
 import {getOptionsAll2InputInfo} from "@components/lurushuju/services/lrsj-status.utils";
-import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {cloneDeep} from "lodash";
@@ -68,6 +68,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
       ...optionalCols2,
       ...optionalCols1,
       {type: "string", field: "限定可选锁体"},
+      {type: "string", field: "双开门扇宽生成方式", hidden: fenlei !== "双开"},
       {type: "boolean", field: "停用"},
       {type: "number", field: "排序"},
       {type: "boolean", field: "默认值"},
@@ -111,10 +112,15 @@ export const getXhmrmsbjSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbI
   ...item
 });
 
-export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, options: OptionsAll2, item?: XhmrmsbjSbjbItemSbjb) => {
+export const getXhmrmsbjSbjbItemSbjbForm = async (
+  message: MessageService,
+  options: OptionsAll2,
+  fenlei: string,
+  item?: XhmrmsbjSbjbItemSbjb
+) => {
   const data = getXhmrmsbjSbjbItemSbjb(cloneDeep(item));
-  const getSelectInputInfo = (key: keyof XhmrmsbjSbjbItemSbjb) => {
-    const info = getOptionsAll2InputInfo(options, key);
+  const getSelectInputInfo = (key: keyof XhmrmsbjSbjbItemSbjb, setter?: (info: InputInfoSelect) => void) => {
+    const info = getOptionsAll2InputInfo(options, key, setter);
     info.model = {data, key};
     return info;
   };
@@ -123,6 +129,7 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, optio
     getSelectInputInfo("门铰"),
     getSelectInputInfo("门扇厚度"),
     getSelectInputInfo("限定可选锁体"),
+    getSelectInputInfo("双开门扇宽生成方式", (info) => (info.hidden = fenlei !== "双开")),
     {type: "string", label: "条件", model: {data, key: "条件"}},
     getSelectInputInfo("包边方向"),
     {type: "boolean", label: "停用", model: {data, key: "停用"}},

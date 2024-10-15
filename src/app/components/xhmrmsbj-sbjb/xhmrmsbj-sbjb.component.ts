@@ -263,7 +263,7 @@ export class XhmrmsbjSbjbComponent {
       case "edit":
         {
           const options = await this.optionsManager.fetch();
-          const item3 = await getXhmrmsbjSbjbItemSbjbForm(this.message, options, item);
+          const item3 = await getXhmrmsbjSbjbItemSbjbForm(this.message, options, item2.产品分类, item);
           if (item3) {
             item2.锁边铰边数据[rowIdx] = item3;
             if (item3.默认值) {
@@ -297,23 +297,24 @@ export class XhmrmsbjSbjbComponent {
   }
   async addSbjbItemSbjb() {
     const options = await this.optionsManager.fetch();
-    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, options);
+    const item2 = this.activeItem();
+    if (!item2) {
+      return;
+    }
+    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, options, item2.产品分类);
     if (item) {
-      const item2 = this.activeItem();
-      if (item2) {
-        if (item.默认值) {
-          for (const item3 of item2.锁边铰边数据) {
-            delete item3.默认值;
-          }
+      if (item.默认值) {
+        for (const item3 of item2.锁边铰边数据) {
+          delete item3.默认值;
         }
-        item.CAD数据 = [];
-        for (const title of xhmrmsbjSbjbItemCadKeys[item2.产品分类] || []) {
-          const name = title === "小扇铰边" ? "铰边" : title;
-          item.CAD数据.push({name, title});
-        }
-        item2.锁边铰边数据.unshift(item);
-        this.refreshItems();
       }
+      item.CAD数据 = [];
+      for (const title of xhmrmsbjSbjbItemCadKeys[item2.产品分类] || []) {
+        const name = title === "小扇铰边" ? "铰边" : title;
+        item.CAD数据.push({name, title});
+      }
+      item2.锁边铰边数据.unshift(item);
+      this.refreshItems();
     }
   }
 
