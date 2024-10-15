@@ -2,6 +2,7 @@ import {WritableSignal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
+import {getOptionsAll2InputInfo} from "@components/lurushuju/services/lrsj-status.utils";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
@@ -24,7 +25,6 @@ import {
   门缝配置,
   门缝配置输入
 } from "../../xinghao-data";
-import {getOptionInputInfo} from "../lrsj-pieces.utils";
 
 export const updateMenjiaoData = (dataSignal: WritableSignal<算料数据> | 算料数据) => {
   const data = typeof dataSignal === "function" ? dataSignal() : dataSignal;
@@ -306,7 +306,7 @@ export const getMenjiaoOptionInputInfo = (
   options: OptionsAll2,
   onOptionsChange: (options: OptionsDataData[]) => void
 ): InputInfoSelect => {
-  return getOptionInputInfo(options, key, (info) => {
+  return getOptionsAll2InputInfo(options, key, (info) => {
     info.model = {data, key};
     if (!info.readonly && !info.disabled) {
       info.validators = Validators.required;

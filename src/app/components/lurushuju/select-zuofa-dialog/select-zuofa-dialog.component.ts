@@ -12,8 +12,9 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {getOptionInputInfo, getOptions} from "../lrsj-pieces/lrsj-pieces.utils";
+import {getOptions} from "../lrsj-pieces/lrsj-pieces.utils";
 import {LrsjStatusService} from "../services/lrsj-status.service";
+import {getOptionsAll2InputInfo} from "../services/lrsj-status.utils";
 import {算料数据} from "../xinghao-data";
 import {SelectZuofaInput, SelectZuofaItem, SelectZuofaItemData, SelectZuofaOutput} from "./select-zuofa-dialog.types";
 
@@ -81,7 +82,7 @@ export class SelectZuofaDialogComponent {
     const menjiaoOptions = this.lrsjStatus.menjiaoOptionsManager.data();
     const data2 = this.searchFormMenjiao();
     const getOptionInputInfo2 = (key: keyof typeof data2) => {
-      return getOptionInputInfo(menjiaoOptions, key, (info) => {
+      return getOptionsAll2InputInfo(menjiaoOptions, key, (info) => {
         info.value = data2[key];
         info.onChange = (val: string) => this.searchFormMenjiao.update((v) => ({...v, [key]: val}));
         info.disabled = false;

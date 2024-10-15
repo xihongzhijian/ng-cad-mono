@@ -16,10 +16,11 @@ export interface XhmrmsbjSbjbItemSbjb {
   门扇厚度: string[];
   条件: string;
   包边方向: string;
-  锁边: XhmrmsbjSbjbItemSbjbItem;
-  铰边: XhmrmsbjSbjbItemSbjbItem;
-  插销边: XhmrmsbjSbjbItemSbjbItem;
-  小扇铰边: XhmrmsbjSbjbItemSbjbItem;
+  限定可选锁体: string[];
+  锁边?: XhmrmsbjSbjbItemSbjbItem;
+  铰边?: XhmrmsbjSbjbItemSbjbItem;
+  插销边?: XhmrmsbjSbjbItemSbjbItem;
+  小扇铰边?: XhmrmsbjSbjbItemSbjbItem;
   锁框?: string;
   铰框?: string;
   顶框?: string;

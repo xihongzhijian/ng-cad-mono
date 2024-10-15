@@ -1,9 +1,10 @@
 import {Validators} from "@angular/forms";
 import {getSortedItems} from "@app/utils/sort-items";
-import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
+import {getOptionsAll2InputInfo} from "@components/lurushuju/services/lrsj-status.utils";
+import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
-import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {
   XhmrmsbjSbjbItem,
@@ -49,7 +50,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
     return col;
   });
   const optionalCols2 = xhmrmsbjSbjbItemOptionalKeys2.map((key) => {
-    const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key, getString: (val) => val[key].名字};
+    const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key, getString: (val) => val[key]?.名字 || ""};
     if (!optionalKeys.includes(key)) {
       col.hidden = true;
     }
@@ -66,6 +67,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
       {type: "string", field: "条件"},
       ...optionalCols2,
       ...optionalCols1,
+      {type: "string", field: "限定可选锁体"},
       {type: "boolean", field: "停用"},
       {type: "number", field: "排序"},
       {type: "boolean", field: "默认值"},
@@ -86,22 +88,19 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
   return info;
 };
 
-export const getXhmrmsbjSbjbItemSbjb = (item?: Partial<XhmrmsbjSbjbItemSbjb>): XhmrmsbjSbjbItemSbjb => ({
-  开启: "",
-  门铰: [],
-  门扇厚度: [],
-  条件: "",
-  包边方向: "",
-  锁边: getXhmrmsbjSbjbItemSbjbItem(item?.锁边),
-  铰边: getXhmrmsbjSbjbItemSbjbItem(item?.铰边),
-  插销边: getXhmrmsbjSbjbItemSbjbItem(item?.插销边),
-  小扇铰边: getXhmrmsbjSbjbItemSbjbItem(item?.小扇铰边),
-  锁框: "",
-  铰框: "",
-  顶框: "",
-  CAD数据: [],
-  ...item
-});
+export const getXhmrmsbjSbjbItemSbjb = (item?: Partial<XhmrmsbjSbjbItemSbjb>) => {
+  const result: XhmrmsbjSbjbItemSbjb = {
+    开启: "",
+    门铰: [],
+    门扇厚度: [],
+    限定可选锁体: [],
+    条件: "",
+    包边方向: "",
+    CAD数据: [],
+    ...item
+  };
+  return result;
+};
 export const isXhmrmsbjSbjbItemSbjbHasSuokuang = (fenlei: string) => ["单门", "子母连开"].includes(fenlei);
 export const getXhmrmsbjSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbItem>): XhmrmsbjSbjbItemSbjbItem => ({
   名字: "",
@@ -112,31 +111,20 @@ export const getXhmrmsbjSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbI
   ...item
 });
 
-export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, options: OptionsService, item?: XhmrmsbjSbjbItemSbjb) => {
+export const getXhmrmsbjSbjbItemSbjbForm = async (message: MessageService, options: OptionsAll2, item?: XhmrmsbjSbjbItemSbjb) => {
   const data = getXhmrmsbjSbjbItemSbjb(cloneDeep(item));
-  const getSelectInputInfo = async (key: keyof XhmrmsbjSbjbItemSbjb, multiple: boolean, required?: boolean, optionsDialog?: boolean) => {
-    const info: InputInfoSelect<typeof data> = {
-      type: "select",
-      label: key,
-      model: {data, key},
-      multiple,
-      clearable: true,
-      options: await options.fetchInputInfoOptions({name: key})
-    };
-    if (required) {
-      info.validators = Validators.required;
-    }
-    if (optionsDialog) {
-      info.optionsDialog = {noImage: true};
-    }
+  const getSelectInputInfo = (key: keyof XhmrmsbjSbjbItemSbjb) => {
+    const info = getOptionsAll2InputInfo(options, key);
+    info.model = {data, key};
     return info;
   };
   const form: InputInfo[] = [
-    await getSelectInputInfo("开启", false, true),
-    await getSelectInputInfo("门铰", true, true, true),
-    await getSelectInputInfo("门扇厚度", true, true, true),
+    getSelectInputInfo("开启"),
+    getSelectInputInfo("门铰"),
+    getSelectInputInfo("门扇厚度"),
+    getSelectInputInfo("限定可选锁体"),
     {type: "string", label: "条件", model: {data, key: "条件"}},
-    await getSelectInputInfo("包边方向", false),
+    getSelectInputInfo("包边方向"),
     {type: "boolean", label: "停用", model: {data, key: "停用"}},
     {type: "number", label: "排序", model: {data, key: "排序"}},
     {type: "boolean", label: "默认值", model: {data, key: "默认值"}}

@@ -4,7 +4,13 @@ import {ZuoshujuTableData} from "@views/msbj/msbj.types";
 import {MenjiaoCadType} from "../xinghao-data";
 
 export type OptionsAll = ObjectOf<OptionsDataData[]>;
-export type OptionsAll2 = ObjectOf<{options: OptionsDataData[]; disabled?: boolean; multiple?: boolean}>;
+export type OptionsAll2 = ObjectOf<{
+  options: OptionsDataData[];
+  disabled?: boolean;
+  multiple?: boolean;
+  useDialog?: boolean;
+  required?: boolean;
+}>;
 
 export interface XinghaoData extends TableDataBase2, ZuoshujuTableData {
   tupian?: string;

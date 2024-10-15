@@ -15,10 +15,12 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {FetchManager} from "@app/utils/fetch-manager";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
+import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -29,7 +31,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, RowSelectionChange} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
-import {OptionsService} from "@services/options.service";
 import {cloneDeep} from "lodash";
 import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -45,6 +46,7 @@ import {
 import {
   getXhmrmsbjSbjbItemOptions,
   getXhmrmsbjSbjbItemSbjbForm,
+  getXhmrmsbjSbjbItemSbjbItem,
   getXhmrmsbjSbjbItemTableInfo,
   isXhmrmsbjSbjbItemOptionalKeys1,
   isXhmrmsbjSbjbItemOptionalKeys2
@@ -62,7 +64,6 @@ export class XhmrmsbjSbjbComponent {
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
-  private options = inject(OptionsService);
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = "ng-page";
@@ -183,6 +184,9 @@ export class XhmrmsbjSbjbComponent {
       if (isXhmrmsbjSbjbItemOptionalKeys1(title)) {
         item[title] = cad2.name;
       } else if (isXhmrmsbjSbjbItemOptionalKeys2(title)) {
+        if (!item[title]) {
+          item[title] = getXhmrmsbjSbjbItemSbjbItem();
+        }
         item[title].名字 = cad2.name;
       }
       item.CAD数据[index].cad = getHoutaiCad(cad2);
@@ -205,6 +209,9 @@ export class XhmrmsbjSbjbComponent {
     if (isXhmrmsbjSbjbItemOptionalKeys1(title)) {
       item[title] = "";
     } else if (isXhmrmsbjSbjbItemOptionalKeys2(title)) {
+      if (!item[title]) {
+        item[title] = getXhmrmsbjSbjbItemSbjbItem();
+      }
       item[title].名字 = "";
     }
     item.CAD数据[index].cad = null;
@@ -220,6 +227,8 @@ export class XhmrmsbjSbjbComponent {
   clickItem(i: number) {
     this.activeItemIndex.set(i);
   }
+
+  optionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll2>("shuju/api/getSuobianjiaobianOptions")) || {});
 
   activeSbjbItemIndex = signal<number>(0);
   activeSbjbItemIndexEff = effect(
@@ -253,7 +262,8 @@ export class XhmrmsbjSbjbComponent {
     switch (event.button.event) {
       case "edit":
         {
-          const item3 = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options, item);
+          const options = await this.optionsManager.fetch();
+          const item3 = await getXhmrmsbjSbjbItemSbjbForm(this.message, options, item);
           if (item3) {
             item2.锁边铰边数据[rowIdx] = item3;
             if (item3.默认值) {
@@ -286,7 +296,8 @@ export class XhmrmsbjSbjbComponent {
     this.activeSbjbItemIndex.set(event.indexs[0] ?? -1);
   }
   async addSbjbItemSbjb() {
-    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, this.options);
+    const options = await this.optionsManager.fetch();
+    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, options);
     if (item) {
       const item2 = this.activeItem();
       if (item2) {
@@ -410,7 +421,7 @@ export class XhmrmsbjSbjbComponent {
         const errKeys: string[] = [];
         for (const key of xhmrmsbjSbjbItemCadKeys[item.产品分类] || []) {
           if (key === "锁边" || key === "铰边") {
-            if (!item2[key].名字) {
+            if (!item2[key]?.名字) {
               errKeys.push(key);
             }
           } else if (!item2[key]) {
