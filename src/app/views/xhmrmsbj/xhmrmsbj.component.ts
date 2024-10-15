@@ -484,7 +484,7 @@ export class XhmrmsbjComponent implements OnDestroy {
       checkedVids.push(选中布局数据.vid);
     }
     const result = await openCadOptionsDialog(this.dialog, {
-      data: {name: "p_menshanbuju", filter: {guanlianCN: {menshanweizhi}}, checkedVids}
+      data: {name: "p_menshanbuju", filter: {guanlianCN: {menshanweizhi}}, checkedVids, typeFiltering: {field: "fenlei", title: "分类"}}
     });
     if (result && infos[menshanweizhi]) {
       const targetMsbj = result.options[0];

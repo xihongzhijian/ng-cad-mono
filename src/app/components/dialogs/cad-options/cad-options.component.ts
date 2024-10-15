@@ -1,24 +1,36 @@
-import {AfterViewInit, Component, forwardRef, HostBinding, Inject, ViewChild} from "@angular/core";
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  forwardRef,
+  HostBinding,
+  inject,
+  Inject,
+  signal,
+  viewChild
+} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {filePathUrl} from "@app/app.common";
-import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf, queryString, timeout} from "@lucilor/utils";
+import {FetchManager} from "@app/utils/fetch-manager";
+import {queryString, timeout} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {GetOptionsParams, OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsParams, OptionsData, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
-import {debounce} from "lodash";
+import {cloneDeep, debounce} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
 import {InputComponent} from "../../../modules/input/components/input.component";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {getOpenDialogFunc} from "../dialog.common";
+import {CadOptionsInput, CadOptionsOutput, CadOptionsPageDataItem} from "./cad-options.types";
 
 @Component({
   selector: "app-cad-options",
@@ -36,45 +48,32 @@ import {getOpenDialogFunc} from "../dialog.common";
     MatPaginatorModule,
     NgScrollbar,
     SpinnerComponent
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadOptionsComponent implements AfterViewInit {
+  private http = inject(CadDataService);
+  private spinner = inject(SpinnerService);
+  private message = inject(MessageService);
+
   @HostBinding("class") class = ["ng-page"];
-  pageData: (OptionsData["data"][number] & {checked: boolean})[] = [];
-  length = 100;
-  pageSizeOptions = [50, 100, 200, 500];
-  pageSize = 50;
+
+  pageData = signal<CadOptionsPageDataItem[]>([]);
+  length = signal(100);
+  pageSizeOptions = signal([50, 100, 200, 500]);
+  pageSize = signal(50);
   checkedIdsCurr = new Set<number>();
   checkedIdsOthers = new Set<number>();
   loaderIds = {optionsLoader: "cadOptions", submitLoaderId: "cadOptionsSubmit"};
-  searchValue = "";
-  searchInputInfo: InputInfo<this> = {
-    label: "搜索",
-    type: "string",
-    autoFocus: true,
-    model: {data: this, key: "searchValue"},
-    onInput: debounce(() => {
-      if (!this.showPaginator) {
-        this.search();
-      }
-    }, 500),
-    onChange: () => {
-      if (this.showPaginator) {
-        this.search();
-      }
-    }
-  };
+
   filePathUrl = filePathUrl;
-  @ViewChild("paginator", {read: MatPaginator}) paginator?: MatPaginator;
-  showPaginator = true;
-  noImage = false;
+  paginator = viewChild(MatPaginator);
+  showPaginator = signal(true);
+  noImage = signal(false);
 
   constructor(
     public dialogRef: MatDialogRef<CadOptionsComponent, CadOptionsOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadOptionsInput,
-    private http: CadDataService,
-    private spinner: SpinnerService,
-    private message: MessageService
+    @Inject(MAT_DIALOG_DATA) public data: CadOptionsInput
   ) {}
 
   async ngAfterViewInit() {
@@ -119,18 +118,13 @@ export class CadOptionsComponent implements AfterViewInit {
     this.dialogRef.close();
   }
 
-  searchKeydown(event: KeyboardEvent) {
-    if (event.key === "Enter") {
-      this.search();
-    }
-  }
-
   search(stayOnPage = false, refreshLocalOptions = false) {
-    if (this.paginator) {
+    const paginator = this.paginator();
+    if (paginator) {
       if (!stayOnPage) {
-        this.paginator.pageIndex = 0;
+        paginator.pageIndex = 0;
       }
-      this.getData(this.paginator.pageIndex + 1, refreshLocalOptions);
+      this.getData(paginator.pageIndex + 1, refreshLocalOptions);
     } else {
       this.getData(undefined, refreshLocalOptions);
     }
@@ -140,6 +134,73 @@ export class CadOptionsComponent implements AfterViewInit {
     this.getData(event.pageIndex + 1);
   }
 
+  optionTypesManager = new FetchManager([], async () => {
+    const {typeFiltering, name} = this.data;
+    if (!typeFiltering) {
+      return [];
+    }
+    const records = await this.http.queryMySql({table: name, fields: [typeFiltering.field]});
+    const types: string[] = [];
+    for (const record of records) {
+      const type = (record as any)[typeFiltering.field];
+      if (type && !types.includes(type)) {
+        types.push(type);
+      }
+    }
+    if (types.length > 1) {
+      return types;
+    }
+    return [];
+  });
+  activeOptionTypes = signal<string[]>([]);
+  optionTypesInputInfo = computed(() => {
+    const {typeFiltering} = this.data;
+    if (!typeFiltering) {
+      return null;
+    }
+    const info: InputInfo = {
+      type: "select",
+      label: "类型",
+      appearance: "list",
+      multiple: true,
+      options: this.optionTypesManager.data()
+    };
+    return info;
+  });
+  toggleActiveOptionType(type: string | null) {
+    // const types = this.activeOptionTypes();
+    // if (types.includes(type)) {
+    //   this.activeOptionTypes.set(types.filter((v) => v !== type));
+    // } else {
+    //   this.activeOptionTypes.set([...types, type]);
+    // }
+    if (type) {
+      if (!this.activeOptionTypes().includes(type)) {
+        this.activeOptionTypes.set([type]);
+        this.search();
+      }
+    } else {
+      this.activeOptionTypes.set([]);
+      this.search();
+    }
+  }
+
+  searchValue = signal("");
+  searchInputInfo = computed(() => {
+    const onChange = (val: string) => {
+      this.searchValue.set(val);
+      this.search();
+    };
+    const info: InputInfo = {
+      label: "搜索",
+      type: "string",
+      autoFocus: true,
+      value: this.searchValue(),
+      onInput: debounce(onChange, 500),
+      onChange
+    };
+    return info;
+  });
   async getOptions(params: GetOptionsParams, loader: Parameters<typeof this.spinner.show>, refreshLocalOptions: boolean) {
     let data: OptionsData | null;
     const {options} = this.data;
@@ -158,36 +219,43 @@ export class CadOptionsComponent implements AfterViewInit {
         if (params.values && !params.values.includes(v[field])) {
           return false;
         }
-        return queryString(this.searchValue, v.name);
+        return queryString(this.searchValue(), v.name);
       });
       data = {data: options2, count: options2.length};
-      this.showPaginator = false;
+      this.showPaginator.set(false);
     } else {
       this.spinner.show(...loader);
       data = await this.http.getOptions(params);
       this.spinner.hide(loader[0]);
-      this.showPaginator = true;
+      this.showPaginator.set(true);
     }
     return data;
   }
 
   async getData(page?: number, refreshLocalOptions = false) {
-    const {checkedIdsCurr, checkedIdsOthers, pageData} = this;
+    const {checkedIdsCurr, checkedIdsOthers} = this;
     checkedIdsCurr.clear();
+    let pageData = this.pageData();
     for (const {vid, checked} of pageData) {
       if (checked) {
         checkedIdsOthers.add(vid);
       }
     }
+    const filter = cloneDeep(this.data.filter || {});
+    const {typeFiltering} = this.data;
+    const types = this.activeOptionTypes();
+    if (typeFiltering && types.length > 0) {
+      filter.where_in = {...filter.where_in, [typeFiltering.field]: types};
+    }
     const data = (await this.getOptions(
       {
         name: this.data.name,
-        search: this.searchValue,
+        search: this.searchValue(),
         page,
-        limit: this.paginator?.pageSize,
+        limit: this.paginator()?.pageSize,
         data: this.data.data,
         xinghao: this.data.xinghao,
-        filter: this.data.filter,
+        filter,
         fields: this.data.fields,
         nameField: this.data.nameField,
         info: this.data.info
@@ -195,8 +263,8 @@ export class CadOptionsComponent implements AfterViewInit {
       [this.loaderIds.optionsLoader, {text: "获取CAD数据"}],
       refreshLocalOptions
     )) || {data: [], count: 0};
-    this.length = data.count;
-    this.pageData = data.data.map((v) => {
+    this.length.set(data.count);
+    pageData = data.data.map((v) => {
       let checked = false;
       if (this.data.checkedItems?.includes(v.name)) {
         checked = true;
@@ -209,16 +277,18 @@ export class CadOptionsComponent implements AfterViewInit {
       }
       return {...v, checked};
     });
-    this.noImage = this.data.noImage || this.pageData.every((v) => !v.img);
+    this.pageData.set(pageData);
+    this.noImage.set(this.data.noImage || pageData.every((v) => !v.img));
     return data;
   }
 
-  onCheckboxChange(item: CadOptionsComponent["pageData"][number]) {
+  onCheckboxChange(item: CadOptionsPageDataItem) {
     const {multi} = this.data;
-    if (!item.checked && !multi) {
-      this.pageData.forEach((v) => (v.checked = false));
+    if (multi) {
+      this.pageData.update((v) => v.map((v2) => ({...v2, checked: !v2.checked})));
+    } else {
+      this.pageData.update((v) => v.map((v2) => ({...v2, checked: v2 === item ? !v2.checked : false})));
     }
-    item.checked = !item.checked;
     const {checkedIdsCurr} = this;
     if (item.checked) {
       if (!multi) {
@@ -231,8 +301,9 @@ export class CadOptionsComponent implements AfterViewInit {
   }
 
   selectAll() {
-    const isAllSelected = this.pageData.every((v) => v.checked);
-    for (const item of this.pageData) {
+    const pageData = this.pageData();
+    const isAllSelected = pageData.every((v) => v.checked);
+    for (const item of pageData) {
       const shouldChange = isAllSelected ? item.checked : !item.checked;
       if (shouldChange) {
         this.onCheckboxChange(item);
@@ -240,7 +311,7 @@ export class CadOptionsComponent implements AfterViewInit {
     }
   }
 
-  setDefaultValue(item: CadOptionsComponent["pageData"][number]) {
+  setDefaultValue(item: CadOptionsPageDataItem) {
     if (!item.checked) {
       this.onCheckboxChange(item);
     }
@@ -274,26 +345,3 @@ export const openCadOptionsDialog = getOpenDialogFunc<CadOptionsComponent, CadOp
   width: "80vw",
   height: "80vh"
 });
-
-export interface CadOptionsInput {
-  data?: CadData;
-  name: string;
-  checkedItems?: string[];
-  checkedVids?: number[];
-  multi?: boolean;
-  xinghao?: string;
-  filter?: ObjectOf<any>;
-  fields?: string[];
-  nameField?: string;
-  options?: OptionsDataData[];
-  defaultValue?: {value?: string; required?: boolean};
-  openInNewTab?: boolean;
-  useLocalOptions?: boolean;
-  info?: ObjectOf<any>;
-  noImage?: boolean;
-}
-
-export interface CadOptionsOutput {
-  options: TableDataBase[];
-  defaultValue?: string;
-}

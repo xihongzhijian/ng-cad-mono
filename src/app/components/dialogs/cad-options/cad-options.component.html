@@ -1,5 +1,5 @@
-<div class="btn-group">
-  <app-input class="flex-110" [info]="searchInputInfo"></app-input>
+<div class="toolbar">
+  <app-input class="flex-110" [info]="searchInputInfo()"></app-input>
   @if (data.multi) {
     <button mat-raised-button color="primary" (click)="selectAll()">全选当前数据</button>
   }
@@ -13,11 +13,21 @@
     </button>
   }
 </div>
+<div class="toolbar hidden-if-empty">
+  <button mat-raised-button [color]="activeOptionTypes().length < 1 ? 'accent' : 'primary'" (click)="toggleActiveOptionType(null)">
+    全部
+  </button>
+  @for (type of optionTypesManager.data(); track $index) {
+    <button mat-raised-button [color]="activeOptionTypes().includes(type) ? 'accent' : 'primary'" (click)="toggleActiveOptionType(type)">
+      {{ type }}
+    </button>
+  }
+</div>
 
 <ng-scrollbar>
   <app-spinner [id]="loaderIds.optionsLoader"></app-spinner>
   <div class="options items no-items-per-row add-empty-msg">
-    @for (item of pageData; track i; let i = $index) {
+    @for (item of pageData(); track i; let i = $index) {
       <div class="option border item" [class.checked]="item.checked" (click)="onCheckboxChange(item)">
         <div class="toolbar">
           @if (data.defaultValue) {
@@ -31,7 +41,7 @@
             </button>
           }
         </div>
-        @if (!noImage) {
+        @if (!noImage()) {
           <app-image [src]="item.img" [prefix]="filePathUrl"></app-image>
         }
         <div class="option-name toolbar">
@@ -45,12 +55,12 @@
   </div>
 </ng-scrollbar>
 
-@if (showPaginator) {
+@if (showPaginator()) {
   <mat-paginator
     #paginator
-    [length]="length"
-    [pageSize]="pageSize"
-    [pageSizeOptions]="pageSizeOptions"
+    [length]="length()"
+    [pageSize]="pageSize()"
+    [pageSizeOptions]="pageSizeOptions()"
     showFirstLastButtons
     (page)="changePage($event)"
   ></mat-paginator>
