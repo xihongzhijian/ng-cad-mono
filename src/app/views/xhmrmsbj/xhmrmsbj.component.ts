@@ -297,6 +297,7 @@ export class XhmrmsbjComponent implements OnDestroy {
     const 浮动弹窗 = data.opts?.浮动弹窗;
     if (浮动弹窗 && !浮动弹窗.consumed) {
       this.activeMenshanKey.set(浮动弹窗.门扇名字);
+      await timeout(0);
       this.selectMsbjRect(浮动弹窗.节点名字);
     } else if (!this.activeMenshanKey()) {
       this.activeMenshanKey.set(this.menshanKeys[0]);

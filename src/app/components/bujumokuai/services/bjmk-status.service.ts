@@ -164,7 +164,11 @@ export class BjmkStatusService {
     const names = this.mokuaisManager.items().map((v) => v.name);
     const mokuai2 = await this.getMokuaiWithForm(mokuai, {name: getCopyName(names, mokuai.name)});
     if (mokuai2?.cads) {
-      mokuai2.cads = mokuai2.cads.map((v) => getHoutaiCad(new CadData(v.json).clone(true)));
+      mokuai2.cads = mokuai2.cads.map((v) => {
+        const cad = new CadData(v.json).clone(true);
+        delete cad.info.imgId;
+        return getHoutaiCad(cad);
+      });
     }
     if (mokuai2) {
       const mokuai3 = await this.http.getData<MokuaiItem>("ngcad/copyPeijianmokuai", {item: mokuai2});
