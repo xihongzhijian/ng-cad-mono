@@ -8,7 +8,8 @@ import {
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {MongodbDataBase} from "@modules/http/services/cad-data.service.types";
-import {XhmrmsbjInfo} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {MsbjData} from "@views/msbj/msbj.types";
+import {MenshanKey, XhmrmsbjInfo, XhmrmsbjTableData} from "@views/xhmrmsbj/xhmrmsbj.types";
 
 export interface SuanliaoInput {
   materialResult: Formulas;
@@ -18,8 +19,10 @@ export interface SuanliaoInput {
   型号选中门扇布局: ObjectOf<XhmrmsbjInfo>;
   配件模块CAD: ObjectOf<ObjectOf<any[]>>;
   门扇布局CAD: any[];
-  bujuNames: string[];
+  bujuNames: MenshanKey[];
   varNames: string[];
+  xhmrmsbj: XhmrmsbjTableData;
+  msbjs: MsbjData[];
   step1Data?: Step1Data;
   silent?: boolean;
 }

@@ -564,20 +564,20 @@ export class XhmrmsbjComponent implements OnDestroy {
   }
 
   tongyongFormulasCache: Formulas | null = null;
-  tongyongFormulas = new FetchManager({}, async () => {
+  tongyongFormulasManager = new FetchManager({}, async () => {
     if (this.tongyongFormulasCache) {
       return this.tongyongFormulasCache;
     }
     const data = await this.http.getData<Formulas>("ngcad/getMokuaiTongyongPeizhi");
     return data || {};
-  }).data;
+  });
   getValueInfo(node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, key: string, value: string) {
     if (key in (node.输入值 || {})) {
       return {value, type: "输入值"};
     }
     const materialResult = this.materialResult();
     const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
-    const tongyongFormulas = this.tongyongFormulas();
+    const tongyongFormulas = this.tongyongFormulasManager.data();
     const list: [string, Formulas][] = [
       ["算料结果值", materialResult],
       ["模块大小关系值", mokuaidaxiaoResult],
@@ -604,6 +604,10 @@ export class XhmrmsbjComponent implements OnDestroy {
       }
     }
     return {value: "", type: "输入值"};
+  }
+  async getValueInfo2(node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, key: string, value: string) {
+    await this.tongyongFormulasManager.fetch();
+    return this.getValueInfo(node, mokuai, key, value);
   }
   mokuaiInputInfos = computed(() => {
     const node = this.activeMokuaiNode();
@@ -860,7 +864,7 @@ export class XhmrmsbjComponent implements OnDestroy {
           }
           const missingVars: string[] = [];
           for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
-            const valueInfo = this.getValueInfo(node1, mokuai, arr[0], arr[1]);
+            const valueInfo = await this.getValueInfo2(node1, mokuai, arr[0], arr[1]);
             arr[1] = valueInfo.value;
             if (!arr[1]) {
               missingVars.push(arr[0]);
@@ -918,6 +922,7 @@ export class XhmrmsbjComponent implements OnDestroy {
       await this.message.error({content: "以下模块有错", details});
     }
     if (jumpTo) {
+      this.activeTabName.set("门扇模块");
       this.activeMenshanKey.set(jumpTo.门扇名字);
       if (jumpTo.层名字) {
         this.selectMsbjRect(jumpTo.层名字);

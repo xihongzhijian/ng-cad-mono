@@ -21,7 +21,8 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
-import {getIsVersion2024} from "@views/msbj/msbj.utils";
+import {getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
+import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {cloneDeep, isEqual} from "lodash";
 import {
   SuanliaoInput,
@@ -174,6 +175,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     if (varNames && !isVersion2024) {
       calcVars.keys = varNames;
     }
+    const msbjs = params.msbjs.map((v) => new MsbjInfo(v));
+    const xhmrmsbj = new XhmrmsbjData(params.xhmrmsbj, bujuNames, step1Data?.typesInfo || {}, msbjs);
     const calcZxpjResult = await calcZxpj(this.dialog, this.message, this.calc, this.status, materialResult, mokuais, lingsans, {
       changeLinesLength: false,
       calcVars,
@@ -182,7 +185,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       inputResult,
       mokuaiVars,
       mokuaiGongshis,
-      isVersion2024
+      isVersion2024,
+      xhmrmsbj
     });
     if (!calcZxpjResult.fulfilled) {
       result.data.error = calcZxpjResult.error;

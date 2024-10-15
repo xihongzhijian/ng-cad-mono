@@ -16,6 +16,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
 import {matchConditions} from "@views/suanliao/suanliao.utils";
+import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {cloneDeep, difference, intersection, isEmpty, isEqual, union} from "lodash";
 import md5 from "md5";
 import {openDrawCadDialog} from "../draw-cad/draw-cad.component";
@@ -135,15 +136,19 @@ export interface GetMokuaiTitleOpts {
   门扇名字?: string;
   层名字?: string;
   mokuaiNameShort?: boolean;
+  xhmrmsbj?: XhmrmsbjData | null;
 }
-export const getMokuaiTitleBase = (item: ZixuanpeijianMokuaiItem, opts: GetMokuaiTitleOpts & {mokuaiUrl?: string} = {}) => {
+export const getMokuaiTitleBase = (
+  item: ZixuanpeijianMokuaiItem,
+  opts: GetMokuaiTitleOpts & {mokuaiUrl?: string; xhmrmsbjUrl?: string} = {}
+) => {
   const {type1, type2, info} = item;
   if (!type1 && !type2) {
     return "";
   }
   const arr: string[] = [];
   let {门扇名字, 层名字} = opts;
-  const {mokuaiNameShort, mokuaiUrl} = opts;
+  const {mokuaiNameShort, mokuaiUrl, xhmrmsbjUrl} = opts;
   if (!门扇名字) {
     门扇名字 = info?.门扇名字;
   }
@@ -157,18 +162,25 @@ export const getMokuaiTitleBase = (item: ZixuanpeijianMokuaiItem, opts: GetMokua
     arr.push(`${层名字}位置`);
   }
   let mokuaiName = type2;
-  if (mokuaiUrl) {
+  const getLink = (url: string, title: string) => {
     const a = document.createElement("a");
     a.target = "_blank";
-    a.href = mokuaiUrl;
+    a.href = url;
     a.style.color = "black";
-    a.textContent = mokuaiName;
-    mokuaiName = a.outerHTML;
+    a.textContent = title;
+    return a.outerHTML;
+  };
+  if (mokuaiUrl) {
+    mokuaiName = getLink(mokuaiUrl, mokuaiName);
   }
   if (!mokuaiNameShort) {
     mokuaiName = `模块【${mokuaiName}】`;
   }
   arr.push(mokuaiName);
+  if (xhmrmsbjUrl) {
+    const link = getLink(xhmrmsbjUrl, opts.xhmrmsbj?.name || "");
+    arr.unshift(link);
+  }
   return arr.join("");
 };
 export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null, opts?: GetMokuaiTitleOpts) => {
@@ -190,7 +202,12 @@ export const getMokuaiTitleWithUrl = (
     return getMokuaiTitle(item, opts);
   }
   const mokuaiUrl = status.getUrl(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: item.id}});
-  return getMokuaiTitleBase(item, {...opts, mokuaiUrl});
+  const opts2: Parameters<typeof getMokuaiTitleBase>[1] = {...opts, mokuaiUrl};
+  if (opts?.xhmrmsbj) {
+    const xhmrmsbjUrl = status.getUrl(["/型号默认门扇布局"], {queryParams: {id: opts.xhmrmsbj.vid}});
+    opts2.xhmrmsbjUrl = xhmrmsbjUrl;
+  }
+  return getMokuaiTitleBase(item, opts2);
 };
 
 export const getStep1Data = async (
@@ -347,6 +364,7 @@ export interface CalcZxpjOptions {
   mokuaiVars?: ObjectOf<Formulas>;
   mokuaiGongshis?: ObjectOf<Formulas>;
   isVersion2024?: boolean;
+  xhmrmsbj?: XhmrmsbjData | null;
 }
 export const calcZxpj = async (
   dialog: MatDialog,
@@ -369,6 +387,7 @@ export const calcZxpj = async (
     mokuaiVars: {},
     mokuaiGongshis: {},
     isVersion2024: false,
+    xhmrmsbj: null,
     ...options
   };
   const {
@@ -432,7 +451,8 @@ export const calcZxpj = async (
     }
   };
 
-  const getCalcMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null) => getMokuaiTitleWithUrl(status, isVersion2024, item);
+  const getCalcMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null) =>
+    getMokuaiTitleWithUrl(status, isVersion2024, item, {xhmrmsbj: options?.xhmrmsbj});
 
   for (const [i, item1] of mokuais.entries()) {
     for (const [j, item2] of mokuais.entries()) {
