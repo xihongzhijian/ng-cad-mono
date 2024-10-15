@@ -105,7 +105,8 @@ export class XhmrmsbjSbjbComponent {
   });
   cadButtons2 = computed(() => {
     const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] = [
-      {name: "选择", onClick: ({customInfo}) => this.selectSbjbItemSbjbCad(customInfo.index)}
+      {name: "选择", onClick: ({customInfo}) => this.selectSbjbItemSbjbCad(customInfo.index)},
+      {name: "删除", onClick: ({customInfo}) => this.deselectSbjbItemSbjbCad(customInfo.index)}
     ];
     return buttons;
   });
@@ -190,6 +191,24 @@ export class XhmrmsbjSbjbComponent {
     if (needsRefresh) {
       this.refreshItems();
     }
+  }
+  async deselectSbjbItemSbjbCad(index: number) {
+    const item = this.activeSbjbItem();
+    if (!item) {
+      return;
+    }
+    if (!Array.isArray(item.CAD数据)) {
+      item.CAD数据 = [];
+    }
+    const cadInfo = this.cadInfos()[index];
+    const {title} = cadInfo;
+    if (isXhmrmsbjSbjbItemOptionalKeys1(title)) {
+      item[title] = "";
+    } else if (isXhmrmsbjSbjbItemOptionalKeys2(title)) {
+      item[title].名字 = "";
+    }
+    item.CAD数据[index].cad = null;
+    this.refreshItems();
   }
 
   fetchDataEff = effect(() => this.fetchData(), {allowSignalWrites: true});
