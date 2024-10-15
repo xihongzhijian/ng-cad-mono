@@ -22,6 +22,7 @@ export abstract class CadDimension extends CadEntity {
   quzhifanwei: string;
   xianshigongshiwenben: string;
   xiaoshuchuli: "四舍五入" | "舍去小数" | "小数进一" | "保留一位" | "保留两位";
+  算料单缩放标注文字 = false;
 
   get hideDimLines() {
     return !!this.style?.extensionLines?.hidden;
@@ -77,9 +78,10 @@ export abstract class CadDimension extends CadEntity {
     this.qujian = data.qujian ?? "";
     this.ref = data.ref ?? "entity1";
     this.quzhifanwei = data.quzhifanwei ?? "";
-    this.hideDimLines = data.hideDimLines === true;
+    this.hideDimLines = !!data.hideDimLines;
     this.xianshigongshiwenben = data.xianshigongshiwenben ?? "";
     this.xiaoshuchuli = data.xiaoshuchuli ?? "四舍五入";
+    this.算料单缩放标注文字 = !!data.算料单缩放标注文字 === true;
   }
 
   export(): ObjectOf<any> {
@@ -94,7 +96,8 @@ export abstract class CadDimension extends CadEntity {
         quzhifanwei: this.quzhifanwei,
         hideDimLines: this.hideDimLines,
         xianshigongshiwenben: this.xianshigongshiwenben,
-        xiaoshuchuli: this.xiaoshuchuli
+        xiaoshuchuli: this.xiaoshuchuli,
+        算料单缩放标注文字: this.算料单缩放标注文字
       })
     };
     return result;

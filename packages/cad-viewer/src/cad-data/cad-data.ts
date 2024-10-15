@@ -1,7 +1,17 @@
 import {getTypeOf, keysOf, Matrix, MatrixLike, ObjectOf, Point} from "@lucilor/utils";
 import {cloneDeep, intersection, uniqWith} from "lodash";
 import {v4} from "uuid";
-import {getArray, getObject, getVectorFromArray, mergeArray, mergeObject, purgeObject, separateArray, separateObject} from "../cad-utils";
+import {
+  exportObjProps,
+  getObject,
+  getVectorFromArray,
+  importObjProps,
+  mergeArray,
+  mergeObject,
+  purgeObject,
+  separateArray,
+  separateObject
+} from "../cad-utils";
 import {CadDataInfo, intersectionKeys} from "./cad-data.types";
 import {CadEntities, tryGetCadEntity} from "./cad-entities";
 import {CadCircle, CadDimension, CadEntity, CadLine} from "./cad-entity";
@@ -218,21 +228,7 @@ export class CadData {
     if (data.kailiaomuban && !this.zhankai[0].kailiaomuban) {
       this.zhankai[0].kailiaomuban = data.kailiaomuban;
     }
-    for (const key of propertyKeys) {
-      if (!(key in data)) {
-        continue;
-      }
-      const sourceValue = data[key];
-      const currentValue = this[key];
-      const currentType = getTypeOf(currentValue);
-      if (currentType === "array") {
-        (this as any)[key] = getArray(sourceValue);
-      } else if (currentType === "object") {
-        (this as any)[key] = getObject(sourceValue);
-      } else {
-        (this as any)[key] = cloneDeep(sourceValue);
-      }
-    }
+    importObjProps(this, data, propertyKeys);
     this.updateDimensions();
     this.updateLayers();
     if (resetIds) {
@@ -269,14 +265,11 @@ export class CadData {
       jointPoints: this.jointPoints.map((v) => v.export()),
       partners: this.partners.map((v) => v.export()),
       components: this.components.export(),
-      zhankai: this.zhankai.map((v) => v.export())
+      zhankai: this.zhankai.map((v) => v.export()),
+      ...exportObjProps(this, propertyKeys)
     };
-    for (const key of propertyKeys) {
-      if (key === "conditions") {
-        result[key] = this[key].filter(Boolean);
-      } else {
-        result[key] = this[key];
-      }
+    if (Array.isArray(result.conditions)) {
+      result.conditions = result.conditions.filter(Boolean);
     }
     return purgeObject(result);
   }

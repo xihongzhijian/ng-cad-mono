@@ -177,3 +177,28 @@ export const purgeObject = (obj: ObjectOf<any>, defaultObj?: ObjectOf<any>): Obj
   purgeObject2(result, defaultObj);
   return result;
 };
+
+export const importObjProps = <T extends object>(obj: T, data: ObjectOf<any>, propertyKeys: (keyof T)[]) => {
+  for (const key of propertyKeys) {
+    if (!(key in data)) {
+      continue;
+    }
+    const sourceValue = (data as any)[key];
+    const currentValue = obj[key];
+    const currentType = getTypeOf(currentValue);
+    if (currentType === "array") {
+      (obj as any)[key] = getArray(sourceValue);
+    } else if (currentType === "object") {
+      (obj as any)[key] = getObject(sourceValue);
+    } else {
+      (obj as any)[key] = cloneDeep(sourceValue);
+    }
+  }
+};
+export const exportObjProps = <T extends object>(obj: T, propertyKeys: (keyof T)[]) => {
+  const result: ObjectOf<any> = {};
+  for (const key of propertyKeys) {
+    (result as any)[key] = obj[key];
+  }
+  return result;
+};

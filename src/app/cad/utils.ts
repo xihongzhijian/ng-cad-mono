@@ -679,7 +679,8 @@ export const openCadDimensionForm = async (
       model: {data: dimension2, key: "xiaoshuchuli"},
       options: cadDimensionOptions.xiaoshuchuli.values.slice()
     },
-    {type: "number", label: "字体大小", value: dimension2.style.text?.size}
+    {type: "number", label: "字体大小", value: dimension2.style.text?.size},
+    {type: "boolean", label: "算料单缩放标注文字", model: {data: dimension2, key: "算料单缩放标注文字"}}
   ];
   const name = dimension2.mingzi;
   let title = "编辑标注";
