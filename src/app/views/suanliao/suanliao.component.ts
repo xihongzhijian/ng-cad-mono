@@ -16,17 +16,14 @@ import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, WindowMessageManager} from "@lucilor/utils";
 import {openSuanliaogongshiDialog} from "@modules/cad-editor/components/dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
-import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
 import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.types";
-import {cloneDeep, isEqual} from "lodash";
 import {
   SuanliaoInput,
-  SuanliaoOutput,
   SuanliaoOutputData,
   根据输入值计算选中配件模块无依赖的公式结果输入,
   根据输入值计算选中配件模块无依赖的公式结果输出
@@ -42,7 +39,6 @@ import {
 export class SuanliaoComponent implements OnInit, OnDestroy {
   private calc = inject(CalcService);
   private dialog = inject(MatDialog);
-  private http = inject(CadDataService);
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
@@ -63,22 +59,20 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
   async suanliaoStart(params: SuanliaoInput): Promise<SuanliaoOutputData> {
     const {materialResult, gongshi, tongyongGongshi, inputResult, 型号选中门扇布局, 配件模块CAD, 门扇布局CAD} = params;
     const {bujuNames, varNames, step1Data, silent} = params;
-    const materialResultOld = cloneDeep(materialResult);
     let timerName: string | null = null;
     if (!silent) {
       timerName = "算料";
       timer.start(timerName);
     }
 
-    const materialResultDiff: SuanliaoOutput["materialResultDiff"] = {};
     const result: SuanliaoOutputData = {
       action: "suanliaoEnd",
       data: {
         materialResult,
-        materialResultDiff,
         配件模块CAD: [],
         门扇布局CAD: [],
         模块公式输入: {},
+        输出变量公式计算结果: {},
         fulfilled: false
       }
     };
@@ -219,14 +213,13 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
         }
       }
     }
-    result.data.fulfilled = true;
-    for (const key in materialResult) {
-      const value1 = materialResult[key];
-      const value2 = materialResultOld[key];
-      if (!isEqual(value1, value2)) {
-        materialResultDiff[key] = value1;
+    result.data.输出变量公式计算结果 = {...tongyongGongshi, ...gongshi};
+    for (const key in result.data.输出变量公式计算结果) {
+      if (key in materialResult) {
+        result.data.输出变量公式计算结果[key] = materialResult[key];
       }
     }
+    result.data.fulfilled = true;
     return finish();
   }
 
