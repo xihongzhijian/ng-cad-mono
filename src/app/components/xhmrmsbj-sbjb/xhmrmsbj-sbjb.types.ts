@@ -1,7 +1,6 @@
 import {CadCollection} from "@app/cad/collections";
 import {SortedItem} from "@app/utils/sort-items";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf} from "@lucilor/utils";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 
 export type XhmrmsbjSbjbResponseData = XhmrmsbjSbjbItem[];
@@ -56,11 +55,7 @@ export type XhmrmsbjSbjbItemOptionalKey2 = (typeof xhmrmsbjSbjbItemOptionalKeys2
 export const xhmrmsbjSbjbItemOptionalKeys3 = [...xhmrmsbjSbjbItemOptionalKeys1, ...xhmrmsbjSbjbItemOptionalKeys2] as const;
 export type XhmrmsbjSbjbItemOptionalKey3 = XhmrmsbjSbjbItemOptionalKey1 | XhmrmsbjSbjbItemOptionalKey2;
 
-export const xhmrmsbjSbjbItemCadKeys: ObjectOf<XhmrmsbjSbjbItemOptionalKey3[]> = {
-  单门: ["铰框", "铰边", "锁边", "锁框", "顶框"],
-  子母对开: ["铰框", "小扇铰边", "插销边", "锁边", "铰边", "铰框", "顶框"],
-  双开: ["铰框", "铰边", "插销边", "锁边", "铰边", "铰框", "顶框"]
-};
+export const xhmrmsbjSbjbItemOptionalKeys2Map = new Map<XhmrmsbjSbjbItemOptionalKey2, XhmrmsbjSbjbItemOptionalKey2>([["小扇铰边", "铰边"]]);
 
 export const xhmrmsbjSbjbItemCopyModes = ["清空原有数据并全部替换为新数据", "添加到原有数据"] as const;
 export type XhmrmsbjSbjbItemCopyMode = (typeof xhmrmsbjSbjbItemCopyModes)[number];

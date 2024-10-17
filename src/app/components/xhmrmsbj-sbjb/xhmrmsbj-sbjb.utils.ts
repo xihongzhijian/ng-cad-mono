@@ -7,10 +7,11 @@ import {
   show双开门扇宽生成方式,
   show锁扇铰扇蓝线宽固定差值
 } from "@components/lurushuju/services/lrsj-status.utils";
+import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
-import {cloneDeep} from "lodash";
+import {cloneDeep, intersection} from "lodash";
 import {
   XhmrmsbjSbjbItem,
   XhmrmsbjSbjbItemOptionalKey1,
@@ -20,18 +21,34 @@ import {
   xhmrmsbjSbjbItemOptionalKeys2,
   xhmrmsbjSbjbItemOptionalKeys3,
   XhmrmsbjSbjbItemSbjb,
+  XhmrmsbjSbjbItemSbjbCad,
   XhmrmsbjSbjbItemSbjbItem,
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
 
 export const getXhmrmsbjSbjbItemOptionalKeys = (fenlei: string): XhmrmsbjSbjbItemOptionalKey3[] => {
   switch (fenlei) {
+    case "单门":
+      return ["锁边", "铰边", "锁框", "铰框", "顶框"];
     case "子母对开":
       return ["锁边", "铰边", "铰框", "顶框", "插销边", "小扇铰边"];
     case "双开":
       return ["锁边", "铰边", "铰框", "顶框", "插销边"];
     default:
-      return ["锁边", "铰边", "锁框", "铰框", "顶框"];
+      return [];
+  }
+};
+
+export const getXhmrmsbjSbjbItemCadKeys = (fenlei: string): XhmrmsbjSbjbItemOptionalKey3[] => {
+  switch (fenlei) {
+    case "单门":
+      return ["铰框", "铰边", "锁边", "锁框", "顶框"];
+    case "子母对开":
+      return ["铰框", "小扇铰边", "插销边", "锁边", "铰边", "铰框", "顶框"];
+    case "双开":
+      return ["铰框", "铰边", "插销边", "锁边", "铰边", "铰框", "顶框"];
+    default:
+      return [];
   }
 };
 
@@ -45,6 +62,16 @@ export const isXhmrmsbjSbjbItemOptionalKeys3 = (key: string): key is XhmrmsbjSbj
   return xhmrmsbjSbjbItemOptionalKeys3.includes(key as XhmrmsbjSbjbItemOptionalKey3);
 };
 
+export const getXhmrmsbjSbjbItemSbjbCadName = (title: XhmrmsbjSbjbItemOptionalKey3) => (title === "小扇铰边" ? "铰边" : title);
+
+export const getXhmrmsbjSbjbItemSbjbCad = (title: XhmrmsbjSbjbItemOptionalKey3, cad?: HoutaiCad | null) => {
+  const result: XhmrmsbjSbjbItemSbjbCad = {name: getXhmrmsbjSbjbItemSbjbCadName(title), title};
+  if (cad) {
+    result.cad = cad;
+  }
+  return result;
+};
+
 export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: XhmrmsbjSbjbItemSbjb) => {
   const result = cloneDeep(item);
   const keysFrom = getXhmrmsbjSbjbItemOptionalKeys(formType);
@@ -54,9 +81,6 @@ export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: 
       delete result[key];
     }
   }
-  if (Array.isArray(item.CAD数据)) {
-    item.CAD数据 = item.CAD数据.filter((v) => keysTo.includes(v.title as any));
-  }
   for (const key of keysTo) {
     if (!keysFrom.includes(key)) {
       if (isXhmrmsbjSbjbItemOptionalKeys1(key)) {
@@ -65,10 +89,22 @@ export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: 
         result[key] = getXhmrmsbjSbjbItemSbjbItem();
       }
     }
-    if (Array.isArray(item.CAD数据) && !item.CAD数据.some((v) => v.title === key)) {
-      item.CAD数据.push({name: "", title: key});
+  }
+  const CAD数据 = result.CAD数据 || [];
+  result.CAD数据 = [];
+  const usedCadIndexs = new Set<number>();
+  for (const key of getXhmrmsbjSbjbItemCadKeys(toType)) {
+    const keys: string[] = [getXhmrmsbjSbjbItemSbjbCadName(key), key];
+    const index = CAD数据.findIndex((v, i) => intersection(keys, [v.name, v.title]).length > 0 && !usedCadIndexs.has(i));
+    if (index >= 0) {
+      usedCadIndexs.add(index);
+      CAD数据[index].title = key;
+      result.CAD数据.push(CAD数据[index]);
+    } else {
+      result.CAD数据.push(getXhmrmsbjSbjbItemSbjbCad(key));
     }
   }
+  return result;
 };
 
 export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string, activeRowIndex: number) => {

@@ -36,7 +36,6 @@ import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   XhmrmsbjSbjbItem,
-  xhmrmsbjSbjbItemCadKeys,
   XhmrmsbjSbjbItemCopyMode,
   xhmrmsbjSbjbItemCopyModes,
   XhmrmsbjSbjbItemSbjbCad,
@@ -44,7 +43,10 @@ import {
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
 import {
+  convertXhmrmsbjSbjbItem,
+  getXhmrmsbjSbjbItemCadKeys,
   getXhmrmsbjSbjbItemOptions,
+  getXhmrmsbjSbjbItemSbjbCad,
   getXhmrmsbjSbjbItemSbjbForm,
   getXhmrmsbjSbjbItemSbjbItem,
   getXhmrmsbjSbjbItemTableInfo,
@@ -83,8 +85,7 @@ export class XhmrmsbjSbjbComponent {
     const yaoqius: ObjectOf<Cad数据要求 | undefined> = {};
     const item = this.activeItem();
     if (item) {
-      const keys = xhmrmsbjSbjbItemCadKeys[item.产品分类] || [];
-      for (const key of keys) {
+      for (const key of getXhmrmsbjSbjbItemCadKeys(item.产品分类)) {
         yaoqius[key] = this.status.getCadYaoqiu(key);
       }
     }
@@ -308,11 +309,7 @@ export class XhmrmsbjSbjbComponent {
           delete item3.默认值;
         }
       }
-      item.CAD数据 = [];
-      for (const title of xhmrmsbjSbjbItemCadKeys[item2.产品分类] || []) {
-        const name = title === "小扇铰边" ? "铰边" : title;
-        item.CAD数据.push({name, title});
-      }
+      item.CAD数据 = getXhmrmsbjSbjbItemCadKeys(item2.产品分类).map((key) => getXhmrmsbjSbjbItemSbjbCad(key));
       item2.锁边铰边数据.unshift(item);
       this.refreshItems();
     }
@@ -337,7 +334,7 @@ export class XhmrmsbjSbjbComponent {
     if (!result || !from) {
       return;
     }
-    const fromItems = cloneDeep(from.锁边铰边数据);
+    const fromItems = from.锁边铰边数据.map((v) => convertXhmrmsbjSbjbItem(from.产品分类, to.产品分类, v));
     if (mode === "清空原有数据并全部替换为新数据") {
       to.锁边铰边数据 = fromItems;
     } else {
@@ -420,7 +417,7 @@ export class XhmrmsbjSbjbComponent {
       const items2 = getSortedItems(item.锁边铰边数据, (v) => v.排序 ?? 0);
       for (const [j, item2] of items2.entries()) {
         const errKeys: string[] = [];
-        for (const key of xhmrmsbjSbjbItemCadKeys[item.产品分类] || []) {
+        for (const key of getXhmrmsbjSbjbItemCadKeys(item.产品分类)) {
           if (key === "锁边" || key === "铰边") {
             if (!item2[key]?.名字) {
               errKeys.push(key);
