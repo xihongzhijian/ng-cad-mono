@@ -177,7 +177,7 @@ export class XhmrmsbjComponent implements OnDestroy {
 
   constructor() {
     setGlobal("xhmrmsbj", this);
-    effect(() => this.refresh(), {allowSignalWrites: true});
+    this.refresh();
   }
 
   async refresh() {
