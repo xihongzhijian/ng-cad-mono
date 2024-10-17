@@ -1452,6 +1452,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       open(url);
     }
   }
+  async menfengpeizhi() {
+    const xinghao = this.xinghao()?.raw.mingzi;
+    const suobianjiaobian = this.sbjb()?.activeItem();
+    if (!xinghao || !suobianjiaobian) {
+      return;
+    }
+    await this.http.getData("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian});
+  }
 
   mkdcpzValidator: FormulasValidatorFn = (formulasList) => {
     const msbjInfo = this.activeMsbjInfo();
