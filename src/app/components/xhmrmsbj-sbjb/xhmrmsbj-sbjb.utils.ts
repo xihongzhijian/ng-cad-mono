@@ -7,7 +7,6 @@ import {
   show双开门扇宽生成方式,
   show锁扇铰扇蓝线宽固定差值
 } from "@components/lurushuju/services/lrsj-status.utils";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
@@ -64,10 +63,10 @@ export const isXhmrmsbjSbjbItemOptionalKeys3 = (key: string): key is XhmrmsbjSbj
 
 export const getXhmrmsbjSbjbItemSbjbCadName = (title: XhmrmsbjSbjbItemOptionalKey3) => (title === "小扇铰边" ? "铰边" : title);
 
-export const getXhmrmsbjSbjbItemSbjbCad = (title: XhmrmsbjSbjbItemOptionalKey3, cad?: HoutaiCad | null) => {
+export const getXhmrmsbjSbjbItemSbjbCad = (title: XhmrmsbjSbjbItemOptionalKey3, cadId?: string) => {
   const result: XhmrmsbjSbjbItemSbjbCad = {name: getXhmrmsbjSbjbItemSbjbCadName(title), title};
-  if (cad) {
-    result.cad = cad;
+  if (cadId) {
+    result.cadId = cadId;
   }
   return result;
 };
@@ -134,7 +133,6 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
       {type: "string", field: "条件"},
       ...optionalCols2,
       ...optionalCols1,
-      {type: "string", field: "限定可选锁体"},
       {type: "string", field: "双开门扇宽生成方式", hidden: !show双开门扇宽生成方式(fenlei)},
       {
         type: "number",
@@ -166,7 +164,6 @@ export const getXhmrmsbjSbjbItemSbjb = (item?: Partial<XhmrmsbjSbjbItemSbjb>) =>
     开启: "",
     门铰: [],
     门扇厚度: [],
-    限定可选锁体: [],
     条件: "",
     包边方向: "",
     CAD数据: [],
@@ -200,7 +197,6 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
     getSelectInputInfo("开启"),
     getSelectInputInfo("门铰"),
     getSelectInputInfo("门扇厚度"),
-    getSelectInputInfo("限定可选锁体"),
     ...get双开门扇宽生成方式Inputs(fenlei, options, data),
     {type: "string", label: "条件", model: {data, key: "条件"}},
     getSelectInputInfo("包边方向"),

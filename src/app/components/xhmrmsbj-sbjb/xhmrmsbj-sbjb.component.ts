@@ -15,7 +15,6 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
-import {FetchManager} from "@app/utils/fetch-manager";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
@@ -25,7 +24,6 @@ import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
-import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
@@ -91,14 +89,18 @@ export class XhmrmsbjSbjbComponent {
     }
     return yaoqius;
   });
+  cadMap = new Map<string, CadData>();
   cadInfos = computed(() => {
-    const infos: (Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> & {cad: CadData | null})[] = [];
+    const infos: (Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> & {cad?: CadData})[] = [];
     const item = this.activeSbjbItem();
     if (item) {
       for (const item2 of item.CAD数据 || []) {
-        const info: (typeof infos)[0] = {...item2, cad: null};
-        if (item2.cad) {
-          info.cad = new CadData(item2.cad.json);
+        const info: (typeof infos)[0] = {...item2};
+        if (item2.cadId) {
+          const cad = this.cadMap.get(item2.cadId);
+          if (cad) {
+            info.cad = cad;
+          }
         }
         infos.push(info);
       }
@@ -173,7 +175,7 @@ export class XhmrmsbjSbjbComponent {
             if (Array.isArray(item2.CAD数据)) {
               for (let i = 0; i < item2.CAD数据.length; i++) {
                 if (item2.CAD数据[i].name === type) {
-                  item2.CAD数据[i].cad = cloneDeep(data);
+                  item2.CAD数据[i].cadId = data._id;
                 }
               }
             }
@@ -190,7 +192,9 @@ export class XhmrmsbjSbjbComponent {
         }
         item[title].名字 = cad2.name;
       }
-      item.CAD数据[index].cad = getHoutaiCad(cad2);
+      item.CAD数据[index].cadId = cad2.id;
+      this.cadMap.set(cad2.id, cad2);
+      this.purgeCadMap();
       needsRefresh = true;
     }
     if (needsRefresh) {
@@ -215,21 +219,48 @@ export class XhmrmsbjSbjbComponent {
       }
       item[title].名字 = "";
     }
-    item.CAD数据[index].cad = null;
+    delete item.CAD数据[index].cadId;
+    this.purgeCadMap();
     this.refreshItems();
   }
+  purgeCadMap() {
+    const ids = new Set<string>();
+    for (const item of this.items()) {
+      for (const item2 of item.锁边铰边数据) {
+        for (const cadItem of item2.CAD数据 || []) {
+          if (cadItem.cadId) {
+            ids.add(cadItem.cadId);
+          }
+        }
+      }
+    }
+    for (const id of this.cadMap.keys()) {
+      if (!ids.has(id)) {
+        this.cadMap.delete(id);
+      }
+    }
+  }
+
+  options = signal<OptionsAll2>({});
 
   fetchDataEff = effect(() => this.fetchData(), {allowSignalWrites: true});
   async fetchData() {
-    const items = await this.http.getData<XhmrmsbjSbjbItem[]>("shuju/api/getsuobianjiaobianData", {xinghao: this.xinghaoName()});
-    this.items.set(items || []);
+    const data = await this.http.getData<{锁边铰边: XhmrmsbjSbjbItem[]; CAD数据map: ObjectOf<HoutaiCad>; 选项: OptionsAll2}>(
+      "shuju/api/getsuobianjiaobianData",
+      {xinghao: this.xinghaoName()}
+    );
+    if (data) {
+      this.items.set(data.锁边铰边);
+      for (const key in data.CAD数据map) {
+        this.cadMap.set(key, new CadData(data.CAD数据map[key].json));
+      }
+      this.options.set(data.选项);
+    }
     await this.status.cadYaoqiusManager.fetch();
   }
   clickItem(i: number) {
     this.activeItemIndex.set(i);
   }
-
-  optionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll2>("shuju/api/getSuobianjiaobianOptions")) || {});
 
   activeSbjbItemIndex = signal<number>(0);
   activeSbjbItemIndexEff = effect(
@@ -263,7 +294,7 @@ export class XhmrmsbjSbjbComponent {
     switch (event.button.event) {
       case "edit":
         {
-          const options = await this.optionsManager.fetch();
+          const options = this.options();
           const item3 = await getXhmrmsbjSbjbItemSbjbForm(this.message, options, item2.产品分类, item);
           if (item3) {
             item2.锁边铰边数据[rowIdx] = item3;
@@ -297,7 +328,7 @@ export class XhmrmsbjSbjbComponent {
     this.activeSbjbItemIndex.set(event.indexs[0] ?? -1);
   }
   async addSbjbItemSbjb() {
-    const options = await this.optionsManager.fetch();
+    const options = this.options();
     const item2 = this.activeItem();
     if (!item2) {
       return;

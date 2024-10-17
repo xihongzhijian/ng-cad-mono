@@ -1,7 +1,6 @@
 import {CadCollection} from "@app/cad/collections";
 import {SortedItem} from "@app/utils/sort-items";
 import {CadData} from "@lucilor/cad-viewer";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 
 export type XhmrmsbjSbjbResponseData = XhmrmsbjSbjbItem[];
 
@@ -15,7 +14,6 @@ export interface XhmrmsbjSbjbItemSbjb {
   门扇厚度: string[];
   条件: string;
   包边方向: string;
-  限定可选锁体: string[];
   双开门扇宽生成方式?: string;
   锁扇铰扇蓝线宽固定差值?: number;
   锁边?: XhmrmsbjSbjbItemSbjbItem;
@@ -41,7 +39,7 @@ export interface XhmrmsbjSbjbItemSbjbItem {
 export interface XhmrmsbjSbjbItemSbjbCad {
   name: string;
   title: string;
-  cad?: HoutaiCad | null;
+  cadId?: string;
 }
 
 export interface XhmrmsbjSbjbItemSbjbCadInfo {
