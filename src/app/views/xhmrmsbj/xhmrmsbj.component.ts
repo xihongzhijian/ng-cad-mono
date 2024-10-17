@@ -10,6 +10,7 @@ import {
   inject,
   input,
   OnDestroy,
+  OnInit,
   output,
   signal,
   untracked,
@@ -121,7 +122,7 @@ const table = "p_xinghaomorenmenshanbuju";
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class XhmrmsbjComponent implements OnDestroy {
+export class XhmrmsbjComponent implements OnInit, OnDestroy {
   private bjmkStatus = inject(BjmkStatusService);
   private calc = inject(CalcService);
   private dialog = inject(MatDialog);
@@ -177,7 +178,13 @@ export class XhmrmsbjComponent implements OnDestroy {
 
   constructor() {
     setGlobal("xhmrmsbj", this);
+  }
+
+  ngOnInit() {
     this.refresh();
+  }
+  ngOnDestroy() {
+    this.wmm.destroy();
   }
 
   async refresh() {
@@ -229,10 +236,6 @@ export class XhmrmsbjComponent implements OnDestroy {
     } else {
       this.activeMenshanKey.set(this.menshanKeys[0]);
     }
-  }
-
-  ngOnDestroy() {
-    this.wmm.destroy();
   }
 
   setStep1Data(step1Data: Step1Data | null) {
