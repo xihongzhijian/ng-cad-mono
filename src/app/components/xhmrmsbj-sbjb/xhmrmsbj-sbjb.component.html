@@ -17,10 +17,11 @@
     <div class="flex-column flex-110" #sbjbItemTableContainer>
       @if (sbjbItemTableInfo(); as info) {
         <app-table
+          #sbjbItemTable
           class="flex-110"
           [info]="info"
           (rowButtonClick)="onSbjbItemTableRow($event)"
-          (rowSelectionChange)="onSbjbItemTableRowSelect($event)"
+          (cellClick)="onSbjbItemTableCellClick($event)"
         ></app-table>
       }
     </div>

@@ -42,7 +42,7 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
-import csstype from "csstype";
+import {Properties} from "csstype";
 import {cloneDeep, debounce, intersection, isEqual} from "lodash";
 import {Subscription} from "rxjs";
 import {ImageComponent} from "../../../image/components/image/image.component";
@@ -196,9 +196,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       if (rowSelection) {
         if (changedKeys.includes("rowSelection")) {
           this._initRowSelection();
-          if (rowSelection.initialSelected) {
-            this.rowSelection.select(...rowSelection.initialSelected);
-          }
         }
         if (!rowSelection.hideCheckBox) {
           this.columnFields.unshift("select");
@@ -223,7 +220,13 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const {rowSelection} = this;
     const numSelected = rowSelection.selected.length;
     const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
+    return numSelected > 0 && numSelected >= numRows;
+  }
+  isPartiallySelected() {
+    const {rowSelection} = this;
+    const numSelected = rowSelection.selected.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected > 0 && numSelected < numRows;
   }
 
   masterToggle() {
@@ -358,10 +361,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   async onCellClick(event: CellEvent<T>) {
-    const rowSelection = this.info.rowSelection;
-    if (rowSelection?.selectOnCellClick) {
-      this.rowSelection.select(event.rowIdx);
-    }
     this.cellClick.emit(event);
   }
 
@@ -456,26 +455,43 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   getCheckBoxStyle() {
-    const style: csstype.Properties = {};
+    const style: Properties = {};
     const checkBoxSize = 50;
     style.flex = `0 0 ${checkBoxSize}px`;
     return style;
   }
 
-  getCellClass(column: ColumnInfo<T>, rowIdx: number) {
-    const classes: string[] = ["column-type-" + column.type];
-    let active = this.info.activeRows?.includes(rowIdx);
-    if (!active && this.rowSelection.isSelected(rowIdx)) {
+  getCellClass(column: ColumnInfo<T>, item: T | null, rowIdx: number, colIdx: number) {
+    const classes = new Set(["column-type-" + column.type]);
+    const {activeRows, rowSelection, getCellClass} = this.info;
+    let active = activeRows?.includes(rowIdx);
+    if (!active && rowSelection && !rowSelection.noActive && this.rowSelection.isSelected(rowIdx)) {
       active = true;
     }
     if (active) {
-      classes.push("active");
+      classes.add("active");
     }
-    return classes;
+    if (item && getCellClass) {
+      const classes2 = getCellClass({column, item, rowIdx, colIdx});
+      if (classes2 && typeof classes2 === "string") {
+        for (const cls of classes2.split(" ")) {
+          classes.add(cls);
+        }
+      } else if (Array.isArray(classes2)) {
+        for (const cls of classes2) {
+          classes.add(cls);
+        }
+      }
+    }
+    return Array.from(classes);
   }
 
-  getCellStyle(column: ColumnInfo<T>) {
-    const style: csstype.Properties = {...column.style};
+  getCellStyle(column: ColumnInfo<T>, item: T | null, rowIdx: number, colIdx: number) {
+    const {getCellStyle} = this.info;
+    const style = {...column.style};
+    if (item && getCellStyle) {
+      Object.assign(style, getCellStyle({column, item, rowIdx, colIdx}));
+    }
     if (column.width) {
       style.flex = `0 0 ${column.width}`;
     } else if (!style.flex) {

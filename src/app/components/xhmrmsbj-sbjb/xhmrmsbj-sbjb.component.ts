@@ -27,7 +27,7 @@ import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent, RowSelectionChange} from "@modules/table/components/table/table.types";
+import {CellEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
 import {DateTime} from "luxon";
@@ -277,21 +277,22 @@ export class XhmrmsbjSbjbComponent {
     }
     return null;
   });
+
+  sbjbItemTable = viewChild<TableComponent<XhmrmsbjSbjbItemSbjbSorted>>("sbjbItemTable");
   sbjbItemTableInfo = computed(() => {
     const item = this.activeItem();
     if (!item) {
       return null;
     }
-    return getXhmrmsbjSbjbItemTableInfo(item.锁边铰边数据, item.产品分类, this.activeSbjbItemIndex());
+    return getXhmrmsbjSbjbItemTableInfo(item.锁边铰边数据, item.产品分类, this.activeSbjbItemIndex);
   });
-  async onSbjbItemTableRow(event: RowButtonEvent<XhmrmsbjSbjbItemSbjbSorted>) {
+  async onSbjbItemTableRow({item, button}: RowButtonEvent<XhmrmsbjSbjbItemSbjbSorted>) {
     const item2 = this.activeItem();
     if (!item2) {
       return;
     }
-    const {item} = event;
     const rowIdx = item.originalIndex;
-    switch (event.button.event) {
+    switch (button.event) {
       case "edit":
         {
           const options = this.options();
@@ -324,8 +325,8 @@ export class XhmrmsbjSbjbComponent {
         break;
     }
   }
-  onSbjbItemTableRowSelect(event: RowSelectionChange) {
-    this.activeSbjbItemIndex.set(event.indexs[0] ?? -1);
+  onSbjbItemTableCellClick({rowIdx}: CellEvent<XhmrmsbjSbjbItemSbjbSorted>) {
+    this.activeSbjbItemIndex.set(rowIdx);
   }
   async addSbjbItemSbjb() {
     const options = this.options();
@@ -344,6 +345,23 @@ export class XhmrmsbjSbjbComponent {
       item2.锁边铰边数据.unshift(item);
       this.refreshItems();
     }
+  }
+  async removeSbjbItemSbjbs() {
+    const table = this.sbjbItemTable();
+    const item2 = this.activeItem();
+    if (!table || !item2) {
+      return;
+    }
+    const selected = table.rowSelection.selected;
+    if (selected.length < 1) {
+      await this.message.error("请先选择要删除的数据");
+      return;
+    }
+    if (!(await this.message.confirm(`确定删除${selected.length}条数据吗？`))) {
+      return;
+    }
+    item2.锁边铰边数据 = item2.锁边铰边数据.filter((_, i) => !selected.includes(i));
+    this.refreshItems();
   }
 
   async copySbjbItems(to: XhmrmsbjSbjbItem) {

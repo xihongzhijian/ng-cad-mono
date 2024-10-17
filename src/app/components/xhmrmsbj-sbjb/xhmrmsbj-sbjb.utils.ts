@@ -1,3 +1,4 @@
+import {WritableSignal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
@@ -106,7 +107,7 @@ export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: 
   return result;
 };
 
-export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string, activeRowIndex: number) => {
+export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string, activeSbjbItemIndex: WritableSignal<number>) => {
   const optionalKeys = getXhmrmsbjSbjbItemOptionalKeys(fenlei);
   const optionalCols1 = xhmrmsbjSbjbItemOptionalKeys1.map((key) => {
     const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key};
@@ -124,7 +125,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
   });
   const info: TableRenderInfo<XhmrmsbjSbjbItemSbjbSorted> = {
     data: getSortedItems(data, (v) => v.排序 ?? 0),
-    rowSelection: {mode: "single", hideCheckBox: true, selectOnCellClick: true, initialSelected: [activeRowIndex]},
+    rowSelection: {mode: "multiple", noActive: true},
     columns: [
       {type: "string", field: "开启"},
       {type: "string", field: "门铰"},
@@ -154,7 +155,8 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
           {event: "copy", title: "复制", color: "primary"}
         ]
       }
-    ]
+    ],
+    getCellClass: ({rowIdx}) => (rowIdx === activeSbjbItemIndex() ? "active" : "")
   };
   return info;
 };

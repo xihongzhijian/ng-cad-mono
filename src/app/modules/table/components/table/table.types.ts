@@ -1,16 +1,16 @@
 import {MatTableDataSource} from "@angular/material/table";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfoOptions} from "@modules/input/components/input.types";
-import csstype from "csstype";
+import {Properties} from "csstype";
 
 export interface TableRenderInfo<T> {
   data: T[];
   columns: ColumnInfo<T>[];
   newItem?: T | ItemGetter<T>;
   title?: string;
-  titleStyle?: csstype.Properties;
+  titleStyle?: Properties;
   subTitle?: string;
-  subTitleStyle?: csstype.Properties;
+  subTitleStyle?: Properties;
   editMode?: boolean;
   sortable?: boolean;
   filterable?: boolean | {searchColumns?: string[]};
@@ -31,14 +31,15 @@ export interface TableRenderInfo<T> {
   onlineMode?: {tableName: string; refresh: () => Promise<void>};
   noScroll?: boolean;
   class?: string | string[];
-  style?: csstype.Properties;
+  style?: Properties;
+  getCellClass?: (event: CellEvent<T>) => string | string[];
+  getCellStyle?: (event: CellEvent<T>) => Properties;
 }
 
 export interface RowSelection {
   mode: "single" | "multiple";
   hideCheckBox?: boolean;
-  selectOnCellClick?: boolean;
-  initialSelected?: number[];
+  noActive?: boolean;
 }
 
 export interface TableButton {
@@ -46,7 +47,7 @@ export interface TableButton {
   title?: string;
   color?: "" | "primary" | "accent" | "warn";
   class?: string | string[];
-  style?: csstype.Properties;
+  style?: Properties;
   hidden?: boolean;
 }
 
@@ -59,7 +60,7 @@ export interface ColumnInfoBase<T> {
   sticky?: boolean;
   stickyEnd?: boolean;
   hidden?: boolean;
-  style?: csstype.Properties;
+  style?: Properties;
   getString?: (value: T) => string;
 }
 

@@ -64,34 +64,34 @@
         <ng-container matColumnDef="select" sticky>
           <mat-header-cell *matHeaderCellDef [style]="getCheckBoxStyle()">
             @if (rowSelection.isMultipleSelection()) {
-              <mat-checkbox
-                (change)="$event ? masterToggle() : null"
-                [checked]="rowSelection.hasValue() && isAllSelected()"
-                [indeterminate]="rowSelection.hasValue() && !isAllSelected()"
-              >
-              </mat-checkbox>
+              <mat-checkbox (change)="masterToggle()" [checked]="isAllSelected()" [indeterminate]="isPartiallySelected()"></mat-checkbox>
             }
           </mat-header-cell>
           <mat-cell *matCellDef="let item; let rowIdx = index" [style]="getCheckBoxStyle()">
-            <mat-checkbox appClickStop (change)="toggleRowSelection(item)" [checked]="rowSelection.isSelected(item)"> </mat-checkbox>
+            <mat-checkbox appClickStop (change)="toggleRowSelection(rowIdx)" [checked]="rowSelection.isSelected(rowIdx)"> </mat-checkbox>
           </mat-cell>
         </ng-container>
 
         @for (column of info.columns; track colIdx; let colIdx = $index) {
           <ng-container [matColumnDef]="toTypeString(column.field)" [sticky]="column.sticky" [stickyEnd]="column.stickyEnd">
             @if (info.sortable) {
-              <mat-header-cell *matHeaderCellDef mat-sort-header [class]="getCellClass(column, -1)" [style]="getCellStyle(column)">
+              <mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                [class]="getCellClass(column, null, -1, -1)"
+                [style]="getCellStyle(column, null, -1, -1)"
+              >
                 {{ column.name || column.field }}
               </mat-header-cell>
             } @else {
-              <mat-header-cell *matHeaderCellDef [class]="getCellClass(column, -1)" [style]="getCellStyle(column)">
+              <mat-header-cell *matHeaderCellDef [class]="getCellClass(column, null, -1, -1)" [style]="getCellStyle(column, null, -1, -1)">
                 {{ column.name || column.field }}
               </mat-header-cell>
             }
             <mat-cell
               *matCellDef="let item; let rowIdx = index"
-              [class]="getCellClass(column, rowIdx)"
-              [style]="getCellStyle(column)"
+              [class]="getCellClass(column, item, rowIdx, colIdx)"
+              [style]="getCellStyle(column, item, rowIdx, colIdx)"
               [class.error]="!isVaild(rowIdx)"
               (click)="onCellClick({column, item, colIdx, rowIdx})"
             >
