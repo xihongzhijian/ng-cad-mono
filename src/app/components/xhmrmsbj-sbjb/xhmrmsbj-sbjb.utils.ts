@@ -8,10 +8,11 @@ import {
   show双开门扇宽生成方式,
   show锁扇铰扇蓝线宽固定差值
 } from "@components/lurushuju/services/lrsj-status.utils";
+import {environment} from "@env";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
-import {cloneDeep, intersection} from "lodash";
+import {cloneDeep, intersection, sample, sampleSize} from "lodash";
 import {
   XhmrmsbjSbjbItem,
   XhmrmsbjSbjbItemOptionalKey1,
@@ -215,7 +216,17 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
     {type: "number", label: "排序", model: {data, key: "排序"}},
     {type: "boolean", label: "默认值", model: {data, key: "默认值"}}
   ];
-  const result = await message.form(form);
+  const result = await message.form(form, {
+    autoFill: environment.production
+      ? undefined
+      : () => {
+          const rand = (key: keyof XhmrmsbjSbjbItemSbjb) => sample(options[key]?.options)?.name || "";
+          const rand2 = (key: keyof XhmrmsbjSbjbItemSbjb) => sampleSize(options[key]?.options).map((v) => v.name);
+          data.开启 = rand("开启");
+          data.门铰 = rand2("门铰");
+          data.门扇厚度 = rand2("门扇厚度");
+        }
+  });
   return result ? data : null;
 };
 export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, item?: XhmrmsbjSbjbItemSbjbItem) => {

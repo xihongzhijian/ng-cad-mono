@@ -773,14 +773,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   isSubmited = signal(false);
   async submit() {
-    const tabName = this.activeTabName();
-    if (tabName === "锁边铰边") {
-      const sbjb = this.sbjb();
-      if (sbjb) {
-        const success = await sbjb.save();
-        if (!success) {
-          return;
-        }
+    const sbjb = this.sbjb();
+    if (sbjb) {
+      const success = await sbjb.save();
+      if (!success) {
+        this.activeTabName.set("锁边铰边");
+        return;
       }
     }
     const dataInfo = this.data();

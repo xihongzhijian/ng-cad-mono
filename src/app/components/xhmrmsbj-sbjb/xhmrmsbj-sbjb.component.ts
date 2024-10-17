@@ -482,7 +482,7 @@ export class XhmrmsbjSbjbComponent {
     }
     if (errItems.length > 0) {
       await this.message.error({
-        content: "数据有误",
+        content: "锁边铰边数据有误",
         details: errItems.map(({i, errKeys}) => {
           const item = items[i];
           const str = errKeys.map((v) => `【${v}】`).join("");
