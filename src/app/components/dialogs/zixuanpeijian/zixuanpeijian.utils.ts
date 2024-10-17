@@ -1,6 +1,5 @@
 import {MatDialog} from "@angular/material/dialog";
 import {getCadTotalLength, getShuangxiangLineRects, setShuangxiangLineRects, splitShuangxiangCad} from "@app/cad/utils";
-import {getCADBeishu} from "@app/utils/beishu";
 import {Formulas, toFixed} from "@app/utils/calc";
 import {matchOrderData} from "@app/utils/mongo";
 import {nameEquals} from "@app/utils/zhankai";
@@ -851,16 +850,7 @@ export const calcZxpj = async (
         const width = toFixed(result3.succeedTrim.展开宽, fractionDigits);
         const height = toFixed(result3.succeedTrim.展开高, fractionDigits);
         let num = Number(result3.succeedTrim.数量);
-        const {产品分类, 栋数, 门中门扇数} = materialResult;
-        const CAD分类 = data.type;
-        const CAD分类2 = data.type2;
-        try {
-          num *= getCADBeishu(String(产品分类 || ""), String(栋数 || ""), CAD分类, CAD分类2, String(门中门扇数 || ""));
-        } catch (error) {
-          if (error instanceof Error) {
-            message.error(error.message);
-          }
-        }
+        num *= Number(materialResult.栋数);
         zhankais2.push({width, height, num: String(num), originalWidth: zhankai.zhankaikuan, cadZhankaiIndex: i});
       }
       info.zhankai = [...zhankais2, ...info.zhankai.filter((v) => !("cadZhankaiIndex" in v))];
