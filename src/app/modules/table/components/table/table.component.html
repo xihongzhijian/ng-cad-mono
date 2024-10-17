@@ -44,8 +44,10 @@
           </button>
         }
       }
-      @if (info.filterable) {
-        <app-input class="flex-110" [info]="filterInput"></app-input>
+      @if (filterInputInfos(); as infos) {
+        @for (info of infos; track $index) {
+          <app-input [info]="info"></app-input>
+        }
       }
     </div>
     @if (info.subTitleStyle && toolbarButtons.inlineTitle) {

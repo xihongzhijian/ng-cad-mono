@@ -3,6 +3,7 @@ import {FlatTreeControl} from "@angular/cdk/tree";
 import {
   AfterViewInit,
   Component,
+  computed,
   DoCheck,
   EventEmitter,
   forwardRef,
@@ -13,6 +14,7 @@ import {
   KeyValueDiffers,
   OnChanges,
   Output,
+  signal,
   SimpleChanges,
   ViewChild
 } from "@angular/core";
@@ -116,15 +118,53 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   dataSource: MatTreeFlatDataSource<any, any> | MatTableDataSource<T> = new MatTableDataSource();
 
   editing: {colIdx: number; rowIdx: number; value: string};
-  filterStr = "";
-  filterInput: InputInfo = {
-    type: "string",
-    label: "搜索",
-    model: {data: this, key: "filterStr"},
-    onInput: debounce(() => {
-      this.filterTable();
-    }, 100)
-  };
+  filterStr = signal("");
+  filterField = signal("");
+  filterInputInfosFlag = signal(0);
+  filterInputInfos = computed(() => {
+    this.filterInputInfosFlag();
+    const info = this.info;
+    const filterable = info.filterable;
+    if (!filterable) {
+      return null;
+    }
+    const fields = info.columns.filter((v) => !v.hidden).map((v) => v.field as string);
+    const infos: InputInfo[] = [
+      {
+        type: "select",
+        label: "搜索",
+        options: fields,
+        multiple: false,
+        clearable: true,
+        value: this.filterField(),
+        hidden: true,
+        onChange: (val) => {
+          this.filterField.set(val);
+          this.filterTable();
+        }
+      },
+      {
+        type: "string",
+        label: "搜索",
+        value: this.filterStr(),
+        clearable: true,
+        onInput: debounce((val) => {
+          this.filterStr.set(val);
+          this.filterTable();
+        }, 100),
+        style: {flex: "1 1 0"}
+      }
+    ];
+    if (typeof filterable === "object") {
+      if (filterable.selectField) {
+        infos[0].hidden = false;
+      }
+      if (filterable.setInputInfosFn) {
+        filterable.setInputInfosFn(infos);
+      }
+    }
+    return infos;
+  });
 
   get toolbarButtons() {
     return this.info.toolbarButtons || {};
@@ -190,6 +230,16 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       changedKeys.push(v.key);
     });
 
+    this.filterInputInfosFlag.update((v) => v + 1);
+    if (intersection<InfoKey>(changedKeys, ["filterable"]).length > 0) {
+      const filterable = this.info.filterable;
+      if (filterable) {
+        if (typeof filterable === "object" && filterable.selectFieldDefault && !this.filterField()) {
+          this.filterField.set(filterable.selectFieldDefault as string);
+        }
+      }
+    }
+
     if (intersection<InfoKey>(changedKeys, ["columns", "rowSelection"]).length > 0) {
       this.columnFields = [...this.info.columns.filter((v) => !v.hidden).map((v) => v.field)];
       const rowSelection = this.info.rowSelection;
@@ -210,6 +260,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         this.dataSource = new MatTableDataSource(data);
       }
       this.validate();
+      this.filterTable();
     }
     if (intersection<InfoKey>(changedKeys, ["class"]).length > 0) {
       this.class = this.info.class;
@@ -712,20 +763,28 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (!filterable || !(dataSource instanceof MatTableDataSource)) {
       return;
     }
-    dataSource.filter = this.filterStr;
-    dataSource.filterPredicate = (data: T, filter: string) => {
+    dataSource.filter = this.filterStr();
+    dataSource.filterPredicate = (data: any, filter: string) => {
       const {filterable} = this.info;
       if (!filterable || !isTypeOf(data, "object")) {
         return true;
       }
       let searchColumns: string[] | undefined;
+      let selectField: boolean | undefined;
       if (typeof filterable === "object") {
         searchColumns = filterable.searchColumns;
+        selectField = filterable.selectField;
       }
       if (!Array.isArray(searchColumns)) {
         searchColumns = this.columnFields as string[];
       }
-      const values = searchColumns.map((v) => getValueString((data as any)[v]));
+      let values: string[];
+      const field = this.filterField();
+      if (selectField && field) {
+        values = [getValueString(data[field])];
+      } else {
+        values = searchColumns.map((v) => getValueString(data[v]));
+      }
       return queryStringList(filter, values);
     };
   }

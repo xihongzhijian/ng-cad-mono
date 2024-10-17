@@ -15,12 +15,14 @@ const data: XhmrmsbjMokuaisInput = {
         配件模块CAD: {},
         门扇布局CAD: [],
         bujuNames: [],
-        varNames: []
+        varNames: [],
+        xhmrmsbj: {vid: 1, mingzi: "1"},
+        msbjs: []
       },
       output: {
         fulfilled: true,
         materialResult: {},
-        materialResultDiff: {},
+        输出变量公式计算结果: {},
         配件模块CAD: [],
         门扇布局CAD: []
       }

@@ -1,6 +1,6 @@
 import {MatTableDataSource} from "@angular/material/table";
 import {ObjectOf} from "@lucilor/utils";
-import {InputInfoOptions} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOptions} from "@modules/input/components/input.types";
 import {Properties} from "csstype";
 
 export interface TableRenderInfo<T> {
@@ -13,7 +13,7 @@ export interface TableRenderInfo<T> {
   subTitleStyle?: Properties;
   editMode?: boolean;
   sortable?: boolean;
-  filterable?: boolean | {searchColumns?: string[]};
+  filterable?: boolean | TableRenderInfoFilterable<T>;
   rowSelection?: RowSelection;
   validator?: TableValidator<T>;
   activeRows?: number[];
@@ -34,6 +34,12 @@ export interface TableRenderInfo<T> {
   style?: Properties;
   getCellClass?: (event: CellEvent<T>) => string | string[];
   getCellStyle?: (event: CellEvent<T>) => Properties;
+}
+export interface TableRenderInfoFilterable<T> {
+  searchColumns?: string[];
+  selectField?: boolean;
+  selectFieldDefault?: keyof T;
+  setInputInfosFn?: (infos: InputInfo[]) => void;
 }
 
 export interface RowSelection {
