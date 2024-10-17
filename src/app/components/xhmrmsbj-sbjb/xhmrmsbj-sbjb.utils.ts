@@ -1,7 +1,12 @@
 import {Validators} from "@angular/forms";
 import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
-import {getOptionsAll2InputInfo} from "@components/lurushuju/services/lrsj-status.utils";
+import {
+  getOptionsAll2InputInfo,
+  get双开门扇宽生成方式Inputs,
+  show双开门扇宽生成方式,
+  show锁扇铰扇蓝线宽固定差值
+} from "@components/lurushuju/services/lrsj-status.utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
@@ -40,6 +45,32 @@ export const isXhmrmsbjSbjbItemOptionalKeys3 = (key: string): key is XhmrmsbjSbj
   return xhmrmsbjSbjbItemOptionalKeys3.includes(key as XhmrmsbjSbjbItemOptionalKey3);
 };
 
+export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: XhmrmsbjSbjbItemSbjb) => {
+  const result = cloneDeep(item);
+  const keysFrom = getXhmrmsbjSbjbItemOptionalKeys(formType);
+  const keysTo = getXhmrmsbjSbjbItemOptionalKeys(toType);
+  for (const key of keysFrom) {
+    if (!keysTo.includes(key)) {
+      delete result[key];
+    }
+  }
+  if (Array.isArray(item.CAD数据)) {
+    item.CAD数据 = item.CAD数据.filter((v) => keysTo.includes(v.title as any));
+  }
+  for (const key of keysTo) {
+    if (!keysFrom.includes(key)) {
+      if (isXhmrmsbjSbjbItemOptionalKeys1(key)) {
+        result[key] = "";
+      } else if (isXhmrmsbjSbjbItemOptionalKeys2(key)) {
+        result[key] = getXhmrmsbjSbjbItemSbjbItem();
+      }
+    }
+    if (Array.isArray(item.CAD数据) && !item.CAD数据.some((v) => v.title === key)) {
+      item.CAD数据.push({name: "", title: key});
+    }
+  }
+};
+
 export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string, activeRowIndex: number) => {
   const optionalKeys = getXhmrmsbjSbjbItemOptionalKeys(fenlei);
   const optionalCols1 = xhmrmsbjSbjbItemOptionalKeys1.map((key) => {
@@ -68,7 +99,12 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
       ...optionalCols2,
       ...optionalCols1,
       {type: "string", field: "限定可选锁体"},
-      {type: "string", field: "双开门扇宽生成方式", hidden: fenlei !== "双开"},
+      {type: "string", field: "双开门扇宽生成方式", hidden: !show双开门扇宽生成方式(fenlei)},
+      {
+        type: "number",
+        field: "锁扇铰扇蓝线宽固定差值",
+        hidden: !data.some((v) => show锁扇铰扇蓝线宽固定差值(fenlei, v.双开门扇宽生成方式))
+      },
       {type: "boolean", field: "停用"},
       {type: "number", field: "排序"},
       {type: "boolean", field: "默认值"},
@@ -129,7 +165,7 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
     getSelectInputInfo("门铰"),
     getSelectInputInfo("门扇厚度"),
     getSelectInputInfo("限定可选锁体"),
-    getSelectInputInfo("双开门扇宽生成方式", (info) => (info.hidden = fenlei !== "双开")),
+    ...get双开门扇宽生成方式Inputs(fenlei, options, data),
     {type: "string", label: "条件", model: {data, key: "条件"}},
     getSelectInputInfo("包边方向"),
     {type: "boolean", label: "停用", model: {data, key: "停用"}},

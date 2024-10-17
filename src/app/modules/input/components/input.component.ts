@@ -674,7 +674,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const validators = info.validators;
     let errors: ValidationErrors | null = null;
     let errors2: ValidationErrors | null = null;
-    if (validators) {
+    if (validators && !info.hidden) {
       const control = new FormControl(value, validators);
       errors = control.errors;
     }

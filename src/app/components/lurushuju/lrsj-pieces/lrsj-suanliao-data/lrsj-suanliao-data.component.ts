@@ -22,6 +22,7 @@ import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {filterCad} from "@app/cad/cad-shujuyaoqiu";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
+import {get双开门扇宽生成方式Inputs} from "@components/lurushuju/services/lrsj-status.utils";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
@@ -300,53 +301,26 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           return Validators.required(control);
         }
       ];
-      const setInputHidden = (info: InputInfo, hidden: boolean) => {
-        info.hidden = hidden;
-        if (hidden) {
-          delete info.validators;
-        } else {
-          info.validators = validators;
+
+      const inputs = get双开门扇宽生成方式Inputs(fenleiName, this.menjiaoOptions(), data[key1]);
+      const update双开门扇宽生成方式Inputs = () => {
+        for (const info of inputs) {
+          if (info.hidden) {
+            delete info.validators;
+          } else {
+            info.validators = validators;
+          }
         }
       };
-      const 使用双开门扇宽生成方式 = () => fenleiName === "双开";
-      const 锁扇蓝线宽比铰扇蓝线宽大 = (key1: MenjiaoCadType) => data[key1].双开门扇宽生成方式 === "锁扇蓝线宽比铰扇蓝线宽大";
-
-      const inputs = [
-        {
-          ...this.getOptionInputInfo2(data[key1] as any, "双开门扇宽生成方式", true, {flex: "0 0 250px"}),
-          onChange: () => {
-            if (锁扇蓝线宽比铰扇蓝线宽大(key1)) {
-              setInputHidden(inputs[1], false);
-              if (!data[key1].锁扇铰扇蓝线宽固定差值) {
-                data[key1].锁扇铰扇蓝线宽固定差值 = 0;
-              }
-            } else {
-              setInputHidden(inputs[1], true);
-              delete data[key1].锁扇铰扇蓝线宽固定差值;
-            }
-            this.suanliaoData.update((v) => ({...v}));
-          }
-        },
-        {
-          type: "number",
-          label: "锁扇铰扇蓝线宽固定差值",
-          model: {data: data[key1], key: "锁扇铰扇蓝线宽固定差值"},
-          style: getInputStyle(true, {flex: "0 0 180px"})
-        }
-      ] as InputInfo<(typeof data)[typeof key1]>[];
-      if (!使用双开门扇宽生成方式()) {
-        setInputHidden(inputs[0], true);
-        setInputHidden(inputs[1], true);
-        data[key1].双开门扇宽生成方式 = "";
-        delete data[key1].锁扇铰扇蓝线宽固定差值;
-      } else if (!锁扇蓝线宽比铰扇蓝线宽大(key1)) {
-        setInputHidden(inputs[0], false);
-        setInputHidden(inputs[1], true);
-        delete data[key1].锁扇铰扇蓝线宽固定差值;
-      } else {
-        setInputHidden(inputs[0], false);
-        setInputHidden(inputs[1], false);
-      }
+      inputs[0].style = getInputStyle(true, {flex: "0 0 250px"});
+      const tmpOnChange = inputs[0].onChange;
+      inputs[0].onChange = (val, info) => {
+        tmpOnChange?.(val, info);
+        update双开门扇宽生成方式Inputs();
+        this.suanliaoData.update((v) => ({...v}));
+      };
+      inputs[1].style = getInputStyle(true, {flex: "0 0 180px"});
+      update双开门扇宽生成方式Inputs();
       const varNameItem = this.lrsjStatus.varNames().at(0) || {};
       key1Infos[key1] = {
         xiaoguotuInputs: [],
@@ -364,7 +338,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           data: {算料公式: data[key1].算料公式, 输入数据: data[key1].输入数据},
           varNameItem
         },
-        inputs,
+        inputs: inputs.slice(),
         title: this.getMenjiaoCadTabLabel(key1),
         mrbjfzInputData: this.getMrbcjfzInputData(key1)
       };

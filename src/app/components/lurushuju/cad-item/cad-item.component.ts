@@ -129,9 +129,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   ngOnChanges(changes: SimpleChanges) {
     if (changes.cad) {
       this.cadData = undefined;
-      setTimeout(() => {
-        this.update();
-      }, 0);
+      this.update();
     }
   }
 
