@@ -3,7 +3,7 @@
     <div class="flex-row">
       <div class="item import-config">
         <div class="toolbar center">
-          @if (compactPage) {
+          @if (compactPage()) {
             <div class="spinner-container">
               <button mat-raised-button color="primary" (click)="importDxf(false, loaderIds.importLoader)" [disabled]="!canSubmit(false)">
                 导入dxf文件
@@ -31,12 +31,12 @@
           }
         </div>
         <div class="form">
-          @for (info of importNormalInputs; track $index) {
+          @for (info of importNormalInputs(); track $index) {
             <app-input [info]="info"></app-input>
           }
         </div>
       </div>
-      @if (!compactPage) {
+      @if (!compactPage()) {
         <mat-divider vertical style="height: auto"></mat-divider>
         <div class="item import-config">
           <div class="toolbar center">
@@ -64,28 +64,28 @@
             </div>
           </div>
           <div class="form">
-            @for (info of importSuanliaoInputs; track $index) {
+            @for (info of importSuanliaoInputs(); track $index) {
               <app-input [info]="info"></app-input>
             }
           </div>
         </div>
       }
     </div>
-    <app-progress-bar [progress]="progressBar.progress" [status]="progressBarStatus" [msg]="msg"></app-progress-bar>
+    <app-progress-bar [progressBar]="progressBar"></app-progress-bar>
 
     <div class="toolbar">
       <div class="spinner-container">
-        <button mat-raised-button (click)="downloadSourceCad()" [disabled]="!sourceCad || !cadsParsed">下载dxf文件</button>
+        <button mat-raised-button (click)="downloadSourceCad()" [disabled]="!sourceCad() || !cadsParsed()">下载dxf文件</button>
         <app-spinner [id]="loaderIds.downloadSourceCad" [inline]="true"></app-spinner>
       </div>
-      <button mat-raised-button (click)="downloadBatchCheckData()" [disabled]="!batchCheckData || !cadsParsed">下载json数据</button>
+      <button mat-raised-button (click)="downloadBatchCheckData()" [disabled]="!batchCheckData() || !cadsParsed()">下载json数据</button>
     </div>
     <div class="cads">
-      @for (cad of cads; track $index) {
+      @for (cad of cads(); track $index) {
         @if (cad.errors.length > 0) {
           <div class="cad">
             <div>名字: {{ cad.data.name }}</div>
-            <div>唯一码: {{ cad.data.info["唯一码"] }}</div>
+            <div>分类: {{ cad.data.type }}</div>
             <ul>
               @for (error of cad.errors; track $index) {
                 @if (isString(error)) {
@@ -101,7 +101,7 @@
           </div>
         }
       }
-      @for (slgs of slgses; track $index) {
+      @for (slgs of slgses(); track $index) {
         @if (slgs.errors.length > 0) {
           <div class="cad">
             <div>名字: {{ slgs.data["名字"] }}</div>
@@ -113,11 +113,11 @@
           </div>
         }
       }
-      @if (xinghaoInfo && xinghaoInfo.errors.length > 0) {
+      @if (xinghaoInfoErrors(); as errors) {
         <div class="cad">
           <div>型号配置</div>
           <ul>
-            @for (error of xinghaoInfo.errors; track $index) {
+            @for (error of errors; track $index) {
               <li class="error" [innerHtml]="error"></li>
             }
           </ul>

@@ -237,8 +237,7 @@ export class CadListComponent implements AfterViewInit {
       params.options = options;
       params.optionsMatchType = matchType;
       if (!this.data.yaoqiu) {
-        await this.status.cadYaoqiusManager.fetch();
-        this.data.yaoqiu = this.status.getCadYaoqiu("配件库");
+        this.data.yaoqiu = await this.status.fetchAndGetCadYaoqiu("配件库");
       }
       params.fields = getCadQueryFields(this.data.yaoqiu);
       if (this.showCheckedOnly()) {
@@ -303,7 +302,7 @@ export class CadListComponent implements AfterViewInit {
     }
   }
 
-  allChecked = computed(() => this.pageData().every((v) => !v.checked));
+  allChecked = computed(() => this.pageData().every((v) => v.checked));
   partiallyChecked = computed(() => {
     if (this.checkedInOtherPages()) {
       return true;
@@ -525,7 +524,8 @@ export class CadListComponent implements AfterViewInit {
   }
 
   async openImportPage() {
-    openImportPage(this.status, {collection: this.data.collection, yaoqiu: this.data.yaoqiu, lurushuju: true});
+    const {collection, yaoqiu} = this.data;
+    openImportPage(this.status, {collection, yaoqiu, lurushuju: true});
     if (await this.message.newTabConfirm()) {
       this.search();
     }
@@ -533,7 +533,8 @@ export class CadListComponent implements AfterViewInit {
 
   openExportPage() {
     const ids = this.checkedItems().slice();
-    openExportPage(this.status, {ids, search: this.data.search, lurushuju: true});
+    const {collection} = this.data;
+    openExportPage(this.status, {collection, ids, search: this.data.search, lurushuju: true});
   }
 
   getItemSelectable(item: CadListPageItem): CadItemComponent<CadListItemInfo>["selectable"] {

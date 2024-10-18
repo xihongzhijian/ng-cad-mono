@@ -1,19 +1,21 @@
-import {Component, input, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, input, signal} from "@angular/core";
 import {ListRandom} from "@lucilor/utils";
-
-export type ProgressBarStatus = "hidden" | "progress" | "success" | "error" | "warning";
+import {ProgressBar} from "./progress-bar.utils";
 
 @Component({
   selector: "app-progress-bar",
   templateUrl: "./progress-bar.component.html",
   styleUrls: ["./progress-bar.component.scss"],
   standalone: true,
-  imports: []
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProgressBarComponent {
-  progress = input.required<number>();
-  status = input.required<ProgressBarStatus>();
-  msg = input.required<string>();
+  progressBar = input.required<ProgressBar>();
+
+  progress = computed(() => this.progressBar().progress());
+  status = computed(() => this.progressBar().status());
+  msg = computed(() => this.progressBar().msg());
 
   clickTextsRandom = new ListRandom([
     "(〃'▽'〃)",

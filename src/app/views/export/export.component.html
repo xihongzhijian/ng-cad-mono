@@ -1,24 +1,22 @@
-<div class="container max-width">
-  <div class="btn-group">
-    @for (info of inputInfos; track $index) {
-      <app-input [info]="info"></app-input>
-    }
-  </div>
-  <div class="btn-group">
-    @if (!exportCache?.direct && !exportCache?.search) {
-      <button mat-raised-button color="primary" (click)="exportCads('包边正面')">包边正面</button>
-      <button mat-raised-button color="primary" (click)="exportCads('框型和企料')">框型和企料</button>
-      <button mat-raised-button color="primary" (click)="exportCads('指定型号')">指定型号</button>
-      <button mat-raised-button color="primary" (click)="exportCads('企料分体')">企料分体</button>
-      <button mat-raised-button color="primary" (click)="exportCads('企料')">企料</button>
-      <button mat-raised-button color="primary" (click)="exportCads('框型')">框型</button>
-    }
-    @if (exportCache && exportCache.ids && exportCache.ids.length > 0) {
-      <button mat-raised-button color="primary" (click)="exportCads('导出选中')">导出选中</button>
-    } @else {
-      <button mat-raised-button color="primary" (click)="exportCads('自由选择')">自由选择</button>
-    }
-    <button mat-raised-button color="primary" (click)="exportCads('导出所有')">导出所有</button>
-  </div>
-  <app-progress-bar [progress]="progressBar.progress" [status]="progressBarStatus" [msg]="msg"></app-progress-bar>
+<div class="toolbar">
+  @for (info of inputInfos(); track $index) {
+    <app-input [info]="info"></app-input>
+  }
 </div>
+<div class="toolbar">
+  @if (showBtns1()) {
+    <button mat-raised-button color="primary" (click)="exportCads('包边正面')">包边正面</button>
+    <button mat-raised-button color="primary" (click)="exportCads('框型和企料')">框型和企料</button>
+    <button mat-raised-button color="primary" (click)="exportCads('指定型号')">指定型号</button>
+    <button mat-raised-button color="primary" (click)="exportCads('企料分体')">企料分体</button>
+    <button mat-raised-button color="primary" (click)="exportCads('企料')">企料</button>
+    <button mat-raised-button color="primary" (click)="exportCads('框型')">框型</button>
+  }
+  @if (showBtns2()) {
+    <button mat-raised-button color="primary" (click)="exportCads('导出选中')">导出选中</button>
+  } @else {
+    <button mat-raised-button color="primary" (click)="exportCads('自由选择')">自由选择</button>
+  }
+  <button mat-raised-button color="primary" (click)="exportCads('导出所有')">导出所有</button>
+</div>
+<app-progress-bar [progressBar]="progressBar"></app-progress-bar>

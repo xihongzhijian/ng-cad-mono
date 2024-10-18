@@ -6,10 +6,10 @@ import {setGlobal} from "@app/app.common";
 import {getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {generateLineTexts2} from "@app/cad/utils";
-import {ProgressBarComponent, ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
+import {ProgressBarComponent} from "@components/progress-bar/progress-bar.component";
+import {ProgressBar} from "@components/progress-bar/progress-bar.utils";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
-import {ProgressBar} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
@@ -34,9 +34,6 @@ export class RefreshCadImgsComponent implements OnInit {
 
   collectionOptions = signal<InputInfoOption[]>([]);
   progressBar = new ProgressBar(1);
-  progress = signal<number>(-1);
-  status = signal<ProgressBarStatus>("hidden");
-  msg = signal<string>("");
   collecionQueries = signal<CollecionQuery[] | null>(null);
   lrsjQueries = signal<LrsjQuery[] | null>(null);
   queryConfig: RefreshCadImgsQueryConfig = {
@@ -124,34 +121,28 @@ export class RefreshCadImgsComponent implements OnInit {
     const collations = this.queryConfig.collections();
     const queryLrsj = this.queryConfig.queryLrsj();
     this.progressBar.start(collations.length + (queryLrsj ? 1 : 0));
-    this.progress.set(0);
-    this.status.set("progress");
     const options: HttpOptions = {silent: true};
 
     const collecionQueries: CollecionQuery[] = [];
     const collectionOptions = this.collectionOptions();
     for (const collection of collations) {
       const name = collectionOptions.find((v) => v.value === collection)?.label || collection;
-      this.msg.set(`正在查询【${name}】总数...`);
+      this.progressBar.msg.set(`正在查询【${name}】总数...`);
       const ids = await this.http.queryMongodb({collection, fields: ["_id"]}, options);
       this.progressBar.forward();
-      this.progress.set(this.progressBar.progress);
       collecionQueries.push({collection, name, ids: ids.map((v) => v._id)});
     }
     this.collecionQueries.set(collecionQueries);
 
     if (queryLrsj) {
-      this.msg.set("正在查询【录入数据CAD】总数...");
+      this.progressBar.msg.set("正在查询【录入数据CAD】总数...");
       const lrsjQueries = await this.http.getData<LrsjQuery[]>("shuju/api/getAllCadsQueries", options);
       this.lrsjQueries.set(lrsjQueries);
       this.progressBar.forward();
-      this.progress.set(this.progressBar.progress);
     } else {
       this.lrsjQueries.set(null);
     }
-
-    this.msg.set("查询完成");
-    this.status.set("success");
+    this.progressBar.end("success", "查询完成");
   }
 
   async start() {
@@ -168,8 +159,6 @@ export class RefreshCadImgsComponent implements OnInit {
     const lrsjTotal = lrsjQueries ? lrsjQueries.reduce((acc, curr) => acc + curr.ids.length, 0) : 0;
     const total = collectionTotal + lrsjTotal;
     this.progressBar.start(total);
-    this.progress.set(0);
-    this.status.set("progress");
     const httpOptions: HttpOptions = {silent: true};
     let successCount = 0;
     const refreshCollecionCads = (collection: CadCollection, cads: CadData[]) => {
@@ -201,7 +190,7 @@ export class RefreshCadImgsComponent implements OnInit {
       const endIndex = ids.length - 1;
       for (let i = 0; i <= endIndex; i += step) {
         const j = Math.min(i + step - 1, endIndex);
-        this.msg.set(`正在刷新【${name}】图片(${getIndexsStr(i, j)}/${collectionTotal})`);
+        this.progressBar.msg.set(`正在刷新【${name}】图片(${getIndexsStr(i, j)}/${collectionTotal})`);
         const ids2 = ids.slice(i, j + 1);
         if (ids2.length < 1) {
           continue;
@@ -209,7 +198,6 @@ export class RefreshCadImgsComponent implements OnInit {
         const cads = (await this.http.getCad({collection, ids: ids2}, httpOptions)).cads;
         await refreshCollecionCads(collection, cads);
         this.progressBar.forward(j - i + 1);
-        this.progress.set(this.progressBar.progress);
       }
     }
     if (lrsjQueries) {
@@ -223,27 +211,23 @@ export class RefreshCadImgsComponent implements OnInit {
           if (ids2.length < 1) {
             continue;
           }
-          this.msg.set(`正在刷新【录入数据CAD】图片(${getIndexsStr(i, j, indexOffset)}/${lrsjTotal})`);
+          this.progressBar.msg.set(`正在刷新【录入数据CAD】图片(${getIndexsStr(i, j, indexOffset)}/${lrsjTotal})`);
           const cadsRaw = await this.http.getData<HoutaiCad[]>("shuju/api/getOrSetCads", {...query, ids: ids2}, httpOptions);
           const cads = (cadsRaw || []).map((v) => new CadData(v.json));
           await refreshCollecionCads("cad", cads);
           this.progressBar.forward(j - i + 1);
-          this.progress.set(this.progressBar.progress);
         }
         indexOffset += ids.length;
       }
     }
     if (successCount < total) {
       if (successCount > 0) {
-        this.status.set("warning");
-        this.msg.set(`部分刷新成功，成功${successCount}个，失败${total - successCount}个`);
+        this.progressBar.end("warning", `部分刷新成功，成功${successCount}个，失败${total - successCount}个`);
       } else {
-        this.status.set("error");
-        this.msg.set(`全部${total}个刷新失败`);
+        this.progressBar.end("error", `全部${total}个刷新失败`);
       }
     } else {
-      this.status.set("success");
-      this.msg.set(`全部${total}个刷新成功`);
+      this.progressBar.end("success", `全部${total}个刷新成功`);
     }
   }
 

@@ -1,18 +1,17 @@
-import {Component, HostBinding, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, WritableSignal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
-import {CadCollection} from "@app/cad/collections";
 import {CadInfo, CadInfoError, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
-import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
+import {ProgressBar, ProgressBarStatus} from "@components/progress-bar/progress-bar.utils";
+import {isSbjbCad, isSbjbCollection, isSbjbType, xhmrmsbjSbjbItemOptionalKeys4} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {environment} from "@env";
 import {CadData, CadDimensionLinear, CadLayer, CadLeader, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
-import {downloadByString, keysOf, ObjectOf, ProgressBar, selectFiles, timeout} from "@lucilor/utils";
-import {Utils} from "@mixins/utils.mixin";
+import {downloadByString, keysOf, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
@@ -35,20 +34,17 @@ import {BatchUploadChecker} from "./import.utils";
   templateUrl: "./import.component.html",
   styleUrls: ["./import.component.scss"],
   standalone: true,
-  imports: [InputComponent, MatButtonModule, MatDividerModule, MatTooltipModule, NgScrollbar, ProgressBarComponent, SpinnerComponent]
+  imports: [InputComponent, MatButtonModule, MatDividerModule, MatTooltipModule, NgScrollbar, ProgressBarComponent, SpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ImportComponent extends Utils() implements OnInit {
-  @HostBinding("class") class = "ng-page";
+export class ImportComponent implements OnInit {
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private spinner = inject(SpinnerService);
+  private status = inject(AppStatusService);
 
-  private _cadNameRegex = /^(?!\d)[\da-zA-Z\u4e00-\u9fa5_]*$/u;
-  private _optionsCache: ObjectOf<string[]> = {};
-  // private _peiheCadCache: ObjectOf<boolean> = {};
-  private _sourceCadMap: SourceCadMap = {cads: {}, slgses: {}};
-  private _errorMsgLayer = "导入错误信息";
-  sourceFile?: File;
-  sourceCad: CadData | null = null;
-  batchUploadChecker = new BatchUploadChecker();
-  batchCheckData: ReturnType<BatchUploadChecker["batchCheck"]>["data"] | null = null;
+  @HostBinding("class") class = "ng-page";
 
   loaderIds = {
     importLoader: "importLoader",
@@ -57,16 +53,36 @@ export class ImportComponent extends Utils() implements OnInit {
     reimportSuanliaoLoader: "reimportSuanliaoLoader",
     downloadSourceCad: "downloadSourceCad"
   };
-  msg = "";
-  collection: CadCollection = "cad";
-  cads: CadInfo[] = [];
-  slgses: SlgsInfo[] = [];
-  xinghaoInfo: XinghaoInfo | undefined;
-  cadsParsed = false;
-  hasError = false;
-  isImporting = false;
-  progressBar = new ProgressBar(0);
-  progressBarStatus: ProgressBarStatus = "hidden";
+
+  async ngOnInit() {
+    setGlobal("importer", this);
+    if (!environment.production) {
+      this.importConfigNormal.update((v) => ({...v, requireLineId: false, pruneLines: false}));
+    }
+    this.route.queryParams.subscribe(() => {
+      this.updateImportCache();
+    });
+  }
+
+  importCache = signal<ImportCache | null>(null);
+  importCacheEff = effect(
+    () => {
+      const importCache = this.importCache();
+      const 导入配置 = importCache?.yaoqiu?.导入配置;
+      if (导入配置) {
+        this.importConfigNormal.update((v) => ({...v, ...导入配置}));
+      }
+    },
+    {allowSignalWrites: true}
+  );
+  updateImportCache() {
+    const {key} = this.route.snapshot.queryParams;
+    this.importCache.set(session.load<ImportCache>("importParams-" + key));
+  }
+  maxLineLength = signal(200);
+  collection = computed(() => this.importCache()?.collection || "cad");
+  compactPage = computed(() => !!this.importCache()?.lurushuju);
+
   importConfigTranslation: Record<ImportComponentConfigName, string> = {
     requireLineId: "上传线必须全部带ID",
     pruneLines: "后台线在上传数据中没有时删除",
@@ -74,130 +90,128 @@ export class ImportComponent extends Utils() implements OnInit {
     dryRun: "仅检查数据，不导入",
     noFilterEntities: "示意图不删除小于3的线"
   };
-  importConfigNormal: ImportComponentConfig = {
+  importConfigNormal = signal<ImportComponentConfig>({
     requireLineId: false,
     pruneLines: true,
     addUniqCode: true,
     dryRun: false,
     noFilterEntities: false
-  };
-  importConfigSuanliao: ImportComponentConfig = {
+  });
+  importConfigSuanliao = signal<ImportComponentConfig>({
     requireLineId: false,
     pruneLines: true,
     addUniqCode: true,
     dryRun: false,
     noFilterEntities: false
-  };
-  importNormalInputs: InputInfo[] = [];
-  importSuanliaoInputs: InputInfo[] = [];
-  maxLineLength = 200;
-  导入dxf文件时展开名字不改变 = false;
-  importCache: ImportCache | null = null;
-  compactPage = false;
+  });
 
-  constructor(
-    private http: CadDataService,
-    private message: MessageService,
-    private spinner: SpinnerService,
-    private status: AppStatusService,
-    private route: ActivatedRoute
-  ) {
-    super();
-    setGlobal("importer", this);
-  }
-
-  async ngOnInit() {
-    if (!environment.production) {
-      this.importConfigNormal.requireLineId = false;
-      this.importConfigNormal.pruneLines = true;
-    }
-    this.importSuanliaoInputs.push({
-      type: "number",
-      label: "使用公式的线段最大长度",
-      hint: () => {
-        const len = this.maxLineLength;
-        if (len > 0) {
-          return `长于${len}的线段会被调整至${len}`;
-        } else {
-          return "最大长度不大于0则不调整";
-        }
-      },
-      model: {data: this, key: "maxLineLength"}
-    });
-
-    const {key} = this.route.snapshot.queryParams;
-    if (key) {
-      this.importCache = session.load<ImportCache>("importParams-" + key);
-      if (this.importCache?.yaoqiu?.导入配置) {
-        Object.assign(this.importConfigNormal, this.importCache.yaoqiu.导入配置);
-      }
-      this.compactPage = !!this.importCache?.lurushuju;
-      if (this.importCache) {
-        this.collection = this.importCache.collection || "cad";
-      }
-    }
-
-    const normalHiddenKeys: ImportComponentConfigName[] = [];
-    const suanliaoHiddenKeys: ImportComponentConfigName[] = ["noFilterEntities"];
-    if (this.compactPage) {
-      const toPush = new Set<ImportComponentConfigName>(importComponentConfigNames);
-      if (this.importCache?.yaoqiu?.CAD分类?.includes("算料单示意图")) {
-        toPush.delete("noFilterEntities");
-      }
-      normalHiddenKeys.push(...toPush);
-    }
+  private _getImportInputInfos = (config: WritableSignal<ImportComponentConfig>, hiddenKeys: ImportComponentConfigName[]) => {
+    const infos: InputInfo[] = [];
     for (const key of keysOf(this.importConfigTranslation)) {
       const label = this.importConfigTranslation[key];
-      this.importNormalInputs.push({
+      infos.push({
         type: "boolean",
         label,
         appearance: "radio",
+        value: config()[key],
+        onChange: (val) => {
+          config.update((v) => ({...v, [key]: val}));
+        },
         model: {data: this.importConfigNormal, key},
-        hidden: normalHiddenKeys.includes(key)
-      });
-      this.importSuanliaoInputs.push({
-        type: "boolean",
-        label,
-        appearance: "radio",
-        model: {data: this.importConfigSuanliao, key},
-        hidden: suanliaoHiddenKeys.includes(key)
+        hidden: hiddenKeys.includes(key)
       });
     }
-  }
+    return infos;
+  };
+  normalHiddenKeys = computed(() => {
+    const hiddenKeys: ImportComponentConfigName[] = [];
+    const importCache = this.importCache();
+    const toPush = new Set<ImportComponentConfigName>(importComponentConfigNames);
+    if (importCache?.yaoqiu?.CAD分类?.includes("算料单示意图")) {
+      toPush.delete("noFilterEntities");
+    }
+    hiddenKeys.push(...toPush);
+    return hiddenKeys;
+  });
+  importNormalInputs = computed(() => {
+    const infos = this._getImportInputInfos(this.importConfigNormal, this.normalHiddenKeys());
+    return infos;
+  });
+  suanliaoHiddenKeys = computed(() => {
+    const hiddenKeys: ImportComponentConfigName[] = ["noFilterEntities"];
+    return hiddenKeys;
+  });
+  importSuanliaoInputs = computed(() => {
+    const infos = this._getImportInputInfos(this.importConfigSuanliao, this.suanliaoHiddenKeys());
+    const maxLineLength = this.maxLineLength();
+    let hint = "最大长度不大于0则不调整";
+    if (maxLineLength > 0) {
+      hint = `长于${maxLineLength}的线段会被调整至${maxLineLength}`;
+    }
+    infos.push({
+      type: "number",
+      label: "使用公式的线段最大长度",
+      value: maxLineLength,
+      onChange: (val) => this.maxLineLength.set(val),
+      hint
+    });
+    return infos;
+  });
 
   private _getImportConfig(isXinghao: boolean) {
-    return isXinghao ? this.importConfigSuanliao : this.importConfigNormal;
+    return isXinghao ? this.importConfigSuanliao() : this.importConfigNormal();
   }
-
   private _getImportConfigValues(isXinghao: boolean) {
     const config = this._getImportConfig(isXinghao);
     const values: ObjectOf<boolean> = {};
-    this.keysOf(config).forEach((key) => {
+    keysOf(config).forEach((key) => {
       values[key] = !!config[key];
     });
     return values as Record<ImportComponentConfigName, boolean>;
   }
 
   canSubmit(isXinghao: boolean) {
-    if (this.isImporting) {
+    if (this.isImporting()) {
       return false;
     }
     const {requireLineId, pruneLines} = this._getImportConfig(isXinghao);
     return requireLineId !== null && pruneLines !== null;
   }
 
+  private _cadNameRegex = /^(?!\d)[\da-zA-Z\u4e00-\u9fa5_]*$/u;
+  private _optionsCache: ObjectOf<string[]> = {};
+  // private _peiheCadCache: ObjectOf<boolean> = {};
+  private _sourceCadMap: SourceCadMap = {cads: {}, slgses: {}};
+  private _errorMsgLayer = "导入错误信息";
+  sourceFile?: File;
+  sourceCad = signal<CadData | null>(null);
+  batchUploadChecker = new BatchUploadChecker();
+  batchCheckData = signal<ReturnType<BatchUploadChecker["batchCheck"]>["data"] | null>(null);
+  cads = signal<CadInfo[]>([]);
+  slgses = signal<SlgsInfo[]>([]);
+  xinghaoInfo = signal<XinghaoInfo | null>(null);
+  xinghaoInfoErrors = computed(() => this.xinghaoInfo()?.errors || null);
+  cadsParsed = signal(false);
+  hasError = signal(false);
+  isImporting = signal(false);
+  progressBar = new ProgressBar(0);
+  导入dxf文件时展开名字不改变 = signal(false);
+
   async importDxf(isXinghao: boolean, loaderId: string, file?: File | null): Promise<boolean> {
     timer.start("导入总用时");
-    const finish = (hasLoader: boolean, progressBarStatus: ProgressBarStatus, msg?: string) => {
+    const finish = (hasLoader: boolean, status: ProgressBarStatus, msg?: string) => {
       if (hasLoader) {
         this.spinner.hide(loaderId);
       }
-      this.progressBar.end();
-      this.progressBarStatus = progressBarStatus;
-      this.msg = typeof msg === "string" ? msg : "";
-      this.isImporting = false;
+      this.progressBar.end(status, msg);
+      this.isImporting.set(false);
       timer.end("导入总用时", "导入总用时");
-      return progressBarStatus === "success";
+      try {
+        this.cads.set(cads);
+        this.slgses.set(slgses);
+        this.xinghaoInfo.set(xinghaoInfo || null);
+      } catch {}
+      return status === "success";
     };
     if (!file) {
       file = (await selectFiles({accept: ".dxf"}))?.[0];
@@ -212,10 +226,8 @@ export class ImportComponent extends Utils() implements OnInit {
     if (!(await this.message.confirm(`是否确定导入【${this.sourceFile.name}】？`))) {
       return finish(false, "hidden");
     }
-    this.isImporting = true;
-    this.progressBar.start(1);
-    this.progressBarStatus = "progress";
-    this.msg = "正在读取dxf";
+    this.isImporting.set(true);
+    this.progressBar.start(1, "正在读取dxf");
     timer.start("读取dxf");
     this.spinner.show(loaderId);
     const 导入dxf文件时展开名字不改变 = this.status.projectConfig.getBoolean("导入dxf文件时展开名字不改变");
@@ -225,7 +237,7 @@ export class ImportComponent extends Utils() implements OnInit {
       return finish(true, "error", "读取文件失败");
     }
     timer.end("读取dxf", "读取dxf");
-    this.sourceCad = data;
+    this.sourceCad.set(data);
     const removedDimensions = data.info.removedDimensions;
     let errorMsgLayer = data.layers.find((v) => v.name === this._errorMsgLayer);
     if (!errorMsgLayer) {
@@ -238,8 +250,8 @@ export class ImportComponent extends Utils() implements OnInit {
         data.entities.remove(e);
       }
     });
-    const maxLineLength = isXinghao ? this.maxLineLength : 0;
-    this.msg = "正在解析dxf";
+    const maxLineLength = isXinghao ? this.maxLineLength() : 0;
+    this.progressBar.msg.set("正在解析dxf");
     timer.start("解析dxf");
     await timeout(100);
     const {cads, slgses, sourceCadMap, xinghaoInfo} = CadPortable.import({sourceCad: data, maxLineLength, 导入dxf文件时展开名字不改变});
@@ -282,11 +294,11 @@ export class ImportComponent extends Utils() implements OnInit {
     this._sourceCadMap = sourceCadMap;
     const totalCad = cads.length;
     const totalSlgs = slgses.length;
-    this.msg = "正在检查cad";
+    this.progressBar.msg.set("正在检查cad");
     timer.start("检查cad");
     await this.parseCads(cads, slgses, isXinghao, httpOptions, xinghaoInfo);
     timer.end("检查cad", "检查cad");
-    if (this.hasError && isXinghao) {
+    if (this.hasError() && isXinghao) {
       return finish(true, "error", "数据有误");
     }
 
@@ -296,11 +308,12 @@ export class ImportComponent extends Utils() implements OnInit {
       return finish(true, "success", `检查结束`);
     }
     let skipped = 0;
+    const collection = this.collection();
     if (isXinghao) {
       const xinghao = cads[0].data.options.型号;
       const uniqCodes = cads.map((v) => v.data.info.唯一码);
       const oldCadsRaw = await this.http.queryMongodb<HoutaiCad>({
-        collection: this.collection,
+        collection,
         where: {"选项.型号": xinghao, 分类: "算料", 名字: {$regex: "^((?!分体|上下包边).)*$"}}
       });
       const oldSlgsRaw = await this.http.queryMongodb({collection: "material", where: {"选项.型号": xinghao}});
@@ -318,7 +331,7 @@ export class ImportComponent extends Utils() implements OnInit {
       //     await this.dataService.removeCads("cad", toDelete.cad, {silent: true});
       // }
       if (toDelete.material.length > 0) {
-        this.msg = "正在删除旧的算料公式";
+        this.progressBar.msg.set("正在删除旧的算料公式");
         await this.http.removeCads("material", toDelete.material, {silent: true});
       }
     }
@@ -330,7 +343,7 @@ export class ImportComponent extends Utils() implements OnInit {
       }
       const result = await this.http.setCad(
         {
-          collection: this.collection,
+          collection,
           cadData: cads[i].data,
           force: true,
           importConfig: {pruneLines}
@@ -338,29 +351,28 @@ export class ImportComponent extends Utils() implements OnInit {
         true,
         httpOptions
       );
-      this.msg = `正在导入dxf数据(${i + 1}/${totalCad})`;
+      this.progressBar.msg.set(`正在导入dxf数据(${i + 1}/${totalCad})`);
       if (!result) {
         skipped++;
-        this.cads[i].errors.push(this.http.lastResponse?.msg || "保存失败");
+        cads[i].errors.push(this.http.lastResponse?.msg || "保存失败");
       }
       this.progressBar.forward();
     }
     this.progressBar.start(totalSlgs);
     for (let i = 0; i < totalSlgs; i++) {
-      const responseData = await this.http.getData("ngcad/updateSuanliaogonshi", {data: this.slgses[i].data}, httpOptions);
-      this.msg = `正在导入算料公式(${i + 1}/${totalSlgs})`;
+      const responseData = await this.http.getData("ngcad/updateSuanliaogonshi", {data: slgses[i].data}, httpOptions);
+      this.progressBar.msg.set(`正在导入算料公式(${i + 1}/${totalSlgs})`);
       if (!responseData) {
         skipped++;
-        this.slgses[i].errors.push(this.http.lastResponse?.msg || "保存失败");
+        slgses[i].errors.push(this.http.lastResponse?.msg || "保存失败");
       }
       this.progressBar.forward();
     }
     timer.end("上传cad", "上传cad");
 
-    this.progressBar.start(1);
-    this.msg = `正在保存dxf文件`;
+    this.progressBar.start(1, `正在保存dxf文件`);
     if (isXinghao) {
-      const xinghao = this.cads[0].data.options.型号;
+      const xinghao = cads[0].data.options.型号;
       const result = await this.http.post<boolean>("ngcad/setImportDxf", {file: this.sourceFile, xinghao});
       if (!result) {
         return finish(true, "error", this.http.lastResponse?.msg || "保存失败");
@@ -398,26 +410,28 @@ export class ImportComponent extends Utils() implements OnInit {
 
   private _clearCache() {
     this._optionsCache = {};
-    this._peiheCadCache = {};
+    // this._peiheCadCache = {};
   }
 
   async parseCads(cads: CadInfo[], slgses: SlgsInfo[], isXinghao: boolean, httpOptions: HttpOptions, xinghaoInfo?: XinghaoInfo) {
-    this.cadsParsed = false;
-    this.hasError = false;
+    this.cadsParsed.set(false);
+    this.hasError.set(false);
     this._clearCache();
     const uniqCodesCount: ObjectOf<number> = {};
     const {requireLineId, addUniqCode, noFilterEntities} = this._getImportConfigValues(isXinghao);
+    const importCache = this.importCache();
     for (const v of cads) {
       const data = v.data;
       let uniqCode = data.info.唯一码;
       if (!uniqCode) {
         if (addUniqCode) {
+          const user = this.status.user$.value;
           if (isXinghao) {
-            v.data.info.唯一码 = CadPortable.getUniqCode(v.data, this.importCache, this.status.user$.value);
+            v.data.info.唯一码 = CadPortable.getUniqCode(v.data, importCache, user);
           } else {
             const 唯一码 = await this.http.getData<string>(
               "ngcad/generateUniqCode",
-              {uniqCode: CadPortable.getUniqCode(v.data, this.importCache, this.status.user$.value)},
+              {uniqCode: CadPortable.getUniqCode(v.data, importCache, user)},
               httpOptions
             );
             if (唯一码) {
@@ -445,13 +459,36 @@ export class ImportComponent extends Utils() implements OnInit {
         data.entities = entities;
       }
 
-      const {xinghao, searchYaoqiu} = this.importCache || {};
-      let yaoqiu = this.importCache?.yaoqiu;
-      if (!yaoqiu && searchYaoqiu) {
-        await this.status.cadYaoqiusManager.fetch();
-        yaoqiu = this.status.getCadYaoqiu(data.type);
+      const collection = this.collection();
+      const {xinghao, searchYaoqiu} = importCache || {};
+      let yaoqiu = importCache?.yaoqiu;
+      let skipYaoqiu = false;
+      if (isSbjbCollection(collection)) {
+        if (yaoqiu) {
+          if (isSbjbType(yaoqiu.CAD分类)) {
+            if (isSbjbCad(collection, data)) {
+              yaoqiu = await this.status.fetchAndGetCadYaoqiu(data.type);
+              for (const key of xhmrmsbjSbjbItemOptionalKeys4) {
+                delete data.options[key];
+              }
+            } else {
+              const str = xhmrmsbjSbjbItemOptionalKeys4.join("，");
+              v.errors.push(`分类只能是【${str}】`);
+              skipYaoqiu = true;
+            }
+          } else {
+            if (isSbjbCad(collection, data)) {
+              const str = xhmrmsbjSbjbItemOptionalKeys4.join("，");
+              v.errors.push(`分类不能是【${str}】`);
+              skipYaoqiu = true;
+            }
+          }
+        }
       }
-      if (yaoqiu) {
+      if (!skipYaoqiu && !yaoqiu && searchYaoqiu) {
+        yaoqiu = await this.status.fetchAndGetCadYaoqiu(data.type);
+      }
+      if (!skipYaoqiu && yaoqiu) {
         setCadData(data, yaoqiu.新建CAD要求);
         for (const {cadKey, key, key2, required} of yaoqiu.新建CAD要求) {
           const dataAny = data as any;
@@ -471,7 +508,7 @@ export class ImportComponent extends Utils() implements OnInit {
       if (ellipses.length > 0) {
         v.errors.push("不能在CAD里画椭圆，不支持椭圆");
         ellipses.forEach((e) => {
-          const e2 = this.sourceCad?.entities.find(e.id);
+          const e2 = this.sourceCad()?.entities.find(e.id);
           if (e2) {
             e2.setColor("red");
             e2.layer = this._errorMsgLayer;
@@ -479,10 +516,6 @@ export class ImportComponent extends Utils() implements OnInit {
         });
       }
     }
-
-    this.cads = cads;
-    this.slgses = slgses;
-    this.xinghaoInfo = xinghaoInfo;
 
     const slgsMd5Map: ObjectOf<SlgsInfo[]> = {};
     slgses.forEach((slgs) => {
@@ -495,7 +528,7 @@ export class ImportComponent extends Utils() implements OnInit {
     });
     for (const md5Str in slgsMd5Map) {
       if (slgsMd5Map[md5Str].length > 1) {
-        this.hasError = true;
+        this.hasError.set(true);
         slgsMd5Map[md5Str].forEach((slgs) => {
           slgs.errors.push("算料公式重复");
         });
@@ -506,14 +539,14 @@ export class ImportComponent extends Utils() implements OnInit {
     const totalSlgs = slgses.length;
     this.progressBar.start(totalCad);
     for (let i = 0; i < totalCad; i++) {
-      this.msg = `正在检查dxf数据(${i + 1}/${totalCad})`;
+      this.progressBar.msg.set(`正在检查dxf数据(${i + 1}/${totalCad})`);
       this.progressBar.forward();
       await timeout(200);
       await this._validateCad(cads[i], uniqCodesCount, requireLineId, httpOptions);
     }
     this.progressBar.start(totalSlgs);
     for (let i = 0; i < totalSlgs; i++) {
-      this.msg = `正在检查算料公式数据(${i + 1}/${totalSlgs})`;
+      this.progressBar.msg.set(`正在检查算料公式数据(${i + 1}/${totalSlgs})`);
       this.progressBar.forward();
       await timeout(100);
       await this._validateSlgs(slgses[i], httpOptions);
@@ -521,26 +554,26 @@ export class ImportComponent extends Utils() implements OnInit {
     this.progressBar.start(1);
 
     const {data} = this.batchUploadChecker.batchCheck(cads);
-    this.batchCheckData = data;
+    this.batchCheckData.set(data);
 
     if (xinghaoInfo) {
-      this.msg = `正在检查型号配置`;
+      this.progressBar.msg.set(`正在检查型号配置`);
       this.progressBar.forward();
       if (xinghaoInfo.errors.length > 0) {
-        this.hasError = true;
+        this.hasError.set(true);
       }
     }
 
-    const sourceCad = this.sourceCad;
+    const sourceCad = this.sourceCad();
     if (sourceCad) {
       for (const e of sourceCad.entities.dimension) {
         if (e.layer === "0") {
           e.layer = "标注线";
         }
       }
-      for (const cad of this.cads) {
+      for (const cad of cads) {
         if (cad.errors.length > 0) {
-          this.hasError = true;
+          this.hasError.set(true);
           const sourceCadInfo = this._sourceCadMap.cads[cad.data.id];
           const mtext = new CadMtext();
           mtext.text = cad.errors.map((v) => (typeof v === "string" ? v : v.text)).join("\n");
@@ -572,7 +605,7 @@ export class ImportComponent extends Utils() implements OnInit {
         }
       }
     }
-    this.cadsParsed = true;
+    this.cadsParsed.set(true);
   }
 
   private async _validateOptions(options: ObjectOf<string>, httpOptions: HttpOptions) {
@@ -662,7 +695,7 @@ export class ImportComponent extends Utils() implements OnInit {
         cad.errors.push("存在没有id的线");
       }
     }
-    cad.errors = cad.errors.concat(validateLines(this.collection, data).errors);
+    cad.errors = cad.errors.concat(validateLines(this.collection(), data).errors);
     cad.errors = cad.errors.concat(await this._validateOptions(data.options, httpOptions));
     cad.errors = cad.errors.concat(await this._validateOptions(data.对应计算条数的配件, httpOptions));
 
@@ -689,7 +722,7 @@ export class ImportComponent extends Utils() implements OnInit {
     if (infoArray !== undefined) {
       const infoArray2: PeiheInfo[] = [];
       for (const info of infoArray) {
-        const dataArr = this.cads.map((v) => v.data);
+        const dataArr = this.cads().map((v) => v.data);
         const {value} = CadPortable.hasPeiheCad(dataArr, info, data.options);
         if (!value) {
           infoArray2.push(info);
@@ -779,7 +812,7 @@ export class ImportComponent extends Utils() implements OnInit {
     }
 
     if (slgs.errors.length > 0) {
-      this.hasError = true;
+      this.hasError.set(true);
     }
   }
 
@@ -819,11 +852,12 @@ export class ImportComponent extends Utils() implements OnInit {
   }
 
   async downloadSourceCad() {
-    if (!this.sourceCad) {
+    const sourceCad = this.sourceCad();
+    if (!sourceCad) {
       return;
     }
     this.spinner.show(this.loaderIds.downloadSourceCad);
-    await this.http.downloadDxf(this.sourceCad);
+    await this.http.downloadDxf(sourceCad);
     this.spinner.hide(this.loaderIds.downloadSourceCad);
   }
 

@@ -642,6 +642,17 @@ export class AppStatusService {
     }
     return result;
   }
+  async fetchAndGetCadYaoqiu(name: string | CadData, force?: boolean) {
+    await this.cadYaoqiusManager.fetch(force);
+    if (name instanceof CadData) {
+      name = name.name;
+    }
+    let result = this.cadYaoqiusManager.data().find((v) => v.CAD分类 === name);
+    if (!result) {
+      result = this.cadYaoqiusManager.data().find((v) => v.CAD分类 === "配件库");
+    }
+    return result;
+  }
 
   checkEnvBeta() {
     if (!environment.production) {

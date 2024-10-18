@@ -115,9 +115,8 @@ export const openCadLineForm = async (
   const line2 = line.clone();
   const lineLength = Number(line.length.toFixed(2));
   const isLine = line instanceof CadLine;
-  await status.cadYaoqiusManager.fetch();
   const data = cad.data;
-  const yaoqiu = status.getCadYaoqiu(data.type);
+  const yaoqiu = await status.fetchAndGetCadYaoqiu(data.type);
   const vars = cloneDeep(data.info.vars);
   const form = getCadLineInputs(yaoqiu?.线段弹窗修改属性 || [], data, line2, status, gongshis);
   if (collection === "kailiaocadmuban" && !form.some((v) => v.label === "关联变化公式")) {

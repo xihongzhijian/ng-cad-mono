@@ -1467,7 +1467,8 @@ export class ZixuanpeijianComponent implements OnInit {
   openExportPage() {
     const cads = this.lingsanCads[this.lingsanCadType] || [];
     const ids = cads.map((v) => v.data.id);
-    openExportPage(this.status, {search: {_id: {$in: ids}}, lurushuju: true});
+    const collection = this.collection;
+    openExportPage(this.status, {collection, search: {_id: {$in: ids}}, lurushuju: true});
   }
 
   async copyLingsanCad(component: CadItemComponent<LingsanCadItemInfo>) {

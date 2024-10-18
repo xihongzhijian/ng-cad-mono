@@ -1,5 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ProgressBarComponent} from "./progress-bar.component";
+import {ProgressBar} from "./progress-bar.utils";
 
 describe("ProgressBarComponent", () => {
   let component: ProgressBarComponent;
@@ -15,9 +16,7 @@ describe("ProgressBarComponent", () => {
     fixture = TestBed.createComponent(ProgressBarComponent);
     component = fixture.componentInstance;
     const ref = fixture.componentRef;
-    ref.setInput("progress", 0);
-    ref.setInput("status", "hidden");
-    ref.setInput("msg", "");
+    ref.setInput("progressBar", new ProgressBar(100));
     fixture.detectChanges();
   });
 

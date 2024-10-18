@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, untracked} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -6,9 +6,9 @@ import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal} from "@app/app.common";
 import {CadExportParams, CadPortable, CadSourceParams, ExportType} from "@app/cad/portable";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
-import {ProgressBarStatus} from "@components/progress-bar/progress-bar.component";
+import {ProgressBar, ProgressBarStatus} from "@components/progress-bar/progress-bar.utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf, ProgressBar} from "@lucilor/utils";
+import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -24,51 +24,74 @@ import {ExportCache} from "./export.types";
   templateUrl: "./export.component.html",
   styleUrls: ["./export.component.scss"],
   standalone: true,
-  imports: [InputComponent, MatButtonModule, ProgressBarComponent]
+  imports: [InputComponent, MatButtonModule, ProgressBarComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExportComponent implements OnInit {
-  progressBar = new ProgressBar(0);
-  progressBarStatus: ProgressBarStatus = "hidden";
-  msg = "";
-  exportCache: ExportCache | null = null;
-  exportParams: CadExportParams = {
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private status = inject(AppStatusService);
+
+  @HostBinding("class") class = "ng-page";
+
+  ngOnInit() {
+    setGlobal("exporter", this);
+    this.route.queryParams.subscribe(() => {
+      this.updateExportCache();
+    });
+  }
+
+  exportCache = signal<ExportCache | null>(null);
+  exportCacheEff = effect(() => {
+    const exportCache = this.exportCache();
+    if (exportCache?.direct) {
+      untracked(() => this.exportCads("导出选中"));
+    }
+  });
+  updateExportCache() {
+    const {key} = this.route.snapshot.queryParams;
+    this.exportCache.set(session.load<ExportCache>("exportParams-" + key));
+  }
+
+  showBtns1 = computed(() => {
+    const exportCache = this.exportCache();
+    return !exportCache?.direct && !exportCache?.search;
+  });
+  showBtns2 = computed(() => {
+    const ids = this.exportCache()?.ids;
+    return ids && ids.length > 0;
+  });
+
+  collection = computed(() => this.exportCache()?.collection || "cad");
+  compactPage = computed(() => !!this.exportCache()?.lurushuju);
+
+  exportParams = signal<CadExportParams>({
     cads: [],
     type: "自由选择",
     exportId: false,
     exportUniqCode: false,
     exportOptions: true
-  };
-  inputInfos: InputInfo<CadExportParams>[] = [];
-
-  constructor(
-    private dialog: MatDialog,
-    private http: CadDataService,
-    private message: MessageService,
-    private status: AppStatusService,
-    private route: ActivatedRoute
-  ) {
-    setGlobal("exporter", this);
-  }
-
-  ngOnInit() {
-    const {key} = this.route.snapshot.queryParams;
-    this.exportCache = session.load<ExportCache>("exportParams-" + key);
-    if (this.exportCache?.direct) {
-      this.exportCads("导出选中");
+  });
+  inputInfos = computed(() => {
+    if (this.compactPage()) {
+      return [];
     }
-    if (!this.exportCache?.lurushuju) {
-      const data = this.exportParams;
-      this.inputInfos = [
-        {type: "boolean", label: "导出ID", appearance: "radio", model: {data, key: "exportId"}},
-        {type: "boolean", label: "导出唯一码", appearance: "radio", model: {data, key: "exportUniqCode"}},
-        {type: "boolean", label: "导出选项", appearance: "radio", model: {data, key: "exportOptions"}}
-      ];
-    }
-  }
+    const exportParams = {...this.exportParams()};
+    const onChange = () => this.exportParams.set(exportParams);
+    const infos: InputInfo[] = [
+      {type: "boolean", label: "导出ID", appearance: "radio", value: exportParams.exportId, onChange},
+      {type: "boolean", label: "导出唯一码", appearance: "radio", value: exportParams.exportUniqCode, onChange},
+      {type: "boolean", label: "导出选项", appearance: "radio", value: exportParams.exportOptions, onChange}
+    ];
+    return infos;
+  });
 
   private async _queryIds(where: ObjectOf<any>, limit?: number) {
     const result: string[][] = [];
-    const data = await this.http.queryMongodb({collection: "cad", fields: ["_id"], where});
+    const collection = this.collection();
+    const data = await this.http.queryMongodb({collection, fields: ["_id"], where});
     const idsAll = data.map((v) => v._id);
     if (typeof limit === "number" && limit > 0) {
       for (let i = 0; i < idsAll.length; i += limit) {
@@ -80,19 +103,16 @@ export class ExportComponent implements OnInit {
     return result;
   }
 
+  progressBar = new ProgressBar(0);
   async exportCads(type: ExportType) {
-    this.progressBar.start(1);
-    this.progressBarStatus = "progress";
-    this.msg = "正在获取数据";
+    this.progressBar.start(1, "正在获取数据");
     let idsList: Awaited<ReturnType<typeof this._queryIds>>;
-    const finish = (progressBarStatus: ProgressBarStatus, msg?: string) => {
-      this.progressBar.end();
-      this.progressBarStatus = progressBarStatus;
-      this.msg = typeof msg === "string" ? msg : "";
+    const finish = (status: ProgressBarStatus, msg?: string) => {
+      this.progressBar.end(status, msg);
     };
-    this.exportParams.type = type;
-    delete this.exportParams.sourceParams;
+    this.exportParams.update((v) => ({...v, type, sourceParams: undefined}));
     let filename0: string;
+    const collection = this.collection();
     switch (type) {
       case "包边正面":
         idsList = await this._queryIds({$or: [{分类: "包边正面"}, {分类2: "包边正面"}]});
@@ -155,7 +175,7 @@ export class ExportComponent implements OnInit {
             collection: "material",
             where: {"选项.型号": xinghao}
           });
-          this.exportParams.sourceParams = {sourceCad, importResult, xinghaoInfo, slgses};
+          this.exportParams.update((v) => ({...v, sourceParams: {sourceCad, importResult, xinghaoInfo, slgses}}));
         } else {
           finish("error", this.http.lastResponse?.msg || "读取文件失败");
           return;
@@ -166,11 +186,11 @@ export class ExportComponent implements OnInit {
       }
       case "自由选择":
         {
-          let search = this.exportCache?.search;
+          let search = this.exportCache()?.search;
           if (!search) {
             search = {分类: "^.+$"};
           }
-          const cads = await openCadListDialog(this.dialog, {data: {selectMode: "multiple", collection: "cad", search}});
+          const cads = await openCadListDialog(this.dialog, {data: {selectMode: "multiple", collection, search}});
           if (cads) {
             idsList = [cads.map((v) => v.id)];
             filename0 = "自由选择";
@@ -181,7 +201,7 @@ export class ExportComponent implements OnInit {
         }
         break;
       case "导出选中":
-        idsList = [this.exportCache?.ids || []];
+        idsList = [this.exportCache()?.ids || []];
         filename0 = "导出选中";
         break;
       case "导出所有": {
@@ -202,7 +222,7 @@ export class ExportComponent implements OnInit {
           finish("hidden");
           return;
         }
-        idsList = await this._queryIds(this.exportCache?.search || {}, limit);
+        idsList = await this._queryIds(this.exportCache()?.search || {}, limit);
         filename0 = "导出所有";
         break;
       }
@@ -223,27 +243,27 @@ export class ExportComponent implements OnInit {
           const end = Math.min(total2, j + step);
           const currIds = ids.slice(j, end);
           if (j + 1 === end) {
-            this.msg = `正在导出数据(${end + sum}/${total})`;
+            this.progressBar.msg.set(`正在导出数据(${end + sum}/${total})`);
           } else {
-            this.msg = `正在导出数据((${j + 1 + sum}~${end + sum})/${total})`;
+            this.progressBar.msg.set(`正在导出数据((${j + 1 + sum}~${end + sum})/${total})`);
           }
           const data = await this.http.queryMongodb<HoutaiCad>(
-            {collection: "cad", where: {_id: {$in: currIds}}, genUnqiCode: true},
+            {collection, where: {_id: {$in: currIds}}, genUnqiCode: true},
             {spinner: false}
           );
           data.forEach((v) => cads.push(new CadData(v.json)));
           this.progressBar.forward(end - j);
         }
-        this.exportParams.cads = cads;
+        this.exportParams.update((v) => ({...v, cads}));
         let result: CadData | undefined;
         try {
-          result = await CadPortable.export(this.exportParams, this.status.projectConfig);
+          result = await CadPortable.export(this.exportParams(), this.status.projectConfig);
         } catch (error) {
           console.error(error);
           finish("error", this.http.lastResponse?.msg || "导出失败");
           return;
         }
-        this.msg = "正在下载dxf文件";
+        this.progressBar.msg.set("正在下载dxf文件");
         let filename = filename0;
         if (idsList.length > 1) {
           filename += `(${i + 1})`;

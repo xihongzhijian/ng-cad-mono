@@ -291,13 +291,9 @@ export class MokuaiCadsComponent {
     this.selectedCads.update((v) => v.filter((_, index) => index !== i));
   }
 
-  async openImportPage(searchYaoqiu: boolean) {
-    const data: ImportCache = {collection: "peijianCad", lurushuju: true};
-    if (searchYaoqiu) {
-      data.searchYaoqiu = true;
-    } else {
-      data.yaoqiu = this.cadYaoqiu();
-    }
+  async openImportPage() {
+    const collection = this.bjmkStatus.collection;
+    const data: ImportCache = {collection, yaoqiu: this.cadYaoqiu(), lurushuju: true};
     if (data.yaoqiu && !data.yaoqiu.新建CAD要求.some((v) => v.cadKey === "type")) {
       data.yaoqiu.新建CAD要求.push({
         cadKey: "type",
@@ -315,6 +311,7 @@ export class MokuaiCadsComponent {
   openExportPage() {
     const cads = this.cads();
     const ids = cads.map((v) => v.id);
-    openExportPage(this.status, {search: {_id: {$in: ids}}, lurushuju: true});
+    const collection = this.bjmkStatus.collection;
+    openExportPage(this.status, {collection, search: {_id: {$in: ids}}, lurushuju: true});
   }
 }

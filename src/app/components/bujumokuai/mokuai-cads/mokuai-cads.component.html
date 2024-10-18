@@ -18,8 +18,7 @@
     @if (cadYaoqiu()?.["有导入参考dxf模板"]) {
       <button mat-raised-button color="primary" (click)="cadYaoqiu()?.['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
     }
-    <button mat-raised-button color="primary" (click)="openImportPage(false)">导入CAD</button>
-    <button mat-raised-button color="primary" (click)="openImportPage(true)">保留分类导入CAD</button>
+    <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
     <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
     <button mat-raised-button color="primary">导入</button>
     <button mat-raised-button color="primary">导出</button>

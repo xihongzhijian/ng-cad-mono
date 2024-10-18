@@ -52,17 +52,20 @@ export const xhmrmsbjSbjbItemOptionalKeys2 = ["锁边", "铰边", "插销边", "
 export type XhmrmsbjSbjbItemOptionalKey2 = (typeof xhmrmsbjSbjbItemOptionalKeys2)[number];
 export const xhmrmsbjSbjbItemOptionalKeys3 = [...xhmrmsbjSbjbItemOptionalKeys1, ...xhmrmsbjSbjbItemOptionalKeys2] as const;
 export type XhmrmsbjSbjbItemOptionalKey3 = XhmrmsbjSbjbItemOptionalKey1 | XhmrmsbjSbjbItemOptionalKey2;
+export const xhmrmsbjSbjbItemOptionalKeys4 = ["锁框", "铰框", "顶框", "锁边", "铰边", "插销边"] as const;
+export type XhmrmsbjSbjbItemOptionalKey4 = (typeof xhmrmsbjSbjbItemOptionalKeys4)[number];
 
 export const xhmrmsbjSbjbItemOptionalKeys2Map = new Map<XhmrmsbjSbjbItemOptionalKey2, XhmrmsbjSbjbItemOptionalKey2>([["小扇铰边", "铰边"]]);
 
 export const xhmrmsbjSbjbItemCopyModes = ["清空原有数据并全部替换为新数据", "添加到原有数据"] as const;
 export type XhmrmsbjSbjbItemCopyMode = (typeof xhmrmsbjSbjbItemCopyModes)[number];
 
-export const isSbjbCad = (collection: CadCollection, cad: CadData) => {
-  const collections: CadCollection[] = ["peijianCad"];
-  if (!collections.includes(collection)) {
-    return false;
-  }
-  const type = cad.type as XhmrmsbjSbjbItemOptionalKey3;
-  return xhmrmsbjSbjbItemOptionalKeys3.includes(type);
+export const isSbjbCollection = (collection: CadCollection): collection is "peijianCad" => {
+  return collection === "peijianCad";
+};
+export const isSbjbType = (type: string): type is XhmrmsbjSbjbItemOptionalKey4 => {
+  return xhmrmsbjSbjbItemOptionalKeys4.includes(type as XhmrmsbjSbjbItemOptionalKey4);
+};
+export const isSbjbCad = (collection: CadCollection, cad: CadData): collection is "peijianCad" => {
+  return isSbjbCollection(collection) && isSbjbType(cad.type);
 };
