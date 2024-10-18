@@ -9,7 +9,8 @@ import {
   input,
   model,
   output,
-  signal
+  signal,
+  viewChild
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
@@ -127,7 +128,16 @@ export class MkdxpzEditorComponent {
     }
   }
 
+  formulasEditor = viewChild(FormulasEditorComponent);
+  async validate() {
+    const errors = await this.formulasEditor()?.validate();
+    return !errors || errors.length < 1;
+  }
+
   async close(submit = false) {
+    if (submit && !(await this.validate())) {
+      return;
+    }
     const data = submit ? this.data() : null;
     this.closeOut.emit({data});
   }

@@ -25,7 +25,7 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
-import {Formulas} from "@app/utils/calc";
+import {CalcResult, Formulas} from "@app/utils/calc";
 import {FetchManager} from "@app/utils/fetch-manager";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
@@ -1541,11 +1541,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const key = this.activeMenshanKey();
     replaceMenshanName(key, formulas);
     const materialResult = this.lastSuanliao()?.output?.materialResult || {};
-    const calcResult = this.calc.calc.calcFormulas(formulas, materialResult);
     const onChange = () => {
       this.setMkdxpz(formulas);
     };
-    return getFormulaInfos(this.calc, formulas, calcResult.succeed, {shurus: mkdxpz.输入显示, onChange});
+    let calcResult: CalcResult | undefined;
+    try {
+      calcResult = this.calc.calc.calcFormulas(formulas, materialResult);
+    } catch {}
+    return getFormulaInfos(this.calc, formulas, calcResult?.succeed, {shurus: mkdxpz.输入显示, onChange});
   });
   async setMkdxpz(formulas: Formulas) {
     const mkdxpz = this.activeMsbjInfo()?.选中布局数据?.模块大小配置;

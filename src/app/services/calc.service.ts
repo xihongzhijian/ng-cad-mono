@@ -23,26 +23,39 @@ export class CalcService {
       }
       return result;
     } catch (error) {
-      if (error instanceof CalcSelfReferenceError) {
-        let str = error.message + "<br><br>";
-        str += `${error.varName}<span style='color:red'> => </span>${error.varValue}`;
-        if (errorMsg) {
-          await this.message.error(str);
-        }
-      } else if (error instanceof CalcCircularReferenceError) {
-        let str = error.message + "<br><br>";
-        str += `${error.varName1}<span style='color:red'> => </span>${error.varValue1}<br>`;
-        str += `${error.varName2}<span style='color:red'> => </span>${error.varValue2}`;
-        if (errorMsg) {
-          await this.message.error(str);
-        }
-      } else {
-        if (errorMsg) {
-          await this.message.alert({content: error});
-        }
-        console.error(error);
-      }
+      await this._alert(false, error, errorMsg);
       return null;
+    }
+  }
+
+  async calcFormulasPre(formulas: Formulas, errorMsg?: CalcCustomErrorMsg) {
+    const result = {error: null as any};
+    try {
+      Calc.calcFormulas(formulas);
+    } catch (error) {
+      await this._alert(true, error, errorMsg);
+      result.error = error;
+    }
+    return result;
+  }
+
+  private async _alert(pre: boolean, error: any, errorMsg?: CalcCustomErrorMsg) {
+    let err: Parameters<typeof this.message.error>[0] = "";
+    if (error instanceof CalcSelfReferenceError) {
+      err = error.message + "<br><br>";
+      err += `${error.varName}<span style='color:red'> => </span>${error.varValue}`;
+    } else if (error instanceof CalcCircularReferenceError) {
+      err = error.message + "<br><br>";
+      err += `${error.varName1}<span style='color:red'> => </span>${error.varValue1}<br>`;
+      err += `${error.varName2}<span style='color:red'> => </span>${error.varValue2}`;
+    } else {
+      if (!pre) {
+        err = {content: error};
+      }
+      console.error(error);
+    }
+    if (errorMsg) {
+      await this.message.error(err);
     }
   }
 

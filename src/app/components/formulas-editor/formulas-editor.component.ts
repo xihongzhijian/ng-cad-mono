@@ -228,10 +228,12 @@ export class FormulasEditorComponent {
       }
     }
     const errors = Array.from(errorsSet);
-    if (errors.length > 0) {
-      if (!silent) {
-        await this.message.error(errors.join("<br>"));
-      }
+    const calcPreResult = await this.calc.calcFormulasPre(this.formulas(), silent ? undefined : {});
+    if (calcPreResult.error) {
+      errors.push("计算有误");
+    }
+    if (!silent && errors.length > 0 && !calcPreResult.error) {
+      await this.message.error(errors.join("<br>"));
     }
     return errors;
   }

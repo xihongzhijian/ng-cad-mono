@@ -273,12 +273,6 @@ export class Calc {
       if (nextInfo) {
         const nextVars = nextInfo.vars;
         if (nextVars.includes(v)) {
-          // singleAlert(
-          //     `错误！算料公式，自引用死循环<br><br>${v} <span style='color:red;'>=></span> ${map[v].exp}`,
-          //     {area: ["70%", "80%"]},
-          //     true,
-          //     true
-          // );
           throw new CalcSelfReferenceError(v, map[v].exp);
         }
         if (originVar) {

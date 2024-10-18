@@ -800,7 +800,6 @@ export const calcZxpj = async (
       const calcLinesResult: Formulas = {};
       // console.log({formulas2, vars2, result2});
       if (!result2?.fulfilled) {
-        console.log(result2);
         return {fulfilled: false, error: {message: result2Msg + "出错", calc: {formulas: formulas2, vars: vars2, result: result2}}};
       }
       calc.calc.mergeFormulas(varsGlobal, result2.succeedTrim);
