@@ -108,7 +108,7 @@
       <ng-scrollbar #kexuanmokuaisScrollbar>
         <div class="flex-row" style="flex-wrap: wrap">
           @for (mokuai of kexuanmokuais(); track $index) {
-            <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai, isActive: isMokuaiActive(mokuai)}"> </ng-template>
+            <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai}"> </ng-template>
           }
         </div>
       </ng-scrollbar>
@@ -187,8 +187,8 @@
   }
 </div>
 
-<ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai let-isActive="isActive">
-  <div class="flex-column mokuai" [class]="{active: isActive}" [attr.data-id]="mokuai.weiyima">
+<ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai>
+  <div class="flex-column mokuai" [class]="{active: activeMokuaiNode()?.['选中模块']?.id === mokuai.id}" [attr.data-id]="mokuai.weiyima">
     <div class="flex-column">
       <div class="toolbar mokuai-top">
         @if (!isFromOrder()) {
@@ -198,9 +198,6 @@
         <button mat-icon-button color="primary" (click)="mokuaiImage.showBigPic()">
           <mat-icon>zoom_in</mat-icon>
         </button>
-        @if (isActive && isFromOrder()) {
-          <button mat-icon-button class="active-sign" (click)="selectMokuai(mokuai)"><mat-icon>check</mat-icon></button>
-        }
       </div>
       <app-image
         #mokuaiImage

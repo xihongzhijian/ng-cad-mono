@@ -478,9 +478,9 @@ export class CadListComponent implements AfterViewInit {
       return;
     }
     const data = getHoutaiCad(cadData);
-    const resData = await this.http.mongodbInsert(collection, data, {force: !!yaoqiu});
+    const resData = await this.http.mongodbInsert<HoutaiCad>(collection, data, {force: !!yaoqiu});
     if (resData) {
-      const data2 = new CadData(resData);
+      const data2 = new CadData(resData.json);
       if (await this.message.confirm("是否编辑新的CAD？")) {
         await openCadEditorDialog(this.dialog, {data: {data: data2, collection, center: true, gongshis}});
       }

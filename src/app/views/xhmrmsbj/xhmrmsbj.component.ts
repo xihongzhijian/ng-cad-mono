@@ -161,7 +161,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return infos;
   });
 
-  mokuaiTemplateType!: {$implicit: ZixuanpeijianMokuaiItem; isActive?: boolean};
+  mokuaiTemplateType!: {$implicit: ZixuanpeijianMokuaiItem};
   menshanKeys: MenshanKey[] = menshanKeys.slice();
   materialResult = signal<Formulas>({});
   houtaiUrl = "";
@@ -532,17 +532,20 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const mokuaiPrev = mokuaiNode.选中模块;
     this.data()?.setSelectedMokuai(mokuaiNode, mokuai, this.isFromOrder());
-    this.refreshData();
+    this.refreshData(true);
     const mokuaiCurr = mokuaiNode.选中模块;
+    this.scrollToMokuai(mokuaiCurr);
+    if (!mokuaiPrev || !mokuaiCurr || !isMokuaiItemEqual(mokuaiPrev, mokuaiCurr)) {
+      await this.suanliao();
+    }
+  }
+  scrollToMokuai(mokuai: ZixuanpeijianMokuaiItem | null | undefined) {
     const scrollbar = this.kexuanmokuaisScrollbar();
-    if (scrollbar && mokuaiCurr) {
-      const mokuaiEl = scrollbar.nativeElement.querySelector(`[data-id="${mokuaiCurr.weiyima}"]`);
+    if (scrollbar && mokuai) {
+      const mokuaiEl = scrollbar.nativeElement.querySelector(`[data-id="${mokuai.weiyima}"]`);
       if (mokuaiEl instanceof HTMLElement && getElementVisiblePercentage(mokuaiEl, scrollbar.nativeElement) <= 0.1) {
         scrollbar.scrollToElement(mokuaiEl);
       }
-    }
-    if (!mokuaiPrev || !mokuaiCurr || !isMokuaiItemEqual(mokuaiPrev, mokuaiCurr)) {
-      await this.suanliao();
     }
   }
 
@@ -983,10 +986,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     {allowSignalWrites: true}
   );
 
-  isMokuaiActive(mokuai: ZixuanpeijianMokuaiItem) {
-    return this.activeMokuaiNode()?.选中模块?.id === mokuai.id;
-  }
-
   async setKexuanmokuai(mokuais?: ZixuanpeijianMokuaiItem[]) {
     const rectInfo = this.activeRectInfo();
     const mokuaiNode = this.activeMokuaiNode();
@@ -1048,6 +1047,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   kexuanmokuais = computed(() => {
     const query = this.kexuanmokuaiQuery();
     const mokuais = this.activeMokuaiNode()?.["可选模块"] || [];
+    setTimeout(() => {
+      this.scrollToMokuai(this.activeMokuaiNode()?.选中模块);
+    }, 0);
     return mokuais.filter(({type2}) => queryString(query, type2));
   });
 

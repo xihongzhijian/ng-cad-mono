@@ -303,7 +303,7 @@ export const onKeyEvent = (event: KeyboardEvent, items: KeyEventItem[]) => {
     if (alt && !event.altKey) {
       continue;
     }
-    if (event.key.toLowerCase() === key.toLowerCase()) {
+    if ((event.key || "").toLowerCase() === key.toLowerCase()) {
       callback();
       event.preventDefault();
       return;
