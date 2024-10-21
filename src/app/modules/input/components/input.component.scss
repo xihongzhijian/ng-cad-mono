@@ -66,6 +66,9 @@
     display: flex;
     flex-direction: column;
   }
+  &.readonly {
+    --mdc-filled-text-field-container-color: #d3d3d3;
+  }
 }
 
 ::ng-deep {

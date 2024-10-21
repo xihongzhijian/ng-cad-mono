@@ -135,10 +135,20 @@
             }
           }
           <div class="items">
-            @for (info of mokuaiInputInfos(); track $index) {
+            @for (info of mokuaiInputInfos1(); track $index) {
               <app-input class="item" [info]="info"></app-input>
             }
           </div>
+          @if (mokuaiInputInfos2().length > 0) {
+            @if (!isFloatingDialog()) {
+              <div class="title">下单显示</div>
+            }
+            <div class="items">
+              @for (info of mokuaiInputInfos2(); track $index) {
+                <app-input class="item" [info]="info"></app-input>
+              }
+            </div>
+          }
         </div>
       </ng-scrollbar>
     </div>

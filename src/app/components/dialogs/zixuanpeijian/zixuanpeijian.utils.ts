@@ -15,7 +15,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
 import {matchConditions} from "@views/suanliao/suanliao.utils";
-import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {cloneDeep, difference, intersection, isEmpty, isEqual, union} from "lodash";
 import md5 from "md5";
 import {openDrawCadDialog} from "../draw-cad/draw-cad.component";
@@ -621,18 +621,6 @@ export const calcZxpj = async (
     }
   }
 
-  const getMokuaiVarsCurr = (formulas: Formulas, 模块名字: string) => {
-    const result = {...formulas};
-    const keys = ["总宽", "总高"];
-    for (const key of keys) {
-      const key2 = 模块名字 + key;
-      if (result[key2] !== undefined) {
-        result[key] = result[key2];
-      }
-    }
-    return result;
-  };
-
   let calc1Count = 0;
   let calc1Finished = false;
   let calcErrors1: Formulas = {};
@@ -650,10 +638,10 @@ export const calcZxpj = async (
       const info = v.item.info || {};
       const 门扇名字 = info.门扇名字 || "";
       const 模块名字 = info.模块名字 || "";
-      const mokuaiGongshisCurr = getMokuaiVarsCurr(mokuaiGongshis[门扇名字], 模块名字);
+      const mokuaiGongshisCurr = getNodeVars(mokuaiGongshis[门扇名字], 模块名字);
       const formulas1 = {...v.formulas, ...v.dimensionVars, ...mokuaiGongshisCurr};
       replaceMenshanName(门扇名字, formulas1);
-      const mokuaiVarsCurr = getMokuaiVarsCurr(mokuaiVars[门扇名字], 模块名字);
+      const mokuaiVarsCurr = getNodeVars(mokuaiVars[门扇名字], 模块名字);
       const vars1 = {...materialResult, ...shuchubianliang, ...lingsanVars, ...mokuaiVarsCurr};
       vars1.门扇布局 = v.item.info?.门扇布局?.name || "";
       const result1Msg = `${getCalcMokuaiTitle(v.item)}计算`;
@@ -745,7 +733,7 @@ export const calcZxpj = async (
 
     const zhankais: [number, CadZhankai][] = [];
     const {门扇名字, 模块名字} = info;
-    vars2 = {...vars2, ...getMokuaiVarsCurr(mokuaiVars[门扇名字 || ""], 模块名字 || "")};
+    vars2 = {...vars2, ...getNodeVars(mokuaiVars[门扇名字 || ""], 模块名字 || "")};
     for (const [i, zhankai] of data.zhankai.entries()) {
       let enabled = true;
       let title = `计算展开条件`;
@@ -970,6 +958,18 @@ export const calcZxpj = async (
     }
   }
   return {fulfilled: true, 门扇布局大小: mokuaiVars, 模块公式输入};
+};
+
+export const getNodeVars = (formulas: Formulas, nodeName: string) => {
+  const result = {...formulas};
+  const keys = ["总宽", "总高"];
+  for (const key of keys) {
+    const key2 = nodeName + key;
+    if (result[key2] !== undefined) {
+      result[key] = result[key2];
+    }
+  }
+  return result;
 };
 
 export const getFromulasFromString = (str: string | undefined | null): Formulas => {

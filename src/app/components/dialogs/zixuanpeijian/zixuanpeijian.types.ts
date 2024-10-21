@@ -1,5 +1,6 @@
 import {XiaodaohangColumn} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {MokuaiItemCustomData} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
 import {KailiaocanshuData} from "@components/klcs/klcs.component";
 import {KlkwpzSource} from "@components/klkwpz/klkwpz";
 import {算料公式} from "@components/lurushuju/xinghao-data";
@@ -111,6 +112,7 @@ export interface ZixuanpeijianMokuaiItem extends ZixuanpeijianTypesInfoItem {
   totalWidth: string;
   totalHeight: string;
   cads: ZixuanpeijianCadItem[];
+  自定义数据?: MokuaiItemCustomData;
   可替换模块?: ZixuanpeijianMokuaiItem[];
   vars?: Formulas;
   info?: {门扇名字?: string; 门扇布局?: XhmrmsbjInfo["选中布局数据"]; 模块名字?: string; 层id?: number; isDefault?: boolean};

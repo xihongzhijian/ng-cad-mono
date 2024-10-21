@@ -45,7 +45,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzDataSubmitEvent, MrbcjfzInfo, MrbcjfzInputData, MrbcjfzResponseData} from "@views/mrbcjfz/mrbcjfz.types";
 import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
-import {cloneDeep, isEqual} from "lodash";
+import {clone, cloneDeep, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {firstValueFrom, Subject} from "rxjs";
 import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
@@ -260,23 +260,36 @@ export class MokuaiItemComponent {
     }
   }
 
-  mokuaiInputInfos = computed(() => {
-    const mokuai = this.mokuai();
-    const onChange = () => this.mokuai.update((v) => ({...v}));
-    const getTextInputInfo = (label: string, key: keyof MokuaiItem): InputInfo => ({
+  private _getTextInputInfo1(key: keyof MokuaiItem, label: string = key) {
+    const info: InputInfo = {
       type: "string",
       textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
-      model: {key, data: mokuai},
-      onChange
-    });
-    const infos: InputInfo[] = [
-      getTextInputInfo("公式输入", "gongshishuru"),
-      getTextInputInfo("输出变量", "shuchubianliang"),
-      getTextInputInfo("效果图使用变量", "xiaoguotushiyongbianliang")
-    ];
-    return infos;
-  });
+      model: {data: this.mokuai(), key},
+      onChange: () => this.mokuai.update((v) => ({...v}))
+    };
+    return info;
+  }
+  private _getTextInputInfo2(key: keyof MokuaiItemCustomData, label: string = key) {
+    const mokuai = this.mokuai();
+    if (!mokuai.自定义数据) {
+      mokuai.自定义数据 = getMokuaiCustomData(null, this.bjmkStatus.mokuaiOptionsManager.data());
+    }
+    const info: InputInfo = {
+      type: "string",
+      textarea: {autosize: {minRows: 1, maxRows: 3}},
+      label,
+      model: {data: mokuai.自定义数据, key},
+      onChange: () => this.mokuai.update((v) => ({...v, 自定义数据: clone(v.自定义数据)}))
+    };
+    return info;
+  }
+  mokuaiInputInfos = computed(() => [
+    this._getTextInputInfo1("gongshishuru", "公式输入"),
+    this._getTextInputInfo1("shuchubianliang", "输出变量"),
+    this._getTextInputInfo1("xiaoguotushiyongbianliang", "效果图使用变量"),
+    this._getTextInputInfo2("下单显示")
+  ]);
 
   mokuaiOptionsEff = effect(async () => {
     const options = await this.bjmkStatus.mokuaiOptionsManager.fetch();
@@ -287,10 +300,10 @@ export class MokuaiItemComponent {
       this.mokuai.update((v) => ({...v, 自定义数据: customDataNew}));
     }
   });
-  setMokuaiCustomData<T extends keyof MokuaiItemCustomData>(key: T, value: MokuaiItemCustomData[T]) {
+  async setMokuaiCustomData<T extends keyof MokuaiItemCustomData>(key: T, value: MokuaiItemCustomData[T]) {
     const mokuai = this.mokuai();
     if (!mokuai.自定义数据) {
-      mokuai.自定义数据 = {输入数据: [], 选项数据: []};
+      mokuai.自定义数据 = getMokuaiCustomData(null, await this.bjmkStatus.mokuaiOptionsManager.fetch());
     }
     mokuai.自定义数据[key] = value;
     this.mokuai.update((v) => ({...v}));

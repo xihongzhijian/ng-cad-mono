@@ -21,7 +21,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
-import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {
   SuanliaoInput,
   SuanliaoOutputData,

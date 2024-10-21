@@ -21,6 +21,7 @@ export const getMokuaiCustomData = (raw: MokuaiItemCustomData | null | undefined
   const result: MokuaiItemCustomData = {
     输入数据: [],
     选项数据: [],
+    下单显示: "",
     ...raw
   };
   for (const optionName in 选项数据选项) {

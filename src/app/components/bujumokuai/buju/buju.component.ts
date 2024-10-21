@@ -6,7 +6,7 @@ import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MsbjComponent} from "@views/msbj/msbj.component";
 import {MsbjCloseEvent} from "@views/msbj/msbj.types";
 import {MsbjInfo} from "@views/msbj/msbj.utils";
-import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 

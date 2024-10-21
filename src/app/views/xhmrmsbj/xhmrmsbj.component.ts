@@ -24,7 +24,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
-import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
+import {getValueString, remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {CalcResult, Formulas} from "@app/utils/calc";
 import {FetchManager} from "@app/utils/fetch-manager";
 import {getTrbl} from "@app/utils/trbl";
@@ -40,6 +40,7 @@ import {
   getFromulasFromString,
   getMokuaiTitle,
   getMokuaiTitleWithUrl,
+  getNodeVars,
   getStep1Data,
   isMokuaiItemEqual,
   replaceMenshanName,
@@ -83,7 +84,6 @@ import {
   MenshanKey,
   menshanKeys,
   XhmrmsbjCloseEvent,
-  XhmrmsbjData,
   XhmrmsbjInfo,
   XhmrmsbjInfoMokuaiNode,
   XhmrmsbjRequestData,
@@ -91,6 +91,7 @@ import {
   XhmrmsbjTabName,
   xhmrmsbjTabNames
 } from "./xhmrmsbj.types";
+import {XhmrmsbjData} from "./xhmrmsbj.utils";
 
 const table = "p_xinghaomorenmenshanbuju";
 @Component({
@@ -615,110 +616,141 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     await this.tongyongFormulasManager.fetch();
     return this.getValueInfo(node, mokuai, key, value);
   }
-  mokuaiInputInfos = computed(() => {
+  mokuaiInputInfos1 = computed(() => {
     const node = this.activeMokuaiNode();
     const mokuai = node?.选中模块;
-    const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
     const infos: InputInfo[] = [];
-    if (mokuai) {
-      const keyMap = {总宽: "totalWidth", 总高: "totalHeight"} as const;
-      if (!this.data()?.isVersion2024) {
-        const name = node.层名字;
-        for (const key in keyMap) {
-          const key3 = name + key;
-          infos.push({
-            type: "string",
-            label: key,
-            model: {key: key3, data: () => mokuaidaxiaoResult},
-            readonly: true
-          });
-        }
-      }
-      const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
-      for (const v of arr) {
-        const valueInfo = this.getValueInfo(node, mokuai, v[0], v[1]);
-        v[1] = valueInfo.value;
+    if (!mokuai) {
+      return infos;
+    }
+    const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
+    const keyMap = {总宽: "totalWidth", 总高: "totalHeight"} as const;
+    if (!this.data()?.isVersion2024) {
+      const name = node.层名字;
+      for (const key in keyMap) {
+        const key3 = name + key;
         infos.push({
           type: "string",
-          label: v[0],
-          model: {key: "1", data: v},
-          clearable: true,
-          validators: (control) => {
-            const valueInfo2 = this.getValueInfo(node, mokuai, v[0], control.value);
-            if (!valueInfo2.value) {
-              return {required: true};
-            }
-            return null;
-          },
-          hint: valueInfo.type,
-          onChange: async (val, info) => {
-            if (!node.输入值) {
-              node.输入值 = {};
-            }
-            const keysToDelete = difference(
-              Object.keys(node.输入值),
-              arr.map((v) => v[0])
-            );
-            for (const key of keysToDelete) {
-              delete node.输入值[key];
-            }
-            if (val) {
-              node.输入值[v[0]] = val;
-            } else {
-              delete node.输入值[v[0]];
-            }
-            const valueInfo2 = this.getValueInfo(node, mokuai, v[0], val);
-            v[1] = valueInfo2.value;
-            info.hint = valueInfo2.type;
+          label: key,
+          model: {key: key3, data: () => mokuaidaxiaoResult},
+          readonly: true
+        });
+      }
+    }
+    const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
+    for (const v of arr) {
+      const valueInfo = this.getValueInfo(node, mokuai, v[0], v[1]);
+      v[1] = valueInfo.value;
+      infos.push({
+        type: "string",
+        label: v[0],
+        model: {key: "1", data: v},
+        clearable: true,
+        validators: (control) => {
+          const valueInfo2 = this.getValueInfo(node, mokuai, v[0], control.value);
+          if (!valueInfo2.value) {
+            return {required: true};
+          }
+          return null;
+        },
+        hint: valueInfo.type,
+        onChange: async (val, info) => {
+          if (!node.输入值) {
+            node.输入值 = {};
+          }
+          const keysToDelete = difference(
+            Object.keys(node.输入值),
+            arr.map((v) => v[0])
+          );
+          for (const key of keysToDelete) {
+            delete node.输入值[key];
+          }
+          if (val) {
+            node.输入值[v[0]] = val;
+          } else {
+            delete node.输入值[v[0]];
+          }
+          const valueInfo2 = this.getValueInfo(node, mokuai, v[0], val);
+          v[1] = valueInfo2.value;
+          info.hint = valueInfo2.type;
 
-            const data = this.data();
-            const activeMenshanKey = this.activeMenshanKey();
-            const varNames = mokuai.shuchubianliang;
-            if (this.isFromOrder()) {
-              varNames.push(...(await this.getVarNames()));
-            }
-            const isShuchubianliang = varNames.includes(v[0]);
-            const updateMenshanKeys = new Set<string>();
-            if (data && activeMenshanKey) {
-              for (const key of keysOf(data.menshanbujuInfos)) {
-                for (const node2 of data.menshanbujuInfos[key]?.模块节点 || []) {
-                  const mokuai2 = node2.选中模块;
-                  if (mokuai2) {
-                    const isCurrent = key === activeMenshanKey && node?.层名字 === node2.层名字;
-                    if (!isCurrent) {
-                      const arr2 = mokuai2.gongshishuru.concat(mokuai2.xuanxiangshuru);
-                      for (const v2 of arr2) {
-                        if (v2[0] === v[0]) {
-                          v2[1] = v[1];
-                          if (!node2.输入值) {
-                            node2.输入值 = {};
-                          }
-                          node2.输入值[v[0]] = v[1];
+          const data = this.data();
+          const activeMenshanKey = this.activeMenshanKey();
+          const varNames = mokuai.shuchubianliang;
+          if (this.isFromOrder()) {
+            varNames.push(...(await this.getVarNames()));
+          }
+          const isShuchubianliang = varNames.includes(v[0]);
+          const updateMenshanKeys = new Set<string>();
+          if (data && activeMenshanKey) {
+            for (const key of keysOf(data.menshanbujuInfos)) {
+              for (const node2 of data.menshanbujuInfos[key]?.模块节点 || []) {
+                const mokuai2 = node2.选中模块;
+                if (mokuai2) {
+                  const isCurrent = key === activeMenshanKey && node?.层名字 === node2.层名字;
+                  if (!isCurrent) {
+                    const arr2 = mokuai2.gongshishuru.concat(mokuai2.xuanxiangshuru);
+                    for (const v2 of arr2) {
+                      if (v2[0] === v[0]) {
+                        v2[1] = v[1];
+                        if (!node2.输入值) {
+                          node2.输入值 = {};
                         }
+                        node2.输入值[v[0]] = v[1];
                       }
                     }
-                    const msbjInfo2 = data.menshanbujuInfos[key];
-                    if (msbjInfo2 && (isShuchubianliang || isCurrent)) {
-                      if (v[0] in (msbjInfo2.模块大小输出 || {})) {
-                        if (!msbjInfo2.模块大小输入) {
-                          msbjInfo2.模块大小输入 = {};
-                        }
-                        msbjInfo2.模块大小输入[v[0]] = v[1];
-                        updateMenshanKeys.add(key);
+                  }
+                  const msbjInfo2 = data.menshanbujuInfos[key];
+                  if (msbjInfo2 && (isShuchubianliang || isCurrent)) {
+                    if (v[0] in (msbjInfo2.模块大小输出 || {})) {
+                      if (!msbjInfo2.模块大小输入) {
+                        msbjInfo2.模块大小输入 = {};
                       }
+                      msbjInfo2.模块大小输入[v[0]] = v[1];
+                      updateMenshanKeys.add(key);
                     }
                   }
                 }
               }
             }
-
-            if (updateMenshanKeys.size > 0 && this.isFromOrder()) {
-              await this.updateOrder();
-            }
-            await this.suanliao();
           }
-        });
+
+          if (updateMenshanKeys.size > 0 && this.isFromOrder()) {
+            await this.updateOrder();
+          }
+          await this.suanliao();
+        }
+      });
+    }
+    return infos;
+  });
+  mokuaiInputInfos2 = computed(() => {
+    const data = this.data();
+    const msbjInfo = this.activeMsbjInfo();
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
+    const infos: InputInfo[] = [];
+    if (!data || !mokuai) {
+      return infos;
+    }
+    const names = mokuai.自定义数据?.下单显示?.split("+") || [];
+    const formulas = data.getCommonFormulas();
+    Object.assign(formulas, getNodeVars(msbjInfo?.选中布局数据?.模块大小配置?.算料公式 || {}, node.层名字));
+    Object.assign(formulas, mokuai.suanliaogongshi);
+    replaceMenshanName(this.activeMenshanKey(), formulas);
+    for (const [key, value] of mokuai.gongshishuru) {
+      formulas[key] = this.getValueInfo(node, mokuai, key, value).value;
+    }
+    const vars = this.lastSuanliaoManager.data()?.output.materialResult || {};
+    try {
+      const res = this.calc.calc.calcFormulas(formulas, vars);
+      Object.assign(formulas, res.succeedTrim);
+    } catch {}
+    for (const name of names) {
+      if (!name) {
+        continue;
       }
+      infos.push({type: "string", label: name, readonly: true, value: getValueString(formulas[name])});
     }
     return infos;
   });
@@ -1157,8 +1189,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   async suanliao() {
-    if (!this.isFromOrder() || this.isFloatingDialog()) {
-      return;
+    if (!this.isFromOrder()) {
+      return false;
     }
     if (this.suanliaoLock$.value) {
       await firstValueFrom(this.suanliaoLock$.pipe(filter((v) => !v)));
@@ -1176,7 +1208,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.spinner.hide(this.spinner.defaultLoaderId);
     this.suanliaoLock$.next(false);
     this.genXiaoguotu();
-    this.fetchLastSuanliao();
+    this.lastSuanliaoManager.fetch(true);
+    return true;
   }
 
   private _ignoreXiaoguotuKey = "xhmrmsbjIgnoreXiaoguotu";
@@ -1241,12 +1274,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.genXiaoguotuLock$.next(false);
   }
 
-  lastSuanliao = signal<LastSuanliao | null>(null);
-  async fetchLastSuanliao() {
+  lastSuanliaoManager = new FetchManager(null, async () => {
+    if (!this.isFromOrder()) {
+      return null;
+    }
     this.wmm.postMessage("getLastSuanliaoStart");
-    const data = await this.wmm.waitForMessage<LastSuanliao | null>("getLastSuanliaoEnd");
-    this.lastSuanliao.set(data);
-  }
+    return await this.wmm.waitForMessage<LastSuanliao | null>("getLastSuanliaoEnd");
+  });
 
   async updateOrder() {
     this.wmm.postMessage("updateOrderStart", {型号选中门扇布局: this.data()?.menshanbujuInfos});
@@ -1263,11 +1297,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   async openMokuais() {
-    let lastSuanliao = this.lastSuanliao();
-    if (!lastSuanliao) {
-      await this.fetchLastSuanliao();
-      lastSuanliao = this.lastSuanliao();
-    }
+    const lastSuanliao = await this.lastSuanliaoManager.fetch();
     if (!lastSuanliao) {
       return;
     }
@@ -1543,7 +1573,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const formulas = {...mkdxpz.算料公式};
     const key = this.activeMenshanKey();
     replaceMenshanName(key, formulas);
-    const materialResult = this.lastSuanliao()?.output?.materialResult || {};
+    const materialResult = this.lastSuanliaoManager.data()?.output?.materialResult || {};
     const onChange = () => {
       this.setMkdxpz(formulas);
     };

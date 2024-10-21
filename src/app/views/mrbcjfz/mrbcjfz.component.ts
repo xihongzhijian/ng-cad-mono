@@ -22,6 +22,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
+import {FetchManager} from "@app/utils/fetch-manager";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
@@ -149,6 +150,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     }
   }
 
+  bancaiListManager = new FetchManager(null, () => this.http.getBancaiList(9, {spinner: this.loaderId}));
   async refresh() {
     if (this._refreshLock$.value) {
       await lastValueFrom(this._refreshLock$.pipe(first((v) => !v)));
@@ -208,7 +210,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       if (data.bancaiList) {
         bancaiListData = data.bancaiList;
       } else {
-        bancaiListData = await this.http.getBancaiList(9, {spinner: this.loaderId});
+        bancaiListData = await this.bancaiListManager.fetch();
       }
       this.xiaodaohangStructure = {mingzi: "型号", table: "p_xinghao", gongneng: {jiegou: []}};
       if (bancaiListData) {
