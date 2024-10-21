@@ -789,6 +789,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!dataInfo || isFromOrder) {
       return;
     }
+    const isVersion2024 = dataInfo.isVersion2024;
     const errorXuanzhongMenshans: {menshan: MenshanKey; nodeNames: string[]}[] = [];
     const errorMkdxpz: {menshan: MenshanKey}[] = [];
     const varKeysXinghao = Object.keys(this.xinghaoVars());
@@ -813,7 +814,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     for (let i = 0; i < msbjInfos.length; i++) {
       const {menshanKey, msbjInfo} = msbjInfos[i];
       const errorXuanzhongNodeNames: string[] = [];
-      if (msbjInfo.选中布局数据) {
+      if (msbjInfo.选中布局数据 && isVersion2024) {
         const formulas = msbjInfo.选中布局数据.模块大小配置?.算料公式 || {};
         const formulasKeys = getNodeFormulasKeys(msbjInfo.模块节点?.map((v) => v.层名字) || []);
         if (!formulasKeys.every((key) => !!formulas[key])) {
@@ -1474,7 +1475,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     return null;
   };
-  openedMkdcpz = signal<{data: MkdxpzEditorData; msbjInfo: XhmrmsbjInfo; varNameItem: VarNameItem; title: string} | null>(null);
+  openedMkdxpz = signal<{data: MkdxpzEditorData; msbjInfo: XhmrmsbjInfo; varNameItem: VarNameItem; title: string} | null>(null);
   async openMkdxpz() {
     const msbjInfo = this.activeMsbjInfo();
     const 选中布局数据 = msbjInfo?.选中布局数据;
@@ -1509,20 +1510,20 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     justify模块大小配置(dxpz, nodes.map((v) => v.层名字) || []);
     const data: MkdxpzEditorData = {dxpz, nodes};
     const title = `【${activeKey}】模块大小配置`;
-    this.openedMkdcpz.set({data, msbjInfo, varNameItem, title});
+    this.openedMkdxpz.set({data, msbjInfo, varNameItem, title});
   }
   async editMkdcpz() {
     this.openMkdxpz();
   }
-  closeMkdcpz({data}: MkdxpzEditorCloseEvent) {
-    const 选中布局数据 = this.openedMkdcpz()?.msbjInfo.选中布局数据;
+  closeMkdxpz({data}: MkdxpzEditorCloseEvent) {
+    const 选中布局数据 = this.openedMkdxpz()?.msbjInfo.选中布局数据;
     const {dxpz, nodes} = data || {};
     let changed = false;
     if (dxpz && 选中布局数据) {
       选中布局数据.模块大小配置 = dxpz;
       changed = true;
     }
-    const msbjInfo = this.openedMkdcpz()?.msbjInfo;
+    const msbjInfo = this.openedMkdxpz()?.msbjInfo;
     if (msbjInfo && nodes) {
       msbjInfo.模块节点 = nodes;
       changed = true;
@@ -1530,7 +1531,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (changed) {
       this.refreshData();
     }
-    this.openedMkdcpz.set(null);
+    this.openedMkdxpz.set(null);
   }
 
   mkdxpzFormulaInfos = computed(() => {

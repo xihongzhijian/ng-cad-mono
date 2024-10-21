@@ -247,15 +247,15 @@
   </app-floating-dialog>
 }
 
-@if (openedMkdcpz(); as openedMkdcpz) {
+@if (openedMkdxpz(); as openedMkdxpz) {
   <app-floating-dialog [maximized]="true" noTitle>
     <app-mkdxpz-editor
-      [data]="openedMkdcpz.data"
-      [title]="openedMkdcpz.title"
-      [varNameItem]="openedMkdcpz.varNameItem"
+      [data]="openedMkdxpz.data"
+      [title]="openedMkdxpz.title"
+      [varNameItem]="openedMkdxpz.varNameItem"
       [validator]="mkdcpzValidator"
       closable
-      (close)="closeMkdcpz($event)"
+      (close)="closeMkdxpz($event)"
     ></app-mkdxpz-editor>
   </app-floating-dialog>
 }

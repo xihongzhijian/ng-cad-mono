@@ -502,10 +502,10 @@ export class ZixuanpeijianComponent implements OnInit {
       cadData.options.型号 = xinghao;
     }
     const data = getHoutaiCad(cadData);
-    const resData = await this.http.mongodbInsert(collection, data, {force: !!yaoqiu});
+    const resData = await this.http.mongodbInsert<HoutaiCad>(collection, data, {force: !!yaoqiu});
     if (resData) {
       if (await this.message.confirm("是否编辑新的CAD？")) {
-        const data2 = new CadData(resData);
+        const data2 = new CadData(resData.json);
         if (data2) {
           const gongshis = this.data?.gongshis;
           await openCadEditorDialog(this.dialog, {data: {data: data2, collection, center: true, gongshis}});
