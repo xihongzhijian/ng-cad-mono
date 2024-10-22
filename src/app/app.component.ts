@@ -1,5 +1,5 @@
 import {CdkDrag} from "@angular/cdk/drag-drop";
-import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, HostListener, inject} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
@@ -7,6 +7,7 @@ import {ActivatedRoute, ResolveFn, Router, RouterOutlet} from "@angular/router";
 import {environment} from "@env";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {emulateTab} from "emulate-tab";
 import {MessageTestComponent} from "./modules/message/components/message-test/message-test.component";
 import {SpinnerComponent} from "./modules/spinner/components/spinner/spinner.component";
 import {routesInfo} from "./routing/routes-info";
@@ -87,5 +88,15 @@ export class AppComponent {
   navigate(routeInfo: (typeof routesInfo)[number]) {
     this.dialog.closeAll();
     this.router.navigate([routeInfo.path], {queryParamsHandling: "merge"});
+  }
+
+  @HostListener("window:keydown", ["$event"])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key === "Enter") {
+      if (document.activeElement instanceof HTMLInputElement) {
+        emulateTab();
+        event.preventDefault();
+      }
+    }
   }
 }
