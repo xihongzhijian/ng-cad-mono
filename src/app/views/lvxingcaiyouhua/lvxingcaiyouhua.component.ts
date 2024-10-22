@@ -1,8 +1,9 @@
-import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, OnInit, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
+import {ActivatedRoute, Router} from "@angular/router";
 import {session, timer} from "@app/app.common";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -24,40 +25,40 @@ import {calc, getNum, InputData, OutputData, 优化结果} from "./lvxingcaiyouh
 export class LvxingcaiyouhuaComponent implements OnInit {
   private http = inject(CadDataService);
   private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   @HostBinding("class") class = "ng-page";
 
-  inputs = signal<InputInfo[]>([]);
-  inputData = signal<InputData | null>(null);
-  qiekousunhao = signal(0);
-  outputData = signal<OutputData | null>(null);
-
-  constructor() {
-    const dataKey = "lvxingcaiyouhuaData";
-    this.inputData.set(session.load<InputData>(dataKey));
-    effect(() => {
-      const data = this.inputData();
-      session.save(dataKey, data);
-    });
-    const qiekousunhaoKey = "lvxingcaiyouhuaQiekousunhao";
-    this.qiekousunhao.set(session.load<number>(qiekousunhaoKey) || 0);
-    effect(() => {
-      const qiekousunhao = this.qiekousunhao();
-      session.save(qiekousunhaoKey, qiekousunhao);
-    });
-  }
-
   ngOnInit() {
-    this.updateInputs();
+    this.route.queryParams.subscribe(() => this.onQueryParamsChange());
   }
 
-  updateInputs() {
-    const inputs: ReturnType<typeof this.inputs> = [
+  private _dataKey = "lvxingcaiyouhuaData";
+  inputData = signal<InputData | null>(session.load<InputData>(this._dataKey));
+  inputDataEff = effect(() => session.save(this._dataKey, this.inputData()));
+
+  private _qiekousunhaoKey = "lvxingcaiyouhuaQiekousunhao";
+  qiekousunhao = signal(session.load<number>(this._qiekousunhaoKey) || 0);
+  qiekousunhaoEff = effect(() => session.save(this._qiekousunhaoKey, this.qiekousunhao()));
+
+  async onQueryParamsChange() {
+    const {optimizeCode} = this.route.snapshot.queryParams;
+    if (optimizeCode) {
+      this.code.set(optimizeCode);
+      await this.getOptimizeData();
+      this.calc();
+    }
+  }
+
+  inputs = computed(() => {
+    const inputData = this.inputData();
+    const infos: InputInfo[] = [
       {
         type: "string",
         label: "数据",
         textarea: {autosize: {minRows: 1, maxRows: 2}},
-        value: this.inputData() ? JSON.stringify(this.inputData()) : "",
+        value: inputData ? JSON.stringify(inputData) : "",
         onChange: (val) => {
           if (val) {
             try {
@@ -73,7 +74,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
           {
             name: "edit",
             onClick: async () => {
-              const result = await this.message.json(this.inputData(), {options: {mode: Mode.table}});
+              const result = await this.message.json(inputData, {options: {mode: Mode.table}});
               if (result) {
                 this.inputData.set(result);
               }
@@ -83,11 +84,13 @@ export class LvxingcaiyouhuaComponent implements OnInit {
       },
       {type: "number", label: "切口损耗", value: this.qiekousunhao(), onChange: (val) => this.qiekousunhao.set(val)}
     ];
-    this.inputs.set(inputs);
-  }
+    return infos;
+  });
 
-  calcResult: {result: OutputData; duration: number} | null = null;
-  calcResultInfo: {showDetails: boolean}[] = [];
+  code = signal("");
+  outputData = signal<OutputData | null>(null);
+  calcResult = signal<{result: OutputData; duration: number} | null>(null);
+  calcResultInfo = signal<{showDetails: boolean}[]>([]);
   calc() {
     const data = this.inputData();
     if (!data) {
@@ -100,9 +103,15 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     const duration = getNum(timer.getDuration(timerKey) || -1);
     timer.end(timerKey, timerKey);
     console.log(result);
-    this.calcResult = {result, duration};
-    this.calcResultInfo = result.铝型材优化结果.map(() => ({showDetails: true}));
+    this.calcResult.set({result, duration});
+    this.calcResultInfo.set(result.铝型材优化结果.map(() => ({showDetails: true})));
   }
+  toggleCalcResultInfoShowDetails(index: number) {
+    const info = this.calcResultInfo().slice();
+    info[index].showDetails = !info[index].showDetails;
+    this.calcResultInfo.set(info);
+  }
+
   async import() {
     const files = await selectFiles({accept: ".json"});
     const file = files?.[0];
@@ -118,23 +127,33 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     }
     if (data) {
       this.inputData.set(data);
-      this.updateInputs();
     }
   }
   export() {
     downloadByString(JSON.stringify(this.inputData()), {filename: "铝型材优化.json"});
   }
-  async getOptimizeData() {
-    const code = await this.message.prompt({type: "string", label: "订单号", validators: Validators.required});
+  async getOptimizeDataCode() {
+    const code = await this.message.prompt({type: "string", label: "订单号", value: this.code(), validators: Validators.required});
     if (!code) {
       return;
     }
-    const data = await this.http.getData<InputData>("xh_interface/getOptimizeData", {code});
+    this.router.navigate([], {queryParams: {optimizeCode: code}, queryParamsHandling: "merge"});
+  }
+  async getOptimizeData() {
+    const code = this.code();
+    const data = await this.http.getData<InputData>("order/lvxingcai/getOptimizeData", {code});
     if (!data) {
       return;
     }
     this.inputData.set(data);
-    this.updateInputs();
+  }
+  async setOptimizeData() {
+    const code = this.code();
+    const optimizeData = this.calcResult()?.result?.铝型材优化结果;
+    if (!code || !optimizeData) {
+      return;
+    }
+    await this.http.post("order/lvxingcai/saveOptimizeResult", {code, optimizeData});
   }
 
   getLengthsStr(item: 优化结果) {
