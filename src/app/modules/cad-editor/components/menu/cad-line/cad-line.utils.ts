@@ -1,6 +1,6 @@
 import {CadCollection} from "@app/cad/collections";
 import {算料公式} from "@components/lurushuju/xinghao-data";
-import {CadData, CadLine, CadLineLike, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
+import {CadData, CadLine, CadLineLike, CadViewer, setLinesLength, 企料位置识别} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -15,7 +15,8 @@ export const cadLineFields = {
   显示线长: "显示线长",
   关联变化公式: "guanlianbianhuagongshi",
   双向折弯附加值: "双向折弯附加值",
-  线长字体大小: "lengthTextSize"
+  线长字体大小: "lengthTextSize",
+  企料位置识别: "企料位置识别"
 } as const;
 
 export const getLine = (data: CadLineLike | (() => CadLineLike)) => (typeof data === "function" ? data() : data);
@@ -53,6 +54,9 @@ export const getCadLineInputs = (
         break;
       case "线长":
         info = {type: "number", label: key, value: lineLength, readonly: !isLine};
+        break;
+      case "企料位置识别":
+        info = {type: "select", label: key, model: {data: line, key: cadLineFields[key]}, options: 企料位置识别};
         break;
       case "可改名字":
         {
