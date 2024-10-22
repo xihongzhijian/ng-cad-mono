@@ -1498,12 +1498,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   openPeijiankuInNew() {
     this.status.openInNewTab(["/布局模块"], {queryParams: {page: "配件库"}});
   }
-  async openMenfengcanshu() {
-    const url = await this.http.getShortUrl("门缝参数");
-    if (url) {
-      open(url);
-    }
-  }
 
   showMenfengpeizhi = computed(() => this.activeTabName() === "锁边铰边");
   async menfengpeizhi() {

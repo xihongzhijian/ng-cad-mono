@@ -22,8 +22,20 @@ export const getMenfengPeizhiTableInfo = (items: MenfengpeizhiItem[]) => {
         name: "总门缝",
         width: "100px",
         getString: (item) => {
-          const arr = [item.suobianmenfeng, item.jiaobianmenfeng, item.dingbumenfeng, item.dibumenfeng];
-          const n = arr.reduce<number>((a, b) => (a || 0) + (b || 0), 0);
+          let n: number;
+          const a = item.suobianmenfeng || 0;
+          const b = item.jiaobianmenfeng || 0;
+          switch (item.chanpinfenlei) {
+            case "单门":
+              n = a + b;
+              break;
+            case "子母对开":
+            case "双开":
+              n = a + b * 2;
+              break;
+            default:
+              n = 0;
+          }
           return n.toString();
         }
       }
