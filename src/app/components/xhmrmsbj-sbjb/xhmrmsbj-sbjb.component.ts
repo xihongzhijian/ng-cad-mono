@@ -1,15 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  HostBinding,
-  inject,
-  input,
-  signal,
-  viewChild
-} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -27,7 +16,7 @@ import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {CellEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
+import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {cloneDeep} from "lodash";
@@ -268,20 +257,13 @@ export class XhmrmsbjSbjbComponent {
     this.activeItemIndex.set(i);
   }
 
-  activeSbjbItemIndex = signal<number>(0);
-  activeSbjbItemIndexEff = effect(
-    () => {
-      this.activeItemIndex();
-      this.activeSbjbItemIndex.set(0);
-    },
-    {allowSignalWrites: true}
-  );
+  activeSbjbItemIndex = signal<number>(-1);
   activeSbjbItem = computed(() => {
-    const tableItem = this.sbjbItemTableInfo()?.data[this.activeSbjbItemIndex()];
-    if (tableItem) {
-      return this.activeItem()?.锁边铰边数据?.[tableItem.originalIndex] || null;
+    const items = this.activeItem()?.锁边铰边数据;
+    if (!items) {
+      return null;
     }
-    return null;
+    return items[this.activeSbjbItemIndex()];
   });
 
   sbjbItemTable = viewChild<TableComponent<XhmrmsbjSbjbItemSbjbSorted>>("sbjbItemTable");
@@ -331,8 +313,23 @@ export class XhmrmsbjSbjbComponent {
         break;
     }
   }
-  onSbjbItemTableCellClick({rowIdx}: CellEvent<XhmrmsbjSbjbItemSbjbSorted>) {
-    this.activeSbjbItemIndex.set(rowIdx);
+  onSbjbItemTableCellClick({item}: CellEvent<XhmrmsbjSbjbItemSbjbSorted>) {
+    this.activeSbjbItemIndex.set(item.originalIndex);
+  }
+  onSbjbItemTableFilterAfter({dataSource}: FilterAfterEvent<XhmrmsbjSbjbItemSbjbSorted>) {
+    const index = this.activeSbjbItemIndex();
+    const items = dataSource.filteredData;
+    const item = items.find((v) => v.originalIndex === index);
+    if (!item) {
+      if (items.length > 0) {
+        this.activeSbjbItemIndex.set(items[0].originalIndex);
+        setTimeout(() => {
+          this.sbjbItemTable()?.scrollToRow(0);
+        }, 0);
+      } else {
+        this.activeSbjbItemIndex.set(-1);
+      }
+    }
   }
   async addSbjbItemSbjb() {
     const options = this.options();
@@ -471,7 +468,6 @@ export class XhmrmsbjSbjbComponent {
     await this.message.exportData(data.from, title);
   }
 
-  sbjbItemTableContainer = viewChild<ElementRef<HTMLElement>>("sbjbItemTableContainer");
   async validate() {
     const items = this.items();
     const errItems: {i: number; j: number; errKeys: string[]}[] = [];
@@ -506,13 +502,7 @@ export class XhmrmsbjSbjbComponent {
       this.activeItemIndex.set(errItem.i);
       setTimeout(() => {
         this.activeSbjbItemIndex.set(errItem.j);
-        const sbjbItemTableContainer = this.sbjbItemTableContainer()?.nativeElement;
-        if (sbjbItemTableContainer) {
-          const row = sbjbItemTableContainer.querySelectorAll("app-table mat-table mat-row")[errItem.j];
-          if (row) {
-            row.scrollIntoView({block: "center"});
-          }
-        }
+        this.sbjbItemTable()?.scrollToRow(errItem.j);
       }, 0);
       return false;
     }

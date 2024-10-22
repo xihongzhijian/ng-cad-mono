@@ -1,4 +1,5 @@
 import {AbstractControlOptions} from "@angular/forms";
+import {MatTableDataSource} from "@angular/material/table";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {InputInfoOptions} from "@modules/input/components/input.types";
 import {Properties} from "csstype";
@@ -138,6 +139,10 @@ export interface CellEvent<T> {
   item: T;
   colIdx: number;
   rowIdx: number;
+}
+
+export interface FilterAfterEvent<T> {
+  dataSource: MatTableDataSource<T>;
 }
 
 export type ItemGetter<T> = ((rowIdx: number) => T | null) | ((rowIdx: number) => Promise<T | null>);

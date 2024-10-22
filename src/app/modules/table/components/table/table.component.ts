@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   DoCheck,
+  ElementRef,
   EventEmitter,
   forwardRef,
   HostBinding,
@@ -16,6 +17,7 @@ import {
   Output,
   signal,
   SimpleChanges,
+  viewChild,
   ViewChild,
   viewChildren
 } from "@angular/core";
@@ -53,6 +55,7 @@ import {ImageComponent} from "../../../image/components/image/image.component";
 import {
   CellEvent,
   ColumnInfo,
+  FilterAfterEvent,
   InfoKey,
   ItemGetter,
   RowButtonEvent,
@@ -94,6 +97,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   @Output() cellChange = new EventEmitter<CellEvent<T>>();
   @Output() cellClick = new EventEmitter<CellEvent<T>>();
   @Output() toolbarButtonClick = new EventEmitter<ToolbarButtonEvent>();
+  @Output() filterAfter = new EventEmitter<FilterAfterEvent<T>>();
 
   rowSelection: SelectionModel<number>;
   columnFields: (keyof T | "select")[] = [];
@@ -785,5 +789,17 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       return true;
     };
     dataSource.filter = uniqueId("tableFilter");
+    this.filterAfter.emit({dataSource});
+  }
+
+  tableEl = viewChild("tableComponent", {read: ElementRef<HTMLElement>});
+  scrollToRow(index: number) {
+    const tableEl = this.tableEl()?.nativeElement;
+    if (tableEl) {
+      const row = tableEl.querySelectorAll("app-table mat-table mat-row")[index];
+      if (row) {
+        row.scrollIntoView({block: "center"});
+      }
+    }
   }
 }

@@ -160,7 +160,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
         ]
       }
     ],
-    getCellClass: ({rowIdx}) => (rowIdx === activeSbjbItemIndex() ? "active" : "")
+    getCellClass: ({item}) => (item.originalIndex === activeSbjbItemIndex() ? "active" : "")
   };
   return info;
 };

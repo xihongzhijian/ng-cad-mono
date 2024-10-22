@@ -14,7 +14,7 @@
   </ng-scrollbar>
   <mat-divider vertical></mat-divider>
   <div class="flex-column flex-110">
-    <div class="flex-column flex-110" #sbjbItemTableContainer>
+    <div class="flex-column flex-110">
       @if (sbjbItemTableInfo(); as info) {
         <app-table
           #sbjbItemTable
@@ -22,6 +22,7 @@
           [info]="info"
           (rowButtonClick)="onSbjbItemTableRow($event)"
           (cellClick)="onSbjbItemTableCellClick($event)"
+          (filterAfter)="onSbjbItemTableFilterAfter($event)"
         ></app-table>
       }
     </div>
