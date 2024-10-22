@@ -128,7 +128,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
     data: getSortedItems(data, (v) => v.排序 ?? 0),
     rowSelection: {mode: "multiple", noActive: true},
     filterable: {
-      searchFields: ["开启", "门铰", "门扇厚度", "锁边", "铰边"]
+      fields: ["开启", "门铰", "门扇厚度", "锁边", "铰边"]
     },
     columns: [
       {type: "string", field: "开启"},

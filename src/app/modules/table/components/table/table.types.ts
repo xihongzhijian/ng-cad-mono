@@ -35,7 +35,7 @@ export interface TableRenderInfo<T> {
   getCellStyle?: (event: CellEvent<T>) => Properties;
 }
 export interface TableRenderInfoFilterable<T> {
-  searchFields?: (keyof T)[];
+  fields?: (keyof T)[];
 }
 
 export interface RowSelection {

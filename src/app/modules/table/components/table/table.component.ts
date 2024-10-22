@@ -129,10 +129,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     }
     let fields: (keyof T)[] | undefined;
     if (typeof filterable === "object") {
-      fields = filterable.searchFields;
-      // if (filterable.setInputInfosFn) {
-      //   filterable.setInputInfosFn(infos);
-      // }
+      fields = filterable.fields;
     }
     const columns = this.info.columns;
     if (!fields) {
