@@ -94,9 +94,21 @@ export class AppComponent {
   onKeyDown(event: KeyboardEvent) {
     if (event.key === "Enter") {
       if (document.activeElement instanceof HTMLInputElement) {
-        emulateTab();
-        event.preventDefault();
+        if (emulateTab()) {
+          const next = document.activeElement;
+          if (next instanceof HTMLInputElement) {
+            next.select();
+          }
+          event.preventDefault();
+        }
       }
+    }
+  }
+  @HostListener("window:dblclick", ["$event"])
+  onDblClick(event: MouseEvent) {
+    const el = event.target;
+    if (el instanceof HTMLInputElement) {
+      el.select();
     }
   }
 }
