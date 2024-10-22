@@ -54,12 +54,6 @@
       <div [style]="info.subTitleStyle">{{ info.subTitle }}</div>
     }
   }
-  @for (item of errorState; track $index) {
-    <div class="error-msg">
-      <mat-icon>error</mat-icon>
-      <div>{{ item.msg }}</div>
-    </div>
-  }
   <div class="table-body">
     <mat-table [dataSource]="dataSource" matSort>
       <div>
@@ -94,7 +88,6 @@
               *matCellDef="let item; let rowIdx = index"
               [class]="getCellClass(column, item, rowIdx, colIdx)"
               [style]="getCellStyle(column, item, rowIdx, colIdx)"
-              [class.error]="!isVaild(rowIdx)"
               (click)="onCellClick({column, item, colIdx, rowIdx})"
             >
               @if (info.isTree && colIdx === 0) {
@@ -110,51 +103,6 @@
                 </button>
               }
               @switch (column.type) {
-                @case ("string") {
-                  @if (isColumnEditable({column, item, colIdx, rowIdx})) {
-                    <mat-form-field>
-                      <input
-                        type="text"
-                        matInput
-                        [value]="item[column['field']]"
-                        (change)="setCellValue($event, colIdx, rowIdx, item)"
-                        (focus)="onCellFocus($event, colIdx, rowIdx, item)"
-                        (blur)="onCellBlur($event, colIdx, rowIdx, item)"
-                      />
-                    </mat-form-field>
-                  } @else {
-                    <span [innerHTML]="getValueString(item, column)"></span>
-                  }
-                }
-                @case ("number") {
-                  @if (isColumnEditable({column, item, colIdx, rowIdx})) {
-                    <mat-form-field>
-                      <input
-                        matInput
-                        type="number"
-                        [value]="item[column['field']]"
-                        (change)="setCellValue($event, colIdx, rowIdx, item)"
-                        (focus)="onCellFocus($event, colIdx, rowIdx, item)"
-                        (blur)="onCellBlur($event, colIdx, rowIdx, item)"
-                      />
-                    </mat-form-field>
-                  } @else {
-                    <span [innerHTML]="getValueString(item, column)"></span>
-                  }
-                }
-                @case ("boolean") {
-                  @if (isColumnEditable({column, item, colIdx, rowIdx})) {
-                    <mat-form-field>
-                      <input type="text" matInput hidden />
-                      <mat-slide-toggle
-                        [checked]="!!item[column['field']]"
-                        (change)="setCellValue($event, colIdx, rowIdx, item)"
-                      ></mat-slide-toggle>
-                    </mat-form-field>
-                  } @else {
-                    <span [innerHTML]="getValueString(item, column)"></span>
-                  }
-                }
                 @case ("time") {
                   @if (isColumnEditable({column, item, colIdx, rowIdx})) {
                     <mat-form-field>
@@ -167,21 +115,6 @@
                         (focus)="onCellFocus($event, colIdx, rowIdx, item)"
                         (blur)="onCellBlur($event, colIdx, rowIdx, item)"
                       />
-                    </mat-form-field>
-                  } @else {
-                    <span [innerHTML]="getValueString(item, column)"></span>
-                  }
-                }
-                @case ("select") {
-                  @if (isColumnEditable({column, item, colIdx, rowIdx})) {
-                    <mat-form-field>
-                      <mat-select [value]="item[column['field']]" (selectionChange)="setCellValue($event, colIdx, rowIdx, item)">
-                        @for (item of getColumnOptions(column); track $index) {
-                          <mat-option [value]="item">
-                            {{ item }}
-                          </mat-option>
-                        }
-                      </mat-select>
                     </mat-form-field>
                   } @else {
                     <span [innerHTML]="getValueString(item, column)"></span>
@@ -256,6 +189,15 @@
                       </div>
                     }
                   </div>
+                }
+                @default {
+                  @if (isColumnEditable({column, item, colIdx, rowIdx})) {
+                    @if (cellInputInfos().at(rowIdx)?.at(colIdx); as info) {
+                      <app-input #cellInput [info]="info"></app-input>
+                    }
+                  } @else {
+                    <span [innerHTML]="getValueString(item, column)"></span>
+                  }
                 }
               }
             </mat-cell>

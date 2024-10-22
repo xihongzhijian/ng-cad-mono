@@ -16,8 +16,10 @@ import {
   Output,
   signal,
   SimpleChanges,
-  ViewChild
+  ViewChild,
+  viewChildren
 } from "@angular/core";
+import {FormControl} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatOptionModule} from "@angular/material/core";
@@ -45,7 +47,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
 import {Properties} from "csstype";
-import {cloneDeep, debounce, intersection, isEqual} from "lodash";
+import {cloneDeep, debounce, intersection, isEmpty, isEqual} from "lodash";
 import {Subscription} from "rxjs";
 import {ImageComponent} from "../../../image/components/image/image.component";
 import {
@@ -55,7 +57,6 @@ import {
   ItemGetter,
   RowButtonEvent,
   RowSelectionChange,
-  TableErrorState,
   TableRenderInfo,
   ToolbarButtonEvent
 } from "./table.types";
@@ -98,7 +99,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   columnFields: (keyof T | "select")[] = [];
   @ViewChild(MatTable) table?: MatTable<T>;
   @ViewChild(MatSort) sort?: MatSort;
-  errorState: TableErrorState = [];
   private infoDiffer: KeyValueDiffer<string, any>;
   treeControl = new FlatTreeControl<any>(
     (node) => node.level,
@@ -252,18 +252,28 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         }
       }
     }
-    if (intersection<InfoKey>(changedKeys, ["data", "validator", "isTree"]).length > 0) {
+    if (intersection<InfoKey>(changedKeys, ["data", "isTree"]).length > 0) {
       const data = this.info.data;
       if (this.info.isTree) {
         this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener, data);
       } else {
         this.dataSource = new MatTableDataSource(data);
       }
-      this.validate();
       this.filterTable();
     }
     if (intersection<InfoKey>(changedKeys, ["class"]).length > 0) {
       this.class = this.info.class;
+    }
+    if (intersection<InfoKey>(changedKeys, ["data", "columns"]).length > 0) {
+      const cellInputInfos: InputInfo[][] = [];
+      for (const [rowIdx, item] of this.info.data.entries()) {
+        const group: InputInfo[] = [];
+        for (const [colIdx, column] of this.info.columns.entries()) {
+          group.push(this.getCellInputInfo({column, item, colIdx, rowIdx}));
+        }
+        cellInputInfos.push(group);
+      }
+      this.cellInputInfos.set(cellInputInfos);
     }
   }
 
@@ -392,9 +402,9 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     }
     const valueAfter = item[field];
     if (!isEqual(valueBefore, valueAfter)) {
-      this.validate();
+      const control = new FormControl(valueAfter, column.validators);
       const item2 = item as TableDataBase;
-      if (onlineMode && this.errorState.length < 1) {
+      if (onlineMode && isEmpty(control.errors)) {
         this.http.tableUpdate({table: onlineMode.tableName, data: {vid: item2.vid, [field]: valueAfter}});
       }
       this.cellChange.emit({column, item, colIdx, rowIdx});
@@ -453,7 +463,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       }
       if (Array.isArray(data)) {
         data.forEach((v) => this.info.data.push(v));
-        this.validate();
       } else {
         this.message.alert("数据格式错误");
       }
@@ -484,17 +493,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     return [];
   }
 
-  validate() {
-    if (this.info.validator && this.dataSource instanceof MatTableDataSource) {
-      this.errorState = this.info.validator(this.dataSource);
-    } else {
-      this.errorState = [];
-    }
-  }
-
-  isVaild(row: number) {
-    for (const v of this.errorState) {
-      if (v.rows.includes(row)) {
+  cellInputs = viewChildren<InputComponent>("cellInput");
+  cellInputInfos = signal<InputInfo[][]>([]);
+  isVaild() {
+    for (const input of this.cellInputs()) {
+      const errors = input.validateValue();
+      if (!isEmpty(errors)) {
         return false;
       }
     }
@@ -735,6 +739,26 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     };
     addRows(this.info.data);
     this.http.downloadExcel(data, this.info.title, opts?.filename);
+  }
+
+  getCellInputInfo(event: CellEvent<T>): InputInfo<T> {
+    let info: InputInfo = {type: "string", label: ""};
+    const onChange = () => this.cellChange.emit(event);
+    const column = event.column;
+    switch (column.type) {
+      case "string":
+      case "number":
+      case "boolean":
+      case "image":
+        info = {type: column.type, label: "", onChange};
+        break;
+      case "select":
+        info = {type: column.type, label: "", options: column.options, onChange};
+    }
+    info.model = {data: event.item, key: column.field};
+    info.validators = column.validators;
+    info.style = {width: "0", flex: "1 1 0"};
+    return info;
   }
 
   getValueString(item: T, column: ColumnInfo<T>) {

@@ -1,17 +1,17 @@
 @if (!isFloatingDialog()) {
   <div class="toolbar">
     @for (name of tabNames(); track $index) {
-      <button mat-raised-button [color]="name === activeTabName() ? 'accent' : 'primary'" (click)="activeTabName.set(name)">
+      <button mat-raised-button [color]="name === activeTabName() ? 'accent' : 'primary'" (click)="setActiveTabName(name)">
         {{ name }}
       </button>
     }
     @if (!isFromOrder() || isZhijian()) {
+      <mat-divider vertical class="large placeholder"></mat-divider>
+      <button mat-raised-button color="primary">算料单</button>
       <button mat-raised-button color="primary" (click)="openMokuaikuInNew()">模块库</button>
       <button mat-raised-button color="primary" (click)="openPeijiankuInNew()">配件库</button>
       <mat-divider vertical class="large placeholder"></mat-divider>
-      <button mat-raised-button color="primary">算料单</button>
       <button mat-raised-button color="primary" (click)="openMenfengcanshu()">门缝参数</button>
-      <button mat-raised-button color="primary" (click)="menfengpeizhi()">门缝配置</button>
     }
     <mat-divider vertical class="large placeholder"></mat-divider>
     @if (isFromOrder()) {
@@ -49,10 +49,9 @@
     <div class="title" [class]="canOpenXhmrmsbj() ? 'link text' : ''" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
   </div>
 }
-@if (!isFromOrder() && loadSbjb()) {
-  @if (xinghao(); as xinghao) {
-    <app-xhmrmsbj-sbjb [class.hidden]="activeTabName() !== '锁边铰边'" [xinghaoName]="xinghao.raw.mingzi"></app-xhmrmsbj-sbjb>
-  }
+@if (!isFromOrder()) {
+  <app-xhmrmsbj-sbjb [class.hidden]="activeTabName() !== '锁边铰边'" [xinghao]="xinghao()"></app-xhmrmsbj-sbjb>
+  <app-menfeng-peizhi [class.hidden]="activeTabName() !== '门缝配置'" [xinghao]="xinghao()" [sbjbItems]="sbjbItems()"></app-menfeng-peizhi>
 }
 <div class="flex-row flex-110" [class.hidden]="activeTabName() !== '门扇模块'">
   @if (!isFloatingDialog()) {
@@ -263,7 +262,7 @@
       [data]="openedMkdxpz.data"
       [title]="openedMkdxpz.title"
       [varNameItem]="openedMkdxpz.varNameItem"
-      [validator]="mkdcpzValidator"
+      [validator]="mkdxpzValidator"
       closable
       (close)="closeMkdxpz($event)"
     ></app-mkdxpz-editor>

@@ -29,6 +29,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
+import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {cloneDeep} from "lodash";
 import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -68,8 +69,9 @@ export class XhmrmsbjSbjbComponent {
 
   @HostBinding("class") class = "ng-page";
 
-  xinghaoName = input.required<string>();
+  xinghao = input.required<MrbcjfzXinghaoInfo | null>();
 
+  xinghaoName = computed(() => this.xinghao()?.raw.mingzi);
   items = signal<XhmrmsbjSbjbItem[]>([]);
   refreshItems() {
     this.items.update((v) => v.map((v2) => ({...v2, 锁边铰边数据: v2.锁边铰边数据.map((v3) => ({...v3}))})));
@@ -245,9 +247,13 @@ export class XhmrmsbjSbjbComponent {
 
   fetchDataEff = effect(() => this.fetchData(), {allowSignalWrites: true});
   async fetchData() {
+    const xinghao = this.xinghaoName();
+    if (!xinghao) {
+      return;
+    }
     const data = await this.http.getData<{锁边铰边: XhmrmsbjSbjbItem[]; CAD数据map: ObjectOf<HoutaiCad>; 选项: OptionsAll2}>(
       "shuju/api/getsuobianjiaobianData",
-      {xinghao: this.xinghaoName()}
+      {xinghao}
     );
     if (data) {
       this.items.set(data.锁边铰边);
@@ -390,6 +396,13 @@ export class XhmrmsbjSbjbComponent {
       to.锁边铰边数据.push(...fromItems);
     }
     this.refreshItems();
+  }
+
+  async mf() {
+    const xinghao = this.xinghaoName();
+    const suobianjiaobian = this.items();
+    const data = await this.http.getData("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian});
+    console.log(data);
   }
 
   import() {

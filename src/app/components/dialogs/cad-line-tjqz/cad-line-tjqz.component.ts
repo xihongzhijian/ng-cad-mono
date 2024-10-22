@@ -5,7 +5,7 @@ import {CadLine} from "@lucilor/cad-viewer";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {CellEvent, ItemGetter, TableErrorState, TableRenderInfo} from "@modules/table/components/table/table.types";
+import {CellEvent, ItemGetter, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {cloneDeep} from "lodash";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {CadLineTjqzSelectData, openCadLineTjqzSelectDialog} from "../cad-line-tjqz-select/cad-line-tjqz-select.component";
@@ -39,40 +39,31 @@ export class CadLineTjqzComponent {
     private message: MessageService,
     private console: CadConsoleService
   ) {
+    const tiaojianquzhi = cloneDeep(data.tiaojianquzhi);
     this.infoLeft = {
-      data: cloneDeep(data.tiaojianquzhi),
+      data: tiaojianquzhi,
       rowSelection: {mode: "multiple"},
       columns: [
         {field: "key", name: "名字", type: "string", editable: true},
-        {field: "level", name: "优先级", type: "number", editable: true},
+        {
+          field: "level",
+          name: "优先级",
+          type: "number",
+          editable: true,
+          validators: (control) => {
+            const items = tiaojianquzhi.filter((v) => v.level === control.value);
+            if (items.length > 1) {
+              return {优先级重复: true};
+            }
+            return null;
+          }
+        },
         {field: "type", name: "类型", type: "select", options: ["选择", "数值", "数值+选择"], editable: true}
       ],
       title: "条件取值",
       editMode: true,
       newItem: (rowIdx: number) => ({key: "", level: rowIdx + 1, type: "数值", data: []}),
-      toolbarButtons: {add: true, remove: true, import: true, export: true},
-      validator: (data2) => {
-        const result: TableErrorState = [];
-        const duplicateLevels: number[] = [];
-        const levels: number[] = [];
-        const rows: number[] = [];
-        data2.data.forEach((v) => {
-          if (levels.includes(v.level)) {
-            duplicateLevels.push(v.level);
-          } else {
-            levels.push(v.level);
-          }
-        });
-        data2.data.forEach((v, row) => {
-          if (duplicateLevels.includes(v.level)) {
-            rows.push(row);
-          }
-        });
-        if (rows.length) {
-          result.push({rows, msg: "优先级重复"});
-        }
-        return result;
-      }
+      toolbarButtons: {add: true, remove: true, import: true, export: true}
       // dataTransformer: (type, data) => {
       //   if (type === "import") {
       //     let maxLevel = -Infinity;
@@ -102,7 +93,7 @@ export class CadLineTjqzComponent {
   }
 
   submit() {
-    if (this.tableLeft?.errorState.length) {
+    if (!this.tableLeft?.isVaild()) {
       this.message.alert("当前数据存在错误");
     } else {
       this.data.tiaojianquzhi = this.infoLeft.data;

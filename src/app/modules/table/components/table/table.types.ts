@@ -1,5 +1,5 @@
-import {MatTableDataSource} from "@angular/material/table";
-import {ObjectOf} from "@lucilor/utils";
+import {AbstractControlOptions} from "@angular/forms";
+import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOptions} from "@modules/input/components/input.types";
 import {Properties} from "csstype";
 
@@ -15,7 +15,6 @@ export interface TableRenderInfo<T> {
   sortable?: boolean;
   filterable?: boolean | TableRenderInfoFilterable<T>;
   rowSelection?: RowSelection;
-  validator?: TableValidator<T>;
   activeRows?: number[];
   dataTransformer?: DataTransformer<T>;
   toolbarButtons?: {
@@ -28,7 +27,7 @@ export interface TableRenderInfo<T> {
     extra?: TableButton[];
   };
   isTree?: boolean;
-  onlineMode?: {tableName: string; refresh: () => Promise<void>};
+  onlineMode?: {tableName: string; refresh: () => MaybePromise<void>};
   noScroll?: boolean;
   class?: string | string[];
   style?: Properties;
@@ -68,6 +67,7 @@ export interface ColumnInfoBase<T> {
   hidden?: boolean;
   style?: Properties;
   getString?: (value: T) => string;
+  validators?: AbstractControlOptions["validators"];
 }
 
 export interface ColumnInfoNormal<T> extends ColumnInfoBase<T> {
@@ -120,10 +120,6 @@ export type ColumnInfo<T> =
   | ColumnInfoImage<T>
   | ColumnInfoFile<T>
   | ColumnInfoCad<T>;
-
-export type TableErrorState = {rows: number[]; msg: string}[];
-
-export type TableValidator<T> = (data: MatTableDataSource<T>) => TableErrorState;
 
 export interface ToolbarButtonEvent {
   button: TableButton;

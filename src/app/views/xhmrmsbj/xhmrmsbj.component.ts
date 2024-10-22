@@ -77,6 +77,7 @@ import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, Subject} from "rxjs";
 import {MokuaiItemComponent} from "../../components/bujumokuai/mokuai-item/mokuai-item.component";
+import {MenfengPeizhiComponent} from "../../components/menfeng-peizhi/menfeng-peizhi.component";
 import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {InputComponent} from "../../modules/input/components/input.component";
@@ -119,7 +120,8 @@ const table = "p_xinghaomorenmenshanbuju";
     NgScrollbar,
     NgTemplateOutlet,
     TypedTemplateDirective,
-    XhmrmsbjSbjbComponent
+    XhmrmsbjSbjbComponent,
+    MenfengPeizhiComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -171,11 +173,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   suanliaoLock$ = new BehaviorSubject(false);
   genXiaoguotuLock$ = new BehaviorSubject(false);
   production = environment.production;
-  loadSbjb = signal(false);
 
   msbjRectsComponent = viewChild(MsbjRectsComponent);
   xiaoguotuContainer = viewChild<ElementRef<HTMLDivElement>>("xiaoguotuContainer");
   sbjb = viewChild(XhmrmsbjSbjbComponent);
+  sbjbItems = computed(() => this.sbjb()?.items() || []);
+  mfpz = viewChild(MenfengPeizhiComponent);
 
   constructor() {
     setGlobal("xhmrmsbj", this);
@@ -810,12 +813,19 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   async submit() {
     const sbjb = this.sbjb();
     if (sbjb) {
-      const success = await sbjb.save();
-      if (!success) {
+      if (!(await sbjb.save())) {
         this.activeTabName.set("锁边铰边");
         return;
       }
     }
+    const mfpz = this.mfpz();
+    if (mfpz) {
+      if (!(await mfpz.submit())) {
+        this.activeTabName.set("门缝配置");
+        return;
+      }
+    }
+
     const dataInfo = this.data();
     const isFromOrder = this.isFromOrder();
     if (!dataInfo || isFromOrder) {
@@ -973,7 +983,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     const data: TableUpdateParams<MsbjData>["data"] = dataInfo.export();
-    console.log(data);
     // delete data.mingzi;
     await this.http.tableUpdate({table, data});
     this.isSubmited.set(true);
@@ -1006,18 +1015,30 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   private _activeTabNameKey = "xhmrmsbjActiveTabName";
   activeTabName = signal<XhmrmsbjTabName>(session.load(this._activeTabNameKey) || "门扇模块");
   activeTabNameEff = effect(
-    () => {
+    async () => {
       const name = this.activeTabName();
       session.save(this._activeTabNameKey, name);
       setTimeout(() => {
         this.msbjRectsComponent()?.generateRects();
       }, 0);
-      if (name === "锁边铰边") {
-        this.loadSbjb.set(true);
-      }
     },
     {allowSignalWrites: true}
   );
+  async setActiveTabName(name: XhmrmsbjTabName) {
+    const nameOld = this.activeTabName();
+    if (nameOld === name) {
+      this.activeTabName.set(name);
+      return;
+    }
+    if (nameOld === "门缝配置") {
+      const mfpz = this.mfpz();
+      if (mfpz && !(await mfpz.submit())) {
+        this.activeTabName.set("门缝配置");
+        return;
+      }
+    }
+    this.activeTabName.set(name);
+  }
 
   async setKexuanmokuai(mokuais?: ZixuanpeijianMokuaiItem[]) {
     const rectInfo = this.activeRectInfo();
@@ -1483,16 +1504,18 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       open(url);
     }
   }
+
+  showMenfengpeizhi = computed(() => this.activeTabName() === "锁边铰边");
   async menfengpeizhi() {
     const xinghao = this.xinghao()?.raw.mingzi;
-    const suobianjiaobian = this.sbjb()?.activeItem();
-    if (!xinghao || !suobianjiaobian) {
+    const suobianjiaobian = this.sbjb()?.items() || [];
+    if (!xinghao) {
       return;
     }
     await this.http.getData("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian});
   }
 
-  mkdcpzValidator: FormulasValidatorFn = (formulasList) => {
+  mkdxpzValidator: FormulasValidatorFn = (formulasList) => {
     const msbjInfo = this.activeMsbjInfo();
     const names = getNodeFormulasKeys(msbjInfo?.模块节点?.map((v) => v.层名字) || []);
     if (
