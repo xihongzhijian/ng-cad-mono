@@ -38,7 +38,7 @@ import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-edi
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types";
 import {CadData} from "@lucilor/cad-viewer";
-import {downloadByString, isTypeOf, queryStringList, selectFiles} from "@lucilor/utils";
+import {downloadByString, isTypeOf, queryString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -47,7 +47,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
 import {Properties} from "csstype";
-import {cloneDeep, debounce, intersection, isEmpty, isEqual} from "lodash";
+import {cloneDeep, debounce, intersection, isEmpty, isEqual, uniqueId} from "lodash";
 import {Subscription} from "rxjs";
 import {ImageComponent} from "../../../image/components/image/image.component";
 import {
@@ -118,8 +118,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   dataSource: MatTreeFlatDataSource<any, any> | MatTableDataSource<T> = new MatTableDataSource();
 
   editing: {colIdx: number; rowIdx: number; value: string};
-  filterStr = signal("");
-  filterField = signal("");
+  filterForm = new Map<keyof T, string>();
   filterInputInfosFlag = signal(0);
   filterInputInfos = computed(() => {
     this.filterInputInfosFlag();
@@ -128,42 +127,37 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (!filterable) {
       return null;
     }
-    const fields = info.columns.filter((v) => !v.hidden).map((v) => v.field as string);
-    const infos: InputInfo[] = [
-      {
-        type: "select",
-        label: "搜索",
-        options: fields,
-        multiple: false,
-        clearable: true,
-        value: this.filterField(),
-        hidden: true,
-        onChange: (val) => {
-          this.filterField.set(val);
-          this.filterTable();
-        }
-      },
-      {
+    let fields: (keyof T)[] | undefined;
+    if (typeof filterable === "object") {
+      fields = filterable.searchFields;
+      // if (filterable.setInputInfosFn) {
+      //   filterable.setInputInfosFn(infos);
+      // }
+    }
+    const columns = this.info.columns;
+    if (!fields) {
+      fields = columns.map((v) => v.field);
+    }
+    const form = this.filterForm;
+    return fields.map((field) => {
+      const column = columns.find((v) => v.field === field);
+      let label = "搜索";
+      if (column) {
+        label += `：${column.name || String(column.field)}`;
+      }
+      const info: InputInfo = {
         type: "string",
-        label: "搜索",
-        value: this.filterStr(),
+        label,
         clearable: true,
+        value: form.get(field) || "",
         onInput: debounce((val) => {
-          this.filterStr.set(val);
+          form.set(field, val);
           this.filterTable();
         }, 100),
-        style: {flex: "1 1 0"}
-      }
-    ];
-    if (typeof filterable === "object") {
-      if (filterable.selectField) {
-        infos[0].hidden = false;
-      }
-      if (filterable.setInputInfosFn) {
-        filterable.setInputInfosFn(infos);
-      }
-    }
-    return infos;
+        style: {width: "150px"}
+      };
+      return info;
+    });
   });
 
   get toolbarButtons() {
@@ -231,14 +225,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     });
 
     this.filterInputInfosFlag.update((v) => v + 1);
-    if (intersection<InfoKey>(changedKeys, ["filterable"]).length > 0) {
-      const filterable = this.info.filterable;
-      if (filterable) {
-        if (typeof filterable === "object" && filterable.selectFieldDefault && !this.filterField()) {
-          this.filterField.set(filterable.selectFieldDefault as string);
-        }
-      }
-    }
 
     if (intersection<InfoKey>(changedKeys, ["columns", "rowSelection"]).length > 0) {
       this.columnFields = [...this.info.columns.filter((v) => !v.hidden).map((v) => v.field)];
@@ -787,29 +773,20 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (!filterable || !(dataSource instanceof MatTableDataSource)) {
       return;
     }
-    dataSource.filter = this.filterStr();
-    dataSource.filterPredicate = (data: any, filter: string) => {
+    dataSource.filterPredicate = (data: T) => {
       const {filterable} = this.info;
       if (!filterable || !isTypeOf(data, "object")) {
         return true;
       }
-      let searchColumns: string[] | undefined;
-      let selectField: boolean | undefined;
-      if (typeof filterable === "object") {
-        searchColumns = filterable.searchColumns;
-        selectField = filterable.selectField;
+      const form = this.filterForm;
+      for (const [k, v] of form) {
+        const dataVal = getValueString(data[k]);
+        if (!queryString(v.trim(), dataVal)) {
+          return false;
+        }
       }
-      if (!Array.isArray(searchColumns)) {
-        searchColumns = this.columnFields as string[];
-      }
-      let values: string[];
-      const field = this.filterField();
-      if (selectField && field) {
-        values = [getValueString(data[field])];
-      } else {
-        values = searchColumns.map((v) => getValueString(data[v]));
-      }
-      return queryStringList(filter, values);
+      return true;
     };
+    dataSource.filter = uniqueId("tableFilter");
   }
 }

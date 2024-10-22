@@ -1,6 +1,6 @@
 import {AbstractControlOptions} from "@angular/forms";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
-import {InputInfo, InputInfoOptions} from "@modules/input/components/input.types";
+import {InputInfoOptions} from "@modules/input/components/input.types";
 import {Properties} from "csstype";
 
 export interface TableRenderInfo<T> {
@@ -35,10 +35,7 @@ export interface TableRenderInfo<T> {
   getCellStyle?: (event: CellEvent<T>) => Properties;
 }
 export interface TableRenderInfoFilterable<T> {
-  searchColumns?: string[];
-  selectField?: boolean;
-  selectFieldDefault?: keyof T;
-  setInputInfosFn?: (infos: InputInfo[]) => void;
+  searchFields?: (keyof T)[];
 }
 
 export interface RowSelection {

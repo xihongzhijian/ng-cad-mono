@@ -128,13 +128,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
     data: getSortedItems(data, (v) => v.排序 ?? 0),
     rowSelection: {mode: "multiple", noActive: true},
     filterable: {
-      searchColumns: ["开启", "门铰", "门扇厚度", "锁边", "铰边"],
-      selectField: true,
-      selectFieldDefault: "开启",
-      setInputInfosFn: (infos) => {
-        infos[0].style = {width: "180px"};
-        infos[1].style = {width: "180px"};
-      }
+      searchFields: ["开启", "门铰", "门扇厚度", "锁边", "铰边"]
     },
     columns: [
       {type: "string", field: "开启"},
