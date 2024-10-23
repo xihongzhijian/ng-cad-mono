@@ -23,7 +23,7 @@ import {Debounce} from "@decorators/debounce";
 import {environment} from "@env";
 import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, setLinesLength} from "@lucilor/cad-viewer";
 import {getElementVisiblePercentage, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
-import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList, HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -484,24 +484,22 @@ export class ZixuanpeijianComponent implements OnInit {
   async step3Add() {
     const yaoqiu = this.getLingsanYaoqiu();
     const cadData = new CadData({type: this.lingsanCadType});
-    const yaoqiuItems = yaoqiu?.新建CAD要求 || [];
-    setCadData(cadData, yaoqiuItems);
+    setCadData(cadData, yaoqiu, "add");
     const {collection} = this;
     const gongshis = this.data?.gongshis;
-    const form = await getCadInfoInputs2(yaoqiu, "add", collection, cadData, this.http, this.dialog, this.status, true, gongshis);
-    const result = await this.message.form<typeof data>(form);
-    if (!result) {
+    const cadData2 = await openCadForm(yaoqiu, collection, cadData, this.http, this.dialog, this.status, this.message, true, gongshis);
+    if (!cadData2) {
       return;
     }
-    const {uploadDxf} = cadData.info;
+    const {uploadDxf} = cadData2.info;
     if (uploadDxf instanceof File) {
-      await uploadAndReplaceCad(uploadDxf, cadData, true, this.message, this.http);
+      await uploadAndReplaceCad(uploadDxf, cadData2, true, this.message, this.http);
     }
     const {xinghao} = this.data?.lingsanOptions || {};
     if (xinghao) {
-      cadData.options.型号 = xinghao;
+      cadData2.options.型号 = xinghao;
     }
-    const data = getHoutaiCad(cadData);
+    const data = getHoutaiCad(cadData2);
     const resData = await this.http.mongodbInsert<HoutaiCad>(collection, data, {force: !!yaoqiu});
     if (resData) {
       if (await this.message.confirm("是否编辑新的CAD？")) {
@@ -978,8 +976,7 @@ export class ZixuanpeijianComponent implements OnInit {
     const data = item.data.clone(true);
     data.info.imgId = await this.http.getMongoId();
     const yaoqiu = this.getLingsanYaoqiu();
-    const yaoqiuItems = yaoqiu?.选中CAD要求 || [];
-    setCadData(data, yaoqiuItems);
+    setCadData(data, yaoqiu, "set");
     const names = this.result.零散.map((v) => v.data.name);
     data.name = getNameWithSuffix(names, data.name, "_", 1);
     this.result.零散.push({data, info: {houtaiId: item.data.id, zhankai: [], calcZhankai: []}});

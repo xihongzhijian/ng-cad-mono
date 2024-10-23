@@ -7,7 +7,6 @@ export interface BaseMessageData {
   content?: any;
   disableCancel?: boolean;
   titleClass?: string;
-  contentClass?: string;
   beforeClose?: (event: MessageBeforeCloseEvent) => MaybePromise<boolean>;
 }
 export interface MessageBeforeCloseEvent {

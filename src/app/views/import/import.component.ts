@@ -489,7 +489,7 @@ export class ImportComponent implements OnInit {
         yaoqiu = await this.status.fetchAndGetCadYaoqiu(data.type);
       }
       if (!skipYaoqiu && yaoqiu) {
-        setCadData(data, yaoqiu.新建CAD要求);
+        setCadData(data, yaoqiu, "add");
         for (const {cadKey, key, key2, required} of yaoqiu.新建CAD要求) {
           const dataAny = data as any;
           if (cadKey && required) {

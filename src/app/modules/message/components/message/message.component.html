@@ -1,18 +1,18 @@
 @switch (data.type) {
   @case ("iframe") {
     <div class="iframe-toolbar">
-      <h2 class="iframe-title" [innerHTML]="titleHTML"></h2>
+      <h2 class="iframe-title" [innerHTML]="titleHTML()"></h2>
       <button mat-icon-button (click)="cancel()">
         <mat-icon>close</mat-icon>
       </button>
     </div>
   }
   @default {
-    @if (titleHTML) {
-      <div mat-dialog-title [class]="titleClass" [innerHTML]="titleHTML"></div>
+    @if (titleHTML(); as title) {
+      <div mat-dialog-title [class]="titleClass()" [innerHTML]="title"></div>
     }
-    @if (subTitleHTML) {
-      <div mat-dialog-title class="sub-title" [innerHTML]="subTitleHTML"></div>
+    @if (subTitleHTML(); as subTitle) {
+      <div mat-dialog-title class="sub-title" [innerHTML]="subTitle"></div>
     }
   }
 }
@@ -23,14 +23,14 @@
         <quill-editor [(ngModel)]="data.content"></quill-editor>
       }
       @case ("iframe") {
-        <iframe #iframe [src]="iframeSrc" frameborder="0"></iframe>
+        <iframe #iframe [src]="iframeSrc()" frameborder="0"></iframe>
       }
       @case ("json") {
         <div #jsonEditorContainer></div>
       }
       @case ("form") {
-        <div [innerHTML]="contentHTML"></div>
-        <form style="padding: 1px" (keyup)="onKeyUp($event)">
+        <div [innerHTML]="contentHTML()"></div>
+        <form style="padding: 1px">
           <button hidden></button>
           @for (info of data.form; track $index) {
             <app-input #formInput [info]="info"></app-input>
@@ -38,7 +38,7 @@
         </form>
       }
       @default {
-        <div [innerHTML]="contentHTML"></div>
+        <div [innerHTML]="contentHTML()"></div>
       }
     }
   </ng-scrollbar>
@@ -55,14 +55,14 @@
       <ng-container *ngTemplateOutlet="formBtns"></ng-container>
     }
     @case ("book") {
-      <button mat-raised-button (click)="setPage(page - 1)" [disabled]="page <= minPage">
-        {{ cast("book", data).btnTexts?.prev || "上一页" }}
+      <button mat-raised-button (click)="setPage(page() - 1)" [disabled]="page() <= pageMin()">
+        {{ data.btnTexts?.prev || "上一页" }}
       </button>
-      <button mat-raised-button (click)="setPage(page + 1)" [disabled]="page >= maxPage">
-        {{ cast("book", data).btnTexts?.prev || "下一页" }}
+      <button mat-raised-button (click)="setPage(page() + 1)" [disabled]="page() >= pageMax()">
+        {{ data.btnTexts?.prev || "下一页" }}
       </button>
       <button mat-raised-button (click)="cancel()">
-        {{ cast("book", data).btnTexts?.exit || "退出" }}
+        {{ data.btnTexts?.exit || "退出" }}
       </button>
     }
     @case ("editor") {
@@ -72,7 +72,7 @@
       <ng-container *ngTemplateOutlet="formBtns"></ng-container>
     }
     @case ("button") {
-      @for (button of cast("button", data).buttons; track $index) {
+      @for (button of data.buttons; track $index) {
         <button mat-raised-button color="primary" (click)="submit(button)">
           {{ getButtonLabel(button) }}
         </button>

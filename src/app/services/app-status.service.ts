@@ -22,6 +22,7 @@ import {
 import {FetchManager} from "@app/utils/fetch-manager";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
 import {算料公式} from "@components/lurushuju/xinghao-data";
+import {getXhmrmsbjSbjbItemSbjbCadName, isXhmrmsbjSbjbItemOptionalKeys3} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.utils";
 import {environment} from "@env";
 import {
   CadData,
@@ -45,7 +46,7 @@ import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
-import {clamp, differenceWith, isEmpty} from "lodash";
+import {clamp, cloneDeep, differenceWith, isEmpty} from "lodash";
 import {BehaviorSubject, Subject} from "rxjs";
 import {local, remoteHost, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
@@ -636,9 +637,21 @@ export class AppStatusService {
     if (name instanceof CadData) {
       name = name.name;
     }
-    let result = this.cadYaoqiusManager.data().find((v) => v.CAD分类 === name);
+    const yaoqius = this.cadYaoqiusManager.data();
+    let result = yaoqius.find((v) => v.CAD分类 === name);
+    if (isXhmrmsbjSbjbItemOptionalKeys3(name)) {
+      const name2 = getXhmrmsbjSbjbItemSbjbCadName(name);
+      if (!result && name2) {
+        result = yaoqius.find((v) => v.CAD分类 === name2);
+      }
+    }
     if (!result) {
-      result = this.cadYaoqiusManager.data().find((v) => v.CAD分类 === "配件库");
+      result = yaoqius.find((v) => v.CAD分类 === "配件库");
+      if (result) {
+        result = cloneDeep(result);
+        result.CAD分类 = name;
+        yaoqius.push(result);
+      }
     }
     return result;
   }

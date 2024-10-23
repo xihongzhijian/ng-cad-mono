@@ -1,6 +1,7 @@
-import {Validators} from "@angular/forms";
+import {ValidationErrors, Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
-import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {getArray} from "@app/app.common";
+import {CadEditType, Cad数据要求, setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {cadOptionOptions, cadOptions} from "@app/cad/options";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -10,6 +11,7 @@ import {environment} from "@env";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
+import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {openCadDataAttrsDialog} from "../../dialogs/cad-data-attrs/cad-data-attrs.component";
 
@@ -365,17 +367,20 @@ export const getCadInfoInputs = (
 
 export const getCadInfoInputs2 = async (
   yaoqiu: Cad数据要求 | null | undefined,
-  type: "add" | "set",
+  type: CadEditType,
   collection: CadCollection,
   data: CadData | (() => CadData),
   http: CadDataService,
   dialog: MatDialog,
   status: AppStatusService,
   parseOptionString: boolean,
-  gongshis: 算料公式[] | null | undefined
+  gongshis?: 算料公式[] | null
 ) => {
-  const items = (type === "add" ? yaoqiu?.新建CAD要求 : yaoqiu?.CAD弹窗修改属性) || [];
-  const items2 = yaoqiu?.选中CAD要求 || [];
+  if (!yaoqiu) {
+    return [];
+  }
+  const items = yaoqiu.getItems(type) || [];
+  const items2 = yaoqiu.选中CAD要求 || [];
   const result: InputInfo[] = [];
   const cad = getData(data);
   const isSbjb = isSbjbCad(collection, cad);
@@ -460,4 +465,45 @@ export const getCadInfoInputs2 = async (
     result.push(info);
   }
   return result;
+};
+
+export interface CadFormValidators {
+  name?: (data: CadData) => ValidationErrors | null;
+}
+export const openCadForm = async (
+  yaoqiu: Cad数据要求 | null | undefined,
+  collection: CadCollection,
+  data: CadData | null | undefined,
+  http: CadDataService,
+  dialog: MatDialog,
+  status: AppStatusService,
+  message: MessageService,
+  parseOptionString: boolean,
+  gongshis?: 算料公式[] | null,
+  validators?: CadFormValidators
+) => {
+  const data2 = data?.clone() || new CadData();
+  const type: CadEditType = data ? "set" : "add";
+  const form = await getCadInfoInputs2(yaoqiu, type, collection, data2, http, dialog, status, parseOptionString, gongshis);
+  if (validators?.name) {
+    const nameValidator = validators.name;
+    const nameInput = form.find((v) => v.label === "名字");
+    if (nameInput) {
+      nameInput.validators = [...getArray(nameInput.validators), () => nameValidator(data2)];
+    }
+  }
+  let title = (data ? "编辑" : "新建") + "CAD";
+  const name = data2.name;
+  if (name) {
+    title += `【${name}】`;
+  }
+  const result = await message.form(form, {title});
+  if (result) {
+    if (yaoqiu) {
+      data2.type = yaoqiu.CAD分类;
+    }
+    setCadData(data2, yaoqiu, type);
+    return data2;
+  }
+  return null;
 };

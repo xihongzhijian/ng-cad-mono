@@ -24,7 +24,7 @@ import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.componen
 import {CadItemButton, CadItemIsOnlineInfo, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
-import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
 import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
@@ -169,28 +169,13 @@ export class MokuaiCadsComponent {
     return this.status.getCadYaoqiu(type);
   });
   downloadApi = this.http.getUrl("ngcad/downloadFile");
-  async getCadItem(data0?: CadData) {
+  async getCadItem(data?: CadData) {
     const yaoqiu = this.cadYaoqiu();
     if (!yaoqiu) {
       return null;
     }
-    let data: CadData;
-    if (data0) {
-      data = data0.clone(true);
-    } else {
-      data = new CadData();
-    }
-    const type = this.activeNavNode()?.name;
-    if (type) {
-      data.type = type;
-    }
     const collection = this.collection;
-    const form = await getCadInfoInputs2(yaoqiu, data0 ? "set" : "add", collection, data, this.http, this.dialog, this.status, true, null);
-    const result = await this.message.form(form);
-    if (result) {
-      return data;
-    }
-    return null;
+    return await openCadForm(yaoqiu, collection, data, this.http, this.dialog, this.status, this.message, true);
   }
   async addCad() {
     const data = await this.getCadItem();
@@ -277,8 +262,7 @@ export class MokuaiCadsComponent {
     delete cad.info.incomplete;
     delete cad.info.isOnline;
     const yaoqiu = this.cadYaoqiu();
-    const yaoqiuItems = yaoqiu?.选中CAD要求 || [];
-    setCadData(cad, yaoqiuItems);
+    setCadData(cad, yaoqiu, "set");
     const names = this.selectedCads().map((v) => v.name);
     cad.name = getNameWithSuffix(names, cad.name, "_", 1);
     this.selectedCads.update((v) => [...v, cad]);

@@ -1,3 +1,4 @@
+import {CadFormValidators} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadItemComponent} from "./cad-item.component";
 
 export interface CadItemButton<T> {
@@ -15,4 +16,8 @@ export interface CadItemSelectable<T> {
 export interface CadItemIsOnlineInfo<T> {
   isFetched?: boolean;
   afterFetch?: (component: CadItemComponent<T>) => void;
+}
+
+export interface CadItemValidators extends CadFormValidators {
+  zhankai?: boolean;
 }

@@ -26,7 +26,7 @@ import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.componen
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
-import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetCadParams, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -359,8 +359,7 @@ export class CadListComponent implements AfterViewInit {
       return;
     }
     const {data} = this;
-    const {collection, raw, vars, source} = data;
-    const yaoqiuItems = data.yaoqiu?.选中CAD要求 || [];
+    const {collection, raw, vars, source, yaoqiu} = data;
     let cads: (CadData | HoutaiCad)[] = [];
     if (ids.length > 0) {
       if (source) {
@@ -374,10 +373,10 @@ export class CadListComponent implements AfterViewInit {
       }
       for (const cad of cads) {
         if (cad instanceof CadData) {
-          setCadData(cad, yaoqiuItems, vars);
+          setCadData(cad, yaoqiu, "set", vars);
         } else {
           const cad2 = new CadData(cad.json);
-          setCadData(cad2, yaoqiuItems, vars);
+          setCadData(cad2, yaoqiu, "set", vars);
           Object.assign(cad, getHoutaiCad(cad2));
         }
       }
@@ -385,7 +384,7 @@ export class CadListComponent implements AfterViewInit {
         const result: {cad: CadData; i: number}[] = [];
         for (const [i, v] of cads.entries()) {
           const cad = v instanceof CadData ? v : new CadData(v.json);
-          if (!validateCad(cad, yaoqiuItems)) {
+          if (!validateCad(cad, yaoqiu, "set")) {
             result.push({cad, i});
           }
         }
@@ -394,19 +393,13 @@ export class CadListComponent implements AfterViewInit {
       const toEdit = getInvalidCad();
       if (toEdit.length > 0) {
         for (const {cad, i} of toEdit) {
-          const form = await getCadInfoInputs2(data.yaoqiu, "set", collection, cad, this.http, this.dialog, this.status, true, []);
-          let title = "编辑CAD";
-          const name = cad.name;
-          if (name) {
-            title += `【${name}】`;
-          }
-          const result = await this.message.form(form, {title});
-          if (result) {
-            const cad2 = cads[i];
-            if (cad2 instanceof CadData) {
-              Object.assign(cad2, cad);
+          const cad2 = await openCadForm(data.yaoqiu, collection, cad, this.http, this.dialog, this.status, this.message, true);
+          if (cad2) {
+            const cad3 = cads[i];
+            if (cad3 instanceof CadData) {
+              Object.assign(cad3, cad2);
             } else {
-              Object.assign(cad2, getHoutaiCad(cad));
+              Object.assign(cad3, getHoutaiCad(cad2));
             }
           }
         }
@@ -469,15 +462,14 @@ export class CadListComponent implements AfterViewInit {
 
   async addCad() {
     const {addCadData, yaoqiu, gongshis, collection} = this.data;
-    const cadData = new CadData(addCadData);
-    setCadData(cadData, yaoqiu?.新建CAD要求);
-    const form = await getCadInfoInputs2(yaoqiu, "add", collection, cadData, this.http, this.dialog, this.status, true, gongshis);
-
-    const result = await this.message.form(form);
-    if (!result) {
+    const cad2 = await openCadForm(yaoqiu, collection, null, this.http, this.dialog, this.status, this.message, true);
+    if (!cad2) {
       return;
     }
-    const data = getHoutaiCad(cadData);
+    if (addCadData) {
+      Object.assign(cad2, addCadData);
+    }
+    const data = getHoutaiCad(cad2);
     const resData = await this.http.mongodbInsert<HoutaiCad>(collection, data, {force: !!yaoqiu});
     if (resData) {
       const data2 = new CadData(resData.json);

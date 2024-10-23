@@ -23,7 +23,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
-import {getArray, getValueString} from "@app/app.common";
+import {getValueString} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {Cad数据要求, Cad数据要求Item} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
@@ -33,7 +33,7 @@ import {DataInfoChnageEvent} from "@components/cad-image/cad-image.types";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai} from "@lucilor/cad-viewer";
 import {ObjectOf, selectFiles, timeout} from "@lucilor/utils";
-import {getCadInfoInputs2} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {openCadLineForm} from "@modules/cad-editor/components/menu/cad-line/cad-line.utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -51,7 +51,7 @@ import {Subscription} from "rxjs";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
 import {算料公式} from "../xinghao-data";
-import {CadItemButton, CadItemIsOnlineInfo, CadItemSelectable, typeOptions} from "./cad-item.types";
+import {CadItemButton, CadItemIsOnlineInfo, CadItemSelectable, CadItemValidators, typeOptions} from "./cad-item.types";
 
 @Component({
   selector: "app-cad-item",
@@ -102,7 +102,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
   };
-  @Input() validators?: {zhankai?: boolean; name?: (data: CadData) => ValidationErrors | null};
+  @Input() validators?: CadItemValidators;
   @Output() beforeEditCad = new EventEmitter<void>();
   @Output() afterEditCad = new EventEmitter<void>();
 
@@ -283,36 +283,26 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       data = new CadData(cad.json);
     }
     this.beforeEditCad.emit();
-    const form = await getCadInfoInputs2(yaoqiu, "set", this.collection(), data, this.http, this.dialog, this.status, true, this.gongshis);
-    const nameInput = form.find((v) => v.label === "名字");
-    if (nameInput) {
-      const {name} = this.validators || {};
-      if (name) {
-        nameInput.validators = [...getArray(nameInput.validators), () => name(data)];
-      }
+    const collection = this.collection();
+    const {http, dialog, status, message, validators} = this;
+    const data2 = await openCadForm(yaoqiu, collection, data, http, dialog, status, message, true, null, validators);
+    if (!data2) {
+      return;
     }
-    let title = "编辑CAD";
-    const name = data.name;
-    if (name) {
-      title += `【${name}】`;
+    if (data.zhankai[0] && data.zhankai[0].name !== data.name) {
+      data.zhankai[0].name = data.name;
     }
-    const result = await this.message.form(form, {title});
-    if (result) {
-      if (data.zhankai[0] && data.zhankai[0].name !== data.name) {
-        data.zhankai[0].name = data.name;
-      }
-      if (cad instanceof CadData) {
-        Object.assign(cad, data);
-      } else {
-        Object.assign(cad, getHoutaiCad(data));
-      }
-      if (isOnline) {
-        await this.http.setCad({collection: this.collection(), cadData: data, force: true}, true);
-      }
-      await this.initCadViewer();
-      this.afterEditCad.emit();
-      this.validate();
+    if (cad instanceof CadData) {
+      Object.assign(cad, data);
+    } else {
+      Object.assign(cad, getHoutaiCad(data));
     }
+    if (isOnline) {
+      await this.http.setCad({collection: this.collection(), cadData: data, force: true}, true);
+    }
+    await this.initCadViewer();
+    this.afterEditCad.emit();
+    this.validate();
   }
 
   centerMuban() {

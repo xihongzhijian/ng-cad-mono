@@ -299,7 +299,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   async ngAfterViewInit() {
     if (this.info.autoFocus) {
       await timeout(100);
-      const el = this.elRef?.nativeElement.querySelector("input, textarea");
+      const el = this.elRef?.nativeElement.querySelector("input, textarea, mat-select");
       if (el instanceof HTMLElement) {
         el.focus();
       }

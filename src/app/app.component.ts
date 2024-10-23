@@ -90,8 +90,8 @@ export class AppComponent {
     this.router.navigate([routeInfo.path], {queryParamsHandling: "merge"});
   }
 
-  @HostListener("window:keydown", ["$event"])
-  onKeyDown(event: KeyboardEvent) {
+  @HostListener("window:keyup", ["$event"])
+  onKeyUp(event: KeyboardEvent) {
     if (event.key === "Enter") {
       if (document.activeElement instanceof HTMLInputElement) {
         if (emulateTab()) {

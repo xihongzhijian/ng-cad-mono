@@ -2,16 +2,20 @@ import {A11yModule} from "@angular/cdk/a11y";
 import {NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   ElementRef,
   forwardRef,
   HostListener,
+  inject,
   Inject,
   OnDestroy,
   OnInit,
-  QueryList,
-  ViewChild,
-  ViewChildren
+  signal,
+  viewChild,
+  viewChildren
 } from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -46,69 +50,25 @@ import {validateForm} from "./message.utils";
     NgScrollbarModule,
     NgTemplateOutlet,
     QuillEditorComponent
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
-  titleHTML: SafeHtml = "";
-  subTitleHTML: SafeHtml = "";
-  contentHTML: SafeHtml = "";
-  iframeSrc: SafeResourceUrl = "";
-  page = 0;
-  inputsBackup: InputInfo[] = [];
-  jsonEditor: ReturnType<typeof createJSONEditor> | null = null;
-  @ViewChild(QuillEditorComponent) editor?: QuillViewComponent;
-  @ViewChild("iframe") iframe?: ElementRef<HTMLIFrameElement>;
-  @ViewChildren("formInput") formInputs?: QueryList<InputComponent>;
-  @ViewChild("jsonEditorContainer") jsonEditorContainer?: ElementRef<HTMLDivElement>;
-
-  private get _editorToolbarHeight() {
-    if (this.editor) {
-      const el = this.editor.elementRef.nativeElement as HTMLElement;
-      const toolbar = el.querySelector(".ql-toolbar");
-      if (toolbar) {
-        return toolbar.getBoundingClientRect().height;
-      }
-    }
-    return 0;
-  }
-
-  get buttons() {
-    if (this.data.type === "button") {
-      return this.data.buttons;
-    }
-    return [];
-  }
-
-  get minPage() {
-    return 0;
-  }
-  get maxPage() {
-    if (this.data.type === "book") {
-      return this.data.bookData.length - 1;
-    }
-    return 0;
-  }
-
-  get titleClass() {
-    return this.data.titleClass || "";
-  }
-  get contentClass() {
-    return this.data.contentClass || "";
-  }
+  private elRef = inject(ElementRef<HTMLElement>);
+  private message = inject(MessageService);
+  private sanitizer = inject(DomSanitizer);
 
   constructor(
     public dialogRef: MatDialogRef<MessageComponent, MessageOutput>,
-    private sanitizer: DomSanitizer,
-    private message: MessageService,
     @Inject(MAT_DIALOG_DATA) public data: MessageData
   ) {}
 
   ngOnInit() {
     const data = this.data;
     if (data.title) {
-      this.titleHTML = this.sanitizer.bypassSecurityTrustHtml(data.title);
+      this.titleHTML.set(this.sanitizer.bypassSecurityTrustHtml(data.title));
     } else {
-      this.titleHTML = "";
+      this.titleHTML.set("");
     }
     if (data.content === null || data.content === undefined) {
       data.content = "";
@@ -121,7 +81,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
         console.warn(error);
       }
     }
-    this.contentHTML = this.sanitizer.bypassSecurityTrustHtml(data.content);
+    this.contentHTML.set(this.sanitizer.bypassSecurityTrustHtml(data.content));
 
     if (data.type === "form") {
       if (data.form.length > 0 && !data.form.some((v) => v.autoFocus)) {
@@ -130,7 +90,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     } else if (data.type === "book") {
       this.setPage(0);
     } else if (data.type === "iframe") {
-      this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(data.content);
+      this.iframeSrc.set(this.sanitizer.bypassSecurityTrustResourceUrl(data.content));
     }
 
     const id = window.setInterval(() => {
@@ -143,9 +103,9 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.inputsBackup = cloneDeep(data.form);
     }
   }
-
   ngAfterViewInit() {
-    const {jsonEditorContainer, data} = this;
+    const {data} = this;
+    const jsonEditorContainer = this.jsonEditorContainer();
     if (jsonEditorContainer && data.type === "json") {
       this.jsonEditor = createJSONEditor({
         target: jsonEditorContainer.nativeElement,
@@ -154,7 +114,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.jsonEditor.set({json: data.json});
     }
   }
-
   ngOnDestroy() {
     if (this.jsonEditor) {
       this.jsonEditor.destroy();
@@ -162,18 +121,102 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  titleHTML = signal<SafeHtml>("");
+  subTitleHTML = signal<SafeHtml>("");
+  contentHTML = signal<SafeHtml>("");
+  titleClass = computed(() => this.data.titleClass || "");
+
+  iframeSrc = signal<SafeResourceUrl>("");
+  iframe = viewChild<ElementRef<HTMLIFrameElement>>("iframe");
+
+  jsonEditor: ReturnType<typeof createJSONEditor> | null = null;
+  jsonEditorContainer = viewChild<ElementRef<HTMLDivElement>>("jsonEditorContainer");
+
+  editor = viewChild(QuillViewComponent);
+  private _getEditorToolbarHeight() {
+    const el = this.editor()?.elementRef.nativeElement;
+    if (el instanceof HTMLElement) {
+      const toolbar = el.querySelector(".ql-toolbar");
+      if (toolbar) {
+        return toolbar.getBoundingClientRect().height;
+      }
+    }
+    return 0;
+  }
   @HostListener("window:resize")
   @Debounce(500)
   resizeEditor() {
-    if (this.editor) {
-      const el = this.editor.editorElem;
-      const height = this._editorToolbarHeight;
+    const el = this.editor()?.editorElem;
+    if (el) {
+      const height = this._getEditorToolbarHeight();
       if (height) {
         el.style.height = `calc(100% - ${height}px)`;
         return true;
       }
     }
     return false;
+  }
+
+  buttons = computed(() => {
+    if (this.data.type === "button") {
+      return this.data.buttons;
+    }
+    return [];
+  });
+
+  page = signal(0);
+  pageMin = computed(() => 0);
+  pageMax = computed(() => {
+    if (this.data.type === "book") {
+      return this.data.bookData.length - 1;
+    }
+    return 0;
+  });
+  setPage(page: number) {
+    if (this.data.type !== "book") {
+      return;
+    }
+    this.page.set(clamp(page, this.pageMin(), this.pageMax()));
+  }
+  pageEff = effect(
+    () => {
+      if (this.data.type !== "book") {
+        return;
+      }
+      const data = this.data.bookData[this.page()];
+      this.contentHTML.set(this.sanitizer.bypassSecurityTrustHtml(data.content));
+      if (data.title) {
+        this.subTitleHTML.set(this.sanitizer.bypassSecurityTrustHtml(data.title));
+      } else {
+        this.subTitleHTML.set("");
+      }
+    },
+    {allowSignalWrites: true}
+  );
+
+  inputsBackup: InputInfo[] = [];
+  formInputs = viewChildren<InputComponent>("formInput");
+  reset() {
+    switch (this.data.type) {
+      case "form":
+        this.data.form = cloneDeep(this.inputsBackup);
+        break;
+      case "json":
+        this.jsonEditor?.set(this.data.defaultJson || null);
+        break;
+      default:
+        break;
+    }
+  }
+  autoFill() {
+    switch (this.data.type) {
+      case "form":
+        this.data.autoFill?.(this.data.form);
+        validateForm(this.formInputs());
+        break;
+      default:
+        break;
+    }
   }
 
   async close(type: MessageBeforeCloseEvent["type"], data?: any) {
@@ -195,7 +238,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (type === "confirm") {
       await this.close(closeType, true);
     } else if (type === "form") {
-      const {errors, values, errorMsg} = await validateForm(this.formInputs?.toArray() || []);
+      const {errors, values, errorMsg} = await validateForm(this.formInputs());
       if (isEmpty(errors)) {
         await this.close(closeType, values);
       } else {
@@ -235,48 +278,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  reset() {
-    switch (this.data.type) {
-      case "form":
-        this.data.form = cloneDeep(this.inputsBackup);
-        break;
-      case "json":
-        this.jsonEditor?.set(this.data.defaultJson || null);
-        break;
-      default:
-        break;
-    }
-  }
-
-  autoFill() {
-    switch (this.data.type) {
-      case "form":
-        this.data.autoFill?.(this.data.form);
-        validateForm(this.formInputs?.toArray() || []);
-        break;
-      default:
-        break;
-    }
-  }
-
-  setPage(page: number) {
-    if (this.data.type !== "book") {
-      return;
-    }
-    if (this.data.bookData) {
-      this.page = clamp(page, this.minPage, this.maxPage);
-      const data = this.data.bookData[this.page];
-      this.contentHTML = this.sanitizer.bypassSecurityTrustHtml(data.content);
-      if (data.title) {
-        this.subTitleHTML = this.sanitizer.bypassSecurityTrustHtml(data.title);
-      } else {
-        this.subTitleHTML = "";
-      }
-    } else {
-      this.page = 0;
-    }
-  }
-
   cast<T extends MessageData["type"]>(type: T, data: MessageData) {
     return data as MessageDataMap[T];
   }
@@ -285,10 +286,22 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     return typeof button === "string" ? button : button.label;
   }
 
+  @HostListener("window:keyup", ["$event"])
   onKeyUp(event: KeyboardEvent) {
-    if (event.key === "Enter" && event.target instanceof HTMLInputElement) {
-      if (this.data.type !== "form") {
-        this.submit();
+    const data = this.data;
+    const isEnter = event.key === "Enter";
+    const isEsc = event.key === "Escape";
+    if (data.type === "form" && (isEnter || isEsc)) {
+      const target = event.target;
+      if (target instanceof HTMLElement) {
+        const el = target.querySelector("app-message");
+        if (el === this.elRef.nativeElement) {
+          if (isEnter) {
+            this.submit();
+          } else if (isEsc) {
+            this.cancel();
+          }
+        }
       }
     }
   }

@@ -251,7 +251,7 @@ export class XhmrmsbjSbjbComponent {
       }
       this.options.set(data.选项);
     }
-    await this.status.cadYaoqiusManager.fetch();
+    // await this.status.cadYaoqiusManager.fetch();
   }
   clickItem(i: number) {
     this.activeItemIndex.set(i);
