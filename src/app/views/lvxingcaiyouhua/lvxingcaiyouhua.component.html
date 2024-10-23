@@ -12,13 +12,18 @@
 </div>
 @if (calcResult(); as calcResult) {
   <ng-scrollbar>
-    <div class="calc-result item border">
+    <div class="calc-result item">
       <div class="text">总利用率【{{ calcResult.result["总利用率"] }}】用时【{{ calcResult.duration }}ms】</div>
+      <div class="text">(1) 利用率不包含余料</div>
+      <div class="text">(2) 余料计算长度包含45度切角</div>
+      <div class="text">(3) 废料，指长度小于余料入库最小长度的加工剩余型材</div>
       <div class="items">
         @for (item of calcResult.result["铝型材优化结果"]; track i; let i = $index) {
-          <!-- <mat-divider></mat-divider> -->
           <div class="xingcai item border">
-            <div class="xingcai-name text">型材【{{ item["型材"] }}】</div>
+            <div class="xingcai-name text toolbar">
+              <div>型材【{{ item["型材"] }}】</div>
+              <div>余料入库最小长度【{{ item["余料入库最小长度"] }}】</div>
+            </div>
             <div class="toolbar">
               <span>所有型材利用率【{{ item["所有型材利用率"] }}】【{{ item["优化结果"].length }}】根</span>
               <button mat-icon-button color="primary" (click)="toggleCalcResultInfoShowDetails(i)">
@@ -33,9 +38,17 @@
               <div class="items">
                 @for (item2 of item["优化结果"]; track j; let j = $index) {
                   <div class="item border">
-                    <div class="text">
-                      <span>【{{ j + 1 }}】利用率【{{ item2["单支型材利用率"] }}】【{{ item2["型材类型"] }}】</span>
-                      <span>{{ getLengthsStr(item2) }}</span>
+                    <div class="text toolbar">
+                      <div>【{{ j + 1 }}】利用率【{{ item2["单支型材利用率"] }}】【{{ getTypeStr(item2) }}】</div>
+                      <div>{{ getLengthsStr(item2) }}</div>
+                      <div>
+                        @if (item2["余料可以入库"]) {
+                          余料长
+                        } @else {
+                          废料
+                        }
+                        ：{{ item2["排料后剩余长度"] }}
+                      </div>
                     </div>
                   </div>
                 }

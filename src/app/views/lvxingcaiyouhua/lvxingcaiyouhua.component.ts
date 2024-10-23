@@ -156,6 +156,14 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     await this.http.post("order/lvxingcai/saveOptimizeResult", {code, optimizeData});
   }
 
+  getTypeStr(item: 优化结果) {
+    let str = item.型材类型;
+    if (item.型材类型 !== "余料") {
+      return str;
+    }
+    str += `,${item.库存位置编码},库存码${item.库存码}`;
+    return str;
+  }
   getLengthsStr(item: 优化结果) {
     const str = item.BOM.map((item) => item.型材长度).join("+");
     return `${item.物料长度}=${str}`;

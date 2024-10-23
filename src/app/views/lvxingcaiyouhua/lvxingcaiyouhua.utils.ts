@@ -1,4 +1,5 @@
 import {ObjectOf} from "@lucilor/utils";
+import {TableDataBase2} from "@modules/http/services/cad-data.service.types";
 
 export const calc = (data: InputData, 切口损耗: number) => {
   const bomGroups: ObjectOf<型材BOM[]> = {};
@@ -119,9 +120,12 @@ export const calc = (data: InputData, 切口损耗: number) => {
     }
     const totalLength = 余料.yuliaochangdu;
     const dpResult = backpackDp(boms, totalLength, 余料.kucunshuliang);
+    const 铝型材 = data.铝型材.find((v) => v.mingzi === 余料.lvxingcai);
+    const yuliaorukuzuixiaochangdu = 铝型材?.yuliaorukuzuixiaochangdu ?? 0;
     for (const dpItem of dpResult) {
       const usedLength = dpItem.value;
       const wastedLength = Math.min(totalLength - usedLength, dpItem.cuts * 切口损耗);
+      const 排料后剩余长度 = totalLength - usedLength - wastedLength;
       resultItems.push({
         vid: 余料.vid,
         铝型材: 余料.lvxingcai,
@@ -129,13 +133,14 @@ export const calc = (data: InputData, 切口损耗: number) => {
         物料颜色: boms[0].型材颜色,
         数量: 1,
         单支型材利用率: 0,
-        排料后剩余长度: totalLength - usedLength - wastedLength,
+        排料后剩余长度,
         切口损耗: wastedLength,
         BOM: dpItem.items,
-        废料长度: totalLength - usedLength - wastedLength,
-        余料可以入库: wastedLength >= 余料.yuliaorukuzuixiaochangdu,
+        余料可以入库: 排料后剩余长度 >= yuliaorukuzuixiaochangdu,
         余料标签信息: "",
-        型材类型: "余料"
+        型材类型: "余料",
+        库存位置编码: 余料.kucunweizhibianma,
+        库存码: 余料.kucunma
       });
     }
   }
@@ -149,6 +154,7 @@ export const calc = (data: InputData, 切口损耗: number) => {
     for (const dpItem of dpResult) {
       const usedLength = dpItem.value;
       const wastedLength = Math.min(totalLength - usedLength, dpItem.cuts * 切口损耗);
+      const 排料后剩余长度 = totalLength - usedLength - wastedLength;
       resultItems.push({
         vid: 铝型材.vid,
         铝型材: 铝型材.mingzi,
@@ -156,7 +162,8 @@ export const calc = (data: InputData, 切口损耗: number) => {
         物料颜色: boms[0].型材颜色,
         数量: 1,
         单支型材利用率: 0,
-        排料后剩余长度: totalLength - usedLength - wastedLength,
+        排料后剩余长度,
+        余料可以入库: 排料后剩余长度 >= 铝型材.yuliaorukuzuixiaochangdu,
         切口损耗: wastedLength,
         BOM: dpItem.items,
         型材类型: "标准型材"
@@ -170,9 +177,12 @@ export const calc = (data: InputData, 切口损耗: number) => {
     if (group) {
       group.优化结果.push(item);
     } else {
+      const 铝型材 = data.铝型材.find((v) => v.mingzi === item.铝型材);
       result.push({
         型材: item.铝型材,
         颜色: item.物料颜色,
+        排序: 铝型材?.paixu ?? 0,
+        余料入库最小长度: 铝型材?.yuliaorukuzuixiaochangdu ?? 0,
         所有型材利用率: 0,
         优化结果: [item]
       });
@@ -183,6 +193,7 @@ export const calc = (data: InputData, 切口损耗: number) => {
   for (const resultItem of result) {
     let totalLength2 = 0;
     let unusedLength2 = 0;
+    resultItem.优化结果.sort((a, b) => b.物料长度 - a.物料长度);
     for (const item of resultItem.优化结果) {
       totalLength2 += item.物料长度;
       const unusedLength3 = item.排料后剩余长度;
@@ -194,6 +205,7 @@ export const calc = (data: InputData, 切口损耗: number) => {
     totalLength += totalLength2;
     unusedLength += unusedLength2;
   }
+  result.sort((a, b) => a.排序 - b.排序);
   return {铝型材优化结果: result, 总利用率: getNum(1 - unusedLength / totalLength)};
 };
 export const getNum = (num: number) => Number(num.toFixed(3));
@@ -212,22 +224,24 @@ export interface 型材BOM {
   型材颜色: string;
   型材优化分组信息: string;
 }
-export interface 铝型材 {
-  vid: number;
-  mingzi: string;
+export interface 铝型材 extends TableDataBase2 {
   biaozhunchangdu: number;
+  yuliaorukuzuixiaochangdu: number;
 }
 export interface 铝型材余料库存 {
   vid: number;
   lvxingcai: string;
   yanse: string;
   kucunshuliang: number;
+  kucunweizhibianma: string;
+  kucunma: string;
   yuliaochangdu: number;
-  yuliaorukuzuixiaochangdu: number;
 }
 export interface 铝型材优化结果 {
   型材: string;
   颜色: string;
+  余料入库最小长度: number;
+  排序: number;
   所有型材利用率: number;
   优化结果: 优化结果[];
 }
@@ -241,14 +255,15 @@ export interface 优化结果Base {
   排料后剩余长度: number;
   切口损耗: number;
   BOM: 型材BOM[];
+  余料可以入库: boolean;
 }
 export interface 优化结果标准型材 extends 优化结果Base {
   型材类型: "标准型材";
 }
 export interface 优化结果余料 extends 优化结果Base {
   型材类型: "余料";
-  废料长度: number;
-  余料可以入库: boolean;
   余料标签信息: string;
+  库存位置编码: string;
+  库存码: string;
 }
 export type 优化结果 = 优化结果标准型材 | 优化结果余料;
