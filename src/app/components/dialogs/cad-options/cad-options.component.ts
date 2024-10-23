@@ -93,24 +93,33 @@ export class CadOptionsComponent implements AfterViewInit {
       }
       result.defaultValue = value;
     }
-    const data = await this.getOptions(
-      {
-        name: this.data.name,
-        data: this.data.data,
-        xinghao: this.data.xinghao,
-        includeTingyong: true,
-        values: Array.from(this.checkedIdsCurr).concat(Array.from(this.checkedIdsOthers)) as any,
-        fields: ["vid"],
-        nameField: this.data.nameField,
-        info: this.data.info
-      },
-      [this.loaderIds.submitLoaderId],
-      false
-    );
-    if (!data) {
-      return;
+    result.options = [];
+    for (const item of this.pageData()) {
+      if (item.checked) {
+        result.options.push({vid: item.vid, mingzi: item.name});
+      }
     }
-    result.options = data.data.map((v) => ({vid: v.vid, mingzi: v.name}));
+    if (this.checkedIdsOthers.size > 0) {
+      const dataInOthers = await this.getOptions(
+        {
+          name: this.data.name,
+          data: this.data.data,
+          xinghao: this.data.xinghao,
+          includeTingyong: true,
+          values: Array.from(this.checkedIdsOthers),
+          fields: ["vid"],
+          nameField: this.data.nameField,
+          info: this.data.info
+        },
+        [this.loaderIds.submitLoaderId],
+        false
+      );
+      if (dataInOthers) {
+        for (const item of dataInOthers.data) {
+          result.options.push({vid: item.vid, mingzi: item.name});
+        }
+      }
+    }
     this.dialogRef.close(result);
   }
 
@@ -284,17 +293,19 @@ export class CadOptionsComponent implements AfterViewInit {
 
   onCheckboxChange(item: CadOptionsPageDataItem) {
     const {multi} = this.data;
-    if (multi) {
-      this.pageData.update((v) => v.map((v2) => ({...v2, checked: v2 === item ? !v2.checked : v2.checked})));
-    } else {
-      this.pageData.update((v) => v.map((v2) => ({...v2, checked: v2 === item ? !v2.checked : false})));
-    }
-    const {checkedIdsCurr} = this;
+    const items = this.pageData();
     item.checked = !item.checked;
-    if (item.checked) {
-      if (!multi) {
-        checkedIdsCurr.clear();
+    const {checkedIdsCurr} = this;
+    if (!multi && item.checked) {
+      for (const item2 of items) {
+        if (item !== item2) {
+          item2.checked = false;
+        }
       }
+      checkedIdsCurr.clear();
+    }
+    this.pageData.set(items.map((v) => ({...v})));
+    if (item.checked) {
       checkedIdsCurr.add(item.vid);
     } else {
       checkedIdsCurr.delete(item.vid);

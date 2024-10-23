@@ -2,7 +2,6 @@ import {Injectable, Injector} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {imgCadEmpty, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
-import {cadOptionOptions} from "@app/cad/options";
 import {exportCadData} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {dataURLtoBlob, downloadByUrl, DownloadOptions, isTypeOf, ObjectOf} from "@lucilor/utils";
@@ -196,13 +195,6 @@ export class CadDataService extends HttpService {
     params: GetOptionsParams,
     httpOptions?: HttpOptions
   ): Promise<OptionsData<T> | null> {
-    const option = cadOptionOptions[params.name];
-    if (option) {
-      return {
-        data: option.values.map((v, i) => ({vid: i + 1, name: v, img: "", disabled: false}) as T),
-        count: option.values.length
-      };
-    }
     const postData: ObjectOf<any> = {...params};
     if (params.data instanceof CadData) {
       delete postData.data;
