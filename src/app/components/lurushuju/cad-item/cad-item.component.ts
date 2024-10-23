@@ -522,7 +522,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     const cadContainer = this.cadContainer;
     if (showCadViewer && cadContainer) {
       const containerEl = cadContainer.nativeElement;
-      const collection: CadCollection = "cad";
+      const collection = this.collection();
       this.cadViewer = this.initCadViewer0(collection, data, containerEl, async (data) => {
         this.beforeEditCad.emit();
         if (!this.isOnline) {
@@ -776,7 +776,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       if (data.info.imgId) {
         id = data.info.imgId;
       }
-      await this.http.setCadImg(id, await getCadPreview("cad", data), {silent: true});
+      await this.http.setCadImg(id, await getCadPreview(collection, data), {silent: true});
       this.status.addCadImgToUpdate(id);
       delete this.cadData;
       await timeout(200);
