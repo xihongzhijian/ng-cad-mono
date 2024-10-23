@@ -1,3 +1,4 @@
+<div class="title">优化单号：{{ code() }}</div>
 @for (info of inputs(); track $index) {
   <app-input [info]="info"></app-input>
 }
@@ -6,9 +7,8 @@
   <button mat-raised-button color="primary" (click)="import()">导入数据</button>
   <button mat-raised-button color="primary" (click)="export()">导出数据</button>
   <button mat-raised-button color="primary" (click)="getOptimizeDataCode()">请求数据</button>
-  @if (calcResult()) {
-    <button mat-raised-button color="primary" (click)="setOptimizeData()">确定优化</button>
-  }
+  <button mat-raised-button color="primary" (click)="setOptimizeData()">确定优化</button>
+  <button mat-raised-button color="primary" (click)="unsetOptimizeData()">取消优化</button>
 </div>
 @if (calcResult(); as calcResult) {
   <ng-scrollbar>
@@ -23,6 +23,8 @@
             <div class="xingcai-name text toolbar">
               <div>型材【{{ item["型材"] }}】</div>
               <div>余料入库最小长度【{{ item["余料入库最小长度"] }}】</div>
+              <div>切断90度损耗【{{ item["切断90度损耗"] }}】</div>
+              <div>切断45度损耗【{{ item["切断45度损耗"] }}】</div>
             </div>
             <div class="toolbar">
               <span>所有型材利用率【{{ item["所有型材利用率"] }}】【{{ item["优化结果"].length }}】根</span>
@@ -43,7 +45,7 @@
                       <div>{{ getLengthsStr(item2) }}</div>
                       <div>
                         @if (item2["余料可以入库"]) {
-                          余料长
+                          不计损耗余料长
                         } @else {
                           废料
                         }

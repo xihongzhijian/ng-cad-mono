@@ -155,6 +155,10 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     }
     await this.http.post("order/lvxingcai/saveOptimizeResult", {code, optimizeData});
   }
+  async unsetOptimizeData() {
+    const code = this.code();
+    await this.http.post("order/lvxingcai/cancelOptimizeBars", {code});
+  }
 
   getTypeStr(item: 优化结果) {
     let str = item.型材类型;

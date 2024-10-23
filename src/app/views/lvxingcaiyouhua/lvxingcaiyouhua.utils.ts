@@ -182,6 +182,8 @@ export const calc = (data: InputData, 切口损耗: number) => {
         型材: item.铝型材,
         颜色: item.物料颜色,
         排序: 铝型材?.paixu ?? 0,
+        切断90度损耗: 铝型材?.qieduan90dusunhao ?? 0,
+        切断45度损耗: 铝型材?.qieduan45dusuanhao ?? 0,
         余料入库最小长度: 铝型材?.yuliaorukuzuixiaochangdu ?? 0,
         所有型材利用率: 0,
         优化结果: [item]
@@ -227,6 +229,8 @@ export interface 型材BOM {
 export interface 铝型材 extends TableDataBase2 {
   biaozhunchangdu: number;
   yuliaorukuzuixiaochangdu: number;
+  qieduan90dusunhao: number;
+  qieduan45dusuanhao: number;
 }
 export interface 铝型材余料库存 {
   vid: number;
@@ -242,6 +246,8 @@ export interface 铝型材优化结果 {
   颜色: string;
   余料入库最小长度: number;
   排序: number;
+  切断90度损耗: number;
+  切断45度损耗: number;
   所有型材利用率: number;
   优化结果: 优化结果[];
 }
