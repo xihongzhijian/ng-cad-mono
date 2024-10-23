@@ -133,10 +133,6 @@ export class Cad数据要求 {
     const url = `${api}?path=${this.导入参考dxf模板}`;
     downloadByUrl(url, {filename});
   }
-
-  getItems(type: CadEditType) {
-    return type === "add" ? this.新建CAD要求 : this.选中CAD要求;
-  }
 }
 
 export interface Cad数据要求Item {
@@ -169,10 +165,10 @@ export const filterCad = (query: string, cad: HoutaiCad, yaoqiu: Cad数据要求
 
 export const validateCad = (data: CadData, yaoqiu: Cad数据要求 | null | undefined, type: CadEditType) => {
   if (!yaoqiu) {
-    return;
+    return true;
   }
   const isEmpty = (v: any) => [undefined, null, ""].includes(v);
-  const yaoqiuItems = yaoqiu.getItems(type);
+  const yaoqiuItems = type === "add" ? yaoqiu.新建CAD要求 : yaoqiu.选中CAD要求;
   for (const {key, key2, cadKey, required, value} of yaoqiuItems) {
     if (!required) {
       continue;
@@ -219,7 +215,7 @@ export const setCadData = (data: CadData, yaoqiu: Cad数据要求 | null | undef
     }
     return value;
   };
-  const yaoqiuItems = yaoqiu.getItems(type);
+  const yaoqiuItems = type === "add" ? yaoqiu.新建CAD要求 : yaoqiu.选中CAD要求;
   for (const {key, cadKey, value, key2, override, remove, reserve, required} of yaoqiuItems) {
     if (cadKey) {
       if (remove) {

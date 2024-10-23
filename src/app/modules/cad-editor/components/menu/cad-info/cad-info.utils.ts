@@ -379,7 +379,7 @@ export const getCadInfoInputs2 = async (
   if (!yaoqiu) {
     return [];
   }
-  const items = yaoqiu.getItems(type) || [];
+  const items = type === "add" ? yaoqiu.新建CAD要求 : yaoqiu.CAD弹窗修改属性;
   const items2 = yaoqiu.选中CAD要求 || [];
   const result: InputInfo[] = [];
   const cad = getData(data);

@@ -289,16 +289,16 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (!data2) {
       return;
     }
-    if (data.zhankai[0] && data.zhankai[0].name !== data.name) {
-      data.zhankai[0].name = data.name;
+    if (data2.zhankai[0] && data2.zhankai[0].name !== data2.name) {
+      data2.zhankai[0].name = data2.name;
     }
     if (cad instanceof CadData) {
-      Object.assign(cad, data);
+      Object.assign(cad, data2);
     } else {
-      Object.assign(cad, getHoutaiCad(data));
+      Object.assign(cad, getHoutaiCad(data2));
     }
     if (isOnline) {
-      await this.http.setCad({collection: this.collection(), cadData: data, force: true}, true);
+      await this.http.setCad({collection: this.collection(), cadData: data2, force: true}, true);
     }
     await this.initCadViewer();
     this.afterEditCad.emit();
