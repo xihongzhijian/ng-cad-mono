@@ -64,5 +64,5 @@ export interface XhmrmsbjRequestData {
   模块通用配置: Formulas;
 }
 export interface XhmrmsbjRequestDataOpts {
-  浮动弹窗?: {门扇名字: MenshanKey; 节点名字: string; consumed: boolean};
+  浮动弹窗?: {门扇名字: MenshanKey; 节点名字: string};
 }
