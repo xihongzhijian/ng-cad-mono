@@ -84,7 +84,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
           }
         ]
       },
-      {type: "number", label: "切口损耗", value: this.qiekousunhao(), onChange: (val) => this.qiekousunhao.set(val)}
+      {type: "number", label: "切口损耗", value: this.qiekousunhao(), onChange: (val) => this.qiekousunhao.set(val), hidden: true}
     ];
     return infos;
   });
@@ -102,6 +102,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     timer.start(timerKey);
     const result = calc(data, this.qiekousunhao());
     const duration = getNum(timer.getDuration(timerKey) || -1);
+    console.log(result);
     timer.end(timerKey, timerKey);
     this.calcResult.set({result, duration});
   }

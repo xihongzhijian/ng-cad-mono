@@ -34,6 +34,7 @@ export interface TableRenderInfo<T> {
   style?: Properties;
   getCellClass?: (event: CellEvent<T>) => string | string[];
   getCellStyle?: (event: CellEvent<T>) => Properties;
+  hideHeader?: boolean;
 }
 export interface TableRenderInfoFilterable<T> {
   fields?: (keyof T)[];

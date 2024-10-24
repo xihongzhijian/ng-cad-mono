@@ -80,3 +80,46 @@
     }
   }
 }
+
+.table-title {
+  border-left: var(--border);
+  border-right: var(--border);
+  border-bottom: var(--border);
+  padding: 5px;
+}
+
+.xingcai-info {
+  border-left: var(--border);
+  border-right: var(--border);
+  display: flex;
+  font-size: 17px;
+  min-height: 50px;
+
+  .xingcai-info-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 5px;
+    box-sizing: border-box;
+    white-space: nowrap;
+
+    &.铝型材 {
+      flex: 1 1 0;
+    }
+    &.型材颜色 {
+      flex: 2 2 0;
+    }
+    &.图示 {
+      flex: 1 1 0;
+    }
+    &.领料要求 {
+      flex: 3 3 0;
+    }
+
+    app-image {
+      width: 100%;
+      height: 0;
+      flex: 1 1 0;
+    }
+  }
+}

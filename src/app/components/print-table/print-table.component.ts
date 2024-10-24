@@ -1,4 +1,4 @@
-import {Component, ElementRef, HostBinding, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, ElementRef, HostBinding, inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
@@ -6,52 +6,44 @@ import {getValueString, setGlobal} from "@app/app.common";
 import {environment} from "@env";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {ColumnInfo, RowButtonEvent, TableRenderInfo} from "@modules/table/components/table/table.types";
 import csstype from "csstype";
-import {TableData, TableInfoData, XikongData, XikongDataRaw} from "./print-table.types";
+import {TableData, TableInfoData, TableInfoDataTable, XikongData, XikongDataRaw, 型材信息} from "./print-table.types";
 
 @Component({
   selector: "app-print-table",
   standalone: true,
-  imports: [MatButtonModule, MatDividerModule, TableComponent],
+  imports: [ImageComponent, MatButtonModule, MatDividerModule, TableComponent],
   templateUrl: "./print-table.component.html",
-  styleUrl: "./print-table.component.scss"
+  styleUrl: "./print-table.component.scss",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PrintTableComponent implements OnInit {
+  private elRef = inject(ElementRef<HTMLElement>);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+
   @HostBinding("class") class = ["ng-page"];
 
-  title = "";
-  tableInfos: TableRenderInfo<TableData>[] = [];
-  xikongTableInfo: TableRenderInfo<XikongData> | null = null;
-  xikongTableWidth = 0;
-  xikongColWidths: ObjectOf<number> = {};
-  data: TableInfoData | null = null;
-
-  constructor(
-    private http: CadDataService,
-    private route: ActivatedRoute,
-    private message: MessageService,
-    private elRef: ElementRef<HTMLElement>
-  ) {
-    setGlobal("printTable", this);
-  }
-
   async ngOnInit() {
+    setGlobal("printTable", this);
     await this.getData();
   }
 
   export() {
-    const {小导航, vid} = this.data || {};
+    const {小导航, vid} = this.data() || {};
     window.open(this.http.getUrl("order/lvxingcai/exportBOM", {小导航, vid}));
   }
 
   async print() {
-    const {tableInfos} = this;
-    const {表换行索引} = this.data || {};
+    const tableInfos = this.tableInfos();
+    const {表换行索引 = {}} = this.data() || {};
     const columnsAll: ColumnInfo<TableData>[][] = [];
-    for (const info of tableInfos) {
+    for (const info of this.tableInfos()) {
       columnsAll.push(info.columns);
       info.columns = info.columns.map((col) => {
         if (col.type === "button") {
@@ -61,6 +53,7 @@ export class PrintTableComponent implements OnInit {
         }
       });
     }
+    this.tableInfos.set([...tableInfos]);
     await timeout(1000);
     const toRemove: HTMLElement[] = [];
     let nextTableBorderTop = false;
@@ -77,7 +70,10 @@ export class PrintTableComponent implements OnInit {
         nextTableBorderTop = false;
         tableEl.style.borderTop = "var(--border)";
       }
-      const indexs = 表换行索引?.[title];
+      let indexs = 表换行索引[title];
+      if (!indexs && info.换行索引) {
+        indexs = 表换行索引[info.换行索引];
+      }
       const rowEls = tableEl.querySelectorAll(`app-table.${title} mat-row`);
       const rowCount = rowEls.length;
       if (Array.isArray(indexs) && indexs.length > 0) {
@@ -102,11 +98,19 @@ export class PrintTableComponent implements OnInit {
     for (let i = 0; i < tableInfos.length; i++) {
       tableInfos[i].columns = columnsAll[i];
     }
+    this.tableInfos.set([...tableInfos]);
     for (const el of toRemove) {
       el.remove();
     }
   }
 
+  title = signal("");
+  titleEff = effect(() => (document.title = this.title()));
+  tableInfos = signal<TableInfoDataTable[]>([]);
+  xikongTableInfo = signal<TableRenderInfo<XikongData> | null>(null);
+  xikongTableWidth = signal(0);
+  xikongColWidths = signal<ObjectOf<number>>({});
+  data = signal<TableInfoData | null>(null);
   async getData() {
     const {action} = this.route.snapshot.queryParams;
     if (!action) {
@@ -117,10 +121,7 @@ export class PrintTableComponent implements OnInit {
     if (!data) {
       return;
     }
-    this.title = data.标题;
-    document.title = data.标题;
-    this.data = data;
-    this.tableInfos = [];
+    const tableInfos: TableInfoDataTable[] = [];
     for (const [i, value] of data.表头.entries()) {
       const 表头列: ColumnInfo<TableData>[] = [];
       let 表头列i = 0;
@@ -146,7 +147,7 @@ export class PrintTableComponent implements OnInit {
           style: {...headerStyle, flex: `1 1 calc(${value2.width[0]} - ${value2.width[1]})`}
         });
       }
-      this.tableInfos.push({
+      tableInfos.push({
         noScroll: true,
         columns: 表头列,
         data: []
@@ -159,9 +160,12 @@ export class PrintTableComponent implements OnInit {
           item.序号 = i + 1;
         }
       }
-      this.tableInfos.push({noScroll: true, ...info});
+      tableInfos.push({noScroll: true, ...info, titleStyle: {display: "none"}});
     }
-    this.xikongColWidths = data.铣孔信息列宽;
+    this.title.set(data.标题);
+    this.data.set(data);
+    this.tableInfos.set(tableInfos);
+    this.xikongColWidths.set(data.铣孔信息列宽);
   }
 
   async onRowButtonClick(tableInfo: TableRenderInfo<TableData>, event: RowButtonEvent<TableData>) {
@@ -169,7 +173,7 @@ export class PrintTableComponent implements OnInit {
     switch (button.event) {
       case "查看铣孔信息":
         {
-          this.xikongTableInfo = null;
+          this.xikongTableInfo.set(null);
           if (tableInfo.activeRows?.includes(rowIdx)) {
             tableInfo.activeRows = [];
             return;
@@ -185,9 +189,9 @@ export class PrintTableComponent implements OnInit {
           if (!xikongData) {
             return;
           }
-          const xikongColWidths = this.xikongColWidths;
-          this.xikongTableWidth = 10 + Object.values(xikongColWidths).reduce((a, b) => a + b, 0);
-          this.xikongTableInfo = {
+          const xikongColWidths = this.xikongColWidths();
+          this.xikongTableWidth.set(10 + Object.values(xikongColWidths).reduce((a, b) => a + b, 0));
+          this.xikongTableInfo.set({
             filterable: {fields: ["加工孔名字"]},
             columns: [
               {type: "number", field: "序号", width: `${xikongColWidths.序号}px`},
@@ -200,7 +204,7 @@ export class PrintTableComponent implements OnInit {
             data: xikongData.map((value, index) => {
               return {序号: index + 1, ...value};
             })
-          };
+          });
           tableInfo.activeRows = [rowIdx];
         }
         break;
@@ -213,5 +217,21 @@ export class PrintTableComponent implements OnInit {
         }
         break;
     }
+  }
+
+  getLlyqStr(item: 型材信息["领料要求"][number]) {
+    let str: string;
+    if (item.型材类型 === "标准型材") {
+      str = `标准${item.物料长度}，${item.支数}支`;
+    } else {
+      str = `余料${item.物料长度}，${item.支数}支`;
+      if (item.库存码) {
+        str += `，库存码${item.库存码}`;
+      }
+      if (item.库存位置编码) {
+        str += `，${item.库存位置编码}`;
+      }
+    }
+    return str;
   }
 }
