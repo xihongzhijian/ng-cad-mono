@@ -3,11 +3,12 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
+import {getValueString} from "@app/app.common";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
-import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
+import {CadItemButton, CadItemForm, CadItemFormExtraText} from "@components/lurushuju/cad-item/cad-item.types";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
@@ -28,6 +29,7 @@ import {
   xhmrmsbjSbjbItemCopyModes,
   XhmrmsbjSbjbItemSbjbCad,
   XhmrmsbjSbjbItemSbjbCadInfo,
+  XhmrmsbjSbjbItemSbjbItem,
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
 import {
@@ -37,6 +39,7 @@ import {
   getXhmrmsbjSbjbItemSbjbCad,
   getXhmrmsbjSbjbItemSbjbForm,
   getXhmrmsbjSbjbItemSbjbItem,
+  getXhmrmsbjSbjbItemSbjbItemForm,
   getXhmrmsbjSbjbItemTableInfo,
   isXhmrmsbjSbjbItemOptionalKeys1,
   isXhmrmsbjSbjbItemOptionalKeys2
@@ -82,7 +85,7 @@ export class XhmrmsbjSbjbComponent {
   });
   cadMap = new Map<string, CadData>();
   cadInfos = computed(() => {
-    const infos: (Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> & {cad?: CadData})[] = [];
+    const infos: (Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> & {cad?: CadData; cadForm?: CadItemForm<XhmrmsbjSbjbItemSbjbCadInfo>})[] = [];
     const item = this.activeSbjbItem();
     if (item) {
       for (const item2 of item.CAD数据 || []) {
@@ -92,6 +95,24 @@ export class XhmrmsbjSbjbComponent {
           if (cad) {
             info.cad = cad;
           }
+        }
+        const title = info.title;
+        if (isXhmrmsbjSbjbItemOptionalKeys2(title)) {
+          const extraTexts: CadItemFormExtraText[] = [];
+          const keys: (keyof XhmrmsbjSbjbItemSbjbItem)[] = [
+            "企料宽1",
+            "企料宽1取值范围",
+            "企料宽1可改",
+            "企料宽2",
+            "企料宽2取值范围",
+            "企料宽2可改",
+            "虚拟企料",
+            "使用分体"
+          ];
+          for (const key of keys) {
+            extraTexts.push({key, value: getValueString(item[title]?.[key])});
+          }
+          info.cadForm = {extraTexts, onEdit: ({customInfo}) => this.editSbjbItemSbjbItem(customInfo.index)};
         }
         infos.push(info);
       }
@@ -105,6 +126,23 @@ export class XhmrmsbjSbjbComponent {
     ];
     return buttons;
   });
+  async editSbjbItemSbjbItem(index: number) {
+    const item = this.activeSbjbItem();
+    if (!item) {
+      return;
+    }
+    const info = this.cadInfos().at(index);
+    const name = info?.name;
+    if (!name || !isXhmrmsbjSbjbItemOptionalKeys2(name)) {
+      return;
+    }
+    const title = `${info.title}：${item[name]?.名字 || ""}`;
+    const result = await getXhmrmsbjSbjbItemSbjbItemForm(this.message, title, item[name]);
+    if (result) {
+      item[name] = result;
+      this.refreshItems();
+    }
+  }
   async selectSbjbItemSbjbCad(index: number) {
     const item = this.activeSbjbItem();
     if (!item) {

@@ -31,10 +31,17 @@ export interface XhmrmsbjSbjbItemSbjb {
 export type XhmrmsbjSbjbItemSbjbSorted = SortedItem<XhmrmsbjSbjbItemSbjb>;
 export interface XhmrmsbjSbjbItemSbjbItem {
   名字: string;
-  默认正面宽: number;
-  默认背面宽: number;
-  虚拟企料: boolean;
-  使用分体: boolean;
+  企料宽1?: number;
+  企料宽1取值范围?: string;
+  企料宽1可改?: boolean;
+  企料宽2?: number;
+  企料宽2取值范围?: string;
+  企料宽2可改?: boolean;
+  正背面同时改变?: boolean;
+  虚拟企料?: boolean;
+  使用分体?: boolean;
+  分体1?: string;
+  分体2?: string;
 }
 export interface XhmrmsbjSbjbItemSbjbCad {
   name: string;

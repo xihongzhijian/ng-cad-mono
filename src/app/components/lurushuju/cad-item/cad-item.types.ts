@@ -1,4 +1,5 @@
 import {CadFormValidators} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {MaybePromise} from "packages/utils/lib";
 import {CadItemComponent} from "./cad-item.component";
 
 export interface CadItemButton<T> {
@@ -20,4 +21,13 @@ export interface CadItemIsOnlineInfo<T> {
 
 export interface CadItemValidators extends CadFormValidators {
   zhankai?: boolean;
+}
+
+export interface CadItemFormExtraText {
+  key: string;
+  value?: string;
+}
+export interface CadItemForm<T> {
+  extraTexts?: CadItemFormExtraText[];
+  onEdit?: (component: CadItemComponent<T>) => MaybePromise<void>;
 }

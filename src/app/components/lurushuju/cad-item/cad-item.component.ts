@@ -51,7 +51,7 @@ import {Subscription} from "rxjs";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
 import {算料公式} from "../xinghao-data";
-import {CadItemButton, CadItemIsOnlineInfo, CadItemSelectable, CadItemValidators, typeOptions} from "./cad-item.types";
+import {CadItemButton, CadItemForm, CadItemIsOnlineInfo, CadItemSelectable, CadItemValidators, typeOptions} from "./cad-item.types";
 
 @Component({
   selector: "app-cad-item",
@@ -103,6 +103,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
   };
   @Input() validators?: CadItemValidators;
+  @Input() cadForm?: CadItemForm<T>;
   @Output() beforeEditCad = new EventEmitter<void>();
   @Output() afterEditCad = new EventEmitter<void>();
 
@@ -268,6 +269,11 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async editCadForm() {
+    const onEdit = this.cadForm?.onEdit;
+    if (typeof onEdit === "function") {
+      await onEdit(this);
+      return;
+    }
     if (this.editDisabled) {
       return;
     }

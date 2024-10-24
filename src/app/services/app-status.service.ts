@@ -630,8 +630,8 @@ export class AppStatusService {
   }
 
   cadYaoqiusManager = new FetchManager([], async () => {
-    const cadYoqiusRaw = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu"});
-    return cadYoqiusRaw.map((v) => new Cad数据要求(v));
+    const cadYaoqiusRaw = await this.http.queryMySql<Cad数据要求Raw>({table: "p_tongyongcadshujujiemianyaoqiu"});
+    return cadYaoqiusRaw.map((v) => new Cad数据要求(v));
   });
   getCadYaoqiu(name: string | CadData) {
     if (name instanceof CadData) {

@@ -91,6 +91,16 @@
           }
         }
       }
+      @for (text of cadForm?.extraTexts; track $index) {
+        <div class="flex-row">
+          @if (text.value !== undefined) {
+            <div class="key">{{ text.key }}：</div>
+            <div class="value">{{ text.value }}</div>
+          } @else {
+            <div class="key">{{ text.key }}</div>
+          }
+        </div>
+      }
     </div>
     @if (fentiDialogInput) {
       <div class="fenti-cads toolbar">

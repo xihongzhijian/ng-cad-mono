@@ -20,6 +20,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getCopyName} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
@@ -319,16 +320,7 @@ export class SuanliaogongshiComponent {
         type: "string",
         label: "取值范围",
         model: {data, key: "取值范围"},
-        validators: [
-          Validators.required,
-          (control) => {
-            const value = control.value;
-            if (!/^\d+(.\d+)?-\d+(.\d+)?$/.test(value)) {
-              return {取值范围不符合格式: true};
-            }
-            return null;
-          }
-        ]
+        validators: [Validators.required, CustomValidators.numberRangeStr]
       },
       {type: "string", label: "生效条件", model: {data, key: "生效条件"}},
       {type: "number", label: "排序", model: {data, key: "排序"}}

@@ -1,5 +1,6 @@
 import {Validators} from "@angular/forms";
 import {getArrayString} from "@app/app.common";
+import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {输入, 输入下单用途, 选项} from "@components/lurushuju/xinghao-data";
@@ -139,16 +140,7 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
       type: "string",
       label: "取值范围",
       model: {data, key: "取值范围"},
-      validators: [
-        Validators.required,
-        (control) => {
-          const value = control.value;
-          if (!/^\d+(.\d+)?-\d+(.\d+)?$/.test(value)) {
-            return {取值范围不符合格式: true};
-          }
-          return null;
-        }
-      ]
+      validators: [Validators.required, CustomValidators.numberRangeStr]
     },
     {type: "string", label: "生效条件", model: {data, key: "生效条件"}},
     {type: "number", label: "排序", model: {data, key: "排序"}}
