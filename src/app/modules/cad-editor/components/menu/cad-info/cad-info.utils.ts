@@ -502,7 +502,9 @@ export const openCadForm = async (
     if (yaoqiu) {
       data2.type = yaoqiu.CAD分类;
     }
-    setCadData(data2, yaoqiu, type);
+    if (type === "add") {
+      setCadData(data2, yaoqiu, type);
+    }
     return data2;
   }
   return null;
