@@ -1,5 +1,5 @@
 import {ObjectOf} from "@lucilor/utils";
-import {TableDataBase2} from "@modules/http/services/cad-data.service.types";
+import {InputData, 优化结果, 型材BOM, 铝型材优化结果, 铝型材余料库存} from "./lvxingcaiyouhua.types";
 
 export const calc = (data: InputData, 切口损耗: number) => {
   const bomGroups: ObjectOf<型材BOM[]> = {};
@@ -30,60 +30,63 @@ export const calc = (data: InputData, 切口损耗: number) => {
       let dp: [number, (typeof result)[number]][] = [];
       for (const [i, bom] of boms.entries()) {
         const length = parseFloat(bom.型材长度);
-        if (i === 0) {
-          dp.push([0, {value: 0, items: [], cuts: 0}]);
-          if (length <= totalLength) {
-            const dpItem: (typeof dp)[number] = [length, {value: length, items: [bom], cuts: 0}];
-            if (length < totalLength) {
-              dpItem[0] = Math.min(totalLength, dpItem[0] + 切口损耗);
-              dpItem[1].cuts++;
-            }
-            dp.push(dpItem);
-          }
-        } else {
-          const dp2 = dp.slice();
-          for (const dpItem of dp) {
-            const unusedLength = totalLength - dpItem[0];
-            if (dpItem[1].items.find((v) => v.vid === bom.vid)) {
-              continue;
-            }
-            if (length <= unusedLength) {
-              const [length2, item] = dpItem;
-              const dpItem2: (typeof dp)[number] = [
-                length2 + length,
-                {
-                  value: item.value + length,
-                  items: [...item.items, bom],
-                  cuts: item.cuts
-                }
-              ];
-              if (length < unusedLength) {
-                dpItem2[0] = Math.min(totalLength, dpItem2[0] + 切口损耗);
-                dpItem2[1].cuts++;
+        for (let j = 0; j < bom.要求数量; j++) {
+          if (i + j === 0) {
+            dp.push([0, {value: 0, items: [], cuts: 0}]);
+            if (length <= totalLength) {
+              const dpItem: (typeof dp)[number] = [length, {value: length, items: [bom], cuts: 0}];
+              if (length < totalLength) {
+                dpItem[0] = Math.min(totalLength, dpItem[0] + 切口损耗);
+                dpItem[1].cuts++;
               }
+              dp.push(dpItem);
+            }
+          } else {
+            const dp2 = dp.slice();
+            for (const dpItem of dp) {
+              const unusedLength = totalLength - dpItem[0];
+              const usedBoms = dpItem[1].items.filter((v) => v.vid === bom.vid);
+              if (usedBoms.length >= bom.要求数量) {
+                continue;
+              }
+              if (length <= unusedLength) {
+                const [length2, item] = dpItem;
+                const dpItem2: (typeof dp)[number] = [
+                  length2 + length,
+                  {
+                    value: item.value + length,
+                    items: [...item.items, bom],
+                    cuts: item.cuts
+                  }
+                ];
+                if (length < unusedLength) {
+                  dpItem2[0] = Math.min(totalLength, dpItem2[0] + 切口损耗);
+                  dpItem2[1].cuts++;
+                }
 
-              let shouldAdd = true;
-              for (const v of dp) {
-                const val1 = getDpItemValue(v[1]);
-                const val2 = getDpItemValue(dpItem2[1]);
-                if (v[0] === dpItem2[0] && val1 < val2) {
-                  shouldAdd = false;
-                  v[1] = dpItem2[1];
-                  break;
+                let shouldAdd = true;
+                for (const v of dp) {
+                  const val1 = getDpItemValue(v[1]);
+                  const val2 = getDpItemValue(dpItem2[1]);
+                  if (v[0] === dpItem2[0] && val1 < val2) {
+                    shouldAdd = false;
+                    v[1] = dpItem2[1];
+                    break;
+                  }
+                  if (v[0] <= dpItem2[0] && val1 >= val2) {
+                    shouldAdd = false;
+                    break;
+                  }
                 }
-                if (v[0] <= dpItem2[0] && val1 >= val2) {
-                  shouldAdd = false;
-                  break;
+                if (shouldAdd) {
+                  dp2.push(dpItem2);
+                } else {
+                  // console.log(dp2[i - 1].slice(), dpItem2);
                 }
-              }
-              if (shouldAdd) {
-                dp2.push(dpItem2);
-              } else {
-                // console.log(dp2[i - 1].slice(), dpItem2);
               }
             }
+            dp = dp2;
           }
-          dp = dp2;
         }
       }
       let max = 0;
@@ -211,65 +214,3 @@ export const calc = (data: InputData, 切口损耗: number) => {
   return {铝型材优化结果: result, 总利用率: getNum(1 - unusedLength / totalLength)};
 };
 export const getNum = (num: number) => Number(num.toFixed(3));
-
-export interface InputData {
-  型材BOM: 型材BOM[];
-  铝型材: 铝型材[];
-  铝型材余料库存: 铝型材余料库存[];
-}
-export type OutputData = ReturnType<typeof calc>;
-export interface 型材BOM {
-  vid: number;
-  名字: string;
-  铝型材: string;
-  型材长度: string;
-  型材颜色: string;
-  型材优化分组信息: string;
-}
-export interface 铝型材 extends TableDataBase2 {
-  biaozhunchangdu: number;
-  yuliaorukuzuixiaochangdu: number;
-  qieduan90dusunhao: number;
-  qieduan45dusuanhao: number;
-}
-export interface 铝型材余料库存 {
-  vid: number;
-  lvxingcai: string;
-  yanse: string;
-  kucunshuliang: number;
-  kucunweizhibianma: string;
-  kucunma: string;
-  yuliaochangdu: number;
-}
-export interface 铝型材优化结果 {
-  型材: string;
-  颜色: string;
-  余料入库最小长度: number;
-  排序: number;
-  切断90度损耗: number;
-  切断45度损耗: number;
-  所有型材利用率: number;
-  优化结果: 优化结果[];
-}
-export interface 优化结果Base {
-  vid: number;
-  铝型材: string;
-  物料长度: number;
-  物料颜色: string;
-  数量: 1;
-  单支型材利用率: number;
-  排料后剩余长度: number;
-  切口损耗: number;
-  BOM: 型材BOM[];
-  余料可以入库: boolean;
-}
-export interface 优化结果标准型材 extends 优化结果Base {
-  型材类型: "标准型材";
-}
-export interface 优化结果余料 extends 优化结果Base {
-  型材类型: "余料";
-  余料标签信息: string;
-  库存位置编码: string;
-  库存码: string;
-}
-export type 优化结果 = 优化结果标准型材 | 优化结果余料;

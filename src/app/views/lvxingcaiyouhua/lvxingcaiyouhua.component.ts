@@ -5,14 +5,16 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute, Router} from "@angular/router";
 import {session, timer} from "@app/app.common";
-import {downloadByString, selectFiles} from "@lucilor/utils";
+import {downloadByString, queryString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {Mode} from "vanilla-jsoneditor";
-import {calc, getNum, InputData, OutputData, 优化结果} from "./lvxingcaiyouhua.utils";
+import {CalcResultItem, InputData, LvxingcaiFilterForm, OutputData, 优化结果} from "./lvxingcaiyouhua.types";
+import {calc, getNum} from "./lvxingcaiyouhua.utils";
 
 @Component({
   selector: "app-lvxingcaiyouhua",
@@ -51,7 +53,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     }
   }
 
-  inputs = computed(() => {
+  dataInputInfos = computed(() => {
     const inputData = this.inputData();
     const infos: InputInfo[] = [
       {
@@ -90,7 +92,6 @@ export class LvxingcaiyouhuaComponent implements OnInit {
   code = signal("");
   outputData = signal<OutputData | null>(null);
   calcResult = signal<{result: OutputData; duration: number} | null>(null);
-  calcResultInfo = signal<{showDetails: boolean}[]>([]);
   calc() {
     const data = this.inputData();
     if (!data) {
@@ -102,14 +103,50 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     const result = calc(data, this.qiekousunhao());
     const duration = getNum(timer.getDuration(timerKey) || -1);
     timer.end(timerKey, timerKey);
-    console.log(result);
     this.calcResult.set({result, duration});
-    this.calcResultInfo.set(result.铝型材优化结果.map(() => ({showDetails: true})));
   }
-  toggleCalcResultInfoShowDetails(index: number) {
-    const info = this.calcResultInfo().slice();
-    info[index].showDetails = !info[index].showDetails;
-    this.calcResultInfo.set(info);
+
+  private _filterFormKey = "lvxingcaiFilterForm";
+  filterForm = signal(session.load<LvxingcaiFilterForm>(this._filterFormKey) || {型材: ""});
+  filterFormEff = effect(() => session.save(this._filterFormKey, this.filterForm()));
+  filterInputInfos = computed(() => {
+    const filterForm = this.filterForm();
+    const infos: InputInfo[] = [
+      {
+        type: "string",
+        label: "搜索：型材",
+        value: filterForm.型材,
+        clearable: true,
+        onInput: debounce((型材) => this.filterForm.set({...filterForm, 型材}), 100)
+      }
+    ];
+    return infos;
+  });
+  calcResultItemsAll = signal<CalcResultItem[]>([]);
+  calcResultItemsAllEff = effect(
+    () => {
+      const reuslt = this.calcResult()?.result?.铝型材优化结果 || [];
+      this.calcResultItemsAll.set(reuslt.map((v) => ({...v, showDetails: true})));
+    },
+    {allowSignalWrites: true}
+  );
+  calcResultItems = computed(() => {
+    const form = this.filterForm();
+    const itemsAll = this.calcResultItemsAll();
+    if (Object.values(form).every((v) => !v)) {
+      return itemsAll;
+    }
+    return itemsAll.filter((item) => {
+      if (!queryString(form.型材, item.型材)) {
+        return false;
+      }
+      return true;
+    });
+  });
+  toggleCalcResultItemShowDetails(index: number) {
+    const item = this.calcResultItems()[index];
+    item.showDetails = !item.showDetails;
+    this.calcResultItemsAll.update((v) => [...v]);
   }
 
   async import() {

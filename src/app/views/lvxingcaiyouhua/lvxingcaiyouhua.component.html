@@ -1,5 +1,5 @@
 <div class="title">优化单号：{{ code() }}</div>
-@for (info of inputs(); track $index) {
+@for (info of dataInputInfos(); track $index) {
   <app-input [info]="info"></app-input>
 }
 <div class="toolbar">
@@ -9,16 +9,18 @@
   <button mat-raised-button color="primary" (click)="getOptimizeDataCode()">请求数据</button>
   <button mat-raised-button color="primary" (click)="setOptimizeData()">确定优化</button>
   <button mat-raised-button color="primary" (click)="unsetOptimizeData()">取消优化</button>
+  @for (info of filterInputInfos(); track $index) {
+    <app-input [info]="info"></app-input>
+  }
 </div>
 @if (calcResult(); as calcResult) {
   <ng-scrollbar>
     <div class="calc-result item">
       <div class="text">总利用率【{{ calcResult.result["总利用率"] }}】用时【{{ calcResult.duration }}ms】</div>
-      <div class="text">(1) 利用率不包含余料</div>
-      <div class="text">(2) 余料计算长度包含45度切角</div>
-      <div class="text">(3) 废料，指长度小于余料入库最小长度的加工剩余型材</div>
+      <div class="text">(1) 余料计算长度包含45度切角</div>
+      <div class="text">(2) 废料，指长度小于余料入库最小长度的加工剩余型材</div>
       <div class="items">
-        @for (item of calcResult.result["铝型材优化结果"]; track i; let i = $index) {
+        @for (item of calcResultItems(); track i; let i = $index) {
           <div class="xingcai item border">
             <div class="xingcai-name text toolbar">
               <div>型材【{{ item["型材"] }}】</div>
@@ -28,20 +30,20 @@
             </div>
             <div class="toolbar">
               <span>所有型材利用率【{{ item["所有型材利用率"] }}】【{{ item["优化结果"].length }}】根</span>
-              <button mat-icon-button color="primary" (click)="toggleCalcResultInfoShowDetails(i)">
-                @if (calcResultInfo()[i].showDetails) {
+              <button mat-icon-button color="primary" (click)="toggleCalcResultItemShowDetails(i)">
+                @if (item.showDetails) {
                   <mat-icon>expand_circle_down</mat-icon>
                 } @else {
                   <mat-icon>expand_circle_right</mat-icon>
                 }
               </button>
             </div>
-            @if (calcResultInfo()[i].showDetails) {
+            @if (item.showDetails) {
               <div class="items">
                 @for (item2 of item["优化结果"]; track j; let j = $index) {
                   <div class="item border">
                     <div class="text toolbar">
-                      <div>【{{ j + 1 }}】利用率【{{ item2["单支型材利用率"] }}】【{{ getTypeStr(item2) }}】</div>
+                      <div>【{{ j + 1 }}】不含余料利用率【{{ item2["单支型材利用率"] }}】【{{ getTypeStr(item2) }}】</div>
                       <div>{{ getLengthsStr(item2) }}</div>
                       <div>
                         @if (item2["余料可以入库"]) {
