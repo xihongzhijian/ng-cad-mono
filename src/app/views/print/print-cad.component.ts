@@ -179,7 +179,9 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       if (!responseData) {
         responseData = await this.http.getData<PrintCadsParams>(action, queryParams, {encrypt: "both", spinner: false});
         if (!this.production) {
-          session.save(this._httpCacheKey, responseData);
+          try {
+            session.save(this._httpCacheKey, responseData);
+          } catch {}
         }
       }
       if (responseData) {

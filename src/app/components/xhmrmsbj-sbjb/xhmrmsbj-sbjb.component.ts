@@ -85,11 +85,11 @@ export class XhmrmsbjSbjbComponent {
   });
   cadMap = new Map<string, CadData>();
   cadInfos = computed(() => {
-    const infos: (Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> & {cad?: CadData; cadForm?: CadItemForm<XhmrmsbjSbjbItemSbjbCadInfo>})[] = [];
+    const infos: (Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> & {cad?: CadData; cadForm: CadItemForm<XhmrmsbjSbjbItemSbjbCadInfo>})[] = [];
     const item = this.activeSbjbItem();
     if (item) {
       for (const item2 of item.CAD数据 || []) {
-        const info: (typeof infos)[0] = {...item2};
+        const info: (typeof infos)[0] = {...item2, cadForm: {noDefaultTexts: true}};
         if (item2.cadId) {
           const cad = this.cadMap.get(item2.cadId);
           if (cad) {
@@ -112,7 +112,8 @@ export class XhmrmsbjSbjbComponent {
           for (const key of keys) {
             extraTexts.push({key, value: getValueString(item[title]?.[key])});
           }
-          info.cadForm = {extraTexts, onEdit: ({customInfo}) => this.editSbjbItemSbjbItem(customInfo.index)};
+          info.cadForm.extraTexts = extraTexts;
+          info.cadForm.onEdit = ({customInfo}) => this.editSbjbItemSbjbItem(customInfo.index);
         }
         infos.push(info);
       }

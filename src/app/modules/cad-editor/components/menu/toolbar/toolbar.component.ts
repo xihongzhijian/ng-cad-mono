@@ -1,5 +1,5 @@
 import {AsyncPipe} from "@angular/common";
-import {Component, HostListener} from "@angular/core";
+import {Component, HostBinding, HostListener} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -35,6 +35,8 @@ import {openCadLineForm} from "../cad-line/cad-line.utils";
   imports: [AboutComponent, AsyncPipe, MatButtonModule, MatDividerModule, MatMenuModule]
 })
 export class ToolbarComponent {
+  @HostBinding("class") class = "ng-page";
+
   openLock = false;
   keyEventItems: KeyEventItem[] = [
     {key: "s", ctrl: true, action: () => this.save()},

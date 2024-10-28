@@ -1,8 +1,9 @@
-import {Component, forwardRef, Inject, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, inject, Inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadEditorComponent} from "@modules/cad-editor/components/cad-editor/cad-editor.component";
+import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -12,40 +13,43 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./cad-editor-dialog.component.html",
   styleUrls: ["./cad-editor-dialog.component.scss"],
   standalone: true,
-  imports: [MatButtonModule, forwardRef(() => CadEditorComponent)]
+  imports: [MatButtonModule, forwardRef(() => CadEditorComponent)],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadEditorDialogComponent extends Subscribed() implements OnInit {
-  @ViewChild(forwardRef(() => CadEditorComponent)) cadEditor?: CadEditorComponent;
-  isSaved = false;
-  canClose = true;
-  cadEditorParams: OpenCadOptions = {};
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
+  @HostBinding("class") class = "ng-page";
 
   constructor(
     public dialogRef: MatDialogRef<CadEditorDialogComponent, CadEditorOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadEditorInput,
-    private status: AppStatusService
+    @Inject(MAT_DIALOG_DATA) public data: CadEditorInput
   ) {
     super();
     if (!this.data) {
       this.data = {};
     }
-    this.cadEditorParams = {...this.data, isDialog: true};
+    this.cadEditorParams.set({...this.data, isDialog: true});
   }
 
   ngOnInit() {
     this.subscribe(this.status.saveCadStart$, () => {
-      this.canClose = false;
+      this.canClose.set(false);
     });
     this.subscribe(this.status.saveCadEnd$, () => {
-      this.canClose = true;
-      this.isSaved = true;
+      this.canClose.set(true);
+      this.isSaved.set(true);
     });
   }
 
+  cadEditor = viewChild(forwardRef(() => CadEditorComponent));
+  isSaved = signal(false);
+  canClose = signal(true);
+  cadEditorParams = signal<OpenCadOptions>({});
+
   async save() {
-    if (this.cadEditor) {
-      await this.cadEditor.save();
-    }
+    await this.cadEditor()?.save();
   }
 
   async close(save: boolean) {
@@ -55,11 +59,21 @@ export class CadEditorDialogComponent extends Subscribed() implements OnInit {
         return;
       }
     }
-    if (this.cadEditor) {
-      this.dialogRef.close({isSaved: this.isSaved});
+    if (this.cadEditor()) {
+      this.dialogRef.close({isSaved: this.isSaved()});
     } else {
       this.dialogRef.close();
     }
+  }
+
+  openCad() {
+    const id = this.data.data?.id;
+    const collection = this.data.collection;
+    if (!id || !collection) {
+      this.message.error("缺少id或collection");
+      return;
+    }
+    this.status.openCadInNewTab(id, collection);
   }
 }
 

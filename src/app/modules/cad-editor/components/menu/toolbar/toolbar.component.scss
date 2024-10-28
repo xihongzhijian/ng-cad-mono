@@ -3,7 +3,6 @@
   min-width: unset;
 }
 
-.toolbar {
-  display: flex;
-  flex-direction: column;
+.toolbar > * {
+  margin: 0;
 }

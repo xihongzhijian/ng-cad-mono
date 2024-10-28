@@ -1,5 +1,5 @@
-<div class="toolbar">
-  <div class="flex-row" style="flex-wrap: wrap">
+<div class="flex-column">
+  <div class="toolbar">
     <button mat-button [matMenuTriggerFor]="file">文件</button>
     <mat-menu #file="matMenu">
       @if ((isCadLocal$ | async) === false) {
@@ -83,7 +83,7 @@
       </button>
     }
   </div>
-  <div>
+  <div class="toolbar">
     <button mat-button (click)="editZhankai()">展开</button>
     <button mat-button (click)="editTiaojianquzhi()">条件取值</button>
     <button mat-button (click)="editLineInfo()">线属性弹窗</button>

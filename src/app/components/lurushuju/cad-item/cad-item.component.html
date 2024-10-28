@@ -79,15 +79,17 @@
       </div>
     }
     <div class="cad-info item link" style="align-items: flex-start" (click)="selectable?.onChange(this)" (dblclick)="editCadForm()">
-      @for (item of yaoqiu?.["CAD弹窗修改属性"]; track $index) {
-        @if (item.key !== "名字") {
-          @if (isCadInfoVisible(item)) {
-            <div class="flex-row">
-              <div class="key">{{ item.key }}{{ item.key2 }}：</div>
-              <div class="value" [class.error]="errorMsgs[item.key]">{{ getCadInfoStr(item) }}</div>
-            </div>
-          } @else {
-            <div class="key disabled">{{ item.key }}（未实现）</div>
+      @if (!cadForm?.noDefaultTexts) {
+        @for (item of yaoqiu?.["CAD弹窗修改属性"]; track $index) {
+          @if (item.key !== "名字") {
+            @if (isCadInfoVisible(item)) {
+              <div class="flex-row">
+                <div class="key">{{ item.key }}{{ item.key2 }}：</div>
+                <div class="value" [class.error]="errorMsgs[item.key]">{{ getCadInfoStr(item) }}</div>
+              </div>
+            } @else {
+              <div class="key disabled">{{ item.key }}（未实现）</div>
+            }
           }
         }
       }

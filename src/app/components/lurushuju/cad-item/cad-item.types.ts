@@ -28,6 +28,7 @@ export interface CadItemFormExtraText {
   value?: string;
 }
 export interface CadItemForm<T> {
+  noDefaultTexts?: boolean;
   extraTexts?: CadItemFormExtraText[];
   onEdit?: (component: CadItemComponent<T>) => MaybePromise<void>;
 }
