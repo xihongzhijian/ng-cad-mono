@@ -13,6 +13,7 @@ export interface TableInfoData {
   表换行索引?: ObjectOf<number[]>;
   小导航?: string;
   vid?: number;
+  二维码?: string;
 }
 export type TableInfoDataTable = TableRenderInfo<TableData> & {型材信息?: 型材信息; hideTitle?: boolean; 换行索引?: string};
 export interface 型材信息 {

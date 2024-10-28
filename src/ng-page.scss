@@ -18,7 +18,6 @@
       width: calc(100% / var(--items-per-row, 1) - var(--item-margin) * 2);
     }
     .no-items-per-row {
-      // placeholder
       position: relative;
     }
   }

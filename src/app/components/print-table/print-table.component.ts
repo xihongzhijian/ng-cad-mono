@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, effect, ElementRef, HostBinding, inj
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
-import {getValueString, setGlobal} from "@app/app.common";
+import {getValueString, replaceRemoteHost, setGlobal} from "@app/app.common";
 import {environment} from "@env";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -10,7 +10,8 @@ import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {ColumnInfo, RowButtonEvent, TableRenderInfo} from "@modules/table/components/table/table.types";
-import csstype from "csstype";
+import {Properties} from "csstype";
+import {toDataURL} from "qrcode";
 import {TableData, TableInfoData, TableInfoDataTable, XikongData, XikongDataRaw, 型材信息} from "./print-table.types";
 
 @Component({
@@ -57,6 +58,7 @@ export class PrintTableComponent implements OnInit {
     await timeout(1000);
     const toRemove: HTMLElement[] = [];
     let nextTableBorderTop = false;
+    const changedBorderTopEls: HTMLElement[] = [];
     for (const info of tableInfos) {
       const title = info.title;
       if (!title) {
@@ -68,7 +70,15 @@ export class PrintTableComponent implements OnInit {
       }
       if (nextTableBorderTop) {
         nextTableBorderTop = false;
-        tableEl.style.borderTop = "var(--border)";
+        const prevEl = tableEl.previousElementSibling;
+        let target: HTMLElement;
+        if (prevEl instanceof HTMLElement && prevEl.classList.contains("xingcai-info")) {
+          target = prevEl;
+        } else {
+          target = tableEl;
+        }
+        target.style.borderTop = "var(--border)";
+        changedBorderTopEls.push(target);
       }
       let indexs = 表换行索引[title];
       if (!indexs && info.换行索引) {
@@ -102,6 +112,9 @@ export class PrintTableComponent implements OnInit {
     for (const el of toRemove) {
       el.remove();
     }
+    for (const el of changedBorderTopEls) {
+      el.style.borderTop = "";
+    }
   }
 
   title = signal("");
@@ -111,6 +124,7 @@ export class PrintTableComponent implements OnInit {
   xikongTableWidth = signal(0);
   xikongColWidths = signal<ObjectOf<number>>({});
   data = signal<TableInfoData | null>(null);
+  qrCodeImg = signal<string | null>(null);
   async getData() {
     const {action} = this.route.snapshot.queryParams;
     if (!action) {
@@ -125,7 +139,7 @@ export class PrintTableComponent implements OnInit {
     for (const [i, value] of data.表头.entries()) {
       const 表头列: ColumnInfo<TableData>[] = [];
       let 表头列i = 0;
-      const headerStyle: csstype.Properties = {};
+      const headerStyle: Properties = {};
       if (i < data.表头.length - 1) {
         headerStyle.borderBottom = "none";
       }
@@ -166,6 +180,18 @@ export class PrintTableComponent implements OnInit {
     this.data.set(data);
     this.tableInfos.set(tableInfos);
     this.xikongColWidths.set(data.铣孔信息列宽);
+
+    if (data.二维码) {
+      try {
+        const img = await toDataURL(data.二维码, {width: 55, margin: 0});
+        this.qrCodeImg.set(img);
+      } catch (error) {
+        console.error(error);
+        this.message.error("二维码生成失败");
+      }
+    } else {
+      this.qrCodeImg.set(null);
+    }
   }
 
   async onRowButtonClick(tableInfo: TableRenderInfo<TableData>, event: RowButtonEvent<TableData>) {
@@ -233,5 +259,12 @@ export class PrintTableComponent implements OnInit {
       }
     }
     return str;
+  }
+
+  openQrCodeUrl() {
+    const {二维码} = this.data() || {};
+    if (二维码) {
+      window.open(replaceRemoteHost(二维码));
+    }
   }
 }

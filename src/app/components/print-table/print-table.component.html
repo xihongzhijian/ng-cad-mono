@@ -1,5 +1,12 @@
 <div class="content">
-  <div class="title center">{{ title() }}</div>
+  <div class="title center">
+    <div>{{ title() }}</div>
+    @if (qrCodeImg(); as img) {
+      <div class="qr-code link" (click)="openQrCodeUrl()">
+        <app-image [src]="img"></app-image>
+      </div>
+    }
+  </div>
   <div class="table-container flex-column flex-110">
     @for (info of tableInfos(); track $index) {
       @if (info.title && !info.hideTitle) {

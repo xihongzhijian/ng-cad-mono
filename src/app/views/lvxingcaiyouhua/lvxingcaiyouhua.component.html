@@ -1,19 +1,15 @@
 <div class="title">优化单号：{{ code() }}</div>
-@for (info of dataInputInfos(); track $index) {
-  <app-input [info]="info"></app-input>
-}
 <div class="toolbar">
-  <button mat-raised-button color="primary" (click)="calc()">计算</button>
-  <button mat-raised-button color="primary" (click)="import()">导入数据</button>
-  <button mat-raised-button color="primary" (click)="export()">导出数据</button>
-  <button mat-raised-button color="primary" (click)="getOptimizeDataCode()">请求数据</button>
-  <button mat-raised-button color="primary" (click)="setOptimizeData()">确定优化</button>
-  <button mat-raised-button color="primary" (click)="unsetOptimizeData()">取消优化</button>
   @for (info of filterInputInfos(); track $index) {
     <app-input [info]="info"></app-input>
   }
+  <button mat-raised-button color="primary" (click)="calc()">计算</button>
+  <button mat-raised-button color="primary" (click)="getOptimizeDataCode()">请求数据</button>
+  <button mat-raised-button color="primary" (click)="setOptimizeData()">确定优化</button>
+  <!-- <button mat-raised-button color="primary" (click)="unsetOptimizeData()">取消优化</button> -->
 </div>
 @if (calcResult(); as calcResult) {
+  <div class="title">优化结果</div>
   <ng-scrollbar>
     <div class="calc-result item">
       <div class="text">总利用率【{{ calcResult.result["总利用率"] }}】用时【{{ calcResult.duration }}ms】</div>

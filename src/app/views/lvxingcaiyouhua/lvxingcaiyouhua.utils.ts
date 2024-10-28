@@ -113,6 +113,18 @@ export const calc = (data: InputData, 切口损耗: number) => {
         break;
       }
     }
+    for (const resultItem of result) {
+      const items = resultItem.items;
+      resultItem.items = [];
+      for (const item of items) {
+        const itemPrev = resultItem.items.find((v) => v.vid === item.vid);
+        if (itemPrev) {
+          itemPrev.要求数量++;
+        } else {
+          resultItem.items.push({...item, 要求数量: 1});
+        }
+      }
+    }
     return result;
   };
   // const

@@ -5,14 +5,13 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute, Router} from "@angular/router";
 import {session, timer} from "@app/app.common";
-import {downloadByString, queryString, selectFiles} from "@lucilor/utils";
+import {queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {Mode} from "vanilla-jsoneditor";
 import {CalcResultItem, InputData, LvxingcaiFilterForm, OutputData, 优化结果} from "./lvxingcaiyouhua.types";
 import {calc, getNum} from "./lvxingcaiyouhua.utils";
 
@@ -50,44 +49,9 @@ export class LvxingcaiyouhuaComponent implements OnInit {
       this.code.set(optimizeCode);
       await this.getOptimizeData();
       this.calc();
+      await this.setOptimizeData();
     }
   }
-
-  dataInputInfos = computed(() => {
-    const inputData = this.inputData();
-    const infos: InputInfo[] = [
-      {
-        type: "string",
-        label: "数据",
-        textarea: {autosize: {minRows: 1, maxRows: 2}},
-        value: inputData ? JSON.stringify(inputData) : "",
-        onChange: (val) => {
-          if (val) {
-            try {
-              this.inputData.set(JSON.parse(val));
-            } catch (e) {
-              console.error(e);
-            }
-          } else {
-            this.inputData.set(null);
-          }
-        },
-        suffixIcons: [
-          {
-            name: "edit",
-            onClick: async () => {
-              const result = await this.message.json(inputData, {options: {mode: Mode.table}});
-              if (result) {
-                this.inputData.set(result);
-              }
-            }
-          }
-        ]
-      },
-      {type: "number", label: "切口损耗", value: this.qiekousunhao(), onChange: (val) => this.qiekousunhao.set(val), hidden: true}
-    ];
-    return infos;
-  });
 
   code = signal("");
   outputData = signal<OutputData | null>(null);
@@ -150,26 +114,6 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     this.calcResultItemsAll.update((v) => [...v]);
   }
 
-  async import() {
-    const files = await selectFiles({accept: ".json"});
-    const file = files?.[0];
-    if (!file) {
-      return;
-    }
-    const dataStr = await file.text();
-    let data: InputData | undefined;
-    try {
-      data = JSON.parse(dataStr);
-    } catch (e) {
-      console.error(e);
-    }
-    if (data) {
-      this.inputData.set(data);
-    }
-  }
-  export() {
-    downloadByString(JSON.stringify(this.inputData()), {filename: "铝型材优化.json"});
-  }
   async getOptimizeDataCode() {
     const code = await this.message.prompt({type: "string", label: "订单号", value: this.code(), validators: Validators.required});
     if (!code) {
@@ -207,7 +151,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     return str;
   }
   getLengthsStr(item: 优化结果) {
-    const str = item.BOM.map((item) => item.型材长度).join("+");
+    const str = item.BOM.map(({型材长度, 要求数量}) => (要求数量 > 1 ? `${型材长度}*${要求数量}` : 型材长度)).join("+");
     return `${item.物料长度}=${str}`;
   }
 }

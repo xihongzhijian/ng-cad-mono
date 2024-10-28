@@ -28,6 +28,19 @@
   padding: 10px;
   overflow: auto;
   box-sizing: border-box;
+
+  > .title {
+    line-height: 36px;
+    position: relative;
+  }
+}
+
+.qr-code {
+  position: absolute;
+  top: 0;
+  right: 0;
+  top: 2.5px;
+  right: 0;
 }
 
 .content .table-container app-table {
