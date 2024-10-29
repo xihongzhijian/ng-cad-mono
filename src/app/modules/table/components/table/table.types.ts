@@ -12,6 +12,7 @@ export interface TableRenderInfo<T> {
   titleStyle?: Properties;
   subTitle?: string;
   subTitleStyle?: Properties;
+  inlineTitle?: boolean;
   editMode?: boolean;
   sortable?: boolean;
   filterable?: boolean | TableRenderInfoFilterable<T>;
@@ -24,7 +25,6 @@ export interface TableRenderInfo<T> {
     import?: boolean;
     export?: boolean;
     editModeToggle?: boolean;
-    inlineTitle?: boolean;
     extra?: TableButton[];
   };
   isTree?: boolean;

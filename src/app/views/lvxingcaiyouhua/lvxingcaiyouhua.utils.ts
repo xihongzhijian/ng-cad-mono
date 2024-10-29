@@ -1,8 +1,24 @@
 import {ObjectOf} from "@lucilor/utils";
-import {InputData, 优化结果, 型材BOM, 铝型材优化结果, 铝型材余料库存} from "./lvxingcaiyouhua.types";
+import {cloneDeep} from "lodash";
+import {InputData, 优化结果, 型材Bom, 铝型材, 铝型材优化结果, 铝型材余料库存} from "./lvxingcaiyouhua.types";
 
-export const calc = (data: InputData, 切口损耗: number) => {
-  const bomGroups: ObjectOf<型材BOM[]> = {};
+export const getInputDataBoms = (data: InputData) => {
+  const boms: 型材Bom[] = [];
+  for (const bom of data.型材BOM) {
+    const bom2 = cloneDeep(bom);
+    const bomsExclude = data.不上设备的型材BOM?.filter((v) => v.vid === bom.vid);
+    for (const bom3 of bomsExclude || []) {
+      bom2.要求数量 -= bom3.要求数量;
+    }
+    if (bom2.要求数量 > 0) {
+      boms.push(bom2);
+    }
+  }
+  return boms;
+};
+
+export const calc = (data: InputData) => {
+  const bomGroups: ObjectOf<型材Bom[]> = {};
   for (const bom of data.型材BOM) {
     const key = bom.型材优化分组信息;
     if (!bomGroups[key]) {
@@ -17,9 +33,9 @@ export const calc = (data: InputData, 切口损耗: number) => {
   }
 
   const resultItems: 优化结果[] = [];
-  const usedBoms = new Set<number>();
-  const backpackDp = (boms: 型材BOM[], totalLength: number, num: number) => {
-    const result: {value: number; items: 型材BOM[]; cuts: number}[] = [];
+  const usedBoms = new Map<number, number>();
+  const backpackDp = (boms: 型材Bom[], totalLength: number, num: number, {qieduansunhao}: 铝型材) => {
+    const result: {value: number; items: 型材Bom[]; cuts: number}[] = [];
     if (boms.length < 1) {
       return result;
     }
@@ -36,7 +52,7 @@ export const calc = (data: InputData, 切口损耗: number) => {
             if (length <= totalLength) {
               const dpItem: (typeof dp)[number] = [length, {value: length, items: [bom], cuts: 0}];
               if (length < totalLength) {
-                dpItem[0] = Math.min(totalLength, dpItem[0] + 切口损耗);
+                dpItem[0] = Math.min(totalLength, dpItem[0] + qieduansunhao);
                 dpItem[1].cuts++;
               }
               dp.push(dpItem);
@@ -60,7 +76,7 @@ export const calc = (data: InputData, 切口损耗: number) => {
                   }
                 ];
                 if (length < unusedLength) {
-                  dpItem2[0] = Math.min(totalLength, dpItem2[0] + 切口损耗);
+                  dpItem2[0] = Math.min(totalLength, dpItem2[0] + qieduansunhao);
                   dpItem2[1].cuts++;
                 }
 
@@ -104,10 +120,11 @@ export const calc = (data: InputData, 切口损耗: number) => {
       }
       result.push(resultItem);
       for (const item of resultItem.items) {
-        usedBoms.add(item.vid);
+        const val = usedBoms.get(item.vid) || 0;
+        usedBoms.set(item.vid, val + 1);
       }
       const length = boms.length;
-      boms = boms.filter((v) => !usedBoms.has(v.vid));
+      boms = boms.filter((v) => (usedBoms.get(v.vid) || 0) < v.要求数量);
       num--;
       if (length === boms.length) {
         break;
@@ -127,31 +144,39 @@ export const calc = (data: InputData, 切口损耗: number) => {
     }
     return result;
   };
-  // const
+  const getTotalLength = (rawLength: number, {touweisunhao, qieduansunhao}: 铝型材) => {
+    return rawLength - touweisunhao * 2 - qieduansunhao;
+  };
+  const getRemainingLength = (totalLength: number, dpItem: ReturnType<typeof backpackDp>[number], {qieduansunhao}: 铝型材) => {
+    return totalLength - dpItem.value - dpItem.cuts * qieduansunhao;
+  };
+  const bomsAll = getInputDataBoms(data);
   for (const 余料 of data.铝型材余料库存) {
-    const boms = data.型材BOM.filter((v) => v.铝型材 === 余料.lvxingcai && v.型材颜色 === 余料.yanse && !usedBoms.has(v.vid));
+    const boms = bomsAll.filter((v) => v.铝型材 === 余料.lvxingcai && v.型材颜色 === 余料.yanse && !usedBoms.has(v.vid));
     if (boms.length < 1) {
       continue;
     }
-    const totalLength = 余料.yuliaochangdu;
-    const dpResult = backpackDp(boms, totalLength, 余料.kucunshuliang);
     const 铝型材 = data.铝型材.find((v) => v.mingzi === 余料.lvxingcai);
-    const yuliaorukuzuixiaochangdu = 铝型材?.yuliaorukuzuixiaochangdu ?? 0;
+    if (!铝型材) {
+      continue;
+    }
+    const rawLength = 余料.yuliaochangdu;
+    const totalLength = getTotalLength(rawLength, 铝型材);
+    const yuliaorukuzuixiaochangdu = 铝型材.yuliaorukuzuixiaochangdu;
+    const dpResult = backpackDp(boms, totalLength, 余料.kucunshuliang, 铝型材);
     for (const dpItem of dpResult) {
-      const usedLength = dpItem.value;
-      const wastedLength = Math.min(totalLength - usedLength, dpItem.cuts * 切口损耗);
-      const 排料后剩余长度 = totalLength - usedLength - wastedLength;
+      const remainingLength = getRemainingLength(totalLength, dpItem, 铝型材);
       resultItems.push({
         vid: 余料.vid,
         铝型材: 余料.lvxingcai,
-        物料长度: totalLength,
+        物料长度: rawLength,
         物料颜色: boms[0].型材颜色,
         数量: 1,
         单支型材利用率: 0,
-        排料后剩余长度,
-        切口损耗: wastedLength,
+        排料后剩余长度: remainingLength,
+        总损耗: rawLength - dpItem.value - remainingLength,
         BOM: dpItem.items,
-        余料可以入库: 排料后剩余长度 >= yuliaorukuzuixiaochangdu,
+        余料可以入库: remainingLength >= yuliaorukuzuixiaochangdu,
         余料标签信息: "",
         型材类型: "余料",
         库存位置编码: 余料.kucunweizhibianma,
@@ -160,26 +185,25 @@ export const calc = (data: InputData, 切口损耗: number) => {
     }
   }
   for (const 铝型材 of data.铝型材) {
-    const boms = data.型材BOM.filter((v) => v.铝型材 === 铝型材.mingzi && !usedBoms.has(v.vid));
+    const boms = bomsAll.filter((v) => v.铝型材 === 铝型材.mingzi && !usedBoms.has(v.vid));
     if (boms.length < 1) {
       continue;
     }
-    const totalLength = 铝型材.biaozhunchangdu;
-    const dpResult = backpackDp(boms, totalLength, Infinity);
+    const rawLength = 铝型材.biaozhunchangdu;
+    const totalLength = getTotalLength(rawLength, 铝型材);
+    const dpResult = backpackDp(boms, totalLength, Infinity, 铝型材);
     for (const dpItem of dpResult) {
-      const usedLength = dpItem.value;
-      const wastedLength = Math.min(totalLength - usedLength, dpItem.cuts * 切口损耗);
-      const 排料后剩余长度 = totalLength - usedLength - wastedLength;
+      const remainingLength = getRemainingLength(totalLength, dpItem, 铝型材);
       resultItems.push({
         vid: 铝型材.vid,
         铝型材: 铝型材.mingzi,
-        物料长度: totalLength,
+        物料长度: rawLength,
         物料颜色: boms[0].型材颜色,
         数量: 1,
         单支型材利用率: 0,
-        排料后剩余长度,
-        余料可以入库: 排料后剩余长度 >= 铝型材.yuliaorukuzuixiaochangdu,
-        切口损耗: wastedLength,
+        排料后剩余长度: remainingLength,
+        总损耗: rawLength - dpItem.value - remainingLength,
+        余料可以入库: remainingLength >= 铝型材.yuliaorukuzuixiaochangdu,
         BOM: dpItem.items,
         型材类型: "标准型材"
       });
@@ -199,6 +223,8 @@ export const calc = (data: InputData, 切口损耗: number) => {
         排序: 铝型材?.paixu ?? 0,
         切断90度损耗: 铝型材?.qieduan90dusunhao ?? 0,
         切断45度损耗: 铝型材?.qieduan45dusuanhao ?? 0,
+        头尾损耗: 铝型材?.touweisunhao ?? 0,
+        切断损耗: 铝型材?.qieduansunhao ?? 0,
         余料入库最小长度: 铝型材?.yuliaorukuzuixiaochangdu ?? 0,
         所有型材利用率: 0,
         优化结果: [item]
@@ -223,6 +249,10 @@ export const calc = (data: InputData, 切口损耗: number) => {
     unusedLength += unusedLength2;
   }
   result.sort((a, b) => a.排序 - b.排序);
-  return {铝型材优化结果: result, 总利用率: getNum(1 - unusedLength / totalLength)};
+  let 总利用率 = 0;
+  if (totalLength > 0) {
+    总利用率 = getNum(1 - unusedLength / totalLength);
+  }
+  return {铝型材优化结果: result, 总利用率};
 };
 export const getNum = (num: number) => Number(num.toFixed(3));

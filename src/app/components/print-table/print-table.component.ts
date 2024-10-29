@@ -1,8 +1,20 @@
-import {ChangeDetectionStrategy, Component, effect, ElementRef, HostBinding, inject, OnInit, signal} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  HostBinding,
+  inject,
+  input,
+  OnInit,
+  signal,
+  untracked,
+  viewChildren
+} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
-import {getValueString, replaceRemoteHost, setGlobal} from "@app/app.common";
+import {getValueString, setGlobal} from "@app/app.common";
 import {environment} from "@env";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -12,7 +24,7 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {ColumnInfo, RowButtonEvent, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {Properties} from "csstype";
 import {toDataURL} from "qrcode";
-import {TableData, TableInfoData, TableInfoDataTable, XikongData, XikongDataRaw, 型材信息} from "./print-table.types";
+import {LvxingcaiyouhuaInfo, TableData, TableInfoData, TableInfoDataTable, XikongData, XikongDataRaw, 型材信息} from "./print-table.types";
 
 @Component({
   selector: "app-print-table",
@@ -22,7 +34,7 @@ import {TableData, TableInfoData, TableInfoDataTable, XikongData, XikongDataRaw,
   styleUrl: "./print-table.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PrintTableComponent implements OnInit {
+export class PrintTableComponent<T = any> implements OnInit {
   private elRef = inject(ElementRef<HTMLElement>);
   private http = inject(CadDataService);
   private message = inject(MessageService);
@@ -30,9 +42,14 @@ export class PrintTableComponent implements OnInit {
 
   @HostBinding("class") class = ["ng-page"];
 
+  lvxingcaiyouhuaInfo = input<LvxingcaiyouhuaInfo | null>(null);
+  lvxingcaiyouhuaInfoEff = effect(() => {
+    this.lvxingcaiyouhuaInfo();
+    untracked(() => this.getData());
+  });
+
   async ngOnInit() {
     setGlobal("printTable", this);
-    await this.getData();
   }
 
   export() {
@@ -117,8 +134,14 @@ export class PrintTableComponent implements OnInit {
     }
   }
 
+  tables = viewChildren("tables", {read: TableComponent<T>});
+
   title = signal("");
-  titleEff = effect(() => (document.title = this.title()));
+  titleEff = effect(() => {
+    if (!this.lvxingcaiyouhuaInfo()) {
+      document.title = this.title();
+    }
+  });
   tableInfos = signal<TableInfoDataTable[]>([]);
   xikongTableInfo = signal<TableRenderInfo<XikongData> | null>(null);
   xikongTableWidth = signal(0);
@@ -126,12 +149,18 @@ export class PrintTableComponent implements OnInit {
   data = signal<TableInfoData | null>(null);
   qrCodeImg = signal<string | null>(null);
   async getData() {
-    const {action} = this.route.snapshot.queryParams;
-    if (!action) {
-      this.message.error("缺少参数: action");
-      return;
+    const lvxingcaiyouhuaInfo = this.lvxingcaiyouhuaInfo();
+    let data: TableInfoData | null;
+    if (lvxingcaiyouhuaInfo) {
+      data = lvxingcaiyouhuaInfo.tableInfoData;
+    } else {
+      const {action} = this.route.snapshot.queryParams;
+      if (!action) {
+        this.message.error("缺少参数: action");
+        return;
+      }
+      data = await this.http.getData<TableInfoData>(action);
     }
-    const data = await this.http.getData<TableInfoData>(action);
     if (!data) {
       return;
     }
@@ -162,6 +191,7 @@ export class PrintTableComponent implements OnInit {
         });
       }
       tableInfos.push({
+        isHeader: true,
         noScroll: true,
         columns: 表头列,
         data: []
@@ -264,7 +294,7 @@ export class PrintTableComponent implements OnInit {
   openQrCodeUrl() {
     const {二维码} = this.data() || {};
     if (二维码) {
-      window.open(replaceRemoteHost(二维码));
+      window.open(二维码);
     }
   }
 }

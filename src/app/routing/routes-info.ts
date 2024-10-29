@@ -67,5 +67,5 @@ export const routesInfo: (Route & {path: string})[] = [
   {path: "print-table", component: PrintTableComponent, title: "打印表格"},
   {path: "订单异常", component: DingdanyichangComponent, title: "订单异常"},
   {path: "refresh-cad-imgs", component: RefreshCadImgsComponent, title: "刷新cad图片"},
-  {path: "铝型材优化", component: LvxingcaiyouhuaComponent, title: "铝型材优化"}
+  {path: "铝型材优化", component: LvxingcaiyouhuaComponent, title: "多订单型材优化排产"}
 ];

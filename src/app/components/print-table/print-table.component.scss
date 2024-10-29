@@ -24,7 +24,8 @@
 }
 
 .content {
-  flex: 0 0 210mm;
+  width: 210mm;
+  flex: 0 0 auto;
   padding: 10px;
   overflow: auto;
   box-sizing: border-box;

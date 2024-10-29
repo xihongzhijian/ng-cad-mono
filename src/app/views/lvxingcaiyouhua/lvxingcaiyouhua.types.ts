@@ -2,25 +2,30 @@ import {TableDataBase2} from "@modules/http/services/cad-data.service.types";
 import {calc} from "./lvxingcaiyouhua.utils";
 
 export interface InputData {
-  型材BOM: 型材BOM[];
+  型材BOM: 型材Bom[];
+  不上设备的型材BOM?: 型材BomBase[];
   铝型材: 铝型材[];
   铝型材余料库存: 铝型材余料库存[];
 }
 export type OutputData = ReturnType<typeof calc>;
-export interface 型材BOM {
+export interface 型材BomBase {
   vid: number;
+  要求数量: number;
+}
+export interface 型材Bom extends 型材BomBase {
   名字: string;
   铝型材: string;
   型材长度: string;
   型材颜色: string;
   型材优化分组信息: string;
-  要求数量: number;
 }
 export interface 铝型材 extends TableDataBase2 {
   biaozhunchangdu: number;
   yuliaorukuzuixiaochangdu: number;
   qieduan90dusunhao: number;
   qieduan45dusuanhao: number;
+  qieduansunhao: number;
+  touweisunhao: number;
 }
 export interface 铝型材余料库存 {
   vid: number;
@@ -38,6 +43,8 @@ export interface 铝型材优化结果 {
   排序: number;
   切断90度损耗: number;
   切断45度损耗: number;
+  头尾损耗: number;
+  切断损耗: number;
   所有型材利用率: number;
   优化结果: 优化结果[];
 }
@@ -49,8 +56,8 @@ export interface 优化结果Base {
   数量: 1;
   单支型材利用率: number;
   排料后剩余长度: number;
-  切口损耗: number;
-  BOM: 型材BOM[];
+  总损耗: number;
+  BOM: 型材Bom[];
   余料可以入库: boolean;
 }
 export interface 优化结果标准型材 extends 优化结果Base {

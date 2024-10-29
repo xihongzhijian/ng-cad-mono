@@ -1,5 +1,5 @@
 <div class="table-container" [class]="{'no-scroll': info.noScroll, 'no-data': !haveData}">
-  @if (!toolbarButtons.inlineTitle) {
+  @if (!info.inlineTitle) {
     <div class="flex-column">
       @if (info.title) {
         <div class="title" [style]="info.titleStyle">{{ info.title }}</div>
@@ -11,7 +11,7 @@
   }
   @if (haveToolbarButtons) {
     <div class="btn-group table-toolbar">
-      @if (info.title && toolbarButtons.inlineTitle) {
+      @if (info.title && info.inlineTitle) {
         @if (info.title) {
           <div class="title" [style]="info.titleStyle">{{ info.title }}</div>
         }
@@ -50,7 +50,7 @@
         }
       }
     </div>
-    @if (info.subTitleStyle && toolbarButtons.inlineTitle) {
+    @if (info.subTitleStyle && info.inlineTitle) {
       <div [style]="info.subTitleStyle">{{ info.subTitle }}</div>
     }
   }

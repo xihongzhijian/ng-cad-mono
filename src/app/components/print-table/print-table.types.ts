@@ -15,7 +15,12 @@ export interface TableInfoData {
   vid?: number;
   二维码?: string;
 }
-export type TableInfoDataTable = TableRenderInfo<TableData> & {型材信息?: 型材信息; hideTitle?: boolean; 换行索引?: string};
+export type TableInfoDataTable = TableRenderInfo<TableData> & {
+  isHeader?: boolean;
+  型材信息?: 型材信息;
+  hideTitle?: boolean;
+  换行索引?: string;
+};
 export interface 型材信息 {
   图示: string;
   型材颜色: string;
@@ -44,4 +49,8 @@ export interface XikongDataRaw {
 
 export interface XikongData extends XikongDataRaw {
   序号: number;
+}
+
+export interface LvxingcaiyouhuaInfo {
+  tableInfoData: TableInfoData | null;
 }

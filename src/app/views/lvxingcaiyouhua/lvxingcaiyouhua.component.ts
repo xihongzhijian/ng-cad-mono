@@ -1,24 +1,26 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute, Router} from "@angular/router";
-import {session, timer} from "@app/app.common";
-import {queryString} from "@lucilor/utils";
+import {session, setGlobal, timer} from "@app/app.common";
+import {PrintTableComponent} from "@components/print-table/print-table.component";
+import {LvxingcaiyouhuaInfo, TableInfoData} from "@components/print-table/print-table.types";
+import {queryString, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {CalcResultItem, InputData, LvxingcaiFilterForm, OutputData, 优化结果} from "./lvxingcaiyouhua.types";
-import {calc, getNum} from "./lvxingcaiyouhua.utils";
+import {CalcResultItem, InputData, LvxingcaiFilterForm, OutputData, 优化结果, 铝型材优化结果} from "./lvxingcaiyouhua.types";
+import {calc, getInputDataBoms, getNum} from "./lvxingcaiyouhua.utils";
 
 @Component({
   selector: "app-lvxingcaiyouhua",
   standalone: true,
-  imports: [InputComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule],
+  imports: [InputComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule, PrintTableComponent],
   templateUrl: "./lvxingcaiyouhua.component.html",
   styleUrl: "./lvxingcaiyouhua.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -32,57 +34,98 @@ export class LvxingcaiyouhuaComponent implements OnInit {
   @HostBinding("class") class = "ng-page";
 
   ngOnInit() {
+    setGlobal("lvxingcaiyouhua", this);
     this.route.queryParams.subscribe(() => this.onQueryParamsChange());
   }
-
-  private _dataKey = "lvxingcaiyouhuaData";
-  inputData = signal<InputData | null>(session.load<InputData>(this._dataKey));
-  inputDataEff = effect(() => session.save(this._dataKey, this.inputData()));
-
-  private _qiekousunhaoKey = "lvxingcaiyouhuaQiekousunhao";
-  qiekousunhao = signal(session.load<number>(this._qiekousunhaoKey) || 0);
-  qiekousunhaoEff = effect(() => session.save(this._qiekousunhaoKey, this.qiekousunhao()));
 
   async onQueryParamsChange() {
     const {optimizeCode} = this.route.snapshot.queryParams;
     if (optimizeCode) {
       this.code.set(optimizeCode);
       await this.getOptimizeData();
-      this.calc();
       await this.setOptimizeData();
     }
   }
 
+  lvxingcaiyouhuaInfo = signal<LvxingcaiyouhuaInfo>({tableInfoData: null});
+  printTableComponent = viewChild(PrintTableComponent<{vid: number; 数量: number}>);
+
+  selectAllBoms() {
+    const tables = this.printTableComponent()?.tables();
+    if (!tables) {
+      return;
+    }
+    const isAllSelected = tables.every((table) => table.isAllSelected());
+    for (const table of tables) {
+      if (isAllSelected) {
+        table.deselectAllRows();
+      } else {
+        table.selectAllRows();
+      }
+    }
+  }
+
   code = signal("");
+  inputData = signal<InputData | null>(null);
   outputData = signal<OutputData | null>(null);
   calcResult = signal<{result: OutputData; duration: number} | null>(null);
+  calcResult2 = signal<{result: OutputData; duration: number} | null>(null);
   calc() {
-    const data = this.inputData();
-    if (!data) {
+    const input = this.inputData();
+    if (!input) {
       this.message.error("没有数据");
       return;
     }
+
+    const pt = this.printTableComponent();
+    if (pt && this.calcResult()) {
+      input.不上设备的型材BOM = [];
+      for (const table of pt.tables()) {
+        const selectedIds = table.getSelectedRows().map((v) => v.vid);
+        for (const item of table.info.data) {
+          if (!selectedIds.includes(item.vid)) {
+            input.不上设备的型材BOM.push({vid: item.vid, 要求数量: item.数量});
+          }
+        }
+      }
+    }
+
     const timerKey = "铝型材优化";
     timer.start(timerKey);
-    const result = calc(data, this.qiekousunhao());
+    const output = calc(input);
     const duration = getNum(timer.getDuration(timerKey) || -1);
-    console.log(result);
+    console.log({input, output});
     timer.end(timerKey, timerKey);
-    this.calcResult.set({result, duration});
+    this.calcResult.set({result: output, duration});
+
+    if (!this.calcResult2()) {
+      if ((input.不上设备的型材BOM || []).length < 1) {
+        this.calcResult2.set({result: output, duration});
+      } else {
+        const timerKey2 = "铝型材优化2";
+        timer.start(timerKey2);
+        const output2 = calc({...input, 不上设备的型材BOM: []});
+        const duration2 = getNum(timer.getDuration(timerKey2) || -1);
+        timer.end(timerKey2, timerKey2);
+        this.calcResult2.set({result: output2, duration: duration2});
+      }
+    }
   }
 
-  private _filterFormKey = "lvxingcaiFilterForm";
-  filterForm = signal(session.load<LvxingcaiFilterForm>(this._filterFormKey) || {型材: ""});
-  filterFormEff = effect(() => session.save(this._filterFormKey, this.filterForm()));
-  filterInputInfos = computed(() => {
-    const filterForm = this.filterForm();
+  xingcaiDiaplayKeys = signal<(keyof 铝型材优化结果)[]>(["型材", "余料入库最小长度", "头尾损耗", "切断损耗"]);
+
+  private _filterOutputKey = "lvxingcaiFilterForm";
+  filterOutput = signal(session.load<LvxingcaiFilterForm>(this._filterOutputKey) || {型材: ""});
+  filterOutputEff = effect(() => session.save(this._filterOutputKey, this.filterOutput()));
+  filterOutputInputInfos = computed(() => {
+    const filterForm = this.filterOutput();
     const infos: InputInfo[] = [
       {
         type: "string",
         label: "搜索：型材",
         value: filterForm.型材,
         clearable: true,
-        onInput: debounce((型材) => this.filterForm.set({...filterForm, 型材}), 100)
+        onInput: debounce((型材) => this.filterOutput.set({...filterForm, 型材}), 100)
       }
     ];
     return infos;
@@ -96,7 +139,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     {allowSignalWrites: true}
   );
   calcResultItems = computed(() => {
-    const form = this.filterForm();
+    const form = this.filterOutput();
     const itemsAll = this.calcResultItemsAll();
     if (Object.values(form).every((v) => !v)) {
       return itemsAll;
@@ -130,12 +173,31 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     this.inputData.set(data);
   }
   async setOptimizeData() {
+    this.calc();
     const code = this.code();
     const optimizeData = this.calcResult()?.result?.铝型材优化结果;
     if (!code || !optimizeData) {
       return;
     }
-    await this.http.post("order/lvxingcai/saveOptimizeResult", {code, optimizeData});
+    const inputData = this.inputData();
+    const pt = this.printTableComponent();
+    if (!inputData || !pt) {
+      return;
+    }
+    const bushangshebeidexingcaibom = inputData.不上设备的型材BOM || [];
+    const quanbuliaodeyouhuashuju = this.calcResult2()?.result?.铝型材优化结果;
+    const data = await this.http.getData<{优化工单: TableInfoData}>("order/lvxingcai/saveOptimizeResult", {
+      code,
+      optimizeData,
+      bushangshebeidexingcaibom,
+      quanbuliaodeyouhuashuju
+    });
+    this.lvxingcaiyouhuaInfo.set({tableInfoData: data?.优化工单 || null});
+    await timeout(0);
+    const bomIds = getInputDataBoms(inputData).map((v) => v.vid);
+    for (const table of pt.tables()) {
+      table.setSelectedRows(table.info.data.filter((v) => bomIds.includes(v.vid)));
+    }
   }
   async unsetOptimizeData() {
     const code = this.code();

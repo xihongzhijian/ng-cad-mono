@@ -2,6 +2,7 @@ import {SelectionModel} from "@angular/cdk/collections";
 import {FlatTreeControl} from "@angular/cdk/tree";
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   computed,
   DoCheck,
@@ -176,7 +177,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     private differs: KeyValueDiffers,
     private dialog: MatDialog,
     private http: CadDataService,
-    private status: AppStatusService
+    private status: AppStatusService,
+    private cd: ChangeDetectorRef
   ) {
     this.editing = {colIdx: -1, rowIdx: -1, value: ""};
     this.infoDiffer = this.differs.find(this.info).create();
@@ -288,6 +290,31 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   toggleRowSelection(rowIdx: number) {
     this.rowSelection.toggle(rowIdx);
     this.rowSelectionChange.emit({indexs: this.rowSelection.selected});
+  }
+  getSelectedRows() {
+    const rows: T[] = [];
+    for (const index of this.rowSelection.selected) {
+      rows.push(this.info.data[index]);
+    }
+    return rows;
+  }
+  setSelectedRows(rows: T[]) {
+    const indexs: number[] = [];
+    for (const row of rows) {
+      const index = this.info.data.findIndex((v) => v === row);
+      if (index >= 0) {
+        indexs.push(index);
+      }
+    }
+    this.rowSelection.setSelection(...indexs);
+    this.cd.detectChanges();
+    this.rowSelectionChange.emit({indexs: this.rowSelection.selected});
+  }
+  selectAllRows() {
+    this.setSelectedRows(this.info.data);
+  }
+  deselectAllRows() {
+    this.setSelectedRows([]);
   }
 
   async addItem(rowIdx?: number) {

@@ -22,6 +22,7 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
   klcsCollection: CadCollection = "kailiaocanshu";
   klkwpzTable: TableRenderInfo<KlkwpzData> = {
     title: "开料孔位配置",
+    inlineTitle: true,
     data: [],
     columns: [
       {type: "string", field: "名字"},
@@ -40,12 +41,12 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
       extra: [
         {event: "编辑", color: "primary"},
         {event: "刷新", color: "primary"}
-      ],
-      inlineTitle: true
+      ]
     }
   };
   klcsTable: TableRenderInfo<KlcsData> = {
     title: "开料参数",
+    inlineTitle: true,
     data: [],
     columns: [
       {type: "string", field: "名字"},
@@ -64,8 +65,7 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
       extra: [
         {event: "编辑", color: "primary"},
         {event: "刷新", color: "primary"}
-      ],
-      inlineTitle: true
+      ]
     }
   };
 

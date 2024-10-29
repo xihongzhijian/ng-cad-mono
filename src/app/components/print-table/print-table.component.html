@@ -30,18 +30,24 @@
           </div>
         </div>
       }
-      <app-table [info]="info" (rowButtonClick)="onRowButtonClick(info, $event)"></app-table>
+      @if (info.isHeader) {
+        <app-table [info]="info"></app-table>
+      } @else {
+        <app-table #tables [info]="info" (rowButtonClick)="onRowButtonClick(info, $event)"></app-table>
+      }
     }
   </div>
 </div>
-<div class="menu toolbar no-print flex-column">
-  <div class="toolbar">
-    <button mat-raised-button color="primary" (click)="export()">导出</button>
-    <button mat-raised-button color="primary" (click)="print()">打印</button>
+@if (!lvxingcaiyouhuaInfo()) {
+  <div class="menu toolbar no-print flex-column">
+    <div class="toolbar">
+      <button mat-raised-button color="primary" (click)="export()">导出</button>
+      <button mat-raised-button color="primary" (click)="print()">打印</button>
+    </div>
+    <div class="flex-110 flex-column">
+      @if (xikongTableInfo(); as info) {
+        <app-table [info]="info" [style]="{width: xikongTableWidth() + 'px'}"></app-table>
+      }
+    </div>
   </div>
-  <div class="flex-110 flex-column">
-    @if (xikongTableInfo(); as info) {
-      <app-table [info]="info" [style]="{width: xikongTableWidth() + 'px'}"></app-table>
-    }
-  </div>
-</div>
+}

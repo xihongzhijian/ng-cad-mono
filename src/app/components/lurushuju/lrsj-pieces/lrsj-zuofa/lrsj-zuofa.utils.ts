@@ -13,6 +13,7 @@ import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} f
 export const getXuanxiangTable = (data: XuanxiangTableData[]): TableRenderInfo<XuanxiangTableData> => {
   return {
     title: "选项数据",
+    inlineTitle: true,
     columns: [
       {type: "string", field: "名字"},
       {
@@ -32,7 +33,7 @@ export const getXuanxiangTable = (data: XuanxiangTableData[]): TableRenderInfo<X
       }
     ],
     data,
-    toolbarButtons: {extra: [], inlineTitle: true}
+    toolbarButtons: {extra: []}
   };
 };
 export const getXuanxiangItem = async (message: MessageService, options: OptionsAll, list: 选项[], data0?: 选项) => {
@@ -88,6 +89,7 @@ export const getXuanxiangItem = async (message: MessageService, options: Options
 export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTableDataSorted> => {
   return {
     title: "输入显示",
+    inlineTitle: true,
     columns: [
       {type: "string", field: "名字"},
       {type: "string", field: "下单用途", getString: (value) => `${value.下单用途 || ""}<br><br>${value.可以修改 ? "可改" : "不可改"}`},
@@ -104,7 +106,7 @@ export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTabl
       }
     ],
     data: getSortedItems(data, (v) => v.排序 ?? 0),
-    toolbarButtons: {extra: [{event: "添加", color: "primary"}], inlineTitle: true}
+    toolbarButtons: {extra: [{event: "添加", color: "primary"}]}
   };
 };
 export const getShuruItem = async (message: MessageService, list: 输入[], data0?: 输入) => {
@@ -150,6 +152,7 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
 
 export const getMenjiaoTable = (data: MenjiaoData[]): TableRenderInfo<MenjiaoData> => {
   return {
+    inlineTitle: true,
     columns: [
       {type: "string", field: "名字", width: "180px", name: "门铰锁边铰边"},
       {type: "string", field: "开启", width: "100px"},
@@ -204,8 +207,7 @@ export const getMenjiaoTable = (data: MenjiaoData[]): TableRenderInfo<MenjiaoDat
       extra: [
         {event: "添加", color: "primary"},
         {event: "从其他做法选择", title: "从其他做法选择门铰锁边铰边", color: "primary"}
-      ],
-      inlineTitle: true
+      ]
     }
   };
 };
