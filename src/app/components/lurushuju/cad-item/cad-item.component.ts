@@ -69,8 +69,8 @@ import {CadItemButton, CadItemForm, CadItemIsOnlineInfo, CadItemSelectable, CadI
   styleUrl: "./cad-item.component.scss"
 })
 export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDestroy {
-  @Input() cadWidth = 360;
-  @Input() cadHeight = 180;
+  cadWidth = 300;
+  cadHeight = 150;
 
   @HostBinding("style.--cad-image-width") get widthStyle() {
     return `${this.cadWidth}px`;
@@ -443,17 +443,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   getCadPreviewParams = (() => {
-    const params: CadPreviewParams = {
-      config: {
-        width: this.cadWidth,
-        height: this.cadHeight,
-        backgroundColor: "black",
-        lineGongshi: 24,
-        hideLineGongshi: false,
-        hideLineLength: false,
-        padding: [5]
-      }
-    };
+    const params: CadPreviewParams = {};
     return params;
   }).bind(this);
 

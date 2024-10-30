@@ -671,6 +671,7 @@ export const openCadDimensionForm = async (
         }
       ]
     },
+    {type: "string", label: "活动标注显示扣数", model: {data: dimension2, key: "活动标注显示扣数"}},
     {type: "boolean", label: "删除标注", appearance: "radio", value: false},
     {type: "boolean", label: "隐藏尺寸线", appearance: "radio", value: !!dimension2.style.dimensionLine?.hidden},
     {

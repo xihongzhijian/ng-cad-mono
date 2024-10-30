@@ -11,6 +11,7 @@ export interface CadPreviewRawParams {
   maxZoom?: number;
 }
 export const getCadPreviewRaw = async (collection: CadCollection, data: CadData, params: CadPreviewRawParams = {}) => {
+  console.warn(collection, data, params);
   const cad = new CadViewer(new CadData(), {
     width: 300,
     height: 150,

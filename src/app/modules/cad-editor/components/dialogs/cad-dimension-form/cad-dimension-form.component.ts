@@ -33,6 +33,7 @@ export interface CadDimensionForm {
   hideDimLines: CadDimensionLinear["hideDimLines"];
   xiaoshuchuli: CadDimensionLinear["xiaoshuchuli"];
   算料单缩放标注文字: CadDimensionLinear["算料单缩放标注文字"];
+  活动标注显示扣数: CadDimensionLinear["活动标注显示扣数"];
 }
 
 @Component({
@@ -80,7 +81,8 @@ export class CadDimensionFormComponent {
       quzhifanwei: getFormControl(dimension.quzhifanwei),
       hideDimLines: getFormControl(dimension.hideDimLines),
       xiaoshuchuli: getFormControl(dimension.xiaoshuchuli),
-      算料单缩放标注文字: getFormControl(dimension.算料单缩放标注文字)
+      算料单缩放标注文字: getFormControl(dimension.算料单缩放标注文字),
+      活动标注显示扣数: getFormControl(dimension.活动标注显示扣数)
     });
   }
 
@@ -104,6 +106,7 @@ export class CadDimensionFormComponent {
       dimension.hideDimLines = value.hideDimLines;
       dimension.xiaoshuchuli = value.xiaoshuchuli;
       dimension.算料单缩放标注文字 = value.算料单缩放标注文字;
+      dimension.活动标注显示扣数 = value.活动标注显示扣数;
       this.dialogRef.close(dimension);
     } else {
       this.form.controls.qujian.updateValueAndValidity();
