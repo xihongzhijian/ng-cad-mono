@@ -195,7 +195,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     cad.appendTo(this.cadContainer.nativeElement);
     cad.on("entitiescopy", this._onEntitiesCopy);
     cad.on("entitiespaste", this._onEntitiesPaste);
-    cad.on("entitiesremove", this._onEntitiesReomve);
+    cad.on("entitiesremove", this._onEntitiesRemove);
     cad.on("entitydblclick", this._onEntityDblClick);
     cad.on("entitiesselect", this._onEntitySelect);
     cad.on("entitiesunselect", this._onEntityUnselect);
@@ -267,7 +267,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     const cad = this.status.cad;
     cad.off("entitiescopy", this._onEntitiesCopy);
     cad.off("entitiespaste", this._onEntitiesPaste);
-    cad.off("entitiesremove", this._onEntitiesReomve);
+    cad.off("entitiesremove", this._onEntitiesRemove);
     cad.off("entitydblclick", this._onEntityDblClick);
     cad.off("entitiesselect", this._onEntitySelect);
     cad.off("entitiesunselect", this._onEntityUnselect);
@@ -286,7 +286,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     entities.forEach((e) => (e.opacity = 1));
     this.status.cad.render(entities);
   };
-  private _onEntitiesReomve: CadEventCallBack<"entitiesremove"> = () => {
+  private _onEntitiesRemove: CadEventCallBack<"entitiesremove"> = () => {
     this._highlightDimensions();
   };
   private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (event, entity) => {

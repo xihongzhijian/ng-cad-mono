@@ -10,6 +10,7 @@ import {reservedDimNames} from "@app/cad/utils";
 import {
   CadData,
   CadDimension,
+  CadDimensionEntity,
   CadDimensionLinear,
   CadDimensionType,
   CadEntities,
@@ -111,7 +112,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     cad.off("moveentities", this._onMoveEntities);
   }
 
-  private _onEntitiesSelect: CadEventCallBack<"entitiesselect"> = (entities) => {
+  private _onEntitiesSelect: CadEventCallBack<"entitiesselect"> = (entities, _, event) => {
     const cad = this.status.cad;
     const data = cad.data;
     const cadStatus = this.status.cadStatus;
@@ -131,25 +132,55 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
           data.entities.add(dimensionLinear);
           newIndex = data.entities.dimension.length - 1;
         }
+
+        let location: CadDimensionEntity["location"];
+        const getOppositeLocation = (location: CadDimensionEntity["location"]) => (location === "start" ? "end" : "start");
+        if (event) {
+          const point = cad.getWorldPoint(event.clientX, event.clientY);
+          const distanceStart = entity.start.distanceTo(point);
+          const distanceEnd = entity.end.distanceTo(point);
+          location = distanceStart < distanceEnd ? "start" : "end";
+          if (entity.swapped) {
+            location = getOppositeLocation(location);
+          }
+        } else {
+          location = "start";
+        }
         if (!dimensionLinear.entity1.id) {
-          dimensionLinear.entity1 = {id: entity.id, location: "start"};
+          if (dimensionLinear.entity2.id && dimensionLinear.entity2.location === location) {
+            location = getOppositeLocation(location);
+          }
+          dimensionLinear.entity1 = {id: entity.id, location};
           dimensionLinear.cad1 = data.name;
         } else if (!dimensionLinear.entity2.id) {
-          dimensionLinear.entity2 = {id: entity.id, location: "end"};
+          if (dimensionLinear.entity1.id && dimensionLinear.entity1.location === location) {
+            location = getOppositeLocation(location);
+          }
+          dimensionLinear.entity2 = {id: entity.id, location};
           dimensionLinear.cad2 = data.name;
         } else {
-          dimensionLinear.entity1 = dimensionLinear.entity2;
-          dimensionLinear.entity2 = {id: entity.id, location: "end"};
-          if (dimensionLinear.entity1.id === dimensionLinear.entity2.id) {
-            if (dimensionLinear.entity1.location === "start") {
-              dimensionLinear.entity2.location = "end";
-            } else if (dimensionLinear.entity1.location === "end") {
-              dimensionLinear.entity2.location = "start";
-            } else {
-              dimensionLinear.entity1.location = "start";
-              dimensionLinear.entity2.location = "end";
-            }
+          const isEntity1 = dimensionLinear.entity1.id === entity.id;
+          const isEntity2 = dimensionLinear.entity2.id === entity.id;
+          if (isEntity1 && !isEntity2) {
+            dimensionLinear.entity2.id = entity.id;
+            dimensionLinear.entity2.location = getOppositeLocation(dimensionLinear.entity1.location);
+          } else if (!isEntity1 && isEntity2) {
+            dimensionLinear.entity1.id = entity.id;
+            dimensionLinear.entity1.location = getOppositeLocation(dimensionLinear.entity2.location);
+          } else if (!isEntity1 && !isEntity2) {
+            dimensionLinear.entity1 = dimensionLinear.entity2;
+            dimensionLinear.entity2 = {id: entity.id, location};
           }
+          // if (dimensionLinear.entity1.id === dimensionLinear.entity2.id) {
+          //   if (dimensionLinear.entity1.location === "start") {
+          //     dimensionLinear.entity2.location = "end";
+          //   } else if (dimensionLinear.entity1.location === "end") {
+          //     dimensionLinear.entity2.location = "start";
+          //   } else {
+          //     dimensionLinear.entity1.location = "start";
+          //     dimensionLinear.entity2.location = "end";
+          //   }
+          // }
           dimensionLinear.cad2 = data.name;
         }
         const e1 = cad.data.findEntity(dimensionLinear.entity1.id);
@@ -265,7 +296,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
   }
 
   focus(dimension?: CadDimension) {
-    const toFocus: CadEntity[] = dimension ? [dimension] : [];
+    const toFocus: CadEntity[] = [];
     const toBlur: CadEntity[] = [];
     const ids: string[] = [];
     const isLinear = dimension instanceof CadDimensionLinear;
@@ -285,13 +316,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
       }
     });
     this.status.focus(toFocus, {
-      selected: (e) => {
-        if (e instanceof CadLine) {
-          return ids.includes(e.id);
-        } else {
-          return true;
-        }
-      }
+      selected: (e) => e instanceof CadDimension
     });
     this.status.blur(toBlur);
     this.status.highlightDimensions(dimension ? [dimension] : []);

@@ -732,32 +732,56 @@ export class AppStatusService {
     return null;
   }
 
-  private _highlightDimensionsSelectedPrev: CadDimension[] = [];
+  private _highlightDimensionsMap = new Map<string, CadEntity[]>();
   highlightDimensions(dimensions?: CadDimension[]) {
     const points: Point[] = [];
     const cad = this.cad;
+    const dimensionsAll = cad.data.getAllEntities().dimension;
     if (!dimensions) {
-      dimensions = cad.data.getAllEntities().dimension;
+      dimensions = dimensionsAll;
     }
-    const selectedPrev = this._highlightDimensionsSelectedPrev;
-    const selectedCurr: typeof selectedPrev = [];
-    this._highlightDimensionsSelectedPrev = selectedCurr;
+    const map = this._highlightDimensionsMap;
     for (const dimension of dimensions) {
       if (!(dimension instanceof CadDimensionLinear)) {
         continue;
       }
-      for (const info of [dimension.entity1, dimension.entity2]) {
-        const line = cad.data.findEntity(info.id);
-        if (!(line instanceof CadLineLike)) {
-          continue;
-        }
-        if (dimension.selected) {
-          line.selected = true;
+      const esPrev = map.get(dimension.id);
+      const esCurr: CadEntity[] = [];
+      if (dimension.selected) {
+        for (const info of [dimension.entity1, dimension.entity2]) {
+          const line = cad.data.findEntity(info.id);
+          if (!(line instanceof CadLineLike)) {
+            continue;
+          }
+          line.highlighted = true;
           points.push(getDimensionLinePoint(line, info.location, dimension.axis));
-          selectedCurr.push(dimension);
-        } else if (selectedPrev.includes(dimension)) {
-          line.selected = false;
+          esCurr.push(line);
         }
+        if (esPrev) {
+          for (const e of esPrev) {
+            if (!esCurr.includes(e)) {
+              e.highlighted = false;
+            }
+          }
+        }
+      } else if (esPrev) {
+        for (const e of esPrev) {
+          e.highlighted = false;
+        }
+      }
+      if (esCurr.length > 0) {
+        map.set(dimension.id, esCurr);
+      } else {
+        map.delete(dimension.id);
+      }
+    }
+    const dimensionIdsAll = dimensionsAll.map((v) => v.id);
+    for (const [id, es] of map) {
+      if (!dimensionIdsAll.includes(id)) {
+        for (const e of es) {
+          e.highlighted = false;
+        }
+        map.delete(id);
       }
     }
     this.setCadPoints(points.map((v) => ({point: v, lines: [], selected: false})));
