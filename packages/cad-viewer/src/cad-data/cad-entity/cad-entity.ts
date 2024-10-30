@@ -93,6 +93,22 @@ export abstract class CadEntity extends ColoredObject {
     this.children.forEach((c) => (c.selected = value));
   }
 
+  protected _highlighted = false;
+  get highlighted() {
+    return this._highlighted;
+  }
+  set highlighted(value) {
+    if (this.el) {
+      if (value) {
+        this.el.addClass("highlighted");
+      } else {
+        this.el.removeClass("highlighted");
+      }
+    }
+    this._highlighted = value;
+    this.children.forEach((c) => (c.highlighted = value));
+  }
+
   protected _opacity = 0;
   get opacity() {
     if (this.el) {

@@ -10,6 +10,7 @@ export default defineConfig(({mode}) => {
         css: {},
         build: {
           outDir: "lib",
+          emptyOutDir: false,
           watch: {},
           lib: {
             entry: resolve(__dirname, "src/index.ts"),

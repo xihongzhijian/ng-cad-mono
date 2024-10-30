@@ -1,21 +1,29 @@
-@mixin stroke-color($color) {
-  stroke: $color;
-  &[fill]:not([fill="none"]) {
-    fill: $color;
-  }
-}
-
-@mixin fill-color($color) {
-  fill: $color;
-  &[stroke]:not([stroke="none"]) {
+@mixin colored-entity($color) {
+  line,
+  circle,
+  path {
     stroke: $color;
+    &[fill]:not([fill="none"]) {
+      fill: $color;
+    }
+  }
+
+  text {
+    fill: $color;
+    &[stroke]:not([stroke="none"]) {
+      stroke: $color;
+    }
+  }
+
+  image {
+    filter: drop-shadow(0px 0px 5px $color);
   }
 }
-
-$selected-color: #ffca1c;
-$hover-color: cyan;
 
 .cad-viewer {
+  --selected-color: #ffca1c;
+  --highlighted-color: #ffca1c;
+  --hover-color: cyan;
   position: relative;
   svg {
     box-sizing: border-box;
@@ -28,31 +36,17 @@ $hover-color: cyan;
     }
 
     g {
-      &:hover.selectable {
-        line,
-        circle,
-        path {
-          @include stroke-color($hover-color);
-        }
-
-        text {
-          @include fill-color($hover-color);
-        }
+      &.highlighted {
+        @include colored-entity(var(--highlighted-color));
       }
-
-      &.selected.selectable {
-        line,
-        circle,
-        path {
-          @include stroke-color($selected-color);
+      &:not(.highlighted) {
+        &.selected.selectable {
+          @include colored-entity(var(--selected-color));
         }
-
-        text {
-          @include fill-color($selected-color);
-        }
-
-        image {
-          filter: drop-shadow(0px 0px 5px $selected-color);
+        &:not(.selected) {
+          &:hover.selectable {
+            @include colored-entity(var(--hover-color));
+          }
         }
       }
     }

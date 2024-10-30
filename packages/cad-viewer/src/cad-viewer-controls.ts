@@ -18,8 +18,8 @@ export interface CadEvents {
   entitiescopy: [CadEntities];
   entitiespaste: [CadEntities];
   entitiesremove: [CadEntities];
-  entitiesselect: [CadEntities, boolean];
-  entitiesunselect: [CadEntities, boolean];
+  entitiesselect: [CadEntities, boolean, MouseEvent | null];
+  entitiesunselect: [CadEntities, boolean, MouseEvent | null];
   entityclick: [MouseEvent, CadEntity];
   entitydblclick: [MouseEvent, CadEntity];
   entitypointerdown: [PointerEvent, CadEntity];
@@ -272,9 +272,9 @@ function onEntityClick(this: CadViewer, event: MouseEvent, entity: CadEntity) {
       this.unselectAll();
     }
     if (entity.selected) {
-      this.unselect(entity);
+      this.unselect(entity, event);
     } else {
-      this.select(entity);
+      this.select(entity, event);
     }
   }
   this.dom.focus();

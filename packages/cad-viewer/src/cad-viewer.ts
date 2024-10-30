@@ -685,7 +685,7 @@ export class CadViewer extends EventEmitter {
     return this.data.getAllEntities().filter((e) => !e.selected, true);
   }
 
-  select(entities?: CadEntities | CadEntity | CadEntity[]): this {
+  select(entities?: CadEntities | CadEntity | CadEntity[], event?: MouseEvent): this {
     let multi = true;
     if (!entities) {
       return this;
@@ -697,12 +697,12 @@ export class CadViewer extends EventEmitter {
     }
     if (entities.length) {
       entities.forEach((e) => (e.selected = e.selectable));
-      this.emit("entitiesselect", entities, multi);
+      this.emit("entitiesselect", entities, multi, event || null);
     }
     return this;
   }
 
-  unselect(entities?: CadEntities | CadEntity | CadEntity[]): this {
+  unselect(entities?: CadEntities | CadEntity | CadEntity[], event?: MouseEvent): this {
     let multi = true;
     if (!entities) {
       return this;
@@ -714,7 +714,7 @@ export class CadViewer extends EventEmitter {
     }
     if (entities.length) {
       entities.forEach((e) => (e.selected = false));
-      this.emit("entitiesunselect", entities, multi);
+      this.emit("entitiesunselect", entities, multi, event || null);
     }
     return this;
   }

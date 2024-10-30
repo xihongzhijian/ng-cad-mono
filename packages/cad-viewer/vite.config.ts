@@ -10,6 +10,7 @@ export default defineConfig(({mode}) => {
         plugins: [dts(), cssInjectedByJsPlugin()],
         build: {
           outDir: "lib",
+          emptyOutDir: false,
           watch: {},
           lib: {
             entry: resolve(__dirname, "src/index.ts"),
