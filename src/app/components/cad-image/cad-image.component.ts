@@ -34,14 +34,6 @@ export class CadImageComponent {
   private http = inject(CadDataService);
   private status = inject(AppStatusService);
 
-  @HostBinding("style.--cad-image-width") get widthStyle() {
-    const width = this.width();
-    return typeof width === "number" ? `${width}px` : "";
-  }
-  @HostBinding("style.--cad-image-height") get heightStyle() {
-    const height = this.height();
-    return typeof height === "number" ? `${height}px` : "";
-  }
   @HostBinding("style.--cad-image-background-color") get backgroundColorStyle() {
     return this.backgroundColor();
   }
@@ -49,8 +41,6 @@ export class CadImageComponent {
   id = input.required<string>();
   dataIn = input<CadData | null | undefined>(null, {alias: "data"});
   collection = input<CadCollection>("cad");
-  width = input<number>();
-  height = input<number>();
   isLocalIn = input(false, {transform: booleanAttribute, alias: "isLocal"});
   isImgId = input(false, {transform: booleanAttribute});
   backgroundColor = input("black");
@@ -88,18 +78,6 @@ export class CadImageComponent {
   async getPreview(data: CadData) {
     const collection = this.collection();
     const params = this.paramsGetter()?.() || {};
-    if (!params.config) {
-      params.config = {};
-    }
-    if (params.config.width === undefined) {
-      params.config.width = this.width() || 300;
-    }
-    if (params.config.height === undefined) {
-      params.config.height = this.height() || 150;
-    }
-    if (params.config.backgroundColor === undefined) {
-      params.config.backgroundColor = this.backgroundColor();
-    }
     return await getCadPreview(collection, data, params);
   }
 

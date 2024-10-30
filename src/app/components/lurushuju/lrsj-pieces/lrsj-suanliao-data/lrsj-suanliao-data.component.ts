@@ -114,8 +114,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   saveInfo = output();
 
   production = environment.production;
-  cadWidth = 300;
-  cadHeight = 150;
   menjiaoCadTypes = menjiaoCadTypes;
   peiheKeys = 配合框组合;
   qiliaoKeys = 企料组合;
@@ -605,7 +603,6 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       const item = this.suanliaoData()[key1];
       return {
         data: item[key2][key3]["企料分体CAD"] || {},
-        cadSize: [this.cadWidth, this.cadHeight],
         cad数据要求: this.getCadshujuyaoqiu("企料分体"),
         gongshis: item.算料公式
       };

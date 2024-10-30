@@ -5,7 +5,6 @@ import {算料公式} from "../xinghao-data";
 
 export interface FentiCadDialogInput {
   data: FentiCadData;
-  cadSize: [number, number];
   cad数据要求?: Cad数据要求;
   gongshis?: 算料公式[];
 }

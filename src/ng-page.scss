@@ -238,5 +238,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    width: var(--cad-image-width);
+    height: var(--cad-image-height);
   }
 }

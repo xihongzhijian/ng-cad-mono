@@ -13,13 +13,11 @@
           [customInfo]="{key: item.key}"
           [yaoqiu]="data['cad数据要求']"
           [gongshis]="data.gongshis"
-          [cadWidth]="data.cadSize[0]"
-          [cadHeight]="data.cadSize[1]"
         ></app-cad-item>
       } @else {
         <div class="empty-cad item link" (click)="selectFentiCad(item.key)">
           <div class="name">{{ item.key }}</div>
-          <div class="box border" [style.width.px]="data.cadSize[0]" [style.height.px]="data.cadSize[1]"></div>
+          <div class="box border"></div>
         </div>
       }
     }

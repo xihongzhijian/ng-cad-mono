@@ -91,7 +91,7 @@
         @for (id of xinghao["默认板材"][key].CAD; track $index) {
           @if (cads[id]) {
             <div class="item" cdkDrag (click)="selectListItem(cads[id], 'CAD', key)">
-              <app-cad-image [id]="id" [data]="cads[id].data" [width]="cadWidth" [height]="cadHeight"></app-cad-image>
+              <app-cad-image [id]="id" [data]="cads[id].data"></app-cad-image>
               <div class="toolbar center">
                 <div>{{ cads[id].data.name }}</div>
                 <button mat-icon-button color="primary" appClickStop (click)="openCad(cads[id])">
@@ -129,7 +129,7 @@
     @for (item of cads | keyvalue: returnZero; track $index) {
       @if (!item.value.selected) {
         <div class="item" (click)="selectListItem(item.value, 'CAD')">
-          <app-cad-image [id]="item.value.id" [data]="item.value.data" [width]="cadWidth" [height]="cadHeight"></app-cad-image>
+          <app-cad-image [id]="item.value.id" [data]="item.value.data"></app-cad-image>
           <div class="toolbar center">
             <div>{{ item.value.data.name }}</div>
             <button mat-icon-button color="primary" appClickStop (click)="openCad(item.value)">

@@ -71,8 +71,6 @@ export class XhmrmsbjSbjbComponent {
   activeItemIndex = signal<number>(0);
   activeItem = computed(() => this.items().at(this.activeItemIndex()));
 
-  cadWidth = 300;
-  cadHeight = 150;
   cadYaoqius = computed(() => {
     const yaoqius: ObjectOf<Cad数据要求 | undefined> = {};
     const item = this.activeItem();

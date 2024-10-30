@@ -32,8 +32,6 @@
           @if (info.cad; as cad) {
             <app-cad-item
               [cad]="cad"
-              [cadWidth]="cadWidth"
-              [cadHeight]="cadHeight"
               [buttons]="[]"
               [buttons2]="cadButtons2()"
               [customInfo]="{index: i}"
@@ -46,7 +44,7 @@
           } @else {
             <div class="empty-cad item link" (click)="selectSbjbItemSbjbCad(i)">
               <div class="name">{{ info.title }}</div>
-              <div class="box border" [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}">
+              <div class="box border">
                 <span class="error">请选择</span>
               </div>
             </div>

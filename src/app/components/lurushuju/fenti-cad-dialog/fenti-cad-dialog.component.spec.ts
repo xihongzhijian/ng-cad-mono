@@ -4,8 +4,7 @@ import {FentiCadDialogComponent} from "./fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "./fenti-cad-dialog.types";
 
 const data: FentiCadDialogInput = {
-  data: {分体1: null, 分体2: null},
-  cadSize: [300, 150]
+  data: {分体1: null, 分体2: null}
 };
 
 describe("FentiCadDialogComponent", () => {
