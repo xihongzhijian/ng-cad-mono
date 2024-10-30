@@ -414,8 +414,8 @@ export class CadViewer extends EventEmitter {
         text = qujian;
       }
       if (entity instanceof CadDimensionLinear) {
-        const {axis} = entity;
-        drawResult = drawDimensionLinear(el, points, text, axis, xiaoshuchuli, dimStyle);
+        const {axis, 活动标注显示扣数} = entity;
+        drawResult = drawDimensionLinear(el, points, text, axis, xiaoshuchuli, 活动标注显示扣数, dimStyle);
       } else {
         console.log(entity);
       }

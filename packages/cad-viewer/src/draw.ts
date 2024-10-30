@@ -181,6 +181,7 @@ export const drawDimensionLinear = (
   text: string,
   axis: CadAxis,
   xiaoshuchuli: CadDimension["xiaoshuchuli"],
+  活动标注显示扣数?: string,
   style?: CadDimensionStyle,
   i = 0
 ) => {
@@ -280,6 +281,9 @@ export const drawDimensionLinear = (
           break;
       }
       text = text.replace(/<>/g, numStr);
+    }
+    if (活动标注显示扣数) {
+      text += `(扣数${活动标注显示扣数})`;
     }
     const middle = p3.clone().add(p4).divide(2);
     if (axis === "x") {
