@@ -74,8 +74,7 @@ export class PrintTableComponent<T = any> implements OnInit {
     this.tableInfos.set([...tableInfos]);
     await timeout(1000);
     const toRemove: HTMLElement[] = [];
-    let nextTableBorderTop = false;
-    const changedBorderTopEls: HTMLElement[] = [];
+    const toRemovePageBreak: HTMLElement[] = [];
     for (const info of tableInfos) {
       const title = info.title;
       if (!title) {
@@ -84,18 +83,6 @@ export class PrintTableComponent<T = any> implements OnInit {
       const tableEl = this.elRef.nativeElement.querySelector(`app-table.${title}`);
       if (!(tableEl instanceof HTMLElement)) {
         continue;
-      }
-      if (nextTableBorderTop) {
-        nextTableBorderTop = false;
-        const prevEl = tableEl.previousElementSibling;
-        let target: HTMLElement;
-        if (prevEl instanceof HTMLElement && prevEl.classList.contains("xingcai-info")) {
-          target = prevEl;
-        } else {
-          target = tableEl;
-        }
-        target.style.borderTop = "var(--border)";
-        changedBorderTopEls.push(target);
       }
       let indexs = 表换行索引[title];
       if (!indexs && info.换行索引) {
@@ -111,12 +98,11 @@ export class PrintTableComponent<T = any> implements OnInit {
           const rowEl = rowEls.item(i - 1);
           if (rowEl instanceof HTMLElement) {
             const dummyRowEl = document.createElement("div");
-            dummyRowEl.classList.add("page-break");
             rowEl.after(dummyRowEl);
+            dummyRowEl.classList.add("page-break");
             toRemove.push(dummyRowEl);
-            if (i === rowCount) {
-              nextTableBorderTop = true;
-            }
+            tableEl.classList.add("page-break");
+            toRemovePageBreak.push(tableEl);
           }
         }
       }
@@ -129,8 +115,8 @@ export class PrintTableComponent<T = any> implements OnInit {
     for (const el of toRemove) {
       el.remove();
     }
-    for (const el of changedBorderTopEls) {
-      el.style.borderTop = "";
+    for (const el of toRemovePageBreak) {
+      el.classList.remove("page-break");
     }
   }
 

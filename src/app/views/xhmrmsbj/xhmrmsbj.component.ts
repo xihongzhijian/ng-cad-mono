@@ -367,10 +367,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return undefined;
   });
   activeMokuaiNode = computed(() => {
+    this.data();
     const activeRectInfo = this.activeRectInfo();
     return this.activeMsbjInfo()?.模块节点?.find((v) => v.层id === activeRectInfo?.raw.vid);
   });
   activeMorenbancai = computed(() => {
+    this.data();
     return this.activeMokuaiNode()?.选中模块?.morenbancai || {};
   });
   activeMokuaidaxiaoResult = computed(() => {
@@ -391,12 +393,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     },
     {allowSignalWrites: true}
   );
-  // async selectMenshanKey(key: MenshanKey | string) {
-  //   if (this.activeMenshanKey() !== key) {
-  //     this.activeMenshanKey.set(key as MenshanKey);
-  //     await this.activeMsbjInfo.s(this.activeMsbjInfo());
-  //   }
-  // }
 
   activeMsbj = computed(() => {
     const info = this.activeMsbjInfo();
@@ -761,7 +757,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return infos;
     }
     const activeMorenbancai = this.activeMorenbancai();
-    const morenbancai = this.xinghao()?.["默认板材"];
+    const morenbancai = xinghao?.["默认板材"];
     const options: InputInfoOptions = [];
     for (const key in morenbancai) {
       const title = xinghao.getBancaiTitle(key);

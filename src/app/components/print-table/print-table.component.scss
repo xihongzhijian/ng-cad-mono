@@ -83,13 +83,21 @@
     padding: 30px;
   }
 
-  app-table ::ng-deep {
-    .page-break {
-      break-before: page;
-      opacity: 0;
-      height: var(--row-min-height);
-      & + * {
+  app-table {
+    &.page-break {
+      + * {
         border-top: var(--border);
+      }
+    }
+
+    ::ng-deep {
+      .page-break {
+        break-before: page;
+        opacity: 0;
+        height: var(--row-min-height);
+        + * {
+          border-top: var(--border);
+        }
       }
     }
   }
@@ -98,8 +106,11 @@
 .table-title {
   border-left: var(--border);
   border-right: var(--border);
-  border-bottom: var(--border);
   padding: 5px;
+
+  & + .xingcai-info {
+    border-top: var(--border);
+  }
 }
 
 .xingcai-info {

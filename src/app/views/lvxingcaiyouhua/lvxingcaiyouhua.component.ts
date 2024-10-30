@@ -92,6 +92,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
 
     const timerKey = "铝型材优化";
     timer.start(timerKey);
+    console.log(input);
     const output = calc(input);
     const duration = getNum(timer.getDuration(timerKey) || -1);
     console.log({input, output});

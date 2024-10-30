@@ -34,7 +34,7 @@ export const calc = (data: InputData) => {
 
   const resultItems: 优化结果[] = [];
   const usedBoms = new Map<number, number>();
-  const backpackDp = (boms: 型材Bom[], totalLength: number, num: number, {qieduansunhao}: 铝型材) => {
+  const backpackDp = (boms: 型材Bom[], totalLength: number, num: number, {qieduansunhao = 0}: 铝型材) => {
     const result: {value: number; items: 型材Bom[]; cuts: number}[] = [];
     if (boms.length < 1) {
       return result;
@@ -144,10 +144,10 @@ export const calc = (data: InputData) => {
     }
     return result;
   };
-  const getTotalLength = (rawLength: number, {touweisunhao, qieduansunhao}: 铝型材) => {
+  const getTotalLength = (rawLength: number, {touweisunhao = 0, qieduansunhao = 0}: 铝型材) => {
     return rawLength - touweisunhao * 2 - qieduansunhao;
   };
-  const getRemainingLength = (totalLength: number, dpItem: ReturnType<typeof backpackDp>[number], {qieduansunhao}: 铝型材) => {
+  const getRemainingLength = (totalLength: number, dpItem: ReturnType<typeof backpackDp>[number], {qieduansunhao = 0}: 铝型材) => {
     return totalLength - dpItem.value - dpItem.cuts * qieduansunhao;
   };
   const bomsAll = getInputDataBoms(data);
