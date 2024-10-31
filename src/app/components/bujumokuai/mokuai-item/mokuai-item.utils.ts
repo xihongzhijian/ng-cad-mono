@@ -19,7 +19,6 @@ export const getEmptyMokuaiItem = (): MokuaiItem => {
 
 export const getMokuaiCustomData = (raw: MokuaiItemCustomData | null | undefined, 选项数据选项: OptionsAll) => {
   const result: MokuaiItemCustomData = {
-    输入数据: [],
     选项数据: [],
     下单显示: "",
     ...raw

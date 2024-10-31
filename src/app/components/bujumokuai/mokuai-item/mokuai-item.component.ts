@@ -21,14 +21,9 @@ import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
-import {ShuruTableDataSorted, XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
-import {
-  getShuruItem,
-  getShuruTable,
-  getXuanxiangItem,
-  getXuanxiangTable
-} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
-import {输入, 选项} from "@components/lurushuju/xinghao-data";
+import {XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
+import {getXuanxiangItem, getXuanxiangTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
+import {选项} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -348,49 +343,6 @@ export class MokuaiItemComponent {
           const item2 = items[rowIdx];
           item2.可选项 = [];
           this.setMokuaiCustomData("选项数据", items);
-        }
-        break;
-    }
-  }
-
-  shuruTable = computed(() => {
-    return getShuruTable(this.mokuai().自定义数据?.输入数据 || []);
-  });
-  async getShuruItem(data0?: 输入) {
-    return await getShuruItem(this.message, this.shuruTable().data, data0);
-  }
-  async onShuruToolbar(event: ToolbarButtonEvent) {
-    const items = this.mokuai().自定义数据?.输入数据 || [];
-    switch (event.button.event) {
-      case "添加":
-        {
-          const item = await this.getShuruItem();
-          if (item) {
-            items.push(item);
-            this.setMokuaiCustomData("输入数据", items);
-          }
-        }
-        break;
-    }
-  }
-  async onShuruRow(event: RowButtonEvent<ShuruTableDataSorted>) {
-    const items = this.mokuai().自定义数据?.输入数据 || [];
-    const {button, item} = event;
-    switch (button.event) {
-      case "编辑":
-        {
-          const item2 = items[item.originalIndex];
-          const item3 = await this.getShuruItem(item2);
-          if (item3) {
-            items[item.originalIndex] = item3;
-            this.setMokuaiCustomData("输入数据", items);
-          }
-        }
-        break;
-      case "删除":
-        if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          items.splice(item.originalIndex, 1);
-          this.setMokuaiCustomData("输入数据", items);
         }
         break;
     }
