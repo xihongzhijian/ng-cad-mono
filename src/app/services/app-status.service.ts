@@ -789,4 +789,28 @@ export class AppStatusService {
     }
     this.setCadPoints(points.map((v) => ({point: v, lines: [], selected: false})));
   }
+
+  highlightLineTexts(entities?: CadEntities) {
+    const cad = this.cad;
+    if (!entities) {
+      entities = cad.data.getAllEntities();
+    }
+    entities.forEach((e) => {
+      if (!(e instanceof CadLineLike)) {
+        return;
+      }
+      const selectedMtext = e.children.mtext.find((mtext) => {
+        const {isLengthText, isGongshiText, isBianhuazhiText} = mtext.info;
+        if (!isLengthText && !isGongshiText && !isBianhuazhiText) {
+          return false;
+        }
+        return mtext.selected;
+      });
+      if (selectedMtext) {
+        e.highlighted = true;
+      } else {
+        e.highlighted = false;
+      }
+    });
+  }
 }

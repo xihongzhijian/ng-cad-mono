@@ -254,7 +254,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       this.cadConsoleComponent.execute(command);
     });
     this.subscribe(this.status.cadStatusEnter$, () => {
-      this._highlightDimensions();
+      this._highlightEntities();
     });
     setTimeout(() => {
       this._isViewInited = true;
@@ -287,7 +287,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     this.status.cad.render(entities);
   };
   private _onEntitiesRemove: CadEventCallBack<"entitiesremove"> = () => {
-    this._highlightDimensions();
+    this._highlightEntities();
   };
   private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (event, entity) => {
     const collection = this.status.collection$.value;
@@ -302,22 +302,23 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     }
   };
   private _onEntitySelect: CadEventCallBack<"entitiesselect"> = () => {
-    this._highlightDimensions();
+    this._highlightEntities();
   };
   private _onEntityUnselect: CadEventCallBack<"entitiesunselect"> = () => {
-    this._highlightDimensions();
+    this._highlightEntities();
   };
   private _onZoom: CadEventCallBack<"zoom"> = () => {
-    this._highlightDimensions();
+    this._highlightEntities();
   };
   private _onMoveEntities: CadEventCallBack<"moveentities"> = () => {
-    this._highlightDimensions();
+    this._highlightEntities();
   };
-  private _highlightDimensions() {
+  private _highlightEntities() {
     if (!(this.status.cadStatus instanceof CadStatusNormal)) {
       return;
     }
     this.status.highlightDimensions();
+    this.status.highlightLineTexts();
   }
 
   private _setCadPadding() {

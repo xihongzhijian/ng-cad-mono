@@ -380,7 +380,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
       return;
     }
     if (!oldEntity) {
-      this.addLineDrawing(true);
+      this.addLineDrawing(true, true);
     }
   };
 
@@ -691,7 +691,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     this.status.toggleCadStatus(new CadStatusCutLine());
   }
 
-  addLineDrawing(round: boolean) {
+  addLineDrawing(round: boolean, isFinished = false) {
     const lineDrawing = this.lineDrawing;
     const entity = lineDrawing?.entity;
     if (!lineDrawing || !entity) {
@@ -702,6 +702,9 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
       this.status.setLinesLength([entity], Math.round(entity.length));
     } else {
       this.status.updateCadTotalLength();
+    }
+    if (isFinished) {
+      this.status.generateLineTexts();
     }
     cad.render(entity);
     entity.opacity = 1;
