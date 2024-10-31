@@ -33,6 +33,7 @@ export interface OpenCadOptions {
   gongshis?: 算料公式[] | null;
   validator?: (data: CadData) => ValidationErrors | null;
   query?: ObjectOf<string>;
+  mokuaiName?: string;
 }
 
 export interface AppUser extends TableDataBase {

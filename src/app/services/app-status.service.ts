@@ -541,11 +541,14 @@ export class AppStatusService {
     });
   }
 
-  openCadInNewTab(id: string, collection: CadCollection) {
+  openCadInNewTab(id: string, collection: CadCollection, mokuaiName?: string) {
     if (!id) {
       return;
     }
-    const params = {collection, id};
+    const params: Params = {collection, id};
+    if (mokuaiName) {
+      params.模块 = mokuaiName;
+    }
     this.openInNewTab(["index"], {queryParams: params});
   }
   openMokuaiCadInNewTab(id: string, mokuaiName: string) {

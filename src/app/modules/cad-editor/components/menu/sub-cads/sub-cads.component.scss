@@ -10,6 +10,8 @@
   display: flex;
   flex-direction: column;
   padding-right: 5px;
+  --cad-image-width: auto;
+  --cad-image-height: auto;
 
   .section-title {
     padding: 5px;

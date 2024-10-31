@@ -104,6 +104,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   };
   @Input() validators?: CadItemValidators;
   @Input() cadForm?: CadItemForm<T>;
+  @Input() mokuaiName?: string;
   @Output() beforeEditCad = new EventEmitter<void>();
   @Output() afterEditCad = new EventEmitter<void>();
 
@@ -246,6 +247,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         center: true,
         isLocal: this.isLocal || !isOnline,
         gongshis: this.gongshis,
+        mokuaiName: this.mokuaiName,
         validator: (data) => {
           return {...this.validateZhankai(data), ...this.validateName(data)};
         },

@@ -73,7 +73,8 @@ export class CadEditorDialogComponent extends Subscribed() implements OnInit {
       this.message.error("缺少id或collection");
       return;
     }
-    this.status.openCadInNewTab(id, collection);
+    const mokuaiName = this.data.mokuaiName;
+    this.status.openCadInNewTab(id, collection, mokuaiName);
   }
 }
 
