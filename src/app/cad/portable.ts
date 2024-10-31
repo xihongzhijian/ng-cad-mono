@@ -1,5 +1,6 @@
 import {getValueString, replaceChars} from "@app/app.common";
 import {ProjectConfig} from "@app/utils/project-config";
+import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {
   CadArc,
   CadCircle,
@@ -22,6 +23,7 @@ import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.u
 import {AppUser} from "@services/app-status.types";
 import {ImportCache} from "@views/import/import.types";
 import {difference, intersection, isEqual, uniqueId} from "lodash";
+import {CadCollection} from "./collections";
 import {autoShuangxiangzhewan, generateLineTexts2, isShiyitu, showIntersections} from "./utils";
 
 export interface Slgs {
@@ -119,6 +121,7 @@ export interface CadSourceParams {
 }
 
 export interface CadExportParams {
+  collection: CadCollection;
   cads: CadData[];
   type: ExportType;
   exportId: boolean;
@@ -376,87 +379,89 @@ export class CadPortable {
       this._extractIntersections(data);
       data.info.errors = [];
       data.options = {...globalOptions};
+      const prefixs = ["唯一码", "名字"];
       const found = data.entities.mtext.some((e, i) => {
-        const text = replaceChars(e.text);
-        if (text.startsWith("唯一码")) {
-          toRemove = i;
-          sourceCadMap.cads[data.id].text = e;
-          const obj = getObject(text, ":");
-          let zhankaiObjs: ObjectOf<any>[] = [];
-          for (const key in obj) {
-            if (skipFields.includes(key)) {
-              continue;
-            }
-            const value = obj[key];
-            if (key === "展开") {
-              zhankaiObjs = Array.from(value.matchAll(/\[([^\]]*)\]/g)).map((vv) => {
-                const arr = vv[1].split(",").map((v) => v.trim());
-                if (obj.分类 === "包边正面") {
-                  if (!arr[1].includes(";")) {
-                    if (arr.length < 3) {
-                      cad.errors.push("包边正面展开必须至少有3项, 有两个展开高");
-                    }
-                    arr[1] = arr[1] + "," + arr[2];
-                    arr.splice(2, 1);
+        const text = replaceChars(e.text).trim();
+        if (!prefixs.some((v) => text.startsWith(v))) {
+          return false;
+        }
+        toRemove = i;
+        sourceCadMap.cads[data.id].text = e;
+        const obj = getObject(text, ":");
+        let zhankaiObjs: ObjectOf<any>[] = [];
+        for (const key in obj) {
+          if (skipFields.includes(key)) {
+            continue;
+          }
+          const value = obj[key];
+          if (key === "展开") {
+            zhankaiObjs = Array.from(value.matchAll(/\[([^\]]*)\]/g)).map((vv) => {
+              const arr = vv[1].split(",").map((v) => v.trim());
+              if (obj.分类 === "包边正面") {
+                if (!arr[1].includes(";")) {
+                  if (arr.length < 3) {
+                    cad.errors.push("包边正面展开必须至少有3项, 有两个展开高");
                   }
-                }
-                const zhankaikuan = arr[0];
-                const zhankaigao = arr[1];
-                const shuliang = arr[2];
-                const conditions = arr.slice(3);
-                for (const vvv of [zhankaikuan, zhankaigao, shuliang]) {
-                  if (vvv && vvv.match(/['"]/)) {
-                    cad.errors.push("展开宽, 展开高和数量不能有引号");
-                    break;
-                  }
-                }
-                return {zhankaikuan, zhankaigao, shuliang, conditions};
-              });
-              continue;
-            }
-            obj[key] = value;
-            const key2 = cadFields[key as keyof typeof cadFields];
-            if (key === "对应计算条数的配件") {
-              data.对应计算条数的配件 = getObject(value, "=");
-            } else if (key2) {
-              if (cadIncludeFields.includes(key as any)) {
-                const defaultValue = emptyCad[key2];
-                if (typeof defaultValue === "boolean") {
-                  (data[key2] as boolean) = value === "是";
-                } else if (Array.isArray(defaultValue)) {
-                  (data[key2] as string[]) = this.splitOptionValue(value);
-                } else {
-                  (data[key2] as string) = value;
+                  arr[1] = arr[1] + "," + arr[2];
+                  arr.splice(2, 1);
                 }
               }
-            } else if (this.infoFields.includes(key)) {
-              data.info[key] = value;
-            } else {
-              if (globalOptions[key]) {
-                cad.errors.push(`多余的选项【${key}】`);
+              const zhankaikuan = arr[0];
+              const zhankaigao = arr[1];
+              const shuliang = arr[2];
+              const conditions = arr.slice(3);
+              for (const vvv of [zhankaikuan, zhankaigao, shuliang]) {
+                if (vvv && vvv.match(/['"]/)) {
+                  cad.errors.push("展开宽, 展开高和数量不能有引号");
+                  break;
+                }
+              }
+              return {zhankaikuan, zhankaigao, shuliang, conditions};
+            });
+            continue;
+          }
+          obj[key] = value;
+          const key2 = cadFields[key as keyof typeof cadFields];
+          if (key === "对应计算条数的配件") {
+            data.对应计算条数的配件 = getObject(value, "=");
+          } else if (key2) {
+            if (cadIncludeFields.includes(key as any)) {
+              const defaultValue = emptyCad[key2];
+              if (typeof defaultValue === "boolean") {
+                (data[key2] as boolean) = value === "是";
+              } else if (Array.isArray(defaultValue)) {
+                (data[key2] as string[]) = this.splitOptionValue(value);
               } else {
-                const optionValues = this.splitOptionValue(value);
-                data.options[key] = this.joinOptionValue(optionValues);
+                (data[key2] as string) = value;
               }
+            }
+          } else if (this.infoFields.includes(key)) {
+            data.info[key] = value;
+          } else {
+            if (globalOptions[key]) {
+              cad.errors.push(`多余的选项【${key}】`);
+            } else {
+              const optionValues = this.splitOptionValue(value);
+              data.options[key] = this.joinOptionValue(optionValues);
             }
           }
-          data.zhankai = zhankaiObjs.map((o, j) => {
-            if (j > 0) {
-              let name = data.name;
-              if (!params.导入dxf文件时展开名字不改变) {
-                name += j + 1;
-              }
-              return new CadZhankai({...o, name});
-            } else {
-              return new CadZhankai(o);
-            }
-          });
-          return true;
         }
-        return false;
+        data.zhankai = zhankaiObjs.map((o, j) => {
+          if (j > 0) {
+            let name = data.name;
+            if (!params.导入dxf文件时展开名字不改变) {
+              name += j + 1;
+            }
+            return new CadZhankai({...o, name});
+          } else {
+            return new CadZhankai(o);
+          }
+        });
+        return true;
       });
       if (!found) {
-        data.info.errors.push("找不到以唯一码开头的文本");
+        const prefixsStr = prefixs.map((v) => `【${v}】`).join("");
+        data.info.errors.push(`找不到以${prefixsStr}开头的文本`);
         data.info.isEmpty = true;
         return;
       }
@@ -508,7 +513,7 @@ export class CadPortable {
     const width = 855;
     const height = 1700;
     const cols = 10;
-    const {type, exportId, exportUniqCode, exportOptions} = params;
+    const {type, exportId, exportUniqCode, exportOptions, collection} = params;
     const {sourceCad, importResult, xinghaoInfo, slgses} = params.sourceParams || {};
     const cads = params.cads.filter((v) => v.entities.length > 0);
     const emptyData = new CadData();
@@ -616,10 +621,12 @@ export class CadPortable {
         cadRect.transform({translate});
 
         const texts = [];
-        if (exportUniqCode) {
-          texts.push(`唯一码: ${cad.info.唯一码}`);
-        } else {
-          texts.push("唯一码: ");
+        if (!isSbjbCad(collection, cad)) {
+          if (exportUniqCode) {
+            texts.push(`唯一码: ${cad.info.唯一码}`);
+          } else {
+            texts.push("唯一码: ");
+          }
         }
         const {skipFields, cadIncludeFields} = this;
         for (const key of keysOf(cadFields)) {

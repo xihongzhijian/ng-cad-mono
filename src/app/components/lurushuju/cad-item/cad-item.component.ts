@@ -24,14 +24,14 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {getValueString} from "@app/app.common";
-import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
+import {getCadPreview, getCadPreviewConfig} from "@app/cad/cad-preview";
 import {Cad数据要求, Cad数据要求Item} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData, generateLineTexts2, openCadDimensionForm} from "@app/cad/utils";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {DataInfoChnageEvent} from "@components/cad-image/cad-image.types";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
-import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadViewerConfig, CadZhankai} from "@lucilor/cad-viewer";
+import {CadData, CadDimensionLinear, CadLineLike, CadMtext, CadViewer, CadZhankai} from "@lucilor/cad-viewer";
 import {ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {openCadLineForm} from "@modules/cad-editor/components/menu/cad-line/cad-line.utils";
@@ -444,22 +444,18 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     await this.initMubanViewer();
   }
 
-  getCadPreviewParams = (() => {
-    const params: CadPreviewParams = {};
-    return params;
-  }).bind(this);
-
   initCadViewer0(collection: CadCollection, data: CadData, containerEl: HTMLDivElement, afterDblClickForm: (data: CadData) => void) {
-    const params = this.getCadPreviewParams();
-    const cadConfig: Partial<CadViewerConfig> = {
-      ...params.config,
-      enableZoom: false,
-      dragAxis: "xy",
-      selectMode: "single",
-      entityDraggable: false
-    };
     containerEl.innerHTML = "";
-    const cadViewer = new CadViewer(data, cadConfig);
+    const cadViewer = new CadViewer(
+      data,
+      getCadPreviewConfig(collection, {
+        enableZoom: false,
+        dragAxis: "xy",
+        selectMode: "single",
+        entityDraggable: false
+      })
+    );
+    console.log(cadViewer);
     cadViewer.appendTo(containerEl);
     cadViewer.on("entitydblclick", async (_, entity) => {
       if (entity instanceof CadMtext && entity.parent) {

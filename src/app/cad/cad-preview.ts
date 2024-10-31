@@ -10,18 +10,18 @@ export interface CadPreviewRawParams {
   autoSize?: boolean;
   maxZoom?: number;
 }
+export const getCadPreviewConfig = (collection: CadCollection, config?: Partial<CadViewerConfig>): Partial<CadViewerConfig> => ({
+  width: 300,
+  height: 150,
+  padding: [5],
+  backgroundColor: "black",
+  hideLineLength: collection === "CADmuban",
+  hideLineGongshi: false,
+  lineGongshi: 8,
+  ...config
+});
 export const getCadPreviewRaw = async (collection: CadCollection, data: CadData, params: CadPreviewRawParams = {}) => {
-  console.warn(collection, data, params);
-  const cad = new CadViewer(new CadData(), {
-    width: 300,
-    height: 150,
-    padding: [5],
-    backgroundColor: "rgba(0,0,0,0)",
-    hideLineLength: collection === "CADmuban",
-    hideLineGongshi: false,
-    lineGongshi: 8,
-    ...params.config
-  });
+  const cad = new CadViewer(new CadData(), getCadPreviewConfig(collection, params.config));
   cad.dom.style.opacity = "0";
   cad.dom.style.position = "fixed";
   cad.appendTo(document.body);

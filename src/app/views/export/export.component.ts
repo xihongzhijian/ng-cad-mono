@@ -67,7 +67,7 @@ export class ExportComponent implements OnInit {
   collection = computed(() => this.exportCache()?.collection || "cad");
   compactPage = computed(() => !!this.exportCache()?.lurushuju);
 
-  exportParams = signal<CadExportParams>({
+  exportParams = signal<Omit<CadExportParams, "collection">>({
     cads: [],
     type: "自由选择",
     exportId: false,
@@ -257,7 +257,7 @@ export class ExportComponent implements OnInit {
         this.exportParams.update((v) => ({...v, cads}));
         let result: CadData | undefined;
         try {
-          result = await CadPortable.export(this.exportParams(), this.status.projectConfig);
+          result = await CadPortable.export({collection, ...this.exportParams()}, this.status.projectConfig);
         } catch (error) {
           console.error(error);
           finish("error", this.http.lastResponse?.msg || "导出失败");

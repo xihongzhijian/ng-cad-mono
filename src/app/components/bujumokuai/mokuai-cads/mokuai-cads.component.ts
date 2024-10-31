@@ -295,7 +295,8 @@ export class MokuaiCadsComponent {
   openExportPage() {
     const cads = this.cads();
     const ids = cads.map((v) => v.id);
+    const selectedIds = this.selectedCadIndexs().map((v) => cads[v].id);
     const collection = this.bjmkStatus.collection;
-    openExportPage(this.status, {collection, search: {_id: {$in: ids}}, lurushuju: true});
+    openExportPage(this.status, {collection, ids: selectedIds, search: {_id: {$in: ids}}, lurushuju: true});
   }
 }
