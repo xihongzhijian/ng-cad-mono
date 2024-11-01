@@ -119,7 +119,7 @@ export class MokuaiItemComponent {
         type: "string",
         label: key,
         value: str,
-        readonly: true,
+        selectOnly: true,
         suffixIcons: [
           {name: "edit", isDefault: true, onClick: () => this.editMorenbancai(i)}
           // {name: "add", onClick: () => this.addMorenbancai(i)},

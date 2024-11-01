@@ -317,8 +317,10 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     if (!(this.status.cadStatus instanceof CadStatusNormal)) {
       return;
     }
-    this.status.highlightDimensions();
-    this.status.highlightLineTexts();
+    setTimeout(() => {
+      this.status.highlightDimensions();
+      this.status.highlightLineTexts();
+    }, 0);
   }
 
   private _setCadPadding() {

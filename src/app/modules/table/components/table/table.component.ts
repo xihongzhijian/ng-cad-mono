@@ -254,15 +254,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       this.class = this.info.class;
     }
     if (intersection<InfoKey>(changedKeys, ["data", "columns"]).length > 0) {
-      const cellInputInfos: InputInfo[][] = [];
-      for (const [rowIdx, item] of this.info.data.entries()) {
-        const group: InputInfo[] = [];
-        for (const [colIdx, column] of this.info.columns.entries()) {
-          group.push(this.getCellInputInfo({column, item, colIdx, rowIdx}));
-        }
-        cellInputInfos.push(group);
-      }
-      this.cellInputInfos.set(cellInputInfos);
+      this.updateCellInputInfos();
     }
   }
 
@@ -352,6 +344,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         data.splice(rowIdx, 0, cloneDeep(newItem));
       }
       this.dataSource.data = data;
+      this.updateCellInputInfos();
     }
   }
 
@@ -387,6 +380,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         rowSelection.clear();
       }
       this.dataSource.data = data;
+      this.updateCellInputInfos();
     }
   }
 
@@ -509,6 +503,17 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   cellInputs = viewChildren<InputComponent>("cellInput");
   cellInputInfos = signal<InputInfo[][]>([]);
+  updateCellInputInfos() {
+    const cellInputInfos: InputInfo[][] = [];
+    for (const [rowIdx, item] of this.info.data.entries()) {
+      const group: InputInfo[] = [];
+      for (const [colIdx, column] of this.info.columns.entries()) {
+        group.push(this.getCellInputInfo({column, item, colIdx, rowIdx}));
+      }
+      cellInputInfos.push(group);
+    }
+    this.cellInputInfos.set(cellInputInfos);
+  }
   isVaild() {
     for (const input of this.cellInputs()) {
       const errors = input.validateValue();

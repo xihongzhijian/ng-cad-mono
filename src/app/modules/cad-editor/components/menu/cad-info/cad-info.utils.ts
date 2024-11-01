@@ -216,10 +216,11 @@ export const getCadInfoInputs = (
         info = {
           type: "string",
           label: key,
-          readonly: true,
+          selectOnly: true,
           suffixIcons: [
             {
               name: "list",
+              isDefault: true,
               onClick: async () => {
                 const data2 = getData(data);
                 const result = await openCadDataAttrsDialog(dialog, {data: data2.attributes});
@@ -303,12 +304,13 @@ export const getCadInfoInputs = (
                 type: "string",
                 label: key,
                 style,
-                readonly: true,
+                selectOnly: true,
                 model: {data: getZhankai(), key: "kailiaomuban"},
                 suffixIcons: [
                   {name: "open_in_new", onClick: () => status.openCadInNewTab(getZhankai()?.kailiaomuban || "", "kailiaocadmuban")},
                   {
                     name: "list",
+                    isDefault: true,
                     onClick: async () => {
                       const zhankai = getZhankai();
                       if (!zhankai) {

@@ -382,7 +382,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
             type: "string",
             label: "",
             value: v.length ? "已指定" : "未指定",
-            readonly: true,
+            selectOnly: true,
             suffixIcons: [
               {name: "linear_scale", isDefault: true, color: this.getPointColor(i, key), onClick: () => this.selectPoint(i, key)},
               {name: "add_circle", color: "primary", onClick: () => this.addIntersectionValue(key, i + 1)},

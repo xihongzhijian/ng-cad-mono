@@ -222,7 +222,7 @@ export class KlcsComponent implements OnInit, AfterViewInit {
           {
             type: "string",
             label: "",
-            readonly: true,
+            selectOnly: true,
             value: JSON.stringify(data.参数),
             suffixIcons: [
               {

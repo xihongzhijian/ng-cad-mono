@@ -47,8 +47,10 @@
     <div class="title" [class]="canOpenXhmrmsbj() ? 'link text' : ''" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
   </div>
 }
-@if (!isFromOrder()) {
+@if (enableSbjb()) {
   <app-xhmrmsbj-sbjb [class.hidden]="activeTabName() !== '锁边铰边'" [xinghao]="xinghao()"></app-xhmrmsbj-sbjb>
+}
+@if (enableMfpz()) {
   <app-menfeng-peizhi [class.hidden]="activeTabName() !== '门缝配置'" [xinghao]="xinghao()" [sbjbItems]="sbjbItems()"></app-menfeng-peizhi>
 }
 <div class="flex-row flex-110" [class.hidden]="activeTabName() !== '门扇模块'">

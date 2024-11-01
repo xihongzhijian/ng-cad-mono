@@ -449,13 +449,13 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     const cadViewer = new CadViewer(
       data,
       getCadPreviewConfig(collection, {
+        backgroundColor: "black",
         enableZoom: false,
         dragAxis: "xy",
         selectMode: "single",
         entityDraggable: false
       })
     );
-    console.log(cadViewer);
     cadViewer.appendTo(containerEl);
     cadViewer.on("entitydblclick", async (_, entity) => {
       if (entity instanceof CadMtext && entity.parent) {

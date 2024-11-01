@@ -59,7 +59,7 @@ export class BancaiFormComponent {
           type: "string",
           label: "板材",
           value: data.bancai,
-          readonly: true,
+          selectOnly: true,
           suffixIcons: [
             {
               name: "list",
@@ -99,7 +99,7 @@ export class BancaiFormComponent {
           type: "string",
           label: "可选板材",
           value: joinOptions(data.bancaiList),
-          readonly: true,
+          selectOnly: true,
           suffixIcons: [
             {
               name: "list",

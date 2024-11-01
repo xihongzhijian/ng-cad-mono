@@ -621,7 +621,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
     const keyMap = {总宽: "totalWidth", 总高: "totalHeight"} as const;
-    if (!this.data()?.isVersion2024) {
+    const isVersion2024 = this.data()?.isVersion2024;
+    if (!isVersion2024) {
       const name = node.层名字;
       for (const key in keyMap) {
         const key3 = name + key;
@@ -643,6 +644,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         model: {key: "1", data: v},
         clearable: true,
         validators: (control) => {
+          if (!isVersion2024) {
+            return null;
+          }
           const valueInfo2 = this.getValueInfo(node, mokuai, v[0], control.value);
           if (!valueInfo2.value) {
             return {required: true};
@@ -906,7 +910,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
             const valueInfo = await this.getValueInfo2(node1, mokuai, arr[0], arr[1]);
             arr[1] = valueInfo.value;
-            if (!arr[1]) {
+            if (!arr[1] && isVersion2024) {
               missingVars.push(arr[0]);
             }
           }
@@ -998,10 +1002,15 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
   }
 
+  enableSbjb = computed(() => !this.isFromOrder() && this.data()?.isVersion2024);
+  enableMfpz = computed(() => this.data()?.isVersion2024);
   tabNames = computed(() => {
     let names = xhmrmsbjTabNames.slice();
-    if (this.isFromOrder()) {
+    if (!this.enableSbjb()) {
       names = names.filter((v) => v !== "锁边铰边");
+    }
+    if (!this.enableMfpz()) {
+      names = names.filter((v) => v !== "门缝配置");
     }
     return names;
   });

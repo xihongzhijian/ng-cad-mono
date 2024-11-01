@@ -33,7 +33,7 @@
           <input
             matInput
             [errorStateMatcher]="getErrorStateMatcher()"
-            [readonly]="info.readonly"
+            [readonly]="info.readonly || info.selectOnly"
             [disabled]="info.disabled || false"
             [autocomplete]="info.autocomplete || ''"
             [(ngModel)]="value"
@@ -61,7 +61,7 @@
           </mat-option>
         }
       </mat-autocomplete>
-      @if (info.optionsDialog) {
+      @if (info.optionsDialog && !info.readonly && !info.disabled) {
         <button matSuffix mat-icon-button color="primary" (click)="selectOptions(model.key)">
           <mat-icon>list</mat-icon>
         </button>

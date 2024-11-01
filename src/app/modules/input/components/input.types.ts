@@ -45,6 +45,7 @@ export interface InputInfoString<T = any> extends InputInfoBase<T> {
   onInput?: (val: string, info: InputInfoString<T>) => void;
   onChange?: (val: string, info: InputInfoString<T>) => void;
   options?: Value<InputInfoOptions<string>>;
+  selectOnly?: boolean;
   optionValueType?: "string" | "array";
   fixedOptions?: string[];
   optionRequired?: boolean;

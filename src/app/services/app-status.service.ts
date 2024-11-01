@@ -799,14 +799,14 @@ export class AppStatusService {
       if (!(e instanceof CadLineLike)) {
         return;
       }
-      const selectedMtext = e.children.mtext.find((mtext) => {
+      const selectedMtexts = e.children.mtext.filter((mtext) => {
         const {isLengthText, isGongshiText, isBianhuazhiText} = mtext.info;
         if (!isLengthText && !isGongshiText && !isBianhuazhiText) {
           return false;
         }
-        return mtext.selected;
+        return mtext.selected && mtext.visible;
       });
-      if (selectedMtext) {
+      if (selectedMtexts.length > 0) {
         e.highlighted = true;
       } else {
         e.highlighted = false;
