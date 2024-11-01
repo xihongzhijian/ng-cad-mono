@@ -257,6 +257,20 @@ export const drawDimensionLinear = (
     if (text === "") {
       text = "<>";
     }
+    const suffixs: string[] = [];
+    if (text.includes("活动标注") && !text.includes("<>")) {
+      suffixs.push("<>");
+    }
+    if (活动标注显示扣数) {
+      const 活动标注显示扣数2 = Number(活动标注显示扣数);
+      if (活动标注显示扣数2 > 0) {
+        活动标注显示扣数 = "+" + 活动标注显示扣数;
+      }
+      suffixs.push(`扣数${活动标注显示扣数}`);
+    }
+    if (suffixs.length > 0) {
+      text += `(${suffixs.join(", ")})`;
+    }
     if (text.includes("<>")) {
       const num = p3.distanceTo(p4);
       let numStr: string;
@@ -281,9 +295,6 @@ export const drawDimensionLinear = (
           break;
       }
       text = text.replace(/<>/g, numStr);
-    }
-    if (活动标注显示扣数) {
-      text += `(扣数${活动标注显示扣数})`;
     }
     const middle = p3.clone().add(p4).divide(2);
     if (axis === "x") {
