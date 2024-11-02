@@ -1,6 +1,7 @@
 import {WritableSignal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {matchOptionFn} from "@app/utils/mongo";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {getOptionsAll2InputInfo} from "@components/lurushuju/services/lrsj-status.utils";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
@@ -142,29 +143,6 @@ export const getMenjiaoCadInfos = (data: 算料数据) => {
   }
   return menjiaoCadInfos;
 };
-
-const matchOptionFn = `
-function (value1, value2, falseIfEmpty) {
-  if (value2 === undefined || value2 === null || value2 === "") {
-    return !falseIfEmpty;
-  }
-  if (value2 === "所有") {
-    return true;
-  }
-  if (typeof value2 === "string") {
-    value2 = value2.split(";");
-  }
-  if (!Array.isArray(value1)) {
-    value1 = [value1];
-  }
-  for (var i = 0; i < value1.length; i++) {
-    var v = value1[i];
-    if (value2.indexOf(v) >= 0) {
-      return true;
-    }
-  }
-  return false;
-}`;
 
 export const getCadSearch = (data: 算料数据, yaoqiu: Cad数据要求, key1: MenjiaoCadType, key2: string, key3: string) => {
   const 分类0 = yaoqiu.search.分类;

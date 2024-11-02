@@ -9,6 +9,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-data-transform";
 import {uploadAndReplaceCad} from "@app/cad/utils";
+import {matchOptionsFn} from "@app/utils/mongo";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
@@ -316,16 +317,23 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
       if (sourceData.length > 0) {
         source = sourceData.map((v) => new CadData(v));
       }
+      const where = `
+      function fn() {
+        var 选项 = ${JSON.stringify(data.options)};
+        var matchOptionsFn = ${matchOptionsFn};
+        return matchOptionsFn(选项, this.选项);
+      }
+      `;
       cads = await openCadListDialog(this.dialog, {
         data: {
           selectMode: "multiple",
           checkedItems,
-          options: data.options,
           collection: "cad",
           qiliao,
           search: {
             _id: {$ne: data.id},
-            分类: {$not: {$in: feilei}}
+            分类: {$not: {$in: feilei}},
+            $where: where
           },
           source
         }

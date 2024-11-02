@@ -186,3 +186,47 @@ const convertChineseSymbol = (str: string): string => {
 
   return str;
 };
+
+export const matchOptionFn = `
+function (value1, value2, falseIfEmpty) {
+  if (value2 === undefined || value2 === null || value2 === "") {
+    return !falseIfEmpty;
+  }
+  if (value2 === "所有") {
+    return true;
+  }
+  if (typeof value2 === "string") {
+    value2 = value2.split(";");
+  }
+  if (!Array.isArray(value1)) {
+    if (typeof value1 === "string") {
+      value1 = value1.split(";");
+    } else {
+      value1 = [value1];
+    }
+  }
+  for (var i = 0; i < value1.length; i++) {
+    var v = value1[i];
+    if (value2.indexOf(v) >= 0) {
+      return true;
+    }
+  }
+  return false;
+}`;
+
+export const matchOptionsFn = `
+function (options1, options2, falseIfEmpty) {
+  if (!options1) {
+    return true;
+  }
+  if (!options2) {
+    return !falseIfEmpty;
+  }
+  var matchOption = ${matchOptionFn};
+  for (var key in options1) {
+    if (!matchOption(options1[key], options2[key], falseIfEmpty)) {
+      return false;
+    }
+  }
+  return true;
+}`;
