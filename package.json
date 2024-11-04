@@ -59,7 +59,7 @@
     "ngx-quill": "^26.0.8",
     "ngx-scrollbar": "^16.0.0",
     "ngx-ui-loader": "^13.0.0",
-    "pdfmake": "^0.2.14",
+    "pdfmake": "^0.2.15",
     "print-js": "^1.6.0",
     "qrcode": "^1.5.4",
     "quill": "2.0.2",
