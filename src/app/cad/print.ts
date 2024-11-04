@@ -656,7 +656,7 @@ const getUnfoldCadViewers = async (
     const boxRect = new Rectangle();
     boxRect.min.set(colIndex * boxWidth + boxPadding[3], (rowIndex - 1) * boxHeight + boxPadding[2]);
     boxRect.max.set((colIndex + 1) * boxWidth - boxPadding[1], rowIndex * boxHeight - boxPadding[0]);
-    await configCadDataForPrint(unfoldCadViewer, cad, params, {isZxpj: true, lineLengthFontStyle: {size: 10}, 使用显示线长: true});
+    await configCadDataForPrint(unfoldCadViewer, cad, params, {isZxpj: true, lineLengthFontStyle: {size: 5}, 使用显示线长: true});
     const calcZhankai = cad.info.calcZhankai || [];
     const bancai = cad.info.bancai || {};
 

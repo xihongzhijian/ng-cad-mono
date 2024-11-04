@@ -33,7 +33,7 @@ import {cadDimensionOptions} from "./options";
 
 export const reservedDimNames = ["前板宽", "后板宽", "小前板宽", "小后板宽", "骨架宽", "小骨架宽", "骨架中空宽", "小骨架中空宽"];
 
-export const maxLineLength = 130 as const;
+export const maxLineLength = 100 as const;
 
 export const 激光开料标记线类型 = ["短直线", "直角三角形", "等腰三角形"] as const;
 
