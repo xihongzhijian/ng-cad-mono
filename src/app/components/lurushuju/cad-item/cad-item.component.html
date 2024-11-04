@@ -1,3 +1,13 @@
+<div class="toolbar compact hidden-if-empty">
+  @if (titlePrefix; as prefix) {
+    <div class="text short">{{ prefix }}</div>
+  }
+  @for (button of buttons2; track $index) {
+    <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="button.onClick(this)">
+      {{ button.name }}
+    </button>
+  }
+</div>
 <div class="name toolbar">
   @if (selectable) {
     <mat-checkbox
@@ -9,16 +19,11 @@
   }
   <div class="toolbar flex-110 center" (click)="selectable?.onChange(this)">
     <div class="name-text link" [class.error]="!!errorMsgs['名字']" (dblclick)="editCadForm()">
-      {{ cadTitle }}
+      {{ cadName }}
     </div>
     <button class="name-btn" mat-icon-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="copyName()">
       <mat-icon>content_copy</mat-icon>
     </button>
-    @for (button of buttons2; track $index) {
-      <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="button.onClick(this)">
-        {{ button.name }}
-      </button>
-    }
   </div>
 </div>
 <div class="cads">

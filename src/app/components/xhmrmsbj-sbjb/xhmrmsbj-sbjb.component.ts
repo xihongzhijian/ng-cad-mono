@@ -8,7 +8,7 @@ import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
-import {CadItemButton, CadItemForm, CadItemFormExtraText} from "@components/lurushuju/cad-item/cad-item.types";
+import {CadItemButton, CadItemFormExtraText} from "@components/lurushuju/cad-item/cad-item.types";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
@@ -24,10 +24,11 @@ import {cloneDeep} from "lodash";
 import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
+  XhmrmsbjSbjbCadInfo,
+  XhmrmsbjSbjbCadInfoGrouped,
   XhmrmsbjSbjbItem,
   XhmrmsbjSbjbItemCopyMode,
   xhmrmsbjSbjbItemCopyModes,
-  XhmrmsbjSbjbItemSbjbCad,
   XhmrmsbjSbjbItemSbjbCadInfo,
   XhmrmsbjSbjbItemSbjbItem,
   XhmrmsbjSbjbItemSbjbSorted
@@ -83,11 +84,11 @@ export class XhmrmsbjSbjbComponent {
   });
   cadMap = new Map<string, CadData>();
   cadInfos = computed(() => {
-    const infos: (Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> & {cad?: CadData; cadForm: CadItemForm<XhmrmsbjSbjbItemSbjbCadInfo>})[] = [];
+    const infos: XhmrmsbjSbjbCadInfo[] = [];
     const item = this.activeSbjbItem();
     if (item) {
       for (const item2 of item.CAD数据 || []) {
-        const info: (typeof infos)[0] = {...item2, cadForm: {noDefaultTexts: true}};
+        const info: XhmrmsbjSbjbCadInfo = {...item2, cadForm: {noDefaultTexts: true}};
         if (item2.cadId) {
           const cad = this.cadMap.get(item2.cadId);
           if (cad) {
@@ -117,6 +118,19 @@ export class XhmrmsbjSbjbComponent {
       }
     }
     return infos;
+  });
+  cadInfoGroups = computed(() => {
+    const group1: XhmrmsbjSbjbCadInfoGrouped[] = [];
+    const group2: XhmrmsbjSbjbCadInfoGrouped[] = [];
+    const group1Keys = ["锁框", "铰框", "顶框"];
+    for (const [i, info] of this.cadInfos().entries()) {
+      if (group1Keys.includes(info.name)) {
+        group1.push({...info, originalIndex: i});
+      } else {
+        group2.push({...info, originalIndex: i});
+      }
+    }
+    return [group1, group2];
   });
   cadButtons2 = computed(() => {
     const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] = [

@@ -1,4 +1,4 @@
-<div class="flex-row flex-110">
+<div class="flex-row flex-110 scrollbar-container">
   <ng-scrollbar style="flex: 0 0 auto; height: 100%">
     <div class="item-types border flex-column">
       @for (item of items(); track i; let i = $index) {
@@ -13,7 +13,7 @@
     </div>
   </ng-scrollbar>
   <mat-divider vertical></mat-divider>
-  <div class="flex-column flex-110">
+  <div class="flex-column flex-110 scrollbar-container">
     <div class="flex-column flex-110">
       @if (sbjbItemTableInfo(); as info) {
         <app-table
@@ -26,29 +26,33 @@
         ></app-table>
       }
     </div>
-    <ng-scrollbar>
-      <div class="items no-items-per-row flex-110">
-        @for (info of cadInfos(); track i; let i = $index) {
-          @if (info.cad; as cad) {
-            <app-cad-item
-              [cad]="cad"
-              [buttons]="[]"
-              [buttons2]="cadButtons2()"
-              [customInfo]="{index: i}"
-              [yaoqiu]="cadYaoqius()[cad.type]"
-              [titlePrefix]="info.title + '：'"
-              [cadForm]="info.cadForm"
-              editDisabled
-              [isOnline]="{isFetched: true}"
-            ></app-cad-item>
-          } @else {
-            <div class="empty-cad item link" (click)="selectSbjbItemSbjbCad(i)">
-              <div class="name">{{ info.title }}</div>
-              <div class="box border">
-                <span class="error">请选择</span>
-              </div>
-            </div>
-          }
+    <ng-scrollbar class="enable-x">
+      <div class="flex-column">
+        @for (group of cadInfoGroups(); track $index) {
+          <div class="flex-row">
+            @for (info of group; track $index) {
+              @if (info.cad; as cad) {
+                <app-cad-item
+                  [cad]="cad"
+                  [buttons]="[]"
+                  [buttons2]="cadButtons2()"
+                  [customInfo]="{index: info.originalIndex}"
+                  [yaoqiu]="cadYaoqius()[cad.type]"
+                  [titlePrefix]="info.title + '：'"
+                  [cadForm]="info.cadForm"
+                  editDisabled
+                  [isOnline]="{isFetched: true}"
+                ></app-cad-item>
+              } @else {
+                <div class="empty-cad item link" (click)="selectSbjbItemSbjbCad(info.originalIndex)">
+                  <div class="name">{{ info.title }}</div>
+                  <div class="box border">
+                    <span class="error">请选择</span>
+                  </div>
+                </div>
+              }
+            }
+          </div>
         }
       </div>
     </ng-scrollbar>

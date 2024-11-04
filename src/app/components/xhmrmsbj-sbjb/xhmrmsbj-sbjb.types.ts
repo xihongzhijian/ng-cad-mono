@@ -1,5 +1,6 @@
 import {CadCollection} from "@app/cad/collections";
 import {SortedItem} from "@app/utils/sort-items";
+import {CadItemForm} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 
 export type XhmrmsbjSbjbResponseData = XhmrmsbjSbjbItem[];
@@ -76,3 +77,12 @@ export const isSbjbType = (type: string): type is XhmrmsbjSbjbItemOptionalKey4 =
 export const isSbjbCad = (collection: CadCollection, cad: CadData): collection is "peijianCad" => {
   return isSbjbCollection(collection) && isSbjbType(cad.type);
 };
+
+export interface XhmrmsbjSbjbCadInfo extends Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> {
+  cad?: CadData;
+  cadForm: CadItemForm<XhmrmsbjSbjbItemSbjbCadInfo>;
+}
+
+export interface XhmrmsbjSbjbCadInfoGrouped extends XhmrmsbjSbjbCadInfo {
+  originalIndex: number;
+}
