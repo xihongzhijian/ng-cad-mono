@@ -6,7 +6,7 @@ export const getInputDataBoms = (data: InputData) => {
   const boms: 型材Bom[] = [];
   for (const bom of data.型材BOM) {
     const bom2 = cloneDeep(bom);
-    const bomsExclude = data.不上设备的型材BOM?.filter((v) => v.vid === bom.vid);
+    const bomsExclude = data.不上设备的型材BOM?.filter((v) => v.BOM唯一码 === bom.BOM唯一码);
     for (const bom3 of bomsExclude || []) {
       bom2.要求数量 -= bom3.要求数量;
     }
@@ -33,7 +33,7 @@ export const calc = (data: InputData) => {
   }
 
   const resultItems: 优化结果[] = [];
-  const usedBoms = new Map<number, number>();
+  const usedBoms = new Map<string, number>();
   const backpackDp = (boms: 型材Bom[], totalLength: number, num: number, {qieduansunhao = 0}: 铝型材) => {
     const result: {value: number; items: 型材Bom[]; cuts: number}[] = [];
     if (boms.length < 1) {
@@ -49,23 +49,21 @@ export const calc = (data: InputData) => {
         for (let j = 0; j < bom.要求数量; j++) {
           if (i + j === 0) {
             dp.push([0, {value: 0, items: [], cuts: 0}]);
-            if (length <= totalLength) {
+            if (length + qieduansunhao <= totalLength) {
               const dpItem: (typeof dp)[number] = [length, {value: length, items: [bom], cuts: 0}];
-              if (length < totalLength) {
-                dpItem[0] = Math.min(totalLength, dpItem[0] + qieduansunhao);
-                dpItem[1].cuts++;
-              }
+              dpItem[0] = Math.min(totalLength, dpItem[0] + qieduansunhao);
+              dpItem[1].cuts++;
               dp.push(dpItem);
             }
           } else {
             const dp2 = dp.slice();
             for (const dpItem of dp) {
               const unusedLength = totalLength - dpItem[0];
-              const usedBoms = dpItem[1].items.filter((v) => v.vid === bom.vid);
+              const usedBoms = dpItem[1].items.filter((v) => v.BOM唯一码 === bom.BOM唯一码);
               if (usedBoms.length >= bom.要求数量) {
                 continue;
               }
-              if (length <= unusedLength) {
+              if (length + qieduansunhao <= unusedLength) {
                 const [length2, item] = dpItem;
                 const dpItem2: (typeof dp)[number] = [
                   length2 + length,
@@ -75,10 +73,8 @@ export const calc = (data: InputData) => {
                     cuts: item.cuts
                   }
                 ];
-                if (length < unusedLength) {
-                  dpItem2[0] = Math.min(totalLength, dpItem2[0] + qieduansunhao);
-                  dpItem2[1].cuts++;
-                }
+                dpItem2[0] = Math.min(totalLength, dpItem2[0] + qieduansunhao);
+                dpItem2[1].cuts++;
 
                 let shouldAdd = true;
                 for (const v of dp) {
@@ -120,11 +116,11 @@ export const calc = (data: InputData) => {
       }
       result.push(resultItem);
       for (const item of resultItem.items) {
-        const val = usedBoms.get(item.vid) || 0;
-        usedBoms.set(item.vid, val + 1);
+        const val = usedBoms.get(item.BOM唯一码) || 0;
+        usedBoms.set(item.BOM唯一码, val + 1);
       }
       const length = boms.length;
-      boms = boms.filter((v) => (usedBoms.get(v.vid) || 0) < v.要求数量);
+      boms = boms.filter((v) => (usedBoms.get(v.BOM唯一码) || 0) < v.要求数量);
       num--;
       if (length === boms.length) {
         break;
@@ -134,7 +130,7 @@ export const calc = (data: InputData) => {
       const items = resultItem.items;
       resultItem.items = [];
       for (const item of items) {
-        const itemPrev = resultItem.items.find((v) => v.vid === item.vid);
+        const itemPrev = resultItem.items.find((v) => v.BOM唯一码 === item.BOM唯一码);
         if (itemPrev) {
           itemPrev.要求数量++;
         } else {
@@ -148,11 +144,11 @@ export const calc = (data: InputData) => {
     return rawLength - touweisunhao * 2 - qieduansunhao;
   };
   const getRemainingLength = (totalLength: number, dpItem: ReturnType<typeof backpackDp>[number], {qieduansunhao = 0}: 铝型材) => {
-    return totalLength - dpItem.value - dpItem.cuts * qieduansunhao;
+    return totalLength - dpItem.value - (dpItem.cuts - 1) * qieduansunhao;
   };
   const bomsAll = getInputDataBoms(data);
   for (const 余料 of data.铝型材余料库存) {
-    const boms = bomsAll.filter((v) => v.铝型材 === 余料.lvxingcai && v.型材颜色 === 余料.yanse && !usedBoms.has(v.vid));
+    const boms = bomsAll.filter((v) => v.铝型材 === 余料.lvxingcai && v.型材颜色 === 余料.yanse && !usedBoms.has(v.BOM唯一码));
     if (boms.length < 1) {
       continue;
     }
@@ -185,7 +181,7 @@ export const calc = (data: InputData) => {
     }
   }
   for (const 铝型材 of data.铝型材) {
-    const boms = bomsAll.filter((v) => v.铝型材 === 铝型材.mingzi && !usedBoms.has(v.vid));
+    const boms = bomsAll.filter((v) => v.铝型材 === 铝型材.mingzi && !usedBoms.has(v.BOM唯一码));
     if (boms.length < 1) {
       continue;
     }
@@ -235,18 +231,17 @@ export const calc = (data: InputData) => {
   let unusedLength = 0;
   for (const resultItem of result) {
     let totalLength2 = 0;
-    let unusedLength2 = 0;
+    let usedLength2 = 0;
     resultItem.优化结果.sort((a, b) => b.物料长度 - a.物料长度);
     for (const item of resultItem.优化结果) {
       totalLength2 += item.物料长度;
-      const unusedLength3 = item.排料后剩余长度;
-      unusedLength2 += unusedLength3;
-      item.排料后剩余长度 = getNum(item.排料后剩余长度);
-      item.单支型材利用率 = getNum(1 - unusedLength3 / item.物料长度);
+      const usedLength3 = item.BOM.reduce((prev, curr) => prev + Number(curr.型材长度), 0);
+      item.单支型材利用率 = getNum(usedLength3 / item.物料长度);
+      usedLength2 += usedLength3;
     }
-    resultItem.所有型材利用率 = getNum(1 - unusedLength2 / totalLength2);
+    resultItem.所有型材利用率 = getNum(usedLength2 / totalLength2);
     totalLength += totalLength2;
-    unusedLength += unusedLength2;
+    unusedLength += usedLength2;
   }
   result.sort((a, b) => a.排序 - b.排序);
   let 总利用率 = 0;

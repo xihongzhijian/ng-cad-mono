@@ -6,10 +6,15 @@
   <button mat-raised-button color="primary" (click)="selectAllBoms()">全选</button>
   <mat-divider vertical class="large"></mat-divider>
   <button mat-raised-button color="primary" (click)="setOptimizeData()">按选中加工料优化排产</button>
+  <button mat-raised-button color="primary" (click)="youhuaInfoHidden.set(!youhuaInfoHidden())">
+    {{ youhuaInfoHidden() ? "隐藏" : "显示" }}生产工单
+  </button>
   <!-- <button mat-raised-button color="primary" (click)="unsetOptimizeData()">取消优化</button> -->
 </div>
 <div class="flex-row flex-110 scrollbar-container">
-  <app-print-table [lvxingcaiyouhuaInfo]="lvxingcaiyouhuaInfo()"></app-print-table>
+  @if (!youhuaInfoHidden()) {
+    <app-print-table [lvxingcaiyouhuaInfo]="youhuaInfo()"></app-print-table>
+  }
   <div class="flex-column flex-110 calc-result-container">
     <div class="toolbar">
       <div class="title">优化结果</div>

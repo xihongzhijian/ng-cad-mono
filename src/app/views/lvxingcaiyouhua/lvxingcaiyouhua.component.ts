@@ -47,8 +47,12 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     }
   }
 
-  lvxingcaiyouhuaInfo = signal<LvxingcaiyouhuaInfo>({tableInfoData: null});
-  printTableComponent = viewChild(PrintTableComponent<{vid: number; 数量: number}>);
+  youhuaInfo = signal<LvxingcaiyouhuaInfo>({tableInfoData: null});
+  printTableComponent = viewChild(PrintTableComponent<{BOM唯一码: string; 数量: number}>);
+
+  private _youhuaInfoHiddenKey = "lvxingcaiyouhuaYouhuaInfoHidden";
+  youhuaInfoHidden = signal(session.load<boolean>(this._youhuaInfoHiddenKey) || false);
+  youhuaInfoHiddenEff = effect(() => session.save(this._youhuaInfoHiddenKey, this.youhuaInfoHidden()));
 
   selectAllBoms() {
     const tables = this.printTableComponent()?.tables();
@@ -81,10 +85,10 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     if (pt && this.calcResult()) {
       input.不上设备的型材BOM = [];
       for (const table of pt.tables()) {
-        const selectedIds = table.getSelectedRows().map((v) => v.vid);
+        const selectedIds = table.getSelectedRows().map((v) => v.BOM唯一码);
         for (const item of table.info.data) {
-          if (!selectedIds.includes(item.vid)) {
-            input.不上设备的型材BOM.push({vid: item.vid, 要求数量: item.数量});
+          if (!selectedIds.includes(item.BOM唯一码)) {
+            input.不上设备的型材BOM.push({BOM唯一码: item.BOM唯一码, 要求数量: item.数量});
           }
         }
       }
@@ -92,7 +96,6 @@ export class LvxingcaiyouhuaComponent implements OnInit {
 
     const timerKey = "铝型材优化";
     timer.start(timerKey);
-    console.log(input);
     const output = calc(input);
     const duration = getNum(timer.getDuration(timerKey) || -1);
     console.log({input, output});
@@ -193,11 +196,11 @@ export class LvxingcaiyouhuaComponent implements OnInit {
       bushangshebeidexingcaibom,
       quanbuliaodeyouhuashuju
     });
-    this.lvxingcaiyouhuaInfo.set({tableInfoData: data?.优化工单 || null});
+    this.youhuaInfo.set({tableInfoData: data?.优化工单 || null});
     await timeout(0);
-    const bomIds = getInputDataBoms(inputData).map((v) => v.vid);
+    const bomIds = getInputDataBoms(inputData).map((v) => v.BOM唯一码);
     for (const table of pt.tables()) {
-      table.setSelectedRows(table.info.data.filter((v) => bomIds.includes(v.vid)));
+      table.setSelectedRows(table.info.data.filter((v) => bomIds.includes(v.BOM唯一码)));
     }
   }
   async unsetOptimizeData() {

@@ -9,7 +9,7 @@ export interface InputData {
 }
 export type OutputData = ReturnType<typeof calc>;
 export interface 型材BomBase {
-  vid: number;
+  BOM唯一码: string;
   要求数量: number;
 }
 export interface 型材Bom extends 型材BomBase {
