@@ -2,6 +2,7 @@ import {remoteHost} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {ProjectConfig} from "@app/utils/project-config";
 import {getCalcZhankaiText} from "@app/utils/zhankai";
+import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {environment} from "@env";
 import {
   CadArc,
@@ -141,13 +142,21 @@ export const validateLines = (collection: CadCollection, data: CadData, noInfo?:
   }
   const typeCheck = cadTypes1.includes(data.type) || collection === "peijianCad";
   let has自动识别上下折 = false;
+  let has上下折 = false;
+  let shuangxiangzhewan = data.shuangxiangzhewan;
   if (cadTypes2.includes(data.type)) {
     has自动识别上下折 = !!data.entities.find((e) => e instanceof CadLineLike && e.双向折弯附加值.includes("上下折程序自动识别"));
+  }
+  if (isSbjbCad(collection, data)) {
+    has上下折 = !!data.entities.find((e) => e instanceof CadLineLike && !!e.双向折弯附加值);
+    if (!has上下折) {
+      shuangxiangzhewan = false;
+    }
   }
   const lines = sortLines(data, tol);
   result.errorLines = lines;
   const [min, max] = LINE_LIMIT;
-  let groupMaxLength = data.shuangxiangzhewan ? 2 : 1;
+  let groupMaxLength = shuangxiangzhewan ? 2 : 1;
   if (cadTypes3.includes(data.type)) {
     groupMaxLength = 1;
   }
@@ -196,7 +205,7 @@ export const validateLines = (collection: CadCollection, data: CadData, noInfo?:
   if (lines.length < 1) {
     result.errors.push("没有线");
   } else if (typeCheck && lines.length > groupMaxLength && !has自动识别上下折) {
-    if (data.shuangxiangzhewan) {
+    if (shuangxiangzhewan) {
       result.errors.push("CAD是双向折弯，分成了3段以上或线重叠");
     } else {
       result.errors.push("CAD不是双向折弯，分成了多段或线重叠");
