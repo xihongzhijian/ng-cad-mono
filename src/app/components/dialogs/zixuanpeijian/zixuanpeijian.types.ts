@@ -17,6 +17,7 @@ export interface ZixuanpeijianTypesInfoItemBase {
   weiyima: string;
   xiaoguotu: string;
   suanliaogongshi: Formulas;
+  xuanxianggongshi: 算料公式[];
   xinghaozhuanyong: string[];
   mokuaishuoming: string;
   unique: boolean;

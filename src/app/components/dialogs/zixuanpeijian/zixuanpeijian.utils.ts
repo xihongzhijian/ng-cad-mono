@@ -1,7 +1,7 @@
 import {MatDialog} from "@angular/material/dialog";
 import {getCadTotalLength, getShuangxiangLineRects, setShuangxiangLineRects, splitShuangxiangCad} from "@app/cad/utils";
 import {Formulas, toFixed} from "@app/utils/calc";
-import {matchOrderData} from "@app/utils/mongo";
+import {matchCadData} from "@app/utils/mongo";
 import {nameEquals} from "@app/utils/zhankai";
 import zxpjTestData from "@assets/json/zixuanpeijian.json";
 import zixuanpeijianTypesInfo from "@assets/json/zixuanpeijianTypesInfo.json";
@@ -242,7 +242,7 @@ export const getZixuanpeijianCads = async (
           cads[type1][type2].push(cadData);
         }
         if (!isEmpty(materialResult)) {
-          cads[type1][type2] = matchOrderData(cads[type1][type2], materialResult);
+          cads[type1][type2] = matchCadData(cads[type1][type2], materialResult);
         }
       }
     }

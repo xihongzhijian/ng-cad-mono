@@ -1,11 +1,12 @@
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
+import {MongodbDataBase2} from "@modules/http/services/cad-data.service.types";
 import {difference, isEmpty} from "lodash";
 import {splitOptions} from "../app.common";
-import {Calc} from "./calc";
+import {Calc, Formulas} from "./calc";
 import {toFixed} from "./func";
 
-export const matchOrderData = (data: CadData[], materialResult: any) => {
+export const matchCadData = (data: CadData[], materialResult: Formulas) => {
   if (isEmpty(materialResult)) {
     return [];
   }
@@ -19,6 +20,24 @@ export const matchOrderData = (data: CadData[], materialResult: any) => {
 
     // 判断条件
     if (!isConditionOK(value.conditions, materialResult)) {
+      return false;
+    }
+
+    return true;
+  });
+};
+
+export const matchMongoData = <T extends MongodbDataBase2>(data: T[], materialResult: Formulas) => {
+  if (isEmpty(materialResult)) {
+    return [];
+  }
+
+  return data.filter((value) => {
+    if (!isOptionsOK(value.选项, materialResult)) {
+      return false;
+    }
+
+    if (!isConditionOK(value.条件, materialResult)) {
       return false;
     }
 

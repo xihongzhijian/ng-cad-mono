@@ -132,7 +132,13 @@ export class SuanliaogongshiComponent {
         varNameItem: this.info().varNameItem,
         extraInputInfos: [
           {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
-          {type: "object", label: "选项", model: {data, key: "选项"}, optionsDialog: {}, optionMultiple: true},
+          {
+            type: "object",
+            label: "选项",
+            model: {data, key: "选项"},
+            optionsDialog: {},
+            optionMultiple: true
+          },
           {type: "array", label: "条件", model: {data, key: "条件"}}
         ]
       }
@@ -145,12 +151,7 @@ export class SuanliaogongshiComponent {
   }
 
   justifyGongshi(item: 算料公式) {
-    if (item.选项) {
-      const removeKeys = ["产品分类", "包边方向", "开启"];
-      for (const key of removeKeys) {
-        delete item.选项[key];
-      }
-    }
+    this.info().justifyGongshi?.(item);
   }
 
   async addGongshi() {
@@ -161,7 +162,10 @@ export class SuanliaogongshiComponent {
     }
     const item = await this.getGongshiItem();
     if (item) {
-      data.算料公式.push(item);
+      const length = data.算料公式.push(item);
+      setTimeout(() => {
+        this.editGongshiStart(length - 1);
+      }, 0);
       this.info.set({...info});
       this.slgsChange.emit();
     }

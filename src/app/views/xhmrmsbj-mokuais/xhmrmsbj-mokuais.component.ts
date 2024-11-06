@@ -69,7 +69,7 @@ export class XhmrmsbjMokuaisComponent {
           });
           const cads: CadData[] = [];
           const suanliaogongshi = {...mokuai.suanliaogongshi};
-          const 输入值 = node.输入值;
+          const 输入值 = value.输入值;
           for (const [k, v] of [...mokuai.gongshishuru, ...mokuai.xuanxiangshuru]) {
             if (!isTypeOf(v, ["number", "string"])) {
               continue;

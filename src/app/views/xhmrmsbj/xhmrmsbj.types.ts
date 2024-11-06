@@ -25,7 +25,10 @@ export interface XhmrmsbjInfo {
   模块大小输入?: Formulas;
   模块大小输出?: Formulas;
   模块节点?: XhmrmsbjInfoMokuaiNode[];
+  输入值?: Shuruzhi;
+  选项公式输入值?: ObjectOf<Shuruzhi>;
 }
+export type Shuruzhi = ObjectOf<string>;
 
 export interface XhmrmsbjInfoMokuaiNode {
   层id: number;
@@ -33,7 +36,6 @@ export interface XhmrmsbjInfoMokuaiNode {
   可选模块: ZixuanpeijianMokuaiItem[];
   选中模块?: ZixuanpeijianMokuaiItem;
   排序?: number;
-  输入值?: ObjectOf<string>;
 }
 
 export const xhmrmsbjTabNames = ["锁边铰边", "门扇模块", "门缝配置"] as const;

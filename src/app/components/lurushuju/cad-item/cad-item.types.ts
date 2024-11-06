@@ -1,5 +1,5 @@
+import {MaybePromise} from "@lucilor/utils";
 import {CadFormValidators} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
-import {MaybePromise} from "packages/utils/lib";
 import {CadItemComponent} from "./cad-item.component";
 
 export interface CadItemButton<T> {

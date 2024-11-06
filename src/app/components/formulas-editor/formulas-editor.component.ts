@@ -100,6 +100,7 @@ export class FormulasEditorComponent {
       label: "",
       textarea: {autosize: {minRows: compact?.minRows, maxRows: compact?.maxRows}},
       value: this.formulasText(),
+      autoFocus: !!compact,
       validators: (control) => {
         const validator = this.validator();
         if (validator) {

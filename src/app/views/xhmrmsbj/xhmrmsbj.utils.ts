@@ -1,9 +1,10 @@
 import {Formulas} from "@app/utils/calc";
+import {matchMongoData} from "@app/utils/mongo";
 import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {getNodeVars, isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {MsbjInfo, ZuoshujuData} from "@views/msbj/msbj.utils";
-import {clone, cloneDeep} from "lodash";
-import {MenshanKey, XhmrmsbjDataMsbjInfos, XhmrmsbjInfo, XhmrmsbjInfoMokuaiNode, XhmrmsbjTableData} from "./xhmrmsbj.types";
+import {clone, cloneDeep, isEmpty} from "lodash";
+import {MenshanKey, Shuruzhi, XhmrmsbjDataMsbjInfos, XhmrmsbjInfo, XhmrmsbjInfoMokuaiNode, XhmrmsbjTableData} from "./xhmrmsbj.types";
 
 export class XhmrmsbjData extends ZuoshujuData {
   menshanbujuInfos: XhmrmsbjDataMsbjInfos;
@@ -134,3 +135,66 @@ export class XhmrmsbjData extends ZuoshujuData {
     return formulas;
   }
 }
+
+export const getShuruzhi = (info: XhmrmsbjInfo, xxgsId?: string) => {
+  if (xxgsId) {
+    if (!info.选项公式输入值) {
+      info.选项公式输入值 = {};
+    }
+    if (!info.选项公式输入值[xxgsId]) {
+      info.选项公式输入值[xxgsId] = {};
+    }
+    delete info.输入值;
+    return info.选项公式输入值[xxgsId];
+  } else {
+    if (!info.输入值) {
+      info.输入值 = {};
+    }
+    delete info.选项公式输入值;
+    return info.输入值;
+  }
+};
+export const setShuruzhi = (info: XhmrmsbjInfo, shuruzhi: Shuruzhi, xxgsId?: string) => {
+  if (xxgsId) {
+    if (isEmpty(shuruzhi)) {
+      if (info.选项公式输入值) {
+        delete info.选项公式输入值[xxgsId];
+      }
+    } else {
+      if (!info.选项公式输入值) {
+        info.选项公式输入值 = {};
+      }
+      info.选项公式输入值[xxgsId] = shuruzhi;
+    }
+  } else {
+    if (isEmpty(shuruzhi)) {
+      delete info.输入值;
+    } else {
+      info.输入值 = shuruzhi;
+    }
+  }
+};
+
+export const getMokuaiFormulas = (info: XhmrmsbjInfo, mokuai: ZixuanpeijianMokuaiItem, materialResult: Formulas) => {
+  const formulas: Formulas = {};
+  const setFormulas = (输入值: Shuruzhi | undefined) => {
+    for (const arr of mokuai.gongshishuru) {
+      const k = arr[0];
+      const v = 输入值?.[k];
+      if (v) {
+        formulas[k] = v;
+      }
+    }
+  };
+  if (mokuai.xuanxianggongshi.length > 1) {
+    const xxgsList = matchMongoData(mokuai.xuanxianggongshi, materialResult);
+    for (const xxgs of xxgsList) {
+      Object.assign(formulas, xxgs.公式);
+      setFormulas(info.选项公式输入值?.[xxgs._id]);
+    }
+  } else {
+    Object.assign(formulas, mokuai.suanliaogongshi);
+    setFormulas(info.输入值);
+  }
+  return formulas;
+};

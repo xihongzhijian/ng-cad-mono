@@ -1,4 +1,4 @@
-import {Component, HostBinding, Inject, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Formulas} from "@app/utils/calc";
@@ -10,11 +10,13 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./edit-formulas-dialog.component.html",
   styleUrls: ["./edit-formulas-dialog.component.scss"],
   standalone: true,
-  imports: [FormulasEditorComponent, MatButtonModule]
+  imports: [FormulasEditorComponent, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditFormulasDialogComponent {
   @HostBinding("class") class = "ng-page";
-  @ViewChild("formulasEditor") formulasEditor?: FormulasEditorComponent;
+
+  formulasEditor = viewChild<FormulasEditorComponent>("formulasEditor");
 
   constructor(
     public dialogRef: MatDialogRef<EditFormulasDialogComponent, EditFormulasOutput>,
@@ -22,10 +24,11 @@ export class EditFormulasDialogComponent {
   ) {}
 
   async submit() {
-    if (!this.formulasEditor) {
+    const formulasEditor = this.formulasEditor();
+    if (!formulasEditor) {
       return;
     }
-    const result = await this.formulasEditor.submitFormulas();
+    const result = await formulasEditor.submitFormulas();
     if (result.errors.length > 0) {
       return;
     }

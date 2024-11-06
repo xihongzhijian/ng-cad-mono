@@ -21,7 +21,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
-import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
+import {getMokuaiFormulas, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {
   SuanliaoInput,
   SuanliaoOutputData,
@@ -103,7 +103,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       if (!型号选中门扇布局[门扇]) {
         continue;
       }
-      const {选中布局数据, 模块节点, 模块大小输出} = 型号选中门扇布局[门扇];
+      const msbjInfo = 型号选中门扇布局[门扇];
+      const {选中布局数据, 模块节点, 模块大小输出} = msbjInfo;
       const {模块大小配置} = 选中布局数据 || {};
       if (模块大小配置) {
         mokuaiGongshis[门扇] = {...模块大小配置.算料公式};
@@ -201,9 +202,10 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     result.data.门扇布局CAD = lingsans.map(getCadItem2) as any;
     result.data.效果图使用变量 = {};
     const 效果图使用变量 = result.data.效果图使用变量;
+    const materialResult2 = result.data.materialResult;
     for (const name of bujuNames) {
       效果图使用变量[name] = {};
-      const vars = {...result.data.materialResult, ...result.data.门扇布局大小?.[name]};
+      const vars = {...materialResult2, ...result.data.门扇布局大小?.[name]};
       for (const node of 型号选中门扇布局[name].模块节点 || []) {
         效果图使用变量[name][node.层名字] = {};
         for (const key of node.选中模块?.xiaoguotushiyongbianliang || []) {
@@ -215,8 +217,13 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     }
     result.data.输出变量公式计算结果 = {...tongyongGongshi, ...gongshi};
     for (const key in result.data.输出变量公式计算结果) {
-      if (key in materialResult) {
-        result.data.输出变量公式计算结果[key] = materialResult[key];
+      if (key in materialResult2) {
+        result.data.输出变量公式计算结果[key] = materialResult2[key];
+      }
+    }
+    for (const mokuai of mokuais) {
+      for (const key of mokuai.shuchubianliang) {
+        result.data.输出变量公式计算结果[key] = materialResult2[key];
       }
     }
     result.data.fulfilled = true;
@@ -253,28 +260,18 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
   }
 
   async 根据输入值计算选中配件模块无依赖的公式结果开始(data: 根据输入值计算选中配件模块无依赖的公式结果输入) {
-    const {vars, 型号选中门扇布局} = data;
+    const {vars, 型号选中门扇布局, materialResult} = data;
     const result: 根据输入值计算选中配件模块无依赖的公式结果输出 = {成功: {}, 失败: {}};
     for (const menshanKey in 型号选中门扇布局) {
-      const {模块节点} = 型号选中门扇布局[menshanKey];
-      for (const {选中模块, 输入值} of 模块节点 || []) {
-        if (!选中模块) {
+      const msbjInfo = 型号选中门扇布局[menshanKey];
+      for (const node of msbjInfo.模块节点 || []) {
+        const {选中模块: mokuai} = node;
+        if (!mokuai) {
           continue;
         }
-        const {type2, suanliaogongshi, gongshishuru} = 选中模块;
-        for (const arr of gongshishuru) {
-          const k = arr[0];
-          let v: string;
-          if (输入值) {
-            v = 输入值[k];
-          } else {
-            v = arr[1];
-          }
-          if (v) {
-            suanliaogongshi[k] = v;
-          }
-        }
-        const calcResult = await this.calc.calcFormulas(suanliaogongshi, vars);
+        const {type2} = mokuai;
+        const formulas = getMokuaiFormulas(msbjInfo, mokuai, materialResult);
+        const calcResult = await this.calc.calcFormulas(formulas, vars);
         const title = [menshanKey, type2].join("-");
         if (calcResult) {
           const {succeedTrim, error} = calcResult;
@@ -289,7 +286,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
           }
         } else {
           result.成功[title] = {};
-          result.失败[title] = {...suanliaogongshi};
+          result.失败[title] = {...formulas};
         }
       }
     }

@@ -160,6 +160,11 @@ export interface MongodbDataBase {
   名字: string;
 }
 
+export interface MongodbDataBase2 extends MongodbDataBase {
+  选项: ObjectOf<string>;
+  条件: string[];
+}
+
 export interface BancaiListData {
   bancais: BancaiList[];
   bancaiKeys: string[];

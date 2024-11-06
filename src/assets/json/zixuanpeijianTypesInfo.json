@@ -9,6 +9,7 @@
         "gongshishuru": [],
         "xuanxiangshuru": [],
         "suanliaogongshi": {},
+        "xuanxianggongshi": [],
         "shuchubianliang": [],
         "xiaoguotushiyongbianliang": [],
         "shuchuwenben": [],
@@ -28,6 +29,9 @@
         "gongshishuru": [],
         "xuanxiangshuru": [["d", "1"]],
         "suanliaogongshi": {"总宽": "小后板宽", "总高": "门扇高", "铰面厚": 78},
+        "xuanxianggongshi": [
+          {"_id": "1", "名字": "1", "选项": {}, "条件": [], "公式": {"总宽": "小后板宽", "总高": "门扇高", "铰面厚": 78}}
+        ],
         "shuchubianliang": ["铰面厚"],
         "xiaoguotushiyongbianliang": ["铰面厚"],
         "shuchuwenben": [["a", "b"]],

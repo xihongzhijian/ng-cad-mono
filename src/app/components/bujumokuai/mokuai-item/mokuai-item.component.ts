@@ -26,6 +26,8 @@ import {getXuanxiangItem, getXuanxiangTable} from "@components/lurushuju/lrsj-pi
 import {选项} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
+import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
+import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -65,6 +67,7 @@ import {getEmptyMokuaiItem, getMokuaiCustomData} from "./mokuai-item.utils";
     MokuaiCadsComponent,
     MrbcjfzComponent,
     NgScrollbarModule,
+    SuanliaogongshiComponent,
     TableComponent
   ],
   templateUrl: "./mokuai-item.component.html",
@@ -95,6 +98,15 @@ export class MokuaiItemComponent {
     const mokuai2 = await this.bjmkStatus.getMokuaiWithForm(mokuai);
     Object.assign(mokuai, mokuai2);
     this.cd.markForCheck();
+  }
+
+  slgsInfo = computed(() => {
+    const mokuai = this.mokuai();
+    const info: SuanliaogongshiInfo = {data: {算料公式: mokuai.xuanxianggongshi}};
+    return info;
+  });
+  onSlgsChange(info: SuanliaogongshiInfo) {
+    this.mokuai.update((v) => ({...v, xuanxianggongshi: info.data.算料公式 || []}));
   }
 
   morenbancais = signal<{key: string; val: MrbcjfzInfo}[]>([]);
@@ -433,21 +445,10 @@ export class MokuaiItemComponent {
   close() {
     this.closeOut.emit({isSaved: this.isSaved()});
   }
-  slgsComponent = viewChild<FormulasEditorComponent>("slgs");
   forceUpdateKeys = new Set<keyof MokuaiItem>();
   async updateMokaui() {
     const mokuai = this.mokuai();
     const errors: string[] = [];
-
-    const slgsComponent = this.slgsComponent();
-    if (slgsComponent) {
-      const formulasResult = await slgsComponent.submitFormulas(slgsComponent.formulaList(), true);
-      if (formulasResult.errors.length > 0) {
-        errors.push(...formulasResult.errors.map((v) => `模块公式：${v}`));
-      } else {
-        mokuai.suanliaogongshi = formulasResult.formulas;
-      }
-    }
 
     await this._fetchMrbcjfzResponseData();
     await timeout(0);

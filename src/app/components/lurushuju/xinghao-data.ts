@@ -1,6 +1,6 @@
 import {Formulas} from "@app/utils/calc";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
-import {HoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad, MongodbDataBase2, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {isArray, uniq} from "lodash";
 import {OptionsAll} from "./services/lrsj-status.types";
@@ -184,11 +184,7 @@ export type 输入下单用途 = (typeof 输入下单用途)[number];
 
 export type 花件玻璃信息 = ObjectOf<any>;
 
-export interface 算料公式 {
-  _id: string;
-  名字: string;
-  选项: ObjectOf<string>;
-  条件: string[];
+export interface 算料公式 extends MongodbDataBase2 {
   公式: Formulas;
 }
 
