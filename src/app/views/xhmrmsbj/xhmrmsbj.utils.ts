@@ -40,6 +40,11 @@ export class XhmrmsbjData extends ZuoshujuData {
       const 模块节点 = item.模块节点 || [];
       for (const v of 模块节点) {
         const 选中模块 = v.选中模块;
+        if (v.输入值) {
+          const shuruzhi = getShuruzhi(item);
+          setShuruzhi(item, {...v.输入值, ...shuruzhi});
+          delete v.输入值;
+        }
         if (选中模块) {
           const i = v.可选模块.findIndex((v2) => isMokuaiItemEqual(v2, 选中模块));
           if (i >= 0) {

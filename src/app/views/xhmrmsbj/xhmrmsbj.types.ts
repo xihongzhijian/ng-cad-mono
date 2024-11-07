@@ -36,6 +36,7 @@ export interface XhmrmsbjInfoMokuaiNode {
   可选模块: ZixuanpeijianMokuaiItem[];
   选中模块?: ZixuanpeijianMokuaiItem;
   排序?: number;
+  输入值?: Shuruzhi;
 }
 
 export const xhmrmsbjTabNames = ["锁边铰边", "门扇模块", "门缝配置"] as const;

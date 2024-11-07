@@ -4,16 +4,21 @@ import {setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openDrawCadDialog} from "@components/dialogs/draw-cad/draw-cad.component";
-import {ZixuanpeijianCadItem, ZixuanpeijianInfo, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {
+  Step1Data,
+  ZixuanpeijianCadItem,
+  ZixuanpeijianInfo,
+  ZixuanpeijianMokuaiItem
+} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {
   calcCadItemZhankai,
   calcZxpj,
   CalcZxpjOptions,
-  updateMokuaiItem,
+  isMokuaiItemEqual,
   updateMokuaiItems
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf, WindowMessageManager} from "@lucilor/utils";
+import {keysOf, ObjectOf, WindowMessageManager} from "@lucilor/utils";
 import {openSuanliaogongshiDialog} from "@modules/cad-editor/components/dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -21,6 +26,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
+import {XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {getMokuaiFormulas, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {
   SuanliaoInput,
@@ -121,8 +127,8 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
             选中模块.info = info;
             mokuais.push(选中模块);
             mokuaisToUpdate.push(选中模块);
+            选中模块.suanliaogongshi = getMokuaiFormulas(msbjInfo, 选中模块, materialResult);
           }
-          updateMokuaiItems(mokuaisToUpdate, step1Data?.typesInfo || {});
         }
       }
     }
@@ -249,14 +255,28 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     return {action: "openGongshiEnd", data: result};
   }
 
-  updateMokuaiItemsStart(data: {mokuais: ZixuanpeijianMokuaiItem[]; mokuais2: ZixuanpeijianMokuaiItem[]}) {
-    const {mokuais, mokuais2} = data;
-    for (const mokuai of mokuais) {
-      for (const mokuai2 of mokuais2) {
-        updateMokuaiItem(mokuai, mokuai2);
+  updateXhmrmsbjStart(data: {xhmrmsbj: XhmrmsbjDataMsbjInfos; step1Data: Step1Data}) {
+    const typesInfo = data.step1Data.typesInfo;
+    const xhmrmsbj = data.xhmrmsbj;
+    for (const key of keysOf(xhmrmsbj)) {
+      const msbjInfo = xhmrmsbj[key];
+      if (!msbjInfo) {
+        continue;
+      }
+      for (const node of msbjInfo.模块节点 || []) {
+        updateMokuaiItems(node.可选模块, typesInfo);
+        const mokuai = node.选中模块;
+        if (mokuai) {
+          const mokuai2 = node.可选模块.find((v) => isMokuaiItemEqual(v, mokuai));
+          if (mokuai2) {
+            node.选中模块 = mokuai2;
+          } else {
+            delete node.选中模块;
+          }
+        }
       }
     }
-    return {mokuais};
+    return {action: "updateXhmrmsbjEnd", data: {xhmrmsbj}};
   }
 
   async 根据输入值计算选中配件模块无依赖的公式结果开始(data: 根据输入值计算选中配件模块无依赖的公式结果输入) {

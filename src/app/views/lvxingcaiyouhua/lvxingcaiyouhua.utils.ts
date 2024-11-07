@@ -181,28 +181,37 @@ export const calc = (data: InputData) => {
     }
   }
   for (const 铝型材 of data.铝型材) {
-    const boms = bomsAll.filter((v) => v.铝型材 === 铝型材.mingzi && !usedBoms.has(v.BOM唯一码));
-    if (boms.length < 1) {
+    const boms0 = bomsAll.filter((v) => v.铝型材 === 铝型材.mingzi && !usedBoms.has(v.BOM唯一码));
+    if (boms0.length < 1) {
       continue;
+    }
+    const bomsMap = new Map<string, 型材Bom[]>();
+    for (const bom of boms0) {
+      const key = bom.型材颜色;
+      const boms2 = bomsMap.get(key) || [];
+      boms2.push(bom);
+      bomsMap.set(key, boms2);
     }
     const rawLength = 铝型材.biaozhunchangdu;
     const totalLength = getTotalLength(rawLength, 铝型材);
-    const dpResult = backpackDp(boms, totalLength, Infinity, 铝型材);
-    for (const dpItem of dpResult) {
-      const remainingLength = getRemainingLength(totalLength, dpItem, 铝型材);
-      resultItems.push({
-        vid: 铝型材.vid,
-        铝型材: 铝型材.mingzi,
-        物料长度: rawLength,
-        物料颜色: boms[0].型材颜色,
-        数量: 1,
-        单支型材利用率: 0,
-        排料后剩余长度: remainingLength,
-        总损耗: rawLength - dpItem.value - remainingLength,
-        余料可以入库: remainingLength >= 铝型材.yuliaorukuzuixiaochangdu,
-        BOM: dpItem.items,
-        型材类型: "标准型材"
-      });
+    for (const boms of bomsMap.values()) {
+      const dpResult = backpackDp(boms, totalLength, Infinity, 铝型材);
+      for (const dpItem of dpResult) {
+        const remainingLength = getRemainingLength(totalLength, dpItem, 铝型材);
+        resultItems.push({
+          vid: 铝型材.vid,
+          铝型材: 铝型材.mingzi,
+          物料长度: rawLength,
+          物料颜色: boms[0].型材颜色,
+          数量: 1,
+          单支型材利用率: 0,
+          排料后剩余长度: remainingLength,
+          总损耗: rawLength - dpItem.value - remainingLength,
+          余料可以入库: remainingLength >= 铝型材.yuliaorukuzuixiaochangdu,
+          BOM: dpItem.items,
+          型材类型: "标准型材"
+        });
+      }
     }
   }
 

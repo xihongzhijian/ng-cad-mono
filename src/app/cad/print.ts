@@ -690,7 +690,7 @@ const getUnfoldCadViewers = async (
         await unfoldCadViewer.render(img);
         y += img.boundingRect.height + imgPadding[0];
       }
-    } else {
+    } else if (useQrcode) {
       const qrcodeText = offsetStrs.join(";");
       if (qrcodeText) {
         let qrcodeSuccess = true;

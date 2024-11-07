@@ -100,6 +100,10 @@ export class MokuaiItemComponent {
     this.cd.markForCheck();
   }
 
+  useSlgsInfo = computed(() => {
+    const mokuai = this.mokuai();
+    return mokuai.xuanxianggongshi.length > 0;
+  });
   slgsInfo = computed(() => {
     const mokuai = this.mokuai();
     const info: SuanliaogongshiInfo = {data: {算料公式: mokuai.xuanxianggongshi}};

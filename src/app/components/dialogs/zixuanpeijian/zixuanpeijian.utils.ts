@@ -264,7 +264,7 @@ export const updateMokuaiItem = (
     item.type1 = others.type1;
     item.type2 = others.type2;
   }
-  const {gongshishuru, xuanxiangshuru, suanliaogongshi, morenbancai} = item;
+  const {suanliaogongshi, morenbancai} = item;
   Object.assign(item, item2);
   if (useSlgs) {
     const getValue = (key: string, value: string) => {
@@ -275,16 +275,6 @@ export const updateMokuaiItem = (
     };
     item.totalWidth = getValue("总宽", item.totalWidth);
     item.totalHeight = getValue("总高", item.totalHeight);
-  }
-  for (const v of item.gongshishuru) {
-    if (!v[1]) {
-      v[1] = gongshishuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
-    }
-  }
-  for (const v of item.xuanxiangshuru) {
-    if (!v[1]) {
-      v[1] = xuanxiangshuru.find((v2) => v2[0] === v[0])?.[1] || v[1];
-    }
   }
   if (morenbancai) {
     if (!item.morenbancai) {
@@ -559,16 +549,6 @@ export const calcZxpj = async (
     checkDuplicate("模块输出变量", ["公式", "公式输入"], item, item.shuchubianliang);
     if (useCeshishuju && item.ceshishuju) {
       calc.calc.mergeFormulas(formulas, item.ceshishuju);
-    }
-    for (const group of item.gongshishuru) {
-      if (group[0] && group[1]) {
-        formulas[group[0]] = group[1];
-      }
-    }
-    for (const group of item.xuanxiangshuru) {
-      if (group[0] && group[1]) {
-        formulas[group[0]] = `'${group[1]}'`;
-      }
     }
     const dimensionVars = getCadDimensionVars(item.cads);
     return {formulas, dimensionVars, succeedTrim: {} as Formulas, error: {} as Formulas, item};
@@ -953,8 +933,8 @@ export const calcZxpj = async (
   calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);
   const 模块公式输入: Formulas = {};
   for (const mokuai of mokuais) {
-    for (const [k, v] of mokuai.gongshishuru) {
-      模块公式输入[k] = varsGlobal[k] ?? v;
+    for (const [k] of mokuai.gongshishuru) {
+      模块公式输入[k] = varsGlobal[k];
     }
   }
   return {fulfilled: true, 门扇布局大小: mokuaiVars, 模块公式输入};

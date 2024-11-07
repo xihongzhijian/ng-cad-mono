@@ -72,7 +72,7 @@ import {MsbjCloseEvent, MsbjData, Node2rectData, node2rectDataMsdxKeys} from "@v
 import {getEmpty模块大小配置, getNodeFormulasKeys, justify模块大小配置, MsbjInfo} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {getFormulaInfos, openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
-import {cloneDeep, debounce, difference, intersection} from "lodash";
+import {cloneDeep, debounce, intersection} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, Subject} from "rxjs";
@@ -574,7 +574,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const data = await this.http.getData<Formulas>("ngcad/getMokuaiTongyongPeizhi");
     return data || {};
   });
-  getValueInfo(key: string, value: string, slgs: Formulas, shuruzhi: Shuruzhi = {}) {
+  getValueInfo(key: string, slgs: Formulas, shuruzhi: Shuruzhi = {}) {
     if (key in shuruzhi) {
       return {value: shuruzhi[key], type: "输入值"};
     }
@@ -586,29 +586,18 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       ["模块公式值", slgs],
       ["通用公式值", tongyongFormulas]
     ];
-    for (const val of [value, ""]) {
-      for (const [type, formulas] of list) {
-        if (val && val === String(formulas[key])) {
-          return {value, type};
-        }
-        if (!val) {
-          if (formulas[key] === undefined) {
-            continue;
-          }
-          const n = Number(formulas[key]);
-          if (isNaN(n)) {
-            continue;
-          }
-          const val2 = String(n);
-          return {value: val2, type};
-        }
+    for (const [type, formulas] of list) {
+      if (!(key in formulas)) {
+        continue;
       }
+      const value = String(formulas[key]);
+      return {value, type};
     }
-    return {value: "", type: "输入值"};
+    return {value: "", type: "空值"};
   }
-  async getValueInfo2(key: string, value: string, slgs: Formulas, shuruzhi: Shuruzhi = {}) {
+  async getValueInfo2(key: string, slgs: Formulas, shuruzhi: Shuruzhi = {}) {
     await this.tongyongFormulasManager.fetch();
-    return this.getValueInfo(key, value, slgs, shuruzhi);
+    return this.getValueInfo(key, slgs, shuruzhi);
   }
   mokuaiInputInfos1 = computed(() => {
     const msbjInfo = this.activeMsbjInfo();
@@ -634,13 +623,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
     }
     const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
-    const keys = arr.map((v) => v[0]);
     const getValidators = (key: string, slgs: Formulas, shuruzhi?: Shuruzhi): InputInfo["validators"] => {
-      return (control) => {
+      return () => {
         if (!isVersion2024) {
           return null;
         }
-        const valueInfo2 = this.getValueInfo(key, control.value, slgs, shuruzhi);
+        const valueInfo2 = this.getValueInfo(key, slgs, shuruzhi);
         if (!valueInfo2.value) {
           return {required: true};
         }
@@ -649,17 +637,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     };
     const onChange = async (v: string[], val: string, slgs: Formulas, info: InputInfo, xxgsId?: string) => {
       const shuruzhi = getShuruzhi(msbjInfo, xxgsId);
-      const keysToDelete = difference(Object.keys(shuruzhi), keys);
-      for (const key of keysToDelete) {
-        delete shuruzhi[key];
-      }
       if (val) {
         shuruzhi[v[0]] = val;
       } else {
         delete shuruzhi[v[0]];
       }
       setShuruzhi(msbjInfo, shuruzhi, xxgsId);
-      const valueInfo = this.getValueInfo(v[0], val, slgs, shuruzhi);
+      const valueInfo = this.getValueInfo(v[0], slgs, shuruzhi);
       info.value = valueInfo.value;
       info.hint = valueInfo.type;
 
@@ -707,9 +691,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       const xxgsList = mokuai.xuanxianggongshi.filter((v2) => v[0] in v2.公式);
       if (xxgsList.length > 0) {
         for (const item of xxgsList) {
-          const value2 = String(item.公式[v[0]]);
           const 输入值 = msbjInfo.选项公式输入值?.[item._id];
-          const valueInfo = this.getValueInfo(v[0], value2, item.公式, 输入值);
+          const valueInfo = this.getValueInfo(v[0], item.公式, 输入值);
           infos.push({
             type: "string",
             label: `【${item.名字}】${v[0]}`,
@@ -723,7 +706,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           });
         }
       } else {
-        const valueInfo = this.getValueInfo(v[0], v[1], mokuai.suanliaogongshi, msbjInfo.输入值);
+        const valueInfo = this.getValueInfo(v[0], mokuai.suanliaogongshi, msbjInfo.输入值);
         infos.push({
           type: "string",
           label: v[0],
@@ -753,8 +736,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     Object.assign(formulas, getNodeVars(msbjInfo?.选中布局数据?.模块大小配置?.算料公式 || {}, node.层名字));
     Object.assign(formulas, mokuai.suanliaogongshi);
     replaceMenshanName(this.activeMenshanKey(), formulas);
-    for (const [key, value] of mokuai.gongshishuru) {
-      formulas[key] = this.getValueInfo(key, value, mokuai.suanliaogongshi, msbjInfo.输入值).value;
+    for (const [key] of mokuai.gongshishuru) {
+      formulas[key] = this.getValueInfo(key, mokuai.suanliaogongshi, msbjInfo.输入值).value;
     }
     const vars = this.lastSuanliaoManager.data()?.output.materialResult || {};
     try {
@@ -923,7 +906,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           }
           const missingVars: string[] = [];
           for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
-            const valueInfo = await this.getValueInfo2(arr[0], arr[1], mokuai.suanliaogongshi, msbjInfo.输入值);
+            const valueInfo = await this.getValueInfo2(arr[0], mokuai.suanliaogongshi, msbjInfo.输入值);
             arr[1] = valueInfo.value;
             if (!arr[1] && isVersion2024) {
               missingVars.push(arr[0]);
@@ -1466,8 +1449,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       const mokuai = (await this.fetchMokuais([openedMokuai.mokuai.id]))[0];
       const slgsKeys = new Set<string>();
       const arr0 = mokuai0.gongshishuru.concat(mokuai0.xuanxiangshuru);
-      for (const [k, v] of arr0) {
-        const {type} = this.getValueInfo(k, v, mokuai.suanliaogongshi, msbjInfo.输入值);
+      for (const [k] of arr0) {
+        const {type} = this.getValueInfo(k, mokuai.suanliaogongshi, msbjInfo.输入值);
         if (["模块公式值", "通用公式值"].includes(type)) {
           slgsKeys.add(k);
         }

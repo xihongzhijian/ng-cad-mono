@@ -11,10 +11,11 @@ import {getMokuaiTitleWithUrl, replaceMenshanName} from "@components/dialogs/zix
 import {FormulaInfo} from "@components/formulas/formulas.component";
 import {输入} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
-import {isBetween, isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
+import {isBetween, ObjectOf, timeout} from "@lucilor/utils";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
+import {getMokuaiFormulas} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {Properties} from "csstype";
 import {NgScrollbar} from "ngx-scrollbar";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
@@ -50,6 +51,7 @@ export class XhmrmsbjMokuaisComponent {
   infos = computed(() => {
     const {lastSuanliao, mokuaidaxiaoResults} = this.data.data;
     const {input, output} = lastSuanliao;
+    const materialResult = output.materialResult;
     const mkdxFormulaInfos: XhmrmsbjMkdxFormulaInfo[] = [];
     const xuanzhongMokuaiInfos: XhmrmsbjXuanzhongMokuaiInfo[] = [];
     for (const key of input.bujuNames) {
@@ -68,19 +70,7 @@ export class XhmrmsbjMokuaisComponent {
             return 门扇名字 === key && 模块名字 === node.层名字 && v.weiyima === mokuai.weiyima;
           });
           const cads: CadData[] = [];
-          const suanliaogongshi = {...mokuai.suanliaogongshi};
-          const 输入值 = value.输入值;
-          for (const [k, v] of [...mokuai.gongshishuru, ...mokuai.xuanxiangshuru]) {
-            if (!isTypeOf(v, ["number", "string"])) {
-              continue;
-            }
-            if (输入值 && !(k in 输入值)) {
-              continue;
-            }
-            if (k in suanliaogongshi) {
-              suanliaogongshi[k] = v;
-            }
-          }
+          const formulas = getMokuaiFormulas(value, mokuai, materialResult);
           const formulas2 = {...output.materialResult};
           if (mokuai2) {
             Object.assign(formulas2, mokuai2.suanliaogongshi);
@@ -93,8 +83,8 @@ export class XhmrmsbjMokuaisComponent {
           Object.assign(formulas2, mokuaidaxiaoResult);
           const gongshi = value.选中布局数据?.模块大小配置?.算料公式 || {};
           replaceMenshanName(key, gongshi);
-          Object.assign(suanliaogongshi, gongshi);
-          const gongshiResult = this.calc.calc.calcFormulas(suanliaogongshi, formulas2);
+          Object.assign(formulas, gongshi);
+          const gongshiResult = this.calc.calc.calcFormulas(formulas, formulas2);
           Object.assign(formulas2, gongshiResult.succeedTrim);
           for (const key2 of ["总宽", "总高"]) {
             const key3 = node.层名字 + key2;
@@ -105,7 +95,7 @@ export class XhmrmsbjMokuaisComponent {
           xuanzhongMokuaiInfo.nodes.push({
             layer: node.层名字,
             mokuai,
-            formulaInfos: getFormulaInfos(this.calc, suanliaogongshi, formulas2)
+            formulaInfos: getFormulaInfos(this.calc, formulas, formulas2)
           });
         }
       }

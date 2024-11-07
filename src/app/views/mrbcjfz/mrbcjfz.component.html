@@ -39,15 +39,17 @@
         </ng-scrollbar>
       }
       <mat-divider></mat-divider>
-      @if (noScroll) {
-        <ng-container [ngTemplateOutlet]="content3"></ng-container>
-      } @else {
-        <ng-scrollbar style="height: 105px">
+      @if ((qiliaos | keyvalue).length > 0) {
+        @if (noScroll) {
           <ng-container [ngTemplateOutlet]="content3"></ng-container>
-        </ng-scrollbar>
+        } @else {
+          <ng-scrollbar style="flex: 0 0 70px">
+            <ng-container [ngTemplateOutlet]="content3"></ng-container>
+          </ng-scrollbar>
+        }
+        <div class="tips">企料不分组则程序自动分组为：门扇板材</div>
+        <mat-divider></mat-divider>
       }
-      <div class="tips">企料不分组则程序自动分组为：门扇板材</div>
-      <mat-divider></mat-divider>
       @if (noScroll) {
         <ng-container [ngTemplateOutlet]="content4"></ng-container>
       } @else {
