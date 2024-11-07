@@ -56,6 +56,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
   @ViewChild(MatMenuTrigger) contextMenu!: MatMenuTrigger;
   @ViewChild("dxfInut", {read: ElementRef}) dxfInut!: ElementRef<HTMLElement>;
   contextMenuCad?: {field: ContextMenuCadField; data: CadData};
+  multiSelect = false;
   private lastPointer: Point | null = null;
   private entitiesToMove?: CadEntities;
   private entitiesNotToMove?: CadEntities;

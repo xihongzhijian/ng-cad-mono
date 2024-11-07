@@ -1,0 +1,9 @@
+:host {
+  padding: 10px;
+}
+
+.sub-form-field {
+  &:not(:last-child) {
+    margin-bottom: 5px;
+  }
+}

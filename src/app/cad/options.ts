@@ -1,3 +1,4 @@
+import {FlipType} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 
 export const cadOptions = {
@@ -78,3 +79,10 @@ export const cadOptionOptions: ObjectOf<{values: string[]; defaultValue: string}
   包边方向: {values: ["包边在外", "包边在内"], defaultValue: ""},
   锁向: {values: ["左锁", "右锁"], defaultValue: ""}
 };
+
+export const flipOptions: {label: string; value: FlipType}[] = [
+  {label: "无", value: ""},
+  {label: "水平翻转", value: "h"},
+  {label: "垂直翻转", value: "v"},
+  {label: "水平垂直翻转", value: "vh"}
+];

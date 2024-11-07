@@ -5,6 +5,8 @@ import {CadEditType, Cad数据要求, setCadData} from "@app/cad/cad-shujuyaoqiu
 import {CadCollection} from "@app/cad/collections";
 import {cadOptionOptions, cadOptions} from "@app/cad/options";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
+import {openKlkwpzDialog} from "@components/dialogs/klkwpz-dialog/klkwpz-dialog.component";
+import {openSuanliaodanFlipDialog} from "@components/dialogs/suanliaodan-flip/suanliaodan-flip.component";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {environment} from "@env";
@@ -212,6 +214,11 @@ export const getCadInfoInputs = (
       case "激光开料打标":
         info = {type: "boolean", label: key, model: {data: attrGetter("info"), key}};
         break;
+      case "指定下单板材":
+      case "指定下单材料":
+      case "指定下单厚度":
+        info = {type: "string", label: key, model: {data: attrGetter("info"), key}};
+        break;
       case "自定义属性":
         info = {
           type: "string",
@@ -346,6 +353,46 @@ export const getCadInfoInputs = (
             const file = files?.[0];
             getData(data).info.uploadDxf = file;
           }
+        };
+        break;
+      case "开料孔位配置":
+        info = {
+          type: "string",
+          label: key,
+          selectOnly: true,
+          suffixIcons: [
+            {
+              name: "list",
+              isDefault: true,
+              onClick: async () => {
+                const data2 = getData(data);
+                const result = await openKlkwpzDialog(dialog, {data: {source: data2.info[key]}});
+                if (result) {
+                  data2.info[key] = result;
+                }
+              }
+            }
+          ]
+        };
+        break;
+      case "算料单翻转":
+        info = {
+          type: "string",
+          label: key,
+          selectOnly: true,
+          suffixIcons: [
+            {
+              name: "list",
+              isDefault: true,
+              onClick: async () => {
+                const data2 = getData(data);
+                const result = await openSuanliaodanFlipDialog(dialog, {data: {items: data2.info[key]}});
+                if (result) {
+                  data2.info[key] = result.items;
+                }
+              }
+            }
+          ]
         };
         break;
       default:

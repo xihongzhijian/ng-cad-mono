@@ -9,7 +9,6 @@ import {MatInputModule} from "@angular/material/input";
 import {MatSelectModule} from "@angular/material/select";
 import {exportCadDataRemoveLengthTextCount, 激光开料标记线类型} from "@app/cad/utils";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
-import {openKlkwpzDialog} from "@components/dialogs/klkwpz-dialog/klkwpz-dialog.component";
 import {
   CadBaseLine,
   CadData,
@@ -139,8 +138,13 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
         "拼接料拼接时垂直翻转",
         "正面线到见光线展开模板",
         "指定板材分组",
+        "指定下单板材",
+        "指定下单材料",
+        "指定下单厚度",
         "拉码碰撞判断",
-        "装配示意图自动拼接锁边铰边"
+        "装配示意图自动拼接锁边铰边",
+        "开料孔位配置",
+        "算料单翻转"
       ],
       () => this.data,
       this.dialog,
@@ -508,13 +512,6 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
 
   copyCadId(cad: CadData) {
     this.message.copyText(cad.id, {successText: "id已复制"});
-  }
-
-  async openKlkwpzDialog(data: CadData) {
-    const result = await openKlkwpzDialog(this.dialog, {data: {source: data.info.开料孔位配置}});
-    if (result) {
-      data.info.开料孔位配置 = result;
-    }
   }
 
   addIntersectionValue(key: IntersectionKey, i?: number) {

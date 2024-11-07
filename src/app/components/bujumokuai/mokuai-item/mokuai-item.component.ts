@@ -445,10 +445,21 @@ export class MokuaiItemComponent {
   close() {
     this.closeOut.emit({isSaved: this.isSaved()});
   }
+  slgsComponent = viewChild<FormulasEditorComponent>("slgs");
   forceUpdateKeys = new Set<keyof MokuaiItem>();
   async updateMokaui() {
     const mokuai = this.mokuai();
     const errors: string[] = [];
+
+    const slgsComponent = this.slgsComponent();
+    if (slgsComponent) {
+      const formulasResult = await slgsComponent.submitFormulas(slgsComponent.formulaList(), true);
+      if (formulasResult.errors.length > 0) {
+        errors.push(...formulasResult.errors.map((v) => `模块公式：${v}`));
+      } else {
+        mokuai.suanliaogongshi = formulasResult.formulas;
+      }
+    }
 
     await this._fetchMrbcjfzResponseData();
     await timeout(0);

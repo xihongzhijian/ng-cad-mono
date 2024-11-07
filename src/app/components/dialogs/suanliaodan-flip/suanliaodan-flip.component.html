@@ -1,0 +1,28 @@
+<div class="toolbar hidden-if-empty">
+  @if (items().length < 1) {
+    <button mat-icon-button color="primary" (click)="addItem()">
+      <mat-icon>add_circle</mat-icon>
+    </button>
+  }
+</div>
+<ng-scrollbar>
+  @for (group of inputInfos(); track i; let i = $index) {
+    <div class="sub-form-field">
+      @for (info of group; track $index) {
+        <app-input [info]="info"></app-input>
+      }
+      <div class="toolbar">
+        <button mat-icon-button color="primary" (click)="addItem(i + 1)">
+          <mat-icon>add_circle</mat-icon>
+        </button>
+        <button mat-icon-button color="primary" (click)="removeItem(i)">
+          <mat-icon>remove_circle</mat-icon>
+        </button>
+      </div>
+    </div>
+  }
+</ng-scrollbar>
+<div class="toolbar center">
+  <button mat-raised-button color="primary" (click)="submit()">确定</button>
+  <button mat-raised-button color="primary" (click)="close()">取消</button>
+</div>

@@ -207,6 +207,7 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
     }
   };
 
+  private _leftTopArr: {x: number; y: number}[] = [];
   private _onCadStatusEnter = (cadStatus: CadStatus) => {
     if (cadStatus instanceof CadStatusAssemble) {
       const cad = this.status.cad;

@@ -8,7 +8,7 @@
         <mat-hint>{{ hint }}</mat-hint>
       }
       @if (displayValue !== null) {
-        <textarea matInput readonly [value]="displayValue" cdkTextareaAutosize [cdkAutosizeMinRows]="1"></textarea>
+        <textarea matInput readonly [value]="displayValue" cdkTextareaAutosize [cdkAutosizeMinRows]="1" (click)="onClick()"></textarea>
       } @else {
         @if (info.textarea) {
           <textarea

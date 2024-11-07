@@ -3,7 +3,7 @@ import {Constructor} from "@lucilor/utils";
 import {Observable, Observer, Subject, Subscription} from "rxjs";
 import {takeUntil} from "rxjs/operators";
 
-export const Subscribed = <T extends Constructor>(base: T = class {} as T) =>
+export const Subscribed = <T extends Constructor>(base = class {} as T) =>
   class extends base implements OnDestroy {
     destroyed$ = new Subject<void>();
 

@@ -808,6 +808,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.selectOptions(this.model.key);
     } else if (type === "object" && params?.key) {
       this.selectOptions(this.model.key, params.key);
+    } else if (type === "string") {
+      const {optionsDialog, selectOnly} = this.info;
+      if (optionsDialog && selectOnly) {
+        this.selectOptions(this.model.key);
+      }
     }
   }
 
@@ -932,6 +937,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
       if (typeof onChange === "function") {
         onChange(result);
+      } else {
+        this.onChange();
       }
       this.validateValue();
     }

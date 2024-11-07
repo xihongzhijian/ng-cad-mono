@@ -11,7 +11,8 @@ import {MatInputModule} from "@angular/material/input";
 import {MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {joinOptions, splitOptions} from "@app/app.common";
-import {CadData, CadZhankai, FlipType} from "@lucilor/cad-viewer";
+import {flipOptions} from "@app/cad/options";
+import {CadData, CadZhankai} from "@lucilor/cad-viewer";
 import {Utils} from "@mixins/utils.mixin";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -50,12 +51,7 @@ export class CadZhankaiComponent extends Utils() {
     chanpinfenlei: "产品分类",
     flip: "翻转"
   };
-  flipOptions: {name: string; value: FlipType}[] = [
-    {name: "无", value: ""},
-    {name: "水平翻转", value: "h"},
-    {name: "垂直翻转", value: "v"},
-    {name: "水平垂直翻转", value: "vh"}
-  ];
+  flipOptions = flipOptions;
   get emptyFlipItem(): CadZhankai["flip"][0] {
     return {kaiqi: "", chanpinfenlei: "", fanzhuanfangshi: ""};
   }
@@ -149,9 +145,11 @@ export class CadZhankaiComponent extends Utils() {
   }
 
   async selectOptions(obj: any, field: string) {
-    const name = (this.keysMap as any)[field];
+    if (!field) {
+      await this.message.error("键名不能为空");
+    }
     const checkedItems = splitOptions(obj[field]);
-    const result = await openCadOptionsDialog(this.dialog, {data: {name, checkedItems, multi: true}});
+    const result = await openCadOptionsDialog(this.dialog, {data: {name: field, checkedItems, multi: true}});
     if (result?.options) {
       obj[field] = joinOptions(result?.options);
     }
