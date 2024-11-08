@@ -62,6 +62,7 @@ export class SuanliaodanFlipComponent extends Utils() {
       const group: InputInfo<SuanliaodanFlipItem>[] = [
         getOptionInputInfo("kaiqi", "开启"),
         getOptionInputInfo("chanpinfenlei", "产品分类"),
+        getOptionInputInfo("suoxiang", "锁向"),
         {type: "select", label: "翻转", options: flipOptions, model: {data, key: "fanzhuanfangshi"}, onChange}
       ];
       infos.push(group);
