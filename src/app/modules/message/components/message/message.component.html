@@ -32,8 +32,8 @@
         <div [innerHTML]="contentHTML()"></div>
         <form style="padding: 1px">
           <button hidden></button>
-          @for (info of data.form; track $index) {
-            <app-input #formInput [info]="info"></app-input>
+          @for (info of form(); track $index) {
+            <app-input #formInput [info]="info" (change)="refreshForm()"></app-input>
           }
         </form>
       }

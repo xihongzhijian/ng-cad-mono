@@ -59,7 +59,7 @@ export class FormulasEditorComponent {
   vars = input<Formulas>({});
   varNameItem = input<VarNameItem>();
   menshanweizhi = input("");
-  extraInputInfos = input<InputInfo[]>([]);
+  extraInputInfosIn = input<InputInfo[]>([], {alias: "extraInputInfos"});
   validator = input<FormulasValidatorFn>();
   noFormulasText = input(false, {transform: booleanAttribute});
   noScroll = input(false, {transform: booleanAttribute});
@@ -68,6 +68,17 @@ export class FormulasEditorComponent {
 
   constructor() {
     setGlobal("formulasEditor", this);
+  }
+
+  extraInputInfos = signal<InputInfo[]>([]);
+  extraInputInfosEff = effect(
+    () => {
+      this.extraInputInfos.set(this.extraInputInfosIn());
+    },
+    {allowSignalWrites: true}
+  );
+  refreshExtraInputInfos() {
+    this.extraInputInfos.update((v) => [...v]);
   }
 
   formulaList = computed(() => Object.entries(this.formulas()).map(([k, v]) => [k, String(v)]));

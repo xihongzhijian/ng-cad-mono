@@ -196,6 +196,20 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   inputsBackup: InputInfo[] = [];
   formInputs = viewChildren<InputComponent>("formInput");
+  form = signal<InputInfo[]>([]);
+  formEff = effect(
+    () => {
+      const data = this.data;
+      if (data.type !== "form") {
+        return;
+      }
+      this.form.set(data.form);
+    },
+    {allowSignalWrites: true}
+  );
+  refreshForm() {
+    this.form.update((v) => [...v]);
+  }
   reset() {
     switch (this.data.type) {
       case "form":

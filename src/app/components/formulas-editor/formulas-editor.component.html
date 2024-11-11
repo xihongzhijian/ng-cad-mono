@@ -26,7 +26,7 @@
       @if (extraInputInfos()) {
         <div class="toolbar extra-input-infos">
           @for (info of extraInputInfos(); track $index) {
-            <app-input #extraInput [info]="info"></app-input>
+            <app-input #extraInput [info]="info" (change)="refreshExtraInputInfos()"></app-input>
           }
         </div>
       }

@@ -12,6 +12,7 @@ import {
   KeyValueDiffers,
   OnChanges,
   OnDestroy,
+  output,
   QueryList,
   SimpleChanges,
   ViewChild,
@@ -96,6 +97,7 @@ import {getValue, parseObjectString} from "./input.utils";
 export class InputComponent extends Utils() implements AfterViewInit, OnChanges, DoCheck, OnDestroy {
   suffixIconsType!: SuffixIconsType;
   @Input() info: InputInfo = {type: "string", label: ""};
+  change = output<{value: any}>();
   infoDiffer: KeyValueDiffer<keyof InputInfo, ValueOf<InputInfo>>;
   modelDataDiffer: KeyValueDiffer<keyof InputInfo["model"], ValueOf<InputInfo["model"]>>;
   onChangeDelayTime = 200;
@@ -657,6 +659,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       default:
         break;
     }
+    this.change.emit({value});
   }
 
   onColorChange(ngxColor: NgxColor) {
@@ -933,6 +936,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
       if (typeof onChange === "function") {
         onChange(result);
+        this.change.emit({value: resultValue});
       } else {
         this.onChange();
       }
