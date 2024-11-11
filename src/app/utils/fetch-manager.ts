@@ -19,15 +19,24 @@ export class FetchManager<T> {
     return this._data();
   });
 
+  private _fetchPromise: Promise<T> | null = null;
   async fetch(force?: boolean) {
     if (!force && this._isDataFetched) {
       return this._data();
     }
-    const data = await this.fetchFn();
-    if (data) {
-      this._isDataFetched = true;
-      this._data.set(data);
+    let data: T;
+    if (this._fetchPromise) {
+      data = await this._fetchPromise;
+    } else {
+      const fetchResult = this.fetchFn();
+      if (fetchResult instanceof Promise) {
+        this._fetchPromise = fetchResult;
+      }
+      data = await fetchResult;
     }
+    this._isDataFetched = true;
+    this._fetchPromise = null;
+    this._data.set(data);
     return this._data();
   }
 

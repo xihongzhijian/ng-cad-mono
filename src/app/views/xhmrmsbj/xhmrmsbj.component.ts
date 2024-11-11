@@ -237,7 +237,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!this.isFromOrder()) {
       const step1Data = await getStep1Data(this.http);
       this.setStep1Data(step1Data);
-      await this.bjmkStatus.msbjsManager.fetch(true);
+      await this.bjmkStatus.msbjsManager.fetch();
       const tableData = this.tableData();
       const data = tableData ? new XhmrmsbjData(tableData, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null;
       this.data.set(data);
