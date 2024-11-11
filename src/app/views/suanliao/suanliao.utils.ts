@@ -1,7 +1,8 @@
 import {splitOptions} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf} from "@lucilor/utils";
+import {keysOf, ObjectOf} from "@lucilor/utils";
 import {CalcCustomErrorMsg, CalcService} from "@services/calc.service";
+import {XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {difference} from "lodash";
 import {HoutaiData, SuanliaoCalcError} from "./suanliao.types";
 
@@ -82,4 +83,48 @@ export const matchHoutaiData = async (
   result.isMatched = reuslt1.isMatched && reuslt2.isMatched;
   result.error = reuslt2.error;
   return result;
+};
+
+export const resetInputs = (data: XhmrmsbjDataMsbjInfos, dataOld: XhmrmsbjDataMsbjInfos, mokuaiIds?: number[]) => {
+  for (const menshanKey of keysOf(data)) {
+    const msbjInfoOld = dataOld[menshanKey];
+    const msbjInfoNew = data[menshanKey];
+    if (!msbjInfoOld || !msbjInfoNew) {
+      continue;
+    }
+    const varNames = new Set<string>();
+    const xxgsIds = new Set<string>();
+    for (const node of msbjInfoNew.模块节点 || []) {
+      for (const mokuai of node.可选模块) {
+        if (!mokuaiIds || mokuaiIds.includes(mokuai.id)) {
+          for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
+            varNames.add(arr[0]);
+          }
+          for (const xxgs of mokuai.xuanxianggongshi) {
+            xxgsIds.add(xxgs._id);
+          }
+        }
+      }
+    }
+    for (const varName of varNames) {
+      if (msbjInfoOld.输入值 && varName in msbjInfoOld.输入值) {
+        if (!msbjInfoNew.输入值) {
+          msbjInfoNew.输入值 = {};
+        }
+        msbjInfoNew.输入值[varName] = msbjInfoOld.输入值[varName];
+      } else {
+        delete msbjInfoNew.输入值?.[varName];
+      }
+    }
+    for (const xxgsId of xxgsIds) {
+      if (msbjInfoOld.选项公式输入值 && xxgsId in msbjInfoOld.选项公式输入值) {
+        if (!msbjInfoNew.选项公式输入值) {
+          msbjInfoNew.选项公式输入值 = {};
+        }
+        msbjInfoNew.选项公式输入值[xxgsId] = msbjInfoOld.选项公式输入值[xxgsId];
+      } else {
+        delete msbjInfoNew.选项公式输入值?.[xxgsId];
+      }
+    }
+  }
 };

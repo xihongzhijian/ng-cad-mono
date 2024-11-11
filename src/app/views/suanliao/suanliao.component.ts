@@ -26,14 +26,17 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
-import {XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {XhmrmsbjDataMsbjInfos, XhmrmsbjTableData} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {getMokuaiFormulas, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {
+  ResetInputsInput,
+  ResetInputsOutput,
   SuanliaoInput,
   SuanliaoOutputData,
   根据输入值计算选中配件模块无依赖的公式结果输入,
   根据输入值计算选中配件模块无依赖的公式结果输出
 } from "./suanliao.types";
+import {resetInputs} from "./suanliao.utils";
 
 @Component({
   selector: "app-suanliao",
@@ -312,5 +315,29 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
     }
     return {action: "根据输入值计算选中配件模块无依赖的公式结果结束", data: result};
+  }
+
+  async getXhmrmsbjRaw() {
+    this.wmm.postMessage("getXhmrmsbjRawStart");
+    const result = await this.wmm.waitForMessage<XhmrmsbjTableData>("getXhmrmsbjRawEnd");
+    return result;
+  }
+
+  async resetInputsStart({data, mokuaiIds}: ResetInputsInput = {}) {
+    const result = {action: "resetInputsEnd", data: null as ResetInputsOutput};
+    if (!data) {
+      return result;
+    }
+    const xhmrmsbjRaw = await this.getXhmrmsbjRaw();
+    let dataOld: XhmrmsbjDataMsbjInfos | undefined;
+    try {
+      dataOld = JSON.parse(xhmrmsbjRaw.peizhishuju || "");
+    } catch {}
+    if (!dataOld) {
+      return result;
+    }
+    resetInputs(data, dataOld, mokuaiIds);
+    result.data = {data};
+    return result;
   }
 }

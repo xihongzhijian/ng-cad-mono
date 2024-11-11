@@ -9,7 +9,7 @@ import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {MongodbDataBase} from "@modules/http/services/cad-data.service.types";
 import {MsbjData} from "@views/msbj/msbj.types";
-import {MenshanKey, XhmrmsbjInfo, XhmrmsbjTableData} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {MenshanKey, XhmrmsbjDataMsbjInfos, XhmrmsbjInfo, XhmrmsbjTableData} from "@views/xhmrmsbj/xhmrmsbj.types";
 
 export interface SuanliaoInput {
   materialResult: Formulas;
@@ -69,3 +69,11 @@ export interface HoutaiData extends MongodbDataBase {
   条件?: any[];
   分类?: string;
 }
+
+export interface ResetInputsInput {
+  data?: XhmrmsbjDataMsbjInfos;
+  mokuaiIds?: number[];
+}
+export type ResetInputsOutput = {
+  data: XhmrmsbjDataMsbjInfos;
+} | null;

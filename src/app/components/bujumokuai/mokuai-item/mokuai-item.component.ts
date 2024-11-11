@@ -18,6 +18,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {getCopyName} from "@app/app.common";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
+import {getFromulasFromString} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
@@ -41,7 +42,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzDataSubmitEvent, MrbcjfzInfo, MrbcjfzInputData, MrbcjfzResponseData} from "@views/mrbcjfz/mrbcjfz.types";
 import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
-import {clone, cloneDeep, isEqual} from "lodash";
+import {clone, cloneDeep, intersection, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {firstValueFrom, Subject} from "rxjs";
 import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
@@ -225,7 +226,7 @@ export class MokuaiItemComponent {
   }
 
   showMrbcjfzDialog = signal(false);
-  private _mrbcjfzResponseData = signal<MrbcjfzResponseData | null>(null);
+  private _mrbcjfzResponseData = signal<{id: number; data: MrbcjfzResponseData} | null>(null);
   private _mrbcjfzDialogClose$ = new Subject<MrbcjfzDataSubmitEvent | null>();
   mrbcjfzComponent = viewChild<MrbcjfzComponent>("mrbcjfz");
   mrbcjfzInputData = computed(() => {
@@ -238,19 +239,25 @@ export class MokuaiItemComponent {
       cads: this.selectedCads()
     };
     if (data) {
-      inputData.resData = data;
+      inputData.resData = data.data;
     }
     return inputData;
   });
   private async _fetchMrbcjfzResponseData() {
     const mokuai = this.mokuai();
-    this._mrbcjfzResponseData.set(
-      await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {
-        table: "p_peijianmokuai",
-        id: mokuai.id,
-        collection: this.bjmkStatus.collection
-      })
-    );
+    const resData = this._mrbcjfzResponseData();
+    const id = mokuai.id;
+    if (resData?.id === mokuai.id) {
+      return;
+    }
+    const data = await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {
+      table: "p_peijianmokuai",
+      id,
+      collection: this.bjmkStatus.collection
+    });
+    if (data) {
+      this._mrbcjfzResponseData.set({id, data});
+    }
   }
   async openMrbcjfzDialog() {
     await this._fetchMrbcjfzResponseData();
@@ -455,6 +462,20 @@ export class MokuaiItemComponent {
   async updateMokaui() {
     const mokuai = this.mokuai();
     const errors: string[] = [];
+
+    const checkDuplicateVars = (vars1: string[], vars2: string[], name1: string, name2: string) => {
+      const duplicateVars = intersection(vars1, vars2);
+      if (duplicateVars.length > 0) {
+        errors.push(`${name1}与${name2}重复：${duplicateVars.join("，")}`);
+      }
+    };
+    const varKeysShuchu = mokuai.shuchubianliang.split("+");
+    const varKeysXuanxiang = mokuai.自定义数据?.选项数据?.map((v) => v.名字) || [];
+    checkDuplicateVars(varKeysShuchu, varKeysXuanxiang, "输出变量", "模块选项");
+    const gongshishuru = getFromulasFromString(mokuai.gongshishuru);
+    checkDuplicateVars(Object.keys(gongshishuru), varKeysXuanxiang, "公式输入", "模块选项");
+    const xuanxiangshuru = getFromulasFromString(mokuai.xuanxiangshuru);
+    checkDuplicateVars(Object.keys(xuanxiangshuru), varKeysXuanxiang, "选项输入", "模块选项");
 
     const slgsComponent = this.slgsComponent();
     if (slgsComponent) {

@@ -164,6 +164,9 @@ export const setShuruzhi = (info: XhmrmsbjInfo, shuruzhi: Shuruzhi, xxgsId?: str
     if (isEmpty(shuruzhi)) {
       if (info.选项公式输入值) {
         delete info.选项公式输入值[xxgsId];
+        if (isEmpty(info.选项公式输入值)) {
+          delete info.选项公式输入值;
+        }
       }
     } else {
       if (!info.选项公式输入值) {
@@ -176,6 +179,40 @@ export const setShuruzhi = (info: XhmrmsbjInfo, shuruzhi: Shuruzhi, xxgsId?: str
       delete info.输入值;
     } else {
       info.输入值 = shuruzhi;
+    }
+  }
+};
+export const purgeShuruzhi = (info: XhmrmsbjInfo) => {
+  const varNames = new Set<string>();
+  const xxgsIds = new Set<string>();
+  for (const node of info.模块节点 || []) {
+    for (const mokuai of node.可选模块) {
+      for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
+        varNames.add(arr[0]);
+      }
+      for (const xxgs of mokuai.xuanxianggongshi) {
+        xxgsIds.add(xxgs._id);
+      }
+    }
+    if (info.输入值) {
+      for (const key of Object.keys(info.输入值)) {
+        if (!varNames.has(key)) {
+          delete info.输入值[key];
+        }
+      }
+      if (isEmpty(info.输入值)) {
+        delete info.输入值;
+      }
+    }
+    if (info.选项公式输入值) {
+      for (const key of Object.keys(info.选项公式输入值)) {
+        if (!xxgsIds.has(key) || isEmpty(info.选项公式输入值[key])) {
+          delete info.选项公式输入值[key];
+        }
+      }
+      if (isEmpty(info.选项公式输入值)) {
+        delete info.选项公式输入值;
+      }
     }
   }
 };
@@ -245,4 +282,9 @@ export const purgeShuchuDisabled = (info: XhmrmsbjInfo) => {
   if (isEmpty(info.输出变量禁用)) {
     delete info.输出变量禁用;
   }
+};
+
+export const purgeMsbjInfo = (info: XhmrmsbjInfo) => {
+  purgeShuruzhi(info);
+  purgeShuchuDisabled(info);
 };
