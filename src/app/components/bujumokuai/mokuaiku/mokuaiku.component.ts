@@ -1,4 +1,3 @@
-import {NgTemplateOutlet} from "@angular/common";
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -25,13 +24,10 @@ import {DataListComponent} from "@modules/data-list/components/data-list/data-li
 import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@modules/data-list/data-list.module";
-import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
-import {InputComponent} from "@modules/input/components/input.component";
-import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {MokuaiItemComponent} from "../mokuai-item/mokuai-item.component";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
@@ -45,15 +41,12 @@ import {MokuaikuCloseEvent} from "./mokuaiku.types";
     DataListModule,
     FloatingDialogModule,
     ImageComponent,
-    InputComponent,
     MatButtonModule,
     MatDividerModule,
     MatIconModule,
     MatTreeModule,
     MokuaiItemComponent,
-    NgScrollbarModule,
-    NgTemplateOutlet,
-    TypedTemplateDirective
+    NgScrollbarModule
   ],
   templateUrl: "./mokuaiku.component.html",
   styleUrl: "./mokuaiku.component.scss",
@@ -62,7 +55,6 @@ import {MokuaikuCloseEvent} from "./mokuaiku.types";
 export class MokuaikuComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);
   private http = inject(CadDataService);
-  private message = inject(MessageService);
   private route = inject(ActivatedRoute);
 
   @HostBinding("class") class = ["ng-page"];

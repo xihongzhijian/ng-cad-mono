@@ -161,14 +161,20 @@ export class BjmkStatusService {
   async copyMokuai(mokuai: MokuaiItem) {
     const names = this.mokuaisManager.items().map((v) => v.name);
     const mokuai2 = await this.getMokuaiWithForm(mokuai, {name: getCopyName(names, mokuai.name)});
-    if (mokuai2?.cads) {
-      mokuai2.cads = mokuai2.cads.map((v) => {
-        const cad = new CadData(v.json).clone(true);
-        delete cad.info.imgId;
-        return getHoutaiCad(cad);
-      });
-    }
     if (mokuai2) {
+      if (mokuai2.cads) {
+        const cadIdMap = new Map<string, string>();
+        mokuai2.cads = mokuai2.cads.map((v) => {
+          const idPrev = v._id;
+          const cad = new CadData(v.json).clone(true);
+          cadIdMap.set(idPrev, cad.id);
+          delete cad.info.imgId;
+          return getHoutaiCad(cad);
+        });
+        for (const item of Object.values(mokuai2.morenbancai || {})) {
+          item.CAD = item.CAD.map((v) => cadIdMap.get(v) || v);
+        }
+      }
       const mokuai3 = await this.http.getData<MokuaiItem>("ngcad/copyPeijianmokuai", {item: mokuai2});
       if (mokuai3) {
         this.mokuaisManager.refresh({add: [mokuai3]});
