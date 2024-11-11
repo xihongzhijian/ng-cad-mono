@@ -10,7 +10,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} from "./lrsj-zuofa.types";
 
-export const getXuanxiangTable = (data: XuanxiangTableData[]): TableRenderInfo<XuanxiangTableData> => {
+export const getXuanxiangTable = (data: XuanxiangTableData[], use输出变量 = false): TableRenderInfo<XuanxiangTableData> => {
   return {
     title: "选项数据",
     inlineTitle: true,
@@ -23,6 +23,7 @@ export const getXuanxiangTable = (data: XuanxiangTableData[]): TableRenderInfo<X
           return item.可选项.map((v) => v.mingzi).join("*");
         }
       },
+      {type: "boolean", field: "输出变量", hidden: !use输出变量},
       {
         type: "button",
         field: "操作",
@@ -36,7 +37,7 @@ export const getXuanxiangTable = (data: XuanxiangTableData[]): TableRenderInfo<X
     toolbarButtons: {extra: []}
   };
 };
-export const getXuanxiangItem = async (message: MessageService, options: OptionsAll, list: 选项[], data0?: 选项) => {
+export const getXuanxiangItem = async (message: MessageService, options: OptionsAll, list: 选项[], data0?: 选项, use输出变量 = false) => {
   const data: 选项 = {名字: "", 可选项: [], ...data0};
   const names = list.map((v) => v.名字);
   const form: InputInfo<typeof data>[] = [
@@ -80,7 +81,8 @@ export const getXuanxiangItem = async (message: MessageService, options: Options
           });
         }
       }
-    }
+    },
+    {type: "boolean", label: "输出变量", model: {data, key: "输出变量"}, hidden: !use输出变量}
   ];
   const result = await message.form(form);
   return result ? data : null;

@@ -48,10 +48,10 @@
   </ng-scrollbar>
   <div class="item-cads border flex-row">
     <div class="mokuai-gongshi flex-column">
-      <div class="title">模块公式</div>
       @if (useSlgsInfo()) {
         <app-suanliaogongshi [info]="slgsInfo()" (infoChange)="onSlgsChange($event)"></app-suanliaogongshi>
       } @else {
+        <div class="title">模块公式</div>
         <app-formulas-editor
           #slgs
           class="box flex-110"

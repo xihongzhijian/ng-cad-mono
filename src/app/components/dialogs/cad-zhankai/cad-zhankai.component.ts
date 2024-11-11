@@ -29,19 +29,19 @@ import {getOpenDialogFunc} from "../dialog.common";
   styleUrls: ["./cad-zhankai.component.scss"],
   standalone: true,
   imports: [
-    NgScrollbar,
-    MatCardModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatFormFieldModule,
-    MatInputModule,
     FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatDialogActions,
+    MatFormFieldModule,
     MatIconModule,
-    MatSlideToggleModule,
-    ReplaceFullCharsDirective,
-    MatSelectModule,
+    MatInputModule,
     MatOptionModule,
-    MatDialogActions
+    MatSelectModule,
+    MatSlideToggleModule,
+    NgScrollbar,
+    ReplaceFullCharsDirective
   ]
 })
 export class CadZhankaiComponent extends Utils() {
@@ -149,7 +149,8 @@ export class CadZhankaiComponent extends Utils() {
       await this.message.error("键名不能为空");
     }
     const checkedItems = splitOptions(obj[field]);
-    const result = await openCadOptionsDialog(this.dialog, {data: {name: field, checkedItems, multi: true}});
+    const name = (this.keysMap as any)[field] || field;
+    const result = await openCadOptionsDialog(this.dialog, {data: {name, checkedItems, multi: true}});
     if (result?.options) {
       obj[field] = joinOptions(result?.options);
     }

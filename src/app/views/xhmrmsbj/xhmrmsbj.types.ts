@@ -27,6 +27,7 @@ export interface XhmrmsbjInfo {
   模块节点?: XhmrmsbjInfoMokuaiNode[];
   输入值?: Shuruzhi;
   选项公式输入值?: ObjectOf<Shuruzhi>;
+  输出变量禁用?: ObjectOf<string[]>;
 }
 export type Shuruzhi = ObjectOf<string>;
 

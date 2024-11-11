@@ -168,6 +168,7 @@ export interface 可选项 {
 export interface 选项 {
   名字: string;
   可选项: 可选项[];
+  输出变量?: boolean;
 }
 
 export interface 输入 {

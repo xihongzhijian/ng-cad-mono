@@ -18,6 +18,7 @@ import {
 } from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
@@ -92,7 +93,15 @@ import {
   XhmrmsbjTabName,
   xhmrmsbjTabNames
 } from "./xhmrmsbj.types";
-import {getShuruzhi, setShuruzhi, XhmrmsbjData} from "./xhmrmsbj.utils";
+import {
+  getMokuaiFormulas,
+  getMokuaiShuchuVars,
+  getShuruzhi,
+  purgeShuchuDisabled,
+  setMokuaiShuchuVars,
+  setShuruzhi,
+  XhmrmsbjData
+} from "./xhmrmsbj.utils";
 
 const table = "p_xinghaomorenmenshanbuju";
 @Component({
@@ -109,9 +118,11 @@ const table = "p_xinghaomorenmenshanbuju";
     InputComponent,
     KeyValuePipe,
     MatButtonModule,
+    MatCheckboxModule,
     MatDividerModule,
     MatIconModule,
     MatSlideToggleModule,
+    MenfengPeizhiComponent,
     MkdxpzEditorComponent,
     MokuaiItemComponent,
     MokuaikuComponent,
@@ -120,8 +131,7 @@ const table = "p_xinghaomorenmenshanbuju";
     NgScrollbar,
     NgTemplateOutlet,
     TypedTemplateDirective,
-    XhmrmsbjSbjbComponent,
-    MenfengPeizhiComponent
+    XhmrmsbjSbjbComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -256,8 +266,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
   }
 
-  refreshData(noDeep = false) {
-    this.data.update((v) => (v ? v.clone(!noDeep) : null));
+  refreshData(deep = false) {
+    this.data.update((v) => (v ? v.clone(deep) : null));
   }
 
   user = signal<XhmrmsbjRequestData["user"]>(null);
@@ -501,7 +511,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         delete infos[menshanweizhi].选中布局;
         delete infos[menshanweizhi].选中布局数据;
       }
-      this.refreshData();
+      this.refreshData(true);
     }
   }
 
@@ -529,7 +539,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const mokuaiPrev = mokuaiNode.选中模块;
     this.data()?.setSelectedMokuai(mokuaiNode, mokuai, this.isFromOrder());
-    this.refreshData(true);
+    this.refreshData();
     const mokuaiCurr = mokuaiNode.选中模块;
     this.scrollToMokuai(mokuaiCurr);
     if (!mokuaiPrev || !mokuaiCurr || !isMokuaiItemEqual(mokuaiPrev, mokuaiCurr)) {
@@ -599,7 +609,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     await this.tongyongFormulasManager.fetch();
     return this.getValueInfo(key, slgs, shuruzhi);
   }
-  mokuaiInputInfos1 = computed(() => {
+  mokuaiInputInfosInput = computed(() => {
     const msbjInfo = this.activeMsbjInfo();
     const node = this.activeMokuaiNode();
     const mokuai = node?.选中模块;
@@ -722,7 +732,46 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     return infos;
   });
-  mokuaiInputInfos2 = computed(() => {
+  mokuaiInputInfosOutput = computed(() => {
+    const data = this.data();
+    const msbjInfo = this.activeMsbjInfo();
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
+    const infos: {key: string; disabled: boolean; duplicate: boolean}[] = [];
+    if (!mokuai || !msbjInfo || !data) {
+      return infos;
+    }
+    const varsOthersEnabled = new Set<string>();
+    const activeMenshanKey = this.activeMenshanKey();
+    for (const key of keysOf(data.menshanbujuInfos)) {
+      const msbjInfo2 = data.menshanbujuInfos[key];
+      if (!msbjInfo2) {
+        continue;
+      }
+      for (const node2 of msbjInfo2.模块节点 || []) {
+        const mokuai2 = node2.选中模块;
+        if (mokuai2) {
+          const isCurrent = key === activeMenshanKey && node?.层名字 === node2.层名字;
+          if (!isCurrent) {
+            const varsEnabled2 = getMokuaiShuchuVars(msbjInfo2, node2, mokuai2);
+            for (const varName of varsEnabled2) {
+              varsOthersEnabled.add(varName);
+            }
+          }
+        }
+      }
+    }
+    const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
+    for (const key of mokuai.shuchubianliang) {
+      const disabled = !varsEnabled.includes(key);
+      const duplicate = !disabled && varsOthersEnabled.has(key);
+      infos.push({key, disabled, duplicate});
+    }
+    return infos;
+  });
+  mokuaiXuanxiangAll = computed(() => this.activeMokuaiNode()?.选中模块?.自定义数据?.选项数据 || []);
+  mokuaiXuanxiang = computed(() => this.mokuaiXuanxiangAll().filter((v) => v.可选项.length > 0));
+  mokuaiInputInfosFormulas = computed(() => {
     const data = this.data();
     const msbjInfo = this.activeMsbjInfo();
     const node = this.activeMokuaiNode();
@@ -804,6 +853,55 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     // return infos;
   });
 
+  toggleMokuaiShuruDisabled(name: string) {
+    const msbjInfo = this.activeMsbjInfo();
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
+    if (!mokuai || !node || !msbjInfo) {
+      return;
+    }
+    const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
+    const index = varsEnabled.indexOf(name);
+    if (index >= 0) {
+      varsEnabled.splice(index, 1);
+    } else {
+      varsEnabled.push(name);
+    }
+    setMokuaiShuchuVars(msbjInfo, node, mokuai, varsEnabled);
+    this.refreshData();
+  }
+  setAllMokuaiShuruDisabled() {
+    const msbjInfo = this.activeMsbjInfo();
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
+    if (!mokuai || !node || !msbjInfo) {
+      return;
+    }
+    const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
+    if (varsEnabled.length === mokuai.shuchubianliang.length) {
+      setMokuaiShuchuVars(msbjInfo, node, mokuai, []);
+    } else {
+      setMokuaiShuchuVars(msbjInfo, node, mokuai, mokuai.shuchubianliang);
+    }
+    this.refreshData();
+  }
+
+  toggleMokuaiXuanxiangDisabled(i: number) {
+    const item = this.mokuaiXuanxiang()[i];
+    if (!item) {
+      return;
+    }
+    item.输出变量 = !item.输出变量;
+    this.refreshData();
+  }
+  setAllMokuaiXuanxiangDisabled() {
+    const isAllEnabled = this.mokuaiXuanxiang().every((v) => v.输出变量);
+    for (const item of this.mokuaiXuanxiangAll()) {
+      item.输出变量 = isAllEnabled ? false : true;
+    }
+    this.refreshData();
+  }
+
   isSubmited = signal(false);
   async submit() {
     const sbjb = this.sbjb();
@@ -850,6 +948,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     for (let i = 0; i < msbjInfos.length; i++) {
       const {menshanKey, msbjInfo} = msbjInfos[i];
+      purgeShuchuDisabled(msbjInfo);
       const errorXuanzhongNodeNames: string[] = [];
       if (msbjInfo.选中布局数据 && isVersion2024) {
         const formulas = msbjInfo.选中布局数据.模块大小配置?.算料公式 || {};
@@ -874,7 +973,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             if (!选中模块2) {
               continue;
             }
-            const dupVars1 = intersection(选中模块1.shuchubianliang, 选中模块2.shuchubianliang);
+            const scbl1 = getMokuaiShuchuVars(msbjInfo, node1, 选中模块1);
+            const scbl2 = getMokuaiShuchuVars(msbjInfo, node2, 选中模块2);
+            const dupVars1 = intersection(scbl1, scbl2);
             if (dupVars1.length > 0) {
               nodeVarsErrorInfo.push({
                 menshanKey,
@@ -883,32 +984,49 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
               });
               continue;
             }
-            const slgsKeys = Object.keys(选中模块2.suanliaogongshi);
-            const dupVars2 = intersection(slgsKeys, 选中模块1.shuchubianliang);
-            if (dupVars2.length > 0) {
-              nodeVarsErrorInfo.push({
-                menshanKey,
-                layerName: node2.层名字,
-                duplicateHint: `${node2.层名字}模块的变量${getNamesStr(dupVars2)}与${node1.层名字}模块的输出变量${getNamesStr(dupVars2)}重名`
-              });
+            if (!isMokuaiItemEqual(选中模块1, 选中模块2)) {
+              const slgsKeys = Object.keys(getMokuaiFormulas(msbjInfo, 选中模块2));
+              const dupVars2 = intersection(slgsKeys, scbl1);
+              if (dupVars2.length > 0) {
+                nodeVarsErrorInfo.push({
+                  menshanKey,
+                  layerName: node2.层名字,
+                  duplicateHint: `${node2.层名字}模块的变量${getNamesStr(dupVars2)}与${node1.层名字}模块的输出变量${getNamesStr(dupVars2)}重名`
+                });
+              }
             }
           }
         }
         for (const mokuai of node1.可选模块) {
-          const varKeysMokuai = mokuai.shuchubianliang;
-          const keys1 = intersection(varKeysXinghao, varKeysMokuai);
+          const varKeysMokuai = getMokuaiShuchuVars(msbjInfo, node1, mokuai);
           const mokuaiErrors: string[] = [];
-          if (keys1.length > 0) {
+          if (intersection(varKeysXinghao, varKeysMokuai).length > 0) {
             mokuaiErrors.push("输出变量与型号公式输入重复");
+          }
+          const varKeysMokuai2 = mokuai.自定义数据?.选项数据?.filter((v) => v.可选项.length > 0 && v.输出变量).map((v) => v.名字) || [];
+          if (intersection(varKeysMokuai, varKeysMokuai2).length > 0) {
+            mokuaiErrors.push("输出变量与模块选项输出变量重复");
           }
           if (!this.validateMorenbancai(mokuai.morenbancai)) {
             mokuaiErrors.push("未配置默认板材分组");
           }
           const missingVars: string[] = [];
           for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
-            const valueInfo = await this.getValueInfo2(arr[0], mokuai.suanliaogongshi, msbjInfo.输入值);
-            arr[1] = valueInfo.value;
-            if (!arr[1] && isVersion2024) {
+            const formulas = getMokuaiFormulas(msbjInfo, mokuai);
+            let value = "";
+            if (mokuai.xuanxianggongshi.length > 0) {
+              for (const xxgs of mokuai.xuanxianggongshi) {
+                const valueInfo = await this.getValueInfo2(arr[0], formulas, getShuruzhi(msbjInfo, xxgs._id));
+                if (valueInfo.value) {
+                  value = valueInfo.value;
+                  break;
+                }
+              }
+            } else {
+              const valueInfo = await this.getValueInfo2(arr[0], formulas, getShuruzhi(msbjInfo, arr[1]));
+              value = valueInfo.value;
+            }
+            if (!value && isVersion2024) {
               missingVars.push(arr[0]);
             }
           }
@@ -978,6 +1096,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     const data: TableUpdateParams<MsbjData>["data"] = dataInfo.export();
+    this.refreshData();
     // delete data.mingzi;
     await this.http.tableUpdate({table, data});
     this.isSubmited.set(true);
@@ -1097,6 +1216,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           }
         }
       }
+      purgeShuchuDisabled(msbjInfo);
       let refresh = true;
       if (kexuan.length > 0) {
         if (!kexuan.find((v) => v.info?.isDefault)) {
@@ -1127,6 +1247,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return info;
   });
   kexuanmokuais = computed(() => {
+    this.data();
     const query = this.kexuanmokuaiQuery();
     const mokuais = this.activeMokuaiNode()?.["可选模块"] || [];
     setTimeout(() => {
@@ -1675,6 +1796,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     Object.assign(to, cloneDeep(from));
-    this.refreshData();
+    this.refreshData(true);
   }
 }

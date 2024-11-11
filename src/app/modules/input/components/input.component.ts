@@ -1,4 +1,4 @@
-import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, CdkDropListGroup, moveItemInArray} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {TextFieldModule} from "@angular/cdk/text-field";
 import {AsyncPipe, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
@@ -6,7 +6,6 @@ import {
   Component,
   DoCheck,
   ElementRef,
-  forwardRef,
   HostBinding,
   Input,
   KeyValueDiffer,
@@ -35,7 +34,6 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getArray, imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
 import {toFixed} from "@app/utils/func";
-import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
@@ -71,12 +69,10 @@ import {getValue, parseObjectString} from "./input.utils";
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
-    CdkDropListGroup,
     ClickStopPropagationDirective,
     ColorChromeModule,
     ColorCircleModule,
     FormsModule,
-    forwardRef(() => CadImageComponent),
     ImageComponent,
     KeyValuePipe,
     MatAutocompleteModule,

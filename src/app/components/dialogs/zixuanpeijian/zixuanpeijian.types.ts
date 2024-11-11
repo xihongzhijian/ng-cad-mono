@@ -10,7 +10,7 @@ import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {SuanliaoCalcError} from "@views/suanliao/suanliao.types";
-import {XhmrmsbjInfo} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {MenshanKey, XhmrmsbjInfo} from "@views/xhmrmsbj/xhmrmsbj.types";
 
 export interface ZixuanpeijianTypesInfoItemBase {
   id: number;
@@ -90,7 +90,7 @@ export interface ZixuanpeijianInfo {
   dimensionVars?: Formulas;
   开料孔位配置?: KlkwpzSource;
   开料参数?: KailiaocanshuData;
-  门扇名字?: string;
+  门扇名字?: MenshanKey;
   门扇布局?: XhmrmsbjInfo["选中布局数据"];
   层id?: number;
   模块名字?: string;
@@ -116,7 +116,7 @@ export interface ZixuanpeijianMokuaiItem extends ZixuanpeijianTypesInfoItem {
   自定义数据?: MokuaiItemCustomData;
   可替换模块?: ZixuanpeijianMokuaiItem[];
   vars?: Formulas;
-  info?: {门扇名字?: string; 门扇布局?: XhmrmsbjInfo["选中布局数据"]; 模块名字?: string; 层id?: number; isDefault?: boolean};
+  info?: {门扇名字?: MenshanKey; 门扇布局?: XhmrmsbjInfo["选中布局数据"]; 模块名字?: string; 层id?: number; isDefault?: boolean};
 }
 
 export interface CadItemInputInfo {

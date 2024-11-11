@@ -17,7 +17,6 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {getCopyName} from "@app/app.common";
-import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
@@ -55,7 +54,6 @@ import {getEmptyMokuaiItem, getMokuaiCustomData} from "./mokuai-item.utils";
   selector: "app-mokuai-item",
   standalone: true,
   imports: [
-    CadImageComponent,
     CadItemComponent,
     FloatingDialogModule,
     FormulasEditorComponent,
@@ -106,7 +104,10 @@ export class MokuaiItemComponent {
   });
   slgsInfo = computed(() => {
     const mokuai = this.mokuai();
-    const info: SuanliaogongshiInfo = {data: {算料公式: mokuai.xuanxianggongshi}};
+    const info: SuanliaogongshiInfo = {
+      data: {算料公式: mokuai.xuanxianggongshi},
+      slgs: {title: "模块公式", titleStyle: {fontSize: "1.2em", fontWeight: "bold"}}
+    };
     return info;
   });
   onSlgsChange(info: SuanliaogongshiInfo) {
@@ -320,10 +321,10 @@ export class MokuaiItemComponent {
     this.mokuai.update((v) => ({...v}));
   }
 
-  xuanxiangTable = computed(() => getXuanxiangTable(this.mokuai().自定义数据?.选项数据 || []));
+  xuanxiangTable = computed(() => getXuanxiangTable(this.mokuai().自定义数据?.选项数据 || [], true));
   async getXuanxiangItem(data0?: 选项) {
     const optionsAll = await this.bjmkStatus.mokuaiOptionsManager.fetch();
-    return await getXuanxiangItem(this.message, optionsAll, this.xuanxiangTable().data, data0);
+    return await getXuanxiangItem(this.message, optionsAll, this.xuanxiangTable().data, data0, true);
   }
   async onXuanxiangToolbar(event: ToolbarButtonEvent) {
     switch (event.button.event) {
