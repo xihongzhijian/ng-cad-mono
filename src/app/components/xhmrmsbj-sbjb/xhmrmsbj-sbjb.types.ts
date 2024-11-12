@@ -32,17 +32,15 @@ export interface XhmrmsbjSbjbItemSbjb {
 export type XhmrmsbjSbjbItemSbjbSorted = SortedItem<XhmrmsbjSbjbItemSbjb>;
 export interface XhmrmsbjSbjbItemSbjbItem {
   名字: string;
-  企料宽1?: number;
-  企料宽1取值范围?: string;
-  企料宽1可改?: boolean;
-  企料宽2?: number;
-  企料宽2取值范围?: string;
-  企料宽2可改?: boolean;
+  正面宽?: number;
+  正面宽取值范围?: string;
+  正面宽可改?: boolean;
+  背面宽?: number;
+  背面宽取值范围?: string;
+  背面宽可改?: boolean;
   正背面同时改变?: boolean;
-  虚拟企料?: boolean;
-  使用分体?: boolean;
-  分体1?: string;
-  分体2?: string;
+  使用正面分体?: boolean;
+  使用背面分体?: boolean;
 }
 export interface XhmrmsbjSbjbItemSbjbCad {
   name: string;

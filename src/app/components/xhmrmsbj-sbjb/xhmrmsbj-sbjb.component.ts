@@ -99,14 +99,14 @@ export class XhmrmsbjSbjbComponent {
         if (isXhmrmsbjSbjbItemOptionalKeys2(title)) {
           const extraTexts: CadItemFormExtraText[] = [];
           const keys: (keyof XhmrmsbjSbjbItemSbjbItem)[] = [
-            "企料宽1",
-            "企料宽1取值范围",
-            "企料宽1可改",
-            "企料宽2",
-            "企料宽2取值范围",
-            "企料宽2可改",
-            "虚拟企料",
-            "使用分体"
+            "正面宽",
+            "正面宽取值范围",
+            "正面宽可改",
+            "背面宽",
+            "背面宽取值范围",
+            "背面宽可改",
+            "使用正面分体",
+            "使用背面分体"
           ];
           for (const key of keys) {
             extraTexts.push({key, value: getValueString(item[title]?.[key])});

@@ -223,31 +223,17 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, t
   const data = getXhmrmsbjSbjbItemSbjbItem(cloneDeep(item));
   const getPart = (key: keyof typeof data) => ({label: key, model: {data, key}});
   const form: InputInfo<typeof data>[] = [
-    {type: "number", ...getPart("企料宽1")},
-    {type: "string", ...getPart("企料宽1取值范围"), validators: CustomValidators.numberRangeStr},
-    {type: "boolean", ...getPart("企料宽1可改")},
-    {type: "number", ...getPart("企料宽2")},
-    {type: "string", ...getPart("企料宽2取值范围"), validators: CustomValidators.numberRangeStr},
-    {type: "boolean", ...getPart("企料宽2可改")},
-    {type: "boolean", ...getPart("虚拟企料")}
+    {type: "number", ...getPart("正面宽")},
+    {type: "string", ...getPart("正面宽取值范围"), validators: CustomValidators.numberRangeStr},
+    {type: "boolean", ...getPart("正面宽可改")},
+    {type: "number", ...getPart("背面宽")},
+    {type: "string", ...getPart("背面宽取值范围"), validators: CustomValidators.numberRangeStr},
+    {type: "boolean", ...getPart("背面宽可改")}
   ];
 
-  const 使用分体: (typeof form)[number] = {type: "boolean", ...getPart("使用分体"), onChange: () => setFentiHidden()};
-  const 分体1: (typeof form)[number] = {type: "string", ...getPart("分体1")};
-  const 分体2: (typeof form)[number] = {type: "string", ...getPart("分体2")};
-  form.push(使用分体, 分体1, 分体2);
-  const setFentiHidden = () => {
-    if (data.使用分体) {
-      分体1.hidden = false;
-      分体2.hidden = false;
-    } else {
-      分体1.hidden = true;
-      分体2.hidden = true;
-      delete data.分体1;
-      delete data.分体2;
-    }
-  };
-  setFentiHidden();
+  const 分体1: (typeof form)[number] = {type: "string", ...getPart("使用正面分体")};
+  const 分体2: (typeof form)[number] = {type: "string", ...getPart("使用背面分体")};
+  form.push(分体1, 分体2);
 
   const result = await message.form(form, {title});
   return result ? data : null;
