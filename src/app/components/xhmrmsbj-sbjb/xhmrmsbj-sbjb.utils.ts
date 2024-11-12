@@ -111,14 +111,19 @@ export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: 
 export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string, activeSbjbItemIndex: WritableSignal<number>) => {
   const optionalKeys = getXhmrmsbjSbjbItemOptionalKeys(fenlei);
   const optionalCols1 = xhmrmsbjSbjbItemOptionalKeys1.map((key) => {
-    const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key};
+    const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key, style: {flex: "1 0 100px"}};
     if (!optionalKeys.includes(key)) {
       col.hidden = true;
     }
     return col;
   });
   const optionalCols2 = xhmrmsbjSbjbItemOptionalKeys2.map((key) => {
-    const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key, getString: (val) => val[key]?.名字 || ""};
+    const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {
+      type: "string",
+      field: key,
+      getString: (val) => val[key]?.名字 || "",
+      style: {flex: "1 0 100px"}
+    };
     if (!optionalKeys.includes(key)) {
       col.hidden = true;
     }
@@ -131,22 +136,23 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
       fields: ["开启", "门铰", "门扇厚度", "锁边", "铰边"]
     },
     columns: [
-      {type: "string", field: "开启"},
-      {type: "string", field: "门铰"},
-      {type: "string", field: "门扇厚度"},
-      {type: "string", field: "包边方向"},
-      {type: "string", field: "条件"},
+      {type: "string", field: "开启", width: "60px"},
+      {type: "string", field: "门铰", width: "80px"},
+      {type: "string", field: "门扇厚度", width: "80px"},
+      {type: "string", field: "包边方向", width: "80px"},
+      {type: "string", field: "条件", width: "80px"},
       ...optionalCols2,
       ...optionalCols1,
-      {type: "string", field: "双开门扇宽生成方式", hidden: !show双开门扇宽生成方式(fenlei)},
+      {type: "string", field: "双开门扇宽生成方式", hidden: !show双开门扇宽生成方式(fenlei), width: "110px"},
       {
         type: "number",
         field: "锁扇铰扇蓝线宽固定差值",
-        hidden: !data.some((v) => show锁扇铰扇蓝线宽固定差值(fenlei, v.双开门扇宽生成方式))
+        hidden: !data.some((v) => show锁扇铰扇蓝线宽固定差值(fenlei, v.双开门扇宽生成方式)),
+        width: "110px"
       },
-      {type: "boolean", field: "停用"},
-      {type: "number", field: "排序"},
-      {type: "boolean", field: "默认值"},
+      {type: "boolean", field: "停用", width: "60px"},
+      {type: "number", field: "排序", width: "60px"},
+      {type: "boolean", field: "默认值", width: "70px"},
       {
         type: "button",
         field: "CAD数据",
