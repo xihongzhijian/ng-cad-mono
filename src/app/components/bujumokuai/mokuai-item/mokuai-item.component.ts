@@ -49,7 +49,7 @@ import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
 import {MokuaiCadsComponent} from "../mokuai-cads/mokuai-cads.component";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 import {MokuaiItem, MokuaiItemCadInfo, MokuaiItemCloseEvent, MokuaiItemCustomData} from "./mokuai-item.types";
-import {getEmptyMokuaiItem, getMokuaiCustomData} from "./mokuai-item.utils";
+import {getEmptyMokuaiItem, getMokuaiCustomData, updateMokuaiCustomDataOptions} from "./mokuai-item.utils";
 
 @Component({
   selector: "app-mokuai-item",
@@ -91,7 +91,17 @@ export class MokuaiItemComponent {
 
   imgPrefix = this.bjmkStatus.imgPrefix;
   mokuai = signal<MokuaiItem>(getEmptyMokuaiItem());
-  mokuaiEff = effect(() => this.mokuai.set(cloneDeep(this.mokuaiIn())), {allowSignalWrites: true});
+  mokuaiEff = effect(
+    () => {
+      const mokuai = cloneDeep(this.mokuaiIn());
+      if (mokuai.自定义数据) {
+        const optionsAll = this.bjmkStatus.mokuaiOptionsManager.data();
+        updateMokuaiCustomDataOptions(mokuai.自定义数据, optionsAll);
+      }
+      this.mokuai.set(mokuai);
+    },
+    {allowSignalWrites: true}
+  );
   async editMokuai() {
     const mokuai = this.mokuai();
     const mokuai2 = await this.bjmkStatus.getMokuaiWithForm(mokuai);

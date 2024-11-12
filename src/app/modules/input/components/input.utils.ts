@@ -47,7 +47,10 @@ export const parseObjectString = (str: string, objectBefore: ObjectOf<string>, m
   }
 };
 
-export const convertOptions = (options: OptionsDataData[]) => {
+export const convertOptions = (options: OptionsDataData[] | undefined) => {
+  if (!Array.isArray(options)) {
+    return [];
+  }
   return options.map<InputInfoOption>((v) => ({value: v.name, label: v.label, img: v.img, disabled: v.disabled, vid: v.vid}));
 };
 

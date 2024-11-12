@@ -3,7 +3,7 @@
   @if (data.multi) {
     <button mat-raised-button color="primary" (click)="selectAll()">全选当前数据</button>
   }
-  @if (data.name) {
+  @if (data.name && !data.useLocalOptions) {
     <button mat-raised-button color="primary" (click)="search(true, true)">刷新</button>
   }
   @if (data.openInNewTab) {

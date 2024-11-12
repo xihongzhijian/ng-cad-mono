@@ -6,6 +6,7 @@ import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {输入, 输入下单用途, 选项} from "@components/lurushuju/xinghao-data";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {convertOptions} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} from "./lrsj-zuofa.types";
@@ -55,8 +56,8 @@ export const getXuanxiangItem = async (message: MessageService, options: Options
         if (Array.isArray(info.value)) {
           info.value.length = 0;
         }
-        if (info.optionsDialog) {
-          info.optionsDialog.optionKey = data.名字;
+        if (info.type === "select") {
+          info.options = convertOptions(options[data.名字]);
         }
       }
     },
@@ -64,12 +65,12 @@ export const getXuanxiangItem = async (message: MessageService, options: Options
       type: "select",
       label: "可选项",
       value: data.可选项.map((v) => v.mingzi),
-      options: [],
+      options: convertOptions(options[data.名字]),
       multiple: true,
       validators: Validators.required,
       optionsDialog: {
         optionKey: data.名字,
-        openInNewTab: true,
+        useLocalOptions: true,
         defaultValue: {value: data.可选项.find((v) => v.morenzhi)?.mingzi, required: true},
         onChange: (val) => {
           data.可选项 = val.options.map((v) => {
