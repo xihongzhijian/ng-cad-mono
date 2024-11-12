@@ -795,6 +795,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         } else {
           return String(value);
         }
+      case "boolean":
+        return getValueString(value, {forceBoolean: true});
       default:
         return getValueString(value);
     }
