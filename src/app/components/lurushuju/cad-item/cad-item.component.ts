@@ -693,7 +693,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       if (item.key2) {
         value = value?.[item.key2];
       }
-      return getValueString(value, "\n", "：");
+      return getValueString(value, {separator: "\n", separatorKv: "："});
     } else if (item.key === "展开信息") {
       const zhankai = this.zhankai;
       if (zhankai) {

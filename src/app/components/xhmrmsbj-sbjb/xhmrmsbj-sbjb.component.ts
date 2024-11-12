@@ -11,9 +11,9 @@ import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.componen
 import {CadItemButton, CadItemFormExtraText} from "@components/lurushuju/cad-item/cad-item.types";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf} from "@lucilor/utils";
+import {ObjectOf, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {ExcelSheet, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
@@ -35,6 +35,7 @@ import {
 } from "./xhmrmsbj-sbjb.types";
 import {
   convertXhmrmsbjSbjbItem,
+  exportXhmrmsbjSbjbItemSbjbs,
   getXhmrmsbjSbjbItemCadKeys,
   getXhmrmsbjSbjbItemOptions,
   getXhmrmsbjSbjbItemSbjbCad,
@@ -42,6 +43,7 @@ import {
   getXhmrmsbjSbjbItemSbjbItem,
   getXhmrmsbjSbjbItemSbjbItemForm,
   getXhmrmsbjSbjbItemTableInfo,
+  importXhmrmsbjSbjbItemSbjbs,
   isXhmrmsbjSbjbItemOptionalKeys1,
   isXhmrmsbjSbjbItemOptionalKeys2
 } from "./xhmrmsbj-sbjb.utils";
@@ -446,53 +448,28 @@ export class XhmrmsbjSbjbComponent {
     this.refreshItems();
   }
 
-  async mf() {
-    const xinghao = this.xinghaoName();
-    const suobianjiaobian = this.items();
-    const data = await this.http.getData("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian});
-    console.log(data);
-  }
-
-  import() {
-    this.message.importData(async (items: XhmrmsbjSbjbItem[]) => {
-      const itemOptions = getXhmrmsbjSbjbItemOptions(items);
-      const data: {from: XhmrmsbjSbjbItem[]; mode: XhmrmsbjSbjbItemCopyMode} = {from: [], mode: "添加到原有数据"};
-      const form: InputInfo<typeof data>[] = [
-        {
-          type: "select",
-          label: "选择导入哪些产品分类",
-          multiple: true,
-          options: itemOptions,
-          appearance: "list",
-          model: {data, key: "from"},
-          validators: Validators.required
-        },
-        {
-          type: "select",
-          label: "导入方式",
-          options: xhmrmsbjSbjbItemCopyModes.slice(),
-          model: {data, key: "mode"},
-          validators: Validators.required
-        }
-      ];
-      const result = await this.message.form(form);
-      const {from, mode} = data;
-      if (!result || from.length < 1) {
-        return false;
+  async getExportData() {
+    const items = this.items();
+    const itemOptions = getXhmrmsbjSbjbItemOptions(items);
+    const data = {from: Array<XhmrmsbjSbjbItem>()};
+    const indexMap = new Map(items.map((v, i) => [v.产品分类, i]));
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "select",
+        label: "选择导出哪些产品分类",
+        multiple: true,
+        options: itemOptions,
+        appearance: "list",
+        model: {data, key: "from"},
+        validators: Validators.required
       }
-      for (const item of data.from) {
-        const item2 = this.items().find((v) => v.产品分类 === item.产品分类);
-        if (item2) {
-          if (mode === "清空原有数据并全部替换为新数据") {
-            item2.锁边铰边数据 = item.锁边铰边数据;
-          } else {
-            item2.锁边铰边数据.push(...item.锁边铰边数据);
-          }
-        }
-      }
-      this.refreshItems();
-      return true;
-    });
+    ];
+    const result = await this.message.form(form);
+    if (!result) {
+      return [];
+    }
+    data.from.sort((a, b) => (indexMap.get(a.产品分类) ?? 0) - (indexMap.get(b.产品分类) ?? 0));
+    return data.from;
   }
   async export() {
     const items = this.items();
@@ -514,9 +491,73 @@ export class XhmrmsbjSbjbComponent {
     if (!result) {
       return;
     }
-    data.from.sort((a, b) => (indexMap.get(a.产品分类) ?? 0) - (indexMap.get(b.产品分类) ?? 0));
-    const title = [this.xinghaoName(), "锁边铰边", DateTime.now().toFormat("yyyyMMdd")].join("_");
-    await this.message.exportData(data.from, title);
+
+    const exportItems = data.from;
+    exportItems.sort((a, b) => (indexMap.get(a.产品分类) ?? 0) - (indexMap.get(b.产品分类) ?? 0));
+    const sheets: ExcelSheet[] = [];
+    for (const item of exportItems) {
+      const {产品分类, 锁边铰边数据} = item;
+      sheets.push({title: 产品分类, dataArray: exportXhmrmsbjSbjbItemSbjbs(产品分类, 锁边铰边数据)});
+    }
+    const name = [this.xinghaoName(), "锁边铰边", DateTime.now().toFormat("yyyyMMdd")].join("_");
+    await this.http.exportExcel({data: {name, sheets}});
+  }
+  async import() {
+    const files = await selectFiles({accept: ".xlsx"});
+    const file = files?.[0];
+    if (!file) {
+      return;
+    }
+    const excelData = await this.http.importExcel({file});
+    const sheets = excelData?.sheets;
+    if (!sheets) {
+      return;
+    }
+    const items: XhmrmsbjSbjbItem[] = [];
+    for (const sheet of sheets) {
+      if (!sheet.dataArray || sheet.dataArray.length < 1) {
+        continue;
+      }
+      const 产品分类 = sheet.title || "";
+      items.push({产品分类, 锁边铰边数据: importXhmrmsbjSbjbItemSbjbs(产品分类, sheet.dataArray)});
+    }
+
+    const itemOptions = getXhmrmsbjSbjbItemOptions(items);
+    const data: {from: XhmrmsbjSbjbItem[]; mode: XhmrmsbjSbjbItemCopyMode} = {from: [], mode: "添加到原有数据"};
+    const form: InputInfo<typeof data>[] = [
+      {
+        type: "select",
+        label: "选择导入哪些产品分类",
+        multiple: true,
+        options: itemOptions,
+        appearance: "list",
+        model: {data, key: "from"},
+        validators: Validators.required
+      },
+      {
+        type: "select",
+        label: "导入方式",
+        options: xhmrmsbjSbjbItemCopyModes.slice(),
+        model: {data, key: "mode"},
+        validators: Validators.required
+      }
+    ];
+    const result = await this.message.form(form);
+    const {from, mode} = data;
+    if (!result || from.length < 1) {
+      return;
+    }
+    for (const item of data.from) {
+      const item2 = this.items().find((v) => v.产品分类 === item.产品分类);
+      if (item2) {
+        if (mode === "清空原有数据并全部替换为新数据") {
+          item2.锁边铰边数据 = item.锁边铰边数据;
+        } else {
+          item2.锁边铰边数据.push(...item.锁边铰边数据);
+        }
+      }
+    }
+    this.refreshItems();
   }
 
   async validate() {

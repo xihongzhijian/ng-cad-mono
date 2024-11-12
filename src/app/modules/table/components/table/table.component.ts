@@ -796,7 +796,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
           return String(value);
         }
       default:
-        return getValueString(value, ",", ":");
+        return getValueString(value);
     }
   }
 

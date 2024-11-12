@@ -12,10 +12,13 @@ import {
   CadSearchData,
   Changelog,
   DeleteMongodbParams,
+  ExcelData,
+  ExportExcelOptions,
   GetCadParams,
   GetOptionsParams,
   GetShortUrlParams,
   HoutaiCad,
+  ImportExcelOptions,
   MongodbCopyOptions,
   MongodbDataBase,
   MongodbInsertOptions,
@@ -428,5 +431,12 @@ export class CadDataService extends HttpService {
 
   async updateItemType(table: string, field: string, typeOld: string, typeNew: string, options?: HttpOptions) {
     return await this.getData<boolean>("ngcad/updateItemType", {table, field, typeOld, typeNew}, options);
+  }
+
+  async importExcel(options: ImportExcelOptions, httpOptions?: HttpOptions) {
+    return await this.getData<ExcelData>("ngcad/importExcel", options, httpOptions);
+  }
+  async exportExcel(options: ExportExcelOptions, httpOptions?: HttpOptions) {
+    return await this.getData<void>("ngcad/exportExcel", options, {responseType: "blob", ...httpOptions});
   }
 }

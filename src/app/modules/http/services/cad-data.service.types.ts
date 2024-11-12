@@ -224,3 +224,18 @@ export interface MongodbCopyOptions {
   extraData?: ObjectOf<any>;
   force?: boolean;
 }
+
+export interface ImportExcelOptions {
+  file: File;
+}
+export interface ExportExcelOptions {
+  data: ExcelData;
+}
+export interface ExcelData {
+  name?: string;
+  sheets?: ExcelSheet[];
+}
+export interface ExcelSheet {
+  title?: string;
+  dataArray?: string[][];
+}

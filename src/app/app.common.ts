@@ -270,15 +270,16 @@ export const getObjectString = (value: any, separator: string, separatorKv: stri
   }
   return strs.join(separator);
 };
-export const getValueString = (value: any, separator = ",", separatorKv = ":") => {
-  if (Array.isArray(value)) {
+export const getValueString = (value: any, opts?: {separator?: string; separatorKv?: string; forceBoolean?: boolean}) => {
+  const {separator = ",", separatorKv = ":", forceBoolean} = opts || {};
+  if (forceBoolean || typeof value === "boolean") {
+    return getBooleanStr(value);
+  } else if (Array.isArray(value)) {
     return getArrayString(value, separator);
   } else if (value && typeof value === "object") {
     return getObjectString(value, separator, separatorKv);
   } else if ([null, undefined].includes(value)) {
     return "";
-  } else if (typeof value === "boolean") {
-    return getBooleanStr(value);
   } else {
     return String(value);
   }

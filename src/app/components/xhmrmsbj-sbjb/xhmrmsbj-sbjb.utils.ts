@@ -1,4 +1,5 @@
 import {WritableSignal} from "@angular/core";
+import {getValueString} from "@app/app.common";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
@@ -9,6 +10,7 @@ import {
   show锁扇铰扇蓝线宽固定差值
 } from "@components/lurushuju/services/lrsj-status.utils";
 import {environment} from "@env";
+import {keysOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
@@ -39,6 +41,24 @@ export const getXhmrmsbjSbjbItemOptionalKeys = (fenlei: string): XhmrmsbjSbjbIte
       return [];
   }
 };
+export const getXhmrmsbjSbjbItemOptionalKeys1 = (fenlei: string) => {
+  const keys: XhmrmsbjSbjbItemOptionalKey1[] = [];
+  for (const key of getXhmrmsbjSbjbItemOptionalKeys(fenlei)) {
+    if (isXhmrmsbjSbjbItemOptionalKeys1(key)) {
+      keys.push(key);
+    }
+  }
+  return keys;
+};
+export const getXhmrmsbjSbjbItemOptionalKeys2 = (fenlei: string) => {
+  const keys: XhmrmsbjSbjbItemOptionalKey2[] = [];
+  for (const key of getXhmrmsbjSbjbItemOptionalKeys(fenlei)) {
+    if (isXhmrmsbjSbjbItemOptionalKeys2(key)) {
+      keys.push(key);
+    }
+  }
+  return keys;
+};
 
 export const getXhmrmsbjSbjbItemCadKeys = (fenlei: string): XhmrmsbjSbjbItemOptionalKey3[] => {
   switch (fenlei) {
@@ -53,11 +73,17 @@ export const getXhmrmsbjSbjbItemCadKeys = (fenlei: string): XhmrmsbjSbjbItemOpti
   }
 };
 
-export const isXhmrmsbjSbjbItemOptionalKeys1 = (key: string): key is XhmrmsbjSbjbItemOptionalKey1 => {
-  return xhmrmsbjSbjbItemOptionalKeys1.includes(key as XhmrmsbjSbjbItemOptionalKey1);
+export const isXhmrmsbjSbjbItemOptionalKeys1 = (
+  key: string,
+  keys: XhmrmsbjSbjbItemOptionalKey1[] = xhmrmsbjSbjbItemOptionalKeys1.slice()
+): key is XhmrmsbjSbjbItemOptionalKey1 => {
+  return keys.includes(key as XhmrmsbjSbjbItemOptionalKey1);
 };
-export const isXhmrmsbjSbjbItemOptionalKeys2 = (key: string): key is XhmrmsbjSbjbItemOptionalKey2 => {
-  return xhmrmsbjSbjbItemOptionalKeys2.includes(key as XhmrmsbjSbjbItemOptionalKey2);
+export const isXhmrmsbjSbjbItemOptionalKeys2 = (
+  key: string,
+  keys: XhmrmsbjSbjbItemOptionalKey2[] = xhmrmsbjSbjbItemOptionalKeys2.slice()
+): key is XhmrmsbjSbjbItemOptionalKey2 => {
+  return keys.includes(key as XhmrmsbjSbjbItemOptionalKey2);
 };
 export const isXhmrmsbjSbjbItemOptionalKeys3 = (key: string): key is XhmrmsbjSbjbItemOptionalKey3 => {
   return xhmrmsbjSbjbItemOptionalKeys3.includes(key as XhmrmsbjSbjbItemOptionalKey3);
@@ -255,3 +281,128 @@ export const getXhmrmsbjSbjbItemOptions = (items: XhmrmsbjSbjbItem[]) =>
     }
     return {label, value: item, disabled};
   });
+
+export const exportXhmrmsbjSbjbItemSbjbs = (fenlei: string, items: XhmrmsbjSbjbItemSbjb[]) => {
+  const show双开门扇宽生成方式Val = show双开门扇宽生成方式(fenlei);
+  const emptySbjbItemSbjbItem: Required<XhmrmsbjSbjbItemSbjbItem> = {
+    名字: "",
+    正面宽: 0,
+    正面宽取值范围: "",
+    正面宽可改: false,
+    背面宽: 0,
+    背面宽取值范围: "",
+    背面宽可改: false,
+    正背面同时改变: false,
+    使用正面分体: false,
+    使用背面分体: false
+  };
+  const sbjbItemSbjbItemKeys = keysOf(emptySbjbItemSbjbItem);
+  const sbjbItemOptionalKeys1 = getXhmrmsbjSbjbItemOptionalKeys1(fenlei);
+  const sbjbItemOptionalKeys2 = getXhmrmsbjSbjbItemOptionalKeys2(fenlei);
+  const header = [
+    "开启",
+    "门铰",
+    "门扇厚度",
+    "条件",
+    "包边方向",
+    ...sbjbItemOptionalKeys2.map((key) => sbjbItemSbjbItemKeys.map((key2) => key + key2)).flat(),
+    ...sbjbItemOptionalKeys1,
+    ...(show双开门扇宽生成方式Val ? ["双开门扇宽生成方式", "锁扇铰扇蓝线宽固定差值"] : []),
+    "停用",
+    "排序",
+    "默认值"
+  ];
+  const rows: string[][] = [];
+  for (const item of getSortedItems(items, (v) => v.排序 ?? 0)) {
+    const row = [
+      item.开启,
+      item.门铰,
+      item.门扇厚度,
+      item.条件,
+      item.包边方向,
+      ...sbjbItemOptionalKeys2.map((key) => sbjbItemSbjbItemKeys.map((key2) => item[key]?.[key2])).flat(),
+      ...sbjbItemOptionalKeys1.map((key) => item[key]),
+      ...(show双开门扇宽生成方式Val ? [item.双开门扇宽生成方式, item.锁扇铰扇蓝线宽固定差值] : []),
+      item.停用,
+      item.排序,
+      item.默认值
+    ];
+    rows.push(row.map((v) => getValueString(v)));
+  }
+  return [header, ...rows];
+};
+export const importXhmrmsbjSbjbItemSbjbs = (fenlei: string, dataArray: string[][]) => {
+  const header = dataArray[0];
+  const rows = dataArray.slice(1);
+  const items: XhmrmsbjSbjbItemSbjb[] = [];
+  for (const row of rows) {
+    const item = getXhmrmsbjSbjbItemSbjb();
+    items.push(item);
+    for (const [i, value] of row.entries()) {
+      let key = header[i];
+      if (!key || !value) {
+        continue;
+      }
+      let key2: keyof XhmrmsbjSbjbItemSbjbItem | null = null;
+      for (const optionalKeys2 of xhmrmsbjSbjbItemOptionalKeys2) {
+        if (key.startsWith(optionalKeys2)) {
+          key2 = key.slice(optionalKeys2.length) as keyof XhmrmsbjSbjbItemSbjbItem;
+          key = optionalKeys2;
+          break;
+        }
+      }
+      const sbjbItemOptionalKeys1 = getXhmrmsbjSbjbItemOptionalKeys1(fenlei);
+      const sbjbItemOptionalKeys2 = getXhmrmsbjSbjbItemOptionalKeys2(fenlei);
+      if (isXhmrmsbjSbjbItemOptionalKeys1(key, sbjbItemOptionalKeys1)) {
+        item[key] = value;
+      } else if (isXhmrmsbjSbjbItemOptionalKeys2(key, sbjbItemOptionalKeys2) && key2) {
+        const item2 = getXhmrmsbjSbjbItemSbjbItem();
+        item[key] = item2;
+        switch (key2) {
+          case "名字":
+          case "正面宽取值范围":
+          case "背面宽取值范围":
+            item2[key2] = value;
+            break;
+          case "正面宽":
+          case "背面宽":
+            item2[key2] = parseFloat(value);
+            break;
+          case "正面宽可改":
+          case "背面宽可改":
+          case "正背面同时改变":
+          case "使用正面分体":
+          case "使用背面分体":
+            item2[key2] = value === "是";
+            break;
+          default:
+            console.error("unknown XhmrmsbjSbjbItemSbjbItem key", key2);
+        }
+      } else {
+        switch (key) {
+          case "开启":
+          case "条件":
+          case "包边方向":
+          case "双开门扇宽生成方式":
+            item[key] = value;
+            break;
+          case "门铰":
+          case "门扇厚度":
+            item[key] = value.split(",").map((v) => v.trim());
+            break;
+          case "锁扇铰扇蓝线宽固定差值":
+          case "排序":
+            item[key] = parseFloat(value);
+            break;
+          case "停用":
+          case "默认值":
+            item[key] = value === "是";
+            break;
+          default:
+            console.error("unknown XhmrmsbjSbjbItem key", key);
+        }
+      }
+    }
+  }
+  return items;
+};
