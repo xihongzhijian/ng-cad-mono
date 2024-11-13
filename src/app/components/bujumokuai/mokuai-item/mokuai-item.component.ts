@@ -497,6 +497,11 @@ export class MokuaiItemComponent {
       }
     }
 
+    const purgeStr = (str: string) => str.replaceAll(" ", "");
+    mokuai.gongshishuru = purgeStr(mokuai.gongshishuru);
+    mokuai.xuanxiangshuru = purgeStr(mokuai.xuanxiangshuru);
+    mokuai.shuchubianliang = purgeStr(mokuai.shuchubianliang);
+
     await this._fetchMrbcjfzResponseData();
     await timeout(0);
     const mrbcjfzErrors = this.mrbcjfzComponent()?.checkSubmit();

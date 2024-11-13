@@ -815,6 +815,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const morenbancai = xinghao?.["默认板材"];
     const options: InputInfoOptions = [];
     for (const key in morenbancai) {
+      if (key === "底框板材") {
+        continue;
+      }
       const title = xinghao.getBancaiTitle(key);
       const alias = morenbancai[key].板材分组别名;
       if (title) {
@@ -952,7 +955,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     for (let i = 0; i < msbjInfos.length; i++) {
       const {menshanKey, msbjInfo} = msbjInfos[i];
-      purgeMsbjInfo(msbjInfo);
       const errorXuanzhongNodeNames: string[] = [];
       if (msbjInfo.选中布局数据 && isVersion2024) {
         const formulas = msbjInfo.选中布局数据.模块大小配置?.算料公式 || {};
@@ -1052,6 +1054,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         errorXuanzhongMenshans.push({menshan: menshanKey, nodeNames: errorXuanzhongNodeNames});
       }
     }
+    purgeMsbjInfo(dataInfo.menshanbujuInfos);
     let jumpTo: {门扇名字: MenshanKey; 层名字?: string; mokuai?: ZixuanpeijianMokuaiItem; mkdx?: boolean} | null = null;
     if (!jumpTo && errorXuanzhongMenshans.length > 0) {
       await this.message.error({
@@ -1226,7 +1229,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           }
         }
       }
-      purgeMsbjInfo(msbjInfo);
+      purgeMsbjInfo(data.menshanbujuInfos);
       let refresh = true;
       if (kexuan.length > 0) {
         if (!kexuan.find((v) => v.info?.isDefault)) {
