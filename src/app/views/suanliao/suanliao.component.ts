@@ -27,7 +27,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
 import {XhmrmsbjDataMsbjInfos, XhmrmsbjTableData} from "@views/xhmrmsbj/xhmrmsbj.types";
-import {getMokuaiFormulas, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
+import {getMokuaiFormulas, getMokuaiShuchuVars, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {
   ResetInputsInput,
   ResetInputsOutput,
@@ -294,6 +294,14 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
         }
         const {type2} = mokuai;
         const formulas = getMokuaiFormulas(msbjInfo, mokuai, materialResult);
+        if (getIsVersion2024(mokuai.zuoshujubanben)) {
+          const shuchuVars = getMokuaiShuchuVars(msbjInfo, node, mokuai);
+          for (const key of Object.keys(formulas)) {
+            if (!shuchuVars.includes(key)) {
+              delete formulas[key];
+            }
+          }
+        }
         const calcResult = await this.calc.calcFormulas(formulas, vars);
         const title = [menshanKey, type2].join("-");
         if (calcResult) {

@@ -74,7 +74,7 @@ import {getEmpty模块大小配置, getNodeFormulasKeys, justify模块大小配�
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {resetInputs} from "@views/suanliao/suanliao.utils";
 import {getFormulaInfos, openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
-import {cloneDeep, debounce, intersection} from "lodash";
+import {cloneDeep, debounce, difference, intersection} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, Subject} from "rxjs";
@@ -992,7 +992,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             }
             if (!isMokuaiItemEqual(选中模块1, 选中模块2)) {
               const slgsKeys = Object.keys(getMokuaiFormulas(msbjInfo, 选中模块2));
-              const dupVars2 = intersection(slgsKeys, scbl1);
+              const dupVars2 = difference(intersection(slgsKeys, scbl1), 选中模块2.shuchubianliang);
               if (dupVars2.length > 0) {
                 nodeVarsErrorInfo.push({
                   menshanKey,
