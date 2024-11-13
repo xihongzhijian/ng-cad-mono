@@ -16,18 +16,20 @@ export const getXuanxiangTable = (data: XuanxiangTableData[], use输出变量 = 
     title: "选项数据",
     inlineTitle: true,
     columns: [
-      {type: "string", field: "名字"},
+      {type: "string", field: "名字", style: {flex: "1 1 130px"}},
       {
         type: "string",
         field: "可选项",
+        style: {flex: "1 1 200px"},
         getString: (item) => {
           return item.可选项.map((v) => v.mingzi).join("*");
         }
       },
-      {type: "boolean", field: "输出变量", hidden: !use输出变量},
+      {type: "boolean", field: "输出变量", style: {flex: "1 1 80px"}, hidden: !use输出变量},
       {
         type: "button",
         field: "操作",
+        style: {flex: "1 1 150px"},
         buttons: [
           {event: "编辑", color: "primary"},
           {event: "清空数据", color: "primary"}

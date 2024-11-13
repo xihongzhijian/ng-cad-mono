@@ -3,11 +3,10 @@
 }
 
 .item-infos {
-  width: 1800px;
   height: 362px;
   margin: 20px 0 10px 0;
   > * {
-    width: 0;
+    flex: 0 0 auto;
 
     &:not(:last-child) {
       margin-right: 10px;
@@ -20,12 +19,12 @@
   }
 
   .item-basic {
-    flex: 0 0 250px;
+    width: 250px;
     --item-height: 100%;
   }
 
   .item-bancai {
-    flex: 0 0 250px;
+    width: 250px;
   }
 
   .box {
@@ -35,7 +34,11 @@
   }
 
   .mokuai-gongneng {
-    flex: 0 0 350px;
+    width: 350px;
+  }
+
+  .xuanxiang-table {
+    width: 560px;
   }
 }
 

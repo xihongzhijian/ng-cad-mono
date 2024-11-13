@@ -30,7 +30,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatListModule, MatSelectionListChange} from "@angular/material/list";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatRadioModule} from "@angular/material/radio";
-import {MatSelectModule} from "@angular/material/select";
+import {MatSelectChange, MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getArray, imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
@@ -769,6 +769,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.onChangeDelay = null;
     }
     this.onChange(event.option.value, true);
+  }
+
+  onBooleanSelectChange(event: MatSelectChange) {
+    this.value = event.value;
+    this.onChange();
   }
 
   onInput(value = this.value) {
