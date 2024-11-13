@@ -9,7 +9,7 @@
     <mat-option value="relative">相对定位</mat-option>
   </mat-select>
 </mat-form-field> -->
-<div class="btn-group">
+<div class="toolbar">
   @if (!showPointsAssemble) {
     <button mat-raised-button color="primary" (click)="directAssemble()">快速装配</button>
   }
@@ -20,7 +20,7 @@
 
 @if (connections.length) {
   <ng-scrollbar class="connections">
-    <div class="btn-group">
+    <div class="toolbar">
       <button mat-raised-button color="primary" (click)="clearConnections()">清空</button>
     </div>
     @for (c of connections; track i; let i = $index) {

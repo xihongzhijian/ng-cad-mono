@@ -84,7 +84,7 @@
         }
       </div>
       <div
-        class="items no-items-per-row flex-row"
+        class="items flex-row"
         cdkDropList
         cdkDropListOrientation="horizontal"
         [cdkDropListData]="xinghao['默认板材'][key].CAD"
@@ -104,7 +104,7 @@
           }
         }
       </div>
-      <div class="items no-items-per-row flex-row">
+      <div class="items flex-row">
         @for (id of xinghao["默认板材"][key]["企料"]; track $index) {
           @if (qiliaos[id]) {
             <div class="item" (click)="selectListItem(qiliaos[id], '企料', key)">
@@ -113,7 +113,7 @@
           }
         }
       </div>
-      <div class="items no-items-per-row flex-row">
+      <div class="items flex-row">
         @for (id of xinghao["默认板材"][key]["花件"]; track $index) {
           @if (huajians[id]) {
             <div class="item" (click)="selectListItem(huajians[id], '花件', key)">
@@ -127,7 +127,7 @@
   }
 </ng-template>
 <ng-template #content2>
-  <div class="items no-items-per-row">
+  <div class="items">
     @for (item of cads | keyvalue: returnZero; track $index) {
       @if (!item.value.selected) {
         <div class="item" (click)="selectListItem(item.value, 'CAD')">
@@ -144,7 +144,7 @@
   </div>
 </ng-template>
 <ng-template #content3>
-  <div class="items no-items-per-row">
+  <div class="items">
     @for (item of qiliaos | keyvalue: returnZero; track $index) {
       @if (!item.value.selected) {
         <div class="item" (click)="selectListItem(item.value, '企料')">
@@ -155,7 +155,7 @@
   </div>
 </ng-template>
 <ng-template #content4>
-  <div class="items no-items-per-row">
+  <div class="items">
     @for (item of huajians | keyvalue: returnZero; track $index) {
       @if (!item.value.selected) {
         <div class="item" (click)="selectListItem(item.value, '花件')">

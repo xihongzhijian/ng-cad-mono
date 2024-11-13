@@ -6,30 +6,17 @@ pre {
   font-family: "Fira Code Retina", monospace;
 }
 
-body {
+body.ng-page {
   width: 100vw;
   height: 100vh;
   margin: 0;
   overflow: hidden;
+  display: block;
 }
 @media print {
   body,
   body * {
     overflow: visible;
-  }
-}
-
-.btn-group {
-  margin: 5px 5px 0 5px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-
-  > * {
-    margin-bottom: 5px;
-    &:not(:last-child) {
-      margin-right: 5px;
-    }
   }
 }
 

@@ -28,7 +28,7 @@
 
 <ng-scrollbar>
   <app-spinner [id]="loaderIds.optionsLoader"></app-spinner>
-  <div class="options items no-items-per-row add-empty-msg">
+  <div class="options items add-empty-msg">
     @for (item of pageData(); track i; let i = $index) {
       <div class="option border item" [class.checked]="item.checked" (click)="onCheckboxChange(item)">
         <div class="toolbar">

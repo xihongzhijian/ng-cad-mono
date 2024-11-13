@@ -4,7 +4,7 @@
   </div>
 }
 @if (toolbarVisible) {
-  <div class="toolbar btn-group" [@toolbarEnter] [@toolbarLeave]>
+  <div class="toolbar toolbar" [@toolbarEnter] [@toolbarLeave]>
     @if (showDxfInput) {
       <input #uploadDxfInput type="file" hidden accept=".dxf" (input)="uploadDxf($event)" />
       <input #uploadJsonInput type="file" hidden accept=".json" (input)="uploadDxf($event)" />

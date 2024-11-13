@@ -16,7 +16,7 @@
 
 <ng-scrollbar>
   @if (showDefaultWorkDataList && defaultWorkDataList) {
-    <div class="items no-items-per-row">
+    <div class="items">
       @for (item of defaultWorkDataList; track $index) {
         <div class="favorite-item item border">
           <div class="toolbar header">
@@ -42,7 +42,7 @@
             <button mat-button color="primary" (click)="editType(i)">编辑</button>
           }
         </div>
-        <div class="items no-items-per-row">
+        <div class="items">
           @for (j of manager.favoritesSortedIndexs; track $index) {
             @if (manager.favorites[j].type === manager.types[i].name) {
               <div class="favorite-item item border">

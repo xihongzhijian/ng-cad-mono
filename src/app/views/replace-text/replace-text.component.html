@@ -40,19 +40,19 @@
   </div>
 </div>
 @if (step.value === 1) {
-  <div class="btn-group">
+  <div class="toolbar">
     <button mat-raised-button color="primary" (click)="ready()" [disabled]="form.invalid">提交</button>
   </div>
 }
 
 @if (step.value === 2) {
-  <div class="btn-group">
+  <div class="toolbar">
     <button mat-raised-button color="primary" (click)="step.next(1)">取消</button>
     <button mat-raised-button color="primary" (click)="submit()">确认替换</button>
   </div>
   <div>{{ replacerDesc }}</div>
   <div>匹配到的模板：</div>
-  <div class="btn-group">
+  <div class="toolbar">
     <button mat-raised-button color="primary" (click)="selectAll()">全选</button>
     <button mat-raised-button color="primary" (click)="selectNone()">全不选</button>
   </div>

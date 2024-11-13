@@ -25,7 +25,7 @@
                       <app-input [info]="info"></app-input>
                     }
                   </div>
-                  <div class="items no-items-per-row">
+                  <div class="items">
                     @for (key3 of qiliaoKeys[suanliaoData()["产品分类"]] || []; track i; let i = $index) {
                       <ng-container *ngTemplateOutlet="cadItem; context: {key1, key2: '企料CAD', key3}"></ng-container>
                     }
@@ -43,7 +43,7 @@
                         <div class="text" style="color: blue">【型号专用CAD】做了【算料单示意图】，这里不可以再选择数据</div>
                       </div>
                     }
-                    <div class="items no-items-per-row">
+                    <div class="items">
                       @if (suanliaoData()[key1]["示意图CAD"]["算料单示意图"].length > 0) {
                         @for (item of suanliaoData()[key1]["示意图CAD"]["算料单示意图"]; track i; let i = $index) {
                           <app-cad-item

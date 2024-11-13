@@ -23,7 +23,7 @@
     <button mat-raised-button color="primary">导入</button>
     <button mat-raised-button color="primary">导出</button>
   </div>
-  <div class="data-items items no-items-per-row" appDataListItems>
+  <div class="data-items items" appDataListItems>
     @for (cad of cads(); track i; let i = $index) {
       <div class="data-item item link">
         <app-cad-item
@@ -53,7 +53,7 @@
       <div class="error">现在是编辑状态，不可以选择配件</div>
     }
     <ng-scrollbar #selectedCadsScrollbar class="selected-cads">
-      <div class="data-items items no-items-per-row">
+      <div class="data-items items">
         @for (cad of selectedCads(); track i; let i = $index) {
           <div class="data-item item link">
             <app-cad-image id="" [data]="cad"></app-cad-image>

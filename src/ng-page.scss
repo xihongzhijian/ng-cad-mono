@@ -14,11 +14,11 @@
     flex-wrap: wrap;
     --item-margin: 2px;
 
-    &:not(.no-items-per-row) > .item {
+    &.items-per-row > .item {
       width: calc(100% / var(--items-per-row, 1) - var(--item-margin) * 2);
     }
-    .no-items-per-row {
-      position: relative;
+    .items-per-row {
+      position: relative; // placeholder
     }
   }
 

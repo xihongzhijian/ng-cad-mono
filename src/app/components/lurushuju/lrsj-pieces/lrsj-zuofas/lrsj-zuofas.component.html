@@ -10,7 +10,7 @@
             <div class="header">
               <div class="name title">{{ fenlei }}</div>
             </div>
-            <div class="工艺做法 items no-items-per-row">
+            <div class="工艺做法 items">
               @for (zuofa of xinghao["产品分类"][fenlei]; track j; let j = $index) {
                 <div class="item link" [attr.data-ij]="i + ',' + j">
                   @if (zuofa["录入完成"]) {

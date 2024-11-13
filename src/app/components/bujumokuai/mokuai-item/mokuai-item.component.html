@@ -70,7 +70,7 @@
         <button mat-raised-button color="primary" (click)="importCads()">导入替换</button>
         <button mat-raised-button color="primary" (click)="exportCads()">导出</button>
       </div>
-      <div class="items no-items-per-row flex-110">
+      <div class="items flex-110">
         @for (cad of selectedCads(); track i; let i = $index) {
           <app-cad-item
             class="item"

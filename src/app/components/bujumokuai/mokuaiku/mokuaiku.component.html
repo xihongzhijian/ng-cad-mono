@@ -23,7 +23,7 @@
         <button mat-raised-button color="primary">导出</button>
       }
     </div>
-    <div class="data-items items no-items-per-row" appDataListItems>
+    <div class="data-items items" appDataListItems>
       @for (mokuai of mokuais(); track $index) {
         <div
           class="data-item item link"
@@ -71,7 +71,7 @@
     <div class="flex-column">
       <div class="title">可选模块</div>
       <ng-scrollbar>
-        <div class="selected-mokuais items flex-110">
+        <div class="selected-mokuais items items-per-row flex-110">
           @for (mokuai of selectedMokuais(); track $index) {
             <div class="item">
               <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()"></app-image>

@@ -1,5 +1,5 @@
 <ng-scrollbar>
-  <div class="items no-items-per-row">
+  <div class="items">
     @for (msbj of msbjs(); track $index) {
       <div class="item link" (click)="openMsbj(msbj)">
         <app-image [src]="msbj.xiaoguotu" [prefix]="imgPrefix"></app-image>

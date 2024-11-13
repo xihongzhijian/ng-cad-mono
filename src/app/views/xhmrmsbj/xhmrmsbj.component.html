@@ -139,7 +139,7 @@
               <div class="error">取值顺序：输入值 > 模块公式值 > 通用公式值</div>
             }
           }
-          <div class="items">
+          <div class="items items-per-row">
             @for (info of mokuaiInputInfosInput(); track $index) {
               <app-input class="item" [info]="info"></app-input>
             }

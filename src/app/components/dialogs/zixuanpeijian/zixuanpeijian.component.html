@@ -75,7 +75,7 @@
                     </button>
                     <div class="name">{{ getMokuaiTitle(item) }}</div>
                   </div>
-                  <div class="btn-group">
+                  <div class="toolbar">
                     @if (data?.["可替换模块"]) {
                       <button mat-raised-button color="primary" (click)="setReplaceableMokuais(item)">可替换模块</button>
                     }
@@ -118,7 +118,7 @@
     }
     @case (2) {
       <div class="step-2 flex-column flex-110">
-        <div class="btn-group">
+        <div class="toolbar">
           <button mat-raised-button color="primary" (click)="setStep(1)">选择模块配件</button>
           <button mat-raised-button color="primary" (click)="setStep(3)">选择零散配件</button>
           <div class="divider"></div>
@@ -232,7 +232,7 @@
           </ng-scrollbar>
         </div>
         <div class="flex-column flex-110">
-          <div class="btn-group">
+          <div class="toolbar">
             <app-input [info]="lingsanCadsSearchInput" style="width: 100px; flex: 1 1 0"></app-input>
             <button mat-raised-button [color]="multiDeleting ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
             @if (getCadYaoqiu()?.["有帮助文档"]) {
@@ -403,7 +403,7 @@
           }
         }
       }
-      <div class="btn-group">
+      <div class="toolbar">
         @if (type !== "模块") {
           <button mat-raised-button color="primary" (click)="openKlkwpzDialog(cad)">开料孔位配置</button>
           <button mat-raised-button color="primary" (click)="openKlcsDialog(cad)">切内空参数</button>
