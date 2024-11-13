@@ -67,7 +67,8 @@ export const cadOptions = {
 
 export const cadLineOptions = {
   zhankaixiaoshuchuli: {values: ["不处理", "舍去小数", "小数进一", "四舍五入", "0.5取整", "保留一位小数四舍五入"], defaultValue: "不处理"},
-  suanliaosanxiaoshuchuli: {values: ["默认", "舍去小数", "小数进一", "四舍五入", "保留一位", "保留两位"], defaultValue: "默认"}
+  suanliaosanxiaoshuchuli: {values: ["默认", "舍去小数", "小数进一", "四舍五入", "保留一位", "保留两位"], defaultValue: "默认"},
+  圆弧显示: {values: ["默认", "半径", "R+半径", "φ+直径", "弧长", "弧长+线长"], defaultValue: "默认"}
 } as const;
 
 export const cadDimensionOptions = {
