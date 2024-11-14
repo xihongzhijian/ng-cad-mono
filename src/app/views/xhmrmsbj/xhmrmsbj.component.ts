@@ -305,6 +305,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.step1Data.typesInfo,
       this.msbjs()
     );
+    let activeMenshanKey = this.activeMenshanKey();
+    let nodeName = this.activeRectInfo()?.name || "";
     this.data.set(data2);
     this.materialResult.set(materialResult);
     this.houtaiUrl = houtaiUrl;
@@ -318,12 +320,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.xinghao.set(xinghao);
     const 浮动弹窗 = data.opts?.浮动弹窗;
     if (浮动弹窗) {
-      this.activeMenshanKey.set(浮动弹窗.门扇名字);
-      await timeout(0);
-      this.selectMsbjRect(浮动弹窗.节点名字);
-    } else if (!this.activeMenshanKey()) {
-      this.activeMenshanKey.set(this.menshanKeys[0]);
+      activeMenshanKey = 浮动弹窗.门扇名字;
+      nodeName = 浮动弹窗.节点名字;
     }
+    this.activeMenshanKey.set(activeMenshanKey || this.menshanKeys[0]);
+    await timeout(0);
+    this.selectMsbjRect(nodeName);
   }
 
   submitDataStart() {
@@ -760,9 +762,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     return infos;
   });
-  mokuaiXuanxiangAll = computed(() => this.activeMokuaiNode()?.选中模块?.自定义数据?.选项数据 || []);
-  mokuaiXuanxiang = computed(() => this.mokuaiXuanxiangAll().filter((v) => v.可选项.length > 0));
-  mokuaiXuanxiangInputInfos = computed(() => {
+  mokuaiOptionsAll = computed(() => {
+    this.data();
+    return this.activeMokuaiNode()?.选中模块?.自定义数据?.选项数据 || [];
+  });
+  mokuaiOptions = computed(() => this.mokuaiOptionsAll().filter((v) => v.可选项.length > 0));
+  mokuaiOptionInputInfos = computed(() => {
     const data = this.data();
     const msbjInfo = this.activeMsbjInfo();
     const node = this.activeMokuaiNode();
@@ -775,7 +780,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       check: (key, node2) => key !== activeMenshanKey || node2.层名字 !== node.层名字
     });
     const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
-    return this.mokuaiXuanxiang().map((item) => {
+    return this.mokuaiOptions().map((item) => {
       const name = item.名字;
       const options = getMokuaiOptions(msbjInfo, node, mokuai);
       const option = options.find((v) => v.名字 === name);
@@ -1434,13 +1439,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  async resetMokuaiInputs() {
+  async resetMokuaiInputs(all?: boolean) {
     const data = this.data()?.menshanbujuInfos;
     if (!data) {
-      return;
-    }
-    const mokuai = this.activeMokuaiNode()?.选中模块;
-    if (!mokuai) {
       return;
     }
     const xhmrmsbjRaw = await this.getXhmrmsbjRaw();
@@ -1451,7 +1452,15 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!dataOld) {
       return;
     }
-    resetInputs(data, dataOld, [mokuai.id]);
+    if (all) {
+      resetInputs(data, dataOld);
+    } else {
+      const mokuai = this.activeMokuaiNode()?.选中模块;
+      if (!mokuai) {
+        return;
+      }
+      resetInputs(data, dataOld, [mokuai.id]);
+    }
     await this.suanliao();
   }
 
@@ -1543,13 +1552,17 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   async openMokuais() {
+    const xhmrmsbj = this.data();
+    const xinghao = this.xinghao();
     const lastSuanliao = await this.lastSuanliaoManager.fetch();
-    if (!lastSuanliao) {
+    if (!xhmrmsbj || !xinghao || !lastSuanliao) {
       return;
     }
     const mokuaidaxiaoResults = this.mokuaidaxiaoResults();
     await openXhmrmsbjMokuaisDialog(this.dialog, {
       data: {
+        xhmrmsbj,
+        xinghao,
         data: {lastSuanliao, mokuaidaxiaoResults},
         isVersion2024: !!this.data()?.isVersion2024
       }

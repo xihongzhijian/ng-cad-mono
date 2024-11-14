@@ -12,6 +12,7 @@ import {
 import {environment} from "@env";
 import {keysOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {cloneDeep, intersection, sample, sampleSize} from "lodash";
@@ -253,19 +254,32 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
 };
 export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, title: string, item?: XhmrmsbjSbjbItemSbjbItem) => {
   const data = getXhmrmsbjSbjbItemSbjbItem(cloneDeep(item));
-  const getPart = (key: keyof typeof data) => ({label: key, model: {data, key}});
+  const getPart = (key: keyof typeof data, isInGroup = false) => ({label: key, model: {data, key}, style: getInputStyle(isInGroup)});
   const form: InputInfo<typeof data>[] = [
-    {type: "number", ...getPart("正面宽")},
-    {type: "string", ...getPart("正面宽取值范围"), validators: CustomValidators.numberRangeStr},
-    {type: "boolean", ...getPart("正面宽可改")},
-    {type: "number", ...getPart("背面宽")},
-    {type: "string", ...getPart("背面宽取值范围"), validators: CustomValidators.numberRangeStr},
-    {type: "boolean", ...getPart("背面宽可改")}
+    {
+      type: "group",
+      label: "",
+      groupStyle: getGroupStyle(),
+      infos: [
+        {type: "number", ...getPart("正面宽", true)},
+        {type: "string", ...getPart("正面宽取值范围", true), validators: CustomValidators.numberRangeStr},
+        {type: "boolean", ...getPart("正面宽可改", true)}
+      ]
+    },
+    {
+      type: "group",
+      label: "",
+      groupStyle: getGroupStyle(),
+      infos: [
+        {type: "number", ...getPart("背面宽", true)},
+        {type: "string", ...getPart("背面宽取值范围", true), validators: CustomValidators.numberRangeStr},
+        {type: "boolean", ...getPart("背面宽可改", true)}
+      ]
+    },
+    {type: "boolean", ...getPart("正背面同时改变")},
+    {type: "boolean", ...getPart("使用正面分体")},
+    {type: "boolean", ...getPart("使用背面分体")}
   ];
-
-  const 分体1: (typeof form)[number] = {type: "string", ...getPart("使用正面分体")};
-  const 分体2: (typeof form)[number] = {type: "string", ...getPart("使用背面分体")};
-  form.push(分体1, 分体2);
 
   const result = await message.form(form, {title});
   return result ? data : null;

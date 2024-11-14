@@ -126,5 +126,12 @@ export const resetInputs = (data: XhmrmsbjDataMsbjInfos, dataOld: XhmrmsbjDataMs
         delete msbjInfoNew.选项公式输入值?.[xxgsId];
       }
     }
+    for (const options of Object.values(msbjInfoNew.模块选项 || {})) {
+      for (const option of options) {
+        if (option.选中值) {
+          delete option.选中值;
+        }
+      }
+    }
   }
 };

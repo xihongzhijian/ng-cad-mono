@@ -21,6 +21,7 @@
       @if (isZhijian()) {
         <button mat-raised-button color="primary" (click)="openHoutaiUrl()">查看型号默认门扇布局</button>
       }
+      <button mat-raised-button color="primary" (click)="resetMokuaiInputs(true)">全部恢复默认</button>
     } @else {
       @switch (activeTabName()) {
         @case ("锁边铰边") {
@@ -171,10 +172,9 @@
               <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
             </div>
             <div class="items">
-              @for (item of mokuaiXuanxiang(); track i; let i = $index) {
+              @for (item of mokuaiOptions(); track i; let i = $index) {
                 <div class="toolbar" style="width: 100%">
-                  <!-- <div>{{ item["名字"] }}</div> -->
-                  <app-input class="flex-110" [info]="mokuaiXuanxiangInputInfos()[i]"></app-input>
+                  <app-input class="flex-110" [info]="mokuaiOptionInputInfos()[i]"></app-input>
                   <div class="toolbar" (click)="toggleMokuaiShuruDisabled(item['名字'])">
                     <mat-checkbox [checked]="!item['输出变量']"></mat-checkbox>
                     <div>关闭输出</div>
@@ -186,7 +186,7 @@
           @if (isFromOrder()) {
             <div class="title">模块选项</div>
             <div class="items items-per-row">
-              @for (info of mokuaiXuanxiangInputInfos(); track $index) {
+              @for (info of mokuaiOptionInputInfos(); track $index) {
                 <app-input class="item" [info]="info"></app-input>
               }
             </div>

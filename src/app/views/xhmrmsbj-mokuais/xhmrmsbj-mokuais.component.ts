@@ -14,8 +14,9 @@ import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, ObjectOf, timeout} from "@lucilor/utils";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
+import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
-import {getMokuaiFormulas} from "@views/xhmrmsbj/xhmrmsbj.utils";
+import {getMokuaiFormulas, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {Properties} from "csstype";
 import {NgScrollbar} from "ngx-scrollbar";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
@@ -121,9 +122,16 @@ export class XhmrmsbjMokuaisComponent {
   close() {
     this.dialogRef.close();
   }
+
+  openXhmrmsbj() {
+    const xhmrmsbj = this.data.xhmrmsbj;
+    this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: xhmrmsbj.vid}});
+  }
 }
 
 export interface XhmrmsbjMokuaisInput {
+  xhmrmsbj: XhmrmsbjData;
+  xinghao: MrbcjfzXinghaoInfo;
   data: {lastSuanliao: LastSuanliao; mokuaidaxiaoResults: ObjectOf<Formulas>};
   isVersion2024: boolean;
 }

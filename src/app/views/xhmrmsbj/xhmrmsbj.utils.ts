@@ -11,7 +11,7 @@ import {
   XhmrmsbjDataMsbjInfos,
   XhmrmsbjInfo,
   XhmrmsbjInfoMokuaiNode,
-  XhmrmsbjInfoMokuaiXuanxiang,
+  XhmrmsbjInfoMokuaiOption,
   XhmrmsbjTableData
 } from "./xhmrmsbj.types";
 
@@ -364,7 +364,7 @@ export const getAllShuchuVars = (
   return Array.from(vars);
 };
 
-export const filterMokuaiOptions = (mokuai: ZixuanpeijianMokuaiItem, options: XhmrmsbjInfoMokuaiXuanxiang[]) => {
+export const filterMokuaiOptions = (mokuai: ZixuanpeijianMokuaiItem, options: XhmrmsbjInfoMokuaiOption[]) => {
   const names = mokuai.自定义数据?.选项数据.map((v) => v.名字) || [];
   return options.filter((v) => names.includes(v.名字));
 };
@@ -377,7 +377,7 @@ export const setMokuaiOptions = (
   info: XhmrmsbjInfo,
   node: XhmrmsbjInfoMokuaiNode,
   mokuai: ZixuanpeijianMokuaiItem,
-  options: XhmrmsbjInfoMokuaiXuanxiang[]
+  options: XhmrmsbjInfoMokuaiOption[]
 ) => {
   if (!info.模块选项) {
     info.模块选项 = {};
