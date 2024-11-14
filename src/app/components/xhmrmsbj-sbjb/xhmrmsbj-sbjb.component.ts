@@ -31,7 +31,8 @@ import {
   xhmrmsbjSbjbItemCopyModes,
   XhmrmsbjSbjbItemSbjbCadInfo,
   XhmrmsbjSbjbItemSbjbItem,
-  XhmrmsbjSbjbItemSbjbSorted
+  XhmrmsbjSbjbItemSbjbSorted,
+  XhmrmsbjSbjbResponseData
 } from "./xhmrmsbj-sbjb.types";
 import {
   convertXhmrmsbjSbjbItem,
@@ -288,23 +289,23 @@ export class XhmrmsbjSbjbComponent {
   options = signal<OptionsAll2>({});
 
   fetchDataEff = effect(() => this.fetchData(), {allowSignalWrites: true});
-  async fetchData() {
+  async fetchData(peizhi?: XhmrmsbjSbjbResponseData) {
     const xinghao = this.xinghaoName();
     if (!xinghao) {
       return;
     }
     const data = await this.http.getData<{锁边铰边: XhmrmsbjSbjbItem[]; CAD数据map: ObjectOf<HoutaiCad>; 选项: OptionsAll2}>(
       "shuju/api/getsuobianjiaobianData",
-      {xinghao}
+      {xinghao, peizhi}
     );
     if (data) {
       this.items.set(data.锁边铰边);
+      this.cadMap.clear();
       for (const key in data.CAD数据map) {
         this.cadMap.set(key, new CadData(data.CAD数据map[key].json));
       }
       this.options.set(data.选项);
     }
-    // await this.status.cadYaoqiusManager.fetch();
   }
   clickItem(i: number) {
     this.activeItemIndex.set(i);
@@ -547,8 +548,9 @@ export class XhmrmsbjSbjbComponent {
     if (!result || from.length < 1) {
       return;
     }
+    const itemsCurr = this.items();
     for (const item of data.from) {
-      const item2 = this.items().find((v) => v.产品分类 === item.产品分类);
+      const item2 = itemsCurr.find((v) => v.产品分类 === item.产品分类);
       if (item2) {
         if (mode === "清空原有数据并全部替换为新数据") {
           item2.锁边铰边数据 = item.锁边铰边数据;
@@ -557,7 +559,7 @@ export class XhmrmsbjSbjbComponent {
         }
       }
     }
-    this.refreshItems();
+    this.fetchData(itemsCurr);
   }
 
   async validate() {

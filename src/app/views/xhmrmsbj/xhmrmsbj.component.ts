@@ -1680,16 +1680,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.status.openInNewTab(["/布局模块"], {queryParams: {page: "配件库"}});
   }
 
-  showMenfengpeizhi = computed(() => this.activeTabName() === "锁边铰边");
-  async menfengpeizhi() {
-    const xinghao = this.xinghao()?.raw.mingzi;
-    const suobianjiaobian = this.sbjb()?.items() || [];
-    if (!xinghao) {
-      return;
-    }
-    await this.http.getData("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian});
-  }
-
   mkdxpzValidator: FormulasValidatorFn = (formulasList) => {
     const msbjInfo = this.activeMsbjInfo();
     const names = getNodeFormulasKeys(msbjInfo?.模块节点?.map((v) => v.层名字) || []);
