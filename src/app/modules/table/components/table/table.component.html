@@ -193,7 +193,12 @@
                 @default {
                   @if (isColumnEditable({column, item, colIdx, rowIdx})) {
                     @if (cellInputInfos().at(rowIdx)?.at(colIdx); as info) {
-                      <app-input #cellInput [info]="info"></app-input>
+                      <app-input
+                        #cellInput
+                        [info]="info"
+                        (focus)="onCellFocus($event, colIdx, rowIdx, item)"
+                        (blur)="onCellBlur($event, colIdx, rowIdx, item)"
+                      ></app-input>
                     }
                   } @else {
                     <span [innerHTML]="getValueString(item, column)"></span>

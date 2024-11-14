@@ -98,6 +98,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   suffixIconsType!: SuffixIconsType;
   @Input() info: InputInfo = {type: "string", label: ""};
   change = output<{value: any}>();
+  input = output<Event>();
+  focus = output<FocusEvent>();
+  blur = output<FocusEvent>();
+  click = output<MouseEvent>();
+
   infoDiffer: KeyValueDiffer<keyof InputInfo, ValueOf<InputInfo>>;
   modelDataDiffer: KeyValueDiffer<keyof InputInfo["model"], ValueOf<InputInfo["model"]>>;
   onChangeDelayTime = 200;
@@ -620,7 +625,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
             const timeoutId = window.setTimeout(() => {
               if (optionRequired && !this.options.find((v) => v.value === value)) {
                 this.value = "";
-                this.onInput();
+                this.onInput(null);
               }
               this.onChange(value, true);
             }, this.onChangeDelayTime);
@@ -776,7 +781,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     this.onChange();
   }
 
-  onInput(value = this.value) {
+  onInput(event: Event | null, value = this.value) {
     const {info} = this;
     switch (info.type) {
       case "string":
@@ -789,15 +794,20 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         break;
     }
     this.valueChange$.next(value);
+    if (event) {
+      this.input.emit(event);
+    }
   }
-
-  onBlur() {
+  onFocus(event: FocusEvent) {
+    this.focus.emit(event);
+  }
+  onBlur(event: FocusEvent) {
     if (!this._validateValueLock) {
       this.validateValue();
     }
+    this.blur.emit(event);
   }
-
-  async onClick(params?: {key: string}) {
+  async onClick(event: MouseEvent, params?: {key: string}) {
     const {type, suffixIcons} = this.info;
     const defaultSuffixIcon = suffixIcons?.find((v) => v.isDefault);
     if (defaultSuffixIcon) {
@@ -818,6 +828,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         this.selectOptions(this.model.key);
       }
     }
+    this.click.emit(event);
   }
 
   async selectOptions(key?: keyof any, optionKey?: string) {
@@ -835,12 +846,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       optionKey = optionsDialog.optionKey;
     }
     let optionValueType: InputInfoString["optionValueType"];
+    let optionSeparator: InputInfoString["optionSeparator"];
     let multiple: boolean | undefined;
     let hasOptions = false;
     if (info.type === "string" || info.type === "object") {
       optionValueType = info.optionValueType || "string";
       multiple = info.optionMultiple;
       hasOptions = !!info.options;
+      optionSeparator = info.optionSeparator;
     } else if (info.type === "select") {
       multiple = info.multiple;
       hasOptions = !optionKey || !!useLocalOptions;
@@ -919,7 +932,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
       let resultValue: string | string[] = options2;
       if (optionValueType === "string") {
-        resultValue = joinOptions(options2);
+        resultValue = joinOptions(options2, optionSeparator);
       } else if (!multiple) {
         resultValue = options2[0] || "";
       }
@@ -1098,8 +1111,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.displayValue = displayValue;
     } else if (this.optionsDialog) {
       const {value} = this;
+      let optionSeparator: InputInfoString["optionSeparator"];
+      if (info.type === "string" || info.type === "object") {
+        optionSeparator = info.optionSeparator;
+      }
       if (Array.isArray(value)) {
-        this.displayValue = joinOptions(value);
+        this.displayValue = joinOptions(value, optionSeparator);
       } else if (typeof value === "string") {
         this.displayValue = value;
       }

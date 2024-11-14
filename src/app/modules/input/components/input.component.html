@@ -8,7 +8,16 @@
         <mat-hint>{{ hint }}</mat-hint>
       }
       @if (displayValue !== null) {
-        <textarea matInput readonly [value]="displayValue" cdkTextareaAutosize [cdkAutosizeMinRows]="1" (click)="onClick()"></textarea>
+        <textarea
+          matInput
+          readonly
+          [value]="displayValue"
+          cdkTextareaAutosize
+          [cdkAutosizeMinRows]="1"
+          (focus)="onFocus($event)"
+          (blur)="onBlur($event)"
+          (click)="onClick($event)"
+        ></textarea>
       } @else {
         @if (info.textarea) {
           <textarea
@@ -24,9 +33,10 @@
             [name]="name"
             type="text"
             (change)="onChange()"
-            (input)="onInput()"
-            (blur)="onBlur()"
-            (click)="onClick()"
+            (input)="onInput($event)"
+            (focus)="onFocus($event)"
+            (blur)="onBlur($event)"
+            (click)="onClick($event)"
             [placeholder]="info.placeholder || ''"
           ></textarea>
         } @else {
@@ -40,9 +50,10 @@
             [name]="name"
             type="text"
             (change)="onChange()"
-            (input)="onInput()"
-            (blur)="onBlur()"
-            (click)="onClick()"
+            (input)="onInput($event)"
+            (focus)="onFocus($event)"
+            (blur)="onBlur($event)"
+            (click)="onClick($event)"
             [placeholder]="info.placeholder || ''"
             [matAutocomplete]="auto"
             [matAutocompleteDisabled]="options.length < 1"
@@ -102,9 +113,10 @@
         [min]="info.min ?? null"
         [max]="info.max ?? null"
         (change)="onChange()"
-        (input)="onInput()"
-        (blur)="onBlur()"
-        (click)="onClick()"
+        (input)="onInput($event)"
+        (focus)="onFocus($event)"
+        (blur)="onBlur($event)"
+        (click)="onClick($event)"
         (wheel)="$event.preventDefault()"
         [placeholder]="info.placeholder || ''"
       />
@@ -157,7 +169,10 @@
               [name]="name + '-key'"
               (change)="changeObjectKey2(value, item.key, $event)"
               (input)="onObjectKeyInput($event, i)"
-              (blur)="onBlur()"
+              (input)="onInput($event)"
+              (focus)="onFocus($event)"
+              (blur)="onBlur($event)"
+              (click)="onClick($event)"
               [matAutocomplete]="auto"
               [matAutocompleteDisabled]="xuanxiangOptions.length < 1"
             />
@@ -194,8 +209,10 @@
               [(ngModel)]="item.value"
               [name]="name + '-value'"
               (change)="changeObjectValue2(value, item.key, item.value)"
-              (blur)="onBlur()"
-              (click)="onClick({key: item.key})"
+              (input)="onInput($event)"
+              (focus)="onFocus($event)"
+              (blur)="onBlur($event)"
+              (click)="onClick($event, {key: item.key})"
             />
             <ng-container matSuffix>
               @if (optionsDialog) {
@@ -258,8 +275,10 @@
             [(ngModel)]="value[j]"
             [name]="name + '-value'"
             [ngModelOptions]="{standalone: true}"
-            (blur)="onBlur()"
-            (click)="onClick()"
+            (input)="onInput($event)"
+            (focus)="onFocus($event)"
+            (blur)="onBlur($event)"
+            (click)="onClick($event)"
           />
           <ng-container matSuffix>
             @if (!info.readonly) {
@@ -352,9 +371,10 @@
             [name]="name"
             type="text"
             (change)="onChange()"
-            (input)="onInput()"
-            (blur)="onBlur()"
-            (click)="onClick()"
+            (input)="onInput($event)"
+            (focus)="onFocus($event)"
+            (blur)="onBlur($event)"
+            (click)="onClick($event)"
             [placeholder]="info.placeholder || ''"
           />
         } @else {

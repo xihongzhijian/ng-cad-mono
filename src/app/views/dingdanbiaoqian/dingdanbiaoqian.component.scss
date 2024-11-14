@@ -298,10 +298,13 @@ $info-border: solid 1px black;
 
   .item {
     display: flex;
+    flex-direction: row;
     align-items: center;
     flex: 1 1 0;
+    --border: 1px solid black;
 
     > * {
+      margin: 0;
       padding: 5px 0;
       box-sizing: border-box;
       height: 100%;

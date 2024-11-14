@@ -1,5 +1,6 @@
 import {AbstractControl, AbstractControlOptions, ValidationErrors} from "@angular/forms";
 import {FloatLabelType} from "@angular/material/form-field";
+import {OptionSeparator} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.types";
 import {EditFormulasInput} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
@@ -51,6 +52,7 @@ export interface InputInfoString<T = any> extends InputInfoBase<T> {
   optionRequired?: boolean;
   optionsDisplayLimit?: number;
   optionMultiple?: boolean;
+  optionSeparator?: OptionSeparator;
   optionsDialog?: OptionsDialog;
 }
 
@@ -74,6 +76,7 @@ export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   optionValueType?: "string" | "array";
   optionsDialog?: OptionsDialog;
   optionMultiple?: boolean;
+  optionSeparator?: OptionSeparator;
   keyLabel?: string;
   valueLabel?: string;
   keyValidators?: KeyValidatorFn | KeyValidatorFn[] | null;
