@@ -14,6 +14,7 @@ import {
   calcCadItemZhankai,
   calcZxpj,
   CalcZxpjOptions,
+  getMokuaiInfoScbl,
   isMokuaiItemEqual,
   updateMokuaiItems
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
@@ -130,7 +131,6 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
             选中模块.info = info;
             mokuais.push(选中模块);
             mokuaisToUpdate.push(选中模块);
-            选中模块.suanliaogongshi = getMokuaiFormulas(msbjInfo, 选中模块, materialResult);
           }
         }
       }
@@ -143,10 +143,6 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       mokuai.shuruzongkuan = false;
       mokuai.shuruzonggao = false;
       mokuai.unique = false;
-      if (!mokuai.suanliaogongshi) {
-        mokuai.suanliaogongshi = {};
-      }
-      mokuai.calcVars = {keys: Object.keys(mokuai.suanliaogongshi)};
       mokuai.cads = [];
       const {门扇名字} = mokuai.info || {};
       if (配件模块CAD[type1] && 配件模块CAD[type1][type2]) {
@@ -231,7 +227,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
     }
     for (const mokuai of mokuais) {
-      for (const key of mokuai.shuchubianliang) {
+      for (const key of getMokuaiInfoScbl(xhmrmsbj.menshanbujuInfos, mokuai)) {
         result.data.输出变量公式计算结果[key] = materialResult2[key];
       }
     }
@@ -293,7 +289,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
           continue;
         }
         const {type2} = mokuai;
-        const formulas = getMokuaiFormulas(msbjInfo, mokuai, materialResult);
+        const formulas = getMokuaiFormulas(msbjInfo, node, mokuai, materialResult);
         if (getIsVersion2024(mokuai.zuoshujubanben)) {
           const shuchuVars = getMokuaiShuchuVars(msbjInfo, node, mokuai);
           for (const key of Object.keys(formulas)) {

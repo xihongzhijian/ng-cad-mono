@@ -15,6 +15,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
 import {matchConditions} from "@views/suanliao/suanliao.utils";
+import {XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {getMokuaiFormulas, getMokuaiShuchuVars, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {cloneDeep, difference, intersection, isEmpty, isEqual, union} from "lodash";
 import md5 from "md5";
@@ -440,34 +441,12 @@ export const calcZxpj = async (
 
   const getCalcMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null) =>
     getMokuaiTitleWithUrl(status, isVersion2024, item, {xhmrmsbj: options?.xhmrmsbj});
-  const getMokuaiInfo = (item: ZixuanpeijianMokuaiItem) => {
-    const {门扇名字, 层id} = item.info || {};
-    if (!门扇名字 || !层id) {
-      return null;
-    }
-    const msbjInfo = options?.xhmrmsbj?.menshanbujuInfos[门扇名字];
-    if (!msbjInfo) {
-      return null;
-    }
-    const node = msbjInfo.模块节点?.find((v) => v.层id === 层id);
-    if (!node) {
-      return null;
-    }
-    return {msbjInfo, node};
+  const xhmrmsbj = optionsAll.xhmrmsbj;
+  const getMokuaiInfoScbl2 = (item: ZixuanpeijianMokuaiItem) => {
+    return getMokuaiInfoScbl(xhmrmsbj?.menshanbujuInfos || {}, item);
   };
-  const getMokuaiScbl = (item: ZixuanpeijianMokuaiItem) => {
-    const mokuaiInfo = getMokuaiInfo(item);
-    if (!mokuaiInfo) {
-      return item.shuchubianliang;
-    }
-    return getMokuaiShuchuVars(mokuaiInfo.msbjInfo, mokuaiInfo.node, item);
-  };
-  const getMokuaiSlgs = (item: ZixuanpeijianMokuaiItem) => {
-    const mokuaiInfo = getMokuaiInfo(item);
-    if (!mokuaiInfo) {
-      return item.suanliaogongshi;
-    }
-    return getMokuaiFormulas(mokuaiInfo.msbjInfo, item, materialResult);
+  const getMokuaiInfoSlgs2 = (item: ZixuanpeijianMokuaiItem) => {
+    return getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, materialResult);
   };
 
   for (const [i, item1] of mokuais.entries()) {
@@ -484,10 +463,10 @@ export const calcZxpj = async (
           continue;
         }
       }
-      const keys1 = intersection(calcVars.keys, Object.keys(getMokuaiSlgs(item1)));
-      const keys2 = intersection(calcVars.keys, Object.keys(getMokuaiSlgs(item2)));
-      const shuchubianliang1 = union(keys1, getMokuaiScbl(item1));
-      const shuchubianliang2 = union(keys2, getMokuaiScbl(item2));
+      const keys1 = intersection(calcVars.keys, Object.keys(getMokuaiInfoSlgs2(item1)));
+      const keys2 = intersection(calcVars.keys, Object.keys(getMokuaiInfoSlgs2(item2)));
+      const shuchubianliang1 = union(keys1, getMokuaiInfoScbl2(item1));
+      const shuchubianliang2 = union(keys2, getMokuaiInfoScbl2(item2));
       const duplicateKeys = difference(intersection(shuchubianliang1, shuchubianliang2), calcVars.keys);
       if (duplicateKeys.length > 0) {
         const add = (item3: ZixuanpeijianMokuaiItem) => {
@@ -557,7 +536,7 @@ export const calcZxpj = async (
     return vars;
   };
   const toCalc1 = mokuais.map((item) => {
-    const slgs = getMokuaiSlgs(item);
+    const slgs = getMokuaiInfoSlgs2(item);
     const formulas = {...slgs};
     if (item.shuruzongkuan) {
       formulas.总宽 = item.totalWidth;
@@ -574,7 +553,7 @@ export const calcZxpj = async (
     }
     checkDuplicate("模块公式输入", ["公式", "公式输入"], item, gongshishuruKeys);
     checkDuplicate("模块算料公式", ["公式", "公式输入"], item, formulasKeys);
-    checkDuplicate("模块输出变量", ["公式", "公式输入"], item, getMokuaiScbl(item));
+    checkDuplicate("模块输出变量", ["公式", "公式输入"], item, getMokuaiInfoScbl2(item));
     if (useCeshishuju && item.ceshishuju) {
       calc.calc.mergeFormulas(formulas, item.ceshishuju);
     }
@@ -674,7 +653,7 @@ export const calcZxpj = async (
         mokuaiVars[门扇名字][key] = result1.succeed[key];
       }
       const missingKeys: string[] = [];
-      for (const vv of getMokuaiScbl(v.item)) {
+      for (const vv of getMokuaiInfoScbl2(v.item)) {
         if (vv in result1.succeedTrim) {
           const value = result1.succeedTrim[vv];
           for (const item of duplicateScbl) {
@@ -935,9 +914,9 @@ export const calcZxpj = async (
   calc.calc.mergeFormulas(materialResult, calcVars.result);
   for (const [i, item] of mokuais.entries()) {
     const vars2: Formulas = {...materialResult, ...lingsanVars, ...shuchubianliang, ...toCalc1[i].succeedTrim};
-    if (item.calcVars) {
-      item.calcVars.result = await calcVarsResult(item.calcVars.keys, vars2);
-    }
+    const keys = Object.keys(getMokuaiInfoSlgs2(item));
+    const result = await calcVarsResult(keys, vars2);
+    item.calcVars = {keys, result};
     for (const cadItem of item.cads) {
       const calcCadItemResult = await calcCadItem(cadItem, vars2, item);
       if (!calcCadItemResult.fulfilled) {
@@ -1029,4 +1008,28 @@ export const replaceMenshanName = (门扇名字: string | undefined | null, form
       formulas[key] = value.replaceAll("当前扇", 门扇名字);
     }
   }
+};
+
+export const getMokuaiInfo = (infos: XhmrmsbjDataMsbjInfos, item: ZixuanpeijianMokuaiItem) => {
+  const {门扇名字, 层id} = item.info || {};
+  if (!门扇名字 || !层id) {
+    return {};
+  }
+  const msbjInfo = infos[门扇名字];
+  const node = msbjInfo?.模块节点?.find((v) => v.层id === 层id);
+  return {msbjInfo, node};
+};
+export const getMokuaiInfoScbl = (infos: XhmrmsbjDataMsbjInfos, item: ZixuanpeijianMokuaiItem) => {
+  const {msbjInfo, node} = getMokuaiInfo(infos, item);
+  if (!msbjInfo || !node) {
+    return item.shuchubianliang;
+  }
+  return getMokuaiShuchuVars(msbjInfo, node, item);
+};
+export const getMokuaiInfoSlgs = (infos: XhmrmsbjDataMsbjInfos, item: ZixuanpeijianMokuaiItem, materialResult?: Formulas) => {
+  const {msbjInfo, node} = getMokuaiInfo(infos, item);
+  if (!msbjInfo || !node) {
+    return item.suanliaogongshi;
+  }
+  return getMokuaiFormulas(msbjInfo, node, item, materialResult);
 };

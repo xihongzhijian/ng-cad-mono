@@ -28,8 +28,14 @@ export interface XhmrmsbjInfo {
   输入值?: Shuruzhi;
   选项公式输入值?: ObjectOf<Shuruzhi>;
   输出变量禁用?: ObjectOf<string[]>;
+  模块选项?: ObjectOf<XhmrmsbjInfoMokuaiXuanxiang[]>;
 }
 export type Shuruzhi = ObjectOf<string>;
+export interface XhmrmsbjInfoMokuaiXuanxiang {
+  名字: string;
+  默认值?: string;
+  选中值?: string;
+}
 
 export interface XhmrmsbjInfoMokuaiNode {
   层id: number;

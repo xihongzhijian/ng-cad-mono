@@ -148,7 +148,7 @@
             <div class="toolbar">
               <div class="title">模块输出</div>
               <div class="flex-110"></div>
-              <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled()">全部关闭</button>
+              <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(false)">全部关闭</button>
             </div>
             <div class="items">
               @for (info of mokuaiInputInfosOutput(); track $index) {
@@ -168,18 +168,26 @@
             <div class="toolbar">
               <div class="title">模块选项</div>
               <div class="flex-110"></div>
-              <button mat-raised-button color="primary" (click)="setAllMokuaiXuanxiangDisabled()">全部关闭</button>
+              <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
             </div>
             <div class="items">
               @for (item of mokuaiXuanxiang(); track i; let i = $index) {
                 <div class="toolbar" style="width: 100%">
-                  <div>{{ item["名字"] }}</div>
-                  <div class="flex-110"></div>
-                  <div class="toolbar" (click)="toggleMokuaiXuanxiangDisabled(i)">
+                  <!-- <div>{{ item["名字"] }}</div> -->
+                  <app-input class="flex-110" [info]="mokuaiXuanxiangInputInfos()[i]"></app-input>
+                  <div class="toolbar" (click)="toggleMokuaiShuruDisabled(item['名字'])">
                     <mat-checkbox [checked]="!item['输出变量']"></mat-checkbox>
                     <div>关闭输出</div>
                   </div>
                 </div>
+              }
+            </div>
+          }
+          @if (isFromOrder()) {
+            <div class="title">模块选项</div>
+            <div class="items items-per-row">
+              @for (info of mokuaiXuanxiangInputInfos(); track $index) {
+                <app-input class="item" [info]="info"></app-input>
               }
             </div>
           }

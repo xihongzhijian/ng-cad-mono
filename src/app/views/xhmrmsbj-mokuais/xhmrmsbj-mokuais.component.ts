@@ -70,7 +70,7 @@ export class XhmrmsbjMokuaisComponent {
             return 门扇名字 === key && 模块名字 === node.层名字 && v.weiyima === mokuai.weiyima;
           });
           const cads: CadData[] = [];
-          const formulas = getMokuaiFormulas(value, mokuai, materialResult);
+          const formulas = getMokuaiFormulas(value, node, mokuai, materialResult);
           const formulas2 = {...output.materialResult};
           if (mokuai2) {
             Object.assign(formulas2, mokuai2.suanliaogongshi);
