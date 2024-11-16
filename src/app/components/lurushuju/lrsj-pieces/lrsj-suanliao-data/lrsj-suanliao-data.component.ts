@@ -64,7 +64,6 @@ import {
   门缝配置输入
 } from "../../xinghao-data";
 import {LrsjPiece} from "../lrsj-piece";
-import {LrsjSuanliaoCadsComponent} from "../lrsj-suanliao-cads/lrsj-suanliao-cads.component";
 import {MenjiaoCadItemInfo, MenjiaoShiyituCadItemInfo, SuanliaoDataBtnName} from "./lrsj-suanliao-data.types";
 import {
   copySuanliaoData,
@@ -88,8 +87,7 @@ import {
     NgScrollbarModule,
     NgTemplateOutlet,
     SuanliaoTablesComponent,
-    TypedTemplateDirective,
-    LrsjSuanliaoCadsComponent
+    TypedTemplateDirective
   ],
   templateUrl: "./lrsj-suanliao-data.component.html",
   styleUrl: "./lrsj-suanliao-data.component.scss",
@@ -764,6 +762,26 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         }
       })
     );
+    for (const input of this.inputs()) {
+      if (!input.isValid()) {
+        let key1El: HTMLElement | null = input.el;
+        while (key1El && !key1El.dataset.key1) {
+          key1El = key1El.parentElement;
+        }
+        const key1 = key1El?.dataset.key1 as MenjiaoCadType | undefined;
+        if (key1) {
+          // if (!key1Errors[key1]) {
+          //   key1Errors[key1] = {msg: "", missingCads: [], bcfz: []};
+          // }
+          // if (!key1Errors[key1].msg) {
+          //   key1Errors[key1].msg = `【${input.info.label}】` + input.getErrorMsg();
+          // }
+          if (!errors.key1[key1]) {
+            errors.key1[key1] = `【${input.info.label}】` + input.getErrorMsg();
+          }
+        }
+      }
+    }
     this.key1Errors.set(key1Errors);
     this.errors.set(errors);
     this.suanliaoData.update((v) => ({...v}));
@@ -789,7 +807,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           setTimeout(() => {
             if (!isEmpty(missingCads)) {
               this.onTriggerBtn("包边+企料数据");
-            } else if (bcfz) {
+            } else if (!isEmpty(bcfz)) {
               this.onTriggerBtn("板材分组");
             }
           }, 0);

@@ -113,6 +113,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   fileName = "";
   @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
 
+  get el() {
+    return this.elRef.nativeElement;
+  }
+
   private _model: NonNullable<Required<InputInfo["model"]>> = {data: {key: ""}, key: "key"};
   get model() {
     let model = {...this.info.model};
@@ -943,8 +947,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         } else if (!Array.isArray(resultValue) && !info.multiple) {
           info.onChange?.(resultValue, info);
         }
-      } else if (key) {
-        const value = key ? data[key] : this.value;
+      } else if (key !== undefined) {
+        const value = key in data ? data[key] : this.value;
         const isObject = isTypeOf(value, "object");
         if (isObject && optionKey) {
           data[key][optionKey] = resultValue;
