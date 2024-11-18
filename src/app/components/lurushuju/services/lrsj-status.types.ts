@@ -20,6 +20,7 @@ export interface XinghaoData extends TableDataBase2, ZuoshujuTableData {
   dingdanliucheng?: string;
   算料单模板?: string;
   是否需要激光开料?: boolean;
+  下单显示没有配件的板材分组?: boolean;
 }
 
 export interface XinghaoMenchuang extends TableDataBase2 {

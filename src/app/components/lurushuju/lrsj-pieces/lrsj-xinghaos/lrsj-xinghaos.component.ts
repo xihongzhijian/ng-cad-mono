@@ -149,8 +149,12 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       订单流程: data.dingdanliucheng,
       做数据版本: data.zuoshujubanben,
       算料单模板: data.算料单模板,
-      是否需要激光开料: data.是否需要激光开料
+      是否需要激光开料: data.是否需要激光开料,
+      下单显示没有配件的板材分组: data.下单显示没有配件的板材分组
     };
+    if (typeof data2.下单显示没有配件的板材分组 !== "boolean") {
+      data2.下单显示没有配件的板材分组 = true;
+    }
     const mingziOld = data.mingzi;
     const names = this.xinghaos().map((xinghao) => xinghao.mingzi);
     let refreshOptions = false;
@@ -215,6 +219,11 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         label: "算料单模板",
         model: {data: data2, key: "算料单模板"},
         options: 算料单模板Options.slice()
+      },
+      {
+        type: "boolean",
+        label: "下单显示没有配件的板材分组",
+        model: {data: data2, key: "下单显示没有配件的板材分组"}
       },
       {
         type: "boolean",

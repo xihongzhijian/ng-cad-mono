@@ -153,6 +153,7 @@ export interface XinghaoRaw {
   做数据版本?: string;
   算料单模板?: string;
   是否需要激光开料?: boolean;
+  下单显示没有配件的板材分组?: boolean;
 }
 export interface Xinghao extends XinghaoRaw {
   产品分类: ObjectOf<工艺做法[]>;
