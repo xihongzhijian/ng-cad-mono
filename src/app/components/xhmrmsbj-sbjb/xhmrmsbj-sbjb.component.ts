@@ -38,6 +38,7 @@ import {
   convertXhmrmsbjSbjbItem,
   exportXhmrmsbjSbjbItemSbjbs,
   getXhmrmsbjSbjbItemCadKeys,
+  getXhmrmsbjSbjbItemOptionalKeys2,
   getXhmrmsbjSbjbItemOptions,
   getXhmrmsbjSbjbItemSbjbCad,
   getXhmrmsbjSbjbItemSbjbForm,
@@ -108,6 +109,7 @@ export class XhmrmsbjSbjbComponent {
             "背面宽",
             "背面宽取值范围",
             "背面宽可改",
+            "正背面同时改变",
             "使用正面分体",
             "使用背面分体"
           ];
@@ -299,6 +301,13 @@ export class XhmrmsbjSbjbComponent {
       {xinghao, peizhi}
     );
     if (data) {
+      for (const item of data.锁边铰边) {
+        for (const item2 of item.锁边铰边数据) {
+          for (const key of getXhmrmsbjSbjbItemOptionalKeys2(item.产品分类)) {
+            item2[key] = getXhmrmsbjSbjbItemSbjbItem(item2[key]);
+          }
+        }
+      }
       this.items.set(data.锁边铰边);
       this.cadMap.clear();
       for (const key in data.CAD数据map) {

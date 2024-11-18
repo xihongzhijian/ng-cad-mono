@@ -213,6 +213,11 @@ export const getXhmrmsbjSbjbItemSbjb = (item?: Partial<XhmrmsbjSbjbItemSbjb>) =>
 export const isXhmrmsbjSbjbItemSbjbHasSuokuang = (fenlei: string) => ["单门", "子母连开"].includes(fenlei);
 export const getXhmrmsbjSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbItem>): XhmrmsbjSbjbItemSbjbItem => ({
   名字: "",
+  正面宽可改: true,
+  背面宽可改: true,
+  正背面同时改变: true,
+  使用正面分体: false,
+  使用背面分体: false,
   ...item
 });
 
@@ -254,6 +259,15 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
 };
 export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, title: string, item?: XhmrmsbjSbjbItemSbjbItem) => {
   const data = getXhmrmsbjSbjbItemSbjbItem(cloneDeep(item));
+  if (typeof data.正面宽可改 !== "boolean") {
+    data.正面宽可改 = true;
+  }
+  if (typeof data.背面宽可改 !== "boolean") {
+    data.背面宽可改 = true;
+  }
+  if (typeof data.正背面同时改变 !== "boolean") {
+    data.正背面同时改变 = true;
+  }
   const getPart = (key: keyof typeof data, isInGroup = false) => ({label: key, model: {data, key}, style: getInputStyle(isInGroup)});
   const form: InputInfo<typeof data>[] = [
     {
@@ -261,7 +275,7 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, t
       label: "",
       groupStyle: getGroupStyle(),
       infos: [
-        {type: "number", ...getPart("正面宽", true)},
+        {type: "string", ...getPart("正面宽", true)},
         {type: "string", ...getPart("正面宽取值范围", true), validators: CustomValidators.numberRangeStr},
         {type: "boolean", ...getPart("正面宽可改", true)}
       ]
@@ -271,7 +285,7 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, t
       label: "",
       groupStyle: getGroupStyle(),
       infos: [
-        {type: "number", ...getPart("背面宽", true)},
+        {type: "string", ...getPart("背面宽", true)},
         {type: "string", ...getPart("背面宽取值范围", true), validators: CustomValidators.numberRangeStr},
         {type: "boolean", ...getPart("背面宽可改", true)}
       ]
@@ -300,10 +314,10 @@ export const exportXhmrmsbjSbjbItemSbjbs = (fenlei: string, items: XhmrmsbjSbjbI
   const show双开门扇宽生成方式Val = show双开门扇宽生成方式(fenlei);
   const emptySbjbItemSbjbItem: Required<XhmrmsbjSbjbItemSbjbItem> = {
     名字: "",
-    正面宽: 0,
+    正面宽: "",
     正面宽取值范围: "",
     正面宽可改: false,
-    背面宽: 0,
+    背面宽: "",
     背面宽取值范围: "",
     背面宽可改: false,
     正背面同时改变: false,
@@ -376,11 +390,9 @@ export const importXhmrmsbjSbjbItemSbjbs = (fenlei: string, dataArray: string[][
           case "名字":
           case "正面宽取值范围":
           case "背面宽取值范围":
-            item2[key2] = value;
-            break;
           case "正面宽":
           case "背面宽":
-            item2[key2] = parseFloat(value);
+            item2[key2] = value;
             break;
           case "正面宽可改":
           case "背面宽可改":

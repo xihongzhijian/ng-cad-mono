@@ -32,10 +32,10 @@ export interface XhmrmsbjSbjbItemSbjb {
 export type XhmrmsbjSbjbItemSbjbSorted = SortedItem<XhmrmsbjSbjbItemSbjb>;
 export interface XhmrmsbjSbjbItemSbjbItem {
   名字: string;
-  正面宽?: number;
+  正面宽?: string;
   正面宽取值范围?: string;
   正面宽可改?: boolean;
-  背面宽?: number;
+  背面宽?: string;
   背面宽取值范围?: string;
   背面宽可改?: boolean;
   正背面同时改变?: boolean;
