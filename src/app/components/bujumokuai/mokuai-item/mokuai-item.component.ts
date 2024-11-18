@@ -552,4 +552,8 @@ export class MokuaiItemComponent {
     const mokuai = this.mokuai();
     this.status.openInNewTab(["/dingdanbiaoqian"], {queryParams: {ids: mokuai.id, type: "配件模块"}});
   }
+
+  showXhmrmsbjsUsingMokuai() {
+    this.bjmkStatus.showXhmrmsbjsUsingMokuai(this.mokuai().id);
+  }
 }

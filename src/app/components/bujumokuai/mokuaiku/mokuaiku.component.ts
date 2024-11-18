@@ -249,4 +249,8 @@ export class MokuaikuComponent implements OnInit {
   unselectMokuai(mokuai: MokuaiItem) {
     this.selectedMokuaiIds.update((v) => v.filter((v2) => v2 !== mokuai.id));
   }
+
+  showXhmrmsbjsUsingMokuai(mokuai: MokuaiItem) {
+    this.bjmkStatus.showXhmrmsbjsUsingMokuai(mokuai.id);
+  }
 }

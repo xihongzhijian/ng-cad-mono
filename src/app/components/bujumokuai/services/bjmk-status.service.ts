@@ -204,4 +204,12 @@ export class BjmkStatusService {
   );
 
   mokuaiOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll>("shuju/api/getMokuaiOption")) || {});
+
+  async showXhmrmsbjsUsingMokuai(mokuaiId: number) {
+    const data = await this.http.getData<{url: string}>("shuju/api/showXhmrmsbjsUsingMokuai", {mokuaiId});
+    const url = data?.url;
+    if (url) {
+      open(url);
+    }
+  }
 }

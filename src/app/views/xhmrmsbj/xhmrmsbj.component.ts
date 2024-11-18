@@ -1923,4 +1923,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     Object.assign(to, cloneDeep(from));
     this.refreshData(true);
   }
+
+  showXhmrmsbjsUsingMokuai(mokuai: ZixuanpeijianMokuaiItem) {
+    this.bjmkStatus.showXhmrmsbjsUsingMokuai(mokuai.id);
+  }
 }
