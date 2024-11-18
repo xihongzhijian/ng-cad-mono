@@ -76,3 +76,20 @@ export interface XhmrmsbjRequestData {
 export interface XhmrmsbjRequestDataOpts {
   浮动弹窗?: {门扇名字: MenshanKey; 节点名字: string};
 }
+
+export interface XhmrmsbjError {
+  content: string;
+  details: XhmrmsbjErrorDetail[];
+}
+export type XhmrmsbjErrorDetail = XhmrmsbjErrorDetailText[];
+export interface XhmrmsbjErrorDetailText {
+  text?: string;
+  jumpTo?: XhmrmsbjErrorJumpTo;
+  br?: boolean;
+}
+export interface XhmrmsbjErrorJumpTo {
+  门扇名字: MenshanKey;
+  层名字?: string;
+  mokuai?: string;
+  mkdx?: boolean;
+}

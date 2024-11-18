@@ -124,3 +124,17 @@
   box-sizing: border-box;
   padding: 3px;
 }
+
+.errors {
+  max-width: 310px;
+
+  .error {
+    width: 100%;
+    color: black;
+
+    ol {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  }
+}

@@ -132,6 +132,23 @@ export const exportZixuanpeijian = (source: ZixuanpeijianData) => {
   return result;
 };
 
+export interface GetMsbjInfoTitleOpts {
+  门扇名字?: string;
+  层名字?: string;
+  xhmrmsbj?: XhmrmsbjData | null;
+}
+export const getMsbjInfoTitle = (opts: GetMsbjInfoTitleOpts) => {
+  const arr: string[] = [];
+  const {门扇名字, 层名字} = opts;
+  if (typeof 门扇名字 === "string" && 门扇名字) {
+    arr.push(`【${门扇名字}】`);
+  }
+  if (typeof 层名字 === "string" && 层名字) {
+    arr.push(`${层名字}位置`);
+  }
+  return arr.join("");
+};
+
 export interface GetMokuaiTitleOpts {
   门扇名字?: string;
   层名字?: string;
@@ -155,11 +172,9 @@ export const getMokuaiTitleBase = (
   if (!层名字) {
     层名字 = info?.模块名字;
   }
-  if (typeof 门扇名字 === "string" && 门扇名字) {
-    arr.push(`【${门扇名字}】`);
-  }
-  if (typeof 层名字 === "string" && 层名字) {
-    arr.push(`${层名字}位置`);
+  const msbjInfoTitle = getMsbjInfoTitle({门扇名字, 层名字});
+  if (msbjInfoTitle) {
+    arr.push(msbjInfoTitle);
   }
   let mokuaiName = type2;
   const getLink = (url: string, title: string) => {

@@ -207,7 +207,7 @@
   </div>
   @if (!isFloatingDialog()) {
     <mat-divider vertical></mat-divider>
-    <div class="flex-column">
+    <ng-scrollbar class="enable-x" style="flex: 0 0 auto">
       @if (xinghao(); as xinghao) {
         <div class="toolbar">
           <div class="title">型号板材分组</div>
@@ -222,8 +222,6 @@
             }
           }
         </div>
-      }
-      @if (xinghao(); as xinghao) {
         <div class="xinghao-bancai flex-110 flex-column">
           @if (activeMokuaiNode()?.["选中模块"]; as mokuai) {
             <mat-divider></mat-divider>
@@ -232,20 +230,44 @@
             </div>
           }
           <!-- 板材选择 -->
-          <ng-scrollbar>
-            @for (info of bancaiInputInfos(); track $index) {
+          @for (info of bancaiInputInfos(); track $index) {
+            <app-input [info]="info"></app-input>
+          }
+          @if (xhmrbsbjInputInfos().length > 0) {
+            <mat-divider></mat-divider>
+            @for (info of xhmrbsbjInputInfos(); track $index) {
               <app-input [info]="info"></app-input>
             }
-            @if (xhmrbsbjInputInfos().length > 0) {
-              <mat-divider></mat-divider>
-              @for (info of xhmrbsbjInputInfos(); track $index) {
-                <app-input [info]="info"></app-input>
-              }
-            }
-          </ng-scrollbar>
+          }
         </div>
       }
-    </div>
+      @if (errors().length > 0) {
+        <mat-divider></mat-divider>
+        <div class="title error">错误</div>
+        <div class="errors items">
+          @for (error of errors(); track $index) {
+            <div class="error item">
+              <div class="text">{{ error.content }}</div>
+              <ol>
+                @for (detail of error.details; track $index) {
+                  <li class="text">
+                    @for (item of detail; track $index) {
+                      @if (item.br) {
+                        <br />
+                      } @else if (item.jumpTo) {
+                        <span class="link text" (click)="jumpToError(item.jumpTo)">{{ item.text }}</span>
+                      } @else {
+                        <span>{{ item.text }}</span>
+                      }
+                    }
+                  </li>
+                }
+              </ol>
+            </div>
+          }
+        </div>
+      }
+    </ng-scrollbar>
   }
 </div>
 

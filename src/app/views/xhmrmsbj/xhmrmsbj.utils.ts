@@ -192,28 +192,22 @@ export const setShuruzhi = (info: XhmrmsbjInfo, shuruzhi: Shuruzhi, xxgsId?: str
   }
 };
 export const purgeShuruzhi = (infos: XhmrmsbjDataMsbjInfos) => {
-  const varNames = new Set<string>();
-  const xxgsIds = new Set<string>();
   for (const key of keysOf(infos)) {
     const info = infos[key];
     if (!info) {
       continue;
     }
+    const varNamesXxgsMap = new Map<string, string[]>();
+    const varNames = new Set<string>();
     for (const node of info.模块节点 || []) {
       for (const mokuai of node.可选模块) {
         for (const arr of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
           varNames.add(arr[0]);
         }
         for (const xxgs of mokuai.xuanxianggongshi) {
-          xxgsIds.add(xxgs._id);
+          varNamesXxgsMap.set(xxgs._id, Object.keys(xxgs.公式));
         }
       }
-    }
-  }
-  for (const key of keysOf(infos)) {
-    const info = infos[key];
-    if (!info) {
-      continue;
     }
     if (info.输入值) {
       for (const key of Object.keys(info.输入值)) {
@@ -227,7 +221,16 @@ export const purgeShuruzhi = (infos: XhmrmsbjDataMsbjInfos) => {
     }
     if (info.选项公式输入值) {
       for (const key of Object.keys(info.选项公式输入值)) {
-        if (!xxgsIds.has(key) || isEmpty(info.选项公式输入值[key])) {
+        const varNamesXxgs = varNamesXxgsMap.get(key);
+        if (varNamesXxgs) {
+          const keysToRemove = difference(Object.keys(info.选项公式输入值[key]), varNamesXxgs);
+          for (const key2 of keysToRemove) {
+            delete info.选项公式输入值[key][key2];
+          }
+          if (isEmpty(info.选项公式输入值[key])) {
+            delete info.选项公式输入值[key];
+          }
+        } else {
           delete info.选项公式输入值[key];
         }
       }
