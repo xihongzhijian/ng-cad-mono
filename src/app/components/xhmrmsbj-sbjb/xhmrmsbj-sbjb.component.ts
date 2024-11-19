@@ -104,10 +104,8 @@ export class XhmrmsbjSbjbComponent {
           const extraTexts: CadItemFormExtraText[] = [];
           const keys: (keyof XhmrmsbjSbjbItemSbjbItem)[] = [
             "正面宽",
-            "正面宽取值范围",
             "正面宽可改",
             "背面宽",
-            "背面宽取值范围",
             "背面宽可改",
             "正背面同时改变",
             "使用正面分体",

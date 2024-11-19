@@ -1,6 +1,5 @@
 import {WritableSignal} from "@angular/core";
 import {getValueString} from "@app/app.common";
-import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
 import {
@@ -276,7 +275,6 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, t
       groupStyle: getGroupStyle(),
       infos: [
         {type: "string", ...getPart("正面宽", true)},
-        {type: "string", ...getPart("正面宽取值范围", true), validators: CustomValidators.numberRangeStr},
         {type: "boolean", ...getPart("正面宽可改", true)}
       ]
     },
@@ -286,7 +284,6 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, t
       groupStyle: getGroupStyle(),
       infos: [
         {type: "string", ...getPart("背面宽", true)},
-        {type: "string", ...getPart("背面宽取值范围", true), validators: CustomValidators.numberRangeStr},
         {type: "boolean", ...getPart("背面宽可改", true)}
       ]
     },
@@ -315,10 +312,8 @@ export const exportXhmrmsbjSbjbItemSbjbs = (fenlei: string, items: XhmrmsbjSbjbI
   const emptySbjbItemSbjbItem: Required<XhmrmsbjSbjbItemSbjbItem> = {
     名字: "",
     正面宽: "",
-    正面宽取值范围: "",
     正面宽可改: false,
     背面宽: "",
-    背面宽取值范围: "",
     背面宽可改: false,
     正背面同时改变: false,
     使用正面分体: false,
@@ -388,8 +383,6 @@ export const importXhmrmsbjSbjbItemSbjbs = (fenlei: string, dataArray: string[][
         item[key] = item2;
         switch (key2) {
           case "名字":
-          case "正面宽取值范围":
-          case "背面宽取值范围":
           case "正面宽":
           case "背面宽":
             item2[key2] = value;
