@@ -616,6 +616,35 @@ export const getCadCalcZhankaiText = (
   return text;
 };
 
+export const getCadPaokengText = (
+  cad: CadData,
+  calcZhankai: any[],
+  bancai: {mingzi?: string; cailiao?: string; houdu?: string; zidingyi?: string},
+  projectConfig: ProjectConfig
+) => {
+  const arr: string[] = [];
+  for (const zhankai of calcZhankai) {
+    arr.push(`${zhankai.calcW}×${zhankai.calcH}=${zhankai.num}`);
+  }
+  const arr2 = [];
+  const 指定位置刨坑表示方法 = projectConfig.get("指定位置刨坑表示方法", "箭头") === "箭头" ? "刨坑(箭头)" : "刨坑";
+  if (cad.zhidingweizhipaokeng.length > 0) {
+    arr2.push(指定位置刨坑表示方法);
+  } else if (cad.kailiaoshibaokeng) {
+    arr2.push("刨坑");
+  }
+  if (cad.算料特殊要求) {
+    arr2.push(cad.算料特殊要求);
+  }
+  if (arr.length > 0) {
+    arr[0] = [arr[0], ...arr2].join(",");
+  } else {
+    arr.push(arr2.join(","));
+  }
+  arr.push(`${bancai.houdu}/${bancai.cailiao}/${bancai.zidingyi || bancai.mingzi}`);
+  return arr;
+};
+
 export const exportCadDataRemoveLengthTextCount = 200 as const;
 export const exportCadData = (data: CadData) => {
   const exportData = data.export();

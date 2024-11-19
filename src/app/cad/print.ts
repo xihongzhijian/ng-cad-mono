@@ -33,7 +33,7 @@ import {
   型材物料明细Item
 } from "./print.types";
 import {
-  getCadCalcZhankaiText,
+  getCadPaokengText,
   getShuangxiangLineRects,
   maxLineLength,
   prepareCadViewer,
@@ -630,13 +630,12 @@ const getUnfoldCadViewers = async (
     const colLine = new CadLine({start: [x, 0], end: [x, contentHeight]});
     unfoldCad.entities.add(colLine);
   }
-  const materialResult = params.orders?.[i]?.materialResult || {};
-  const projectName = params.projectName || "";
   const barcodeEl = new Image();
   barcodeEl.id = "tmp-bar-code";
   document.body.appendChild(barcodeEl);
   const qrcodeEl = document.createElement("canvas");
   const useQrcode = params.projectConfig.getBoolean("刨坑工单生成新代系统二维码");
+  const noCode = params.projectConfig.getBoolean("刨坑生产单不显示条码");
   let isBarcodeFailed = false;
   const barcodeSize = [2, 40];
   const qrcodeWidth = 60 + imgPadding[1] + imgPadding[3];
@@ -661,61 +660,63 @@ const getUnfoldCadViewers = async (
     const bancai = cad.info.bancai || {};
 
     let y = boxRect.bottom + textMargin;
-    if (!useQrcode && !isBarcodeFailed) {
-      const barcodeText = `${code}-${cad.numId}`;
-      const barcodeResult = getOrderBarcode(barcodeEl, {
-        text: `${code}-${cad.numId}`,
-        displayValue: false,
-        margin: 0,
-        width: 2,
-        height: 30
-      });
-      if (barcodeResult.error) {
-        const msg = barcodeResult.error;
-        console.warn(msg);
-        isBarcodeFailed = true;
-        const mtext = await addText("生成条形码出错：" + msg, [boxRect.left, y], {anchor: [0, 1], fontStyle: infoTextFontStyle});
-        y += mtext.boundingRect.height + textMargin;
-      }
-      if (!isBarcodeFailed) {
-        const mtext = await addText(barcodeText, [boxRect.x, y], {anchor: [0.5, 1], fontStyle: infoTextFontStyle});
-        y += mtext.boundingRect.height + imgPadding[2];
-        const img = new CadImage();
-        img.objectFit = "contain";
-        img.anchor.set(0.5, 1);
-        img.targetSize = new Point(boxRect.width - imgPadding[1] - imgPadding[3], barcodeSize[1]);
-        img.url = barcodeEl.src;
-        img.position.set(boxRect.x, y);
-        unfoldCad.entities.add(img);
-        await unfoldCadViewer.render(img);
-        y += img.boundingRect.height + imgPadding[0];
-      }
-    } else if (useQrcode) {
-      const qrcodeText = offsetStrs.join(";");
-      if (qrcodeText) {
-        let qrcodeSuccess = true;
-        try {
-          await QRCode.toCanvas(qrcodeEl, qrcodeText, {width: qrcodeWidth, margin: 0});
-        } catch (error) {
-          console.warn("生成二维码出错", error);
-          qrcodeSuccess = false;
+    if (!noCode) {
+      if (!useQrcode && !isBarcodeFailed) {
+        const barcodeText = `${code}-${cad.numId}`;
+        const barcodeResult = getOrderBarcode(barcodeEl, {
+          text: `${code}-${cad.numId}`,
+          displayValue: false,
+          margin: 0,
+          width: 2,
+          height: 30
+        });
+        if (barcodeResult.error) {
+          const msg = barcodeResult.error;
+          console.warn(msg);
+          isBarcodeFailed = true;
+          const mtext = await addText("生成条形码出错：" + msg, [boxRect.left, y], {anchor: [0, 1], fontStyle: infoTextFontStyle});
+          y += mtext.boundingRect.height + textMargin;
         }
-        if (qrcodeSuccess && qrcodeEl.width <= boxRect.width && qrcodeEl.height <= boxRect.height) {
+        if (!isBarcodeFailed) {
+          const mtext = await addText(barcodeText, [boxRect.x, y], {anchor: [0.5, 1], fontStyle: infoTextFontStyle});
+          y += mtext.boundingRect.height + imgPadding[2];
           const img = new CadImage();
           img.objectFit = "contain";
           img.anchor.set(0.5, 1);
-          img.targetSize = new Point(qrcodeEl.width, qrcodeEl.height);
-          img.url = qrcodeEl.toDataURL();
+          img.targetSize = new Point(boxRect.width - imgPadding[1] - imgPadding[3], barcodeSize[1]);
+          img.url = barcodeEl.src;
           img.position.set(boxRect.x, y);
           unfoldCad.entities.add(img);
           await unfoldCadViewer.render(img);
           y += img.boundingRect.height + imgPadding[0];
         }
+      } else if (useQrcode) {
+        const qrcodeText = offsetStrs.join(";");
+        if (qrcodeText) {
+          let qrcodeSuccess = true;
+          try {
+            await QRCode.toCanvas(qrcodeEl, qrcodeText, {width: qrcodeWidth, margin: 0});
+          } catch (error) {
+            console.warn("生成二维码出错", error);
+            qrcodeSuccess = false;
+          }
+          if (qrcodeSuccess && qrcodeEl.width <= boxRect.width && qrcodeEl.height <= boxRect.height) {
+            const img = new CadImage();
+            img.objectFit = "contain";
+            img.anchor.set(0.5, 1);
+            img.targetSize = new Point(qrcodeEl.width, qrcodeEl.height);
+            img.url = qrcodeEl.toDataURL();
+            img.position.set(boxRect.x, y);
+            unfoldCad.entities.add(img);
+            await unfoldCadViewer.render(img);
+            y += img.boundingRect.height + imgPadding[0];
+          }
+        }
       }
     }
 
-    const zhankaiText = getCadCalcZhankaiText(cad, calcZhankai, materialResult, bancai, params.projectConfig.getRaw(), projectName);
-    const texts0 = [zhankaiText].concat(offsetStrs);
+    const zhankaiText = getCadPaokengText(cad, calcZhankai, bancai, params.projectConfig);
+    const texts0 = zhankaiText.concat(offsetStrs);
     const texts: string[] = [];
     for (const text of texts0) {
       const texts1 = text.split(/\n{2,}/);
