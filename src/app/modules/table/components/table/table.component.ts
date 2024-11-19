@@ -54,6 +54,7 @@ import {cloneDeep, debounce, intersection, isEmpty, isEqual, uniqueId} from "lod
 import {Subscription} from "rxjs";
 import {ImageComponent} from "../../../image/components/image/image.component";
 import {
+  CellChangeEvent,
   CellEvent,
   ColumnInfo,
   FilterAfterEvent,
@@ -95,7 +96,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   @Output() rowSelectionChange = new EventEmitter<RowSelectionChange>();
   @Output() cellFocus = new EventEmitter<CellEvent<T>>();
   @Output() cellBlur = new EventEmitter<CellEvent<T>>();
-  @Output() cellChange = new EventEmitter<CellEvent<T>>();
+  @Output() cellChange = new EventEmitter<CellChangeEvent<T>>();
   @Output() cellClick = new EventEmitter<CellEvent<T>>();
   @Output() toolbarButtonClick = new EventEmitter<ToolbarButtonEvent>();
   @Output() filterAfter = new EventEmitter<FilterAfterEvent<T>>();
@@ -415,7 +416,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       if (onlineMode && isEmpty(control.errors)) {
         this.http.tableUpdate({table: onlineMode.tableName, data: {vid: item2.vid, [field]: valueAfter}});
       }
-      this.cellChange.emit({column, item, colIdx, rowIdx});
+      this.cellChange.emit({column, item, colIdx, rowIdx, value: valueAfter});
     }
   }
 
@@ -762,19 +763,30 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   getCellInputInfo(event: CellEvent<T>): InputInfo<T> {
     let info: InputInfo = {type: "string", label: ""};
-    const onChange = () => this.cellChange.emit(event);
+    const onChange = (value: any) => this.cellChange.emit({...event, value});
     const column = event.column;
     switch (column.type) {
       case "string":
-      case "number":
       case "boolean":
       case "image":
         info = {type: column.type, label: "", onChange};
         break;
+      case "number":
+        info = {type: column.type, label: "", onChange, ndigits: column.ndigits};
+        break;
       case "select":
         info = {type: column.type, label: "", options: column.options, onChange};
     }
-    info.model = {data: event.item, key: column.field};
+    const {item} = event;
+    let descriptor = Object.getOwnPropertyDescriptor(item, event.column.field);
+    if (!descriptor && item instanceof Object) {
+      descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(item), event.column.field);
+    }
+    if (descriptor?.set || descriptor?.writable) {
+      info.model = {data: item, key: column.field};
+    } else {
+      info.value = item[column.field];
+    }
     info.validators = column.validators;
     info.style = {width: "0", flex: "1 1 0"};
     return info;
@@ -797,6 +809,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         }
       case "boolean":
         return getValueString(value, {forceBoolean: true});
+      case "number":
+        return getValueString(value, {ndigits: column.ndigits});
       default:
         return getValueString(value);
     }

@@ -275,9 +275,9 @@
     <mat-form-field>
       <mat-label>展开方式</mat-label>
       <mat-select name="zhankaifangshi" [value]="getLineText('zhankaifangshi')" (selectionChange)="setLineText($event, 'zhankaifangshi')">
-        <mat-option value="自动计算">自动计算</mat-option>
-        <mat-option value="使用线长">使用线长</mat-option>
-        <mat-option value="指定长度">指定长度</mat-option>
+        @for (option of cadLineOptions.zhankaifangshi.values; track $index) {
+          <mat-option [value]="option">{{ option }}</mat-option>
+        }
       </mat-select>
     </mat-form-field>
   </div>

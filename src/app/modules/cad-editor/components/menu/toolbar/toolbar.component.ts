@@ -5,7 +5,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
 import {KeyEventItem, onKeyEvent} from "@app/app.common";
-import {isLengthTextSizeSetKey} from "@app/cad/utils";
+import {isLengthTextSizeSetKey, isShiyitu} from "@app/cad/utils";
 import {AboutComponent} from "@components/about/about.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
@@ -24,6 +24,7 @@ import {OpenCadOptions} from "@services/app-status.types";
 import {CadStatusNormal} from "@services/cad-status";
 import {isEqual} from "lodash";
 import {map, startWith} from "rxjs";
+import {openCadKailiaoConfigDialog} from "../../dialogs/cad-kailiao-config/cad-kailiao-config.component";
 import {CadLayerInput, openCadLayerDialog} from "../../dialogs/cad-layer/cad-layer.component";
 import {openCadLineForm} from "../cad-line/cad-line.utils";
 
@@ -384,6 +385,22 @@ export class ToolbarComponent {
       if (!isEqual(map1, map2)) {
         this.status.cad.render();
       }
+    }
+  }
+
+  get canOpenKailiaoConfig() {
+    return !isShiyitu(this.data);
+  }
+  async openKailiaoConfig() {
+    const cad = this.data;
+    const lineGroups = sortLines(cad);
+    if (![1, 2].includes(lineGroups.length)) {
+      this.message.error("CAD必须分成一段或两段");
+      return;
+    }
+    const result = await openCadKailiaoConfigDialog(this.dialog, {data: {cad}});
+    if (result) {
+      this.status.openCad({data: result.cad});
     }
   }
 }

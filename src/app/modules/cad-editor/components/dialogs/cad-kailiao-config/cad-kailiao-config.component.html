@@ -1,0 +1,27 @@
+<div class="title center">线开料设置</div>
+<ng-scrollbar>
+  <div class="item">
+    <div class="toolbar">
+      <div>批量设置选中数据</div>
+      <button mat-raised-button color="primary" (click)="resetMultiSetData()">清空</button>
+      <button mat-raised-button color="primary" (click)="multiSet()">确定</button>
+    </div>
+    <div class="toolbar">
+      @for (info of multiSetInputInfos(); track $index) {
+        <app-input class="flex-110" [info]="info"></app-input>
+      }
+    </div>
+  </div>
+  <div class="tables flex-row">
+    @for (info of lineTables(); track $index) {
+      <!-- @if ($index > 0) {
+        <mat-divider></mat-divider>
+      } -->
+      <app-table #lineTables class="flex-110" [info]="info" (cellChange)="onCellChange($event, $index)"></app-table>
+    }
+  </div>
+</ng-scrollbar>
+<div class="toolbar center">
+  <button mat-raised-button color="primary" (click)="submit()">确定</button>
+  <button mat-raised-button color="primary" (click)="cancel()">取消</button>
+</div>

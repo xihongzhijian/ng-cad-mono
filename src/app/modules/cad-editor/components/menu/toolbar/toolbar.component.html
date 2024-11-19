@@ -87,6 +87,9 @@
     <button mat-button (click)="editZhankai()">展开</button>
     <button mat-button (click)="editTiaojianquzhi()">条件取值</button>
     <button mat-button (click)="editLineInfo()">线属性弹窗</button>
+    @if (canOpenKailiaoConfig) {
+      <button mat-button (click)="openKailiaoConfig()">线开料设置</button>
+    }
     @if (data.type === "包边正面") {
       <button mat-button (click)="editBbzhmkgz()">修改包边正面宽规则</button>
     }

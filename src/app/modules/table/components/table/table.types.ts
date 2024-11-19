@@ -70,7 +70,12 @@ export interface ColumnInfoBase<T> {
 }
 
 export interface ColumnInfoNormal<T> extends ColumnInfoBase<T> {
-  type: "string" | "number" | "boolean" | "checkbox";
+  type: "string" | "boolean" | "checkbox";
+}
+
+export interface ColumnInfoNumber<T> extends ColumnInfoBase<T> {
+  type: "number";
+  ndigits?: number;
 }
 
 export interface ColumnInfoTime<T> extends ColumnInfoBase<T> {
@@ -113,6 +118,7 @@ export interface ColumnInfoCad<T> extends ColumnInfoBase<T> {
 export type ColumnInfo<T> =
   | ColumnInfoTime<T>
   | ColumnInfoNormal<T>
+  | ColumnInfoNumber<T>
   | ColumnInfoSelect<T>
   | ColumnInfoButton<T>
   | ColumnInfoLink<T>
@@ -140,6 +146,10 @@ export interface CellEvent<T> {
   item: T;
   colIdx: number;
   rowIdx: number;
+}
+
+export interface CellChangeEvent<T> extends CellEvent<T> {
+  value: any;
 }
 
 export interface FilterAfterEvent<T> {

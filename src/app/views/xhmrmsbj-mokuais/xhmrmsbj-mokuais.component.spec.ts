@@ -1,9 +1,13 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {provideRouter} from "@angular/router";
+import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
+import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {XhmrmsbjMokuaisComponent, XhmrmsbjMokuaisInput} from "./xhmrmsbj-mokuais.component";
 
 const data: XhmrmsbjMokuaisInput = {
+  xhmrmsbj: new XhmrmsbjData({vid: 0, mingzi: "1"}, [], {}, []),
+  xinghao: new MrbcjfzXinghaoInfo("", {vid: 0, mingzi: "1"}),
   data: {
     lastSuanliao: {
       input: {
