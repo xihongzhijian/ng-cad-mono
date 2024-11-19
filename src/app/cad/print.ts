@@ -35,7 +35,6 @@ import {
 import {
   getCadPaokengText,
   getShuangxiangLineRects,
-  maxLineLength,
   prepareCadViewer,
   setShuangxiangLineRects,
   showIntersections,
@@ -479,8 +478,14 @@ export const configCadDataForPrint = async (
           }
         }
         const length = e.length;
-        if (e instanceof CadLine && length > maxLineLength * data.suanliaodanZoom) {
-          setLinesLength(data, [e], maxLineLength);
+        if (e instanceof CadLine) {
+          let maxLineLength = 100;
+          if (e.isHorizontal()) {
+            maxLineLength = 180;
+          }
+          if (length > maxLineLength * data.suanliaodanZoom) {
+            setLinesLength(data, [e], maxLineLength);
+          }
         }
       }
     });

@@ -758,22 +758,17 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!mokuai || !msbjInfo || !data) {
       return infos;
     }
-    const activeMenshanKey = this.activeMenshanKey();
-    const varsOthersEnabled = getAllShuchuVars(data.menshanbujuInfos, {
-      check: (key, node2) => {
-        if (data.铰扇跟随锁扇 && key.includes("铰扇")) {
-          return false;
-        }
-        if (key === activeMenshanKey && node2.层名字 === node.层名字) {
-          return false;
-        }
-        return true;
-      }
-    });
+    const nodeVarsError = this.errors().find((v) => v.content.startsWith("以下变量重名"));
     const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
     for (const key of mokuai.shuchubianliang) {
       const disabled = !varsEnabled.includes(key);
-      const duplicate = !disabled && varsOthersEnabled.includes(key);
+      let duplicate = false;
+      if (nodeVarsError) {
+        const detail = nodeVarsError.details.find((v) => v.some((v2) => v2.text?.includes(`【${key}】`)));
+        if (detail) {
+          duplicate = true;
+        }
+      }
       infos.push({key, disabled, duplicate});
     }
     return infos;
@@ -1082,8 +1077,15 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                 if (i > i2 || (i === i2 && j > j2) || (i === i2 && j === j2 && k > k2)) {
                   continue;
                 }
-                const scbl1 = getMokuaiShuchuVars(msbjInfo, node, mokuai);
-                const scbl2 = getMokuaiShuchuVars(msbjInfo2, node2, mokuai2);
+                const isEqual = isMokuaiItemEqual(mokuai, mokuai2);
+                let scbl1 = getMokuaiShuchuVars(msbjInfo, node, mokuai);
+                let scbl2 = getMokuaiShuchuVars(msbjInfo2, node2, mokuai2);
+                const getShurus = (mokuai0: ZixuanpeijianMokuaiItem) =>
+                  mokuai0.gongshishuru.concat(mokuai0.xuanxiangshuru).map((v) => v[0]);
+                if (isEqual) {
+                  scbl1 = intersection(scbl1, getShurus(mokuai));
+                  scbl2 = intersection(scbl2, getShurus(mokuai2));
+                }
                 if (menshanKey !== menshanKey2 || node.层名字 !== node2.层名字) {
                   const dupVars1 = intersection(scbl1, scbl2);
                   const getDetailPart = (
@@ -1100,10 +1102,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                     const part2 = getDetailPart(menshanKey2, node2, mokuai2, type2);
                     return [{text: getNamesStr(dupVars) + "重名"}, {br: true}, ...part1, {br: true}, ...part2];
                   };
+
                   if (dupVars1.length > 0) {
                     nodeVarsError.details.push(getDetail(dupVars1, "输出", "输出"));
                   }
-                  if (!isMokuaiItemEqual(mokuai, mokuai2)) {
+                  if (!isEqual) {
                     const slgsKeys = Object.keys(getMokuaiFormulas(msbjInfo, node2, mokuai2));
                     const dupVars2 = difference(intersection(slgsKeys, scbl1), mokuai2.shuchubianliang);
                     if (dupVars2.length > 0) {
@@ -1154,6 +1157,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       const mokuai = mokuaiNode?.可选模块.find((v) => v.type2 === jumpTo.mokuai);
       if (mokuai) {
         await this.selectMokuai(mokuai);
+        this.openMokuai(mokuai);
       }
     }
     if (jumpTo.mkdx) {
