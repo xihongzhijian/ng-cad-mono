@@ -4,7 +4,7 @@ import {cloneDeep} from "lodash";
 import {CadDimension, CadEntity, CadHatch, CadLine, CadLineLike, CadMtext} from "./cad-data/cad-entity";
 import {CadDimensionStyle, CadStyle, FontStyle} from "./cad-data/cad-styles";
 import {Defaults} from "./cad-utils";
-import {CadViewerConfig} from "./cad-viewer";
+import {CadViewerConfig} from "./cad-viewer.types";
 
 export class CadStylizer {
   static get(entity: CadEntity, config: CadViewerConfig, params: CadStyle = {}) {

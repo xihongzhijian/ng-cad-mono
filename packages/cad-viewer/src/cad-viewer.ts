@@ -19,38 +19,13 @@ import {
 import {CadDimensionLinear} from "./cad-data/cad-entity/cad-dimension-linear";
 import {CadImage} from "./cad-data/cad-entity/cad-image";
 import {CadInsert} from "./cad-data/cad-entity/cad-insert";
-import {CadDimensionStyle, CadStyle, FontStyle} from "./cad-data/cad-styles";
-import {EntityType, entityTypes} from "./cad-data/cad-types";
+import {CadStyle, FontStyle} from "./cad-data/cad-styles";
+import {entityTypes} from "./cad-data/cad-types";
 import {CadStylizer} from "./cad-stylizer";
 import {getVectorFromArray, toFixedTrim} from "./cad-utils";
 import {CadEventCallBack, CadEvents, controls} from "./cad-viewer-controls";
+import {CadViewerConfig, CadViewerFont} from "./cad-viewer.types";
 import {drawArc, drawCircle, drawDimensionLinear, drawImage, drawLeader, drawLine, drawShape, drawText} from "./draw";
-
-export interface CadViewerFont {
-  name: string;
-  url: string;
-}
-
-export interface CadViewerConfig {
-  width: number; // 宽
-  height: number; // 高
-  backgroundColor: string; // 背景颜色, 写法与css相同
-  padding: number[]; // 内容居中时的内边距, 写法与css相同
-  reverseSimilarColor: boolean; // 实体颜色与背景颜色相近时是否反相
-  validateLines: boolean; // 是否验证线段
-  selectMode: "none" | "single" | "multiple"; // 实体选取模式
-  dragAxis: "" | "x" | "y" | "xy"; // 限制整体内容可向x或y方向拖动
-  entityDraggable: boolean | EntityType[]; // 实体是否可拖动
-  hideDimensions: boolean; // 是否隐藏标注
-  lineGongshi: number; // 显示线公式的字体大小, ≤0时不显示
-  hideLineLength: boolean; // 是否隐藏线长度(即使lineLength>0)
-  hideLineGongshi: boolean; // 是否隐藏线公式(即使lineGongshi>0)
-  minLinewidth: number; // 所有线的最小宽度(调大以便选中)
-  fontStyle: FontStyle; // 全局字体样式
-  dimStyle: CadDimensionStyle; // 全局标注样式
-  enableZoom: boolean; // 是否启用缩放
-  dashedLinePadding: number | number[]; // 虚线前后留白
-}
 
 const getConfigProxy = (config: Partial<CadViewerConfig> = {}) => {
   const defalutConfig: CadViewerConfig = {

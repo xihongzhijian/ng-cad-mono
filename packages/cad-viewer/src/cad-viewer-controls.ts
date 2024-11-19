@@ -3,6 +3,7 @@ import {CadEntities} from "./cad-data/cad-entities";
 import {CadDimension, CadEntity} from "./cad-data/cad-entity";
 import {CadDimensionLinear} from "./cad-data/cad-entity/cad-dimension-linear";
 import {CadViewer} from "./cad-viewer";
+import {CadViewerSelectMode} from "./cad-viewer.types";
 
 let pointer: {from: Point; to: Point} | null = null;
 let button: number | null = null;
@@ -93,6 +94,7 @@ function onPointerMove(this: CadViewer, event: PointerEvent) {
       }
       this.move(translate.x, -translate.y);
     } else if (button === 0) {
+      const selectModesWithSelection: CadViewerSelectMode[] = ["single", "multiple"];
       if (entitiesToDrag && entitiesNotToDrag && entityDraggable) {
         if (Array.isArray(entityDraggable)) {
           const toRemove: CadEntity[] = [];
@@ -149,7 +151,7 @@ function onPointerMove(this: CadViewer, event: PointerEvent) {
           }
           this.render(draggingDimension);
         }
-      } else if (selectMode === "multiple" && from.distanceTo(to) > 1) {
+      } else if (selectModesWithSelection.includes(selectMode) && from.distanceTo(to) > 1) {
         if (!multiSelector) {
           multiSelector = document.createElement("div");
           multiSelector.classList.add("multi-selector");
@@ -193,10 +195,16 @@ function clearPointer(this: CadViewer, event: PointerEvent) {
           toSelect.push(e);
         }
       });
-      if (toSelect.every((e) => e.selected)) {
-        this.unselect(toSelect);
-      } else {
-        this.select(toSelect);
+      const {selectMode} = this.getConfig();
+      if (selectMode === "multiple") {
+        if (toSelect.every((e) => e.selected)) {
+          this.unselect(toSelect);
+        } else {
+          this.select(toSelect);
+        }
+      } else if (selectMode === "single") {
+        this.unselectAll();
+        this.select(toSelect[0]);
       }
       multiSelector.remove();
       multiSelector = null;
