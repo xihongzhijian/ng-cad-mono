@@ -42,7 +42,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzDataSubmitEvent, MrbcjfzInfo, MrbcjfzInputData, MrbcjfzResponseData} from "@views/mrbcjfz/mrbcjfz.types";
 import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
-import {clone, cloneDeep, intersection, isEqual} from "lodash";
+import {clone, cloneDeep, intersection, isEmpty, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {firstValueFrom, Subject} from "rxjs";
 import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
@@ -111,7 +111,7 @@ export class MokuaiItemComponent {
 
   useSlgsInfo = computed(() => {
     const mokuai = this.mokuai();
-    return mokuai.xuanxianggongshi.length > 0;
+    return mokuai.xuanxianggongshi.length > 0 || isEmpty(mokuai.suanliaogongshi);
   });
   slgsInfo = computed(() => {
     const mokuai = this.mokuai();
