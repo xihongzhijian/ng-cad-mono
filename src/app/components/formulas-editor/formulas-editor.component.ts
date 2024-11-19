@@ -302,11 +302,18 @@ export class FormulasEditorComponent {
     return 0;
   }
 
-  async import() {
-    if (!(await this.message.confirm("导入会替换当前的公式，是否继续？"))) {
-      return;
-    }
-    await this.message.importData((data) => this.parseFormulaList(data), this.dataName());
+  async import(replace: boolean) {
+    await this.message.importData<string[][]>(
+      replace,
+      (data) => {
+        if (replace) {
+          this.parseFormulaList(data);
+        } else {
+          this.parseFormulaList(this.formulaList().concat(data));
+        }
+      },
+      this.dataName()
+    );
   }
   export() {
     this.message.exportData(this.formulaList(), this.dataName());

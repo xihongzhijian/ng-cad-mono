@@ -164,10 +164,14 @@ export class MessageService {
   }
 
   async importData<T = any>(
+    replace: boolean,
     action: (data: T) => MaybePromise<void | boolean>,
     title = "",
     jsonOptions?: {reviver?: (this: any, key: string, value: any) => any}
   ) {
+    if (!(await this.confirm(`是否确定导入并${replace ? "替换" : "添加"}？`))) {
+      return;
+    }
     const files = await selectFiles({accept: ".json"});
     const file = files?.[0];
     if (!file) {

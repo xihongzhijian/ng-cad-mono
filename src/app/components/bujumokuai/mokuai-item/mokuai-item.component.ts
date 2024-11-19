@@ -446,15 +446,23 @@ export class MokuaiItemComponent {
     this.showCadsDialog.set(false);
     this.selectCads$.next(mokuaiCads);
   }
-  async importCads() {
-    if (!(await this.message.confirm("导入会替换当前的CAD，是否继续？"))) {
-      return;
-    }
-    await this.message.importData((data: ObjectOf<any>[]) => {
-      const cads = data.map((v) => getHoutaiCad(new CadData(v).clone(true)));
-      this.mokuai.update((v) => ({...v, cads}));
-      this.selectedCads.set(data.map((v) => new CadData(v)));
-    }, "模块CAD");
+  async importCads(replace: boolean) {
+    await this.message.importData(
+      replace,
+      (data: ObjectOf<any>[]) => {
+        const cads = data.map((v) => getHoutaiCad(new CadData(v).clone(true)));
+        if (replace) {
+          this.mokuai.update((v) => ({...v, cads}));
+        } else {
+          const mokuai = this.mokuai();
+          const cadsOld = mokuai.cads || [];
+          mokuai.cads = [...cadsOld, ...cads];
+          this.mokuai.set({...mokuai});
+        }
+        this.selectedCads.set(data.map((v) => new CadData(v)));
+      },
+      "模块CAD"
+    );
   }
   exportCads() {
     this.message.exportData(

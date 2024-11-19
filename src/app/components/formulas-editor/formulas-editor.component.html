@@ -46,7 +46,8 @@
           <div>公式</div>
           <button mat-raised-button color="primary" (click)="addFormula()">添加</button>
           <button mat-raised-button color="primary" (click)="test(false)">测试</button>
-          <button mat-raised-button color="primary" (click)="import()">导入替换</button>
+          <button mat-raised-button color="primary" (click)="import(true)">导入替换</button>
+          <button mat-raised-button color="primary" (click)="import(false)">导入添加</button>
           <button mat-raised-button color="primary" (click)="export()">导出</button>
         </div>
         <div class="formulas-list" cdkDropList [cdkDropListData]="formulaList" (cdkDropListDropped)="dropFormula($event)">
