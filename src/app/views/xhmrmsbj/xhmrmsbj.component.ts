@@ -1295,34 +1295,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       if (mokuaiNode.选中模块 && !kexuan.find((v) => v.id === mokuaiNode.选中模块?.id)) {
         delete mokuaiNode.选中模块;
       }
-      for (const mokuai of mokuaiNode.可选模块) {
-        const keys: string[] = [];
-        for (const key of mokuai.gongshishuru.concat(mokuai.xuanxiangshuru)) {
-          keys.push(key[0]);
-        }
-        const menshanKey = this.activeMenshanKey();
-        for (const menshanKey2 of keysOf(data.menshanbujuInfos)) {
-          if (menshanKey === menshanKey2) {
-            continue;
-          }
-          const msbjInfo2 = data.menshanbujuInfos[menshanKey2];
-          if (!msbjInfo2) {
-            continue;
-          }
-          const setShuruzhi2 = (xxgsId?: string) => {
-            const shuruzhi = getShuruzhi(msbjInfo, xxgsId);
-            setShuruzhi(msbjInfo2, shuruzhi, xxgsId);
-          };
-          if (mokuai.xuanxianggongshi.length > 0) {
-            for (const xxgs of mokuai.xuanxianggongshi) {
-              setShuruzhi2(xxgs._id);
-            }
-          } else {
-            setShuruzhi2();
-          }
-        }
-      }
-      purgeMsbjInfo(data.menshanbujuInfos);
       let refresh = true;
       if (kexuan.length > 0) {
         if (!kexuan.find((v) => v.info?.isDefault)) {

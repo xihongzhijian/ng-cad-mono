@@ -281,9 +281,11 @@
           <div class="default-sign" [class]="{active: mokuai?.info?.isDefault}" (click)="setDefaultMokuai(mokuai)">默认</div>
         }
         <div class="flex-110"></div>
-        <button mat-icon-button color="primary" (click)="showXhmrmsbjsUsingMokuai(mokuai)">
-          <mat-icon>link</mat-icon>
-        </button>
+        @if (!isFromOrder()) {
+          <button mat-icon-button color="primary" (click)="showXhmrmsbjsUsingMokuai(mokuai)">
+            <mat-icon>link</mat-icon>
+          </button>
+        }
         <button mat-icon-button color="primary" (click)="mokuaiImage.showBigPic()">
           <mat-icon>zoom_in</mat-icon>
         </button>

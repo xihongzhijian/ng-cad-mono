@@ -379,8 +379,11 @@ export const importXhmrmsbjSbjbItemSbjbs = (fenlei: string, dataArray: string[][
       if (isXhmrmsbjSbjbItemOptionalKeys1(key, sbjbItemOptionalKeys1)) {
         item[key] = value;
       } else if (isXhmrmsbjSbjbItemOptionalKeys2(key, sbjbItemOptionalKeys2) && key2) {
-        const item2 = getXhmrmsbjSbjbItemSbjbItem();
-        item[key] = item2;
+        let item2 = item[key];
+        if (!item2) {
+          item2 = getXhmrmsbjSbjbItemSbjbItem();
+          item[key] = item2;
+        }
         switch (key2) {
           case "名字":
           case "正面宽":

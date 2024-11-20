@@ -158,13 +158,11 @@ export const getShuruzhi = (info: XhmrmsbjInfo, xxgsId?: string) => {
     if (!info.选项公式输入值[xxgsId]) {
       info.选项公式输入值[xxgsId] = {};
     }
-    delete info.输入值;
     return info.选项公式输入值[xxgsId];
   } else {
     if (!info.输入值) {
       info.输入值 = {};
     }
-    delete info.选项公式输入值;
     return info.输入值;
   }
 };
@@ -210,9 +208,9 @@ export const purgeShuruzhi = (infos: XhmrmsbjDataMsbjInfos) => {
       }
     }
     if (info.输入值) {
-      for (const key of Object.keys(info.输入值)) {
-        if (!varNames.has(key)) {
-          delete info.输入值[key];
+      for (const shuruzhiKey of Object.keys(info.输入值)) {
+        if (!varNames.has(shuruzhiKey)) {
+          delete info.输入值[shuruzhiKey];
         }
       }
       if (isEmpty(info.输入值)) {
@@ -220,18 +218,18 @@ export const purgeShuruzhi = (infos: XhmrmsbjDataMsbjInfos) => {
       }
     }
     if (info.选项公式输入值) {
-      for (const key of Object.keys(info.选项公式输入值)) {
-        const varNamesXxgs = varNamesXxgsMap.get(key);
+      for (const xxgsKey of Object.keys(info.选项公式输入值)) {
+        const varNamesXxgs = varNamesXxgsMap.get(xxgsKey);
         if (varNamesXxgs) {
-          const keysToRemove = difference(Object.keys(info.选项公式输入值[key]), varNamesXxgs);
+          const keysToRemove = difference(Object.keys(info.选项公式输入值[xxgsKey]), varNamesXxgs);
           for (const key2 of keysToRemove) {
-            delete info.选项公式输入值[key][key2];
+            delete info.选项公式输入值[xxgsKey][key2];
           }
-          if (isEmpty(info.选项公式输入值[key])) {
-            delete info.选项公式输入值[key];
+          if (isEmpty(info.选项公式输入值[xxgsKey])) {
+            delete info.选项公式输入值[xxgsKey];
           }
         } else {
-          delete info.选项公式输入值[key];
+          delete info.选项公式输入值[xxgsKey];
         }
       }
       if (isEmpty(info.选项公式输入值)) {
