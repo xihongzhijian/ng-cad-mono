@@ -203,7 +203,7 @@ export class BjmkStatusService {
     (item1, item2) => item1.vid === item2.vid
   );
 
-  mokuaiOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll>("shuju/api/getMokuaiOption")) || {});
+  mokuaiOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll>("shuju/api/getMokuaiOptions")) || {});
 
   async showXhmrmsbjsUsingMokuai(mokuaiId: number) {
     const data = await this.http.getData<{url: string}>("shuju/api/showXhmrmsbjsUsingMokuai", {mokuaiId});

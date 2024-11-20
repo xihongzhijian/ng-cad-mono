@@ -135,6 +135,10 @@
     ol {
       width: 100%;
       box-sizing: border-box;
+
+      li:not(:last-child) {
+        margin-bottom: 1em;
+      }
     }
   }
 }

@@ -80,12 +80,14 @@ export interface XhmrmsbjRequestDataOpts {
 export interface XhmrmsbjError {
   content: string;
   details: XhmrmsbjErrorDetail[];
+  duplicateVars?: Set<string>;
 }
 export type XhmrmsbjErrorDetail = XhmrmsbjErrorDetailText[];
 export interface XhmrmsbjErrorDetailText {
   text?: string;
   jumpTo?: XhmrmsbjErrorJumpTo;
   br?: boolean;
+  color?: string;
 }
 export interface XhmrmsbjErrorJumpTo {
   门扇名字: MenshanKey;

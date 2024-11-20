@@ -252,13 +252,15 @@
                 @for (detail of error.details; track $index) {
                   <li class="text">
                     @for (item of detail; track $index) {
-                      @if (item.br) {
-                        <br />
-                      } @else if (item.jumpTo) {
-                        <span class="link text" (click)="jumpToError(item.jumpTo)">{{ item.text }}</span>
-                      } @else {
-                        <span>{{ item.text }}</span>
-                      }
+                      <span [style.color]="item.color">
+                        @if (item.br) {
+                          <br />
+                        } @else if (item.jumpTo) {
+                          <span class="link text" (click)="jumpToError(item.jumpTo)">{{ item.text }}</span>
+                        } @else {
+                          <span>{{ item.text }}</span>
+                        }
+                      </span>
                     }
                   </li>
                 }

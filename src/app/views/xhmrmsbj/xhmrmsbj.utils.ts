@@ -341,31 +341,6 @@ export const purgeShuchuDisabled = (infos: XhmrmsbjDataMsbjInfos) => {
     }
   }
 };
-export const getAllShuchuVars = (
-  infos: XhmrmsbjDataMsbjInfos,
-  opts?: {check?: (key: MenshanKey, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => boolean}
-) => {
-  const vars = new Set<string>();
-  for (const key of keysOf(infos)) {
-    const msbjInfo = infos[key];
-    if (!msbjInfo) {
-      continue;
-    }
-    for (const node of msbjInfo.模块节点 || []) {
-      const mokuai = node.选中模块;
-      if (mokuai) {
-        if (opts?.check && !opts.check(key, node, mokuai)) {
-          continue;
-        }
-        const varsEnabled2 = getMokuaiShuchuVars(msbjInfo, node, mokuai);
-        for (const varName of varsEnabled2) {
-          vars.add(varName);
-        }
-      }
-    }
-  }
-  return Array.from(vars);
-};
 
 export const filterMokuaiOptions = (mokuai: ZixuanpeijianMokuaiItem, options: XhmrmsbjInfoMokuaiOption[]) => {
   const names = mokuai.自定义数据?.选项数据.map((v) => v.名字) || [];

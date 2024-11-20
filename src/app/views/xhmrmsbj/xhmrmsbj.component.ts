@@ -101,7 +101,6 @@ import {
   xhmrmsbjTabNames
 } from "./xhmrmsbj.types";
 import {
-  getAllShuchuVars,
   getMokuaiFormulas,
   getMokuaiOptions,
   getMokuaiShuchuVars,
@@ -624,6 +623,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     await this.tongyongFormulasManager.fetch();
     return this.getValueInfo(key, slgs, shuruzhi);
   }
+  nodeVarsError = computed(() => this.errors().find((v) => v.content.startsWith("以下变量重名")));
+  isVarNameDuplicate(name: string) {
+    const duplicateVars = this.nodeVarsError()?.duplicateVars;
+    if (!duplicateVars) {
+      return false;
+    }
+    return duplicateVars.has(name);
+  }
   mokuaiInputInfosInput = computed(() => {
     const msbjInfo = this.activeMsbjInfo();
     const node = this.activeMokuaiNode();
@@ -758,17 +765,10 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!mokuai || !msbjInfo || !data) {
       return infos;
     }
-    const nodeVarsError = this.errors().find((v) => v.content.startsWith("以下变量重名"));
     const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
     for (const key of mokuai.shuchubianliang) {
       const disabled = !varsEnabled.includes(key);
-      let duplicate = false;
-      if (nodeVarsError) {
-        const detail = nodeVarsError.details.find((v) => v.some((v2) => v2.text?.includes(`【${key}】`)));
-        if (detail) {
-          duplicate = true;
-        }
-      }
+      const duplicate = this.isVarNameDuplicate(key);
       infos.push({key, disabled, duplicate});
     }
     return infos;
@@ -786,18 +786,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!mokuai || !msbjInfo || !data) {
       return [];
     }
-    const activeMenshanKey = this.activeMenshanKey();
-    const varsOthersEnabled = getAllShuchuVars(data.menshanbujuInfos, {
-      check: (key, node2) => key !== activeMenshanKey || node2.层名字 !== node.层名字
-    });
-    const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
     return this.mokuaiOptions().map((item) => {
       const name = item.名字;
       const options = getMokuaiOptions(msbjInfo, node, mokuai);
       const option = options.find((v) => v.名字 === name);
       const info: InputInfo = {type: "select", label: name, options: item.可选项.map((v) => v.mingzi)};
-      const disabled = !varsEnabled.includes(name);
-      const duplicate = !disabled && varsOthersEnabled.includes(name);
+      const duplicate = this.isVarNameDuplicate(name);
       info.validators = () => (duplicate ? {重复: true} : null);
       if (this.isFromOrder()) {
         info.value = option?.选中值 || option?.默认值 || item.可选项.find((v) => v.morenzhi)?.mingzi;
@@ -991,7 +985,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     errors.push(errorMkdxpz);
     const varKeysXinghao = Object.keys(this.xinghaoVars());
     const msbjInfos: {menshanKey: MenshanKey; msbjInfo: XhmrmsbjInfo}[] = [];
-    const nodeVarsError: XhmrmsbjError = {content: "以下变量重名，请修改", details: []};
+    const duplicateNodeVars = new Set<string>();
+    const nodeVarsError: XhmrmsbjError = {content: "以下变量重名，请修改", details: [], duplicateVars: duplicateNodeVars};
     errors.push(nodeVarsError);
     const mokuaisError: XhmrmsbjError = {content: "以下模块有错", details: []};
     errors.push(mokuaisError);
@@ -1011,7 +1006,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         }
       }
       const nodes = msbjInfo.模块节点 || [];
-      const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");
+      const getNameDetail = (name: string): XhmrmsbjErrorDetail => [{text: "【"}, {text: name, color: "red"}, {text: "】"}];
+      const getNamesDetail = (names: string[]): XhmrmsbjErrorDetail => names.map((v) => getNameDetail(v)).flat();
       for (const [j, node] of nodes.entries()) {
         if (!data.铰扇跟随锁扇 || !menshanKey.includes("铰扇")) {
           if (!node.选中模块) {
@@ -1020,11 +1016,18 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         }
         for (const [k, mokuai] of node.可选模块.entries()) {
           const varKeysShuchu = mokuai.shuchubianliang;
-          const mokuaiErrors: string[] = [];
+          const mokuaiErrors: XhmrmsbjErrorDetail[] = [];
           const checkDuplicateVars = (vars1: string[], vars2: string[], name1: string, name2: string) => {
             const duplicateVars = intersection(vars1, vars2);
             if (duplicateVars.length > 0) {
-              mokuaiErrors.push(`${name1}与${name2}重复：${duplicateVars.join("，")}`);
+              mokuaiErrors.push([
+                ...getNameDetail(name1),
+                {text: "与"},
+                ...getNameDetail(name2),
+                {
+                  text: `重复：${duplicateVars.join("，")}`
+                }
+              ]);
             }
           };
           checkDuplicateVars(varKeysShuchu, varKeysXinghao, "输出变量", "型号公式输入");
@@ -1035,7 +1038,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           const varKeysXxsr = mokuai.gongshishuru.map((v) => v[0]);
           checkDuplicateVars(varKeysXxsr, varKeysXuanxiang, "选项输入", "模块选项");
           if (!this.validateMorenbancai(mokuai.morenbancai)) {
-            mokuaiErrors.push("未配置默认板材分组");
+            mokuaiErrors.push([{text: "未配置默认板材分组"}]);
           }
           const missingVars: string[] = [];
           for (const key of [...varKeysGssr, ...varKeysXxsr]) {
@@ -1058,7 +1061,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             }
           }
           if (missingVars.length > 0) {
-            mokuaiErrors.push(`模块输入${getNamesStr(missingVars)}不能为空`);
+            mokuaiErrors.push([{text: "模块输入"}, ...getNamesDetail(missingVars), {text: "不能为空"}]);
           }
           if (mokuaiErrors.length > 0) {
             const title = getMokuaiTitle(mokuai, {门扇名字: menshanKey, 层名字: node.层名字});
@@ -1100,17 +1103,23 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                   const getDetail = (dupVars: string[], type1: string, type2: string): XhmrmsbjErrorDetail => {
                     const part1 = getDetailPart(menshanKey, node, mokuai, type1);
                     const part2 = getDetailPart(menshanKey2, node2, mokuai2, type2);
-                    return [{text: getNamesStr(dupVars) + "重名"}, {br: true}, ...part1, {br: true}, ...part2];
+                    return [...getNamesDetail(dupVars), {text: "变量重名"}, {br: true}, ...part1, {br: true}, ...part2];
                   };
 
                   if (dupVars1.length > 0) {
                     nodeVarsError.details.push(getDetail(dupVars1, "输出", "输出"));
+                    for (const key of dupVars1) {
+                      duplicateNodeVars.add(key);
+                    }
                   }
                   if (!isEqual) {
                     const slgsKeys = Object.keys(getMokuaiFormulas(msbjInfo, node2, mokuai2));
                     const dupVars2 = difference(intersection(slgsKeys, scbl1), mokuai2.shuchubianliang);
                     if (dupVars2.length > 0) {
                       nodeVarsError.details.push(getDetail(dupVars2, "输出", "公式"));
+                      for (const key of dupVars2) {
+                        duplicateNodeVars.add(key);
+                      }
                     }
                   }
                 }
