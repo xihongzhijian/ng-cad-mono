@@ -73,12 +73,12 @@ export const getXuanxiangItem = async (message: MessageService, options: Options
       type: "select",
       label: "可选项",
       value: data.可选项.map((v) => v.mingzi),
-      options: convertOptions(options[data.名字]),
+      options: [],
       multiple: true,
       validators: Validators.required,
       optionsDialog: {
         optionKey: data.名字,
-        useLocalOptions: true,
+        openInNewTab: true,
         defaultValue: {value: data.可选项.find((v) => v.morenzhi)?.mingzi, required: true},
         onChange: (val) => {
           data.可选项 = val.options.map((v) => {

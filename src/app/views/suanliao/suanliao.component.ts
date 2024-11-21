@@ -177,6 +177,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     }
     const msbjs = params.msbjs.map((v) => new MsbjInfo(v));
     const xhmrmsbj = new XhmrmsbjData(params.xhmrmsbj, bujuNames, step1Data?.typesInfo || {}, msbjs);
+    xhmrmsbj.name = String(materialResult.型号);
     const calcZxpjResult = await calcZxpj(this.dialog, this.message, this.calc, this.status, materialResult, mokuais, lingsans, {
       changeLinesLength: false,
       calcVars,

@@ -291,9 +291,10 @@ export class CadOptionsComponent implements AfterViewInit {
     return data;
   }
 
-  onCheckboxChange(item: CadOptionsPageDataItem) {
+  onCheckboxChange(i: number) {
     const {multi} = this.data;
     const items = this.pageData();
+    const item = items[i];
     item.checked = !item.checked;
     const {checkedIdsCurr} = this;
     if (!multi && item.checked) {
@@ -315,17 +316,18 @@ export class CadOptionsComponent implements AfterViewInit {
   selectAll() {
     const pageData = this.pageData();
     const isAllSelected = pageData.every((v) => v.checked);
-    for (const item of pageData) {
+    for (const [i, item] of pageData.entries()) {
       const shouldChange = isAllSelected ? item.checked : !item.checked;
       if (shouldChange) {
-        this.onCheckboxChange(item);
+        this.onCheckboxChange(i);
       }
     }
   }
 
-  setDefaultValue(item: CadOptionsPageDataItem) {
+  setDefaultValue(i: number) {
+    const item = this.pageData()[i];
     if (!item.checked) {
-      this.onCheckboxChange(item);
+      this.onCheckboxChange(i);
     }
     const {defaultValue} = this.data;
     if (!defaultValue) {

@@ -30,14 +30,14 @@
   <app-spinner [id]="loaderIds.optionsLoader"></app-spinner>
   <div class="options items add-empty-msg">
     @for (item of pageData(); track i; let i = $index) {
-      <div class="option border item" [class.checked]="item.checked" (click)="onCheckboxChange(item)">
+      <div class="option border item" [class.checked]="item.checked" (click)="onCheckboxChange(i)">
         <div class="toolbar">
           @if (data.defaultValue) {
             <button
               mat-button
               [color]="data.defaultValue.value === item.name ? 'accent' : 'primary'"
               appClickStop
-              (click)="setDefaultValue(item)"
+              (click)="setDefaultValue(i)"
             >
               默认值
             </button>
