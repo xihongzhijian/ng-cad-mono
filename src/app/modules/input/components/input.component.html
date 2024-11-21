@@ -153,8 +153,8 @@
         </div>
       }
       @for (item of asObject(value) | keyvalue: returnZero; track i; let i = $index) {
-        <div>
-          <mat-form-field style="width: 30%" [class]="{empty: isEmpty(item.key)}">
+        <div class="flex-row">
+          <mat-form-field style="width: 35%; flex: 0 0 auto" [class]="{empty: isEmpty(item.key)}">
             @if (info.keyLabel) {
               <mat-label>{{ info.keyLabel }}</mat-label>
             }
@@ -195,7 +195,7 @@
               </button>
             }
           </mat-form-field>
-          <mat-form-field style="width: 70%" [class]="{empty: isEmpty(item.value)}">
+          <mat-form-field style="width: 0; flex: 1 1 0" [class]="{empty: isEmpty(item.value)}">
             @if (info.valueLabel) {
               <mat-label>{{ info.valueLabel }}</mat-label>
             }

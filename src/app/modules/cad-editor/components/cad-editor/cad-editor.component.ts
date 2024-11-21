@@ -177,7 +177,6 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     private el: ElementRef<HTMLElement>
   ) {
     super();
-    this.status.fetchInputOptions();
   }
 
   onScrollChange = debounce(() => {

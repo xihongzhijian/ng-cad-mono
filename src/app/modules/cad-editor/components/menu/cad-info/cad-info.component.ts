@@ -1,7 +1,18 @@
-import {Component, forwardRef, HostBinding, OnDestroy, OnInit} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  forwardRef,
+  HostBinding,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal
+} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MatOptionModule} from "@angular/material/core";
+import {MatOptionModule, ThemePalette} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
@@ -47,120 +58,21 @@ import {getCadInfoInputs} from "./cad-info.utils";
     MatInputModule,
     MatOptionModule,
     MatSelectModule
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnDestroy {
+  private dialog = inject(MatDialog);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
   @HostBinding("class") class = "ng-page";
 
   private _cadPointsLock = false;
   cadStatusIntersectionInfo: string | null = null;
-  get data() {
-    const components = this.status.components.selected$.value;
-    if (components.length === 1) {
-      return components[0];
-    }
-    return this.status.cad.data;
-  }
-  intersectionKeys = intersectionKeys;
-  intersectionKeysTranslate = intersectionKeysTranslate;
-  infoGroup1: InputInfo[];
-  infoGroup2: InputInfo[];
-  infoGroup3: InputInfo[];
-  intersectionInputs: Partial<Record<IntersectionKey, InputInfo[][]>> = {};
   bjxTypes = 激光开料标记线类型;
   bjxIntersectionKey = "激光开料标记线";
   emptyBjxItem: NonNullable<CadData["info"]["激光开料标记线"]>[0] = {type: "短直线", ids: []};
-
-  constructor(
-    private status: AppStatusService,
-    private dialog: MatDialog,
-    private message: MessageService
-  ) {
-    super();
-    const parseOptionString = false;
-    this.infoGroup1 = getCadInfoInputs(
-      ["id", "名字", "唯一码", "显示名字", "开孔对应名字", "切内空对应名字", "分类", "分类2", "选项", "条件"],
-      () => this.data,
-      this.dialog,
-      this.status,
-      parseOptionString
-    );
-    this.infoGroup2 = getCadInfoInputs(
-      [
-        "开料时刨坑",
-        "变形方式",
-        "板材纹理方向",
-        "激光开料是否翻转",
-        "激光开料打标",
-        "开料排版方式",
-        "默认开料板材",
-        "默认开料材料",
-        "默认开料板材厚度",
-        "固定开料板材",
-        "算料处理",
-        "显示宽度标注",
-        "板材厚度方向",
-        "自定义属性",
-        "型号花件",
-        "必须绑定花件",
-        "可独立板材",
-        "必须选择板材",
-        "双向折弯",
-        "自动生成双折宽双折高公式",
-        "算料单显示"
-      ],
-      () => this.data,
-      this.dialog,
-      this.status,
-      parseOptionString
-    );
-    this.infoGroup3 = getCadInfoInputs(
-      [
-        "算料单显示放大倍数",
-        "企料前后宽同时改变",
-        "主CAD",
-        "算料单展开显示位置",
-        "属于门框门扇",
-        "内开做分体",
-        "板材绑定选项",
-        "算料单线长显示的最小长度",
-        "检查企料厚度",
-        "对应门扇厚度",
-        "显示厚度",
-        "跟随CAD开料板材",
-        "算料特殊要求",
-        "正面宽差值",
-        "墙厚差值",
-        "企料翻转",
-        "企料门框配合位增加值",
-        "企料包边类型",
-        "指定封口厚度",
-        "拼接料拼接时垂直翻转",
-        "正面线到见光线展开模板",
-        "指定板材分组",
-        "指定下单板材",
-        "指定下单材料",
-        "指定下单厚度",
-        "拉码碰撞判断",
-        "装配示意图自动拼接锁边铰边",
-        "开料孔位配置",
-        "算料单翻转"
-      ],
-      () => this.data,
-      this.dialog,
-      this.status,
-      parseOptionString
-    );
-
-    const 名字 = this.infoGroup1.find((v) => v.label === "名字");
-    if (名字?.type === "string") {
-      名字.onChange = this.setCadName.bind(this);
-    }
-    const 板材厚度方向 = this.infoGroup2.find((v) => v.label === "板材厚度方向");
-    if (板材厚度方向?.type === "select") {
-      板材厚度方向.onChange = this.offset.bind(this);
-    }
-  }
 
   ngOnInit() {
     this.subscribe(this.status.cadStatusEnter$, (cadStatus) => {
@@ -190,7 +102,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
         this._cadPointsLock = false;
         return;
       }
-      const data = this.data;
+      const data = this.data();
       if (cadStatus instanceof CadStatusSelectJointpoint) {
         const jointPoint = data.jointPoints[cadStatus.index];
         if (activePoints.length < 1) {
@@ -208,6 +120,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
             }
           }
         }
+        this.updateJointPointInfos();
       } else if (cadStatus instanceof CadStatusIntersection && cadStatus.info === this.cadStatusIntersectionInfo) {
         const key = this.cadStatusIntersectionInfo;
         const index = cadStatus.index;
@@ -264,9 +177,118 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     cad.off("zoom", this._updateCadPoints);
   }
 
+  data = signal<CadData>(this.status.cad.data);
+  dataEff = effect(
+    () => {
+      const setData = () => {
+        const components = this.status.components.selected$.value;
+        if (components.length === 1) {
+          this.data.set(components[0]);
+        } else {
+          this.data.set(this.status.cad.data);
+        }
+      };
+      this.subscribe(this.status.openCad$, () => setData());
+      this.subscribe(this.status.components.selected$, () => setData());
+    },
+    {allowSignalWrites: true}
+  );
+
+  parseOptionString = computed(() => false);
+  infoGroup1 = computed(() => {
+    const infos = getCadInfoInputs(
+      ["id", "名字", "唯一码", "显示名字", "开孔对应名字", "切内空对应名字", "分类", "分类2", "选项", "条件"],
+      this.data(),
+      this.dialog,
+      this.status,
+      this.parseOptionString()
+    );
+    const 名字 = infos.find((v) => v.label === "名字");
+    if (名字?.type === "string") {
+      名字.onChange = this.setCadName.bind(this);
+    }
+    return infos;
+  });
+  infoGroup2 = computed(() => {
+    const infos = getCadInfoInputs(
+      [
+        "开料时刨坑",
+        "变形方式",
+        "板材纹理方向",
+        "激光开料是否翻转",
+        "激光开料打标",
+        "开料排版方式",
+        "默认开料板材",
+        "默认开料材料",
+        "默认开料板材厚度",
+        "固定开料板材",
+        "算料处理",
+        "显示宽度标注",
+        "板材厚度方向",
+        "自定义属性",
+        "型号花件",
+        "必须绑定花件",
+        "可独立板材",
+        "必须选择板材",
+        "双向折弯",
+        "自动生成双折宽双折高公式",
+        "算料单显示"
+      ],
+      this.data(),
+      this.dialog,
+      this.status,
+      this.parseOptionString()
+    );
+    const 板材厚度方向 = infos.find((v) => v.label === "板材厚度方向");
+    if (板材厚度方向?.type === "select") {
+      板材厚度方向.onChange = this.offset.bind(this);
+    }
+    return infos;
+  });
+  infoGroup3 = computed(() => {
+    const infos = getCadInfoInputs(
+      [
+        "算料单显示放大倍数",
+        "企料前后宽同时改变",
+        "主CAD",
+        "算料单展开显示位置",
+        "属于门框门扇",
+        "内开做分体",
+        "板材绑定选项",
+        "算料单线长显示的最小长度",
+        "检查企料厚度",
+        "对应门扇厚度",
+        "显示厚度",
+        "跟随CAD开料板材",
+        "算料特殊要求",
+        "正面宽差值",
+        "墙厚差值",
+        "企料翻转",
+        "企料门框配合位增加值",
+        "企料包边类型",
+        "指定封口厚度",
+        "拼接料拼接时垂直翻转",
+        "正面线到见光线展开模板",
+        "指定板材分组",
+        "指定下单板材",
+        "指定下单材料",
+        "指定下单厚度",
+        "拉码碰撞判断",
+        "装配示意图自动拼接锁边铰边",
+        "开料孔位配置",
+        "算料单翻转"
+      ],
+      this.data(),
+      this.dialog,
+      this.status,
+      this.parseOptionString()
+    );
+    return infos;
+  });
+
   private _onEntityClick: CadEventCallBack<"entityclick"> = (_, entity) => {
     const cadStatus = this.status.cadStatus;
-    const data = this.data;
+    const data = this.data();
     if (cadStatus instanceof CadStatusSelectBaseline) {
       if (entity instanceof CadLine) {
         const baseLine = data.baseLines[cadStatus.index];
@@ -277,6 +299,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
           baseLine.idX = entity.selected ? entity.id : "";
         }
         data.updateBaseLines();
+        this.updateBaseLineInfos();
         data.getAllEntities().forEach((e) => {
           e.selected = [baseLine.idX, baseLine.idY].includes(e.id);
         });
@@ -297,7 +320,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   };
   private _updateCadPoints = () => {
     const cadStatus = this.status.cadStatus;
-    const data = this.data;
+    const data = this.data();
     const key = this.cadStatusIntersectionInfo;
     if (cadStatus instanceof CadStatusSelectJointpoint) {
       const points = this.status.getCadPoints(data.getAllEntities());
@@ -327,58 +350,86 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     return null;
   }
 
-  getBaselineItemColor(i: number) {
+  baseLineInfos = signal<{data: CadBaseLine; color: ThemePalette}[]>([]);
+  updateBaseLineInfos() {
     const cadStatus = this.status.cadStatus;
-    if (cadStatus instanceof CadStatusSelectBaseline && i === cadStatus.index) {
-      return "accent";
-    }
-    return "primary";
+    this.baseLineInfos.set(
+      this.data().baseLines.map((baseLine, i) => {
+        let color: ThemePalette = "primary";
+        if (cadStatus instanceof CadStatusSelectBaseline && i === cadStatus.index) {
+          color = "accent";
+        }
+        return {data: baseLine, color};
+      })
+    );
   }
-  getJointPointItemColor(i: number) {
-    const cadStatus = this.status.cadStatus;
-    if (cadStatus instanceof CadStatusSelectJointpoint && i === cadStatus.index) {
-      return "accent";
-    }
-    return "primary";
+  baseLinesEff = effect(() => this.updateBaseLineInfos(), {allowSignalWrites: true});
+  baseLinesEff2 = effect(() => this.subscribe(this.status.cadStatusEnter$, () => this.updateBaseLineInfos()), {allowSignalWrites: true});
+  addBaseLine(index: number) {
+    const arr = this.data().baseLines;
+    arr.splice(index + 1, 0, new CadBaseLine());
+    this.updateBaseLineInfos();
   }
-  addBaseLine(data: CadData, index: number) {
-    data.baseLines.splice(index + 1, 0, new CadBaseLine());
-  }
-  async removeBaseLine(data: CadData, index: number) {
+  async removeBaseLine(index: number) {
     if (await this.message.confirm("是否确定删除？")) {
-      const arr = data.baseLines;
+      const arr = this.data().baseLines;
       if (arr.length === 1) {
         arr[0] = new CadBaseLine();
       } else {
         arr.splice(index, 1);
       }
+      this.updateBaseLineInfos();
     }
   }
   selectBaseLine(i: number) {
     this.status.toggleCadStatus(new CadStatusSelectBaseline(i));
   }
-  addJointPoint(data: CadData, index: number) {
-    data.jointPoints.splice(index + 1, 0, new CadJointPoint());
+
+  jointPointInfos = signal<{data: CadJointPoint; color: ThemePalette}[]>([]);
+  updateJointPointInfos() {
+    const cadStatus = this.status.cadStatus;
+    this.jointPointInfos.set(
+      this.data().jointPoints.map((jointPoint, i) => {
+        let color: ThemePalette = "primary";
+        if (cadStatus instanceof CadStatusSelectJointpoint && i === cadStatus.index) {
+          color = "accent";
+        }
+        return {data: jointPoint, color};
+      })
+    );
   }
-  async removeJointPoint(data: CadData, index: number) {
+  jointPointsEff = effect(() => this.updateJointPointInfos(), {allowSignalWrites: true});
+  jointPointsEff2 = effect(() => this.subscribe(this.status.cadStatusEnter$, () => this.updateJointPointInfos()), {
+    allowSignalWrites: true
+  });
+  addJointPoint(index: number) {
+    const arr = this.data().jointPoints;
+    arr.splice(index + 1, 0, new CadJointPoint());
+    this.updateJointPointInfos();
+  }
+  async removeJointPoint(index: number) {
     if (await this.message.confirm("是否确定删除？")) {
-      const arr = data.jointPoints;
+      const arr = this.data().jointPoints;
       if (arr.length === 1) {
         arr[0] = new CadJointPoint();
       } else {
         arr.splice(index, 1);
       }
+      this.updateJointPointInfos();
     }
   }
   selectJointPoint(i: number) {
     this.status.toggleCadStatus(new CadStatusSelectJointpoint(i));
   }
 
+  intersectionKeys = intersectionKeys;
+  intersectionKeysTranslate = intersectionKeysTranslate;
+  intersectionInputs = signal<Partial<Record<IntersectionKey, InputInfo[][]>>>({});
   updateIntersectionInputs() {
-    const inputs: typeof this.intersectionInputs = {};
-    const data = this.data;
+    const inputs: ReturnType<typeof this.intersectionInputs> = {};
+    const data = this.data();
     for (const key of intersectionKeys) {
-      const arr = this.data[key];
+      const arr = data[key];
       inputs[key] = [];
       for (const [i, v] of arr.entries()) {
         const arr2: InputInfo[] = [
@@ -425,11 +476,11 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
         inputs[key].push(arr2);
       }
     }
-    this.intersectionInputs = inputs;
+    this.intersectionInputs.set(inputs);
   }
 
   offset(value: string) {
-    const data = this.data;
+    const data = this.data();
     const cad = this.status.cad;
     data.bancaihoudufangxiang = value as CadData["bancaihoudufangxiang"];
     let direction = 0;
@@ -478,7 +529,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
 
   setCadName(value: string) {
     this.status.updateTitle();
-    const zhankai = this.data.zhankai[0];
+    const zhankai = this.data().zhankai[0];
     if (zhankai) {
       zhankai.name = value;
     }
@@ -515,7 +566,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   }
 
   addIntersectionValue(key: IntersectionKey, i?: number) {
-    const data = this.data;
+    const data = this.data();
     this.arrayAdd(data[key], [], i);
     if (key === "zhidingweizhipaokeng") {
       if (!Array.isArray(data.info.刨坑深度)) {
@@ -526,7 +577,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     this.updateIntersectionInputs();
   }
   removeIntersectionValue(key: IntersectionKey, i: number) {
-    const data = this.data;
+    const data = this.data();
     this.arrayRemove(data[key], i);
     if (key === "zhidingweizhipaokeng") {
       this.arrayRemove(data.info.刨坑深度, i);

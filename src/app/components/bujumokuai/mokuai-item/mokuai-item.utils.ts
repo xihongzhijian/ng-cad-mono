@@ -1,5 +1,7 @@
 import zixuanpeijianTypesInfo from "@assets/json/zixuanpeijianTypesInfo.json";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
+import {getTypeOf} from "@lucilor/utils";
+import {isEmpty} from "lodash";
 import {MokuaiItem, MokuaiItemCustomData} from "./mokuai-item.types";
 
 export const getEmptyMokuaiItem = (): MokuaiItem => {
@@ -21,12 +23,13 @@ export const getMokuaiCustomData = (raw: MokuaiItemCustomData | null | undefined
   const result: MokuaiItemCustomData = {
     选项数据: [],
     下单显示: "",
+    下单时需要满足选项: {},
     ...raw
   };
-  updateMokuaiCustomDataOptions(result, 选项数据选项);
+  updateMokuaiCustomData(result, 选项数据选项);
   return result;
 };
-export const updateMokuaiCustomDataOptions = (data: MokuaiItemCustomData, 选项数据选项: OptionsAll) => {
+export const updateMokuaiCustomData = (data: MokuaiItemCustomData, 选项数据选项: OptionsAll) => {
   const optionsOld = data.选项数据;
   data.选项数据 = [];
   for (const key in 选项数据选项) {
@@ -35,6 +38,22 @@ export const updateMokuaiCustomDataOptions = (data: MokuaiItemCustomData, 选项
       data.选项数据.push(item);
     } else {
       data.选项数据.push({名字: key, 可选项: []});
+    }
+  }
+  if (getTypeOf(data.下单时需要满足选项) !== "object") {
+    data.下单时需要满足选项 = {};
+  }
+};
+
+export const mokuaiSubmitBefore = (item: Partial<MokuaiItem>) => {
+  if (item.自定义数据) {
+    delete item.自定义数据.下单时需要满足选项[""];
+  }
+};
+export const mokuaiSubmitAfter = (item: MokuaiItem) => {
+  if (item.自定义数据) {
+    if (isEmpty(item.自定义数据.下单时需要满足选项)) {
+      item.自定义数据.下单时需要满足选项[""] = "";
     }
   }
 };

@@ -63,3 +63,13 @@
 .mokuai-gongshi {
   width: 500px;
 }
+
+.mokuai-shaixuan {
+  width: 450px;
+
+  app-input ::ng-deep {
+    .sub-form-field {
+      border: none;
+    }
+  }
+}

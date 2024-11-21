@@ -40,6 +40,18 @@
           </div>
         </ng-scrollbar>
       </div>
+      <div class="mokuai-shaixuan flex-column">
+        <div class="title">模块筛选</div>
+        <ng-scrollbar>
+          <div class="box">
+            <div class="flex-column">
+              @for (info of shaixuanInputInfos(); track $index) {
+                <app-input [info]="info"></app-input>
+              }
+            </div>
+          </div>
+        </ng-scrollbar>
+      </div>
       <app-table
         class="xuanxiang-table"
         [info]="xuanxiangTable()"

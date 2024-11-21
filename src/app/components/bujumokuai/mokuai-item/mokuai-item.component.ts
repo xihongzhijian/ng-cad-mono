@@ -49,7 +49,7 @@ import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
 import {MokuaiCadsComponent} from "../mokuai-cads/mokuai-cads.component";
 import {BjmkStatusService} from "../services/bjmk-status.service";
 import {MokuaiItem, MokuaiItemCadInfo, MokuaiItemCloseEvent, MokuaiItemCustomData} from "./mokuai-item.types";
-import {getEmptyMokuaiItem, getMokuaiCustomData, updateMokuaiCustomDataOptions} from "./mokuai-item.utils";
+import {getEmptyMokuaiItem, getMokuaiCustomData, mokuaiSubmitAfter, updateMokuaiCustomData} from "./mokuai-item.utils";
 
 @Component({
   selector: "app-mokuai-item",
@@ -96,8 +96,9 @@ export class MokuaiItemComponent {
       const mokuai = cloneDeep(this.mokuaiIn());
       if (mokuai.自定义数据) {
         const optionsAll = this.bjmkStatus.mokuaiOptionsManager.data();
-        updateMokuaiCustomDataOptions(mokuai.自定义数据, optionsAll);
+        updateMokuaiCustomData(mokuai.自定义数据, optionsAll);
       }
+      mokuaiSubmitAfter(mokuai);
       this.mokuai.set(mokuai);
     },
     {allowSignalWrites: true}
@@ -319,6 +320,24 @@ export class MokuaiItemComponent {
     this._getTextInputInfo1("xiaoguotushiyongbianliang", "效果图使用变量"),
     this._getTextInputInfo2("下单显示")
   ]);
+  shaixuanInputInfos = computed(() => {
+    const mokuai = this.mokuai();
+    if (!mokuai.自定义数据) {
+      mokuai.自定义数据 = getMokuaiCustomData(null, this.bjmkStatus.mokuaiOptionsManager.data());
+    }
+    const infos: InputInfo<typeof mokuai.自定义数据>[] = [
+      {
+        type: "object",
+        label: "下单时需要满足选项",
+        model: {data: mokuai.自定义数据, key: "下单时需要满足选项"},
+        clearable: true,
+        optionsDialog: {},
+        optionMultiple: true,
+        optionType: "模块选项"
+      }
+    ];
+    return infos;
+  });
 
   mokuaiOptionsEff = effect(async () => {
     const options = await this.bjmkStatus.mokuaiOptionsManager.fetch();

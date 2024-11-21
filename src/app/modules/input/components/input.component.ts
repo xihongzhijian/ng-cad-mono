@@ -3,6 +3,7 @@ import {TextFieldModule} from "@angular/cdk/text-field";
 import {AsyncPipe, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   DoCheck,
   ElementRef,
@@ -257,8 +258,16 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return undefined;
   }
 
-  get xuanxiangOptions() {
-    return this.status.getXuanxiangOptions().map<(typeof this.options)[number]>((v) => ({value: v, label: v}));
+  xuanxiangOptions: typeof this.options = [];
+  async fetchXuanxiangOptions() {
+    const info = this.info;
+    this.xuanxiangOptions = [];
+    if (info.type !== "object" || !info.optionType) {
+      return;
+    }
+    const inputOptions = await this.status.inputOptionsManager.fetch();
+    const options = inputOptions?.[info.optionType] || [];
+    this.xuanxiangOptions = options.map((v) => ({value: v, label: v}));
   }
 
   displayValue: string | null = null;
@@ -284,6 +293,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   private _validateValueLock = false;
 
   constructor(
+    private cd: ChangeDetectorRef,
     private message: MessageService,
     private dialog: MatDialog,
     private differs: KeyValueDiffers,
@@ -395,12 +405,13 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     return result;
   }
-  private _filterXuanxiangOptions(i?: number, keyVal?: string) {
+  private async _filterXuanxiangOptions(i?: number, keyVal?: string) {
     const info = this.info;
     const value = this.value;
-    if (info.type !== "object" || !info.isXuanxiang || !isTypeOf(value, "object")) {
+    if (info.type !== "object" || !info.optionType || !isTypeOf(value, "object")) {
       return;
     }
+    await this.fetchXuanxiangOptions();
     if (typeof i === "number") {
       const options = this.filteredXuanxiangOptions$.value;
       options[i] = this._filterOptions(keyVal || "", this.xuanxiangOptions);
@@ -963,6 +974,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         this.onChange();
       }
       this.validateValue();
+      this.cd.markForCheck();
     }
   }
 
@@ -971,6 +983,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return val;
     }
     return {};
+  }
+  asArray(val: any): any[] {
+    if (Array.isArray(val)) {
+      return val;
+    }
+    return [];
   }
 
   getAnchorValue(axis: "x" | "y") {

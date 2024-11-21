@@ -50,7 +50,7 @@ import {clamp, cloneDeep, differenceWith, isEmpty} from "lodash";
 import {BehaviorSubject, Subject} from "rxjs";
 import {local, remoteHost, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
-import {AppUser, CadPoints, OpenCadOptions} from "./app-status.types";
+import {AppUser, CadPoints, HoutaiInputOptions, OpenCadOptions} from "./app-status.types";
 import {CadStatus, CadStatusNormal} from "./cad-status";
 
 const 合型板示意图 = new CadData();
@@ -687,32 +687,22 @@ export class AppStatusService {
     }
   }
 
-  private _gongshiOptions: string[] | null = null;
-  private _xuanxiangOptions: string[] | null = null;
-  private _isInputOptionsFetched = false;
-  async fetchInputOptions() {
-    if (this._isInputOptionsFetched) {
-      return;
-    }
-    const result = await this.http.getData<ObjectOf<string[]>>("shuju/api/getInputNames", {}, {spinner: false});
+  inputOptionsManager = new FetchManager(null, async () => {
+    const result = await this.http.getData<HoutaiInputOptions>("shuju/api/getInputNames", {}, {spinner: false});
     if (!result || !isTypeOf(result, "object")) {
-      return;
+      return null;
     }
-    this._gongshiOptions = result.公式;
-    this._xuanxiangOptions = result.选项;
-    this._isInputOptionsFetched = true;
-  }
+    return result;
+  });
   getGongshiOptions(gongshis: 算料公式[] | null | undefined) {
-    const result = new Set<string>(this._gongshiOptions);
+    const inputOptions = this.inputOptionsManager.data();
+    const result = new Set<string>(inputOptions?.公式 || []);
     for (const gongshi of gongshis || []) {
       for (const key in gongshi.公式 || {}) {
         result.add(key);
       }
     }
     return Array.from(result);
-  }
-  getXuanxiangOptions() {
-    return this._xuanxiangOptions || [];
   }
 
   getCadQuery() {

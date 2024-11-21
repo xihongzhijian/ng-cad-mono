@@ -1,4 +1,5 @@
 import {AbstractControlOptions} from "@angular/forms";
+import {ThemePalette} from "@angular/material/core";
 import {MatTableDataSource} from "@angular/material/table";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {InputInfoOptions} from "@modules/input/components/input.types";
@@ -49,7 +50,7 @@ export interface RowSelection {
 export interface TableButton {
   event: string;
   title?: string;
-  color?: "" | "primary" | "accent" | "warn";
+  color?: ThemePalette;
   class?: string | string[];
   style?: Properties;
   hidden?: boolean;

@@ -1,4 +1,5 @@
 import {AbstractControl, AbstractControlOptions, ValidationErrors} from "@angular/forms";
+import {ThemePalette} from "@angular/material/core";
 import {FloatLabelType} from "@angular/material/form-field";
 import {OptionSeparator} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
@@ -83,8 +84,8 @@ export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   valueValidators?: ValueValidatorFn | ValueValidatorFn[] | null;
   keysReadonly?: boolean;
   parseString?: boolean;
-  isXuanxiang?: boolean;
   requiredKeys?: string[];
+  optionType?: "选项" | "模块选项";
 }
 
 export interface InputInfoArray<T = any> extends InputInfoBase<T> {
@@ -166,12 +167,12 @@ export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
 export interface InputInfoButtonInfo {
   name: string;
   onClick?: () => MaybePromise<{isValueChanged?: boolean} | void | null>;
-  color?: "" | "primary" | "accent" | "warn";
+  color?: ThemePalette;
   isDefault?: boolean;
 }
 export interface InputInfoTextInfo {
   name: string;
-  color?: "" | "primary" | "accent" | "warn";
+  color?: ThemePalette;
 }
 export interface InputInfoButton<T = any> extends InputInfoBase<T> {
   type: "button";

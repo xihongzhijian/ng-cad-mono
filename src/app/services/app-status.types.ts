@@ -39,3 +39,9 @@ export interface OpenCadOptions {
 export interface AppUser extends TableDataBase {
   isAdmin: boolean;
 }
+
+export interface HoutaiInputOptions {
+  选项: string[];
+  模块选项: string[];
+  公式: string[];
+}

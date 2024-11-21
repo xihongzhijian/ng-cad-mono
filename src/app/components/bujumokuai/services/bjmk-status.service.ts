@@ -18,7 +18,7 @@ import {MsbjData} from "@views/msbj/msbj.types";
 import {MsbjInfo} from "@views/msbj/msbj.utils";
 import {cloneDeep} from "lodash";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
-import {getEmptyMokuaiItem} from "../mokuai-item/mokuai-item.utils";
+import {getEmptyMokuaiItem, mokuaiSubmitAfter, mokuaiSubmitBefore} from "../mokuai-item/mokuai-item.utils";
 
 @Injectable({
   providedIn: "root"
@@ -131,14 +131,16 @@ export class BjmkStatusService {
     return null;
   }
   async addMukuai(mokuai?: Partial<MokuaiItem>, mokuaiOverride?: Partial<MokuaiItem>) {
-    let mokuai2: Partial<MokuaiItem> | undefined | null = mokuai;
+    let mokuai2: Partial<MokuaiItem> | undefined | null = cloneDeep(mokuai);
     if (!mokuai2) {
       mokuai2 = await this.getMokuaiWithForm(undefined, mokuaiOverride);
     }
     if (mokuai2) {
+      mokuaiSubmitBefore(mokuai2);
       delete mokuai2.id;
       let mokuai3 = await this.http.getData<MokuaiItem>("ngcad/addPeijianmokuai", {item: mokuai2});
       if (mokuai3) {
+        mokuaiSubmitAfter(mokuai3);
         this.mokuaisManager.refresh({add: [mokuai3]});
       }
       mokuai3 = this.mokuaisManager.items().find((v) => v.id === mokuai3?.id) || null;
@@ -147,10 +149,12 @@ export class BjmkStatusService {
     return null;
   }
   async editMokuai(mokuai: Partial<MokuaiItem>, noForm?: boolean) {
-    const mokuai2 = noForm ? mokuai : await this.getMokuaiWithForm(mokuai);
+    const mokuai2 = noForm ? cloneDeep(mokuai) : await this.getMokuaiWithForm(mokuai);
     if (mokuai2) {
+      mokuaiSubmitBefore(mokuai2);
       let mokuai3 = await this.http.getData<MokuaiItem>("ngcad/editPeijianmokuai", {item: mokuai2});
       if (mokuai3) {
+        mokuaiSubmitAfter(mokuai3);
         this.mokuaisManager.refresh({update: [mokuai3]});
       }
       mokuai3 = this.mokuaisManager.items().find((v) => v.id === mokuai3?.id) || null;

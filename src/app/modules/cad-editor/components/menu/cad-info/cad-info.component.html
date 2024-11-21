@@ -1,58 +1,58 @@
 <form>
   <button hidden></button>
-  @for (info of infoGroup1; track $index) {
+  @for (info of infoGroup1(); track $index) {
     <app-input [info]="info"></app-input>
   }
-  @for (b of data.baseLines; track $index; let j = $index) {
+  @for (info of baseLineInfos(); track $index; let j = $index) {
     <div>
-      <mat-form-field [color]="getBaselineItemColor(j)">
+      <mat-form-field [color]="info.color">
         <mat-label>基准</mat-label>
-        <input matInput type="text" [(ngModel)]="b.name" name="baseLineName" />
-        <button mat-icon-button matSuffix [color]="getBaselineItemColor(j)" (click)="selectBaseLine(j)">
+        <input matInput type="text" [(ngModel)]="info.data.name" (change)="updateBaseLineInfos()" name="baseLineName" />
+        <button mat-icon-button matSuffix [color]="info.color" (click)="selectBaseLine(j)">
           <mat-icon>linear_scale</mat-icon>
         </button>
-        <button mat-icon-button matSuffix color="primary" (click)="addBaseLine(data, j)">
+        <button mat-icon-button matSuffix color="primary" (click)="addBaseLine(j)">
           <mat-icon>add_circle</mat-icon>
         </button>
-        <button mat-icon-button matSuffix color="primary" (click)="removeBaseLine(data, j)">
+        <button mat-icon-button matSuffix color="primary" (click)="removeBaseLine(j)">
           <mat-icon>remove_circle</mat-icon>
         </button>
-        <mat-hint [align]="'start'">x:{{ b.valueX.toFixed(2) }}, y:{{ b.valueY.toFixed(2) }}</mat-hint>
+        <mat-hint [align]="'start'">x:{{ info.data.valueX.toFixed(2) }}, y:{{ info.data.valueY.toFixed(2) }}</mat-hint>
       </mat-form-field>
     </div>
   }
-  @for (p of data.jointPoints; track $index; let j = $index) {
+  @for (info of jointPointInfos(); track $index; let j = $index) {
     <div>
-      <mat-form-field [color]="getJointPointItemColor(j)">
+      <mat-form-field [color]="info.color">
         <mat-label>连接点</mat-label>
-        <input matInput type="text" [(ngModel)]="p.name" name="jointPointName" />
-        <button mat-icon-button matSuffix [color]="getJointPointItemColor(j)" (click)="selectJointPoint(j)">
+        <input matInput type="text" [(ngModel)]="info.data.name" (change)="updateJointPointInfos()" name="jointPointName" />
+        <button mat-icon-button matSuffix [color]="info.color" (click)="selectJointPoint(j)">
           <mat-icon>linear_scale</mat-icon>
         </button>
-        <button mat-icon-button matSuffix color="primary" (click)="addJointPoint(data, j)">
+        <button mat-icon-button matSuffix color="primary" (click)="addJointPoint(j)">
           <mat-icon>add_circle</mat-icon>
         </button>
-        <button mat-icon-button matSuffix color="primary" (click)="removeJointPoint(data, j)">
+        <button mat-icon-button matSuffix color="primary" (click)="removeJointPoint(j)">
           <mat-icon>remove_circle</mat-icon>
         </button>
-        <mat-hint [align]="'start'">x:{{ p.valueX.toFixed(2) }}, y:{{ p.valueY.toFixed(2) }}</mat-hint>
+        <mat-hint [align]="'start'">x:{{ info.data.valueX.toFixed(2) }}, y:{{ info.data.valueY.toFixed(2) }}</mat-hint>
       </mat-form-field>
     </div>
   }
-  @for (info of infoGroup2; track $index) {
+  @for (info of infoGroup2(); track $index) {
     <app-input [info]="info"></app-input>
   }
   @for (key of intersectionKeys; track $index) {
     <div class="sub-form-field">
       <div class="label">{{ intersectionKeysTranslate[key] }}</div>
-      @if (data[key].length === 0) {
+      @if (data()[key].length === 0) {
         <div>
           <button mat-icon-button color="primary" (click)="addIntersectionValue(key)">
             <mat-icon>add_circle</mat-icon>
           </button>
         </div>
       }
-      @for (v of intersectionInputs[key]; track $index) {
+      @for (v of intersectionInputs()[key]; track $index) {
         <div class="toolbar">
           @for (v2 of v; track $index) {
             <app-input [info]="v2"></app-input>
@@ -63,14 +63,14 @@
   }
   <div class="sub-form-field">
     <div class="label">激光开料标记线</div>
-    @if (data.info["激光开料标记线"]?.length === 0) {
+    @if (data().info["激光开料标记线"]?.length === 0) {
       <div>
-        <button mat-icon-button color="primary" (click)="arrayAdd2(data.info, '激光开料标记线', emptyBjxItem)">
+        <button mat-icon-button color="primary" (click)="arrayAdd2(data().info, '激光开料标记线', emptyBjxItem)">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
     }
-    @for (v of data.info["激光开料标记线"]; track $index; let j = $index) {
+    @for (v of data().info["激光开料标记线"]; track $index; let j = $index) {
       <div>
         <mat-form-field>
           <mat-select [(ngModel)]="v.type" [ngModelOptions]="{standalone: true}">
@@ -85,7 +85,7 @@
             mat-icon-button
             matSuffix
             color="primary"
-            (click)="$event.stopPropagation(); arrayAdd2(data.info, '激光开料标记线', emptyBjxItem, j + 1)"
+            (click)="$event.stopPropagation(); arrayAdd2(data().info, '激光开料标记线', emptyBjxItem, j + 1)"
           >
             <mat-icon>add_circle</mat-icon>
           </button>
@@ -93,7 +93,7 @@
             mat-icon-button
             matSuffix
             color="primary"
-            (click)="$event.stopPropagation(); arrayRemove2(data.info, '激光开料标记线', j)"
+            (click)="$event.stopPropagation(); arrayRemove2(data().info, '激光开料标记线', j)"
           >
             <mat-icon>remove_circle</mat-icon>
           </button>
@@ -101,7 +101,7 @@
       </div>
     }
   </div>
-  @for (info of infoGroup3; track $index) {
+  @for (info of infoGroup3(); track $index) {
     <app-input [info]="info"></app-input>
   }
 </form>
