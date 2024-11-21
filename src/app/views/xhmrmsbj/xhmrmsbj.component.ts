@@ -75,6 +75,7 @@ import {getEmpty模块大小配置, getNodeFormulasKeys, justify模块大小配�
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {resetInputs} from "@views/suanliao/suanliao.utils";
 import {getFormulaInfos, openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
+import {XhmrmsbjXinghaoConfigComponent} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.component";
 import {cloneDeep, debounce, difference, intersection} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -140,7 +141,8 @@ const table = "p_xinghaomorenmenshanbuju";
     NgScrollbar,
     NgTemplateOutlet,
     TypedTemplateDirective,
-    XhmrmsbjSbjbComponent
+    XhmrmsbjSbjbComponent,
+    XhmrmsbjXinghaoConfigComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -1225,6 +1227,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
   }
 
+  enableXinghaoConfig = computed(() => !this.isFromOrder());
   enableSbjb = computed(() => !this.isFromOrder() && this.data()?.isVersion2024);
   enableMfpz = computed(() => this.data()?.isVersion2024);
   tabNames = computed(() => {

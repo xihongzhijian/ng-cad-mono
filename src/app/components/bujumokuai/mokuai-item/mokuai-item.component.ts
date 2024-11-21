@@ -22,7 +22,7 @@ import {getFromulasFromString} from "@components/dialogs/zixuanpeijian/zixuanpei
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
-import {getXuanxiangItem, getXuanxiangTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
+import {emptyXuanxiangItem, getXuanxiangItem, getXuanxiangTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {选项} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
@@ -113,10 +113,10 @@ export class MokuaiItemComponent {
     const mokuai = this.mokuai();
     return mokuai.xuanxianggongshi.length > 0 || isEmpty(mokuai.suanliaogongshi);
   });
+  gongshis = computed(() => this.mokuai().xuanxianggongshi);
   slgsInfo = computed(() => {
-    const mokuai = this.mokuai();
     const info: SuanliaogongshiInfo = {
-      data: {算料公式: mokuai.xuanxianggongshi},
+      data: {算料公式: this.gongshis()},
       slgs: {title: "模块公式", titleStyle: {fontSize: "1.2em", fontWeight: "bold"}}
     };
     return info;
@@ -338,7 +338,7 @@ export class MokuaiItemComponent {
     this.mokuai.update((v) => ({...v}));
   }
 
-  xuanxiangTable = computed(() => getXuanxiangTable(this.mokuai().自定义数据?.选项数据 || [], true));
+  xuanxiangTable = computed(() => getXuanxiangTable(this.mokuai().自定义数据?.选项数据 || [], {}, true));
   async getXuanxiangItem(data0?: 选项) {
     const optionsAll = await this.bjmkStatus.mokuaiOptionsManager.fetch();
     return await getXuanxiangItem(this.message, optionsAll, this.xuanxiangTable().data, data0, true);
@@ -359,23 +359,21 @@ export class MokuaiItemComponent {
   }
   async onXuanxiangRow(event: RowButtonEvent<XuanxiangTableData>) {
     const mokuai = this.mokuai();
-    const {button, item, rowIdx} = event;
+    const {button, rowIdx} = event;
     const items = mokuai.自定义数据?.选项数据 || [];
+    const item = items[rowIdx];
     switch (button.event) {
       case "编辑":
         {
-          const item2 = items[rowIdx];
-          const item3 = await this.getXuanxiangItem(item2);
-          if (item3) {
-            items[rowIdx] = item3;
+          const item2 = await this.getXuanxiangItem(item);
+          if (item2) {
+            items[rowIdx] = item2;
             this.setMokuaiCustomData("选项数据", items);
           }
         }
         break;
       case "清空数据":
-        if (await this.message.confirm(`确定清空【${item.名字}】的数据吗？`)) {
-          const item2 = items[rowIdx];
-          item2.可选项 = [];
+        if (await emptyXuanxiangItem(this.message, item)) {
           this.setMokuaiCustomData("选项数据", items);
         }
         break;
@@ -397,10 +395,10 @@ export class MokuaiItemComponent {
   }
   showCadsDialog = signal(false);
   selectedCads = signal<CadData[]>([]);
+  cads = computed(() => this.mokuai().cads || []);
   selectedCadsEff = effect(
     () => {
-      const cads = this.mokuai().cads || [];
-      this.selectedCads.set(cads.map((v) => new CadData(v.json)));
+      this.selectedCads.set(this.cads().map((v) => new CadData(v.json)));
     },
     {allowSignalWrites: true}
   );

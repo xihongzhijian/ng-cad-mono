@@ -1,9 +1,11 @@
 import {Formulas} from "@app/utils/calc";
+import {tryParseJson} from "@app/utils/json-helper";
 import {matchMongoData} from "@app/utils/mongo";
 import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {getNodeVars, isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {keysOf} from "@lucilor/utils";
 import {MsbjInfo, ZuoshujuData} from "@views/msbj/msbj.utils";
+import {XhmrmsbjXinghaoConfig} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
 import {clone, cloneDeep, difference, intersection, isEmpty} from "lodash";
 import {
   MenshanKey,
@@ -17,6 +19,7 @@ import {
 
 export class XhmrmsbjData extends ZuoshujuData {
   menshanbujuInfos: XhmrmsbjDataMsbjInfos;
+  xinghaoConfig: XhmrmsbjXinghaoConfig;
   铰扇跟随锁扇?: boolean;
   算料单模板?: string;
 
@@ -24,16 +27,17 @@ export class XhmrmsbjData extends ZuoshujuData {
     super(data);
     this.铰扇跟随锁扇 = data.jiaoshanbujuhesuoshanxiangtong === 1;
     this.算料单模板 = data.suanliaodanmuban;
-    let info: any = null;
+    const info = tryParseJson<XhmrmsbjDataMsbjInfos>(data.peizhishuju || "", {});
     this.menshanbujuInfos = {};
-    try {
-      info = JSON.parse(data.peizhishuju || "");
-    } catch {}
-    if (!info || typeof info !== "object") {
-      info = {};
-    }
+    const xinghaoConfig = tryParseJson<Partial<XhmrmsbjXinghaoConfig>>(data.xinghaopeizhi || "", {});
+    this.xinghaoConfig = {
+      输入: [],
+      选项: [],
+      公式: [],
+      ...xinghaoConfig
+    };
     for (const key of menshanKeys) {
-      const item = (info[key] || {}) as XhmrmsbjInfo;
+      const item = info[key] || {};
       this.menshanbujuInfos[key] = item;
       if (!item.选中布局数据) {
         const msbj = msbjs.find((v) => v.vid === item.选中布局);
@@ -120,12 +124,13 @@ export class XhmrmsbjData extends ZuoshujuData {
       mingzi: this.name,
       jiaoshanbujuhesuoshanxiangtong: this.铰扇跟随锁扇 ? 1 : 0,
       suanliaodanmuban: this.算料单模板,
-      peizhishuju: JSON.stringify(this.menshanbujuInfos)
+      peizhishuju: JSON.stringify(this.menshanbujuInfos),
+      xinghaopeizhi: JSON.stringify(this.xinghaoConfig)
     };
     return data;
   }
 
-  clone(deep: boolean) {
+  clone(deep = false) {
     return deep ? cloneDeep(this) : clone(this);
   }
 
@@ -255,7 +260,7 @@ export const getMokuaiFormulas = (
       }
     }
   };
-  if (mokuai.xuanxianggongshi.length > 1) {
+  if (mokuai.xuanxianggongshi.length > 0) {
     let xxgsList = mokuai.xuanxianggongshi;
     if (!isEmpty(materialResult)) {
       xxgsList = matchMongoData(xxgsList, materialResult);

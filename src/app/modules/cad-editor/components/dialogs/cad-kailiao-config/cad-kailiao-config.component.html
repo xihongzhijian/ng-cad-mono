@@ -14,9 +14,6 @@
   </div>
   <div class="tables flex-row">
     @for (info of lineTables(); track $index) {
-      <!-- @if ($index > 0) {
-        <mat-divider></mat-divider>
-      } -->
       <app-table #lineTables class="flex-110" [info]="info" (cellChange)="onCellChange($event, $index)"></app-table>
     }
   </div>

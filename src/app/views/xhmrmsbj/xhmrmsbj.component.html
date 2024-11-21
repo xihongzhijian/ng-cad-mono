@@ -48,6 +48,9 @@
     <div class="title" [class]="canOpenXhmrmsbj() ? 'link text' : ''" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
   </div>
 }
+@if (enableXinghaoConfig()) {
+  <app-xhmrmsbj-xinghao-config [class.hidden]="activeTabName() !== '型号配置'" [(data)]="data"></app-xhmrmsbj-xinghao-config>
+}
 @if (enableSbjb()) {
   <app-xhmrmsbj-sbjb [class.hidden]="activeTabName() !== '锁边铰边'" [xinghao]="xinghao()"></app-xhmrmsbj-sbjb>
 }

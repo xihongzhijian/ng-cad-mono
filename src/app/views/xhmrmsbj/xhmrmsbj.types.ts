@@ -12,6 +12,7 @@ export interface XhmrmsbjTableData extends TableDataBase {
   jiaoshanbujuhesuoshanxiangtong?: number;
   suanliaodanmuban?: string;
   zuoshujubanben?: string;
+  xinghaopeizhi?: string;
 }
 
 export interface XhmrmsbjInfo {
@@ -46,7 +47,7 @@ export interface XhmrmsbjInfoMokuaiNode {
   输入值?: Shuruzhi;
 }
 
-export const xhmrmsbjTabNames = ["锁边铰边", "门扇模块", "门缝配置"] as const;
+export const xhmrmsbjTabNames = ["型号配置", "锁边铰边", "门扇模块", "门缝配置"] as const;
 export type XhmrmsbjTabName = (typeof xhmrmsbjTabNames)[number];
 
 export const menshanKeys = ["锁扇正面", "锁扇背面", "铰扇正面", "铰扇背面", "小扇正面", "小扇背面"] as const;

@@ -12,7 +12,6 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatDividerModule} from "@angular/material/divider";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadData, CadLine, CadLineLike, setLinesLength, sortLines} from "@lucilor/cad-viewer";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -26,7 +25,7 @@ import {getLineTable, getMultiSetData, getMultiSetInputInfos, MultiSetData} from
 @Component({
   selector: "app-cad-kailiao-config",
   standalone: true,
-  imports: [forwardRef(() => InputComponent), MatButtonModule, MatDividerModule, NgScrollbarModule, TableComponent],
+  imports: [forwardRef(() => InputComponent), MatButtonModule, NgScrollbarModule, TableComponent],
   templateUrl: "./cad-kailiao-config.component.html",
   styleUrl: "./cad-kailiao-config.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush

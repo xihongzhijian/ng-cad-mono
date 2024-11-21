@@ -4,6 +4,7 @@ import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {输入, 输入下单用途, 选项} from "@components/lurushuju/xinghao-data";
+import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {convertOptions} from "@modules/input/components/input.utils";
@@ -11,7 +12,11 @@ import {MessageService} from "@modules/message/services/message.service";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} from "./lrsj-zuofa.types";
 
-export const getXuanxiangTable = (data: XuanxiangTableData[], use输出变量 = false): TableRenderInfo<XuanxiangTableData> => {
+export const getXuanxiangTable = (
+  data: XuanxiangTableData[],
+  others?: Partial<TableRenderInfo<XuanxiangTableData>>,
+  use输出变量 = false
+): TableRenderInfo<XuanxiangTableData> => {
   return {
     title: "选项数据",
     inlineTitle: true,
@@ -37,7 +42,8 @@ export const getXuanxiangTable = (data: XuanxiangTableData[], use输出变量 = 
       }
     ],
     data,
-    toolbarButtons: {extra: []}
+    toolbarButtons: {extra: []},
+    ...others
   };
 };
 export const getXuanxiangItem = async (message: MessageService, options: OptionsAll, list: 选项[], data0?: 选项, use输出变量 = false) => {
@@ -90,8 +96,18 @@ export const getXuanxiangItem = async (message: MessageService, options: Options
   const result = await message.form(form);
   return result ? data : null;
 };
+export const emptyXuanxiangItem = async (message: MessageService, item: 选项) => {
+  if (!(await message.confirm(`确定清空【${item.名字}】的数据吗？`))) {
+    return false;
+  }
+  item.可选项 = [];
+  return true;
+};
 
-export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTableDataSorted> => {
+export const getShuruTable = (
+  data: ShuruTableData[],
+  others?: Partial<TableRenderInfo<ShuruTableDataSorted>>
+): TableRenderInfo<ShuruTableDataSorted> => {
   return {
     title: "输入显示",
     inlineTitle: true,
@@ -111,7 +127,8 @@ export const getShuruTable = (data: ShuruTableData[]): TableRenderInfo<ShuruTabl
       }
     ],
     data: getSortedItems(data, (v) => v.排序 ?? 0),
-    toolbarButtons: {extra: [{event: "添加", color: "primary"}]}
+    toolbarButtons: {extra: [{event: "添加", color: "primary"}]},
+    ...others
   };
 };
 export const getShuruItem = async (message: MessageService, list: 输入[], data0?: 输入) => {
@@ -152,7 +169,15 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
     {type: "string", label: "生效条件", model: {data, key: "生效条件"}},
     {type: "number", label: "排序", model: {data, key: "排序"}}
   ];
-  return await message.form<typeof data, typeof data>(form);
+  return await message.form<typeof data, typeof data>(form, {
+    autoFill: environment.production
+      ? undefined
+      : () => {
+          data.名字 = "test";
+          data.默认值 = "1";
+          data.取值范围 = "1-10";
+        }
+  });
 };
 
 export const getMenjiaoTable = (data: MenjiaoData[]): TableRenderInfo<MenjiaoData> => {

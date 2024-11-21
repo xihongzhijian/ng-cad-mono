@@ -19,7 +19,7 @@ import {
   updateMenjiaoData
 } from "../lrsj-suanliao-data/lrsj-suanliao-data.utils";
 import {ShuruTableDataSorted, XuanxiangTableData, ZuofaTab} from "./lrsj-zuofa.types";
-import {getMenjiaoTable, getShuruItem, getShuruTable, getXuanxiangItem, getXuanxiangTable} from "./lrsj-zuofa.utils";
+import {emptyXuanxiangItem, getMenjiaoTable, getShuruItem, getShuruTable, getXuanxiangItem, getXuanxiangTable} from "./lrsj-zuofa.utils";
 
 @Component({
   selector: "app-lrsj-zuofa",
@@ -75,22 +75,20 @@ export class LrsjZuofaComponent {
   }
   async onXuanxiangRow(event: RowButtonEvent<XuanxiangTableData>) {
     const zuofa = this.zuofa();
-    const {button, item, rowIdx} = event;
+    const {button, rowIdx} = event;
+    const item = zuofa.选项数据[rowIdx];
     switch (button.event) {
       case "编辑":
         {
-          const item2 = zuofa.选项数据[rowIdx];
-          const item3 = await this.getXuanxiangItem(item2);
-          if (item3) {
-            zuofa.选项数据[rowIdx] = item3;
+          const item2 = await this.getXuanxiangItem(item);
+          if (item2) {
+            zuofa.选项数据[rowIdx] = item2;
             await this.updateXuanxiang();
           }
         }
         break;
       case "清空数据":
-        if (await this.message.confirm(`确定清空【${item.名字}】的数据吗？`)) {
-          const item2 = zuofa.选项数据[rowIdx];
-          item2.可选项 = [];
+        if (await emptyXuanxiangItem(this.message, item)) {
           await this.updateXuanxiang();
         }
         break;

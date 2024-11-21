@@ -1,0 +1,9 @@
+<div class="content flex-row flex-110 scrollbar-container">
+  <app-table [info]="shuruTable()" (toolbarButtonClick)="onShuruToolbar($event)" (rowButtonClick)="onShuruRow($event)"></app-table>
+  <app-table
+    [info]="xuanxiangTable()"
+    (toolbarButtonClick)="onXuanxiangToolbar($event)"
+    (rowButtonClick)="onXuanxiangRow($event)"
+  ></app-table>
+  <app-suanliaogongshi [info]="slgsInfo()" (slgsChange)="onSlgsChange()"></app-suanliaogongshi>
+</div>
