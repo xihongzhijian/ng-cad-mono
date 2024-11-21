@@ -147,15 +147,9 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
           location = "start";
         }
         if (!dimensionLinear.entity1.id) {
-          if (dimensionLinear.entity2.id && dimensionLinear.entity2.location === location) {
-            location = getOppositeLocation(location);
-          }
           dimensionLinear.entity1 = {id: entity.id, location};
           dimensionLinear.cad1 = data.name;
         } else if (!dimensionLinear.entity2.id) {
-          if (dimensionLinear.entity1.id && dimensionLinear.entity1.location === location) {
-            location = getOppositeLocation(location);
-          }
           dimensionLinear.entity2 = {id: entity.id, location};
           dimensionLinear.cad2 = data.name;
         } else {
@@ -171,16 +165,6 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
             dimensionLinear.entity1 = dimensionLinear.entity2;
             dimensionLinear.entity2 = {id: entity.id, location};
           }
-          // if (dimensionLinear.entity1.id === dimensionLinear.entity2.id) {
-          //   if (dimensionLinear.entity1.location === "start") {
-          //     dimensionLinear.entity2.location = "end";
-          //   } else if (dimensionLinear.entity1.location === "end") {
-          //     dimensionLinear.entity2.location = "start";
-          //   } else {
-          //     dimensionLinear.entity1.location = "start";
-          //     dimensionLinear.entity2.location = "end";
-          //   }
-          // }
           dimensionLinear.cad2 = data.name;
         }
         const e1 = cad.data.findEntity(dimensionLinear.entity1.id);
