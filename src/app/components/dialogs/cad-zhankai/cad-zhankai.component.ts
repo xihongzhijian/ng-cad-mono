@@ -27,7 +27,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-cad-zhankai",
   templateUrl: "./cad-zhankai.component.html",
   styleUrls: ["./cad-zhankai.component.scss"],
-  standalone: true,
   imports: [
     FormsModule,
     MatButtonModule,
@@ -152,7 +151,7 @@ export class CadZhankaiComponent extends Utils() {
     const name = (this.keysMap as any)[field] || field;
     const result = await openCadOptionsDialog(this.dialog, {data: {name, checkedItems, multi: true}});
     if (result?.options) {
-      obj[field] = joinOptions(result?.options);
+      obj[field] = joinOptions(result.options);
     }
   }
 

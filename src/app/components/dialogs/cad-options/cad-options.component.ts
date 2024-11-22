@@ -36,7 +36,6 @@ import {CadOptionsInput, CadOptionsOutput, CadOptionsPageDataItem} from "./cad-o
   selector: "app-cad-options",
   templateUrl: "./cad-options.component.html",
   styleUrls: ["./cad-options.component.scss"],
-  standalone: true,
   imports: [
     ClickStopPropagationDirective,
     forwardRef(() => InputComponent),

@@ -9,7 +9,6 @@ import {AppStatusService} from "@services/app-status.service";
 
 @Component({
   selector: "app-about",
-  standalone: true,
   imports: [MatButtonModule, SpinnerModule],
   templateUrl: "./about.component.html",
   styleUrl: "./about.component.scss"

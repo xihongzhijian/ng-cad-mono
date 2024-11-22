@@ -195,7 +195,7 @@ export const drawDimensionLinear = (
 
   const dimLineStyle = style?.dimensionLine || {};
   let dimLine: ReturnType<typeof drawLine> = [];
-  if (!dimLineStyle?.hidden) {
+  if (!dimLineStyle.hidden) {
     if (!dimLineStyle.color) {
       dimLineStyle.color = color;
     }
@@ -206,7 +206,7 @@ export const drawDimensionLinear = (
   const extLinesStyle = style?.extensionLines || {};
   let extLine1: ReturnType<typeof drawLine> = [];
   let extLine2: ReturnType<typeof drawLine> = [];
-  if (!extLinesStyle?.hidden) {
+  if (!extLinesStyle.hidden) {
     const length = extLinesStyle.length;
     if (!extLinesStyle.color) {
       extLinesStyle.color = color;
@@ -234,7 +234,7 @@ export const drawDimensionLinear = (
   const arrowsStyle = style?.arrows || {};
   let arrow1: ReturnType<typeof drawTriangle> = [];
   let arrow2: ReturnType<typeof drawTriangle> = [];
-  if (!arrowsStyle?.hidden) {
+  if (!arrowsStyle.hidden) {
     let size = Number(arrowsStyle.size);
     if (!arrowsStyle.color) {
       arrowsStyle.color = color;
@@ -242,15 +242,15 @@ export const drawDimensionLinear = (
     if (isNaN(size)) {
       size = Math.max(1, Math.min(20, p3.distanceTo(p4) / 8));
     }
-    arrow1 = drawTriangle(draw, p3, p4, size, arrowsStyle?.color, i);
+    arrow1 = drawTriangle(draw, p3, p4, size, arrowsStyle.color, i);
     i += arrow1.length;
-    arrow2 = drawTriangle(draw, p4, p3, size, arrowsStyle?.color, i);
+    arrow2 = drawTriangle(draw, p4, p3, size, arrowsStyle.color, i);
     i += arrow2.length;
     [...arrow1, ...arrow2].forEach((el) => el.addClass("dim-arrow"));
   }
   const textStyle = {...style?.text};
   let textEls: ReturnType<typeof drawText> = [];
-  if (!textStyle?.hidden) {
+  if (!textStyle.hidden) {
     if (!textStyle.color) {
       textStyle.color = color;
     }
@@ -324,7 +324,9 @@ const loadImageEl = async (el: Image, url: string) => {
   }
   return new Promise<void>((resolve, reject) => {
     el.load(url);
-    el.on("load", () => resolve());
+    el.on("load", () => {
+      resolve();
+    });
     el.on("error", reject);
   });
 };

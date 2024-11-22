@@ -8,7 +8,6 @@ import {AppStatusService} from "@services/app-status.service";
   selector: "app-page-not-found",
   templateUrl: "./page-not-found.component.html",
   styleUrls: ["./page-not-found.component.scss"],
-  standalone: true,
   imports: [MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -16,7 +16,6 @@ import {routesInfo} from "./routing/routes-info";
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
-  standalone: true,
   imports: [RouterOutlet, SpinnerComponent, CdkDrag, MatIconModule, MatMenuModule, MessageTestComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

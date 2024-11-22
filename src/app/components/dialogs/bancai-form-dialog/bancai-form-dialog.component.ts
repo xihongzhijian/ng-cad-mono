@@ -14,7 +14,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-bancai-form-dialog",
   templateUrl: "./bancai-form-dialog.component.html",
   styleUrls: ["./bancai-form-dialog.component.scss"],
-  standalone: true,
   imports: [BancaiFormComponent, MatButtonModule, MatDialogActions, MatDialogTitle],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

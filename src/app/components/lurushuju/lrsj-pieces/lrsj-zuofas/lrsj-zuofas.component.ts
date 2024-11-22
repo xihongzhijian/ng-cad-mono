@@ -23,7 +23,6 @@ import {ZuofaInfo} from "./lrsj-zuofas.types";
 
 @Component({
   selector: "app-lrsj-zuofas",
-  standalone: true,
   imports: [FloatingDialogModule, ImageComponent, LrsjZuofaComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule],
   templateUrl: "./lrsj-zuofas.component.html",
   styleUrl: "./lrsj-zuofas.component.scss",
@@ -48,21 +47,18 @@ export class LrsjZuofasComponent extends LrsjPiece {
 
   private _zuofaInfosPrev: ZuofaInfo[] | null = null;
   zuofaInfos = signal<ZuofaInfo[]>([]);
-  zuofaInfosEff = effect(
-    () => {
-      const {show, restoreZuofas} = this.lrsjStatus.pieceInfos().zuofas;
-      if (show) {
-        if (restoreZuofas && this._zuofaInfosPrev) {
-          this.zuofaInfos.set(this._zuofaInfosPrev);
-          this._zuofaInfosPrev = null;
-        }
-      } else {
-        this._zuofaInfosPrev = untracked(() => this.zuofaInfos());
-        this.zuofaInfos.set([]);
+  zuofaInfosEff = effect(() => {
+    const {show, restoreZuofas} = this.lrsjStatus.pieceInfos().zuofas;
+    if (show) {
+      if (restoreZuofas && this._zuofaInfosPrev) {
+        this.zuofaInfos.set(this._zuofaInfosPrev);
+        this._zuofaInfosPrev = null;
       }
-    },
-    {allowSignalWrites: true}
-  );
+    } else {
+      this._zuofaInfosPrev = untracked(() => this.zuofaInfos());
+      this.zuofaInfos.set([]);
+    }
+  });
 
   async addZuofa(fenleiName: string) {
     const xinghao = this.xinghao();
@@ -241,7 +237,9 @@ export class LrsjZuofasComponent extends LrsjPiece {
       return;
     }
     const {i, j} = focusFenleiZuofa;
-    untracked(() => this.onFocusFenleiZuofa(i, j));
+    untracked(() => {
+      this.onFocusFenleiZuofa(i, j);
+    });
   });
   scrollToFenlei(i: number) {
     this.lrsjStatus.focusFenleiZuofa.set({i});

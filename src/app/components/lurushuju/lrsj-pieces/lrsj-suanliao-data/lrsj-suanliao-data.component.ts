@@ -76,7 +76,6 @@ import {
 
 @Component({
   selector: "app-lrsj-suanliao-data",
-  standalone: true,
   imports: [
     CadItemComponent,
     InputComponent,
@@ -489,7 +488,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       return;
     }
     const {search, addCadData} = getCadSearch(data, yaoqiu, key1, key2, key3);
-    const imgIdPrev = data[key1][key2][key3]?.cad?.json?.info?.imgId;
+    const imgIdPrev = data[key1][key2][key3].cad?.json.info?.imgId;
     const result = await openCadListDialog(this.dialog, {
       data: {
         selectMode: "single",
@@ -928,7 +927,9 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     if (typeof name !== "string") {
       return;
     }
-    untracked(() => this.onTriggerBtn(name));
+    untracked(() => {
+      this.onTriggerBtn(name);
+    });
   });
   async scrollToElement(selector: string) {
     const show = this.lrsjStatus.pieceInfos().suanliaoData.show;

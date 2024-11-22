@@ -17,7 +17,6 @@ import {openCadAssembleFormDialog} from "../../dialogs/cad-assemble-form/cad-ass
   selector: "app-cad-assemble",
   templateUrl: "./cad-assemble.component.html",
   styleUrls: ["./cad-assemble.component.scss"],
-  standalone: true,
   imports: [MatButtonModule, NgScrollbar]
 })
 export class CadAssembleComponent extends Subscribed() implements OnInit, OnDestroy {

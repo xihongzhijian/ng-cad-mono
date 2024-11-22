@@ -81,7 +81,6 @@ import {SuanliaogongshiComponent} from "../suanliaogongshi/suanliaogongshi.compo
       transition(":leave", [style({opacity: 1}), animate("0.5s", style({opacity: 0}))])
     ])
   ],
-  standalone: true,
   imports: [
     AsyncPipe,
     CadAssembleComponent,

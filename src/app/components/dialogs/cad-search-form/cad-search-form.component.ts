@@ -23,7 +23,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-cad-search-form",
   templateUrl: "./cad-search-form.component.html",
   styleUrls: ["./cad-search-form.component.scss"],
-  standalone: true,
   imports: [
     NgScrollbar,
     MatCardModule,
@@ -107,12 +106,12 @@ export class CadSearchFormComponent implements OnInit {
 
   reset() {
     this.form = {};
-    this.data.forEach((v) =>
+    this.data.forEach((v) => {
       v.items.forEach(({label}) => {
         this.form[label] = "";
         this.options$[label].change$.emit("");
-      })
-    );
+      });
+    });
   }
 }
 

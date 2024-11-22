@@ -29,7 +29,6 @@ import {calcTestCase, getTestCaseInfo} from "./suanliao-test-dialog.utils";
 
 @Component({
   selector: "app-suanliao-test-dialog",
-  standalone: true,
   imports: [
     CadImageComponent,
     InputComponent,

@@ -38,7 +38,6 @@ import {
   selector: "app-select-bancai",
   templateUrl: "./select-bancai.component.html",
   styleUrls: ["./select-bancai.component.scss"],
-  standalone: true,
   imports: [
     FormsModule,
     InputComponent,
@@ -263,9 +262,9 @@ export class SelectBancaiComponent extends Subscribed() {
           this.updateSortedCads(info, bancai, i);
         };
         const bancaiList = this.bancaiList[bancai.mingzi];
-        const cailiaos = bancaiList?.cailiaoList || [];
-        const houdus = bancaiList?.houduList || [];
-        const guiges = (bancaiList?.guigeList || []).map((v) => v.join(" × "));
+        const cailiaos = bancaiList.cailiaoList || [];
+        const houdus = bancaiList.houduList || [];
+        const guiges = (bancaiList.guigeList || []).map((v) => v.join(" × "));
         const gasOptions = this.gasOptions.slice();
         const bancaiInfo: (typeof info.bancaiInfos)[0] = {
           cads: group.map((v) => v.id),
@@ -278,7 +277,9 @@ export class SelectBancaiComponent extends Subscribed() {
               value: bancai.cailiao || "",
               options: cailiaos,
               fixedOptions: cailiaos,
-              onChange: (value) => onChange("cailiao", value),
+              onChange: (value) => {
+                onChange("cailiao", value);
+              },
               validators: Validators.required
             },
             {
@@ -287,7 +288,9 @@ export class SelectBancaiComponent extends Subscribed() {
               value: bancai.houdu || "",
               options: houdus,
               fixedOptions: houdus,
-              onChange: (value) => onChange("houdu", value),
+              onChange: (value) => {
+                onChange("houdu", value);
+              },
               validators: [
                 Validators.required,
                 (control) => {
@@ -304,7 +307,9 @@ export class SelectBancaiComponent extends Subscribed() {
               value: bancai.guige?.join(" × ") || "",
               options: guiges,
               fixedOptions: guiges,
-              onChange: (value) => onChange("guige", value),
+              onChange: (value) => {
+                onChange("guige", value);
+              },
               validators: [
                 Validators.required,
                 (control) => {
@@ -323,7 +328,9 @@ export class SelectBancaiComponent extends Subscribed() {
             type: "select",
             value: bancai.gas || "",
             options: gasOptions,
-            onChange: (value: string) => onChange("gas", value)
+            onChange: (value: string) => {
+              onChange("gas", value);
+            }
           });
         }
         info.bancaiInfos.push(bancaiInfo);

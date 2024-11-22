@@ -64,20 +64,17 @@ export class BjmkStatusService {
     (item1, item2) => item1.id === item2.id
   );
   currMokuai = signal<MokuaiItem | null>(null);
-  mokuaisAllEff = effect(
-    () => {
-      const noFetch = this.mokuaisManager.fetchManager.noFetch;
-      this.mokuaisManager.fetchManager.noFetch = true;
-      const mokuais = this.mokuaisManager.items();
-      this.mokuaisManager.fetchManager.noFetch = noFetch;
-      const currMokuai = untracked(() => this.currMokuai());
-      if (currMokuai) {
-        const currMokuai2 = mokuais.find((v) => v.id === currMokuai.id) || null;
-        this.currMokuai.set(currMokuai2);
-      }
-    },
-    {allowSignalWrites: true}
-  );
+  mokuaisAllEff = effect(() => {
+    const noFetch = this.mokuaisManager.fetchManager.noFetch;
+    this.mokuaisManager.fetchManager.noFetch = true;
+    const mokuais = this.mokuaisManager.items();
+    this.mokuaisManager.fetchManager.noFetch = noFetch;
+    const currMokuai = untracked(() => this.currMokuai());
+    if (currMokuai) {
+      const currMokuai2 = mokuais.find((v) => v.id === currMokuai.id) || null;
+      this.currMokuai.set(currMokuai2);
+    }
+  });
   async fetchMokuai(id: number) {
     let mokuai2: MokuaiItem | null = null;
     const ids = [id];

@@ -111,7 +111,7 @@ export const exportZixuanpeijian = (source: ZixuanpeijianData) => {
       continue;
     }
     if (key === "模块") {
-      result[key] = source[key]?.map((item) => {
+      result[key] = source[key].map((item) => {
         const item2 = {
           ...item,
           cads: item.cads.map(getCadItem)
@@ -122,9 +122,9 @@ export const exportZixuanpeijian = (source: ZixuanpeijianData) => {
         return item2;
       });
     } else if (key === "零散") {
-      result[key] = source[key]?.map(getCadItem);
+      result[key] = source[key].map(getCadItem);
     } else if (key === "备注") {
-      result[key] = source[key]?.map((v) => v.export());
+      result[key] = source[key].map((v) => v.export());
     } else {
       result[key] = source[key];
     }
@@ -885,7 +885,7 @@ export const calcZxpj = async (
           ])
         };
         ["门扇上切", "门扇下切", "门扇上面上切", "门扇下面下切"].forEach((qiekey) => {
-          if (cadZhankai?.zhankaigao.includes(qiekey) && Number(materialResult[qiekey]) > 0) {
+          if (cadZhankai.zhankaigao.includes(qiekey) && Number(materialResult[qiekey]) > 0) {
             if (qiekey.includes("上切")) {
               calcObj["上切"] = materialResult[qiekey];
             } else {

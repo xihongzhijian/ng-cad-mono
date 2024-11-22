@@ -41,7 +41,6 @@ export interface Bancai {
   selector: "app-piliangjianban",
   templateUrl: "./piliangjianban.component.html",
   styleUrls: ["./piliangjianban.component.scss"],
-  standalone: true,
   imports: [ImageComponent, MatButtonModule, MatCardModule, MatExpansionModule]
 })
 export class PiliangjianbanComponent implements OnInit {

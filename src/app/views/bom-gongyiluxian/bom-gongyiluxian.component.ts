@@ -28,7 +28,6 @@ import {DingdanBomCacheData, DingdanBomData, DingdanBomDataResponseData} from ".
       transition("expanded <=> collapsed", animate("225ms cubic-bezier(0.4, 0.0, 0.2, 1)"))
     ])
   ],
-  standalone: true,
   imports: [MatButtonModule, MatSlideToggleModule, FormsModule, TableComponent]
 })
 export class BomGongyiluxianComponent implements OnInit {

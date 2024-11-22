@@ -17,7 +17,6 @@ import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
-import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {MsbjRectInfo, MsbjRectInfoRaw} from "@components/msbj-rects/msbj-rects.types";
@@ -29,7 +28,6 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep, debounce} from "lodash";
-import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
 import {MsbjCloseEvent, MsbjData, MsbjFenlei} from "./msbj.types";
 import {getEmpty模块大小配置, MsbjInfo} from "./msbj.utils";
@@ -38,8 +36,7 @@ import {getEmpty模块大小配置, MsbjInfo} from "./msbj.utils";
   selector: "app-msbj",
   templateUrl: "./msbj.component.html",
   styleUrls: ["./msbj.component.scss"],
-  standalone: true,
-  imports: [CadImageComponent, InputComponent, MatButtonModule, MsbjRectsComponent, NgScrollbar],
+  imports: [InputComponent, MatButtonModule, MsbjRectsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MsbjComponent {
@@ -70,7 +67,7 @@ export class MsbjComponent {
     setGlobal("msbj", this);
   }
 
-  refreshEff = effect(() => this.refresh(), {allowSignalWrites: true});
+  refreshEff = effect(() => this.refresh());
   async refresh() {
     let msbjInfo: MsbjInfo | null = null;
     const msbjInfoIn = this.msbjInfoModel();
@@ -110,13 +107,10 @@ export class MsbjComponent {
   }
 
   rectInfos = signal<MsbjRectInfoRaw[]>([]);
-  rectInfosEff = effect(
-    () => {
-      const msbjInfo = this.msbjInfo();
-      this.rectInfos.set(msbjInfo?.peizhishuju?.["模块节点"] || []);
-    },
-    {allowSignalWrites: true}
-  );
+  rectInfosEff = effect(() => {
+    const msbjInfo = this.msbjInfo();
+    this.rectInfos.set(msbjInfo?.peizhishuju["模块节点"] || []);
+  });
 
   activeRectInfo = signal<MsbjRectInfo | null>(null);
   private _generateRectsEnd = 0;
@@ -251,16 +245,13 @@ export class MsbjComponent {
 
   mkdxpz = signal<MkdxpzEditorData>({});
   varNameItem = computed(() => this.bjmkStatus.varNamesManager.data().at(0) || {});
-  mkdxpzEff = effect(
-    () => {
-      let dxpz = this.msbjInfo()?.peizhishuju.模块大小配置;
-      if (!dxpz) {
-        dxpz = getEmpty模块大小配置();
-      }
-      this.mkdxpz.set({dxpz});
-    },
-    {allowSignalWrites: true}
-  );
+  mkdxpzEff = effect(() => {
+    let dxpz = this.msbjInfo()?.peizhishuju.模块大小配置;
+    if (!dxpz) {
+      dxpz = getEmpty模块大小配置();
+    }
+    this.mkdxpz.set({dxpz});
+  });
   onMkdxpzChange(data: MkdxpzEditorData) {
     const info = this.msbjInfo();
     if (info && data.dxpz) {

@@ -26,7 +26,6 @@ import {defaultFenleis, getOptions} from "../lrsj-pieces.utils";
 
 @Component({
   selector: "app-lrsj-xinghaos",
-  standalone: true,
   imports: [
     FloatingDialogModule,
     FormsModule,
@@ -62,7 +61,9 @@ export class LrsjXinghaosComponent extends LrsjPiece {
 
   xinghaoFilterForm = computed(() => {
     const data = {...this.lrsjStatus.xinghaoFilter()};
-    const update = () => this.lrsjStatus.xinghaoFilter.set(data);
+    const update = () => {
+      this.lrsjStatus.xinghaoFilter.set(data);
+    };
     const zuoshujubanbenOptions = this.getOptions0(this.lrsjStatus.xinghaoOptionsManager.data(), "做数据版本");
     zuoshujubanbenOptions.unshift({label: "全部", value: ""});
     const form: InputInfo<typeof data>[] = [
@@ -71,7 +72,9 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         label: "搜索型号",
         clearable: true,
         model: {data, key: "name"},
-        onInput: debounce(() => update(), 500),
+        onInput: debounce(() => {
+          update();
+        }, 500),
         style: {width: "200px"}
       },
       {
@@ -80,7 +83,9 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         clearable: true,
         model: {data, key: "zuoshujubanben"},
         options: zuoshujubanbenOptions,
-        onChange: () => update(),
+        onChange: () => {
+          update();
+        },
         style: {width: "220px"}
       }
     ];
@@ -92,13 +97,10 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     return xinghaoMenchuangs.item?.gongyis?.item?.xinghaos?.items || [];
   });
   xinghaoSelectedIndexs = signal<number[]>([]);
-  xinghaoSelectedIndexsEff = effect(
-    () => {
-      this.xinghaos();
-      this.xinghaoSelectedIndexs.set([]);
-    },
-    {allowSignalWrites: true}
-  );
+  xinghaoSelectedIndexsEff = effect(() => {
+    this.xinghaos();
+    this.xinghaoSelectedIndexs.set([]);
+  });
   xinghaosSelected = computed(() => {
     const xinghaos = this.xinghaos();
     const indexs = this.xinghaoSelectedIndexs();

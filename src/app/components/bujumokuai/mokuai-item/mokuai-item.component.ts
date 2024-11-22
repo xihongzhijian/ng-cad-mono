@@ -53,7 +53,6 @@ import {getEmptyMokuaiItem, getMokuaiCustomData, mokuaiSubmitAfter, updateMokuai
 
 @Component({
   selector: "app-mokuai-item",
-  standalone: true,
   imports: [
     CadItemComponent,
     FloatingDialogModule,
@@ -91,18 +90,15 @@ export class MokuaiItemComponent {
 
   imgPrefix = this.bjmkStatus.imgPrefix;
   mokuai = signal<MokuaiItem>(getEmptyMokuaiItem());
-  mokuaiEff = effect(
-    () => {
-      const mokuai = cloneDeep(this.mokuaiIn());
-      if (mokuai.自定义数据) {
-        const optionsAll = this.bjmkStatus.mokuaiOptionsManager.data();
-        updateMokuaiCustomData(mokuai.自定义数据, optionsAll);
-      }
-      mokuaiSubmitAfter(mokuai);
-      this.mokuai.set(mokuai);
-    },
-    {allowSignalWrites: true}
-  );
+  mokuaiEff = effect(() => {
+    const mokuai = cloneDeep(this.mokuaiIn());
+    if (mokuai.自定义数据) {
+      const optionsAll = this.bjmkStatus.mokuaiOptionsManager.data();
+      updateMokuaiCustomData(mokuai.自定义数据, optionsAll);
+    }
+    mokuaiSubmitAfter(mokuai);
+    this.mokuai.set(mokuai);
+  });
   async editMokuai() {
     const mokuai = this.mokuai();
     const mokuai2 = await this.bjmkStatus.getMokuaiWithForm(mokuai);
@@ -127,13 +123,10 @@ export class MokuaiItemComponent {
   }
 
   morenbancais = signal<{key: string; val: MrbcjfzInfo}[]>([]);
-  morenbancaisEff = effect(
-    () => {
-      const morenbancai = this.mokuai().morenbancai || {};
-      this.morenbancais.set(Object.entries(morenbancai).map(([key, val]) => ({key, val})));
-    },
-    {allowSignalWrites: true}
-  );
+  morenbancaisEff = effect(() => {
+    const morenbancai = this.mokuai().morenbancai || {};
+    this.morenbancais.set(Object.entries(morenbancai).map(([key, val]) => ({key, val})));
+  });
   morenbancaiInputInfos = computed(() => {
     const infos: InputInfo[] = [];
     for (const [i, {key, val}] of this.morenbancais().entries()) {
@@ -296,7 +289,9 @@ export class MokuaiItemComponent {
       textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
       model: {data: this.mokuai(), key},
-      onChange: () => this.mokuai.update((v) => ({...v}))
+      onChange: () => {
+        this.mokuai.update((v) => ({...v}));
+      }
     };
     return info;
   }
@@ -310,7 +305,9 @@ export class MokuaiItemComponent {
       textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
       model: {data: mokuai.自定义数据, key},
-      onChange: () => this.mokuai.update((v) => ({...v, 自定义数据: clone(v.自定义数据)}))
+      onChange: () => {
+        this.mokuai.update((v) => ({...v, 自定义数据: clone(v.自定义数据)}));
+      }
     };
     return info;
   }
@@ -402,7 +399,12 @@ export class MokuaiItemComponent {
   cadYaoqiu = this.bjmkStatus.cadYaoqiu;
   cadButtons = computed(() => {
     const buttons: CadItemButton<MokuaiItemCadInfo>[] = [
-      {name: "复制", onClick: ({customInfo}) => this.copyCad(customInfo.index)},
+      {
+        name: "复制",
+        onClick: ({customInfo}) => {
+          this.copyCad(customInfo.index);
+        }
+      },
       {name: "删除", onClick: ({customInfo}) => this.unselectCad(customInfo.index)}
     ];
     return buttons;
@@ -415,12 +417,9 @@ export class MokuaiItemComponent {
   showCadsDialog = signal(false);
   selectedCads = signal<CadData[]>([]);
   cads = computed(() => this.mokuai().cads || []);
-  selectedCadsEff = effect(
-    () => {
-      this.selectedCads.set(this.cads().map((v) => new CadData(v.json)));
-    },
-    {allowSignalWrites: true}
-  );
+  selectedCadsEff = effect(() => {
+    this.selectedCads.set(this.cads().map((v) => new CadData(v.json)));
+  });
   selectCads$ = new Subject<MokuaiCadsComponent | null>();
   async selectCads() {
     const mokuai = this.mokuai();
@@ -505,7 +504,7 @@ export class MokuaiItemComponent {
       }
     };
     const varKeysShuchu = mokuai.shuchubianliang.split("+");
-    const varKeysXuanxiang = mokuai.自定义数据?.选项数据?.map((v) => v.名字) || [];
+    const varKeysXuanxiang = mokuai.自定义数据?.选项数据.map((v) => v.名字) || [];
     checkDuplicateVars(varKeysShuchu, varKeysXuanxiang, "输出变量", "模块选项");
     const gongshishuru = getFromulasFromString(mokuai.gongshishuru);
     checkDuplicateVars(Object.keys(gongshishuru), varKeysXuanxiang, "公式输入", "模块选项");

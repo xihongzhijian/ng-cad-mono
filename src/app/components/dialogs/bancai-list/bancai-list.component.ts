@@ -16,7 +16,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-bancai-list",
   templateUrl: "./bancai-list.component.html",
   styleUrls: ["./bancai-list.component.scss"],
-  standalone: true,
   imports: [InputComponent, MatButtonModule, NgScrollbar, MatCheckboxModule, MatTooltipModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -41,14 +40,18 @@ export class BancaiListComponent {
   }
 
   filterText = signal(session.load("bancaiListSearchText") || "");
-  filterTextEff = effect(() => session.save("bancaiListSearchText", this.filterText()));
+  filterTextEff = effect(() => {
+    session.save("bancaiListSearchText", this.filterText());
+  });
   filterInputInfo = computed<InputInfo>(() => ({
     type: "string",
     label: "搜索",
     autoFocus: true,
     clearable: true,
     value: this.filterText(),
-    onInput: debounce((val) => this.filterText.set(val), 200)
+    onInput: debounce((val) => {
+      this.filterText.set(val);
+    }, 200)
   }));
 
   bancaiTypes = computed(() => {
@@ -81,7 +84,7 @@ export class BancaiListComponent {
     return bancai.bancaileixing === type;
   }
   list = computed(() => {
-    const checkedItemNames = this.checkedItems()?.map((v) => v.mingzi) || [];
+    const checkedItemNames = this.checkedItems().map((v) => v.mingzi) || [];
     let list = this.data.list;
     if (this.data.multi) {
       list = [{mingzi: "全部", cailiaoList: [], houduList: [], guigeList: []}, ...list];

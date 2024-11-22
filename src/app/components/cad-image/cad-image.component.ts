@@ -24,7 +24,6 @@ import {DataInfoChnageEvent} from "./cad-image.types";
 
 @Component({
   selector: "app-cad-image",
-  standalone: true,
   imports: [ImageComponent],
   templateUrl: "./cad-image.component.html",
   styleUrl: "./cad-image.component.scss",
@@ -128,7 +127,7 @@ export class CadImageComponent {
     }
     this.url.set(url);
   }
-  updateUrlEff = effect(() => this.updateUrl(), {allowSignalWrites: true});
+  updateUrlEff = effect(() => this.updateUrl());
 
   async refreshCadPreview() {
     if (this.isLocal()) {

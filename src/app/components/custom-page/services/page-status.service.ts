@@ -49,20 +49,67 @@ export class PageStatusService {
   saveBefore = new Subject<void>();
   saveAfter = new Subject<void>();
   keyEventItems: KeyEventItem[] = [
-    {key: "s", ctrl: true, action: () => this.saveBefore.next()},
-    {key: "z", ctrl: true, action: () => this.undo()},
-    {key: "y", ctrl: true, action: () => this.redo()},
-    {key: "c", ctrl: true, action: () => this.copy()},
-    {key: "v", ctrl: true, action: () => this.paste()},
-    {key: "a", ctrl: true, action: () => this.selectAll()},
-    {key: "delete", action: () => this.remove()}
+    {
+      key: "s",
+      ctrl: true,
+      action: () => {
+        this.saveBefore.next();
+      }
+    },
+    {
+      key: "z",
+      ctrl: true,
+      action: () => {
+        this.undo();
+      }
+    },
+    {
+      key: "y",
+      ctrl: true,
+      action: () => {
+        this.redo();
+      }
+    },
+    {
+      key: "c",
+      ctrl: true,
+      action: () => {
+        this.copy();
+      }
+    },
+    {
+      key: "v",
+      ctrl: true,
+      action: () => {
+        this.paste();
+      }
+    },
+    {
+      key: "a",
+      ctrl: true,
+      action: () => {
+        this.selectAll();
+      }
+    },
+    {
+      key: "delete",
+      action: () => {
+        this.remove();
+      }
+    }
   ];
 
   constructor() {
     setGlobal("pageStatus", this);
-    effect(() => this.onComponentsChanged(), {allowSignalWrites: true});
-    effect(() => this.onActiveComponentChanged(), {allowSignalWrites: true});
-    effect(() => this.onPageConfigChanged(), {allowSignalWrites: true});
+    effect(() => {
+      this.onComponentsChanged();
+    });
+    effect(() => {
+      this.onActiveComponentChanged();
+    });
+    effect(() => {
+      this.onPageConfigChanged();
+    });
   }
 
   updatePageComponents() {
@@ -138,7 +185,9 @@ export class PageStatusService {
     if (this._noSaveOnComponentsChanged) {
       this._noSaveOnComponentsChanged = false;
     } else {
-      untracked(() => this.savePageSnapshot());
+      untracked(() => {
+        this.savePageSnapshot();
+      });
     }
   }
   onActiveComponentChanged() {
@@ -154,7 +203,9 @@ export class PageStatusService {
     if (this._noSaveOnPageConfigChanged) {
       this._noSaveOnPageConfigChanged = false;
     } else {
-      untracked(() => this.savePageSnapshot());
+      untracked(() => {
+        this.savePageSnapshot();
+      });
     }
   }
 

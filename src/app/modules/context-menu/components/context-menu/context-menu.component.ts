@@ -3,7 +3,6 @@ import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 
 @Component({
   selector: "app-context-menu",
-  standalone: true,
   imports: [MatMenuModule],
   templateUrl: "./context-menu.component.html",
   styleUrl: "./context-menu.component.scss",

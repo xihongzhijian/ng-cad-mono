@@ -32,7 +32,6 @@ import {openCadDimensionFormDialog} from "../../dialogs/cad-dimension-form/cad-d
   selector: "app-cad-dimension",
   templateUrl: "./cad-dimension.component.html",
   styleUrls: ["./cad-dimension.component.scss"],
-  standalone: true,
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatSlideToggleModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -285,10 +284,10 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     const ids: string[] = [];
     const isLinear = dimension instanceof CadDimensionLinear;
     if (isLinear) {
-      if (dimension.entity1?.id) {
+      if (dimension.entity1.id) {
         ids.push(dimension.entity1.id);
       }
-      if (dimension.entity2?.id) {
+      if (dimension.entity2.id) {
         ids.push(dimension.entity2.id);
       }
     }

@@ -1,4 +1,3 @@
-import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {Component, HostBinding, Inject, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
@@ -28,8 +27,7 @@ import {
 
 @Component({
   selector: "app-tongyongshuju-dialog",
-  standalone: true,
-  imports: [CadItemComponent, KeyValuePipe, MatButtonModule, MatDividerModule, NgScrollbarModule, NgTemplateOutlet, SpinnerModule],
+  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, SpinnerModule],
   templateUrl: "./tongyongshuju-dialog.component.html",
   styleUrl: "./tongyongshuju-dialog.component.scss"
 })

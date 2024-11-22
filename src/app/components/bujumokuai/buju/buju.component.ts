@@ -12,7 +12,6 @@ import {BjmkStatusService} from "../services/bjmk-status.service";
 
 @Component({
   selector: "app-buju",
-  standalone: true,
   imports: [FloatingDialogModule, ImageComponent, MatTooltipModule, MsbjComponent, NgScrollbarModule],
   templateUrl: "./buju.component.html",
   styleUrl: "./buju.component.scss",

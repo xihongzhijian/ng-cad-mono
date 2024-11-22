@@ -24,7 +24,6 @@ import {MsbjRectInfo, MsbjRectInfoRaw} from "./msbj-rects.types";
   selector: "app-msbj-rects",
   templateUrl: "./msbj-rects.component.html",
   styleUrls: ["./msbj-rects.component.scss"],
-  standalone: true,
   imports: [ClickStopPropagationDirective],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -32,7 +31,7 @@ export class MsbjRectsComponent {
   rectInfos = input.required<MsbjRectInfoRaw[]>();
   padding = input<TrblLike>(0);
   ignoreNonBuju = input(false, {transform: booleanAttribute});
-  generateRectsStart = output<void>();
+  generateRectsStart = output();
   generateRectsEnd = output<GenerateRectsEndEvent>();
   activeRectInfo = model<MsbjRectInfo | null>(null);
 
@@ -176,12 +175,9 @@ export class MsbjRectsComponent {
     }
     this.generateRectsEnd.emit({isWindowResize});
   }
-  generateRectsEff = effect(
-    () => {
-      this.generateRects({resetColors: true});
-    },
-    {allowSignalWrites: true}
-  );
+  generateRectsEff = effect(() => {
+    this.generateRects({resetColors: true});
+  });
 
   onRectClick(info: MsbjRectInfo) {
     if (this.ignoreNonBuju() && !info.raw.isBuju) {

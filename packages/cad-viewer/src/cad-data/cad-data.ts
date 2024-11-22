@@ -485,7 +485,9 @@ export class CadData {
   updatePartners() {
     const partners = this.partners.slice();
     this.partners.length = 0;
-    partners.forEach((v) => this.addPartner(v));
+    partners.forEach((v) => {
+      this.addPartner(v);
+    });
     this.partners.forEach((v) => v.updatePartners());
     this.components.data.forEach((v) => v.updatePartners());
     return this;

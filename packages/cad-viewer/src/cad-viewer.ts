@@ -622,7 +622,7 @@ export class CadViewer extends EventEmitter {
     }
     const outerWidth = this.width();
     const outerHeight = this.height();
-    const padding = cloneDeep(this._config.padding) as number[];
+    const padding = cloneDeep(this._config.padding);
     const scaleX = (outerWidth - padding[1] - padding[3]) / width;
     const scaleY = (outerHeight - padding[0] - padding[2]) / height;
     const scale = Math.min(scaleX, scaleY);
@@ -823,7 +823,9 @@ export class CadViewer extends EventEmitter {
   }
 
   traverse(callback: (e: CadEntity) => void, recursive = false) {
-    this.data.getAllEntities().forEach((e) => callback(e), recursive);
+    this.data.getAllEntities().forEach((e) => {
+      callback(e);
+    }, recursive);
     return this;
   }
 
@@ -903,7 +905,9 @@ export class CadViewer extends EventEmitter {
             resolve(null);
           }
         };
-        fileReader.onerror = () => resolve(null);
+        fileReader.onerror = () => {
+          resolve(null);
+        };
       });
     }
     if (!dataUrl) {

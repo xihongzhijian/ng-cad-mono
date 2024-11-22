@@ -46,7 +46,6 @@ import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-co
 
 @Component({
   selector: "app-custom-page-index",
-  standalone: true,
   imports: [
     AboutComponent,
     InputComponent,
@@ -122,7 +121,9 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
   constructor() {
     super();
     setGlobal("customPage", this);
-    effect(() => session.save(this._menuTabIndexKey, this.menuTabIndex()));
+    effect(() => {
+      session.save(this._menuTabIndexKey, this.menuTabIndex());
+    });
     this.subscribe(this.route.queryParams, () => this.load());
     this.subscribe(this.pageStatus.saveBefore, async () => {
       await this.save();
@@ -214,7 +215,9 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
     const pdf = await this.getPagePdf();
     this.spinner.show(this.spinner.defaultLoaderId, {text: "正在打印"});
     const blob = await new Promise<Blob>((resolve) => {
-      pdf.getBlob((b) => resolve(b));
+      pdf.getBlob((b) => {
+        resolve(b);
+      });
     });
     this.spinner.hide(this.spinner.defaultLoaderId);
     const url = URL.createObjectURL(blob);

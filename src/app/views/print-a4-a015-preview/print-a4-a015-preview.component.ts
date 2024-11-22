@@ -24,7 +24,6 @@ export type PreviewData = {
   selector: "app-print-a4-a015-preview",
   templateUrl: "./print-a4-a015-preview.component.html",
   styleUrls: ["./print-a4-a015-preview.component.scss"],
-  standalone: true,
   imports: [CadImageComponent, ImageComponent, MatButtonModule, NgScrollbar, SpinnerComponent]
 })
 export class PrintA4A015PreviewComponent implements AfterViewInit, OnDestroy {

@@ -20,7 +20,6 @@ import {SelectZuofaInput, SelectZuofaItem, SelectZuofaItemData, SelectZuofaOutpu
 
 @Component({
   selector: "app-select-zuofa-dialog",
-  standalone: true,
   imports: [ImageComponent, InputComponent, MatButtonModule, MatCheckboxModule, MatTooltipModule, NgScrollbarModule],
   templateUrl: "./select-zuofa-dialog.component.html",
   styleUrl: "./select-zuofa-dialog.component.scss",
@@ -64,7 +63,11 @@ export class SelectZuofaDialogComponent {
         multiple: false,
         value: data.型号,
         options: xinghaoOptions,
-        optionsDialog: {onChange: (val) => this.searchForm.update((v) => ({...v, 型号: val.options[0].mingzi}))}
+        optionsDialog: {
+          onChange: (val) => {
+            this.searchForm.update((v) => ({...v, 型号: val.options[0].mingzi}));
+          }
+        }
       },
       {
         type: "select",
@@ -72,7 +75,9 @@ export class SelectZuofaDialogComponent {
         clearable: true,
         multiple: false,
         value: data.产品分类,
-        onChange: (val) => this.searchForm.update((v) => ({...v, 产品分类: val})),
+        onChange: (val) => {
+          this.searchForm.update((v) => ({...v, 产品分类: val}));
+        },
         options: getOptions(options, "产品分类"),
         hidden: !!fenlei
       }
@@ -84,7 +89,9 @@ export class SelectZuofaDialogComponent {
     const getOptionInputInfo2 = (key: keyof typeof data2) => {
       return getOptionsAll2InputInfo(menjiaoOptions, key, (info) => {
         info.value = data2[key];
-        info.onChange = (val: string) => this.searchFormMenjiao.update((v) => ({...v, [key]: val}));
+        info.onChange = (val: string) => {
+          this.searchFormMenjiao.update((v) => ({...v, [key]: val}));
+        };
         info.disabled = false;
         info.multiple = false;
         info.clearable = true;
@@ -120,7 +127,7 @@ export class SelectZuofaDialogComponent {
           for (const item2 of items2) {
             let isMatched = true;
             for (const menjiaoKey of keysOf(searchFormMenjiao)) {
-              const val1 = (item2 as any)[menjiaoKey];
+              const val1 = item2[menjiaoKey];
               const val2 = searchFormMenjiao[menjiaoKey];
               if (!val2) {
                 continue;

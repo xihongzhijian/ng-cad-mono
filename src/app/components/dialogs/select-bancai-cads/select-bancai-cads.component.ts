@@ -14,7 +14,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-select-bancai-cads",
   templateUrl: "./select-bancai-cads.component.html",
   styleUrls: ["./select-bancai-cads.component.scss"],
-  standalone: true,
   imports: [MatSlideToggleModule, FormsModule, NgScrollbar, MatDividerModule, MatCheckboxModule, MatDialogActions, MatButtonModule]
 })
 export class SelectBancaiCadsComponent {

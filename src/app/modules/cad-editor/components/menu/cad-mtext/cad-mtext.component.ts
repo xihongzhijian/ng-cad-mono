@@ -15,7 +15,6 @@ import {InputComponent} from "../../../../input/components/input.component";
   selector: "app-cad-mtext",
   templateUrl: "./cad-mtext.component.html",
   styleUrls: ["./cad-mtext.component.scss"],
-  standalone: true,
   imports: [MatButtonModule, forwardRef(() => InputComponent)]
 })
 export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy {

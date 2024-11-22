@@ -1,5 +1,4 @@
 import {CdkDrag, CdkDragEnd, CdkDragHandle, CdkDragMove, Point} from "@angular/cdk/drag-drop";
-import {NgTemplateOutlet} from "@angular/common";
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -29,8 +28,7 @@ import {ResizeHandle} from "./floating-dialog.types";
 
 @Component({
   selector: "app-floating-dialog",
-  standalone: true,
-  imports: [CdkDrag, CdkDragHandle, ContextMenuModule, MatButtonModule, MatIconModule, MatMenuModule, NgTemplateOutlet],
+  imports: [CdkDrag, CdkDragHandle, ContextMenuModule, MatButtonModule, MatIconModule, MatMenuModule],
   templateUrl: "./floating-dialog.component.html",
   styleUrl: "./floating-dialog.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -60,16 +58,13 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   dialogEl = viewChild.required<ElementRef<HTMLElement>>("dialogEl");
   contextMenu = viewChild.required<MatMenuTrigger>("contextMenu");
 
-  minimizedEff = effect(
-    () => {
-      const minimized = this.minimized();
-      if (minimized) {
-        this.active.set(false);
-      }
-      this.manager.dialogs.update((v) => [...v]);
-    },
-    {allowSignalWrites: true}
-  );
+  minimizedEff = effect(() => {
+    const minimized = this.minimized();
+    if (minimized) {
+      this.active.set(false);
+    }
+    this.manager.dialogs.update((v) => [...v]);
+  });
   maximizedEff = effect(() => {
     if (this.maximized()) {
       if (!this.class.includes("backdrop")) {
@@ -168,13 +163,38 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   titleBtns = computed(() => {
     const btns: {icon: string; action: () => void}[] = [];
     if (this.pinned()) {
-      btns.push({icon: "keep_off", action: () => this.pinned.set(false)});
+      btns.push({
+        icon: "keep_off",
+        action: () => {
+          this.pinned.set(false);
+        }
+      });
     } else {
-      btns.push({icon: "keep", action: () => this.pinned.set(true)});
+      btns.push({
+        icon: "keep",
+        action: () => {
+          this.pinned.set(true);
+        }
+      });
     }
-    btns.push({icon: "remove", action: () => this.toggleMinimized()});
-    btns.push({icon: this.maximized() ? "stack" : "check_box_outline_blank", action: () => this.toggleMaximized()});
-    btns.push({icon: "close", action: () => this.close.emit()});
+    btns.push({
+      icon: "remove",
+      action: () => {
+        this.toggleMinimized();
+      }
+    });
+    btns.push({
+      icon: this.maximized() ? "stack" : "check_box_outline_blank",
+      action: () => {
+        this.toggleMaximized();
+      }
+    });
+    btns.push({
+      icon: "close",
+      action: () => {
+        this.close.emit();
+      }
+    });
     return btns;
   });
   contextMenuBtns = computed(() => {
@@ -270,8 +290,12 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
         this.size.update(({y}) => ({x: sizeX - dx, y}));
         this.position.update(({y}) => ({x: posX + dx, y}));
       },
-      right: () => this.size.update(({y}) => ({x: sizeX + dx, y})),
-      bottom: () => this.size.update(({x}) => ({x, y: sizeY + dy})),
+      right: () => {
+        this.size.update(({y}) => ({x: sizeX + dx, y}));
+      },
+      bottom: () => {
+        this.size.update(({x}) => ({x, y: sizeY + dy}));
+      },
       "top-left": () => {
         this.size.set({x: sizeX - dx, y: sizeY - dy});
         this.position.set({x: posX + dx, y: posY + dy});
@@ -284,9 +308,11 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
         this.size.set({x: sizeX - dx, y: sizeY + dy});
         this.position.set({x: posX + dx, y: posY});
       },
-      "bottom-right": () => this.size.set({x: sizeX + dx, y: sizeY + dy})
+      "bottom-right": () => {
+        this.size.set({x: sizeX + dx, y: sizeY + dy});
+      }
     };
-    handlers[handle.name]?.();
+    handlers[handle.name]();
     event.source.reset();
   }
 }

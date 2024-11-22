@@ -24,7 +24,6 @@ import {
   selector: "app-dakong-summary",
   templateUrl: "./dakong-summary.component.html",
   styleUrls: ["./dakong-summary.component.scss"],
-  standalone: true,
   imports: [CadImageComponent, FormsModule, InputComponent, MatButtonModule, MatSlideToggleModule, NgScrollbar],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -82,7 +81,9 @@ export class DakongSummaryComponent {
   });
   formEff = effect(() => {
     this.form();
-    untracked(() => this.filterTableData());
+    untracked(() => {
+      this.filterTableData();
+    });
   });
   formInputInfos = computed<InputInfo[]>(() => {
     const form = this.form();

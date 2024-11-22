@@ -15,7 +15,6 @@ import {DingdanyichangData} from "./dingdanyichang.types";
 
 @Component({
   selector: "app-dingdanyichang",
-  standalone: true,
   imports: [InputComponent, MatButtonModule, NgScrollbarModule],
   templateUrl: "./dingdanyichang.component.html",
   styleUrl: "./dingdanyichang.component.scss"

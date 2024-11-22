@@ -161,7 +161,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
 
     const lingsans = [];
     for (const name of bujuNames) {
-      const 选中布局数据 = 型号选中门扇布局[name]?.选中布局数据;
+      const 选中布局数据 = 型号选中门扇布局[name].选中布局数据;
       for (const data of 门扇布局CAD) {
         const {布局id: 布局id2} = data.info;
         const type2 = data.type2;
@@ -196,7 +196,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     Object.assign(result.data, calcZxpjResult);
     for (const mokuai of mokuais) {
       if (mokuai.calcVars?.result) {
-        mokuai.suanliaogongshi = mokuai.calcVars?.result;
+        mokuai.suanliaogongshi = mokuai.calcVars.result;
       }
       delete mokuai.calcVars;
     }

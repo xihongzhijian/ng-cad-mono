@@ -6,6 +6,7 @@
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "esModuleInterop": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
@@ -29,7 +30,6 @@
       "@env": ["src/environments/environment.ts"]
     },
     "allowJs": true,
-    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "useDefineForClassFields": false
   },

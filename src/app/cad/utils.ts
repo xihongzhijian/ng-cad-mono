@@ -551,7 +551,7 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
 };
 
 export const removeIntersections = (data: CadData) => {
-  data.entities = data.entities.filter((entity) => !entity.info?.isIntersectionEntity);
+  data.entities = data.entities.filter((entity) => !entity.info.isIntersectionEntity);
 };
 
 export const setDimensionText = (e: CadDimension, materialResult: Formulas) => {
@@ -643,7 +643,7 @@ export const getCadPaokengText = (
   return arr;
 };
 
-export const exportCadDataRemoveLengthTextCount = 200 as const;
+export const exportCadDataRemoveLengthTextCount = 200;
 export const exportCadData = (data: CadData) => {
   const exportData = data.export();
   const count = data.entities.line.length + data.entities.arc.length;
@@ -755,7 +755,7 @@ export const getLineLengthTextSize = (line: CadLineLike) => {
   return size;
 };
 
-export const isLengthTextSizeSetKey = "isLengthTextSizeSet" as const;
+export const isLengthTextSizeSetKey = "isLengthTextSizeSet";
 export const generateLineTexts2 = (data: CadData) => {
   generateLineTexts(data);
   data.entities.forEach((e) => {

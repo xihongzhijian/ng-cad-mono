@@ -5,7 +5,9 @@ export const loadImage = (src: string, crossOrigin?: boolean) =>
       img.crossOrigin = "anonymous";
     }
     img.src = src;
-    img.onload = () => resolve(img);
+    img.onload = () => {
+      resolve(img);
+    };
     img.onerror = reject;
   });
 

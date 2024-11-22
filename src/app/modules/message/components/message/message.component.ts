@@ -37,7 +37,6 @@ import {validateForm} from "./message.utils";
   selector: "app-message",
   templateUrl: "./message.component.html",
   styleUrls: ["./message.component.scss"],
-  standalone: true,
   imports: [
     A11yModule,
     FormsModule,
@@ -178,35 +177,29 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.page.set(clamp(page, this.pageMin(), this.pageMax()));
   }
-  pageEff = effect(
-    () => {
-      if (this.data.type !== "book") {
-        return;
-      }
-      const data = this.data.bookData[this.page()];
-      this.contentHTML.set(this.sanitizer.bypassSecurityTrustHtml(data.content));
-      if (data.title) {
-        this.subTitleHTML.set(this.sanitizer.bypassSecurityTrustHtml(data.title));
-      } else {
-        this.subTitleHTML.set("");
-      }
-    },
-    {allowSignalWrites: true}
-  );
+  pageEff = effect(() => {
+    if (this.data.type !== "book") {
+      return;
+    }
+    const data = this.data.bookData[this.page()];
+    this.contentHTML.set(this.sanitizer.bypassSecurityTrustHtml(data.content));
+    if (data.title) {
+      this.subTitleHTML.set(this.sanitizer.bypassSecurityTrustHtml(data.title));
+    } else {
+      this.subTitleHTML.set("");
+    }
+  });
 
   inputsBackup: InputInfo[] = [];
   formInputs = viewChildren<InputComponent>("formInput");
   form = signal<InputInfo[]>([]);
-  formEff = effect(
-    () => {
-      const data = this.data;
-      if (data.type !== "form") {
-        return;
-      }
-      this.form.set(data.form);
-    },
-    {allowSignalWrites: true}
-  );
+  formEff = effect(() => {
+    const data = this.data;
+    if (data.type !== "form") {
+      return;
+    }
+    this.form.set(data.form);
+  });
   refreshForm() {
     this.form.update((v) => [...v]);
   }

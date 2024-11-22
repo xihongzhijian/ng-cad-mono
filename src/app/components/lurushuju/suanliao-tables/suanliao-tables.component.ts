@@ -11,7 +11,6 @@ import {getSuanliaoDataSearch} from "./suanliao-tables.utils";
 
 @Component({
   selector: "app-suanliao-tables",
-  standalone: true,
   imports: [TableComponent],
   templateUrl: "./suanliao-tables.component.html",
   styleUrl: "./suanliao-tables.component.scss"

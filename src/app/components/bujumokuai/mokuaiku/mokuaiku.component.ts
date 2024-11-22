@@ -36,7 +36,6 @@ import {MokuaikuCloseEvent} from "./mokuaiku.types";
 
 @Component({
   selector: "app-mokuaiku",
-  standalone: true,
   imports: [
     DataListModule,
     FloatingDialogModule,
@@ -80,7 +79,7 @@ export class MokuaikuComponent implements OnInit {
       if (mokuaiId) {
         const mokuai = this.bjmkStatus.mokuaisManager.items().find((v) => v.id === +mokuaiId);
         if (mokuai) {
-          this.dataList()?.updateActiveNavNode(mokuai?.type);
+          this.dataList()?.updateActiveNavNode(mokuai.type);
           this.enterMokuai(mokuai);
         }
       }
@@ -203,7 +202,9 @@ export class MokuaikuComponent implements OnInit {
     }
     session.save(this._infoKey, this.getInfo());
   }
-  saveInfoEff = effect(() => this.saveInfo());
+  saveInfoEff = effect(() => {
+    this.saveInfo();
+  });
   loadInfo() {
     const info = session.load(this._infoKey);
     if (info) {
@@ -211,7 +212,9 @@ export class MokuaikuComponent implements OnInit {
     }
   }
 
-  selectedMokuaiIdsInEff = effect(() => this.selectedMokuaiIds.set(this.selectedMokuaiIdsIn()), {allowSignalWrites: true});
+  selectedMokuaiIdsInEff = effect(() => {
+    this.selectedMokuaiIds.set(this.selectedMokuaiIdsIn());
+  });
   selectedMokuaiIds = signal<number[]>([]);
   selectedMokuais = computed(() => {
     const ids = this.selectedMokuaiIds();

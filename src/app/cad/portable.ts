@@ -57,7 +57,9 @@ export const addCadInfoError = (cad: CadInfo, error: CadInfoError | string) => {
   cad.errors.push(error);
 };
 export const addCadInfoErrors = (cad: CadInfo, errors: (CadInfoError | string)[]) => {
-  errors.forEach((v) => addCadInfoError(cad, v));
+  errors.forEach((v) => {
+    addCadInfoError(cad, v);
+  });
 };
 
 /**
@@ -716,7 +718,9 @@ export class CadPortable {
             })
           );
           const {line: lines, arc: arcs} = cad.getAllEntities();
-          [...lines, ...arcs].forEach((e) => this._addLineInfoDimension(cad, e, exportId));
+          [...lines, ...arcs].forEach((e) => {
+            this._addLineInfoDimension(cad, e, exportId);
+          });
 
           let color: number;
           if (ids.includes(cad.id)) {
@@ -770,7 +774,7 @@ export class CadPortable {
       if (slgses) {
         const names: string[] = [];
         for (const slgs of slgses) {
-          let mtext = sourceCadMap.slgses[slgs.名字]?.text;
+          let mtext = sourceCadMap.slgses[slgs.名字].text;
           const obj = {名字: slgs.名字, 分类: slgs.分类, 条件: slgs.条件} as ObjectOf<string>;
           for (const optionName in slgs.选项) {
             if (isXinghao && optionName === "型号") {

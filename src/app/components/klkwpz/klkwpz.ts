@@ -65,7 +65,7 @@ export class Klkwpz {
     if (source.板材打孔范围缩减) {
       板材打孔范围缩减 = {上: "", 下: "", 左: "", 右: ""};
       for (const key of keysOf(板材打孔范围缩减)) {
-        板材打孔范围缩减[key] = getGongshi(source.板材打孔范围缩减?.[key]);
+        板材打孔范围缩减[key] = getGongshi(source.板材打孔范围缩减[key]);
       }
     }
     let 板材孔位阵列范围: KlkwpzItem["板材孔位阵列范围"] | undefined;

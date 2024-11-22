@@ -19,7 +19,6 @@ import {calc, getInputDataBoms, getNum} from "./lvxingcaiyouhua.utils";
 
 @Component({
   selector: "app-lvxingcaiyouhua",
-  standalone: true,
   imports: [InputComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule, PrintTableComponent],
   templateUrl: "./lvxingcaiyouhua.component.html",
   styleUrl: "./lvxingcaiyouhua.component.scss",
@@ -52,7 +51,9 @@ export class LvxingcaiyouhuaComponent implements OnInit {
 
   private _youhuaInfoHiddenKey = "lvxingcaiyouhuaYouhuaInfoHidden";
   youhuaInfoHidden = signal(session.load<boolean>(this._youhuaInfoHiddenKey) || false);
-  youhuaInfoHiddenEff = effect(() => session.save(this._youhuaInfoHiddenKey, this.youhuaInfoHidden()));
+  youhuaInfoHiddenEff = effect(() => {
+    session.save(this._youhuaInfoHiddenKey, this.youhuaInfoHidden());
+  });
 
   selectAllBoms() {
     const tables = this.printTableComponent()?.tables();
@@ -120,7 +121,9 @@ export class LvxingcaiyouhuaComponent implements OnInit {
 
   private _filterOutputKey = "lvxingcaiFilterForm";
   filterOutput = signal(session.load<LvxingcaiFilterForm>(this._filterOutputKey) || {型材: ""});
-  filterOutputEff = effect(() => session.save(this._filterOutputKey, this.filterOutput()));
+  filterOutputEff = effect(() => {
+    session.save(this._filterOutputKey, this.filterOutput());
+  });
   filterOutputInputInfos = computed(() => {
     const filterForm = this.filterOutput();
     const infos: InputInfo[] = [
@@ -129,19 +132,18 @@ export class LvxingcaiyouhuaComponent implements OnInit {
         label: "搜索：型材",
         value: filterForm.型材,
         clearable: true,
-        onInput: debounce((型材) => this.filterOutput.set({...filterForm, 型材}), 100)
+        onInput: debounce((型材) => {
+          this.filterOutput.set({...filterForm, 型材});
+        }, 100)
       }
     ];
     return infos;
   });
   calcResultItemsAll = signal<CalcResultItem[]>([]);
-  calcResultItemsAllEff = effect(
-    () => {
-      const reuslt = this.calcResult()?.result?.铝型材优化结果 || [];
-      this.calcResultItemsAll.set(reuslt.map((v) => ({...v, showDetails: true})));
-    },
-    {allowSignalWrites: true}
-  );
+  calcResultItemsAllEff = effect(() => {
+    const reuslt = this.calcResult()?.result.铝型材优化结果 || [];
+    this.calcResultItemsAll.set(reuslt.map((v) => ({...v, showDetails: true})));
+  });
   calcResultItems = computed(() => {
     const form = this.filterOutput();
     const itemsAll = this.calcResultItemsAll();
@@ -179,7 +181,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
   async setOptimizeData() {
     this.calc();
     const code = this.code();
-    const optimizeData = this.calcResult()?.result?.铝型材优化结果;
+    const optimizeData = this.calcResult()?.result.铝型材优化结果;
     if (!code || !optimizeData) {
       return;
     }
@@ -189,7 +191,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
       return;
     }
     const bushangshebeidexingcaibom = inputData.不上设备的型材BOM || [];
-    const quanbuliaodeyouhuashuju = this.calcResult2()?.result?.铝型材优化结果;
+    const quanbuliaodeyouhuashuju = this.calcResult2()?.result.铝型材优化结果;
     const data = await this.http.getData<{优化工单: TableInfoData}>("order/lvxingcai/saveOptimizeResult", {
       code,
       optimizeData,

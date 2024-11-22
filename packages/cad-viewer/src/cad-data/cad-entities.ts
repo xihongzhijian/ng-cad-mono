@@ -139,7 +139,9 @@ export class CadEntities {
   merge(entities: CadEntities) {
     entityTypesKey.forEach((key) => {
       this[key] = mergeArray<any>(this[key] as any, entities[key] as any, "id");
-      this[key].forEach((e) => this._setEntityRootToThis(e));
+      this[key].forEach((e) => {
+        this._setEntityRootToThis(e);
+      });
     });
     return this;
   }
@@ -147,7 +149,9 @@ export class CadEntities {
   separate(entities: CadEntities) {
     entityTypesKey.forEach((key) => {
       this[key] = separateArray<any>(this[key] as any, entities[key] as any, "id");
-      entities[key].forEach((e) => this._setEntityRootToNull(e));
+      entities[key].forEach((e) => {
+        this._setEntityRootToNull(e);
+      });
     });
     return this;
   }

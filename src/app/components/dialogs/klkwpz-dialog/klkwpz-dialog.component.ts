@@ -9,7 +9,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-klkwpz-dialog",
   templateUrl: "./klkwpz-dialog.component.html",
   styleUrls: ["./klkwpz-dialog.component.scss"],
-  standalone: true,
   imports: [KlkwpzComponent, MatButtonModule]
 })
 export class KlkwpzDialogComponent {

@@ -18,7 +18,6 @@ export interface BbzhmkgzComponentData {
   selector: "app-bbzhmkgz",
   templateUrl: "./bbzhmkgz.component.html",
   styleUrls: ["./bbzhmkgz.component.scss"],
-  standalone: true,
   imports: [forwardRef(() => InputComponent), KeyValuePipe, MatDialogActions, MatButtonModule]
 })
 export class BbzhmkgzComponent {

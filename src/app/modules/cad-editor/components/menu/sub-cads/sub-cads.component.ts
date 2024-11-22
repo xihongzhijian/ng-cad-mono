@@ -34,7 +34,6 @@ type ContextMenuCadField = "main" | "component";
   selector: "app-sub-cads",
   templateUrl: "./sub-cads.component.html",
   styleUrls: ["./sub-cads.component.scss"],
-  standalone: true,
   imports: [
     ContextMenuModule,
     forwardRef(() => CadImageComponent),
@@ -91,8 +90,12 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
 
   ngOnInit() {
     this.updateData();
-    this.subscribe(this.status.openCad$, () => this.updateData());
-    this.subscribe(this.status.components.selected$, () => this.setSelectedComponents());
+    this.subscribe(this.status.openCad$, () => {
+      this.updateData();
+    });
+    this.subscribe(this.status.components.selected$, () => {
+      this.setSelectedComponents();
+    });
 
     const setConfig = () => {
       const {subCadsMultiSelect} = this.config.getConfig();
@@ -150,7 +153,9 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     const translate = this.lastPointer.sub(pointer).divide(cad.zoom());
     translate.x = -translate.x;
     if (components.length) {
-      components.forEach((v) => cad.data.moveComponent(v, translate, false));
+      components.forEach((v) => {
+        cad.data.moveComponent(v, translate, false);
+      });
       this.entitiesNeedRender = true;
     } else if (this.entitiesToMove && this.entitiesNotToMove) {
       cad.moveEntities(this.entitiesToMove, this.entitiesNotToMove, translate.x, translate.y);

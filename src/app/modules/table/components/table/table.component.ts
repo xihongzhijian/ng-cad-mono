@@ -71,7 +71,6 @@ import {getInputInfosFromTableColumns} from "./table.utils";
   selector: "app-table",
   templateUrl: "./table.component.html",
   styleUrls: ["./table.component.scss"],
-  standalone: true,
   imports: [
     forwardRef(() => CadImageComponent),
     forwardRef(() => InputComponent),
@@ -170,7 +169,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     return Object.keys(this.toolbarButtons).length > 0 || this.info.filterable;
   }
   get haveData() {
-    return this.info.data?.length > 0;
+    return this.info.data.length > 0;
   }
 
   constructor(
@@ -763,7 +762,9 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   getCellInputInfo(event: CellEvent<T>): InputInfo<T> {
     let info: InputInfo = {type: "string", label: ""};
-    const onChange = (value: any) => this.cellChange.emit({...event, value});
+    const onChange = (value: any) => {
+      this.cellChange.emit({...event, value});
+    };
     const column = event.column;
     switch (column.type) {
       case "string":

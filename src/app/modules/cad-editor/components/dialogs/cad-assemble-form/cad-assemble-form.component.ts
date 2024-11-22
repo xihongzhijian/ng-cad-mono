@@ -9,7 +9,6 @@ import {InputComponent} from "../../../../input/components/input.component";
   selector: "app-cad-assemble-form",
   templateUrl: "./cad-assemble-form.component.html",
   styleUrls: ["./cad-assemble-form.component.scss"],
-  standalone: true,
   imports: [forwardRef(() => InputComponent), MatButtonModule]
 })
 export class CadAssembleFormComponent {
@@ -21,8 +20,8 @@ export class CadAssembleFormComponent {
     public dialogRef: MatDialogRef<CadAssembleFormComponent, CadAssembleFormOutput>,
     @Inject(MAT_DIALOG_DATA) public data: CadAssembleFormInput
   ) {
-    this.x = data?.x || 0;
-    this.y = data?.y || 0;
+    this.x = data.x || 0;
+    this.y = data.y || 0;
     this.inputInfos = [
       {type: "number", label: "x", model: {key: "x", data: this}},
       {type: "number", label: "y", model: {key: "y", data: this}}

@@ -8,7 +8,6 @@ import {FloatingDialogComponent} from "../floating-dialog/floating-dialog.compon
 
 @Component({
   selector: "app-floating-dialog-trays",
-  standalone: true,
   imports: [ContextMenuModule, MatButtonModule, MatMenuModule],
   templateUrl: "./floating-dialog-trays.component.html",
   styleUrl: "./floating-dialog-trays.component.scss",
@@ -23,7 +22,9 @@ export class FloatingDialogTraysComponent implements OnDestroy {
   traysEl = viewChild.required<ElementRef<HTMLElement>>("traysEl");
 
   constructor() {
-    effect(() => this.manager.limits.update(this.limits), {allowSignalWrites: true});
+    effect(() => {
+      this.manager.limits.update(this.limits);
+    });
   }
 
   ngOnDestroy() {

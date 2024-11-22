@@ -18,7 +18,6 @@ import {Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
   selector: "app-klkwpz",
   templateUrl: "./klkwpz.component.html",
   styleUrls: ["./klkwpz.component.scss"],
-  standalone: true,
   imports: [NgScrollbar, MatCardModule, MatButtonModule, forwardRef(() => InputComponent)]
 })
 export class KlkwpzComponent implements AfterViewInit {
@@ -53,7 +52,7 @@ export class KlkwpzComponent implements AfterViewInit {
       const result = await this.http.getCad({collection: "cad", id});
       if (result.cads.length > 0) {
         this.cadData = result.cads[0];
-        const mubanId = this.cadData.zhankai?.[0].kailiaomuban;
+        const mubanId = this.cadData.zhankai[0].kailiaomuban;
         if (mubanId) {
           const result2 = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId});
           if (result2.cads.length > 0) {
@@ -120,7 +119,9 @@ export class KlkwpzComponent implements AfterViewInit {
           options: ["打单个孔", "按展开高打阵列孔", "按展开高打阵列孔（缩短范围）", "按指定宽高打阵列孔"],
           model: {data: typesData, key: "type3"},
           showEmpty: true,
-          onChange: () => this._updateItemInputs3(result, typesData)
+          onChange: () => {
+            this._updateItemInputs3(result, typesData);
+          }
         },
         {
           type: "select",
@@ -186,7 +187,9 @@ export class KlkwpzComponent implements AfterViewInit {
       options: ["取开料模板横线竖线交点", "在算料CAD的打孔面上"],
       model: {data: typesData, key: "type2"},
       showEmpty: true,
-      onChange: () => this._updateItemInputs2(data, typesData)
+      onChange: () => {
+        this._updateItemInputs2(data, typesData);
+      }
     };
     const type2 = typesData.type2;
     if (type2 === "取开料模板横线竖线交点") {

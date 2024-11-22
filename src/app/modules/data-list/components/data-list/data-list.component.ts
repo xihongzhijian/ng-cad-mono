@@ -1,4 +1,3 @@
-import {NestedTreeControl} from "@angular/cdk/tree";
 import {NgTemplateOutlet} from "@angular/common";
 import {
   ChangeDetectionStrategy,
@@ -20,14 +19,13 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
-import {MatTreeModule, MatTreeNestedDataSource} from "@angular/material/tree";
+import {MatTree, MatTreeModule} from "@angular/material/tree";
 import {session} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {environment} from "@env";
 import {downloadByString, getElementVisiblePercentage, ObjectOf, queryStringList, selectFiles} from "@lucilor/utils";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -50,9 +48,7 @@ import {
 
 @Component({
   selector: "app-data-list",
-  standalone: true,
   imports: [
-    ImageComponent,
     InputComponent,
     MatButtonModule,
     MatDividerModule,
@@ -95,8 +91,8 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
 
   private _navCollection: CadCollection = "ngcadNavs";
   private _navDataId = "";
-  navDataSource = new MatTreeNestedDataSource<DataListNavNode>();
-  navTreeControl = new NestedTreeControl<DataListNavNode>(({children}) => children);
+  navDataSource = signal<DataListNavNode[]>([]);
+  childrenAccessor = ({children}: DataListNavNode) => children || [];
   navNodehasChild = (_: number, node: DataListNavNode) => node.hasChild();
   navNodeTrackBy = (_: number, node: DataListNavNode) => node.id;
   navNodesHideEmpty = computed(() => !!this.itemQuery());
@@ -112,7 +108,8 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }, 200),
     style: {width: "100px"}
   }));
-  navNodesTreeEl = viewChild<string, ElementRef<HTMLElement>>("navNodesTree", {read: ElementRef});
+  navNodesTree = viewChild.required<MatTree<DataListNavNode, DataListNavNode>>("navNodesTree");
+  navNodesTreeEl = viewChild("navNodesTree", {read: ElementRef});
   navNodesScrollbar = viewChild<NgScrollbar>("navNodesScrollbar");
 
   private _navEditModeKey = "dataListNavEditMode";
@@ -136,10 +133,10 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
     if (data) {
       this._navDataId = data._id;
-      this.navDataSource.data = getDataListNavNodeList(data.data || []);
+      this.navDataSource.set(getDataListNavNodeList(data.data || []));
     } else {
       this._navDataId = "";
-      this.navDataSource.data = [];
+      this.navDataSource.set([]);
     }
   }
   async setNavNodes() {
@@ -147,11 +144,10 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       this.message.error("未找到数据");
       return;
     }
-    const data = this.navDataSource.data;
-    this.navDataSource.data = [];
+    const data = this.navDataSource().slice();
     sortDataListNavNodeList(data);
     updateDataListNavNodeList(data, this.itemsAll());
-    this.navDataSource.data = data;
+    this.navDataSource.set(data);
     const activeNavNode = this.activeNavNode();
     if (activeNavNode) {
       this.activeNavNode.set(null);
@@ -161,7 +157,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   }
   filterNavNodes() {
     const needle = this.navQuery();
-    const nodes = this.navDataSource.data.slice();
+    const nodes = this.navDataSource().slice();
     const filter = (list: DataListNavNode[]) => {
       for (const node of list) {
         if (node.children && node.children.length > 0) {
@@ -173,14 +169,13 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       }
     };
     filter(nodes);
-    this.navDataSource.data = [];
-    this.navDataSource.data = nodes;
+    this.navDataSource.set(nodes);
   }
   updateActiveNavNode(type = this.activeNavNode()?.name) {
     if (!type) {
       return;
     }
-    const node = findActiveDataListNavNode(this.navDataSource.data, type);
+    const node = findActiveDataListNavNode(this.navDataSource(), type);
     if (node) {
       this.activeNavNode.set(node);
     }
@@ -194,7 +189,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       data = new DataListNavNode({id: v4(), name: "", children: []});
     }
     const names: string[] = [];
-    const nodes = this.navDataSource.data;
+    const nodes = this.navDataSource();
     for (const node of getDataListNavNodesFlat(nodes)) {
       if (id && node.id === id) {
         continue;
@@ -284,7 +279,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
     await this.setNavNodes();
     setTimeout(() => {
-      this.navTreeControl.expand(node);
+      this.navNodesTree().expand(node);
     }, 0);
   }
   async editNavNode(node: DataListNavNode) {
@@ -325,12 +320,12 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       }
       return false;
     };
-    remove(this.navDataSource.data);
+    remove(this.navDataSource());
     await this.setNavNodes();
   }
   clickNavNode(node: DataListNavNode) {
     if (node.hasChild()) {
-      this.navTreeControl.toggle(node);
+      this.navNodesTree().toggle(node);
     } else {
       this.activeNavNode.set(node);
     }
@@ -352,17 +347,14 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   });
 
   itemsAll = signal<T[]>([]);
-  itemsAllEff = effect(
-    () => {
-      const itemsAll = sortDataListItems(this.itemsAllIn());
-      this.itemsAll.set(itemsAll);
-      untracked(() => this._onItemsAllChange(itemsAll));
-    },
-    {allowSignalWrites: true}
-  );
+  itemsAllEff = effect(() => {
+    const itemsAll = sortDataListItems(this.itemsAllIn());
+    this.itemsAll.set(itemsAll);
+    untracked(() => this._onItemsAllChange(itemsAll));
+  });
   private async _onItemsAllChange(itemsAll: T[]) {
     await this.untilInited();
-    updateDataListNavNodeList(this.navDataSource.data, itemsAll);
+    updateDataListNavNodeList(this.navDataSource(), itemsAll);
     this.filterNavNodes();
     this.filterItems();
   }
@@ -393,9 +385,9 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       return;
     }
     const treeEl = this.navNodesTreeEl()?.nativeElement;
-    const path = getDataListNavNodePath(this.navDataSource.data, activeNode);
+    const path = getDataListNavNodePath(this.navDataSource(), activeNode);
     for (const [i, node] of path.entries()) {
-      this.navTreeControl.expand(node);
+      this.navNodesTree().expand(node);
       if (i === path.length - 1) {
         const nodeEl = treeEl?.querySelector(`[data-id="${node.id}"]`);
         if (nodeEl instanceof HTMLElement && getElementVisiblePercentage(nodeEl) < 1) {
@@ -452,11 +444,11 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
         }
       }
     };
-    const nodes = this.navDataSource.data.slice();
+    const nodes = this.navDataSource().slice();
     for (const node of nodes) {
       setCount(node);
     }
-    this.navDataSource.data = nodes;
+    this.navDataSource.set(nodes);
     if (currNode && !currNode.hidden) {
       this.activeNavNode.set(currNode);
     } else if (firstNonEmptyNode) {
@@ -479,11 +471,11 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       return;
     }
     const dataList = getDataListNavNodeList(nodes);
-    this.navDataSource.data = dataList;
+    this.navDataSource.set(dataList);
     this.setNavNodes();
   }
   async exportNavNodes() {
-    const nodes = this.navDataSource.data.map((node) => node.export());
+    const nodes = this.navDataSource().map((node) => node.export());
     downloadByString(JSON.stringify(nodes), {filename: `${this.navDataTitle()}.json`});
   }
 }

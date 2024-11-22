@@ -436,7 +436,9 @@ export class AppStatusService {
       data.entities.line.forEach((e) => {
         e.children.mtext = e.children.mtext.filter((mt) => !mt.info.isLengthText && !mt.info.isGongshiText);
       });
-      data.components.data.forEach((v) => generateLineTexts2(v));
+      data.components.data.forEach((v) => {
+        generateLineTexts2(v);
+      });
     } else {
       generateLineTexts2(data);
     }
@@ -558,7 +560,7 @@ export class AppStatusService {
     const params = {模块: mokuaiName, id};
     this.openInNewTab(["index"], {queryParams: params});
   }
-  getUrl(commands: any[], navigationExtras?: UrlCreationOptions | undefined) {
+  getUrl(commands: any[], navigationExtras?: UrlCreationOptions) {
     if (!navigationExtras) {
       navigationExtras = {};
     }
@@ -570,7 +572,7 @@ export class AppStatusService {
       return url;
     }
   }
-  openInNewTab(commands: any[], navigationExtras?: UrlCreationOptions | undefined) {
+  openInNewTab(commands: any[], navigationExtras?: UrlCreationOptions) {
     open(this.getUrl(commands, navigationExtras));
   }
 

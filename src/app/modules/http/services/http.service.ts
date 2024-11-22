@@ -167,7 +167,9 @@ export class HttpService {
             formData.append(key, data[key]);
           }
         }
-        files.forEach((v) => formData.append(v.key, v.file));
+        files.forEach((v) => {
+          formData.append(v.key, v.file);
+        });
         if (token) {
           formData.append("token", token);
         }

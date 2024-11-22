@@ -13,7 +13,6 @@ import {SuanliaodanFlipInput, SuanliaodanFlipItem, SuanliaodanFlipOutput} from "
 
 @Component({
   selector: "app-suanliaodan-flip",
-  standalone: true,
   imports: [forwardRef(() => InputComponent), MatButtonModule, MatIconModule, NgScrollbarModule],
   templateUrl: "./suanliaodan-flip.component.html",
   styleUrl: "./suanliaodan-flip.component.scss",
@@ -27,7 +26,7 @@ export class SuanliaodanFlipComponent extends Utils() {
     @Inject(MAT_DIALOG_DATA) public data: SuanliaodanFlipInput
   ) {
     super();
-    let items = data?.items;
+    let items = data.items;
     if (!items) {
       items = [];
     }

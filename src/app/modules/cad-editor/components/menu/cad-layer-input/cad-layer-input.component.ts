@@ -13,7 +13,6 @@ import {BehaviorSubject} from "rxjs";
   selector: "app-cad-layer-input[entities]",
   templateUrl: "./cad-layer-input.component.html",
   styleUrls: ["./cad-layer-input.component.scss"],
-  standalone: true,
   imports: [MatFormFieldModule, MatInputModule, MatAutocompleteModule, MatOptionModule, AsyncPipe]
 })
 export class CadLayerInputComponent extends Subscribed() {

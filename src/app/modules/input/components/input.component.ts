@@ -64,7 +64,6 @@ import {getValue, parseObjectString} from "./input.utils";
   selector: "app-input",
   templateUrl: "./input.component.html",
   styleUrls: ["./input.component.scss"],
-  standalone: true,
   imports: [
     AnchorSelectorComponent,
     AsyncPipe,
@@ -316,7 +315,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   async ngAfterViewInit() {
     if (this.info.autoFocus) {
       await timeout(100);
-      const el = this.elRef?.nativeElement.querySelector("input, textarea, mat-select");
+      const el = this.elRef.nativeElement.querySelector("input, textarea, mat-select");
       if (el instanceof HTMLElement) {
         el.focus();
       }
@@ -826,7 +825,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     const {type, suffixIcons} = this.info;
     const defaultSuffixIcon = suffixIcons?.find((v) => v.isDefault);
     if (defaultSuffixIcon) {
-      let result = defaultSuffixIcon?.onClick?.();
+      let result = defaultSuffixIcon.onClick?.();
       if (result instanceof Promise) {
         result = await result;
       }

@@ -52,7 +52,6 @@ import {
 
 @Component({
   selector: "app-xhmrmsbj-sbjb",
-  standalone: true,
   imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, TableComponent],
   templateUrl: "./xhmrmsbj-sbjb.component.html",
   styleUrl: "./xhmrmsbj-sbjb.component.scss",
@@ -288,7 +287,7 @@ export class XhmrmsbjSbjbComponent {
 
   options = signal<OptionsAll2>({});
 
-  fetchDataEff = effect(() => this.fetchData(), {allowSignalWrites: true});
+  fetchDataEff = effect(() => this.fetchData());
   async fetchData(peizhi?: XhmrmsbjSbjbResponseData) {
     const xinghao = this.xinghaoName();
     if (!xinghao) {

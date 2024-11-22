@@ -33,7 +33,6 @@ const imgLoading = "assets/images/loading.gif";
       transition(":leave", [style({transform: "scale(1)", opacity: 1}), animate("0.3s", style({transform: "scale(0)", opacity: 0}))])
     ])
   ],
-  standalone: true,
   imports: [MatButtonModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -81,19 +80,16 @@ export class ImageComponent {
         }
       }
     });
-    effect(
-      () => {
-        if (this.currSrc()) {
-          this.loading.set(true);
-          this.error.set(false);
-        } else {
-          this.loading.set(false);
-          this.error.set(false);
-        }
-        this.cd.markForCheck();
-      },
-      {allowSignalWrites: true}
-    );
+    effect(() => {
+      if (this.currSrc()) {
+        this.loading.set(true);
+        this.error.set(false);
+      } else {
+        this.loading.set(false);
+        this.error.set(false);
+      }
+      this.cd.markForCheck();
+    });
   }
 
   currSrc = computed(() => {

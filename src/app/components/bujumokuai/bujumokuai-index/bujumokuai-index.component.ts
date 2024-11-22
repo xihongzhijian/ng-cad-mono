@@ -9,7 +9,6 @@ import {bjmkPageNames, BjmkPages} from "./bujumokuai-index.types";
 
 @Component({
   selector: "app-bujumokuai-index",
-  standalone: true,
   imports: [BujuComponent, MatButtonModule, MatTabsModule, MokuaiCadsComponent, MokuaikuComponent],
   templateUrl: "./bujumokuai-index.component.html",
   styleUrl: "./bujumokuai-index.component.scss",
@@ -37,8 +36,10 @@ export class BujumokuaiIndexComponent implements OnInit {
   pageIndexEff = effect(() => {
     const page = this.page();
     if (page) {
-      const path = this.route.snapshot.url[0].path;
-      this.router.navigate([path], {queryParams: {page: page.name}, queryParamsHandling: "merge"});
+      const path = this.route.snapshot.url[0]?.path;
+      if (path) {
+        this.router.navigate([path], {queryParams: {page: page.name}, queryParamsHandling: "merge"});
+      }
     }
   });
 }

@@ -7,7 +7,6 @@ import {SuanliaogongshiDialogInput, SuanliaogongshiDialogOutput} from "./suanlia
 
 @Component({
   selector: "app-suanliaogongshi-dialog",
-  standalone: true,
   imports: [forwardRef(() => SuanliaogongshiComponent), MatButtonModule],
   templateUrl: "./suanliaogongshi-dialog.component.html",
   styleUrl: "./suanliaogongshi-dialog.component.scss"

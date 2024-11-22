@@ -35,7 +35,6 @@ import {FormulasChangeEvent, FormulasValidatorFn} from "./formulas-editor.types"
   selector: "app-formulas-editor",
   templateUrl: "./formulas-editor.component.html",
   styleUrls: ["./formulas-editor.component.scss"],
-  standalone: true,
   imports: [
     CdkDrag,
     CdkDragHandle,
@@ -71,12 +70,9 @@ export class FormulasEditorComponent {
   }
 
   extraInputInfos = signal<InputInfo[]>([]);
-  extraInputInfosEff = effect(
-    () => {
-      this.extraInputInfos.set(this.extraInputInfosIn());
-    },
-    {allowSignalWrites: true}
-  );
+  extraInputInfosEff = effect(() => {
+    this.extraInputInfos.set(this.extraInputInfosIn());
+  });
   refreshExtraInputInfos() {
     this.extraInputInfos.update((v) => [...v]);
   }
@@ -93,17 +89,14 @@ export class FormulasEditorComponent {
     ]);
   });
   formulasText = signal("");
-  formulasTextEff = effect(
-    () => {
-      const text = this.formulasTextIn();
-      if (this.compact() && !text) {
-        this.formulasText.set(this.stringifyFormulaList());
-      } else {
-        this.formulasText.set(text);
-      }
-    },
-    {allowSignalWrites: true}
-  );
+  formulasTextEff = effect(() => {
+    const text = this.formulasTextIn();
+    if (this.compact() && !text) {
+      this.formulasText.set(this.stringifyFormulaList());
+    } else {
+      this.formulasText.set(text);
+    }
+  });
   formulasInputInfo = computed(() => {
     const compact = this.compact();
     const info: InputInfo = {

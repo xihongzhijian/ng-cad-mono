@@ -20,7 +20,6 @@ import {CollecionQuery, LrsjQuery, RefreshCadImgsQueryConfig, RefreshCadImgsRefr
 
 @Component({
   selector: "app-refresh-cad-imgs",
-  standalone: true,
   imports: [FormsModule, InputComponent, MatButtonModule, MatDividerModule, ProgressBarComponent],
   templateUrl: "./refresh-cad-imgs.component.html",
   styleUrl: "./refresh-cad-imgs.component.scss",
@@ -77,8 +76,24 @@ export class RefreshCadImgsComponent implements OnInit {
     const options = this.collectionOptions();
     const config = this.queryConfig;
     const infos: InputInfo<RefreshCadImgsQueryConfig>[] = [
-      {type: "select", label: "CAD集合", options, multiple: true, value: config.collections(), onChange: (v) => config.collections.set(v)},
-      {type: "boolean", label: "是否查询录入数据CAD", value: config.queryLrsj(), onChange: (v) => config.queryLrsj.set(v)}
+      {
+        type: "select",
+        label: "CAD集合",
+        options,
+        multiple: true,
+        value: config.collections(),
+        onChange: (v) => {
+          config.collections.set(v);
+        }
+      },
+      {
+        type: "boolean",
+        label: "是否查询录入数据CAD",
+        value: config.queryLrsj(),
+        onChange: (v) => {
+          config.queryLrsj.set(v);
+        }
+      }
     ];
     return infos;
   });
@@ -89,7 +104,15 @@ export class RefreshCadImgsComponent implements OnInit {
     }
     const config = this.refreshConfig;
     const infos: InputInfo<RefreshCadImgsRefreshConfig>[] = [
-      {type: "number", label: "每次刷新几个", hint: "数量越大出错概率越大", value: config.step(), onChange: (v) => config.step.set(v)}
+      {
+        type: "number",
+        label: "每次刷新几个",
+        hint: "数量越大出错概率越大",
+        value: config.step(),
+        onChange: (v) => {
+          config.step.set(v);
+        }
+      }
     ];
     return infos;
   });

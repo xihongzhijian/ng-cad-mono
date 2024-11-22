@@ -14,7 +14,6 @@ import {MessageService} from "@modules/message/services/message.service";
   selector: "app-pjmk",
   templateUrl: "./pjmk.component.html",
   styleUrls: ["./pjmk.component.scss"],
-  standalone: true,
   imports: [MatButtonModule]
 })
 export class PjmkComponent implements OnInit {
@@ -56,7 +55,7 @@ export class PjmkComponent implements OnInit {
       filter: {where: {vid: id}},
       fields: ["mingzi", "peijianmokuai"]
     });
-    if (records?.length > 0) {
+    if (records.length > 0) {
       this.name = records[0].mingzi || "";
       try {
         this.data = importZixuanpeijian(JSON.parse(records[0].peijianmokuai));

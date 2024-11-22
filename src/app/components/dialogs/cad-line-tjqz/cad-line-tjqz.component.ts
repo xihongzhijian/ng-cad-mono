@@ -19,7 +19,6 @@ type RawDataRight = RawDataLeft["data"][0];
   selector: "app-cad-line-tjqz",
   templateUrl: "./cad-line-tjqz.component.html",
   styleUrls: ["./cad-line-tjqz.component.scss"],
-  standalone: true,
   imports: [MatButtonModule, SpinnerComponent, forwardRef(() => TableComponent)],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

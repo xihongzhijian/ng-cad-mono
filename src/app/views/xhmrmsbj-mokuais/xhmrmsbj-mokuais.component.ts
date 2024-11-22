@@ -25,7 +25,6 @@ import {FormulasComponent} from "../../components/formulas/formulas.component";
   selector: "app-xhmrmsbj-mokuais",
   templateUrl: "./xhmrmsbj-mokuais.component.html",
   styleUrls: ["./xhmrmsbj-mokuais.component.scss"],
-  standalone: true,
   imports: [NgScrollbar, FormulasComponent, MatDividerModule, MatDialogActions, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -202,7 +201,7 @@ export const getFormulaInfos = (
     if (valueLast && input) {
       const shuru = input.shurus.find((v) => v.名字 === key && v.下单用途 === "输入");
       if (shuru) {
-        const range = shuru.取值范围?.split("-").map((v) => parseFloat(v)) || [];
+        const range = shuru.取值范围.split("-").map((v) => parseFloat(v)) || [];
         const getNum = (n: any, defaultVal: number) => {
           if (typeof n === "number" && !isNaN(n)) {
             return n;
@@ -226,7 +225,9 @@ export const getFormulaInfos = (
             }
             return null;
           },
-          onChange: (val) => input.onChange(val)
+          onChange: (val) => {
+            input.onChange(val);
+          }
         };
       }
     }

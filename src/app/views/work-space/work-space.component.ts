@@ -5,7 +5,6 @@ import {setGlobal} from "@app/app.common";
 import {environment} from "@env";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {convertOptions} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
@@ -17,8 +16,7 @@ import {WorkSpaceManager} from "./work-space.utils";
 
 @Component({
   selector: "app-work-space",
-  standalone: true,
-  imports: [InputComponent, MatButtonModule, NgScrollbarModule],
+  imports: [MatButtonModule, NgScrollbarModule],
   templateUrl: "./work-space.component.html",
   styleUrl: "./work-space.component.scss"
 })

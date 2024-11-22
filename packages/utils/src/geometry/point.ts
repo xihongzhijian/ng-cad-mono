@@ -23,7 +23,7 @@ export class Point {
     } else if (typeof x === "number") {
       this.x = x;
       this.y = typeof y === "number" ? y : x;
-    } else if (typeof x?.x === "number" && typeof x?.y === "number") {
+    } else if (typeof x.x === "number" && typeof x.y === "number") {
       this.x = x.x;
       this.y = x.y;
     } else {

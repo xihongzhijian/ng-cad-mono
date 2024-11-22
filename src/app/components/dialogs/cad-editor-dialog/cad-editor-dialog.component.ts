@@ -12,7 +12,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-cad-editor-dialog",
   templateUrl: "./cad-editor-dialog.component.html",
   styleUrls: ["./cad-editor-dialog.component.scss"],
-  standalone: true,
   imports: [MatButtonModule, forwardRef(() => CadEditorComponent)],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

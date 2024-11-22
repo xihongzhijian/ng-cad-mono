@@ -33,7 +33,6 @@ pageComponentInfos; // ? 虽然没用，但删除了会报错
 
 @Component({
   selector: "app-page-component-config2",
-  standalone: true,
   imports: [
     CdkDrag,
     CdkDragHandle,

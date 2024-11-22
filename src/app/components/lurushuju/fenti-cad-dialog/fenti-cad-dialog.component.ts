@@ -12,7 +12,6 @@ import {FentiCadDialogInput, FentiCadDialogOutput, FentiCadItemInfo} from "./fen
 
 @Component({
   selector: "app-fenti-cad-dialog",
-  standalone: true,
   imports: [forwardRef(() => CadItemComponent), KeyValuePipe, MatButtonModule, NgScrollbarModule],
   templateUrl: "./fenti-cad-dialog.component.html",
   styleUrl: "./fenti-cad-dialog.component.scss"

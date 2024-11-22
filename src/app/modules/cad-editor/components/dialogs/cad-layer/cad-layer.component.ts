@@ -16,7 +16,6 @@ import {NgScrollbar} from "ngx-scrollbar";
   selector: "app-cad-layer",
   templateUrl: "./cad-layer.component.html",
   styleUrls: ["./cad-layer.component.scss"],
-  standalone: true,
   imports: [forwardRef(() => InputComponent), NgScrollbar, MatButtonModule, MatIconModule]
 })
 export class CadLayerComponent {
@@ -40,7 +39,7 @@ export class CadLayerComponent {
     @Inject(MAT_DIALOG_DATA) public data: CadLayerInput,
     private message: MessageService
   ) {
-    const layers = data?.layers || [];
+    const layers = data.layers || [];
     this.layers = layers.map((v) => v.clone());
     this.updateForms();
   }

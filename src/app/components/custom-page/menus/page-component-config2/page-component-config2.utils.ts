@@ -163,7 +163,7 @@ export const getImageInputs = (
   if (!components0.every((v) => v instanceof PageComponentImage)) {
     return [];
   }
-  const components = components0 as PageComponentImage[]; // fixme;
+  const components = components0; // fixme;
   return [
     {
       name: "",
@@ -235,7 +235,7 @@ export const getFormInputs = (components0: PageComponentTypeAny[], onChange: () 
   if (!components0.every((v) => v instanceof PageComponentForm)) {
     return [];
   }
-  const components = components0 as PageComponentForm[]; // fixme;
+  const components = components0; // fixme;
   return [
     {
       name: "",
@@ -359,7 +359,7 @@ export const getCommonInputs = (
     }),
     style: getInputStyle(false)
   };
-  const borderInputs: InputInfo<any>[] = [
+  const borderInputs: InputInfo[] = [
     borderStyleInput,
     {
       type: "color",

@@ -25,7 +25,6 @@ import {XinghaoOverviewData, XinghaoOverviewTableData} from "./xinghao-overview.
   selector: "app-xinghao-overview",
   templateUrl: "./xinghao-overview.component.html",
   styleUrls: ["./xinghao-overview.component.scss"],
-  standalone: true,
   imports: [
     MatButtonModule,
     CdkDropListGroup,

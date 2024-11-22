@@ -200,7 +200,7 @@ const drawDesignPics = async (
     flip: "",
     ...params
   };
-  const flip2 = flip?.toLocaleLowerCase() || "";
+  const flip2 = flip.toLocaleLowerCase() || "";
 
   const {width, height, top, bottom, left, right} = rect;
   if (!findLocator) {
@@ -412,7 +412,7 @@ export const configCadDataForPrint = async (
       e.fontStyle.weight = "bolder";
       offsetFontSize(8);
     } else {
-      if (config.fontStyle?.family === "宋体") {
+      if (config.fontStyle.family === "宋体") {
         offsetFontSize(6);
         offsetInsert(0, -5);
       } else {
@@ -610,7 +610,7 @@ const getUnfoldCadViewers = async (
   const infoTextFontStyle: FontStyle = {size: 12} as const;
   const boxPadding = [5, 5, 5, 5] as const;
   const imgPadding = [5, 5, 5, 5] as const;
-  const textMargin = 5 as const;
+  const textMargin = 5;
 
   const code = params.codes?.[i] || "";
   const titleText = new CadMtext({text: "刨坑生产单", anchor: [0, 0], fontStyle: titleFontStyle});

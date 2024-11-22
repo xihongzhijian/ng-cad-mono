@@ -10,7 +10,6 @@ import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner
   selector: "app-kailiaocanshu",
   templateUrl: "./kailiaocanshu.component.html",
   styleUrls: ["./kailiaocanshu.component.scss"],
-  standalone: true,
   imports: [MatButtonModule, SpinnerComponent, KlcsComponent]
 })
 export class KailiaocanshuComponent implements OnInit {

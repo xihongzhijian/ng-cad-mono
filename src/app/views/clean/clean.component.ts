@@ -12,7 +12,6 @@ import {InputComponent} from "../../modules/input/components/input.component";
   selector: "app-clean",
   templateUrl: "./clean.component.html",
   styleUrls: ["./clean.component.scss"],
-  standalone: true,
   imports: [InputComponent, MatButtonModule, NgScrollbar]
 })
 export class CleanComponent implements OnInit {

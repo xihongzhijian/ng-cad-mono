@@ -28,7 +28,6 @@ import {LvxingcaiyouhuaInfo, TableData, TableInfoData, TableInfoDataTable, Xikon
 
 @Component({
   selector: "app-print-table",
-  standalone: true,
   imports: [ImageComponent, MatButtonModule, MatDividerModule, TableComponent],
   templateUrl: "./print-table.component.html",
   styleUrl: "./print-table.component.scss",

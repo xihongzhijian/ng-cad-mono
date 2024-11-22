@@ -9,7 +9,6 @@ import {Properties} from "csstype";
   selector: "app-cad-points",
   templateUrl: "./cad-points.component.html",
   styleUrls: ["./cad-points.component.scss"],
-  standalone: true,
   imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -24,7 +23,9 @@ export class CadPointsComponent extends Subscribed() implements OnInit {
   }
 
   ngOnInit() {
-    this.subscribe(this.status.cadPoints$, (points) => this.points.set(points));
+    this.subscribe(this.status.cadPoints$, (points) => {
+      this.points.set(points);
+    });
   }
 
   onPointClick(index: number) {

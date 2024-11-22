@@ -29,7 +29,6 @@ export interface LoginResponse {
   selector: "app-login-form",
   templateUrl: "./login-form.component.html",
   styleUrls: ["./login-form.component.scss"],
-  standalone: true,
   imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule]
 })
 export class LoginFormComponent implements AfterViewInit {

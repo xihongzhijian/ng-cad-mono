@@ -119,7 +119,6 @@ export const cmdNames = commands.map((v) => v.name);
       transition(":leave", [style({filter: "blur(0)"}), animate("0.3s", style({filter: "blur(20px)"}))])
     ])
   ],
-  standalone: true,
   imports: []
 })
 export class CadConsoleComponent {
@@ -477,7 +476,7 @@ export class CadConsoleComponent {
       const el = this.el;
       const activeEl = document.activeElement;
       if (
-        key?.match(/[a-z]/) &&
+        key.match(/[a-z]/) &&
         el &&
         el !== activeEl &&
         !(activeEl instanceof HTMLInputElement) &&
@@ -716,7 +715,9 @@ export class CadConsoleComponent {
       };
       const selectedComponents = this.status.components.selected$.value;
       if (selectedComponents.length) {
-        selectedComponents.forEach((data) => t(data));
+        selectedComponents.forEach((data) => {
+          t(data);
+        });
       } else {
         t(cad.data);
       }

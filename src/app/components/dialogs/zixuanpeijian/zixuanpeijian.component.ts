@@ -1,5 +1,4 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {NestedTreeControl} from "@angular/cdk/tree";
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {Component, ElementRef, HostBinding, HostListener, Inject, OnInit, ViewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
@@ -10,7 +9,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {MatTreeModule, MatTreeNestedDataSource} from "@angular/material/tree";
+import {MatTree, MatTreeModule, MatTreeNestedDataSource} from "@angular/material/tree";
 import {getNameWithSuffix, imgCadEmpty, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
@@ -80,7 +79,6 @@ import {
   selector: "app-zixuanpeijian",
   templateUrl: "./zixuanpeijian.component.html",
   styleUrls: ["./zixuanpeijian.component.scss"],
-  standalone: true,
   imports: [
     CadImageComponent,
     CadItemComponent,
@@ -121,6 +119,7 @@ export class ZixuanpeijianComponent implements OnInit {
   cadViewers: {模块: ObjectOf<ObjectOf<CadViewer[]>>; 零散: CadViewer[]} = {模块: {}, 零散: []};
   getMokuaiTitle = getMokuaiTitle;
   @ViewChild("lingsanTypesScrollbar") lingsanTypesScrollbar?: NgScrollbar;
+  @ViewChild("lingsanTypesTree") lingsanTypesTree?: MatTree<TypesMapNode, TypesMapNode>;
   @ViewChild("lingsanTypesTree", {read: ElementRef}) lingsanTypesTreeEl?: ElementRef<HTMLElement>;
   @ViewChild("lingsanLeftScrollbar") lingsanLeftScrollbar?: NgScrollbar;
   @ViewChild("lingsanRightScrollbar") lingsanRightScrollbar?: NgScrollbar;
@@ -140,7 +139,7 @@ export class ZixuanpeijianComponent implements OnInit {
   lingsanCadType = "";
   lingsanTypesTables: LingsanTypesData["tables"] = [];
   lingsanTypesDataSource = new MatTreeNestedDataSource<TypesMapNode>();
-  lingsanTypesTreeControl = new NestedTreeControl<TypesMapNode>((node) => node.children);
+  lingsanTypesChildrenAccessor = (node: TypesMapNode) => node.children;
   lingsanTypesEditMode = false;
   hasChild = (_: number, node: TypesMapNode) => !!node.children && node.children.length > 0;
   searchLingsanValueKey = "zixuanpeijian-searchLingsanValue";
@@ -344,7 +343,7 @@ export class ZixuanpeijianComponent implements OnInit {
       };
       for (const [i, item] of this.result.模块.entries()) {
         const {type1, type2} = item;
-        const cads1 = cads[type1]?.[type2] || [];
+        const cads1 = cads[type1][type2] || [];
         const cads2: CadData[] = [];
         const infos: ObjectOf<ZixuanpeijianInfo> = {};
         for (const {info} of item.cads) {
@@ -429,7 +428,7 @@ export class ZixuanpeijianComponent implements OnInit {
         if (!this.lingsanCads[type]) {
           this.lingsanCads[type] = [];
         }
-        this.lingsanCads[type]?.push(item);
+        this.lingsanCads[type].push(item);
       }
       const responseData2 = await this.http.getData<LingsanTypesData>("ngcad/getLingsanTypes", {
         allTypes: Object.keys(this.lingsanCads),
@@ -537,7 +536,7 @@ export class ZixuanpeijianComponent implements OnInit {
   resizeCadViewers(indexes?: [number, number]) {
     for (const [i, item] of this.result.模块.entries()) {
       const {type1, type2} = item;
-      const cadViewers = this.cadViewers.模块[type1]?.[type2];
+      const cadViewers = this.cadViewers.模块[type1][type2];
       if (cadViewers) {
         for (const [j, cadViewer] of cadViewers.entries()) {
           if (indexes && indexes[0] !== i && indexes[1] !== j) {
@@ -588,7 +587,7 @@ export class ZixuanpeijianComponent implements OnInit {
   centerCad() {
     const {i, j} = this.contextMenuData;
     const {type1, type2} = this.result.模块[i];
-    const cadViewer = this.cadViewers.模块[type1]?.[type2]?.[j];
+    const cadViewer = this.cadViewers.模块[type1][type2][j];
     if (cadViewer) {
       cadViewer.center();
     }
@@ -1168,7 +1167,7 @@ export class ZixuanpeijianComponent implements OnInit {
     };
     const path = getPath(this.lingsanTypesDataSource.data);
     for (const [i, node] of path.entries()) {
-      this.lingsanTypesTreeControl.expand(node);
+      this.lingsanTypesTree?.expand(node);
       if (i === path.length - 1) {
         const nodeEl = treeEl?.querySelector(`[data-id="${node.id}"]`);
         if (nodeEl instanceof HTMLElement && getElementVisiblePercentage(nodeEl) < 1) {

@@ -12,7 +12,6 @@ import {InputComponent} from "../../modules/input/components/input.component";
   selector: "app-bancai-form",
   templateUrl: "./bancai-form.component.html",
   styleUrls: ["./bancai-form.component.scss"],
-  standalone: true,
   imports: [InputComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -25,33 +24,32 @@ export class BancaiFormComponent {
 
   bancaiList = computed(() => this.bancaiListIn().filter((v) => !["同框色", "同扇色", "同背封板"].includes(v.mingzi)));
   checkedItem = computed(() => this.bancaiList().find((v) => v.mingzi === this.data().bancai));
-  dataEff = effect(
-    () => {
-      const data = {...untracked(() => this.data())};
-      const checkedItem = this.checkedItem();
-      if (checkedItem) {
-        data.bancai = checkedItem.mingzi;
-        if (checkedItem.cailiaoList.length === 1) {
-          data.cailiao = checkedItem.cailiaoList[0];
-        } else if (!checkedItem.cailiaoList.includes(data.cailiao)) {
-          data.cailiao = "";
-        }
-        if (checkedItem.houduList.length === 1) {
-          data.houdu = checkedItem.houduList[0];
-        } else if (!checkedItem.houduList.includes(data.houdu)) {
-          data.houdu = "";
-        }
+  dataEff = effect(() => {
+    const data = {...untracked(() => this.data())};
+    const checkedItem = this.checkedItem();
+    if (checkedItem) {
+      data.bancai = checkedItem.mingzi;
+      if (checkedItem.cailiaoList.length === 1) {
+        data.cailiao = checkedItem.cailiaoList[0];
+      } else if (!checkedItem.cailiaoList.includes(data.cailiao)) {
+        data.cailiao = "";
       }
-      this.data.set(data);
-    },
-    {allowSignalWrites: true}
-  );
+      if (checkedItem.houduList.length === 1) {
+        data.houdu = checkedItem.houduList[0];
+      } else if (!checkedItem.houduList.includes(data.houdu)) {
+        data.houdu = "";
+      }
+    }
+    this.data.set(data);
+  });
 
   inputInfos = computed(() => {
     const data = {...this.data()};
     const bancaiList = this.bancaiList();
     const checkedItem = this.checkedItem();
-    const onChange = () => this.data.set(data);
+    const onChange = () => {
+      this.data.set(data);
+    };
     const infos: InputInfo<BancaiFormData>[][] = [
       ...(this.extraInputInfos() || []),
       [

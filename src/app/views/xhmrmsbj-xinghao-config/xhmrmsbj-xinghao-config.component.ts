@@ -19,7 +19,6 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 
 @Component({
   selector: "app-xhmrmsbj-xinghao-config",
-  standalone: true,
   imports: [NgScrollbarModule, SuanliaogongshiComponent, TableComponent],
   templateUrl: "./xhmrmsbj-xinghao-config.component.html",
   styleUrl: "./xhmrmsbj-xinghao-config.component.scss",
@@ -35,32 +34,29 @@ export class XhmrmsbjXinghaoConfigComponent {
   dataChange = output<XhmrmsbjData | null>();
 
   data = signal<XhmrmsbjData | null>(null);
-  dataEff = effect(
-    async () => {
-      const data = this.dataIn();
-      if (!data) {
-        this.data.set(null);
-        return;
+  dataEff = effect(async () => {
+    const data = this.dataIn();
+    if (!data) {
+      this.data.set(null);
+      return;
+    }
+    const options = await this.bjmk.xinghaoOptionsManager.fetch();
+    const config = data.xinghaoConfig;
+    const options2 = config.选项;
+    config.选项 = [];
+    for (const name of Object.keys(options)) {
+      const optionFound = options2.find((v) => v.名字 === name);
+      if (optionFound) {
+        config.选项.push(optionFound);
+      } else {
+        config.选项.push({名字: name, 可选项: []});
       }
-      const options = await this.bjmk.xinghaoOptionsManager.fetch();
-      const config = data.xinghaoConfig;
-      const options2 = config.选项;
-      config.选项 = [];
-      for (const name of Object.keys(options)) {
-        const optionFound = options2?.find((v) => v.名字 === name);
-        if (optionFound) {
-          config.选项.push(optionFound);
-        } else {
-          config.选项.push({名字: name, 可选项: []});
-        }
-      }
-      this.data.set(data);
-      if (!isEqual(config.选项, options2)) {
-        this.refreshData();
-      }
-    },
-    {allowSignalWrites: true}
-  );
+    }
+    this.data.set(data);
+    if (!isEqual(config.选项, options2)) {
+      this.refreshData();
+    }
+  });
   refreshData() {
     let data = this.data();
     if (data) {

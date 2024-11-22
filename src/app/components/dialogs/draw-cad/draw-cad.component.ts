@@ -12,7 +12,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-draw-cad",
   templateUrl: "./draw-cad.component.html",
   styleUrls: ["./draw-cad.component.scss"],
-  standalone: true,
   imports: [CadImageComponent, MatButtonModule, NgScrollbar]
 })
 export class DrawCadComponent implements OnInit {
@@ -25,7 +24,7 @@ export class DrawCadComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    const cads = this.data?.cads || [];
+    const cads = this.data.cads || [];
     this.items = [];
     for (const cad of cads) {
       this.items.push({data: cad});

@@ -8,7 +8,6 @@ import {VarNameItem} from "./var-names.types";
 
 @Component({
   selector: "app-var-names",
-  standalone: true,
   imports: [MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule],
   templateUrl: "./var-names.component.html",
   styleUrl: "./var-names.component.scss",

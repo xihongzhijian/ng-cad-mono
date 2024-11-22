@@ -7,7 +7,6 @@ import {NgxUiLoaderConfig, NgxUiLoaderModule} from "ngx-ui-loader";
   selector: "app-spinner",
   templateUrl: "./spinner.component.html",
   styleUrls: ["./spinner.component.scss"],
-  standalone: true,
   imports: [NgxUiLoaderModule]
 })
 export class SpinnerComponent extends Subscribed() implements OnInit, AfterViewInit {

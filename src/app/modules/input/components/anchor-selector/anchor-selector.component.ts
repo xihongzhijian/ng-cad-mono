@@ -14,7 +14,6 @@ export interface AnchorEvent {
   selector: "app-anchor-selector",
   templateUrl: "./anchor-selector.component.html",
   styleUrls: ["./anchor-selector.component.scss"],
-  standalone: true,
   imports: [MatFormFieldModule, MatInputModule, MatAutocompleteModule, MatOptionModule]
 })
 export class AnchorSelectorComponent implements AfterViewInit {

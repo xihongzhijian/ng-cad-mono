@@ -50,7 +50,6 @@ const duration = 400;
     slideInRightOnEnterAnimation({anchor: "toolbarToggleEnter", duration}),
     slideOutRightOnLeaveAnimation({anchor: "toolbarToggleLeave", duration})
   ],
-  standalone: true,
   imports: [
     FormsModule,
     ImageComponent,
@@ -735,7 +734,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       },
       {spinner: false}
     );
-    if (responseData && responseData.data?.length > 0) {
+    if (responseData && responseData.data.length > 0) {
       const {prefix, data} = responseData;
       this.orderImageUrl = data[0].zhengmiantu ? prefix + data[0].zhengmiantu : "";
     }

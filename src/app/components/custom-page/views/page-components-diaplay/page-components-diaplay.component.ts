@@ -23,7 +23,6 @@ import {ControlPoint, Helpers} from "./page-components-diaplay.types";
 
 @Component({
   selector: "app-page-components-diaplay",
-  standalone: true,
   imports: [CdkDrag, CdkTextareaAutosize, ImageComponent, MatIconModule, MatInputModule, NgTemplateOutlet, TypedTemplateDirective],
   templateUrl: "./page-components-diaplay.component.html",
   styleUrl: "./page-components-diaplay.component.scss",
@@ -60,17 +59,14 @@ export class PageComponentsDiaplayComponent {
 
   constructor() {
     setGlobal("pageComponentsDiaplay", this);
-    effect(() => this.updateControl(), {allowSignalWrites: true});
-    effect(
-      () => {
-        const editingComponent = untracked(() => this.editingComponent());
-        const activeComponents = this.pageStatus.activeComponents();
-        if (editingComponent && !activeComponents.some((v) => v.id === editingComponent.id)) {
-          this.editingComponent.set(null);
-        }
-      },
-      {allowSignalWrites: true}
-    );
+    effect(() => this.updateControl());
+    effect(() => {
+      const editingComponent = untracked(() => this.editingComponent());
+      const activeComponents = this.pageStatus.activeComponents();
+      if (editingComponent && !activeComponents.some((v) => v.id === editingComponent.id)) {
+        this.editingComponent.set(null);
+      }
+    });
     effect(() => {
       this.components();
       for (const autoSize of this.autoSizes()) {
@@ -80,18 +76,15 @@ export class PageComponentsDiaplayComponent {
         this.updateControl();
       }, 0);
     });
-    effect(
-      () => {
-        const {width, height} = this.pageConfig();
-        const helpers = this.helpers();
-        const rotateSize = Math.max(width, height);
-        if (helpers.rotation.size !== rotateSize) {
-          helpers.rotation.size = rotateSize;
-          this.helpers.set({...helpers});
-        }
-      },
-      {allowSignalWrites: true}
-    );
+    effect(() => {
+      const {width, height} = this.pageConfig();
+      const helpers = this.helpers();
+      const rotateSize = Math.max(width, height);
+      if (helpers.rotation.size !== rotateSize) {
+        helpers.rotation.size = rotateSize;
+        this.helpers.set({...helpers});
+      }
+    });
   }
 
   getComponentStyle(component: PageComponentTypeAny) {
@@ -340,7 +333,7 @@ export class PageComponentsDiaplayComponent {
     }
     const components = this.pageStatus.activeComponents3();
     for (const component of components) {
-      const componentEl = this.elRef.nativeElement.querySelector(`.page-component[data-id="${component?.id}"]`);
+      const componentEl = this.elRef.nativeElement.querySelector(`.page-component[data-id="${component.id}"]`);
       if (!(componentEl instanceof HTMLElement)) {
         continue;
       }
@@ -390,7 +383,7 @@ export class PageComponentsDiaplayComponent {
   }
   moveResizePoint(event: CdkDragMove, point: ControlPoint) {
     const component2 = this.pageStatus.activeComponents2()[0];
-    const component = this.pageStatus.activeComponents().find((v) => v.id === component2?.id);
+    const component = this.pageStatus.activeComponents().find((v) => v.id === component2.id);
     if (!component2 || !component) {
       return;
     }
@@ -454,7 +447,7 @@ export class PageComponentsDiaplayComponent {
   private _moveRotatePointPosPrev: Point | null = null;
   moveRotatePoint(event: CdkDragMove, componentEl: HTMLElement) {
     const component2 = this.pageStatus.activeComponents2()[0];
-    const component = this.pageStatus.activeComponents().find((v) => v.id === component2?.id);
+    const component = this.pageStatus.activeComponents().find((v) => v.id === component2.id);
     if (!component2 || !component) {
       return;
     }

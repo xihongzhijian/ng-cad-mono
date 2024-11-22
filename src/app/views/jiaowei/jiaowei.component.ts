@@ -15,13 +15,12 @@ import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbar} from "ngx-scrollbar";
 import {Jiaowei, jiaoweiAnchorOptions, JiaoweiDataItem, JiaoweiTableData} from "./jiaowei";
 
-const table = "p_menjiao" as const;
+const table = "p_menjiao";
 
 @Component({
   selector: "app-jiaowei",
   templateUrl: "./jiaowei.component.html",
   styleUrls: ["./jiaowei.component.scss"],
-  standalone: true,
   imports: [
     MatButtonModule,
     NgScrollbar,

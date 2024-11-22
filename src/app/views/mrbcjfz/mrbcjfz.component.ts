@@ -68,7 +68,6 @@ import {
   selector: "app-mrbcjfz",
   templateUrl: "./mrbcjfz.component.html",
   styleUrls: ["./mrbcjfz.component.scss"],
-  standalone: true,
   imports: [
     CadImageComponent,
     CdkDrag,

@@ -23,7 +23,6 @@ import {ExportCache} from "./export.types";
   selector: "app-export",
   templateUrl: "./export.component.html",
   styleUrls: ["./export.component.scss"],
-  standalone: true,
   imports: [InputComponent, MatButtonModule, ProgressBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -79,7 +78,9 @@ export class ExportComponent implements OnInit {
       return [];
     }
     const exportParams = {...this.exportParams()};
-    const onChange = () => this.exportParams.set(exportParams);
+    const onChange = () => {
+      this.exportParams.set(exportParams);
+    };
     const infos: InputInfo[] = [
       {type: "boolean", label: "导出ID", appearance: "radio", value: exportParams.exportId, onChange},
       {type: "boolean", label: "导出唯一码", appearance: "radio", value: exportParams.exportUniqCode, onChange},

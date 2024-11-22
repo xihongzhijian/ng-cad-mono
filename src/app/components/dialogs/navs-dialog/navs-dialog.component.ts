@@ -19,7 +19,6 @@ import {NavsData, NavsDataNode, NavsDialogInput, NavsDialogOutput, NavsResultIte
   selector: "app-navs-dialog",
   templateUrl: "./navs-dialog.component.html",
   styleUrls: ["./navs-dialog.component.scss"],
-  standalone: true,
   imports: [InputComponent, NgScrollbar, MatTreeModule, MatCheckboxModule, MatButtonModule, MatIconModule, MatDialogActions]
 })
 export class NavsDialogComponent {
@@ -51,7 +50,7 @@ export class NavsDialogComponent {
   }
 
   async refresh() {
-    if (this.data?.navs) {
+    if (this.data.navs) {
       this.navs = this.data.navs;
     } else {
       this.navs = await this.http.getData<NavsData>("ngcad/getNavs");
@@ -76,7 +75,7 @@ export class NavsDialogComponent {
     }
     const search = this.searchInputValue;
     if (search) {
-      return table?.includes(search) || mingzi?.includes(search);
+      return table?.includes(search) || mingzi.includes(search);
     }
     return true;
   }

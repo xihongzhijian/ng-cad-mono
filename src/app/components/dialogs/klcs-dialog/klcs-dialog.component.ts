@@ -8,7 +8,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-klcs-dialog",
   templateUrl: "./klcs-dialog.component.html",
   styleUrls: ["./klcs-dialog.component.scss"],
-  standalone: true,
   imports: [KlcsComponent, MatButtonModule]
 })
 export class KlcsDialogComponent {

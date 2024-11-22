@@ -1,4 +1,3 @@
-import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -39,7 +38,6 @@ import {openExportPage} from "@views/export/export.utils";
 import {openImportPage} from "@views/import/import.utils";
 import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
 import {openCadSearchFormDialog} from "../cad-search-form/cad-search-form.component";
@@ -50,12 +48,10 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
   selector: "app-cad-list",
   templateUrl: "./cad-list.component.html",
   styleUrls: ["./cad-list.component.scss"],
-  standalone: true,
   imports: [
     FormsModule,
     forwardRef(() => CadItemComponent),
     forwardRef(() => InputComponent),
-    KeyValuePipe,
     MatButtonModule,
     MatCheckboxModule,
     MatDividerModule,
@@ -63,9 +59,7 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
     MatPaginatorModule,
     MatSlideToggleModule,
     NgScrollbar,
-    NgTemplateOutlet,
-    SpinnerComponent,
-    TypedTemplateDirective
+    SpinnerComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -103,7 +97,7 @@ export class CadListComponent implements AfterViewInit {
     if (!data) {
       this.data = {selectMode: "single", collection: "cad"};
     }
-    if (typeof data?.pageSize === "number") {
+    if (typeof data.pageSize === "number") {
       this.pageSize.set(data.pageSize);
     }
     if (!selectModes.includes(this.data.selectMode)) {
@@ -167,7 +161,9 @@ export class CadListComponent implements AfterViewInit {
         hidden: !!this.data.source,
         options: [{value: "_id", label: "ID"}, "名字", "选项", "条件"],
         value: this.searchField(),
-        onChange: (val) => this.searchField.set(val),
+        onChange: (val) => {
+          this.searchField.set(val);
+        },
         style: {flex: "0 1 100px", width: 0}
       },
       {

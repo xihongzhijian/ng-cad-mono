@@ -11,7 +11,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-mrbcjfz-dialog",
   templateUrl: "./mrbcjfz-dialog.component.html",
   styleUrls: ["./mrbcjfz-dialog.component.scss"],
-  standalone: true,
   imports: [MrbcjfzComponent]
 })
 export class MrbcjfzDialogComponent {

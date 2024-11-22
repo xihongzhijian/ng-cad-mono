@@ -43,7 +43,6 @@ import {MokuaiCadItemInfo} from "./mokuai-cads.types";
 
 @Component({
   selector: "app-mokuai-cads",
-  standalone: true,
   imports: [
     CadImageComponent,
     CadItemComponent,
@@ -97,13 +96,10 @@ export class MokuaiCadsComponent {
   }
 
   selectedCadIndexs = signal<number[]>([]);
-  selectedCadIndexsEff = effect(
-    () => {
-      this.cads();
-      this.selectedCadIndexs.set([]);
-    },
-    {allowSignalWrites: true}
-  );
+  selectedCadIndexsEff = effect(() => {
+    this.cads();
+    this.selectedCadIndexs.set([]);
+  });
   cadsSelectInfo = computed(() => {
     const infos: CadItemSelectable<MokuaiCadItemInfo>[] = [];
     const indexs = this.selectedCadIndexs();

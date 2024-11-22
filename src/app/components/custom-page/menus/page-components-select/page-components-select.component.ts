@@ -12,7 +12,6 @@ import {PageStatusService} from "../../services/page-status.service";
 
 @Component({
   selector: "app-page-components-select",
-  standalone: true,
   imports: [ImageComponent, MatTooltipModule],
   templateUrl: "./page-components-select.component.html",
   styleUrl: "./page-components-select.component.scss",

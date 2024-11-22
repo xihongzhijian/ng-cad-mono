@@ -24,7 +24,6 @@ import {getLineTable, getMultiSetData, getMultiSetInputInfos, MultiSetData} from
 
 @Component({
   selector: "app-cad-kailiao-config",
-  standalone: true,
   imports: [forwardRef(() => InputComponent), MatButtonModule, NgScrollbarModule, TableComponent],
   templateUrl: "./cad-kailiao-config.component.html",
   styleUrl: "./cad-kailiao-config.component.scss",
@@ -41,7 +40,9 @@ export class CadKailiaoConfigComponent {
   ) {}
 
   cad = signal<CadData>(new CadData());
-  cadEff = effect(() => this.cad.set(this.data.cad.clone()), {allowSignalWrites: true});
+  cadEff = effect(() => {
+    this.cad.set(this.data.cad.clone());
+  });
 
   lineGroups = computed(() => sortLines(this.cad()));
   lineTables = computed(() => this.lineGroups().map((v) => getLineTable(v)));

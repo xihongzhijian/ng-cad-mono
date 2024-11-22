@@ -23,7 +23,6 @@ import {emptyXuanxiangItem, getMenjiaoTable, getShuruItem, getShuruTable, getXua
 
 @Component({
   selector: "app-lrsj-zuofa",
-  standalone: true,
   imports: [MatTabsModule, TableComponent],
   templateUrl: "./lrsj-zuofa.component.html",
   styleUrl: "./lrsj-zuofa.component.scss",

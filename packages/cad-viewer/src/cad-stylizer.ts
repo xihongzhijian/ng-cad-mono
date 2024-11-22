@@ -21,7 +21,7 @@ export class CadStylizer {
     this.mergeDimStyle(result.dimStyle, config.dimStyle);
     this.mergeDimStyle(result.dimStyle, params.dimStyle || {});
     let linewidth: number;
-    let color = new Color(params.color || entity?.getColor() || 0);
+    let color = new Color(params.color || entity.getColor() || 0);
     if (params.lineStyle) {
       result.lineStyle = params.lineStyle;
       linewidth = params.lineStyle.width || 1;

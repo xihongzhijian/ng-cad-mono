@@ -247,8 +247,8 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
     autoFill: environment.production
       ? undefined
       : () => {
-          const rand = (key: keyof XhmrmsbjSbjbItemSbjb) => sample(options[key]?.options)?.name || "";
-          const rand2 = (key: keyof XhmrmsbjSbjbItemSbjb) => sampleSize(options[key]?.options).map((v) => v.name);
+          const rand = (key: keyof XhmrmsbjSbjbItemSbjb) => sample(options[key].options)?.name || "";
+          const rand2 = (key: keyof XhmrmsbjSbjbItemSbjb) => sampleSize(options[key].options).map((v) => v.name);
           data.开启 = rand("开启");
           data.门铰 = rand2("门铰");
           data.门扇厚度 = rand2("门扇厚度");

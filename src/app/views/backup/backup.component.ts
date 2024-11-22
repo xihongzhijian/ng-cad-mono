@@ -38,7 +38,6 @@ export interface BackupCadsData {
   selector: "app-backup",
   templateUrl: "./backup.component.html",
   styleUrls: ["./backup.component.scss"],
-  standalone: true,
   providers: [provideNativeDateAdapter()],
   imports: [
     CadImageComponent,

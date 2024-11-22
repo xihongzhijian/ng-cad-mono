@@ -13,7 +13,6 @@ import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner
   selector: "app-kailiaokongweipeizhi",
   templateUrl: "./kailiaokongweipeizhi.component.html",
   styleUrls: ["./kailiaokongweipeizhi.component.scss"],
-  standalone: true,
   imports: [MatButtonModule, SpinnerComponent, KlkwpzComponent]
 })
 export class KailiaokongweipeizhiComponent implements OnInit {

@@ -31,7 +31,6 @@ import {getNodesTable} from "./mkdxpz-editor.utils";
 
 @Component({
   selector: "app-mkdxpz-editor",
-  standalone: true,
   imports: [FormulasEditorComponent, MatButtonModule, MatDividerModule, TableComponent, VarNamesComponent],
   templateUrl: "./mkdxpz-editor.component.html",
   styleUrl: "./mkdxpz-editor.component.scss",
@@ -50,20 +49,22 @@ export class MkdxpzEditorComponent {
   closeOut = output<MkdxpzEditorCloseEvent>({alias: "close"});
 
   data = signal<MkdxpzEditorData>({});
-  dataEff = effect(() => this.data.set(cloneDeep(this.dataIn())), {allowSignalWrites: true});
+  dataEff = effect(() => {
+    this.data.set(cloneDeep(this.dataIn()));
+  });
 
   formulas = signal<Formulas>({});
-  formulasInEff = effect(() => this.formulas.set(this.data().dxpz?.算料公式 || {}), {allowSignalWrites: true});
-  formulasOutEff = effect(
-    () =>
-      this.data.update((data) => {
-        if (data.dxpz) {
-          data.dxpz = {...data.dxpz, 算料公式: this.formulas()};
-        }
-        return data;
-      }),
-    {allowSignalWrites: true}
-  );
+  formulasInEff = effect(() => {
+    this.formulas.set(this.data().dxpz?.算料公式 || {});
+  });
+  formulasOutEff = effect(() => {
+    this.data.update((data) => {
+      if (data.dxpz) {
+        data.dxpz = {...data.dxpz, 算料公式: this.formulas()};
+      }
+      return data;
+    });
+  });
 
   nodesTable = computed(() => {
     const nodes = this.data().nodes;

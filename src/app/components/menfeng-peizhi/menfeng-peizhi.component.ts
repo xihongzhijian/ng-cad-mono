@@ -10,7 +10,6 @@ import {getMenfengPeizhiTableInfo} from "./menfeng-peizhi.utils";
 
 @Component({
   selector: "app-menfeng-peizhi",
-  standalone: true,
   imports: [TableComponent],
   templateUrl: "./menfeng-peizhi.component.html",
   styleUrl: "./menfeng-peizhi.component.scss",
@@ -37,7 +36,7 @@ export class MenfengPeizhiComponent {
     const data = await this.http.getData<MenfengpeizhiItem[]>("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian});
     this.items.set(data || []);
   }
-  fetchDataEff = effect(() => this.fetchData(), {allowSignalWrites: true});
+  fetchDataEff = effect(() => this.fetchData());
 
   async submit() {
     if (!(await this.validate())) {

@@ -191,7 +191,7 @@ export abstract class CadEntity extends ColoredObject {
       this._lineweight = data.lineweight;
       this.linewidth = lineweight2linewidth(data.lineweight);
     }
-    if (typeof data.linetype === "string" && (data.linetype as string).toLowerCase().includes("dash")) {
+    if (typeof data.linetype === "string" && data.linetype.toLowerCase().includes("dash")) {
       this.dashArray = Defaults.DASH_ARRAY;
     } else if (Array.isArray(data.dashArray) && data.dashArray.length > 0) {
       this.dashArray = cloneDeep(data.dashArray);
@@ -213,7 +213,7 @@ export abstract class CadEntity extends ColoredObject {
     return color;
   }
 
-  transform(matrix: MatrixLike, alter: boolean, isFromParent?: boolean): CadEntity {
+  transform(matrix: MatrixLike, alter: boolean, isFromParent?: boolean): this {
     if (alter) {
       this._transform(matrix, isFromParent);
     } else {

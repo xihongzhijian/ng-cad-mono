@@ -32,7 +32,6 @@ import {openCadLineForm} from "../cad-line/cad-line.utils";
   selector: "app-toolbar",
   templateUrl: "./toolbar.component.html",
   styleUrls: ["./toolbar.component.scss"],
-  standalone: true,
   imports: [AboutComponent, AsyncPipe, MatButtonModule, MatDividerModule, MatMenuModule]
 })
 export class ToolbarComponent {
@@ -40,16 +39,76 @@ export class ToolbarComponent {
 
   openLock = false;
   keyEventItems: KeyEventItem[] = [
-    {key: "s", ctrl: true, action: () => this.save()},
-    {key: "1", ctrl: true, action: () => this.open("1")},
-    {key: "2", ctrl: true, action: () => this.open("2")},
-    {key: "3", ctrl: true, action: () => this.open("3")},
-    {key: "4", ctrl: true, action: () => this.open("4")},
-    {key: "5", ctrl: true, action: () => this.open("5")},
-    {key: "g", ctrl: true, action: () => this.assembleCads()},
-    {key: "h", ctrl: true, action: () => this.splitCad()},
-    {key: "p", ctrl: true, action: () => this.printCad()},
-    {key: "q", ctrl: true, action: () => this.newCad()},
+    {
+      key: "s",
+      ctrl: true,
+      action: () => {
+        this.save();
+      }
+    },
+    {
+      key: "1",
+      ctrl: true,
+      action: () => {
+        this.open("1");
+      }
+    },
+    {
+      key: "2",
+      ctrl: true,
+      action: () => {
+        this.open("2");
+      }
+    },
+    {
+      key: "3",
+      ctrl: true,
+      action: () => {
+        this.open("3");
+      }
+    },
+    {
+      key: "4",
+      ctrl: true,
+      action: () => {
+        this.open("4");
+      }
+    },
+    {
+      key: "5",
+      ctrl: true,
+      action: () => {
+        this.open("5");
+      }
+    },
+    {
+      key: "g",
+      ctrl: true,
+      action: () => {
+        this.assembleCads();
+      }
+    },
+    {
+      key: "h",
+      ctrl: true,
+      action: () => {
+        this.splitCad();
+      }
+    },
+    {
+      key: "p",
+      ctrl: true,
+      action: () => {
+        this.printCad();
+      }
+    },
+    {
+      key: "q",
+      ctrl: true,
+      action: () => {
+        this.newCad();
+      }
+    },
     {
       key: "escape",
       action: () => {
@@ -141,9 +200,9 @@ export class ToolbarComponent {
         return;
       }
     } else {
-      if (clockwise === true) {
+      if (clockwise) {
         angle = 90;
-      } else if (clockwise === false) {
+      } else if (!clockwise) {
         angle = -90;
       }
     }
@@ -286,7 +345,7 @@ export class ToolbarComponent {
 
   private async _checkSelectedOnlyOne() {
     const selected = this.status.cad.selected();
-    const lines = selected.toArray().filter((v) => v instanceof CadLine) as CadLine[];
+    const lines = selected.toArray().filter((v) => v instanceof CadLine);
     if (lines.length !== 1) {
       this.message.alert("请先选中且只选中一根线");
       return null;

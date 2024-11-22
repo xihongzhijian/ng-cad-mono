@@ -16,7 +16,6 @@ import {InputComponent} from "../../modules/input/components/input.component";
   selector: "app-klcs",
   templateUrl: "./klcs.component.html",
   styleUrls: ["./klcs.component.scss"],
-  standalone: true,
   imports: [InputComponent, MatButtonModule, NgScrollbar]
 })
 export class KlcsComponent implements OnInit, AfterViewInit {
@@ -55,7 +54,7 @@ export class KlcsComponent implements OnInit, AfterViewInit {
       const result = await this.http.getCad({collection: "cad", id});
       if (result.cads.length > 0) {
         this.cadData = result.cads[0];
-        const mubanId = this.cadData.zhankai?.[0].kailiaomuban;
+        const mubanId = this.cadData.zhankai[0].kailiaomuban;
         if (mubanId) {
           const result2 = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId});
           if (result2.cads.length > 0) {

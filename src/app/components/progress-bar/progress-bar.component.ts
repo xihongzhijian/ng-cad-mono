@@ -6,7 +6,6 @@ import {ProgressBar} from "./progress-bar.utils";
   selector: "app-progress-bar",
   templateUrl: "./progress-bar.component.html",
   styleUrls: ["./progress-bar.component.scss"],
-  standalone: true,
   imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

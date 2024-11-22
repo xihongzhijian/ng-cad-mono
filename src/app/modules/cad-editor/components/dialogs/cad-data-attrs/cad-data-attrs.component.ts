@@ -16,7 +16,6 @@ export type CadDataAttrsComponentData = CadData["attributes"];
   selector: "app-cad-data-attrs",
   templateUrl: "./cad-data-attrs.component.html",
   styleUrls: ["./cad-data-attrs.component.scss"],
-  standalone: true,
   imports: [NgScrollbar, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, FormsModule]
 })
 export class CadDataAttrsComponent extends Utils() {

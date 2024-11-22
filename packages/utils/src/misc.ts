@@ -28,7 +28,12 @@ export const getDPI = () => {
   return [dpiX, dpiY] as [number, number];
 };
 
-export const timeout = <T>(time = 0, value?: T) => new Promise<T | undefined>((resolve) => setTimeout(() => resolve(value), time));
+export const timeout = <T>(time = 0, value?: T) =>
+  new Promise<T | undefined>((resolve) =>
+    setTimeout(() => {
+      resolve(value);
+    }, time)
+  );
 
 export const getTypeOf = (value: any) => {
   const type = typeof value;

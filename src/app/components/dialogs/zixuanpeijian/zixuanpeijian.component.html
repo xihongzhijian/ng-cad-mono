@@ -195,7 +195,7 @@
             <mat-tree
               #lingsanTypesTree
               [dataSource]="lingsanTypesDataSource"
-              [treeControl]="lingsanTypesTreeControl"
+              [childrenAccessor]="lingsanTypesChildrenAccessor"
               class="lingsan-types-tree"
             >
               <mat-tree-node *matTreeNodeDef="let node" [class.hidden]="node.hidden || node.hidden2">
@@ -216,7 +216,7 @@
                 <div class="toolbar">
                   <button mat-icon-button matTreeNodeToggle>
                     <mat-icon class="mat-icon-rtl-mirror">
-                      {{ lingsanTypesTreeControl.isExpanded(node) ? "expand_more" : "chevron_right" }}
+                      {{ lingsanTypesTree.isExpanded(node) ? "expand_more" : "chevron_right" }}
                     </mat-icon>
                   </button>
                   <button mat-button matTreeNodeToggle [attr.data-id]="node.id">
@@ -224,7 +224,7 @@
                   </button>
                   <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
                 </div>
-                <div [class.hidden]="!lingsanTypesTreeControl.isExpanded(node)" role="group">
+                <div [class.hidden]="!lingsanTypesTree.isExpanded(node)" role="group">
                   <ng-container matTreeNodeOutlet></ng-container>
                 </div>
               </mat-nested-tree-node>

@@ -44,11 +44,9 @@ import {SuanliaoCadItemInfo} from "./lrsj-suanliao-cads.types";
 
 @Component({
   selector: "app-lrsj-suanliao-cads",
-  standalone: true,
   imports: [
     CadItemComponent,
     InputComponent,
-    LrsjSuanliaoCadsComponent,
     MatButtonModule,
     MatDividerModule,
     MatIconModule,
@@ -167,7 +165,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
   }
   filterCads(val: string) {
     const hiddenCads: number[] = [];
-    for (const [i, cad] of this.data()?.算料CAD?.entries() || []) {
+    for (const [i, cad] of this.data()?.算料CAD.entries() || []) {
       const yaoqiu = this.status.getCadYaoqiu(cad.分类);
       if (yaoqiu && !filterCad(val, cad, yaoqiu)) {
         hiddenCads.push(i);
@@ -178,7 +176,9 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
   suanliaoCadsSearch = computed<InputInfo>(() => ({
     type: "string",
     label: "搜索",
-    onInput: debounce((val) => this.filterCads(val), 500)
+    onInput: debounce((val) => {
+      this.filterCads(val);
+    }, 500)
   }));
   cadInfos = computed(() => {
     const data = this.data();
@@ -343,7 +343,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
       }
     });
     const itemData = result?.items[0] as SelectZuofaItemData<算料数据>;
-    if (!itemData?.工艺做法 || !itemData.data) {
+    if (!itemData.工艺做法 || !itemData.data) {
       return;
     }
     const key1 = suanliaoCadsInfo.key1;

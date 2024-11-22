@@ -48,7 +48,6 @@ import {getCadInfoInputs} from "./cad-info.utils";
   selector: "app-cad-info",
   templateUrl: "./cad-info.component.html",
   styleUrls: ["./cad-info.component.scss"],
-  standalone: true,
   imports: [
     FormsModule,
     forwardRef(() => InputComponent),
@@ -178,21 +177,22 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   }
 
   data = signal<CadData>(this.status.cad.data);
-  dataEff = effect(
-    () => {
-      const setData = () => {
-        const components = this.status.components.selected$.value;
-        if (components.length === 1) {
-          this.data.set(components[0]);
-        } else {
-          this.data.set(this.status.cad.data);
-        }
-      };
-      this.subscribe(this.status.openCad$, () => setData());
-      this.subscribe(this.status.components.selected$, () => setData());
-    },
-    {allowSignalWrites: true}
-  );
+  dataEff = effect(() => {
+    const setData = () => {
+      const components = this.status.components.selected$.value;
+      if (components.length === 1) {
+        this.data.set(components[0]);
+      } else {
+        this.data.set(this.status.cad.data);
+      }
+    };
+    this.subscribe(this.status.openCad$, () => {
+      setData();
+    });
+    this.subscribe(this.status.components.selected$, () => {
+      setData();
+    });
+  });
 
   parseOptionString = computed(() => false);
   infoGroup1 = computed(() => {
@@ -363,8 +363,14 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       })
     );
   }
-  baseLinesEff = effect(() => this.updateBaseLineInfos(), {allowSignalWrites: true});
-  baseLinesEff2 = effect(() => this.subscribe(this.status.cadStatusEnter$, () => this.updateBaseLineInfos()), {allowSignalWrites: true});
+  baseLinesEff = effect(() => {
+    this.updateBaseLineInfos();
+  });
+  baseLinesEff2 = effect(() =>
+    this.subscribe(this.status.cadStatusEnter$, () => {
+      this.updateBaseLineInfos();
+    })
+  );
   addBaseLine(index: number) {
     const arr = this.data().baseLines;
     arr.splice(index + 1, 0, new CadBaseLine());
@@ -398,10 +404,14 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       })
     );
   }
-  jointPointsEff = effect(() => this.updateJointPointInfos(), {allowSignalWrites: true});
-  jointPointsEff2 = effect(() => this.subscribe(this.status.cadStatusEnter$, () => this.updateJointPointInfos()), {
-    allowSignalWrites: true
+  jointPointsEff = effect(() => {
+    this.updateJointPointInfos();
   });
+  jointPointsEff2 = effect(() =>
+    this.subscribe(this.status.cadStatusEnter$, () => {
+      this.updateJointPointInfos();
+    })
+  );
   addJointPoint(index: number) {
     const arr = this.data().jointPoints;
     arr.splice(index + 1, 0, new CadJointPoint());
@@ -439,9 +449,28 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
             value: v.length ? "已指定" : "未指定",
             selectOnly: true,
             suffixIcons: [
-              {name: "linear_scale", isDefault: true, color: this.getPointColor(i, key), onClick: () => this.selectPoint(i, key)},
-              {name: "add_circle", color: "primary", onClick: () => this.addIntersectionValue(key, i + 1)},
-              {name: "remove_circle", color: "primary", onClick: () => this.removeIntersectionValue(key, i)}
+              {
+                name: "linear_scale",
+                isDefault: true,
+                color: this.getPointColor(i, key),
+                onClick: () => {
+                  this.selectPoint(i, key);
+                }
+              },
+              {
+                name: "add_circle",
+                color: "primary",
+                onClick: () => {
+                  this.addIntersectionValue(key, i + 1);
+                }
+              },
+              {
+                name: "remove_circle",
+                color: "primary",
+                onClick: () => {
+                  this.removeIntersectionValue(key, i);
+                }
+              }
             ],
             style: {flex: "2 2 0", width: 0}
           }
@@ -482,7 +511,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   offset(value: string) {
     const data = this.data();
     const cad = this.status.cad;
-    data.bancaihoudufangxiang = value as CadData["bancaihoudufangxiang"];
+    data.bancaihoudufangxiang = value;
     let direction = 0;
     if (value === "gt0") {
       direction = 1;
@@ -515,7 +544,9 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     });
     let count = 1;
     const id = setInterval(() => {
-      entities.forEach((e) => blink(e.el));
+      entities.forEach((e) => {
+        blink(e.el);
+      });
       if (++count > blinkCount) {
         clearInterval(id);
         cad.remove(entities);

@@ -55,7 +55,6 @@ import {CadItemButton, CadItemForm, CadItemIsOnlineInfo, CadItemSelectable, CadI
 
 @Component({
   selector: "app-cad-item",
-  standalone: true,
   imports: [
     ClickStopPropagationDirective,
     forwardRef(() => CadImageComponent),
@@ -161,7 +160,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (this.cad instanceof CadData) {
       return this.cad.zhankai[0]?.kailiaomuban || "";
     }
-    return this.cad?.json?.zhankai?.[0]?.kailiaomuban || "";
+    return this.cad.json.zhankai?.[0]?.kailiaomuban || "";
   }
   set mubanId(value: string) {
     const {cad} = this;
@@ -192,7 +191,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (cad instanceof CadData) {
       zhankai = cad.zhankai[0];
     } else {
-      if (cad?.json?.zhankai && cad.json.zhankai[0]) {
+      if (cad.json.zhankai && cad.json.zhankai[0]) {
         zhankai = cad.json.zhankai[0];
       }
     }
@@ -336,13 +335,13 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       Object.assign(cadData, mubanExtraData);
     }
     if (cad instanceof CadData) {
-      cadData.name = cad?.name || "模板";
+      cadData.name = cad.name || "模板";
       cadData.info.fromCad = {
         name: cad.name,
         imgId: cad.info.imgId
       };
     } else {
-      cadData.name = cad?.名字 || "模板";
+      cadData.name = cad.名字 || "模板";
       cadData.info.fromCad = {
         name: cad.名字,
         imgId: cad.json.info?.imgId
@@ -365,7 +364,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       return undefined;
     }
     const resultData = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId}, {silent: true});
-    const mubanData = resultData?.cads[0] as CadData | undefined;
+    const mubanData = resultData.cads[0] as CadData | undefined;
     if (!mubanData) {
       this.message.error(`【${this.cadName}】的模板不存在`);
     }
@@ -639,7 +638,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     const {validators} = this;
     const zhankai = data.zhankai[0];
     if (validators?.zhankai) {
-      if (!zhankai?.zhankaigao) {
+      if (!zhankai.zhankaigao) {
         return {[`【${data.name}】展开高不能为空，请检查红色文字并补充数据`]: true};
       }
     }

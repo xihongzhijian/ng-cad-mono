@@ -43,7 +43,6 @@ const cadStatusIntersectionInfo = "addWHDashedLines";
   selector: "app-cad-line",
   templateUrl: "./cad-line.component.html",
   styleUrls: ["./cad-line.component.scss"],
-  standalone: true,
   imports: [
     MatButtonModule,
     FormsModule,
@@ -481,7 +480,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
   async setLineLength(event: Event) {
     const {selected} = this;
     const cad = this.status.cad;
-    const lines = selected.filter((v) => v instanceof CadLine) as CadLine[];
+    const lines = selected.filter((v) => v instanceof CadLine);
     this.status.setLinesLength(lines, Number((event.target as HTMLInputElement).value));
     this.status.validate();
     await cad.render();
@@ -725,7 +724,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
   }
 
   async editTiaojianquzhi() {
-    const lines = this.selected.filter((v) => v instanceof CadLine) as CadLine[];
+    const lines = this.selected.filter((v) => v instanceof CadLine);
     if (lines.length < 1) {
       this.message.alert("请先选中一条直线");
     } else if (lines.length > 1) {
@@ -815,7 +814,9 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
 
   addWHDashedLinesEnd() {
     if (this.WHDashedLines) {
-      this.WHDashedLines.map.forEach((v) => v.lines.forEach((line) => line.remove()));
+      this.WHDashedLines.map.forEach((v) => {
+        v.lines.forEach((line) => line.remove());
+      });
       this.WHDashedLines = null;
       this.status.setCadPoints();
     }

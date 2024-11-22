@@ -11,7 +11,6 @@ import {PageStatusService} from "../../services/page-status.service";
 
 @Component({
   selector: "app-page-config",
-  standalone: true,
   imports: [InputComponent, NgScrollbarModule],
   templateUrl: "./page-config.component.html",
   styleUrl: "./page-config.component.scss",
@@ -26,7 +25,9 @@ export class PageConfigComponent {
 
   inputInfos = computed(() => {
     const config = this.config();
-    const onChange = () => this.config.set(cloneDeep(config));
+    const onChange = () => {
+      this.config.set(cloneDeep(config));
+    };
     const sizeNameInput: InputInfoSelect<PageConfig, PageSizeNameCustom> = {
       type: "select",
       label: "页面大小",

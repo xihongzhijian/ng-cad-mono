@@ -15,7 +15,7 @@ declare module "csstype" {
     [key: string]: any;
   }
 }
-export const remoteHost = "https://www.let888.cn" as const;
+export const remoteHost = "https://www.let888.cn";
 export const remoteFilePath = `${remoteHost}/filepath`;
 
 export const addJs = (name: string) => {

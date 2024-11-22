@@ -26,7 +26,7 @@ export abstract class CadDimension extends CadEntity {
   活动标注显示扣数?: string;
 
   get hideDimLines() {
-    return !!this.style?.extensionLines?.hidden;
+    return !!this.style.extensionLines?.hidden;
   }
   set hideDimLines(value) {
     if (!this.style) {
@@ -82,7 +82,7 @@ export abstract class CadDimension extends CadEntity {
     this.hideDimLines = !!data.hideDimLines;
     this.xianshigongshiwenben = data.xianshigongshiwenben ?? "";
     this.xiaoshuchuli = data.xiaoshuchuli ?? "四舍五入";
-    this.算料单缩放标注文字 = !!data.算料单缩放标注文字 === true;
+    this.算料单缩放标注文字 = !!data.算料单缩放标注文字;
     this.活动标注显示扣数 = data.活动标注显示扣数;
   }
 

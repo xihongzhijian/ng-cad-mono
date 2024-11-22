@@ -13,7 +13,6 @@ import {lastValueFrom, Subject} from "rxjs";
   selector: "app-formulas",
   templateUrl: "./formulas.component.html",
   styleUrls: ["./formulas.component.scss"],
-  standalone: true,
   imports: [InputComponent]
 })
 export class FormulasComponent implements AfterViewInit {

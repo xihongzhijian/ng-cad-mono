@@ -234,7 +234,7 @@ export const copySuanliaoData = async (
   const mubanIds: ObjectOf<string> = {};
   const toChangeMubanId: any[] = [];
   const clear = (cad: HoutaiCad | undefined | null) => {
-    if (cad?.json?.info?.imgId) {
+    if (cad?.json.info?.imgId) {
       delete cad.json.info.imgId;
     }
   };

@@ -1,6 +1,5 @@
 import {FlatCompat} from "@eslint/eslintrc";
 import js from "@eslint/js";
-import deprecation from "eslint-plugin-deprecation";
 import prettier from "eslint-plugin-prettier";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
@@ -82,7 +81,6 @@ export default [
     files: ["**/*.ts"],
 
     plugins: {
-      deprecation,
       prettier
     },
 
@@ -125,7 +123,7 @@ export default [
       ],
 
       "@typescript-eslint/no-explicit-any": "off",
-      // "deprecation/deprecation": "warn",
+      "@typescript-eslint/no-deprecated": "warn",
 
       "no-empty": [
         "error",

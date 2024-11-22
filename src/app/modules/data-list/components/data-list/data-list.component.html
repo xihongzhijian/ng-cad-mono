@@ -12,7 +12,7 @@
       <button mat-stroked-button color="primary" (click)="exportNavNodes()">导出</button>
     </div>
     <ng-scrollbar #navNodesScrollbar>
-      <mat-tree #navNodesTree [dataSource]="navDataSource" [treeControl]="navTreeControl" [trackBy]="navNodeTrackBy">
+      <mat-tree #navNodesTree [dataSource]="navDataSource()" [childrenAccessor]="childrenAccessor" [trackBy]="navNodeTrackBy">
         <mat-tree-node *matTreeNodeDef="let node" [class.hidden]="node.hidden || node.hidden2">
           <div class="toolbar">
             <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
@@ -23,17 +23,17 @@
           <div class="toolbar">
             <button mat-icon-button matTreeNodeToggle>
               <mat-icon class="mat-icon-rtl-mirror">
-                {{ navTreeControl.isExpanded(node) ? "expand_more" : "chevron_right" }}
+                {{ navNodesTree.isExpanded(node) ? "expand_more" : "chevron_right" }}
               </mat-icon>
             </button>
             <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
             <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
           </div>
-          <div [class.hidden]="!navTreeControl.isExpanded(node)" role="group">
+          <div [class.hidden]="!navNodesTree.isExpanded(node)" role="group">
             <ng-container matTreeNodeOutlet></ng-container>
           </div>
         </mat-nested-tree-node>
-        <ng-template #nodeTitle [appTypedTemplate]="{$implicit: navDataSource.data[0]}" let-node>
+        <ng-template #nodeTitle [appTypedTemplate]="{$implicit: navDataSource()[0]}" let-node>
           <button
             mat-button
             class="nav-title"
@@ -53,7 +53,7 @@
             }
           </button>
         </ng-template>
-        <ng-template #nodeEdit [appTypedTemplate]="{$implicit: navDataSource.data[0]}" let-node>
+        <ng-template #nodeEdit [appTypedTemplate]="{$implicit: navDataSource()[0]}" let-node>
           @if (navEditMode()) {
             <div class="nav-edit toolbar compact">
               @if (node.isVirtual) {

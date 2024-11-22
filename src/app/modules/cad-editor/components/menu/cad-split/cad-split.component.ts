@@ -86,7 +86,9 @@ export class CadSplitComponent extends Subscribed() implements OnInit {
   async focus() {
     const cad = this.status.cad;
     this.status.focus();
-    cad.data.components.data.forEach((v) => this.status.blur(v.entities));
+    cad.data.components.data.forEach((v) => {
+      this.status.blur(v.entities);
+    });
     await cad.render();
   }
 

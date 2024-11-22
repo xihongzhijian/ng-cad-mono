@@ -33,7 +33,6 @@ import {BatchUploadChecker} from "./import.utils";
   selector: "app-import",
   templateUrl: "./import.component.html",
   styleUrls: ["./import.component.scss"],
-  standalone: true,
   imports: [InputComponent, MatButtonModule, MatDividerModule, MatTooltipModule, NgScrollbar, ProgressBarComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -65,16 +64,13 @@ export class ImportComponent implements OnInit {
   }
 
   importCache = signal<ImportCache | null>(null);
-  importCacheEff = effect(
-    () => {
-      const importCache = this.importCache();
-      const 导入配置 = importCache?.yaoqiu?.导入配置;
-      if (导入配置) {
-        this.importConfigNormal.update((v) => ({...v, ...导入配置}));
-      }
-    },
-    {allowSignalWrites: true}
-  );
+  importCacheEff = effect(() => {
+    const importCache = this.importCache();
+    const 导入配置 = importCache?.yaoqiu?.导入配置;
+    if (导入配置) {
+      this.importConfigNormal.update((v) => ({...v, ...导入配置}));
+    }
+  });
   updateImportCache() {
     const {key} = this.route.snapshot.queryParams;
     this.importCache.set(session.load<ImportCache>("importParams-" + key));
@@ -127,7 +123,7 @@ export class ImportComponent implements OnInit {
     const hiddenKeys: ImportComponentConfigName[] = [];
     const importCache = this.importCache();
     const toPush = new Set<ImportComponentConfigName>(importComponentConfigNames);
-    if (importCache?.yaoqiu?.CAD分类?.includes("算料单示意图")) {
+    if (importCache?.yaoqiu?.CAD分类.includes("算料单示意图")) {
       toPush.delete("noFilterEntities");
     }
     hiddenKeys.push(...toPush);
@@ -152,7 +148,9 @@ export class ImportComponent implements OnInit {
       type: "number",
       label: "使用公式的线段最大长度",
       value: maxLineLength,
-      onChange: (val) => this.maxLineLength.set(val),
+      onChange: (val) => {
+        this.maxLineLength.set(val);
+      },
       hint
     });
     return infos;
@@ -319,7 +317,7 @@ export class ImportComponent implements OnInit {
       const oldSlgsRaw = await this.http.queryMongodb({collection: "material", where: {"选项.型号": xinghao}});
       const toDelete = {cad: [] as string[], material: [] as string[]};
       oldCadsRaw.forEach((v) => {
-        if (!uniqCodes.includes(v.json?.info?.唯一码)) {
+        if (!uniqCodes.includes(v.json.info?.唯一码)) {
           toDelete.cad.push(v._id);
         }
       });

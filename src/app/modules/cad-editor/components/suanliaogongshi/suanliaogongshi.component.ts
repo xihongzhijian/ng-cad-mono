@@ -40,7 +40,6 @@ import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.
 
 @Component({
   selector: "app-suanliaogongshi",
-  standalone: true,
   imports: [
     FormulasEditorComponent,
     KeyValuePipe,
@@ -70,13 +69,10 @@ export class SuanliaogongshiComponent {
   slgsChange = output();
 
   gongshiInfo = signal<{formulas?: Formulas}[]>([]);
-  gongshiInfoEff = effect(
-    () => {
-      const info = this.info();
-      this.gongshiInfo.set((info.data.算料公式 || []).map(() => ({})));
-    },
-    {allowSignalWrites: true}
-  );
+  gongshiInfoEff = effect(() => {
+    const info = this.info();
+    this.gongshiInfo.set((info.data.算料公式 || []).map(() => ({})));
+  });
 
   shuruTable = computed(() => {
     const info = this.info();

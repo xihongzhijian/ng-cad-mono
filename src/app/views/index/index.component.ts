@@ -14,7 +14,6 @@ import {CadEditorComponent} from "../../modules/cad-editor/components/cad-editor
   selector: "app-index",
   templateUrl: "./index.component.html",
   styleUrls: ["./index.component.scss"],
-  standalone: true,
   imports: [CadEditorComponent]
 })
 export class IndexComponent implements OnInit {

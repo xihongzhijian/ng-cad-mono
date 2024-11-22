@@ -13,7 +13,6 @@ import {getFileSize, ObjectOf} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -28,12 +27,10 @@ import {ToolbarBtn} from "./lurushuju-index.types";
 
 @Component({
   selector: "app-lurushuju-index",
-  standalone: true,
   imports: [
     AboutComponent,
     ClickStopPropagationDirective,
     FloatingDialogModule,
-    ImageComponent,
     LrsjSuanliaoCadsComponent,
     LrsjSuanliaoDataComponent,
     LrsjXinghaosComponent,
@@ -187,7 +184,9 @@ export class LurushujuIndexComponent {
       {name: "粘贴页面信息", onClick: this.pasteInfo.bind(this)},
       {
         name: "重新生成所有cad图片",
-        onClick: () => this.status.openInNewTab(["/refresh-cad-imgs"])
+        onClick: () => {
+          this.status.openInNewTab(["/refresh-cad-imgs"]);
+        }
       }
     ];
     if (!environment.production) {

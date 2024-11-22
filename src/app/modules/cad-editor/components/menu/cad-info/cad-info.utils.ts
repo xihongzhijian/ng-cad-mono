@@ -82,7 +82,7 @@ export const getCadInfoInputs = (
   dialog: MatDialog,
   status: AppStatusService,
   parseOptionString: boolean,
-  gongshis?: 算料公式[] | null | undefined
+  gongshis?: 算料公式[] | null
 ) => {
   const result: InputInfo<CadData>[] = [];
   const attrGetter =
@@ -316,7 +316,12 @@ export const getCadInfoInputs = (
                 selectOnly: true,
                 model: {data: getZhankai(), key: "kailiaomuban"},
                 suffixIcons: [
-                  {name: "open_in_new", onClick: () => status.openCadInNewTab(getZhankai()?.kailiaomuban || "", "kailiaocadmuban")},
+                  {
+                    name: "open_in_new",
+                    onClick: () => {
+                      status.openCadInNewTab(getZhankai()?.kailiaomuban || "", "kailiaocadmuban");
+                    }
+                  },
                   {
                     name: "list",
                     isDefault: true,

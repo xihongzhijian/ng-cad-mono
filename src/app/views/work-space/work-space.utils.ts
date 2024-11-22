@@ -18,7 +18,7 @@ export class WorkSpaceManager {
     if (!data) {
       data = {};
     }
-    this.user = data?.user ?? -1;
+    this.user = data.user ?? -1;
     this.favorites = Array.isArray(data.favorites) ? data.favorites : [];
     this.types = Array.isArray(data.types) ? data.types : [];
     this.update();

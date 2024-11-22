@@ -54,7 +54,6 @@ import {DdbqConfig, DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig}
   selector: "app-dingdanbiaoqian",
   templateUrl: "./dingdanbiaoqian.component.html",
   styleUrls: ["./dingdanbiaoqian.component.scss"],
-  standalone: true,
   imports: [
     FormsModule,
     FormulasComponent,
@@ -164,14 +163,18 @@ export class DingdanbiaoqianComponent implements OnInit {
         label: "渲染小图",
         appearance: "switch",
         value: config.showCadSmallImg,
-        onChange: (val) => this.setConfig("showCadSmallImg", val)
+        onChange: (val) => {
+          this.setConfig("showCadSmallImg", val);
+        }
       },
       {
         type: "boolean",
         label: "渲染大图",
         appearance: "switch",
         value: config.showCadLargeImg,
-        onChange: (val) => this.setConfig("showCadLargeImg", val)
+        onChange: (val) => {
+          this.setConfig("showCadLargeImg", val);
+        }
       }
     ];
     return infos;
@@ -493,7 +496,9 @@ export class DingdanbiaoqianComponent implements OnInit {
           break;
       }
     });
-    orders2.forEach((order) => this.setPage(order));
+    orders2.forEach((order) => {
+      this.setPage(order);
+    });
     this.orders.set(orders2);
     this.forms.set(forms);
     await timeout(0);
@@ -501,7 +506,9 @@ export class DingdanbiaoqianComponent implements OnInit {
     if (cadsElRect) {
       this.cadsSize.set([cadsElRect.width, cadsElRect.height]);
     }
-    cadsToSet.forEach((v) => this.setCad(...v));
+    cadsToSet.forEach((v) => {
+      this.setCad(...v);
+    });
   }
 
   mokuais = signal<ZixuanpeijianMokuaiItem[]>([]);

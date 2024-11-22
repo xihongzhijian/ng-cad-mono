@@ -8,7 +8,6 @@ import {MessageData, MessageDataMap} from "../message/message.types";
   selector: "app-message-test",
   templateUrl: "./message-test.component.html",
   styleUrls: ["./message-test.component.scss"],
-  standalone: true,
   imports: [MatButtonModule, KeyValuePipe]
 })
 export class MessageTestComponent {

@@ -22,7 +22,6 @@ import {PageStatusService} from "../../services/page-status.service";
 
 @Component({
   selector: "app-page-component-config",
-  standalone: true,
   imports: [
     CdkDrag,
     CdkDropList,

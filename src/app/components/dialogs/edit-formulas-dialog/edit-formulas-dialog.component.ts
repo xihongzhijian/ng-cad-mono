@@ -9,7 +9,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-edit-formulas-dialog",
   templateUrl: "./edit-formulas-dialog.component.html",
   styleUrls: ["./edit-formulas-dialog.component.scss"],
-  standalone: true,
   imports: [FormulasEditorComponent, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

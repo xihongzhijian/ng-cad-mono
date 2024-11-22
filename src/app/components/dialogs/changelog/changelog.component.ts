@@ -20,7 +20,6 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-changelog",
   templateUrl: "./changelog.component.html",
   styleUrls: ["./changelog.component.scss"],
-  standalone: true,
   imports: [ImageComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbar, NgTemplateOutlet, SpinnerModule]
 })
 export class ChangelogComponent implements OnInit {

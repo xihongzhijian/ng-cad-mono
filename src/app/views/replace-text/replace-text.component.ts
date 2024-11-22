@@ -36,7 +36,6 @@ interface ToBeReplaced {
   selector: "app-replace-text",
   templateUrl: "./replace-text.component.html",
   styleUrls: ["./replace-text.component.scss"],
-  standalone: true,
   imports: [
     FormsModule,
     ReactiveFormsModule,

@@ -15,7 +15,6 @@ import {getXinghaoGongyi, getXinghaoMenchuang} from "../services/lrsj-status.uti
 
 @Component({
   selector: "app-lurushuju-nav",
-  standalone: true,
   imports: [MatButtonModule, NgScrollbarModule],
   templateUrl: "./lurushuju-nav.component.html",
   styleUrl: "./lurushuju-nav.component.scss",
