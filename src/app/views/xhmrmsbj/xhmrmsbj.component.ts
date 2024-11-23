@@ -725,9 +725,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         for (const item of xxgsList) {
           const 输入值 = msbjInfo.选项公式输入值?.[item._id];
           const valueInfo = this.getValueInfo(v[0], item.公式, 输入值);
+          let label = v[0];
+          if (!this.isFromOrder()) {
+            label = `【${item.名字}】${v[0]}`;
+          }
           infos.push({
             type: "string",
-            label: `【${item.名字}】${v[0]}`,
+            label,
             value: valueInfo.value,
             clearable: true,
             validators: getValidators(v[0], item.公式, 输入值),

@@ -5,6 +5,7 @@ import {matchCadData} from "@app/utils/mongo";
 import {nameEquals} from "@app/utils/zhankai";
 import zxpjTestData from "@assets/json/zixuanpeijian.json";
 import zixuanpeijianTypesInfo from "@assets/json/zixuanpeijianTypesInfo.json";
+import {getMokuaiCustomData} from "@components/bujumokuai/mokuai-item/mokuai-item.utils";
 import {CadData, CadMtext, CadZhankai, setLinesLength} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -272,6 +273,7 @@ export const updateMokuaiItem = (
   item2: ZixuanpeijianMokuaiItem | ZixuanpeijianTypesInfoItem,
   others?: {type1: string; type2: string}
 ) => {
+  item.自定义数据 = getMokuaiCustomData(item.自定义数据, {});
   if (!isMokuaiItemEqual(item, item2)) {
     return false;
   }
