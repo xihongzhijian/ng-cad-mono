@@ -16,6 +16,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
+import {getNodeFormulasKey, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {matchConditions} from "@views/suanliao/suanliao.utils";
 import {XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {getMokuaiFormulas, getMokuaiShuchuVars, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
@@ -49,7 +50,7 @@ export const getTestData = () => {
       零散: zxpjTestData.模块.flatMap((item) => item.cads.map((cadItem) => ({...cadItem, data: new CadData()})))
     },
     order: {code: "1", type: "order", materialResult: zxpjTestData.输出变量},
-    dropDownKeys: ["总宽", "总高"],
+    dropDownKeys: nodeFormulasKeysRaw.slice(),
     可替换模块: true,
     step1Data: zixuanpeijianTypesInfo,
     noValidateCads: false,
@@ -634,15 +635,14 @@ export const calcZxpj = async (
   let calcErrors1: Formulas = {};
   let calcErrors2: Formulas = {};
   while (!calc1Finished) {
-    calc1Finished = true;
+    if (calc1Count > 0) {
+      calc1Finished = true;
+    }
     calc1Count++;
     const alertError = calc1Count > 1 && isEqual(calcErrors1, calcErrors2);
     calcErrors1 = calcErrors2;
     calcErrors2 = {};
     for (const v of toCalc1) {
-      if (calc1Count > 1 && isEmpty(v.error)) {
-        continue;
-      }
       const info = v.item.info || {};
       const 门扇名字 = info.门扇名字 || "";
       const 模块名字 = info.模块名字 || "";
@@ -970,9 +970,8 @@ export const calcZxpj = async (
 
 export const getNodeVars = (formulas: Formulas, nodeName: string) => {
   const result = {...formulas};
-  const keys = ["总宽", "总高"];
-  for (const key of keys) {
-    const key2 = nodeName + key;
+  for (const key of nodeFormulasKeysRaw) {
+    const key2 = getNodeFormulasKey(nodeName, key);
     if (result[key2] !== undefined) {
       result[key] = result[key2];
     }

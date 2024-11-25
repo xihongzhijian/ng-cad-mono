@@ -3,3 +3,11 @@
   --mat-divider-margin: 10px;
   padding: 10px;
 }
+
+.mokuai-infos {
+  --items-per-row: 2;
+
+  app-formulas {
+    width: 100%;
+  }
+}

@@ -16,28 +16,25 @@
     </ng-scrollbar>
   </div>
   <mat-divider vertical></mat-divider>
-  <div class="section flex-110">
-    <ng-scrollbar>
+  <ng-scrollbar>
+    <div class="mokuai-infos items items-per-row">
       @for (info of infos().xuanzhongMokuaiInfos; track i; let i = $index) {
-        <div class="flex-column">
+        <div class="item border">
           <div class="title">{{ info.name }}选中模块</div>
-          @for (node of info.nodes; track $index) {
-            <div>
-              <div class="title flex-row">
+          <div style="width: 100%">
+            @for (node of info.nodes; track $index) {
+              <div class="title toolbar">
                 <div>层名字：{{ node.layer }}</div>
                 <mat-divider class="placeholder" [vertical]="true"></mat-divider>
                 <div [innerHTML]="getMokuaiTitle(node.mokuai)"></div>
               </div>
               <app-formulas [formulaInfos]="node.formulaInfos" [formulaStyles]="formulaStyles"></app-formulas>
-            </div>
-          }
-          @if (i < $count - 1) {
-            <mat-divider></mat-divider>
-          }
+            }
+          </div>
         </div>
       }
-    </ng-scrollbar>
-  </div>
+    </div>
+  </ng-scrollbar>
 </div>
 <div matDialogActions>
   <button mat-raised-button color="primary" (click)="close()">关闭</button>

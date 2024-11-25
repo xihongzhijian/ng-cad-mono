@@ -42,7 +42,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
-import {getIsVersion2024} from "@views/msbj/msbj.utils";
+import {getIsVersion2024, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEmpty} from "lodash";
 import {DateTime} from "luxon";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
@@ -553,7 +553,7 @@ export class DingdanbiaoqianComponent implements OnInit {
             data,
             info: {houtaiId: "", zhankai: [], calcZhankai: []}
           })),
-          calcVars: {keys: ["总宽", "总高"]}
+          calcVars: {keys: nodeFormulasKeysRaw.slice()}
         };
         mokuais.push(item);
       }

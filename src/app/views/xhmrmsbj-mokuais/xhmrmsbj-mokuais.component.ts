@@ -15,6 +15,7 @@ import {isBetween, ObjectOf, timeout} from "@lucilor/utils";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
+import {getNodeFormulasKey, getNodeFormulasKeys, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {getMokuaiFormulas, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {Properties} from "csstype";
@@ -62,6 +63,8 @@ export class XhmrmsbjMokuaisComponent {
       const mokuaidaxiaoResult = mokuaidaxiaoResults[key] || {};
       const mkdxFormulaInfo: XhmrmsbjMkdxFormulaInfo = {name: key, formulaInfos: []};
       const xuanzhongMokuaiInfo: XhmrmsbjXuanzhongMokuaiInfo = {name: key, nodes: []};
+      const nodeNames = value.模块节点?.map((v) => v.层名字) || [];
+      const nodeNameKeysAll = getNodeFormulasKeys(nodeNames);
       for (const node of value.模块节点 || []) {
         const mokuai = node.选中模块;
         if (mokuai) {
@@ -81,13 +84,19 @@ export class XhmrmsbjMokuaisComponent {
             formulas2.门扇布局 = mokuai2.info?.门扇布局?.name || "";
           }
           Object.assign(formulas2, mokuaidaxiaoResult);
-          const gongshi = value.选中布局数据?.模块大小配置?.算料公式 || {};
+          const gongshi = {...value.选中布局数据?.模块大小配置?.算料公式};
+          const nodeNameKeys = getNodeFormulasKeys([node.层名字]);
+          for (const key of Object.keys(gongshi)) {
+            if (nodeNameKeysAll.includes(key) && !nodeNameKeys.includes(key)) {
+              delete gongshi[key];
+            }
+          }
           replaceMenshanName(key, gongshi);
           Object.assign(formulas, gongshi);
           const gongshiResult = this.calc.calc.calcFormulas(formulas, formulas2);
           Object.assign(formulas2, gongshiResult.succeedTrim);
-          for (const key2 of ["总宽", "总高"]) {
-            const key3 = node.层名字 + key2;
+          for (const key2 of nodeFormulasKeysRaw) {
+            const key3 = getNodeFormulasKey(node.层名字, key2);
             if (key3 in formulas2) {
               formulas2[key2] = formulas2[key3];
             }

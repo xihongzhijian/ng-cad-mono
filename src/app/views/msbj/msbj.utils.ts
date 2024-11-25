@@ -87,10 +87,14 @@ export const getEmpty模块大小配置 = (): 模块大小配置 => {
   return {算料公式: {}, 输入显示: []};
 };
 
+export const nodeFormulasKeysRaw = ["总宽", "总高"] as const;
+export type NodeFormulasKeyRaw = (typeof nodeFormulasKeysRaw)[number];
+
+export const getNodeFormulasKey = (nodeName: string, key: NodeFormulasKeyRaw) => `${nodeName}${key}`;
 export const getNodeFormulasKeys = (nodeNames: string[]) => {
   const names: string[] = [];
   for (const name of nodeNames) {
-    names.push(...["总宽", "总高"].map((v) => `${name}${v}`));
+    names.push(...nodeFormulasKeysRaw.map((v) => getNodeFormulasKey(name, v)));
   }
   return names;
 };
