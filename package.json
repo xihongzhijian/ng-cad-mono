@@ -96,7 +96,7 @@
     "@types/pdfmake": "^0.2.9",
     "@types/qrcode": "^1.5.5",
     "@types/uuid": "^10.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/eslint-plugin": "^8.16.0",
     "@typescript-eslint/parser": "^8.15.0",
     "@typescript-eslint/utils": "^8.15.0",
     "angular-animations": "^0.11.0",
