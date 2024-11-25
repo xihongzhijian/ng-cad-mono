@@ -61,6 +61,9 @@ export class MrbcjfzXinghaoInfo {
         style: {flex: "20 20 0"},
         validators: (control) => {
           const val = String(control.value);
+          if (this.table !== "p_peijianmokuai" && /板材分组\d+/.test(key) && !val) {
+            return {required: true};
+          }
           if (["p_luomatou", "p_luomazhu", "p_qianhoubankuanshi"].includes(this.table)) {
             const data = this.默认板材[key];
             if (!isMrbcjfzInfoEmpty1(key, data) && !val) {
