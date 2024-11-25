@@ -45,6 +45,7 @@ import {
   getNodeVars,
   getStep1Data,
   isMokuaiItemEqual,
+  justifyMokuaiItem,
   replaceMenshanName,
   updateMokuaiItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
@@ -1744,7 +1745,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     for (const type1 in step1Data.typesInfo) {
       for (const type2 in step1Data.typesInfo[type1]) {
         const info = step1Data.typesInfo[type1][type2];
-        mokuais.push({...info, type1, type2, totalWidth: "", totalHeight: "", cads: []});
+        const mokuai: ZixuanpeijianMokuaiItem = {...info, type1, type2, totalWidth: "", totalHeight: "", cads: []};
+        justifyMokuaiItem(mokuai);
+        mokuais.push(mokuai);
       }
     }
     return mokuais;

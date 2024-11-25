@@ -13,12 +13,12 @@
     </div>
     <ng-scrollbar #navNodesScrollbar>
       <mat-tree #navNodesTree [dataSource]="navDataSource()" [childrenAccessor]="childrenAccessor" [trackBy]="navNodeTrackBy">
-        <mat-tree-node *matTreeNodeDef="let node" [class.hidden]="node.hidden || node.hidden2">
+        <mat-nested-tree-node *matTreeNodeDef="let node" [class.hidden]="node.hidden || node.hidden2">
           <div class="toolbar">
             <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
             <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
           </div>
-        </mat-tree-node>
+        </mat-nested-tree-node>
         <mat-nested-tree-node *matTreeNodeDef="let node; when: navNodehasChild" [class.hidden]="node.hidden || node.hidden2">
           <div class="toolbar">
             <button mat-icon-button matTreeNodeToggle>
