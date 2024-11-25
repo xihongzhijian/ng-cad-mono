@@ -1,29 +1,17 @@
-<!-- <mat-form-field>
-<mat-label>距离</mat-label>
-<input matInput type="text" name="distance" [(ngModel)]="options.space" placeholder="请输入距离" />
-</mat-form-field>
-<mat-form-field>
-  <mat-label>定位</mat-label>
-  <mat-select name="position" [(ngModel)]="options.position">
-    <mat-option value="absolute">绝对定位</mat-option>
-    <mat-option value="relative">相对定位</mat-option>
-  </mat-select>
-</mat-form-field> -->
 <div class="toolbar">
-  @if (!showPointsAssemble) {
+  @if (showPointsAssemble()) {
+    <button mat-raised-button [color]="pointsAssembling() ? 'accent' : 'primary'" (click)="pointsAssemble()">按点装配</button>
+  } @else {
     <button mat-raised-button color="primary" (click)="directAssemble()">快速装配</button>
-  }
-  @if (showPointsAssemble) {
-    <button mat-raised-button [color]="pointsAssembling ? 'accent' : 'primary'" (click)="pointsAssemble()">按点装配</button>
   }
 </div>
 
-@if (connections.length) {
+@if (data().components.connections.length > 0) {
   <ng-scrollbar class="connections">
     <div class="toolbar">
       <button mat-raised-button color="primary" (click)="clearConnections()">清空</button>
     </div>
-    @for (c of connections; track i; let i = $index) {
+    @for (c of data().components.connections; track i; let i = $index) {
       <div class="connection">
         <p>名字: {{ c.names[0] }} &harr; {{ c.names[1] }}</p>
         <p>方向: {{ c.axis }}</p>

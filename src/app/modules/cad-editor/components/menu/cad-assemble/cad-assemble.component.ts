@@ -1,9 +1,10 @@
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {toSignal} from "@angular/core/rxjs-interop";
 import {MatButtonModule} from "@angular/material/button";
-import {MatDialog} from "@angular/material/dialog";
 import {setGlobal} from "@app/app.common";
 import {CadConnection, CadData, CadEntity, CadEventCallBack, CadImage, CadLine, generatePointsMap, PointsMap} from "@lucilor/cad-viewer";
 import {Subscribed} from "@mixins/subscribed.mixin";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -11,46 +12,19 @@ import {CadPoints} from "@services/app-status.types";
 import {CadStatus, CadStatusAssemble} from "@services/cad-status";
 import {debounce, difference, differenceBy} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {openCadAssembleFormDialog} from "../../dialogs/cad-assemble-form/cad-assemble-form.component";
+import {map} from "rxjs";
 
 @Component({
   selector: "app-cad-assemble",
   templateUrl: "./cad-assemble.component.html",
   styleUrls: ["./cad-assemble.component.scss"],
-  imports: [MatButtonModule, NgScrollbar]
+  imports: [MatButtonModule, NgScrollbar],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadAssembleComponent extends Subscribed() implements OnInit, OnDestroy {
-  options = {space: "0", position: "absolute"};
-  ids: string[] = [];
-  names: string[] = [];
-  lines: string[] = [];
-  get data() {
-    return this.status.cad.data;
-  }
-  get connections() {
-    return this.data.components.connections;
-  }
-  get selectedComponents() {
-    return this.status.components.selected$.value;
-  }
-  get unselectedComponents() {
-    return differenceBy(this.data.components.data, this.selectedComponents, (data) => data.id);
-  }
-  showPointsAssemble = false;
-  pointsAssembling = 0;
-
-  private _prevConfig: Partial<AppConfig> = {};
-  private _prevSelectedComponents: CadData[] | null = null;
-  private _prevComponentsSelectable: boolean | null = null;
-
-  constructor(
-    private config: AppConfigService,
-    private status: AppStatusService,
-    private message: MessageService,
-    private dialog: MatDialog
-  ) {
-    super();
-  }
+  private config = inject(AppConfigService);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
 
   ngOnInit() {
     setGlobal("assemble", this);
@@ -58,9 +32,6 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
     this.subscribe(this.status.cadStatusExit$, this._onCadStatusExit);
     this.subscribe(this.status.components.selected$, this._onComponentSelected);
     this.subscribe(this.status.cadPoints$, this._onCadPointsChange);
-    this.subscribe(this.status.collection$, (collection) => {
-      this.showPointsAssemble = collection === "luomatoucad";
-    });
 
     {
       const cad = this.status.cad;
@@ -78,13 +49,36 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
     cad.off("entitiesunselect", this._onEntitiesUnselect);
   }
 
+  data = toSignal(this.status.openCad$.pipe(map(() => this.status.cad.data)), {initialValue: this.status.cad.data});
+
+  selectedComponents = toSignal(this.status.components.selected$, {initialValue: []});
+  unselectedComponents = toSignal(
+    this.status.components.selected$.pipe(
+      map((selected) => {
+        return differenceBy(this.data().components.data, selected, (data) => data.id);
+      })
+    ),
+    {initialValue: []}
+  );
+
+  options = signal<{space: string; position: string}>({space: "0", position: "absolute"});
+  ids = signal<string[]>([]);
+  names = signal<string[]>([]);
+  lines = signal<string[]>([]);
+  showPointsAssemble = toSignal(this.status.collection$.pipe(map((collection) => collection === "luomatoucad")), {initialValue: false});
+  pointsAssembling = signal(0);
+
+  private _prevConfig: Partial<AppConfig> = {};
+  private _prevSelectedComponents: CadData[] | null = null;
+  private _prevComponentsSelectable: boolean | null = null;
+
   private _onEntitiesSelect: CadEventCallBack<"entitiesselect"> = (entities, multi) => {
     const cadStatus = this.status.cadStatus;
     if (!(cadStatus instanceof CadStatusAssemble)) {
       return;
     }
     const cad = this.status.cad;
-    const data = this.data;
+    const data = this.data();
     const selected = cad.selected().toArray();
     const ids = selected.map((e) => e.id);
     if (multi || (selected.length === 1 && selected[0] instanceof CadImage)) {
@@ -105,17 +99,17 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
 
   private _onEntitiesUnselect: CadEventCallBack<"entitiesunselect"> = (entities) => {
     const ids = entities.toArray().map((v) => v.id);
-    this.lines = difference(this.lines, ids);
+    this.lines.update((lines) => difference(lines, ids));
   };
 
   private _onMoveEntities: CadEventCallBack<"moveentities"> = debounce(() => {
-    if (this.pointsAssembling > 0) {
+    if (this.pointsAssembling() > 0) {
       this._setCadPoints();
     }
   }, 500).bind(this);
 
   private _onZoom: CadEventCallBack<"zoom"> = debounce(() => {
-    if (this.pointsAssembling > 0) {
+    if (this.pointsAssembling() > 0) {
       this._setCadPoints();
     }
   }, 500).bind(this);
@@ -126,15 +120,17 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
       return;
     }
     const cad = this.status.cad;
-    const data = this.data;
+    const data = this.data();
     const dumpComponent = new CadData({id: data.id, name: data.name});
     dumpComponent.entities = data.entities;
     for (const component of [...data.components.data, dumpComponent]) {
-      const {ids, lines, names} = this;
+      const ids = this.ids();
+      const names = this.names();
+      const lines = this.lines();
       const found = component.findEntity(entity.id);
       if (found) {
         const prev = ids.findIndex((id) => id === component.id);
-        const {space, position} = this.options;
+        const {space, position} = this.options();
         if (entity.selected) {
           if (position === "absolute") {
             if (prev > -1) {
@@ -206,7 +202,6 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
     }
   };
 
-  private _leftTopArr: {x: number; y: number}[] = [];
   private _onCadStatusEnter = (cadStatus: CadStatus) => {
     if (cadStatus instanceof CadStatusAssemble) {
       const cad = this.status.cad;
@@ -218,7 +213,6 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
       this.status.components.selected$.next([]);
       this._prevComponentsSelectable = this.status.components.selectable$.value;
       this.status.components.selectable$.next(true);
-      this._leftTopArr = [];
       if (this.status.collection$.value === "CADmuban") {
         const data = cad.data;
         const {top, bottom, left, right} = data.entities.getBoundingRect();
@@ -281,17 +275,18 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
   };
 
   private _onComponentSelected = () => {
-    if (this.pointsAssembling > 0) {
+    if (this.pointsAssembling() > 0) {
       this._setCadPoints();
     }
   };
 
   private async _setCadPoints(include?: CadPoints) {
     let cads: CadData[];
-    if (this.pointsAssembling === 1) {
-      cads = this.selectedComponents;
-    } else if (this.pointsAssembling === 2) {
-      cads = this.unselectedComponents;
+    const pointsAssembling = this.pointsAssembling();
+    if (pointsAssembling === 1) {
+      cads = this.selectedComponents();
+    } else if (pointsAssembling === 2) {
+      cads = this.unselectedComponents();
     } else {
       return;
     }
@@ -304,14 +299,15 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
 
   private _onCadPointsChange = async (points: CadPoints) => {
     const active = points.filter((p) => p.active);
+    const pointsAssembling = this.pointsAssembling();
     if (active.length === 0) {
-      if (this.pointsAssembling === 2) {
-        this.pointsAssembling = 1;
+      if (pointsAssembling === 2) {
+        this.pointsAssembling.set(1);
         this._setCadPoints();
       }
     } else if (active.length === 1) {
-      if (this.pointsAssembling === 1) {
-        this.pointsAssembling = 2;
+      if (pointsAssembling === 1) {
+        this.pointsAssembling.set(2);
         this._setCadPoints(active);
       }
     } else if (active.length > 1) {
@@ -320,7 +316,8 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
       let cad2: CadData | undefined;
       const p1 = this.status.cad.getWorldPoint(active1.x, active1.y);
       const p2 = this.status.cad.getWorldPoint(active2.x, active2.y);
-      for (const cad of this.data.components.data) {
+      const data = this.data();
+      for (const cad of data.components.data) {
         for (const e of cad.entities.toArray()) {
           if (active1.lines.includes(e.id)) {
             cad1 = cad;
@@ -337,7 +334,12 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
         this.message.error("选择错误");
         return;
       }
-      const result = await openCadAssembleFormDialog(this.dialog);
+      const data2 = {x: 0, y: 0};
+      const form: InputInfo<typeof data2>[] = [
+        {type: "number", label: "x", model: {key: "x", data: data2}},
+        {type: "number", label: "y", model: {key: "y", data: data2}}
+      ];
+      const result = await this.message.form(form);
       if (result) {
         const rect1 = cad1.getBoundingRect();
         const rect2 = cad2.getBoundingRect();
@@ -349,31 +351,35 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
         const names = [cad1.name, cad2.name];
         const position = "absolute";
         const connX = new CadConnection({ids, names, position});
-        connX.value = rect1.left - rect2.left - result.x;
+        connX.value = rect1.left - rect2.left - data2.x;
         connX.axis = "x";
-        this.data.assembleComponents(connX);
+        data.assembleComponents(connX);
         const connY = new CadConnection({ids, names, position});
-        connY.value = rect1.top - rect2.top - result.y;
+        connY.value = rect1.top - rect2.top - data2.y;
         connY.axis = "y";
-        this.data.assembleComponents(connY);
-        this.status.cad.render();
+        data.assembleComponents(connY);
+        this.status.openCad();
       }
 
-      this.pointsAssembling = 0;
+      this.pointsAssembling.set(0);
       this.status.setCadPoints();
     }
   };
 
   clearConnections() {
-    this.connections.length = 0;
+    const data = this.data();
+    data.components.connections = [];
+    this.status.openCad();
   }
 
   removeConnection(index: number) {
-    this.connections.splice(index, 1);
+    const data = this.data();
+    data.components.connections.splice(index, 1);
+    this.status.openCad();
   }
 
   directAssemble() {
-    const data = this.data;
+    const data = this.data();
     data.components.data.forEach((v) => {
       try {
         data.directAssemble(v);
@@ -381,12 +387,12 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
         this.message.alert({content: error});
       }
     });
-    this.status.cad.render();
+    this.status.openCad();
   }
 
   pointsAssemble() {
-    this.pointsAssembling = this.pointsAssembling > 1 ? 0 : this.pointsAssembling + 1;
-    if (this.pointsAssembling) {
+    this.pointsAssembling.update((v) => (v === 0 ? 1 : 0));
+    if (this.pointsAssembling() > 0) {
       this._setCadPoints();
     } else {
       this.status.setCadPoints();
