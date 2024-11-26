@@ -94,5 +94,6 @@ export interface XhmrmsbjErrorJumpTo {
   门扇名字: MenshanKey;
   层名字?: string;
   mokuai?: string;
+  openMokuai?: boolean;
   mkdx?: boolean;
 }

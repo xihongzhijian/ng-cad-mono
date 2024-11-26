@@ -247,6 +247,7 @@ export class MokuaiItemComponent {
     }
     return inputData;
   });
+  mrbcjfzTable = computed(() => "p_peijianmokuai");
   private async _fetchMrbcjfzResponseData() {
     const mokuai = this.mokuai();
     const resData = this._mrbcjfzResponseData();
@@ -254,11 +255,9 @@ export class MokuaiItemComponent {
     if (resData?.id === mokuai.id) {
       return;
     }
-    const data = await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {
-      table: "p_peijianmokuai",
-      id,
-      collection: this.bjmkStatus.collection
-    });
+    const table = this.mrbcjfzTable();
+    const collection = this.bjmkStatus.collection;
+    const data = await this.http.getData<MrbcjfzResponseData>("peijian/xinghao/bancaifenzuIndex", {table, id, collection});
     if (data) {
       this._mrbcjfzResponseData.set({id, data});
     }

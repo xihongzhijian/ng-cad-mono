@@ -1051,10 +1051,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             mokuaiErrors.push([{text: "模块输入"}, ...getNamesDetail(missingVars), {text: "不能为空"}]);
           }
           if (mokuaiErrors.length > 0) {
+            const mokuaiErrors2: XhmrmsbjErrorDetail = [{br: true}];
+            for (const err of mokuaiErrors) {
+              mokuaiErrors2.push(...err, {br: true});
+            }
             const title = getMokuaiTitle(mokuai, {门扇名字: menshanKey, 层名字: node.层名字});
             mokuaisError.details.push([
               {text: title, jumpTo: {门扇名字: menshanKey, 层名字: node.层名字, mokuai: mokuai.type2}},
-              {text: `：${mokuaiErrors.join("，")}`}
+              ...mokuaiErrors2
             ]);
           }
 
@@ -1085,7 +1089,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                     type: string
                   ): XhmrmsbjErrorDetail => {
                     const title = getMokuaiTitle(mokuai, {门扇名字: key0, 层名字: node0.层名字});
-                    return [{text: title, jumpTo: {门扇名字: key0, 层名字: node0.层名字, mokuai: mokuai.type2}}, {text: `的${type}变量`}];
+                    const jumpTo: XhmrmsbjErrorJumpTo = {门扇名字: key0, 层名字: node0.层名字, mokuai: mokuai.type2};
+                    return [
+                      {text: title, jumpTo},
+                      {text: `的${type}变量，【`},
+                      {text: "打开", jumpTo: {...jumpTo, openMokuai: true}},
+                      {text: "】"}
+                    ];
                   };
                   const getDetail = (dupVars: string[], type1: string, type2: string): XhmrmsbjErrorDetail => {
                     const part1 = getDetailPart(menshanKey, node, mokuai, type1);
@@ -1153,7 +1163,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       const mokuai = mokuaiNode?.可选模块.find((v) => v.type2 === jumpTo.mokuai);
       if (mokuai) {
         await this.selectMokuai(mokuai);
-        this.openMokuai(mokuai);
+        if (jumpTo.openMokuai) {
+          this.openMokuai(mokuai);
+        }
       }
     }
     if (jumpTo.mkdx) {

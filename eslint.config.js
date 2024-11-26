@@ -103,7 +103,6 @@ export default [
           style: "kebab-case"
         }
       ],
-
       "@angular-eslint/directive-selector": [
         "error",
         {
@@ -112,6 +111,8 @@ export default [
           style: "camelCase"
         }
       ],
+      "@angular-eslint/no-input-rename": "off",
+      "@angular-eslint/no-output-rename": "off",
 
       "@typescript-eslint/naming-convention": [
         "error",
@@ -121,7 +122,6 @@ export default [
           leadingUnderscore: "allowSingleOrDouble"
         }
       ],
-
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-deprecated": "warn",
 
