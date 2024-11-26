@@ -60,11 +60,8 @@
 <div class="flex-row flex-110 scrollbar-container" [class.hidden]="activeTabName() !== '门扇模块'">
   @if (!isFloatingDialog()) {
     <div class="flex-column">
-      @if (data(); as data) {
-        <mat-slide-toggle [(ngModel)]="data['铰扇跟随锁扇']" (change)="refreshData(true)">铰扇布局和锁扇相同</mat-slide-toggle>
-      }
-      @if (isFromOrder() && !production) {
-        <mat-slide-toggle [(ngModel)]="ignoreXiaoguotu">ignoreXiaoguotu</mat-slide-toggle>
+      @for (info of menshanFollowersInputInfo(); track $index) {
+        <app-input [info]="info"></app-input>
       }
       <mat-divider class="placeholder"></mat-divider>
       <ng-scrollbar>

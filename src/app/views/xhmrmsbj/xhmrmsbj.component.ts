@@ -22,7 +22,6 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {getValueString, remoteFilePath, session, setGlobal, timer} from "@app/app.common";
@@ -57,7 +56,6 @@ import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
 import {VarNameItem} from "@components/var-names/var-names.types";
 import {XhmrmsbjSbjbComponent} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.component";
-import {environment} from "@env";
 import {getElementVisiblePercentage, keysOf, ObjectOf, Point, queryString, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -77,7 +75,7 @@ import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {resetInputs} from "@views/suanliao/suanliao.utils";
 import {getFormulaInfos, openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {XhmrmsbjXinghaoConfigComponent} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.component";
-import {cloneDeep, debounce, difference, intersection} from "lodash";
+import {clone, cloneDeep, debounce, difference, intersection} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, Subject} from "rxjs";
@@ -87,6 +85,7 @@ import {TypedTemplateDirective} from "../../modules/directives/typed-template.di
 import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {InputComponent} from "../../modules/input/components/input.component";
 import {
+  MenshanFollowerKey,
   MenshanKey,
   menshanKeys,
   Shuruzhi,
@@ -131,7 +130,6 @@ const table = "p_xinghaomorenmenshanbuju";
     MatCheckboxModule,
     MatDividerModule,
     MatIconModule,
-    MatSlideToggleModule,
     MenfengPeizhiComponent,
     MkdxpzEditorComponent,
     MokuaiItemComponent,
@@ -193,7 +191,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   wmm = new WindowMessageManager("门扇模块", this, window.parent);
   suanliaoLock$ = new BehaviorSubject(false);
   genXiaoguotuLock$ = new BehaviorSubject(false);
-  production = environment.production;
 
   msbjRectsComponent = viewChild(MsbjRectsComponent);
   xiaoguotuContainer = viewChild<ElementRef<HTMLDivElement>>("xiaoguotuContainer");
@@ -277,11 +274,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
   }
 
-  refreshData(deep = false) {
-    this.data.update((v) => (v ? v.clone(deep) : null));
+  refreshData() {
+    this.data.update((v) => clone(v));
   }
-  refreshXinghao(deep = false) {
-    this.xinghao.update((v) => (v ? v.clone(deep) : null));
+  refreshXinghao() {
+    this.xinghao.update((v) => clone(v));
   }
 
   user = signal<XhmrmsbjRequestData["user"]>(null);
@@ -289,8 +286,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   opts = signal<XhmrmsbjRequestData["opts"]>(undefined);
   isFloatingDialog = computed(() => !!this.opts()?.浮动弹窗);
   async requestDataEnd(data: XhmrmsbjRequestData) {
-    const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys, 铰扇跟随锁扇} = data;
+    const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys} = data;
     const {houtaiUrl, id, user, localServerUrl, menshanbujus, step1Data, 模块通用配置} = data;
+    const {铰扇跟随锁扇, 铰扇正面跟随锁扇正面, 铰扇背面跟随锁扇背面} = data;
     if (typeof localServerUrl === "string") {
       this.urlPrefix = localServerUrl;
     }
@@ -307,7 +305,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         vid: id,
         mingzi: "1",
         peizhishuju: JSON.stringify(型号选中门扇布局),
-        jiaoshanbujuhesuoshanxiangtong: 铰扇跟随锁扇 ? 1 : 0,
+        jiaoshanbujuhesuoshanxiangtong: 铰扇跟随锁扇,
+        jiaoshanzhengmianhesuoshanzhengmianxiangtong: 铰扇正面跟随锁扇正面,
+        jiaoshanbeimianhesuoshanbeimianxiangtong: 铰扇背面跟随锁扇背面,
         zuoshujubanben: String(materialResult.做数据版本)
       },
       menshanKeys,
@@ -402,6 +402,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   });
 
   activeMsbj = computed(() => {
+    this.data();
     const info = this.activeMsbjInfo();
     const vid = info?.选中布局数据?.vid;
     return cloneDeep(this.msbjs().find((item) => item.vid === vid) || null);
@@ -435,6 +436,35 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
       await this.updateMokuaidaxiaoResults();
     });
+  });
+
+  menshanFollowersInputInfo = computed(() => {
+    const data = this.data();
+    if (!data) {
+      return [];
+    }
+    const raw = data.raw;
+    const get = (key: MenshanFollowerKey, label: string): InputInfo<typeof raw> => ({
+      type: "boolean",
+      label: label,
+      appearance: "switch",
+      value: !!raw[key],
+      onChange: (val) => {
+        raw[key] = val ? 1 : 0;
+        data.updateMenshanFollowers();
+        this.refreshData();
+      }
+    });
+    const infos = [];
+    if (data.getHasSeparateMenshanFollowerKeys()) {
+      infos.push(
+        get("jiaoshanzhengmianhesuoshanzhengmianxiangtong", "铰扇正面和锁扇正面相同"),
+        get("jiaoshanbeimianhesuoshanbeimianxiangtong", "铰扇背面和锁扇背面相同")
+      );
+    } else {
+      infos.push(get("jiaoshanbujuhesuoshanxiangtong", "铰扇布局和锁扇相同"));
+    }
+    return infos;
   });
 
   selectMsbjRect(name: string) {
@@ -508,7 +538,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         delete infos[menshanweizhi].选中布局;
         delete infos[menshanweizhi].选中布局数据;
       }
-      this.refreshData(true);
+      this.refreshData();
     }
   }
 
@@ -996,10 +1026,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       const getNameDetail = (name: string): XhmrmsbjErrorDetail => [{text: "【"}, {text: name, color: "red"}, {text: "】"}];
       const getNamesDetail = (names: string[]): XhmrmsbjErrorDetail => names.map((v) => getNameDetail(v)).flat();
       for (const [j, node] of nodes.entries()) {
-        if (!data.铰扇跟随锁扇 || !menshanKey.includes("铰扇")) {
-          if (!node.选中模块) {
-            errorXuanzhongNodeNames.push(node.层名字);
-          }
+        if (!data.isMenshanFollower(menshanKey) && !node.选中模块) {
+          errorXuanzhongNodeNames.push(node.层名字);
         }
         for (const [k, mokuai] of node.可选模块.entries()) {
           const varKeysShuchu = mokuai.shuchubianliang;
@@ -1063,7 +1091,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           }
 
           for (const [i2, {menshanKey: menshanKey2, msbjInfo: msbjInfo2}] of msbjInfos.entries()) {
-            if (data.铰扇跟随锁扇 && menshanKey2.includes("铰扇")) {
+            if (data.isMenshanFollower(menshanKey2)) {
               continue;
             }
             for (const [j2, node2] of (msbjInfo2.模块节点 || []).entries()) {
@@ -1569,17 +1597,16 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!data) {
       return null;
     }
-    if (data.铰扇跟随锁扇) {
-      for (const key of keysOf(data.menshanbujuInfos)) {
-        if (key.includes("铰扇")) {
-          const key2 = key.replace("铰扇", "锁扇") as MenshanKey;
-          data.menshanbujuInfos[key] = cloneDeep(data.menshanbujuInfos[key2]);
-        }
+    for (const key of keysOf(data.menshanbujuInfos)) {
+      for (const key2 of data.getMenshanFollowers(key)) {
+        data.menshanbujuInfos[key2] = cloneDeep(data.menshanbujuInfos[key]);
       }
     }
     return {
       型号选中门扇布局: data.menshanbujuInfos,
-      铰扇布局和锁扇相同: data.铰扇跟随锁扇
+      铰扇布局和锁扇相同: !!data.raw.jiaoshanbujuhesuoshanxiangtong,
+      铰扇正面和锁扇正面相同: !!data.raw.jiaoshanzhengmianhesuoshanzhengmianxiangtong,
+      铰扇背面和锁扇背面相同: !!data.raw.jiaoshanbeimianhesuoshanbeimianxiangtong
     };
   }
   async updateOrder() {
@@ -1896,7 +1923,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       if (!info) {
         continue;
       }
-      if (data.铰扇跟随锁扇 && key.includes("铰扇")) {
+      if (data.isMenshanFollower(key)) {
         continue;
       }
       items.push({key, info});
@@ -1925,7 +1952,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     Object.assign(to, cloneDeep(from));
-    this.refreshData(true);
+    this.refreshData();
   }
 
   showXhmrmsbjsUsingMokuai(mokuai: ZixuanpeijianMokuaiItem) {

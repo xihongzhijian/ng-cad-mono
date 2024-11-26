@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, model, output, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, model} from "@angular/core";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {ShuruTableDataSorted, XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {
@@ -14,7 +14,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
-import {isEqual} from "lodash";
+import {clone, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 
 @Component({
@@ -30,14 +30,11 @@ export class XhmrmsbjXinghaoConfigComponent {
 
   @HostBinding("class") class = "ng-page";
 
-  dataIn = model.required<XhmrmsbjData | null>({alias: "data"});
-  dataChange = output<XhmrmsbjData | null>();
+  data = model.required<XhmrmsbjData | null>({alias: "data"});
 
-  data = signal<XhmrmsbjData | null>(null);
   dataEff = effect(async () => {
-    const data = this.dataIn();
+    const data = this.data();
     if (!data) {
-      this.data.set(null);
       return;
     }
     const options = await this.bjmk.xinghaoOptionsManager.fetch();
@@ -45,25 +42,19 @@ export class XhmrmsbjXinghaoConfigComponent {
     const options2 = config.选项;
     config.选项 = [];
     for (const name of Object.keys(options)) {
-      const optionFound = options2.find((v) => v.名字 === name);
+      const optionFound = options2?.find((v) => v.名字 === name);
       if (optionFound) {
         config.选项.push(optionFound);
       } else {
         config.选项.push({名字: name, 可选项: []});
       }
     }
-    this.data.set(data);
     if (!isEqual(config.选项, options2)) {
       this.refreshData();
     }
   });
   refreshData() {
-    let data = this.data();
-    if (data) {
-      data = data.clone();
-    }
-    this.data.set(data);
-    this.dataChange.emit(data);
+    this.data.update((v) => clone(v));
   }
 
   shurus = computed(() => this.data()?.xinghaoConfig.输入 || []);

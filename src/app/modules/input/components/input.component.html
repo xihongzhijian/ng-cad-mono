@@ -307,7 +307,7 @@
     @if (info.appearance === "switch") {
       <div class="switch-container" [class]="{empty: isEmpty(value)}">
         <div>{{ info.label }}</div>
-        <mat-slide-toggle [(ngModel)]="value" (change)="onChange()"></mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="value" [disabled]="!!(info.disabled || info.readonly)" (change)="onChange()"></mat-slide-toggle>
       </div>
     } @else {
       <mat-form-field [class]="{empty: isEmpty(value)}">
@@ -320,8 +320,8 @@
         @if (info.appearance === "radio") {
           <input matInput hidden />
           <mat-radio-group [(ngModel)]="value" (change)="onChange()">
-            <mat-radio-button [value]="true" [disabled]="info.readonly">是</mat-radio-button>
-            <mat-radio-button [value]="false" [disabled]="info.readonly">否</mat-radio-button>
+            <mat-radio-button [value]="true" [disabled]="info.disabled || info.readonly">是</mat-radio-button>
+            <mat-radio-button [value]="false" [disabled]="info.disabled || info.readonly">否</mat-radio-button>
           </mat-radio-group>
         } @else {
           <mat-select

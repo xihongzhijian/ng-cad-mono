@@ -3,11 +3,13 @@ import {tryParseJson} from "@app/utils/json-helper";
 import {matchMongoData} from "@app/utils/mongo";
 import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {getNodeVars, isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
-import {keysOf} from "@lucilor/utils";
+import {isTypeOf, keysOf} from "@lucilor/utils";
 import {MsbjInfo, ZuoshujuData} from "@views/msbj/msbj.utils";
 import {XhmrmsbjXinghaoConfig} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
-import {clone, cloneDeep, difference, intersection, isEmpty} from "lodash";
+import {difference, intersection, isEmpty} from "lodash";
 import {
+  MenshanFollowerKey,
+  menshanFollowersKeys,
   MenshanKey,
   Shuruzhi,
   XhmrmsbjDataMsbjInfos,
@@ -20,16 +22,19 @@ import {
 export class XhmrmsbjData extends ZuoshujuData {
   menshanbujuInfos: XhmrmsbjDataMsbjInfos;
   xinghaoConfig: XhmrmsbjXinghaoConfig;
-  铰扇跟随锁扇?: boolean;
   算料单模板?: string;
 
-  constructor(data: XhmrmsbjTableData, menshanKeys: readonly MenshanKey[], typesInfo: ZixuanpeijianTypesInfo, msbjs: MsbjInfo[]) {
-    super(data);
-    this.铰扇跟随锁扇 = data.jiaoshanbujuhesuoshanxiangtong === 1;
-    this.算料单模板 = data.suanliaodanmuban;
-    const info = tryParseJson<XhmrmsbjDataMsbjInfos>(data.peizhishuju || "", {});
+  constructor(
+    public raw: XhmrmsbjTableData,
+    menshanKeys: readonly MenshanKey[],
+    typesInfo: ZixuanpeijianTypesInfo,
+    msbjs: MsbjInfo[]
+  ) {
+    super(raw);
+    this.算料单模板 = raw.suanliaodanmuban;
+    const info = tryParseJson<XhmrmsbjDataMsbjInfos>(raw.peizhishuju || "", {});
     this.menshanbujuInfos = {};
-    const xinghaoConfig = tryParseJson<Partial<XhmrmsbjXinghaoConfig>>(data.xinghaopeizhi || "", {});
+    const xinghaoConfig = tryParseJson<Partial<XhmrmsbjXinghaoConfig>>(raw.xinghaopeizhi || "", {});
     this.xinghaoConfig = {
       输入: [],
       选项: [],
@@ -68,6 +73,7 @@ export class XhmrmsbjData extends ZuoshujuData {
         this.setSelectedMokuai(v, 选中模块, true);
       }
     }
+    this.updateMenshanFollowers();
   }
 
   setSelectedMokuai(node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem | undefined | null, setIsDefault: boolean) {
@@ -107,10 +113,7 @@ export class XhmrmsbjData extends ZuoshujuData {
     }
   }
 
-  export(): XhmrmsbjTableData {
-    return {vid: this.vid, ...this.exportWithoutVid()};
-  }
-  exportWithoutVid() {
+  export() {
     for (const info of Object.values(this.menshanbujuInfos)) {
       for (const node of info.模块节点 || []) {
         for (const mokuai of node.可选模块) {
@@ -120,18 +123,19 @@ export class XhmrmsbjData extends ZuoshujuData {
         }
       }
     }
-    const data: Omit<XhmrmsbjTableData, "vid"> = {
+
+    const data: XhmrmsbjTableData = {
+      vid: this.vid,
       mingzi: this.name,
-      jiaoshanbujuhesuoshanxiangtong: this.铰扇跟随锁扇 ? 1 : 0,
       suanliaodanmuban: this.算料单模板,
       peizhishuju: JSON.stringify(this.menshanbujuInfos),
       xinghaopeizhi: JSON.stringify(this.xinghaoConfig)
     };
+    const {raw} = this;
+    for (const key of menshanFollowersKeys) {
+      (data as any)[key] = raw[key];
+    }
     return data;
-  }
-
-  clone(deep = false) {
-    return deep ? cloneDeep(this) : clone(this);
   }
 
   getCommonFormulas() {
@@ -152,6 +156,41 @@ export class XhmrmsbjData extends ZuoshujuData {
       }
     }
     return formulas;
+  }
+
+  private _menshanFollowersMap = new Map<MenshanKey, MenshanKey[]>();
+  menshanFollowersMissingKeys = new Set<MenshanFollowerKey>();
+  getHasSeparateMenshanFollowerKeys() {
+    const keys: MenshanFollowerKey[] = ["jiaoshanzhengmianhesuoshanzhengmianxiangtong", "jiaoshanbeimianhesuoshanbeimianxiangtong"];
+    return keys.every((key) => isTypeOf(this.raw[key], ["number", "boolean"]));
+  }
+  updateMenshanFollowers() {
+    const {raw, _menshanFollowersMap: map} = this;
+    map.clear();
+    if (this.getHasSeparateMenshanFollowerKeys()) {
+      if (raw.jiaoshanzhengmianhesuoshanzhengmianxiangtong) {
+        map.set("锁扇正面", ["铰扇正面"]);
+      }
+      if (raw.jiaoshanbeimianhesuoshanbeimianxiangtong) {
+        map.set("锁扇背面", ["铰扇背面"]);
+      }
+    } else {
+      if (raw.jiaoshanbujuhesuoshanxiangtong) {
+        map.set("锁扇正面", ["铰扇正面"]);
+        map.set("锁扇背面", ["铰扇背面"]);
+      }
+    }
+  }
+  getMenshanFollowers(key: MenshanKey) {
+    return this._menshanFollowersMap.get(key) || [];
+  }
+  isMenshanFollower(key: MenshanKey) {
+    for (const followers of this._menshanFollowersMap.values()) {
+      if (followers.includes(key)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 

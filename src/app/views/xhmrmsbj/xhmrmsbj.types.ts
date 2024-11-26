@@ -9,11 +9,19 @@ import {MsbjData} from "@views/msbj/msbj.types";
 export interface XhmrmsbjTableData extends TableDataBase {
   peizhishuju?: string;
   xinghao?: string;
-  jiaoshanbujuhesuoshanxiangtong?: number;
+  jiaoshanbujuhesuoshanxiangtong?: number | boolean;
+  jiaoshanzhengmianhesuoshanzhengmianxiangtong?: number | boolean;
+  jiaoshanbeimianhesuoshanbeimianxiangtong?: number | boolean;
   suanliaodanmuban?: string;
   zuoshujubanben?: string;
   xinghaopeizhi?: string;
 }
+export const menshanFollowersKeys = [
+  "jiaoshanbujuhesuoshanxiangtong",
+  "jiaoshanzhengmianhesuoshanzhengmianxiangtong",
+  "jiaoshanbeimianhesuoshanbeimianxiangtong"
+] as const;
+export type MenshanFollowerKey = (typeof menshanFollowersKeys)[number];
 
 export interface XhmrmsbjInfo {
   选中布局?: number;
@@ -63,6 +71,8 @@ export interface XhmrmsbjRequestData {
   型号选中门扇布局: XhmrmsbjDataMsbjInfos;
   型号选中板材: MrbcjfzXinghaoInfo["默认板材"];
   铰扇跟随锁扇?: boolean;
+  铰扇正面跟随锁扇正面?: boolean;
+  铰扇背面跟随锁扇背面?: boolean;
   materialResult: Formulas;
   menshanKeys: MenshanKey[];
   houtaiUrl: string;

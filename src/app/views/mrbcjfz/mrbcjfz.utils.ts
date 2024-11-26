@@ -1,7 +1,7 @@
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoSelect, InputInfoString} from "@modules/input/components/input.types";
-import {clone, cloneDeep, difference, isEqual} from "lodash";
+import {difference, isEqual} from "lodash";
 import {MrbcjfzHuajian, MrbcjfzInfo, MrbcjfzInfoShowItem, mrbcjfzInfoShowItems, mrbcjfzMsxzItems, MrbcjfzXinghao} from "./mrbcjfz.types";
 
 export class MrbcjfzXinghaoInfo {
@@ -178,10 +178,6 @@ export class MrbcjfzXinghaoInfo {
       return arr1.join("/");
     }
     return placeholder;
-  }
-
-  clone(deep: boolean) {
-    return deep ? cloneDeep(this) : clone(this);
   }
 }
 

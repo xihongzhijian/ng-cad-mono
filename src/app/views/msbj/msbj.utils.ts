@@ -13,10 +13,10 @@ export class ZuoshujuData {
     return getIsVersion2024(this.zuoshujubanben);
   }
 
-  constructor(data: ZuoshujuTableData) {
-    this.vid = data.vid;
-    this.name = data.mingzi;
-    this.zuoshujubanben = data.zuoshujubanben;
+  constructor(public raw: ZuoshujuTableData) {
+    this.vid = raw.vid;
+    this.name = raw.mingzi;
+    this.zuoshujubanben = raw.zuoshujubanben;
   }
 }
 
