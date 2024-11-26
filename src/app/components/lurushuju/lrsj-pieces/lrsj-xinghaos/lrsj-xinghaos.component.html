@@ -34,6 +34,6 @@
 
 @if (showXhmrmsbj(); as data) {
   <app-floating-dialog [maximized]="true" noTitle>
-    <app-xhmrmsbj [xinghaoId]="data.id" closable (close)="closeXhmrmsbj()"></app-xhmrmsbj>
+    <app-xhmrmsbj [xinghaoId]="data.id" cancelable (close)="closeXhmrmsbj()"></app-xhmrmsbj>
   </app-floating-dialog>
 }

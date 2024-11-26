@@ -41,8 +41,8 @@
         }
       }
       <button mat-raised-button color="primary" (click)="submit()">保存</button>
-      @if (closable()) {
-        <button mat-raised-button color="primary" (click)="close()">关闭</button>
+      @if (cancelable()) {
+        <button mat-raised-button color="primary" (click)="cancel()">关闭</button>
       }
     }
     <div class="title" [class]="canOpenXhmrmsbj() ? 'link text' : ''" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>

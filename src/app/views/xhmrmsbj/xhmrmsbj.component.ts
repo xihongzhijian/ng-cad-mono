@@ -160,8 +160,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   @HostBinding("class") class = "ng-page";
 
   xinghaoId = input(-1);
-  closable = input(false, {transform: booleanAttribute});
-  closeOut = output<XhmrmsbjCloseEvent>({alias: "close"});
+  cancelable = input(false, {transform: booleanAttribute});
+  close = output<XhmrmsbjCloseEvent>();
 
   msbjsCache = signal<MsbjInfo[]>([]);
   msbjs = computed(() => {
@@ -338,23 +338,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   submitDataStart() {
-    const result = {action: "submitDataEnd", data: {} as any};
-    const data = this.data();
-    if (data) {
-      if (data.铰扇跟随锁扇) {
-        for (const key of keysOf(data.menshanbujuInfos)) {
-          if (key.includes("铰扇")) {
-            const key2 = key.replace("铰扇", "锁扇") as MenshanKey;
-            data.menshanbujuInfos[key] = cloneDeep(data.menshanbujuInfos[key2]);
-          }
-        }
-      }
-      result.data = {
-        型号选中门扇布局: data.menshanbujuInfos,
-        铰扇跟随锁扇: data.铰扇跟随锁扇
-      };
-    }
-    return result;
+    return {action: "submitDataEnd", data: this.getOrderData()};
   }
 
   async 保存模块大小(data: {inputValues: Formulas}) {
@@ -1210,11 +1194,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     await this.http.tableUpdate({table, data});
     this.isSubmited.set(true);
   }
-  close() {
-    if (!this.closable()) {
+  cancel() {
+    if (!this.cancelable()) {
       return;
     }
-    this.closeOut.emit({isSubmited: this.isSubmited()});
+    this.close.emit({isSubmited: this.isSubmited()});
   }
 
   async openMrbcjfzDialog() {
@@ -1568,11 +1552,29 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return await this.wmm.waitForMessage<LastSuanliao | null>("getLastSuanliaoEnd");
   });
 
+  getOrderData() {
+    const data = this.data();
+    if (!data) {
+      return null;
+    }
+    if (data.铰扇跟随锁扇) {
+      for (const key of keysOf(data.menshanbujuInfos)) {
+        if (key.includes("铰扇")) {
+          const key2 = key.replace("铰扇", "锁扇") as MenshanKey;
+          data.menshanbujuInfos[key] = cloneDeep(data.menshanbujuInfos[key2]);
+        }
+      }
+    }
+    return {
+      型号选中门扇布局: data.menshanbujuInfos,
+      铰扇布局和锁扇相同: data.铰扇跟随锁扇
+    };
+  }
   async updateOrder() {
     if (!this.isFromOrder()) {
       return;
     }
-    this.wmm.postMessage("updateOrderStart", {型号选中门扇布局: this.data()?.menshanbujuInfos});
+    this.wmm.postMessage("updateOrderStart", this.getOrderData());
     await this.wmm.waitForMessage("updateOrderEnd");
   }
 
@@ -1861,7 +1863,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.wmm.postMessage("requestDataStart");
   }
 
-  canOpenXhmrmsbj = computed(() => this.isFromOrder() || this.closable());
+  canOpenXhmrmsbj = computed(() => this.isFromOrder() || this.cancel());
   openXhmrmsbj() {
     const data = this.data();
     if (!data || !this.canOpenXhmrmsbj()) {
