@@ -18,6 +18,50 @@ export class MrbcjfzXinghaoInfo {
     this.update();
   }
 
+  get板材分组别名InputInfo(key: string, isInBancaiForm = false) {
+    const data = this.默认板材[key];
+    const info: InputInfoString = {
+      type: "string",
+      label: "板材分组别名",
+      model: {data, key: "板材分组别名"},
+      style: {flex: "20 20 0"},
+      validators: (control) => {
+        const val = String(control.value);
+        const {table} = this;
+        if (!val) {
+          let required = false;
+          if ((isInBancaiForm || !isMrbcjfzInfoEmpty2(key, data)) && table !== "p_peijianmokuai" && /板材分组\d+/.test(key)) {
+            required = true;
+          } else if (!isMrbcjfzInfoEmpty1(key, data) && ["p_luomatou", "p_luomazhu", "p_qianhoubankuanshi"].includes(table)) {
+            required = true;
+          }
+          if (required) {
+            return {required: true};
+          }
+        }
+        if (val) {
+          if (!/(板材|颜色)$/.test(val)) {
+            return {pattern: "必须以“板材”或“颜色”结尾"};
+          }
+          for (const key2 in this.默认板材) {
+            if (key2 !== key && this.默认板材[key2].板材分组别名 === val) {
+              return {pattern: "不能重复"};
+            }
+          }
+        }
+        return null;
+      },
+      onChange: () => {
+        for (const key2 in this.默认板材) {
+          if (key2 !== key) {
+            info.forceValidateNum = (info.forceValidateNum || 0) + 1;
+          }
+        }
+      }
+    };
+    return info;
+  }
+
   update() {
     this.inputInfos = {};
     for (const key in this.默认板材) {
@@ -54,42 +98,6 @@ export class MrbcjfzXinghaoInfo {
       if (!value.门扇使用限制 || !mrbcjfzMsxzItems.includes(value.门扇使用限制)) {
         value.门扇使用限制 = "无限制";
       }
-      const 板材分组别名InputInfo: InputInfoString = {
-        type: "string",
-        label: "板材分组别名",
-        model: {data: value, key: "板材分组别名"},
-        style: {flex: "20 20 0"},
-        validators: (control) => {
-          const val = String(control.value);
-          if (this.table !== "p_peijianmokuai" && /板材分组\d+/.test(key) && !val) {
-            return {required: true};
-          }
-          if (["p_luomatou", "p_luomazhu", "p_qianhoubankuanshi"].includes(this.table)) {
-            const data = this.默认板材[key];
-            if (!isMrbcjfzInfoEmpty1(key, data) && !val) {
-              return {required: true};
-            }
-          }
-          if (val) {
-            if (!/(板材|颜色)$/.test(val)) {
-              return {pattern: "必须以“板材”或“颜色”结尾"};
-            }
-            for (const key2 in this.默认板材) {
-              if (key2 !== key && this.默认板材[key2].板材分组别名 === val) {
-                return {pattern: "不能重复"};
-              }
-            }
-          }
-          return null;
-        },
-        onChange: () => {
-          for (const key2 in this.默认板材) {
-            if (key2 !== key) {
-              板材分组别名InputInfo.forceValidateNum = (板材分组别名InputInfo.forceValidateNum || 0) + 1;
-            }
-          }
-        }
-      };
       const 显示内容InputInfo: InputInfoSelect = {
         type: "select",
         label: "显示内容",
@@ -123,7 +131,7 @@ export class MrbcjfzXinghaoInfo {
         }
       };
       this.inputInfos[key] = [
-        [板材分组别名InputInfo],
+        [this.get板材分组别名InputInfo(key)],
         [
           {type: "boolean", label: "允许修改", model: {data: value, key: "允许修改"}, style: {flex: "8 8 0"}},
           {

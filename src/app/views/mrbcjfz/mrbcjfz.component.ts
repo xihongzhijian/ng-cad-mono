@@ -367,7 +367,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         },
         bancaiList: this.bancaiList,
         key,
-        extraInputInfos: [this.xinghao.inputInfos[key][0]]
+        extraInputInfos: [[this.xinghao.get板材分组别名InputInfo(key, true)]]
       }
     });
     if (result) {

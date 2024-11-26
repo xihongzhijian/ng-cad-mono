@@ -1863,7 +1863,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.wmm.postMessage("requestDataStart");
   }
 
-  canOpenXhmrmsbj = computed(() => this.isFromOrder() || this.cancel());
+  canOpenXhmrmsbj = computed(() => this.isFromOrder() || this.cancelable());
   openXhmrmsbj() {
     const data = this.data();
     if (!data || !this.canOpenXhmrmsbj()) {
