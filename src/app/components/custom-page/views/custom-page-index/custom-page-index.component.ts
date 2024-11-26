@@ -370,8 +370,6 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
       return;
     }
     event.preventDefault();
-
-    event.returnValue = "";
   }
 
   openDoc() {

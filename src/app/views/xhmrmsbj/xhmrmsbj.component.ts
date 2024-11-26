@@ -1602,12 +1602,16 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         data.menshanbujuInfos[key2] = cloneDeep(data.menshanbujuInfos[key]);
       }
     }
-    return {
-      型号选中门扇布局: data.menshanbujuInfos,
-      铰扇布局和锁扇相同: !!data.raw.jiaoshanbujuhesuoshanxiangtong,
-      铰扇正面和锁扇正面相同: !!data.raw.jiaoshanzhengmianhesuoshanzhengmianxiangtong,
-      铰扇背面和锁扇背面相同: !!data.raw.jiaoshanbeimianhesuoshanbeimianxiangtong
+    const result: ObjectOf<any> = {
+      型号选中门扇布局: data.menshanbujuInfos
     };
+    if (data.getHasSeparateMenshanFollowerKeys()) {
+      result.铰扇正面和锁扇正面相同 = !!data.raw.jiaoshanzhengmianhesuoshanzhengmianxiangtong;
+      result.铰扇背面和锁扇背面相同 = !!data.raw.jiaoshanbeimianhesuoshanbeimianxiangtong;
+    } else {
+      result.铰扇布局和锁扇相同 = !!data.raw.jiaoshanbujuhesuoshanxiangtong;
+    }
+    return result;
   }
   async updateOrder() {
     if (!this.isFromOrder()) {
