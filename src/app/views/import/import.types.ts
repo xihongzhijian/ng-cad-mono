@@ -11,4 +11,5 @@ export interface ImportCache {
   searchYaoqiu?: boolean;
   xinghao?: string;
   lurushuju?: boolean;
+  sbjbReplace?: boolean;
 }

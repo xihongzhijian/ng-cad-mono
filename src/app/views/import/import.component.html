@@ -5,9 +5,21 @@
         <div class="toolbar center">
           @if (compactPage()) {
             <div class="spinner-container">
-              <button mat-raised-button color="primary" (click)="importDxf(false, loaderIds.importLoader)" [disabled]="!canSubmit(false)">
-                导入dxf文件
-              </button>
+              <div class="toolbar">
+                @if (isSbjbType()) {
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="importDxf(false, loaderIds.importLoader, null, true)"
+                    [disabled]="!canSubmit(false)"
+                  >
+                    导入替换
+                  </button>
+                }
+                <button mat-raised-button color="primary" (click)="importDxf(false, loaderIds.importLoader)" [disabled]="!canSubmit(false)">
+                  导入添加
+                </button>
+              </div>
               <app-spinner [id]="loaderIds.importLoader" [inline]="true"></app-spinner>
             </div>
           } @else {

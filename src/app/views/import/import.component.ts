@@ -78,6 +78,13 @@ export class ImportComponent implements OnInit {
   maxLineLength = signal(200);
   collection = computed(() => this.importCache()?.collection || "cad");
   compactPage = computed(() => !!this.importCache()?.lurushuju);
+  isSbjbType = computed(() => {
+    const {yaoqiu} = this.importCache() || {};
+    if (!yaoqiu) {
+      return false;
+    }
+    return isSbjbType(yaoqiu.CAD分类);
+  });
 
   importConfigTranslation: Record<ImportComponentConfigName, string> = {
     requireLineId: "上传线必须全部带ID",
@@ -195,7 +202,7 @@ export class ImportComponent implements OnInit {
   progressBar = new ProgressBar(0);
   导入dxf文件时展开名字不改变 = signal(false);
 
-  async importDxf(isXinghao: boolean, loaderId: string, file?: File | null): Promise<boolean> {
+  async importDxf(isXinghao: boolean, loaderId: string, file?: File | null, sbjbReplace = false): Promise<boolean> {
     timer.start("导入总用时");
     const finish = (hasLoader: boolean, status: ProgressBarStatus, msg?: string) => {
       if (hasLoader) {
@@ -344,7 +351,8 @@ export class ImportComponent implements OnInit {
           collection,
           cadData: cads[i].data,
           force: true,
-          importConfig: {pruneLines}
+          importConfig: {pruneLines},
+          sbjbReplace
         },
         true,
         httpOptions
