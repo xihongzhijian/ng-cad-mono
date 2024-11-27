@@ -12,7 +12,6 @@ import {CadEditorModule} from "@modules/cad-editor/cad-editor.module";
 import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
-import {RECAPTCHA_LOADER_OPTIONS, RECAPTCHA_V3_SITE_KEY, RecaptchaLoaderOptions, RecaptchaV3Module} from "ng-recaptcha";
 import {QuillModule} from "ngx-quill";
 import {AppComponent} from "./app/app.component";
 import {AppRoutingModule} from "./app/routing/app-routing.module";
@@ -78,7 +77,6 @@ bootstrapApplication(AppComponent, {
           ]
         }
       }),
-      RecaptchaV3Module,
       SpinnerModule
     ),
     {provide: MatPaginatorIntl, useClass: MyMatPaginatorIntl},
@@ -87,17 +85,6 @@ bootstrapApplication(AppComponent, {
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: matFormFieldOptions},
     {provide: MAT_ICON_DEFAULT_OPTIONS, useValue: matIconDefaultOptions},
     {provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipOptions},
-    {provide: RECAPTCHA_V3_SITE_KEY, useValue: "6Leil-0ZAAAAACnzpTud2QN5OuhJ10UyJJrUq70m"},
-    {
-      provide: RECAPTCHA_LOADER_OPTIONS,
-      useValue: {
-        onBeforeLoad: () => {
-          return {
-            url: new URL("https://www.recaptcha.net/recaptcha/api.js")
-          };
-        }
-      } as RecaptchaLoaderOptions
-    },
     provideAnimations()
   ]
 }).catch((err) => {

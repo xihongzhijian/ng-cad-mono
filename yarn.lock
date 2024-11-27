@@ -5181,13 +5181,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/grecaptcha@npm:^3.0.7":
-  version: 3.0.7
-  resolution: "@types/grecaptcha@npm:3.0.7"
-  checksum: 10c0/5de9364cf73b6156a5ec8235c1a63eb71b749b108caa0c4866a9d4234127af0ca05cff11b50deee1fa5017bf5bc3e69836d851359b78883f211e6fb63ccd8119
-  languageName: node
-  linkType: hard
-
 "@types/http-errors@npm:*":
   version: 2.0.1
   resolution: "@types/http-errors@npm:2.0.1"
@@ -12265,7 +12258,6 @@ __metadata:
     luxon: "npm:^3.5.0"
     md5: "npm:^2.3.0"
     minimist: "npm:^1.2.8"
-    ng-recaptcha: "npm:^13.2.1"
     ngx-color: "npm:^9.0.0"
     ngx-infinite-scroll: "npm:^19.0.0"
     ngx-quill: "npm:^27.0.0"
@@ -12285,18 +12277,6 @@ __metadata:
     zone.js: "npm:~0.15.0"
   languageName: unknown
   linkType: soft
-
-"ng-recaptcha@npm:^13.2.1":
-  version: 13.2.1
-  resolution: "ng-recaptcha@npm:13.2.1"
-  dependencies:
-    "@types/grecaptcha": "npm:^3.0.7"
-    tslib: "npm:^2.2.0"
-  peerDependencies:
-    "@angular/core": ^17.0.0
-  checksum: 10c0/ac29bdb1ef832408a1da9333e905d59e8345f11b1639459ee043c8120ee4bab28d5efadaf56d04a7e9484a622a4b76ffba2c6fe8e12ab89d291bd29fa9fc0f47
-  languageName: node
-  linkType: hard
 
 "ngx-color@npm:^9.0.0":
   version: 9.0.0
@@ -15428,7 +15408,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0":
+"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0":
   version: 2.6.1
   resolution: "tslib@npm:2.6.1"
   checksum: 10c0/a0382d386f5f1d6e3a39ab22bc56d1e08493da99ab3daf550e63bae6c08fdd6dd4fd20623ef387cad8262ce3fede98439257054fc025f2103cd4603b4509a052

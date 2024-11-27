@@ -11,7 +11,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import axios from "axios";
 import md5 from "md5";
-import {ReCaptchaV3Service} from "ng-recaptcha";
 import {getOpenDialogFunc} from "../dialog.common";
 
 export interface LoginFormData {
@@ -42,7 +41,6 @@ export class LoginFormComponent implements AfterViewInit {
   constructor(
     public dialogRef: MatDialogRef<LoginFormComponent, boolean>,
     @Inject(MAT_DIALOG_DATA) public data: LoginFormData,
-    private recaptcha: ReCaptchaV3Service,
     private message: MessageService,
     private spinner: SpinnerService
   ) {
@@ -72,8 +70,6 @@ export class LoginFormComponent implements AfterViewInit {
     data.append("username", form.value.user || "");
     data.append("password", md5(form.value.password || ""));
     data.append("phonecode", "");
-    // const token = await lastValueFrom(this.recaptcha.execute("submit"));
-    // data.append("recaptcha_token", token);
     this.spinner.show(this.spinner.defaultLoaderId);
     let response: ObjectOf<any> = (await axios.post(`${baseUrl}/login/in`, data)).data;
     this.spinner.hide(this.spinner.defaultLoaderId);
