@@ -32,7 +32,7 @@
               <button mat-button color="primary" (click)="copyGongshi(i)">复制</button>
               <button mat-button color="primary" (click)="removeGongshi(i)">删除</button>
             </div>
-            <div class="gongshi-items">
+            <div class="gongshi-items" (dblclick)="editGongshiStart(i)">
               @if (gongshiInfo().at(i)?.formulas; as formulas) {
                 <app-formulas-editor
                   [formulas]="formulas"

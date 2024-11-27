@@ -278,8 +278,8 @@ export const updateMokuaiItem = (
   item2: ZixuanpeijianMokuaiItem | ZixuanpeijianTypesInfoItem,
   others?: {type1: string; type2: string}
 ) => {
-  justifyMokuaiItem(item);
   if (!isMokuaiItemEqual(item, item2)) {
+    justifyMokuaiItem(item);
     return false;
   }
   if (others) {
@@ -288,6 +288,7 @@ export const updateMokuaiItem = (
   }
   const {morenbancai, 自定义数据} = item;
   Object.assign(item, item2);
+  justifyMokuaiItem(item);
   if (自定义数据) {
     const items = item.自定义数据?.选项数据 || [];
     for (const item of items) {

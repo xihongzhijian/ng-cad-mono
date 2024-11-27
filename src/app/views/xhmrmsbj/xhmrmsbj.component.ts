@@ -412,7 +412,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   activeMsbjEff = effect(async () => {
     this.activeMsbj();
     untracked(async () => {
-      this.activeRectInfo.set(null);
+      const activeRectInfo = this.activeRectInfo();
       const msbjInfo = this.activeMsbjInfo();
       await timeout(0);
       if (msbjInfo) {
@@ -423,6 +423,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         msbjInfo.模块节点 = msbjInfo.模块节点.filter((v) =>
           rectInfos.find((rectInfo) => rectInfo.raw.isBuju && rectInfo.raw.vid === v.层id)
         );
+        if (activeRectInfo && !rectInfos.some((v) => v.raw.vid === activeRectInfo.raw.vid)) {
+          this.activeRectInfo.set(null);
+        }
         for (const rectInfo of rectInfos) {
           if (rectInfo.raw.isBuju) {
             const node = msbjInfo.模块节点.find((v) => v.层id === rectInfo.raw.vid);
