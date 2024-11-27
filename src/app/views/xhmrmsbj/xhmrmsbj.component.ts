@@ -1257,6 +1257,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   enableMfpz = computed(() => this.data()?.isVersion2024);
   tabNames = computed(() => {
     let names = xhmrmsbjTabNames.slice();
+    if (!this.enableXinghaoConfig()) {
+      names = names.filter((v) => v !== "型号配置");
+    }
     if (!this.enableSbjb()) {
       names = names.filter((v) => v !== "锁边铰边");
     }

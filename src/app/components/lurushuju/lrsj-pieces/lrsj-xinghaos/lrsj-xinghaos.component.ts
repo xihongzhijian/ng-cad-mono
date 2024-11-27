@@ -9,7 +9,14 @@ import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.mod
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoGroup, InputInfoSelect} from "@modules/input/components/input.types";
+import {
+  InputInfo,
+  InputInfoBoolean,
+  InputInfoGroup,
+  InputInfoPart,
+  InputInfoSelect,
+  InputInfoString
+} from "@modules/input/components/input.types";
 import {getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -143,25 +150,21 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     if (xinghao && !data.zuoshujubanben) {
       data.zuoshujubanben = " ";
     }
-
-    const data2: XinghaoRaw = {
-      名字: data.mingzi,
-      所属门窗: data.menchuang,
-      所属工艺: data.gongyi,
-      订单流程: data.dingdanliucheng,
-      做数据版本: data.zuoshujubanben,
-      算料单模板: data.算料单模板,
-      是否需要激光开料: data.是否需要激光开料,
-      下单显示没有配件的板材分组: data.下单显示没有配件的板材分组
-    };
-    if (typeof data2.下单显示没有配件的板材分组 !== "boolean") {
-      data2.下单显示没有配件的板材分组 = true;
+    if (typeof data.下单显示没有配件的板材分组 !== "boolean") {
+      data.下单显示没有配件的板材分组 = true;
     }
+
     const mingziOld = data.mingzi;
     const names = this.xinghaos().map((xinghao) => xinghao.mingzi);
     let refreshOptions = false;
-    const getOptionInput = async (key: string, label: string, hasDialog?: boolean, multiple?: boolean, options?: Partial<InputInfo>) => {
-      const info = await this.getOptionInput(data2, key, label, multiple, options);
+    const getOptionInput = async (
+      key: keyof typeof data,
+      label: string,
+      hasDialog?: boolean,
+      multiple?: boolean,
+      others?: InputInfoPart
+    ) => {
+      const info = await this.getOptionInput(data, label, key, multiple, others);
       if (hasDialog) {
         if (info.optionsDialog) {
           const onChange = info.optionsDialog.onChange;
@@ -175,24 +178,45 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       }
       return info;
     };
+    const getStringInput = (key: keyof typeof data, others?: InputInfoPart): InputInfoString => ({
+      type: "string",
+      label: key,
+      model: {data, key},
+      ...others
+    });
+    const getSelectInput = (key: keyof typeof data, options: string[], others?: InputInfoPart): InputInfoSelect => ({
+      type: "select",
+      label: key,
+      model: {data, key},
+      options: options.map((v) => ({label: v, value: v})),
+      ...others
+    });
+    const getBooleanInput = (key: keyof typeof data, others?: InputInfoPart): InputInfoBoolean => ({
+      type: "boolean",
+      label: key,
+      model: {data, key},
+      ...others
+    });
+    const getNumberInput = (key: keyof typeof data, others?: InputInfoPart): InputInfo => ({
+      type: "number",
+      label: key,
+      model: {data, key},
+      ...others
+    });
     const form: InputInfo[] = [
-      {
-        type: "string",
+      getStringInput("mingzi", {
         label: "名字",
-        model: {data: data, key: "mingzi"},
-        validators: [
-          (control) => {
-            const value = control.value;
-            if (!value) {
-              return {名字不能为空: true};
-            }
-            if (names.includes(value) && value !== mingziOld) {
-              return {名字已存在: true};
-            }
-            return null;
+        validators: (control) => {
+          const value = control.value;
+          if (!value) {
+            return {名字不能为空: true};
           }
-        ]
-      },
+          if (names.includes(value) && value !== mingziOld) {
+            return {名字已存在: true};
+          }
+          return null;
+        }
+      }),
       {
         type: "image",
         label: "图片",
@@ -212,37 +236,33 @@ export class LrsjXinghaosComponent extends LrsjPiece {
           }
         }
       },
-      await getOptionInput("门窗", "所属门窗", true, true),
-      await getOptionInput("工艺", "所属工艺", true, true),
-      await getOptionInput("订单流程", "订单流程"),
-      await getOptionInput("做数据版本", "做数据版本"),
-      {
-        type: "select",
-        label: "算料单模板",
-        model: {data: data2, key: "算料单模板"},
-        options: 算料单模板Options.slice()
-      },
-      {
-        type: "boolean",
-        label: "下单显示没有配件的板材分组",
-        model: {data: data2, key: "下单显示没有配件的板材分组"}
-      },
-      {
-        type: "boolean",
-        label: "是否需要激光开料",
-        model: {data: data2, key: "是否需要激光开料"},
-        validators: Validators.required
-      },
-      {type: "number", label: "排序", model: {data, key: "paixu"}},
-      {type: "boolean", label: "停用", model: {data, key: "tingyong"}}
+      await getOptionInput("menchuang", "门窗", true, true),
+      await getOptionInput("gongyi", "工艺", true, true),
+      await getOptionInput("dingdanliucheng", "订单流程"),
+      await getOptionInput("zuoshujubanben", "做数据版本"),
+      getSelectInput("算料单模板", 算料单模板Options.slice()),
+      getBooleanInput("下单显示没有配件的板材分组"),
+      getBooleanInput("是否需要激光开料", {validators: Validators.required}),
+      getNumberInput("paixu", {label: "排序"}),
+      getBooleanInput("tingyong", {label: "停用"}),
+      getBooleanInput("数据已录入完成")
     ];
     const result = await this.message.form(form);
     if (result) {
       if (refreshOptions) {
         this.lrsjStatus.xinghaoOptionsManager.fetch(true);
       }
-      data.menchuang = data2.所属门窗 || "";
-      data.gongyi = data2.所属工艺 || "";
+      const data2: XinghaoRaw = {
+        名字: data.mingzi,
+        所属门窗: data.menchuang,
+        所属工艺: data.gongyi,
+        订单流程: data.dingdanliucheng,
+        做数据版本: data.zuoshujubanben,
+        算料单模板: data.算料单模板,
+        是否需要激光开料: data.是否需要激光开料,
+        下单显示没有配件的板材分组: data.下单显示没有配件的板材分组,
+        数据已录入完成: data.数据已录入完成
+      };
       return {data, data2, mingziOld};
     }
     return null;
@@ -406,7 +426,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     const xinghaoOptionsAll = await this.lrsjStatus.xinghaoOptionsManager.fetch();
     return this.getOptions0(xinghaoOptionsAll, key);
   }
-  async getOptionInput(data: any, key1: string, key2: string, multiple?: boolean, others?: Partial<InputInfo>) {
+  async getOptionInput(data: any, key1: string, key2: string, multiple?: boolean, others?: InputInfoPart) {
     const info: InputInfoSelect = {
       type: "select",
       label: key1,

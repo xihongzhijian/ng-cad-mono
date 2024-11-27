@@ -14,6 +14,9 @@
           @if (xinghao.tingyong) {
             <div class="img disabled"></div>
           }
+          @if (xinghao["数据已录入完成"]) {
+            <div class="img done"></div>
+          }
           <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="gotoZuofas(xinghao)"></app-image>
           <div class="name" [matTooltip]="xinghao.mingzi">
             <mat-checkbox [checked]="xinghaoSelectedIndexs().includes(i)" (change)="toggleXinghaoSelected(i)"></mat-checkbox>
