@@ -16,7 +16,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {MsbjData} from "@views/msbj/msbj.types";
 import {MsbjInfo} from "@views/msbj/msbj.utils";
-import {cloneDeep} from "lodash";
+import {cloneDeep, difference} from "lodash";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
 import {getEmptyMokuaiItem, mokuaiSubmitAfter, mokuaiSubmitBefore} from "../mokuai-item/mokuai-item.utils";
 
@@ -75,12 +75,18 @@ export class BjmkStatusService {
       this.currMokuai.set(currMokuai2);
     }
   });
+  async fetchMokuais(ids: number[]) {
+    const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {mokuaiIds: ids})) || [];
+    return mokuais;
+  }
   async fetchMokuai(id: number) {
-    let mokuai2: MokuaiItem | null = null;
-    const ids = [id];
-    const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {mokuaiIds: ids, focusMokuaiIds: ids})) || [];
-    mokuai2 = mokuais.at(0) || null;
-    return mokuai2;
+    return (await this.fetchMokuais([id])).at(0) || null;
+  }
+  async checkMokuaisExist(ids: number[]) {
+    const mokuais = await this.fetchMokuais(ids);
+    const ids2 = mokuais.map((v) => v.id);
+    const missingMokuais = difference(ids, ids2);
+    return {mokuais, missingMokuais};
   }
 
   async getMokuaiWithForm(mokuai?: Partial<MokuaiItem>, mokuaiOverride?: Partial<MokuaiItem>) {

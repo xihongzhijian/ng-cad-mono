@@ -257,6 +257,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.wmm.postMessage("requestDataStart");
     } else {
       this.activeMenshanKey.set(this.menshanKeys[0]);
+      this.checkMissingMokuais();
     }
   }
 
@@ -1719,7 +1720,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const mokuai2 = await this.bjmkStatus.fetchMokuai(mokuai.id);
     if (!mokuai2) {
-      await this.message.error("该模块已被删除");
+      await this.message.error("该模块已被删除或停用");
       return;
     }
     if (this.isFromOrder()) {
@@ -1964,5 +1965,53 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   showXhmrmsbjsUsingMokuai(mokuai: ZixuanpeijianMokuaiItem) {
     this.bjmkStatus.showXhmrmsbjsUsingMokuai(mokuai.id);
+  }
+
+  async checkMissingMokuais() {
+    const data = this.data();
+    if (!data) {
+      return;
+    }
+    const mokuaiInfos: {item: ZixuanpeijianMokuaiItem; paths: [MenshanKey, string][]}[] = [];
+    for (const key of keysOf(data.menshanbujuInfos)) {
+      const msbjInfo = data.menshanbujuInfos[key];
+      if (msbjInfo) {
+        for (const node of msbjInfo.模块节点 || []) {
+          for (const mokuai of node.可选模块) {
+            const mokuaiInfo = mokuaiInfos.find((v) => isMokuaiItemEqual(v.item, mokuai));
+            if (mokuaiInfo) {
+              mokuaiInfo.paths.push([key, node.层名字]);
+            } else {
+              mokuaiInfos.push({item: mokuai, paths: [[key, node.层名字]]});
+            }
+          }
+        }
+      }
+    }
+    const ids = mokuaiInfos.map((v) => v.item.id);
+    const mokuais2 = await this.bjmkStatus.fetchMokuais(ids);
+    const ids2 = mokuais2.map((v) => v.id);
+    const errMsgs: string[] = [];
+    const mokuaiInfos2 = mokuaiInfos.filter((v) => !ids2.includes(v.item.id));
+
+    for (const mokuaiInfo of mokuaiInfos2) {
+      for (const [门扇名字, 层名字] of mokuaiInfo.paths) {
+        errMsgs.push(getMokuaiTitle(mokuaiInfo.item, {门扇名字, 层名字}));
+      }
+    }
+    if (errMsgs.length > 0) {
+      await this.message.alert({content: "以下模块已被删除或停用", details: errMsgs.join("\n")});
+      for (const mokuaiInfo of mokuaiInfos2) {
+        for (const [门扇名字, 层名字] of mokuaiInfo.paths) {
+          const msbjInfo = data.menshanbujuInfos[门扇名字];
+          const node = msbjInfo?.模块节点?.find((v) => v.层名字 === 层名字);
+          if (!node) {
+            continue;
+          }
+          node.可选模块 = node.可选模块.filter((v) => v.id !== mokuaiInfo.item.id);
+        }
+      }
+      this.refreshData();
+    }
   }
 }
