@@ -299,10 +299,21 @@ export const getMokuaiFormulas = (
       }
     }
   };
+  const options2 = getMokuaiOptions(info, node, mokuai);
+  const optionValues: Formulas = {};
+  const optionFormulas: Formulas = {};
+  for (const option of mokuai.自定义数据?.选项数据 || []) {
+    const option2 = options2.find((v) => v.名字 === option.名字);
+    const value = option2?.选中值 || option2?.默认值 || option.可选项.find((v) => v.morenzhi)?.mingzi;
+    if (value) {
+      optionValues[option.名字] = value;
+      optionFormulas[option.名字] = `"${value}"`;
+    }
+  }
   if (mokuai.xuanxianggongshi.length > 0) {
     let xxgsList = mokuai.xuanxianggongshi;
     if (!isEmpty(materialResult)) {
-      xxgsList = matchMongoData(xxgsList, materialResult);
+      xxgsList = matchMongoData(xxgsList, {...materialResult, ...optionValues});
     }
     for (const xxgs of xxgsList) {
       Object.assign(formulas, xxgs.公式);
@@ -312,14 +323,7 @@ export const getMokuaiFormulas = (
     Object.assign(formulas, mokuai.suanliaogongshi);
     setFormulas(info.输入值);
   }
-  const options2 = getMokuaiOptions(info, node, mokuai);
-  for (const option of mokuai.自定义数据?.选项数据 || []) {
-    const option2 = options2.find((v) => v.名字 === option.名字);
-    const value = option2?.选中值 || option2?.默认值 || option.可选项.find((v) => v.morenzhi)?.mingzi;
-    if (value) {
-      formulas[option.名字] = `"${value}"`;
-    }
-  }
+  Object.assign(formulas, optionFormulas);
   return formulas;
 };
 

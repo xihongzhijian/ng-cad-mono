@@ -271,7 +271,7 @@ export const getZixuanpeijianCads = async (
 };
 
 export const justifyMokuaiItem = (item: ZixuanpeijianMokuaiItem | MokuaiItem) => {
-  item.自定义数据 = getMokuaiCustomData(item.自定义数据, {});
+  item.自定义数据 = getMokuaiCustomData(item.自定义数据, null);
 };
 export const updateMokuaiItem = (
   item: ZixuanpeijianMokuaiItem,
@@ -792,7 +792,8 @@ export const calcZxpj = async (
       }
 
       const mokuaiTitle = mokuai ? `（${getCalcMokuaiTitle(mokuai)}）` : "";
-      const result2Msg = `计算${mokuaiTitle}${data.name}线公式`;
+      const cadTitle = `计算${mokuaiTitle}CAD【${data.name}】`;
+      const result2Msg = `${cadTitle}线公式`;
       const result2 = await calc.calcFormulas(formulas2, vars2, {title: result2Msg});
       const calcLinesResult: Formulas = {};
       // console.log({formulas2, vars2, result2});
@@ -832,7 +833,7 @@ export const calcZxpj = async (
         formulas3.展开宽 = zhankai.zhankaikuan;
         formulas3.展开高 = zhankai.zhankaigao;
         formulas3.数量 = `(${zhankai.shuliang})*(${zhankai.shuliangbeishu})`;
-        const result3Msg = `计算${mokuaiTitle}${data.name}的第${i + 1}个展开`;
+        const result3Msg = `${cadTitle}的第${i + 1}个展开`;
         const result3 = await calc.calcFormulas(formulas3, vars3, {title: result3Msg});
         if (!result3?.fulfilled) {
           const cads = [data];
