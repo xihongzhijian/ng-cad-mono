@@ -1,6 +1,7 @@
 import {Formulas} from "@app/utils/calc";
 import {输入} from "@components/lurushuju/xinghao-data";
 import {ObjectOf, Rectangle} from "@lucilor/utils";
+import {Properties} from "csstype";
 import {uniqueId} from "lodash";
 
 export interface MsbjRectInfoRaw {
@@ -38,6 +39,7 @@ export class MsbjRectInfo {
   id: string;
   rect: Rectangle;
   bgColor?: string;
+  style?: Properties;
 
   get name() {
     return this.raw.name || "";

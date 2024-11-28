@@ -2,6 +2,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
   HostListener,
@@ -11,6 +12,7 @@ import {
   signal,
   viewChild
 } from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
 import {getTrbl, TrblLike} from "@app/utils/trbl";
 import {Debounce} from "@decorators/debounce";
@@ -24,7 +26,7 @@ import {MsbjRectInfo, MsbjRectInfoRaw} from "./msbj-rects.types";
   selector: "app-msbj-rects",
   templateUrl: "./msbj-rects.component.html",
   styleUrls: ["./msbj-rects.component.scss"],
-  imports: [ClickStopPropagationDirective],
+  imports: [ClickStopPropagationDirective, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MsbjRectsComponent {
@@ -86,7 +88,35 @@ export class MsbjRectsComponent {
 
   rectInfosAbsolute = signal<MsbjRectInfo[]>([]);
   rectInfosRelative = signal<MsbjRectInfo[]>([]);
+  rectInfosRelativeWithStyle = computed(() => {
+    const rectInfos = this.rectInfosRelative();
+    return rectInfos.map((info) => {
+      const {rect, bgColor, raw} = info;
+      let order = 0;
+      if (raw.isBuju) {
+        order++;
+      }
+      if (typeof raw.排序 === "number") {
+        order += raw.排序;
+      }
+      const style: Properties = {
+        left: `${rect.min.x * 100}%`,
+        top: `${rect.min.y * 100}%`,
+        width: `${Math.max(0, rect.width) * 100}%`,
+        height: `${Math.max(0, rect.height) * 100}%`,
+        backgroundColor: bgColor,
+        zIndex: order
+      };
+      if (raw.isBuju || !this.ignoreNonBuju()) {
+        style.cursor = "pointer";
+      }
+      const info2 = new MsbjRectInfo(info.raw);
+      info2.style = style;
+      return info2;
+    });
+  });
   rectOuter = viewChild<ElementRef<HTMLDivElement>>("rectOuter");
+  rectOuterStyle = signal<Properties>({});
   async generateRects(opts?: GenerateRectsOpts) {
     this.generateRectsStart.emit();
     const rectInfosAbsolute: MsbjRectInfo[] = [];
@@ -144,16 +174,16 @@ export class MsbjRectsComponent {
           infoRelative.name = name;
         }
       }
+      infoRelative.style = this.getRectStyle(infoRelative);
       rectInfosRelative.push(infoRelative);
     }
     this.rectInfosAbsolute.set(rectInfosAbsolute);
     this.rectInfosRelative.set(rectInfosRelative);
     const el = this.rectOuter()?.nativeElement;
     if (el) {
-      const padding = getTrbl(this.padding());
-      el.style.padding = "0";
-      el.style.opacity = "0";
+      this.rectOuterStyle.update((v) => ({...v, padding: "0", opacity: "0"}));
       await timeout(0);
+      const padding = getTrbl(this.padding());
       const elRect = el.getBoundingClientRect();
       const ratio1 = (elRect.width - padding[1] - padding[3]) / (elRect.height - padding[0] - padding[2]);
       const ratio2 = width / height;
@@ -169,15 +199,17 @@ export class MsbjRectsComponent {
       for (let i = 0; i < 4; i++) {
         padding[i] = Math.max(0, padding[i]);
       }
-      el.style.padding = `${padding[0]}px ${padding[1]}px ${padding[2]}px ${padding[3]}px`;
+      this.rectOuterStyle.update((v) => ({...v, padding: `${padding[0]}px ${padding[1]}px ${padding[2]}px ${padding[3]}px`}));
       await timeout(0);
-      el.style.opacity = "1";
+      this.rectOuterStyle.update((v) => ({...v, opacity: "1"}));
     }
     this.generateRectsEnd.emit({isWindowResize});
   }
   generateRectsEff = effect(() => {
     this.generateRects({resetColors: true});
   });
+
+  bujuRectInfos = computed(() => this.rectInfosRelative().filter((v) => v.raw.isBuju));
 
   onRectClick(info: MsbjRectInfo) {
     if (this.ignoreNonBuju() && !info.raw.isBuju) {
