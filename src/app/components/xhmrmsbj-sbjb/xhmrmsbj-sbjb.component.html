@@ -28,6 +28,11 @@
     </div>
     <ng-scrollbar class="enable-x">
       <div class="flex-column">
+        <div class="toolbar">
+          <button mat-raised-button [color]="showCadFormDefaultTexts() ? 'accent' : 'primary'" (click)="toggleShowCadFormDefaultTexts()">
+            显示详细信息
+          </button>
+        </div>
         @for (group of cadInfoGroups(); track $index) {
           <div class="flex-row">
             @for (info of group; track $index) {

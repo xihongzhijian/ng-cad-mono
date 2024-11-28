@@ -86,12 +86,16 @@ export class XhmrmsbjSbjbComponent {
     return yaoqius;
   });
   cadMap = new Map<string, CadData>();
+  showCadFormDefaultTexts = signal(false);
+  toggleShowCadFormDefaultTexts() {
+    this.showCadFormDefaultTexts.update((v) => !v);
+  }
   cadInfos = computed(() => {
     const infos: XhmrmsbjSbjbCadInfo[] = [];
     const item = this.activeSbjbItem();
     if (item) {
       for (const item2 of item.CAD数据 || []) {
-        const info: XhmrmsbjSbjbCadInfo = {...item2, cadForm: {noDefaultTexts: true}};
+        const info: XhmrmsbjSbjbCadInfo = {...item2, cadForm: {noDefaultTexts: !this.showCadFormDefaultTexts()}};
         if (item2.cadId) {
           const cad = this.cadMap.get(item2.cadId);
           if (cad) {

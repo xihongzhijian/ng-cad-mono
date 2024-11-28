@@ -1,3 +1,4 @@
+import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -55,6 +56,8 @@ import {getEmptyMokuaiItem, getMokuaiCustomData, mokuaiSubmitAfter, updateMokuai
   selector: "app-mokuai-item",
   imports: [
     CadItemComponent,
+    CdkDrag,
+    CdkDropList,
     FloatingDialogModule,
     FormulasEditorComponent,
     ImageComponent,
@@ -240,7 +243,7 @@ export class MokuaiItemComponent {
     const inputData: MrbcjfzInputData = {
       xinghao: mokuai.name,
       morenbancai,
-      cads: this.selectedCads()
+      cads: this.cads()
     };
     if (data) {
       inputData.resData = data.data;
@@ -410,28 +413,32 @@ export class MokuaiItemComponent {
   });
   afterEditCad() {
     const mokuai = this.mokuai();
-    mokuai.cads = this.selectedCads().map((v) => getHoutaiCad(v));
+    mokuai.cads = this.cads().map((v) => getHoutaiCad(v));
     this.cd.markForCheck();
   }
   showCadsDialog = signal(false);
-  selectedCads = signal<CadData[]>([]);
-  cads = computed(() => this.mokuai().cads || []);
+  hideCadFormDefaultTexts = signal(false);
+  toggleHideCadFormDefaultTexts() {
+    this.hideCadFormDefaultTexts.update((v) => !v);
+  }
+  cads = signal<CadData[]>([]);
+  cadsHoutai = computed(() => this.mokuai().cads || []);
   selectedCadsEff = effect(() => {
-    this.selectedCads.set(this.cads().map((v) => new CadData(v.json)));
+    this.cads.set(this.cadsHoutai().map((v) => new CadData(v.json)));
   });
   selectCads$ = new Subject<MokuaiCadsComponent | null>();
   async selectCads() {
     const mokuai = this.mokuai();
     const cadsBefore = (mokuai.cads || []).map((v) => new CadData(v.json));
-    this.selectedCads.set(cadsBefore);
+    this.cads.set(cadsBefore);
     this.showCadsDialog.set(true);
     const component = await firstValueFrom(this.selectCads$);
     if (!component) {
-      this.selectedCads.set(cadsBefore);
+      this.cads.set(cadsBefore);
       return;
     }
     const cads: HoutaiCad[] = [];
-    for (const cad of this.selectedCads()) {
+    for (const cad of this.cads()) {
       delete cad.info.isLocal;
       if (!cad.info.imgId) {
         cad.info.imgId = await this.http.getMongoId();
@@ -474,16 +481,35 @@ export class MokuaiItemComponent {
           mokuai.cads = [...cadsOld, ...cads];
           this.mokuai.set({...mokuai});
         }
-        this.selectedCads.set(data.map((v) => new CadData(v)));
+        this.cads.set(data.map((v) => new CadData(v)));
       },
       "模块CAD"
     );
   }
   exportCads() {
     this.message.exportData(
-      this.selectedCads().map((v) => v.export()),
+      this.cads().map((v) => v.export()),
       "模块CAD"
     );
+  }
+
+  cadDragEnabled = signal(false);
+  toggleCadDragEnabled() {
+    this.cadDragEnabled.update((v) => !v);
+  }
+  dropCad(event: CdkDragDrop<CadData[]>) {
+    const mokuai = this.mokuai();
+    const morenbancai = mokuai.morenbancai || {};
+    const cads = mokuai.cads || [];
+    moveItemInArray(cads || [], event.previousIndex, event.currentIndex);
+    mokuai.cads = [...cads];
+    const cadIds = cads.map((v) => v._id);
+    mokuai.morenbancai = {};
+    for (const [key, value] of Object.entries(morenbancai)) {
+      value.CAD.sort((a, b) => cadIds.indexOf(a) - cadIds.indexOf(b));
+      mokuai.morenbancai[key] = {...value};
+    }
+    this.mokuai.set({...mokuai});
   }
 
   isSaved = signal(false);
