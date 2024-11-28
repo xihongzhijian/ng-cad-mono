@@ -24,7 +24,7 @@ import {
   intersectionKeysTranslate,
   sortLines
 } from "@lucilor/cad-viewer";
-import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, Line, ObjectOf, Point} from "@lucilor/utils";
+import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, keysOf, Line, ObjectOf, Point} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -680,45 +680,65 @@ export const exportCadData = (data: CadData) => {
   return exportData;
 };
 
+export type OpenCadDimensionFormKey = keyof CadDimensionLinear | "删除标注" | "隐藏尺寸线" | "字体大小";
 export const openCadDimensionForm = async (
   collection: CadCollection,
   message: MessageService,
   cad: CadViewer,
-  dimension: CadDimensionLinear
+  dimension: CadDimensionLinear,
+  keys?: OpenCadDimensionFormKey[]
 ) => {
   const dimension2 = dimension.clone();
-  const form: InputInfo<typeof dimension>[] = [
-    {
-      type: "group",
-      label: "",
-      groupStyle: {display: "flex"},
-      infos: [
-        {type: "string", label: "名字", model: {data: dimension2, key: "mingzi"}, style: {flex: "1 1 0"}},
-        {
-          type: "select",
+  const form: InputInfo<typeof dimension>[] = [];
+  const allKeys: OpenCadDimensionFormKey[] = [...keysOf(dimension2), "删除标注", "隐藏尺寸线", "字体大小"];
+  for (const key of keys || allKeys) {
+    switch (key) {
+      case "mingzi":
+        form.push({
+          type: "group",
           label: "",
-          appearance: "list",
-          value: "无",
-          multiple: false,
-          options: ["阵列图形", "阵列个数:"],
-          onChange: (val) => {
-            dimension2.mingzi += val;
-          }
-        }
-      ]
-    },
-    {type: "string", label: "活动标注显示扣数", model: {data: dimension2, key: "活动标注显示扣数"}},
-    {type: "boolean", label: "删除标注", appearance: "radio", value: false},
-    {type: "boolean", label: "隐藏尺寸线", appearance: "radio", value: !!dimension2.style.dimensionLine?.hidden},
-    {
-      type: "select",
-      label: "小数处理",
-      model: {data: dimension2, key: "xiaoshuchuli"},
-      options: cadDimensionOptions.xiaoshuchuli.values.slice()
-    },
-    {type: "number", label: "字体大小", value: dimension2.style.text?.size},
-    {type: "boolean", label: "算料单缩放标注文字", model: {data: dimension2, key: "算料单缩放标注文字"}}
-  ];
+          groupStyle: {display: "flex"},
+          infos: [
+            {type: "string", label: "名字", model: {data: dimension2, key: "mingzi"}, style: {flex: "1 1 0"}},
+            {
+              type: "select",
+              label: "",
+              appearance: "list",
+              value: "无",
+              multiple: false,
+              options: ["阵列图形", "阵列个数:"],
+              onChange: (val) => {
+                dimension2.mingzi += val;
+              }
+            }
+          ]
+        });
+        break;
+      case "活动标注显示扣数":
+        form.push({type: "string", label: "活动标注显示扣数", model: {data: dimension2, key}, style: {flex: "1 1 0"}});
+        break;
+      case "删除标注":
+        form.push({type: "boolean", label: "删除标注", appearance: "radio", value: false});
+        break;
+      case "隐藏尺寸线":
+        form.push({type: "boolean", label: "隐藏尺寸线", appearance: "radio", value: !!dimension2.style.dimensionLine?.hidden});
+        break;
+      case "xiaoshuchuli":
+        form.push({
+          type: "select",
+          label: "小数处理",
+          model: {data: dimension2, key},
+          options: cadDimensionOptions.xiaoshuchuli.values.slice()
+        });
+        break;
+      case "字体大小":
+        form.push({type: "number", label: "字体大小", value: dimension2.style.text?.size});
+        break;
+      case "算料单缩放标注文字":
+        form.push({type: "boolean", label: "算料单缩放标注文字", model: {data: dimension2, key}});
+        break;
+    }
+  }
   const name = dimension2.mingzi;
   let title = "编辑标注";
   if (name) {

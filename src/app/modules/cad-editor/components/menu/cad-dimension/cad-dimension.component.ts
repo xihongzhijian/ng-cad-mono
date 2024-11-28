@@ -6,7 +6,7 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {reservedDimNames} from "@app/cad/utils";
+import {openCadDimensionForm, OpenCadDimensionFormKey, reservedDimNames} from "@app/cad/utils";
 import {
   CadData,
   CadDimension,
@@ -317,5 +317,27 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     const dimension = this.dimensions()[i];
     dimension.hideDimLines = event.checked;
     this.status.cad.render(dimension);
+  }
+
+  async editAllDimensions() {
+    const dimension0 = new CadDimensionLinear();
+    const keys: OpenCadDimensionFormKey[] = ["字体大小"];
+    const collection = this.status.collection$.value;
+    const cad = this.status.cad;
+    const result = await openCadDimensionForm(collection, this.message, cad, dimension0, keys);
+    if (result) {
+      for (const dimension of cad.data.entities.dimension) {
+        if (!(dimension instanceof CadDimensionLinear)) {
+          continue;
+        }
+        for (const key of keys) {
+          switch (key) {
+            case "字体大小":
+              dimension.setStyle({text: {size: dimension0.style?.text?.size}});
+          }
+        }
+      }
+      cad.render();
+    }
   }
 }
