@@ -6,7 +6,7 @@ import {getNodeVars, isMokuaiItemEqual, updateMokuaiItems} from "@components/dia
 import {isTypeOf, keysOf} from "@lucilor/utils";
 import {MsbjInfo, ZuoshujuData} from "@views/msbj/msbj.utils";
 import {XhmrmsbjXinghaoConfig} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
-import {difference, intersection, isEmpty} from "lodash";
+import {difference, intersection, isEmpty, mapValues} from "lodash";
 import {
   MenshanFollowerKey,
   menshanFollowersKeys,
@@ -196,18 +196,9 @@ export class XhmrmsbjData extends ZuoshujuData {
 
 export const getShuruzhi = (info: XhmrmsbjInfo, xxgsId?: string) => {
   if (xxgsId) {
-    if (!info.选项公式输入值) {
-      info.选项公式输入值 = {};
-    }
-    if (!info.选项公式输入值[xxgsId]) {
-      info.选项公式输入值[xxgsId] = {};
-    }
-    return info.选项公式输入值[xxgsId];
+    return {...info.输入值, ...info.选项公式输入值?.[xxgsId]};
   } else {
-    if (!info.输入值) {
-      info.输入值 = {};
-    }
-    return info.输入值;
+    return {...info.输入值};
   }
 };
 export const setShuruzhi = (info: XhmrmsbjInfo, shuruzhi: Shuruzhi, xxgsId?: string) => {
@@ -224,12 +215,33 @@ export const setShuruzhi = (info: XhmrmsbjInfo, shuruzhi: Shuruzhi, xxgsId?: str
         info.选项公式输入值 = {};
       }
       info.选项公式输入值[xxgsId] = shuruzhi;
+      if (info.输入值) {
+        for (const key of Object.keys(shuruzhi)) {
+          delete info.输入值[key];
+        }
+        if (isEmpty(info.输入值)) {
+          delete info.输入值;
+        }
+      }
     }
   } else {
     if (isEmpty(shuruzhi)) {
       delete info.输入值;
     } else {
       info.输入值 = shuruzhi;
+      if (info.选项公式输入值) {
+        for (const xxgsId2 in info.选项公式输入值) {
+          for (const key of Object.keys(shuruzhi)) {
+            delete info.选项公式输入值[xxgsId2][key];
+          }
+          if (isEmpty(info.选项公式输入值[xxgsId2])) {
+            delete info.选项公式输入值[xxgsId2];
+          }
+        }
+        if (isEmpty(info.选项公式输入值)) {
+          delete info.选项公式输入值;
+        }
+      }
     }
   }
 };
@@ -283,6 +295,19 @@ export const purgeShuruzhi = (infos: XhmrmsbjDataMsbjInfos) => {
   }
 };
 
+export const getMokuaiXxsjValues = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
+  const options2 = getMokuaiOptions(info, node, mokuai);
+  const values: Formulas = {};
+  for (const option of mokuai.自定义数据?.选项数据 || []) {
+    const option2 = options2.find((v) => v.名字 === option.名字);
+    const value = option2?.选中值 || option2?.默认值 || option.可选项.find((v) => v.morenzhi)?.mingzi;
+    if (value) {
+      values[option.名字] = value;
+    }
+  }
+  return values;
+};
+
 export const getMokuaiFormulas = (
   info: XhmrmsbjInfo,
   node: XhmrmsbjInfoMokuaiNode,
@@ -290,26 +315,17 @@ export const getMokuaiFormulas = (
   materialResult: Formulas = {}
 ) => {
   const formulas: Formulas = {};
-  const setFormulas = (输入值: Shuruzhi | undefined) => {
+  const setFormulas = (输入值: Shuruzhi) => {
     for (const arr of mokuai.gongshishuru) {
       const k = arr[0];
-      const v = 输入值?.[k];
+      const v = 输入值[k];
       if (v) {
         formulas[k] = v;
       }
     }
   };
-  const options2 = getMokuaiOptions(info, node, mokuai);
-  const optionValues: Formulas = {};
-  const optionFormulas: Formulas = {};
-  for (const option of mokuai.自定义数据?.选项数据 || []) {
-    const option2 = options2.find((v) => v.名字 === option.名字);
-    const value = option2?.选中值 || option2?.默认值 || option.可选项.find((v) => v.morenzhi)?.mingzi;
-    if (value) {
-      optionValues[option.名字] = value;
-      optionFormulas[option.名字] = `"${value}"`;
-    }
-  }
+  const optionValues = getMokuaiXxsjValues(info, node, mokuai);
+  const optionFormulas = mapValues(optionValues, (v) => `"${v}"`);
   if (mokuai.xuanxianggongshi.length > 0) {
     let xxgsList = mokuai.xuanxianggongshi;
     if (!isEmpty(materialResult)) {
@@ -317,11 +333,11 @@ export const getMokuaiFormulas = (
     }
     for (const xxgs of xxgsList) {
       Object.assign(formulas, xxgs.公式);
-      setFormulas(info.选项公式输入值?.[xxgs._id]);
+      setFormulas(getShuruzhi(info, xxgs._id));
     }
   } else {
     Object.assign(formulas, mokuai.suanliaogongshi);
-    setFormulas(info.输入值);
+    setFormulas(getShuruzhi(info));
   }
   Object.assign(formulas, optionFormulas);
   return formulas;

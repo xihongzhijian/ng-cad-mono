@@ -184,7 +184,9 @@
             </div>
           }
           @if (isFromOrder()) {
-            <div class="title">模块选项</div>
+            @if (!isFloatingDialog()) {
+              <div class="title">模块选项</div>
+            }
             <div class="items items-per-row">
               @for (info of mokuaiOptionInputInfos(); track $index) {
                 <app-input class="item" [info]="info"></app-input>
@@ -195,7 +197,7 @@
             @if (!isFloatingDialog()) {
               <div class="title">下单显示</div>
             }
-            <div class="items">
+            <div class="items items-per-row">
               @for (info of mokuaiInputInfosFormulas(); track $index) {
                 <app-input class="item" [info]="info"></app-input>
               }

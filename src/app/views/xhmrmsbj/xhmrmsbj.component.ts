@@ -27,6 +27,7 @@ import {ActivatedRoute} from "@angular/router";
 import {getValueString, remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {CalcResult, Formulas} from "@app/utils/calc";
 import {FetchManager} from "@app/utils/fetch-manager";
+import {matchMongoData} from "@app/utils/mongo";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
 import {MokuaiItem, MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
@@ -105,6 +106,7 @@ import {
   getMokuaiFormulas,
   getMokuaiOptions,
   getMokuaiShuchuVars,
+  getMokuaiXxsjValues,
   getShuruzhi,
   purgeMsbjInfo,
   setMokuaiOptions,
@@ -615,7 +617,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const data = await this.http.getData<Formulas>("ngcad/getMokuaiTongyongPeizhi");
     return data || {};
   });
-  getValueInfo(key: string, slgs: Formulas, shuruzhi: Shuruzhi = {}) {
+  getValueInfo(key: string, slgs: Formulas, shuruzhi: Shuruzhi) {
     if (key in shuruzhi) {
       return {value: shuruzhi[key], type: "输入值"};
     }
@@ -671,8 +673,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         });
       }
     }
+    const showHint = !this.isFromOrder();
     const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
-    const getValidators = (key: string, slgs: Formulas, shuruzhi?: Shuruzhi): InputInfo["validators"] => {
+    const getValidators = (key: string, slgs: Formulas, shuruzhi: Shuruzhi): InputInfo["validators"] => {
       return () => {
         if (!isVersion2024) {
           return null;
@@ -694,7 +697,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       setShuruzhi(msbjInfo, shuruzhi, xxgsId);
       const valueInfo = this.getValueInfo(v[0], slgs, shuruzhi);
       info.value = valueInfo.value;
-      info.hint = valueInfo.type;
+      if (showHint) {
+        info.hint = valueInfo.type;
+      }
 
       const data = this.data();
       const activeMenshanKey = this.activeMenshanKey();
@@ -739,11 +744,15 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
     };
     for (const v of arr) {
-      const xxgsList = mokuai.xuanxianggongshi.filter((v2) => v[0] in v2.公式);
+      let xxgsList = mokuai.xuanxianggongshi.filter((v2) => v[0] in v2.公式);
       if (xxgsList.length > 0) {
+        if (this.isFromOrder()) {
+          const xxsjValues = getMokuaiXxsjValues(msbjInfo, node, mokuai);
+          xxgsList = matchMongoData(xxgsList, {...this.materialResult(), ...xxsjValues});
+        }
         for (const item of xxgsList) {
-          const 输入值 = msbjInfo.选项公式输入值?.[item._id];
-          const valueInfo = this.getValueInfo(v[0], item.公式, 输入值);
+          const shuruzhi = getShuruzhi(msbjInfo, item._id);
+          const valueInfo = this.getValueInfo(v[0], item.公式, shuruzhi);
           let label = v[0];
           if (!this.isFromOrder()) {
             label = `【${item.名字}】${v[0]}`;
@@ -753,22 +762,23 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             label,
             value: valueInfo.value,
             clearable: true,
-            validators: getValidators(v[0], item.公式, 输入值),
-            hint: valueInfo.type,
+            validators: getValidators(v[0], item.公式, shuruzhi),
+            hint: showHint ? valueInfo.type : "",
             onChange: async (val, info) => {
               onChange(v, val, item.公式, info, item._id);
             }
           });
         }
       } else {
-        const valueInfo = this.getValueInfo(v[0], mokuai.suanliaogongshi, msbjInfo.输入值);
+        const shuruzhi = getShuruzhi(msbjInfo);
+        const valueInfo = this.getValueInfo(v[0], mokuai.suanliaogongshi, shuruzhi);
         infos.push({
           type: "string",
           label: v[0],
           value: valueInfo.value,
           clearable: true,
-          validators: getValidators(v[0], mokuai.suanliaogongshi, msbjInfo.输入值),
-          hint: valueInfo.type,
+          validators: getValidators(v[0], mokuai.suanliaogongshi, shuruzhi),
+          hint: showHint ? valueInfo.type : "",
           onChange: async (val, info) => {
             onChange(v, val, mokuai.suanliaogongshi, info);
           }
@@ -849,14 +859,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!data || !msbjInfo || !mokuai) {
       return infos;
     }
-    const names = mokuai.自定义数据?.下单显示.split("+") || [];
-    const formulas = data.getCommonFormulas();
+    const inputs = this.mokuaiInputInfosInput();
+    const names = (mokuai.自定义数据?.下单显示.split("+") || []).filter((v) => !inputs.some((v2) => v2.label === v));
+    const formulas = this.materialResult();
+    Object.assign(data.getCommonFormulas());
     Object.assign(formulas, getNodeVars(msbjInfo.选中布局数据?.模块大小配置?.算料公式 || {}, node.层名字));
-    Object.assign(formulas, mokuai.suanliaogongshi);
+    Object.assign(formulas, getMokuaiFormulas(msbjInfo, node, mokuai));
     replaceMenshanName(this.activeMenshanKey(), formulas);
-    for (const [key] of mokuai.gongshishuru) {
-      formulas[key] = this.getValueInfo(key, mokuai.suanliaogongshi, msbjInfo.输入值).value;
-    }
     const vars = this.lastSuanliaoManager.data()?.output.materialResult || {};
     try {
       const res = this.calc.calc.calcFormulas(formulas, vars);
@@ -1346,6 +1355,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   kexuanmokuaiQuery = signal("");
   kexuanmokuaiSearchInputInfo = computed(() => {
+    const minLength = this.isFloatingDialog() ? 6 : 8;
     const info: InputInfo = {
       type: "string",
       label: "搜索",
@@ -1354,7 +1364,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       onInput: debounce((val: string) => {
         this.kexuanmokuaiQuery.set(val);
       }, 100),
-      style: {width: "150px", maxWidth: "100%"}
+      style: {width: "150px", maxWidth: "100%"},
+      hidden: this.kexuanmokuais().length <= minLength
     };
     return info;
   });
@@ -1741,16 +1752,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const msbjInfo = this.activeMsbjInfo();
     const node = this.activeMokuaiNode();
     if (isSaved && msbjInfo && node) {
-      const mokuai0 = openedMokuai.mokuai0;
       const mokuai = (await this.fetchMokuais([openedMokuai.mokuai.id]))[0];
-      const slgsKeys = new Set<string>();
-      const arr0 = mokuai0.gongshishuru.concat(mokuai0.xuanxiangshuru);
-      for (const [k] of arr0) {
-        const {type} = this.getValueInfo(k, mokuai.suanliaogongshi, msbjInfo.输入值);
-        if (["模块公式值", "通用公式值"].includes(type)) {
-          slgsKeys.add(k);
-        }
-      }
       if (mokuai) {
         const menshanbujuInfos = this.data()?.menshanbujuInfos || {};
         const menshanbujuKeys = keysOf(menshanbujuInfos);
