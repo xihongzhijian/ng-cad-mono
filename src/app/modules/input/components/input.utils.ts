@@ -1,10 +1,23 @@
-import {session} from "@app/app.common";
+import {filePathUrl, session} from "@app/app.common";
 import {ObjectOf} from "@lucilor/utils";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {Properties} from "csstype";
 import {uniq} from "lodash";
-import {InputInfo, InputInfoBoolean, InputInfoNumber, InputInfoOption, InputInfoString, Value} from "./input.types";
+import {
+  InputInfo,
+  InputInfoBoolean,
+  InputInfoImage,
+  InputInfoNumber,
+  InputInfoOption,
+  InputInfoOptions,
+  InputInfoPart,
+  InputInfoSelectMultiple,
+  InputInfoSelectSingle,
+  InputInfoString,
+  Value
+} from "./input.types";
 
 export const getValue = <T>(fromValue: Value<T>, message: MessageService) => {
   let result = fromValue;
@@ -138,3 +151,84 @@ export const getUnifiedInputs = <T>(
   }
   return [unifiedInput, ...inputs];
 };
+
+export type InputInfoWithDataPart<T extends InputInfo> = Omit<InputInfoPart<T>, "model" | "value">;
+export class InputInfoWithDataGetter<T> {
+  constructor(
+    public data: T,
+    public others?: Omit<InputInfoPart, "model">
+  ) {}
+
+  string(key: keyof T, others?: InputInfoWithDataPart<InputInfoString>): InputInfoString {
+    return {
+      type: "string",
+      label: String(key),
+      model: {data: this.data, key},
+      ...this.others,
+      ...others
+    };
+  }
+
+  selectSingle<K extends string = string>(
+    key: keyof T,
+    options: Value<InputInfoOptions<K>>,
+    others?: InputInfoWithDataPart<InputInfoSelectSingle>
+  ): InputInfoSelectSingle {
+    return {
+      type: "select",
+      label: String(key),
+      options,
+      multiple: false,
+      model: {data: this.data, key},
+      ...this.others,
+      ...others
+    };
+  }
+
+  selectMultiple<K extends string = string>(
+    key: keyof T,
+    options: Value<InputInfoOptions<K>>,
+    others?: InputInfoWithDataPart<InputInfoSelectMultiple>
+  ): InputInfoSelectMultiple {
+    return {
+      type: "select",
+      label: String(key),
+      options,
+      multiple: true,
+      model: {data: this.data, key},
+      ...this.others,
+      ...others
+    };
+  }
+
+  number(key: keyof T, others?: InputInfoWithDataPart<InputInfoNumber>): InputInfoNumber {
+    return {type: "number", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
+  }
+
+  boolean(key: keyof T, others?: InputInfoWithDataPart<InputInfoBoolean>): InputInfoBoolean {
+    return {type: "boolean", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
+  }
+
+  image(key: keyof T, http: CadDataService, others?: InputInfoWithDataPart<InputInfoImage>): InputInfoImage {
+    return {
+      type: "image",
+      label: String(key),
+      value: this.data[key],
+      prefix: filePathUrl,
+      onChange: async (val, info) => {
+        if (val) {
+          const result = await http.uploadImage(val);
+          if (result?.url) {
+            info.value = result.url;
+            this.data[key] = result.url as any;
+          }
+        } else {
+          info.value = "";
+          this.data[key] = "" as any;
+        }
+      },
+      ...this.others,
+      ...others
+    };
+  }
+}

@@ -205,7 +205,7 @@ export type InputInfo<T = any> =
   | InputInfoButton<T>
   | InputInfoList<T>
   | InputInfoGroup<T>;
-export type InputInfoPart = Partial<Omit<InputInfo, "type">>;
+export type InputInfoPart<R extends InputInfo = InputInfo> = Partial<Omit<R, "type">>;
 
 export type InputInfoOption<T = any> = {value: T; label?: string; disabled?: boolean; img?: string; vid?: number};
 

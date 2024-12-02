@@ -3,21 +3,14 @@ import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {filePathUrl, getCopyName, joinOptions, splitOptions} from "@app/app.common";
+import {getCopyName, joinOptions, splitOptions} from "@app/app.common";
 import {environment} from "@env";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
-import {
-  InputInfo,
-  InputInfoBoolean,
-  InputInfoGroup,
-  InputInfoPart,
-  InputInfoSelect,
-  InputInfoString
-} from "@modules/input/components/input.types";
-import {getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
+import {InputInfo, InputInfoGroup, InputInfoPart, InputInfoSelect} from "@modules/input/components/input.types";
+import {getGroupStyle, getInputStyle, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {getIsVersion2024} from "@views/msbj/msbj.utils";
@@ -178,33 +171,9 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       }
       return info;
     };
-    const getStringInput = (key: keyof typeof data, others?: InputInfoPart): InputInfoString => ({
-      type: "string",
-      label: key,
-      model: {data, key},
-      ...others
-    });
-    const getSelectInput = (key: keyof typeof data, options: string[], others?: InputInfoPart): InputInfoSelect => ({
-      type: "select",
-      label: key,
-      model: {data, key},
-      options: options.map((v) => ({label: v, value: v})),
-      ...others
-    });
-    const getBooleanInput = (key: keyof typeof data, others?: InputInfoPart): InputInfoBoolean => ({
-      type: "boolean",
-      label: key,
-      model: {data, key},
-      ...others
-    });
-    const getNumberInput = (key: keyof typeof data, others?: InputInfoPart): InputInfo => ({
-      type: "number",
-      label: key,
-      model: {data, key},
-      ...others
-    });
+    const inputInfoGetter = new InputInfoWithDataGetter(data, {clearable: true});
     const form: InputInfo[] = [
-      getStringInput("mingzi", {
+      inputInfoGetter.string("mingzi", {
         label: "名字",
         validators: (control) => {
           const value = control.value;
@@ -217,35 +186,17 @@ export class LrsjXinghaosComponent extends LrsjPiece {
           return null;
         }
       }),
-      {
-        type: "image",
-        label: "图片",
-        value: data.tupian,
-        prefix: filePathUrl,
-        clearable: true,
-        onChange: async (val, info) => {
-          if (val) {
-            const result = await this.http.uploadImage(val);
-            if (result?.url) {
-              info.value = result.url;
-              data.tupian = result.url;
-            }
-          } else {
-            info.value = "";
-            data.tupian = "";
-          }
-        }
-      },
+      inputInfoGetter.image("tupian", this.http, {label: "图片"}),
       await getOptionInput("menchuang", "门窗", true, true),
       await getOptionInput("gongyi", "工艺", true, true),
       await getOptionInput("dingdanliucheng", "订单流程"),
       await getOptionInput("zuoshujubanben", "做数据版本"),
-      getSelectInput("算料单模板", 算料单模板Options.slice()),
-      getBooleanInput("下单显示没有配件的板材分组"),
-      getBooleanInput("是否需要激光开料", {validators: Validators.required}),
-      getNumberInput("paixu", {label: "排序"}),
-      getBooleanInput("tingyong", {label: "停用"}),
-      getBooleanInput("数据已录入完成")
+      inputInfoGetter.selectSingle("算料单模板", 算料单模板Options.slice()),
+      inputInfoGetter.boolean("下单显示没有配件的板材分组"),
+      inputInfoGetter.boolean("是否需要激光开料", {validators: Validators.required}),
+      inputInfoGetter.number("paixu", {label: "排序"}),
+      inputInfoGetter.boolean("tingyong", {label: "停用"}),
+      inputInfoGetter.boolean("数据已录入完成")
     ];
     const result = await this.message.form(form);
     if (result) {
