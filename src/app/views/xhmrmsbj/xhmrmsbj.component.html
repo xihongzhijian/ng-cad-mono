@@ -24,7 +24,7 @@
       <button mat-raised-button color="primary" (click)="resetMokuaiInputs(true)">全部恢复默认</button>
     } @else {
       @switch (activeTabName()) {
-        @case ("锁边铰边") {
+        @case ("可选锁边铰边") {
           <button mat-raised-button color="primary" (click)="sbjb()?.addSbjbItemSbjb()">添加</button>
           <button mat-raised-button color="primary" (click)="sbjb()?.removeSbjbItemSbjbs()">删除</button>
           <button mat-raised-button color="primary" (click)="sbjb()?.import()">导入</button>
@@ -49,10 +49,14 @@
   </div>
 }
 @if (enableXinghaoConfig()) {
-  <app-xhmrmsbj-xinghao-config [class.hidden]="activeTabName() !== '型号配置'" [(data)]="data"></app-xhmrmsbj-xinghao-config>
+  <app-xhmrmsbj-xinghao-config
+    [class.hidden]="!tabXinghaoConfig()"
+    [(data)]="data"
+    [type]="tabXinghaoConfig()"
+  ></app-xhmrmsbj-xinghao-config>
 }
 @if (enableSbjb()) {
-  <app-xhmrmsbj-sbjb [class.hidden]="activeTabName() !== '锁边铰边'" [xinghao]="xinghao()"></app-xhmrmsbj-sbjb>
+  <app-xhmrmsbj-sbjb [class.hidden]="activeTabName() !== '可选锁边铰边'" [xinghao]="xinghao()"></app-xhmrmsbj-sbjb>
 }
 @if (enableMfpz()) {
   <app-menfeng-peizhi [class.hidden]="activeTabName() !== '门缝配置'" [xinghao]="xinghao()" [sbjbItems]="sbjbItems()"></app-menfeng-peizhi>

@@ -64,13 +64,18 @@ ng-scrollbar.ng-scrollbar {
   --scrollbar-thumb-transition: height ease-out 150ms, width ease-out 150ms;
   --scrollbar-track-transition: height ease-out 150ms, width ease-out 150ms;
   --_scrollbar-content-width: 100%;
+  --_scrollbar-content-height: auto;
 
   &.enable-x {
     --_scrollbar-content-width: fit-content;
   }
+  &.disable-y {
+    --_scrollbar-content-height: 100%;
+  }
 
   .ng-scroll-content {
     box-sizing: border-box;
+    height: var(--_scrollbar-content-height);
   }
 }
 .scrollbar-container {

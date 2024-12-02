@@ -5,6 +5,7 @@ import {ObjectOf} from "@lucilor/utils";
 import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MsbjData} from "@views/msbj/msbj.types";
+import {xhmrmsbjXinghaoConfigComponentTypes} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
 
 export interface XhmrmsbjTableData extends TableDataBase {
   peizhishuju?: string;
@@ -55,7 +56,7 @@ export interface XhmrmsbjInfoMokuaiNode {
   输入值?: Shuruzhi;
 }
 
-export const xhmrmsbjTabNames = ["型号配置", "锁边铰边", "门扇模块", "门缝配置"] as const;
+export const xhmrmsbjTabNames = [...xhmrmsbjXinghaoConfigComponentTypes, "可选锁边铰边", "门扇模块", "门缝配置"] as const;
 export type XhmrmsbjTabName = (typeof xhmrmsbjTabNames)[number];
 
 export const menshanKeys = ["锁扇正面", "锁扇背面", "铰扇正面", "铰扇背面", "小扇正面", "小扇背面"] as const;

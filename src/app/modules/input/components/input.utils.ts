@@ -7,9 +7,11 @@ import {Properties} from "csstype";
 import {uniq} from "lodash";
 import {
   InputInfo,
+  InputInfoArray,
   InputInfoBoolean,
   InputInfoImage,
   InputInfoNumber,
+  InputInfoObject,
   InputInfoOption,
   InputInfoOptions,
   InputInfoPart,
@@ -207,6 +209,14 @@ export class InputInfoWithDataGetter<T> {
 
   boolean(key: keyof T, others?: InputInfoWithDataPart<InputInfoBoolean>): InputInfoBoolean {
     return {type: "boolean", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
+  }
+
+  object(key: keyof T, others?: InputInfoWithDataPart<InputInfoObject>): InputInfoObject {
+    return {type: "object", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
+  }
+
+  array(key: keyof T, others?: InputInfoWithDataPart<InputInfoArray>): InputInfoArray {
+    return {type: "array", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
 
   image(key: keyof T, http: CadDataService, others?: InputInfoWithDataPart<InputInfoImage>): InputInfoImage {

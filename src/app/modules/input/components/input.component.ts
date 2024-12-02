@@ -662,6 +662,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
           info.onChange?.(value, info);
         }
         break;
+      case "object":
+        info.onChange?.(value, info);
+        break;
+      case "array":
+        info.onChange?.(value, info);
+        break;
       case "coordinate":
         info.onChange?.(value, info);
         break;
@@ -1062,29 +1068,21 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   changeObjectKey2(...args: Parameters<InputComponent["changeObjectKey"]>) {
     this.changeObjectKey(...args);
-    setTimeout(() => {
-      this.validateValue();
-    }, 0);
+    this.onChange();
   }
   changeObjectValue2(...args: Parameters<InputComponent["changeObjectValue"]>) {
     this.changeObjectValue(...args);
-    setTimeout(() => {
-      this.validateValue();
-    }, 0);
+    this.onChange();
   }
   objectAdd2(...args: Parameters<InputComponent["objectAdd"]>) {
     this.objectAdd(...args);
     this._filterXuanxiangOptions();
-    setTimeout(() => {
-      this.validateValue();
-    }, 0);
+    this.onChange();
   }
   objectRemove2(...args: Parameters<InputComponent["objectRemove"]>) {
     this.objectRemove(...args);
     this._filterXuanxiangOptions();
-    setTimeout(() => {
-      this.validateValue();
-    }, 0);
+    this.onChange();
   }
   onObjectKeyInput(event: Event, i: number) {
     const target = event.target as HTMLInputElement;

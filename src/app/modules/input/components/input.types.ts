@@ -86,6 +86,7 @@ export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   parseString?: boolean;
   requiredKeys?: string[];
   optionType?: "选项" | "模块选项";
+  onChange?: <R>(val: ObjectOf<R>, info: InputInfoObject<T, K>) => void;
 }
 
 export interface InputInfoArray<T = any> extends InputInfoBase<T> {
@@ -93,6 +94,7 @@ export interface InputInfoArray<T = any> extends InputInfoBase<T> {
   value?: Value<any[]>;
   valueLabel?: string;
   valueValidators?: AbstractControlOptions["validators"];
+  onChange?: <R>(val: R[], info: InputInfoArray<T>) => void;
 }
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {

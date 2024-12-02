@@ -161,7 +161,9 @@ export interface MongodbDataBase {
   名字: string;
 }
 
-export interface MongodbDataBase2 extends MongodbDataBase {
+export type MongodbDataBase2 = MongodbDataBase & MongodbDataFilterable;
+
+export interface MongodbDataFilterable {
   选项: ObjectOf<string>;
   条件: string[];
 }

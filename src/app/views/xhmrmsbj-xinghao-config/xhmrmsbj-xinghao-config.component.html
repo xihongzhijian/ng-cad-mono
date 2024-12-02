@@ -1,9 +1,48 @@
-<div class="content flex-row flex-110 scrollbar-container">
-  <app-table [info]="shuruTable()" (toolbarButtonClick)="onShuruToolbar($event)" (rowButtonClick)="onShuruRow($event)"></app-table>
-  <app-table
-    [info]="xuanxiangTable()"
-    (toolbarButtonClick)="onXuanxiangToolbar($event)"
-    (rowButtonClick)="onXuanxiangRow($event)"
-  ></app-table>
-  <app-suanliaogongshi [info]="slgsInfo()" (slgsChange)="onSlgsChange()"></app-suanliaogongshi>
-</div>
+<ng-scrollbar class="enable-x disable-y">
+  <div class="content flex-row">
+    @switch (type()) {
+      @case ("型号配置") {
+        <app-table
+          class="shuru-table"
+          [info]="shuruTable()"
+          (toolbarButtonClick)="onShuruToolbar($event)"
+          (rowButtonClick)="onShuruRow($event)"
+        ></app-table>
+        <app-table
+          class="xuanxiang-table"
+          [info]="xuanxiangTable()"
+          (toolbarButtonClick)="onXuanxiangToolbar($event)"
+          (rowButtonClick)="onXuanxiangRow($event)"
+        ></app-table>
+        <app-suanliaogongshi class="slgs" [info]="slgsInfo()" (slgsChange)="onSlgsChange()"></app-suanliaogongshi>
+      }
+      @case ("算料单配置") {
+        <div class="suanliao-config flex-column">
+          <div class="title">算料单</div>
+          <div class="toolbar">
+            <div>门扇中间标注显示</div>
+            <button mat-raised-button color="primary" (click)="addSuanliaoMszjbzxs()">添加</button>
+          </div>
+          <ng-scrollbar>
+            <div class="items">
+              @for (info of suanliaoMszjbzxsInfos(); track $index) {
+                <div class="suanliao-mszjbzxs item border">
+                  <div class="toolbar">
+                    <div>{{ info.item["名字"] }}</div>
+                    <button mat-raised-button color="primary" (click)="removeSuanliaoMszjbzxs($index)">删除</button>
+                  </div>
+                  @for (inputInfo of info.inputInfos; track $index) {
+                    <app-input class="text" [info]="inputInfo"></app-input>
+                  }
+                </div>
+              }
+            </div>
+          </ng-scrollbar>
+        </div>
+      }
+      @case ("企料结构配置") {
+        <div class="title">未实现</div>
+      }
+    }
+  </div>
+</ng-scrollbar>

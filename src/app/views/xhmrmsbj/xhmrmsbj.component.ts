@@ -77,6 +77,7 @@ import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {resetInputs} from "@views/suanliao/suanliao.utils";
 import {getFormulaInfos, openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {XhmrmsbjXinghaoConfigComponent} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.component";
+import {isXhmrmsbjXinghaoConfigComponentType} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
 import {clone, cloneDeep, debounce, difference, intersection} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -996,7 +997,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const sbjb = this.sbjb();
     if (sbjb) {
       if (!(await sbjb.validate())) {
-        this.activeTabName.set("锁边铰边");
+        this.activeTabName.set("可选锁边铰边");
         return;
       }
     }
@@ -1119,6 +1120,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                 if (i > i2 || (i === i2 && j > j2) || (i === i2 && j === j2 && k > k2)) {
                   continue;
                 }
+                if (["铰扇正面", "铰扇背面"].includes(menshanKey) && ["小扇正面", "小扇背面"].includes(menshanKey2)) {
+                  continue;
+                }
                 const isEqual = isMokuaiItemEqual(mokuai, mokuai2);
                 let scbl1 = getMokuaiShuchuVars(msbjInfo, node, mokuai);
                 let scbl2 = getMokuaiShuchuVars(msbjInfo2, node2, mokuai2);
@@ -1236,7 +1240,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const sbjb = this.sbjb();
     if (sbjb) {
       if (!(await sbjb.save())) {
-        this.activeTabName.set("锁边铰边");
+        this.activeTabName.set("可选锁边铰边");
         return;
       }
     }
@@ -1275,13 +1279,17 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   enableXinghaoConfig = computed(() => !this.isFromOrder());
   enableSbjb = computed(() => !this.isFromOrder() && this.data()?.isVersion2024);
   enableMfpz = computed(() => this.data()?.isVersion2024);
+  tabXinghaoConfig = computed(() => {
+    const name = this.activeTabName();
+    return isXhmrmsbjXinghaoConfigComponentType(name) ? name : null;
+  });
   tabNames = computed(() => {
     let names = xhmrmsbjTabNames.slice();
     if (!this.enableXinghaoConfig()) {
-      names = names.filter((v) => v !== "型号配置");
+      names = names.filter((v) => isXhmrmsbjXinghaoConfigComponentType(v));
     }
     if (!this.enableSbjb()) {
-      names = names.filter((v) => v !== "锁边铰边");
+      names = names.filter((v) => v !== "可选锁边铰边");
     }
     if (!this.enableMfpz()) {
       names = names.filter((v) => v !== "门缝配置");
