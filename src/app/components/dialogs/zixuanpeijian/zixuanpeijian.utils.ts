@@ -286,18 +286,9 @@ export const updateMokuaiItem = (
     item.type1 = others.type1;
     item.type2 = others.type2;
   }
-  const {morenbancai, 自定义数据} = item;
+  const {morenbancai} = item;
   Object.assign(item, item2);
   justifyMokuaiItem(item);
-  if (自定义数据) {
-    const items = item.自定义数据?.选项数据 || [];
-    for (const item of items) {
-      const item2 = 自定义数据.选项数据.find((v) => v.名字 === item.名字);
-      if (item2) {
-        item.输出变量 = item2.输出变量;
-      }
-    }
-  }
   if (morenbancai) {
     if (!item.morenbancai) {
       item.morenbancai = {};

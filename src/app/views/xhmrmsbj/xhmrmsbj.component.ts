@@ -51,6 +51,7 @@ import {
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {FormulasComponent} from "@components/formulas/formulas.component";
+import {选项} from "@components/lurushuju/xinghao-data";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
@@ -104,6 +105,7 @@ import {
 } from "./xhmrmsbj.types";
 import {
   getMokuaiFormulas,
+  getMokuaiFormulasRaw,
   getMokuaiOptions,
   getMokuaiShuchuVars,
   getMokuaiXxsjValues,
@@ -755,7 +757,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           const valueInfo = this.getValueInfo(v[0], item.公式, shuruzhi);
           let label = v[0];
           if (!this.isFromOrder()) {
-            label = `【${item.名字}】${v[0]}`;
+            label += `【${item.名字}】`;
           }
           infos.push({
             type: "string",
@@ -809,7 +811,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return this.activeMokuaiNode()?.选中模块?.自定义数据?.选项数据 || [];
   });
   mokuaiOptions = computed(() => this.mokuaiOptionsAll().filter((v) => v.可选项.length > 0));
-  mokuaiOptionInputInfos = computed(() => {
+  mokuaiOptionInfos = computed(() => {
     const data = this.data();
     const msbjInfo = this.activeMsbjInfo();
     const node = this.activeMokuaiNode();
@@ -817,38 +819,43 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!mokuai || !msbjInfo || !data) {
       return [];
     }
-    return this.mokuaiOptions().map((item) => {
-      const name = item.名字;
-      const options = getMokuaiOptions(msbjInfo, node, mokuai);
-      const option = options.find((v) => v.名字 === name);
-      const info: InputInfo = {type: "select", label: name, options: item.可选项.map((v) => v.mingzi)};
+    const infos: {option: 选项; disabled: boolean; inputInfo: InputInfo}[] = [];
+    const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
+    for (const option of this.mokuaiOptions()) {
+      const name = option.名字;
+      const disabled = !varsEnabled.includes(name);
       const duplicate = this.isVarNameDuplicate(name);
-      info.validators = () => (duplicate ? {重复: true} : null);
+      const options2 = getMokuaiOptions(msbjInfo, node, mokuai);
+      const option2 = options2.find((v) => v.名字 === name);
+      const inputInfo: InputInfo = {type: "select", label: name, options: option.可选项.map((v) => v.mingzi)};
+      inputInfo.validators = () => (duplicate ? {重复: true} : null);
       if (this.isFromOrder()) {
-        info.value = option?.选中值 || option?.默认值 || item.可选项.find((v) => v.morenzhi)?.mingzi;
-        info.onChange = (val) => {
-          if (option) {
-            option.选中值 = val;
+        inputInfo.value = option2?.选中值 || option2?.默认值 || option.可选项.find((v) => v.morenzhi)?.mingzi;
+        inputInfo.onChange = (val) => {
+          if (option2) {
+            option2.选中值 = val;
           } else {
-            options.push({名字: name, 选中值: val});
+            options2.push({名字: name, 选中值: val});
           }
-          setMokuaiOptions(msbjInfo, node, mokuai, options);
+          setMokuaiOptions(msbjInfo, node, mokuai, options2);
           this.suanliao();
         };
       } else {
-        info.value = option?.默认值 || item.可选项.find((v) => v.morenzhi)?.mingzi;
-        info.onChange = (val) => {
-          if (option) {
-            option.默认值 = val;
+        inputInfo.value = option2?.默认值 || option.可选项.find((v) => v.morenzhi)?.mingzi;
+        inputInfo.onChange = (val) => {
+          if (option2) {
+            option2.默认值 = val;
           } else {
-            options.push({名字: name, 默认值: val});
+            options2.push({名字: name, 默认值: val});
           }
-          setMokuaiOptions(msbjInfo, node, mokuai, options);
+          setMokuaiOptions(msbjInfo, node, mokuai, options2);
           this.refreshData();
         };
       }
-      return info;
-    });
+      infos.push({option, disabled, inputInfo});
+    }
+    this.mokuaiOptionsAll().filter((v) => v.可选项.length > 0);
+    return infos;
   });
   mokuaiInputInfosFormulas = computed(() => {
     const data = this.data();
@@ -864,7 +871,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const formulas = this.materialResult();
     Object.assign(data.getCommonFormulas());
     Object.assign(formulas, getNodeVars(msbjInfo.选中布局数据?.模块大小配置?.算料公式 || {}, node.层名字));
-    Object.assign(formulas, getMokuaiFormulas(msbjInfo, node, mokuai));
+    Object.assign(formulas, getMokuaiFormulas(msbjInfo, node, mokuai, null));
     replaceMenshanName(this.activeMenshanKey(), formulas);
     const vars = this.lastSuanliaoManager.data()?.output.materialResult || {};
     try {
@@ -1070,7 +1077,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           }
           const missingVars: string[] = [];
           for (const key of [...varKeysGssr, ...varKeysXxsr]) {
-            const formulas = getMokuaiFormulas(msbjInfo, node, mokuai);
+            const formulas = getMokuaiFormulasRaw(msbjInfo, node, mokuai, null);
             let value = "";
             if (mokuai.xuanxianggongshi.length > 0) {
               for (const xxgs of mokuai.xuanxianggongshi) {
@@ -1151,7 +1158,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                     }
                   }
                   if (!isEqual) {
-                    const slgsKeys = Object.keys(getMokuaiFormulas(msbjInfo, node2, mokuai2));
+                    const slgsKeys = Object.keys(getMokuaiFormulasRaw(msbjInfo, node2, mokuai2, null));
                     const dupVars2 = difference(intersection(slgsKeys, scbl1), mokuai2.shuchubianliang);
                     if (dupVars2.length > 0) {
                       nodeVarsError.details.push(getDetail(dupVars2, "输出", "公式"));

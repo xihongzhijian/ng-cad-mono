@@ -172,13 +172,17 @@
               <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
             </div>
             <div class="items">
-              @for (item of mokuaiOptions(); track i; let i = $index) {
+              @for (info of mokuaiOptionInfos(); track i; let i = $index) {
                 <div class="toolbar" style="width: 100%">
-                  <app-input class="flex-110" [info]="mokuaiOptionInputInfos()[i]"></app-input>
-                  <div class="toolbar" (click)="toggleMokuaiShuruDisabled(item['名字'])">
-                    <mat-checkbox [checked]="!item['输出变量']"></mat-checkbox>
-                    <div>关闭输出</div>
-                  </div>
+                  <app-input class="flex-110" [info]="info.inputInfo"></app-input>
+                  @if (info.option["输出变量"]) {
+                    <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.option['名字'])">
+                      <mat-checkbox [checked]="info.disabled"></mat-checkbox>
+                      <div>关闭输出</div>
+                    </div>
+                  } @else {
+                    <div>不输出</div>
+                  }
                 </div>
               }
             </div>
@@ -188,8 +192,8 @@
               <div class="title">模块选项</div>
             }
             <div class="items items-per-row">
-              @for (info of mokuaiOptionInputInfos(); track $index) {
-                <app-input class="item" [info]="info"></app-input>
+              @for (info of mokuaiOptionInfos(); track $index) {
+                <app-input class="item" [info]="info.inputInfo"></app-input>
               }
             </div>
           }

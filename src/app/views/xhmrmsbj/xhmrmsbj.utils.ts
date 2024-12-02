@@ -44,7 +44,7 @@ export class XhmrmsbjData extends ZuoshujuData {
     for (const key of menshanKeys) {
       const item = info[key] || {};
       this.menshanbujuInfos[key] = item;
-      if (!item.选中布局数据) {
+      if (!item.选中布局数据 || item.选中布局数据.vid !== item.选中布局) {
         const msbj = msbjs.find((v) => v.vid === item.选中布局);
         if (msbj) {
           item.选中布局数据 = {
@@ -159,7 +159,6 @@ export class XhmrmsbjData extends ZuoshujuData {
   }
 
   private _menshanFollowersMap = new Map<MenshanKey, MenshanKey[]>();
-  menshanFollowersMissingKeys = new Set<MenshanFollowerKey>();
   getHasSeparateMenshanFollowerKeys() {
     const keys: MenshanFollowerKey[] = ["jiaoshanzhengmianhesuoshanzhengmianxiangtong", "jiaoshanbeimianhesuoshanbeimianxiangtong"];
     return keys.every((key) => isTypeOf(this.raw[key], ["number", "boolean"]));
@@ -308,11 +307,32 @@ export const getMokuaiXxsjValues = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuai
   return values;
 };
 
+export const getMokuaiFormulasRaw = (
+  info: XhmrmsbjInfo,
+  node: XhmrmsbjInfoMokuaiNode,
+  mokuai: ZixuanpeijianMokuaiItem,
+  materialResult: Formulas | null | undefined
+) => {
+  const formulas: Formulas = {};
+  if (mokuai.xuanxianggongshi.length > 0) {
+    let xxgsList = mokuai.xuanxianggongshi;
+    if (materialResult) {
+      const optionValues = getMokuaiXxsjValues(info, node, mokuai);
+      xxgsList = matchMongoData(xxgsList, {...materialResult, ...optionValues});
+    }
+    for (const xxgs of xxgsList) {
+      Object.assign(formulas, xxgs.公式);
+    }
+  } else {
+    Object.assign(formulas, mokuai.suanliaogongshi);
+  }
+  return formulas;
+};
 export const getMokuaiFormulas = (
   info: XhmrmsbjInfo,
   node: XhmrmsbjInfoMokuaiNode,
   mokuai: ZixuanpeijianMokuaiItem,
-  materialResult: Formulas = {}
+  materialResult: Formulas | null | undefined
 ) => {
   const formulas: Formulas = {};
   const setFormulas = (输入值: Shuruzhi) => {
@@ -328,7 +348,7 @@ export const getMokuaiFormulas = (
   const optionFormulas = mapValues(optionValues, (v) => `"${v}"`);
   if (mokuai.xuanxianggongshi.length > 0) {
     let xxgsList = mokuai.xuanxianggongshi;
-    if (!isEmpty(materialResult)) {
+    if (materialResult) {
       xxgsList = matchMongoData(xxgsList, {...materialResult, ...optionValues});
     }
     for (const xxgs of xxgsList) {
@@ -345,10 +365,8 @@ export const getMokuaiFormulas = (
 
 const getMokuaiObjectKey = (node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => `${node.层id}-${mokuai.id}`;
 
-export const getMokuaiShuchuVars = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
-  const {输出变量禁用} = info;
-  const key = getMokuaiObjectKey(node, mokuai);
-  const vars = mokuai.shuchubianliang.filter((v) => !输出变量禁用?.[key]?.includes(v));
+export const getMokuaiShuchuVarsRaw = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
+  const vars = [...mokuai.shuchubianliang];
   for (const option of mokuai.自定义数据?.选项数据 || []) {
     if (option.可选项.length > 0 && option.输出变量) {
       vars.push(option.名字);
@@ -356,21 +374,20 @@ export const getMokuaiShuchuVars = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuai
   }
   return vars;
 };
+export const getMokuaiShuchuVars = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
+  const {输出变量禁用} = info;
+  const key = getMokuaiObjectKey(node, mokuai);
+  const varsDisabled = 输出变量禁用?.[key] || [];
+  const varsRaw = getMokuaiShuchuVarsRaw(info, node, mokuai);
+  return difference(varsRaw, varsDisabled);
+};
 export const setMokuaiShuchuVars = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, vars: string[]) => {
   if (!info.输出变量禁用) {
     info.输出变量禁用 = {};
   }
   const key = getMokuaiObjectKey(node, mokuai);
-  const names1 = intersection(mokuai.shuchubianliang, vars);
-  const names2 = difference(vars, names1);
-  info.输出变量禁用[key] = difference(mokuai.shuchubianliang, vars);
-  for (const option of mokuai.自定义数据?.选项数据 || []) {
-    if (names2.includes(option.名字)) {
-      option.输出变量 = true;
-    } else {
-      delete option.输出变量;
-    }
-  }
+  const varsRaw = getMokuaiShuchuVarsRaw(info, node, mokuai);
+  info.输出变量禁用[key] = difference(varsRaw, vars);
 };
 export const purgeShuchuDisabled = (infos: XhmrmsbjDataMsbjInfos) => {
   for (const key of keysOf(infos)) {
@@ -382,13 +399,8 @@ export const purgeShuchuDisabled = (infos: XhmrmsbjDataMsbjInfos) => {
     const map = new Map<string, MapItem>();
     for (const node of info.模块节点 || []) {
       for (const mokuai of node.可选模块) {
-        const item: MapItem = mokuai.shuchubianliang;
+        const item: MapItem = getMokuaiShuchuVarsRaw(info, node, mokuai);
         map.set(getMokuaiObjectKey(node, mokuai), item);
-        for (const option of mokuai.自定义数据?.选项数据 || []) {
-          if ("输出变量" in option && !option.输出变量) {
-            delete option.输出变量;
-          }
-        }
       }
     }
     for (const key of Object.keys(info.输出变量禁用)) {
