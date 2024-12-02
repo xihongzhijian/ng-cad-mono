@@ -214,6 +214,7 @@ export const getCadInfoInputs = (
         break;
       case "激光开料是否翻转":
       case "激光开料打标":
+      case "激光开料排版后只保留孔":
         info = {type: "boolean", label: key, model: {data: attrGetter("info"), key}};
         break;
       case "指定下单板材":
