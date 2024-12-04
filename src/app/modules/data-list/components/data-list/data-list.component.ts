@@ -418,7 +418,6 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     this.items.set(items);
 
     let currNode: DataListNavNode | undefined;
-    let firstNonEmptyNode: DataListNavNode | undefined;
     const setCount = (node: DataListNavNode) => {
       let count = 0;
       if (node.children && node.children.length > 0) {
@@ -439,9 +438,6 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
         if (node.name === type) {
           currNode = node;
         }
-        if (!firstNonEmptyNode && count > 0) {
-          firstNonEmptyNode = node;
-        }
       }
     };
     const nodes = this.navDataSource().slice();
@@ -451,8 +447,6 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     this.navDataSource.set(nodes);
     if (currNode && !currNode.hidden) {
       this.activeNavNode.set(currNode);
-    } else if (firstNonEmptyNode) {
-      this.activeNavNode.set(firstNonEmptyNode);
     }
   }
 
