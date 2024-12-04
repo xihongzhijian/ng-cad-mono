@@ -460,7 +460,8 @@ export const calcZxpj = async (
     return getMokuaiInfoScbl(xhmrmsbj?.menshanbujuInfos || {}, item);
   };
   const getMokuaiInfoSlgs2 = (item: ZixuanpeijianMokuaiItem) => {
-    const result = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, materialResult);
+    const vars = {...materialResult, ...shuchubianliang};
+    const result = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, vars);
     return result?.formulas || item.suanliaogongshi;
   };
 
@@ -567,7 +568,16 @@ export const calcZxpj = async (
     }
     return vars;
   };
-  const toCalc1 = mokuais.map((item) => {
+
+  interface ToCalc1Item {
+    formulas: Formulas;
+    dimensionVars: Formulas;
+    succeedTrim: Formulas;
+    error: Formulas;
+    item: ZixuanpeijianMokuaiItem;
+  }
+  const updateToCalc1Item = (toCalc1Item: ToCalc1Item) => {
+    const item = toCalc1Item.item;
     const slgs = getMokuaiInfoSlgs2(item);
     const formulas = {...slgs};
     if (item.shuruzongkuan) {
@@ -590,7 +600,13 @@ export const calcZxpj = async (
       calc.calc.mergeFormulas(formulas, item.ceshishuju);
     }
     const dimensionVars = getCadDimensionVars(item.cads);
-    return {formulas, dimensionVars, succeedTrim: {} as Formulas, error: {} as Formulas, item};
+    toCalc1Item.formulas = formulas;
+    toCalc1Item.dimensionVars = dimensionVars;
+  };
+  const toCalc1 = mokuais.map((item) => {
+    const toCalc1Item: ToCalc1Item = {formulas: {}, dimensionVars: {}, succeedTrim: {}, error: {}, item};
+    updateToCalc1Item(toCalc1Item);
+    return toCalc1Item;
   });
   {
     const details: string[] = [];
@@ -653,6 +669,7 @@ export const calcZxpj = async (
     calcErrors1 = calcErrors2;
     calcErrors2 = {};
     for (const v of toCalc1) {
+      updateToCalc1Item(v);
       const info = v.item.info || {};
       const 门扇名字 = info.门扇名字 || "";
       const 模块名字 = info.模块名字 || "";
@@ -947,6 +964,7 @@ export const calcZxpj = async (
 
   calcVars.result = await calcVarsResult(calcVars.keys, varsGlobal);
   calc.calc.mergeFormulas(materialResult, calcVars.result);
+  console.log(toCalc1);
   for (const [i, item] of mokuais.entries()) {
     const vars2: Formulas = {...materialResult, ...lingsanVars, ...shuchubianliang, ...toCalc1[i].succeedTrim};
     const keys = Object.keys(getMokuaiInfoSlgs2(item));
