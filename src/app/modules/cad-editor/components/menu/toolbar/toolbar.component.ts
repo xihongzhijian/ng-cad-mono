@@ -114,7 +114,9 @@ export class ToolbarComponent {
       action: () => {
         if (this.exitWithEsc) {
           this.backToNormal();
+          return true;
         }
+        return false;
       }
     },
     {
@@ -122,7 +124,9 @@ export class ToolbarComponent {
       action: () => {
         if (this.confirmWithEnter) {
           this.backToNormal(true);
+          return true;
         }
+        return false;
       }
     }
   ];

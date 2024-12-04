@@ -297,7 +297,7 @@ export interface KeyEventItem {
   ctrl?: boolean;
   shift?: boolean;
   alt?: boolean;
-  action: () => void;
+  action: () => boolean | void;
 }
 export const onKeyEvent = (event: KeyboardEvent, items: KeyEventItem[]) => {
   for (const item of items) {
@@ -312,9 +312,10 @@ export const onKeyEvent = (event: KeyboardEvent, items: KeyEventItem[]) => {
       continue;
     }
     if ((event.key || "").toLowerCase() === key.toLowerCase()) {
-      callback();
-      event.preventDefault();
-      return;
+      const result = callback();
+      if (result !== false) {
+        event.preventDefault();
+      }
     }
   }
 };

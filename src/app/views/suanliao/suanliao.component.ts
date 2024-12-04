@@ -290,7 +290,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
           continue;
         }
         const {type2} = mokuai;
-        const formulas = getMokuaiFormulas(msbjInfo, node, mokuai, materialResult);
+        const {formulas} = getMokuaiFormulas(msbjInfo, node, mokuai, materialResult);
         if (getIsVersion2024(mokuai.zuoshujubanben)) {
           const shuchuVars = getMokuaiShuchuVars(msbjInfo, node, mokuai);
           for (const key of Object.keys(formulas)) {

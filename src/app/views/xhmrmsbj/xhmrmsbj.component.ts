@@ -25,7 +25,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {getValueString, remoteFilePath, session, setGlobal, timer} from "@app/app.common";
-import {CalcResult, Formulas} from "@app/utils/calc";
+import {Formulas} from "@app/utils/calc";
 import {FetchManager} from "@app/utils/fetch-manager";
 import {matchMongoData} from "@app/utils/mongo";
 import {getTrbl} from "@app/utils/trbl";
@@ -50,7 +50,7 @@ import {
   updateMokuaiItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
-import {FormulasComponent} from "@components/formulas/formulas.component";
+import {FormulaInfo, FormulasComponent} from "@components/formulas/formulas.component";
 import {选项} from "@components/lurushuju/xinghao-data";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
@@ -691,13 +691,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       };
     };
     const onChange = async (v: string[], val: string, slgs: Formulas, info: InputInfo, xxgsId?: string) => {
-      const shuruzhi = getShuruzhi(msbjInfo, xxgsId);
+      const shuruzhi = getShuruzhi(msbjInfo, node, mokuai, xxgsId);
       if (val) {
         shuruzhi[v[0]] = val;
       } else {
         delete shuruzhi[v[0]];
       }
-      setShuruzhi(msbjInfo, shuruzhi, xxgsId);
+      setShuruzhi(msbjInfo, node, mokuai, shuruzhi, xxgsId);
       const valueInfo = this.getValueInfo(v[0], slgs, shuruzhi);
       info.value = valueInfo.value;
       if (showHint) {
@@ -754,7 +754,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           xxgsList = matchMongoData(xxgsList, {...this.materialResult(), ...xxsjValues});
         }
         for (const item of xxgsList) {
-          const shuruzhi = getShuruzhi(msbjInfo, item._id);
+          const shuruzhi = getShuruzhi(msbjInfo, node, mokuai, item._id);
           const valueInfo = this.getValueInfo(v[0], item.公式, shuruzhi);
           let label = v[0];
           if (!this.isFromOrder()) {
@@ -773,7 +773,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           });
         }
       } else {
-        const shuruzhi = getShuruzhi(msbjInfo);
+        const shuruzhi = getShuruzhi(msbjInfo, node, mokuai);
         const valueInfo = this.getValueInfo(v[0], mokuai.suanliaogongshi, shuruzhi);
         infos.push({
           type: "string",
@@ -1082,14 +1082,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             let value = "";
             if (mokuai.xuanxianggongshi.length > 0) {
               for (const xxgs of mokuai.xuanxianggongshi) {
-                const valueInfo = await this.getValueInfo2(key, formulas, getShuruzhi(msbjInfo, xxgs._id));
+                const valueInfo = await this.getValueInfo2(key, formulas, getShuruzhi(msbjInfo, node, mokuai, xxgs._id));
                 if (valueInfo.value) {
                   value = valueInfo.value;
                   break;
                 }
               }
             } else {
-              const valueInfo = await this.getValueInfo2(key, formulas, getShuruzhi(msbjInfo));
+              const valueInfo = await this.getValueInfo2(key, formulas, getShuruzhi(msbjInfo, node, mokuai));
               value = valueInfo.value;
             }
             if (!value && isVersion2024) {
@@ -1903,21 +1903,23 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   mkdxpzFormulaInfos = computed(() => {
     const msbjInfo = this.activeMsbjInfo();
     const mkdxpz = msbjInfo?.选中布局数据?.模块大小配置;
-    if (!mkdxpz) {
+    const key = this.activeMenshanKey();
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
+    if (!mkdxpz || !key || !mokuai) {
       return [];
     }
+    const {materialResult = {}, 门扇布局大小, 配件模块CAD} = this.lastSuanliaoManager.data()?.output || {};
+    const infos: FormulaInfo[] = [];
     const formulas = {...mkdxpz.算料公式};
-    const key = this.activeMenshanKey();
     replaceMenshanName(key, formulas);
-    const materialResult = this.lastSuanliaoManager.data()?.output.materialResult || {};
+    const mokuai2 = 配件模块CAD?.find((v) => v.id === mokuai.id);
+    const vars = {...materialResult, ...门扇布局大小?.[key], ...mokuai2?.suanliaogongshi};
     const onChange = () => {
       this.setMkdxpz(formulas);
     };
-    let calcResult: CalcResult | undefined;
-    try {
-      calcResult = this.calc.calc.calcFormulas(formulas, materialResult);
-    } catch {}
-    return getFormulaInfos(this.calc, formulas, calcResult?.succeed, {shurus: mkdxpz.输入显示, onChange});
+    infos.push(...getFormulaInfos(this.calc, formulas, vars, {shurus: mkdxpz.输入显示, onChange}));
+    return infos;
   });
   async setMkdxpz(formulas: Formulas) {
     const mkdxpz = this.activeMsbjInfo()?.选中布局数据?.模块大小配置;

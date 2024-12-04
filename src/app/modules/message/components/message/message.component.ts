@@ -298,6 +298,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     const data = this.data;
     const isEnter = event.key === "Enter";
     const isEsc = event.key === "Escape";
+    console.log(1);
     if (data.type === "form" && (isEnter || isEsc)) {
       const target = event.target;
       if (target instanceof HTMLElement) {

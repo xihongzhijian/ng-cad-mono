@@ -73,7 +73,7 @@ export class XhmrmsbjMokuaisComponent {
             return 门扇名字 === key && 模块名字 === node.层名字 && v.weiyima === mokuai.weiyima;
           });
           const cads: CadData[] = [];
-          const formulas = getMokuaiFormulas(value, node, mokuai, materialResult);
+          const {formulas} = getMokuaiFormulas(value, node, mokuai, materialResult);
           const formulas2 = {...output.materialResult};
           if (mokuai2) {
             Object.assign(formulas2, mokuai2.suanliaogongshi);
@@ -168,7 +168,7 @@ export interface XhmrmsbjXuanzhongMokuaiInfo {
 export const getFormulaInfos = (
   calc: CalcService,
   formulas: Formulas,
-  formulas2?: Formulas,
+  vars?: Formulas,
   input?: {shurus: 输入[]; onChange: (val: number) => void}
 ) => {
   const infos: FormulaInfo[] = [];
@@ -180,7 +180,7 @@ export const getFormulaInfos = (
       val = val.trim();
       const valReplaced = val.replaceAll(/^(.*)扇.面蓝线宽/g, "$1扇蓝线宽");
       values.push({eq: true, name: valReplaced});
-      const val2 = calc.calc.replaceVars(val, formulas2);
+      const val2 = calc.calc.replaceVars(val, vars);
       if (val !== val2) {
         values.push({eq: true, name: val2});
       }
@@ -190,17 +190,17 @@ export const getFormulaInfos = (
   for (const [key, value] of Object.entries(formulas)) {
     const keys: FormulaInfo["keys"] = [{eq: true, name: key}];
     const values: FormulaInfo["values"] = getValues(value);
-    if (formulas2 && key in formulas2) {
+    if (vars && key in vars) {
       const valuePrev = values.at(-1)?.name;
-      const value2 = getValues(formulas2[key]).filter((v) => v.name !== valuePrev);
+      const value2 = getValues(vars[key]).filter((v) => v.name !== valuePrev);
       if (value2.length > 0) {
         const valueNext = value2[0].name;
-        let calcResult = calc.calc.calcExpress(`(${valuePrev}) === (${valueNext})`, formulas2);
+        let calcResult = calc.calc.calcExpress(`(${valuePrev}) === (${valueNext})`, vars);
         if (calcResult.value !== true) {
-          calcResult = calc.calc.calcExpress(`(\`${valuePrev}\`) === (\`${valueNext}\`)`, formulas2);
+          calcResult = calc.calc.calcExpress(`(\`${valuePrev}\`) === (\`${valueNext}\`)`, vars);
         }
         if (calcResult.value !== true) {
-          calcResult = calc.calc.calcExpress(`(eval(\`${valuePrev}\`)) === (\`${valueNext}\`)`, formulas2);
+          calcResult = calc.calc.calcExpress(`(eval(\`${valuePrev}\`)) === (\`${valueNext}\`)`, vars);
         }
         value2[0].eq = calcResult.value === true;
         values.push(...value2);

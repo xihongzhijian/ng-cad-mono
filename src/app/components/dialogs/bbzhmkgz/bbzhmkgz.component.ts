@@ -1,7 +1,8 @@
 import {KeyValuePipe} from "@angular/common";
-import {Component, forwardRef, Inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, forwardRef, HostBinding, inject, Inject} from "@angular/core";
+import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -18,16 +19,17 @@ export interface BbzhmkgzComponentData {
   selector: "app-bbzhmkgz",
   templateUrl: "./bbzhmkgz.component.html",
   styleUrls: ["./bbzhmkgz.component.scss"],
-  imports: [forwardRef(() => InputComponent), KeyValuePipe, MatDialogActions, MatButtonModule]
+  imports: [FormsModule, forwardRef(() => InputComponent), KeyValuePipe, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BbzhmkgzComponent {
-  inputInfo: InputInfo = {type: "string", textarea: {}, label: ""};
-  batchUploadChecker = new BatchUploadChecker();
+  private message = inject(MessageService);
+
+  @HostBinding("class") class = "ng-page";
 
   constructor(
     public dialogRef: MatDialogRef<BbzhmkgzComponent, BbzhmkgzComponentData>,
-    @Inject(MAT_DIALOG_DATA) public data: BbzhmkgzComponentData,
-    private message: MessageService
+    @Inject(MAT_DIALOG_DATA) public data: BbzhmkgzComponentData
   ) {
     if (!data.value) {
       data.value = "";
@@ -35,9 +37,20 @@ export class BbzhmkgzComponent {
     if (!data.vars) {
       data.vars = {};
     }
-    this.inputInfo.model = {data, key: "value"};
   }
 
+  inputInfo = computed(() => {
+    const data = this.data;
+    const info: InputInfo<typeof data> = {
+      type: "string",
+      label: "",
+      textarea: {},
+      model: {data, key: "value"}
+    };
+    return info;
+  });
+
+  batchUploadChecker = new BatchUploadChecker();
   submit() {
     const {errors} = this.batchUploadChecker.parseBaobianzhengmianRules("修改包边正面宽规则:\n" + this.data.value, this.data.vars);
     if (errors.length > 0) {

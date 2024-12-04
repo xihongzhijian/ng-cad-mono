@@ -57,22 +57,23 @@ export class XhmrmsbjData extends ZuoshujuData {
           };
         }
       }
-      const 模块节点 = item.模块节点 || [];
-      for (const v of 模块节点) {
-        const 选中模块 = v.选中模块;
-        if (v.输入值) {
-          const shuruzhi = getShuruzhi(item);
-          setShuruzhi(item, {...v.输入值, ...shuruzhi});
-          delete v.输入值;
+      for (const node of item.模块节点 || []) {
+        const mokuai = node.选中模块;
+        if (node.输入值) {
+          if (mokuai) {
+            const shuruzhi = getShuruzhi(item, node, mokuai);
+            setShuruzhi(item, node, mokuai, {...node.输入值, ...shuruzhi});
+          }
+          delete node.输入值;
         }
-        if (选中模块) {
-          const i = v.可选模块.findIndex((v2) => isMokuaiItemEqual(v2, 选中模块));
+        if (mokuai) {
+          const i = node.可选模块.findIndex((v2) => isMokuaiItemEqual(v2, mokuai));
           if (i >= 0) {
-            v.可选模块[i] = 选中模块;
+            node.可选模块[i] = mokuai;
           }
         }
-        updateMokuaiItems(v.可选模块, typesInfo);
-        this.setSelectedMokuai(v, 选中模块, true);
+        updateMokuaiItems(node.可选模块, typesInfo);
+        this.setSelectedMokuai(node, mokuai, true);
       }
     }
     this.updateMenshanFollowers();
@@ -195,18 +196,28 @@ export class XhmrmsbjData extends ZuoshujuData {
   }
 }
 
-export const getShuruzhi = (info: XhmrmsbjInfo, xxgsId?: string) => {
+export const getShuruzhi = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, xxgsId?: string) => {
+  const {输入值, 选项公式输入值} = info;
+  const result = {...输入值};
   if (xxgsId) {
-    return {...info.输入值, ...info.选项公式输入值?.[xxgsId]};
-  } else {
-    return {...info.输入值};
+    const xxgsKey = getMokuaiObjectKey(node, mokuai, xxgsId);
+    Object.assign(result, 选项公式输入值?.[xxgsKey]);
   }
+  return result;
 };
-export const setShuruzhi = (info: XhmrmsbjInfo, shuruzhi: Shuruzhi, xxgsId?: string) => {
+export const setShuruzhi = (
+  info: XhmrmsbjInfo,
+  node: XhmrmsbjInfoMokuaiNode,
+  mokuai: ZixuanpeijianMokuaiItem,
+  shuruzhi: Shuruzhi,
+  xxgsId?: string
+) => {
   if (xxgsId) {
+    const xxgsKey = getMokuaiObjectKey(node, mokuai, xxgsId);
     if (isEmpty(shuruzhi)) {
       if (info.选项公式输入值) {
         delete info.选项公式输入值[xxgsId];
+        delete info.选项公式输入值[xxgsKey];
         if (isEmpty(info.选项公式输入值)) {
           delete info.选项公式输入值;
         }
@@ -215,7 +226,8 @@ export const setShuruzhi = (info: XhmrmsbjInfo, shuruzhi: Shuruzhi, xxgsId?: str
       if (!info.选项公式输入值) {
         info.选项公式输入值 = {};
       }
-      info.选项公式输入值[xxgsId] = shuruzhi;
+      delete info.选项公式输入值[xxgsId];
+      info.选项公式输入值[xxgsKey] = shuruzhi;
       if (info.输入值) {
         for (const key of Object.keys(shuruzhi)) {
           delete info.输入值[key];
@@ -232,11 +244,16 @@ export const setShuruzhi = (info: XhmrmsbjInfo, shuruzhi: Shuruzhi, xxgsId?: str
       info.输入值 = shuruzhi;
       if (info.选项公式输入值) {
         for (const xxgsId2 in info.选项公式输入值) {
+          const xxgsKey2 = getMokuaiObjectKey(node, mokuai, xxgsId2);
           for (const key of Object.keys(shuruzhi)) {
-            delete info.选项公式输入值[xxgsId2][key];
+            for (const key2 of [xxgsId2, xxgsKey2]) {
+              delete info.选项公式输入值[key2][key];
+            }
           }
-          if (isEmpty(info.选项公式输入值[xxgsId2])) {
-            delete info.选项公式输入值[xxgsId2];
+          for (const key2 of [xxgsId2, xxgsKey2]) {
+            if (isEmpty(info.选项公式输入值[key2])) {
+              delete info.选项公式输入值[key2];
+            }
           }
         }
         if (isEmpty(info.选项公式输入值)) {
@@ -253,6 +270,7 @@ export const purgeShuruzhi = (infos: XhmrmsbjDataMsbjInfos) => {
       continue;
     }
     const varNamesXxgsMap = new Map<string, string[]>();
+    const xxgsKeyMap = new Map<string, string[]>();
     const varNames = new Set<string>();
     for (const node of info.模块节点 || []) {
       for (const mokuai of node.可选模块) {
@@ -260,7 +278,14 @@ export const purgeShuruzhi = (infos: XhmrmsbjDataMsbjInfos) => {
           varNames.add(arr[0]);
         }
         for (const xxgs of mokuai.xuanxianggongshi) {
-          varNamesXxgsMap.set(xxgs._id, Object.keys(xxgs.公式));
+          const xxgsKey = getMokuaiObjectKey(node, mokuai, xxgs._id);
+          varNamesXxgsMap.set(xxgsKey, Object.keys(xxgs.公式));
+          const xxgsKeys = xxgsKeyMap.get(xxgs._id);
+          if (xxgsKeys) {
+            xxgsKeys.push(xxgsKey);
+          } else {
+            xxgsKeyMap.set(xxgs._id, [xxgsKey]);
+          }
         }
       }
     }
@@ -275,6 +300,15 @@ export const purgeShuruzhi = (infos: XhmrmsbjDataMsbjInfos) => {
       }
     }
     if (info.选项公式输入值) {
+      for (const xxgsKey of Object.keys(info.选项公式输入值)) {
+        const xxgsKeys = xxgsKeyMap.get(xxgsKey);
+        if (xxgsKeys) {
+          for (const xxgsKey2 of xxgsKeys) {
+            info.选项公式输入值[xxgsKey2] = {...info.选项公式输入值[xxgsKey], ...info.选项公式输入值[xxgsKey2]};
+          }
+          delete info.选项公式输入值[xxgsKey];
+        }
+      }
       for (const xxgsKey of Object.keys(info.选项公式输入值)) {
         const varNamesXxgs = varNamesXxgsMap.get(xxgsKey);
         if (varNamesXxgs) {
@@ -348,24 +382,38 @@ export const getMokuaiFormulas = (
   };
   const optionValues = getMokuaiXxsjValues(info, node, mokuai);
   const optionFormulas = mapValues(optionValues, (v) => `"${v}"`);
+  const duplicateVars = new Set<string>();
   if (mokuai.xuanxianggongshi.length > 0) {
     let xxgsList = mokuai.xuanxianggongshi;
     if (materialResult) {
       xxgsList = matchMongoData(xxgsList, {...materialResult, ...optionValues});
     }
     for (const xxgs of xxgsList) {
+      for (const [key, value] of Object.entries(xxgs.公式)) {
+        if (isTypeOf(formulas[key], ["null", "undefined"])) {
+          formulas[key] = value;
+        } else {
+          duplicateVars.add(key);
+        }
+      }
       Object.assign(formulas, xxgs.公式);
-      setFormulas(getShuruzhi(info, xxgs._id));
+      setFormulas(getShuruzhi(info, node, mokuai, xxgs._id));
     }
   } else {
     Object.assign(formulas, mokuai.suanliaogongshi);
-    setFormulas(getShuruzhi(info));
+    setFormulas(getShuruzhi(info, node, mokuai));
   }
   Object.assign(formulas, optionFormulas);
-  return formulas;
+  return {formulas, duplicateVars: Array.from(duplicateVars)};
 };
 
-const getMokuaiObjectKey = (node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => `${node.层id}-${mokuai.id}`;
+const getMokuaiObjectKey = (node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, xxgsId?: string) => {
+  const arr: (string | number)[] = [node.层id, mokuai.id];
+  if (xxgsId) {
+    arr.push(xxgsId);
+  }
+  return arr.join("-");
+};
 
 export const getMokuaiShuchuVarsRaw = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
   const vars = [...mokuai.shuchubianliang];

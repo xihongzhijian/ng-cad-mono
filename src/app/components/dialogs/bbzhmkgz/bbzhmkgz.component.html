@@ -1,4 +1,4 @@
-<app-input [info]="inputInfo" class="flex-110"></app-input>
+<app-input class="flex-110" [info]="inputInfo()"></app-input>
 <div class="flex-column">
   @for (item of data.vars | keyvalue; track $index) {
     <div class="var">
@@ -8,7 +8,7 @@
     </div>
   }
 </div>
-<div matDialogActions>
+<div class="toolbar center">
   <button mat-raised-button (click)="submit()">确定</button>
   <button mat-raised-button (click)="cancel()">取消</button>
 </div>

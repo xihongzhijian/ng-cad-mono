@@ -460,10 +460,17 @@ export const calcZxpj = async (
     return getMokuaiInfoScbl(xhmrmsbj?.menshanbujuInfos || {}, item);
   };
   const getMokuaiInfoSlgs2 = (item: ZixuanpeijianMokuaiItem) => {
-    return getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, materialResult);
+    const result = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, materialResult);
+    return result?.formulas || item.suanliaogongshi;
   };
 
+  const duplicateMokuaiSlgsVars: {mokuai: ZixuanpeijianMokuaiItem; vars: string[]}[] = [];
   for (const [i, item1] of mokuais.entries()) {
+    const slgsResult = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item1, materialResult);
+    if (slgsResult && slgsResult.duplicateVars.length > 0) {
+      duplicateMokuaiSlgsVars.push({mokuai: item1, vars: slgsResult.duplicateVars});
+      continue;
+    }
     for (const [j, item2] of mokuais.entries()) {
       if (i === j) {
         continue;
@@ -510,6 +517,17 @@ export const calcZxpj = async (
       await message.error({content: msg, details});
       return {fulfilled: false, error: {message: msg, details}};
     }
+  }
+  if (duplicateMokuaiSlgsVars.length > 0) {
+    const details: string[] = [];
+    for (const {mokuai, vars} of duplicateMokuaiSlgsVars) {
+      const title = getCalcMokuaiTitle(mokuai);
+      const varsStr = vars.map((v) => `【${v}】`).join("");
+      details.push(`${title}<br>${varsStr}`);
+    }
+    const msg = "以下模块匹配到了重复公式";
+    await message.error({content: msg, details});
+    return {fulfilled: false, error: {message: msg, details}};
   }
   const duplicateDimVars: ObjectOf<{vars: Set<string>; cads: ZixuanpeijianCadItem[]}> = {};
   const getCadDimensionVars = (items: ZixuanpeijianCadItem[], mokuai?: ZixuanpeijianMokuaiItem) => {
@@ -638,11 +656,14 @@ export const calcZxpj = async (
       const info = v.item.info || {};
       const 门扇名字 = info.门扇名字 || "";
       const 模块名字 = info.模块名字 || "";
-      const mokuaiGongshisCurr = getNodeVars(mokuaiGongshis[门扇名字], 模块名字);
+      const mokuaiGongshisCurr = getNodeVars(mokuaiGongshis[门扇名字], 模块名字, true);
       const formulas1 = {...v.formulas, ...v.dimensionVars, ...mokuaiGongshisCurr};
       replaceMenshanName(门扇名字, formulas1);
       const mokuaiVarsCurr = getNodeVars(mokuaiVars[门扇名字], 模块名字);
       const vars1 = {...materialResult, ...shuchubianliang, ...lingsanVars, ...mokuaiVarsCurr};
+      for (const key in formulas1) {
+        delete vars1[key];
+      }
       vars1.门扇布局 = v.item.info?.门扇布局?.name || "";
       const result1Msg = `${getCalcMokuaiTitle(v.item)}计算`;
       const result1 = await calc.calcFormulas(
@@ -961,11 +982,14 @@ export const calcZxpj = async (
   return {fulfilled: true, 门扇布局大小: mokuaiVars, 模块公式输入};
 };
 
-export const getNodeVars = (formulas: Formulas, nodeName: string) => {
-  const result = {...formulas};
+export const getNodeVars = (formulas: Formulas, nodeName: string, exclusive = false) => {
+  const result = exclusive ? {} : {...formulas};
   for (const key of nodeFormulasKeysRaw) {
     const key2 = getNodeFormulasKey(nodeName, key);
-    if (result[key2] !== undefined) {
+    if (formulas[key2] !== undefined) {
+      if (exclusive) {
+        result[key2] = formulas[key2];
+      }
       result[key] = result[key2];
     }
   }
@@ -1042,7 +1066,7 @@ export const getMokuaiInfoScbl = (infos: XhmrmsbjDataMsbjInfos, item: Zixuanpeij
 export const getMokuaiInfoSlgs = (infos: XhmrmsbjDataMsbjInfos, item: ZixuanpeijianMokuaiItem, materialResult?: Formulas) => {
   const {msbjInfo, node} = getMokuaiInfo(infos, item);
   if (!msbjInfo || !node) {
-    return item.suanliaogongshi;
+    return null;
   }
   return getMokuaiFormulas(msbjInfo, node, item, materialResult);
 };
