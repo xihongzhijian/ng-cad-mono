@@ -25,7 +25,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadStatusEditDimension, CadStatusNormal} from "@services/cad-status";
-import {debounce} from "lodash";
 import {openCadDimensionFormDialog} from "../../dialogs/cad-dimension-form/cad-dimension-form.component";
 
 @Component({
@@ -246,7 +245,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     }
   }
 
-  setDimensionName = debounce((event: Event, dimension: CadDimension) => {
+  setDimensionName(event: Event, dimension: CadDimension) {
     const str = (event.target as HTMLInputElement).value;
     if (reservedDimNames.includes(str)) {
       this.message.alert(`标注名字不能是: ${str}`);
@@ -254,7 +253,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     }
     dimension.mingzi = str;
     this.status.cad.render(dimension);
-  }, 500);
+  }
 
   isSelectingDimLine(i: number) {
     const cadStatus = this.status.cadStatus;

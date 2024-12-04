@@ -10,7 +10,7 @@
           [value]="getDimensionName(d, i)"
           (focus)="dimNameFocus.set(i)"
           (blur)="dimNameFocus.set(-1)"
-          (input)="setDimensionName($event, d)"
+          (change)="setDimensionName($event, d)"
           name="dimensionName"
         />
         <button mat-icon-button matSuffix color="primary" (click)="removeDimension(i)">
