@@ -292,7 +292,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         const huajiansToRemove: MrbcjfzHuajianInfo[] = [];
         data.huajians.map((v) => {
           const item: MrbcjfzHuajianInfo = {data: v, id: String(v.vid)};
-          if (filterHuajian(item.data)) {
+          if (filterHuajian(item.data, table)) {
             this.huajians[item.id] = item;
           } else {
             huajiansToRemove.push(item);
