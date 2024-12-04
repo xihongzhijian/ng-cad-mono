@@ -13,6 +13,7 @@ import {environment} from "@env";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
+import {getNumberUnitInput} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {openCadDataAttrsDialog} from "../../dialogs/cad-data-attrs/cad-data-attrs.component";
@@ -221,6 +222,10 @@ export const getCadInfoInputs = (
       case "指定下单材料":
       case "指定下单厚度":
         info = {type: "string", label: key, model: {data: attrGetter("info"), key}};
+        break;
+      case "激光开料折弯标记长直线":
+      case "激光开料折弯标记短直线":
+        info = getNumberUnitInput(false, key, "mm", {}, {model: {data: attrGetter("info"), key}});
         break;
       case "自定义属性":
         info = {

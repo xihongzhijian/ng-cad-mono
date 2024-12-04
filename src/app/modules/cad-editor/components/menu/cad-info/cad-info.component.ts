@@ -277,7 +277,9 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
         "装配示意图自动拼接锁边铰边",
         "开料孔位配置",
         "算料单翻转",
-        "激光开料排版后只保留孔"
+        "激光开料排版后只保留孔",
+        "激光开料折弯标记长直线",
+        "激光开料折弯标记短直线"
       ],
       this.data(),
       this.dialog,
