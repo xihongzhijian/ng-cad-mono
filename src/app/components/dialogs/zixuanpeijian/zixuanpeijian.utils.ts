@@ -1001,6 +1001,7 @@ export const calcZxpj = async (
 };
 
 export const getNodeVars = (formulas: Formulas, nodeName: string, exclusive = false) => {
+  formulas = {...formulas};
   const result = exclusive ? {} : {...formulas};
   for (const key of nodeFormulasKeysRaw) {
     const key2 = getNodeFormulasKey(nodeName, key);

@@ -18,13 +18,15 @@ import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {getCopyName} from "@app/app.common";
+import {getCopyName, getValueString} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
+import {TextInfoComponent} from "@components/text-info/text-info.component";
+import {TextInfo} from "@components/text-info/text-info.types";
 import {downloadByString, isTypeOf, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -49,7 +51,8 @@ import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.
     MatTooltipModule,
     NgScrollbarModule,
     NgTemplateOutlet,
-    TableComponent
+    TableComponent,
+    TextInfoComponent
   ],
   templateUrl: "./suanliaogongshi.component.html",
   styleUrl: "./suanliaogongshi.component.scss",
@@ -379,6 +382,15 @@ export class SuanliaogongshiComponent {
         break;
     }
   }
+
+  slgsInfos = computed(() => {
+    const infos: {textInfos: TextInfo[]}[] = [];
+    const keys: (keyof 算料公式)[] = ["选项", "条件"];
+    for (const slgs of this.info().data["算料公式"] || []) {
+      infos.push({textInfos: keys.map((v) => ({name: v, text: getValueString(slgs[v], {separator: "\n", separatorKv: ": "})}))});
+    }
+    return infos;
+  });
 
   close(submit = false) {
     this.closeOut.emit({submit});

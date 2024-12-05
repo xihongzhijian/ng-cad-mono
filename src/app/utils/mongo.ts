@@ -1,7 +1,7 @@
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {MongodbDataBase2} from "@modules/http/services/cad-data.service.types";
-import {difference, isEmpty} from "lodash";
+import {difference, intersection, isEmpty} from "lodash";
 import {splitOptions} from "../app.common";
 import {Calc, Formulas} from "./calc";
 import {toFixed} from "./func";
@@ -45,111 +45,122 @@ export const matchMongoData = <T extends MongodbDataBase2>(data: T[], materialRe
   });
 };
 
-export const isOptionsOK = (options: ObjectOf<string>, materialResult: ObjectOf<any>) => {
-  let ok = true;
-  let optionArr: string[] = []; //保存提取出来的二级选项, 即选项为数组情况
+export const isOptionOK = (value1: any, value2: any, exclusive: boolean) => {
+  if (typeof value1 === "string") {
+    value1 = value1.replace(" ", "");
+  }
+  // 去掉空, '', 0, false, null
+  let values1: string[] = [];
+  if (Array.isArray(value1)) {
+    values1 = value1.filter((v) => v);
+  } else {
+    values1 = splitOptions(value1).filter((v) => v);
+  }
 
+  // 去除空格
+  values1 = values1.map((v) => v.replace(" ", ""));
+
+  // 1、选择所有, 不判断,直接通过
+  if (values1.some((v) => ["所有", "全部"].includes(v))) {
+    return true;
+  }
+
+  // 2、当前结果没有选项,结束不通过
+  if (value2 === undefined) {
+    return false;
+  }
+
+  // 4、判断当前选项是否满足选项要求,例如当前key：包边
+  // option：a,b,c,不选e；
+  // current：【a,c】,满足；【a,e】,不满足；
+  // 说明,选项内部不选必须满足,其余选上某些就满足；选项与选项必须同时满足
+  let values2: string[];
+  if (Array.isArray(value2)) {
+    values2 = value2;
+  } else {
+    values2 = [value2];
+  }
+
+  const xuan: string[] = [];
+  for (const option of values1) {
+    if (option.includes("不选")) {
+      if (values2.includes(option.replace("不选", ""))) {
+        return false;
+      }
+    } else {
+      xuan.push(option);
+    }
+  }
+  values1 = xuan;
+
+  // 除了不选外,没有选项,认为是全部,通过筛选
+  if (values1.length < 1) {
+    return true;
+  }
+
+  // 由于这里全都是选项，每一个值理论上都是字符串，将数字都转为字符串做比较
+  for (let i = 0; i < values2.length; i++) {
+    const val = values2[i];
+
+    // 只处理数字
+    if (typeof val !== "number") {
+      continue;
+    }
+
+    values2[i] = toFixed(val, 3);
+  }
+
+  for (let i = 0; i < values1.length; i++) {
+    const val = values1[i];
+
+    // 只处理数字
+    if (typeof val !== "number") {
+      continue;
+    }
+
+    values1[i] = toFixed(val, 3);
+  }
+
+  if (exclusive) {
+    return difference(values2, value1).length < 1;
+  } else {
+    return intersection(values2, value1).length > 0;
+  }
+};
+export const isOptionsOK = (options: ObjectOf<string>, materialResult: ObjectOf<any>) => {
   if (isEmpty(options)) {
     return true;
   }
 
-  // 分离
-  // 选项形式：{工艺: 62}、{工艺: 62,68},  {工艺: [62, 68]}；
-  // 当前选项：materialResult【工艺】= 62
-  for (const key2 in options) {
-    const key = key2.replace(" ", "");
-    let value = options[key2];
-    if (typeof value === "string") {
-      value = value.replace(" ", "");
-    }
-
-    // 1、选择所有, 不判断,直接通过
-    if (value === "所有" || value === "全部") {
-      continue;
-    }
-
-    // 2、当前结果没有选项,结束不通过
-    if (materialResult[key] === undefined) {
+  for (const key in options) {
+    const value1 = options[key];
+    const value2 = materialResult[key];
+    if (!isOptionOK(value1, value2, true)) {
       return false;
-    }
-
-    // 去掉空, '', 0, false, null
-    if (Array.isArray(value)) {
-      optionArr = value.filter((v) => v);
-    } else {
-      optionArr = splitOptions(value).filter((v) => v);
-    }
-
-    // 去除空格
-    optionArr = optionArr.map((v) => v.replace(" ", ""));
-
-    // 4、判断当前选项是否满足选项要求,例如当前key：包边
-    // option：a,b,c,不选e；
-    // current：【a,c】,满足；【a,e】,不满足；
-    // 说明,选项内部不选必须满足,其余选上某些就满足；选项与选项必须同时满足
-    let currentOption: string[] = materialResult[key];
-    if (!Array.isArray(currentOption)) {
-      currentOption = [currentOption];
-    }
-
-    const xuan: string[] = [];
-    for (const option of optionArr) {
-      if (option.includes("不选")) {
-        if (currentOption.includes(option.replace("不选", ""))) {
-          return false;
-        }
-      } else {
-        xuan.push(option);
-      }
-    }
-
-    // 除了不选外,没有选项,认为是全部,通过筛选
-    if (xuan.length < 1) {
-      continue;
-    }
-
-    /**
-     * NOTE: difference没处理类型不一样的问题，比如门扇厚度就可能会出错（string、number比较）
-     *
-     * 由于这里全都是选项，每一个值理论上都是字符串，将数字都转为字符串做比较
-     */
-    for (let i = 0; i < currentOption.length; i++) {
-      const val = currentOption[i];
-
-      // 只处理数字
-      if (typeof val !== "number") {
-        continue;
-      }
-
-      currentOption[i] = toFixed(val, 3);
-    }
-
-    for (let i = 0; i < xuan.length; i++) {
-      const val = xuan[i];
-
-      // 只处理数字
-      if (typeof val !== "number") {
-        continue;
-      }
-
-      xuan[i] = toFixed(val, 3);
-    }
-
-    const diff = difference(currentOption, xuan);
-
-    // if (obj['名字'] == 'SD-13铰' && key =='防撬边') {
-    //     echo json_encode([diff, currentOption, xuan], 256);
-    //     die;
-    // }
-
-    if (diff.length > 0) {
-      // 说明当前选项有不满足要求的
-      ok = false;
-      break;
     }
   }
 
-  return ok;
+  return true;
+};
+
+export const canOptionsOverlap = (options1: ObjectOf<string>, options2: ObjectOf<string>) => {
+  if (isEmpty(options1) || isEmpty(options2)) {
+    return true;
+  }
+  const keys1 = Object.keys(options1);
+  const keys2 = Object.keys(options2);
+  const keys = intersection(keys1, keys2);
+  if (keys.length < 1) {
+    return false;
+  }
+  for (const key of keys) {
+    const value1 = splitOptions(options1[key]);
+    const value2 = splitOptions(options2[key]);
+    if (!(isOptionOK(value1, value2, false) || isOptionOK(value2, value1, false))) {
+      return false;
+    }
+  }
+  return true;
 };
 
 export const isConditionOK = (conditions: string[], vars: ObjectOf<any>, errorAlert = true) => {

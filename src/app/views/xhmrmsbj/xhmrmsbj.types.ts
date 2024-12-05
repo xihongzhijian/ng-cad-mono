@@ -1,4 +1,5 @@
 import {Formulas} from "@app/utils/calc";
+import {ErrorDetail, ErrorDetailText, ErrorItem} from "@app/utils/error-message";
 import {Step1Data, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {MsbjPeizhishuju} from "@components/msbj-rects/msbj-rects.types";
 import {ObjectOf} from "@lucilor/utils";
@@ -89,17 +90,10 @@ export interface XhmrmsbjRequestDataOpts {
   浮动弹窗?: {门扇名字: MenshanKey; 节点名字: string};
 }
 
-export interface XhmrmsbjError {
-  content: string;
-  details: XhmrmsbjErrorDetail[];
-  duplicateVars?: Set<string>;
-}
-export type XhmrmsbjErrorDetail = XhmrmsbjErrorDetailText[];
-export interface XhmrmsbjErrorDetailText {
-  text?: string;
+export type XhmrmsbjError = ErrorItem<XhmrmsbjErrorDetailText>;
+export type XhmrmsbjErrorDetail = ErrorDetail<XhmrmsbjErrorDetailText>;
+export interface XhmrmsbjErrorDetailText extends ErrorDetailText {
   jumpTo?: XhmrmsbjErrorJumpTo;
-  br?: boolean;
-  color?: string;
 }
 export interface XhmrmsbjErrorJumpTo {
   门扇名字: MenshanKey;

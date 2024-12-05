@@ -1,0 +1,8 @@
+@for (info of infos(); track $index) {
+  @if (info.name) {
+    <div class="text-info">
+      <div class="text-info-name">{{ info.name }}:</div>
+      <div class="text-info-text add-empty-msg">{{ info.text }}</div>
+    </div>
+  }
+}

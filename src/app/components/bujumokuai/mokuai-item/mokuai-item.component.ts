@@ -18,6 +18,8 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {getCopyName} from "@app/app.common";
+import {alertError, checkDuplicateVars, ErrorDetail, ErrorItem, getNamesDetail} from "@app/utils/error-message";
+import {canOptionsOverlap} from "@app/utils/mongo";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {getFromulasFromString} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
@@ -520,27 +522,33 @@ export class MokuaiItemComponent {
   forceUpdateKeys = new Set<keyof MokuaiItem>();
   async updateMokaui() {
     const mokuai = this.mokuai();
-    const errors: string[] = [];
+    const error: ErrorItem = {content: "", details: []};
 
-    const checkDuplicateVars = (vars1: string[], vars2: string[], name1: string, name2: string) => {
-      const duplicateVars = intersection(vars1, vars2);
-      if (duplicateVars.length > 0) {
-        errors.push(`${name1}与${name2}重复：${duplicateVars.join("，")}`);
-      }
-    };
     const varKeysShuchu = mokuai.shuchubianliang.split("+");
     const varKeysXuanxiang = mokuai.自定义数据?.选项数据.map((v) => v.名字) || [];
-    checkDuplicateVars(varKeysShuchu, varKeysXuanxiang, "输出变量", "模块选项");
+    checkDuplicateVars(varKeysShuchu, varKeysXuanxiang, "输出变量", "模块选项", error.details);
     const gongshishuru = getFromulasFromString(mokuai.gongshishuru);
-    checkDuplicateVars(Object.keys(gongshishuru), varKeysXuanxiang, "公式输入", "模块选项");
+    checkDuplicateVars(Object.keys(gongshishuru), varKeysXuanxiang, "公式输入", "模块选项", error.details);
     const xuanxiangshuru = getFromulasFromString(mokuai.xuanxiangshuru);
-    checkDuplicateVars(Object.keys(xuanxiangshuru), varKeysXuanxiang, "选项输入", "模块选项");
+    checkDuplicateVars(Object.keys(xuanxiangshuru), varKeysXuanxiang, "选项输入", "模块选项", error.details);
+    for (const [i, xxgs1] of mokuai.xuanxianggongshi.entries()) {
+      for (const xxgs2 of mokuai.xuanxianggongshi.slice(i + 1)) {
+        if (canOptionsOverlap(xxgs1.选项, xxgs2.选项)) {
+          const keys1 = Object.keys(xxgs1.公式);
+          const keys2 = Object.keys(xxgs2.公式);
+          const duplicateVars = intersection(keys1, keys2);
+          if (duplicateVars.length > 0) {
+            error.details.push([{text: `公式【${xxgs1.名字}】与【${xxgs2.名字}】变量重复：`}, ...getNamesDetail(duplicateVars)]);
+          }
+        }
+      }
+    }
 
     const slgsComponent = this.slgsComponent();
     if (slgsComponent) {
       const formulasResult = await slgsComponent.submitFormulas(slgsComponent.formulaList(), true);
       if (formulasResult.errors.length > 0) {
-        errors.push(...formulasResult.errors.map((v) => `模块公式：${v}`));
+        error.details.push(...formulasResult.errors.map<ErrorDetail>((v) => [{text: `模块公式：${v}`}]));
       } else {
         mokuai.suanliaogongshi = formulasResult.formulas;
       }
@@ -556,7 +564,7 @@ export class MokuaiItemComponent {
     const mrbcjfzErrors = this.mrbcjfzComponent()?.checkSubmit();
     if (mrbcjfzErrors) {
       if (mrbcjfzErrors.length > 0) {
-        errors.push(...mrbcjfzErrors.map((v) => `板材分组：${v}`));
+        error.details.push(...mrbcjfzErrors.map<ErrorDetail>((v) => [{text: `板材分组：${v}`}]));
       } else {
         mokuai.morenbancai = this.morenbancais().reduce<ObjectOf<MrbcjfzInfo>>((acc, {key, val}) => {
           acc[key] = val;
@@ -565,8 +573,8 @@ export class MokuaiItemComponent {
       }
     }
 
-    if (errors.length > 0) {
-      await this.message.error(errors.join("<br>"));
+    if (error.details.length > 0) {
+      await alertError(this.message, error);
       return null;
     }
     return mokuai;

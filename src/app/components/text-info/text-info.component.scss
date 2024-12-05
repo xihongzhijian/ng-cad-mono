@@ -1,0 +1,17 @@
+.text-info {
+  display: flex;
+
+  :not(:last-child) {
+    margin-right: 5px;
+  }
+}
+
+.text-info-name {
+  flex: 0 0 auto;
+}
+
+.text-info-text {
+  flex: 1 1 0;
+  white-space: pre;
+  word-break: break-all;
+}
