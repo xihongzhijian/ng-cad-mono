@@ -3,6 +3,7 @@ import {CadData} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
 import {CalcCustomErrorMsg, CalcService} from "@services/calc.service";
 import {XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {getMokuaiObjectKey} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {difference} from "lodash";
 import {HoutaiData, SuanliaoCalcError} from "./suanliao.types";
 
@@ -93,7 +94,7 @@ export const resetInputs = (data: XhmrmsbjDataMsbjInfos, dataOld: XhmrmsbjDataMs
       continue;
     }
     const varNames = new Set<string>();
-    const xxgsIds = new Set<string>();
+    const xxgsKeys = new Set<string>();
     for (const node of msbjInfoNew.模块节点 || []) {
       for (const mokuai of node.可选模块) {
         if (!mokuaiIds || mokuaiIds.includes(mokuai.id)) {
@@ -101,7 +102,7 @@ export const resetInputs = (data: XhmrmsbjDataMsbjInfos, dataOld: XhmrmsbjDataMs
             varNames.add(arr[0]);
           }
           for (const xxgs of mokuai.xuanxianggongshi) {
-            xxgsIds.add(xxgs._id);
+            xxgsKeys.add(getMokuaiObjectKey(node, mokuai, xxgs._id));
           }
         }
       }
@@ -116,14 +117,14 @@ export const resetInputs = (data: XhmrmsbjDataMsbjInfos, dataOld: XhmrmsbjDataMs
         delete msbjInfoNew.输入值?.[varName];
       }
     }
-    for (const xxgsId of xxgsIds) {
-      if (msbjInfoOld.选项公式输入值 && xxgsId in msbjInfoOld.选项公式输入值) {
+    for (const xxgsKey of xxgsKeys) {
+      if (msbjInfoOld.选项公式输入值 && xxgsKey in msbjInfoOld.选项公式输入值) {
         if (!msbjInfoNew.选项公式输入值) {
           msbjInfoNew.选项公式输入值 = {};
         }
-        msbjInfoNew.选项公式输入值[xxgsId] = msbjInfoOld.选项公式输入值[xxgsId];
+        msbjInfoNew.选项公式输入值[xxgsKey] = msbjInfoOld.选项公式输入值[xxgsKey];
       } else {
-        delete msbjInfoNew.选项公式输入值?.[xxgsId];
+        delete msbjInfoNew.选项公式输入值?.[xxgsKey];
       }
     }
     for (const options of Object.values(msbjInfoNew.模块选项 || {})) {

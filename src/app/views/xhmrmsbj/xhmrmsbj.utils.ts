@@ -46,7 +46,7 @@ export class XhmrmsbjData extends ZuoshujuData {
     for (const key of menshanKeys) {
       const item = info[key] || {};
       this.menshanbujuInfos[key] = item;
-      if (!item.选中布局数据 || item.选中布局数据.vid !== item.选中布局) {
+      if (!item.选中布局数据) {
         const msbj = msbjs.find((v) => v.vid === item.选中布局);
         if (msbj) {
           item.选中布局数据 = {
@@ -56,6 +56,9 @@ export class XhmrmsbjData extends ZuoshujuData {
             模块大小配置: msbj.peizhishuju.模块大小配置
           };
         }
+      }
+      if (item.选中布局数据 && item.选中布局 && item.选中布局数据.vid !== item.选中布局) {
+        item.选中布局数据.vid = item.选中布局;
       }
       for (const node of item.模块节点 || []) {
         const mokuai = node.选中模块;
@@ -407,7 +410,7 @@ export const getMokuaiFormulas = (
   return {formulas, duplicateVars: Array.from(duplicateVars)};
 };
 
-const getMokuaiObjectKey = (node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, xxgsId?: string) => {
+export const getMokuaiObjectKey = (node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, xxgsId?: string) => {
   const arr: (string | number)[] = [node.层id, mokuai.id];
   if (xxgsId) {
     arr.push(xxgsId);
