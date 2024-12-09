@@ -122,9 +122,9 @@ export const isOptionOK = (value1: any, value2: any, exclusive: boolean) => {
   }
 
   if (exclusive) {
-    return difference(values2, value1).length < 1;
+    return difference(values2, values1).length < 1;
   } else {
-    return intersection(values2, value1).length > 0;
+    return intersection(values2, values1).length > 0;
   }
 };
 export const isOptionsOK = (options: ObjectOf<string>, materialResult: ObjectOf<any>) => {

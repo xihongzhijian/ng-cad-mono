@@ -16,9 +16,9 @@ export interface ErrorDetailText {
   hiddenWhenAlert?: boolean;
 }
 
-export const getNameDetail = (name: string): ErrorDetail => [{text: "【"}, {text: name, color: "red"}, {text: "】"}];
+export const getNameDetail = (name: string, color?: string): ErrorDetail => [{text: "【"}, {text: name, color}, {text: "】"}];
 
-export const getNamesDetail = (names: string[]): ErrorDetail => names.map((v) => getNameDetail(v)).flat();
+export const getNamesDetail = (names: string[], color?: string): ErrorDetail => names.map((v) => getNameDetail(v, color)).flat();
 
 export const checkDuplicateVars = (
   vars1: string[],
@@ -30,9 +30,9 @@ export const checkDuplicateVars = (
   const duplicateVars = intersection(vars1, vars2);
   if (duplicateVars.length > 0) {
     const detail: ErrorDetail = [
-      ...getNameDetail(name1),
+      ...getNameDetail(name1, "red"),
       {text: "与"},
-      ...getNameDetail(name2),
+      ...getNameDetail(name2, "red"),
       {
         text: `重复：${duplicateVars.join("，")}`
       }
@@ -68,3 +68,5 @@ export const alertError = async (message: MessageService, error: ErrorItem) => {
   }
   return null;
 };
+
+export const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");

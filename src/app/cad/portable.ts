@@ -1,4 +1,5 @@
 import {getValueString, replaceChars} from "@app/app.common";
+import {getNamesStr} from "@app/utils/error-message";
 import {ProjectConfig} from "@app/utils/project-config";
 import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {
@@ -462,8 +463,7 @@ export class CadPortable {
         return true;
       });
       if (!found) {
-        const prefixsStr = prefixs.map((v) => `【${v}】`).join("");
-        data.info.errors.push(`找不到以${prefixsStr}开头的文本`);
+        data.info.errors.push(`找不到以${getNamesStr(prefixs)}开头的文本`);
         data.info.isEmpty = true;
         return;
       }

@@ -5,6 +5,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {getValueString} from "@app/app.common";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {getNamesStr} from "@app/utils/error-message";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
@@ -598,8 +599,7 @@ export class XhmrmsbjSbjbComponent {
         content: "锁边铰边数据有误",
         details: errItems.map(({i, errKeys}) => {
           const item = items[i];
-          const str = errKeys.map((v) => `【${v}】`).join("");
-          return `${item.产品分类}: 缺少选项${str}`;
+          return `${item.产品分类}: 缺少选项${getNamesStr(errKeys)}`;
         })
       });
       const errItem = errItems[0];

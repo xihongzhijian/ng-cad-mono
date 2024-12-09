@@ -26,7 +26,7 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {getValueString, remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
-import {alertError, checkDuplicateVars, getNamesDetail} from "@app/utils/error-message";
+import {alertError, checkDuplicateVars, ErrorItem, getNamesDetail} from "@app/utils/error-message";
 import {FetchManager} from "@app/utils/fetch-manager";
 import {canOptionsOverlap, matchMongoData} from "@app/utils/mongo";
 import {getTrbl} from "@app/utils/trbl";
@@ -321,8 +321,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.step1Data.typesInfo,
       this.msbjs()
     );
-    let activeMenshanKey = this.activeMenshanKey();
-    let nodeName = this.activeRectInfo()?.name || "";
     this.data.set(data2);
     this.materialResult.set(materialResult);
     this.houtaiUrl = houtaiUrl;
@@ -335,13 +333,45 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     xinghao.默认板材 = 型号选中板材;
     this.xinghao.set(xinghao);
     const 浮动弹窗 = data.opts?.浮动弹窗;
+    const menshanKeys2 = this.menshanbujuItems().map((v) => v.key);
+    const error: ErrorItem = {content: "参数错误", details: []};
+    let menshanKey: MenshanKey | null = null;
+    let nodeName: string | null = null;
     if (浮动弹窗) {
-      activeMenshanKey = 浮动弹窗.门扇名字;
+      menshanKey = 浮动弹窗.门扇名字;
       nodeName = 浮动弹窗.节点名字;
     }
-    this.activeMenshanKey.set(activeMenshanKey || this.menshanKeys[0]);
-    await timeout(0);
-    this.selectMsbjRect(nodeName);
+    if (menshanKey) {
+      const followee = data2.getMenshanFollowees(menshanKey).at(0);
+      if (followee && menshanKeys2.includes(followee)) {
+        menshanKey = followee;
+      }
+    }
+    if (!menshanKey) {
+      menshanKey = this.activeMenshanKey() || menshanKeys2[0];
+    }
+    if (!menshanKey || !menshanKeys2.includes(menshanKey)) {
+      menshanKey = null;
+      error.details.push([{text: `门扇名字错误：【${menshanKey}】；门扇名字只能是`}, ...getNamesDetail(menshanKeys2)]);
+    }
+    if (menshanKey) {
+      this.activeMenshanKey.set(menshanKey);
+    }
+    const nodeNames = this.activeMsbjInfo()?.模块节点?.map((v) => v.层名字) || [];
+    if (!nodeName) {
+      nodeName = this.activeRectInfo()?.name || nodeNames[0];
+    }
+    if (!nodeName || !nodeNames.includes(nodeName)) {
+      nodeName = null;
+      error.details.push([{text: `节点名字错误：【${nodeName}】；节点名字只能是`}, ...getNamesDetail(nodeNames)]);
+    }
+    if (nodeName) {
+      await timeout(0);
+      this.selectMsbjRect(nodeName);
+    }
+    if (error.details.length > 0) {
+      await alertError(this.message, error);
+    }
   }
 
   submitDataStart() {
@@ -453,12 +483,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!data) {
       return [];
     }
+    const isFromOrder = this.isFromOrder();
     const raw = data.raw;
     const get = (key: MenshanFollowerKey, label: string): InputInfo<typeof raw> => ({
       type: "boolean",
       label: label,
       appearance: "switch",
       value: !!raw[key],
+      readonly: isFromOrder,
       onChange: (val) => {
         raw[key] = val ? 1 : 0;
         data.updateMenshanFollowers();
@@ -1046,7 +1078,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
       const nodes = msbjInfo.模块节点 || [];
       for (const [j, node] of nodes.entries()) {
-        if (!data.isMenshanFollower(menshanKey) && !node.选中模块) {
+        if (!data.getMenshanFollowees(menshanKey) && !node.选中模块) {
           errorXuanzhongNodeNames.push(node.层名字);
         }
         for (const [k, mokuai] of node.可选模块.entries()) {
@@ -1280,10 +1312,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const name = this.activeTabName();
     return isXhmrmsbjXinghaoConfigComponentType(name) ? name : null;
   });
-  tabNames = computed(() => {
+  tabNames = computed<XhmrmsbjTabName[]>(() => {
+    if (this.isFromOrder()) {
+      return ["门扇模块"];
+    }
     let names = xhmrmsbjTabNames.slice();
     if (!this.enableXinghaoConfig()) {
-      names = names.filter((v) => isXhmrmsbjXinghaoConfigComponentType(v));
+      names = names.filter((v) => !isXhmrmsbjXinghaoConfigComponentType(v));
     }
     if (!this.enableSbjb()) {
       names = names.filter((v) => v !== "可选锁边铰边");

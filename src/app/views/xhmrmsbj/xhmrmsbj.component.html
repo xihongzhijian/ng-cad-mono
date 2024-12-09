@@ -1,16 +1,18 @@
 @if (!isFloatingDialog()) {
   <div class="toolbar">
-    @for (name of tabNames(); track $index) {
-      <button mat-raised-button [color]="name === activeTabName() ? 'accent' : 'primary'" (click)="setActiveTabName(name)">
-        {{ name }}
-      </button>
-    }
-    @if (!isFromOrder() || isZhijian()) {
+    @if (tabNames().length > 1) {
+      @for (name of tabNames(); track $index) {
+        <button mat-raised-button [color]="name === activeTabName() ? 'accent' : 'primary'" (click)="setActiveTabName(name)">
+          {{ name }}
+        </button>
+      }
       <mat-divider vertical class="large placeholder"></mat-divider>
+    }
+    @if (!isFromOrder()) {
       <button mat-raised-button color="primary" (click)="openMokuaikuInNew()">模块库</button>
       <button mat-raised-button color="primary" (click)="openPeijiankuInNew()">配件库</button>
+      <mat-divider vertical class="large placeholder"></mat-divider>
     }
-    <mat-divider vertical class="large placeholder"></mat-divider>
     @if (isFromOrder()) {
       <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
       @if (canEditMokuaidaxiao()) {

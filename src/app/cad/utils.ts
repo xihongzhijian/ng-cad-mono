@@ -857,7 +857,11 @@ export const uploadAndReplaceCad = async (file: File, data: CadData, isMain: boo
         // data.partners = resData.partners;
         // data.components = resData.components;
         data.zhidingweizhipaokeng = resData.zhidingweizhipaokeng;
+        const 唯一码 = data.info.唯一码;
         data.info = resData.info;
+        if (唯一码) {
+          data.info.唯一码 = 唯一码;
+        }
       }
       data.blocks = resData.blocks;
       data.layers = resData.layers;

@@ -1,6 +1,7 @@
 import {MatDialog} from "@angular/material/dialog";
 import {getCadTotalLength, getShuangxiangLineRects, setShuangxiangLineRects, splitShuangxiangCad} from "@app/cad/utils";
 import {Formulas, toFixed} from "@app/utils/calc";
+import {getNamesStr} from "@app/utils/error-message";
 import {matchCadData} from "@app/utils/mongo";
 import {nameEquals} from "@app/utils/zhankai";
 import zxpjTestData from "@assets/json/zixuanpeijian.json";
@@ -523,8 +524,7 @@ export const calcZxpj = async (
     const details: string[] = [];
     for (const {mokuai, vars} of duplicateMokuaiSlgsVars) {
       const title = getCalcMokuaiTitle(mokuai);
-      const varsStr = vars.map((v) => `【${v}】`).join("");
-      details.push(`${title}<br>${varsStr}`);
+      details.push(`${title}<br>${getNamesStr(vars)}`);
     }
     const msg = "以下模块匹配到了重复公式";
     await message.error({content: msg, details});

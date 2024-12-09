@@ -23,6 +23,7 @@ import {keysOf, ObjectOf, WindowMessageManager} from "@lucilor/utils";
 import {openSuanliaogongshiDialog} from "@modules/cad-editor/components/dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
+import {MessageData} from "@modules/message/components/message/message.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
@@ -343,5 +344,13 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     resetInputs(data, dataOld, mokuaiIds);
     result.data = {data};
     return result;
+  }
+
+  async messageStart({type, args}: {type: MessageData["type"]; args: [any, ...any[]]}) {
+    let result: any = null;
+    try {
+      result = await this.message[type](...args);
+    } catch {}
+    return {action: "messageEnd", data: result};
   }
 }

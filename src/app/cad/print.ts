@@ -367,8 +367,11 @@ export const configCadDataForPrint = async (
   };
   const configDimension = (e: CadDimension, colorNumber: number) => {
     e.linewidth = linewidth;
+    if (dimStyle) {
+      e.setStyle(dimStyle);
+    }
     e.setStyle({
-      ...dimStyle,
+      text: {weight: "bolder"},
       dimensionLine: {color: "#505050", dashArray: Defaults.DASH_ARRAY},
       extensionLines: {color: "#505050", length: 12},
       arrows: {color: "#505050"}

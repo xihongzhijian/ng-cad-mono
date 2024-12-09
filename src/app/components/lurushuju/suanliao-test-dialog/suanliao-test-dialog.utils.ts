@@ -1,5 +1,6 @@
 import {MatDialog} from "@angular/material/dialog";
 import {Calc, CalcResult, Formulas} from "@app/utils/calc";
+import {getNamesStr} from "@app/utils/error-message";
 import {CalcZxpjResult, ZixuanpeijianCadItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {calcZxpj} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
@@ -65,8 +66,7 @@ export const getTestCaseInfo = async (testCase: 测试用例, data: 算料数据
   info.requiredVars = difference(info.allVars, Object.keys(formulas));
   const missingVars = difference(info.requiredVars, Object.keys(testVars));
   if (missingVars.length > 0) {
-    const missingVarsStr = missingVars.map((v) => `【${v}】`).join("");
-    info.errors.push(`缺少变量${missingVarsStr}`);
+    info.errors.push(`缺少变量${getNamesStr(missingVars)}`);
     for (const v of missingVars) {
       testCase.测试数据[v] = "";
     }

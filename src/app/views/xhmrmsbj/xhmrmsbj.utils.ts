@@ -189,6 +189,18 @@ export class XhmrmsbjData extends ZuoshujuData {
   getMenshanFollowers(key: MenshanKey) {
     return this._menshanFollowersMap.get(key) || [];
   }
+  getMenshanFollowees(key: MenshanKey) {
+    const followees: MenshanKey[] = [];
+    for (const [followee, followers] of this._menshanFollowersMap.entries()) {
+      if (followers.includes(key)) {
+        followees.push(followee);
+      }
+    }
+    return followees;
+  }
+  isMenshanFollowee(key: MenshanKey) {
+    return this._menshanFollowersMap.has(key);
+  }
   isMenshanFollower(key: MenshanKey) {
     for (const followers of this._menshanFollowersMap.values()) {
       if (followers.includes(key)) {
@@ -386,11 +398,11 @@ export const getMokuaiFormulas = (
   const optionValues = getMokuaiXxsjValues(info, node, mokuai);
   const optionFormulas = mapValues(optionValues, (v) => `"${v}"`);
   const duplicateVars = new Set<string>();
-  if (mokuai.xuanxianggongshi.length > 0) {
-    let xxgsList = mokuai.xuanxianggongshi;
-    if (materialResult) {
-      xxgsList = matchMongoData(xxgsList, {...materialResult, ...optionValues});
-    }
+  let xxgsList = mokuai.xuanxianggongshi;
+  if (xxgsList.length > 0 && materialResult) {
+    xxgsList = matchMongoData(xxgsList, {...materialResult, ...optionValues});
+  }
+  if (xxgsList.length > 0) {
     for (const xxgs of xxgsList) {
       for (const [key, value] of Object.entries(xxgs.公式)) {
         if (isTypeOf(formulas[key], ["null", "undefined"])) {
