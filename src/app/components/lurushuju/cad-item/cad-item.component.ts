@@ -253,12 +253,13 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         ...this.openCadOptions
       }
     });
-    if (result?.isSaved) {
+    const savedData = result?.savedData;
+    if (savedData) {
       if (cad instanceof CadData) {
-        Object.assign(cad, cadData);
+        Object.assign(cad, savedData);
         cad.info.imgUpdate = true;
       } else {
-        Object.assign(cad, getHoutaiCad(cadData));
+        Object.assign(cad, getHoutaiCad(savedData));
         if (cad.json.info?.imgId) {
           cad.json.info.imgUpdate = true;
         }
@@ -397,7 +398,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       }
     });
     this.mubanData = this.status.cad.data.clone();
-    if (result?.isSaved) {
+    if (result?.savedData) {
       await this.initMubanViewer();
     }
   }

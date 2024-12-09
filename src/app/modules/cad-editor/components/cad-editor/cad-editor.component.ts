@@ -430,7 +430,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     if (!(await this.validate())) {
       return;
     }
-    await this.status.saveCad(this.spinnerId, query);
+    return await this.status.saveCad(this.spinnerId, query);
   }
 
   async refresh() {

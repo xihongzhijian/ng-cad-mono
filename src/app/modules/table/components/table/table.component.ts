@@ -688,8 +688,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       if (cadData) {
         const data: OpenCadOptions = {data: cadData, isLocal: true, center: true};
         const result = await openCadEditorDialog(this.dialog, {data});
-        if (result?.isSaved) {
-          const cadData2 = this.status.closeCad();
+        if (result?.savedData) {
+          const cadData2 = result?.savedData;
           this.setCellValue(JSON.stringify(cadData2.export()), colIdx, rowIdx, item);
         }
       }

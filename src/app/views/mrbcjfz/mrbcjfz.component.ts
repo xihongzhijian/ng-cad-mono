@@ -562,7 +562,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
       const data0 = this.cads[item.id].data;
       const data = data0.clone();
       const result = await openCadEditorDialog(this.dialog, {data: {data, query: {模块: mokuaiName}}});
-      if (result?.isSaved) {
+      if (result?.savedData) {
         Object.assign(data0, data);
         this.cadChange.emit(data0);
       }

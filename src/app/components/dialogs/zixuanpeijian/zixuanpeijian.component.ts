@@ -1052,7 +1052,7 @@ export class ZixuanpeijianComponent implements OnInit {
     }
     const gongshis = this.data?.gongshis;
     const result = await openCadEditorDialog(this.dialog, {data: {data, collection, isLocal, center: true, gongshis}});
-    if (result?.isSaved) {
+    if (result?.savedData) {
       await this.allFetch();
     }
   }

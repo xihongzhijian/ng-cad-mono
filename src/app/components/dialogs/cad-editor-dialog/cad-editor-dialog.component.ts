@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, inject, Inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {CadData} from "@lucilor/cad-viewer";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadEditorComponent} from "@modules/cad-editor/components/cad-editor/cad-editor.component";
 import {MessageService} from "@modules/message/services/message.service";
@@ -36,30 +37,30 @@ export class CadEditorDialogComponent extends Subscribed() implements OnInit {
     this.subscribe(this.status.saveCadStart$, () => {
       this.canClose.set(false);
     });
-    this.subscribe(this.status.saveCadEnd$, () => {
+    this.subscribe(this.status.saveCadEnd$, (data) => {
       this.canClose.set(true);
-      this.isSaved.set(true);
+      this.savedData.set(data.data);
     });
   }
 
-  cadEditor = viewChild(forwardRef(() => CadEditorComponent));
-  isSaved = signal(false);
+  cadEditor = viewChild<CadEditorComponent>(forwardRef(() => CadEditorComponent));
+  savedData = signal<CadData | null>(null);
   canClose = signal(true);
   cadEditorParams = signal<OpenCadOptions>({});
 
   async save() {
-    await this.cadEditor()?.save();
+    return await this.cadEditor()?.save();
   }
 
   async close(save: boolean) {
     if (save) {
-      await this.save();
-      if (!this.isSaved) {
+      const savedData = await this.save();
+      if (!savedData) {
         return;
       }
     }
     if (this.cadEditor()) {
-      this.dialogRef.close({isSaved: this.isSaved()});
+      this.dialogRef.close({savedData: this.savedData()});
     } else {
       this.dialogRef.close();
     }
@@ -86,5 +87,5 @@ export const openCadEditorDialog = getOpenDialogFunc<CadEditorDialogComponent, C
 export type CadEditorInput = Omit<OpenCadOptions, "isDialog">;
 
 export interface CadEditorOutput {
-  isSaved: boolean;
+  savedData: CadData | null;
 }

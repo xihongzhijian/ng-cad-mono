@@ -76,5 +76,6 @@ export const unsetCadData = (data: CadData) => {
         layer.hidden = info.hidden;
       }
     }
+    delete data.info._layerInfos;
   }
 };
