@@ -16,20 +16,20 @@ import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {cloneDeep, intersection, sample, sampleSize} from "lodash";
 import {
+  SbjbItemOptionalKey1,
+  SbjbItemOptionalKey2,
+  SbjbItemOptionalKey3,
+  sbjbItemOptionalKeys1,
+  sbjbItemOptionalKeys2,
+  sbjbItemOptionalKeys3,
   XhmrmsbjSbjbItem,
-  XhmrmsbjSbjbItemOptionalKey1,
-  XhmrmsbjSbjbItemOptionalKey2,
-  XhmrmsbjSbjbItemOptionalKey3,
-  xhmrmsbjSbjbItemOptionalKeys1,
-  xhmrmsbjSbjbItemOptionalKeys2,
-  xhmrmsbjSbjbItemOptionalKeys3,
   XhmrmsbjSbjbItemSbjb,
   XhmrmsbjSbjbItemSbjbCad,
   XhmrmsbjSbjbItemSbjbItem,
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
 
-export const getXhmrmsbjSbjbItemOptionalKeys = (fenlei: string): XhmrmsbjSbjbItemOptionalKey3[] => {
+export const getXhmrmsbjSbjbItemOptionalKeys = (fenlei: string): SbjbItemOptionalKey3[] => {
   switch (fenlei) {
     case "单门":
       return ["锁边", "铰边", "锁框", "铰框", "顶框"];
@@ -41,26 +41,26 @@ export const getXhmrmsbjSbjbItemOptionalKeys = (fenlei: string): XhmrmsbjSbjbIte
       return [];
   }
 };
-export const getXhmrmsbjSbjbItemOptionalKeys1 = (fenlei: string) => {
-  const keys: XhmrmsbjSbjbItemOptionalKey1[] = [];
+export const getSbjbItemOptionalKeys1 = (fenlei: string) => {
+  const keys: SbjbItemOptionalKey1[] = [];
   for (const key of getXhmrmsbjSbjbItemOptionalKeys(fenlei)) {
-    if (isXhmrmsbjSbjbItemOptionalKeys1(key)) {
+    if (isSbjbItemOptionalKeys1(key)) {
       keys.push(key);
     }
   }
   return keys;
 };
-export const getXhmrmsbjSbjbItemOptionalKeys2 = (fenlei: string) => {
-  const keys: XhmrmsbjSbjbItemOptionalKey2[] = [];
+export const getSbjbItemOptionalKeys2 = (fenlei: string) => {
+  const keys: SbjbItemOptionalKey2[] = [];
   for (const key of getXhmrmsbjSbjbItemOptionalKeys(fenlei)) {
-    if (isXhmrmsbjSbjbItemOptionalKeys2(key)) {
+    if (isSbjbItemOptionalKeys2(key)) {
       keys.push(key);
     }
   }
   return keys;
 };
 
-export const getXhmrmsbjSbjbItemCadKeys = (fenlei: string): XhmrmsbjSbjbItemOptionalKey3[] => {
+export const getXhmrmsbjSbjbItemCadKeys = (fenlei: string): SbjbItemOptionalKey3[] => {
   switch (fenlei) {
     case "单门":
       return ["铰框", "铰边", "锁边", "锁框", "顶框"];
@@ -73,25 +73,25 @@ export const getXhmrmsbjSbjbItemCadKeys = (fenlei: string): XhmrmsbjSbjbItemOpti
   }
 };
 
-export const isXhmrmsbjSbjbItemOptionalKeys1 = (
+export const isSbjbItemOptionalKeys1 = (
   key: string,
-  keys: XhmrmsbjSbjbItemOptionalKey1[] = xhmrmsbjSbjbItemOptionalKeys1.slice()
-): key is XhmrmsbjSbjbItemOptionalKey1 => {
-  return keys.includes(key as XhmrmsbjSbjbItemOptionalKey1);
+  keys: SbjbItemOptionalKey1[] = sbjbItemOptionalKeys1.slice()
+): key is SbjbItemOptionalKey1 => {
+  return keys.includes(key as SbjbItemOptionalKey1);
 };
-export const isXhmrmsbjSbjbItemOptionalKeys2 = (
+export const isSbjbItemOptionalKeys2 = (
   key: string,
-  keys: XhmrmsbjSbjbItemOptionalKey2[] = xhmrmsbjSbjbItemOptionalKeys2.slice()
-): key is XhmrmsbjSbjbItemOptionalKey2 => {
-  return keys.includes(key as XhmrmsbjSbjbItemOptionalKey2);
+  keys: SbjbItemOptionalKey2[] = sbjbItemOptionalKeys2.slice()
+): key is SbjbItemOptionalKey2 => {
+  return keys.includes(key as SbjbItemOptionalKey2);
 };
-export const isXhmrmsbjSbjbItemOptionalKeys3 = (key: string): key is XhmrmsbjSbjbItemOptionalKey3 => {
-  return xhmrmsbjSbjbItemOptionalKeys3.includes(key as XhmrmsbjSbjbItemOptionalKey3);
+export const isSbjbItemOptionalKeys3 = (key: string): key is SbjbItemOptionalKey3 => {
+  return sbjbItemOptionalKeys3.includes(key as SbjbItemOptionalKey3);
 };
 
-export const getXhmrmsbjSbjbItemSbjbCadName = (title: XhmrmsbjSbjbItemOptionalKey3) => (title === "小扇铰边" ? "铰边" : title);
+export const getXhmrmsbjSbjbItemSbjbCadName = (title: SbjbItemOptionalKey3) => (title === "小扇铰边" ? "铰边" : title);
 
-export const getXhmrmsbjSbjbItemSbjbCad = (title: XhmrmsbjSbjbItemOptionalKey3, cadId?: string) => {
+export const getXhmrmsbjSbjbItemSbjbCad = (title: SbjbItemOptionalKey3, cadId?: string) => {
   const result: XhmrmsbjSbjbItemSbjbCad = {name: getXhmrmsbjSbjbItemSbjbCadName(title), title};
   if (cadId) {
     result.cadId = cadId;
@@ -110,10 +110,10 @@ export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: 
   }
   for (const key of keysTo) {
     if (!keysFrom.includes(key)) {
-      if (isXhmrmsbjSbjbItemOptionalKeys1(key)) {
+      if (isSbjbItemOptionalKeys1(key)) {
         result[key] = "";
-      } else if (isXhmrmsbjSbjbItemOptionalKeys2(key)) {
-        result[key] = getXhmrmsbjSbjbItemSbjbItem();
+      } else if (isSbjbItemOptionalKeys2(key)) {
+        result[key] = getSbjbItemSbjbItem();
       }
     }
   }
@@ -136,14 +136,14 @@ export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: 
 
 export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string, activeSbjbItemIndex: WritableSignal<number>) => {
   const optionalKeys = getXhmrmsbjSbjbItemOptionalKeys(fenlei);
-  const optionalCols1 = xhmrmsbjSbjbItemOptionalKeys1.map((key) => {
+  const optionalCols1 = sbjbItemOptionalKeys1.map((key) => {
     const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key, style: {flex: "1 0 100px"}};
     if (!optionalKeys.includes(key)) {
       col.hidden = true;
     }
     return col;
   });
-  const optionalCols2 = xhmrmsbjSbjbItemOptionalKeys2.map((key) => {
+  const optionalCols2 = sbjbItemOptionalKeys2.map((key) => {
     const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {
       type: "string",
       field: key,
@@ -210,7 +210,7 @@ export const getXhmrmsbjSbjbItemSbjb = (item?: Partial<XhmrmsbjSbjbItemSbjb>) =>
   return result;
 };
 export const isXhmrmsbjSbjbItemSbjbHasSuokuang = (fenlei: string) => ["单门", "子母连开"].includes(fenlei);
-export const getXhmrmsbjSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbItem>): XhmrmsbjSbjbItemSbjbItem => ({
+export const getSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbItem>): XhmrmsbjSbjbItemSbjbItem => ({
   名字: "",
   正面宽可改: true,
   背面宽可改: true,
@@ -257,7 +257,7 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
   return result ? data : null;
 };
 export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, title: string, item?: XhmrmsbjSbjbItemSbjbItem) => {
-  const data = getXhmrmsbjSbjbItemSbjbItem(cloneDeep(item));
+  const data = getSbjbItemSbjbItem(cloneDeep(item));
   if (typeof data.正面宽可改 !== "boolean") {
     data.正面宽可改 = true;
   }
@@ -320,8 +320,8 @@ export const exportXhmrmsbjSbjbItemSbjbs = (fenlei: string, items: XhmrmsbjSbjbI
     使用背面分体: false
   };
   const sbjbItemSbjbItemKeys = keysOf(emptySbjbItemSbjbItem);
-  const sbjbItemOptionalKeys1 = getXhmrmsbjSbjbItemOptionalKeys1(fenlei);
-  const sbjbItemOptionalKeys2 = getXhmrmsbjSbjbItemOptionalKeys2(fenlei);
+  const sbjbItemOptionalKeys1 = getSbjbItemOptionalKeys1(fenlei);
+  const sbjbItemOptionalKeys2 = getSbjbItemOptionalKeys2(fenlei);
   const header = [
     "开启",
     "门铰",
@@ -367,21 +367,21 @@ export const importXhmrmsbjSbjbItemSbjbs = (fenlei: string, dataArray: string[][
         continue;
       }
       let key2: keyof XhmrmsbjSbjbItemSbjbItem | null = null;
-      for (const optionalKeys2 of xhmrmsbjSbjbItemOptionalKeys2) {
+      for (const optionalKeys2 of sbjbItemOptionalKeys2) {
         if (key.startsWith(optionalKeys2)) {
           key2 = key.slice(optionalKeys2.length) as keyof XhmrmsbjSbjbItemSbjbItem;
           key = optionalKeys2;
           break;
         }
       }
-      const sbjbItemOptionalKeys1 = getXhmrmsbjSbjbItemOptionalKeys1(fenlei);
-      const sbjbItemOptionalKeys2 = getXhmrmsbjSbjbItemOptionalKeys2(fenlei);
-      if (isXhmrmsbjSbjbItemOptionalKeys1(key, sbjbItemOptionalKeys1)) {
+      const sbjbItemOptionalKeys01 = getSbjbItemOptionalKeys1(fenlei);
+      const sbjbItemOptionalKeys02 = getSbjbItemOptionalKeys2(fenlei);
+      if (isSbjbItemOptionalKeys1(key, sbjbItemOptionalKeys01)) {
         item[key] = value;
-      } else if (isXhmrmsbjSbjbItemOptionalKeys2(key, sbjbItemOptionalKeys2) && key2) {
+      } else if (isSbjbItemOptionalKeys2(key, sbjbItemOptionalKeys02) && key2) {
         let item2 = item[key];
         if (!item2) {
-          item2 = getXhmrmsbjSbjbItemSbjbItem();
+          item2 = getSbjbItemSbjbItem();
           item[key] = item2;
         }
         switch (key2) {

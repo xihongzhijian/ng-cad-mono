@@ -39,7 +39,7 @@ export class XhmrmsbjData extends ZuoshujuData {
       输入: [],
       选项: [],
       公式: [],
-      算料单配置: {门扇中间标注显示: []},
+      算料单配置: {},
       企料结构配置: {},
       ...xinghaoConfig
     };

@@ -38,17 +38,17 @@ import {
 import {
   convertXhmrmsbjSbjbItem,
   exportXhmrmsbjSbjbItemSbjbs,
+  getSbjbItemOptionalKeys2,
+  getSbjbItemSbjbItem,
   getXhmrmsbjSbjbItemCadKeys,
-  getXhmrmsbjSbjbItemOptionalKeys2,
   getXhmrmsbjSbjbItemOptions,
   getXhmrmsbjSbjbItemSbjbCad,
   getXhmrmsbjSbjbItemSbjbForm,
-  getXhmrmsbjSbjbItemSbjbItem,
   getXhmrmsbjSbjbItemSbjbItemForm,
   getXhmrmsbjSbjbItemTableInfo,
   importXhmrmsbjSbjbItemSbjbs,
-  isXhmrmsbjSbjbItemOptionalKeys1,
-  isXhmrmsbjSbjbItemOptionalKeys2
+  isSbjbItemOptionalKeys1,
+  isSbjbItemOptionalKeys2
 } from "./xhmrmsbj-sbjb.utils";
 
 @Component({
@@ -104,7 +104,7 @@ export class XhmrmsbjSbjbComponent {
           }
         }
         const title = info.title;
-        if (isXhmrmsbjSbjbItemOptionalKeys2(title)) {
+        if (isSbjbItemOptionalKeys2(title)) {
           const extraTexts: CadItemFormExtraText[] = [];
           const keys: (keyof XhmrmsbjSbjbItemSbjbItem)[] = [
             "正面宽",
@@ -153,7 +153,7 @@ export class XhmrmsbjSbjbComponent {
     }
     const info = this.cadInfos().at(index);
     const name = info?.name;
-    if (!name || !isXhmrmsbjSbjbItemOptionalKeys2(name)) {
+    if (!name || !isSbjbItemOptionalKeys2(name)) {
       return;
     }
     const title = `${info.title}：${item[name]?.名字 || ""}`;
@@ -211,8 +211,8 @@ export class XhmrmsbjSbjbComponent {
         return;
       }
       const type = data.分类;
-      const isKeys1 = isXhmrmsbjSbjbItemOptionalKeys1(type);
-      const isKeys2 = isXhmrmsbjSbjbItemOptionalKeys2(type);
+      const isKeys1 = isSbjbItemOptionalKeys1(type);
+      const isKeys2 = isSbjbItemOptionalKeys2(type);
       if (!isKeys1 && !isKeys2) {
         return;
       }
@@ -233,11 +233,11 @@ export class XhmrmsbjSbjbComponent {
       }
     });
     if (cad2) {
-      if (isXhmrmsbjSbjbItemOptionalKeys1(title)) {
+      if (isSbjbItemOptionalKeys1(title)) {
         item[title] = cad2.name;
-      } else if (isXhmrmsbjSbjbItemOptionalKeys2(title)) {
+      } else if (isSbjbItemOptionalKeys2(title)) {
         if (!item[title]) {
-          item[title] = getXhmrmsbjSbjbItemSbjbItem();
+          item[title] = getSbjbItemSbjbItem();
         }
         item[title].名字 = cad2.name;
       }
@@ -260,11 +260,11 @@ export class XhmrmsbjSbjbComponent {
     }
     const cadInfo = this.cadInfos()[index];
     const {title} = cadInfo;
-    if (isXhmrmsbjSbjbItemOptionalKeys1(title)) {
+    if (isSbjbItemOptionalKeys1(title)) {
       item[title] = "";
-    } else if (isXhmrmsbjSbjbItemOptionalKeys2(title)) {
+    } else if (isSbjbItemOptionalKeys2(title)) {
       if (!item[title]) {
-        item[title] = getXhmrmsbjSbjbItemSbjbItem();
+        item[title] = getSbjbItemSbjbItem();
       }
       item[title].名字 = "";
     }
@@ -305,8 +305,8 @@ export class XhmrmsbjSbjbComponent {
     if (data) {
       for (const item of data.锁边铰边) {
         for (const item2 of item.锁边铰边数据) {
-          for (const key of getXhmrmsbjSbjbItemOptionalKeys2(item.产品分类)) {
-            item2[key] = getXhmrmsbjSbjbItemSbjbItem(item2[key]);
+          for (const key of getSbjbItemOptionalKeys2(item.产品分类)) {
+            item2[key] = getSbjbItemSbjbItem(item2[key]);
           }
         }
       }

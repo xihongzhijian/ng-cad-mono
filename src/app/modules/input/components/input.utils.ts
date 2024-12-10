@@ -155,7 +155,7 @@ export const getUnifiedInputs = <T>(
 };
 
 export type InputInfoWithDataPart<T extends InputInfo> = Omit<InputInfoPart<T>, "model" | "value">;
-export class InputInfoWithDataGetter<T> {
+export class InputInfoWithDataGetter<T, K extends string = string> {
   constructor(
     public data: T,
     public others?: Omit<InputInfoPart, "model">
@@ -171,7 +171,7 @@ export class InputInfoWithDataGetter<T> {
     };
   }
 
-  selectSingle<K extends string = string>(
+  selectSingle(
     key: keyof T,
     options: Value<InputInfoOptions<K>>,
     others?: InputInfoWithDataPart<InputInfoSelectSingle>

@@ -1,7 +1,12 @@
+import {NgTemplateOutlet} from "@angular/common";
 import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, model} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
+import {MatDialog} from "@angular/material/dialog";
+import {MatDividerModule} from "@angular/material/divider";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
+import {CadImageComponent} from "@components/cad-image/cad-image.component";
+import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {ShuruTableDataSorted, XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {
   emptyXuanxiangItem,
@@ -10,8 +15,10 @@ import {
   getXuanxiangItem,
   getXuanxiangTable
 } from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
+import {sbjbItemOptionalKeys2} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -20,20 +27,41 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {menshanKeys} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
-import {clone, isEqual} from "lodash";
+import {clone, cloneDeep, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {SuanliaoConfigMszjbzxs, XhmrmsbjXinghaoConfigComponentType} from "./xhmrmsbj-xinghao-config.types";
-import {suanliaoMszjbzxsNames} from "./xhmrmsbj-xinghao-config.utils";
+import {
+  qiliaoFtwzxsNames,
+  qiliaoPkwzNames,
+  qiliaoQhfkNames,
+  qiliaoXnqlflNames,
+  SuanliaoConfigItem,
+  SuanliaoConfigItemsGetter,
+  SuanliaoConfigItemsSetter,
+  suanliaoMszjbzxsNames,
+  XhmrmsbjXinghaoConfigComponentType
+} from "./xhmrmsbj-xinghao-config.types";
+import {getSuanliaoConfigData, getSuanliaoConfigItemCadSearch} from "./xhmrmsbj-xinghao-config.utils";
 
 @Component({
   selector: "app-xhmrmsbj-xinghao-config",
-  imports: [InputComponent, MatButtonModule, NgScrollbarModule, SuanliaogongshiComponent, TableComponent],
+  imports: [
+    CadImageComponent,
+    InputComponent,
+    MatButtonModule,
+    MatDividerModule,
+    NgScrollbarModule,
+    NgTemplateOutlet,
+    SuanliaogongshiComponent,
+    TableComponent,
+    TypedTemplateDirective
+  ],
   templateUrl: "./xhmrmsbj-xinghao-config.component.html",
   styleUrl: "./xhmrmsbj-xinghao-config.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class XhmrmsbjXinghaoConfigComponent {
   private bjmk = inject(BjmkStatusService);
+  private dialog = inject(MatDialog);
   private message = inject(MessageService);
 
   @HostBinding("class") class = "ng-page";
@@ -152,10 +180,135 @@ export class XhmrmsbjXinghaoConfigComponent {
     this.refreshData();
   }
 
-  suanliaoMszjbzxses = computed(() => this.data()?.xinghaoConfig.算料单配置?.门扇中间标注显示 || []);
-  suanliaoMszjbzxsInfos = computed(() => {
-    const infos: {item: SuanliaoConfigMszjbzxs; inputInfos: InputInfo[]}[] = [];
-    for (const item of this.suanliaoMszjbzxses()) {
+  async addSuanliaoConfigItem<T extends SuanliaoConfigItem>(
+    itemsGetter: SuanliaoConfigItemsGetter<T>,
+    itemsSetter: SuanliaoConfigItemsSetter<T>,
+    names: T["名字"][],
+    cad: T["cad"]
+  ) {
+    const xinghaoConfig = this.data()?.xinghaoConfig;
+    if (!xinghaoConfig || names.length < 1) {
+      return;
+    }
+    let name: T["名字"] | null = names[0];
+    if (names.length > 1) {
+      name = await this.message.prompt({
+        type: "select",
+        label: "名字",
+        options: names,
+        validators: [Validators.required]
+      });
+    }
+    if (!name) {
+      return;
+    }
+    const items = itemsGetter(xinghaoConfig).slice();
+    items.push(getSuanliaoConfigData(name, [], cad));
+    itemsSetter(xinghaoConfig, items);
+    this.refreshData();
+  }
+  async removeSuanliaoConfigItem<T extends SuanliaoConfigItem>(
+    itemsGetter: SuanliaoConfigItemsGetter<T>,
+    itemsSetter: SuanliaoConfigItemsSetter<T>,
+    index: number
+  ) {
+    const xinghaoConfig = this.data()?.xinghaoConfig;
+    if (!xinghaoConfig) {
+      return;
+    }
+    const items = itemsGetter(xinghaoConfig).slice();
+    const item = items[index];
+    if (!item) {
+      return;
+    }
+    if (!(await this.message.confirm(`确定删除【${item.名字}】吗？`))) {
+      return;
+    }
+    itemsSetter(xinghaoConfig, items);
+    this.refreshData();
+  }
+  copySuanliaoConfigItem<T extends SuanliaoConfigItem>(
+    itemsGetter: SuanliaoConfigItemsGetter<T>,
+    itemsSetter: SuanliaoConfigItemsSetter<T>,
+    index: number
+  ) {
+    const xinghaoConfig = this.data()?.xinghaoConfig;
+    if (!xinghaoConfig) {
+      return;
+    }
+    const items = itemsGetter(xinghaoConfig).slice();
+    const item = items[index];
+    if (!item) {
+      return;
+    }
+    items.splice(index, 0, cloneDeep(item));
+    itemsSetter(xinghaoConfig, items);
+    this.refreshData();
+  }
+  async setSuanliaoConfigItemCad<T extends SuanliaoConfigItem>(
+    itemsGetter: SuanliaoConfigItemsGetter<T>,
+    itemsSetter: SuanliaoConfigItemsSetter<T>,
+    index: number,
+    title: string
+  ) {
+    const xinghaoConfig = this.data()?.xinghaoConfig;
+    if (!xinghaoConfig) {
+      return;
+    }
+    const items = itemsGetter(xinghaoConfig).slice();
+    const item = items[index];
+    const cad = item?.cad;
+    if (!cad) {
+      return;
+    }
+    const result = await openCadListDialog(this.dialog, {
+      data: {selectMode: "single", collection: "peijianCad", fixedSearch: getSuanliaoConfigItemCadSearch(title)}
+    });
+    const data = result?.[0];
+    if (data) {
+      item.cad = {id: data.id, 唯一码: data.info.唯一码};
+      itemsSetter(xinghaoConfig, items);
+      this.refreshData();
+    }
+  }
+  async removeSuanliaoConfigItemCad<T extends SuanliaoConfigItem>(
+    itemsGetter: SuanliaoConfigItemsGetter<T>,
+    itemsSetter: SuanliaoConfigItemsSetter<T>,
+    index: number
+  ) {
+    const xinghaoConfig = this.data()?.xinghaoConfig;
+    if (!xinghaoConfig) {
+      return;
+    }
+    const items = itemsGetter(xinghaoConfig).slice();
+    const item = items[index];
+    const cad = item?.cad;
+    if (!cad) {
+      return;
+    }
+    item.cad = {};
+    itemsSetter(xinghaoConfig, items);
+    this.refreshData();
+  }
+  suanliaoConfigCadCollection = this.bjmk.collection;
+  suanliaoConfigCadYaoqiu = this.bjmk.cadYaoqiu;
+
+  getSuanliaoConfigDataSet<T extends SuanliaoConfigItem>(
+    title: string,
+    itemsGetter: SuanliaoConfigItemsGetter<T>,
+    itemsSetter: SuanliaoConfigItemsSetter<T>,
+    names: T["名字"][],
+    positions: T["位置"],
+    cad: T["cad"]
+  ) {
+    let data = this.data();
+    if (!data) {
+      data = new XhmrmsbjData({vid: 1, mingzi: ""}, [], {}, []);
+    }
+    const xinghaoConfig = data.xinghaoConfig;
+    const items = itemsGetter(xinghaoConfig);
+    const infos: {item: T; inputInfos: InputInfo[]}[] = [];
+    for (const item of items) {
       const getter = new InputInfoWithDataGetter(item);
       const onChange = () => {
         this.refreshData();
@@ -163,46 +316,64 @@ export class XhmrmsbjXinghaoConfigComponent {
       infos.push({
         item,
         inputInfos: [
-          getter.selectMultiple("显示位置", menshanKeys.slice(), {onChange}),
+          getter.selectMultiple("位置", positions, {onChange}),
           getter.object("选项", {onChange, optionType: "选项", optionMultiple: true, optionsDialog: {}}),
           getter.array("条件", {onChange})
         ]
       });
     }
-    return infos;
-  });
-  async addSuanliaoMszjbzxs() {
-    const data = this.data();
-    if (!data) {
-      return;
-    }
-    const suanliaoConfig = data.xinghaoConfig.算料单配置;
-    const result = await this.message.prompt({
-      type: "select",
-      label: "名字",
-      options: suanliaoMszjbzxsNames,
-      validators: [Validators.required]
-    });
-    if (!result) {
-      return;
-    }
-    suanliaoConfig.门扇中间标注显示 = [...suanliaoConfig.门扇中间标注显示, {名字: result, 显示位置: [], 选项: {}, 条件: []}];
-    this.refreshData();
+    return {
+      title,
+      infos,
+      add: () => this.addSuanliaoConfigItem(itemsGetter, itemsSetter, names, cad),
+      remove: (index: number) => this.removeSuanliaoConfigItem(itemsGetter, itemsSetter, index),
+      copy: (index: number) => this.copySuanliaoConfigItem(itemsGetter, itemsSetter, index),
+      setCad: (index: number) => this.setSuanliaoConfigItemCad(itemsGetter, itemsSetter, index, title),
+      removeCad: (index: number) => this.removeSuanliaoConfigItemCad(itemsGetter, itemsSetter, index)
+    };
   }
-  async removeSuanliaoMszjbzxs(index: number) {
-    const data = this.data();
-    if (!data) {
-      return;
-    }
-    const suanliaoConfig = data.xinghaoConfig.算料单配置;
-    const item = suanliaoConfig.门扇中间标注显示[index];
-    if (!item) {
-      return;
-    }
-    if (!(await this.message.confirm(`确定删除【${item.名字}】吗？`))) {
-      return;
-    }
-    suanliaoConfig.门扇中间标注显示 = suanliaoConfig.门扇中间标注显示.filter((_, i) => i !== index);
-    this.refreshData();
-  }
+  suanliaoDataSets = computed(() => [
+    this.getSuanliaoConfigDataSet(
+      "门扇中间标注显示",
+      (xinghaoConfig) => xinghaoConfig.算料单配置.门扇中间标注显示 || [],
+      (xinghaoConfig, items) => (xinghaoConfig.算料单配置.门扇中间标注显示 = items),
+      suanliaoMszjbzxsNames.slice(),
+      menshanKeys.slice(),
+      null
+    )
+  ]);
+  qiliaoDataSets = computed(() => [
+    this.getSuanliaoConfigDataSet(
+      "企料刨坑位置",
+      (xinghaoConfig) => xinghaoConfig.企料结构配置.企料刨坑位置 || [],
+      (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料刨坑位置 = items),
+      qiliaoPkwzNames.slice(),
+      sbjbItemOptionalKeys2.slice(),
+      null
+    ),
+    this.getSuanliaoConfigDataSet(
+      "企料分体位置显示",
+      (xinghaoConfig) => xinghaoConfig.企料结构配置.企料分体位置显示 || [],
+      (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料分体位置显示 = items),
+      qiliaoFtwzxsNames.slice(),
+      sbjbItemOptionalKeys2.slice(),
+      null
+    ),
+    this.getSuanliaoConfigDataSet(
+      "企料前后封口",
+      (xinghaoConfig) => xinghaoConfig.企料结构配置.企料前后封口 || [],
+      (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料前后封口 = items),
+      qiliaoQhfkNames.slice(),
+      sbjbItemOptionalKeys2.slice(),
+      {}
+    ),
+    this.getSuanliaoConfigDataSet(
+      "虚拟企料分类",
+      (xinghaoConfig) => xinghaoConfig.企料结构配置.虚拟企料分类 || [],
+      (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.虚拟企料分类 = items),
+      qiliaoXnqlflNames.slice(),
+      sbjbItemOptionalKeys2.slice(),
+      null
+    )
+  ]);
 }

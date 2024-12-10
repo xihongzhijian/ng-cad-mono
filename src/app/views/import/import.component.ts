@@ -8,7 +8,7 @@ import {setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadInfo, CadInfoError, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
 import {ProgressBar, ProgressBarStatus} from "@components/progress-bar/progress-bar.utils";
-import {isSbjbCad, isSbjbCollection, isSbjbType, xhmrmsbjSbjbItemOptionalKeys4} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
+import {isSbjbCad, isSbjbCollection, isSbjbType, sbjbItemOptionalKeys4} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {environment} from "@env";
 import {CadData, CadDimensionLinear, CadLayer, CadLeader, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {downloadByString, keysOf, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
@@ -474,17 +474,17 @@ export class ImportComponent implements OnInit {
           if (isSbjbType(yaoqiu.CAD分类)) {
             if (isSbjbCad(collection, data)) {
               yaoqiu = await this.status.fetchAndGetCadYaoqiu(data.type);
-              for (const key of xhmrmsbjSbjbItemOptionalKeys4) {
+              for (const key of sbjbItemOptionalKeys4) {
                 delete data.options[key];
               }
             } else {
-              const str = xhmrmsbjSbjbItemOptionalKeys4.join("，");
+              const str = sbjbItemOptionalKeys4.join("，");
               v.errors.push(`分类只能是【${str}】`);
               skipYaoqiu = true;
             }
           } else {
             if (isSbjbCad(collection, data)) {
-              const str = xhmrmsbjSbjbItemOptionalKeys4.join("，");
+              const str = sbjbItemOptionalKeys4.join("，");
               v.errors.push(`分类不能是【${str}】`);
               skipYaoqiu = true;
             }

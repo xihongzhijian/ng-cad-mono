@@ -17,32 +17,54 @@
         <app-suanliaogongshi class="slgs" [info]="slgsInfo()" (slgsChange)="onSlgsChange()"></app-suanliaogongshi>
       }
       @case ("算料单配置") {
-        <div class="suanliao-config flex-column">
-          <div class="title">算料单</div>
-          <div class="toolbar">
-            <div>门扇中间标注显示</div>
-            <button mat-raised-button color="primary" (click)="addSuanliaoMszjbzxs()">添加</button>
-          </div>
-          <ng-scrollbar>
-            <div class="items">
-              @for (info of suanliaoMszjbzxsInfos(); track $index) {
-                <div class="suanliao-mszjbzxs item border">
-                  <div class="toolbar">
-                    <div>{{ info.item["名字"] }}</div>
-                    <button mat-raised-button color="primary" (click)="removeSuanliaoMszjbzxs($index)">删除</button>
-                  </div>
-                  @for (inputInfo of info.inputInfos; track $index) {
-                    <app-input class="text" [info]="inputInfo"></app-input>
-                  }
-                </div>
-              }
-            </div>
-          </ng-scrollbar>
-        </div>
+        <ng-container *ngTemplateOutlet="suanliaoConfigSets; context: {$implicit: suanliaoDataSets()}"></ng-container>
       }
       @case ("企料结构配置") {
-        <div class="title">未实现</div>
+        <ng-container *ngTemplateOutlet="suanliaoConfigSets; context: {$implicit: qiliaoDataSets()}"></ng-container>
       }
     }
   </div>
 </ng-scrollbar>
+
+<ng-template #suanliaoConfigSets [appTypedTemplate]="{$implicit: qiliaoDataSets()}" let-sets>
+  @for (set of sets; track i; let i = $index) {
+    @if (i > 0) {
+      <mat-divider vertical></mat-divider>
+    }
+    <div class="suanliao-config flex-column">
+      <div class="toolbar">
+        <div class="title">{{ set.title }}</div>
+        <div class="flex-110"></div>
+        <button mat-raised-button color="primary" (click)="set.add()">添加</button>
+      </div>
+      <ng-scrollbar>
+        <div class="items">
+          @for (info of set.infos; track j; let j = $index) {
+            <div class="suanliao-config-item item border">
+              <div class="toolbar compact">
+                <div>{{ info.item["名字"] }}</div>
+                <div class="flex-110"></div>
+                <button mat-button color="primary" (click)="set.remove(j)">删除</button>
+                <button mat-button color="primary" (click)="set.copy(j)">复制</button>
+              </div>
+              @for (inputInfo of info.inputInfos; track $index) {
+                <app-input class="text" [info]="inputInfo"></app-input>
+              }
+              @if (info.item.cad) {
+                <div class="toolbar">
+                  <button mat-raised-button color="primary" (click)="set.setCad(j)">选择CAD</button>
+                  @if (info.item.cad.id) {
+                    <button mat-raised-button color="primary" (click)="set.removeCad(j)">删除CAD</button>
+                  }
+                </div>
+                @if (info.item.cad.id; as id) {
+                  <app-cad-image [id]="id" [collection]="suanliaoConfigCadCollection"></app-cad-image>
+                }
+              }
+            </div>
+          }
+        </div>
+      </ng-scrollbar>
+    </div>
+  }
+</ng-template>
