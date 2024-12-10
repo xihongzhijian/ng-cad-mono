@@ -7,7 +7,7 @@ import {输入, 输入下单用途, 选项} from "@components/lurushuju/xinghao-
 import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
-import {convertOptions} from "@modules/input/components/input.utils";
+import {convertOptions, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} from "./lrsj-zuofa.types";
@@ -113,7 +113,23 @@ export const getShuruTable = (
     inlineTitle: true,
     columns: [
       {type: "string", field: "名字"},
-      {type: "string", field: "下单用途", getString: (value) => `${value.下单用途 || ""}<br><br>${value.可以修改 ? "可改" : "不可改"}`},
+      {
+        type: "string",
+        field: "下单用途",
+        getString: (value) => {
+          let str = `${value.下单用途 || ""}<br><br>`;
+          if (value.可以修改) {
+            if (value.下单显示请输入) {
+              str += "可改必须输入";
+            } else {
+              str += "可改";
+            }
+          } else {
+            str += "不可改";
+          }
+          return str;
+        }
+      },
       {type: "string", field: "默认值"},
       {type: "string", field: "取值范围"},
       {type: "string", field: "生效条件"},
@@ -136,11 +152,10 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
   if (!输入下单用途.includes(data.下单用途 as any)) {
     data.下单用途 = "输入";
   }
-  const form: InputInfo<typeof data>[] = [
-    {
-      type: "string",
-      label: "名字",
-      model: {data, key: "名字"},
+  const getter = new InputInfoWithDataGetter(data, {clearable: true});
+  const 下单显示请输入 = getter.boolean("下单显示请输入");
+  const form = [
+    getter.string("名字", {
       validators: [
         Validators.required,
         (control) => {
@@ -151,25 +166,24 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
           return null;
         }
       ]
-    },
-    {type: "select", label: "下单用途", model: {data, key: "下单用途"}, options: 输入下单用途.slice()},
-    {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}},
-    {
-      type: "string",
-      label: "默认值",
-      model: {data, key: "默认值"},
-      validators: Validators.required
-    },
-    {
-      type: "string",
-      label: "取值范围",
-      model: {data, key: "取值范围"},
-      validators: [Validators.required, CustomValidators.numberRangeStr]
-    },
-    {type: "string", label: "生效条件", model: {data, key: "生效条件"}},
-    {type: "number", label: "排序", model: {data, key: "排序"}}
+    }),
+    getter.selectSingle("下单用途", 输入下单用途.slice()),
+    getter.boolean("可以修改", {
+      label: "可以输入",
+      onChange: (val) => {
+        下单显示请输入.hidden = !val;
+        if (!val) {
+          delete data.下单显示请输入;
+        }
+      }
+    }),
+    下单显示请输入,
+    getter.string("默认值", {validators: Validators.required}),
+    getter.string("取值范围", {validators: [Validators.required, CustomValidators.numberRangeStr]}),
+    getter.string("生效条件"),
+    getter.number("排序")
   ];
-  return await message.form<typeof data, typeof data>(form, {
+  const result = await message.form(form, {
     autoFill: environment.production
       ? undefined
       : () => {
@@ -178,6 +192,7 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
           data.取值范围 = "1-10";
         }
   });
+  return result ? data : null;
 };
 
 export const getMenjiaoTable = (data: MenjiaoData[]): TableRenderInfo<MenjiaoData> => {
