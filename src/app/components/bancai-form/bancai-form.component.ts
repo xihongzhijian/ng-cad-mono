@@ -20,9 +20,21 @@ export class BancaiFormComponent {
 
   bancaiListIn = input.required<BancaiList[]>({alias: "bancaiList"});
   extraInputInfos = input<InputInfo[][]>();
+  key = input.required<string>();
   data = model<BancaiFormData>({bancai: "", cailiao: "", houdu: ""});
 
-  bancaiList = computed(() => this.bancaiListIn().filter((v) => !["同框色", "同扇色", "同背封板"].includes(v.mingzi)));
+  bancaiList = computed(() => {
+    const skipBancaiNames: string[] = ["同背封板"];
+    switch (this.key()) {
+      case "门框板材":
+        skipBancaiNames.push("同框色", "同扇色");
+        break;
+      case "门扇板材":
+        skipBancaiNames.push("同扇色");
+        break;
+    }
+    return this.bancaiListIn().filter((v) => !skipBancaiNames.includes(v.mingzi));
+  });
   checkedItem = computed(() => this.bancaiList().find((v) => v.mingzi === this.data().bancai));
   dataEff = effect(() => {
     const data = {...untracked(() => this.data())};

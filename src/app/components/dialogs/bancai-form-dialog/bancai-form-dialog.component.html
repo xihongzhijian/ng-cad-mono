@@ -1,7 +1,12 @@
 @if (!data.noTitle) {
   <div matDialogTitle>分组：【{{ data.key }}】</div>
 }
-<app-bancai-form [(data)]="data.data" [bancaiList]="data.bancaiList" [extraInputInfos]="data.extraInputInfos"></app-bancai-form>
+<app-bancai-form
+  [key]="data.key"
+  [(data)]="data.data"
+  [bancaiList]="data.bancaiList"
+  [extraInputInfos]="data.extraInputInfos"
+></app-bancai-form>
 <div matDialogActions>
   @if (!prod) {
     <button mat-raised-button color="primary" (click)="selectRandom()">rand</button>
