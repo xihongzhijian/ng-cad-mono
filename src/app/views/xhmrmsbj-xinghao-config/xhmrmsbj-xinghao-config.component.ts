@@ -344,22 +344,6 @@ export class XhmrmsbjXinghaoConfigComponent {
   ]);
   qiliaoDataSets = computed(() => [
     this.getSuanliaoConfigDataSet(
-      "企料刨坑位置",
-      (xinghaoConfig) => xinghaoConfig.企料结构配置.企料刨坑位置 || [],
-      (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料刨坑位置 = items),
-      qiliaoPkwzNames.slice(),
-      sbjbItemOptionalKeys2.slice(),
-      null
-    ),
-    this.getSuanliaoConfigDataSet(
-      "企料分体位置显示",
-      (xinghaoConfig) => xinghaoConfig.企料结构配置.企料分体位置显示 || [],
-      (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料分体位置显示 = items),
-      qiliaoFtwzxsNames.slice(),
-      sbjbItemOptionalKeys2.slice(),
-      null
-    ),
-    this.getSuanliaoConfigDataSet(
       "企料前后封口",
       (xinghaoConfig) => xinghaoConfig.企料结构配置.企料前后封口 || [],
       (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料前后封口 = items),
@@ -372,6 +356,22 @@ export class XhmrmsbjXinghaoConfigComponent {
       (xinghaoConfig) => xinghaoConfig.企料结构配置.虚拟企料分类 || [],
       (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.虚拟企料分类 = items),
       qiliaoXnqlflNames.slice(),
+      sbjbItemOptionalKeys2.slice(),
+      null
+    ),
+    this.getSuanliaoConfigDataSet(
+      "企料刨坑位置",
+      (xinghaoConfig) => xinghaoConfig.企料结构配置.企料刨坑位置 || [],
+      (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料刨坑位置 = items),
+      qiliaoPkwzNames.slice(),
+      sbjbItemOptionalKeys2.slice(),
+      null
+    ),
+    this.getSuanliaoConfigDataSet(
+      "企料分体位置显示",
+      (xinghaoConfig) => xinghaoConfig.企料结构配置.企料分体位置显示 || [],
+      (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料分体位置显示 = items),
+      qiliaoFtwzxsNames.slice(),
       sbjbItemOptionalKeys2.slice(),
       null
     )
