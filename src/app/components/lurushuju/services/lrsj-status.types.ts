@@ -1,5 +1,6 @@
+import {TableDataBase2} from "@app/utils/table-data/table-data-base";
 import {ObjectOf} from "@lucilor/utils";
-import {OptionsDataData, TableDataBase2} from "@modules/http/services/cad-data.service.types";
+import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {ZuoshujuTableData} from "@views/msbj/msbj.types";
 import {MenjiaoCadType} from "../xinghao-data";
 

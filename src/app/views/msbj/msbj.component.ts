@@ -16,6 +16,7 @@ import {ValidatorFn, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {GenerateRectsOpts, MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
@@ -23,7 +24,7 @@ import {MsbjRectInfo, MsbjRectInfoRaw} from "@components/msbj-rects/msbj-rects.t
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {TableDataBase, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
+import {TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";

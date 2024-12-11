@@ -1,9 +1,9 @@
 import {Formulas} from "@app/utils/calc";
 import {ErrorDetail, ErrorDetailText, ErrorItem} from "@app/utils/error-message";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {Step1Data, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {MsbjPeizhishuju} from "@components/msbj-rects/msbj-rects.types";
 import {ObjectOf} from "@lucilor/utils";
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MsbjData} from "@views/msbj/msbj.types";
 import {xhmrmsbjXinghaoConfigComponentTypes} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";

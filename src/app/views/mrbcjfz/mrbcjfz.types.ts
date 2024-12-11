@@ -1,7 +1,8 @@
 import {XiaodaohangStructure} from "@app/app.common";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
-import {BancaiList, BancaiListData, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {BancaiList, BancaiListData} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MrbcjfzXinghaoInfo} from "./mrbcjfz.utils";
 

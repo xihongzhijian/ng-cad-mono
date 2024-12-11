@@ -1,4 +1,4 @@
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 
 export interface MenfengpeizhiItem extends TableDataBase {
   menjiao: string;

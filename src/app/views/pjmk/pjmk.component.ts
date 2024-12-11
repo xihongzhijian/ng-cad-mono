@@ -3,11 +3,11 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {openZixuanpeijianDialog} from "@components/dialogs/zixuanpeijian/zixuanpeijian.component";
 import {ZixuanpeijianOutput} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {exportZixuanpeijian, importZixuanpeijian} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 
 @Component({

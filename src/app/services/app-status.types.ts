@@ -1,10 +1,10 @@
 import {ValidationErrors} from "@angular/forms";
 import {CadCollection} from "@app/cad/collections";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {SuanliaoDataParams, 算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 
 export interface Loader {
   id: string;

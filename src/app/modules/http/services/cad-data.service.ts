@@ -3,6 +3,7 @@ import {ActivatedRoute} from "@angular/router";
 import {imgCadEmpty, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {exportCadData} from "@app/cad/utils";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
 import {dataURLtoBlob, downloadByUrl, DownloadOptions, isTypeOf, ObjectOf} from "@lucilor/utils";
 import {
@@ -28,7 +29,6 @@ import {
   QueryMysqlParams,
   SetCadParams,
   TableCopyParams,
-  TableDataBase,
   TableDeleteFile,
   TableDeleteParams,
   TableInsertParams,

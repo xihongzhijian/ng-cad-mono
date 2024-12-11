@@ -1,6 +1,7 @@
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
-import {OptionsData, OptionsDataData, TableDataBase} from "@modules/http/services/cad-data.service.types";
+import {OptionsData, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 
 export interface CadOptionsInput {
   data?: CadData;

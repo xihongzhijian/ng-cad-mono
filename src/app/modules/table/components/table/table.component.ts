@@ -36,6 +36,7 @@ import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatTable, MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
 import {getFilepathUrl, getValueString, joinOptions, splitOptions} from "@app/app.common";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
@@ -43,7 +44,6 @@ import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types
 import {CadData} from "@lucilor/cad-viewer";
 import {downloadByString, isTypeOf, queryString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";

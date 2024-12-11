@@ -1,7 +1,8 @@
 import {exportCadData} from "@app/cad/utils";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
-import {HoutaiCad, TableDataBase, TableUpdateParams} from "./cad-data.service.types";
+import {HoutaiCad, TableUpdateParams} from "./cad-data.service.types";
 
 export const getHoutaiCad = (data = new CadData(), info?: {houtaiId?: string}) => {
   const cad: HoutaiCad = {

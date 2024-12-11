@@ -1,7 +1,7 @@
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {NavsResultItem} from "@components/dialogs/navs-dialog/navs-dialog.types";
 import {ObjectOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {cloneDeep} from "lodash";
 

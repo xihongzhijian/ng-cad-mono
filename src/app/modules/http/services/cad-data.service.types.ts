@@ -1,4 +1,5 @@
 import {CadCollection} from "@app/cad/collections";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 
@@ -145,15 +146,6 @@ export interface TableDeleteFile<T extends TableDataBase = TableDataBase> {
   table: string;
   vid: number;
   field: keyof T;
-}
-
-export interface TableDataBase {
-  vid: number;
-  mingzi: string;
-}
-export interface TableDataBase2 extends TableDataBase {
-  paixu: number;
-  tingyong: boolean;
 }
 
 export interface MongodbDataBase {

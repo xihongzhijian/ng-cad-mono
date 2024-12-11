@@ -1,5 +1,5 @@
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {ObjectOf} from "@lucilor/utils";
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 
 export class Jiaowei {
   data: JiaoweiData = {};

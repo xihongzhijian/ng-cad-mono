@@ -1,7 +1,7 @@
 import {Formulas} from "@app/utils/calc";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {MsbjPeizhishuju, MsbjRectInfoRaw} from "@components/msbj-rects/msbj-rects.types";
 import {ObjectOf} from "@lucilor/utils";
-import {TableDataBase} from "@modules/http/services/cad-data.service.types";
 
 export interface MsbjFenlei extends TableDataBase {
   selected?: boolean;

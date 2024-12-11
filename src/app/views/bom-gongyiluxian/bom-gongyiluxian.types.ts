@@ -1,4 +1,5 @@
-import {TableDataBase, TableRenderData} from "@modules/http/services/cad-data.service.types";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
+import {TableRenderData} from "@modules/http/services/cad-data.service.types";
 
 export interface DingdanBomData extends TableDataBase {
   dingdanbianhao: string;

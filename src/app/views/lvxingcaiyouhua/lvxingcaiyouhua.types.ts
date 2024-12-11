@@ -1,4 +1,4 @@
-import {TableDataBase2} from "@modules/http/services/cad-data.service.types";
+import {TableDataBase2} from "@app/utils/table-data/table-data-base";
 import {calc} from "./lvxingcaiyouhua.utils";
 
 export interface InputData {
