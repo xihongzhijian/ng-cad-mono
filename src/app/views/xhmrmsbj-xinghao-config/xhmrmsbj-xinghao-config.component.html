@@ -54,6 +54,7 @@
                 <div class="toolbar">
                   <button mat-raised-button color="primary" (click)="set.setCad(j)">选择CAD</button>
                   @if (info.item.cad.id) {
+                    <button mat-raised-button color="primary" (click)="set.editCad(j)">编辑CAD</button>
                     <button mat-raised-button color="primary" (click)="set.removeCad(j)">删除CAD</button>
                   }
                 </div>

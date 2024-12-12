@@ -16,6 +16,7 @@ describe("BancaiFormComponent", () => {
     fixture = TestBed.createComponent(BancaiFormComponent);
     component = fixture.componentInstance;
     const ref = fixture.componentRef;
+    ref.setInput("key", "");
     ref.setInput("bancaiList", []);
     fixture.detectChanges();
   });

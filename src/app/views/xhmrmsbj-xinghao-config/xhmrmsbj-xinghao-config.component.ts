@@ -6,6 +6,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
+import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {ShuruTableDataSorted, XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {
@@ -19,6 +20,7 @@ import {sbjbItemOptionalKeys2} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.typ
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
+import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -62,6 +64,7 @@ import {getSuanliaoConfigData, getSuanliaoConfigItemCadSearch} from "./xhmrmsbj-
 export class XhmrmsbjXinghaoConfigComponent {
   private bjmk = inject(BjmkStatusService);
   private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
   private message = inject(MessageService);
 
   @HostBinding("class") class = "ng-page";
@@ -271,6 +274,30 @@ export class XhmrmsbjXinghaoConfigComponent {
       this.refreshData();
     }
   }
+  async editSuanliaoConfigItemCad<T extends SuanliaoConfigItem>(
+    itemsGetter: SuanliaoConfigItemsGetter<T>,
+    itemsSetter: SuanliaoConfigItemsSetter<T>,
+    index: number
+  ) {
+    const xinghaoConfig = this.data()?.xinghaoConfig;
+    if (!xinghaoConfig) {
+      return;
+    }
+    const items = itemsGetter(xinghaoConfig).slice();
+    const item = items[index];
+    const id = item?.cad?.id;
+    if (!id) {
+      return;
+    }
+    const collection = this.bjmk.collection;
+    const cads = await this.http.getCad({collection, id});
+    const result = await openCadEditorDialog(this.dialog, {data: {collection, data: cads.cads[0], center: true}});
+    if (result?.savedData) {
+      item.cad = {id, 唯一码: result.savedData.info.唯一码};
+      itemsSetter(xinghaoConfig, items);
+      this.refreshData();
+    }
+  }
   async removeSuanliaoConfigItemCad<T extends SuanliaoConfigItem>(
     itemsGetter: SuanliaoConfigItemsGetter<T>,
     itemsSetter: SuanliaoConfigItemsSetter<T>,
@@ -329,6 +356,7 @@ export class XhmrmsbjXinghaoConfigComponent {
       remove: (index: number) => this.removeSuanliaoConfigItem(itemsGetter, itemsSetter, index),
       copy: (index: number) => this.copySuanliaoConfigItem(itemsGetter, itemsSetter, index),
       setCad: (index: number) => this.setSuanliaoConfigItemCad(itemsGetter, itemsSetter, index, title),
+      editCad: (index: number) => this.editSuanliaoConfigItemCad(itemsGetter, itemsSetter, index),
       removeCad: (index: number) => this.removeSuanliaoConfigItemCad(itemsGetter, itemsSetter, index)
     };
   }
