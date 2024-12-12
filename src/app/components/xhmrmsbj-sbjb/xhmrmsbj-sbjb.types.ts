@@ -1,7 +1,9 @@
 import {CadCollection} from "@app/cad/collections";
 import {SortedItem} from "@app/utils/sort-items";
+import {Qiliao} from "@app/utils/table-data/table-data.qiliao";
 import {CadItemForm} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
+import {InputInfo} from "@modules/input/components/input.types";
 
 export type XhmrmsbjSbjbResponseData = XhmrmsbjSbjbItem[];
 
@@ -78,8 +80,34 @@ export const isSbjbCad = (collection: CadCollection, cad: CadData): collection i
 export interface XhmrmsbjSbjbCadInfo extends Omit<XhmrmsbjSbjbItemSbjbCad, "cad"> {
   cad?: CadData;
   cadForm: CadItemForm<XhmrmsbjSbjbItemSbjbCadInfo>;
+  item2?: XhmrmsbjSbjbItemSbjbItem;
+  qiliao?: Qiliao | null;
 }
 
 export interface XhmrmsbjSbjbCadInfoGrouped extends XhmrmsbjSbjbCadInfo {
   originalIndex: number;
+}
+
+export interface SbjbItemSbjbItemForm {
+  title: string;
+  inputInfos: InputInfo[];
+  item: XhmrmsbjSbjbItemSbjb;
+  name: SbjbItemOptionalKey2;
+  item2?: XhmrmsbjSbjbItemSbjbItem;
+  item2New: XhmrmsbjSbjbItemSbjbItem;
+  qiliaoPrev?: Qiliao;
+  qiliaoCurr?: Qiliao;
+  fentiCad1?: CadData;
+  fentiCad2?: CadData;
+}
+
+export interface FentiCadTemplateData {
+  key: SbjbItemOptionalKey2;
+  id: string;
+  index: number;
+  title: "正面分体CAD" | "背面分体CAD";
+  formFentiCadInfo?: {cad?: CadData};
+}
+export interface XhmrmsbjSbjbItemSbjbFentiCadInfo {
+  data: FentiCadTemplateData;
 }

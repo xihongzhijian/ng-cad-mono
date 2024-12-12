@@ -1,4 +1,4 @@
-import {CadData} from "packages/cad-viewer/lib";
+import {CadData} from "@lucilor/cad-viewer";
 
 export interface CadKailiaoConfigInput {
   cad: CadData;

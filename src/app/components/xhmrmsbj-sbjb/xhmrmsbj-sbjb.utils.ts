@@ -11,7 +11,7 @@ import {
 import {environment} from "@env";
 import {keysOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
-import {getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
+import {getGroupStyle, getInputStyle, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {cloneDeep, intersection, sample, sampleSize} from "lodash";
@@ -267,33 +267,25 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, t
   if (typeof data.正背面同时改变 !== "boolean") {
     data.正背面同时改变 = true;
   }
-  const getPart = (key: keyof typeof data, isInGroup = false) => ({label: key, model: {data, key}, style: getInputStyle(isInGroup)});
+  const getter = new InputInfoWithDataGetter(data, {clearable: true});
   const form: InputInfo<typeof data>[] = [
     {
       type: "group",
       label: "",
       groupStyle: getGroupStyle(),
-      infos: [
-        {type: "string", ...getPart("正面宽", true)},
-        {type: "boolean", ...getPart("正面宽可改", true)}
-      ]
+      infos: [getter.string("正面宽", {style: getInputStyle(true)}), getter.boolean("正面宽可改", {style: getInputStyle(true)})]
     },
     {
       type: "group",
       label: "",
       groupStyle: getGroupStyle(),
-      infos: [
-        {type: "string", ...getPart("背面宽", true)},
-        {type: "boolean", ...getPart("背面宽可改", true)}
-      ]
+      infos: [getter.string("背面宽", {style: getInputStyle(true)}), getter.boolean("背面宽可改", {style: getInputStyle(true)})]
     },
-    {type: "boolean", ...getPart("正背面同时改变")},
-    {type: "boolean", ...getPart("使用正面分体")},
-    {type: "boolean", ...getPart("使用背面分体")}
+    getter.boolean("正背面同时改变"),
+    getter.boolean("使用正面分体"),
+    getter.boolean("使用背面分体")
   ];
-
-  const result = await message.form(form, {title});
-  return result ? data : null;
+  return {form, data};
 };
 
 export const getXhmrmsbjSbjbItemOptions = (items: XhmrmsbjSbjbItem[]) =>

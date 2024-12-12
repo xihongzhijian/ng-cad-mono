@@ -104,7 +104,7 @@
         align-items: flex-end;
       }
 
-      .mdc-button {
+      > .mdc-button {
         flex: 0 0 auto;
       }
     }
@@ -127,7 +127,7 @@
         align-items: flex-end;
       }
 
-      .mdc-button {
+      > .mdc-button {
         width: 100%;
       }
     }

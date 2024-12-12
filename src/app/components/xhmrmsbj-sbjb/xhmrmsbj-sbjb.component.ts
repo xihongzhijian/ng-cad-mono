@@ -1,3 +1,4 @@
+import {NgTemplateOutlet} from "@angular/common";
 import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -5,32 +6,41 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {getValueString} from "@app/app.common";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
+import {CadCollection} from "@app/cad/collections";
 import {getNamesStr} from "@app/utils/error-message";
+import {ItemsManager} from "@app/utils/items-manager";
 import {getSortedItems} from "@app/utils/sort-items";
+import {Qiliao, QiliaoTableData} from "@app/utils/table-data/table-data.qiliao";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton, CadItemFormExtraText} from "@components/lurushuju/cad-item/cad-item.types";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, selectFiles} from "@lucilor/utils";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ExcelSheet, HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
-import {cloneDeep} from "lodash";
+import {cloneDeep, difference, isEqual} from "lodash";
 import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
+  FentiCadTemplateData,
+  SbjbItemSbjbItemForm,
   XhmrmsbjSbjbCadInfo,
   XhmrmsbjSbjbCadInfoGrouped,
   XhmrmsbjSbjbItem,
   XhmrmsbjSbjbItemCopyMode,
   xhmrmsbjSbjbItemCopyModes,
   XhmrmsbjSbjbItemSbjbCadInfo,
+  XhmrmsbjSbjbItemSbjbFentiCadInfo,
   XhmrmsbjSbjbItemSbjbItem,
   XhmrmsbjSbjbItemSbjbSorted,
   XhmrmsbjSbjbResponseData
@@ -53,7 +63,17 @@ import {
 
 @Component({
   selector: "app-xhmrmsbj-sbjb",
-  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, TableComponent],
+  imports: [
+    CadItemComponent,
+    FloatingDialogModule,
+    InputComponent,
+    MatButtonModule,
+    MatDividerModule,
+    NgScrollbarModule,
+    NgTemplateOutlet,
+    TableComponent,
+    TypedTemplateDirective
+  ],
   templateUrl: "./xhmrmsbj-sbjb.component.html",
   styleUrl: "./xhmrmsbj-sbjb.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -68,7 +88,7 @@ export class XhmrmsbjSbjbComponent {
 
   xinghao = input.required<MrbcjfzXinghaoInfo | null>();
 
-  xinghaoName = computed(() => this.xinghao()?.raw.mingzi);
+  xinghaoName = computed(() => this.xinghao()?.name);
   items = signal<XhmrmsbjSbjbItem[]>([]);
   refreshItems() {
     this.items.update((v) => v.map((v2) => ({...v2, 锁边铰边数据: v2.锁边铰边数据.map((v3) => ({...v3}))})));
@@ -76,6 +96,7 @@ export class XhmrmsbjSbjbComponent {
   activeItemIndex = signal<number>(0);
   activeItem = computed(() => this.items().at(this.activeItemIndex()));
 
+  cadCollection: CadCollection = "peijianCad";
   cadYaoqius = computed(() => {
     const yaoqius: ObjectOf<Cad数据要求 | undefined> = {};
     const item = this.activeItem();
@@ -95,10 +116,11 @@ export class XhmrmsbjSbjbComponent {
     const infos: XhmrmsbjSbjbCadInfo[] = [];
     const item = this.activeSbjbItem();
     if (item) {
-      for (const item2 of item.CAD数据 || []) {
-        const info: XhmrmsbjSbjbCadInfo = {...item2, cadForm: {noDefaultTexts: !this.showCadFormDefaultTexts()}};
-        if (item2.cadId) {
-          const cad = this.cadMap.get(item2.cadId);
+      const qiliaos = this.qiliaosManager.items();
+      for (const cadItem of item.CAD数据 || []) {
+        const info: XhmrmsbjSbjbCadInfo = {...cadItem, cadForm: {noDefaultTexts: !this.showCadFormDefaultTexts()}};
+        if (cadItem.cadId) {
+          const cad = this.cadMap.get(cadItem.cadId);
           if (cad) {
             info.cad = cad;
           }
@@ -115,11 +137,14 @@ export class XhmrmsbjSbjbComponent {
             "使用正面分体",
             "使用背面分体"
           ];
+          const item2 = item[title];
           for (const key of keys) {
-            extraTexts.push({key, value: getValueString(item[title]?.[key])});
+            extraTexts.push({key, value: getValueString(item2?.[key])});
           }
           info.cadForm.extraTexts = extraTexts;
           info.cadForm.onEdit = ({customInfo}) => this.editSbjbItemSbjbItem(customInfo.index);
+          info.item2 = item2;
+          info.qiliao = qiliaos.find((v) => v.name === item2?.名字);
         }
         infos.push(info);
       }
@@ -156,12 +181,21 @@ export class XhmrmsbjSbjbComponent {
     if (!name || !isSbjbItemOptionalKeys2(name)) {
       return;
     }
-    const title = `${info.title}：${item[name]?.名字 || ""}`;
-    const result = await getXhmrmsbjSbjbItemSbjbItemForm(this.message, title, item[name]);
-    if (result) {
-      item[name] = result;
-      this.refreshItems();
+    const item2 = item[name];
+    const title = `${info.title}：${item2?.名字 || ""}`;
+    const {form: inputInfos, data: item2New} = await getXhmrmsbjSbjbItemSbjbItemForm(this.message, title, item2);
+    const qiliaoPrev = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
+    const qiliaoCurr = cloneDeep(qiliaoPrev);
+    const form: SbjbItemSbjbItemForm = {title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr};
+    if (qiliaoCurr) {
+      if (qiliaoCurr.fenti1?.id) {
+        form.fentiCad1 = this.qiliaoCadMap.get(qiliaoCurr.fenti1.id);
+      }
+      if (qiliaoCurr.fenti2?.id) {
+        form.fentiCad2 = this.qiliaoCadMap.get(qiliaoCurr.fenti2.id);
+      }
     }
+    this.sbjbItemSbjbItemForm.set(form);
   }
   async selectSbjbItemSbjbCad(index: number) {
     const item = this.activeSbjbItem();
@@ -177,7 +211,7 @@ export class XhmrmsbjSbjbComponent {
     const cadNamesMap = new Map<string, {nameBefore: string; data: HoutaiCad}>();
     const result = await openCadListDialog(this.dialog, {
       data: {
-        collection: "peijianCad",
+        collection: this.cadCollection,
         selectMode: "single",
         yaoqiu,
         options: {开启: item.开启},
@@ -290,6 +324,142 @@ export class XhmrmsbjSbjbComponent {
     }
   }
 
+  sbjbItemSbjbItemForm = signal<SbjbItemSbjbItemForm | null>(null);
+  async closeSbjbItemSbjbItemForm(submit: boolean) {
+    const form = this.sbjbItemSbjbItemForm();
+    if (!form) {
+      return;
+    }
+    if (submit) {
+      const {item, name, item2New, qiliaoPrev, qiliaoCurr, fentiCad1, fentiCad2} = form;
+      item[name] = item2New;
+      if (qiliaoCurr && !isEqual(qiliaoPrev?.raw, qiliaoCurr.raw)) {
+        await this.updateQiliao(qiliaoCurr);
+      }
+      for (const cad of [fentiCad1, fentiCad2]) {
+        if (cad) {
+          this.qiliaoCadMap.set(cad.id, cad);
+        }
+      }
+      this.refreshItems();
+    }
+    this.sbjbItemSbjbItemForm.set(null);
+  }
+
+  qiliaosManager = new ItemsManager<Qiliao>(
+    () => [],
+    (a, b) => a.id === b.id
+  );
+  qiliaoCadMap = new Map<string, CadData>();
+  qiliaoCadMapEff = effect(async () => {
+    const qiliaos = this.qiliaosManager.items();
+    const cadIdsNew: string[] = [];
+    for (const qiliao of qiliaos) {
+      const ids = [qiliao.fenti1?.id, qiliao.fenti2?.id];
+      for (const id of ids) {
+        if (!id || cadIdsNew.includes(id)) {
+          continue;
+        }
+        cadIdsNew.push(id);
+      }
+    }
+    const cadIdsOld = Array.from(this.qiliaoCadMap.keys());
+    for (const id of difference(cadIdsOld, cadIdsNew)) {
+      this.qiliaoCadMap.delete(id);
+    }
+    const cadIdsToFetch = difference(cadIdsNew, cadIdsOld);
+    if (cadIdsToFetch.length > 0) {
+      const cadsNew = await this.http.getCad({collection: this.cadCollection, ids: cadIdsToFetch});
+      for (const cad of cadsNew.cads) {
+        this.qiliaoCadMap.set(cad.id, cad);
+      }
+    }
+  });
+  qiliaosChanged: Qiliao[] = [];
+  async updateQiliao(qiliao: Qiliao) {
+    this.qiliaosManager.refresh({update: [qiliao]});
+    if (!this.qiliaosChanged.some((v) => this.qiliaosManager.compareFn(v, qiliao))) {
+      this.qiliaosChanged.push(qiliao);
+    }
+  }
+
+  fentiCadTemplateData!: {$implicit: FentiCadTemplateData};
+  fentiCadButtons2 = computed(() => {
+    const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbFentiCadInfo>[] = [
+      {name: "选择", onClick: ({customInfo}) => this.chooseFentiCad(customInfo.data)},
+      {name: "删除", onClick: ({customInfo}) => this.removeFentiCad(customInfo.data)}
+    ];
+    return buttons;
+  });
+  fentiCadYaoqiu = computed(() => this.status.getCadYaoqiu("企料分体"));
+  async chooseFentiCad(data: FentiCadTemplateData) {
+    const item = this.activeSbjbItem();
+    const item2 = item?.[data.key];
+    const {title} = data;
+    const key = title === "正面分体CAD" ? "fenti1" : "fenti2";
+    let qiliao: Qiliao | undefined | null;
+    const form = this.sbjbItemSbjbItemForm();
+    const formFentiCadInfo = data.formFentiCadInfo;
+    const formFentiCad = formFentiCadInfo?.cad;
+    const checkedItems: string[] = [];
+    if (formFentiCad) {
+      qiliao = form?.qiliaoCurr;
+      checkedItems.push(formFentiCad.id);
+    } else {
+      qiliao = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
+      if (qiliao?.[key]?.id) {
+        checkedItems.push(qiliao[key].id);
+      }
+    }
+    const result = await openCadListDialog(this.dialog, {
+      data: {
+        selectMode: "single",
+        collection: this.cadCollection,
+        yaoqiu: this.fentiCadYaoqiu(),
+        checkedItems
+      }
+    });
+    const cad = result?.[0];
+    if (cad) {
+      const form = this.sbjbItemSbjbItemForm();
+      if (form) {
+        const formFentiKey = title === "正面分体CAD" ? "fentiCad1" : "fentiCad2";
+        form[formFentiKey] = cad;
+        if (form.qiliaoCurr) {
+          form.qiliaoCurr[key] = {id: cad.id, 唯一码: cad.info.唯一码};
+        }
+        this.sbjbItemSbjbItemForm.set({...form});
+      } else {
+        if (qiliao) {
+          qiliao[key] = {id: cad.id, 唯一码: cad.info.唯一码};
+          this.qiliaoCadMap.set(cad.id, cad);
+          this.updateQiliao(qiliao);
+        }
+      }
+    }
+  }
+  removeFentiCad(data: FentiCadTemplateData) {
+    const item = this.activeSbjbItem();
+    const item2 = item?.[data.key];
+    const {title} = data;
+    const key = title === "正面分体CAD" ? "fenti1" : "fenti2";
+    const qiliao = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
+    const form = this.sbjbItemSbjbItemForm();
+    if (form) {
+      const formFentiKey = title === "正面分体CAD" ? "fentiCad1" : "fentiCad2";
+      delete form[formFentiKey];
+      if (form.qiliaoCurr) {
+        form.qiliaoCurr[key] = null;
+      }
+      this.sbjbItemSbjbItemForm.set({...form});
+    } else {
+      if (qiliao) {
+        qiliao[key] = null;
+        this.updateQiliao(qiliao);
+      }
+    }
+  }
+
   options = signal<OptionsAll2>({});
 
   fetchDataEff = effect(() => this.fetchData());
@@ -298,10 +468,12 @@ export class XhmrmsbjSbjbComponent {
     if (!xinghao) {
       return;
     }
-    const data = await this.http.getData<{锁边铰边: XhmrmsbjSbjbItem[]; CAD数据map: ObjectOf<HoutaiCad>; 选项: OptionsAll2}>(
-      "shuju/api/getsuobianjiaobianData",
-      {xinghao, peizhi}
-    );
+    const data = await this.http.getData<{
+      锁边铰边: XhmrmsbjSbjbItem[];
+      CAD数据map: ObjectOf<HoutaiCad>;
+      选项: OptionsAll2;
+      qiliaos: QiliaoTableData[];
+    }>("shuju/api/getsuobianjiaobianData", {xinghao, peizhi});
     if (data) {
       for (const item of data.锁边铰边) {
         for (const item2 of item.锁边铰边数据) {
@@ -311,6 +483,10 @@ export class XhmrmsbjSbjbComponent {
         }
       }
       this.items.set(data.锁边铰边);
+      this.qiliaosManager.refresh({
+        remove: this.qiliaosManager.items(),
+        add: data.qiliaos.map((v) => new Qiliao(v))
+      });
       this.cadMap.clear();
       for (const key in data.CAD数据map) {
         this.cadMap.set(key, new CadData(data.CAD数据map[key].json));
@@ -619,7 +795,11 @@ export class XhmrmsbjSbjbComponent {
     }
     const items0 = this.items();
     const items = items0.map((item) => ({...item, 锁边铰边数据: item.锁边铰边数据.map((v) => ({...v, CAD数据: undefined}))}));
-    await this.http.getData("shuju/api/saveSuobianjiaobianData", {xinghao: this.xinghaoName(), data: items});
+    const qiliaosChanged = this.qiliaosChanged.map((v) => v.raw);
+    const response = await this.http.post("shuju/api/saveSuobianjiaobianData", {xinghao: this.xinghaoName(), data: items, qiliaosChanged});
+    if (response?.code === 0) {
+      this.qiliaosChanged = [];
+    }
     return true;
   }
 }
