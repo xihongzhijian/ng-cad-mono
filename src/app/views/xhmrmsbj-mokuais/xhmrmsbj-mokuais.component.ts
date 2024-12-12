@@ -208,7 +208,7 @@ export const getFormulaInfos = (
     }
     const valueLast = values.at(-1);
     if (valueLast && input) {
-      const shuru = input.shurus.find((v) => v.名字 === key && v.下单用途 === "输入");
+      const shuru = input.shurus.find((v) => v.名字 === key);
       if (shuru) {
         const range = shuru.取值范围.split("-").map((v) => parseFloat(v)) || [];
         const getNum = (n: any, defaultVal: number) => {

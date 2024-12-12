@@ -3,7 +3,7 @@ import {getArrayString} from "@app/app.common";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
-import {输入, 输入下单用途, 选项} from "@components/lurushuju/xinghao-data";
+import {输入, 选项} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
@@ -115,12 +115,13 @@ export const getShuruTable = (
       {type: "string", field: "名字"},
       {
         type: "string",
-        field: "下单用途",
+        field: "可以修改",
+        name: "下单要求",
         getString: (value) => {
-          let str = `${value.下单用途 || ""}<br><br>`;
+          let str = "";
           if (value.可以修改) {
             if (value.下单显示请输入) {
-              str += "可改必须输入";
+              str += "可改<br>必须输入";
             } else {
               str += "可改";
             }
@@ -149,9 +150,6 @@ export const getShuruTable = (
 };
 export const getShuruItem = async (message: MessageService, list: 输入[], data0?: 输入) => {
   const data: 输入 = {名字: "", 默认值: "", 取值范围: "", 可以修改: true, ...data0};
-  if (!输入下单用途.includes(data.下单用途 as any)) {
-    data.下单用途 = "输入";
-  }
   const getter = new InputInfoWithDataGetter(data, {clearable: true});
   const 下单显示请输入 = getter.boolean("下单显示请输入");
   const form = [
@@ -167,7 +165,6 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
         }
       ]
     }),
-    getter.selectSingle("下单用途", 输入下单用途.slice()),
     getter.boolean("可以修改", {
       label: "可以输入",
       onChange: (val) => {

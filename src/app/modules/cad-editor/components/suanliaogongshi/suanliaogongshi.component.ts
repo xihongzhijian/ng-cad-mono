@@ -36,7 +36,7 @@ import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/tabl
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
-import {算料公式, 输入, 输入下单用途} from "../../../../components/lurushuju/xinghao-data";
+import {算料公式, 输入} from "../../../../components/lurushuju/xinghao-data";
 import {openSuanliaogongshiDialog} from "../dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
 import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.types";
 
@@ -86,7 +86,7 @@ export class SuanliaogongshiComponent {
       inlineTitle: true,
       columns: [
         {type: "string", field: "名字"},
-        {type: "string", field: "下单用途", getString: (value) => `${value.下单用途 || ""}<br><br>${value.可以修改 ? "可改" : "不可改"}`},
+        {type: "string", field: "可以修改", name: "下单要求", getString: (value) => `${value.可以修改 ? "可改" : "不可改"}`},
         {type: "string", field: "默认值"},
         {type: "string", field: "取值范围"},
         {type: "string", field: "生效条件"},
@@ -292,9 +292,6 @@ export class SuanliaogongshiComponent {
 
   async getShuruItem(data0?: 输入) {
     const data: 输入 = {名字: "", 默认值: "", 取值范围: "", 可以修改: true, ...data0};
-    if (!输入下单用途.includes(data.下单用途 as any)) {
-      data.下单用途 = "输入";
-    }
     const form: InputInfo<typeof data>[] = [
       {
         type: "string",
@@ -311,7 +308,6 @@ export class SuanliaogongshiComponent {
           }
         ]
       },
-      {type: "select", label: "下单用途", model: {data, key: "下单用途"}, options: 输入下单用途.slice()},
       {type: "boolean", label: "可以修改", model: {data, key: "可以修改"}},
       {
         type: "string",

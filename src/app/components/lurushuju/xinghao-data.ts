@@ -179,12 +179,9 @@ export interface 输入 {
   可以修改: boolean;
   取值范围: string;
   排序?: number;
-  下单用途?: 输入下单用途;
   生效条件?: string;
   下单显示请输入?: boolean;
 }
-export const 输入下单用途 = ["输入", "显示计算结果"] as const;
-export type 输入下单用途 = (typeof 输入下单用途)[number];
 
 export type 花件玻璃信息 = ObjectOf<any>;
 
