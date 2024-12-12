@@ -223,7 +223,7 @@ export const getMokuaiTitleWithUrl = (
   const mokuaiUrl = status.getUrl(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: item.id}});
   const opts2: Parameters<typeof getMokuaiTitleBase>[1] = {...opts, mokuaiUrl};
   if (opts?.xhmrmsbj) {
-    const xhmrmsbjUrl = status.getUrl(["/型号默认门扇布局"], {queryParams: {id: opts.xhmrmsbj.vid}});
+    const xhmrmsbjUrl = status.getUrl(["/型号默认门扇布局"], {queryParams: {id: opts.xhmrmsbj.id}});
     opts2.xhmrmsbjUrl = xhmrmsbjUrl;
   }
   return getMokuaiTitleBase(item, opts2);

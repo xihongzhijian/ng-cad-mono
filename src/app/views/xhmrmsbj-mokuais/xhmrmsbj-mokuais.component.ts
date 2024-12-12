@@ -133,7 +133,7 @@ export class XhmrmsbjMokuaisComponent {
 
   openXhmrmsbj() {
     const xhmrmsbj = this.data.xhmrmsbj;
-    this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: xhmrmsbj.vid}});
+    this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: xhmrmsbj.id}});
   }
 }
 

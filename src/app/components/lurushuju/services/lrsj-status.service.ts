@@ -1,6 +1,7 @@
 import {computed, effect, inject, Injectable, OnDestroy, signal, untracked} from "@angular/core";
 import {getFilepathUrl, session, splitOptions} from "@app/app.common";
 import {FetchManager} from "@app/utils/fetch-manager";
+import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {VarNames} from "@components/var-names/var-names.types";
 import {getVarNames} from "@components/var-names/var-names.utils";
 import {environment} from "@env";
@@ -11,7 +12,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
 import {filterHuajian} from "@views/mrbcjfz/mrbcjfz.utils";
-import {getIsVersion2024} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEqual} from "lodash";
 import {lastValueFrom, Subject, take, takeUntil} from "rxjs";
 import {LrsjPieceInfos} from "../lrsj-pieces/lrsj-pieces.types";

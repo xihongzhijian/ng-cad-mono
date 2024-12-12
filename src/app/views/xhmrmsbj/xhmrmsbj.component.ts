@@ -442,7 +442,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.data();
     const info = this.activeMsbjInfo();
     const vid = info?.选中布局数据?.vid;
-    return cloneDeep(this.msbjs().find((item) => item.vid === vid) || null);
+    return cloneDeep(this.msbjs().find((item) => item.id === vid) || null);
   });
   activeRectInfo = signal<MsbjRectInfo | null>(null);
   activeMsbjEff = effect(async () => {
@@ -567,11 +567,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     });
     if (result && infos[menshanweizhi]) {
       const targetMsbj = result.options[0];
-      const msbj = targetMsbj ? this.msbjs().find((v) => v.vid === targetMsbj.vid) : null;
+      const msbj = targetMsbj ? this.msbjs().find((v) => v.id === targetMsbj.vid) : null;
       if (msbj) {
-        infos[menshanweizhi].选中布局 = msbj.vid;
+        infos[menshanweizhi].选中布局 = msbj.id;
         infos[menshanweizhi].选中布局数据 = {
-          vid: msbj.vid,
+          vid: msbj.id,
           name: msbj.name,
           模块大小关系: msbj.peizhishuju.模块大小关系,
           模块大小配置: msbj.peizhishuju.模块大小配置
@@ -1456,7 +1456,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   getMsbj(id: number) {
-    return this.msbjs().find((v) => v.vid === id);
+    return this.msbjs().find((v) => v.id === id);
   }
 
   canEditMokuaidaxiao = computed(() => !this.isFromOrder() || !this.activeMsbj()?.isVersion2024);
@@ -1758,7 +1758,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (this.isFromOrder()) {
       this.status.openInNewTab(["/门扇布局"], {queryParams: {id}});
     } else {
-      const msbj = this.msbjs().find((v) => v.vid === id);
+      const msbj = this.msbjs().find((v) => v.id === id);
       if (msbj) {
         this.openedMsbj.set(msbj);
       }
@@ -1970,7 +1970,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!data || !this.canOpenXhmrmsbj()) {
       return;
     }
-    this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: data.vid}});
+    this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: data.id}});
   }
 
   menshanbujuItems = computed(() => {

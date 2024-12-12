@@ -1,43 +1,20 @@
+import {ZuoshujuData} from "@app/utils/table-data/zuoshuju-data";
 import mokuaidaixiaoData from "@assets/json/mokuaidaxiao.json";
 import {MsbjPeizhishuju, MsbjRectInfoRaw, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
-import {MsbjData, Node2rectData, ZuoshujuTableData} from "./msbj.types";
+import {MsbjData, Node2rectData} from "./msbj.types";
 
-export const getIsVersion2024 = (version: any) => version === "模块版本2024";
-
-export class ZuoshujuData {
-  vid: number;
-  name: string;
-  zuoshujubanben?: string;
-
-  get isVersion2024() {
-    return getIsVersion2024(this.zuoshujubanben);
-  }
-
-  constructor(public raw: ZuoshujuTableData) {
-    this.vid = raw.vid;
-    this.name = raw.mingzi;
-    this.zuoshujubanben = raw.zuoshujubanben;
-  }
-}
-
-export class MsbjInfo extends ZuoshujuData {
+export class MsbjInfo extends ZuoshujuData<MsbjData> {
   xiaoguotu?: string;
   peizhishuju: MsbjPeizhishuju;
 
   constructor(
-    public rawData: MsbjData,
+    public raw: MsbjData,
     node2rectData?: Node2rectData
   ) {
-    super(rawData);
-    this.xiaoguotu = rawData.xiaoguotu;
+    super(raw);
+    this.xiaoguotu = raw.xiaoguotu;
 
-    let peizhishuju: MsbjPeizhishuju | null = null;
-    try {
-      peizhishuju = JSON.parse(rawData.peizhishuju as any);
-    } catch {}
-    if (!peizhishuju) {
-      peizhishuju = {模块节点: []};
-    }
+    const peizhishuju = this.parseField<MsbjPeizhishuju>("peizhishuju", {模块节点: []});
     this.peizhishuju = peizhishuju;
     this.updateRectsInfo(node2rectData);
     if (!peizhishuju.模块大小关系) {
@@ -56,7 +33,7 @@ export class MsbjInfo extends ZuoshujuData {
     }
     let rectInfos1: MsbjRectInfoRaw[] | null = null;
     try {
-      rectInfos1 = window.node2rect(JSON.parse(this.rawData.node || ""), data);
+      rectInfos1 = window.node2rect(JSON.parse(this.raw.node || ""), data);
     } catch {}
     if (rectInfos1) {
       for (const info of rectInfos1) {

@@ -1,7 +1,7 @@
 import {TableDataBase2} from "@app/utils/table-data/table-data-base";
+import {ZuoshujuTableData} from "@app/utils/table-data/zuoshuju-data";
 import {ObjectOf} from "@lucilor/utils";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
-import {ZuoshujuTableData} from "@views/msbj/msbj.types";
 import {MenjiaoCadType} from "../xinghao-data";
 
 export type OptionsAll = ObjectOf<OptionsDataData[]>;

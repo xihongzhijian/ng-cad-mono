@@ -28,6 +28,7 @@ import {
   splitShuangxiangCad
 } from "@app/cad/utils";
 import {Formulas} from "@app/utils/calc";
+import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {CalcZxpjResult, ZixuanpeijianCadItem, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {calcZxpj, getMokuaiTitle, getStep1Data, getZixuanpeijianCads} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
@@ -42,7 +43,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
-import {getIsVersion2024, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
+import {nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEmpty} from "lodash";
 import {DateTime} from "luxon";
 import {FormulasComponent} from "../../components/formulas/formulas.component";

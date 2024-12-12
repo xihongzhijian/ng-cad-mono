@@ -4,6 +4,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getCopyName, joinOptions, splitOptions} from "@app/app.common";
+import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {environment} from "@env";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -13,7 +14,6 @@ import {InputInfo, InputInfoGroup, InputInfoPart, InputInfoSelect} from "@module
 import {getGroupStyle, getInputStyle, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {getIsVersion2024} from "@views/msbj/msbj.utils";
 import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";

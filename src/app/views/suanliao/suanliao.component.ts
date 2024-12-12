@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit} from "@an
 import {MatDialog} from "@angular/material/dialog";
 import {setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {CadEditorInput, openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
 import {openDrawCadDialog} from "@components/dialogs/draw-cad/draw-cad.component";
 import {
@@ -27,7 +28,7 @@ import {MessageData} from "@modules/message/components/message/message.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
-import {getIsVersion2024, MsbjInfo} from "@views/msbj/msbj.utils";
+import {MsbjInfo} from "@views/msbj/msbj.utils";
 import {XhmrmsbjDataMsbjInfos, XhmrmsbjTableData} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {getMokuaiFormulas, getMokuaiShuchuVars, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {

@@ -118,7 +118,7 @@ export class RefreshCadImgsComponent implements OnInit {
   });
 
   async init() {
-    const collections: CadCollection[] = ["cad", "CADmuban", "kailiaocadmuban"];
+    const collections: CadCollection[] = ["cad", "peijianCad", "CADmuban", "kailiaocadmuban"];
     const structs = await this.http.getXiaodaohangStructures(collections);
     this.collectionOptions.set(collections.map((v) => ({value: v, label: structs?.[v]?.mingzi || v})));
   }

@@ -1,10 +1,10 @@
 import {Formulas} from "@app/utils/calc";
-import {tryParseJson} from "@app/utils/json-helper";
 import {matchMongoData} from "@app/utils/mongo";
+import {ZuoshujuData} from "@app/utils/table-data/zuoshuju-data";
 import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {getNodeVars, isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {isTypeOf, keysOf} from "@lucilor/utils";
-import {MsbjInfo, ZuoshujuData} from "@views/msbj/msbj.utils";
+import {MsbjInfo} from "@views/msbj/msbj.utils";
 import {XhmrmsbjXinghaoConfig} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
 import {difference, intersection, isEmpty, mapValues} from "lodash";
 import {
@@ -19,7 +19,7 @@ import {
   XhmrmsbjTableData
 } from "./xhmrmsbj.types";
 
-export class XhmrmsbjData extends ZuoshujuData {
+export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
   menshanbujuInfos: XhmrmsbjDataMsbjInfos;
   xinghaoConfig: XhmrmsbjXinghaoConfig;
   算料单模板?: string;
@@ -32,9 +32,9 @@ export class XhmrmsbjData extends ZuoshujuData {
   ) {
     super(raw);
     this.算料单模板 = raw.suanliaodanmuban;
-    const info = tryParseJson<XhmrmsbjDataMsbjInfos>(raw.peizhishuju || "", {});
+    const info = this.parseField<XhmrmsbjDataMsbjInfos>("peizhishuju", {});
     this.menshanbujuInfos = {};
-    const xinghaoConfig = tryParseJson<Partial<XhmrmsbjXinghaoConfig>>(raw.xinghaopeizhi || "", {});
+    const xinghaoConfig = this.parseField<Partial<XhmrmsbjXinghaoConfig>>("xinghaopeizhi", {});
     this.xinghaoConfig = {
       输入: [],
       选项: [],
@@ -47,10 +47,10 @@ export class XhmrmsbjData extends ZuoshujuData {
       const item = info[key] || {};
       this.menshanbujuInfos[key] = item;
       if (!item.选中布局数据) {
-        const msbj = msbjs.find((v) => v.vid === item.选中布局);
+        const msbj = msbjs.find((v) => v.id === item.选中布局);
         if (msbj) {
           item.选中布局数据 = {
-            vid: msbj.vid,
+            vid: msbj.id,
             name: msbj.name,
             模块大小关系: msbj.peizhishuju.模块大小关系,
             模块大小配置: msbj.peizhishuju.模块大小配置
@@ -131,11 +131,11 @@ export class XhmrmsbjData extends ZuoshujuData {
     }
 
     const data: XhmrmsbjTableData = {
-      vid: this.vid,
+      vid: this.id,
       mingzi: this.name,
       suanliaodanmuban: this.算料单模板,
-      peizhishuju: JSON.stringify(this.menshanbujuInfos),
-      xinghaopeizhi: JSON.stringify(this.xinghaoConfig)
+      peizhishuju: this.stringifyField("menshanbujuInfos"),
+      xinghaopeizhi: this.stringifyField("xinghaoConfig")
     };
     const {raw} = this;
     for (const key of menshanFollowersKeys) {

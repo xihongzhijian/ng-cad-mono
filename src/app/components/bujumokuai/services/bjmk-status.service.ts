@@ -207,7 +207,7 @@ export class BjmkStatusService {
       const msbjs = result.map((v) => new MsbjInfo(v));
       return msbjs;
     },
-    (item1, item2) => item1.vid === item2.vid
+    (item1, item2) => item1.id === item2.id
   );
 
   xinghaoOptionsManager = new FetchManager({}, async () => (await this.http.getData<OptionsAll>("shuju/api/getXinghaoOptions")) || {});

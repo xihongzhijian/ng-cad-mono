@@ -1,4 +1,4 @@
-import {getTypeOf} from "@lucilor/utils";
+import {getTypeOf, isTypeOf} from "@lucilor/utils";
 
 export const tryParseJson: {
   <T = any>(str: string): T | null;
@@ -10,7 +10,7 @@ export const tryParseJson: {
   } catch {
     result = fallbackValue;
   }
-  if (getTypeOf(result) !== getTypeOf(fallbackValue)) {
+  if (!isTypeOf(fallbackValue, ["null", "undefined"]) && getTypeOf(result) !== getTypeOf(fallbackValue)) {
     result = fallbackValue;
   }
   return result;

@@ -1,5 +1,6 @@
 import {Formulas} from "@app/utils/calc";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
+import {ZuoshujuTableData} from "@app/utils/table-data/zuoshuju-data";
 import {MsbjPeizhishuju, MsbjRectInfoRaw} from "@components/msbj-rects/msbj-rects.types";
 import {ObjectOf} from "@lucilor/utils";
 
@@ -7,9 +8,6 @@ export interface MsbjFenlei extends TableDataBase {
   selected?: boolean;
 }
 
-export interface ZuoshujuTableData extends TableDataBase {
-  zuoshujubanben?: string;
-}
 export interface MsbjData extends ZuoshujuTableData {
   peizhishuju?: string | MsbjPeizhishuju;
   node?: string;

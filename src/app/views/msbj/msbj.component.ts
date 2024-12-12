@@ -182,7 +182,7 @@ export class MsbjComponent {
       return;
     }
     const table = this.table();
-    const data: TableUpdateParams<MsbjData>["data"] = {vid: msbjInfo.vid};
+    const data: TableUpdateParams<MsbjData>["data"] = {vid: msbjInfo.id};
     const rectInfos =
       this.msbjRects()
         ?.rectInfosRelative()

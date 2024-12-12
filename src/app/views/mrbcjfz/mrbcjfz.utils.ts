@@ -1,20 +1,20 @@
+import {TableDataWrapper} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoSelect, InputInfoString} from "@modules/input/components/input.types";
 import {difference, isEqual} from "lodash";
 import {MrbcjfzHuajian, MrbcjfzInfo, MrbcjfzInfoShowItem, mrbcjfzInfoShowItems, mrbcjfzMsxzItems, MrbcjfzXinghao} from "./mrbcjfz.types";
 
-export class MrbcjfzXinghaoInfo {
-  默认板材: ObjectOf<MrbcjfzInfo> = {};
+export class MrbcjfzXinghaoInfo extends TableDataWrapper<MrbcjfzXinghao> {
+  默认板材: ObjectOf<MrbcjfzInfo>;
   inputInfos: ObjectOf<InputInfo[][]> = {};
 
   constructor(
     public table: string,
     public raw: MrbcjfzXinghao
   ) {
-    try {
-      this.默认板材 = JSON.parse(raw.morenbancai || "");
-    } catch {}
+    super(raw);
+    this.默认板材 = this.parseField("morenbancai", {});
     this.update();
   }
 
