@@ -1,11 +1,12 @@
 @if (info().data["算料公式"]; as slgs) {
   <div class="gongshis flex-column">
     <div class="toolbar">
-      <div class="title" [style]="info().slgs?.titleStyle">{{ info().slgs?.title || "算料公式" }}</div>
+      <div class="title" [style]="info().slgs?.titleStyle">{{ gongshiTitle() }}</div>
       <button mat-stroked-button color="primary" (click)="addGongshi()">添加</button>
       <button mat-stroked-button color="primary" (click)="viewAllGonshis()">全部</button>
       <button mat-stroked-button color="primary" (click)="importGonshis()">导入</button>
       <button mat-stroked-button color="primary" (click)="exportGongshis()">导出</button>
+      <button mat-stroked-button color="primary" (click)="clearGongshis()">清空</button>
     </div>
     @if (noScroll()) {
       <ng-container *ngTemplateOutlet="content"></ng-container>

@@ -115,6 +115,7 @@ export class SuanliaogongshiComponent {
     return 0;
   }
 
+  gongshiTitle = computed(() => this.info().slgs?.title || "算料公式");
   async getGongshiItem(data0?: 算料公式) {
     let data: 算料公式;
     if (data0) {
@@ -148,11 +149,9 @@ export class SuanliaogongshiComponent {
     }
     return null;
   }
-
   justifyGongshi(item: 算料公式) {
     this.info().justifyGongshi?.(item);
   }
-
   async addGongshi() {
     const info = this.info();
     const data = info.data;
@@ -169,7 +168,6 @@ export class SuanliaogongshiComponent {
       this.slgsChange.emit();
     }
   }
-
   async editGongshi(index: number) {
     const info = this.info();
     const data = info.data;
@@ -184,7 +182,6 @@ export class SuanliaogongshiComponent {
       this.slgsChange.emit();
     }
   }
-
   async copyGongshi(index: number) {
     const info = this.info();
     const data = info.data;
@@ -202,7 +199,6 @@ export class SuanliaogongshiComponent {
     this.info.set({...info});
     this.slgsChange.emit();
   }
-
   async removeGongshi(index: number) {
     const info = this.info();
     const data = info.data;
@@ -216,13 +212,11 @@ export class SuanliaogongshiComponent {
     this.info.set({...info});
     this.slgsChange.emit();
   }
-
   editGongshiStart(index: number) {
     const info = this.gongshiInfo()[index];
     info.formulas = cloneDeep(this.info().data.算料公式?.[index].公式);
     this.gongshiInfo.update((v) => [...v]);
   }
-
   editGongshiEnd(index: number, formulas: Formulas | null, close = false) {
     const info = this.info();
     const gongshiInfo = this.gongshiInfo()[index];
@@ -235,7 +229,6 @@ export class SuanliaogongshiComponent {
       this.gongshiInfo.update((v) => [...v]);
     }
   }
-
   async viewAllGonshis() {
     const useData = this.info().data.算料公式 || [];
     const url = await this.http.getShortUrl("算料公式", {useData, noToolbar: true});
@@ -243,7 +236,6 @@ export class SuanliaogongshiComponent {
       window.open(url);
     }
   }
-
   async importGonshis() {
     const data = this.info().data;
     const files = await selectFiles({accept: ".json"});
@@ -280,10 +272,17 @@ export class SuanliaogongshiComponent {
     });
     reader.readAsText(file);
   }
-
   exportGongshis() {
     const data = this.info().data;
     downloadByString(JSON.stringify(data.算料公式), {filename: "算料公式.json"});
+  }
+  async clearGongshis() {
+    if (!(await this.message.confirm(`确定清空全部【${this.gongshiTitle()}】吗？`))) {
+      return;
+    }
+    const data = this.info().data;
+    data.算料公式 = [];
+    this.info.update((v) => ({...v}));
   }
 
   getGongshiStr(item: KeyValue<string, string | number>) {

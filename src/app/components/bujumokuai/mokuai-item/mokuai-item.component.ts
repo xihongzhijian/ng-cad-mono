@@ -10,7 +10,8 @@ import {
   input,
   output,
   signal,
-  viewChild
+  viewChild,
+  viewChildren
 } from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -287,14 +288,17 @@ export class MokuaiItemComponent {
     }
   }
 
+  private _textInputInfoUpdateDisabled = false;
   private _getTextInputInfo1(key: keyof MokuaiItem, label: string = key) {
-    const info: InputInfo = {
+    const info: InputInfo<MokuaiItem> = {
       type: "string",
       textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
       model: {data: this.mokuai(), key},
       onChange: () => {
-        this.mokuai.update((v) => ({...v}));
+        if (!this._textInputInfoUpdateDisabled) {
+          this.mokuai.update((v) => ({...v}));
+        }
       }
     };
     return info;
@@ -304,13 +308,15 @@ export class MokuaiItemComponent {
     if (!mokuai.自定义数据) {
       mokuai.自定义数据 = getMokuaiCustomData(null, this.bjmkStatus.mokuaiOptionsManager.data());
     }
-    const info: InputInfo = {
+    const info: InputInfo<MokuaiItemCustomData> = {
       type: "string",
       textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
       model: {data: mokuai.自定义数据, key},
       onChange: () => {
-        this.mokuai.update((v) => ({...v, 自定义数据: clone(v.自定义数据)}));
+        if (!this._textInputInfoUpdateDisabled) {
+          this.mokuai.update((v) => ({...v, 自定义数据: clone(v.自定义数据)}));
+        }
       }
     };
     return info;
@@ -358,7 +364,7 @@ export class MokuaiItemComponent {
     this.mokuai.update((v) => ({...v}));
   }
 
-  xuanxiangTable = computed(() => getXuanxiangTable(this.mokuai().自定义数据?.选项数据 || [], {}, true));
+  xuanxiangTable = computed(() => getXuanxiangTable(this.mokuai().自定义数据?.选项数据 || [], {title: ""}, true));
   async getXuanxiangItem(data0?: 选项) {
     const optionsAll = await this.bjmkStatus.mokuaiOptionsManager.fetch();
     return await getXuanxiangItem(this.message, optionsAll, this.xuanxiangTable().data, data0, true);
@@ -612,5 +618,39 @@ export class MokuaiItemComponent {
 
   showXhmrmsbjsUsingMokuai() {
     this.bjmkStatus.showXhmrmsbjsUsingMokuai(this.mokuai().id);
+  }
+
+  gongnengInputs = viewChildren<InputComponent>("gongnengInputs");
+  shaixuanInputs = viewChildren<InputComponent>("shaixuanInputs");
+  async clearData(type: string) {
+    if (!(await this.message.confirm(`确定清空全部【${type}】数据吗？`))) {
+      return;
+    }
+    const mokuai = this.mokuai();
+    this._textInputInfoUpdateDisabled = true;
+    switch (type) {
+      case "模块功能":
+        for (const input of this.gongnengInputs()) {
+          input.clear();
+        }
+        break;
+      case "模块筛选":
+        for (const input of this.shaixuanInputs()) {
+          input.clear();
+        }
+        break;
+      case "选项数据":
+        if (mokuai.自定义数据) {
+          mokuai.自定义数据.选项数据 = [];
+        }
+        break;
+      case "配件CAD":
+        mokuai.cads = [];
+        break;
+      default:
+        return;
+    }
+    this._textInputInfoUpdateDisabled = false;
+    this.mokuai.update((v) => ({...v}));
   }
 }
