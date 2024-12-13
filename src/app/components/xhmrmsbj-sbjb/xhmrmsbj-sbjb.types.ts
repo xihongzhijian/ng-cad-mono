@@ -90,7 +90,7 @@ export interface XhmrmsbjSbjbCadInfoGrouped extends XhmrmsbjSbjbCadInfo {
 
 export interface SbjbItemSbjbItemForm {
   title: string;
-  inputInfos: InputInfo[];
+  inputInfos: InputInfo<XhmrmsbjSbjbItemSbjbItem>[];
   item: XhmrmsbjSbjbItemSbjb;
   name: SbjbItemOptionalKey2;
   item2?: XhmrmsbjSbjbItemSbjbItem;
@@ -103,11 +103,13 @@ export interface SbjbItemSbjbItemForm {
 
 export interface FentiCadTemplateData {
   key: SbjbItemOptionalKey2;
-  id: string;
-  index: number;
-  title: "正面分体CAD" | "背面分体CAD";
-  formFentiCadInfo?: {cad?: CadData};
+  qiliao?: Qiliao;
+  form?: SbjbItemSbjbItemForm;
+  vertical?: boolean;
 }
+export const fentiCadTemplateTitles = ["分体1", "分体2"] as const;
+export type FentiCadTemplateTitle = (typeof fentiCadTemplateTitles)[number];
 export interface XhmrmsbjSbjbItemSbjbFentiCadInfo {
   data: FentiCadTemplateData;
+  title: FentiCadTemplateTitle;
 }

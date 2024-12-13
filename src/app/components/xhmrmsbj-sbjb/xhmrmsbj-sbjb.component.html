@@ -57,20 +57,9 @@
                     </div>
                   </div>
                 }
-                @if (info.item2?.["使用正面分体"]) {
+                @if (info.item2?.["使用正面分体"] || info.item2?.["使用背面分体"]) {
                   <ng-container
-                    *ngTemplateOutlet="
-                      fentiCad;
-                      context: {$implicit: {key: info.title, id: info.qiliao?.fenti1?.id, index: info.originalIndex, title: '正面分体CAD'}}
-                    "
-                  ></ng-container>
-                }
-                @if (info.item2?.["使用背面分体"]) {
-                  <ng-container
-                    *ngTemplateOutlet="
-                      fentiCad;
-                      context: {$implicit: {key: info.title, id: info.qiliao?.fenti2?.id, index: info.originalIndex, title: '背面分体CAD'}}
-                    "
+                    *ngTemplateOutlet="fentiCads; context: {$implicit: {key: info.title, qiliao: info.qiliao, vertical: true}}"
                   ></ng-container>
                 }
               </div>
@@ -88,43 +77,10 @@
     <ng-scrollbar>
       <div class="toolbar vertical">
         @for (info of form.inputInfos; track $index) {
-          <app-input style="width: 100%" [info]="info"></app-input>
-          @if (info.model?.key === "使用正面分体" && info.model?.data[info.model?.key || ""]) {
-            <div class="toolbar" style="width: 100%">
-              <ng-container
-                *ngTemplateOutlet="
-                  fentiCad;
-                  context: {
-                    $implicit: {
-                      key: form.name,
-                      id: form.qiliaoCurr?.fenti1?.id,
-                      index: $index,
-                      title: '正面分体CAD',
-                      formFentiCadInfo: {cad: form.fentiCad1}
-                    }
-                  }
-                "
-              ></ng-container>
-            </div>
-          }
-          @if (info.model?.key === "使用背面分体" && info.model?.data[info.model?.key || ""]) {
-            <div class="toolbar" style="width: 100%">
-              <ng-container
-                *ngTemplateOutlet="
-                  fentiCad;
-                  context: {
-                    $implicit: {
-                      key: form.name,
-                      id: form.qiliaoCurr?.fenti2?.id,
-                      index: $index,
-                      title: '背面分体CAD',
-                      formFentiCadInfo: {cad: form.fentiCad2}
-                    }
-                  }
-                "
-              ></ng-container>
-            </div>
-          }
+          <app-input #sbjbItemSbjbItemFormInputs style="width: 100%" [info]="info"></app-input>
+        }
+        @if (form.item2New["使用正面分体"] || form.item2New["使用背面分体"]) {
+          <ng-container *ngTemplateOutlet="fentiCads; context: {$implicit: {key: form.name, form}}"></ng-container>
         }
       </div>
     </ng-scrollbar>
@@ -135,22 +91,28 @@
   </app-floating-dialog>
 }
 
-<ng-template #fentiCad [appTypedTemplate]="fentiCadTemplateData" let-data>
-  @if (qiliaoCadMap.get(data.id) || data.formFentiCadInfo?.cad; as cad) {
-    <app-cad-item
-      [collection]="cadCollection"
-      [cad]="cad"
-      [buttons]="[]"
-      [buttons2]="fentiCadButtons2()"
-      [customInfo]="{data}"
-      [yaoqiu]="fentiCadYaoqiu()"
-      [titlePrefix]="data.title + '：'"
-      [cadForm]="{noDefaultTexts: !showCadFormDefaultTexts()}"
-      [isOnline]="{isFetched: false}"
-    ></app-cad-item>
-  } @else {
-    <div class="toolbar" style="width: 100%">
-      <button mat-raised-button color="primary" (click)="chooseFentiCad(data)">选择{{ data.title }}</button>
-    </div>
-  }
+<ng-template #fentiCads [appTypedTemplate]="fentiCadTemplateData" let-data>
+  <div class="toolbar" [class.vertical]="data.vertical" style="width: 100%">
+    @for (title of fentiCadTemplateTitles; track $index) {
+      @if (getFentiCadTemplateCad({data, title}); as cad) {
+        <app-cad-item
+          [collection]="cadCollection"
+          [cad]="cad"
+          [buttons]="[]"
+          [buttons2]="fentiCadButtons2()"
+          [customInfo]="{data, title}"
+          [yaoqiu]="fentiCadYaoqiu()"
+          [titlePrefix]="title + '：'"
+          [cadForm]="{noDefaultTexts: !showCadFormDefaultTexts()}"
+          [isOnline]="{isFetched: false}"
+        ></app-cad-item>
+      } @else {
+        <div class="empty-cad item link" (click)="chooseFentiCad({data, title})">
+          <div class="box border">
+            <div class="name">选择{{ title }}</div>
+          </div>
+        </div>
+      }
+    }
+  </div>
 </ng-template>

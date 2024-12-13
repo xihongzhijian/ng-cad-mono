@@ -1,5 +1,16 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, signal, viewChild} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostBinding,
+  inject,
+  input,
+  signal,
+  viewChild,
+  viewChildren
+} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -7,7 +18,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {getValueString} from "@app/app.common";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
-import {getNamesStr} from "@app/utils/error-message";
+import {alertError, ErrorItem, getNamesStr} from "@app/utils/error-message";
 import {ItemsManager} from "@app/utils/items-manager";
 import {getSortedItems} from "@app/utils/sort-items";
 import {Qiliao, QiliaoTableData} from "@app/utils/table-data/table-data.qiliao";
@@ -23,6 +34,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ExcelSheet, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
+import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
@@ -33,6 +45,7 @@ import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   FentiCadTemplateData,
+  fentiCadTemplateTitles,
   SbjbItemSbjbItemForm,
   XhmrmsbjSbjbCadInfo,
   XhmrmsbjSbjbCadInfoGrouped,
@@ -183,7 +196,7 @@ export class XhmrmsbjSbjbComponent {
     }
     const item2 = item[name];
     const title = `${info.title}：${item2?.名字 || ""}`;
-    const {form: inputInfos, data: item2New} = await getXhmrmsbjSbjbItemSbjbItemForm(this.message, title, item2);
+    const {form: inputInfos, data: item2New} = await getXhmrmsbjSbjbItemSbjbItemForm(item2);
     const qiliaoPrev = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
     const qiliaoCurr = cloneDeep(qiliaoPrev);
     const form: SbjbItemSbjbItemForm = {title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr};
@@ -325,13 +338,26 @@ export class XhmrmsbjSbjbComponent {
   }
 
   sbjbItemSbjbItemForm = signal<SbjbItemSbjbItemForm | null>(null);
+  sbjbItemSbjbItemFormInputs = viewChildren<InputComponent>("sbjbItemSbjbItemFormInputs");
   async closeSbjbItemSbjbItemForm(submit: boolean) {
     const form = this.sbjbItemSbjbItemForm();
     if (!form) {
       return;
     }
     if (submit) {
+      const inputs = this.sbjbItemSbjbItemFormInputs();
+      const result = await validateForm(inputs);
+      const error: ErrorItem = {content: "", details: []};
+      if (result.errorMsg) {
+        error.details.push([{text: result.errorMsg}]);
+      }
       const {item, name, item2New, qiliaoPrev, qiliaoCurr, fentiCad1, fentiCad2} = form;
+      if ((item2New.使用正面分体 || item2New.使用背面分体) && (!qiliaoCurr || !qiliaoCurr.fenti1 || !qiliaoCurr.fenti2)) {
+        error.details.push([{text: "请选择分体"}]);
+      }
+      if (await alertError(this.message, error)) {
+        return;
+      }
       item[name] = item2New;
       if (qiliaoCurr && !isEqual(qiliaoPrev?.raw, qiliaoCurr.raw)) {
         await this.updateQiliao(qiliaoCurr);
@@ -384,32 +410,42 @@ export class XhmrmsbjSbjbComponent {
   }
 
   fentiCadTemplateData!: {$implicit: FentiCadTemplateData};
+  fentiCadTemplateTitles = fentiCadTemplateTitles;
+  getFentiCadTemplateCad({data, title}: XhmrmsbjSbjbItemSbjbFentiCadInfo) {
+    const {qiliao, form} = data;
+    if (form) {
+      return form[title === "分体1" ? "fentiCad1" : "fentiCad2"];
+    } else {
+      const id = qiliao?.[title === "分体1" ? "fenti1" : "fenti2"]?.id;
+      if (id) {
+        return this.qiliaoCadMap.get(id);
+      } else {
+        return null;
+      }
+    }
+  }
   fentiCadButtons2 = computed(() => {
     const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbFentiCadInfo>[] = [
-      {name: "选择", onClick: ({customInfo}) => this.chooseFentiCad(customInfo.data)},
-      {name: "删除", onClick: ({customInfo}) => this.removeFentiCad(customInfo.data)}
+      {name: "选择", onClick: ({customInfo}) => this.chooseFentiCad(customInfo)},
+      {name: "删除", onClick: ({customInfo}) => this.removeFentiCad(customInfo)}
     ];
     return buttons;
   });
   fentiCadYaoqiu = computed(() => this.status.getCadYaoqiu("企料分体"));
-  async chooseFentiCad(data: FentiCadTemplateData) {
+  async chooseFentiCad({data, title}: XhmrmsbjSbjbItemSbjbFentiCadInfo) {
     const item = this.activeSbjbItem();
     const item2 = item?.[data.key];
-    const {title} = data;
-    const key = title === "正面分体CAD" ? "fenti1" : "fenti2";
+    const key = title === "分体1" ? "fenti1" : "fenti2";
     let qiliao: Qiliao | undefined | null;
-    const form = this.sbjbItemSbjbItemForm();
-    const formFentiCadInfo = data.formFentiCadInfo;
-    const formFentiCad = formFentiCadInfo?.cad;
-    const checkedItems: string[] = [];
-    if (formFentiCad) {
+    const {form} = data;
+    if (form) {
       qiliao = form?.qiliaoCurr;
-      checkedItems.push(formFentiCad.id);
     } else {
       qiliao = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
-      if (qiliao?.[key]?.id) {
-        checkedItems.push(qiliao[key].id);
-      }
+    }
+    const checkedItems: string[] = [];
+    if (qiliao?.[key]?.id) {
+      checkedItems.push(qiliao[key].id);
     }
     const result = await openCadListDialog(this.dialog, {
       data: {
@@ -421,9 +457,8 @@ export class XhmrmsbjSbjbComponent {
     });
     const cad = result?.[0];
     if (cad) {
-      const form = this.sbjbItemSbjbItemForm();
       if (form) {
-        const formFentiKey = title === "正面分体CAD" ? "fentiCad1" : "fentiCad2";
+        const formFentiKey = title === "分体1" ? "fentiCad1" : "fentiCad2";
         form[formFentiKey] = cad;
         if (form.qiliaoCurr) {
           form.qiliaoCurr[key] = {id: cad.id, 唯一码: cad.info.唯一码};
@@ -438,21 +473,20 @@ export class XhmrmsbjSbjbComponent {
       }
     }
   }
-  removeFentiCad(data: FentiCadTemplateData) {
-    const item = this.activeSbjbItem();
-    const item2 = item?.[data.key];
-    const {title} = data;
-    const key = title === "正面分体CAD" ? "fenti1" : "fenti2";
-    const qiliao = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
-    const form = this.sbjbItemSbjbItemForm();
+  removeFentiCad({data, title}: XhmrmsbjSbjbItemSbjbFentiCadInfo) {
+    const key = title === "分体1" ? "fenti1" : "fenti2";
+    const {form} = data;
     if (form) {
-      const formFentiKey = title === "正面分体CAD" ? "fentiCad1" : "fentiCad2";
+      const formFentiKey = title === "分体1" ? "fentiCad1" : "fentiCad2";
       delete form[formFentiKey];
       if (form.qiliaoCurr) {
         form.qiliaoCurr[key] = null;
       }
       this.sbjbItemSbjbItemForm.set({...form});
     } else {
+      const item = this.activeSbjbItem();
+      const item2 = item?.[data.key];
+      const qiliao = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
       if (qiliao) {
         qiliao[key] = null;
         this.updateQiliao(qiliao);
@@ -751,31 +785,45 @@ export class XhmrmsbjSbjbComponent {
 
   async validate() {
     const items = this.items();
-    const errItems: {i: number; j: number; errKeys: string[]}[] = [];
+    const qiliaos = this.qiliaosManager.items();
+    const errItems: {i: number; j: number; errKeys: string[]; errMsgs: string[]}[] = [];
     for (const [i, item] of items.entries()) {
       const items2 = getSortedItems(item.锁边铰边数据, (v) => v.排序 ?? 0);
       for (const [j, item2] of items2.entries()) {
         const errKeys: string[] = [];
+        const errMsgs: string[] = [];
         for (const key of getXhmrmsbjSbjbItemCadKeys(item.产品分类)) {
-          if (key === "锁边" || key === "铰边") {
-            if (!item2[key]?.名字) {
+          if (isSbjbItemOptionalKeys2(key)) {
+            if (item2[key]?.名字) {
+              if (item2[key]?.使用正面分体 || item2[key]?.使用背面分体) {
+                const qiliao = qiliaos.find((v) => v.name === item2[key]?.名字);
+                if (!qiliao?.fenti1 || !qiliao?.fenti2) {
+                  errMsgs.push("未选择分体");
+                }
+              }
+            } else {
               errKeys.push(key);
             }
           } else if (!item2[key]) {
             errKeys.push(key);
           }
         }
-        if (errKeys.length > 0) {
-          errItems.push({i, j, errKeys});
+        if (errKeys.length > 0 || errMsgs.length > 0) {
+          errItems.push({i, j, errKeys, errMsgs});
         }
       }
     }
     if (errItems.length > 0) {
       await this.message.error({
         content: "锁边铰边数据有误",
-        details: errItems.map(({i, errKeys}) => {
+        details: errItems.map(({i, errKeys, errMsgs}) => {
           const item = items[i];
-          return `${item.产品分类}: 缺少选项${getNamesStr(errKeys)}`;
+          const strs: string[] = [];
+          if (errKeys.length > 0) {
+            strs.push(`缺少选项${getNamesStr(errKeys)}`);
+          }
+          strs.push(...errMsgs);
+          return `${item.产品分类}: ${strs.join("；")}`;
         })
       });
       const errItem = errItems[0];

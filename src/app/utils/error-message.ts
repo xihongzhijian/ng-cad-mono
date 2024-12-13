@@ -63,10 +63,11 @@ export const alertError = async (message: MessageService, error: ErrorItem) => {
     }
     return str;
   });
-  if (details) {
-    return await message.error({content, details: details2});
+  if (details.length > 0) {
+    await message.error({content, details: details2});
+    return true;
   }
-  return null;
+  return false;
 };
 
 export const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");

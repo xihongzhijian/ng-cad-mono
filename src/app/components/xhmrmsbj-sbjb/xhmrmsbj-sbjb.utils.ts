@@ -256,7 +256,7 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
   });
   return result ? data : null;
 };
-export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, title: string, item?: XhmrmsbjSbjbItemSbjbItem) => {
+export const getXhmrmsbjSbjbItemSbjbItemForm = async (item?: XhmrmsbjSbjbItemSbjbItem) => {
   const data = getSbjbItemSbjbItem(cloneDeep(item));
   if (typeof data.正面宽可改 !== "boolean") {
     data.正面宽可改 = true;
@@ -268,7 +268,7 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (message: MessageService, t
     data.正背面同时改变 = true;
   }
   const getter = new InputInfoWithDataGetter(data, {clearable: true});
-  const form: InputInfo<typeof data>[] = [
+  const form: InputInfo<XhmrmsbjSbjbItemSbjbItem>[] = [
     {
       type: "group",
       label: "",
