@@ -1,4 +1,4 @@
-import {getValueString} from "@app/app.common";
+import {getValueString} from "@app/utils/get-value";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData, CadLineLike, CadZhankai, intersectionKeysTranslate} from "@lucilor/cad-viewer";
 import {downloadByUrl, isTypeOf, keysOf, ObjectOf, queryString} from "@lucilor/utils";

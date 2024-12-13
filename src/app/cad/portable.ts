@@ -1,5 +1,6 @@
-import {getValueString, replaceChars} from "@app/app.common";
+import {replaceChars} from "@app/app.common";
 import {getNamesStr} from "@app/utils/error-message";
+import {getValueString} from "@app/utils/get-value";
 import {ProjectConfig} from "@app/utils/project-config";
 import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {

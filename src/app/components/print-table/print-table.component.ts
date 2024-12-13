@@ -14,7 +14,8 @@ import {
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
-import {getValueString, setGlobal} from "@app/app.common";
+import {setGlobal} from "@app/app.common";
+import {getValueString} from "@app/utils/get-value";
 import {environment} from "@env";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";

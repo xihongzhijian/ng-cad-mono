@@ -15,10 +15,10 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {getValueString} from "@app/app.common";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {alertError, ErrorItem, getNamesStr} from "@app/utils/error-message";
+import {getValueString} from "@app/utils/get-value";
 import {ItemsManager} from "@app/utils/items-manager";
 import {getSortedItems} from "@app/utils/sort-items";
 import {Qiliao, QiliaoTableData} from "@app/utils/table-data/table-data.qiliao";
@@ -34,8 +34,9 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ExcelSheet, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {validateForm} from "@modules/message/components/message/message.utils";
-import {MessageService} from "@modules/message/services/message.service";
+import {getMessageImportModeOptions, MessageImportMode, MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
@@ -50,8 +51,6 @@ import {
   XhmrmsbjSbjbCadInfo,
   XhmrmsbjSbjbCadInfoGrouped,
   XhmrmsbjSbjbItem,
-  XhmrmsbjSbjbItemCopyMode,
-  xhmrmsbjSbjbItemCopyModes,
   XhmrmsbjSbjbItemSbjbCadInfo,
   XhmrmsbjSbjbItemSbjbFentiCadInfo,
   XhmrmsbjSbjbItemSbjbItem,
@@ -645,24 +644,18 @@ export class XhmrmsbjSbjbComponent {
   async copySbjbItems(to: XhmrmsbjSbjbItem) {
     const items = this.items().filter((v) => v !== to);
     const itemOptions = getXhmrmsbjSbjbItemOptions(items);
-    const data: {from: XhmrmsbjSbjbItem | null; mode: XhmrmsbjSbjbItemCopyMode} = {from: null, mode: "添加到原有数据"};
-    const form: InputInfo<typeof data>[] = [
-      {type: "select", label: "从哪里复制", options: itemOptions, model: {data, key: "from"}, validators: Validators.required},
-      {
-        type: "select",
-        label: "复制方式",
-        options: xhmrmsbjSbjbItemCopyModes.slice(),
-        model: {data, key: "mode"},
-        validators: Validators.required
-      }
-    ];
-    const result = await this.message.form(form);
+    const data: {from: XhmrmsbjSbjbItem | null; mode: MessageImportMode} = {from: null, mode: "append"};
+    const getter = new InputInfoWithDataGetter(data);
+    const result = await this.message.form([
+      getter.selectSingle("from", itemOptions, {label: "从哪里复制", validators: Validators.required}),
+      getter.selectSingle("mode", getMessageImportModeOptions(), {label: "复制方式", validators: Validators.required})
+    ]);
     const {from, mode} = data;
     if (!result || !from) {
       return;
     }
     const fromItems = from.锁边铰边数据.map((v) => convertXhmrmsbjSbjbItem(from.产品分类, to.产品分类, v));
-    if (mode === "清空原有数据并全部替换为新数据") {
+    if (mode === "replace") {
       to.锁边铰边数据 = fromItems;
     } else {
       to.锁边铰边数据.push(...fromItems);
@@ -695,26 +688,12 @@ export class XhmrmsbjSbjbComponent {
   }
   async export() {
     const items = this.items();
-    const itemOptions = getXhmrmsbjSbjbItemOptions(items);
-    const data = {from: Array<XhmrmsbjSbjbItem>()};
-    const indexMap = new Map(items.map((v, i) => [v.产品分类, i]));
-    const form: InputInfo<typeof data>[] = [
-      {
-        type: "select",
-        label: "选择导出哪些产品分类",
-        multiple: true,
-        options: itemOptions,
-        appearance: "list",
-        model: {data, key: "from"},
-        validators: Validators.required
-      }
-    ];
-    const result = await this.message.form(form);
-    if (!result) {
+    const data = await this.message.getExportFrom(items, (v) => v.产品分类, "产品分类");
+    if (!data) {
       return;
     }
-
     const exportItems = data.from;
+    const indexMap = new Map(items.map((v, i) => [v.产品分类, i]));
     exportItems.sort((a, b) => (indexMap.get(a.产品分类) ?? 0) - (indexMap.get(b.产品分类) ?? 0));
     const sheets: ExcelSheet[] = [];
     for (const item of exportItems) {
@@ -744,36 +723,16 @@ export class XhmrmsbjSbjbComponent {
       items.push({产品分类, 锁边铰边数据: importXhmrmsbjSbjbItemSbjbs(产品分类, sheet.dataArray)});
     }
 
-    const itemOptions = getXhmrmsbjSbjbItemOptions(items);
-    const data: {from: XhmrmsbjSbjbItem[]; mode: XhmrmsbjSbjbItemCopyMode} = {from: [], mode: "添加到原有数据"};
-    const form: InputInfo<typeof data>[] = [
-      {
-        type: "select",
-        label: "选择导入哪些产品分类",
-        multiple: true,
-        options: itemOptions,
-        appearance: "list",
-        model: {data, key: "from"},
-        validators: Validators.required
-      },
-      {
-        type: "select",
-        label: "导入方式",
-        options: xhmrmsbjSbjbItemCopyModes.slice(),
-        model: {data, key: "mode"},
-        validators: Validators.required
-      }
-    ];
-    const result = await this.message.form(form);
-    const {from, mode} = data;
-    if (!result || from.length < 1) {
+    const data = await this.message.getImportFrom(items, (v) => v.产品分类, "产品分类");
+    if (!data) {
       return;
     }
+    const {from, mode} = data;
     const itemsCurr = this.items();
-    for (const item of data.from) {
+    for (const item of from) {
       const item2 = itemsCurr.find((v) => v.产品分类 === item.产品分类);
       if (item2) {
-        if (mode === "清空原有数据并全部替换为新数据") {
+        if (mode === "replace") {
           item2.锁边铰边数据 = item.锁边铰边数据;
         } else {
           item2.锁边铰边数据.push(...item.锁边铰边数据);

@@ -9,6 +9,12 @@
       font-size: var(--mdc-list-list-item-label-text-size);
     }
 
+    .select-list {
+      > mat-checkbox {
+        margin-left: 24px;
+      }
+    }
+
     mat-selection-list {
       display: flex;
       flex-wrap: wrap;

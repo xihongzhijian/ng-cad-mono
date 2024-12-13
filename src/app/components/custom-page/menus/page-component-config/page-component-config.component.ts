@@ -4,7 +4,7 @@ import {ChangeDetectionStrategy, Component, computed, inject, signal} from "@ang
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
-import {getInsertName} from "@app/app.common";
+import {getInsertName} from "@app/utils/get-value";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {NgScrollbarModule} from "ngx-scrollbar";

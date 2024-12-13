@@ -83,9 +83,9 @@ export interface ColumnInfoTime<T> extends ColumnInfoBase<T> {
   type: "time";
 }
 
-export interface ColumnInfoSelect<T> extends ColumnInfoBase<T> {
+export interface ColumnInfoSelect<T, K = any> extends ColumnInfoBase<T> {
   type: "select";
-  options: InputInfoOptions;
+  options: InputInfoOptions<K>;
 }
 
 export interface ColumnInfoButton<T> extends ColumnInfoBase<T> {

@@ -18,8 +18,8 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
-import {getCopyName} from "@app/app.common";
 import {alertError, checkDuplicateVars, ErrorDetail, ErrorItem, getNamesDetail} from "@app/utils/error-message";
+import {getCopyName} from "@app/utils/get-value";
 import {canOptionsOverlap} from "@app/utils/mongo";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {getFromulasFromString} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
@@ -476,29 +476,37 @@ export class MokuaiItemComponent {
     this.showCadsDialog.set(false);
     this.selectCads$.next(mokuaiCads);
   }
-  async importCads(replace: boolean) {
-    await this.message.importData(
-      replace,
-      (data: ObjectOf<any>[]) => {
-        const cads = data.map((v) => getHoutaiCad(new CadData(v).clone(true)));
-        if (replace) {
-          this.mokuai.update((v) => ({...v, cads}));
+  async importCads() {
+    await this.message.importData<HoutaiCad[]>(
+      false,
+      async (cadsRaw) => {
+        const cads = cadsRaw.map((v) => getHoutaiCad(new CadData(v.json).clone(true)));
+        const data = await this.message.getImportFrom(cads, (v) => v.名字, "模块CAD");
+        if (!data) {
+          return false;
+        }
+        if (data.mode === "replace") {
+          this.mokuai.update((v) => ({...v, cads: data.from}));
         } else {
           const mokuai = this.mokuai();
-          const cadsOld = mokuai.cads || [];
-          mokuai.cads = [...cadsOld, ...cads];
+          mokuai.cads = [...(mokuai.cads || []), ...data.from];
           this.mokuai.set({...mokuai});
         }
-        this.cads.set(data.map((v) => new CadData(v)));
+        return true;
       },
       "模块CAD"
     );
   }
-  exportCads() {
-    this.message.exportData(
-      this.cads().map((v) => v.export()),
-      "模块CAD"
-    );
+  async exportCads() {
+    const cads = this.mokuai().cads || [];
+    if (cads.length < 1) {
+      return;
+    }
+    const data = await this.message.getExportFrom(cads, (v) => v.名字, "模块CAD");
+    if (!data) {
+      return;
+    }
+    this.message.exportData(data.from, "模块CAD");
   }
 
   cadDragEnabled = signal(false);

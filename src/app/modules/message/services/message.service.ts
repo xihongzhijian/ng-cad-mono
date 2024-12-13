@@ -1,9 +1,11 @@
 import {Injectable} from "@angular/core";
+import {Validators} from "@angular/forms";
 import {MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarConfig} from "@angular/material/snack-bar";
 import {DomSanitizer} from "@angular/platform-browser";
 import {downloadByString, MaybePromise, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
-import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {BehaviorSubject, lastValueFrom} from "rxjs";
 import {MessageComponent} from "../components/message/message.component";
 import {
@@ -23,6 +25,14 @@ import {getListEl} from "../components/message/message.utils";
 
 export type MessageDataParams<T> = Omit<T, "type">;
 export type MessageDataParams2<T> = Omit<MatDialogConfig<T>, "data">;
+
+export const messageImportMode = ["replace", "append"] as const;
+export type MessageImportMode = (typeof messageImportMode)[number];
+export type MessageImportData<T> = {from: T[]; mode: MessageImportMode};
+export type MessageExportData<T> = {from: T[]};
+
+export const messageImportModeLabels = ["清空原有数据并全部替换为新数据", "添加到原有数据"] as const;
+export const getMessageImportModeOptions = () => messageImportMode.map((v, i) => ({value: v, label: messageImportModeLabels[i]}));
 
 @Injectable({
   providedIn: "root"
@@ -164,12 +174,12 @@ export class MessageService {
   }
 
   async importData<T = any>(
-    replace: boolean,
+    confirm: boolean | null,
     action: (data: T) => MaybePromise<void | boolean>,
     title = "",
     jsonOptions?: {reviver?: (this: any, key: string, value: any) => any}
   ) {
-    if (!(await this.confirm(`是否确定导入并${replace ? "替换" : "添加"}？`))) {
+    if (confirm && !(await this.confirm(`是否确定导入${title}？`))) {
       return;
     }
     const files = await selectFiles({accept: ".json"});
@@ -201,5 +211,24 @@ export class MessageService {
       console.error(e);
       await this.snack(`${title}导出失败`);
     }
+  }
+  async getImportFrom<T>(items: T[], labelGetter: (item: T) => string, name = "数据") {
+    const data: {from: T[]; mode: MessageImportMode} = {from: [], mode: "append"};
+    const getter = new InputInfoWithDataGetter(data);
+    const options: InputInfoOption<T>[] = items.map((v) => ({value: v, label: labelGetter(v)}));
+    const result = await this.form([
+      getter.selectMultiple<T>("from", options, {label: `选择导入哪些${name}`, appearance: "list", validators: Validators.required}),
+      getter.selectSingle("mode", getMessageImportModeOptions(), {label: "导入方式", validators: Validators.required})
+    ]);
+    return result ? data : null;
+  }
+  async getExportFrom<T>(items: T[], labelGetter: (item: T) => string, name = "数据") {
+    const data: {from: T[]} = {from: []};
+    const getter = new InputInfoWithDataGetter(data);
+    const options: InputInfoOption<T>[] = items.map((v) => ({value: v, label: labelGetter(v)}));
+    const result = await this.form([
+      getter.selectMultiple("from", options, {label: `选择导出哪些${name}`, appearance: "list", validators: Validators.required})
+    ]);
+    return result ? data : null;
   }
 }

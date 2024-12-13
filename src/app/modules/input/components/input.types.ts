@@ -3,14 +3,13 @@ import {ThemePalette} from "@angular/material/core";
 import {FloatLabelType} from "@angular/material/form-field";
 import {OptionSeparator} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {Value} from "@app/utils/get-value";
 import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.types";
 import {EditFormulasInput} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {OptionsData} from "@modules/http/services/cad-data.service.types";
 import Color from "color";
 import {Properties} from "csstype";
-
-export type Value<T> = T | (() => T);
 
 export interface InputInfoBase<T = any> {
   label: string;
@@ -103,14 +102,14 @@ export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
   onChange?: (val: boolean, info: InputInfoBoolean<T>) => void;
 }
 
-export interface InputInfoSelectBase<T = any, K = string> extends InputInfoBase<T> {
+export interface InputInfoSelectBase<T = any, K = any> extends InputInfoBase<T> {
   type: "select";
   appearance?: "select" | "list";
   options: Value<InputInfoOptions<K>>;
   optionsDialog?: OptionsDialog;
   openInNewTab?: {optionKey: string; onOptionsChange: (options: OptionsData) => void};
 }
-export interface InputInfoSelectSingle<T = any, K = string> extends InputInfoSelectBase<T, K> {
+export interface InputInfoSelectSingle<T = any, K = any> extends InputInfoSelectBase<T, K> {
   value?: Value<string>;
   optionText?: string | ((val: string) => string);
   multiple?: false;
@@ -209,9 +208,9 @@ export type InputInfo<T = any> =
   | InputInfoGroup<T>;
 export type InputInfoPart<R extends InputInfo = InputInfo> = Partial<Omit<R, "type">>;
 
-export type InputInfoOption<T = any> = {value: T; label?: string; disabled?: boolean; img?: string; vid?: number};
+export type InputInfoOption<T = string> = {value: T; label?: string; disabled?: boolean; img?: string; vid?: number};
 
-export type InputInfoOptions<T = any> = (InputInfoOption<T> | string)[];
+export type InputInfoOptions<T = string> = (InputInfoOption<T> | string)[];
 
 export interface OptionsDialog {
   optionKey?: string;

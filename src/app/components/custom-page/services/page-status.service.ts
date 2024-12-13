@@ -1,5 +1,6 @@
 import {computed, effect, inject, Injectable, signal, untracked} from "@angular/core";
-import {getCopyName, KeyEventItem, session, setGlobal} from "@app/app.common";
+import {KeyEventItem, session, setGlobal} from "@app/app.common";
+import {getCopyName} from "@app/utils/get-value";
 import {isBetween} from "@lucilor/utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {Subject} from "rxjs";

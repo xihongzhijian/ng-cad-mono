@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, input, model, output, signal} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatTabsModule} from "@angular/material/tabs";
-import {getCopyName} from "@app/app.common";
+import {getCopyName} from "@app/utils/get-value";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";

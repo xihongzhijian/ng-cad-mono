@@ -1,9 +1,10 @@
 import {effect, inject, Injectable, signal, untracked} from "@angular/core";
 import {Validators} from "@angular/forms";
-import {filePathUrl, getCopyName} from "@app/app.common";
+import {filePathUrl} from "@app/app.common";
 import {getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {FetchManager} from "@app/utils/fetch-manager";
+import {getCopyName} from "@app/utils/get-value";
 import {ItemsManager} from "@app/utils/items-manager";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {VarNames} from "@components/var-names/var-names.types";

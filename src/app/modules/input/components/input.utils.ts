@@ -1,8 +1,8 @@
 import {filePathUrl, session} from "@app/app.common";
+import {Value} from "@app/utils/get-value";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
-import {MessageService} from "@modules/message/services/message.service";
 import {Properties} from "csstype";
 import {uniq} from "lodash";
 import {
@@ -17,24 +17,8 @@ import {
   InputInfoPart,
   InputInfoSelectMultiple,
   InputInfoSelectSingle,
-  InputInfoString,
-  Value
+  InputInfoString
 } from "./input.types";
-
-export const getValue = <T>(fromValue: Value<T>, message: MessageService) => {
-  let result = fromValue;
-  if (typeof fromValue === "function") {
-    try {
-      result = (fromValue as () => T)();
-    } catch (error) {
-      if (error instanceof Error) {
-        message.error(error.message);
-      }
-      return null;
-    }
-  }
-  return result as T;
-};
 
 export const parseObjectString = (str: string, objectBefore: ObjectOf<string>, mode: "replace" | "append") => {
   const data = Object.fromEntries(
@@ -66,7 +50,7 @@ export const convertOptions = (options: OptionsDataData[] | undefined) => {
   if (!Array.isArray(options)) {
     return [];
   }
-  return options.map<InputInfoOption>((v) => ({value: v.name, label: v.label, img: v.img, disabled: v.disabled, vid: v.vid}));
+  return options.map<InputInfoOption<string>>((v) => ({value: v.name, label: v.label, img: v.img, disabled: v.disabled, vid: v.vid}));
 };
 
 export const getGroupStyle = (): Properties => {
@@ -155,7 +139,7 @@ export const getUnifiedInputs = <T>(
 };
 
 export type InputInfoWithDataPart<T extends InputInfo> = Omit<InputInfoPart<T>, "model" | "value">;
-export class InputInfoWithDataGetter<T, K extends string = string> {
+export class InputInfoWithDataGetter<T> {
   constructor(
     public data: T,
     public others?: Omit<InputInfoPart, "model">
@@ -173,9 +157,19 @@ export class InputInfoWithDataGetter<T, K extends string = string> {
 
   selectSingle(
     key: keyof T,
+    options: Value<string[]>,
+    others?: InputInfoWithDataPart<InputInfoSelectSingle<T, any>>
+  ): InputInfoSelectSingle<T, any>;
+  selectSingle<K>(
+    key: keyof T,
     options: Value<InputInfoOptions<K>>,
-    others?: InputInfoWithDataPart<InputInfoSelectSingle>
-  ): InputInfoSelectSingle {
+    others?: InputInfoWithDataPart<InputInfoSelectSingle<T, K>>
+  ): InputInfoSelectSingle<T, K>;
+  selectSingle<K = any>(
+    key: keyof T,
+    options: Value<InputInfoOptions<K>>,
+    others?: InputInfoWithDataPart<InputInfoSelectSingle<T, K>>
+  ): InputInfoSelectSingle<T, K> {
     return {
       type: "select",
       label: String(key),
@@ -187,15 +181,25 @@ export class InputInfoWithDataGetter<T, K extends string = string> {
     };
   }
 
-  selectMultiple<K extends string = string>(
+  selectMultiple(
+    key: keyof T,
+    options: Value<string[]>,
+    others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, any>>
+  ): InputInfoSelectMultiple<T, any>;
+  selectMultiple<K>(
     key: keyof T,
     options: Value<InputInfoOptions<K>>,
-    others?: InputInfoWithDataPart<InputInfoSelectMultiple>
-  ): InputInfoSelectMultiple {
+    others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, K>>
+  ): InputInfoSelectMultiple<T, K>;
+  selectMultiple<K>(
+    key: keyof T,
+    options: Value<InputInfoOptions<K>>,
+    others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, K>>
+  ): InputInfoSelectMultiple<T, K> {
     return {
       type: "select",
       label: String(key),
-      options,
+      options: options,
       multiple: true,
       model: {data: this.data, key},
       ...this.others,

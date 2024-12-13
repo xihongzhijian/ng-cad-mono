@@ -35,7 +35,8 @@ import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slid
 import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatTable, MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
-import {getFilepathUrl, getValueString, joinOptions, splitOptions} from "@app/app.common";
+import {getFilepathUrl, joinOptions, splitOptions} from "@app/app.common";
+import {getValueString} from "@app/utils/get-value";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";

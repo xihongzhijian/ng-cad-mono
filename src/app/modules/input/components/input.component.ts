@@ -16,19 +16,21 @@ import {
   output,
   QueryList,
   SimpleChanges,
+  viewChild,
   ViewChild,
   ViewChildren
 } from "@angular/core";
 import {FormControl, FormsModule, ValidationErrors, ValidatorFn} from "@angular/forms";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
-import {MatListModule, MatSelectionListChange} from "@angular/material/list";
+import {MatListModule, MatSelectionList, MatSelectionListChange} from "@angular/material/list";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectChange, MatSelectModule} from "@angular/material/select";
@@ -36,6 +38,7 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getArray, imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
 import {toFixed} from "@app/utils/func";
+import {getValue} from "@app/utils/get-value";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
@@ -49,7 +52,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import Color from "color";
 import {Properties} from "csstype";
-import {isEmpty, isEqual} from "lodash";
+import {intersectionWith, isEmpty, isEqual} from "lodash";
 import {Color as NgxColor} from "ngx-color";
 import {ChromeComponent, ColorChromeModule} from "ngx-color/chrome";
 import {ColorCircleModule} from "ngx-color/circle";
@@ -58,7 +61,7 @@ import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
 import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoString} from "./input.types";
-import {getValue, parseObjectString} from "./input.utils";
+import {parseObjectString} from "./input.utils";
 
 @Component({
   selector: "app-input",
@@ -78,6 +81,7 @@ import {getValue, parseObjectString} from "./input.utils";
     KeyValuePipe,
     MatAutocompleteModule,
     MatButtonModule,
+    MatCheckboxModule,
     MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
@@ -484,7 +488,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if ("value" in info) {
       this.value = getValue(info.value, this.message);
     }
-    let options: InputInfoOptions | undefined | null;
+    let options: InputInfoOptions<string> | undefined | null;
     const {type} = info;
     if (type === "select" || type === "string") {
       options = getValue(info.options, this.message);
@@ -1196,6 +1200,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     parseObjectString(this.objectString, this.value, mode);
   }
 
+  selectionList = viewChild<MatSelectionList>("selectionList");
   onListSelectionChange(event: MatSelectionListChange) {
     const values = event.source.selectedOptions.selected.map((v) => v.value);
     const info = this.info;
@@ -1204,6 +1209,38 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       this.value = value;
       this.onChange(value);
     }
+  }
+  getListOptionsSelected() {
+    const value = this.value;
+    const info = this.info;
+    if (!Array.isArray(value) || info.type !== "select" || !info.multiple) {
+      return [];
+    }
+    const options = this.options.map((v) => v.value);
+    return intersectionWith(options, value, (a, b) => isEqual(a, b));
+  }
+  isListOptionsSelectedAll() {
+    const numSelected = this.getListOptionsSelected().length;
+    const numAll = this.options.length;
+    return numSelected === numAll;
+  }
+  isListOptionsSelectedPartial() {
+    const numSelected = this.getListOptionsSelected().length;
+    const numAll = this.options.length;
+    return numSelected < numAll && numSelected > 0;
+  }
+  toggleListOptionsSelectAll() {
+    const selectionList = this.selectionList();
+    if (!selectionList) {
+      return;
+    }
+    if (this.isListOptionsSelectedAll()) {
+      selectionList.deselectAll();
+    } else {
+      selectionList.selectAll();
+    }
+    const event = new MatSelectionListChange(selectionList, selectionList.selectedOptions.selected);
+    selectionList.selectionChange.emit(event);
   }
 }
 

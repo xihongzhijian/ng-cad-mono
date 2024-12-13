@@ -64,9 +64,6 @@ export type SbjbItemOptionalKey4 = (typeof sbjbItemOptionalKeys4)[number];
 
 export const sbjbItemOptionalKeys2Map = new Map<SbjbItemOptionalKey2, SbjbItemOptionalKey2>([["小扇铰边", "铰边"]]);
 
-export const xhmrmsbjSbjbItemCopyModes = ["清空原有数据并全部替换为新数据", "添加到原有数据"] as const;
-export type XhmrmsbjSbjbItemCopyMode = (typeof xhmrmsbjSbjbItemCopyModes)[number];
-
 export const isSbjbCollection = (collection: CadCollection): collection is "peijianCad" => {
   return collection === "peijianCad";
 };

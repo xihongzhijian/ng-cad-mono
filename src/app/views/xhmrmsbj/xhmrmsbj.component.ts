@@ -24,10 +24,11 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
-import {getValueString, remoteFilePath, session, setGlobal, timer} from "@app/app.common";
+import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {alertError, checkDuplicateVars, ErrorItem, getNamesDetail} from "@app/utils/error-message";
 import {FetchManager} from "@app/utils/fetch-manager";
+import {getValueString} from "@app/utils/get-value";
 import {canOptionsOverlap, matchMongoData} from "@app/utils/mongo";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
@@ -64,7 +65,7 @@ import {ClickStopPropagationDirective} from "@modules/directives/click-stop-prop
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
-import {InputInfo, InputInfoOptions} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -928,7 +929,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const activeMorenbancai = this.activeMorenbancai();
     const morenbancai = xinghao["默认板材"];
-    const options: InputInfoOptions = [];
+    const options: InputInfoOption<string>[] = [];
     for (const key in morenbancai) {
       if (key === "底框板材") {
         continue;
@@ -1993,7 +1994,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return items;
   });
   async copyMsbjInfo(to: XhmrmsbjInfo) {
-    const itemOptions: InputInfoOptions = [];
+    const itemOptions: InputInfoOption<XhmrmsbjInfo>[] = [];
     for (const {key, info} of this.menshanbujuItems()) {
       if (info === to) {
         continue;

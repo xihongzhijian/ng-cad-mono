@@ -18,8 +18,8 @@ import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {getCopyName, getValueString} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
+import {getCopyName, getValue, getValueString, Value} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
@@ -27,13 +27,14 @@ import {FormulasEditorComponent} from "@components/formulas-editor/formulas-edit
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {TextInfoComponent} from "@components/text-info/text-info.component";
 import {TextInfo} from "@components/text-info/text-info.types";
-import {downloadByString, isTypeOf, selectFiles} from "@lucilor/utils";
+import {isTypeOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {cloneDeep} from "lodash";
+import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
 import {算料公式, 输入} from "../../../../components/lurushuju/xinghao-data";
@@ -67,6 +68,7 @@ export class SuanliaogongshiComponent {
 
   info = model.required<SuanliaogongshiInfo>();
   noScroll = input(false, {transform: booleanAttribute});
+  exportFilename = input<Value<string>>();
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<SuanliaogongshiCloseEvent>({alias: "close"});
   slgsChange = output();
@@ -76,6 +78,8 @@ export class SuanliaogongshiComponent {
     const info = this.info();
     this.gongshiInfo.set((info.data.算料公式 || []).map(() => ({})));
   });
+
+  title = computed(() => this.info().slgs?.title || "算料公式");
 
   shuruTable = computed(() => {
     const info = this.info();
@@ -238,43 +242,40 @@ export class SuanliaogongshiComponent {
   }
   async importGonshis() {
     const data = this.info().data;
-    const files = await selectFiles({accept: ".json"});
-    const file = files?.[0];
-    if (!file) {
+    this.message.importData<算料公式[]>(null, async (gongshisAll) => {
+      const data2 = await this.message.getImportFrom(gongshisAll, (v) => v.名字, "公式");
+      if (!data2) {
+        return false;
+      }
+      for (const item of data2.from) {
+        this.justifyGongshi(item);
+      }
+      if (data2.mode === "replace" || !data.算料公式) {
+        data.算料公式 = data2.from;
+      } else {
+        data.算料公式.push(...data2.from);
+      }
+      this.info.update((v) => ({...v}));
+      this.slgsChange.emit();
+      return true;
+    });
+  }
+  async exportGongshis() {
+    const gongshisAll = this.info().data.算料公式 || [];
+    if (gongshisAll.length < 1) {
       return;
     }
-    const reader = new FileReader();
-    reader.addEventListener("load", async () => {
-      let data2: any;
-      try {
-        data2 = JSON.parse(reader.result as string);
-      } catch (error) {
-        console.error(error);
-        this.message.error("导入数据有误");
-        return;
-      }
-      if (!(await this.message.confirm("确定导入吗？"))) {
-        return;
-      }
-      if (Array.isArray(data2)) {
-        if (!Array.isArray(data.算料公式)) {
-          data.算料公式 = [];
-        }
-        for (const item of data2) {
-          this.justifyGongshi(item);
-          data.算料公式.push(item);
-        }
-        this.info.update((v) => ({...v}));
-        this.slgsChange.emit();
-      } else {
-        this.message.error("算料公式数据有误");
-      }
-    });
-    reader.readAsText(file);
-  }
-  exportGongshis() {
-    const data = this.info().data;
-    downloadByString(JSON.stringify(data.算料公式), {filename: "算料公式.json"});
+    const data = await this.message.getExportFrom(gongshisAll, (v) => v.名字, "公式");
+    if (!data) {
+      return;
+    }
+    const gongshi = data.from;
+    const names = [this.title(), DateTime.now().toFormat("yyyyMMdd")];
+    const name0 = getValue(this.exportFilename(), this.message);
+    if (name0) {
+      names.unshift(name0);
+    }
+    this.message.exportData(gongshi, names.join("_"));
   }
   async clearGongshis() {
     if (!(await this.message.confirm(`确定清空全部【${this.gongshiTitle()}】吗？`))) {

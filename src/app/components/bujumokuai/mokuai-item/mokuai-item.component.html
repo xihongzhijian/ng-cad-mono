@@ -75,7 +75,7 @@
   <div class="item-cads border flex-row">
     <div class="mokuai-gongshi flex-column">
       @if (useSlgsInfo()) {
-        <app-suanliaogongshi [info]="slgsInfo()" (infoChange)="onSlgsChange($event)"></app-suanliaogongshi>
+        <app-suanliaogongshi noScroll [info]="slgsInfo()" (infoChange)="onSlgsChange($event)"></app-suanliaogongshi>
       } @else {
         <div class="title">模块公式</div>
         <app-formulas-editor
@@ -93,8 +93,7 @@
       <div class="toolbar">
         <div class="title">模块的所有配件CAD</div>
         <button mat-raised-button color="primary" (click)="selectCads()">选择CAD</button>
-        <button mat-raised-button color="primary" (click)="importCads(true)">导入替换</button>
-        <button mat-raised-button color="primary" (click)="importCads(false)">导入添加</button>
+        <button mat-raised-button color="primary" (click)="importCads()">导入</button>
         <button mat-raised-button color="primary" (click)="exportCads()">导出</button>
         <button mat-raised-button color="primary" (click)="clearData('配件CAD')">清空</button>
         <button mat-raised-button [color]="hideCadFormDefaultTexts() ? 'accent' : 'primary'" (click)="toggleHideCadFormDefaultTexts()">

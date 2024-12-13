@@ -31,7 +31,7 @@ export class RefreshCadImgsComponent implements OnInit {
 
   @HostBinding("class") class = "ng-page";
 
-  collectionOptions = signal<InputInfoOption[]>([]);
+  collectionOptions = signal<InputInfoOption<CadCollection>[]>([]);
   progressBar = new ProgressBar(1);
   collecionQueries = signal<CollecionQuery[] | null>(null);
   lrsjQueries = signal<LrsjQuery[] | null>(null);

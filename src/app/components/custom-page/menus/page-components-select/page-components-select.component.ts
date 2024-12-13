@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject} from "@angular/core";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {getInsertName} from "@app/app.common";
+import {getInsertName} from "@app/utils/get-value";
 import {keysOf} from "@lucilor/utils";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {PageComponentInfos, pageComponentInfos, PageComponentType} from "../../models/page-component-infos";

@@ -21,7 +21,7 @@ import {onKeyEvent, session, setGlobal} from "@app/app.common";
 import {getPdfInfo, htmlToPng} from "@app/utils/print";
 import {AboutComponent} from "@components/about/about.component";
 import {environment} from "@env";
-import {downloadByString, Rectangle, selectFiles} from "@lucilor/utils";
+import {Rectangle} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -164,27 +164,16 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
   clearPage() {
     this.pageStatus.components.set([]);
   }
-  async import() {
-    const files = await selectFiles({accept: ".json"});
-    const file = files?.[0];
-    if (!file) {
-      return;
-    }
-    try {
-      const data = JSON.parse(await file.text());
+  import() {
+    this.message.importData(true, async (data: any) => {
       this.page.import(data);
       this.psm.id = this.page.id;
       this.pageStatus.updatePage();
       this.pageStatus.savePageSnapshot();
-      await this.message.snack("导入成功");
-    } catch (e) {
-      console.error(e);
-      await this.message.snack("导入失败");
-    }
+    });
   }
   export() {
-    const data = this.page.export();
-    downloadByString(JSON.stringify(data), {filename: "page.json"});
+    this.message.exportData(this.page.export(), "page.json");
   }
   async getPagePng() {
     this.spinner.show(this.spinner.defaultLoaderId, {text: "正在生成图片"});

@@ -1,5 +1,5 @@
 import {WritableSignal} from "@angular/core";
-import {getValueString} from "@app/app.common";
+import {getValueString} from "@app/utils/get-value";
 import {getSortedItems} from "@app/utils/sort-items";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
 import {
@@ -289,7 +289,7 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (item?: XhmrmsbjSbjbItemSbj
 };
 
 export const getXhmrmsbjSbjbItemOptions = (items: XhmrmsbjSbjbItem[]) =>
-  items.map<InputInfoOption>((item) => {
+  items.map<InputInfoOption<XhmrmsbjSbjbItem>>((item) => {
     let label = item.产品分类;
     let disabled = false;
     if (!item.锁边铰边数据 || item.锁边铰边数据.length < 1) {
