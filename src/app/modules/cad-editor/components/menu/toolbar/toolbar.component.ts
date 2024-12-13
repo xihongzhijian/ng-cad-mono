@@ -4,6 +4,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
+import {RouterModule} from "@angular/router";
 import {KeyEventItem, onKeyEvent} from "@app/app.common";
 import {isLengthTextSizeSetKey, isShiyitu} from "@app/cad/utils";
 import {AboutComponent} from "@components/about/about.component";
@@ -12,16 +13,19 @@ import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
 import {environment} from "@env";
 import {CadData, CadLine, CadMtext, sortLines} from "@lucilor/cad-viewer";
-import {timeout} from "@lucilor/utils";
+import {downloadByString, timeout} from "@lucilor/utils";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
 import {CadStatusNormal} from "@services/cad-status";
+import {openExportPage} from "@views/export/export.utils";
+import {openImportPage} from "@views/import/import.utils";
 import {isEqual} from "lodash";
 import {map, startWith} from "rxjs";
 import {openCadKailiaoConfigDialog} from "../../dialogs/cad-kailiao-config/cad-kailiao-config.component";
@@ -32,7 +36,7 @@ import {openCadLineForm} from "../cad-line/cad-line.utils";
   selector: "app-toolbar",
   templateUrl: "./toolbar.component.html",
   styleUrls: ["./toolbar.component.scss"],
-  imports: [AboutComponent, AsyncPipe, MatButtonModule, MatDividerModule, MatMenuModule]
+  imports: [AboutComponent, AsyncPipe, MatButtonModule, MatDividerModule, MatMenuModule, RouterModule]
 })
 export class ToolbarComponent {
   @HostBinding("class") class = "ng-page";
@@ -465,5 +469,24 @@ export class ToolbarComponent {
     if (result) {
       this.status.openCad({data: result.cad});
     }
+  }
+
+  openImportPage() {
+    const collection = this.status.collection$.value;
+    const cad = this.status.cad.data;
+    const yaoqiu = this.status.getCadYaoqiu(cad.type);
+    openImportPage(this.status, {collection, yaoqiu});
+  }
+  openExportPage() {
+    const collection = this.status.collection$.value;
+    const cad = this.status.cad.data;
+    const ids = [cad.id];
+    openExportPage(this.status, {collection, ids, direct: true});
+  }
+  exportCadJson() {
+    const cad = this.status.closeCad();
+    const content = JSON.stringify([getHoutaiCad(cad)]);
+    const filename = `${cad.name}.json`;
+    downloadByString(content, {filename});
   }
 }

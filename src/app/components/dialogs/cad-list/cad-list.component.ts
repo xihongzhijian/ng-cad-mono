@@ -22,7 +22,7 @@ import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slid
 import {imgCadEmpty} from "@app/app.common";
 import {getCadQueryFields, setCadData, validateCad} from "@app/cad/cad-shujuyaoqiu";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
-import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
+import {CadItemButton, CadItemForm} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
@@ -83,7 +83,6 @@ export class CadListComponent implements AfterViewInit {
   loaderIdSubmit = "cadListSubmit";
   cadDataType!: CadData;
   imgCadEmpty = imgCadEmpty;
-  cadItemButtons = signal<CadItemButton<CadListItemInfo>[]>([]);
   downloadApi = this.http.getUrl("ngcad/downloadFile");
   multiDeleting = signal(false);
 
@@ -106,10 +105,6 @@ export class CadListComponent implements AfterViewInit {
     if (this.data.options) {
       this.searchOptions.set(this.data.options);
     }
-    this.cadItemButtons.set([
-      {name: "复制", onClick: this.copyCad.bind(this)},
-      {name: "删除", onClick: this.deleteCad.bind(this)}
-    ]);
   }
 
   async ngAfterViewInit() {
@@ -449,62 +444,6 @@ export class CadListComponent implements AfterViewInit {
     return 0;
   }
 
-  beforeEditCad(data: HoutaiCad) {
-    this.data.beforeEditCad?.(data);
-  }
-  afterEditCad(data: HoutaiCad) {
-    this.data.afterEditCad?.(data);
-  }
-
-  async addCad() {
-    const {addCadData, yaoqiu, gongshis, collection} = this.data;
-    const cad2 = await openCadForm(yaoqiu, collection, null, this.http, this.dialog, this.status, this.message, true);
-    if (!cad2) {
-      return;
-    }
-    if (addCadData) {
-      Object.assign(cad2, addCadData);
-    }
-    const data = getHoutaiCad(cad2);
-    const resData = await this.http.mongodbInsert<HoutaiCad>(collection, data, {force: !!yaoqiu});
-    if (resData) {
-      const data2 = new CadData(resData.json);
-      if (await this.message.confirm("是否编辑新的CAD？")) {
-        await openCadEditorDialog(this.dialog, {data: {data: data2, collection, center: true, gongshis}});
-      }
-      this.search();
-    }
-  }
-
-  async copyCad(component: CadItemComponent<CadListItemInfo>) {
-    const {index: i} = component.customInfo;
-    const item = this.pageData()[i];
-    if (!(await this.message.confirm(`是否确定复制【${item.data.名字}】？`))) {
-      return;
-    }
-    const {collection} = this.data;
-    const items = await this.http.mongodbCopy<HoutaiCad>(collection, [item.data._id]);
-    if (items?.[0]) {
-      if (await this.message.confirm("是否编辑新的CAD？")) {
-        const data = new CadData(items[0].json);
-        const gongshis = this.data.gongshis;
-        await openCadEditorDialog(this.dialog, {data: {data, collection, center: true, gongshis}});
-      }
-      this.search();
-    }
-  }
-
-  async deleteCad(component: CadItemComponent<CadListItemInfo>) {
-    const {index: i} = component.customInfo;
-    const item = this.pageData()[i];
-    if (!(await this.message.confirm(`是否确定删除【${item.data.名字}】？`))) {
-      return;
-    }
-    if (await this.http.mongodbDelete(this.data.collection, {id: item.data._id})) {
-      this.search();
-    }
-  }
-
   async getCad(id: string, options?: HttpOptions) {
     const {collection} = this.data;
     const {cads} = await this.http.getCad({id, collection}, options);
@@ -525,6 +464,17 @@ export class CadListComponent implements AfterViewInit {
     openExportPage(this.status, {collection, ids, search: this.data.search, lurushuju: true});
   }
 
+  cadItemButtons = computed(() => {
+    const buttons: CadItemButton<CadListItemInfo>[] = [
+      {name: "复制", onClick: this.copyCad.bind(this)},
+      {name: "删除", onClick: this.deleteCad.bind(this)}
+    ];
+    return buttons;
+  });
+  cadItemForm = signal<CadItemForm<CadListItemInfo>>({noDefaultTexts: true});
+  toggleShowCadItemFormTexts() {
+    this.cadItemForm.update((v) => ({...v, noDefaultTexts: !v.noDefaultTexts}));
+  }
   getItemSelectable(item: CadListPageItem): CadItemComponent<CadListItemInfo>["selectable"] {
     if (this.multiDeleting()) {
       return {selected: item.toDelete, onChange: this.onSelectChange.bind(this)};
@@ -533,7 +483,12 @@ export class CadListComponent implements AfterViewInit {
     }
     return undefined;
   }
-
+  beforeEditCad(data: HoutaiCad) {
+    this.data.beforeEditCad?.(data);
+  }
+  afterEditCad(data: HoutaiCad) {
+    this.data.afterEditCad?.(data);
+  }
   onSelectChange(component: CadItemComponent<CadListItemInfo>) {
     const {index: i} = component.customInfo;
     const {selectMode} = this.data;
@@ -574,7 +529,6 @@ export class CadListComponent implements AfterViewInit {
       this.syncCheckedItems();
     }
   }
-
   async toggleMultiDeleting() {
     const data = this.pageData();
     if (this.multiDeleting()) {
@@ -588,10 +542,55 @@ export class CadListComponent implements AfterViewInit {
     this.multiDeleting.update((v) => !v);
     this.pageData.update((v) => v.map((v2) => ({...v2, toDelete: false})));
   }
-
   afterFetch(component: CadItemComponent<CadListItemInfo>) {
     const {index: i} = component.customInfo;
     this.pageData.update((v) => v.map((v2, j) => (i === j ? {...v2, isFetched: true} : v2)));
+  }
+  async addCad() {
+    const {addCadData, yaoqiu, gongshis, collection} = this.data;
+    const cad2 = await openCadForm(yaoqiu, collection, null, this.http, this.dialog, this.status, this.message, true);
+    if (!cad2) {
+      return;
+    }
+    if (addCadData) {
+      Object.assign(cad2, addCadData);
+    }
+    const data = getHoutaiCad(cad2);
+    const resData = await this.http.mongodbInsert<HoutaiCad>(collection, data, {force: !!yaoqiu});
+    if (resData) {
+      const data2 = new CadData(resData.json);
+      if (await this.message.confirm("是否编辑新的CAD？")) {
+        await openCadEditorDialog(this.dialog, {data: {data: data2, collection, center: true, gongshis}});
+      }
+      this.search();
+    }
+  }
+  async copyCad(component: CadItemComponent<CadListItemInfo>) {
+    const {index: i} = component.customInfo;
+    const item = this.pageData()[i];
+    if (!(await this.message.confirm(`是否确定复制【${item.data.名字}】？`))) {
+      return;
+    }
+    const {collection} = this.data;
+    const items = await this.http.mongodbCopy<HoutaiCad>(collection, [item.data._id]);
+    if (items?.[0]) {
+      if (await this.message.confirm("是否编辑新的CAD？")) {
+        const data = new CadData(items[0].json);
+        const gongshis = this.data.gongshis;
+        await openCadEditorDialog(this.dialog, {data: {data, collection, center: true, gongshis}});
+      }
+      this.search();
+    }
+  }
+  async deleteCad(component: CadItemComponent<CadListItemInfo>) {
+    const {index: i} = component.customInfo;
+    const item = this.pageData()[i];
+    if (!(await this.message.confirm(`是否确定删除【${item.data.名字}】？`))) {
+      return;
+    }
+    if (await this.http.mongodbDelete(this.data.collection, {id: item.data._id})) {
+      this.search();
+    }
   }
 }
 

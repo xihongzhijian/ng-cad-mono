@@ -18,6 +18,9 @@
     }
     <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
     <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
+    <button mat-raised-button [color]="cadItemForm().noDefaultTexts ? 'primary' : 'accent'" (click)="toggleShowCadItemFormTexts()">
+      显示详细信息
+    </button>
   }
   @for (btn of data.toolbarBtns; track $index) {
     <button mat-raised-button color="primary" (click)="btn.onClick?.(this)">{{ btn.name }}</button>
@@ -58,6 +61,7 @@
           [gongshis]="data.gongshis"
           [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
           [selectable]="getItemSelectable(item)"
+          [cadForm]="cadItemForm()"
           (beforeEditCad)="beforeEditCad(item.data)"
           (afterEditCad)="afterEditCad(item.data)"
         ></app-cad-item>
