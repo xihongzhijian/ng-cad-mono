@@ -20,6 +20,7 @@ import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.t
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {getShuruItem, getShuruTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {输入} from "@components/lurushuju/xinghao-data";
+import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {VarNamesComponent} from "@components/var-names/var-names.component";
 import {VarNameItem} from "@components/var-names/var-names.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -31,7 +32,7 @@ import {getNodesTable} from "./mkdxpz-editor.utils";
 
 @Component({
   selector: "app-mkdxpz-editor",
-  imports: [FormulasEditorComponent, MatButtonModule, MatDividerModule, TableComponent, VarNamesComponent],
+  imports: [FormulasEditorComponent, MatButtonModule, MatDividerModule, MsbjRectsComponent, TableComponent, VarNamesComponent],
   templateUrl: "./mkdxpz-editor.component.html",
   styleUrl: "./mkdxpz-editor.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush

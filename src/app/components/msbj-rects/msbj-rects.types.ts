@@ -35,6 +35,9 @@ export interface 模块大小配置 {
 
 export type MsbjSelectRectEvent = {info: MsbjRectInfo | null};
 
+export const msbjRectSelectType = ["all", "bujuOnly", "none"] as const;
+export type MsbjRectSelectType = (typeof msbjRectSelectType)[number];
+
 export class MsbjRectInfo {
   id: string;
   rect: Rectangle;

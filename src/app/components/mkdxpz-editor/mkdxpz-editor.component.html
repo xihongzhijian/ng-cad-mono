@@ -12,6 +12,9 @@
   <div class="slgs flex-column">
     <div class="title">模块大小公式（只用于模块大小计算）</div>
     <app-formulas-editor class="flex-110" [(formulas)]="formulas" [compact]="{minRows: 5}" [validator]="validator()"></app-formulas-editor>
+    @if (data().rectInfos; as rectInfos) {
+      <app-msbj-rects [rectInfos]="rectInfos" selectType="none"></app-msbj-rects>
+    }
   </div>
   @if (nodesTable(); as info) {
     <mat-divider vertical></mat-divider>

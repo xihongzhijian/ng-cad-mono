@@ -1,5 +1,4 @@
 import {
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -20,7 +19,7 @@ import {ObjectOf, Rectangle, timeout} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {cloneDeep, random} from "lodash";
 import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
-import {MsbjRectInfo, MsbjRectInfoRaw} from "./msbj-rects.types";
+import {MsbjRectInfo, MsbjRectInfoRaw, MsbjRectSelectType} from "./msbj-rects.types";
 
 @Component({
   selector: "app-msbj-rects",
@@ -32,7 +31,7 @@ import {MsbjRectInfo, MsbjRectInfoRaw} from "./msbj-rects.types";
 export class MsbjRectsComponent {
   rectInfos = input.required<MsbjRectInfoRaw[]>();
   padding = input<TrblLike>(0);
-  ignoreNonBuju = input(false, {transform: booleanAttribute});
+  selectType = input<MsbjRectSelectType>("all");
   generateRectsStart = output();
   generateRectsEnd = output<GenerateRectsEndEvent>();
   activeRectInfo = model<MsbjRectInfo | null>(null);
@@ -63,6 +62,16 @@ export class MsbjRectsComponent {
     this.generateRects({isWindowResize: true});
   }
 
+  getRectSelectable(info: MsbjRectInfo) {
+    switch (this.selectType()) {
+      case "all":
+        return true;
+      case "bujuOnly":
+        return info.raw.isBuju;
+      case "none":
+        return false;
+    }
+  }
   getRectStyle(info: MsbjRectInfo) {
     const {rect, bgColor, raw} = info;
     let order = 0;
@@ -80,7 +89,7 @@ export class MsbjRectsComponent {
       backgroundColor: bgColor,
       zIndex: order
     };
-    if (raw.isBuju || !this.ignoreNonBuju()) {
+    if (this.getRectSelectable(info)) {
       style.cursor = "pointer";
     }
     return style;
@@ -107,7 +116,7 @@ export class MsbjRectsComponent {
         backgroundColor: bgColor,
         zIndex: order
       };
-      if (raw.isBuju || !this.ignoreNonBuju()) {
+      if (this.getRectSelectable(info)) {
         style.cursor = "pointer";
       }
       const info2 = new MsbjRectInfo(info.raw);
@@ -209,10 +218,15 @@ export class MsbjRectsComponent {
     this.generateRects({resetColors: true});
   });
 
-  bujuRectInfos = computed(() => this.rectInfosRelative().filter((v) => v.raw.isBuju));
+  bujuRectInfos = computed(() => {
+    if (this.selectType() === "none") {
+      return [];
+    }
+    return this.rectInfosRelative().filter((v) => v.raw.isBuju);
+  });
 
   onRectClick(info: MsbjRectInfo) {
-    if (this.ignoreNonBuju() && !info.raw.isBuju) {
+    if (!this.getRectSelectable(info)) {
       return;
     }
     this.activeRectInfo.set(info);

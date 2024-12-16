@@ -111,6 +111,9 @@ export const calc = (data: InputData) => {
         }
       }
       const resultItem = dp[maxIndex][1];
+      if (resultItem.items.length < 1) {
+        break;
+      }
       if (resultItem.value === 0) {
         continue;
       }
@@ -119,12 +122,8 @@ export const calc = (data: InputData) => {
         const val = usedBoms.get(item.BOM唯一码) || 0;
         usedBoms.set(item.BOM唯一码, val + 1);
       }
-      const length = boms.length;
       boms = boms.filter((v) => (usedBoms.get(v.BOM唯一码) || 0) < v.要求数量);
       num--;
-      if (length === boms.length) {
-        break;
-      }
     }
     for (const resultItem of result) {
       const items = resultItem.items;
