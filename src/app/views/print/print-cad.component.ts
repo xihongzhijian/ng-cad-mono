@@ -21,7 +21,7 @@ import {exportZixuanpeijian, importZixuanpeijian} from "@components/dialogs/zixu
 import {Debounce} from "@decorators/debounce";
 import {environment} from "@env";
 import {CadData, CadLine, CadMtext, CadViewer} from "@lucilor/cad-viewer";
-import {downloadByUrl, DownloadOptions, ObjectOf, timeout} from "@lucilor/utils";
+import {downloadByBlob, downloadByUrl, DownloadOptions, loadImage, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -35,6 +35,7 @@ import {
 } from "angular-animations";
 import imageCompression from "browser-image-compression";
 import {intersection} from "lodash";
+import {ContentImage} from "pdfmake/interfaces";
 import printJS from "print-js";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
@@ -67,6 +68,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   loaderId = "printLoader";
   pdfUrlRaw?: string;
   pdfUrl?: SafeUrl;
+  imageContents: ContentImage[] = [];
   pdfFile: File | null = null;
   showDxfInput = false;
   private _paramKey = "printCad-paramCache";
@@ -288,7 +290,8 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     } else {
       params.keepCad = false;
     }
-    const {url, errors, cad, pdfFile} = await printCads({...params, cads});
+    const {url, errors, cad, pdfFile, imageContents} = await printCads({...params, cads});
+    this.imageContents = imageContents;
     if (this.enableZixuanpeijian) {
       this.cad = cad;
       if (this.mode === "edit") {
@@ -862,6 +865,51 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       vid: record.vid,
       field: "suanliaodanpdf",
       file: pdfFile
+    });
+  }
+
+  async saveAsImage(space = 10) {
+    const canvas = document.createElement("canvas");
+    let canvasWidth = 0;
+    let canvasHeight = 0;
+    const images2: HTMLImageElement[] = [];
+    this.spinner.show(this.loaderId, {text: "正在生成图片..."});
+    for (const [i, {image}] of this.imageContents.entries()) {
+      let image2: HTMLImageElement;
+      try {
+        image2 = await loadImage(image);
+      } catch {
+        continue;
+      }
+      images2.push(image2);
+      const imgWidth = image2.width;
+      const imgHeight = image2.height;
+      canvasWidth = Math.max(canvasWidth, imgWidth);
+      canvasHeight += imgHeight;
+      if (i > 0) {
+        canvasHeight += space;
+      }
+    }
+    this.spinner.hide(this.loaderId);
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+    let heightCanvas2 = 0;
+    for (const image2 of images2) {
+      const {width, height} = image2;
+      ctx.drawImage(image2, 0, heightCanvas2, width, height);
+      heightCanvas2 += height + space;
+    }
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const title = this.printParams.info.title;
+        downloadByBlob(blob, {filename: `${title}.png`});
+      } else {
+        this.message.alert("生成图片失败");
+      }
     });
   }
 }

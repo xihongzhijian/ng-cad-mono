@@ -21,6 +21,7 @@ import {
 import {getImageDataUrl, isBetween, isNearZero, isTypeOf, loadImage, Matrix, ObjectOf, Point, Rectangle, timeout} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
 import {createPdf} from "pdfmake/build/pdfmake";
+import {ContentImage} from "pdfmake/interfaces";
 import QRCode from "qrcode";
 import {getCadPreview} from "./cad-preview";
 import {
@@ -919,8 +920,9 @@ export const printCads = async (params: PrintCadsParams) => {
   cad.dom.style.opacity = "0";
   await prepareCadViewer(cad);
 
-  const content: PdfDocument["content"] = [];
-  const content2: PdfDocument["content"] = [];
+  const imageContents1: ContentImage[] = [];
+  const imageContents2: ContentImage[] = [];
+
   let pageOrientation: PdfDocument["pageOrientation"] = "portrait";
   for (let i = 0; i < cads.length; i++) {
     const data = cads[i];
@@ -1047,9 +1049,9 @@ export const printCads = async (params: PrintCadsParams) => {
     }
     await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细);
     img = await cad.toDataURL();
-    content.push({image: img, width: localWidth, height: localHeight});
+    imageContents1.push({image: img, width: localWidth, height: localHeight});
     if (img2) {
-      content2.push({image: img2, width: localWidth, height: localHeight});
+      imageContents2.push({image: img2, width: localWidth, height: localHeight});
     }
 
     const cadConfig = cad.getConfig();
@@ -1057,7 +1059,7 @@ export const printCads = async (params: PrintCadsParams) => {
     if (unfold) {
       const unfoldImgs = await getUnfoldCadViewers(params, cadConfig, [localWidth, localHeight], i, unfold);
       for (const unfoldImg of unfoldImgs) {
-        content2.push({image: unfoldImg, width: localWidth, height: localHeight});
+        imageContents2.push({image: unfoldImg, width: localWidth, height: localHeight});
       }
     }
 
@@ -1065,7 +1067,7 @@ export const printCads = async (params: PrintCadsParams) => {
     if (bomTable) {
       const imgs = await getBomTableImgs(bomTable, cadConfig, [localWidth, localHeight]);
       for (const image of imgs) {
-        content2.push({image, width: localWidth, height: localHeight});
+        imageContents2.push({image, width: localWidth, height: localHeight});
       }
     }
   }
@@ -1078,6 +1080,7 @@ export const printCads = async (params: PrintCadsParams) => {
     }, 0);
   }
 
+  const imageContents = [...imageContents1, ...imageContents2];
   const pdf = createPdf(
     {
       info: {
@@ -1086,7 +1089,7 @@ export const printCads = async (params: PrintCadsParams) => {
         keywords: "cad print",
         ...params.info
       },
-      content: content.concat(content2),
+      content: cloneDeep(imageContents),
       pageSize: "A4",
       pageOrientation,
       pageMargins: 0
@@ -1101,7 +1104,7 @@ export const printCads = async (params: PrintCadsParams) => {
       resolve({pdfFile: file, url});
     });
   });
-  return {url, errors, cad, pdfFile};
+  return {url, errors, cad, pdfFile, imageContents};
 };
 
 const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物料明细: 型材物料明细 | undefined) => {
