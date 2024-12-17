@@ -62,6 +62,10 @@
                         <span>{{ item.peizhiName }}</span>
                         <br />
                         <span class="link text" (click)="openKongpeizhi(item)">查看</span>
+                        @if (item.formulaInfos; as infos) {
+                          <br />
+                          <app-formulas [formulaInfos]="infos"></app-formulas>
+                        }
                       </span>
                     }
                     @case ("error") {

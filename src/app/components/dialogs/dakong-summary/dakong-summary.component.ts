@@ -4,8 +4,11 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {session, setGlobal} from "@app/app.common";
+import {toFixed} from "@app/utils/func";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
-import {queryString} from "@lucilor/utils";
+import {FormulasComponent} from "@components/formulas/formulas.component";
+import {FormulaInfo} from "@components/formulas/formulas.types";
+import {keysOf, queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
@@ -24,7 +27,7 @@ import {
   selector: "app-dakong-summary",
   templateUrl: "./dakong-summary.component.html",
   styleUrls: ["./dakong-summary.component.scss"],
-  imports: [CadImageComponent, FormsModule, InputComponent, MatButtonModule, MatSlideToggleModule, NgScrollbar],
+  imports: [CadImageComponent, FormulasComponent, FormsModule, InputComponent, MatButtonModule, MatSlideToggleModule, NgScrollbar],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DakongSummaryComponent {
@@ -131,14 +134,34 @@ export class DakongSummaryComponent {
       const data: DakongSummaryTableData[] = [];
       for (const item of items) {
         for (const detail of item.summary || []) {
-          data.push({
+          const detail2: DakongSummaryTableData = {
             cadId: item.cadId,
             cadName: item.cadName,
             muban: item.muban,
             peizhiName: item.peizhiName,
             hidden: false,
             ...detail
-          });
+          };
+          if (detail.calcResult) {
+            detail2.formulaInfos = [];
+            for (const key of keysOf(detail.calcResult)) {
+              const val1 = detail[key];
+              const val2 = detail.calcResult[key];
+              if (!val1 || typeof val2 !== "number") {
+                continue;
+              }
+              const val3 = toFixed(val2, 2);
+              const info: FormulaInfo = {
+                keys: [{eq: true, name: key}],
+                values: [{eq: true, name: val1}]
+              };
+              if (val3 !== val1) {
+                info.values.push({eq: true, name: val3});
+              }
+              detail2.formulaInfos.push(info);
+            }
+          }
+          data.push(detail2);
         }
       }
       tableInfos.push({code, data});

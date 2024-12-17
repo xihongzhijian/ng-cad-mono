@@ -1,3 +1,4 @@
+import {FormulaInfo} from "@components/formulas/formulas.types";
 import {DakongSummary, DakongSummaryItem, DakongSummaryItemDetail} from "@views/select-bancai/select-bancai.types";
 
 export interface DakongSummaryInput {
@@ -17,6 +18,7 @@ export interface DakongSummaryTableData extends DakongSummaryItemDetail {
   muban: DakongSummaryItem["muban"];
   peizhiName: DakongSummaryItem["peizhiName"];
   hidden: boolean;
+  formulaInfos?: FormulaInfo[];
 }
 
 export interface DakongSummaryTableColumn {

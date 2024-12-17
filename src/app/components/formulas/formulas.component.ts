@@ -5,9 +5,9 @@ import {Input} from "@angular/core";
 import {Component} from "@angular/core";
 import {timeout} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo} from "@modules/input/components/input.types";
 import csstype from "csstype";
 import {lastValueFrom, Subject} from "rxjs";
+import {FormulaInfo} from "./formulas.types";
 
 @Component({
   selector: "app-formulas",
@@ -72,9 +72,4 @@ export class FormulasComponent implements AfterViewInit {
     }
     this.updated.emit();
   }
-}
-
-export interface FormulaInfo {
-  keys: {eq: boolean; name: string}[];
-  values: {eq: boolean; name: string; inputInfo?: InputInfo}[];
 }

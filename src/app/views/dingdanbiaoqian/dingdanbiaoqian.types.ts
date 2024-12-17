@@ -1,5 +1,5 @@
 import {Formulas} from "@app/utils/calc";
-import {FormulaInfo} from "@components/formulas/formulas.component";
+import {FormulaInfo} from "@components/formulas/formulas.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {Properties} from "csstype";

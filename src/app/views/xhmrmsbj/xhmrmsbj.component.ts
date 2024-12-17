@@ -52,7 +52,9 @@ import {
   updateMokuaiItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
-import {FormulaInfo, FormulasComponent} from "@components/formulas/formulas.component";
+import {FormulasComponent} from "@components/formulas/formulas.component";
+import {FormulaInfo} from "@components/formulas/formulas.types";
+import {getFormulaInfos} from "@components/formulas/formulas.utils";
 import {选项} from "@components/lurushuju/xinghao-data";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
@@ -77,7 +79,7 @@ import {MsbjCloseEvent, MsbjData, Node2rectData, node2rectDataMsdxKeys} from "@v
 import {getEmpty模块大小配置, getNodeFormulasKeys, justify模块大小配置, MsbjInfo} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {resetInputs} from "@views/suanliao/suanliao.utils";
-import {getFormulaInfos, openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
+import {openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {XhmrmsbjXinghaoConfigComponent} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.component";
 import {isXhmrmsbjXinghaoConfigComponentType} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
 import {clone, cloneDeep, debounce, difference, intersection} from "lodash";
