@@ -227,6 +227,7 @@ export class XhmrmsbjXinghaoConfigComponent {
     if (!(await this.message.confirm(`确定删除【${item.名字}】吗？`))) {
       return;
     }
+    items.splice(index, 1);
     itemsSetter(xinghaoConfig, items);
     this.refreshData();
   }
