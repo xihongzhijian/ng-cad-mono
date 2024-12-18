@@ -12,7 +12,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoGroup, InputInfoPart, InputInfoSelect} from "@modules/input/components/input.types";
-import {getGroupStyle, getInputStyle, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
+import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
@@ -320,15 +320,10 @@ export class LrsjXinghaosComponent extends LrsjPiece {
           namesGroupInput.infos = getNameInputs();
         }
       },
-      {
-        type: "group",
-        label: "",
-        infos: [
-          await this.getOptionInput(data, "门窗", "menchuang", true, {style: getInputStyle(true)}),
-          await this.getOptionInput(data, "工艺", "gongyi", true, {style: getInputStyle(true)})
-        ],
-        groupStyle: getGroupStyle()
-      },
+      getInputInfoGroup([
+        await this.getOptionInput(data, "门窗", "menchuang", true),
+        await this.getOptionInput(data, "工艺", "gongyi", true)
+      ]),
       namesGroupInput
     ];
     const result = await this.message.form(form, {}, {width: "100%", height: "100%", maxWidth: "900px"});

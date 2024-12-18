@@ -9,6 +9,7 @@ import {
   InputInfo,
   InputInfoArray,
   InputInfoBoolean,
+  InputInfoGroup,
   InputInfoImage,
   InputInfoNumber,
   InputInfoObject,
@@ -53,50 +54,47 @@ export const convertOptions = (options: OptionsDataData[] | undefined) => {
   return options.map<InputInfoOption<string>>((v) => ({value: v.name, label: v.label, img: v.img, disabled: v.disabled, vid: v.vid}));
 };
 
-export const getGroupStyle = (): Properties => {
-  return {display: "flex", marginRight: "-5px", flexWrap: "wrap"};
-};
-
-export const getInputStyle = (isInGroup: boolean, others?: Properties) => {
-  const result: Properties = {boxSizing: "border-box"};
-  if (isInGroup) {
-    result.flex = "1 1 0";
-    result.width = "0";
-    result.marginRight = "5px";
+export interface GetInputInfoGroupOpts {
+  style?: Properties;
+  inputStyle?: Properties;
+  groupStyle?: Properties;
+  label?: string;
+}
+export const getInputInfoGroup = <T>(infos: InputInfo<T>[], opts?: GetInputInfoGroupOpts): InputInfoGroup<T> => {
+  const {style, groupStyle, inputStyle, label = ""} = opts || {};
+  for (const info of infos) {
+    info.style = {flex: "1 1 0", boxSizing: "border-box", width: "0", paddingRight: "5px", ...inputStyle, ...info.style};
   }
-  Object.assign(result, others);
-  return result;
+  return {type: "group", label, style, groupStyle: {display: "flex", paddingRight: "-5px", flexWrap: "wrap", ...groupStyle}, infos};
 };
 
-export const getNumberUnitInput = <T>(
-  isInGroup: boolean,
-  label: string,
-  unit: string,
-  style?: Properties,
-  others?: Partial<InputInfoNumber<T>>
-): InputInfoNumber<T> => {
+export const getNumberUnitInput = <T>(label: string, unit: string, others?: Partial<InputInfoNumber<T>>): InputInfoNumber<T> => {
   return {
     type: "number",
     label,
     suffixTexts: [{name: unit}],
-    style: getInputStyle(isInGroup, style),
     ndigits: 2,
     inputTextAlign: "right",
     ...others
   };
 };
 
+export interface GetUnifiedInputsOpts extends GetInputInfoGroupOpts {
+  onChange?: () => void;
+  unifiedInputStyle?: Properties;
+}
 export const getUnifiedInputs = <T>(
   id: string,
   inputs: (InputInfoString | InputInfoNumber | InputInfoBoolean)[],
   arr: T[],
-  onChange?: () => void
+  opts?: GetUnifiedInputsOpts
 ) => {
   const storageKey = `getUnifiedInputs_${id}`;
   let unified: boolean | null = session.load(storageKey);
   if (typeof unified !== "boolean") {
     unified = uniq(arr).length < 2;
   }
+  const {onChange, unifiedInputStyle, inputStyle} = opts || {};
   const unifiedInput: InputInfo = {
     type: "boolean",
     label: "一起改变",
@@ -121,7 +119,7 @@ export const getUnifiedInputs = <T>(
         }
       }
     },
-    style: getInputStyle(true, {flex: "0 0 100%"})
+    style: {flex: "0 0 100%", ...unifiedInputStyle}
   };
   for (const input of inputs) {
     const onChange2 = input.onChange as any;
@@ -135,7 +133,7 @@ export const getUnifiedInputs = <T>(
       onChange?.();
     };
   }
-  return [unifiedInput, ...inputs];
+  return getInputInfoGroup([unifiedInput, ...inputs], {label: id, ...opts, inputStyle: {flex: "0 0 50%", ...inputStyle}});
 };
 
 export type InputInfoWithDataPart<T extends InputInfo> = Omit<InputInfoPart<T>, "model" | "value">;
@@ -211,7 +209,7 @@ export class InputInfoWithDataGetter<T> {
     return {type: "number", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
   numberWithUnit(key: keyof T, unit: string, others?: InputInfoWithDataPart<InputInfoNumber>): InputInfoNumber {
-    return getNumberUnitInput(false, String(key), unit, {}, {model: {data: this.data, key}, ...this.others, ...others});
+    return getNumberUnitInput(String(key), unit, {model: {data: this.data, key}, ...this.others, ...others});
   }
 
   boolean(key: keyof T, others?: InputInfoWithDataPart<InputInfoBoolean>): InputInfoBoolean {

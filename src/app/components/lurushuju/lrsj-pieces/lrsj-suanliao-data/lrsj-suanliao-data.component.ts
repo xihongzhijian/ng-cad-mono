@@ -33,7 +33,7 @@ import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
-import {convertOptions, getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
+import {convertOptions, getInputInfoGroup} from "@modules/input/components/input.utils";
 import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -134,9 +134,9 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     }
   });
 
-  getOptionInputInfo2(data: any, key: string, isInGroup: boolean, otherStyle?: Properties): InputInfoSelect {
+  getOptionInputInfo2(data: any, key: string, style?: Properties): InputInfoSelect {
     const info = getMenjiaoOptionInputInfo(data, key, this.menjiaoOptions(), () => this.lrsjStatus.menjiaoOptionsManager.fetch(true));
-    info.style = getInputStyle(isInGroup, otherStyle);
+    info.style = style;
     const onChange = info.onChange;
     info.onChange = (val: any, info: any) => {
       onChange?.(val, info);
@@ -162,19 +162,14 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         onChange: () => {
           this.suanliaoData.update((v) => ({...v}));
         },
-        validators: Validators.required,
-        style: getInputStyle(true, {width: "65px", flex: "1 0 auto"})
+        validators: Validators.required
       };
     };
     const optionKeys: (keyof 算料数据)[] = ["门铰", "门扇厚度", "锁边", "铰边"];
     const form1Group: InputInfo[] = [
-      {
-        type: "group",
-        label: "选项",
-        style: getInputStyle(true, {width: "auto", flex: "0 0 auto"}),
-        groupStyle: getGroupStyle(),
-        infos: optionKeys.map((v) => {
-          const info = this.getOptionInputInfo2(data, v, true);
+      getInputInfoGroup(
+        optionKeys.map((v) => {
+          const info = this.getOptionInputInfo2(data, v);
           let w: number;
           switch (v) {
             case "门铰":
@@ -190,15 +185,16 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
             default:
               w = 0;
           }
-          info.style = {...info.style, width: `${w}px`, flex: `0 0 auto`};
+          info.style = {...info.style, width: `${w}px`};
           return info;
-        })
-      }
+        }),
+        {style: {width: "auto", flex: "0 1 auto"}, inputStyle: {flex: `0 0 auto`}, label: "选项"}
+      )
     ];
     const 选项要求Form: InputInfo[] = [];
     for (const key in data.选项要求) {
       const value = data.选项要求[key];
-      const info = this.getOptionInputInfo2(data, key, true);
+      const info = this.getOptionInputInfo2(data, key);
       选项要求Form.push(info);
       delete info.model;
       info.value = value.map((v) => v.mingzi);
@@ -239,29 +235,16 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         ],
         placeholder: "下单显示，请输入有意义的名字"
       },
-      {
-        type: "group",
-        label: "",
-        infos: form1Group,
-        groupStyle: getGroupStyle()
-      }
+      getInputInfoGroup(form1Group)
     ];
     if (选项要求Form.length > 0) {
-      form1.push({
-        type: "group",
-        label: "选项要求",
-        infos: 选项要求Form,
-        groupStyle: getGroupStyle()
-      });
+      form1.push(getInputInfoGroup(选项要求Form, {label: "选项要求", style: {width: "auto", flex: "0 1 auto"}}));
     }
     const form2: InputInfo<门缝配置>[] = [
-      {
-        type: "group",
-        label: "门缝配置",
-        infos: 门缝配置输入.map(getMenfengInputInfo),
-        style: getInputStyle(true, {width: "auto", flex: "0 0 360px"}),
-        groupStyle: getGroupStyle()
-      }
+      getInputInfoGroup(门缝配置输入.map(getMenfengInputInfo), {
+        style: {width: "auto", flex: "0 1 360px"},
+        label: "门缝配置"
+      })
     ];
     form1Group.push(...form2);
     return form1;
@@ -307,14 +290,14 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           }
         }
       };
-      inputs[0].style = getInputStyle(true, {flex: "0 0 250px"});
+      inputs[0].style = {flex: "0 0 250px"};
       const tmpOnChange = inputs[0].onChange;
       inputs[0].onChange = (val, info) => {
         tmpOnChange?.(val, info);
         update双开门扇宽生成方式Inputs();
         this.suanliaoData.update((v) => ({...v}));
       };
-      inputs[1].style = getInputStyle(true, {flex: "0 0 180px"});
+      inputs[1].style = {flex: "0 0 180px"};
       update双开门扇宽生成方式Inputs();
       const varNameItem = this.lrsjStatus.varNames().at(0) || {};
       key1Infos[key1] = {
@@ -348,13 +331,13 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
             options: convertOptions(menshans),
             clearable: true,
             model: {data: data[key1], key},
+            style: {width: "100px", flex: "1 1 auto"},
             optionsDialog: {
               useLocalOptions: true,
               onChange: async () => {
                 this.suanliaoData.update((v) => ({...v}));
               }
-            },
-            style: getInputStyle(true)
+            }
           };
         });
       }

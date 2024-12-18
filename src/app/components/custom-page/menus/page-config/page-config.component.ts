@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/cor
 import {trblItems} from "@app/utils/trbl";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoColor, InputInfoNumber, InputInfoSelect} from "@modules/input/components/input.types";
-import {getGroupStyle, getInputStyle, getNumberUnitInput, getUnifiedInputs} from "@modules/input/components/input.utils";
+import {getInputInfoGroup, getNumberUnitInput, getUnifiedInputs} from "@modules/input/components/input.utils";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {PageConfig} from "../../models/page";
@@ -32,7 +32,6 @@ export class PageConfigComponent {
       type: "select",
       label: "页面大小",
       options: pageSizeNamesCustom,
-      style: getInputStyle(true),
       model: {data: config, key: "sizeName"},
       onChange
     };
@@ -43,19 +42,18 @@ export class PageConfigComponent {
         {label: "纵向", value: "portrait"},
         {label: "横向", value: "landscape"}
       ],
-      style: getInputStyle(true),
       model: {data: config, key: "orientation"},
       onChange
     };
     const isCustomSize = config.sizeName === "自定义";
     const widthInput: InputInfoNumber<PageConfig> = {
-      ...getNumberUnitInput(true, "页宽", "mm"),
+      ...getNumberUnitInput("页宽", "mm"),
       readonly: !isCustomSize,
       model: {data: config, key: "width"},
       onChange
     };
     const heightInput: InputInfoNumber<PageConfig> = {
-      ...getNumberUnitInput(true, "页高", "mm"),
+      ...getNumberUnitInput("页高", "mm"),
       readonly: !isCustomSize,
       model: {data: config, key: "height"},
       onChange
@@ -63,38 +61,30 @@ export class PageConfigComponent {
     const backgroundInnerInput: InputInfoColor<PageConfig> = {
       type: "color",
       label: "页面背景（内）",
-      style: getInputStyle(true),
       model: {data: config, key: "backgroundInnerColor"},
       onChange
     };
     const backgroundOuterInput: InputInfoColor<PageConfig> = {
       type: "color",
       label: "页面背景（外）",
-      style: getInputStyle(true),
       model: {data: config, key: "backgroundOuterColor"},
       onChange
     };
     const workSpaceBackgroundInput: InputInfoColor<PageConfig> = {
       type: "color",
       label: "工作区背景",
-      style: getInputStyle(true),
       model: {data: config, key: "workSpaceBgColor"},
       onChange
     };
     const paddingInputs: InputInfoNumber<PageConfig["padding"]>[] = trblItems.map(({name, index}) => {
-      return getNumberUnitInput(true, name, "mm", {flex: "0 0 50%"}, {model: {data: config.padding, key: index}});
+      return getNumberUnitInput(name, "mm", {model: {data: config.padding, key: index}});
     });
     const inputInfos: InputInfo[] = [
-      {type: "group", label: "", infos: [sizeNameInput, orientationInput], groupStyle: getGroupStyle()},
-      {type: "group", label: "", infos: [widthInput, heightInput], groupStyle: getGroupStyle()},
-      {type: "group", label: "", infos: [workSpaceBackgroundInput], groupStyle: getGroupStyle()},
-      {type: "group", label: "", infos: [backgroundInnerInput, backgroundOuterInput], groupStyle: getGroupStyle()},
-      {
-        type: "group",
-        label: "页边距",
-        infos: getUnifiedInputs("页边距", paddingInputs, config.padding, onChange),
-        groupStyle: getGroupStyle()
-      }
+      getInputInfoGroup([sizeNameInput, orientationInput]),
+      getInputInfoGroup([widthInput, heightInput]),
+      getInputInfoGroup([workSpaceBackgroundInput]),
+      getInputInfoGroup([backgroundInnerInput, backgroundOuterInput]),
+      getUnifiedInputs("页边距", paddingInputs, config.padding, {onChange})
     ];
     return inputInfos;
   });

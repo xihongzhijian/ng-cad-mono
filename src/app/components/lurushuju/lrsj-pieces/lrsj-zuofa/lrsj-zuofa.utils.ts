@@ -7,7 +7,7 @@ import {输入, 选项} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
-import {convertOptions, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
+import {convertOptions, getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} from "./lrsj-zuofa.types";
@@ -152,7 +152,7 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
   const data: 输入 = {名字: "", 默认值: "", 取值范围: "", 可以修改: true, ...data0};
   const getter = new InputInfoWithDataGetter(data, {clearable: true});
   const 下单显示请输入 = getter.boolean("下单显示请输入");
-  const form = [
+  const form: InputInfo[] = [
     getter.string("名字", {
       validators: [
         Validators.required,
@@ -165,16 +165,18 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
         }
       ]
     }),
-    getter.boolean("可以修改", {
-      label: "可以输入",
-      onChange: (val) => {
-        下单显示请输入.hidden = !val;
-        if (!val) {
-          delete data.下单显示请输入;
+    getInputInfoGroup([
+      getter.boolean("可以修改", {
+        label: "可以输入",
+        onChange: (val) => {
+          下单显示请输入.hidden = !val;
+          if (!val) {
+            delete data.下单显示请输入;
+          }
         }
-      }
-    }),
-    下单显示请输入,
+      }),
+      下单显示请输入
+    ]),
     getter.string("默认值", {validators: Validators.required}),
     getter.string("取值范围", {validators: [Validators.required, CustomValidators.numberRangeStr]}),
     getter.string("生效条件"),

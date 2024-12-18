@@ -189,12 +189,12 @@ export class XhmrmsbjSbjbComponent {
       return;
     }
     const info = this.cadInfos().at(index);
-    const name = info?.name;
+    const name = info?.title;
     if (!name || !isSbjbItemOptionalKeys2(name)) {
       return;
     }
     const item2 = item[name];
-    const title = `${info.title}：${item2?.名字 || ""}`;
+    const title = `${name}：${item2?.名字 || ""}`;
     const {form: inputInfos, data: item2New} = await getXhmrmsbjSbjbItemSbjbItemForm(item2);
     const qiliaoPrev = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
     const qiliaoCurr = cloneDeep(qiliaoPrev);

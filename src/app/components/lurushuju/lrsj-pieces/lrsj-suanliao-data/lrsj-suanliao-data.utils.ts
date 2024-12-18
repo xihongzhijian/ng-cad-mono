@@ -8,7 +8,7 @@ import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
 import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
-import {getGroupStyle, getInputStyle} from "@modules/input/components/input.utils";
+import {getInputInfoGroup} from "@modules/input/components/input.utils";
 import {difference} from "lodash";
 import {OptionsAll2} from "../../services/lrsj-status.types";
 import {
@@ -292,7 +292,6 @@ export const getMenjiaoOptionInputInfo = (
     info.onChange = () => {
       updateMenjiaoData(data);
     };
-    info.style = getInputStyle(false);
     const dialogKeys = ["门铰"];
     const openInNewTabKeys = ["门扇厚度", "锁边", "铰边"];
     if (dialogKeys.includes(key)) {
@@ -345,14 +344,8 @@ export const getMenfengInputs = (data: 算料数据): InputInfo<门缝配置> =>
       type: "number",
       label: value.name,
       model: {data: data.门缝配置, key: value.name},
-      validators: Validators.required,
-      style: getInputStyle(true)
+      validators: Validators.required
     };
   };
-  return {
-    type: "group",
-    label: "门缝配置",
-    infos: 门缝配置输入.map(getMenfengInputInfo),
-    groupStyle: getGroupStyle()
-  };
+  return getInputInfoGroup(门缝配置输入.map(getMenfengInputInfo), {label: "门缝配置"});
 };

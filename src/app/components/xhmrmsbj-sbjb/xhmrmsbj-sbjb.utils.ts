@@ -11,7 +11,7 @@ import {
 import {environment} from "@env";
 import {keysOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
-import {getGroupStyle, getInputStyle, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
+import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {cloneDeep, intersection, sample, sampleSize} from "lodash";
@@ -269,18 +269,8 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = async (item?: XhmrmsbjSbjbItemSbj
   }
   const getter = new InputInfoWithDataGetter(data, {clearable: true});
   const form: InputInfo<XhmrmsbjSbjbItemSbjbItem>[] = [
-    {
-      type: "group",
-      label: "",
-      groupStyle: getGroupStyle(),
-      infos: [getter.string("正面宽", {style: getInputStyle(true)}), getter.boolean("正面宽可改", {style: getInputStyle(true)})]
-    },
-    {
-      type: "group",
-      label: "",
-      groupStyle: getGroupStyle(),
-      infos: [getter.string("背面宽", {style: getInputStyle(true)}), getter.boolean("背面宽可改", {style: getInputStyle(true)})]
-    },
+    getInputInfoGroup([getter.string("正面宽"), getter.boolean("正面宽可改")]),
+    getInputInfoGroup([getter.string("背面宽"), getter.boolean("背面宽可改")]),
     getter.boolean("正背面同时改变"),
     getter.boolean("使用正面分体"),
     getter.boolean("使用背面分体")
