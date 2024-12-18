@@ -555,7 +555,6 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     }
     return result;
   }
-
   setLineText = debounce((event: InputEvent | MatSelectChange | Event, field: string, i?: number) => {
     let value: number | string = "";
     if (event instanceof MatSelectChange) {
@@ -630,6 +629,59 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
           } else {
             delete e.info[isLengthTextSizeSetKey];
           }
+        }
+      });
+    }
+  }, 500);
+
+  getLineInfoText(field: string, i?: number) {
+    const infos = this.selected.map((v) => v.info);
+    let result = "";
+    if (infos.length === 1) {
+      if (typeof i === "number") {
+        result = infos[0][field][i];
+      } else {
+        result = infos[0][field];
+      }
+    } else if (infos.length) {
+      let texts = infos.map((l: any) => {
+        if (typeof i === "number") {
+          return l[field][i] as string;
+        } else {
+          return l[field] as string;
+        }
+      });
+      texts = uniq(texts);
+      if (texts.length === 1) {
+        result = texts[0];
+      } else {
+        result = field === this.focusedField ? "" : "多个值";
+      }
+    }
+    if (result === undefined || result === null) {
+      result = "";
+    }
+    return result;
+  }
+  setLineInfoText = debounce((event: InputEvent | MatSelectChange | Event, field: string, i?: number) => {
+    let value: number | string = "";
+    if (event instanceof MatSelectChange) {
+      value = event.value;
+    } else if (event instanceof InputEvent || event instanceof Event) {
+      const target = event.target as HTMLInputElement;
+      if (target.type === "number") {
+        value = Number(target.value);
+      } else {
+        value = target.value;
+      }
+    }
+    if (this.validateLineText(field, value)) {
+      const infos = this.selected.map((v) => v.info);
+      infos.forEach((info) => {
+        if (typeof i === "number") {
+          info[field][i] = value;
+        } else {
+          info[field] = value;
         }
       });
     }

@@ -4,6 +4,7 @@ import {算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData, CadLine, CadLineLike, CadViewer, setLinesLength, 企料位置识别} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
@@ -40,28 +41,30 @@ export const getCadLineInputs = (
       continue;
     }
     let info: InputInfo;
+    const getter = new InputInfoWithDataGetter(line, {clearable: true});
+    const getter2 = new InputInfoWithDataGetter(line.info, {clearable: true});
     switch (key) {
       case "名字":
       case "名字2":
       case "显示线长":
       case "关联变化公式":
       case "双向折弯附加值":
-        info = {type: "string", label: key, model: {data: line, key: cadLineFields[key]}};
+        info = getter.string(cadLineFields[key], {label: key});
         break;
       case "线长字体大小":
-        info = {type: "number", label: key, model: {data: line, key: cadLineFields[key]}};
+        info = getter.number(cadLineFields[key], {label: key});
         break;
       case "公式":
-        info = {type: "string", label: key, options: gongshiOptions, model: {data: line, key: cadLineFields[key]}};
+        info = getter.selectSingle(cadLineFields[key], gongshiOptions, {label: key});
         break;
       case "线长":
         info = {type: "number", label: key, value: lineLength, readonly: !isLine};
         break;
       case "企料位置识别":
-        info = {type: "select", label: key, model: {data: line, key: cadLineFields[key]}, options: 企料位置识别};
+        info = getter.selectSingle(cadLineFields[key], 企料位置识别, {label: key});
         break;
       case "圆弧显示":
-        info = {type: "select", label: key, model: {data: line, key: cadLineFields[key]}, options: cadLineOptions[key].values.slice()};
+        info = getter.selectSingle(cadLineFields[key], cadLineOptions[key].values.slice(), {label: key});
         break;
       case "可改名字":
         {
@@ -104,10 +107,12 @@ export const getCadLineInputs = (
           };
         }
         break;
+      case "门框分体模板跳过折弯线识别":
+        info = getter2.boolean(key);
+        break;
       default:
         info = {type: "string", label: key + "（未实现）", disabled: true};
     }
-    info.clearable = true;
     result.push(info);
   }
   return result;

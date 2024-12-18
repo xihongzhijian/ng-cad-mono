@@ -2,21 +2,30 @@ import {MessageService} from "@modules/message/services/message.service";
 
 export type Value<T> = T | (() => T);
 
-export const getValue = <T>(fromValue: Value<T>, message?: MessageService) => {
-  let result = fromValue;
-  if (typeof fromValue === "function") {
-    try {
-      result = (fromValue as () => T)();
-    } catch (error) {
-      if (message && error instanceof Error) {
-        message.error(error.message);
-      } else {
-        console.error(error);
+export const getValue: {
+  <T>(fromValue: Value<T>): T;
+  <T>(fromValue: Value<T>, message: MessageService): T | null;
+} = <T>(fromValue: Value<T>, message?: MessageService) => {
+  let result: T;
+  if (fromValue instanceof Function) {
+    if (message) {
+      try {
+        result = fromValue();
+      } catch (error) {
+        if (error instanceof Error) {
+          message.error(error.message);
+        } else {
+          console.error(error);
+        }
+        return null;
       }
-      return null;
+    } else {
+      result = fromValue();
     }
+  } else {
+    result = fromValue;
   }
-  return result as T;
+  return result;
 };
 
 export const getBooleanStr = (value: boolean) => {

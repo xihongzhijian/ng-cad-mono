@@ -348,6 +348,19 @@
   </div>
   <div class="form-item">
     <mat-form-field>
+      <mat-label>门框分体模板跳过折弯线识别</mat-label>
+      <mat-select
+        name="kailiaoshishanchu"
+        [value]="getLineInfoText('门框分体模板跳过折弯线识别')"
+        (selectionChange)="setLineInfoText($event, '门框分体模板跳过折弯线识别')"
+      >
+        <mat-option [value]="true">是</mat-option>
+        <mat-option [value]="false">否</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div class="form-item">
+    <mat-form-field>
       <mat-label>变化方式</mat-label>
       <mat-select name="变化方式" [value]="getLineText('变化方式')" (selectionChange)="setLineText($event, '变化方式')">
         @for (o of bhfs; track $index) {

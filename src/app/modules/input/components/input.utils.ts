@@ -1,5 +1,5 @@
 import {filePathUrl, session} from "@app/app.common";
-import {Value} from "@app/utils/get-value";
+import {getValue, Value} from "@app/utils/get-value";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
@@ -141,7 +141,7 @@ export const getUnifiedInputs = <T>(
 export type InputInfoWithDataPart<T extends InputInfo> = Omit<InputInfoPart<T>, "model" | "value">;
 export class InputInfoWithDataGetter<T> {
   constructor(
-    public data: T,
+    public data: Value<T>,
     public others?: Omit<InputInfoPart, "model">
   ) {}
 
@@ -210,6 +210,9 @@ export class InputInfoWithDataGetter<T> {
   number(key: keyof T, others?: InputInfoWithDataPart<InputInfoNumber>): InputInfoNumber {
     return {type: "number", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
+  numberWithUnit(key: keyof T, unit: string, others?: InputInfoWithDataPart<InputInfoNumber>): InputInfoNumber {
+    return getNumberUnitInput(false, String(key), unit, {}, {model: {data: this.data, key}, ...this.others, ...others});
+  }
 
   boolean(key: keyof T, others?: InputInfoWithDataPart<InputInfoBoolean>): InputInfoBoolean {
     return {type: "boolean", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
@@ -224,21 +227,22 @@ export class InputInfoWithDataGetter<T> {
   }
 
   image(key: keyof T, http: CadDataService, others?: InputInfoWithDataPart<InputInfoImage>): InputInfoImage {
+    const data = getValue(this.data);
     return {
       type: "image",
       label: String(key),
-      value: this.data[key],
+      value: data[key],
       prefix: filePathUrl,
       onChange: async (val, info) => {
         if (val) {
           const result = await http.uploadImage(val);
           if (result?.url) {
             info.value = result.url;
-            this.data[key] = result.url as any;
+            data[key] = result.url as any;
           }
         } else {
           info.value = "";
-          this.data[key] = "" as any;
+          data[key] = "" as any;
         }
       },
       ...this.others,
