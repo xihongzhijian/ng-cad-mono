@@ -1,5 +1,5 @@
 import {TableRenderData, TableRenderDataColumn} from "@modules/http/services/cad-data.service.types";
-import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoPart2} from "@modules/input/components/input.types";
 import {ColumnInfo, TableRenderInfo} from "./table.types";
 
 export const convertTableRenderData = <T>(data: TableRenderData, info: TableRenderInfo<T>) => {
@@ -62,18 +62,18 @@ export const convertTableRenderData = <T>(data: TableRenderData, info: TableRend
 
 export const getInputInfosFromTableColumns = <T>(
   columns: ColumnInfo<T>[],
-  extra?: Partial<InputInfo<T>> | ((col: ColumnInfo<T>) => Partial<InputInfo<T>>)
+  extra?: InputInfoPart2<InputInfo<T>> | ((col: ColumnInfo<T>) => InputInfoPart2<InputInfo<T>>)
 ) => {
   const result: InputInfo<T>[] = [];
   const getInfo = (column: ColumnInfo<T>): InputInfo<T> | null => {
-    let extra2: Partial<InputInfo<T>> | undefined;
+    let extra2: InputInfoPart2<InputInfo<T>> | undefined;
     if (typeof extra === "function") {
       extra2 = extra(column);
     } else {
       extra2 = extra;
     }
     const field = column.field as string;
-    const base: Omit<InputInfo<T>, "type"> = {
+    const base: Omit<InputInfo<T>, "type" | "onChange"> = {
       name: field,
       label: column.name || field,
       ...extra2

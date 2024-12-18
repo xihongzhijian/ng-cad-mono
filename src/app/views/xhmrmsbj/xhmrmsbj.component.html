@@ -118,53 +118,51 @@
         </div>
       </ng-scrollbar>
     </div>
-    <mat-divider vertical></mat-divider>
-    <div class="scrollbar-container">
-      <ng-scrollbar class="enable-x">
-        @if (isFromOrder()) {
-          @if (!canEditMokuaidaxiao() && !isFloatingDialog()) {
-            <div class="mkdxpz-formulas flex-column">
-              <div class="title">模块大小</div>
-              <app-formulas [formulaInfos]="mkdxpzFormulaInfos()"></app-formulas>
-            </div>
-          }
-          @if (!disableXiaoguotu()) {
-            <div class="xiaoguotu flex-110" #xiaoguotuContainer></div>
-          }
-        }
-        <div class="mokuai-inputs flex-column" [class.small]="isFloatingDialog()">
+    @if (!isFloatingDialog()) {
+      <mat-divider vertical></mat-divider>
+      <div class="scrollbar-container">
+        <ng-scrollbar class="enable-x">
           @if (isFromOrder()) {
-            @if (!isFloatingDialog()) {
-              <div class="title">模块选项</div>
+            @if (!canEditMokuaidaxiao() && !isFloatingDialog()) {
+              <div class="mkdxpz-formulas flex-column">
+                <div class="title">模块大小</div>
+                <app-formulas [formulaInfos]="mkdxpzFormulaInfos()"></app-formulas>
+              </div>
             }
-            <div class="items items-per-row">
-              @for (info of mokuaiOptionInfos(); track $index) {
-                <app-input class="item" [info]="info.inputInfo"></app-input>
-              }
-            </div>
-          } @else {
-            <div class="toolbar">
-              <div class="title">模块选项</div>
-              <div class="flex-110"></div>
-              <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
-            </div>
-            <div class="items">
-              @for (info of mokuaiOptionInfos(); track i; let i = $index) {
-                <div class="toolbar" style="width: 100%">
-                  <app-input class="flex-110" [info]="info.inputInfo"></app-input>
-                  @if (info.option["输出变量"]) {
-                    <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.option['名字'])">
-                      <mat-checkbox [checked]="info.disabled"></mat-checkbox>
-                      <div>关闭输出</div>
-                    </div>
-                  } @else {
-                    <div>不输出</div>
-                  }
-                </div>
-              }
-            </div>
+            @if (!disableXiaoguotu()) {
+              <div class="xiaoguotu flex-110" #xiaoguotuContainer></div>
+            }
           }
-          @if (!isFloatingDialog()) {
+          <div class="mokuai-inputs flex-column" [class.small]="isFloatingDialog()">
+            @if (isFromOrder()) {
+              <div class="title">模块选项</div>
+              <div class="items items-per-row">
+                @for (info of mokuaiOptionInfos(); track $index) {
+                  <app-input class="item" [info]="info.inputInfo"></app-input>
+                }
+              </div>
+            } @else {
+              <div class="toolbar">
+                <div class="title">模块选项</div>
+                <div class="flex-110"></div>
+                <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
+              </div>
+              <div class="items">
+                @for (info of mokuaiOptionInfos(); track i; let i = $index) {
+                  <div class="toolbar" style="width: 100%">
+                    <app-input class="flex-110" [info]="info.inputInfo"></app-input>
+                    @if (info.option["输出变量"]) {
+                      <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.option['名字'])">
+                        <mat-checkbox [checked]="info.disabled"></mat-checkbox>
+                        <div>关闭输出</div>
+                      </div>
+                    } @else {
+                      <div>不输出</div>
+                    }
+                  </div>
+                }
+              </div>
+            }
             <div class="toolbar">
               <div class="title">模块输入</div>
               <div class="flex-110"></div>
@@ -175,47 +173,45 @@
             @if (!isFromOrder()) {
               <div class="error">取值顺序：输入值 > 模块公式值 > 通用公式值</div>
             }
-          }
-          <div class="items items-per-row">
-            @for (info of mokuaiInputInfosInput(); track $index) {
-              <app-input class="item" [info]="info"></app-input>
-            }
-          </div>
-          @if (!isFromOrder()) {
-            <div class="toolbar">
-              <div class="title">模块输出</div>
-              <div class="flex-110"></div>
-              <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(false)">全部关闭</button>
-            </div>
-            <div class="items">
-              @for (info of mokuaiInputInfosOutput(); track $index) {
-                <div class="toolbar" style="width: 100%">
-                  <div>{{ info.key }}</div>
-                  @if (info.duplicate) {
-                    <div class="error">（重复）</div>
-                  }
-                  <div class="flex-110"></div>
-                  <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.key)">
-                    <mat-checkbox [checked]="info.disabled"></mat-checkbox>
-                    <div>关闭输出</div>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-          @if (mokuaiInputInfosFormulas().length > 0) {
-            @if (!isFloatingDialog()) {
-              <div class="title">下单显示</div>
-            }
             <div class="items items-per-row">
-              @for (info of mokuaiInputInfosFormulas(); track $index) {
+              @for (info of mokuaiInputInfosInput(); track $index) {
                 <app-input class="item" [info]="info"></app-input>
               }
             </div>
-          }
-        </div>
-      </ng-scrollbar>
-    </div>
+            @if (!isFromOrder()) {
+              <div class="toolbar">
+                <div class="title">模块输出</div>
+                <div class="flex-110"></div>
+                <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(false)">全部关闭</button>
+              </div>
+              <div class="items">
+                @for (info of mokuaiInputInfosOutput(); track $index) {
+                  <div class="toolbar" style="width: 100%">
+                    <div>{{ info.key }}</div>
+                    @if (info.duplicate) {
+                      <div class="error">（重复）</div>
+                    }
+                    <div class="flex-110"></div>
+                    <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.key)">
+                      <mat-checkbox [checked]="info.disabled"></mat-checkbox>
+                      <div>关闭输出</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+            @if (mokuaiInputInfosFormulas().length > 0) {
+              <div class="title">下单显示</div>
+              <div class="items items-per-row">
+                @for (info of mokuaiInputInfosFormulas(); track $index) {
+                  <app-input class="item" [info]="info"></app-input>
+                }
+              </div>
+            }
+          </div>
+        </ng-scrollbar>
+      </div>
+    }
   </div>
   @if (!isFloatingDialog()) {
     <mat-divider vertical></mat-divider>

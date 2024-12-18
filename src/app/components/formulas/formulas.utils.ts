@@ -1,8 +1,8 @@
 import {Formulas} from "@app/utils/calc";
 import {toFixed} from "@app/utils/func";
 import {输入} from "@components/lurushuju/xinghao-data";
+import {isBetween} from "@lucilor/utils";
 import {CalcService} from "@services/calc.service";
-import {isBetween} from "packages/utils/lib";
 import {FormulaInfo} from "./formulas.types";
 
 export const getFormulaInfos = (

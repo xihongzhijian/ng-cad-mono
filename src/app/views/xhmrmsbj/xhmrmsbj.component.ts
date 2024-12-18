@@ -2072,4 +2072,49 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.refreshData();
     }
   }
+
+  getFloatingDialogInputs() {
+    const getInfo = (info: InputInfo, type: string, index: number) => {
+      const info2 = {...info};
+      if (info2.model) {
+        info2.value = info2.model.data[info2.model.key];
+      }
+      info2.info = {type, index};
+      delete info2.model;
+      delete info2.validators;
+      delete info2.onChange;
+      return info2;
+    };
+    return {
+      inputInfos: [
+        ...this.mokuaiOptionInfos().map((v, i) => getInfo(v.inputInfo, "模块选项", i)),
+        ...this.mokuaiInputInfosInput().map((v, i) => getInfo(v, "模块输入", i)),
+        ...this.mokuaiInputInfosFormulas().map((v, i) => getInfo(v, "下单显示", i))
+      ]
+    };
+  }
+  floatingDialogInputsEff = effect(() => {
+    this.wmm.postMessage("updateFloatingDialogInputsStart", this.getFloatingDialogInputs());
+  });
+  floatingDialogInputChangeStart(data: {value: any; oldValue: string; info: {type: string; index: number}}) {
+    let infos: InputInfo[] = [];
+    switch (data.info.type) {
+      case "模块选项":
+        infos = this.mokuaiOptionInfos().map((v) => v.inputInfo);
+        break;
+      case "模块输入":
+        infos = this.mokuaiInputInfosInput();
+        break;
+      case "下单显示":
+        infos = this.mokuaiInputInfosFormulas();
+        break;
+      default:
+        return;
+    }
+    const info = infos[data.info.index];
+    if (!info) {
+      return;
+    }
+    (info.onChange as any)?.(data.value, info);
+  }
 }

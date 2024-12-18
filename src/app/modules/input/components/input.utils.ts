@@ -136,14 +136,14 @@ export const getUnifiedInputs = <T>(
   return getInputInfoGroup([unifiedInput, ...inputs], {label: id, ...opts, inputStyle: {flex: "0 0 50%", ...inputStyle}});
 };
 
-export type InputInfoWithDataPart<T extends InputInfo> = Omit<InputInfoPart<T>, "model" | "value">;
+export type InputInfoWithDataPart<R extends InputInfo> = Omit<InputInfoPart<R>, "model" | "value">;
 export class InputInfoWithDataGetter<T> {
   constructor(
     public data: Value<T>,
-    public others?: Omit<InputInfoPart, "model">
+    public others?: Omit<InputInfoPart, "model" | "onChange">
   ) {}
 
-  string(key: keyof T, others?: InputInfoWithDataPart<InputInfoString>): InputInfoString {
+  string(key: keyof T, others?: InputInfoWithDataPart<InputInfoString<T>>): InputInfoString<T> {
     return {
       type: "string",
       label: String(key),
@@ -158,16 +158,16 @@ export class InputInfoWithDataGetter<T> {
     options: Value<string[]>,
     others?: InputInfoWithDataPart<InputInfoSelectSingle<T, any>>
   ): InputInfoSelectSingle<T, any>;
-  selectSingle<K>(
+  selectSingle<R>(
     key: keyof T,
-    options: Value<InputInfoOptions<K>>,
-    others?: InputInfoWithDataPart<InputInfoSelectSingle<T, K>>
-  ): InputInfoSelectSingle<T, K>;
-  selectSingle<K = any>(
+    options: Value<InputInfoOptions<R>>,
+    others?: InputInfoWithDataPart<InputInfoSelectSingle<T, R>>
+  ): InputInfoSelectSingle<T, R>;
+  selectSingle<R = any>(
     key: keyof T,
-    options: Value<InputInfoOptions<K>>,
-    others?: InputInfoWithDataPart<InputInfoSelectSingle<T, K>>
-  ): InputInfoSelectSingle<T, K> {
+    options: Value<InputInfoOptions<R>>,
+    others?: InputInfoWithDataPart<InputInfoSelectSingle<T, R>>
+  ): InputInfoSelectSingle<T, R> {
     return {
       type: "select",
       label: String(key),
@@ -184,16 +184,16 @@ export class InputInfoWithDataGetter<T> {
     options: Value<string[]>,
     others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, any>>
   ): InputInfoSelectMultiple<T, any>;
-  selectMultiple<K>(
+  selectMultiple<R>(
     key: keyof T,
-    options: Value<InputInfoOptions<K>>,
-    others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, K>>
-  ): InputInfoSelectMultiple<T, K>;
-  selectMultiple<K>(
+    options: Value<InputInfoOptions<R>>,
+    others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, R>>
+  ): InputInfoSelectMultiple<T, R>;
+  selectMultiple<R>(
     key: keyof T,
-    options: Value<InputInfoOptions<K>>,
-    others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, K>>
-  ): InputInfoSelectMultiple<T, K> {
+    options: Value<InputInfoOptions<R>>,
+    others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, R>>
+  ): InputInfoSelectMultiple<T, R> {
     return {
       type: "select",
       label: String(key),
@@ -205,26 +205,26 @@ export class InputInfoWithDataGetter<T> {
     };
   }
 
-  number(key: keyof T, others?: InputInfoWithDataPart<InputInfoNumber>): InputInfoNumber {
+  number(key: keyof T, others?: InputInfoWithDataPart<InputInfoNumber<T>>): InputInfoNumber<T> {
     return {type: "number", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
-  numberWithUnit(key: keyof T, unit: string, others?: InputInfoWithDataPart<InputInfoNumber>): InputInfoNumber {
+  numberWithUnit(key: keyof T, unit: string, others?: InputInfoWithDataPart<InputInfoNumber<T>>): InputInfoNumber<T> {
     return getNumberUnitInput(String(key), unit, {model: {data: this.data, key}, ...this.others, ...others});
   }
 
-  boolean(key: keyof T, others?: InputInfoWithDataPart<InputInfoBoolean>): InputInfoBoolean {
+  boolean(key: keyof T, others?: InputInfoWithDataPart<InputInfoBoolean<T>>): InputInfoBoolean<T> {
     return {type: "boolean", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
 
-  object(key: keyof T, others?: InputInfoWithDataPart<InputInfoObject>): InputInfoObject {
+  object(key: keyof T, others?: InputInfoWithDataPart<InputInfoObject<T>>): InputInfoObject<T> {
     return {type: "object", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
 
-  array(key: keyof T, others?: InputInfoWithDataPart<InputInfoArray>): InputInfoArray {
+  array(key: keyof T, others?: InputInfoWithDataPart<InputInfoArray<T>>): InputInfoArray<T> {
     return {type: "array", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
 
-  image(key: keyof T, http: CadDataService, others?: InputInfoWithDataPart<InputInfoImage>): InputInfoImage {
+  image(key: keyof T, http: CadDataService, others?: InputInfoWithDataPart<InputInfoImage<T>>): InputInfoImage<T> {
     const data = getValue(this.data);
     return {
       type: "image",
