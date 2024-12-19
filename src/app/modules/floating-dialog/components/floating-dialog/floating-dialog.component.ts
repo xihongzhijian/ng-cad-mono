@@ -19,6 +19,7 @@ import {
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
+import {TrblLike} from "@app/utils/trbl";
 import {ObjectOf} from "@lucilor/utils";
 import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {Properties} from "csstype";
@@ -53,6 +54,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   pinned = model<boolean>(false);
   minimized = model<boolean>(false);
   maximized = model<boolean>(false);
+  maximizedMargin = input<TrblLike>(50);
   close = output();
 
   dialogEl = viewChild.required<ElementRef<HTMLElement>>("dialogEl");
@@ -124,32 +126,28 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   }
   style = computed(() => {
     const style: Properties = {};
+    const widthInput = this.getPxStr(this.width());
+    const heightInput = this.getPxStr(this.height());
     if (this.maximized()) {
       this._windowResizeNum();
       const margin = 50;
-      const top = margin;
-      const left = margin;
-      const right = window.innerWidth - margin;
-      const bottom = window.innerHeight - margin;
-      // const limits = this.manager.limits();
-      // if (limits.top) {
-      //   top = limits.top.getBoundingClientRect().bottom;
-      // }
-      // if (limits.left) {
-      //   left = limits.left.getBoundingClientRect().right;
-      // }
-      // if (limits.right) {
-      //   right = limits.right.getBoundingClientRect().left;
-      // }
-      // if (limits.bottom) {
-      //   bottom = limits.bottom.getBoundingClientRect().top;
-      // }
-      const width = right - left;
-      const height = bottom - top;
-      style.top = `${top}px`;
-      style.left = `${left}px`;
-      style.width = `${width}px`;
-      style.height = `${height}px`;
+      style.left = "50%";
+      style.top = "50%";
+      style.transform = "translate(-50%, -50%)";
+      if (widthInput && widthInput !== "auto") {
+        style.width = `${widthInput}`;
+      } else {
+        const left = margin;
+        const right = window.innerWidth - margin;
+        style.width = `${right - left}px`;
+      }
+      if (heightInput && heightInput !== "auto") {
+        style.height = `${heightInput}`;
+      } else {
+        const top = margin;
+        const bottom = window.innerHeight - margin;
+        style.height = `${bottom - top}px`;
+      }
     } else {
       const {x: sizeX, y: sizeY} = this.size();
       style.width = sizeX > 0 ? `${sizeX}px` : this.getPxStr(this.width());

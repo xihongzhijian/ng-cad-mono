@@ -72,7 +72,7 @@
 </div>
 
 @if (sbjbItemSbjbItemForm(); as form) {
-  <app-floating-dialog [maximized]="true" noTitle (close)="closeSbjbItemSbjbItemForm(false)">
+  <app-floating-dialog [maximized]="true" width="50%" noTitle (close)="closeSbjbItemSbjbItemForm(false)">
     <div class="title">{{ form.title }}</div>
     <ng-scrollbar>
       <div class="toolbar vertical">
