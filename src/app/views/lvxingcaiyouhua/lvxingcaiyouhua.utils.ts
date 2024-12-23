@@ -32,8 +32,17 @@ export const calc = (data: InputData) => {
     map余料[item.vid] = {...item};
   }
 
+  const bomCounts = new Map<string, number>();
+  const getBomCount = (item: 型材Bom) => bomCounts.get(item.BOM唯一码) ?? 0;
+  const setBomCount = (item: 型材Bom, count: number | ((n: number) => number)) => {
+    if (typeof count === "function") {
+      count = count(getBomCount(item));
+    }
+    bomCounts.set(item.BOM唯一码, count);
+  };
+  const isBomUsable = (item: 型材Bom) => getBomCount(item) < item.要求数量;
+
   const resultItems: 优化结果[] = [];
-  const usedBoms = new Map<string, number>();
   const backpackDp = (boms: 型材Bom[], totalLength: number, num: number, {qieduansunhao = 0}: 铝型材) => {
     const result: {value: number; items: 型材Bom[]; cuts: number}[] = [];
     if (boms.length < 1) {
@@ -46,7 +55,8 @@ export const calc = (data: InputData) => {
       let dp: [number, (typeof result)[number]][] = [];
       for (const [i, bom] of boms.entries()) {
         const length = parseFloat(bom.型材长度);
-        for (let j = 0; j < bom.要求数量; j++) {
+        const count = bom.要求数量 - getBomCount(bom);
+        for (let j = 0; j < count; j++) {
           if (i + j === 0) {
             dp.push([0, {value: 0, items: [], cuts: 0}]);
             if (length + qieduansunhao <= totalLength) {
@@ -119,10 +129,9 @@ export const calc = (data: InputData) => {
       }
       result.push(resultItem);
       for (const item of resultItem.items) {
-        const val = usedBoms.get(item.BOM唯一码) || 0;
-        usedBoms.set(item.BOM唯一码, val + 1);
+        setBomCount(item, (n) => n + 1);
       }
-      boms = boms.filter((v) => (usedBoms.get(v.BOM唯一码) || 0) < v.要求数量);
+      boms = boms.filter((v) => isBomUsable(v));
       num--;
     }
     for (const resultItem of result) {
@@ -147,7 +156,7 @@ export const calc = (data: InputData) => {
   };
   const bomsAll = getInputDataBoms(data);
   for (const 余料 of data.铝型材余料库存) {
-    const boms = bomsAll.filter((v) => v.铝型材 === 余料.lvxingcai && v.型材颜色 === 余料.yanse && !usedBoms.has(v.BOM唯一码));
+    const boms = bomsAll.filter((v) => v.铝型材 === 余料.lvxingcai && v.型材颜色 === 余料.yanse && isBomUsable(v));
     if (boms.length < 1) {
       continue;
     }
@@ -180,7 +189,7 @@ export const calc = (data: InputData) => {
     }
   }
   for (const 铝型材 of data.铝型材) {
-    const boms0 = bomsAll.filter((v) => v.铝型材 === 铝型材.mingzi && !usedBoms.has(v.BOM唯一码));
+    const boms0 = bomsAll.filter((v) => v.铝型材 === 铝型材.mingzi && isBomUsable(v));
     if (boms0.length < 1) {
       continue;
     }
