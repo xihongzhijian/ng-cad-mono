@@ -14,6 +14,7 @@
     "yaml.schemas": {
       "https://json.schemastore.org/github-workflow.json": "file:///e%3A/Documents/%40lucilor/ng-cad-mono/.github/workflows/deploy.yml"
     },
-    "powershell.cwd": "ng-cad-mono"
+    "powershell.cwd": "ng-cad-mono",
+    "typescript.tsdk": "ng-cad-mono\\node_modules\\typescript\\lib"
   }
 }

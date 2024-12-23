@@ -245,25 +245,25 @@ export const calc = (data: InputData) => {
     }
   }
   let totalLength = 0;
-  let unusedLength = 0;
+  let usedLength = 0;
   for (const resultItem of result) {
     let totalLength2 = 0;
     let usedLength2 = 0;
     resultItem.优化结果.sort((a, b) => b.物料长度 - a.物料长度);
     for (const item of resultItem.优化结果) {
       totalLength2 += item.物料长度;
-      const usedLength3 = item.BOM.reduce((prev, curr) => prev + Number(curr.型材长度), 0);
+      const usedLength3 = item.BOM.reduce((prev, curr) => prev + parseFloat(curr.型材长度) * curr.要求数量, 0);
       item.单支型材利用率 = getNum(usedLength3 / item.物料长度);
       usedLength2 += usedLength3;
     }
     resultItem.所有型材利用率 = getNum(usedLength2 / totalLength2);
     totalLength += totalLength2;
-    unusedLength += usedLength2;
+    usedLength += usedLength2;
   }
   result.sort((a, b) => a.排序 - b.排序);
   let 总利用率 = 0;
   if (totalLength > 0) {
-    总利用率 = getNum(1 - unusedLength / totalLength);
+    总利用率 = getNum(usedLength / totalLength);
   }
   return {铝型材优化结果: result, 总利用率};
 };
