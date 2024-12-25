@@ -55,7 +55,7 @@ export const getCadLineInputs = (
         info = getter.number(cadLineFields[key], {label: key});
         break;
       case "公式":
-        info = getter.selectSingle(cadLineFields[key], gongshiOptions, {label: key});
+        info = getter.string(cadLineFields[key], {label: key, options: gongshiOptions});
         break;
       case "线长":
         info = {type: "number", label: key, value: lineLength, readonly: !isLine};
