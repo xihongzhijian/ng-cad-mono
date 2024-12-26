@@ -905,21 +905,21 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const inputs = this.mokuaiInputInfosInput();
     const names = (mokuai.自定义数据?.下单显示.split("+") || []).filter((v) => !inputs.some((v2) => v2.label === v));
-    const formulas = this.materialResult();
+    const formulas: Formulas = {};
     Object.assign(data.getCommonFormulas());
     Object.assign(formulas, getNodeVars(msbjInfo.选中布局数据?.模块大小配置?.算料公式 || {}, node.层名字));
-    Object.assign(formulas, getMokuaiFormulas(msbjInfo, node, mokuai, null));
+    Object.assign(formulas, getMokuaiFormulas(msbjInfo, node, mokuai, null).formulas);
     replaceMenshanName(this.activeMenshanKey(), formulas);
     const vars = this.lastSuanliaoManager.data()?.output.materialResult || {};
     try {
       const res = this.calc.calc.calcFormulas(formulas, vars);
-      Object.assign(formulas, res.succeedTrim);
+      Object.assign(vars, res.succeedTrim);
     } catch {}
     for (const name of names) {
       if (!name) {
         continue;
       }
-      infos.push({type: "string", label: name, readonly: true, value: getValueString(formulas[name])});
+      infos.push({type: "string", label: name, readonly: true, value: getValueString(vars[name])});
     }
     return infos;
   });
