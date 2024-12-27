@@ -290,6 +290,7 @@ export class XhmrmsbjSbjbComponent {
       item.CAD数据[index].cadId = cad2.id;
       this.cadMap.set(cad2.id, cad2);
       this.purgeCadMap();
+      await this.addQiliao(cad2.name);
       needsRefresh = true;
     }
     if (needsRefresh) {
@@ -405,6 +406,17 @@ export class XhmrmsbjSbjbComponent {
     this.qiliaosManager.refresh({update: [qiliao]});
     if (!this.qiliaosChanged.some((v) => this.qiliaosManager.compareFn(v, qiliao))) {
       this.qiliaosChanged.push(qiliao);
+    }
+  }
+  async addQiliao(name: string) {
+    const qiliao = this.qiliaosManager.items().find((v) => v.name === name);
+    if (qiliao) {
+      return;
+    }
+    const qiliaos = await this.http.queryMySql<QiliaoTableData>({table: "p_qiliao", filter: {where: {mingzi: name}}});
+    if (qiliaos[0]) {
+      const qiliao2 = new Qiliao(qiliaos[0]);
+      this.qiliaosManager.refresh({add: [qiliao2]});
     }
   }
 
