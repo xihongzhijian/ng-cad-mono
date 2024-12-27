@@ -487,7 +487,7 @@ export class ZixuanpeijianComponent implements OnInit {
     setCadData(cadData, yaoqiu, "add");
     const {collection} = this;
     const gongshis = this.data?.gongshis;
-    const cadData2 = await openCadForm(yaoqiu, collection, cadData, this.http, this.dialog, this.status, this.message, true, gongshis);
+    const cadData2 = await openCadForm(yaoqiu, collection, cadData, this.http, this.dialog, this.status, this.message, true, {gongshis});
     if (!cadData2) {
       return;
     }

@@ -37,6 +37,7 @@
           [collection]="collection"
           [isOnline]="cadsIsOnline[cad.id]"
           [editDisabled]="!cadItemEditable()"
+          noFixedType
           (afterEditCad)="afterEditCad(cad.id)"
           (click)="clickCad(i)"
         ></app-cad-item>

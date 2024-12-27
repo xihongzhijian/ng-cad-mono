@@ -97,6 +97,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   @Input({transform: booleanAttribute}) isLocal?: boolean;
   @Input() selectable?: CadItemSelectable<T>;
   @Input({transform: booleanAttribute}) editDisabled?: boolean;
+  @Input({transform: booleanAttribute}) noFixedType?: boolean;
   @Input() events?: {
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
@@ -293,7 +294,8 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     this.beforeEditCad.emit();
     const collection = this.collection();
     const {http, dialog, status, message, validators} = this;
-    const data2 = await openCadForm(yaoqiu, collection, data, http, dialog, status, message, true, null, validators);
+    const noFixedType = this.noFixedType;
+    const data2 = await openCadForm(yaoqiu, collection, data, http, dialog, status, message, true, {validators, noFixedType});
     if (!data2) {
       return;
     }
