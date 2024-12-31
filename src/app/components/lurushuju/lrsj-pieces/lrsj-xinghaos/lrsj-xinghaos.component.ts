@@ -126,7 +126,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
 
   async getXinghaoItem(xinghao?: XinghaoData) {
     const data: XinghaoData = xinghao ? cloneDeep(xinghao) : getXinghaoData();
-    if (!data.算料单模板) {
+    if (!xinghao && !data.算料单模板) {
       data.算料单模板 = this.status.projectConfig.get("新做数据算料单排版默认方案") || "自动排版模板";
     }
     if (typeof data.是否需要激光开料 !== "boolean") {
@@ -192,7 +192,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       await getOptionInput("gongyi", "工艺", true, true),
       await getOptionInput("dingdanliucheng", "订单流程"),
       await getOptionInput("zuoshujubanben", "做数据版本"),
-      inputInfoGetter.selectSingle("算料单模板", 算料单模板Options.slice()),
+      inputInfoGetter.selectSingle("算料单模板", 算料单模板Options.slice(), {validators: Validators.required}),
       inputInfoGetter.boolean("下单显示没有配件的板材分组"),
       inputInfoGetter.boolean("是否需要激光开料", {validators: Validators.required}),
       inputInfoGetter.number("paixu", {label: "排序"}),
