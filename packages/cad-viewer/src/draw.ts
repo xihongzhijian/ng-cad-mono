@@ -1,4 +1,4 @@
-import {Angle, Arc, getTypeOf, Line, Matrix, Point} from "@lucilor/utils";
+import {Angle, Arc, getTypeOf, Line, Matrix, Point, timeout} from "@lucilor/utils";
 import {Container, Element, Image, Path, PathArrayAlias, Circle as SvgCircle, Line as SvgLine, Text} from "@svgdotjs/svg.js";
 import {CadAxis, CadImage} from "./cad-data";
 import {CadDimension} from "./cad-data/cad-entity/cad-dimension";
@@ -318,19 +318,6 @@ export const drawLeader = (draw: Container, start: Point, end: Point, size: numb
   return [...line, ...triangle];
 };
 
-const loadImageEl = async (el: Image, url: string) => {
-  if (el.attr("href") === url || !url) {
-    return;
-  }
-  return new Promise<void>((resolve, reject) => {
-    el.load(url);
-    el.on("load", () => {
-      resolve();
-    });
-    el.on("error", reject);
-  });
-};
-
 export const drawImage = async (draw: Container, e: CadImage, i = 0) => {
   if (!e.sourceSize) {
     e.sourceSize = new Point(0, 0);
@@ -349,11 +336,23 @@ export const drawImage = async (draw: Container, e: CadImage, i = 0) => {
     } as any);
     imageEl = imageContainer.image();
     imageEl.css({
-      "transform-origin": `${anchor.x * 100}% ${100 - anchor.y * 100}%`,
+      "transform-origin": `${anchor.x * 100}% ${anchor.y * 100}%`,
       "transform-box": "fill-box"
     } as any);
   }
-  await loadImageEl(imageEl, url);
+  if (url && imageEl.attr("href") !== url) {
+    imageEl.load(url);
+    await new Promise<void>((resolve) => {
+      imageEl.on("load", async () => {
+        await timeout(0);
+        resolve();
+      });
+      imageEl.on("error", (event) => {
+        console.error(event);
+        resolve();
+      });
+    });
+  }
   const sw = imageEl.node.width.baseVal.value;
   const sh = imageEl.node.height.baseVal.value;
   let tw: number;
@@ -367,7 +366,7 @@ export const drawImage = async (draw: Container, e: CadImage, i = 0) => {
     th = sh;
   }
   const translateX = position.x - anchor.x * sw;
-  const translateY = position.y - (1 - anchor.y) * sh;
+  const translateY = position.y - anchor.y * sh;
   let scaleX: number;
   let scaleY: number;
   if (sw > 0 && sh > 0) {
@@ -414,7 +413,7 @@ export const drawImage = async (draw: Container, e: CadImage, i = 0) => {
     scaleX = 1;
     scaleY = 1;
   }
-  const matrix = new Matrix({translate: [translateX, translateY], scale: [scaleX, scaleY]});
+  const matrix = new Matrix({translate: [translateX, translateY], scale: [scaleX, scaleY], origin: anchor});
   matrix.transform(transformMatrix);
   imageEl.transform(matrix);
   return [imageContainer];
