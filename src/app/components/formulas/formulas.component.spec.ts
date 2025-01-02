@@ -12,6 +12,8 @@ describe("FormulasComponent", () => {
 
     fixture = TestBed.createComponent(FormulasComponent);
     component = fixture.componentInstance;
+    const ref = fixture.componentRef;
+    ref.setInput("formulaInfos", []);
     fixture.detectChanges();
   });
 
