@@ -464,7 +464,7 @@ export class MokuaiItemComponent {
     this.mokuai.update((v) => ({...v, cads}));
   }
   copyCad(i: number) {
-    const cads = this.mokuai().cads || [];
+    const cads = this.mokuai().cads?.slice() || [];
     const names = cads.map((v) => v.名字);
     const cad = new CadData(cads[i].json).clone(true);
     cad.name = getCopyName(names, cad.name);
