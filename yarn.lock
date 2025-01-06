@@ -5561,13 +5561,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pdfmake@npm:^0.2.10":
-  version: 0.2.10
-  resolution: "@types/pdfmake@npm:0.2.10"
+"@types/pdfmake@npm:^0.2.11":
+  version: 0.2.11
+  resolution: "@types/pdfmake@npm:0.2.11"
   dependencies:
     "@types/node": "npm:*"
     "@types/pdfkit": "npm:*"
-  checksum: 10c0/44f216c3d285c642b9a697268455b57981ee1a358f9c0d3983437ff8a743bacb6f30b3c1637984ee14cb3a30b3f52bc2236dcc1c841c65093b5dc64939078e86
+  checksum: 10c0/751ea63f2a5aaacbf008543ec58d01f80a11948b7fe18ee531668f97bbed3b0622d3fb1946e3d6b02af9c7ef7396ec858e6f5f5c551b746832b94a6ac33ec453
   languageName: node
   linkType: hard
 
@@ -12546,7 +12546,7 @@ __metadata:
     "@types/md5": "npm:^2.3.5"
     "@types/minimist": "npm:^1.2.5"
     "@types/node": "npm:^22.10.3"
-    "@types/pdfmake": "npm:^0.2.10"
+    "@types/pdfmake": "npm:^0.2.11"
     "@types/qrcode": "npm:^1.5.5"
     "@types/uuid": "npm:^10.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.19.0"
