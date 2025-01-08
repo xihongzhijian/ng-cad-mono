@@ -1,4 +1,4 @@
-import {effect, inject, Injectable, signal} from "@angular/core";
+import {inject, Injectable, signal} from "@angular/core";
 import {ObjectOf} from "@lucilor/utils";
 import {NgxUiLoaderService} from "ngx-ui-loader";
 
@@ -18,8 +18,7 @@ export class SpinnerService {
   defaultLoaderId = "master";
   shownSpinners: ObjectOf<{config?: SpinnerConfig}[]> = {};
 
-  spinnerShowEff = effect(() => {
-    const {id, config} = this.spinnerShow();
+  show(id: string, config?: SpinnerConfig) {
     if (this.shownSpinners[id]) {
       this.shownSpinners[id].push({config});
     } else {
@@ -30,22 +29,20 @@ export class SpinnerService {
     } else {
       this.loader.startLoader(id);
     }
-  });
-  spinnerHideEff = effect(() => {
-    const {id} = this.spinnerHide();
+    this.spinnerShow.set({id, config});
+  }
+
+  hide(id: string) {
     const showSpinner = this.shownSpinners[id];
+    if (!showSpinner) {
+      return;
+    }
     const {config} = showSpinner.shift() || {};
     if (config?.background) {
       this.loader.stopBackgroundLoader(id);
     } else {
       this.loader.stopLoader(id);
     }
-  });
-
-  show(id: string, config?: SpinnerConfig) {
-    this.spinnerShow.set({id, config});
-  }
-  hide(id: string) {
     this.spinnerHide.set({id});
   }
 }
