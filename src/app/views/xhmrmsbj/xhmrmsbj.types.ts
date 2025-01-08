@@ -37,6 +37,7 @@ export interface XhmrmsbjInfo {
   模块大小输出?: Formulas;
   模块节点?: XhmrmsbjInfoMokuaiNode[];
   输入值?: Shuruzhi;
+  模块输入值?: ObjectOf<Shuruzhi>;
   选项公式输入值?: ObjectOf<Shuruzhi>;
   输出变量禁用?: ObjectOf<string[]>;
   模块选项?: ObjectOf<XhmrmsbjInfoMokuaiOption[]>;
