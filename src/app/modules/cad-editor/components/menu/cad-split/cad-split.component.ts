@@ -1,6 +1,5 @@
-import {Component, HostListener, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostListener, inject} from "@angular/core";
 import {CadData} from "@lucilor/cad-viewer";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -10,42 +9,34 @@ import {CadStatusSplit} from "@services/cad-status";
   selector: "app-cad-split",
   templateUrl: "./cad-split.component.html",
   styleUrls: ["./cad-split.component.scss"],
-  standalone: true
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadSplitComponent extends Subscribed() implements OnInit {
+export class CadSplitComponent {
+  private config = inject(AppConfigService);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
+  prevConfig: Partial<AppConfig> = {};
+  cadStatusSplitEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusSplit,
+    () => {
+      this.prevConfig = this.config.setConfig("dragAxis", "xy", {sync: false});
+      this.focus();
+    },
+    () => {
+      this.config.setConfig(this.prevConfig, {sync: false});
+      this.blur();
+    }
+  );
+
   private _splitCadLock = false;
-
-  constructor(
-    private config: AppConfigService,
-    private status: AppStatusService,
-    private message: MessageService
-  ) {
-    super();
-  }
-
-  ngOnInit() {
-    let prevConfig: Partial<AppConfig> = {};
-    this.subscribe(this.status.cadStatusEnter$, async (cadStatus) => {
-      if (cadStatus instanceof CadStatusSplit) {
-        prevConfig = this.config.setConfig("dragAxis", "xy", {sync: false});
-        this.focus();
-      }
-    });
-    this.subscribe(this.status.cadStatusExit$, async (cadStatus) => {
-      if (cadStatus instanceof CadStatusSplit) {
-        this.config.setConfig(prevConfig, {sync: false});
-        this.blur();
-      }
-    });
-  }
-
-  @HostListener("window:keydown")
-  async splitCad({key}: KeyboardEvent) {
-    if (key !== "Enter" || this._splitCadLock) {
+  @HostListener("window:keypress", ["$event"])
+  async splitCad(event: KeyboardEvent) {
+    if (event.key !== "Enter" || this._splitCadLock) {
       return;
     }
-    const cadStatus = this.status.cadStatus;
-    if (!(cadStatus instanceof CadStatusSplit)) {
+    if (!this.status.hasCadStatus((v) => v instanceof CadStatusSplit)) {
       return;
     }
     const cad = this.status.cad;
@@ -77,7 +68,7 @@ export class CadSplitComponent extends Subscribed() implements OnInit {
       return;
     }
     await this.status.openCad({data});
-    if (this.status.cadStatus instanceof CadStatusSplit) {
+    if (this.status.hasCadStatus((v) => v instanceof CadStatusSplit)) {
       await this.focus();
     }
     this._splitCadLock = false;

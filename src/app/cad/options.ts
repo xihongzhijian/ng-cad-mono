@@ -65,13 +65,6 @@ export const cadOptions = {
   装配示意图自动拼接锁边铰边: {values: ["都拼接", "只拼接锁边", "只拼接铰边", "不拼接"], defaultValue: "都拼接"}
 } as const;
 
-export const cadLineOptions = {
-  zhankaixiaoshuchuli: {values: ["不处理", "舍去小数", "小数进一", "四舍五入", "0.5取整", "保留一位小数四舍五入"], defaultValue: "不处理"},
-  suanliaosanxiaoshuchuli: {values: ["默认", "舍去小数", "小数进一", "四舍五入", "保留一位", "保留两位"], defaultValue: "默认"},
-  zhankaifangshi: {values: ["自动计算", "使用线长", "指定长度"], defaultValue: "自动计算"},
-  圆弧显示: {values: ["默认", "半径", "R+半径", "φ+直径", "弧长", "弧长+线长"], defaultValue: "默认"}
-} as const;
-
 export const cadDimensionOptions = {
   xiaoshuchuli: {values: ["四舍五入", "舍去小数", "小数进一", "保留一位", "保留两位"], defaultValue: "四舍五入"}
 } as const;

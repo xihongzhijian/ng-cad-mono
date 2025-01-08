@@ -1,15 +1,14 @@
-import {ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal, untracked} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
 import {CadConnection, CadData, CadEntity, CadEventCallBack, CadImage, CadLine, generatePointsMap, PointsMap} from "@lucilor/cad-viewer";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
-import {CadStatus, CadStatusAssemble} from "@services/cad-status";
+import {CadStatusAssemble} from "@services/cad-status";
 import {debounce, difference, differenceBy} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {map} from "rxjs";
@@ -21,45 +20,30 @@ import {map} from "rxjs";
   imports: [MatButtonModule, NgScrollbar],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadAssembleComponent extends Subscribed() implements OnInit, OnDestroy {
+export class CadAssembleComponent implements OnInit, OnDestroy {
   private config = inject(AppConfigService);
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
   ngOnInit() {
     setGlobal("assemble", this);
-    this.subscribe(this.status.cadStatusEnter$, this._onCadStatusEnter);
-    this.subscribe(this.status.cadStatusExit$, this._onCadStatusExit);
-    this.subscribe(this.status.components.selected$, this._onComponentSelected);
-    this.subscribe(this.status.cadPoints$, this._onCadPointsChange);
-
-    {
-      const cad = this.status.cad;
-      cad.on("entitiesselect", this._onEntitiesSelect);
-      cad.on("entitiesunselect", this._onEntitiesUnselect);
-      cad.on("moveentities", this._onMoveEntities);
-      cad.on("zoom", this._onZoom);
-    }
+    const cad = this.status.cad;
+    cad.on("entitiesselect", this._onEntitiesSelect);
+    cad.on("entitiesunselect", this._onEntitiesUnselect);
+    cad.on("moveentities", this._onMoveEntities);
+    cad.on("zoom", this._onZoom);
   }
 
   ngOnDestroy() {
-    super.ngOnDestroy();
     const cad = this.status.cad;
     cad.off("entitiesselect", this._onEntitiesSelect);
     cad.off("entitiesunselect", this._onEntitiesUnselect);
   }
 
-  data = toSignal(this.status.openCad$.pipe(map(() => this.status.cad.data)), {initialValue: this.status.cad.data});
+  data = this.status.cadData;
 
-  selectedComponents = toSignal(this.status.components.selected$, {initialValue: []});
-  unselectedComponents = toSignal(
-    this.status.components.selected$.pipe(
-      map((selected) => {
-        return differenceBy(this.data().components.data, selected, (data) => data.id);
-      })
-    ),
-    {initialValue: []}
-  );
+  selectedComponents = computed(() => this.status.components.selected());
+  unselectedComponents = computed(() => differenceBy(this.data().components.data, this.selectedComponents(), (data) => data.id));
 
   options = signal<{space: string; position: string}>({space: "0", position: "absolute"});
   ids = signal<string[]>([]);
@@ -73,8 +57,8 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
   private _prevComponentsSelectable: boolean | null = null;
 
   private _onEntitiesSelect: CadEventCallBack<"entitiesselect"> = (entities, multi) => {
-    const cadStatus = this.status.cadStatus;
-    if (!(cadStatus instanceof CadStatusAssemble)) {
+    const cadStatus = this.status.findCadStatus((v) => v instanceof CadStatusAssemble);
+    if (!cadStatus) {
       return;
     }
     const cad = this.status.cad;
@@ -84,11 +68,11 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
     if (multi || (selected.length === 1 && selected[0] instanceof CadImage)) {
       data.components.data.forEach((v) => {
         if (ids.some((id) => v.findEntity(id))) {
-          const selectedComponents = this.status.components.selected$.value;
+          const selectedComponents = this.status.components.selected();
           if (selectedComponents.some((vv) => vv.id === v.id)) {
-            this.status.components.selected$.next(selectedComponents.filter((vv) => vv.id !== v.id));
+            this.status.components.selected.set(selectedComponents.filter((vv) => vv.id !== v.id));
           } else {
-            this.status.components.selected$.next([...selectedComponents, v]);
+            this.status.components.selected.set([...selectedComponents, v]);
           }
         }
       });
@@ -115,8 +99,8 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
   }, 500).bind(this);
 
   private _selectEntity = (entity: CadEntity) => {
-    const cadStatus = this.status.cadStatus;
-    if (!(cadStatus instanceof CadStatusAssemble) || !entity) {
+    const cadStatus = this.status.findCadStatus((v) => v instanceof CadStatusAssemble);
+    if (!cadStatus || !entity) {
       return;
     }
     const cad = this.status.cad;
@@ -202,17 +186,18 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
     }
   };
 
-  private _onCadStatusEnter = (cadStatus: CadStatus) => {
-    if (cadStatus instanceof CadStatusAssemble) {
+  assembleEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusAssemble,
+    () => {
       const cad = this.status.cad;
       this._prevConfig = this.config.setConfig(
         {selectMode: "multiple", entityDraggable: [], hideLineLength: true, hideLineGongshi: true},
         {sync: false}
       );
-      this._prevSelectedComponents = this.status.components.selected$.value;
-      this.status.components.selected$.next([]);
-      this._prevComponentsSelectable = this.status.components.selectable$.value;
-      this.status.components.selectable$.next(true);
+      this._prevSelectedComponents = this.status.components.selected();
+      this.status.components.selected.set([]);
+      this._prevComponentsSelectable = this.status.components.selectable();
+      this.status.components.selectable.set(true);
       if (this.status.collection$.value === "CADmuban") {
         const data = cad.data;
         const {top, bottom, left, right} = data.entities.getBoundingRect();
@@ -249,19 +234,16 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
           }
         });
       }
-    }
-  };
-
-  private _onCadStatusExit = (cadStatus: CadStatus) => {
-    if (cadStatus instanceof CadStatusAssemble) {
+    },
+    () => {
       const cad = this.status.cad;
       this.config.setConfig(this._prevConfig, {sync: false});
       if (this._prevSelectedComponents !== null) {
-        this.status.components.selected$.next(this._prevSelectedComponents);
+        this.status.components.selected.set(this._prevSelectedComponents);
         this._prevSelectedComponents = null;
       }
       if (this._prevComponentsSelectable !== null) {
-        this.status.components.selectable$.next(this._prevComponentsSelectable);
+        this.status.components.selectable.set(this._prevComponentsSelectable);
         this._prevComponentsSelectable = null;
       }
       cad.data.entities.forEach((e) => {
@@ -272,13 +254,14 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
         }
       });
     }
-  };
+  );
 
-  private _onComponentSelected = () => {
+  componentSelectedEff = effect(() => {
+    this.status.components.selected();
     if (this.pointsAssembling() > 0) {
       this._setCadPoints();
     }
-  };
+  });
 
   private async _setCadPoints(include?: CadPoints) {
     let cads: CadData[];
@@ -297,6 +280,10 @@ export class CadAssembleComponent extends Subscribed() implements OnInit, OnDest
     this.status.setCadPoints(pointsMap, {include});
   }
 
+  cadPointsChangeEff = effect(() => {
+    const points = this.status.cadPoints();
+    untracked(() => this._onCadPointsChange(points));
+  });
   private _onCadPointsChange = async (points: CadPoints) => {
     const active = points.filter((p) => p.active);
     const pointsAssembling = this.pointsAssembling();

@@ -1,7 +1,6 @@
 import {CadCollection} from "@app/cad/collections";
-import {cadLineOptions} from "@app/cad/options";
 import {算料公式} from "@components/lurushuju/xinghao-data";
-import {CadData, CadLine, CadLineLike, CadViewer, setLinesLength, 企料位置识别} from "@lucilor/cad-viewer";
+import {CadData, CadLine, CadLineLike, cadLineOptions, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -61,7 +60,7 @@ export const getCadLineInputs = (
         info = {type: "number", label: key, value: lineLength, readonly: !isLine};
         break;
       case "企料位置识别":
-        info = getter.selectSingle(cadLineFields[key], 企料位置识别, {label: key});
+        info = getter.selectSingle(cadLineFields[key], cadLineOptions.企料位置识别.values.slice(), {label: key});
         break;
       case "圆弧显示":
         info = getter.selectSingle(cadLineFields[key], cadLineOptions[key].values.slice(), {label: key});

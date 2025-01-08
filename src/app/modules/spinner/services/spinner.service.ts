@@ -1,7 +1,6 @@
-import {Injectable} from "@angular/core";
+import {effect, inject, Injectable, signal} from "@angular/core";
 import {ObjectOf} from "@lucilor/utils";
 import {NgxUiLoaderService} from "ngx-ui-loader";
-import {BehaviorSubject} from "rxjs";
 
 export interface SpinnerConfig {
   text?: string;
@@ -12,40 +11,41 @@ export interface SpinnerConfig {
   providedIn: "root"
 })
 export class SpinnerService {
-  spinnerShow$ = new BehaviorSubject<{id: string; config?: SpinnerConfig}>({id: ""});
-  spinnerHide$ = new BehaviorSubject<{id: string}>({id: ""});
+  private loader = inject(NgxUiLoaderService);
+
+  spinnerShow = signal<{id: string; config?: SpinnerConfig}>({id: ""});
+  spinnerHide = signal<{id: string}>({id: ""});
   defaultLoaderId = "master";
   shownSpinners: ObjectOf<{config?: SpinnerConfig}[]> = {};
 
-  constructor(private loader: NgxUiLoaderService) {
-    this.spinnerShow$.subscribe(({id, config}) => {
-      if (this.shownSpinners[id]) {
-        this.shownSpinners[id].push({config});
-      } else {
-        this.shownSpinners[id] = [{config}];
-      }
-      if (config?.background) {
-        this.loader.startBackgroundLoader(id);
-      } else {
-        this.loader.startLoader(id);
-      }
-    });
-    this.spinnerHide$.subscribe(({id}) => {
-      const showSpinner = this.shownSpinners[id];
-      const {config} = showSpinner.shift() || {};
-      if (config?.background) {
-        this.loader.stopBackgroundLoader(id);
-      } else {
-        this.loader.stopLoader(id);
-      }
-    });
-  }
+  spinnerShowEff = effect(() => {
+    const {id, config} = this.spinnerShow();
+    if (this.shownSpinners[id]) {
+      this.shownSpinners[id].push({config});
+    } else {
+      this.shownSpinners[id] = [{config}];
+    }
+    if (config?.background) {
+      this.loader.startBackgroundLoader(id);
+    } else {
+      this.loader.startLoader(id);
+    }
+  });
+  spinnerHideEff = effect(() => {
+    const {id} = this.spinnerHide();
+    const showSpinner = this.shownSpinners[id];
+    const {config} = showSpinner.shift() || {};
+    if (config?.background) {
+      this.loader.stopBackgroundLoader(id);
+    } else {
+      this.loader.stopLoader(id);
+    }
+  });
 
   show(id: string, config?: SpinnerConfig) {
-    this.spinnerShow$.next({id, config});
+    this.spinnerShow.set({id, config});
   }
-
   hide(id: string) {
-    this.spinnerHide$.next({id});
+    this.spinnerHide.set({id});
   }
 }

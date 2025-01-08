@@ -1,5 +1,5 @@
 import {ValidatorFn} from "@angular/forms";
-import {isTypeOf} from "packages/utils/lib";
+import {isTypeOf} from "@lucilor/utils";
 
 export class CustomValidators {
   static numberRangeStr: ValidatorFn = (control) => {

@@ -1,5 +1,16 @@
-import {AsyncPipe} from "@angular/common";
-import {AfterViewInit, Component, HostListener, OnDestroy, OnInit} from "@angular/core";
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostListener,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  untracked
+} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
@@ -10,7 +21,6 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatSelectChange, MatSelectModule} from "@angular/material/select";
-import {cadLineOptions} from "@app/cad/options";
 import {autoFixLine, generateLineTexts2, getLineLengthTextSize, isLengthTextSizeSetKey, validColors} from "@app/cad/utils";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
@@ -18,26 +28,23 @@ import {
   CadEventCallBack,
   CadLine,
   CadLineLike,
+  cadLineOptions,
   Defaults,
   lineweight2linewidth,
   linewidth2lineweight,
-  PointsMap,
-  企料位置识别,
-  变化方式
+  PointsMap
 } from "@lucilor/cad-viewer";
 import {Point} from "@lucilor/utils";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
-import {CadStatusCutLine, CadStatusDrawLine, CadStatusIntersection, CadStatusMoveLines} from "@services/cad-status";
+import {CadStatus, CadStatusCutLine, CadStatusDrawLine, CadStatusIntersection, CadStatusMoveLines} from "@services/cad-status";
 import Color from "color";
 import {debounce, uniq} from "lodash";
 import {ColorEvent} from "ngx-color";
 import {ColorCircleModule} from "ngx-color/circle";
+import {convertToCadFentiLine, getCadFentiInfo} from "../cad-fenti-config/cad-fenti-config.utils";
 import {CadLayerInputComponent} from "../cad-layer-input/cad-layer-input.component";
-
-const cadStatusIntersectionInfo = "addWHDashedLines";
 
 @Component({
   selector: "app-cad-line",
@@ -54,13 +61,17 @@ const cadStatusIntersectionInfo = "addWHDashedLines";
     ColorCircleModule,
     MatSelectModule,
     MatOptionModule,
-    MatIconModule,
-    AsyncPipe
-  ]
+    MatIconModule
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadLineComponent extends Subscribed() implements OnInit, AfterViewInit, OnDestroy {
+export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
+  private dialog = inject(MatDialog);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
   focusedField = "";
-  editDiabled = false;
+  editDiabled = signal(false);
   lineDrawing: {start?: Point; end?: Point; entity?: CadLine; oldEntity?: CadLine} | null = null;
   private _lineDrawingLock = false;
   linesMoving: {start?: Point} | null = null;
@@ -76,34 +87,110 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     isErrorState: () => !!this.inputErrors.guanlianbianhuagongshi
   };
   selected: CadLineLike[] = [];
-  bhfs = 变化方式;
-  zhewan = this.status.zhewanLengths$;
+  zhewan = this.status.zhewanLengths;
   WHDashedLines: {line: CadLineLike; map: PointsMap} | null = null;
-  qlwzshb = 企料位置识别;
   cadLineOptions = cadLineOptions;
 
-  get isDrawingLine() {
-    return this.status.cadStatus instanceof CadStatusDrawLine;
-  }
-  get drawLineName() {
-    return new CadStatusDrawLine().name;
-  }
-  get isMovingLines() {
-    return this.status.cadStatus instanceof CadStatusMoveLines;
-  }
-  get moveLinesName() {
-    return new CadStatusMoveLines().name;
-  }
-  get isCuttingLine() {
-    return this.status.cadStatus instanceof CadStatusCutLine;
-  }
-  get cutLineName() {
-    return new CadStatusCutLine().name;
-  }
-  get isAddingWHDashedLines() {
-    const cadStatus = this.status.cadStatus;
-    return cadStatus instanceof CadStatusIntersection && cadStatus.info === "addWHDashedLines";
-  }
+  isDrawingLine = computed(() => this.status.hasCadStatus((v) => v instanceof CadStatusDrawLine));
+  drawLineName = new CadStatusDrawLine(false).name;
+  drawLineEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusDrawLine,
+    () => {
+      this.status.cad.traverse((e) => {
+        e.info.prevSelectable = e.selectable;
+        e.selectable = false;
+      });
+      this.lineDrawing = {};
+      this._updateCadPoints();
+    },
+    () => {
+      const cad = this.status.cad;
+      const lineDrawing = this.lineDrawing;
+      if (lineDrawing) {
+        cad.remove(lineDrawing.entity);
+        if (lineDrawing.oldEntity) {
+          lineDrawing.oldEntity.opacity = 1;
+        }
+      }
+      cad.traverse((e) => {
+        e.selectable = e.info.prevSelectable ?? true;
+        delete e.info.prevSelectable;
+      });
+      this.lineDrawing = null;
+      this.status.setCadPoints();
+    }
+  );
+
+  isMovingLines = computed(() => this.status.hasCadStatus((v) => v instanceof CadStatusMoveLines));
+  moveLinesName = new CadStatusMoveLines().name;
+  moveLinesEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusMoveLines,
+    () => {
+      this.linesMoving = {};
+      this._updateCadPoints();
+    },
+    () => {
+      this.status.setCadPoints();
+      this.linesMoving = null;
+    }
+  );
+
+  isCuttingLine = computed(() => this.status.hasCadStatus((v) => v instanceof CadStatusCutLine));
+  cutLineName = new CadStatusCutLine().name;
+  cutLineEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusCutLine,
+    () => {
+      this.linesCutting = {lines: [], points: []};
+      this._updateCadPoints();
+    },
+    () => {
+      const cad = this.status.cad;
+      const {linesCutting} = this;
+      this.status.setCadPoints();
+      this.linesCutting = null;
+      if (this.status.hasCadStatus((v) => v instanceof CadStatusCutLine && v.confirmed) && linesCutting) {
+        const lines = linesCutting.lines;
+        linesCutting.points.forEach((point) => {
+          let index = -1;
+          let split1: CadLine | undefined;
+          let split2: CadLine | undefined;
+          lines.forEach((line, i) => {
+            if (line.curve.contains(point)) {
+              split1 = new CadLine(line.export(), true);
+              split2 = new CadLine();
+              split2.setColor(line.getColor());
+              split2.zhankaixiaoshuchuli = line.zhankaixiaoshuchuli;
+              split1.end.copy(point);
+              split2.start.copy(point);
+              split2.end.copy(line.end);
+              index = i;
+              cad.data.entities.add(split1, split2);
+              cad.remove(line);
+            }
+          });
+          if (index > -1 && split1 && split2) {
+            lines.splice(index, 1, split1, split2);
+          }
+        });
+      }
+    }
+  );
+
+  checkAddWHDashedLines = (v: CadStatus) => v instanceof CadStatusIntersection && v.info === "addWHDashedLines";
+  isAddingWHDashedLines = computed(() => {
+    const cadStatuses = this.status.cadStatuses();
+    return cadStatuses.some(this.checkAddWHDashedLines);
+  });
+  addWHDashedLinesEff = this.status.getCadStatusEffect(
+    this.checkAddWHDashedLines,
+    () => {
+      this.addWHDashedLinesStart();
+    },
+    () => {
+      this.addWHDashedLinesEnd();
+    }
+  );
+
   get data() {
     return this.status.cad.data;
   }
@@ -132,180 +219,18 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
 
   readonly selectableColors = validColors.slice();
 
-  constructor(
-    private status: AppStatusService,
-    private dialog: MatDialog,
-    private message: MessageService
-  ) {
-    super();
-  }
-
   ngOnInit() {
-    this.subscribe(this.status.cadStatusEnter$, (cadStatus) => {
-      const cad = this.status.cad;
-      if (cadStatus instanceof CadStatusDrawLine) {
-        cad.traverse((e) => {
-          e.info.prevSelectable = e.selectable;
-          e.selectable = false;
-        });
-        this.lineDrawing = {};
-        this._updateCadPoints();
-      } else if (cadStatus instanceof CadStatusMoveLines) {
-        this.linesMoving = {};
-        this._updateCadPoints();
-      } else if (cadStatus instanceof CadStatusCutLine) {
-        this.linesCutting = {lines: [], points: []};
-        this._updateCadPoints();
-      } else if (cadStatus instanceof CadStatusIntersection && cadStatus.info === cadStatusIntersectionInfo) {
-        this.addWHDashedLinesStart();
-      }
-    });
-    this.subscribe(this.status.cadStatusExit$, (cadStatus) => {
-      const cad = this.status.cad;
-      const {linesCutting} = this;
-      if (cadStatus instanceof CadStatusDrawLine) {
-        const lineDrawing = this.lineDrawing;
-        if (lineDrawing) {
-          cad.remove(lineDrawing.entity);
-          if (lineDrawing.oldEntity) {
-            lineDrawing.oldEntity.opacity = 1;
-          }
-        }
-        cad.traverse((e) => {
-          e.selectable = e.info.prevSelectable ?? true;
-          delete e.info.prevSelectable;
-        });
-        this.lineDrawing = null;
-        this.status.setCadPoints();
-      } else if (cadStatus instanceof CadStatusMoveLines) {
-        this.status.setCadPoints();
-        this.linesMoving = null;
-      } else if (cadStatus instanceof CadStatusCutLine) {
-        this.status.setCadPoints();
-        this.linesCutting = null;
-        if (cadStatus.confirmed && linesCutting) {
-          const lines = linesCutting.lines;
-          linesCutting.points.forEach((point) => {
-            let index = -1;
-            let split1: CadLine | undefined;
-            let split2: CadLine | undefined;
-            lines.forEach((line, i) => {
-              if (line.curve.contains(point)) {
-                split1 = new CadLine(line.export(), true);
-                split2 = new CadLine();
-                split2.setColor(line.getColor());
-                split2.zhankaixiaoshuchuli = line.zhankaixiaoshuchuli;
-                split1.end.copy(point);
-                split2.start.copy(point);
-                split2.end.copy(line.end);
-                index = i;
-                cad.data.entities.add(split1, split2);
-                cad.remove(line);
-              }
-            });
-            if (index > -1 && split1 && split2) {
-              lines.splice(index, 1, split1, split2);
-            }
-          });
-        }
-      } else if (cadStatus instanceof CadStatusIntersection && cadStatus.info === cadStatusIntersectionInfo) {
-        this.addWHDashedLinesEnd();
-      }
-    });
-    this.subscribe(this.status.cadPoints$, async (cadPoints) => {
-      const activePoints = cadPoints.filter((v) => v.active);
-      const cadStatus = this.status.cadStatus;
-      if (!activePoints.length) {
-        if (cadStatus instanceof CadStatusDrawLine) {
-          cadStatus.exitWithEsc = true;
-        }
-        return;
-      }
-      const cad = this.status.cad;
-      const worldPoints = activePoints.map((v) => cad.getWorldPoint(v.x, v.y));
-      const {lineDrawing, linesMoving, linesCutting} = this;
-      if (cadStatus instanceof CadStatusDrawLine && lineDrawing) {
-        const {entity, oldEntity} = lineDrawing;
-        if (oldEntity) {
-          if (!entity) {
-            return;
-          }
-          if (worldPoints.length === 2) {
-            entity.start.copy(worldPoints[0]);
-            entity.end.copy(worldPoints[1]);
-            cad.data.entities.add(entity);
-            await cad.remove(oldEntity);
-            entity.selected = false;
-            this.lineDrawing = null;
-            this.drawLine();
-          }
-        } else {
-          cadStatus.exitWithEsc = false;
-          if (worldPoints.length === 1) {
-            lineDrawing.start = worldPoints[0];
-          } else if (entity) {
-            if (worldPoints[0].equals(entity.start)) {
-              entity.end.copy(worldPoints[1]);
-            } else {
-              entity.end.copy(worldPoints[0]);
-            }
-            this.addLineDrawing(false);
-          }
-        }
-      } else if (cadStatus instanceof CadStatusMoveLines && linesMoving) {
-        if (worldPoints.length === 1) {
-          if (linesMoving.start) {
-            this.moveLines();
-            const translate = worldPoints[0].sub(linesMoving.start).toArray();
-            new CadEntities().fromArray(this.selected).transform({translate}, true);
-            this.status.cad.render(this.selected);
-          } else {
-            linesMoving.start = worldPoints[0];
-          }
-          this._updateCadPoints();
-        }
-      } else if (cadStatus instanceof CadStatusCutLine && linesCutting) {
-        linesCutting.points = worldPoints;
-      } else if (cadStatus instanceof CadStatusIntersection && cadStatus.info === cadStatusIntersectionInfo) {
-        const worldPoint = worldPoints[0];
-        const map = this.WHDashedLines?.map;
-        if (!worldPoint || !map) {
-          return;
-        }
-        const index = map.findIndex(({point}) => worldPoint.equals(point));
-        if (index >= 0) {
-          map[index].lines.forEach((l) => (l.opacity = 1));
-          map.splice(index, 1);
-        }
-        generateLineTexts2(cad.data);
-        this.toggleWHDashedLines();
-      }
-    });
-
-    this.subscribe(this.status.openCad$, () => {
-      this._onEntitiesChange();
-    });
-    {
-      const cad = this.status.cad;
-      cad.on("pointermove", this._onPointerMove);
-      cad.on("click", this._onClick);
-      cad.on("entitiesselect", this._onEntitiesChange);
-      cad.on("entitiesunselect", this._onEntitiesChange);
-      cad.on("entitiesadd", this._onEntitiesChange);
-      cad.on("entitiesremove", this._onEntitiesChange);
-      cad.on("moveentities", this._updateCadPoints);
-      cad.on("zoom", this._updateCadPoints);
-    }
+    const cad = this.status.cad;
+    cad.on("pointermove", this._onPointerMove);
+    cad.on("click", this._onClick);
+    cad.on("entitiesselect", this._onEntitiesChange);
+    cad.on("entitiesunselect", this._onEntitiesChange);
+    cad.on("entitiesadd", this._onEntitiesChange);
+    cad.on("entitiesremove", this._onEntitiesChange);
+    cad.on("moveentities", this._updateCadPoints);
+    cad.on("zoom", this._updateCadPoints);
   }
-
-  ngAfterViewInit() {
-    setTimeout(() => {
-      this.status.updateZhewanLengths();
-    }, 0);
-  }
-
   ngOnDestroy() {
-    super.ngOnDestroy();
     const cad = this.status.cad;
     cad.off("pointermove", this._onPointerMove);
     cad.off("click", this._onClick);
@@ -316,6 +241,16 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     cad.off("moveentities", this._updateCadPoints);
     cad.off("zoom", this._updateCadPoints);
   }
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.status.updateZhewanLengths();
+    }, 0);
+  }
+
+  openCadOptionsEff = effect(() => {
+    this.status.openCadOptions();
+    this._onEntitiesChange();
+  });
 
   private _onPointerMove: CadEventCallBack<"pointermove"> = async ({clientX, clientY, shiftKey}) => {
     const lineDrawing = this.lineDrawing;
@@ -342,6 +277,10 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
         entity.end = lineDrawing.end;
       } else {
         entity = new CadLine({...lineDrawing});
+        const cadStatus = this.status.findCadStatus((v) => v instanceof CadStatusDrawLine);
+        if (cadStatus?.isFenti) {
+          entity = convertToCadFentiLine(entity);
+        }
         lineDrawing.entity = entity;
         cad.data.entities.add(entity);
         await cad.render(entity);
@@ -362,7 +301,6 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     }
     await cad.render(entity);
   };
-
   private _onClick: CadEventCallBack<"click"> = (event: MouseEvent) => {
     if (this._lineDrawingLock) {
       return;
@@ -396,16 +334,101 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
         ["gongshi", "guanlianbianhuagongshi"].forEach((v) => this.validateLineText(v, e[v as keyof CadLine] as string));
       }
     });
-    this.editDiabled = selected.length < 1;
+    this.editDiabled.set(selected.length < 1);
     this.colorText = this.getCssColor();
   };
 
+  cadPointsEff = effect(async () => {
+    const cadPoints = this.status.cadPoints();
+    untracked(() => this.onCadPointsChange(cadPoints));
+  });
+  onCadPointsChange = async (cadPoints: CadPoints) => {
+    const activePoints = cadPoints.filter((v) => v.active);
+    if (!activePoints.length) {
+      this.status.updateCadStatuses((cadStatus) => {
+        if (cadStatus instanceof CadStatusDrawLine) {
+          cadStatus.leaveWithEsc = true;
+        }
+      });
+      return;
+    }
+    const cad = this.status.cad;
+    const worldPoints = activePoints.map((v) => cad.getWorldPoint(v.x, v.y));
+    const {lineDrawing, linesMoving, linesCutting} = this;
+    if (this.status.hasCadStatus((v) => v instanceof CadStatusDrawLine) && lineDrawing) {
+      const {entity, oldEntity} = lineDrawing;
+      if (oldEntity) {
+        if (!entity) {
+          return;
+        }
+        if (worldPoints.length === 2) {
+          entity.start.copy(worldPoints[0]);
+          entity.end.copy(worldPoints[1]);
+          cad.data.entities.add(entity);
+          await cad.remove(oldEntity);
+          entity.selected = false;
+          this.lineDrawing = null;
+          this.drawLine();
+        }
+      } else {
+        this.status.updateCadStatuses((cadStatus) => {
+          if (cadStatus instanceof CadStatusDrawLine) {
+            cadStatus.leaveWithEsc = false;
+          }
+        });
+        if (worldPoints.length === 1) {
+          lineDrawing.start = worldPoints[0];
+        } else if (entity) {
+          if (worldPoints[0].equals(entity.start)) {
+            entity.end.copy(worldPoints[1]);
+          } else {
+            entity.end.copy(worldPoints[0]);
+          }
+          this.addLineDrawing(false);
+        }
+      }
+    } else if (this.status.hasCadStatus((v) => v instanceof CadStatusMoveLines) && linesMoving) {
+      if (worldPoints.length === 1) {
+        if (linesMoving.start) {
+          this.moveLines();
+          const translate = worldPoints[0].sub(linesMoving.start).toArray();
+          new CadEntities().fromArray(this.selected).transform({translate}, true);
+          await this.status.cad.render(this.selected);
+          await this.status.refreshCadFenti();
+        } else {
+          linesMoving.start = worldPoints[0];
+        }
+        this._updateCadPoints();
+      }
+    } else if (this.status.hasCadStatus((v) => v instanceof CadStatusCutLine) && linesCutting) {
+      linesCutting.points = worldPoints;
+    } else if (this.status.hasCadStatus(this.checkAddWHDashedLines)) {
+      const worldPoint = worldPoints[0];
+      const map = this.WHDashedLines?.map;
+      if (!worldPoint || !map) {
+        return;
+      }
+      const index = map.findIndex(({point}) => worldPoint.equals(point));
+      if (index >= 0) {
+        map[index].lines.forEach((l) => (l.opacity = 1));
+        map.splice(index, 1);
+      }
+      generateLineTexts2(cad.data);
+      this.toggleWHDashedLines();
+    }
+  };
   private _updateCadPoints = () => {
     const {lineDrawing, linesMoving, linesCutting, selected, WHDashedLines} = this;
     const selected0 = selected[0];
     const cad = this.status.cad;
     if (lineDrawing) {
-      this.status.setCadPoints(cad.data.getAllEntities(), {mid: true});
+      const info = getCadFentiInfo(cad.data);
+      const cadStatus = this.status.findCadStatus((v) => v instanceof CadStatusDrawLine);
+      if (cadStatus?.isFenti) {
+        this.status.setCadPoints(info.fentiEntities, {mid: true});
+      } else {
+        this.status.setCadPoints(info.rawEntities, {mid: true});
+      }
       this.lineDrawing = {};
     } else if (linesMoving) {
       if (linesMoving.start) {
@@ -439,7 +462,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
           }
         });
         if (points.length) {
-          this.status.cadPoints$.next(points);
+          this.status.cadPoints.set(points);
           this.linesCutting = {lines: [selected0], points: []};
         } else {
           this.message.alert("无法截这条线(相交的线不足)");
@@ -453,8 +476,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
   @HostListener("window:keydown", ["$event"])
   onKeyDown(event: KeyboardEvent) {
     if (event.key === "Escape") {
-      const cadStatus = this.status.cadStatus;
-      if (cadStatus instanceof CadStatusDrawLine) {
+      if (this.status.hasCadStatus((v) => v instanceof CadStatusDrawLine)) {
         const lineDrawing = this.lineDrawing;
         if (lineDrawing) {
           this.status.cad.remove(lineDrawing.entity);
@@ -462,7 +484,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
             lineDrawing.oldEntity.opacity = 1;
           }
           this.lineDrawing = null;
-          this.status.cadPoints$.next(this.status.cadPoints$.value.map((v) => ({...v, active: false})));
+          this.status.cadPoints.update((v) => v.map((v2) => ({...v2, active: false})));
         }
       }
     }
@@ -481,7 +503,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     const {selected} = this;
     const cad = this.status.cad;
     const lines = selected.filter((v) => v instanceof CadLine);
-    this.status.setLinesLength(lines, Number((event.target as HTMLInputElement).value));
+    await this.status.setLinesLength(lines, Number((event.target as HTMLInputElement).value));
     this.status.validate();
     await cad.render();
     if (lines.some((v) => v.zhankaifangshi === "指定长度")) {
@@ -731,7 +753,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
   }
 
   drawLine() {
-    this.status.toggleCadStatus(new CadStatusDrawLine());
+    this.status.toggleCadStatus(new CadStatusDrawLine(false));
   }
 
   moveLines() {
@@ -742,7 +764,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     this.status.toggleCadStatus(new CadStatusCutLine());
   }
 
-  addLineDrawing(round: boolean, isFinished = false) {
+  async addLineDrawing(round: boolean, isFinished = false) {
     const lineDrawing = this.lineDrawing;
     const entity = lineDrawing?.entity;
     if (!lineDrawing || !entity) {
@@ -750,14 +772,14 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     }
     const cad = this.status.cad;
     if (round) {
-      this.status.setLinesLength([entity], Math.round(entity.length));
+      await this.status.setLinesLength([entity], Math.round(entity.length));
     } else {
-      this.status.updateCadTotalLength();
+      await this.status.updateCadTotalLength();
     }
     if (isFinished) {
       this.status.generateLineTexts();
     }
-    cad.render(entity);
+    await cad.render(entity);
     entity.opacity = 1;
     entity.selectable = true;
     this._updateCadPoints();
@@ -773,6 +795,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
     });
     this.status.validate();
     await cad.render();
+    await this.status.refreshCadFenti();
   }
 
   async editTiaojianquzhi() {
@@ -812,7 +835,7 @@ export class CadLineComponent extends Subscribed() implements OnInit, AfterViewI
   }
 
   toggleWHDashedLines() {
-    this.status.toggleCadStatus(new CadStatusIntersection(cadStatusIntersectionInfo));
+    this.status.toggleCadStatus(new CadStatusIntersection("addWHDashedLines"));
   }
 
   addWHDashedLinesStart() {

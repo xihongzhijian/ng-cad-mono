@@ -2,7 +2,7 @@
   <div class="toolbar">
     <button mat-button [matMenuTriggerFor]="file">文件</button>
     <mat-menu #file="matMenu">
-      @if ((isCadLocal$ | async) === false) {
+      @if (openCadOptions().isLocal === false) {
         <button mat-menu-item (click)="clickBtn('q')">新建<span class="shortcut">Ctrl + Q</span></button>
         <button mat-menu-item [matMenuTriggerFor]="openType">打开</button>
         <button mat-menu-item (click)="clickBtn('s')">保存<span class="shortcut">Ctrl + S</span></button>
@@ -22,7 +22,7 @@
       <button mat-menu-item (click)="clickBtn('4')">切料CAD<span class="shortcut">Ctrl + 4</span></button>
     </mat-menu>
 
-    <button mat-button [matMenuTriggerFor]="edit" [disabled]="!isStatusNormal">编辑</button>
+    <button mat-button [matMenuTriggerFor]="edit" [disabled]="!isStatusNormal()">编辑</button>
     <mat-menu #edit="matMenu">
       @if (env.beta) {
         <button mat-menu-item (click)="openCadLayerDialog()">图层</button>
@@ -67,18 +67,18 @@
     <button mat-button (click)="setKailiaofangshi()" [disabled]="!isStatusNormal">首尾开料使用线长</button>
     <button mat-button (click)="highlightTjqz()">高亮条件取值的线</button>
 
-    @if (canExit) {
-      <button mat-raised-button color="accent" (click)="backToNormal()">
-        退出{{ statusName }}
-        @if (exitWithEsc) {
+    @if (canLeave()) {
+      <button mat-raised-button color="accent" (click)="leaveCadStatus()">
+        退出{{ statusName() }}
+        @if (canLeaveWithEsc()) {
           <span>(Esc)</span>
         }
       </button>
     }
-    @if (canConfirm) {
-      <button mat-raised-button color="accent" (click)="backToNormal(true)">
+    @if (canConfirm()) {
+      <button mat-raised-button color="accent" (click)="leaveCadStatus(true)">
         确认
-        @if (confirmWithEnter) {
+        @if (canConfirmWithEnter()) {
           <span>(Enter)</span>
         }
       </button>
@@ -94,5 +94,6 @@
     @if (data.type === "包边正面") {
       <button mat-button (click)="editBbzhmkgz()">修改包边正面宽规则</button>
     }
+    <button mat-button [color]="cadFentiOn() ? 'accent' : ''" (click)="toggleCadFentiOn()">分体设置</button>
   </div>
 </div>

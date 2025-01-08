@@ -25,6 +25,7 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, keysOf, Line, ObjectOf, Point} from "@lucilor/utils";
+import {getCadFentiInfo} from "@modules/cad-editor/components/menu/cad-fenti-config/cad-fenti-config.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -153,7 +154,8 @@ export const validateLines = (collection: CadCollection, data: CadData, noInfo?:
       shuangxiangzhewan = false;
     }
   }
-  const lines = sortLines(data, tol);
+  const fentiInfo = getCadFentiInfo(data);
+  const lines = sortLines(fentiInfo.rawEntities, tol);
   result.errorLines = lines;
   const [min, max] = LINE_LIMIT;
   let groupMaxLength = shuangxiangzhewan ? 2 : 1;
@@ -335,7 +337,7 @@ export const splitShuangxiangCad = (data: CadData) => {
   if (!data.shuangxiangzhewan) {
     return null;
   }
-  const lines = sortLines(data);
+  const lines = sortLines(data.entities);
   const result = lines
     .map((v) => {
       const d = new CadData();
@@ -391,7 +393,7 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
   if (!shouldShowIntersection(data)) {
     return;
   }
-  const sortedEntitiesGroups = sortLines(data);
+  const sortedEntitiesGroups = sortLines(data.entities);
   const rect = data.getBoundingRect();
   const rectCenter = new Point(rect.x, rect.y);
   const drawing = {
@@ -877,7 +879,7 @@ export const autoShuangxiangzhewan = (data: CadData, tolerance?: number) => {
   if (cadTypes1.includes(data.type)) {
     return;
   }
-  const lines = sortLines(data, tolerance);
+  const lines = sortLines(data.entities, tolerance);
   if (lines.length !== 2) {
     return;
   }

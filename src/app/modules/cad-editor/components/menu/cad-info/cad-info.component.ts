@@ -33,7 +33,6 @@ import {
   intersectionKeysTranslate,
   sortLines
 } from "@lucilor/cad-viewer";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {Utils} from "@mixins/utils.mixin";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -60,7 +59,7 @@ import {getCadInfoInputs} from "./cad-info.utils";
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnDestroy {
+export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private message = inject(MessageService);
   private status = inject(AppStatusService);
@@ -68,130 +67,131 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   @HostBinding("class") class = "ng-page";
 
   private _cadPointsLock = false;
-  cadStatusIntersectionInfo: string | null = null;
+  cadStatusIntersectionInfo: CadStatusIntersection["info"] | null = null;
   bjxTypes = 激光开料标记线类型;
-  bjxIntersectionKey = "激光开料标记线";
   emptyBjxItem: NonNullable<CadData["info"]["激光开料标记线"]>[0] = {type: "短直线", ids: []};
 
+  selectJointpointEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusSelectJointpoint,
+    () => {
+      this._updateCadPoints();
+    },
+    () => {
+      this._cadPointsLock = true;
+      this.status.setCadPoints();
+    }
+  );
+
+  intersectionEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusIntersection,
+    () => {
+      this._updateCadPoints();
+    },
+    () => {
+      this._cadPointsLock = true;
+      this.status.setCadPoints();
+      this.cadStatusIntersectionInfo = null;
+    }
+  );
+
   ngOnInit() {
-    this.subscribe(this.status.cadStatusEnter$, (cadStatus) => {
-      if (cadStatus instanceof CadStatusSelectJointpoint) {
-        this._updateCadPoints();
-      } else if (cadStatus instanceof CadStatusIntersection) {
-        if (intersectionKeys.includes(cadStatus.info as any) || cadStatus.info === this.bjxIntersectionKey) {
-          this.cadStatusIntersectionInfo = cadStatus.info;
-          this._updateCadPoints();
-        }
-      }
-    });
-    this.subscribe(this.status.cadStatusExit$, (cadStatus) => {
-      if (cadStatus instanceof CadStatusSelectJointpoint) {
-        this._cadPointsLock = true;
-        this.status.setCadPoints();
-      } else if (cadStatus instanceof CadStatusIntersection) {
-        this._cadPointsLock = true;
-        this.status.setCadPoints();
-        this.cadStatusIntersectionInfo = null;
-      }
-    });
-    this.subscribe(this.status.cadPoints$, (points) => {
-      const activePoints = points.filter((p) => p.active);
-      const cadStatus = this.status.cadStatus;
-      if (this._cadPointsLock) {
-        this._cadPointsLock = false;
-        return;
-      }
-      const data = this.data();
-      if (cadStatus instanceof CadStatusSelectJointpoint) {
-        const jointPoint = data.jointPoints[cadStatus.index];
-        if (activePoints.length < 1) {
-          jointPoint.valueX = NaN;
-          jointPoint.valueY = NaN;
-        } else {
-          const {valueX: x, valueY: y} = jointPoint;
-          for (const p of activePoints) {
-            const p2 = this._setActiveCadPoint({x, y}, points);
-            if (!p2 || !isEqual([p.x, p.y], [p2.x, p2.y])) {
-              jointPoint.valueX = p.x;
-              jointPoint.valueY = p.y;
-              this._updateCadPoints();
-              break;
-            }
-          }
-        }
-        this.updateJointPointInfos();
-      } else if (cadStatus instanceof CadStatusIntersection && cadStatus.info === this.cadStatusIntersectionInfo) {
-        const key = this.cadStatusIntersectionInfo;
-        const index = cadStatus.index;
-        if (intersectionKeys.includes(key as IntersectionKey)) {
-          const key2 = key as IntersectionKey;
-          const lines = data[key2][index];
-          if (activePoints.length < 1) {
-            data[key2][index] = [];
-          } else {
-            for (const p of activePoints) {
-              const p2 = this._setActiveCadPoint({lines}, points);
-              if (!p2 || !isEqual(p.lines, p2.lines)) {
-                data[key2][index] = p.lines.slice();
-                this._updateCadPoints();
-                break;
-              }
-            }
-          }
-          this.updateIntersectionInputs();
-        } else if (key === this.bjxIntersectionKey) {
-          if (!data.info.激光开料标记线) {
-            data.info.激光开料标记线 = [];
-          }
-          const item = data.info.激光开料标记线[index];
-          if (activePoints.length < 1) {
-            item.ids = [];
-          } else {
-            for (const p of activePoints) {
-              const p2 = this._setActiveCadPoint({lines: item.ids}, points);
-              if (!p2 || !isEqual(p.lines, p2.lines)) {
-                item.ids = p.lines.slice();
-                this._updateCadPoints();
-                break;
-              }
-            }
-          }
-        }
-      }
-    });
-    this.subscribe(this.status.openCad$, () => {
-      this.updateIntersectionInputs();
-    });
     const cad = this.status.cad;
     cad.on("entityclick", this._onEntityClick);
     cad.on("moveentities", this._onEntityMove);
     cad.on("zoom", this._updateCadPoints);
   }
-
   ngOnDestroy() {
-    super.ngOnDestroy();
     const cad = this.status.cad;
     cad.off("entityclick", this._onEntityClick);
     cad.off("moveentities", this._onEntityMove);
     cad.off("zoom", this._updateCadPoints);
   }
 
-  data = signal<CadData>(this.status.cad.data);
-  dataEff = effect(() => {
-    const setData = () => {
-      const components = this.status.components.selected$.value;
-      if (components.length === 1) {
-        this.data.set(components[0]);
+  openCadOptionsEff = effect(() => {
+    this.status.openCadOptions();
+    this.updateIntersectionInputs();
+  });
+
+  componentsSelected = this.status.components.selected;
+  data = computed(() => {
+    const components = this.componentsSelected();
+    if (components.length === 1) {
+      return components[0];
+    } else {
+      return this.status.cadData();
+    }
+  });
+
+  cadPointsEff = effect(() => {
+    const points = this.status.cadPoints();
+    const activePoints = points.filter((p) => p.active);
+    if (this._cadPointsLock) {
+      this._cadPointsLock = false;
+      return;
+    }
+    const data = this.data();
+    const selectJointpointStatus = this.status.findCadStatus(
+      (v) => v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo
+    );
+    const intersectionStatus = this.status.findCadStatus(
+      (v) => v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo
+    );
+    if (selectJointpointStatus) {
+      const jointPoint = data.jointPoints[selectJointpointStatus.index];
+      if (activePoints.length < 1) {
+        jointPoint.valueX = NaN;
+        jointPoint.valueY = NaN;
       } else {
-        this.data.set(this.status.cad.data);
+        const {valueX: x, valueY: y} = jointPoint;
+        for (const p of activePoints) {
+          const p2 = this._setActiveCadPoint({x, y}, points);
+          if (!p2 || !isEqual([p.x, p.y], [p2.x, p2.y])) {
+            jointPoint.valueX = p.x;
+            jointPoint.valueY = p.y;
+            this._updateCadPoints();
+            break;
+          }
+        }
       }
-    };
-    this.subscribe(this.status.openCad$, () => {
-      setData();
-    });
-    this.subscribe(this.status.components.selected$, () => {
-      setData();
-    });
+      this.updateJointPointInfos();
+    } else if (intersectionStatus) {
+      const key = this.cadStatusIntersectionInfo;
+      const index = intersectionStatus.index;
+      if (intersectionKeys.includes(key as IntersectionKey)) {
+        const key2 = key as IntersectionKey;
+        const lines = data[key2][index];
+        if (activePoints.length < 1) {
+          data[key2][index] = [];
+        } else {
+          for (const p of activePoints) {
+            const p2 = this._setActiveCadPoint({lines}, points);
+            if (!p2 || !isEqual(p.lines, p2.lines)) {
+              data[key2][index] = p.lines.slice();
+              this._updateCadPoints();
+              break;
+            }
+          }
+        }
+        this.updateIntersectionInputs();
+      } else if (key === "激光开料标记线") {
+        if (!data.info.激光开料标记线) {
+          data.info.激光开料标记线 = [];
+        }
+        const item = data.info.激光开料标记线[index];
+        if (activePoints.length < 1) {
+          item.ids = [];
+        } else {
+          for (const p of activePoints) {
+            const p2 = this._setActiveCadPoint({lines: item.ids}, points);
+            if (!p2 || !isEqual(p.lines, p2.lines)) {
+              item.ids = p.lines.slice();
+              this._updateCadPoints();
+              break;
+            }
+          }
+        }
+      }
+    }
   });
 
   parseOptionString = computed(() => false);
@@ -290,11 +290,11 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   });
 
   private _onEntityClick: CadEventCallBack<"entityclick"> = (_, entity) => {
-    const cadStatus = this.status.cadStatus;
     const data = this.data();
-    if (cadStatus instanceof CadStatusSelectBaseline) {
+    const selectBaseLineStatus = this.status.findCadStatus((v) => v instanceof CadStatusSelectBaseline);
+    if (selectBaseLineStatus) {
       if (entity instanceof CadLine) {
-        const baseLine = data.baseLines[cadStatus.index];
+        const baseLine = data.baseLines[selectBaseLineStatus.index];
         if (entity.isHorizontal()) {
           baseLine.idY = entity.selected ? entity.id : "";
         }
@@ -322,24 +322,25 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
     this._updateCadPoints();
   };
   private _updateCadPoints = () => {
-    const cadStatus = this.status.cadStatus;
     const data = this.data();
     const key = this.cadStatusIntersectionInfo;
-    if (cadStatus instanceof CadStatusSelectJointpoint) {
+    const selectJointpointStatus = this.status.findCadStatus((v) => v instanceof CadStatusSelectJointpoint);
+    const intersectionStatus = this.status.findCadStatus((v) => v instanceof CadStatusIntersection && v.info === key);
+    if (selectJointpointStatus) {
       const points = this.status.getCadPoints(data.getAllEntities());
-      const {valueX, valueY} = data.jointPoints[cadStatus.index];
+      const {valueX, valueY} = data.jointPoints[selectJointpointStatus.index];
       this._setActiveCadPoint({x: valueX, y: valueY}, points);
       this._cadPointsLock = true;
-      this.status.cadPoints$.next(points);
-    } else if (cadStatus instanceof CadStatusIntersection && cadStatus.info === key) {
+      this.status.cadPoints.set(points);
+    } else if (intersectionStatus) {
       const points = this.status.getCadPoints(data.getAllEntities());
       if (intersectionKeys.includes(key as IntersectionKey)) {
-        this._setActiveCadPoint({lines: data[key as IntersectionKey][cadStatus.index]}, points);
-      } else if (key === this.bjxIntersectionKey) {
-        this._setActiveCadPoint({lines: data.info.激光开料标记线?.[cadStatus.index].ids}, points);
+        this._setActiveCadPoint({lines: data[key as IntersectionKey][intersectionStatus.index]}, points);
+      } else if (key === "激光开料标记线") {
+        this._setActiveCadPoint({lines: data.info.激光开料标记线?.[intersectionStatus.index].ids}, points);
       }
       this._cadPointsLock = true;
-      this.status.cadPoints$.next(points);
+      this.status.cadPoints.set(points);
     }
   };
   private _setActiveCadPoint(point: Partial<CadPoints[0]>, points: CadPoints) {
@@ -355,11 +356,10 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
 
   baseLineInfos = signal<{data: CadBaseLine; color: ThemePalette}[]>([]);
   updateBaseLineInfos() {
-    const cadStatus = this.status.cadStatus;
     this.baseLineInfos.set(
       this.data().baseLines.map((baseLine, i) => {
         let color: ThemePalette = "primary";
-        if (cadStatus instanceof CadStatusSelectBaseline && i === cadStatus.index) {
+        if (this.status.hasCadStatus((v) => v instanceof CadStatusSelectBaseline && i === v.index)) {
           color = "accent";
         }
         return {data: baseLine, color};
@@ -369,11 +369,6 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   baseLinesEff = effect(() => {
     this.updateBaseLineInfos();
   });
-  baseLinesEff2 = effect(() =>
-    this.subscribe(this.status.cadStatusEnter$, () => {
-      this.updateBaseLineInfos();
-    })
-  );
   addBaseLine(index: number) {
     const arr = this.data().baseLines;
     arr.splice(index + 1, 0, new CadBaseLine());
@@ -396,11 +391,10 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
 
   jointPointInfos = signal<{data: CadJointPoint; color: ThemePalette}[]>([]);
   updateJointPointInfos() {
-    const cadStatus = this.status.cadStatus;
     this.jointPointInfos.set(
       this.data().jointPoints.map((jointPoint, i) => {
         let color: ThemePalette = "primary";
-        if (cadStatus instanceof CadStatusSelectJointpoint && i === cadStatus.index) {
+        if (this.status.hasCadStatus((v) => v instanceof CadStatusSelectJointpoint && i === v.index)) {
           color = "accent";
         }
         return {data: jointPoint, color};
@@ -410,11 +404,6 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   jointPointsEff = effect(() => {
     this.updateJointPointInfos();
   });
-  jointPointsEff2 = effect(() =>
-    this.subscribe(this.status.cadStatusEnter$, () => {
-      this.updateJointPointInfos();
-    })
-  );
   addJointPoint(index: number) {
     const arr = this.data().jointPoints;
     arr.splice(index + 1, 0, new CadJointPoint());
@@ -524,7 +513,7 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
       return;
     }
     const distance = 2;
-    const lines = sortLines(data);
+    const lines = sortLines(data.entities);
     lines.forEach((v) => (v[0].mingzi = "起始线"));
     const entities = data.getAllEntities().clone(true);
     entities.offset(direction, distance);
@@ -576,20 +565,18 @@ export class CadInfoComponent extends Subscribed(Utils()) implements OnInit, OnD
   }
 
   selectBjxPoint(i: number) {
-    this.status.toggleCadStatus(new CadStatusIntersection(this.bjxIntersectionKey, i));
+    this.status.toggleCadStatus(new CadStatusIntersection("激光开料标记线", i));
   }
 
   getPointColor(i: number, key: IntersectionKey) {
-    const cadStatus = this.status.cadStatus;
-    if (cadStatus instanceof CadStatusIntersection && cadStatus.info === key && i === cadStatus.index) {
+    if (this.status.hasCadStatus((v) => v instanceof CadStatusIntersection && v.info === key && i === v.index)) {
       return "accent";
     }
     return "primary";
   }
 
   getBjxPointColor(i: number) {
-    const cadStatus = this.status.cadStatus;
-    if (cadStatus instanceof CadStatusIntersection && cadStatus.info === this.bjxIntersectionKey && i === cadStatus.index) {
+    if (this.status.hasCadStatus((v) => v instanceof CadStatusIntersection && v.info === "激光开料标记线" && i === v.index)) {
       return "accent";
     }
     return "primary";

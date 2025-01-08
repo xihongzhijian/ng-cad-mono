@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import {Injectable, signal, untracked, WritableSignal} from "@angular/core";
 import {local} from "@app/app.common";
 import {CadViewerConfig} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
@@ -31,7 +31,7 @@ export type AppConfigChangeOptions = Partial<Omit<AppConfigChange, "oldVal" | "n
   providedIn: "root"
 })
 export class AppConfigService {
-  private config$: BehaviorSubject<AppConfig>;
+  private _config: WritableSignal<AppConfig>;
   configChange$: BehaviorSubject<AppConfigChange>;
   userConfigSaved$: Subject<boolean>;
   private _userConfig: Partial<AppConfig> = {};
@@ -76,10 +76,10 @@ export class AppConfigService {
         (defaultConfig[key] as any) = localUserConfig[key];
       }
     }
-    this.config$ = new BehaviorSubject<AppConfig>(defaultConfig);
+    this._config = signal(defaultConfig);
     this.configChange$ = new BehaviorSubject<AppConfigChange>({
       oldVal: {},
-      newVal: this.config$.value,
+      newVal: defaultConfig,
       sync: false,
       isUserConfig: true
     });
@@ -127,9 +127,9 @@ export class AppConfigService {
   getConfig<T extends keyof AppConfig>(key: T): AppConfig[T];
   getConfig(key?: keyof AppConfig) {
     if (typeof key === "string") {
-      return cloneDeep(this.config$.value[key]);
+      return cloneDeep(this._config()[key]);
     } else {
-      return cloneDeep({...this.config$.value});
+      return cloneDeep({...this._config()});
     }
   }
 
@@ -140,7 +140,7 @@ export class AppConfigService {
     value?: AppConfig[T] | AppConfigChangeOptions,
     options?: AppConfigChangeOptions
   ) {
-    const oldVal = this.config$.value;
+    const oldVal = untracked(() => this._config());
     let newVal: Partial<AppConfig> | undefined;
     if (typeof key === "string") {
       newVal = {};
@@ -152,13 +152,14 @@ export class AppConfigService {
     const [oldVal2, newVal2] = this._purgeConfig(oldVal, newVal);
     const sync = options?.sync ?? true;
     const isUserConfig = options?.isUserConfig ?? false;
-    this.config$.next({...oldVal, ...newVal2});
+    const config = {...oldVal, ...newVal2};
+    this._config.set(config);
     this.configChange$.next({oldVal: oldVal2, newVal: newVal2, sync, isUserConfig});
     return oldVal2;
   }
 
   setConfigWith<T extends keyof AppConfig>(key: T, getter: (oldVal: AppConfig[T]) => AppConfig[T], options?: AppConfigChangeOptions) {
-    const oldVal = this.config$.value[key];
+    const oldVal = this.getConfig(key);
     const newVal = getter(oldVal);
     return this.setConfig(key, newVal, options);
   }

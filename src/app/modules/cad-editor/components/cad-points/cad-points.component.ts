@@ -1,8 +1,6 @@
-import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from "@angular/core";
-import {Subscribed} from "@mixins/subscribed.mixin";
+import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
-import {CadPoints} from "@services/app-status.types";
 import {Properties} from "csstype";
 
 @Component({
@@ -12,35 +10,29 @@ import {Properties} from "csstype";
   imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadPointsComponent extends Subscribed() implements OnInit {
+export class CadPointsComponent {
   private config = inject(AppConfigService);
   private status = inject(AppStatusService);
 
-  points = signal<CadPoints>([]);
-
-  constructor() {
-    super();
-  }
-
-  ngOnInit() {
-    this.subscribe(this.status.cadPoints$, (points) => {
-      this.points.set(points);
+  pointInfos = computed(() => {
+    return this.status.cadPoints().map((point) => {
+      const classList: string[] = [];
+      if (point.active) {
+        classList.push("active");
+      }
+      const size = this.config.getConfig("pointSize");
+      const style: Properties = {
+        width: `${size}px`,
+        height: `${size}px`,
+        left: `${point.x}px`,
+        top: `${point.y}px`
+      };
+      return {classList, style};
     });
-  }
+  });
 
   onPointClick(index: number) {
-    const points = this.points();
-    points[index].active = !points[index].active;
-    this.status.cadPoints$.next(points);
-  }
-
-  getStyle(p: CadPoints[0]) {
-    const size = this.config.getConfig("pointSize");
-    return {
-      width: `${size}px`,
-      height: `${size}px`,
-      left: `${p.x}px`,
-      top: `${p.y}px`
-    } as Properties;
+    const point = this.status.cadPoints()[index];
+    this.status.setCadPoint(index, {active: !point.active});
   }
 }

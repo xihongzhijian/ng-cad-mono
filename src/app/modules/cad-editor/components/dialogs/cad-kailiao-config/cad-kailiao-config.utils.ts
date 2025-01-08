@@ -1,6 +1,5 @@
 import {WritableSignal} from "@angular/core";
-import {cadLineOptions} from "@app/cad/options";
-import {CadLineLike} from "@lucilor/cad-viewer";
+import {CadLineLike, cadLineOptions} from "@lucilor/cad-viewer";
 import {InputInfo} from "@modules/input/components/input.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
 

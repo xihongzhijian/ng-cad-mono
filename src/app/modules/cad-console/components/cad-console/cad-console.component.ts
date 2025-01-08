@@ -16,7 +16,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
-import {CadStatusAssemble, CadStatusNormal, CadStatusSplit} from "@services/cad-status";
+import {CadStatusAssemble, CadStatusSplit} from "@services/cad-status";
 import hljs from "highlight.js";
 import {differenceWith} from "lodash";
 import printJS from "print-js";
@@ -137,12 +137,7 @@ export class CadConsoleComponent {
 
   private executor: ObjectOf<(this: CadConsoleComponent, ...args: string[]) => any> = {
     async assemble() {
-      const cadStatus = this.status.cadStatus;
-      if (cadStatus instanceof CadStatusAssemble) {
-        this.status.setCadStatus(new CadStatusNormal());
-      } else {
-        this.status.setCadStatus(new CadStatusAssemble());
-      }
+      this.status.toggleCadStatus(new CadStatusAssemble());
     },
     async config() {
       const config = this.config.getConfig();
@@ -432,12 +427,7 @@ export class CadConsoleComponent {
       this.status.saveCad(loaderId);
     },
     async split() {
-      const cadStatus = this.status.cadStatus;
-      if (cadStatus instanceof CadStatusSplit) {
-        this.status.setCadStatus(new CadStatusNormal());
-      } else {
-        this.status.setCadStatus(new CadStatusSplit());
-      }
+      this.status.toggleCadStatus(new CadStatusSplit());
     },
     test(qwer: string, asdf: string) {
       this.message.snack(`qwer=${qwer}, asdf=${asdf}`);
@@ -713,7 +703,7 @@ export class CadConsoleComponent {
           });
         }
       };
-      const selectedComponents = this.status.components.selected$.value;
+      const selectedComponents = this.status.components.selected();
       if (selectedComponents.length) {
         selectedComponents.forEach((data) => {
           t(data);

@@ -1,5 +1,5 @@
 <div style="margin: 10px">
-  <mat-slide-toggle [checked]="componentsMode" (change)="toggleMultiSelect()">{{ componentsMode ? "多选" : "单选" }}</mat-slide-toggle>
+  <mat-slide-toggle [checked]="componentsMode" (change)="toggleMultiSelect()">{{ componentsMode() ? "多选" : "单选" }}</mat-slide-toggle>
 </div>
 <ng-scrollbar>
   <div class="section">

@@ -45,7 +45,8 @@ export const checkDuplicateVars = (
 
 export const alertError = async (message: MessageService, error: ErrorItem) => {
   const {content, details} = error;
-  const details2 = details.map((detail) => {
+  const details2: string[] = [];
+  for (const detail of details) {
     let str = "";
     for (const {text, br, color, hiddenWhenAlert} of detail) {
       if (br) {
@@ -62,8 +63,8 @@ export const alertError = async (message: MessageService, error: ErrorItem) => {
       }
     }
     return str;
-  });
-  if (details.length > 0) {
+  }
+  if (content.length > 0 || details2.length > 0) {
     await message.error({content, details: details2});
     return true;
   }
@@ -71,3 +72,52 @@ export const alertError = async (message: MessageService, error: ErrorItem) => {
 };
 
 export const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");
+
+export class ResultWithErrors<T, K extends ErrorDetailText = ErrorDetailText> {
+  errors: ErrorItem<K>[] = [];
+  warnings: ErrorItem<K>[] = [];
+
+  get fulfilled() {
+    return this.errors.length < 1 && this.warnings.length < 1;
+  }
+  hasError() {
+    return this.errors.length > 0;
+  }
+  hasWarning() {
+    return this.warnings.length > 0;
+  }
+
+  constructor(public data: T) {}
+
+  addError(error: ErrorItem<K>) {
+    this.errors.push(error);
+    return this;
+  }
+  addErrorStr(content: string, details: ErrorDetail<K>[] = []) {
+    this.errors.push({content, details});
+    return this;
+  }
+
+  addWarning(warning: ErrorItem<K>) {
+    this.warnings.push(warning);
+    return this;
+  }
+  addWarningStr(content: string, details: ErrorDetail<K>[] = []) {
+    this.warnings.push({content, details});
+    return this;
+  }
+
+  async check(message: MessageService) {
+    const errorToAlert: ErrorItem<K> = {content: "", details: []};
+    for (const [i, error] of this.errors.entries()) {
+      if (i > 0) {
+        errorToAlert.content += "<br>" + error.content;
+      } else {
+        errorToAlert.content += error.content;
+      }
+      errorToAlert.details.push(...error.details);
+    }
+    await alertError(message, errorToAlert);
+    return this.fulfilled;
+  }
+}

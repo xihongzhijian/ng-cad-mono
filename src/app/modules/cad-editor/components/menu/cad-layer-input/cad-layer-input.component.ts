@@ -1,59 +1,58 @@
-import {AsyncPipe} from "@angular/common";
-import {Component, Input} from "@angular/core";
-import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
-import {MatOptionModule} from "@angular/material/core";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatInputModule} from "@angular/material/input";
+import {ChangeDetectionStrategy, Component, computed, inject, input} from "@angular/core";
 import {CadEntity} from "@lucilor/cad-viewer";
 import {Subscribed} from "@mixins/subscribed.mixin";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
-import {BehaviorSubject} from "rxjs";
 
 @Component({
   selector: "app-cad-layer-input[entities]",
   templateUrl: "./cad-layer-input.component.html",
   styleUrls: ["./cad-layer-input.component.scss"],
-  imports: [MatFormFieldModule, MatInputModule, MatAutocompleteModule, MatOptionModule, AsyncPipe]
+  imports: [InputComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadLayerInputComponent extends Subscribed() {
-  @Input() entities: CadEntity[] = [];
-  layerOptions$ = new BehaviorSubject<string[]>([]);
-  get layerText() {
-    const names = new Set(this.entities.map((e) => e.layer));
+  status = inject(AppStatusService);
+
+  entities = input<CadEntity[]>([]);
+
+  layerText = computed(() => {
+    const names = new Set(this.entities().map((e) => e.layer));
     if (names.size === 1) {
       return names.values().next().value;
     }
     return "";
-  }
-
-  constructor(public status: AppStatusService) {
-    super();
-    this.subscribe(status.openCad$, () => {
-      const data = this.status.cad.data;
-      const layerNames = new Set(["不显示", "跳过判断封闭图形", "微连"]);
-      const layerNamesExclude = new Set(["Defpoints", "走线", "开料额外信息", "打孔", "展开长标注", "line-info", "导入错误信息"]);
-      data.layers.forEach((layer) => {
-        const name = layer.name;
-        if (!layerNamesExclude.has(name)) {
-          layerNames.add(name);
-        }
-      });
-      data.entities.forEach((e) => {
-        if (e.layer) {
-          layerNames.add(e.layer);
-        }
-      }, true);
-      this.layerOptions$.next([...layerNames]);
+  });
+  layerOptions = computed<string[]>(() => {
+    const data = this.status.cadData();
+    const layerNames = new Set(["不显示", "跳过判断封闭图形", "微连"]);
+    const layerNamesExclude = new Set(["Defpoints", "走线", "开料额外信息", "打孔", "展开长标注", "line-info", "导入错误信息"]);
+    data.layers.forEach((layer) => {
+      const name = layer.name;
+      if (!layerNamesExclude.has(name)) {
+        layerNames.add(name);
+      }
     });
-  }
-
-  onLayerTextChange(event: Event | MatAutocompleteSelectedEvent) {
-    let value: string;
-    if (event instanceof MatAutocompleteSelectedEvent) {
-      value = event.option.value;
-    } else {
-      value = (event.target as HTMLInputElement).value;
-    }
-    this.entities.forEach((e) => (e.layer = value));
-  }
+    data.entities.forEach((e) => {
+      if (e.layer) {
+        layerNames.add(e.layer);
+      }
+    }, true);
+    return Array.from(layerNames);
+  });
+  layerNameInputInfo = computed<InputInfo>(() => {
+    const value = this.layerText();
+    const options = this.layerOptions();
+    return {
+      type: "string",
+      label: "图层",
+      value,
+      options,
+      fixedOptions: options,
+      onChange: (val) => {
+        this.entities().forEach((e) => (e.layer = val));
+      }
+    };
+  });
 }

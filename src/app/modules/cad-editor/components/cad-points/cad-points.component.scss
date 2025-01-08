@@ -5,15 +5,14 @@
   cursor: pointer;
   transform: translate(-50%, -50%);
   user-select: none;
-
-  $active-color: rgb(0, 0, 255);
   animation: point 2.2s linear infinite;
+  --active-color: rgb(0, 0, 255);
   &:hover {
     opacity: 0.9;
-    background-color: $active-color;
+    background-color: var(--active-color);
   }
   &.active {
-    background-color: $active-color;
+    background-color: var(--active-color);
     animation: unset;
   }
 

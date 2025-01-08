@@ -122,8 +122,7 @@ export const swapStartEnd = (entity: CadLineLike) => {
   entity.swapped = !entity.swapped;
 };
 
-export const sortLines = (data: CadData, tol = DEFAULT_TOLERANCE) => {
-  const entities = data.entities;
+export const sortLines = (entities: CadEntities, tol = DEFAULT_TOLERANCE) => {
   const result: CadLineLike[][] = [];
   if (entities.length === 0) {
     return result;
@@ -225,7 +224,7 @@ export const sortLines = (data: CadData, tol = DEFAULT_TOLERANCE) => {
     }
   }
   if (allIds.size > 0) {
-    result.push(data.entities.filter((e) => allIds.has(e.id)).toArray() as CadLineLike[]);
+    result.push(entities.filter((e) => allIds.has(e.id)).toArray() as CadLineLike[]);
   }
   return result;
 };
@@ -241,7 +240,7 @@ export const getLinesDistance = (l1: CadLineLike, l2: CadLineLike) => {
 };
 
 export const generateLineTexts = (data: CadData, tol = DEFAULT_TOLERANCE) => {
-  const lines = sortLines(data, tol);
+  const lines = sortLines(data.entities, tol);
   lines.forEach((group) => {
     let cp = 0;
     const length = group.length;

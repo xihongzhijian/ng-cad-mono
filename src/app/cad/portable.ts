@@ -209,7 +209,7 @@ export class CadPortable {
 
     dumpData.entities.line = lines;
     const rects: Rectangle[] = [];
-    const sorted = sortLines(dumpData);
+    const sorted = sortLines(dumpData.entities);
 
     const getObject = (text: string, separator: string) => {
       text = text + "\n";
@@ -839,7 +839,7 @@ export class CadPortable {
   }
 
   static addLineId(cad: CadData) {
-    const lineGroups = sortLines(cad);
+    const lineGroups = sortLines(cad.entities);
     if (lineGroups.length < 1 || lineGroups.length > 2) {
       return;
     }

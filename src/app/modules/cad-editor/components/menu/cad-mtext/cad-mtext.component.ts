@@ -1,4 +1,4 @@
-import {Component, forwardRef, OnDestroy, OnInit} from "@angular/core";
+import {Component, effect, forwardRef, OnDestroy, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {validColors} from "@app/cad/utils";
 import {environment} from "@env";
@@ -54,11 +54,7 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     cad.on("entitiesunselect", this._updateSelected);
     cad.on("entitiesadd", this._updateSelected);
     cad.on("entitiesremove", this._updateSelected);
-    this.subscribe(this.status.openCad$, () => {
-      this._updateSelected();
-    });
   }
-
   ngOnDestroy() {
     super.ngOnDestroy();
     const cad = this.status.cad;
@@ -67,6 +63,10 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     cad.off("entitiesadd", this._updateSelected);
     cad.off("entitiesremove", this._updateSelected);
   }
+
+  openCadOptionsEff = effect(() => {
+    this._updateSelected();
+  });
 
   private _updateInputInfos() {
     const disabled = this.selected.length < 1;

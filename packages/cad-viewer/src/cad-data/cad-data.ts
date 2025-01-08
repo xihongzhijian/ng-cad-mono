@@ -82,7 +82,9 @@ const propertyKeys: (keyof CadData)[] = [
   "默认开料材料",
   "默认开料板材厚度",
   "自动生成双折宽双折高公式",
-  "装配示意图自动拼接锁边铰边"
+  "装配示意图自动拼接锁边铰边",
+  "分体拼接位置",
+  "分体对应线"
 ];
 
 export class CadData {
@@ -165,6 +167,8 @@ export class CadData {
   默认开料板材厚度 = "";
   自动生成双折宽双折高公式 = true;
   装配示意图自动拼接锁边铰边 = "";
+  分体拼接位置: string[][] = [];
+  分体对应线: string[][] = [];
 
   constructor(data?: ObjectOf<any>, resetIds = false) {
     this._entities = new CadEntities();
@@ -343,7 +347,8 @@ export class CadData {
       v.resetIds(entitiesOnly);
     });
     const idMap = this.entities.idMap;
-    for (const key of intersectionKeys) {
+    const fentiIdKeys = ["分体拼接位置", "分体对应线"] as const;
+    for (const key of [...intersectionKeys, ...fentiIdKeys]) {
       this[key] = this[key].map((v) => v.map((id) => idMap[id] || id));
     }
     if (this.info.激光开料标记线) {

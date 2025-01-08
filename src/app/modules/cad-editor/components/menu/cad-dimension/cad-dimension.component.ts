@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -20,11 +20,10 @@ import {
   CadLineLike
 } from "@lucilor/cad-viewer";
 import {isNearZero} from "@lucilor/utils";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
-import {CadStatusEditDimension, CadStatusNormal} from "@services/cad-status";
+import {CadStatusEditDimension} from "@services/cad-status";
 import {openCadDimensionFormDialog} from "../../dialogs/cad-dimension-form/cad-dimension-form.component";
 
 @Component({
@@ -34,7 +33,7 @@ import {openCadDimensionFormDialog} from "../../dialogs/cad-dimension-form/cad-d
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatSlideToggleModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadDimensionComponent extends Subscribed() implements OnInit, OnDestroy {
+export class CadDimensionComponent implements OnInit, OnDestroy {
   private config = inject(AppConfigService);
   private dialog = inject(MatDialog);
   private message = inject(MessageService);
@@ -44,52 +43,44 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
   dimLineSelecting = signal(-1);
   dimensions = signal<CadDimension[]>([]);
 
-  constructor() {
-    super();
-  }
+  prevConfig: Partial<AppConfig> = {};
+  prevSelectedComponents: CadData[] | null = null;
+  prevComponentsSelectable: boolean | null = null;
+  prevSelectedEntities: CadEntities | null = null;
+  editDimensionEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusEditDimension,
+    (cadStatus) => {
+      const index = cadStatus.index;
+      const dimension = this.dimensions()[index];
+      this.prevSelectedEntities = this.status.cad.selected();
+      this.dimLineSelecting.set(index);
+      this.prevConfig = this.config.setConfig({hideLineLength: true, lineGongshi: 0, selectMode: "single"}, {sync: false});
+      this.prevSelectedComponents = this.status.components.selected();
+      this.status.components.selected.set([]);
+      this.prevComponentsSelectable = this.status.components.selectable();
+      this.status.components.selectable.set(false);
+      this.focus(dimension);
+    },
+    () => {
+      this.dimLineSelecting.set(-1);
+      this.config.setConfig(this.prevConfig, {sync: false});
+      if (this.prevSelectedComponents !== null) {
+        this.status.components.selected.set(this.prevSelectedComponents);
+        this.prevSelectedComponents = null;
+      }
+      if (this.prevComponentsSelectable !== null) {
+        this.status.components.selectable.set(this.prevComponentsSelectable);
+        this.prevComponentsSelectable = null;
+      }
+      this.blur();
+      if (this.prevSelectedEntities) {
+        this.status.cad.select(this.prevSelectedEntities);
+        this.prevSelectedEntities = null;
+      }
+    }
+  );
 
   ngOnInit() {
-    let prevConfig: Partial<AppConfig> = {};
-    let prevSelectedComponents: CadData[] | null = null;
-    let prevComponentsSelectable: boolean | null = null;
-    let prevSelectedEntities: CadEntities | null = null;
-    this.subscribe(this.status.cadStatusEnter$, (cadStatus) => {
-      if (cadStatus instanceof CadStatusEditDimension) {
-        const index = cadStatus.index;
-        const dimension = this.dimensions()[index];
-        prevSelectedEntities = this.status.cad.selected();
-        this.dimLineSelecting.set(index);
-        prevConfig = this.config.setConfig({hideLineLength: true, lineGongshi: 0, selectMode: "single"}, {sync: false});
-        prevSelectedComponents = this.status.components.selected$.value;
-        this.status.components.selected$.next([]);
-        prevComponentsSelectable = this.status.components.selectable$.value;
-        this.status.components.selectable$.next(false);
-        this.focus(dimension);
-      }
-    });
-    this.subscribe(this.status.cadStatusExit$, (cadStatus) => {
-      if (cadStatus instanceof CadStatusEditDimension) {
-        this.dimLineSelecting.set(-1);
-        this.config.setConfig(prevConfig, {sync: false});
-        if (prevSelectedComponents !== null) {
-          this.status.components.selected$.next(prevSelectedComponents);
-          prevSelectedComponents = null;
-        }
-        if (prevComponentsSelectable !== null) {
-          this.status.components.selectable$.next(prevComponentsSelectable);
-          prevComponentsSelectable = null;
-        }
-        this.blur();
-        if (prevSelectedEntities) {
-          this.status.cad.select(prevSelectedEntities);
-          prevSelectedEntities = null;
-        }
-      }
-    });
-    this.subscribe(this.status.openCad$, () => {
-      this._updateDimensions();
-    });
-
     const cad = this.status.cad;
     cad.on("entitiesselect", this._onEntitiesSelect);
     cad.on("entitiesunselect", this._onEntitiesUnselect);
@@ -98,9 +89,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     cad.on("zoom", this._onZoom);
     cad.on("moveentities", this._onMoveEntities);
   }
-
   ngOnDestroy() {
-    super.ngOnDestroy();
     const cad = this.status.cad;
     cad.off("entitiesselect", this._onEntitiesSelect);
     cad.off("entitiesunselect", this._onEntitiesUnselect);
@@ -110,16 +99,21 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     cad.off("moveentities", this._onMoveEntities);
   }
 
+  openCadOptionsEff = effect(() => {
+    this.status.openCadOptions();
+    this._updateDimensions();
+  });
+
   private _onEntitiesSelect: CadEventCallBack<"entitiesselect"> = (entities, _, event) => {
     const cad = this.status.cad;
     const data = cad.data;
-    const cadStatus = this.status.cadStatus;
     const dimensions = this.dimensions();
     const entity = entities.line[0];
     let newIndex = -1;
-    if (cadStatus instanceof CadStatusEditDimension && !cadStatus.exitInProgress && entity) {
-      const dimension = dimensions[cadStatus.index];
-      if (cadStatus.type === "linear") {
+    const editDimensionStatus = this.status.findCadStatus((v) => v instanceof CadStatusEditDimension);
+    if (editDimensionStatus && entity) {
+      const dimension = dimensions[editDimensionStatus.index];
+      if (editDimensionStatus.type === "linear") {
         let dimensionLinear: CadDimensionLinear | undefined;
         if (dimension instanceof CadDimensionLinear) {
           dimensionLinear = dimension;
@@ -196,7 +190,7 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
         this._updateDimensions();
       } else if (newIndex >= 0) {
         this._updateDimensions();
-        this.status.setCadStatus(new CadStatusEditDimension("linear", newIndex));
+        this.status.setCadStatuses([new CadStatusEditDimension("linear", newIndex)]);
       }
     } else {
       this._updateDimensions();
@@ -215,8 +209,8 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
     this._highlightDimensions();
   };
   private _highlightDimensions() {
-    const cadStatus = this.status.cadStatus;
-    if (!(cadStatus instanceof CadStatusEditDimension)) {
+    const cadStatus = this.status.findCadStatus((v) => v instanceof CadStatusEditDimension);
+    if (!cadStatus) {
       return;
     }
     const dimension = this.dimensions()[cadStatus.index];
@@ -256,23 +250,22 @@ export class CadDimensionComponent extends Subscribed() implements OnInit, OnDes
   }
 
   isSelectingDimLine(i: number) {
-    const cadStatus = this.status.cadStatus;
-    return cadStatus instanceof CadStatusEditDimension && cadStatus.index === i;
+    return this.status.hasCadStatus((v) => v instanceof CadStatusEditDimension && v.index === i);
   }
 
   async selectDimLine(i: number, type?: CadDimensionType) {
-    const cadStatus = this.status.cadStatus;
-    if (cadStatus instanceof CadStatusEditDimension && cadStatus.index === i) {
-      this.status.setCadStatus(new CadStatusNormal());
-    } else {
-      this.status.setCadStatus(new CadStatusEditDimension(type || "linear", i));
-    }
+    this.status.toggleCadStatus(new CadStatusEditDimension(type || "linear", i));
   }
 
+  isAddingDimension = computed(() => {
+    if (!this.status.hasCadStatus((v) => v instanceof CadStatusEditDimension)) {
+      return false;
+    }
+    return this.dimLineSelecting() < 0;
+  });
   addDimensionLinear() {
     this.selectDimLine(-1, "linear");
   }
-
   removeDimension(index: number) {
     this.status.cad.remove(this.dimensions()[index]);
   }

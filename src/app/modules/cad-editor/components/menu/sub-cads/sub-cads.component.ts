@@ -1,4 +1,4 @@
-import {Component, ElementRef, forwardRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {Component, effect, ElementRef, forwardRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
@@ -61,18 +61,8 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
   private entitiesNotToMove?: CadEntities;
   private entitiesNeedRender = false;
 
-  get componentsSelectable() {
-    return this.status.components.selectable$.value;
-  }
-  set componentsSelectable(value) {
-    this.status.components.selectable$.next(value);
-  }
-  get componentsMode() {
-    return this.status.components.mode$.value;
-  }
-  set componentsMode(value) {
-    this.status.components.mode$.next(value);
-  }
+  componentsSelectable = this.status.components.selectable;
+  componentsMode = this.status.components.mode;
 
   get collection() {
     return this.status.collection$.value;
@@ -90,12 +80,6 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
 
   ngOnInit() {
     this.updateData();
-    this.subscribe(this.status.openCad$, () => {
-      this.updateData();
-    });
-    this.subscribe(this.status.components.selected$, () => {
-      this.setSelectedComponents();
-    });
 
     const setConfig = () => {
       const {subCadsMultiSelect} = this.config.getConfig();
@@ -114,7 +98,6 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     cad.on("pointermove", this._onPointerMove);
     cad.on("pointerup", this.onPointerUp);
   }
-
   ngOnDestroy() {
     super.ngOnDestroy();
     const cad = this.status.cad;
@@ -122,6 +105,11 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     cad.off("pointermove", this._onPointerMove);
     cad.off("pointerup", this.onPointerUp);
   }
+
+  openCadOptionsEff = effect(() => {
+    this.status.openCadOptions();
+    this.updateData();
+  });
 
   private _onPointerDown: CadEventCallBack<"pointerdown"> = (event) => {
     const {clientX, clientY, shiftKey, button} = event;
@@ -131,7 +119,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     this.lastPointer = new Point(clientX, clientY);
     this.entitiesToMove = new CadEntities();
     this.entitiesNotToMove = new CadEntities();
-    const components = this.status.components.selected$.value;
+    const components = this.status.components.selected();
     components.forEach((v) => this.entitiesToMove?.merge(v.getAllEntities()));
     const ids: string[] = [];
     this.entitiesToMove.forEach((e) => ids.push(e.id));
@@ -148,7 +136,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     }
     const {clientX, clientY} = event;
     const cad = this.status.cad;
-    const components = this.status.components.selected$.value;
+    const components = this.status.components.selected();
     const pointer = new Point(clientX, clientY);
     const translate = this.lastPointer.sub(pointer).divide(cad.zoom());
     translate.x = -translate.x;
@@ -179,27 +167,27 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
   }
 
   toggleMultiSelect() {
-    this.componentsSelectable = !this.componentsSelectable;
-    if (!this.componentsSelectable) {
-      const selectedComponents = this.status.components.selected$.value;
+    this.componentsSelectable.update((v) => !v);
+    if (!this.componentsSelectable()) {
+      const selectedComponents = this.status.components.selected();
       if (selectedComponents.length > 1) {
-        this.status.components.selected$.next([selectedComponents[0]]);
+        this.status.components.selected.set([selectedComponents[0]]);
       }
     }
   }
 
   isAllComponentsSelected() {
-    const ids1 = this.status.components.selected$.value.map((v) => v.id);
+    const ids1 = this.status.components.selected().map((v) => v.id);
     const ids2 = this.status.cad.data.components.data.map((v) => v.id);
     return isEqual(ids1, ids2);
   }
 
   selectAllComponents() {
-    this.status.components.selected$.next(this.status.cad.data.components.data);
+    this.status.components.selected.set(this.status.cad.data.components.data);
   }
 
   unselectAllComponents() {
-    this.status.components.selected$.next([]);
+    this.status.components.selected.set([]);
   }
 
   selectComponent(index: number) {
@@ -207,20 +195,20 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
       return;
     }
     const node = this.components[index];
-    const selectedComponents: CadData[] = this.status.components.selected$.value;
+    const selectedComponents: CadData[] = this.status.components.selected();
     if (node.checked) {
-      this.status.components.selected$.next(selectedComponents.filter((v) => v.id !== node.data.id));
+      this.status.components.selected.set(selectedComponents.filter((v) => v.id !== node.data.id));
     } else {
       if (this.multiSelect) {
-        this.status.components.selected$.next([...selectedComponents, node.data]);
+        this.status.components.selected.set([...selectedComponents, node.data]);
       } else {
-        this.status.components.selected$.next([node.data]);
+        this.status.components.selected.set([node.data]);
       }
     }
   }
 
-  setSelectedComponents() {
-    const selectedComponents = this.status.components.selected$.value;
+  selectedComponentsEff = effect(() => {
+    const selectedComponents = this.status.components.selected();
     for (const node of this.components) {
       node.checked = selectedComponents.some((v) => v.id === node.data.id);
     }
@@ -238,7 +226,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
       });
     }
     cad.render();
-  }
+  });
 
   updateData() {
     const cad = this.status.cad;
@@ -249,7 +237,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
       this.components.push(this._getCadNode(v));
     }
     this.componentsExpanded = this.components.length > 0;
-    this.status.components.selected$.next([]);
+    this.status.components.selected.set([]);
   }
 
   onContextMenu(data: CadData, field: ContextMenuCadField) {
@@ -492,7 +480,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
 
   async deleteSelectedComponents() {
     const data = this.status.cad.data;
-    const ids = this.status.components.selected$.value.map((v) => v.id);
+    const ids = this.status.components.selected().map((v) => v.id);
     data.components.data = data.components.data.filter((v) => !ids.includes(v.id));
     this.status.openCad();
   }

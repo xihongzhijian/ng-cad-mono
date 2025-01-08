@@ -3,19 +3,29 @@ import {purgeObject} from "../../cad-utils";
 import {DEFAULT_LENGTH_TEXT_SIZE} from "../cad-entities";
 import {CadEntity} from "./cad-entity";
 
-export const 变化方式 = [
-  "按比例",
-  "只能减小",
-  "只能增大",
-  "只能旋转",
-  "先旋转后按比例",
-  "旋转不足时再按比例",
-  "按比例不足时再旋转",
-  "旋转按比例都可以",
-  "不可改变"
-];
-
-export const 企料位置识别 = ["无", "靠近胶条位", "远离胶条位", "企料正面", "企料背面"];
+export const cadLineOptions = {
+  zhankaixiaoshuchuli: {values: ["不处理", "舍去小数", "小数进一", "四舍五入", "0.5取整", "保留一位小数四舍五入"], defaultValue: "不处理"},
+  suanliaosanxiaoshuchuli: {values: ["默认", "舍去小数", "小数进一", "四舍五入", "保留一位", "保留两位"], defaultValue: "默认"},
+  zhankaifangshi: {values: ["自动计算", "使用线长", "指定长度"], defaultValue: "自动计算"},
+  变化方式: {
+    values: [
+      "按比例",
+      "只能减小",
+      "只能增大",
+      "只能旋转",
+      "先旋转后按比例",
+      "旋转不足时再按比例",
+      "按比例不足时再旋转",
+      "旋转按比例都可以",
+      "不可改变"
+    ],
+    defaultValue: "按比例"
+  },
+  企料位置识别: {values: ["无", "靠近胶条位", "远离胶条位", "企料正面", "企料背面"], defaultValue: "无"},
+  圆弧显示: {values: ["默认", "半径", "R+半径", "φ+直径", "弧长", "弧长+线长"], defaultValue: "默认"},
+  线功能: {values: ["无", "分体线", "CAD分体区分隔线"], defaultValue: "无"}
+} as const;
+export type CadOptionValues<T extends keyof typeof cadLineOptions> = (typeof cadLineOptions)[T]["values"][number];
 
 export interface CadLineLikeInfo {
   [key: string]: any;
@@ -60,15 +70,15 @@ export abstract class CadLineLike extends CadEntity {
   zhewanOffset: number;
   zhewanValue: number;
   zidingzhankaichang: string;
-  zhankaifangshi: "自动计算" | "使用线长" | "指定长度";
-  zhankaixiaoshuchuli: "不处理" | "舍去小数" | "小数进一" | "四舍五入";
-  suanliaosanxiaoshuchuli: "默认" | "舍去小数" | "小数进一" | "四舍五入";
+  zhankaifangshi: CadOptionValues<"zhankaifangshi">;
+  zhankaixiaoshuchuli: CadOptionValues<"zhankaixiaoshuchuli">;
+  suanliaosanxiaoshuchuli: CadOptionValues<"suanliaosanxiaoshuchuli">;
   kailiaoshishanchu: boolean;
   变化方式: string;
   角度范围: number[];
   可输入修改: boolean;
   info: CadLineLikeInfo;
-  圆弧显示: "默认" | "半径" | "R+半径" | "φ+直径" | "弧长" | "弧长+线长" = "默认";
+  圆弧显示: CadOptionValues<"圆弧显示">;
   显示线长?: string;
   线id?: string;
   企料位置识别: string;
@@ -76,7 +86,8 @@ export abstract class CadLineLike extends CadEntity {
   开料不要: boolean;
   分体线长公式: string;
   刨坑起始线: boolean;
-  双向折弯附加值 = "";
+  双向折弯附加值: string;
+  线功能: CadOptionValues<"线功能">;
 
   constructor(data: any = {}, resetId = false) {
     super(data, resetId);
@@ -107,7 +118,7 @@ export abstract class CadLineLike extends CadEntity {
     this.zhankaixiaoshuchuli = data.zhankaixiaoshuchuli ?? "不处理";
     this.suanliaosanxiaoshuchuli = data.suanliaosanxiaoshuchuli ?? "默认";
     this.kailiaoshishanchu = !!data.kailiaoshishanchu;
-    this.变化方式 = data.变化方式 ?? 变化方式[0];
+    this.变化方式 = data.变化方式 ?? cadLineOptions.变化方式.defaultValue;
     this.角度范围 = data.角度范围 ?? [0, 90];
     this.可输入修改 = typeof data.可输入修改 === "boolean" ? data.可输入修改 : true;
     this.info = data.info ?? {};
@@ -119,12 +130,13 @@ export abstract class CadLineLike extends CadEntity {
       this.线id = data.线id;
     }
     this.swapped = data.swapped ?? false;
-    this.企料位置识别 = data.企料位置识别 ?? 企料位置识别[0];
+    this.企料位置识别 = data.企料位置识别 ?? cadLineOptions.企料位置识别.defaultValue;
     this.算料不要 = data.算料不要 ?? false;
     this.开料不要 = data.开料不要 ?? false;
     this.分体线长公式 = data.分体线长公式 ?? "";
     this.刨坑起始线 = data.刨坑起始线 ?? false;
     this.双向折弯附加值 = data.双向折弯附加值 ?? "";
+    this.线功能 = data.线功能 ?? cadLineOptions.线功能.defaultValue;
   }
 
   export(): ObjectOf<any> {
@@ -159,7 +171,8 @@ export abstract class CadLineLike extends CadEntity {
         显示线长: this.显示线长 || undefined,
         线id: this.线id || undefined,
         刨坑起始线: this.刨坑起始线 || undefined,
-        双向折弯附加值: this.双向折弯附加值 || undefined
+        双向折弯附加值: this.双向折弯附加值 || undefined,
+        线功能: this.线功能
       })
     };
     return result;

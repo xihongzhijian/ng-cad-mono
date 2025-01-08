@@ -1,17 +1,21 @@
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {CdkDrag, CdkDragEnd, CdkDragMove, CdkDragStart} from "@angular/cdk/drag-drop";
-import {AsyncPipe} from "@angular/common";
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   ElementRef,
   forwardRef,
   HostListener,
-  Input,
+  inject,
+  input,
   OnDestroy,
-  QueryList,
-  ViewChild,
-  ViewChildren
+  signal,
+  untracked,
+  viewChild,
+  viewChildren
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
@@ -34,14 +38,15 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
-import {CadStatusAssemble, CadStatusNormal, CadStatusSplit} from "@services/cad-status";
+import {CadStatusAssemble, CadStatusFentiConfig, CadStatusNormal, CadStatusSplit} from "@services/cad-status";
 import {debounce, throttle} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {BehaviorSubject, map, startWith, take} from "rxjs";
+import {take} from "rxjs";
 import {SpinnerComponent} from "../../../spinner/components/spinner/spinner.component";
 import {CadPointsComponent} from "../cad-points/cad-points.component";
 import {CadAssembleComponent} from "../menu/cad-assemble/cad-assemble.component";
 import {CadDimensionComponent} from "../menu/cad-dimension/cad-dimension.component";
+import {CadFentiConfigComponent} from "../menu/cad-fenti-config/cad-fenti-config.component";
 import {CadInfoComponent} from "../menu/cad-info/cad-info.component";
 import {CadLineComponent} from "../menu/cad-line/cad-line.component";
 import {openCadLineForm} from "../menu/cad-line/cad-line.utils";
@@ -50,6 +55,7 @@ import {CadSplitComponent} from "../menu/cad-split/cad-split.component";
 import {SubCadsComponent} from "../menu/sub-cads/sub-cads.component";
 import {ToolbarComponent} from "../menu/toolbar/toolbar.component";
 import {SuanliaogongshiComponent} from "../suanliaogongshi/suanliaogongshi.component";
+import {CadEditorMenuName} from "./cad-editor.utils";
 
 @Component({
   selector: "app-cad-editor",
@@ -82,10 +88,10 @@ import {SuanliaogongshiComponent} from "../suanliaogongshi/suanliaogongshi.compo
     ])
   ],
   imports: [
-    AsyncPipe,
     CadAssembleComponent,
     CadConsoleComponent,
     CadDimensionComponent,
+    CadFentiConfigComponent,
     CadInfoComponent,
     CadLineComponent,
     CadMtextComponent,
@@ -105,92 +111,24 @@ import {SuanliaogongshiComponent} from "../suanliaogongshi/suanliaogongshi.compo
     SuanliaoTablesComponent,
     SubCadsComponent,
     ToolbarComponent
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadEditorComponent extends Subscribed() implements AfterViewInit, OnDestroy {
-  private _params?: OpenCadOptions;
-  @Input()
-  get params() {
-    return this._params;
-  }
-  set params(value) {
-    this._params = value;
-    this.refresh();
-  }
-  shownMenus: ("cadInfo" | "entityInfo" | "cadAssemble" | "cadSplit")[] = ["cadInfo", "entityInfo"];
-  showTopMenu = true;
-  showRightMenu = true;
-  showBottomMenu = true;
-  showLeftMenu = true;
-  showSuanliaogongshi = false;
-  showSuanliaoTables = false;
-  showAllMenu = true;
-  tabIndex = 0;
-  cadLength$ = this.status.cadTotalLength$.pipe(
-    startWith(0),
-    map((v) => v.toFixed(2))
-  );
-  menuPaddingBase = [20, 20, 20, 20];
-  leftMenuWidth$ = new BehaviorSubject<number>(this.config.getConfig("leftMenuWidth"));
-  rightMenuWidth$ = new BehaviorSubject<number>(this.config.getConfig("rightMenuWidth"));
-  topMenuHeight$ = new BehaviorSubject<number>(80);
-  bottomMenuHeight$ = new BehaviorSubject<number>(20);
-  dragDataLeft: DragData = {width: 0};
-  dragDataRight: DragData = {width: 0};
-  isDraggingLeft = false;
-  isDraggingRight = false;
-  spinnerId = "cadEditor";
-  openCad$ = this.status.openCad$;
+  private config = inject(AppConfigService);
+  private status = inject(AppStatusService);
+  private cadConsole = inject(CadConsoleService);
+  private message = inject(MessageService);
+  private el = inject(ElementRef<HTMLElement>);
+
+  params = input<OpenCadOptions>();
+  paramsEff = effect(() => this.refresh());
+
   private _isViewInited = false;
-
-  get multiSelect() {
-    return this.status.cad.getConfig("selectMode") === "multiple";
-  }
-  get entityDraggable() {
-    return this.status.cad.getConfig("entityDraggable");
-  }
-  get cadStatusStr() {
-    return this.status.cadStatus.name;
-  }
-
-  @ViewChild("cadContainer", {read: ElementRef}) cadContainer!: ElementRef<HTMLElement>;
-  @ViewChild(CadConsoleComponent) cadConsoleComponent!: CadConsoleComponent;
-  @ViewChild(MatTabGroup) infoTabs!: MatTabGroup;
-  @ViewChild("suanliaogongshi", {read: ElementRef}) suanliaogongshi?: ElementRef<HTMLElement>;
-  @ViewChild("suanliaoTables", {read: ElementRef}) suanliaoTables?: ElementRef<HTMLElement>;
-  @ViewChildren(NgScrollbar) private _scrollbars!: QueryList<NgScrollbar>;
-  private get _scrollbar() {
-    const scrollbar = this._scrollbars.get(this.tabIndex);
-    if (!scrollbar) {
-      throw new Error("Failed to access scrollbar component.");
-    }
-    return scrollbar;
-  }
-  private _scrollChangeLock = false;
-
-  constructor(
-    private config: AppConfigService,
-    private status: AppStatusService,
-    private cadConsole: CadConsoleService,
-    private message: MessageService,
-    private el: ElementRef<HTMLElement>
-  ) {
-    super();
-  }
-
-  onScrollChange = debounce(() => {
-    if (this._scrollChangeLock) {
-      return;
-    }
-    const scroll = this.config.getConfig("scroll");
-    scroll["tab" + this.tabIndex] = this._scrollbar.viewport.nativeElement.scrollTop;
-    this.config.setConfig("scroll", scroll);
-  }, 1000);
-
   ngAfterViewInit() {
     setGlobal("cadEditor", this);
     const cad = this.status.cad;
-    cad.appendTo(this.cadContainer.nativeElement);
+    cad.appendTo(this.cadContainer().nativeElement);
     cad.on("entitiescopy", this._onEntitiesCopy);
     cad.on("entitiespaste", this._onEntitiesPaste);
     cad.on("entitiesremove", this._onEntitiesRemove);
@@ -199,67 +137,13 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     cad.on("entitiesunselect", this._onEntityUnselect);
     cad.on("zoom", this._onZoom);
     cad.on("moveentities", this._onMoveEntities);
-    this._setCadPadding();
-
-    this.subscribe(this.config.configChange$, ({newVal}) => {
-      const {leftMenuWidth, rightMenuWidth} = newVal;
-      if (typeof leftMenuWidth === "number") {
-        this.leftMenuWidth$.next(leftMenuWidth);
-      }
-      if (typeof rightMenuWidth === "number") {
-        this.rightMenuWidth$.next(rightMenuWidth);
-      }
-    });
-    this.subscribe(this.status.cadStatusEnter$, (cadStatus) => {
-      if (cadStatus instanceof CadStatusAssemble) {
-        this.shownMenus = ["cadAssemble"];
-      } else if (cadStatus instanceof CadStatusSplit) {
-        this.shownMenus = ["cadInfo", "entityInfo", "cadSplit"];
-      } else {
-        this.shownMenus = ["cadInfo", "entityInfo"];
-      }
-    });
-
-    const infoTabs = this.infoTabs;
-    const setInfoTabs = () => {
-      const {infoTabIndex, scroll} = this.config.getConfig();
-      if (typeof infoTabIndex === "number" && infoTabIndex >= 0) {
-        infoTabs.selectedIndex = infoTabIndex;
-      }
-      if (scroll) {
-        this._setTabScroll();
-      }
-    };
-    infoTabs.animationDone.pipe(take(1)).subscribe(() => {
-      setTimeout(() => {
-        setInfoTabs();
-      }, 0);
-    });
-    const sub = this.config.configChange$.subscribe(({isUserConfig}) => {
-      if (isUserConfig) {
-        setInfoTabs();
-        sub.unsubscribe();
-      }
-    });
-
-    setTimeout(() => {
-      this._scrollbars.forEach((scrollbar) => {
-        scrollbar.viewport.nativeElement.addEventListener("scroll", this.onScrollChange);
-      });
-    }, 0);
+    cad.on("moveentitiesend", this._onMoveEntitiesEnd);
+    cad.on("entitiesadd", this._onEntitiesAdd);
 
     this.subscribe(this.cadConsole.command$, (command) => {
-      this.cadConsoleComponent.execute(command);
+      this.cadConsoleComponent().execute(command);
     });
-    this.subscribe(this.status.cadStatusEnter$, () => {
-      this._highlightEntities();
-    });
-    setTimeout(() => {
-      this._isViewInited = true;
-      this.refresh();
-    }, 0);
   }
-
   ngOnDestroy() {
     super.ngOnDestroy();
     const cad = this.status.cad;
@@ -271,26 +155,276 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     cad.off("entitiesunselect", this._onEntityUnselect);
     cad.off("zoom", this._onZoom);
     cad.off("moveentities", this._onMoveEntities);
+    cad.off("moveentitiesend", this._onMoveEntitiesEnd);
+    cad.off("entitiesadd", this._onEntitiesAdd);
   }
 
-  private _onEntitiesCopy: CadEventCallBack<"entitiescopy"> = (entities) => {
+  cadStatusesEff = effect(() => {
+    this.status.cadStatuses();
+    this._highlightEntities();
+  });
+
+  shownMenuNames = signal<CadEditorMenuName[]>(["cadInfo"]);
+  shownMenuNamesEff = effect(() => {
+    if (this.status.hasCadStatus((v) => v instanceof CadStatusAssemble)) {
+      this.shownMenuNames.set(["cadAssemble"]);
+    } else if (this.status.hasCadStatus((v) => v instanceof CadStatusSplit)) {
+      this.shownMenuNames.set(["cadInfo", "cadSplit"]);
+    } else {
+      this.shownMenuNames.set(["cadInfo"]);
+    }
+  });
+
+  showTopMenu = signal(true);
+  showLeftMenu = signal(true);
+  showRightMenu = signal(true);
+  showBottomMenu = signal(true);
+  showSuanliaoTables = signal(false);
+  showSuanliaogongshi = signal(false);
+  showAllMenu = signal(true);
+  toggleTopMenu(show?: boolean) {
+    this.showTopMenu.set(show ?? !this.showTopMenu());
+  }
+  toggleLeftMenu(show?: boolean) {
+    this.showLeftMenu.set(show ?? !this.showLeftMenu());
+  }
+  toggleRightMenu(show?: boolean) {
+    this.showRightMenu.set(show ?? !this.showRightMenu());
+  }
+  toggleBottomMenu(show?: boolean) {
+    this.showBottomMenu.set(show ?? !this.showBottomMenu());
+  }
+  toggleSuanliaoTables(show?: boolean) {
+    this.showSuanliaoTables.set(show ?? !this.showSuanliaoTables());
+  }
+  toggleSuanliaogongshi(show?: boolean) {
+    this.showSuanliaogongshi.set(show ?? !this.showSuanliaogongshi());
+  }
+  toggleAllMenu(show?: boolean) {
+    this.showAllMenu.set(show ?? !this.showAllMenu());
+    show = this.showAllMenu();
+    this.toggleTopMenu(show);
+    this.toggleLeftMenu(show);
+    this.toggleRightMenu(show);
+    this.toggleBottomMenu(show);
+    this.toggleSuanliaoTables(show);
+    this.toggleSuanliaogongshi(show);
+  }
+
+  suanliaogongshiLeft = computed(() => {
+    if (!this._isViewInited) {
+      return 0;
+    }
+    if (this.showLeftMenu()) {
+      return this.leftMenuWidth0();
+    }
+    return 30;
+  });
+  suanliaoTablesLeft = computed(() => {
+    if (!this._isViewInited) {
+      return 0;
+    }
+    let left = 0;
+    const suanliaogongshiEl = this.suanliaogongshi()?.nativeElement;
+    if (suanliaogongshiEl) {
+      left += suanliaogongshiEl.clientWidth;
+    }
+    if (this.showLeftMenu()) {
+      left += this.leftMenuWidth0();
+    } else {
+      left += 30;
+    }
+    return left;
+  });
+
+  tabIndex = signal(0);
+  tabIndexPrev = -1;
+
+  cadFentiOn = computed(() => this.status.hasCadStatus((v) => v instanceof CadStatusFentiConfig));
+  cadFentiOnEff = effect(() => {
+    const fentiTabIndex = 4;
+    const tabIndexCurr = untracked(() => this.tabIndex());
+    if (this.cadFentiOn()) {
+      setTimeout(() => {
+        this.tabIndexPrev = tabIndexCurr;
+        this.tabIndex.set(fentiTabIndex);
+      }, 0);
+    } else {
+      if (this.tabIndexPrev >= 0 && tabIndexCurr === fentiTabIndex) {
+        this.tabIndex.set(this.tabIndexPrev);
+        this.tabIndexPrev = -1;
+      }
+    }
+  });
+
+  cadLength = computed(() => this.status.cadTotalLength().toFixed(2));
+
+  menuPaddingBase = [20, 20, 20, 20];
+  leftMenuWidth0 = signal(0);
+  leftMenuWidth = computed(() => this.draggingLeft()?.width ?? this.leftMenuWidth0());
+  rightMenuWidth0 = signal(0);
+  rightMenuWidth = computed(() => this.draggingRight()?.width ?? this.rightMenuWidth0());
+  topMenuHeight = signal<number>(80);
+  bottomMenuHeight = signal<number>(20);
+  leftMenuWidthEff = effect(() => {
+    this.leftMenuWidth0.set(this.config.getConfig("leftMenuWidth"));
+  });
+  rightMenuWidthEff = effect(() => {
+    this.rightMenuWidth0.set(this.config.getConfig("rightMenuWidth"));
+  });
+
+  draggingLeft = signal<{width: number} | null>(null);
+  draggingRight = signal<{width: number} | null>(null);
+  onResizeMenuStart(_event: CdkDragStart, key: Dragkey) {
+    if (key === "leftMenuWidth") {
+      this.draggingLeft.set({width: this.leftMenuWidth0()});
+    } else if (key === "rightMenuWidth") {
+      this.draggingRight.set({width: this.rightMenuWidth0()});
+    }
+  }
+  onResizeMenu(event: CdkDragMove, key: Dragkey) {
+    const dx = event.distance.x;
+    if (key === "leftMenuWidth") {
+      this.draggingLeft.update((v) => ({...v, width: this.leftMenuWidth0() + dx}));
+    } else if (key === "rightMenuWidth") {
+      this.draggingRight.update((v) => ({...v, width: this.rightMenuWidth0() - dx}));
+    }
+    event.source.element.nativeElement.style.transform = "";
+  }
+  onResizeMenuEnd(_event: CdkDragEnd, key: Dragkey) {
+    const draggingLeft = this.draggingLeft();
+    const draggingRight = this.draggingRight();
+    if (key === "leftMenuWidth" && draggingLeft) {
+      this.config.setConfig(key, draggingLeft.width);
+      this.draggingLeft.set(null);
+    } else if (key === "rightMenuWidth" && draggingRight) {
+      this.config.setConfig(key, draggingRight.width);
+      this.draggingRight.set(null);
+    }
+  }
+
+  cadPaddingEff = effect(() => {
+    const padding = this.menuPaddingBase.slice();
+    if (this.showTopMenu()) {
+      padding[0] += this.topMenuHeight();
+    }
+    if (this.showRightMenu()) {
+      padding[1] += this.rightMenuWidth0();
+    }
+    if (this.showBottomMenu()) {
+      padding[2] += this.bottomMenuHeight();
+    }
+    if (this.showLeftMenu()) {
+      padding[3] += this.leftMenuWidth0();
+    }
+    const suanliaogongshiEl = this.suanliaogongshi()?.nativeElement;
+    if (suanliaogongshiEl && this.showSuanliaogongshi()) {
+      padding[3] += suanliaogongshiEl.clientWidth;
+    }
+    const suanliaoTablesEl = this.suanliaoTables()?.nativeElement;
+    if (suanliaoTablesEl && this.showSuanliaoTables()) {
+      padding[3] += suanliaoTablesEl.clientWidth;
+    }
+    this.config.setConfig({padding}, {sync: false});
+  });
+
+  spinnerId = "cadEditor";
+  openCadOptions = this.status.openCadOptions;
+
+  get multiSelect() {
+    return this.status.cad.getConfig("selectMode") === "multiple";
+  }
+  get entityDraggable() {
+    return this.status.cad.getConfig("entityDraggable");
+  }
+  hasCadStatusNotNormal = computed(() => this.status.hasOtherCadStatus((v) => v instanceof CadStatusNormal));
+  cadStatusesName = computed(() =>
+    this.status
+      .cadStatuses()
+      .map((v) => v.name)
+      .join(", ")
+  );
+
+  infoTabGroup = viewChild(MatTabGroup);
+  infoTabGroupEff = effect(() => {
+    const infoTabGroup = this.infoTabGroup();
+    if (!infoTabGroup) {
+      return;
+    }
+    const setInfoTabs = () => {
+      const {infoTabIndex, scroll} = this.config.getConfig();
+      if (typeof infoTabIndex === "number" && infoTabIndex >= 0) {
+        infoTabGroup.selectedIndex = infoTabIndex;
+      }
+      if (scroll) {
+        this._setTabScroll();
+      }
+    };
+    infoTabGroup.animationDone.pipe(take(1)).subscribe(() => {
+      setTimeout(() => {
+        setInfoTabs();
+      }, 0);
+    });
+    const sub = this.config.configChange$.subscribe(({isUserConfig}) => {
+      if (isUserConfig) {
+        setInfoTabs();
+        sub.unsubscribe();
+      }
+    });
+  });
+
+  cadContainer = viewChild.required<ElementRef<HTMLElement>>("cadContainer");
+  cadConsoleComponent = viewChild.required(CadConsoleComponent);
+  suanliaogongshi = viewChild<ElementRef<HTMLElement>>("suanliaogongshi");
+  suanliaoTables = viewChild<ElementRef<HTMLElement>>("suanliaoTables");
+
+  private _scrollbars = viewChildren(NgScrollbar);
+  private get _scrollbar() {
+    const scrollbar = this._scrollbars().at(this.tabIndex());
+    if (!scrollbar) {
+      throw new Error("Failed to access scrollbar component.");
+    }
+    return scrollbar;
+  }
+  scrollbarEff = effect(() => {
+    setTimeout(() => {
+      for (const scrollbar of this._scrollbars()) {
+        scrollbar.viewport.nativeElement.addEventListener("scroll", this.onScrollChange);
+      }
+    }, 0);
+  });
+  private _scrollChangeLock = false;
+
+  onScrollChange = debounce(() => {
+    if (this._scrollChangeLock) {
+      return;
+    }
+    const scroll = this.config.getConfig("scroll");
+    scroll["tab" + this.tabIndex()] = this._scrollbar.viewport.nativeElement.scrollTop;
+    this.config.setConfig("scroll", scroll);
+  }, 1000);
+
+  private _onEntitiesCopy: CadEventCallBack<"entitiescopy"> = async (entities) => {
     const cad = this.status.cad;
     entities.forEach((e) => (e.opacity = 0.3));
     cad.data.entities.merge(entities);
     cad.unselectAll();
-    cad.render(entities);
+    await cad.render(entities);
   };
-  private _onEntitiesPaste: CadEventCallBack<"entitiespaste"> = (entities) => {
+  private _onEntitiesPaste: CadEventCallBack<"entitiespaste"> = async (entities) => {
+    const cad = this.status.cad;
     entities.forEach((e) => (e.opacity = 1));
-    this.status.cad.render(entities);
+    await cad.render(entities);
+    await this.status.refreshCadFenti();
   };
-  private _onEntitiesRemove: CadEventCallBack<"entitiesremove"> = () => {
+  private _onEntitiesRemove: CadEventCallBack<"entitiesremove"> = async () => {
     this._highlightEntities();
+    await this.status.updateCadTotalLength();
   };
   private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (event, entity) => {
     const collection = this.status.collection$.value;
     const cad = this.status.cad;
-    const gongshis = this.status.openCad$.value.gongshis;
+    const gongshis = this.status.openCadOptions().gongshis;
     if (entity instanceof CadMtext && entity.parent instanceof CadLineLike) {
       openCadLineForm(collection, this.status, this.message, cad, entity.parent, gongshis);
     } else if (entity instanceof CadLineLike) {
@@ -311,8 +445,14 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   private _onMoveEntities: CadEventCallBack<"moveentities"> = () => {
     this._highlightEntities();
   };
+  private _onMoveEntitiesEnd: CadEventCallBack<"moveentitiesend"> = async () => {
+    await this.status.refreshCadFenti();
+  };
+  private _onEntitiesAdd: CadEventCallBack<"entitiesadd"> = async () => {
+    await this.status.refreshCadFenti();
+  };
   private _highlightEntities() {
-    if (!(this.status.cadStatus instanceof CadStatusNormal)) {
+    if (this.hasCadStatusNotNormal()) {
       return;
     }
     setTimeout(() => {
@@ -321,32 +461,9 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     }, 0);
   }
 
-  private _setCadPadding() {
-    const padding = this.menuPaddingBase.slice();
-    if (this.showTopMenu) {
-      padding[0] += this.topMenuHeight$.value;
-    }
-    if (this.showRightMenu) {
-      padding[1] += this.rightMenuWidth$.value;
-    }
-    if (this.showBottomMenu) {
-      padding[2] += this.bottomMenuHeight$.value;
-    }
-    if (this.showLeftMenu) {
-      padding[3] += this.leftMenuWidth$.value;
-    }
-    if (this.suanliaogongshi && this.showSuanliaogongshi) {
-      padding[3] += this.suanliaogongshi.nativeElement.clientWidth;
-    }
-    if (this.suanliaoTables && this.showSuanliaoTables) {
-      padding[3] += this.suanliaoTables.nativeElement.clientWidth;
-    }
-    this.config.setConfig({padding}, {sync: false});
-  }
-
   private async _setTabScroll() {
     const scroll = this.config.getConfig("scroll");
-    const key = "tab" + this.tabIndex;
+    const key = "tab" + this.tabIndex();
     if (scroll[key] !== undefined) {
       this._scrollChangeLock = true;
       this._scrollbar.scrollTo({top: scroll[key]});
@@ -357,54 +474,14 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   @HostListener("window:resize")
   @Debounce(500)
   resize() {
-    const parentEl = this.cadContainer.nativeElement.parentElement;
+    const parentEl = this.cadContainer().nativeElement.parentElement;
     if (parentEl) {
       this.config.setConfig({width: parentEl.clientWidth, height: parentEl.clientHeight});
     }
   }
 
-  toggleTopMenu(show?: boolean) {
-    this.showTopMenu = show ?? !this.showTopMenu;
-    this._setCadPadding();
-  }
-
-  toggleRightMenu(show?: boolean) {
-    this.showRightMenu = show ?? !this.showRightMenu;
-    this._setCadPadding();
-  }
-
-  toggleBottomMenu(show?: boolean) {
-    this.showBottomMenu = show ?? !this.showBottomMenu;
-    this._setCadPadding();
-  }
-
-  toggleLeftMenu(show?: boolean) {
-    this.showLeftMenu = show ?? !this.showLeftMenu;
-    this._setCadPadding();
-  }
-
-  toggleSuanliaogongshi(show?: boolean) {
-    this.showSuanliaogongshi = show ?? !this.showSuanliaogongshi;
-    this._setCadPadding();
-  }
-
-  toggleSuanliaoTables(show?: boolean) {
-    this.showSuanliaoTables = show ?? !this.showSuanliaoTables;
-    this._setCadPadding();
-  }
-
-  toggleAllMenu(show?: boolean) {
-    this.showAllMenu = show ?? !this.showAllMenu;
-    this.toggleTopMenu(this.showAllMenu);
-    this.toggleRightMenu(this.showAllMenu);
-    this.toggleBottomMenu(this.showAllMenu);
-    this.toggleLeftMenu(this.showAllMenu);
-    this.toggleSuanliaogongshi(this.showAllMenu);
-    this.toggleSuanliaoTables();
-  }
-
   async validate() {
-    const {validator} = this.params || {};
+    const {validator} = this.params() || {};
     const data = this.status.cad.data;
     if (validator) {
       const errors = Object.keys(validator(data) || {}).join("\n");
@@ -422,7 +499,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   }
 
   async save() {
-    const {extraData, query} = this.params || {};
+    const {extraData, query} = this.params() || {};
     const data = this.status.cad.data;
     if (extraData) {
       Object.assign(data, extraData);
@@ -434,10 +511,8 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   }
 
   async refresh() {
-    if (!this._isViewInited) {
-      return;
-    }
-    await this.status.openCad(this._params);
+    const params = this.params();
+    await untracked(() => this.status.openCad(params));
   }
 
   zoomAll() {
@@ -445,7 +520,6 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   }
 
   onInfoTabChange({index}: MatTabChangeEvent) {
-    this.tabIndex = index;
     this.config.setConfig("infoTabIndex", index);
     this._setTabScroll();
   }
@@ -456,78 +530,27 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     this.config.setConfig("selectMode", selectMode);
   }
 
-  onResizeMenuStart(_event: CdkDragStart<DragData>, key: Dragkey) {
-    if (key === "leftMenuWidth") {
-      this.dragDataLeft.width = this.leftMenuWidth$.value;
-      this.isDraggingLeft = true;
-    } else if (key === "rightMenuWidth") {
-      this.dragDataRight.width = this.rightMenuWidth$.value;
-      this.isDraggingRight = true;
-    }
-  }
-
-  onResizeMenu(event: CdkDragMove<DragData>, key: Dragkey) {
-    if (key === "leftMenuWidth") {
-      this.leftMenuWidth$.next(event.source.data.width + event.distance.x);
-    } else if (key === "rightMenuWidth") {
-      this.rightMenuWidth$.next(event.source.data.width - event.distance.x);
-    }
-    event.source.element.nativeElement.style.transform = "";
-  }
-
-  onResizeMenuEnd(_event: CdkDragEnd<DragData>, key: Dragkey) {
-    if (key === "leftMenuWidth") {
-      this.config.setConfig(key, this.leftMenuWidth$.value);
-      this.isDraggingLeft = false;
-    } else if (key === "rightMenuWidth") {
-      this.config.setConfig(key, this.rightMenuWidth$.value);
-      this.isDraggingRight = false;
-    }
-    this._setCadPadding();
-  }
-
-  getSuanliaogongshiLeft() {
-    if (!this._isViewInited) {
-      return 0;
-    }
-    if (this.showLeftMenu) {
-      return this.leftMenuWidth$.value;
-    }
-    return 30;
-  }
-
-  getSuanliaoTablesLeft() {
-    if (!this._isViewInited) {
-      return 0;
-    }
-    let left = 0;
-    if (this.suanliaogongshi) {
-      left += this.suanliaogongshi.nativeElement.clientWidth;
-    }
-    if (this.showLeftMenu) {
-      left += this.leftMenuWidth$.value;
-    } else {
-      left += 30;
-    }
-    return left;
-  }
-
-  menuSearch: InputInfo = {
-    type: "string",
-    label: "搜索",
-    value: "",
-    autoFocus: true,
-    clearable: true,
-    onInput: throttle((val) => {
-      this.searchMenu(val);
-    }, 500)
-  };
-  menuSearchShown = false;
-  searchMenu(val: string) {
+  menuSearchStr = signal("");
+  menuSearchInputInfo = computed(() => {
+    const info: InputInfo = {
+      type: "string",
+      label: "搜索",
+      value: this.menuSearchStr(),
+      autoFocus: true,
+      clearable: true,
+      onInput: throttle((val) => {
+        this.menuSearchStr.set(val);
+      }, 500)
+    };
+    return info;
+  });
+  menuSearchShown = signal(false);
+  searchMenuEff = effect(() => {
+    const val = this.menuSearchStr();
     if (!val) {
       return;
     }
-    this._scrollbars.forEach((scrollbar) => {
+    this._scrollbars().forEach((scrollbar) => {
       const inputs = scrollbar.viewport.nativeElement.querySelectorAll("app-input");
       const input = Array.from(inputs).find((el) => {
         if (el instanceof HTMLElement && queryString(val, el.dataset.label || "")) {
@@ -539,13 +562,13 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
         scrollbar.scrollToElement(input);
       }
     });
-  }
+  });
   showMenuSearch() {
-    this.menuSearchShown = true;
-    this.menuSearch.value = "";
+    this.menuSearchShown.set(true);
+    this.menuSearchStr.set("");
   }
   hideMenuSearch() {
-    this.menuSearchShown = false;
+    this.menuSearchShown.set(false);
   }
   onMenuSearchPointerMove(event: PointerEvent) {
     const {target: el, clientX, clientY} = event;
@@ -560,10 +583,6 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       this.hideMenuSearch();
     }
   }
-}
-
-interface DragData {
-  width: number;
 }
 
 type Dragkey = keyof Pick<AppConfig, "leftMenuWidth" | "rightMenuWidth">;

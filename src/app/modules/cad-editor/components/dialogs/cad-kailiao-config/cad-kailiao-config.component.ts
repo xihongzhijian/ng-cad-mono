@@ -44,7 +44,7 @@ export class CadKailiaoConfigComponent {
     this.cad.set(this.data.cad.clone());
   });
 
-  lineGroups = computed(() => sortLines(this.cad()));
+  lineGroups = computed(() => sortLines(this.cad().entities));
   lineTables = computed(() => this.lineGroups().map((v) => getLineTable(v)));
   lineTableComponents = viewChildren<TableComponent<CadLineLike>>("lineTables");
   refreshTable() {

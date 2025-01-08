@@ -11,7 +11,7 @@ let multiSelector: HTMLDivElement | null = null;
 let entitiesToDrag: CadEntities | null = null;
 let entitiesNotToDrag: CadEntities | null = null;
 let draggingDimension: CadDimension | null = null;
-let toRender: CadEntities | null = null;
+let movedEntities: CadEntities | null = null;
 
 export interface CadEvents {
   click: [MouseEvent];
@@ -28,6 +28,7 @@ export interface CadEvents {
   entitypointerup: [PointerEvent, CadEntity];
   keydown: [KeyboardEvent];
   moveentities: [CadEntities, [number, number]];
+  moveentitiesend: [CadEntities];
   pointerdown: [PointerEvent];
   pointerenter: [PointerEvent];
   pointerleave: [PointerEvent];
@@ -108,7 +109,7 @@ function onPointerMove(this: CadViewer, event: PointerEvent) {
             entitiesNotToDrag.add(e);
           }
         }
-        toRender = this.moveEntities(entitiesToDrag, entitiesNotToDrag, translate.x, -translate.y);
+        movedEntities = this.moveEntities(entitiesToDrag, entitiesNotToDrag, translate.x, -translate.y);
       } else if (draggingDimension) {
         const [p1, p2] = this.data.getDimensionPoints(draggingDimension).map((v) => this.getScreenPoint(v.x, v.y));
         if (p1 && p2) {
@@ -212,9 +213,10 @@ function clearPointer(this: CadViewer, event: PointerEvent) {
   }
   pointer = null;
   button = null;
-  if (toRender) {
-    this.render(toRender);
-    toRender = null;
+  if (movedEntities) {
+    this.render(movedEntities);
+    this.emit("moveentitiesend", movedEntities);
+    movedEntities = null;
   }
   entitiesToDrag = entitiesNotToDrag = draggingDimension = null;
 }

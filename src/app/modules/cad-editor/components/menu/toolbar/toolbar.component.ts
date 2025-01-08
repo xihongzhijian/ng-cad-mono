@@ -1,5 +1,4 @@
-import {AsyncPipe} from "@angular/common";
-import {Component, HostBinding, HostListener} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, HostBinding, HostListener, inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -22,12 +21,10 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
-import {OpenCadOptions} from "@services/app-status.types";
-import {CadStatusNormal} from "@services/cad-status";
+import {CadStatusFentiConfig, CadStatusNormal} from "@services/cad-status";
 import {openExportPage} from "@views/export/export.utils";
 import {openImportPage} from "@views/import/import.utils";
 import {isEqual} from "lodash";
-import {map, startWith} from "rxjs";
 import {openCadKailiaoConfigDialog} from "../../dialogs/cad-kailiao-config/cad-kailiao-config.component";
 import {CadLayerInput, openCadLayerDialog} from "../../dialogs/cad-layer/cad-layer.component";
 import {openCadLineForm} from "../cad-line/cad-line.utils";
@@ -36,12 +33,21 @@ import {openCadLineForm} from "../cad-line/cad-line.utils";
   selector: "app-toolbar",
   templateUrl: "./toolbar.component.html",
   styleUrls: ["./toolbar.component.scss"],
-  imports: [AboutComponent, AsyncPipe, MatButtonModule, MatDividerModule, MatMenuModule, RouterModule]
+  imports: [AboutComponent, MatButtonModule, MatDividerModule, MatMenuModule, RouterModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ToolbarComponent {
+  private config = inject(AppConfigService);
+  private console = inject(CadConsoleService);
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private spinner = inject(SpinnerService);
+  private status = inject(AppStatusService);
+
   @HostBinding("class") class = "ng-page";
 
-  openLock = false;
+  openLock = signal(false);
   keyEventItems: KeyEventItem[] = [
     {
       key: "s",
@@ -116,8 +122,8 @@ export class ToolbarComponent {
     {
       key: "escape",
       action: () => {
-        if (this.exitWithEsc) {
-          this.backToNormal();
+        if (this.canLeaveWithEsc()) {
+          this.leaveCadStatus();
           return true;
         }
         return false;
@@ -126,8 +132,8 @@ export class ToolbarComponent {
     {
       key: "enter",
       action: () => {
-        if (this.confirmWithEnter) {
-          this.backToNormal(true);
+        if (this.canConfirmWithEnter()) {
+          this.leaveCadStatus(true);
           return true;
         }
         return false;
@@ -135,49 +141,28 @@ export class ToolbarComponent {
     }
   ];
 
-  get isStatusNormal() {
-    return this.status.cadStatus instanceof CadStatusNormal;
-  }
-  get statusName() {
-    return this.status.cadStatus.name;
-  }
-  get canExit() {
-    return !!this.status.cadStatus.canExit;
-  }
-  get exitWithEsc() {
-    const {canExit, exitWithEsc} = this.status.cadStatus;
-    return canExit && exitWithEsc;
-  }
-  get canConfirm() {
-    return !!this.status.cadStatus.canConfirm;
-  }
-  get confirmWithEnter() {
-    const {canConfirm, confirmWithEnter} = this.status.cadStatus;
+  isStatusNormal = computed(() => this.status.hasCadStatus((v) => v instanceof CadStatusNormal));
+  statusName = computed(() => this.status.lastCadStatus()?.name || "");
+  canLeave = computed(() => !!this.status.lastCadStatus()?.canLeave);
+  canLeaveWithEsc = computed(() => {
+    const {canLeave = false, leaveWithEsc = false} = this.status.lastCadStatus() || {};
+    return canLeave && leaveWithEsc;
+  });
+  canConfirm = computed(() => !!this.status.lastCadStatus()?.canConfirm);
+  canConfirmWithEnter = computed(() => {
+    const {canConfirm = false, confirmWithEnter = false} = this.status.lastCadStatus() || {};
     return canConfirm && confirmWithEnter;
-  }
+  });
   get data() {
     return this.status.cad.data;
   }
-  isCadLocal$ = this.status.openCad$.pipe<OpenCadOptions, boolean>(
-    startWith({}),
-    map((v) => !!v.isLocal)
-  );
+  openCadOptions = this.status.openCadOptions;
   env = environment;
 
   @HostListener("window:keydown", ["$event"])
   onKeyDown(event: KeyboardEvent) {
     onKeyEvent(event, this.keyEventItems);
   }
-
-  constructor(
-    private console: CadConsoleService,
-    private message: MessageService,
-    private config: AppConfigService,
-    private status: AppStatusService,
-    private dialog: MatDialog,
-    private http: CadDataService,
-    private spinner: SpinnerService
-  ) {}
 
   getConfig(key: keyof AppConfig) {
     return this.config.getConfig(key);
@@ -299,8 +284,18 @@ export class ToolbarComponent {
     this.console.execute("fillet", {radius: radius ? radius.toString() : "0"});
   }
 
-  backToNormal(confirmed?: boolean) {
-    this.status.setCadStatus(new CadStatusNormal(), confirmed);
+  leaveCadStatus(confirmed?: boolean) {
+    const cadStatuses = this.status.cadStatuses();
+    const cadStatus = cadStatuses.at(-1);
+    if (!cadStatus) {
+      return;
+    }
+    cadStatus.confirmed = !!confirmed;
+    if (cadStatuses.length > 1) {
+      this.status.setCadStatuses(cadStatuses.slice(0, -1));
+    } else {
+      this.status.setCadStatuses([new CadStatusNormal()]);
+    }
   }
 
   newCad() {
@@ -308,7 +303,7 @@ export class ToolbarComponent {
   }
 
   setKailiaofangshi() {
-    sortLines(this.status.cad.data).forEach((group) => {
+    sortLines(this.status.cad.data.entities).forEach((group) => {
       const start = group[0];
       const end = group[group.length - 1];
       if (start) {
@@ -460,7 +455,7 @@ export class ToolbarComponent {
   }
   async openKailiaoConfig() {
     const cad = this.data;
-    const lineGroups = sortLines(cad);
+    const lineGroups = sortLines(cad.entities);
     if (![1, 2].includes(lineGroups.length)) {
       this.message.error("CAD必须分成一段或两段");
       return;
@@ -488,5 +483,10 @@ export class ToolbarComponent {
     const content = JSON.stringify([getHoutaiCad(cad)]);
     const filename = `${cad.name}.json`;
     downloadByString(content, {filename});
+  }
+
+  cadFentiOn = computed(() => this.status.hasCadStatus((v) => v instanceof CadStatusFentiConfig));
+  toggleCadFentiOn() {
+    this.status.toggleCadStatus(new CadStatusFentiConfig());
   }
 }

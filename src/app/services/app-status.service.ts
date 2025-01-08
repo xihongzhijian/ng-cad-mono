@@ -1,4 +1,4 @@
-import {inject, Injectable, signal} from "@angular/core";
+import {computed, effect, inject, Injectable, signal, untracked} from "@angular/core";
 import {ActivatedRoute, Params, Router, UrlCreationOptions} from "@angular/router";
 import {setCadData, unsetCadData} from "@app/cad/cad-data-transform";
 import {getCadPreview, updateCadPreviewImg} from "@app/cad/cad-preview";
@@ -41,12 +41,13 @@ import {
   setLinesLength
 } from "@lucilor/cad-viewer";
 import {FileSizeOptions, getFileSize, isTypeOf, ObjectOf, Point, timeout} from "@lucilor/utils";
+import {refreshCadFenti} from "@modules/cad-editor/components/menu/cad-fenti-config/cad-fenti-config.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
-import {clamp, cloneDeep, differenceWith, isEmpty} from "lodash";
+import {clamp, cloneDeep, differenceWith, isEmpty, isEqual} from "lodash";
 import {BehaviorSubject, Subject} from "rxjs";
 import {local, remoteHost, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
@@ -76,26 +77,35 @@ export class AppStatusService {
 
   project = "";
   collection$ = new BehaviorSubject<CadCollection>("cad");
-  cadTotalLength$ = new BehaviorSubject<number>(0);
+  cadTotalLength = signal(0);
   cad = new CadViewer(setCadData(new CadData({name: "新建CAD", info: {isLocal: true}}), this.project, "cad", this.config.getConfig()));
   components = {
-    selected$: new BehaviorSubject<CadData[]>([]),
-    mode$: new BehaviorSubject<"single" | "multiple">("single"),
-    selectable$: new BehaviorSubject<boolean>(true)
+    selected: signal<CadData[]>([]),
+    mode: signal<"single" | "multiple">("single"),
+    selectable: signal<boolean>(true)
   };
-  openCad$ = new BehaviorSubject<OpenCadOptions>({});
+  openCadOptions = signal<OpenCadOptions>({});
+  cadData = computed(() => {
+    this.openCadOptions();
+    return this.cad.data;
+  });
   saveCadStart$ = new Subject<void>();
   saveCadEnd$ = new Subject<{data: CadData}>();
   saveCadLocked$ = new BehaviorSubject<boolean>(false);
-  cadPoints$ = new BehaviorSubject<CadPoints>([]);
+  cadPoints = signal<CadPoints>([]);
   setProject$ = new Subject<void>();
   user$ = new BehaviorSubject<AppUser | null>(null);
   isAdmin$ = new BehaviorSubject<boolean>(false);
   updateTimeStamp$ = new BehaviorSubject<number>(-1);
-  zhewanLengths$ = new BehaviorSubject<[number, number]>([1, 3]);
+  zhewanLengths = signal<[number, number]>([1, 3]);
   changeProject$ = new Subject<string>();
   private _isZhewanLengthsFetched = false;
   projectConfig = new ProjectConfig();
+
+  componentsModeEff = effect(() => {
+    const mode = this.components.mode();
+    this.config.setConfig("subCadsMultiSelect", mode === "multiple");
+  });
 
   constructor() {
     this.cad.setConfig(this.config.getConfig());
@@ -103,13 +113,10 @@ export class AppStatusService {
       const cad = this.cad;
       cad.setConfig(newVal);
     });
-    this.components.mode$.subscribe((mode) => {
-      this.config.setConfig("subCadsMultiSelect", mode === "multiple");
-    });
     this.cad.on("click", (event) => {
       if (this.config.getConfig("cadPointsAnywhere")) {
         const {clientX: x, clientY: y} = event;
-        this.cadPoints$.next([...this.cadPoints$.value, {x, y, lines: [], active: true}]);
+        this.cadPoints.update((v) => [...v, {x, y, lines: [], active: true}]);
       }
     });
   }
@@ -195,24 +202,76 @@ export class AppStatusService {
     this._cadImgToUpdate.set(map);
   }
 
-  cadStatus = new CadStatusNormal();
-  cadStatusEnter$ = new BehaviorSubject<CadStatus>(new CadStatusNormal());
-  cadStatusExit$ = new BehaviorSubject<CadStatus>(new CadStatusNormal());
-  setCadStatus(value: CadStatus, confirmed = false) {
-    const status = this.cadStatus;
-    status.confirmed = confirmed;
-    status.exitInProgress = true;
-    this.cadStatusExit$.next(this.cadStatus);
-    this.cadStatus = value;
-    status.exitInProgress = false;
-    this.cadStatusEnter$.next(value);
+  cadStatusesPair = signal<{curr: CadStatus[]; prev: CadStatus[]}>({curr: [new CadStatusNormal()], prev: []});
+  cadStatuses = computed(() => this.cadStatusesPair().curr);
+  lastCadStatus = computed(() => this.cadStatuses().at(-1));
+  hasCadStatus(predicate: (v: CadStatus) => boolean) {
+    return this.cadStatuses().some(predicate);
   }
-  toggleCadStatus(cadStatus: CadStatus) {
-    const {name, index} = this.cadStatus;
-    if (name === cadStatus.name && index === cadStatus.index) {
-      this.setCadStatus(new CadStatusNormal());
+  findCadStatus<T extends CadStatus>(predicate: (v: CadStatus) => v is T): T | undefined;
+  findCadStatus(predicate: (v: CadStatus) => boolean): CadStatus | undefined;
+  findCadStatus(predicate: (v: CadStatus) => boolean) {
+    return this.cadStatuses().find(predicate);
+  }
+  hasOtherCadStatus(predicate: (v: CadStatus) => boolean) {
+    return this.cadStatuses().some((v) => !predicate(v));
+  }
+  setCadStatuses(statuses: CadStatus[]) {
+    const pair = this.cadStatusesPair();
+    this.cadStatusesPair.set({curr: [...statuses], prev: pair.curr});
+  }
+  toggleCadStatus(status: CadStatus) {
+    const statusesPrev = this.cadStatuses().filter((v) => !(v instanceof CadStatusNormal));
+    let statusesCurr = statusesPrev.filter((v) => v.isEquals(status));
+    if (statusesCurr.length < 1) {
+      statusesCurr = [...statusesPrev, status];
+    } else if (statusesCurr.length === statusesPrev.length) {
+      statusesCurr = [new CadStatusNormal()];
     } else {
-      this.setCadStatus(cadStatus);
+      statusesCurr = statusesPrev.filter((v) => !v.isEquals(status));
+    }
+    this.setCadStatuses(statusesCurr);
+  }
+  getCadStatusEffect(
+    predicate: (v: CadStatus) => boolean,
+    onEnter: (cadStatus: CadStatus) => void,
+    onLeave: (cadStatus: CadStatus) => void
+  ): void;
+  getCadStatusEffect<T extends CadStatus>(
+    predicate: (v: CadStatus) => v is T,
+    onEnter: (cadStatus: T) => void,
+    onLeave: (cadStatus: T) => void
+  ): void;
+  getCadStatusEffect(
+    predicate: (v: CadStatus) => boolean,
+    onEnter: (cadStatus: CadStatus) => void,
+    onLeave: (cadStatus: CadStatus) => void
+  ) {
+    return effect(() => {
+      const pair = this.cadStatusesPair();
+      const statusCurr = pair.curr.find(predicate);
+      const statusPrev = pair.prev.find(predicate);
+      if (statusCurr && !statusPrev) {
+        untracked(() => onEnter(statusCurr));
+      } else if (!statusCurr && statusPrev) {
+        untracked(() => onLeave(statusPrev));
+      }
+    });
+  }
+  updateCadStatuses(fn: (status: CadStatus) => void) {
+    const pair = this.cadStatusesPair();
+    const curr: CadStatus[] = [];
+    let isChanged = false;
+    for (const status of pair.curr) {
+      const status2 = cloneDeep(status);
+      fn(status2);
+      if (!isEqual(status, status2)) {
+        isChanged = true;
+      }
+      curr.push(status2);
+    }
+    if (isChanged) {
+      this.cadStatusesPair.set({curr, prev: pair.curr});
     }
   }
 
@@ -313,7 +372,7 @@ export class AppStatusService {
       cad.center();
     }
     this.config.setConfig(prevConfig);
-    this.updateCadTotalLength();
+    await this.updateCadTotalLength();
     if (!isDialog) {
       this.updateTitle();
     }
@@ -330,7 +389,7 @@ export class AppStatusService {
         await res;
       }
     }
-    this.openCad$.next(opts);
+    this.openCadOptions.set({...opts});
     timer.end(timerName, "打开CAD");
     return opts;
   }
@@ -392,7 +451,7 @@ export class AppStatusService {
     this.saveCadStart$.next();
     this.saveCadLocked$.next(true);
     data = this.closeCad();
-    const isLocal = this.openCad$.value.isLocal;
+    const isLocal = this.openCadOptions().isLocal;
     if (isLocal) {
       this.saveCadEnd$.next({data});
       this.saveCadLocked$.next(false);
@@ -459,32 +518,39 @@ export class AppStatusService {
       }
       map = generatePointsMap(map).concat(midPoints);
     }
-    return map.map((v) => {
+    return map.map<CadPoints[number]>((v) => {
       const {x, y} = this.cad.getScreenPoint(v.point.x, v.point.y);
-      return {x, y, active: v.selected, lines: v.lines.map((vv) => vv.id)} as CadPoints[0];
+      return {x, y, active: v.selected, lines: v.lines.map((vv) => vv.id)};
     });
   }
 
   setCadPoints(map: PointsMap | CadEntities = [], opts: {include?: CadPoints; exclude?: {x: number; y: number}[]; mid?: boolean} = {}) {
-    const {exclude, mid} = opts;
+    const {include, exclude, mid} = opts;
     const points = this.getCadPoints(map, mid);
-    this.cadPoints$.next(differenceWith(points, exclude || [], (a, b) => a.x === b.x && a.y === b.y).concat(opts.include || []));
+    this.cadPoints.set(differenceWith(points, exclude || [], (a, b) => a.x === b.x && a.y === b.y).concat(include || []));
   }
 
   addCadPoint(point: CadPoints[0], i?: number) {
-    const points = this.cadPoints$.value;
+    const points = this.cadPoints();
     if (typeof i !== "number") {
       i = points.length;
     }
     points.splice(i, 0, point);
-    this.cadPoints$.next(points);
+    this.cadPoints.set([...points]);
   }
-
   removeCadPoint(i: number) {
-    const points = this.cadPoints$.value;
+    const points = this.cadPoints();
     i = clamp(i, 0, points.length - 1);
     points.splice(i, 1);
-    this.cadPoints$.next(points);
+    this.cadPoints.set([...points]);
+  }
+  setCadPoint(i: number, point: Partial<CadPoints[number]> | ((point: CadPoints[number]) => Partial<CadPoints[number]>)) {
+    const points = this.cadPoints();
+    if (typeof point === "function") {
+      point = point(points[i]);
+    }
+    points[i] = {...points[i], ...point};
+    this.cadPoints.set([...points]);
   }
 
   validate(force?: boolean) {
@@ -501,16 +567,25 @@ export class AppStatusService {
     return result;
   }
 
-  updateCadTotalLength() {
-    this.cadTotalLength$.next(getCadTotalLength(this.cad.data));
+  async updateCadTotalLength() {
+    this.cadTotalLength.set(getCadTotalLength(this.cad.data));
+    await this.refreshCadFenti();
   }
 
-  setLinesLength(lines: CadLine[], length: number) {
+  async setLinesLength(lines: CadLine[], length: number) {
     setLinesLength(this.cad.data, lines, length);
     for (const line of lines) {
       line.lengthTextSize = getLineLengthTextSize(line);
     }
-    this.updateCadTotalLength();
+    await this.updateCadTotalLength();
+  }
+
+  async refreshCadFenti() {
+    const skipCollections: CadCollection[] = ["CADmuban", "kailiaocadmuban"];
+    if (skipCollections.includes(this.collection$.value)) {
+      return;
+    }
+    return await refreshCadFenti(this.cad);
   }
 
   updateTitle() {
@@ -582,7 +657,7 @@ export class AppStatusService {
     }
     const data = await this.http.getData<[number, number]>("ngcad/getZhewan");
     if (data) {
-      this.zhewanLengths$.next(data);
+      this.zhewanLengths.set(data);
       this._isZhewanLengthsFetched = true;
     }
   }

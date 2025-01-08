@@ -1,25 +1,25 @@
 <div class="toolbar">
-  <button mat-raised-button [style.z-index]="data ? '1' : '0'" [color]="isDrawingLine ? 'accent' : 'primary'" (click)="drawLine()">
+  <button mat-raised-button [style.z-index]="data ? '1' : '0'" [color]="isDrawingLine() ? 'accent' : 'primary'" (click)="drawLine()">
     {{ drawLineName }}
   </button>
-  <button mat-raised-button [style.z-index]="data ? '1' : '0'" [color]="isMovingLines ? 'accent' : 'primary'" (click)="moveLines()">
+  <button mat-raised-button [style.z-index]="data ? '1' : '0'" [color]="isMovingLines() ? 'accent' : 'primary'" (click)="moveLines()">
     {{ moveLinesName }}
   </button>
-  <button mat-raised-button [style.z-index]="data ? '1' : '0'" [color]="isCuttingLine ? 'accent' : 'primary'" (click)="cutLine()">
+  <button mat-raised-button [style.z-index]="data ? '1' : '0'" [color]="isCuttingLine() ? 'accent' : 'primary'" (click)="cutLine()">
     {{ cutLineName }}
   </button>
   <button mat-raised-button color="primary" (click)="autoFix()">修正</button>
   <button
     mat-raised-button
     [style.z-index]="data ? '1' : '0'"
-    [color]="isAddingWHDashedLines ? 'accent' : 'primary'"
+    [color]="isAddingWHDashedLines() ? 'accent' : 'primary'"
     [disabled]="!canAddWHDashedLines()"
     (click)="toggleWHDashedLines()"
   >
     增加宽高虚线
   </button>
 </div>
-<form [class.not-allowed]="editDiabled">
+<form [class.not-allowed]="editDiabled()">
   <button hidden></button>
   <div class="form-item">
     <mat-form-field>
@@ -228,7 +228,7 @@
       <mat-select name="nextZhewan" [value]="getLineText('nextZhewan')" (selectionChange)="setLineText($event, 'nextZhewan')">
         <mat-option value="自动">自动</mat-option>
         <mat-option value="无">无</mat-option>
-        @for (v of zhewan | async; track $index) {
+        @for (v of zhewan(); track $index) {
           <mat-option [value]="v + 'mm'">{{ v }}mm</mat-option>
         }
       </mat-select>
@@ -240,7 +240,7 @@
       <mat-select name="nextZhewan" [value]="getLineText('betweenZhewan')" (selectionChange)="setLineText($event, 'betweenZhewan')">
         <mat-option value="自动">自动</mat-option>
         <mat-option value="无">无</mat-option>
-        @for (v of zhewan | async; track $index) {
+        @for (v of zhewan(); track $index) {
           <mat-option [value]="v + 'mm'">{{ v }}mm</mat-option>
         }
       </mat-select>
@@ -363,7 +363,7 @@
     <mat-form-field>
       <mat-label>变化方式</mat-label>
       <mat-select name="变化方式" [value]="getLineText('变化方式')" (selectionChange)="setLineText($event, '变化方式')">
-        @for (o of bhfs; track $index) {
+        @for (o of cadLineOptions["变化方式"].values; track $index) {
           <mat-option [value]="o">{{ o }}</mat-option>
         }
       </mat-select>
@@ -392,7 +392,7 @@
     <mat-form-field>
       <mat-label>企料位置识别</mat-label>
       <mat-select name="企料位置识别" [value]="getLineText('企料位置识别')" (selectionChange)="setLineText($event, '企料位置识别')">
-        @for (o of qlwzshb; track $index) {
+        @for (o of cadLineOptions["企料位置识别"].values; track $index) {
           <mat-option [value]="o">{{ o }}</mat-option>
         }
       </mat-select>
@@ -428,6 +428,16 @@
         (blur)="focusedField = ''"
         name="双向折弯附加值"
       />
+    </mat-form-field>
+  </div>
+  <div class="form-item">
+    <mat-form-field>
+      <mat-label>线功能</mat-label>
+      <mat-select name="线功能" [value]="getLineText('线功能')" (selectionChange)="setLineText($event, '线功能')">
+        @for (o of cadLineOptions["线功能"].values; track $index) {
+          <mat-option [value]="o">{{ o }}</mat-option>
+        }
+      </mat-select>
     </mat-form-field>
   </div>
 </form>
