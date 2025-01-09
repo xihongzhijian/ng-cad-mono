@@ -183,7 +183,7 @@ export class ImportComponent implements OnInit {
     return requireLineId !== null && pruneLines !== null;
   }
 
-  private _cadNameRegex = /^(?!\d)[\da-zA-Z\u4e00-\u9fa5_]*$/u;
+  private _cadNameRegex = /^(?!\d)[\da-zA-Z#\u4e00-\u9fa5_]*$/u;
   private _optionsCache: ObjectOf<string[]> = {};
   // private _peiheCadCache: ObjectOf<boolean> = {};
   private _sourceCadMap: SourceCadMap = {cads: {}, slgses: {}};
