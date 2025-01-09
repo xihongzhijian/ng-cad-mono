@@ -38,8 +38,7 @@ export type CadSearchData = {
   }[];
 }[];
 
-export interface GetOptionsParams {
-  name: string;
+export interface GetOptionsParamsBase {
   search?: string;
   page?: number;
   limit?: number;
@@ -52,13 +51,13 @@ export interface GetOptionsParams {
   nameField?: string;
   info?: ObjectOf<any>;
 }
-
-export interface OptionsData<T extends OptionsDataData = OptionsDataData> {
-  data: T[];
-  count: number;
+export interface GetOptionsParamsSingle extends GetOptionsParamsBase {
+  name: string;
 }
-
-export interface OptionsDataData {
+export interface GetOptionsParamsMultiple extends GetOptionsParamsBase {
+  names: string[];
+}
+export interface GetOptionsResultItem {
   vid: number;
   name: string;
   img: string;

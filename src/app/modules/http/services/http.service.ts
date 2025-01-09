@@ -8,7 +8,7 @@ import {downloadByBlob, isTypeOf, ObjectOf, RSA} from "@lucilor/utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import axios, {AxiosError, AxiosResponse} from "axios";
-import {CustomResponse, HttpOptions, HttpServiceResponseError} from "./http.service.types";
+import {CustomResponse, DataAndCount, HttpOptions, HttpServiceResponseError} from "./http.service.types";
 
 @Injectable({
   providedIn: "root"
@@ -308,15 +308,11 @@ export class HttpService {
     return data2;
   }
 
-  async getDataAndCount<T>(url: string, data?: ObjectOf<any>, options?: HttpOptions) {
+  async getDataAndCount<T>(url: string, data?: ObjectOf<any>, options?: HttpOptions): Promise<DataAndCount<T> | null> {
     const response = await this.post<T>(url, data, options);
     if (!this.isSuccessfulResponse(response, options)) {
       return null;
     }
-    let data2: T | undefined | null = response.data;
-    if (data2 === undefined) {
-      data2 = null;
-    }
-    return {data: data2, count: response.count || 0};
+    return {data: response.data, count: response.count || 0};
   }
 }

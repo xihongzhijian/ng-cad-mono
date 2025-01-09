@@ -38,7 +38,7 @@
             [color]="button.color"
             [class]="button.class"
             [style]="button.style"
-            (click)="onToolbarBtnClick({button})"
+            (click)="onToolbarBtnClick(button)"
           >
             {{ button.title || button.event }}
           </button>
@@ -132,7 +132,7 @@
                           [color]="button.color"
                           [class]="button.class"
                           [style]="button.style"
-                          (click)="onRowButtonClick({button, column, item, colIdx, rowIdx})"
+                          (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"
                         >
                           {{ button.title || button.event }}
                         </button>

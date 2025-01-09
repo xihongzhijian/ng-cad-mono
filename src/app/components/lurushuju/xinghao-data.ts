@@ -2,7 +2,7 @@ import {Formulas} from "@app/utils/calc";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
-import {HoutaiCad, MongodbDataBase2, OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsResultItem, HoutaiCad, MongodbDataBase2} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MrbcjfzInfo} from "@views/mrbcjfz/mrbcjfz.types";
 import {difference, isArray, uniq} from "lodash";
@@ -20,7 +20,7 @@ export const updateXinghaoFenleis = (
   xinghao: Xinghao,
   allFenleis: string[],
   defaultFenleis: string[],
-  选项要求Options: OptionsDataData[]
+  选项要求Options: GetOptionsResultItem[]
 ) => {
   for (const fenlei of defaultFenleis) {
     if (!isTypeOf(xinghao.产品分类[fenlei], "array")) {
@@ -110,7 +110,7 @@ export const get算料数据 = (raw?: Partial<算料数据> | null) => {
   }
   return result;
 };
-export const update算料数据 = (data: 算料数据, 选项要求Options: OptionsDataData[]) => {
+export const update算料数据 = (data: 算料数据, 选项要求Options: GetOptionsResultItem[]) => {
   const 选项要求Prev = data.选项要求;
   data.选项要求 = {};
   for (const {name} of 选项要求Options) {

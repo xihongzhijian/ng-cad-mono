@@ -7,7 +7,7 @@ import {getVarNames} from "@components/var-names/var-names.utils";
 import {environment} from "@env";
 import {ObjectOf, queryString} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {BancaiListData, OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {BancaiListData, GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
@@ -619,13 +619,10 @@ export class LrsjStatusService implements OnDestroy {
     if (!force && this._isMenshanOptionsFetched()) {
       return;
     }
-    const menshans =
-      (
-        await this.http.getOptions<MenshanOption>({
-          name: "p_menshan",
-          fields: ["zuchenghuajian"]
-        })
-      )?.data || [];
+    const menshans = await this.http.getOptions<MenshanOption>({
+      name: "p_menshan",
+      fields: ["zuchenghuajian"]
+    });
     this.menshanOptions.set(menshans);
     this._isMenshanOptionsFetched.set(true);
   }
@@ -665,13 +662,13 @@ export class LrsjStatusService implements OnDestroy {
         this.huajians.set(this._huajiansCache[cacheKey]);
       } else {
         const result = await this.http.getOptions<
-          OptionsDataData & {shihuajian?: number; bangdingqianbankuanshicad?: string; bangdinghoubankuanshicad?: string}
+          GetOptionsResultItem & {shihuajian?: number; bangdingqianbankuanshicad?: string; bangdinghoubankuanshicad?: string}
         >({
           name: "花件",
           filter: {where_in: {vid: ids}},
           fields: ["shihuajian", "bangdingqianbankuanshicad", "bangdinghoubankuanshicad"]
         });
-        const huajians = (result?.data || []).map<MrbcjfzHuajian>((v) => ({
+        const huajians = result.map<MrbcjfzHuajian>((v) => ({
           vid: v.vid,
           mingzi: v.name,
           xiaotu: getFilepathUrl(v.img),

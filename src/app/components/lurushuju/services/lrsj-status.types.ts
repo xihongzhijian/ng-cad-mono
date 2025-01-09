@@ -1,12 +1,12 @@
 import {TableDataBase2} from "@app/utils/table-data/table-data-base";
 import {ZuoshujuTableData} from "@app/utils/table-data/zuoshuju-data";
 import {ObjectOf} from "@lucilor/utils";
-import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 import {MenjiaoCadType} from "../xinghao-data";
 
-export type OptionsAll = ObjectOf<OptionsDataData[]>;
+export type OptionsAll = ObjectOf<GetOptionsResultItem[]>;
 export type OptionsAll2 = ObjectOf<{
-  options: OptionsDataData[];
+  options: GetOptionsResultItem[];
   disabled?: boolean;
   multiple?: boolean;
   useDialog?: boolean;
@@ -61,7 +61,7 @@ export interface SuanliaoCadsInfo {
   key1: MenjiaoCadType;
 }
 
-export interface MenshanOption extends OptionsDataData {
+export interface MenshanOption extends GetOptionsResultItem {
   zuchenghuajian?: string;
 }
 

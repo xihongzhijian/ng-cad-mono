@@ -43,3 +43,8 @@ export class HttpServiceResponseError extends Error {
     this.details = details;
   }
 }
+
+export interface DataAndCount<T> {
+  data: T | undefined;
+  count: number;
+}

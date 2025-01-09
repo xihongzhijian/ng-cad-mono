@@ -62,7 +62,9 @@ import {
   InfoKey,
   ItemGetter,
   RowButtonEvent,
+  RowButtonEventBase,
   RowSelectionChange,
+  TableButton,
   TableRenderInfo,
   ToolbarButtonEvent
 } from "./table.types";
@@ -434,8 +436,9 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     this.cellClick.emit(event);
   }
 
-  onRowButtonClick(event: RowButtonEvent<T>) {
-    this.rowButtonClick.emit(event);
+  onRowButtonClick(button: TableButton<RowButtonEventBase<T>>, event: RowButtonEventBase<T>) {
+    button.onClick?.(event);
+    this.rowButtonClick.emit({button, ...event});
   }
 
   export() {
@@ -655,8 +658,9 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     await this.http.tableDeleteFile({table: onlineMode.tableName, vid, field});
   }
 
-  onToolbarBtnClick(event: ToolbarButtonEvent) {
-    this.toolbarButtonClick.emit(event);
+  onToolbarBtnClick(button: TableButton) {
+    button.onClick?.();
+    this.toolbarButtonClick.emit({button});
   }
 
   toggleEditMode() {

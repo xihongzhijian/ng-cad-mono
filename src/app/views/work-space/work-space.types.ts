@@ -1,4 +1,4 @@
-import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 
 export interface WorkSpaceData {
   user?: number;
@@ -28,7 +28,7 @@ export interface DefaultWorkDataFormInfo {
 export interface DefaultWorkDataFormInfoItem {
   labelSet: string;
   labelUnset: string;
-  options: OptionsDataData[];
+  options: GetOptionsResultItem[];
 }
 export interface XiaodaohangDocs {
   xiaodaohang: string;

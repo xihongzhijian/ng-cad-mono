@@ -6,7 +6,7 @@ import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {getOptionsAll2InputInfo} from "@components/lurushuju/services/lrsj-status.utils";
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {HoutaiCad, OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsResultItem, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
 import {getInputInfoGroup} from "@modules/input/components/input.utils";
 import {difference} from "lodash";
@@ -282,7 +282,7 @@ export const getMenjiaoOptionInputInfo = (
   data: any,
   key: string,
   options: OptionsAll2,
-  onOptionsChange: (options: OptionsDataData[]) => void
+  onOptionsChange: (options: GetOptionsResultItem[]) => void
 ): InputInfoSelect => {
   return getOptionsAll2InputInfo(options, key, (info) => {
     info.model = {data, key};
@@ -310,7 +310,7 @@ export const getMenjiaoOptionInputInfo = (
       info.openInNewTab = {
         optionKey: key,
         onOptionsChange: (options) => {
-          onOptionsChange(options.data);
+          onOptionsChange(options);
         }
       };
     }

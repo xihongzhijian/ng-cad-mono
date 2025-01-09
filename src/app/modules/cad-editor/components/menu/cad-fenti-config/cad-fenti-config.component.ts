@@ -1,4 +1,15 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal, untracked} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  forwardRef,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  untracked
+} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {environment} from "@env";
 import {CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
@@ -15,7 +26,7 @@ import {addCadFentiEntities, addCadFentiSeparator, getCadFentiInfo, removeCadFen
 
 @Component({
   selector: "app-cad-fenti-config",
-  imports: [InputComponent, MatButtonModule],
+  imports: [forwardRef(() => InputComponent), MatButtonModule],
   templateUrl: "./cad-fenti-config.component.html",
   styleUrl: "./cad-fenti-config.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush

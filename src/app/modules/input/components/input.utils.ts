@@ -2,7 +2,7 @@ import {filePathUrl, session} from "@app/app.common";
 import {getValue, Value} from "@app/utils/get-value";
 import {ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 import {Properties} from "csstype";
 import {uniq} from "lodash";
 import {
@@ -47,7 +47,7 @@ export const parseObjectString = (str: string, objectBefore: ObjectOf<string>, m
   }
 };
 
-export const convertOptions = (options: OptionsDataData[] | undefined) => {
+export const convertOptions = (options: GetOptionsResultItem[] | undefined) => {
   if (!Array.isArray(options)) {
     return [];
   }

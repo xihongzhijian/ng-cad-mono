@@ -1187,7 +1187,7 @@ export class ZixuanpeijianComponent implements OnInit {
     ];
     if (table?.column?.guanlianTable) {
       const {field, ch, guanlianTable} = table.column;
-      const optionsRaw = (await this.http.getOptions({name: guanlianTable}))?.data || [];
+      const optionsRaw = await this.http.getOptions({name: guanlianTable});
       const options = convertOptions(optionsRaw);
       const ids: number[] = data[field].split("*").map(Number);
       const names = ids.map((id) => optionsRaw.find((v) => v.vid === id)?.name || "");

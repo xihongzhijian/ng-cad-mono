@@ -46,7 +46,7 @@ import {CadViewer} from "@lucilor/cad-viewer";
 import {getTypeOf, isTypeOf, ObjectOf, queryString, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -899,9 +899,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
 
     const fields = optionField ? [optionField] : [];
-    let options: OptionsDataData[] | undefined;
+    let options: GetOptionsResultItem[] | undefined;
     if (hasOptions) {
-      options = this.options.map<OptionsDataData>((v, i) => {
+      options = this.options.map<GetOptionsResultItem>((v, i) => {
         let vid = typeof v.vid === "number" ? v.vid : i;
         let name = "";
         if (typeof v === "string") {
@@ -1138,10 +1138,25 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       if (info.type === "string" || info.type === "object") {
         optionSeparator = info.optionSeparator;
       }
-      if (Array.isArray(value)) {
-        this.displayValue = joinOptions(value, optionSeparator);
-      } else if (typeof value === "string") {
-        this.displayValue = value;
+      if (this.optionsDialog.optionsUseId) {
+        const getOptionName = (vid: string) => {
+          const option = this.options.find((v) => String(v.vid) === vid);
+          return option ? option.label : "";
+        };
+        if (Array.isArray(value)) {
+          this.displayValue = joinOptions(
+            value.map((v) => getOptionName(v)),
+            optionSeparator
+          );
+        } else if (typeof value === "string") {
+          this.displayValue = getOptionName(value);
+        }
+      } else {
+        if (Array.isArray(value)) {
+          this.displayValue = joinOptions(value, optionSeparator);
+        } else if (typeof value === "string") {
+          this.displayValue = value;
+        }
       }
     }
   }

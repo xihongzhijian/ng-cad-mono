@@ -12,11 +12,12 @@ import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {environment} from "@env";
 import {CadData, CadZhankai} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoPart} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {openCadDataAttrsDialog} from "../../dialogs/cad-data-attrs/cad-data-attrs.component";
+import {openCadMenfengConfigDialog} from "../cad-menfeng-config/cad-menfeng-config.component";
 
 export const cadFields = {
   id: "id",
@@ -100,6 +101,15 @@ export const getCadInfoInputs = (
   const gongshiOptions = status.getGongshiOptions(gongshis);
   const getter = new InputInfoWithDataGetter(data, {clearable: true});
   const getter2 = new InputInfoWithDataGetter(() => getData(data).info, {clearable: true});
+  const getDialogInput = (label: string, onClick: () => void, others?: InputInfoPart): InputInfo => {
+    return {
+      type: "string",
+      label,
+      selectOnly: true,
+      suffixIcons: [{name: "list", isDefault: true, onClick}],
+      ...others
+    };
+  };
   for (const key of keys) {
     if (result.some((v) => v.label === key)) {
       continue;
@@ -205,24 +215,13 @@ export const getCadInfoInputs = (
         info = getter2.numberWithUnit(key, "mm");
         break;
       case "自定义属性":
-        info = {
-          type: "string",
-          label: key,
-          selectOnly: true,
-          suffixIcons: [
-            {
-              name: "list",
-              isDefault: true,
-              onClick: async () => {
-                const data2 = getData(data);
-                const result = await openCadDataAttrsDialog(dialog, {data: data2.attributes});
-                if (result) {
-                  data2.attributes = result;
-                }
-              }
-            }
-          ]
-        };
+        info = getDialogInput(key, async () => {
+          const data2 = getData(data);
+          const result = await openCadDataAttrsDialog(dialog, {data: data2.attributes});
+          if (result) {
+            data2.attributes = result;
+          }
+        });
         break;
       case "正面线到见光线展开模板":
         info = getter2.string(key, {
@@ -343,44 +342,38 @@ export const getCadInfoInputs = (
         };
         break;
       case "开料孔位配置":
-        info = {
-          type: "string",
-          label: key,
-          selectOnly: true,
-          suffixIcons: [
-            {
-              name: "list",
-              isDefault: true,
-              onClick: async () => {
-                const data2 = getData(data);
-                const result = await openKlkwpzDialog(dialog, {data: {source: data2.info[key]}});
-                if (result) {
-                  data2.info[key] = result;
-                }
-              }
-            }
-          ]
-        };
+        info = getDialogInput(key, async () => {
+          const data2 = getData(data);
+          const result = await openKlkwpzDialog(dialog, {data: {source: data2.info[key]}});
+          if (result) {
+            data2.info[key] = result;
+          }
+        });
         break;
       case "算料单翻转":
-        info = {
-          type: "string",
-          label: key,
-          selectOnly: true,
-          suffixIcons: [
-            {
-              name: "list",
-              isDefault: true,
-              onClick: async () => {
-                const data2 = getData(data);
-                const result = await openSuanliaodanFlipDialog(dialog, {data: {items: data2.info[key]}});
-                if (result) {
-                  data2.info[key] = result.items;
-                }
+        info = getDialogInput(key, async () => {
+          const data2 = getData(data);
+          const result = await openSuanliaodanFlipDialog(dialog, {data: {items: data2.info[key]}});
+          if (result) {
+            data2.info[key] = result.items;
+          }
+        });
+        break;
+      case "门缝配置":
+        {
+          const data2 = getData(data);
+          info = getDialogInput(
+            key,
+            async () => {
+              const data2 = getData(data);
+              const result = await openCadMenfengConfigDialog(dialog, {data: {type: data2.type, items: data2.info[key]}});
+              if (result) {
+                data2.info[key] = result.items;
               }
-            }
-          ]
-        };
+            },
+            {value: Array.isArray(data2.info[key]) && data2.info[key].length > 0 ? "有数据" : ""}
+          );
+        }
         break;
       default:
         info = {type: "string", label: key + "（未实现）", disabled: true};

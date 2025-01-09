@@ -1,7 +1,7 @@
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
-import {OptionsData, OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 
 export interface CadOptionsInput {
   data?: CadData;
@@ -13,7 +13,7 @@ export interface CadOptionsInput {
   filter?: ObjectOf<any>;
   fields?: string[];
   nameField?: string;
-  options?: OptionsDataData[];
+  options?: GetOptionsResultItem[];
   defaultValue?: {value?: string; required?: boolean};
   openInNewTab?: boolean;
   useLocalOptions?: boolean;
@@ -27,4 +27,6 @@ export interface CadOptionsOutput {
   defaultValue?: string;
 }
 
-export type CadOptionsPageDataItem = OptionsData["data"][number] & {checked: boolean};
+export interface CadOptionsPageDataItem extends GetOptionsResultItem {
+  checked: boolean;
+}

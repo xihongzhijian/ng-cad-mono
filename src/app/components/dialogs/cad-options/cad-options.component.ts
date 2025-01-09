@@ -20,7 +20,8 @@ import {FetchManager} from "@app/utils/fetch-manager";
 import {queryString, timeout} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {GetOptionsParams, OptionsData, OptionsDataData} from "@modules/http/services/cad-data.service.types";
+import {GetOptionsParamsSingle, GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
+import {DataAndCount} from "@modules/http/services/http.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
@@ -114,7 +115,7 @@ export class CadOptionsComponent implements AfterViewInit {
         false
       );
       if (dataInOthers) {
-        for (const item of dataInOthers.data) {
+        for (const item of dataInOthers.data || []) {
           result.options.push({vid: item.vid, mingzi: item.name});
         }
       }
@@ -209,20 +210,20 @@ export class CadOptionsComponent implements AfterViewInit {
     };
     return info;
   });
-  async getOptions(params: GetOptionsParams, loader: Parameters<typeof this.spinner.show>, refreshLocalOptions: boolean) {
-    let data: OptionsData | null;
+  async getOptions(params: GetOptionsParamsSingle, loader: Parameters<typeof this.spinner.show>, refreshLocalOptions: boolean) {
+    let data: DataAndCount<GetOptionsResultItem[]> | null = null;
     const {options} = this.data;
     if (Array.isArray(options)) {
       if (refreshLocalOptions) {
         this.spinner.show(...loader);
-        data = await this.http.getOptions({...params, page: 1, limit: Infinity});
+        data = await this.http.getOptionsAndCount({...params, page: 1, limit: Infinity});
         if (data) {
           options.length = 0;
-          options.push(...data.data);
+          options.push(...(data.data || []));
         }
         this.spinner.hide(loader[0]);
       }
-      const field = (params.fields?.[0] || "name") as keyof OptionsDataData;
+      const field = (params.fields?.[0] || "name") as keyof GetOptionsResultItem;
       const options2 = options.filter((v) => {
         if (params.values && !params.values.includes(v[field])) {
           return false;
@@ -233,7 +234,7 @@ export class CadOptionsComponent implements AfterViewInit {
       this.showPaginator.set(false);
     } else {
       this.spinner.show(...loader);
-      data = await this.http.getOptions(params);
+      data = await this.http.getOptionsAndCount(params);
       this.spinner.hide(loader[0]);
       this.showPaginator.set(true);
     }
@@ -255,7 +256,7 @@ export class CadOptionsComponent implements AfterViewInit {
     if (typeFiltering && types.length > 0) {
       filter.where_in = {...filter.where_in, [typeFiltering.field]: types};
     }
-    const data = (await this.getOptions(
+    const data = await this.getOptions(
       {
         name: this.data.name,
         search: this.searchValue(),
@@ -270,9 +271,9 @@ export class CadOptionsComponent implements AfterViewInit {
       },
       [this.loaderIds.optionsLoader, {text: "获取CAD数据"}],
       refreshLocalOptions
-    )) || {data: [], count: 0};
-    this.length.set(data.count);
-    pageData = data.data.map((v) => {
+    );
+    this.length.set(data?.count || 0);
+    pageData = (data?.data || []).map((v) => {
       let checked = false;
       if (this.data.checkedItems?.includes(v.name)) {
         checked = true;

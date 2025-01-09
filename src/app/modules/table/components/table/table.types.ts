@@ -47,13 +47,14 @@ export interface RowSelection {
   noActive?: boolean;
 }
 
-export interface TableButton {
+export interface TableButton<T = void> {
   event: string;
   title?: string;
   color?: ThemePalette;
   class?: string | string[];
   style?: Properties;
   hidden?: boolean;
+  onClick?: (params: T) => void;
 }
 
 export interface ColumnInfoBase<T> {
@@ -90,7 +91,7 @@ export interface ColumnInfoSelect<T, K = any> extends ColumnInfoBase<T> {
 
 export interface ColumnInfoButton<T> extends ColumnInfoBase<T> {
   type: "button";
-  buttons: TableButton[];
+  buttons: TableButton<RowButtonEventBase<T>>[];
   showValue?: boolean;
 }
 
@@ -131,8 +132,14 @@ export interface ToolbarButtonEvent {
   button: TableButton;
 }
 
+export interface RowButtonEventBase<T> {
+  column: ColumnInfo<T>;
+  item: T;
+  colIdx: number;
+  rowIdx: number;
+}
 export interface RowButtonEvent<T> {
-  button: TableButton;
+  button: TableButton<RowButtonEventBase<T>>;
   column: ColumnInfo<T>;
   item: T;
   colIdx: number;

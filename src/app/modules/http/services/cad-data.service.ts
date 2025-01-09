@@ -16,15 +16,15 @@ import {
   ExcelData,
   ExportExcelOptions,
   GetCadParams,
-  GetOptionsParams,
+  GetOptionsParamsMultiple,
+  GetOptionsParamsSingle,
+  GetOptionsResultItem,
   GetShortUrlParams,
   HoutaiCad,
   ImportExcelOptions,
   MongodbCopyOptions,
   MongodbDataBase,
   MongodbInsertOptions,
-  OptionsData,
-  OptionsDataData,
   QueryMongodbParams,
   QueryMysqlParams,
   SetCadParams,
@@ -194,10 +194,10 @@ export class CadDataService extends HttpService {
     return null;
   }
 
-  async getOptions<T extends OptionsDataData = OptionsDataData>(
-    params: GetOptionsParams,
+  async getOptionsAndCount<T extends GetOptionsResultItem = GetOptionsResultItem>(
+    params: GetOptionsParamsSingle,
     httpOptions?: HttpOptions
-  ): Promise<OptionsData<T> | null> {
+  ) {
     const postData: ObjectOf<any> = {...params};
     if (params.data instanceof CadData) {
       delete postData.data;
@@ -207,9 +207,39 @@ export class CadDataService extends HttpService {
       postData.xuanxiang = exportData.options;
       postData.tiaojian = exportData.conditions;
     }
-    const result = await this.getDataAndCount<T[]>("ngcad/getOptions", postData, httpOptions);
-    const data = result?.data || [];
-    return {data, count: result?.count || 0};
+    return await this.getDataAndCount<T[]>("ngcad/getOptions", postData, httpOptions);
+  }
+  async getOptions<T extends GetOptionsResultItem = GetOptionsResultItem>(params: GetOptionsParamsSingle, httpOptions?: HttpOptions) {
+    const data = (await this.getOptionsAndCount<T>(params, httpOptions))?.data;
+    return data || [];
+  }
+  async getOptionsAndCountMulti<T extends GetOptionsResultItem = GetOptionsResultItem>(
+    params: GetOptionsParamsMultiple,
+    httpOptions?: HttpOptions
+  ) {
+    const postData: ObjectOf<any> = {...params};
+    if (params.data instanceof CadData) {
+      delete postData.data;
+      const exportData = params.data.export();
+      postData.mingzi = exportData.name;
+      postData.fenlei = exportData.type;
+      postData.xuanxiang = exportData.options;
+      postData.tiaojian = exportData.conditions;
+    }
+    return await this.getDataAndCount<ObjectOf<T[]>>("ngcad/getOptions", postData, httpOptions);
+  }
+  async getOptionsMulti<T extends GetOptionsResultItem = GetOptionsResultItem>(
+    params: GetOptionsParamsMultiple,
+    httpOptions?: HttpOptions
+  ) {
+    const data = (await this.getOptionsAndCountMulti<T>(params, httpOptions))?.data;
+    const data2: ObjectOf<T[]> = {};
+    for (const key in data) {
+      if (data[key]) {
+        data2[key] = data[key];
+      }
+    }
+    return data2;
   }
 
   async removeBackup(name: string, time: number) {

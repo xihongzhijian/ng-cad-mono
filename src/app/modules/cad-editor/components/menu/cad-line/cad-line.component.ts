@@ -51,17 +51,17 @@ import {CadLayerInputComponent} from "../cad-layer-input/cad-layer-input.compone
   templateUrl: "./cad-line.component.html",
   styleUrls: ["./cad-line.component.scss"],
   imports: [
-    MatButtonModule,
-    FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
     CadLayerInputComponent,
-    MatCheckboxModule,
-    MatMenuModule,
     ColorCircleModule,
-    MatSelectModule,
+    FormsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatMenuModule,
     MatOptionModule,
-    MatIconModule
+    MatSelectModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
