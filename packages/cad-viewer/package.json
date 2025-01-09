@@ -31,11 +31,11 @@
   "devDependencies": {
     "@types/color": "^4.2.0",
     "@types/events": "^3.0.3",
-    "@types/lodash": "^4.17.13",
+    "@types/lodash": "^4.17.14",
     "@types/uuid": "^10.0.0",
     "csstype": "^3.1.3",
-    "typescript": "~5.5.4",
-    "vite": "^6.0.6",
+    "typescript": "~5.7.3",
+    "vite": "^6.0.7",
     "vite-plugin-css-injected-by-js": "^3.5.2",
     "vite-plugin-dts": "^4.4.0"
   },
@@ -45,6 +45,6 @@
     "color": "^4.2.3",
     "events": "^3.3.0",
     "lodash": "^4.17.21",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.4"
   }
 }
