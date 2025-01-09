@@ -62,7 +62,7 @@ export const alertError = async (message: MessageService, error: ErrorItem) => {
         }
       }
     }
-    return str;
+    details2.push(str);
   }
   if (content.length > 0 || details2.length > 0) {
     await message.error({content, details: details2});
