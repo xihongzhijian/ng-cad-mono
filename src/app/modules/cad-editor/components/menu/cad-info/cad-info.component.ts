@@ -130,9 +130,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       return;
     }
     const data = this.data();
-    const selectJointpointStatus = this.status.findCadStatus(
-      (v) => v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo
-    );
+    const selectJointpointStatus = this.status.findCadStatus((v) => v instanceof CadStatusSelectJointpoint);
     const intersectionStatus = this.status.findCadStatus(
       (v) => v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo
     );
@@ -326,7 +324,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     const data = this.data();
     const key = this.cadStatusIntersectionInfo;
     const selectJointpointStatus = this.status.findCadStatus((v) => v instanceof CadStatusSelectJointpoint);
-    const intersectionStatus = this.status.findCadStatus((v) => v instanceof CadStatusIntersection && v.info === key);
+    const intersectionStatus = this.status.findCadStatus((v) => v instanceof CadStatusIntersection);
     if (selectJointpointStatus) {
       const points = this.status.getCadPoints(data.getAllEntities());
       const {valueX, valueY} = data.jointPoints[selectJointpointStatus.index];
@@ -566,6 +564,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   }
 
   selectBjxPoint(i: number) {
+    this.cadStatusIntersectionInfo = "激光开料标记线";
     this.status.toggleCadStatus(new CadStatusIntersection("激光开料标记线", i));
   }
 
