@@ -23,7 +23,7 @@ import {MatTree, MatTreeModule} from "@angular/material/tree";
 import {session} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {environment} from "@env";
-import {downloadByString, getElementVisiblePercentage, ObjectOf, queryStringList, selectFiles} from "@lucilor/utils";
+import {downloadByString, getElementVisiblePercentage, ObjectOf, queryStringList, selectFiles, timeout} from "@lucilor/utils";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -144,9 +144,11 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       this.message.error("未找到数据");
       return;
     }
-    const data = this.navDataSource().slice();
+    const data = this.navDataSource();
     sortDataListNavNodeList(data);
     updateDataListNavNodeList(data, this.itemsAll());
+    this.navDataSource.set([]);
+    await timeout(0);
     this.navDataSource.set(data);
     const activeNavNode = this.activeNavNode();
     if (activeNavNode) {
