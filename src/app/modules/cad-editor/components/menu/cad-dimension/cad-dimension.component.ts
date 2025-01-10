@@ -77,6 +77,12 @@ export class CadDimensionComponent implements OnInit, OnDestroy {
         this.status.cad.select(this.prevSelectedEntities);
         this.prevSelectedEntities = null;
       }
+    },
+    (cadStatus) => {
+      const index = cadStatus.index;
+      this.dimLineSelecting.set(index);
+      const dimension = this.dimensions()[index];
+      this.focus(dimension);
     }
   );
 
@@ -294,7 +300,7 @@ export class CadDimensionComponent implements OnInit, OnDestroy {
       selected: (e) => e instanceof CadDimension
     });
     this.status.blur(toBlur);
-    this.status.highlightDimensions(dimension ? [dimension] : []);
+    this.status.highlightDimensions();
   }
 
   blur() {

@@ -91,6 +91,9 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this._cadPointsLock = true;
       this.status.setCadPoints();
       this.cadStatusIntersectionInfo = null;
+    },
+    () => {
+      this._updateCadPoints();
     }
   );
 

@@ -143,12 +143,12 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       this.linesCutting = {lines: [], points: []};
       this._updateCadPoints();
     },
-    () => {
+    (cadStatus) => {
       const cad = this.status.cad;
       const {linesCutting} = this;
       this.status.setCadPoints();
       this.linesCutting = null;
-      if (this.status.hasCadStatus((v) => v instanceof CadStatusCutLine && v.confirmed) && linesCutting) {
+      if (cadStatus.confirmed && linesCutting) {
         const lines = linesCutting.lines;
         linesCutting.points.forEach((point) => {
           let index = -1;

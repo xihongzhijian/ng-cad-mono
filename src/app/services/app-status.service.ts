@@ -40,7 +40,7 @@ import {
   PointsMap,
   setLinesLength
 } from "@lucilor/cad-viewer";
-import {FileSizeOptions, getFileSize, isTypeOf, ObjectOf, Point, timeout} from "@lucilor/utils";
+import {FileSizeOptions, getFileSize, isTypeOf, MaybePromise, ObjectOf, Point, timeout} from "@lucilor/utils";
 import {refreshCadFenti} from "@modules/cad-editor/components/menu/cad-fenti-config/cad-fenti-config.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
@@ -223,38 +223,49 @@ export class AppStatusService {
   toggleCadStatus(status: CadStatus) {
     const statusesPrev = this.cadStatuses().filter((v) => !(v instanceof CadStatusNormal));
     let statusesCurr = statusesPrev.filter((v) => v.isEquals(status));
+    const statusesPrev2 = statusesPrev.filter((v) => v.name !== status.name);
     if (statusesCurr.length < 1) {
-      statusesCurr = [...statusesPrev, status];
+      statusesCurr = [...statusesPrev2, status];
     } else if (statusesCurr.length === statusesPrev.length) {
       statusesCurr = [new CadStatusNormal()];
     } else {
-      statusesCurr = statusesPrev.filter((v) => !v.isEquals(status));
+      statusesCurr = statusesPrev2;
     }
     this.setCadStatuses(statusesCurr);
   }
-  getCadStatusEffect(
-    predicate: (v: CadStatus) => boolean,
-    onEnter: (cadStatus: CadStatus) => void,
-    onLeave: (cadStatus: CadStatus) => void
-  ): void;
   getCadStatusEffect<T extends CadStatus>(
     predicate: (v: CadStatus) => v is T,
-    onEnter: (cadStatus: T) => void,
-    onLeave: (cadStatus: T) => void
+    onEnter: (cadStatus: T) => MaybePromise<void>,
+    onLeave: (cadStatus: T) => MaybePromise<void>,
+    onReplace?: (cadStatus: T, cadStatusPrev: T) => MaybePromise<void>
   ): void;
   getCadStatusEffect(
     predicate: (v: CadStatus) => boolean,
-    onEnter: (cadStatus: CadStatus) => void,
-    onLeave: (cadStatus: CadStatus) => void
+    onEnter: (cadStatus: CadStatus) => MaybePromise<void>,
+    onLeave: (cadStatus: CadStatus) => MaybePromise<void>,
+    onReplace?: (cadStatus: CadStatus, cadStatusPrev: CadStatus) => MaybePromise<void>
+  ): void;
+  getCadStatusEffect(
+    predicate: (v: CadStatus) => boolean,
+    onEnter: (cadStatus: CadStatus) => MaybePromise<void>,
+    onLeave: (cadStatus: CadStatus) => MaybePromise<void>,
+    onReplace?: (cadStatus: CadStatus, cadStatusPrev: CadStatus) => MaybePromise<void>
   ) {
-    return effect(() => {
+    return effect(async () => {
       const pair = this.cadStatusesPair();
       const statusCurr = pair.curr.find(predicate);
       const statusPrev = pair.prev.find(predicate);
       if (statusCurr && !statusPrev) {
-        untracked(() => onEnter(statusCurr));
+        await untracked(() => onEnter(statusCurr));
       } else if (!statusCurr && statusPrev) {
-        untracked(() => onLeave(statusPrev));
+        await untracked(() => onLeave(statusPrev));
+      } else if (statusCurr && statusPrev && !statusCurr.isEquals(statusPrev)) {
+        if (onReplace) {
+          await untracked(() => onReplace?.(statusCurr, statusPrev));
+        } else {
+          await untracked(() => onLeave(statusPrev));
+          await untracked(() => onEnter(statusCurr));
+        }
       }
     });
   }
