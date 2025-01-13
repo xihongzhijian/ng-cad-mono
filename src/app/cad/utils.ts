@@ -25,7 +25,7 @@ import {
   sortLines
 } from "@lucilor/cad-viewer";
 import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, keysOf, Line, ObjectOf, Point} from "@lucilor/utils";
-import {getCadFentiInfo} from "@modules/cad-editor/components/menu/cad-fenti-config/cad-fenti-config.utils";
+import {CadFentiInfo, getCadFentiInfo} from "@modules/cad-editor/components/menu/cad-fenti-config/cad-fenti-config.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -131,7 +131,13 @@ export const filterCadEntitiesToSave = (data: CadData) => {
 
 export const LINE_LIMIT = [0.01, 0.1] as const;
 export const validColors = ["#ffffff", "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#00ffff"] as const;
-export const validateLines = (collection: CadCollection, data: CadData, noInfo?: boolean, tol = DEFAULT_TOLERANCE) => {
+export const validateLines = (
+  collection: CadCollection,
+  data: CadData,
+  fentiInfo?: CadFentiInfo,
+  noInfo?: boolean,
+  tol = DEFAULT_TOLERANCE
+) => {
   const result: ValidateResult = {errors: [], errorLines: []};
   data.entities.forEach((e) => {
     if (e instanceof CadLineLike) {
@@ -154,7 +160,9 @@ export const validateLines = (collection: CadCollection, data: CadData, noInfo?:
       shuangxiangzhewan = false;
     }
   }
-  const fentiInfo = getCadFentiInfo(data);
+  if (!fentiInfo) {
+    fentiInfo = getCadFentiInfo(data);
+  }
   const lines = sortLines(fentiInfo.rawEntities, tol);
   result.errorLines = lines;
   const [min, max] = LINE_LIMIT;
@@ -256,10 +264,33 @@ export const validateCad = (collection: CadCollection, data: CadData, noInfo?: b
       result.errors.push(`${intersectionKeysTranslate[key]}存在无效数据`);
     }
   }
+  const fentiInfo = getCadFentiInfo(data);
+  if (data.分体拼接位置.length > 0) {
+    if (data.分体拼接位置.length < 2) {
+      result.errors.push("分体拼接位置数量小于2");
+    }
+    let isIncomplete = false;
+    let hasInvalidPoint = false;
+    for (const group of data.分体拼接位置) {
+      if (group.length < 2) {
+        isIncomplete = true;
+      }
+      const idsToFind: string[] = group.flat();
+      if (difference(idsToFind, idsAll).length > 0) {
+        hasInvalidPoint = true;
+      }
+    }
+    if (isIncomplete) {
+      result.errors.push("分体拼接位置没有设置完");
+    }
+    if (hasInvalidPoint) {
+      result.errors.push("分体拼接位置存在无效数据");
+    }
+  }
   if (!isEmpty(data.blocks) || data.entities.insert.length > 0) {
     result.errors.push("不能包含块");
   }
-  const linesResult = validateLines(collection, data, noInfo, tol);
+  const linesResult = validateLines(collection, data, fentiInfo, noInfo, tol);
   for (const key in result) {
     (result as any)[key].push(...(linesResult as any)[key]);
   }
@@ -388,6 +419,8 @@ export const shouldShowIntersection = (data: CadData) => {
   }
   return false;
 };
+
+export const getIntersectionPoint = () => {};
 
 export const showIntersections = (data: CadData, projectConfig: ProjectConfig) => {
   if (!shouldShowIntersection(data)) {

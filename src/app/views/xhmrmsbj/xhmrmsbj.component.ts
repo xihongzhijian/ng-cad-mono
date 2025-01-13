@@ -986,13 +986,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
-    const index = varsEnabled.indexOf(name);
-    if (index >= 0) {
-      varsEnabled.splice(index, 1);
+    const varsEnabled2 = varsEnabled.filter((v) => v !== name);
+    if (varsEnabled.length === varsEnabled2.length) {
+      setMokuaiShuchuVars(msbjInfo, node, mokuai, [...varsEnabled, name]);
     } else {
-      varsEnabled.push(name);
+      setMokuaiShuchuVars(msbjInfo, node, mokuai, varsEnabled2);
     }
-    setMokuaiShuchuVars(msbjInfo, node, mokuai, varsEnabled);
     this.refreshData();
   }
   setAllMokuaiShuruDisabled(isXuanxiang: boolean) {

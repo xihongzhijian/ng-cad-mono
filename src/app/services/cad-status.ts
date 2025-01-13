@@ -99,7 +99,3 @@ export class CadStatusIntersection extends CadStatus {
     super(index);
   }
 }
-
-export class CadStatusFentiConfig extends CadStatus {
-  name = "分体设置";
-}

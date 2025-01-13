@@ -21,12 +21,13 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
-import {CadStatusFentiConfig, CadStatusNormal} from "@services/cad-status";
+import {CadStatusNormal} from "@services/cad-status";
 import {openExportPage} from "@views/export/export.utils";
 import {openImportPage} from "@views/import/import.utils";
 import {isEqual} from "lodash";
 import {openCadKailiaoConfigDialog} from "../../dialogs/cad-kailiao-config/cad-kailiao-config.component";
 import {CadLayerInput, openCadLayerDialog} from "../../dialogs/cad-layer/cad-layer.component";
+import {CadStatusFentiConfig} from "../cad-fenti-config/cad-fenti-config.utils";
 import {openCadLineForm} from "../cad-line/cad-line.utils";
 
 @Component({

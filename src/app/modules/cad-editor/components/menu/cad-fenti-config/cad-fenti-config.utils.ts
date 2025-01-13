@@ -1,5 +1,6 @@
 import {ResultWithErrors} from "@app/utils/error-message";
 import {CadData, CadEntities, CadLine, CadLineLike, CadViewer} from "@lucilor/cad-viewer";
+import {CadStatus} from "@services/cad-status";
 
 export interface CadFentiInfo {
   separators: CadLineLike[];
@@ -136,3 +137,25 @@ export const refreshCadFenti = async (viewer: CadViewer) => {
   setCadFentiEntities(fentiEntities, info);
   await viewer.render(fentiEntities);
 };
+
+export class CadStatusFentiConfig extends CadStatus {
+  name = "分体设置";
+}
+export class CadStatusFentiPinjieLoc extends CadStatus {
+  name = "选择分体拼接位置";
+  canLeave = true;
+  leaveWithEsc = true;
+
+  constructor(index: number) {
+    super(index);
+  }
+}
+export class CadStatusFentiPairedLines extends CadStatus {
+  name = "选择分体对应线";
+  canLeave = true;
+  leaveWithEsc = true;
+
+  constructor(index: number) {
+    super(index);
+  }
+}

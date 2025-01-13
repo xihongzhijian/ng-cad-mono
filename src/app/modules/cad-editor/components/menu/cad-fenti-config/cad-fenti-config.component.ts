@@ -1,19 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  forwardRef,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal,
-  untracked
-} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, forwardRef, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {environment} from "@env";
-import {CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
-import {selectFiles} from "@lucilor/utils";
+import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
+import {selectFiles, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -21,8 +10,15 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
 import {CadStatusDrawLine} from "@services/cad-status";
-import {cloneDeep, isEqual} from "lodash";
-import {addCadFentiEntities, addCadFentiSeparator, getCadFentiInfo, removeCadFentiSeparator} from "./cad-fenti-config.utils";
+import {isEqual} from "lodash";
+import {
+  addCadFentiEntities,
+  addCadFentiSeparator,
+  CadStatusFentiPairedLines,
+  CadStatusFentiPinjieLoc,
+  getCadFentiInfo,
+  removeCadFentiSeparator
+} from "./cad-fenti-config.utils";
 
 @Component({
   selector: "app-cad-fenti-config",
@@ -38,23 +34,13 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
 
   prod = environment.production;
 
-  private _onCadZoom = () => {
-    this.updateCadPoints();
-  };
-  private _onCadMoveEntities = () => {
-    this.updateCadPoints();
-  };
   async ngOnInit() {
     const result = await addCadFentiSeparator(this.status.cad);
     await result.check(this.message);
-    this.status.cad.on("zoom", this._onCadZoom);
-    this.status.cad.on("moveentities", this._onCadMoveEntities);
   }
   async ngOnDestroy() {
     const result = await removeCadFentiSeparator(this.status.cad);
     await result.check(this.message);
-    this.status.cad.off("zoom", this._onCadZoom);
-    this.status.cad.off("moveentities", this._onCadMoveEntities);
   }
 
   async copyFenti() {
@@ -83,28 +69,53 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
     viewer.remove(info.fentiEntities);
   }
 
-  settingPinjieLoc = signal<{points: CadPoints} | null>(null);
-  toggleSettingPinjieLoc() {
-    this.settingPinjieLoc.update((v) => (v ? null : {points: []}));
-  }
-  updateCadPointsEff = effect(() => {
-    if (this.settingPinjieLoc()) {
-      untracked(() => this.updateCadPoints());
-    } else {
-      this.status.cadPoints.set([]);
+  pinjieLocs = signal<CadData["分体拼接位置"]>([]);
+  pinjieLocsEff = effect(() => {
+    const data = this.status.cadData();
+    const n = 2 - data.分体拼接位置.length;
+    for (let i = 0; i < n; i++) {
+      data.分体拼接位置.push([]);
     }
+    this.pinjieLocs.set(data.分体拼接位置.slice());
   });
-  updateCadPoints(lock?: boolean) {
-    const settingPinjieLoc = this.settingPinjieLoc();
-    if (!settingPinjieLoc) {
-      return;
-    }
+  private _isSelectingPinjieLoc = false;
+  pinjieLocsInputInfos = computed(() => {
+    const index = this.status.findCadStatus((v) => v instanceof CadStatusFentiPinjieLoc)?.index;
+    const list = this.pinjieLocs();
+    return list.map((v, i) => {
+      const info: InputInfo = {
+        type: "string",
+        label: "分体拼接位置",
+        value: v.length > 1 ? "已指定" : "未指定",
+        selectOnly: true,
+        suffixIcons: [
+          {
+            name: "linear_scale",
+            isDefault: true,
+            color: i === index ? "accent" : "primary",
+            onClick: () => this.selectPinjieLoc(i)
+          }
+        ],
+        style: {width: "100%"}
+      };
+      return info;
+    });
+  });
+
+  async selectPinjieLoc(i: number) {
+    this.status.toggleCadStatus(new CadStatusFentiPinjieLoc(i));
+  }
+  private _pinjieLocInfo: {
+    onCadZoom: CadEventCallBack<"zoom">;
+    onCadMoveEntities: CadEventCallBack<"moveentities">;
+  } | null = null;
+  updatePinjieLocPoints(cadStatus: CadStatusFentiPinjieLoc) {
     const data = this.status.cad.data;
-    const idGroups = data.分体拼接位置;
+    const idGroups = this.pinjieLocs()[cadStatus.index];
     const {rawEntities, fentiEntities} = getCadFentiInfo(data);
     if (fentiEntities.length < 1) {
       this.message.alert("没有分体线");
-      this.settingPinjieLoc.set(null);
+      this.status.toggleCadStatus(cadStatus);
       return;
     }
     const allEntities = new CadEntities();
@@ -114,32 +125,58 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
       const active = idGroups.some((v) => isEqual(new Set(v), new Set(point.lines)));
       point.active = active;
     }
-    if (lock) {
-      this._cadPointChangeLock = true;
-    }
     this.status.cadPoints.set(points);
   }
-  private _cadPointChangeLock = false;
-  cadPointChangeEff = effect(() => {
-    const points = this.status.cadPoints().filter((v) => v.active);
-    const settingPinjieLoc = untracked(() => this.settingPinjieLoc());
-    if (!settingPinjieLoc) {
+  pinjieLocStatusEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusFentiPinjieLoc,
+    async (cadStatus) => {
+      this.updatePinjieLocPoints(cadStatus);
+      await timeout(0);
+      this._isSelectingPinjieLoc = true;
+      this._pinjieLocInfo = {
+        onCadZoom: () => this.updatePinjieLocPoints(cadStatus),
+        onCadMoveEntities: () => this.updatePinjieLocPoints(cadStatus)
+      };
+      const viewer = this.status.cad;
+      viewer.on("zoom", this._pinjieLocInfo.onCadZoom);
+      viewer.on("moveentities", this._pinjieLocInfo.onCadMoveEntities);
+    },
+    async () => {
+      this._isSelectingPinjieLoc = false;
+      await timeout(0);
+      this.status.cadPoints.set([]);
+      if (this._pinjieLocInfo) {
+        const viewer = this.status.cad;
+        viewer.off("zoom", this._pinjieLocInfo.onCadZoom);
+        viewer.off("moveentities", this._pinjieLocInfo.onCadMoveEntities);
+        this._pinjieLocInfo = null;
+      }
+    }
+  );
+  private _pinjieLocCadPointsLock = false;
+  pinjieLocCadPointsEff = effect(async () => {
+    const cadStatus = this.status.findCadStatus((v) => v instanceof CadStatusFentiPinjieLoc);
+    if (!cadStatus) {
       return;
     }
-    if (this._cadPointChangeLock) {
-      this._cadPointChangeLock = false;
+    const points = this.status.cadPoints().filter((v) => v.active);
+    if (!this._isSelectingPinjieLoc || this._pinjieLocCadPointsLock) {
       return;
     }
     const data = this.status.cad.data;
-    const {rawEntities, fentiEntities} = getCadFentiInfo(data);
-    const rawPoints: CadPoints = [];
-    const fentiPoints: CadPoints = [];
-    const 分体拼接位置 = cloneDeep(data.分体拼接位置);
+    const 分体拼接位置Old = data.分体拼接位置?.[cadStatus.index];
+    if (!分体拼接位置Old) {
+      return;
+    }
+    const 分体拼接位置New: typeof 分体拼接位置Old = [];
     const getPointOrder = (p: CadPoints[number]) => {
-      const isSelected = 分体拼接位置.some((v) => isEqual(new Set(v), new Set(p.lines)));
+      const isSelected = 分体拼接位置Old.some((v) => isEqual(new Set(v), new Set(p.lines)));
       return isSelected ? 0 : 1;
     };
     points.sort((a, b) => getPointOrder(a) - getPointOrder(b));
+    const {rawEntities, fentiEntities} = getCadFentiInfo(data);
+    const rawPoints: CadPoints = [];
+    const fentiPoints: CadPoints = [];
     for (const point of points) {
       const lines = point.lines;
       const isInRaw = rawEntities.filter((e) => point.lines.includes(e.id)).length === lines.length;
@@ -150,12 +187,11 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
         fentiPoints.push(point);
       }
     }
-    data.分体拼接位置 = [];
     const setActive = (points: CadPoints) => {
       for (const [i, point] of points.entries()) {
         point.active = i === points.length - 1;
         if (point.active) {
-          data.分体拼接位置.push(point.lines);
+          分体拼接位置New.push(point.lines);
         }
       }
     };
@@ -165,19 +201,22 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
     if (fentiPoints.length > 0) {
       setActive(fentiPoints);
     }
-    if (!isEqual(分体拼接位置, data.分体拼接位置)) {
-      this.updateCadPoints(true);
+    if (!isEqual(分体拼接位置Old, 分体拼接位置New)) {
+      data.分体拼接位置[cadStatus.index] = 分体拼接位置New;
+      this.pinjieLocs.set(data.分体拼接位置.slice());
+      this._pinjieLocCadPointsLock = true;
+      await timeout(0);
+      this._pinjieLocCadPointsLock = false;
     }
   });
 
-  pairedLinesList = signal(this.status.cad.data.分体对应线);
+  pairedLinesList = signal<CadData["分体对应线"]>([]);
   pairedLinesEff = effect(() => {
     const data = this.status.cadData();
-    this.pairedLinesList.set(data.分体对应线);
+    this.pairedLinesList.set(data.分体对应线.slice());
   });
-  pairedLinesIdx = signal(-1);
   pairedLinesListInputInfos = computed(() => {
-    const pairedLineGroupIdx = this.pairedLinesIdx();
+    const index = this.status.findCadStatus((v) => v instanceof CadStatusFentiPairedLines)?.index;
     const list = this.pairedLinesList();
     return list.map((v, i) => {
       const info: InputInfo = {
@@ -189,7 +228,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
           {
             name: "linear_scale",
             isDefault: true,
-            color: i === pairedLineGroupIdx ? "accent" : "primary",
+            color: i === index ? "accent" : "primary",
             onClick: () => this.selectPairedLines(i)
           },
           {
@@ -224,85 +263,94 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
     this.status.cad.data.分体对应线 = pairedLinesList;
     this.pairedLinesList.set(pairedLinesList);
   }
-  private _onSelectpairedLines: CadEventCallBack<"entitiesselect"> | null = null;
+  private _pairedLinesInfo: {
+    onCadEntitiesSelect: CadEventCallBack<"entitiesselect">;
+  } | null = null;
   selectPairedLines(i: number) {
-    const viewer = this.status.cad;
-    if (this.pairedLinesIdx() === i) {
-      this.pairedLinesIdx.set(-1);
-      if (this._onSelectpairedLines) {
-        viewer.off("entitiesselect", this._onSelectpairedLines);
+    this.status.toggleCadStatus(new CadStatusFentiPairedLines(i));
+  }
+  pairedLinesStatusEff = this.status.getCadStatusEffect(
+    (v) => v instanceof CadStatusFentiPairedLines,
+    (cadStatus) => {
+      const viewer = this.status.cad;
+      const info = getCadFentiInfo(viewer.data);
+      const {rawEntities, fentiEntities} = info;
+      const pairedLinesList = this.pairedLinesList().slice();
+      let pairedLinesPrev = pairedLinesList[cadStatus.index];
+      const rawIds: string[] = [];
+      const fentiIds: string[] = [];
+      viewer.unselectAll();
+
+      const setLines = (lines: typeof pairedLinesPrev) => {
+        const toFocus = new CadEntities();
+        const toBlur = new CadEntities();
+        toFocus.merge(rawEntities).merge(fentiEntities);
+        viewer.data.entities.forEach((e) => {
+          if (!toFocus.find((e2) => e.id === e2.id)) {
+            toBlur.add(e);
+          }
+        });
+        this.status.focus(toFocus, {
+          selected: (e) => lines.some((v) => v.includes(e.id))
+        });
+        this.status.blur(toBlur);
+      };
+      setLines(pairedLinesPrev);
+
+      this._pairedLinesInfo = {
+        onCadEntitiesSelect: (entities) => {
+          const rawSelected: string[] = [];
+          const fentiSelected: string[] = [];
+          const rawSelectedPrev: string[] = [];
+          const fentiSelectedPrev: string[] = [];
+          rawEntities.forEach((e) => {
+            rawIds.push(e.id);
+            if (pairedLinesPrev.includes(e.id)) {
+              rawSelectedPrev.push(e.id);
+            }
+          }, true);
+          fentiEntities.forEach((e) => {
+            fentiIds.push(e.id);
+            if (pairedLinesPrev.includes(e.id)) {
+              fentiSelectedPrev.push(e.id);
+            }
+          }, true);
+          entities.forEach((e) => {
+            if (rawIds.includes(e.id) && !rawSelectedPrev.includes(e.id)) {
+              rawSelected.push(e.id);
+            } else if (fentiIds.includes(e.id) && !rawSelectedPrev.includes(e.id)) {
+              fentiSelected.push(e.id);
+            }
+          });
+          const pairedLines: typeof pairedLinesPrev = [];
+          if (rawSelected.length > 0) {
+            pairedLines.push(rawSelected[0]);
+          } else if (rawSelectedPrev.length > 0) {
+            pairedLines.push(rawSelectedPrev[0]);
+          }
+          if (fentiSelected.length > 0) {
+            pairedLines.push(fentiSelected[0]);
+          } else if (fentiSelectedPrev.length > 0) {
+            pairedLines.push(fentiSelectedPrev[0]);
+          }
+          pairedLinesList[cadStatus.index] = pairedLines;
+          this.status.cad.data.分体对应线 = pairedLinesList;
+          this.pairedLinesList.set(pairedLinesList);
+          setLines(pairedLines);
+          pairedLinesPrev = pairedLines;
+        }
+      };
+      viewer.on("entitiesselect", this._pairedLinesInfo.onCadEntitiesSelect);
+    },
+    () => {
+      if (this._pairedLinesInfo) {
+        const viewer = this.status.cad;
+        viewer.off("entitiesselect", this._pairedLinesInfo.onCadEntitiesSelect);
+        this._pairedLinesInfo = null;
         this.status.focus();
       }
-      return;
     }
-    this.pairedLinesIdx.set(i);
-    const info = getCadFentiInfo(viewer.data);
-    const {rawEntities, fentiEntities} = info;
-    const pairedLinesList = this.pairedLinesList();
-    let pairedLinesPrev = pairedLinesList[i];
-    const rawIds: string[] = [];
-    const fentiIds: string[] = [];
-    viewer.unselectAll();
-
-    const setLines = (lines: typeof pairedLinesPrev) => {
-      const toFocus = new CadEntities();
-      const toBlur = new CadEntities();
-      toFocus.merge(rawEntities).merge(fentiEntities);
-      viewer.data.entities.forEach((e) => {
-        if (!toFocus.find((e2) => e.id === e2.id)) {
-          toBlur.add(e);
-        }
-      });
-      this.status.focus(toFocus, {
-        selected: (e) => lines.some((v) => v.includes(e.id))
-      });
-      this.status.blur(toBlur);
-    };
-    setLines(pairedLinesPrev);
-
-    this._onSelectpairedLines = (entities) => {
-      const rawSelected: string[] = [];
-      const fentiSelected: string[] = [];
-      const rawSelectedPrev: string[] = [];
-      const fentiSelectedPrev: string[] = [];
-      rawEntities.forEach((e) => {
-        rawIds.push(e.id);
-        if (pairedLinesPrev.includes(e.id)) {
-          rawSelectedPrev.push(e.id);
-        }
-      }, true);
-      fentiEntities.forEach((e) => {
-        fentiIds.push(e.id);
-        if (pairedLinesPrev.includes(e.id)) {
-          fentiSelectedPrev.push(e.id);
-        }
-      }, true);
-      entities.forEach((e) => {
-        if (rawIds.includes(e.id) && !rawSelectedPrev.includes(e.id)) {
-          rawSelected.push(e.id);
-        } else if (fentiIds.includes(e.id) && !rawSelectedPrev.includes(e.id)) {
-          fentiSelected.push(e.id);
-        }
-      });
-      const pairedLines: typeof pairedLinesPrev = [];
-      if (rawSelected.length > 0) {
-        pairedLines.push(rawSelected[0]);
-      } else if (rawSelectedPrev.length > 0) {
-        pairedLines.push(rawSelectedPrev[0]);
-      }
-      if (fentiSelected.length > 0) {
-        pairedLines.push(fentiSelected[0]);
-      } else if (fentiSelectedPrev.length > 0) {
-        pairedLines.push(fentiSelectedPrev[0]);
-      }
-      pairedLinesList[i] = pairedLines;
-      this.status.cad.data.分体对应线 = pairedLinesList;
-      this.pairedLinesList.set([...pairedLinesList]);
-      setLines(pairedLines);
-      pairedLinesPrev = pairedLines;
-    };
-    viewer.on("entitiesselect", this._onSelectpairedLines);
-  }
+  );
 
   drawFentiLines() {
     this.status.toggleCadStatus(new CadStatusDrawLine(true));

@@ -459,7 +459,7 @@ export class MokuaiItemComponent {
     if (!(await this.message.confirm("是否确定删除？"))) {
       return;
     }
-    const cads = this.mokuai().cads || [];
+    const cads = this.mokuai().cads?.slice() || [];
     cads.splice(i, 1);
     this.mokuai.update((v) => ({...v, cads}));
   }
