@@ -82,7 +82,7 @@
     "@angular/compiler-cli": "^19.0.6",
     "@cypress/schematic": "3.0.0",
     "@eslint/eslintrc": "^3.2.0",
-    "@eslint/js": "^9.17.0",
+    "@eslint/js": "^9.18.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.1",
     "@types/color": "^4.2.0",
     "@types/jasmine": "~5.1.5",
