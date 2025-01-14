@@ -29,7 +29,7 @@ import {Formulas} from "@app/utils/calc";
 import {alertError, checkDuplicateVars, ErrorItem, getNamesDetail} from "@app/utils/error-message";
 import {FetchManager} from "@app/utils/fetch-manager";
 import {getValueString} from "@app/utils/get-value";
-import {canOptionsOverlap, matchMongoData} from "@app/utils/mongo";
+import {canItemMatchTogether, matchMongoData} from "@app/utils/mongo";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
 import {MokuaiItem, MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
@@ -1098,7 +1098,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           }
           for (const [i, xxgs1] of mokuai.xuanxianggongshi.entries()) {
             for (const xxgs2 of mokuai.xuanxianggongshi.slice(i + 1)) {
-              if (canOptionsOverlap(xxgs1.选项, xxgs2.选项)) {
+              if (canItemMatchTogether(xxgs1, xxgs2)) {
                 const keys1 = Object.keys(xxgs1.公式);
                 const keys2 = Object.keys(xxgs2.公式);
                 const duplicateVars = intersection(keys1, keys2);

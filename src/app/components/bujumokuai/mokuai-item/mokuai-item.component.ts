@@ -20,7 +20,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {alertError, checkDuplicateVars, ErrorDetail, ErrorItem, getNamesDetail} from "@app/utils/error-message";
 import {getCopyName} from "@app/utils/get-value";
-import {canOptionsOverlap} from "@app/utils/mongo";
+import {canItemMatchTogether} from "@app/utils/mongo";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {getFromulasFromString} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
@@ -547,7 +547,7 @@ export class MokuaiItemComponent {
     checkDuplicateVars(Object.keys(xuanxiangshuru), varKeysXuanxiang, "选项输入", "模块选项", error.details);
     for (const [i, xxgs1] of mokuai.xuanxianggongshi.entries()) {
       for (const xxgs2 of mokuai.xuanxianggongshi.slice(i + 1)) {
-        if (canOptionsOverlap(xxgs1.选项, xxgs2.选项)) {
+        if (canItemMatchTogether(xxgs1, xxgs2)) {
           const keys1 = Object.keys(xxgs1.公式);
           const keys2 = Object.keys(xxgs2.公式);
           const duplicateVars = intersection(keys1, keys2);

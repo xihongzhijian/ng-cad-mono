@@ -163,6 +163,54 @@ export const canOptionsOverlap = (options1: ObjectOf<string>, options2: ObjectOf
   return true;
 };
 
+export const canItemMatchTogether = (item1: MongodbDataBase2, item2: MongodbDataBase2) => {
+  if (!canOptionsOverlap(item1.选项, item2.选项)) {
+    return false;
+  }
+  const getOptionVarNames = (item: MongodbDataBase2) => {
+    const vars = new Set<string>();
+    for (const c of item.条件) {
+      for (const v of Calc.getVars(c)) {
+        vars.add(v);
+      }
+    }
+    return Array.from(vars);
+  };
+  const vars: Formulas = {};
+  const varNames1 = getOptionVarNames(item1);
+  const varNames2 = getOptionVarNames(item2);
+  for (const key of varNames1.concat(varNames2)) {
+    vars[key] = "";
+  }
+  const isOptionsEmpty1 = isEmpty(item1.选项);
+  const isOptionsEmpty2 = isEmpty(item2.选项);
+  const isConditionsEmpty1 = item1.条件.every((v) => !v);
+  const isConditionsEmpty2 = item2.条件.every((v) => !v);
+  const isOptionOK1 = isOptionsOK(item1.选项, vars);
+  const isOptionOK2 = isOptionsOK(item2.选项, vars);
+  const isConditionOK1 = isConditionOK(item1.条件, vars, false);
+  const isConditionOK2 = isConditionOK(item2.条件, vars, false);
+  if (!isOptionsEmpty1 && !isConditionsEmpty1 && isOptionOK1 !== isConditionOK1) {
+    return false;
+  }
+  if (!isOptionsEmpty2 && !isConditionsEmpty2 && isOptionOK2 !== isConditionOK2) {
+    return false;
+  }
+  if (!isOptionsEmpty1 && !isOptionsEmpty2 && isOptionOK1 !== isOptionOK2) {
+    return false;
+  }
+  if (!isConditionsEmpty1 && !isConditionsEmpty2 && isConditionOK1 !== isConditionOK2) {
+    return false;
+  }
+  if (!isOptionsEmpty1 && !isConditionsEmpty2 && isOptionOK1 !== isConditionOK2) {
+    return false;
+  }
+  if (!isOptionsEmpty2 && !isConditionsEmpty1 && isOptionOK2 !== isConditionOK1) {
+    return false;
+  }
+  return true;
+};
+
 export const isConditionOK = (conditions: string[], vars: ObjectOf<any>, errorAlert = true) => {
   if (isEmpty(conditions)) {
     return true;
