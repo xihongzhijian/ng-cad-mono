@@ -28,6 +28,7 @@ import {TypedTemplateDirective} from "@modules/directives/typed-template.directi
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
@@ -229,18 +230,22 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
         }
       }
     }
-    const path2 = getDataListNavNodePath(nodes, data).slice(0, -1);
-    const from = path2.at(-1) || null;
+    let path2: ReturnType<typeof getDataListNavNodePath>;
+    if (to) {
+      path2 = getDataListNavNodePath(nodes, to);
+    } else {
+      path2 = getDataListNavNodePath(nodes, data).slice(0, -1);
+    }
     const path = stringifyPath(path2);
+    const from = path2.at(-1) || null;
     if (!to) {
       to = from;
     }
 
+    const getter = new InputInfoWithDataGetter(data);
     const form: InputInfo<DataListNavNode>[] = [
-      {
-        type: "string",
+      getter.string("name", {
         label: "名字",
-        model: {data, key: "name"},
         validators: [
           Validators.required,
           (control) => {
@@ -251,7 +256,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
             return null;
           }
         ]
-      },
+      }),
       {
         type: "select",
         label: "上一级分类",
@@ -264,7 +269,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
           to = pathMap.get(val);
         }
       },
-      {type: "number", label: "排序", model: {data, key: "order"}}
+      getter.number("order", {label: "排序"})
     ];
     const result = await this.message.form(form);
     if (result) {
