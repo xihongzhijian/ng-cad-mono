@@ -428,7 +428,7 @@ export const getCadInfoInputs2 = async (
         info.optionsDialog = {optionKey: key2, openInNewTab: true};
       }
     } else {
-      info = (await getCadInfoInputs([key], data, dialog, status, parseOptionString, gongshis))[0];
+      info = getCadInfoInputs([key], data, dialog, status, parseOptionString, gongshis)[0];
       if (key === "选项" && info.type === "object") {
         const requiredKeys: string[] = [];
         for (const {key2} of requiredOptionItems || []) {

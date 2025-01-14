@@ -1,5 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, model} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, model, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -17,6 +17,8 @@ import {
   getXuanxiangTable
 } from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {sbjbItemOptionalKeys2} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
+import {CadData} from "@lucilor/cad-viewer";
+import {keysOf} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
@@ -321,6 +323,30 @@ export class XhmrmsbjXinghaoConfigComponent {
   suanliaoConfigCadCollection = this.bjmk.collection;
   suanliaoConfigCadYaoqiu = this.bjmk.cadYaoqiu;
 
+  cadMap = signal(new Map<string, CadData>());
+  cadMapEff = effect(async () => {
+    const map: ReturnType<typeof this.cadMap> = new Map();
+    const xinghaoConfig = this.data()?.xinghaoConfig;
+    if (xinghaoConfig) {
+      const ids = new Set<string>();
+      for (const key of keysOf(xinghaoConfig.企料结构配置)) {
+        const items = xinghaoConfig.企料结构配置[key];
+        for (const item of items || []) {
+          if (item.cad?.id) {
+            ids.add(item.cad.id);
+          }
+        }
+      }
+      if (ids.size > 0) {
+        const cads = await this.http.getCad({collection: this.suanliaoConfigCadCollection, ids: Array.from(ids), fields: ["_id", "名字"]});
+        for (const cad of cads.cads) {
+          map.set(cad.id, cad);
+        }
+      }
+    }
+    this.cadMap.set(map);
+  });
+
   getSuanliaoConfigDataSet<T extends SuanliaoConfigItem>(
     title: string,
     itemsGetter: SuanliaoConfigItemsGetter<T>,
@@ -335,7 +361,8 @@ export class XhmrmsbjXinghaoConfigComponent {
     }
     const xinghaoConfig = data.xinghaoConfig;
     const items = itemsGetter(xinghaoConfig);
-    const infos: {item: T; inputInfos: InputInfo[]}[] = [];
+    const infos: {item: T; inputInfos: InputInfo[]; cad?: CadData}[] = [];
+    const cadMap = this.cadMap();
     for (const item of items) {
       const getter = new InputInfoWithDataGetter(item);
       const onChange = () => {
@@ -343,6 +370,7 @@ export class XhmrmsbjXinghaoConfigComponent {
       };
       infos.push({
         item,
+        cad: cadMap.get(item.cad?.id || ""),
         inputInfos: [
           getter.selectMultiple("位置", positions, {onChange}),
           getter.object("选项", {onChange, optionType: "选项", optionMultiple: true, optionsDialog: {}}),

@@ -20,7 +20,7 @@ import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
 import {getNodeFormulasKey, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {matchConditions} from "@views/suanliao/suanliao.utils";
 import {XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
-import {getMokuaiFormulas, getMokuaiShuchuVars, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
+import {getMokuaiFormulas, getMokuaiShuchuVars, getShuruzhi, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {cloneDeep, difference, intersection, isEmpty, isEqual, union} from "lodash";
 import md5 from "md5";
 import {openDrawCadDialog} from "../draw-cad/draw-cad.component";
@@ -433,10 +433,12 @@ export const calcZxpj = async (
   ) => {
     for (const type2 of types2) {
       let varKeys2: string[];
+      let type2Title = type2;
       if (type2 === "公式") {
         varKeys2 = gongshiKeys;
       } else if (type2 === "公式输入") {
         varKeys2 = inputResultKeys;
+        type2Title = "锁边、铰边或者其他选项的" + type2;
       } else if (type2 === "模块公式") {
         varKeys2 = mokuaiGongshiKeys;
       } else {
@@ -444,7 +446,7 @@ export const calcZxpj = async (
       }
       let varItem: DuplicateMokuaiVar | undefined = duplicateMokuaiVars.find((v) => v.type1 === type1 && v.type2 === type2);
       if (!varItem) {
-        varItem = {info: [], type1, type2};
+        varItem = {info: [], type1, type2: type2Title};
         duplicateMokuaiVars.push(varItem);
       }
       const keys = difference(intersection(varKeys1, varKeys2), calcVars.keys);
@@ -464,6 +466,13 @@ export const calcZxpj = async (
     const vars = {...materialResult, ...shuchubianliang};
     const result = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, vars);
     return result?.formulas || item.suanliaogongshi;
+  };
+  const getMokuaiInfoShuruzhi = (item: ZixuanpeijianMokuaiItem) => {
+    const info = getMokuaiInfo(xhmrmsbj?.menshanbujuInfos || {}, item);
+    if (!info.msbjInfo || !info.node) {
+      return {};
+    }
+    return getShuruzhi(info.msbjInfo, info.node, item);
   };
 
   const duplicateMokuaiSlgsVars: {mokuai: ZixuanpeijianMokuaiItem; vars: string[]}[] = [];
@@ -599,6 +608,7 @@ export const calcZxpj = async (
     if (useCeshishuju && item.ceshishuju) {
       calc.calc.mergeFormulas(formulas, item.ceshishuju);
     }
+    calc.calc.mergeFormulas(formulas, getMokuaiInfoShuruzhi(item));
     const dimensionVars = getCadDimensionVars(item.cads);
     toCalc1Item.formulas = formulas;
     toCalc1Item.dimensionVars = dimensionVars;

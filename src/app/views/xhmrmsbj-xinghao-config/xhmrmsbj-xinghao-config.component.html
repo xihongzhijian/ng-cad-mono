@@ -58,6 +58,9 @@
                     <button mat-raised-button color="primary" (click)="set.removeCad(j)">删除CAD</button>
                   }
                 </div>
+                @if (info.cad?.name; as cadName) {
+                  <div class="name">{{ cadName }}</div>
+                }
                 @if (info.item.cad.id; as id) {
                   <app-cad-image [id]="id" [collection]="suanliaoConfigCadCollection"></app-cad-image>
                 }

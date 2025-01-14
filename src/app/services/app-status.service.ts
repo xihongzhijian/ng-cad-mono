@@ -494,8 +494,8 @@ export class AppStatusService {
           this.addCadImgToUpdate(data2.id);
         }
       });
-      this.saveCadLocked$.next(false);
     }
+    this.saveCadLocked$.next(false);
     spinner.hide(loaderId);
     return resData;
   }

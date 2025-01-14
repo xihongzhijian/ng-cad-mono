@@ -113,7 +113,10 @@ export class CadDataService extends HttpService {
     const cadData = exportCadData(params.cadData);
     const data = {...params, cadData};
     const response = await this.post<any>("ngcad/setCad", data, options);
-    if (response && response.data) {
+    if (!this.isSuccessfulResponse(response)) {
+      return null;
+    }
+    if (response.data) {
       const resData = response.data;
       const restore = await this._resolveMissingCads(response);
       if (typeof restore === "boolean") {
