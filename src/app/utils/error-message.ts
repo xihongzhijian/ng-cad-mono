@@ -73,7 +73,7 @@ export const alertError = async (message: MessageService, error: ErrorItem) => {
 
 export const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");
 
-export class ResultWithErrors<T, K extends ErrorDetailText = ErrorDetailText> {
+export class ResultWithErrors<T = never, K extends ErrorDetailText = ErrorDetailText> {
   errors: ErrorItem<K>[] = [];
   warnings: ErrorItem<K>[] = [];
 
@@ -87,6 +87,8 @@ export class ResultWithErrors<T, K extends ErrorDetailText = ErrorDetailText> {
     return this.warnings.length > 0;
   }
 
+  constructor(data?: never);
+  constructor(data: T);
   constructor(public data: T) {}
 
   addError(error: ErrorItem<K>) {

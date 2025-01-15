@@ -19,6 +19,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {Formulas} from "@app/utils/calc";
+import {ResultWithErrors} from "@app/utils/error-message";
 import {getCopyName, getValue, getValueString, Value} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
@@ -254,9 +255,11 @@ export class SuanliaogongshiComponent {
   async importGonshis() {
     const data = this.info().data;
     this.message.importData<算料公式[]>(null, async (gongshisAll) => {
+      const result = new ResultWithErrors();
       const data2 = await this.message.getImportFrom(gongshisAll, (v) => v.名字, "公式");
       if (!data2) {
-        return false;
+        result.addErrorStr("数据为空");
+        return result;
       }
       for (const item of data2.from) {
         this.justifyGongshi(item);
@@ -268,7 +271,7 @@ export class SuanliaogongshiComponent {
       }
       this.info.update((v) => ({...v}));
       this.slgsChange.emit();
-      return true;
+      return result;
     });
   }
   async exportGongshis() {

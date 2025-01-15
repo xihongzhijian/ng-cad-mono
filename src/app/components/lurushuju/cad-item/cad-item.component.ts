@@ -451,6 +451,8 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     const cadViewer = new CadViewer(
       data,
       getCadPreviewConfig(collection, {
+        width: containerEl.clientWidth,
+        height: containerEl.clientHeight,
         backgroundColor: "black",
         enableZoom: false,
         dragAxis: "xy",

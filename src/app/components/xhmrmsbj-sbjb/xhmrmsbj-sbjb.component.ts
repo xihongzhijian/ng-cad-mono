@@ -17,7 +17,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
-import {alertError, ErrorItem, getNamesStr} from "@app/utils/error-message";
+import {alertError, ErrorItem, getNamesStr, ResultWithErrors} from "@app/utils/error-message";
 import {getValueString} from "@app/utils/get-value";
 import {ItemsManager} from "@app/utils/items-manager";
 import {getSortedItems} from "@app/utils/sort-items";
@@ -51,6 +51,7 @@ import {
   XhmrmsbjSbjbCadInfo,
   XhmrmsbjSbjbCadInfoGrouped,
   XhmrmsbjSbjbItem,
+  XhmrmsbjSbjbItemSbjb,
   XhmrmsbjSbjbItemSbjbCadInfo,
   XhmrmsbjSbjbItemSbjbFentiCadInfo,
   XhmrmsbjSbjbItemSbjbItem,
@@ -70,7 +71,8 @@ import {
   getXhmrmsbjSbjbItemTableInfo,
   importXhmrmsbjSbjbItemSbjbs,
   isSbjbItemOptionalKeys1,
-  isSbjbItemOptionalKeys2
+  isSbjbItemOptionalKeys2,
+  isSbjbItemOptionalKeys3
 } from "./xhmrmsbj-sbjb.utils";
 
 @Component({
@@ -820,5 +822,51 @@ export class XhmrmsbjSbjbComponent {
       this.qiliaosChanged = [];
     }
     return true;
+  }
+
+  async importItemCads() {
+    await this.message.importData(true, async (data) => {
+      const result = new ResultWithErrors();
+      for (const cad of data.cads) {
+        const cad2 = await this.http.setCad({collection: this.cadCollection, cadData: new CadData(cad), force: true}, false, {
+          silent: true
+        });
+        if (cad2) {
+          this.cadMap.set(cad2.id, cad2);
+        } else {
+          result.addErrorStr("导入CAD出错<br>" + this.http.lastResponse?.msg);
+          return result;
+        }
+      }
+      const item = this.activeSbjbItem();
+      if (item) {
+        Object.assign(item, data.item);
+        this.refreshItems();
+      }
+      return result;
+    });
+  }
+  async exportItemCads() {
+    const item = this.activeSbjbItem();
+    const fenlei = this.activeItem()?.产品分类;
+    if (!item || !fenlei) {
+      return;
+    }
+    const cadIds = new Set<string>();
+    for (const info of item.CAD数据 || []) {
+      if (info.cadId) {
+        cadIds.add(info.cadId);
+      }
+    }
+    const cads = (await this.http.getCad({collection: this.cadCollection, ids: Array.from(cadIds)})).cads;
+    const item2: Partial<XhmrmsbjSbjbItemSbjb> = {CAD数据: item.CAD数据};
+    for (const key in item) {
+      if (isSbjbItemOptionalKeys3(key)) {
+        item2[key] = item[key] as any;
+      }
+    }
+    const data = {item: item2, cads: cads.map((v) => v.export())};
+    const title = [this.xinghaoName(), fenlei, this.activeSbjbItemIndex() + 1].join("_");
+    await this.message.exportData(data, title);
   }
 }

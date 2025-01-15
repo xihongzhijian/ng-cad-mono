@@ -3,6 +3,7 @@ import {Validators} from "@angular/forms";
 import {MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarConfig} from "@angular/material/snack-bar";
 import {DomSanitizer} from "@angular/platform-browser";
+import {ErrorDetailText, ResultWithErrors} from "@app/utils/error-message";
 import {downloadByString, MaybePromise, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -173,18 +174,18 @@ export class MessageService {
     }
   }
 
-  async importData<T = any>(
+  async importData<T = any, R = any, S extends ErrorDetailText = ErrorDetailText>(
     confirm: boolean | null,
-    action: (data: T) => MaybePromise<void | boolean>,
-    title = "",
+    action: (data: T) => MaybePromise<void | ResultWithErrors<R, S> | boolean>,
+    title = "数据",
     jsonOptions?: {reviver?: (this: any, key: string, value: any) => any}
   ) {
-    if (confirm && !(await this.confirm(`是否确定导入${title}？`))) {
-      return;
-    }
     const files = await selectFiles({accept: ".json"});
     const file = files?.[0];
     if (!file) {
+      return;
+    }
+    if (confirm && !(await this.confirm(`是否确定导入${title}？`))) {
       return;
     }
     const {reviver} = jsonOptions || {};
@@ -194,22 +195,27 @@ export class MessageService {
       if (res instanceof Promise) {
         res = await res;
       }
-      if (res !== false) {
+      let success = true;
+      if (res instanceof ResultWithErrors) {
+        success = await res.check(this);
+      }
+      if (success) {
         await this.snack(`${title}导入成功`);
       }
     } catch (e) {
       console.error(e);
-      await this.snack(`${title}导入失败`);
+      await this.alert(`${title}导入失败，请检查导入文件是否正确`);
     }
   }
-  async exportData<T = any>(data: T, title = "", jsonOptions?: {replacer?: (number | string)[] | null; space?: string | number}) {
+  async exportData<T = any>(data: T, title = "数据", jsonOptions?: {replacer?: (number | string)[] | null; space?: string | number}) {
     const {replacer, space} = jsonOptions || {};
     try {
       const str = JSON.stringify(data, replacer, space);
       downloadByString(str, {filename: `${title}.json`});
+      await this.snack(`${title}导出成功`);
     } catch (e) {
       console.error(e);
-      await this.snack(`${title}导出失败`);
+      await this.alert(`${title}导出失败`);
     }
   }
   async getImportFrom<T>(items: T[], labelGetter: (item: T) => string, name = "数据") {

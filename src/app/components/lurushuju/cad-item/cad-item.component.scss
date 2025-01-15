@@ -36,6 +36,9 @@
   .cad-container {
     justify-content: center;
     align-items: center;
+    overflow: hidden;
+    width: var(--cad-image-width);
+    height: var(--cad-image-height);
   }
 
   .empty-cad {

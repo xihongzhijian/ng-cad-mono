@@ -5,6 +5,7 @@
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
+  --toolbat-margin: 2.5px;
   &.mat-mdc-dialog-component-host {
     display: flex;
   }
@@ -148,7 +149,7 @@
     }
 
     > * {
-      margin: 2.5px;
+      margin: var(--toolbat-margin);
     }
     > .toolbar {
       margin: 0;
@@ -228,13 +229,11 @@
 }
 
 .empty-cad {
-  margin: 5px;
+  display: flex;
+  flex-direction: column;
+  margin: var(--toolbat-margin);
   font-size: 18px;
   align-items: flex-start;
-
-  > .name {
-    margin-bottom: 10px !important;
-  }
 
   .box {
     display: flex;

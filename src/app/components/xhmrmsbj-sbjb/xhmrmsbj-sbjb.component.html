@@ -32,6 +32,8 @@
           <button mat-raised-button [color]="showCadFormDefaultTexts() ? 'accent' : 'primary'" (click)="toggleShowCadFormDefaultTexts()">
             显示详细信息
           </button>
+          <button mat-raised-button color="primary" (click)="importItemCads()">导入</button>
+          <button mat-raised-button color="primary" (click)="exportItemCads()">导出</button>
         </div>
         @for (group of cadInfoGroups(); track $index) {
           <div class="flex-row">
@@ -50,7 +52,7 @@
                     [isOnline]="{isFetched: false}"
                   ></app-cad-item>
                 } @else {
-                  <div class="empty-cad item link" (click)="selectSbjbItemSbjbCad(info.originalIndex)">
+                  <div class="empty-cad link" (click)="selectSbjbItemSbjbCad(info.originalIndex)">
                     <div class="name">{{ info.title }}</div>
                     <div class="box border">
                       <span class="error">请选择</span>
