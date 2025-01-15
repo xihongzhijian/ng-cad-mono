@@ -195,7 +195,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   mokuaiTemplateType!: {$implicit: ZixuanpeijianMokuaiItem};
   menshanKeys: MenshanKey[] = menshanKeys.slice();
   materialResult = signal<Formulas>({});
-  mokuaidaxiaoResults = signal<ObjectOf<Formulas>>({});
   wmm = new WindowMessageManager("门扇模块", this, window.parent);
   suanliaoLock$ = new BehaviorSubject(false);
   genXiaoguotuLock$ = new BehaviorSubject(false);
@@ -425,17 +424,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   });
   activeMokuaidaxiaoResult = computed(() => {
     const key = this.activeMenshanKey();
-    if (key) {
-      return this.mokuaidaxiaoResults()[key] || {};
+    const lastSuanliao = this.lastSuanliaoManager.data();
+    if (key && lastSuanliao) {
+      return lastSuanliao.output.门扇布局大小?.[key] || {};
     } else {
       return {};
-    }
-  });
-  activeMokuaidaxiaoResultEff = effect(() => {
-    const key = this.activeMenshanKey();
-    if (key) {
-      const value = this.activeMokuaidaxiaoResult();
-      this.mokuaidaxiaoResults.update((v) => ({...v, [key]: value}));
     }
   });
 
@@ -474,8 +467,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           }
         }
       }
-
-      await this.updateMokuaidaxiaoResults();
     });
   });
 
@@ -525,31 +516,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     this.wmm.postMessage("refreshMokuaidaxiaoResultsStart", {menshanKey, msbjInfo});
     return await this.wmm.waitForMessage<{values: Formulas}>("refreshMokuaidaxiaoResultsEnd");
-  }
-
-  async updateMokuaidaxiaoResults() {
-    for (const menshanKey of this.menshanKeys) {
-      const msbjInfo = this.data()?.menshanbujuInfos[menshanKey];
-      if (!this.isFromOrder() || !msbjInfo) {
-        return;
-      }
-      if (msbjInfo.选中布局数据) {
-        const {模块大小关系, 模块大小配置} = msbjInfo.选中布局数据;
-        if (模块大小配置) {
-          this.mokuaidaxiaoResults.update((v) => ({...v, [menshanKey]: msbjInfo.模块大小输出 || {}}));
-        } else if (模块大小关系) {
-          const gongshiObj = msbjInfo.选中布局数据.模块大小关系 || {};
-          if (!gongshiObj.门扇调整) {
-            gongshiObj.门扇调整 = Object.values(gongshiObj)[0];
-          }
-          if (!gongshiObj.配置) {
-            gongshiObj.配置 = {};
-          }
-          const {values} = await this.refreshMokuaidaxiaoResults(menshanKey);
-          this.mokuaidaxiaoResults.update((v) => ({...v, [menshanKey]: values}));
-        }
-      }
-    }
   }
 
   async setMsbj() {
@@ -1544,7 +1510,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const data = await this.wmm.waitForMessage("suanliaoEnd");
     await this.requestDataEnd(data);
     // this.activeMsbj()?.updateRectsInfo(this.getNode2rectData());
-    await this.updateMokuaidaxiaoResults();
     timer.end(timerName, timerName);
     this.spinner.hide(this.spinner.defaultLoaderId);
     this.suanliaoLock$.next(false);
@@ -1702,12 +1667,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!xhmrmsbj || !xinghao || !lastSuanliao) {
       return;
     }
-    const mokuaidaxiaoResults = this.mokuaidaxiaoResults();
     await openXhmrmsbjMokuaisDialog(this.dialog, {
       data: {
         xhmrmsbj,
         xinghao,
-        data: {lastSuanliao, mokuaidaxiaoResults},
+        data: {lastSuanliao},
         isVersion2024: !!this.data()?.isVersion2024
       }
     });

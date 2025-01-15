@@ -4,14 +4,13 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {DomSanitizer} from "@angular/platform-browser";
-import {Formulas} from "@app/utils/calc";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {getMokuaiTitleWithUrl, replaceMenshanName} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulaInfo} from "@components/formulas/formulas.types";
 import {getFormulaInfos} from "@components/formulas/formulas.utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {ObjectOf, timeout} from "@lucilor/utils";
+import {timeout} from "@lucilor/utils";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
@@ -50,7 +49,7 @@ export class XhmrmsbjMokuaisComponent {
   }
 
   infos = computed(() => {
-    const {lastSuanliao, mokuaidaxiaoResults} = this.data.data;
+    const {lastSuanliao} = this.data.data;
     const {input, output} = lastSuanliao;
     const materialResult = output.materialResult;
     const mkdxFormulaInfos: XhmrmsbjMkdxFormulaInfo[] = [];
@@ -60,7 +59,7 @@ export class XhmrmsbjMokuaisComponent {
       if (!value) {
         continue;
       }
-      const mokuaidaxiaoResult = mokuaidaxiaoResults[key] || {};
+      const mokuaidaxiaoResult = output.门扇布局大小?.[key] || {};
       const mkdxFormulaInfo: XhmrmsbjMkdxFormulaInfo = {name: key, formulaInfos: []};
       const xuanzhongMokuaiInfo: XhmrmsbjXuanzhongMokuaiInfo = {name: key, nodes: []};
       const nodeNames = value.模块节点?.map((v) => v.层名字) || [];
@@ -74,7 +73,7 @@ export class XhmrmsbjMokuaisComponent {
           });
           const cads: CadData[] = [];
           const {formulas} = getMokuaiFormulas(value, node, mokuai, materialResult);
-          const formulas2 = {...output.materialResult};
+          const formulas2 = {...output.materialResult, ...mokuaidaxiaoResult};
           if (mokuai2) {
             Object.assign(formulas2, mokuai2.suanliaogongshi);
             for (const cadItem of mokuai2.cads) {
@@ -83,13 +82,15 @@ export class XhmrmsbjMokuaisComponent {
             }
             formulas2.门扇布局 = mokuai2.info?.门扇布局?.name || "";
           }
-          Object.assign(formulas2, mokuaidaxiaoResult);
           const gongshi = {...value.选中布局数据?.模块大小配置?.算料公式};
           const nodeNameKeys = getNodeFormulasKeys([node.层名字]);
-          for (const key of Object.keys(gongshi)) {
-            if (nodeNameKeysAll.includes(key) && !nodeNameKeys.includes(key)) {
-              delete gongshi[key];
+          for (const key2 of Object.keys(gongshi)) {
+            if (nodeNameKeysAll.includes(key2) && !nodeNameKeys.includes(key2)) {
+              delete gongshi[key2];
             }
+          }
+          for (const key2 of nodeFormulasKeysRaw) {
+            formulas2[key2] = formulas2[getNodeFormulasKey(node.层名字, key2)];
           }
           replaceMenshanName(key, gongshi);
           Object.assign(formulas, gongshi);
@@ -140,7 +141,7 @@ export class XhmrmsbjMokuaisComponent {
 export interface XhmrmsbjMokuaisInput {
   xhmrmsbj: XhmrmsbjData;
   xinghao: MrbcjfzXinghaoInfo;
-  data: {lastSuanliao: LastSuanliao; mokuaidaxiaoResults: ObjectOf<Formulas>};
+  data: {lastSuanliao: LastSuanliao};
   isVersion2024: boolean;
 }
 
