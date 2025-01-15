@@ -14,13 +14,10 @@
       <mat-divider vertical class="large placeholder"></mat-divider>
     }
     @if (isFromOrder()) {
-      <button mat-raised-button color="primary" (click)="openMokuais()">查看选中模块算料数据</button>
+      <button mat-raised-button color="primary" (click)="openMokuais()">查看数据</button>
       @if (canEditMokuaidaxiao()) {
         <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
         <button mat-raised-button color="primary" (click)="refreshMokuaidaxiao()">更新模块大小配置</button>
-      }
-      @if (isZhijian()) {
-        <button mat-raised-button color="primary" (click)="openHoutaiUrl()">查看型号默认门扇布局</button>
       }
       <button mat-raised-button color="primary" (click)="resetMokuaiInputs(true)">全部恢复默认</button>
     } @else {

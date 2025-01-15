@@ -195,7 +195,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   mokuaiTemplateType!: {$implicit: ZixuanpeijianMokuaiItem};
   menshanKeys: MenshanKey[] = menshanKeys.slice();
   materialResult = signal<Formulas>({});
-  houtaiUrl = "";
   mokuaidaxiaoResults = signal<ObjectOf<Formulas>>({});
   wmm = new WindowMessageManager("门扇模块", this, window.parent);
   suanliaoLock$ = new BehaviorSubject(false);
@@ -297,7 +296,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   isFloatingDialog = computed(() => !!this.opts()?.浮动弹窗);
   async requestDataEnd(data: XhmrmsbjRequestData) {
     const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys} = data;
-    const {houtaiUrl, id, user, localServerUrl, menshanbujus, step1Data, 模块通用配置} = data;
+    const {id, user, localServerUrl, menshanbujus, step1Data, 模块通用配置} = data;
     const {铰扇跟随锁扇, 铰扇正面跟随锁扇正面, 铰扇背面跟随锁扇背面} = data;
     if (typeof localServerUrl === "string") {
       this.urlPrefix = localServerUrl;
@@ -326,7 +325,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     );
     this.data.set(data2);
     this.materialResult.set(materialResult);
-    this.houtaiUrl = houtaiUrl;
     this.id.set(id);
     this.user.set(user);
     this.opts.set(data.opts);
@@ -1717,10 +1715,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   async openMokuaisStart() {
     await this.openMokuais();
     return {action: "openMokuaisEnd"};
-  }
-
-  openHoutaiUrl() {
-    window.open(this.houtaiUrl);
   }
 
   getNode2rectData() {
