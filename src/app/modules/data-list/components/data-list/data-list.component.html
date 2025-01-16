@@ -77,7 +77,7 @@
       @for (info of itemQueryInputInfos(); track $index) {
         <app-input [info]="info"></app-input>
       }
-      <button mat-raised-button color="primary" (click)="toggleSortItems()">{{ sortItems() ? "按名字排序" : "不排序" }}</button>
+      <button mat-raised-button color="primary" (click)="toggleSortItems()">{{ sortItems() ? "名字排序" : "原始排序" }}</button>
       <ng-content select="[appDataListToolbar]"></ng-content>
     </div>
     <ng-scrollbar #itemsScrollbar>

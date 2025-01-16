@@ -13,6 +13,7 @@
     <button mat-raised-button color="primary" (click)="addCad()">添加</button>
     <button mat-raised-button [color]="cadsEditMode() ? 'accent' : 'primary'" (click)="toggleCadsEditMode()">编辑</button>
     <button mat-raised-button color="primary" (click)="removeCads()">批量删除</button>
+    <button mat-raised-button color="primary" (click)="copyCads()">批量复制</button>
     @if (cadYaoqiu()?.["有帮助文档"]) {
       <button mat-raised-button color="primary" (click)="cadYaoqiu()?.['打开帮助文档']()">帮助文档</button>
     }

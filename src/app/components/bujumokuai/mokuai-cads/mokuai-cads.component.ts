@@ -213,16 +213,31 @@ export class MokuaiCadsComponent {
       this.bjmkStatus.cadsManager.refresh({remove: [cad]});
     }
   }
-  async removeCads() {
+  private async _getSelectedCads() {
     const indexs = this.selectedCadIndexs();
     if (indexs.length < 1) {
       await this.message.alert("请先选择CAD");
-      return;
-    }
-    if (!(await this.message.confirm(`是否确定删除？`))) {
-      return;
+      return null;
     }
     const cads = indexs.map((i) => this.cads()[i]);
+    return indexs.map((i) => cads[i]);
+  }
+  async copyCads() {
+    const cads = await this._getSelectedCads();
+    if (!cads) {
+      return;
+    }
+    const ids = cads.map((v) => v.id);
+    const items = await this.http.mongodbCopy<HoutaiCad>(this.bjmkStatus.collection, ids);
+    if (items) {
+      this.bjmkStatus.cadsManager.refresh({add: items.map((v) => new CadData(v.json))});
+    }
+  }
+  async removeCads() {
+    const cads = await this._getSelectedCads();
+    if (!cads || !(await this.message.confirm(`是否确定删除？`))) {
+      return;
+    }
     const ids = cads.map((v) => v.id);
     const success = await this.http.mongodbDelete(this.bjmkStatus.collection, {ids});
     if (success) {
