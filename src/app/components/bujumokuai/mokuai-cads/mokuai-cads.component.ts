@@ -27,7 +27,7 @@ import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
-import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
+import {DataListNavNameChangeEvent, DataListQueryItemField} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@modules/data-list/data-list.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -72,6 +72,15 @@ export class MokuaiCadsComponent {
   selectedCads = model<CadData[]>([]);
 
   navDataName = signal("配件库分类");
+  queryItemFieldInfos = computed(() => {
+    const fields: DataListQueryItemField<CadData>[] = [];
+    for (const item of this.cadYaoqiu()?.CAD弹窗修改属性 || []) {
+      if (item.cadKey) {
+        fields.push({field: item.cadKey, title: item.key});
+      }
+    }
+    return fields;
+  });
   cads = signal<CadData[]>([]);
   activeNavNode = signal<DataListNavNode | null>(null);
   cadsIsOnline: ObjectOf<CadItemIsOnlineInfo<MokuaiCadItemInfo>> = {};

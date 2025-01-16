@@ -3,11 +3,12 @@
   [navDataName]="navDataName()"
   navDataTitle="配件库分类"
   [itemsAll]="cadsAll()"
+  [queryItemFieldInfos]="queryItemFieldInfos()"
   [(items)]="cads"
   [(activeNavNode)]="activeNavNode"
   (navNameChange)="onNavNameChange($event)"
 >
-  <div class="toolbar" appDataListToolbar>
+  <ng-container appDataListToolbar>
     <button mat-raised-button color="primary" (click)="refreshCads()">刷新</button>
     <button mat-raised-button color="primary" (click)="addCad()">添加</button>
     <button mat-raised-button [color]="cadsEditMode() ? 'accent' : 'primary'" (click)="toggleCadsEditMode()">编辑</button>
@@ -22,7 +23,7 @@
     <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
     <button mat-raised-button color="primary">导入</button>
     <button mat-raised-button color="primary">导出</button>
-  </div>
+  </ng-container>
   <div class="data-items items" appDataListItems>
     @for (cad of cads(); track i; let i = $index) {
       <div class="data-item item link">

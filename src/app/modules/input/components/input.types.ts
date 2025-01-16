@@ -112,13 +112,13 @@ export interface InputInfoSelectBase<T = any, K = any> extends InputInfoBase<T> 
   openInNewTab?: {optionKey: string; onOptionsChange: (options: GetOptionsResultItem[]) => void};
 }
 export interface InputInfoSelectSingle<T = any, K = any> extends InputInfoSelectBase<T> {
-  value?: Value<string>;
+  value?: Value<K>;
   optionText?: string | ((val: string) => string);
   multiple?: false;
   onChange?: (val: K, info: this) => void;
 }
 export interface InputInfoSelectMultiple<T = any, K = string> extends InputInfoSelectBase<T> {
-  value?: Value<string[]>;
+  value?: Value<K[]>;
   optionText?: string | ((val: string[]) => string);
   multiple: true;
   onChange?: (val: K[], info: this) => void;

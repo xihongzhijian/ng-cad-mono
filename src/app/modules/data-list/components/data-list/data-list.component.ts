@@ -22,19 +22,27 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTree, MatTreeModule} from "@angular/material/tree";
 import {session} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
+import {getValueString} from "@app/utils/get-value";
 import {environment} from "@env";
-import {downloadByString, getElementVisiblePercentage, ObjectOf, queryStringList, selectFiles, timeout} from "@lucilor/utils";
+import {downloadByString, getElementVisiblePercentage, ObjectOf, queryString, queryStringList, selectFiles, timeout} from "@lucilor/utils";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom} from "rxjs";
 import {v4} from "uuid";
-import {DataListItem, DataListNavData, DataListNavNameChangeEvent, DataListNavNodeRaw} from "./data-list.types";
+import {
+  DataListItem,
+  DataListNavData,
+  DataListNavNameChangeEvent,
+  DataListNavNodeRaw,
+  DataListQueryItemField as DataListqueryItemFieldInfo,
+  dataListQueryItemFieldsDefault as dataListqueryItemFieldInfosDefault
+} from "./data-list.types";
 import {
   DataListNavNode,
   findActiveDataListNavNode,
@@ -72,6 +80,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   navDataName = input.required<string>();
   navDataTitle = input.required<string>();
   itemsAllIn = input<T[]>([], {alias: "itemsAll"});
+  queryItemFieldInfos = input<DataListqueryItemFieldInfo<T>[]>(dataListqueryItemFieldInfosDefault);
   items = model<T[]>([]);
   activeNavNode = model<DataListNavNode | null>(null);
   navNameChange = output<DataListNavNameChangeEvent>();
@@ -96,19 +105,21 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   childrenAccessor = ({children}: DataListNavNode) => children || [];
   navNodehasChild = (_: number, node: DataListNavNode) => node.hasChild();
   navNodeTrackBy = (_: number, node: DataListNavNode) => node.id;
-  navNodesHideEmpty = computed(() => !!this.itemQuery());
   navQuery = signal("");
-  navQueryInputInfo = computed<InputInfo>(() => ({
-    type: "string",
-    label: "搜索",
-    clearable: true,
-    value: this.navQuery(),
-    onInput: debounce((val) => {
-      this.navQuery.set(val);
-      this.filterNavNodes();
-    }, 200),
-    style: {width: "100px"}
-  }));
+  navQueryInputInfo = computed(() => {
+    const info: InputInfo = {
+      type: "string",
+      label: "搜索",
+      clearable: true,
+      value: this.navQuery(),
+      onInput: debounce((val) => {
+        this.navQuery.set(val);
+        this.filter();
+      }, 200),
+      style: {width: "160px"}
+    };
+    return info;
+  });
   navNodesTree = viewChild.required<MatTree<DataListNavNode, DataListNavNode>>("navNodesTree");
   navNodesTreeEl = viewChild("navNodesTree", {read: ElementRef});
   navNodesScrollbar = viewChild<NgScrollbar>("navNodesScrollbar");
@@ -157,22 +168,6 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       this.updateActiveNavNode(activeNavNode.name);
     }
     await this.http.mongodbUpdate<DataListNavData>(this._navCollection, {_id: this._navDataId, data: data.map((node) => node.export())});
-  }
-  filterNavNodes() {
-    const needle = this.navQuery();
-    const nodes = this.navDataSource().slice();
-    const filter = (list: DataListNavNode[]) => {
-      for (const node of list) {
-        if (node.children && node.children.length > 0) {
-          filter(node.children);
-          node.hidden = node.children.every((v) => v.hidden);
-        } else {
-          node.hidden = !queryStringList(needle, [node.name]);
-        }
-      }
-    };
-    filter(nodes);
-    this.navDataSource.set(nodes);
   }
   updateActiveNavNode(type = this.activeNavNode()?.name) {
     if (!type) {
@@ -333,37 +328,84 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   clickNavNode(node: DataListNavNode) {
     if (node.hasChild()) {
       this.navNodesTree().toggle(node);
+      setTimeout(() => {
+        this.filter();
+      }, 0);
     } else {
       this.activeNavNode.set(node);
     }
   }
 
   itemQuery = signal("");
-  itemQueryInputInfo = computed(() => {
-    const info: InputInfo = {
-      type: "string",
-      label: "搜索",
-      clearable: true,
-      value: this.itemQuery(),
-      onInput: debounce((val) => {
-        this.itemQuery.set(val);
-        this.filterItems();
-      }, 200)
-    };
-    return info;
+  itemQueryTypes = ["搜索所有分类", "搜索选中分类"] as const;
+  itemQueryType = signal<(typeof this.itemQueryTypes)[number]>("搜索选中分类");
+  itemQueryTypeField = signal<keyof T>("name");
+  itemQueryTypeFieldEff = effect(() => {
+    const fields = this.queryItemFieldInfos().map((v) => v.field);
+    if (!fields.includes(this.itemQueryTypeField())) {
+      this.itemQueryTypeField.set(fields.at(0) || "name");
+    }
+  });
+  itemQueryInputInfos = computed(() => {
+    const infos: InputInfo[] = [
+      {
+        type: "select",
+        label: "搜索类型",
+        options: this.itemQueryTypes.slice(),
+        multiple: false,
+        value: this.itemQueryType(),
+        onChange: (val) => {
+          this.itemQueryType.set(val);
+          this.filter();
+        },
+        style: {width: "170px"}
+      },
+      {
+        type: "select",
+        label: "搜索字段",
+        options: this.queryItemFieldInfos().map<InputInfoOption<keyof T>>((v) => {
+          return {value: v.field, label: v.title || String(v.field)};
+        }),
+        multiple: false,
+        value: this.itemQueryTypeField(),
+        onChange: (val) => {
+          this.itemQueryTypeField.set(val);
+          this.filter();
+        },
+        style: {width: "200px"}
+      } satisfies InputInfoSelect<keyof T, keyof T>,
+      {
+        type: "string",
+        label: "搜索",
+        clearable: true,
+        value: this.itemQuery(),
+        onInput: debounce((val) => {
+          this.itemQuery.set(val);
+          this.filter();
+        }, 200),
+        style: {width: "160px"}
+      }
+    ];
+    return infos;
   });
 
   itemsAll = signal<T[]>([]);
+  sortItems = signal(true);
+  toggleSortItems() {
+    this.sortItems.update((v) => !v);
+  }
   itemsAllEff = effect(() => {
-    const itemsAll = sortDataListItems(this.itemsAllIn());
+    let itemsAll = this.itemsAllIn();
+    if (this.sortItems()) {
+      itemsAll = sortDataListItems(itemsAll);
+    }
     this.itemsAll.set(itemsAll);
     untracked(() => this._onItemsAllChange(itemsAll));
   });
   private async _onItemsAllChange(itemsAll: T[]) {
     await this.untilInited();
     updateDataListNavNodeList(this.navDataSource(), itemsAll);
-    this.filterNavNodes();
-    this.filterItems();
+    this.filter();
   }
 
   itemsScrollbar = viewChild<NgScrollbar>("itemsScrollbar");
@@ -387,7 +429,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   });
   private async _onActiveNavNodeChange(activeNode: DataListNavNode | null) {
     await this.untilInited();
-    this.filterItems();
+    this.filter();
     if (!activeNode) {
       return;
     }
@@ -404,14 +446,43 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
 
-  filterItems() {
-    const type = this.activeNavNode()?.name;
+  filter() {
+    const navQuery = this.navQuery();
+    const nodes = this.navDataSource().slice();
+    const activeNode = this.activeNavNode();
+    const isActiveNode = (node: DataListNavNode) => activeNode && node.id === activeNode.id;
+    const filter = (list: DataListNavNode[]) => {
+      for (const node of list) {
+        if (node.children && node.children.length > 0) {
+          filter(node.children);
+          node.hidden = node.children.every((v) => v.hidden);
+        } else {
+          node.hidden = !isActiveNode(node) && !queryStringList(navQuery, [node.name]);
+        }
+      }
+    };
+    filter(nodes);
+
+    const type = activeNode?.name;
     const counts: ObjectOf<number> = {};
     const itemsAll = this.itemsAll();
-    const needle = this.itemQuery();
+    const itemQuery = this.itemQuery();
+    const itemQueryType = this.itemQueryType();
+    const itemQueryField = this.itemQueryTypeField();
+    const navNodesHideEmpty = !!itemQuery;
     const items: T[] = [];
     for (const item of itemsAll) {
-      if (queryStringList(needle, [item.name, item.type])) {
+      let isMatched = true;
+      if (itemQueryType === "搜索选中分类" && activeNode && !activeNode.hidden && navNodesHideEmpty) {
+        isMatched = item.type === type;
+      }
+      if (itemQueryField && itemQueryField in item) {
+        const val = getValueString(item[itemQueryField]);
+        isMatched = isMatched && queryString(itemQuery, val);
+      } else {
+        isMatched = false;
+      }
+      if (isMatched) {
         if (item.type === type) {
           items.push(item);
         }
@@ -424,37 +495,25 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
     this.items.set(items);
 
-    let currNode: DataListNavNode | undefined;
-    const setCount = (node: DataListNavNode) => {
-      let count = 0;
-      if (node.children && node.children.length > 0) {
-        for (const child of node.children) {
-          setCount(child);
-          count += child.itemCount || 0;
+    const setCount = (list: DataListNavNode[]) => {
+      let countTotal = 0;
+      for (const node of list) {
+        let count = 0;
+        if (node.children && node.children.length > 0) {
+          count += setCount(node.children);
+        } else if (node.name in counts) {
+          count = counts[node.name];
         }
-      } else if (node.name in counts) {
-        count = counts[node.name];
-      }
-      node.itemCount = count;
-      if (this.navNodesHideEmpty()) {
-        node.hidden = count < 1;
-      } else {
-        node.hidden = false;
-      }
-      if (!node.hasChild()) {
-        if (node.name === type) {
-          currNode = node;
+        node.itemCount = count;
+        countTotal += count;
+        if (navNodesHideEmpty && count < 1 && !isActiveNode(node)) {
+          node.hidden = true;
         }
       }
+      return countTotal;
     };
-    const nodes = this.navDataSource().slice();
-    for (const node of nodes) {
-      setCount(node);
-    }
+    setCount(nodes);
     this.navDataSource.set(nodes);
-    if (currNode && !currNode.hidden) {
-      this.activeNavNode.set(currNode);
-    }
   }
 
   async importNavNodes() {

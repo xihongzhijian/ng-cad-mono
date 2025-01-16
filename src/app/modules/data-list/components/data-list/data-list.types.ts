@@ -24,3 +24,12 @@ export interface DataListNavNameChangeEvent {
   before: string;
   after: string;
 }
+
+export interface DataListQueryItemField<T extends DataListItem = DataListItem> {
+  field: keyof T;
+  title?: string;
+}
+export const dataListQueryItemFieldsDefault: DataListQueryItemField[] = [
+  {field: "name", title: "名字"},
+  {field: "type", title: "分类"}
+];

@@ -13,7 +13,6 @@ export class DataListNavNode {
   level = 0;
   itemCount = 0;
   hidden?: boolean;
-  hidden2?: boolean;
   isVirtual?: boolean;
 
   constructor(data: DataListNavNodeRaw) {

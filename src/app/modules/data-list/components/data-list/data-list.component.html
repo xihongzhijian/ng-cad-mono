@@ -1,7 +1,7 @@
 <div class="flex-row flex-110">
   <div class="nav flex-column">
     <div class="toolbar">
-      <app-input class="flex-110" [info]="navQueryInputInfo()"></app-input>
+      <app-input [info]="navQueryInputInfo()"></app-input>
       <button mat-stroked-button [color]="navEditMode() ? 'accent' : 'primary'" (click)="toggleNavEditMode()">开启编辑</button>
       @if (navEditMode()) {
         <button mat-stroked-button color="primary" (click)="addNavNode()">添加1级</button>
@@ -13,13 +13,13 @@
     </div>
     <ng-scrollbar #navNodesScrollbar>
       <mat-tree #navNodesTree [dataSource]="navDataSource()" [childrenAccessor]="childrenAccessor" [trackBy]="navNodeTrackBy">
-        <mat-nested-tree-node *matTreeNodeDef="let node" [class.hidden]="node.hidden || node.hidden2">
+        <mat-nested-tree-node *matTreeNodeDef="let node" [class.hidden]="node.hidden">
           <div class="toolbar">
             <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
             <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
           </div>
         </mat-nested-tree-node>
-        <mat-nested-tree-node *matTreeNodeDef="let node; when: navNodehasChild" [class.hidden]="node.hidden || node.hidden2">
+        <mat-nested-tree-node *matTreeNodeDef="let node; when: navNodehasChild" [class.hidden]="node.hidden">
           <div class="toolbar">
             <button mat-icon-button matTreeNodeToggle>
               <mat-icon class="mat-icon-rtl-mirror">
@@ -74,7 +74,10 @@
   <mat-divider vertical></mat-divider>
   <div class="flex-110 flex-column">
     <div class="toolbar">
-      <app-input class="flex-110" [info]="itemQueryInputInfo()"></app-input>
+      @for (info of itemQueryInputInfos(); track $index) {
+        <app-input [info]="info"></app-input>
+      }
+      <button mat-raised-button color="primary" (click)="toggleSortItems()">{{ sortItems() ? "按名字排序" : "不排序" }}</button>
       <ng-content select="[appDataListToolbar]"></ng-content>
     </div>
     <ng-scrollbar #itemsScrollbar>
