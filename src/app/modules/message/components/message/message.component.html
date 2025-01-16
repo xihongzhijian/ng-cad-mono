@@ -84,28 +84,30 @@
 
 <ng-template #submitBtn>
   <button mat-raised-button color="primary" (click)="submit()">
-    {{ cast("confirm", data).btnTexts?.submit || "确定" }}
+    {{ btnTextSubmit() }}
   </button>
 </ng-template>
 
 <ng-template #cancelBtn>
   @if (!data.disableCancel) {
     <button mat-raised-button color="primary" (click)="cancel()">
-      {{ cast("confirm", data).btnTexts?.cancel || "取消" }}
+      {{ btnTextCancel() }}
     </button>
   }
 </ng-template>
 
 <ng-template #formBtn>
-  @if (cast("form", data).resetable) {
-    <button mat-raised-button color="accent" (click)="reset()">
-      {{ cast("form", data).btnTexts?.reset || "重置" }}
-    </button>
-  }
-  @if (cast("form", data).autoFill) {
-    <button mat-raised-button color="primary" (click)="autoFill()">
-      {{ cast("form", data).btnTexts?.autoFill || "自动填充" }}
-    </button>
+  @if (data.type === "form") {
+    @if (data.resetable) {
+      <button mat-raised-button color="accent" (click)="reset()">
+        {{ btnTextReset() }}
+      </button>
+    }
+    @if (data.autoFill) {
+      <button mat-raised-button color="primary" (click)="autoFill()">
+        {{ btnTextAutoFill() }}
+      </button>
+    }
   }
 </ng-template>
 

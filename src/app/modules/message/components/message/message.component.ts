@@ -30,7 +30,7 @@ import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {createJSONEditor, JSONContent, Mode} from "vanilla-jsoneditor";
-import {ButtonMessageData, MessageBeforeCloseEvent, MessageData, MessageDataMap, MessageOutput} from "./message.types";
+import {ButtonMessageData, FormMessageData, MessageBeforeCloseEvent, MessageData, MessageOutput} from "./message.types";
 import {validateForm} from "./message.utils";
 
 @Component({
@@ -226,6 +226,12 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  btnTexts = computed(() => (this.data as FormMessageData).btnTexts || {});
+  btnTextSubmit = computed(() => this.btnTexts().submit || "确定");
+  btnTextCancel = computed(() => this.btnTexts().cancel || "取消");
+  btnTextReset = computed(() => this.btnTexts().reset || "重置");
+  btnTextAutoFill = computed(() => this.btnTexts().autoFill || "自动填充");
+
   async close(type: MessageBeforeCloseEvent["type"], data?: any) {
     const beforeClose = this.data.beforeClose;
     if (typeof beforeClose === "function") {
@@ -279,14 +285,10 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (type === "confirm") {
       await this.close(closeType, false);
     } else if (type === "button") {
-      await this.close(closeType, this.data.btnTexts?.cancel);
+      await this.close(closeType, this.btnTextCancel());
     } else {
       await this.close(closeType);
     }
-  }
-
-  cast<T extends MessageData["type"]>(type: T, data: MessageData) {
-    return data as MessageDataMap[T];
   }
 
   getButtonLabel(button: ButtonMessageData["buttons"][0]) {

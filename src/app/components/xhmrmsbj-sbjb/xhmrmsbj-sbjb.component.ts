@@ -18,7 +18,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {alertError, ErrorItem, getNamesStr, ResultWithErrors} from "@app/utils/error-message";
-import {getValueString} from "@app/utils/get-value";
+import {getCopyName, getValueString} from "@app/utils/get-value";
 import {ItemsManager} from "@app/utils/items-manager";
 import {getSortedItems} from "@app/utils/sort-items";
 import {Qiliao, QiliaoTableData} from "@app/utils/table-data/table-data.qiliao";
@@ -53,6 +53,7 @@ import {
   XhmrmsbjSbjbItem,
   XhmrmsbjSbjbItemSbjb,
   XhmrmsbjSbjbItemSbjbCadInfo,
+  XhmrmsbjSbjbItemSbjbCadsData,
   XhmrmsbjSbjbItemSbjbFentiCadInfo,
   XhmrmsbjSbjbItemSbjbItem,
   XhmrmsbjSbjbItemSbjbSorted,
@@ -61,9 +62,9 @@ import {
 import {
   convertXhmrmsbjSbjbItem,
   exportXhmrmsbjSbjbItemSbjbs,
+  getSbjbItemCadKeys,
   getSbjbItemOptionalKeys2,
   getSbjbItemSbjbItem,
-  getXhmrmsbjSbjbItemCadKeys,
   getXhmrmsbjSbjbItemOptions,
   getXhmrmsbjSbjbItemSbjbCad,
   getXhmrmsbjSbjbItemSbjbForm,
@@ -115,7 +116,7 @@ export class XhmrmsbjSbjbComponent {
     const yaoqius: ObjectOf<Cad数据要求 | undefined> = {};
     const item = this.activeItem();
     if (item) {
-      for (const key of getXhmrmsbjSbjbItemCadKeys(item.产品分类)) {
+      for (const key of getSbjbItemCadKeys(item.产品分类)) {
         yaoqius[key] = this.status.getCadYaoqiu(key);
       }
     }
@@ -168,9 +169,8 @@ export class XhmrmsbjSbjbComponent {
   cadInfoGroups = computed(() => {
     const group1: XhmrmsbjSbjbCadInfoGrouped[] = [];
     const group2: XhmrmsbjSbjbCadInfoGrouped[] = [];
-    const group1Keys = ["锁框", "铰框", "顶框"];
     for (const [i, info] of this.cadInfos().entries()) {
-      if (group1Keys.includes(info.name)) {
+      if (isSbjbItemOptionalKeys1(info.name)) {
         group1.push({...info, originalIndex: i});
       } else {
         group2.push({...info, originalIndex: i});
@@ -632,7 +632,7 @@ export class XhmrmsbjSbjbComponent {
           delete item3.默认值;
         }
       }
-      item.CAD数据 = getXhmrmsbjSbjbItemCadKeys(item2.产品分类).map((key) => getXhmrmsbjSbjbItemSbjbCad(key));
+      item.CAD数据 = getSbjbItemCadKeys(item2.产品分类).map((key) => getXhmrmsbjSbjbItemSbjbCad(key));
       item2.锁边铰边数据.unshift(item);
       this.refreshItems();
     }
@@ -765,7 +765,7 @@ export class XhmrmsbjSbjbComponent {
       for (const [j, item2] of items2.entries()) {
         const errKeys: string[] = [];
         const errMsgs: string[] = [];
-        for (const key of getXhmrmsbjSbjbItemCadKeys(item.产品分类)) {
+        for (const key of getSbjbItemCadKeys(item.产品分类)) {
           if (isSbjbItemOptionalKeys2(key)) {
             if (item2[key]?.名字) {
               if (item2[key]?.使用正面分体 || item2[key]?.使用背面分体) {
@@ -825,47 +825,75 @@ export class XhmrmsbjSbjbComponent {
   }
 
   async importItemCads() {
-    await this.message.importData(true, async (data) => {
+    await this.message.importData<XhmrmsbjSbjbItemSbjbCadsData>(false, async (data) => {
       const result = new ResultWithErrors();
+      const item = this.activeItem();
+      const item2 = this.activeSbjbItem();
+      if (!item || !item2) {
+        return result.addWarningStr("当前页面数据为空");
+      }
+      const resetCads = await this.message.button({content: "是否新建CAD？", buttons: ["是", "否"] as const});
+      if (resetCads === "取消") {
+        return result.addWarningStr("取消导入");
+      }
+      const idMap = new Map<string, string>();
+      let cadNames: string[] = [];
+      if (resetCads) {
+        const cads = await this.http.queryMongodb({collection: this.cadCollection, fields: ["名字"]});
+        cadNames = cads.map((v) => v.名字);
+      }
       for (const cad of data.cads) {
-        const cad2 = await this.http.setCad({collection: this.cadCollection, cadData: new CadData(cad), force: true}, false, {
+        const cadData = new CadData(cad);
+        const idOld = cadData.id;
+        if (resetCads === "是") {
+          cadData.resetIds();
+          cadData.name = getCopyName(cadNames, cadData.name);
+          cadNames.push(cadData.name);
+        }
+        const cad2 = await this.http.setCad({collection: this.cadCollection, cadData, force: true}, false, {
           silent: true
         });
         if (cad2) {
           this.cadMap.set(cad2.id, cad2);
+          if (idOld !== cad2.id) {
+            idMap.set(idOld, cad2.id);
+          }
         } else {
           result.addErrorStr("导入CAD出错<br>" + this.http.lastResponse?.msg);
           return result;
         }
       }
-      const item = this.activeSbjbItem();
-      if (item) {
-        Object.assign(item, data.item);
-        this.refreshItems();
+      for (const cadInfo of data.item.CAD数据 || []) {
+        if (cadInfo.cadId) {
+          cadInfo.cadId = idMap.get(cadInfo.cadId) || cadInfo.cadId;
+        }
       }
+      item.锁边铰边数据[this.activeSbjbItemIndex()] = convertXhmrmsbjSbjbItem(data.fenlei, item.产品分类, {...item2, ...data.item});
+      this.refreshItems();
       return result;
     });
   }
   async exportItemCads() {
-    const item = this.activeSbjbItem();
-    const fenlei = this.activeItem()?.产品分类;
-    if (!item || !fenlei) {
+    const item = this.activeItem();
+    const item2 = this.activeSbjbItem();
+    if (!item || !item2) {
       return;
     }
+    const fenlei = item.产品分类;
     const cadIds = new Set<string>();
-    for (const info of item.CAD数据 || []) {
+    for (const info of item2.CAD数据 || []) {
       if (info.cadId) {
         cadIds.add(info.cadId);
       }
     }
     const cads = (await this.http.getCad({collection: this.cadCollection, ids: Array.from(cadIds)})).cads;
-    const item2: Partial<XhmrmsbjSbjbItemSbjb> = {CAD数据: item.CAD数据};
-    for (const key in item) {
+    const item3: Partial<XhmrmsbjSbjbItemSbjb> = {CAD数据: item2.CAD数据};
+    for (const key in item2) {
       if (isSbjbItemOptionalKeys3(key)) {
-        item2[key] = item[key] as any;
+        item3[key] = item2[key] as any;
       }
     }
-    const data = {item: item2, cads: cads.map((v) => v.export())};
+    const data: XhmrmsbjSbjbItemSbjbCadsData = {fenlei, item: item3, cads: cads.map((v) => v.export())};
     const title = [this.xinghaoName(), fenlei, this.activeSbjbItemIndex() + 1].join("_");
     await this.message.exportData(data, title);
   }

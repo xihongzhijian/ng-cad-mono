@@ -110,3 +110,9 @@ export interface XhmrmsbjSbjbItemSbjbFentiCadInfo {
   data: FentiCadTemplateData;
   title: FentiCadTemplateTitle;
 }
+
+export interface XhmrmsbjSbjbItemSbjbCadsData {
+  fenlei: string;
+  item: Partial<XhmrmsbjSbjbItemSbjb>;
+  cads: ReturnType<CadData["export"]>[];
+}

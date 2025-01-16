@@ -35,10 +35,10 @@ export interface ConfirmMessageData extends BaseMessageData, ConfirmBaseMessageD
   type: "confirm";
 }
 
-export interface ButtonMessageData extends BaseMessageData {
+export interface ButtonMessageData<R extends string = string, S extends string = "取消"> extends BaseMessageData {
   type: "button";
-  buttons: (string | {label: string; value: string})[];
-  btnTexts?: {cancel?: string};
+  buttons: (R | {label: R; value: string})[];
+  btnTexts?: {cancel?: S};
 }
 
 export interface FormMessageData extends BaseMessageData, FormBaseMessageData {

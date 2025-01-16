@@ -350,7 +350,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
   async messageStart({type, args}: {type: MessageData["type"]; args: [any, ...any[]]}) {
     let result: any = null;
     try {
-      result = await this.message[type](...args);
+      result = await (this.message as any)[type](...args);
     } catch {}
     return {action: "messageEnd", data: result};
   }

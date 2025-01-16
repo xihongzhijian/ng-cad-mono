@@ -22,7 +22,7 @@ import {
 import {FetchManager} from "@app/utils/fetch-manager";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
 import {算料公式} from "@components/lurushuju/xinghao-data";
-import {getXhmrmsbjSbjbItemSbjbCadName, isSbjbItemOptionalKeys3} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.utils";
+import {getSbjbCadName, isSbjbItemOptionalKeys3} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.utils";
 import {environment} from "@env";
 import {
   CadData,
@@ -731,7 +731,7 @@ export class AppStatusService {
     const yaoqius = this.cadYaoqiusManager.data();
     let result = yaoqius.find((v) => v.CAD分类 === name);
     if (isSbjbItemOptionalKeys3(name)) {
-      const name2 = getXhmrmsbjSbjbItemSbjbCadName(name);
+      const name2 = getSbjbCadName(name);
       if (!result && name2) {
         result = yaoqius.find((v) => v.CAD分类 === name2);
       }

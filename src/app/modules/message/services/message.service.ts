@@ -140,8 +140,11 @@ export class MessageService {
     return String(await this.open({data: this._getData(data, "editor"), width: "80vw", ...others}));
   }
 
-  async button(data: string | MessageDataParams<ButtonMessageData>, others: MessageDataParams2<ButtonMessageData> = {}) {
-    return String(await this.open({data: this._getData(data, "button"), ...others}));
+  async button<R extends string = string, S extends string = "取消">(
+    data: string | MessageDataParams<ButtonMessageData<R, S>>,
+    others: MessageDataParams2<ButtonMessageData> = {}
+  ) {
+    return String(await this.open({data: this._getData(data, "button"), ...others})) as R | S;
   }
 
   async iframe(data: string | MessageDataParams<IFrameMessageData>, others: MessageDataParams2<IFrameMessageData> = {}) {
@@ -195,11 +198,11 @@ export class MessageService {
       if (res instanceof Promise) {
         res = await res;
       }
-      let success = true;
+      let fulfilled = true;
       if (res instanceof ResultWithErrors) {
-        success = await res.check(this);
+        fulfilled = await res.check(this);
       }
-      if (success) {
+      if (fulfilled) {
         await this.snack(`${title}导入成功`);
       }
     } catch (e) {

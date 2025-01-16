@@ -29,7 +29,7 @@ export class MessageTestComponent {
   }
 
   async openMessage(key: string, data: MessageData) {
-    const result = await this.message[key as keyof MessageDataMap](data);
+    const result = await (this.message as any)[key](data);
     console.log(result);
   }
 }
