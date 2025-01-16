@@ -30,8 +30,7 @@ const data: XhmrmsbjMokuaisInput = {
         配件模块CAD: [],
         门扇布局CAD: []
       }
-    },
-    mokuaidaxiaoResults: {}
+    }
   },
   isVersion2024: true
 };
