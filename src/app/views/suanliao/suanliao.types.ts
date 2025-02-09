@@ -37,7 +37,7 @@ export interface SuanliaoOutput extends CalcZxpjResult {
   输出变量公式计算结果: Formulas;
   配件模块CAD: ZixuanpeijianMokuaiItem[];
   门扇布局CAD: ZixuanpeijianCadItem[];
-  效果图使用变量?: ObjectOf<ObjectOf<Formulas>>;
+  开料使用变量?: ObjectOf<ObjectOf<Formulas>>;
 }
 
 export interface 根据输入值计算选中配件模块无依赖的公式结果输入 {

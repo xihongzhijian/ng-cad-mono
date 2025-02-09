@@ -208,17 +208,17 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     });
     result.data.配件模块CAD = mokuais.map((v) => ({...v, cads: v.cads.map(getCadItem2)})) as any;
     result.data.门扇布局CAD = lingsans.map(getCadItem2) as any;
-    result.data.效果图使用变量 = {};
-    const 效果图使用变量 = result.data.效果图使用变量;
+    result.data.开料使用变量 = {};
+    const 开料使用变量 = result.data.开料使用变量;
     const materialResult2 = result.data.materialResult;
     for (const name of bujuNames) {
-      效果图使用变量[name] = {};
+      开料使用变量[name] = {};
       const vars = {...materialResult2, ...result.data.门扇布局大小?.[name]};
       for (const node of 型号选中门扇布局[name].模块节点 || []) {
-        效果图使用变量[name][node.层名字] = {};
+        开料使用变量[name][node.层名字] = {};
         for (const key of node.选中模块?.xiaoguotushiyongbianliang || []) {
           if (key in vars) {
-            效果图使用变量[name][node.层名字][key] = vars[key];
+            开料使用变量[name][node.层名字][key] = vars[key];
           }
         }
       }
