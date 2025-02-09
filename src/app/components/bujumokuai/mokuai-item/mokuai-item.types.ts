@@ -10,7 +10,7 @@ export interface MokuaiItem extends ZixuanpeijianTypesInfoItemBase {
   gongshishuru: string;
   xuanxiangshuru: string;
   shuchubianliang: string;
-  xiaoguotushiyongbianliang: string;
+  kailiaoshiyongbianliang: string;
   shuchuwenben: string;
   自定义数据?: MokuaiItemCustomData;
   menjiao?: string[];

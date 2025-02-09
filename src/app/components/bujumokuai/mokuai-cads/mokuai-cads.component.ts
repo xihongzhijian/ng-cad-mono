@@ -219,7 +219,7 @@ export class MokuaiCadsComponent {
       await this.message.alert("请先选择CAD");
       return null;
     }
-    const cads = indexs.map((i) => this.cads()[i]);
+    const cads = this.cads();
     return indexs.map((i) => cads[i]);
   }
   async copyCads() {

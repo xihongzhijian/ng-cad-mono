@@ -14,7 +14,7 @@ export const getEmptyMokuaiItem = (): MokuaiItem => {
     gongshishuru: "",
     xuanxiangshuru: "",
     shuchubianliang: "",
-    xiaoguotushiyongbianliang: "",
+    kailiaoshiyongbianliang: "",
     shuchuwenben: ""
   };
 };

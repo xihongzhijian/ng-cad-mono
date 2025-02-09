@@ -145,8 +145,11 @@ export class Calc {
     }
   }
 
-  public static mergeFormulas(target: Formulas, ...sources: Formulas[]) {
+  public static mergeFormulas(target: Formulas, ...sources: (Formulas | null | undefined)[]) {
     for (const source of sources) {
+      if (!isTypeOf(source, "object")) {
+        continue;
+      }
       for (const key in source) {
         const value = source[key];
         if (value === null || value === undefined) {

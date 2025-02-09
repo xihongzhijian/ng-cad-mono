@@ -4,6 +4,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {DomSanitizer} from "@angular/platform-browser";
+import {Calc} from "@app/utils/calc";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {getMokuaiTitleWithUrl, replaceMenshanName} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
@@ -16,7 +17,7 @@ import {CalcService} from "@services/calc.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {getNodeFormulasKey, getNodeFormulasKeys, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
-import {getMokuaiFormulas, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
+import {getMokuaiFormulas, getShuruzhi, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {Properties} from "csstype";
 import {NgScrollbar} from "ngx-scrollbar";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
@@ -72,13 +73,14 @@ export class XhmrmsbjMokuaisComponent {
             return 门扇名字 === key && 模块名字 === node.层名字 && v.weiyima === mokuai.weiyima;
           });
           const cads: CadData[] = [];
-          const {formulas} = getMokuaiFormulas(value, node, mokuai, materialResult);
+          const shuruzhi = getShuruzhi(value, node, mokuai);
+          const formulas = {...shuruzhi, ...getMokuaiFormulas(value, node, mokuai, materialResult).formulas};
           const formulas2 = {...output.materialResult, ...mokuaidaxiaoResult};
           if (mokuai2) {
-            Object.assign(formulas2, mokuai2.suanliaogongshi);
+            Calc.mergeFormulas(formulas2, mokuai2.suanliaogongshi);
             for (const cadItem of mokuai2.cads) {
               cads.push(new CadData(cadItem.data));
-              Object.assign(formulas2, cadItem.info.dimensionVars);
+              Calc.mergeFormulas(formulas2, cadItem.info.dimensionVars);
             }
             formulas2.门扇布局 = mokuai2.info?.门扇布局?.name || "";
           }
@@ -93,9 +95,9 @@ export class XhmrmsbjMokuaisComponent {
             formulas2[key2] = formulas2[getNodeFormulasKey(node.层名字, key2)];
           }
           replaceMenshanName(key, gongshi);
-          Object.assign(formulas, gongshi);
+          Calc.mergeFormulas(formulas, gongshi, shuruzhi);
           const gongshiResult = this.calc.calc.calcFormulas(formulas, formulas2);
-          Object.assign(formulas2, gongshiResult.succeedTrim);
+          Calc.mergeFormulas(formulas2, gongshiResult.succeedTrim);
           for (const key2 of nodeFormulasKeysRaw) {
             const key3 = getNodeFormulasKey(node.层名字, key2);
             if (key3 in formulas2) {
