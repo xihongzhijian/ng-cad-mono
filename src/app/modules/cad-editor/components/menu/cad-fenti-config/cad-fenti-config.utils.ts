@@ -31,7 +31,7 @@ export const getCadFentiInfo = (data: CadData): CadFentiInfo => {
   return {separators, rawEntities, fentiEntities};
 };
 
-export const fentiSpace = 300;
+export const fentiSpace = 150;
 
 export const addCadFentiSeparator = async (viewer: CadViewer, info?: CadFentiInfo) => {
   if (!info) {
@@ -55,8 +55,8 @@ export const setCadFentiSeparator = (line: CadLineLike, info: CadFentiInfo) => {
   line.layer = "不显示";
   line.setColor("lime");
   const rawRect = info.rawEntities.getBoundingRect();
-  line.start.set(rawRect.right + fentiSpace, rawRect.bottom - 500);
-  line.end.set(rawRect.right + fentiSpace, rawRect.top + 500);
+  line.start.set(rawRect.right + fentiSpace, rawRect.bottom - 300);
+  line.end.set(rawRect.right + fentiSpace, rawRect.top + 300);
 };
 
 export const removeCadFentiSeparator = async (viewer: CadViewer) => {
