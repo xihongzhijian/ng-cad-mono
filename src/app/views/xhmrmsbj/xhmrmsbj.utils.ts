@@ -4,7 +4,7 @@ import {ZuoshujuData} from "@app/utils/table-data/zuoshuju-data";
 import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {getNodeVars, isMokuaiItemEqual, updateMokuaiItems} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {isTypeOf, keysOf} from "@lucilor/utils";
-import {MsbjInfo} from "@views/msbj/msbj.utils";
+import {getMkdxpzSlgsFormulas, MsbjInfo} from "@views/msbj/msbj.utils";
 import {XhmrmsbjXinghaoConfig} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
 import {difference, intersection, isEmpty, mapValues} from "lodash";
 import {
@@ -166,10 +166,10 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
     return data;
   }
 
-  getCommonFormulas() {
+  getCommonFormulas(materialResult: Formulas) {
     const formulas: Formulas = {};
     for (const info of Object.values(this.menshanbujuInfos)) {
-      const slgs = {...info.选中布局数据?.模块大小配置?.算料公式};
+      const slgs = {...getMkdxpzSlgsFormulas(info.选中布局数据?.模块大小配置, materialResult).data};
       for (const node of info.模块节点 || []) {
         const vars = getNodeVars(slgs, node.层名字);
         for (const mokuai of node.可选模块) {

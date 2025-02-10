@@ -23,7 +23,7 @@
           }
           <div class="gongshi-card item">
             <div class="toolbar compact">
-              <div class="gongshi-name text long">{{ gongshi["名字"] }}</div>
+              <div class="gongshi-name text short">{{ gongshi["名字"] }}</div>
               @if (gongshiInfo().at(i)?.compact?.editOn) {
                 <button mat-button color="primary" (click)="editGongshiEnd(i, null, true)">关闭编辑</button>
               } @else {

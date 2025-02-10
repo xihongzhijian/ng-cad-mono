@@ -15,7 +15,7 @@ import {timeout} from "@lucilor/utils";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
-import {getNodeFormulasKey, getNodeFormulasKeys, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
+import {getMkdxpzSlgsFormulas, getNodeFormulasKey, getNodeFormulasKeys, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {getMokuaiFormulas, getShuruzhi, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {Properties} from "csstype";
@@ -84,7 +84,8 @@ export class XhmrmsbjMokuaisComponent {
             }
             formulas2.门扇布局 = mokuai2.info?.门扇布局?.name || "";
           }
-          const gongshi = {...value.选中布局数据?.模块大小配置?.算料公式};
+          const formulasResult = getMkdxpzSlgsFormulas(value.选中布局数据?.模块大小配置, materialResult);
+          const gongshi = {...formulasResult.data};
           const nodeNameKeys = getNodeFormulasKeys([node.层名字]);
           for (const key2 of Object.keys(gongshi)) {
             if (nodeNameKeysAll.includes(key2) && !nodeNameKeys.includes(key2)) {

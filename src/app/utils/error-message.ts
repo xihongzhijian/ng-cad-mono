@@ -73,7 +73,7 @@ export const alertError = async (message: MessageService, error: ErrorItem) => {
 
 export const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");
 
-export class ResultWithErrors<T = never, K extends ErrorDetailText = ErrorDetailText> {
+export class ResultWithErrors<T, K extends ErrorDetailText = ErrorDetailText> {
   errors: ErrorItem<K>[] = [];
   warnings: ErrorItem<K>[] = [];
 
@@ -87,7 +87,6 @@ export class ResultWithErrors<T = never, K extends ErrorDetailText = ErrorDetail
     return this.warnings.length > 0;
   }
 
-  constructor(data?: never);
   constructor(data: T);
   constructor(public data: T) {}
 
@@ -109,7 +108,7 @@ export class ResultWithErrors<T = never, K extends ErrorDetailText = ErrorDetail
     return this;
   }
 
-  async check(message: MessageService) {
+  async alertError(message: MessageService) {
     const errorToAlert: ErrorItem<K> = {content: "", details: []};
     for (const [i, error] of this.errors.entries()) {
       if (i > 0) {
@@ -120,6 +119,15 @@ export class ResultWithErrors<T = never, K extends ErrorDetailText = ErrorDetail
       errorToAlert.details.push(...error.details);
     }
     await alertError(message, errorToAlert);
+  }
+  async check(message: MessageService) {
+    await this.alertError(message);
     return this.fulfilled;
+  }
+
+  copy<R>(result: ResultWithErrors<R, K>) {
+    this.errors.push(...result.errors);
+    this.warnings.push(...result.warnings);
+    return this;
   }
 }

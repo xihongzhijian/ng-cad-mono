@@ -255,7 +255,7 @@ export class SuanliaogongshiComponent {
   async importGonshis() {
     const data = this.info().data;
     this.message.importData<算料公式[]>(null, async (gongshisAll) => {
-      const result = new ResultWithErrors();
+      const result = new ResultWithErrors(null);
       const data2 = await this.message.getImportFrom(gongshisAll, (v) => v.名字, "公式");
       if (!data2) {
         result.addErrorStr("数据为空");

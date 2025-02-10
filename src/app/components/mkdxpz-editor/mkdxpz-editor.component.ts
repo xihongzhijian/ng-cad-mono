@@ -14,7 +14,6 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
-import {Formulas} from "@app/utils/calc";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
@@ -23,6 +22,8 @@ import {输入} from "@components/lurushuju/xinghao-data";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {VarNamesComponent} from "@components/var-names/var-names.component";
 import {VarNameItem} from "@components/var-names/var-names.types";
+import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
+import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
@@ -32,7 +33,7 @@ import {getNodesTable} from "./mkdxpz-editor.utils";
 
 @Component({
   selector: "app-mkdxpz-editor",
-  imports: [FormulasEditorComponent, MatButtonModule, MatDividerModule, MsbjRectsComponent, TableComponent, VarNamesComponent],
+  imports: [MatButtonModule, MatDividerModule, MsbjRectsComponent, SuanliaogongshiComponent, TableComponent, VarNamesComponent],
   templateUrl: "./mkdxpz-editor.component.html",
   styleUrl: "./mkdxpz-editor.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -54,17 +55,24 @@ export class MkdxpzEditorComponent {
     this.data.set(cloneDeep(this.dataIn()));
   });
 
-  formulas = signal<Formulas>({});
-  formulasInEff = effect(() => {
-    this.formulas.set(this.data().dxpz?.算料公式 || {});
+  slgsInfo = signal<SuanliaogongshiInfo>({data: {}, slgs: {title: "模块大小公式（只用于模块大小计算）"}});
+  slgsInfoInEff = effect(() => {
+    const 算料公式 = this.data().dxpz?.算料公式2;
+    if (Array.isArray(算料公式)) {
+      this.slgsInfo.update((v) => ({...v, data: {算料公式}}));
+    }
   });
-  formulasOutEff = effect(() => {
-    this.data.update((data) => {
-      if (data.dxpz) {
-        data.dxpz = {...data.dxpz, 算料公式: this.formulas()};
-      }
-      return data;
-    });
+  slgsInfoOutEff = effect(() => {
+    const slgsInfo = this.slgsInfo();
+    if (slgsInfo) {
+      this.data.update((data) => {
+        const dxpz = data.dxpz;
+        if (dxpz) {
+          dxpz.算料公式2 = slgsInfo.data.算料公式;
+        }
+        return data;
+      });
+    }
   });
 
   nodesTable = computed(() => {

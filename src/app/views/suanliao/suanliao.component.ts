@@ -28,7 +28,7 @@ import {MessageData} from "@modules/message/components/message/message.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
-import {MsbjInfo} from "@views/msbj/msbj.utils";
+import {getMkdxpzSlgsFormulas, MsbjInfo} from "@views/msbj/msbj.utils";
 import {XhmrmsbjDataMsbjInfos, XhmrmsbjTableData} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {getMokuaiFormulas, getMokuaiShuchuVars, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {
@@ -119,7 +119,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       const {选中布局数据, 模块节点, 模块大小输出} = msbjInfo;
       const {模块大小配置} = 选中布局数据 || {};
       if (模块大小配置) {
-        mokuaiGongshis[门扇] = {...模块大小配置.算料公式};
+        mokuaiGongshis[门扇] = {...getMkdxpzSlgsFormulas(模块大小配置, materialResult).data};
       } else {
         mokuaiGongshis[门扇] = {};
       }

@@ -826,7 +826,7 @@ export class XhmrmsbjSbjbComponent {
 
   async importItemCads() {
     await this.message.importData<XhmrmsbjSbjbItemSbjbCadsData>(false, async (data) => {
-      const result = new ResultWithErrors();
+      const result = new ResultWithErrors(null);
       const item = this.activeItem();
       const item2 = this.activeSbjbItem();
       if (!item || !item2) {

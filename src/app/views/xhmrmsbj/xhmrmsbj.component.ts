@@ -44,7 +44,6 @@ import {
   getMokuaiTitle,
   getMokuaiTitleWithUrl,
   getMsbjInfoTitle,
-  getNodeVars,
   getStep1Data,
   isMokuaiItemEqual,
   justifyMokuaiItem,
@@ -76,7 +75,14 @@ import {MrbcjfzInfo, MrbcjfzXinghao} from "@views/mrbcjfz/mrbcjfz.types";
 import {isMrbcjfzInfoEmpty1, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MsbjComponent} from "@views/msbj/msbj.component";
 import {MsbjCloseEvent, MsbjData, Node2rectData, node2rectDataMsdxKeys} from "@views/msbj/msbj.types";
-import {getEmpty模块大小配置, getNodeFormulasKeys, justify模块大小配置, MsbjInfo} from "@views/msbj/msbj.utils";
+import {
+  getEmpty模块大小配置,
+  getMkdxpzSlgs,
+  getMkdxpzSlgsFormulas,
+  getNodeFormulasKeys,
+  justifyMkdxpz,
+  MsbjInfo
+} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
 import {resetInputs} from "@views/suanliao/suanliao.utils";
 import {openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
@@ -194,7 +200,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   mokuaiTemplateType!: {$implicit: ZixuanpeijianMokuaiItem};
   menshanKeys: MenshanKey[] = menshanKeys.slice();
-  materialResult = signal<Formulas>({});
   wmm = new WindowMessageManager("门扇模块", this, window.parent);
   suanliaoLock$ = new BehaviorSubject(false);
   genXiaoguotuLock$ = new BehaviorSubject(false);
@@ -323,7 +328,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.msbjs()
     );
     this.data.set(data2);
-    this.materialResult.set(materialResult);
     this.id.set(id);
     this.user.set(user);
     this.opts.set(data.opts);
@@ -867,23 +871,22 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!data || !msbjInfo || !mokuai) {
       return infos;
     }
+    const materialResult = this.materialResult();
     const inputs = this.mokuaiInputInfosInput();
     const names = (mokuai.自定义数据?.下单显示.split("+") || []).filter((v) => !inputs.some((v2) => v2.label === v));
     const formulas: Formulas = {};
-    Object.assign(data.getCommonFormulas());
-    Object.assign(formulas, getNodeVars(msbjInfo.选中布局数据?.模块大小配置?.算料公式 || {}, node.层名字));
+    Object.assign(data.getCommonFormulas(materialResult));
     Object.assign(formulas, getMokuaiFormulas(msbjInfo, node, mokuai, null).formulas);
     replaceMenshanName(this.activeMenshanKey(), formulas);
-    const vars = this.lastSuanliaoManager.data()?.output.materialResult || {};
     try {
-      const res = this.calc.calc.calcFormulas(formulas, vars);
-      Object.assign(vars, res.succeedTrim);
+      const res = this.calc.calc.calcFormulas(formulas, materialResult);
+      Object.assign(materialResult, res.succeedTrim);
     } catch {}
     for (const name of names) {
       if (!name) {
         continue;
       }
-      infos.push({type: "string", label: name, readonly: true, value: getValueString(vars[name])});
+      infos.push({type: "string", label: name, readonly: true, value: getValueString(materialResult[name])});
     }
     return infos;
   });
@@ -1033,10 +1036,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         msbjInfos.push({menshanKey, msbjInfo});
       }
     }
+    const materialResult = this.materialResult();
     for (const [i, {menshanKey, msbjInfo}] of msbjInfos.entries()) {
       const errorXuanzhongNodeNames: string[] = [];
       if (msbjInfo.选中布局数据 && isVersion2024) {
-        const formulas = msbjInfo.选中布局数据.模块大小配置?.算料公式 || {};
+        const formulas = getMkdxpzSlgsFormulas(msbjInfo.选中布局数据.模块大小配置, materialResult).data;
         const formulasKeys = getNodeFormulasKeys(msbjInfo.模块节点?.map((v) => v.层名字) || []);
         if (!formulasKeys.every((key) => !!formulas[key])) {
           errorMkdxpz.details.push([{text: menshanKey, jumpTo: {门扇名字: menshanKey, mkdx: true}}]);
@@ -1621,6 +1625,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.wmm.postMessage("getLastSuanliaoStart");
     return await this.wmm.waitForMessage<LastSuanliao | null>("getLastSuanliaoEnd");
   });
+  materialResult = computed(() => this.lastSuanliaoManager.data()?.output.materialResult || {});
 
   getOrderData() {
     const data = this.data();
@@ -1865,7 +1870,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const dxpz = 选中布局数据.模块大小配置 || getEmpty模块大小配置();
     const nodes = msbjInfo.模块节点 || [];
-    justify模块大小配置(dxpz, nodes.map((v) => v.层名字) || []);
+    justifyMkdxpz(dxpz, nodes.map((v) => v.层名字) || []);
     const rectInfos = this.rectInfos();
     const data: MkdxpzEditorData = {dxpz, nodes, rectInfos};
     const title = `【${activeKey}】模块大小配置`;
@@ -1904,7 +1909,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const {materialResult = {}, 门扇布局大小, 配件模块CAD} = this.lastSuanliaoManager.data()?.output || {};
     const infos: FormulaInfo[] = [];
-    const formulas = {...mkdxpz.算料公式};
+    const formulasResult = getMkdxpzSlgsFormulas(mkdxpz, materialResult);
+    if (!formulasResult.fulfilled) {
+      formulasResult.alertError(this.message);
+      return [];
+    }
+    const formulas = {...formulasResult.data};
     replaceMenshanName(key, formulas);
     const mokuai2 = 配件模块CAD?.find((v) => v.id === mokuai.id);
     const vars = {...materialResult, ...门扇布局大小?.[key], ...mokuai2?.suanliaogongshi};
@@ -1919,7 +1929,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!mkdxpz) {
       return;
     }
-    mkdxpz.算料公式 = formulas;
+    const materialResult = this.materialResult();
+    const mkdxpzSlgsResult = getMkdxpzSlgs(mkdxpz, materialResult);
+    if (!(await mkdxpzSlgsResult.check(this.message)) || !mkdxpzSlgsResult.data) {
+      return;
+    }
+    mkdxpzSlgsResult.data.公式 = formulas;
     this.wmm.postMessage("setMkdxpzStart", {mkdxpz, menshan: this.activeMenshanKey()});
     await this.wmm.waitForMessage("setMkdxpzEnd");
     this.wmm.postMessage("requestDataStart");

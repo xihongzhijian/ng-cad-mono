@@ -1,5 +1,5 @@
 import {Formulas} from "@app/utils/calc";
-import {输入} from "@components/lurushuju/xinghao-data";
+import {算料公式, 输入} from "@components/lurushuju/xinghao-data";
 import {ObjectOf, Rectangle} from "@lucilor/utils";
 import {Properties} from "csstype";
 import {uniqueId} from "lodash";
@@ -29,7 +29,9 @@ export interface MsbjPeizhishuju {
 }
 export type GongshiObj = ObjectOf<any>;
 export interface 模块大小配置 {
-  算料公式: Formulas;
+  /** @deprecated */
+  算料公式?: Formulas;
+  算料公式2?: 算料公式[];
   输入显示: 输入[];
 }
 
