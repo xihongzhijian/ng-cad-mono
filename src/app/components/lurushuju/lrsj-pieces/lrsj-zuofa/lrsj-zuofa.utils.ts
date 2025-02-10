@@ -27,7 +27,7 @@ export const getXuanxiangTable = (
         field: "可选项",
         style: {flex: "1 1 200px"},
         getString: (item) => {
-          return item.可选项.map((v) => v.mingzi).join("*");
+          return item.可选项.map((v) => v.mingzi).join(";");
         }
       },
       {type: "boolean", field: "输出变量", style: {flex: "1 1 80px"}, hidden: !use输出变量},

@@ -389,7 +389,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     if (multiple && info.optionsDialog) {
       info.value = splitOptions(data[key2]);
       info.optionsDialog.onChange = (val) => {
-        data[key2] = joinOptions(val.options, "*");
+        data[key2] = joinOptions(val.options);
       };
     } else {
       info.model = {data, key: key2};
