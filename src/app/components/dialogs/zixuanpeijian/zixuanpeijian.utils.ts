@@ -415,9 +415,8 @@ export const calcZxpj = async (
   const dimensionNamesMap: ObjectOf<{item: ZixuanpeijianCadItem}[]> = {};
   const varsGlobal: Formulas = {};
   const tongyongGongshiCalcResult = await calc.calcFormulas(tongyongGongshi, materialResult);
-  const gongshiCalcResult = await calc.calcFormulas(gongshi, materialResult);
   calc.calc.mergeFormulas(materialResult, tongyongGongshiCalcResult?.succeedTrim || {});
-  calc.calc.mergeFormulas(materialResult, gongshiCalcResult?.succeedTrim || {});
+  calc.calc.mergeFormulas(materialResult, gongshi);
   calc.calc.mergeFormulas(materialResult, inputResult);
 
   const gongshiKeys = Object.keys(gongshi);
