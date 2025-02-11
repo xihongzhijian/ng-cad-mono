@@ -28,10 +28,10 @@ export class EditFormulasDialogComponent {
       return;
     }
     const result = await formulasEditor.submitFormulas();
-    if (result.errors.length > 0) {
+    if (!result.fulfilled) {
       return;
     }
-    this.dialogRef.close(result.formulas);
+    this.dialogRef.close(result.data);
   }
 
   cancel() {

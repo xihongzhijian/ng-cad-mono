@@ -23,24 +23,23 @@ export class CalcService {
       }
       return result;
     } catch (error) {
-      await this._alert(false, error, errorMsg);
+      await this._alert(error, errorMsg);
       return null;
     }
   }
 
   async calcFormulasPre(formulas: Formulas, errorMsg?: CalcCustomErrorMsg) {
-    const result = {error: null as any};
+    const result = {error: ""};
     try {
       Calc.calcFormulas(formulas);
     } catch (error) {
-      await this._alert(true, error, errorMsg);
-      result.error = error;
+      result.error = await this._alert(error, errorMsg);
     }
     return result;
   }
 
-  private async _alert(pre: boolean, error: any, errorMsg?: CalcCustomErrorMsg) {
-    let err: Parameters<typeof this.message.error>[0] = "";
+  private async _alert(error: any, errorMsg?: CalcCustomErrorMsg) {
+    let err: string = "";
     if (error instanceof CalcSelfReferenceError) {
       err = error.message + "<br><br>";
       err += `${error.varName}<span style='color:red'> => </span>${error.varValue}`;
@@ -49,14 +48,12 @@ export class CalcService {
       err += `${error.varName1}<span style='color:red'> => </span>${error.varValue1}<br>`;
       err += `${error.varName2}<span style='color:red'> => </span>${error.varValue2}`;
     } else {
-      if (!pre) {
-        err = {content: error};
-      }
       console.error(error);
     }
     if (errorMsg) {
       await this.message.error(err);
     }
+    return err;
   }
 
   async calcExpression(expression: string, vars: Formulas & {input?: Formulas} = {}, errorMsg?: CalcCustomErrorMsg) {

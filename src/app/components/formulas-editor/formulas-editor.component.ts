@@ -12,8 +12,7 @@ import {
   input,
   model,
   signal,
-  viewChild,
-  viewChildren
+  viewChild
 } from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -22,6 +21,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {replaceChars, setGlobal} from "@app/app.common";
 import {CalcResult, Formulas} from "@app/utils/calc";
+import {ResultWithErrors} from "@app/utils/error-message";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasComponent} from "@components/formulas/formulas.component";
 import {FormulaInfo} from "@components/formulas/formulas.types";
@@ -34,7 +34,7 @@ import {CalcService} from "@services/calc.service";
 import {isEmpty} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../modules/input/components/input.component";
-import {FormulasChangeEvent, FormulasCompactConfig, FormulasValidatorFn} from "./formulas-editor.types";
+import {FormulasCompactConfig, FormulasValidatorFn} from "./formulas-editor.types";
 
 @Component({
   selector: "app-formulas-editor",
@@ -111,28 +111,22 @@ export class FormulasEditorComponent {
   }
   formulasInputInfo = computed(() => {
     const compact = this.compact();
+    const errors = this.submitResult().getValidationErrors();
     const info: InputInfo = {
       type: "string",
       label: "",
       textarea: {autosize: {minRows: compact?.minRows, maxRows: compact?.maxRows}},
       value: this.formulasText(),
       autoFocus: !!compact,
-      validators: (control) => {
-        const validator = this.validator();
-        if (validator) {
-          const val = control.value;
-          const formulaList = this.parseFormulasText(val) || [];
-          return validator(formulaList);
-        }
-        return null;
-      },
+      validators: () => errors,
       onChange: (val) => {
         this.formulasText.set(val);
         if (compact) {
-          const list = this.parseFormulasText();
-          if (list) {
-            this.parseFormulaList(list);
+          const result = this.parseFormulasText();
+          if (result.data) {
+            this.parseFormulaList(result.data);
           }
+          this.submitFormulas();
         }
       }
     };
@@ -146,6 +140,7 @@ export class FormulasEditorComponent {
     console.log(result);
   }
 
+  parseFormulasTextResult = signal(new ResultWithErrors<string[][] | null>(null));
   parseFormulasText(text = this.formulasText()) {
     const list = text
       .split(/；|;|\n/)
@@ -170,22 +165,21 @@ export class FormulasEditorComponent {
       .filter((v) => v);
     this.justifyFormulas(list);
 
-    const errorMsgs: string[] = [];
+    const result = new ResultWithErrors<string[][] | null>(null);
     const list2: typeof list = [];
     for (const arr of list) {
-      const errors = this.validateVarName(arr[0], list);
-      if (isEmpty(errors)) {
+      const errors2 = this.validateVarName(arr[0], list);
+      if (isEmpty(errors2)) {
         list2.push(arr);
       } else {
-        errorMsgs.push(`公式 ${arr[0]} = ${arr[1]} 有错：${Object.keys(errors).join(", ")}`);
+        result.addErrorStr(`公式 ${arr[0]} = ${arr[1]} 有错：${Object.keys(errors2).join(", ")}`);
       }
     }
-    if (errorMsgs.length > 0) {
-      this.message.error(errorMsgs.join("<br>"));
-      return null;
-    } else {
-      return list2;
+    if (result.fulfilled) {
+      result.data = list2;
     }
+    this.parseFormulasTextResult.set(result);
+    return result;
   }
   parseFormulaList(list: string[][]) {
     const formulas: Formulas = {};
@@ -202,10 +196,11 @@ export class FormulasEditorComponent {
   }
 
   addFormulas() {
-    const list = this.parseFormulasText();
-    if (list) {
-      this.parseFormulaList(this.formulaList().concat(list));
+    const result = this.parseFormulasText();
+    if (result.data) {
+      this.parseFormulaList(this.formulaList().concat(result.data));
     }
+    this.submitFormulas();
   }
 
   validateVarName(varName: string, formulaList: string[][]): ValidationErrors | null {
@@ -233,40 +228,33 @@ export class FormulasEditorComponent {
     }
   }
 
-  inputs = viewChildren(forwardRef(() => InputComponent));
-  async validate(formulaList = this.formulaList(), silent?: boolean) {
-    const errorsSet = new Set<string>();
+  submitResult = signal(new ResultWithErrors<Formulas>({}));
+  async submitFormulas(formulaList = this.formulaList(), silent?: boolean) {
+    const result = new ResultWithErrors<Formulas>({});
     const validator = this.validator();
     if (validator) {
       const errors = validator(formulaList);
       for (const key in errors) {
-        errorsSet.add(key);
+        result.addErrorStr(key);
       }
     }
-    this.justifyFormulas(formulaList);
-    const inputs = this.inputs();
-    for (const input of inputs) {
-      const errors2 = input.validateValue();
-      for (const key in errors2) {
-        errorsSet.add(key);
+    const parseFormulasTextResult = this.parseFormulasTextResult();
+    if (!parseFormulasTextResult.fulfilled) {
+      result.learnFrom(parseFormulasTextResult);
+    } else {
+      this.justifyFormulas(formulaList);
+      const calcPreResult = await this.calc.calcFormulasPre(this.formulas() || {});
+      if (calcPreResult.error) {
+        result.addErrorStr("<br>" + calcPreResult.error);
       }
     }
-    const errors = Array.from(errorsSet);
-    const calcPreResult = await this.calc.calcFormulasPre(this.formulas() || {}, silent ? undefined : {});
-    if (calcPreResult.error) {
-      errors.push("计算有误");
+    if (!silent) {
+      await result.alertError(this.message);
     }
-    if (!silent && errors.length > 0 && !calcPreResult.error) {
-      await this.message.error(errors.join("<br>"));
-    }
-    return errors;
-  }
-  async submitFormulas(formulaList = this.formulaList(), silent?: boolean) {
-    const errors = await this.validate(formulaList, silent);
-    const result: FormulasChangeEvent = {formulas: {}, errors};
     for (const arr of formulaList) {
-      result.formulas[arr[0]] = arr[1];
+      result.data[arr[0]] = arr[1];
     }
+    this.submitResult.set(result);
     return result;
   }
 
@@ -293,15 +281,21 @@ export class FormulasEditorComponent {
   testResult = signal<CalcResult | null>(null);
   testResultEl = viewChild<ElementRef<HTMLElement>>("testResultEl");
   async test(parseText: boolean) {
-    const list = parseText ? this.parseFormulasText() : this.formulaList();
-    if (!list) {
-      return;
+    let list: string[][];
+    if (parseText) {
+      const parseFormulasTextResult = this.parseFormulasText();
+      if (!parseFormulasTextResult.data) {
+        return;
+      }
+      list = parseFormulasTextResult.data;
+    } else {
+      list = this.formulaList();
     }
     const submitResult = await this.submitFormulas(list);
     if (submitResult.errors.length > 0) {
       return;
     }
-    const result = await this.calc.calcFormulas(submitResult.formulas, this.vars());
+    const result = await this.calc.calcFormulas(submitResult.data, this.vars());
     if (result) {
       this.testResult.set(result);
       await timeout(200);

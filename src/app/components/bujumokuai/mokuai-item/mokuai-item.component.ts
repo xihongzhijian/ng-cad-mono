@@ -561,10 +561,10 @@ export class MokuaiItemComponent {
     const slgsComponent = this.slgsComponent();
     if (slgsComponent) {
       const formulasResult = await slgsComponent.submitFormulas(slgsComponent.formulaList(), true);
-      if (formulasResult.errors.length > 0) {
-        error.details.push(...formulasResult.errors.map<ErrorDetail>((v) => [{text: `模块公式：${v}`}]));
+      if (formulasResult.fulfilled) {
+        mokuai.suanliaogongshi = formulasResult.data;
       } else {
-        mokuai.suanliaogongshi = formulasResult.formulas;
+        error.details.push(...formulasResult.errors.map<ErrorDetail>((v) => [{text: `模块公式：${v}`}]));
       }
     }
 

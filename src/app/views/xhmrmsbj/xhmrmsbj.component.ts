@@ -79,6 +79,7 @@ import {
   getEmpty模块大小配置,
   getMkdxpzSlgs,
   getMkdxpzSlgsFormulas,
+  getMkdxpzSlgsFormulasList,
   getNodeFormulasKeys,
   justifyMkdxpz,
   MsbjInfo
@@ -1036,13 +1037,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         msbjInfos.push({menshanKey, msbjInfo});
       }
     }
-    const materialResult = this.materialResult();
     for (const [i, {menshanKey, msbjInfo}] of msbjInfos.entries()) {
       const errorXuanzhongNodeNames: string[] = [];
       if (msbjInfo.选中布局数据 && isVersion2024) {
-        const formulas = getMkdxpzSlgsFormulas(msbjInfo.选中布局数据.模块大小配置, materialResult).data;
+        const formulasList = getMkdxpzSlgsFormulasList(msbjInfo.选中布局数据.模块大小配置);
         const formulasKeys = getNodeFormulasKeys(msbjInfo.模块节点?.map((v) => v.层名字) || []);
-        if (!formulasKeys.every((key) => !!formulas[key])) {
+        if (!formulasKeys.every((key) => formulasList.every((v) => !!v[key]))) {
           errorMkdxpz.details.push([{text: menshanKey, jumpTo: {门扇名字: menshanKey, mkdx: true}}]);
         }
       }

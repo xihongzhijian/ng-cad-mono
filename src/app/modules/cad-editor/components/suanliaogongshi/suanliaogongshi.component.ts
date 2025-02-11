@@ -10,7 +10,8 @@ import {
   input,
   model,
   output,
-  signal
+  signal,
+  viewChildren
 } from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -25,7 +26,7 @@ import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
-import {FormulasCompactConfig} from "@components/formulas-editor/formulas-editor.types";
+import {FormulasCompactConfig, FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {TextInfoComponent} from "@components/text-info/text-info.component";
 import {TextInfo} from "@components/text-info/text-info.types";
@@ -74,10 +75,16 @@ export class SuanliaogongshiComponent {
   closeOut = output<SuanliaogongshiCloseEvent>({alias: "close"});
   slgsChange = output();
 
-  gongshiInfo = signal<{formulas: Formulas; compact: FormulasCompactConfig}[]>([]);
+  gongshiInfo = signal<{formulas: Formulas; compact: FormulasCompactConfig; validator?: FormulasValidatorFn}[]>([]);
   gongshiInfoEff = effect(() => {
     const info = this.info();
-    this.gongshiInfo.set((info.data.算料公式 || []).map((v) => ({formulas: v.公式, compact: {minRows: 5, editOn: true, noToolbar: true}})));
+    this.gongshiInfo.set(
+      (info.data.算料公式 || []).map((v) => ({
+        formulas: v.公式,
+        compact: {minRows: 5, editOn: true, noToolbar: true},
+        validator: info.slgs?.validator
+      }))
+    );
   });
 
   title = computed(() => this.info().slgs?.title || "算料公式");
@@ -155,7 +162,7 @@ export class SuanliaogongshiComponent {
     return null;
   }
   justifyGongshi(item: 算料公式) {
-    this.info().justifyGongshi?.(item);
+    this.info().slgs?.justify?.(item);
   }
   async addGongshi() {
     const info = this.info();
@@ -165,6 +172,7 @@ export class SuanliaogongshiComponent {
     }
     const item = await this.getGongshiItem();
     if (item) {
+      this.justifyGongshi(item);
       const length = data.算料公式.push(item);
       setTimeout(() => {
         this.editGongshiStart(length - 1);
@@ -226,16 +234,24 @@ export class SuanliaogongshiComponent {
   }
   editGongshiEnd(index: number, formulas: Formulas | null | undefined, close = false) {
     const info = this.info();
-    if (formulas && info.data.算料公式) {
-      info.data.算料公式[index].公式 = formulas;
+    const slgs = info.data.算料公式?.[index];
+    const gongshiInfo = this.gongshiInfo()[index];
+    let gongshiInfoChanged = false;
+    if (formulas && slgs) {
+      slgs.公式 = formulas;
+      this.justifyGongshi(slgs);
       this.slgsChange.emit();
+      gongshiInfo.formulas = formulas;
+      gongshiInfoChanged = true;
     }
     if (close) {
-      const gongshiInfo = this.gongshiInfo()[index];
       if (gongshiInfo) {
         gongshiInfo.compact = {...gongshiInfo.compact, editOn: false};
-        this.gongshiInfo.update((v) => [...v]);
+        gongshiInfoChanged = true;
       }
+    }
+    if (gongshiInfoChanged) {
+      this.info.update((v) => ({...v}));
     }
   }
   onFormulaCompactChange(index: number, compact: FormulasCompactConfig | undefined) {
@@ -402,7 +418,21 @@ export class SuanliaogongshiComponent {
     return infos;
   });
 
-  close(submit = false) {
+  formulasEditors = viewChildren(FormulasEditorComponent);
+  async submit() {
+    const result = new ResultWithErrors(null);
+    const editors = this.formulasEditors();
+    for (const editor of editors) {
+      const result2 = await editor.submitFormulas(editor.formulaList(), true);
+      result.learnFrom(result2);
+    }
+    await result.alertError(this.message);
+    return result;
+  }
+  async close(submit = false) {
+    if (submit && !(await this.submit()).fulfilled) {
+      return;
+    }
     this.closeOut.emit({submit});
   }
 }

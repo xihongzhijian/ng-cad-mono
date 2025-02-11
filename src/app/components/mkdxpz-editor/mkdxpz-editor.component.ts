@@ -14,7 +14,6 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
-import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {getShuruItem, getShuruTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
@@ -27,6 +26,7 @@ import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongsh
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {justifyMkdxpzSlgs} from "@views/msbj/msbj.utils";
 import {cloneDeep} from "lodash";
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "./mkdxpz-editor.types";
 import {getNodesTable} from "./mkdxpz-editor.utils";
@@ -54,8 +54,21 @@ export class MkdxpzEditorComponent {
   dataEff = effect(() => {
     this.data.set(cloneDeep(this.dataIn()));
   });
+  nodeNames = computed(() => this.data().nodes?.map((v) => v.层名字) || []);
 
-  slgsInfo = signal<SuanliaogongshiInfo>({data: {}, slgs: {title: "模块大小公式（只用于模块大小计算）"}});
+  slgsInfo = signal<SuanliaogongshiInfo>({
+    data: {},
+    slgs: {
+      title: "模块大小公式（只用于模块大小计算）",
+      justify: (item) => justifyMkdxpzSlgs(item, this.nodeNames()),
+      validator: (formulasList) => {
+        if (formulasList.some((v) => !v[1])) {
+          return {模块大小公式不完整: true};
+        }
+        return null;
+      }
+    }
+  });
   slgsInfoInEff = effect(() => {
     const 算料公式 = this.data().dxpz?.算料公式2;
     if (Array.isArray(算料公式)) {
@@ -138,14 +151,13 @@ export class MkdxpzEditorComponent {
     }
   }
 
-  formulasEditor = viewChild(FormulasEditorComponent);
-  async validate() {
-    const errors = await this.formulasEditor()?.validate();
-    return !errors || errors.length < 1;
+  slgsComponent = viewChild.required(SuanliaogongshiComponent);
+  async submit() {
+    return await this.slgsComponent().submit();
   }
 
   async close(submit = false) {
-    if (submit && !(await this.validate())) {
+    if (submit && !(await this.submit()).fulfilled) {
       return;
     }
     const data = submit ? this.data() : null;

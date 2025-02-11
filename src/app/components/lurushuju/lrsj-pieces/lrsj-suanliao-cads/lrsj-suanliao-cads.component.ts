@@ -130,11 +130,13 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
           输入数据: data.输入数据
         },
         varNames: this.lrsjStatus.varNames(),
-        justifyGongshi: (item) => {
-          if (item.选项) {
-            const removeKeys = ["产品分类", "包边方向", "开启"];
-            for (const key of removeKeys) {
-              delete item.选项[key];
+        slgs: {
+          justify: (item) => {
+            if (item.选项) {
+              const removeKeys = ["产品分类", "包边方向", "开启"];
+              for (const key of removeKeys) {
+                delete item.选项[key];
+              }
             }
           }
         }

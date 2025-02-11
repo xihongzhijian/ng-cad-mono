@@ -1,3 +1,4 @@
+import {ValidationErrors} from "@angular/forms";
 import {MessageService} from "@modules/message/services/message.service";
 import {intersection} from "lodash";
 
@@ -43,26 +44,29 @@ export const checkDuplicateVars = (
   return null;
 };
 
+export const getErrorDetailStr = (detail: ErrorDetail) => {
+  let str = "";
+  for (const {text, br, color, hiddenWhenAlert} of detail) {
+    if (br) {
+      str += "<br>";
+    } else if (text && !hiddenWhenAlert) {
+      if (color) {
+        const span = document.createElement("span");
+        span.style.color = color;
+        span.textContent = text;
+        str += span.outerHTML;
+      } else {
+        str += text;
+      }
+    }
+  }
+  return str;
+};
 export const alertError = async (message: MessageService, error: ErrorItem) => {
   const {content, details} = error;
   const details2: string[] = [];
   for (const detail of details) {
-    let str = "";
-    for (const {text, br, color, hiddenWhenAlert} of detail) {
-      if (br) {
-        str += "<br>";
-      } else if (text && !hiddenWhenAlert) {
-        if (color) {
-          const span = document.createElement("span");
-          span.style.color = color;
-          span.textContent = text;
-          str += span.outerHTML;
-        } else {
-          str += text;
-        }
-      }
-    }
-    details2.push(str);
+    details2.push(getErrorDetailStr(detail));
   }
   if (content.length > 0 || details2.length > 0) {
     await message.error({content, details: details2});
@@ -108,7 +112,7 @@ export class ResultWithErrors<T, K extends ErrorDetailText = ErrorDetailText> {
     return this;
   }
 
-  async alertError(message: MessageService) {
+  getErrorToAlert() {
     const errorToAlert: ErrorItem<K> = {content: "", details: []};
     for (const [i, error] of this.errors.entries()) {
       if (i > 0) {
@@ -118,14 +122,31 @@ export class ResultWithErrors<T, K extends ErrorDetailText = ErrorDetailText> {
       }
       errorToAlert.details.push(...error.details);
     }
-    await alertError(message, errorToAlert);
+    return errorToAlert;
+  }
+  getValidationErrors() {
+    const errorToAlert = this.getErrorToAlert();
+    let strList: string[];
+    if (errorToAlert.content) {
+      strList = errorToAlert.content.split("<br>");
+    } else {
+      strList = errorToAlert.details.map((v) => getErrorDetailStr(v));
+    }
+    const errors: ValidationErrors = {};
+    for (const str of strList) {
+      errors[str] = true;
+    }
+    return errors;
+  }
+  async alertError(message: MessageService) {
+    await alertError(message, this.getErrorToAlert());
   }
   async check(message: MessageService) {
     await this.alertError(message);
     return this.fulfilled;
   }
 
-  copy<R>(result: ResultWithErrors<R, K>) {
+  learnFrom<R>(result: ResultWithErrors<R, K>) {
     this.errors.push(...result.errors);
     this.warnings.push(...result.warnings);
     return this;

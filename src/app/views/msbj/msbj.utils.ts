@@ -83,6 +83,14 @@ export const getNodeFormulasKeys = (nodeNames: string[]) => {
 };
 
 /* eslint-disable @typescript-eslint/no-deprecated */
+export const justifyMkdxpzSlgs = (slgs: 算料公式, nodeNames: string[]) => {
+  const formulas = slgs.公式;
+  slgs.公式 = {};
+  nodeNames.sort();
+  for (const name of getNodeFormulasKeys(nodeNames)) {
+    slgs.公式[name] = formulas[name] || "";
+  }
+};
 export const justifyMkdxpz = (dxpz: 模块大小配置, nodeNames: string[]) => {
   const getSlgs = (公式: Formulas) => ({_id: v4(), 名字: "默认公式", 条件: [], 选项: {}, 公式});
   if (!Array.isArray(dxpz.算料公式2)) {
@@ -96,12 +104,7 @@ export const justifyMkdxpz = (dxpz: 模块大小配置, nodeNames: string[]) => 
   }
   delete dxpz.算料公式;
   for (const slgs of dxpz.算料公式2) {
-    const formulas = slgs.公式;
-    slgs.公式 = {};
-    nodeNames.sort();
-    for (const name of getNodeFormulasKeys(nodeNames)) {
-      slgs.公式[name] = formulas[name] || "";
-    }
+    justifyMkdxpzSlgs(slgs, nodeNames);
   }
 };
 export const getMkdxpzSlgs = (mkdxpz: 模块大小配置 | null | undefined, materialResult: Formulas) => {
@@ -123,11 +126,26 @@ export const getMkdxpzSlgsFormulas = (mkdxpz: 模块大小配置 | null | undefi
   const result = new ResultWithErrors<Formulas>(mkdxpz?.算料公式 ?? {});
   const result2 = getMkdxpzSlgs(mkdxpz, materialResult);
   if (!result2.fulfilled) {
-    return result.copy(result2);
+    return result.learnFrom(result2);
   }
   if (result2.data) {
     result.data = result2.data.公式;
   }
   return result;
+};
+export const getMkdxpzSlgsFormulasList = (mkdxpz: 模块大小配置 | null | undefined) => {
+  const list: Formulas[] = [];
+  if (!mkdxpz) {
+    return list;
+  }
+  if (mkdxpz.算料公式) {
+    list.push(mkdxpz.算料公式);
+  }
+  if (Array.isArray(mkdxpz.算料公式2)) {
+    for (const slgs of mkdxpz.算料公式2) {
+      list.push(slgs.公式);
+    }
+  }
+  return list;
 };
 /* eslint-enable @typescript-eslint/no-deprecated */
