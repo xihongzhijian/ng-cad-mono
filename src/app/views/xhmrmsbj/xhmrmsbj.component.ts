@@ -30,6 +30,7 @@ import {alertError, checkDuplicateVars, ErrorItem, getNamesDetail} from "@app/ut
 import {FetchManager} from "@app/utils/fetch-manager";
 import {getValueString} from "@app/utils/get-value";
 import {canItemMatchTogether, matchMongoData} from "@app/utils/mongo";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
 import {MokuaiItem, MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
@@ -67,6 +68,7 @@ import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.mod
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -222,6 +224,10 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.wmm.destroy();
   }
 
+  getXhmrmsbjData(raw: XhmrmsbjTableData | null | undefined) {
+    return raw ? new XhmrmsbjData(raw, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null;
+  }
+
   async refresh() {
     const params = this.route.snapshot.queryParams;
     const {token} = params;
@@ -260,7 +266,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.setStep1Data(step1Data);
       await this.bjmkStatus.msbjsManager.fetch();
       const tableData = this.tableData();
-      const data = tableData ? new XhmrmsbjData(tableData, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null;
+      const data = this.getXhmrmsbjData(tableData);
       this.data.set(data);
       xinghao = await getXinghao(tableData?.xinghao || "");
       this.xinghao.set(xinghao ? new MrbcjfzXinghaoInfo(table, xinghao) : null);
@@ -1134,7 +1140,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                 }
                 if (menshanKey !== menshanKey2 || node.层名字 !== node2.层名字) {
                   const dupVars1 = intersection(scbl1, scbl2);
-                  dupVars1.push("aaa");
                   const getDetailPart = (
                     key0: MenshanKey,
                     node0: XhmrmsbjInfoMokuaiNode,
@@ -1472,18 +1477,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     this.spinner.show(this.spinner.defaultLoaderId, {text: "获取模块大小配置"});
-    const records = await this.http.queryMySql<XhmrmsbjTableData>(
-      {
-        table: "p_xinghaomorenmenshanbuju",
-        filter: {where: {vid: this.id()}}
-      },
-      {spinner: false}
-    );
+    const records = await this.http.queryMySql<XhmrmsbjTableData>({table, filter: {where: {vid: this.id()}}}, {spinner: false});
     if (records[0]) {
-      const data2 = new XhmrmsbjData(records[0], this.menshanKeys, this.step1Data.typesInfo, this.msbjs());
+      const data2 = this.getXhmrmsbjData(records[0]);
       for (const menshanKey of this.menshanKeys) {
         const msbjInfo1 = data.menshanbujuInfos[menshanKey];
-        const msbjInfo2 = data2.menshanbujuInfos[menshanKey];
+        const msbjInfo2 = data2?.menshanbujuInfos[menshanKey];
         if (!msbjInfo1 || !msbjInfo2) {
           continue;
         }
@@ -1950,9 +1949,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.status.openInNewTab(["/型号默认门扇布局"], {queryParams: {id: data.id}});
   }
 
-  menshanbujuItems = computed(() => {
+  getMenshanbujuItems(data: XhmrmsbjData | null) {
     const items: {key: MenshanKey; info: XhmrmsbjInfo}[] = [];
-    const data = this.data();
     if (!data) {
       return items;
     }
@@ -1968,23 +1966,47 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       items.push({key, info});
     }
     return items;
-  });
+  }
+  menshanbujuItems = computed(() => this.getMenshanbujuItems(this.data()));
   async copyMsbjInfo(to: XhmrmsbjInfo) {
-    const itemOptions: InputInfoOption<XhmrmsbjInfo>[] = [];
-    for (const {key, info} of this.menshanbujuItems()) {
-      if (info === to) {
-        continue;
+    const getItemOptions = (data: XhmrmsbjData | null) => {
+      const itemOptions: InputInfoOption<XhmrmsbjInfo>[] = [];
+      for (const {key, info} of this.getMenshanbujuItems(data)) {
+        if (info === to) {
+          continue;
+        }
+        if (!info.选中布局数据 || !info.模块节点 || info.模块节点.length < 1) {
+          itemOptions.push({label: key + "（没有数据）", value: info, disabled: true});
+        } else {
+          itemOptions.push({label: key, value: info});
+        }
       }
-      if (!info.选中布局数据 || !info.模块节点 || info.模块节点.length < 1) {
-        itemOptions.push({label: key + "（没有数据）", value: info, disabled: true});
-      } else {
-        itemOptions.push({label: key, value: info});
-      }
+      return itemOptions;
+    };
+    const data: {xinghao: TableDataBase | null; from: XhmrmsbjInfo | null} = {xinghao: null, from: null};
+    const data2 = this.data();
+    if (data2) {
+      data.xinghao = {vid: data2.id, mingzi: this.xinghao()?.name || ""};
     }
-    const data: {from: XhmrmsbjInfo | null} = {from: null};
-    const form: InputInfo<typeof data>[] = [
-      {type: "select", label: "从哪里复制", options: itemOptions, model: {data, key: "from"}, validators: Validators.required}
-    ];
+    const getter = new InputInfoWithDataGetter(data);
+    const xinghaoInput = getter.selectSingle("xinghao", [], {
+      label: "型号",
+      optionsDialog: {optionKey: "型号默认门扇布局", nameField: "xinghao", optionsUseObj: true},
+      onChange: async (val: TableDataBase) => {
+        if (val.vid === this.xinghao()?.id) {
+          fromInput.options = getItemOptions(this.data());
+        } else {
+          const records = await this.http.queryMySql<XhmrmsbjTableData>({
+            table,
+            filter: {where: {vid: val.vid}}
+          });
+          console.log(records);
+          fromInput.options = getItemOptions(this.getXhmrmsbjData(records[0]));
+        }
+      }
+    });
+    const fromInput = getter.selectSingle("from", getItemOptions(this.data()), {label: "从哪里复制", validators: Validators.required});
+    const form: InputInfo<typeof data>[] = [xinghaoInput, fromInput];
     const result = await this.message.form(form);
     const {from} = data;
     if (!result || !from) {

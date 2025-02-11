@@ -39,6 +39,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {getArray, imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
 import {toFixed} from "@app/utils/func";
 import {getValue} from "@app/utils/get-value";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
@@ -865,7 +866,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return;
     }
     const data = this.model.data;
-    const {optionField, optionsUseId, defaultValue, onChange, useLocalOptions} = optionsDialog;
+    const {optionField, optionsUseId, optionsUseObj, defaultValue, onChange, useLocalOptions} = optionsDialog;
     if (optionsDialog.optionKey) {
       optionKey = optionsDialog.optionKey;
     }
@@ -883,7 +884,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       hasOptions = !optionKey || !!useLocalOptions;
     }
 
-    let checked: string[];
+    let checked: any[];
     if (info.type === "select") {
       checked = Array.isArray(this.value) ? this.value : [this.value];
     } else {
@@ -942,19 +943,23 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     };
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));
+    } else if (optionsUseObj) {
+      dialogData.checkedVids = checked.map((v) => v.vid);
     } else {
       dialogData.checkedItems = checked;
     }
     const result = await openCadOptionsDialog(this.dialog, {data: dialogData});
     if (result) {
       const options1 = result.options;
-      let options2: string[];
+      let options2: (string | TableDataBase)[];
       if (optionsUseId) {
         options2 = options1.map((v) => String(v.vid));
+      } else if (optionsUseObj) {
+        options2 = options1.slice();
       } else {
         options2 = options1.map((v) => v.mingzi);
       }
-      let resultValue: string | string[] = options2;
+      let resultValue: typeof options2 | (typeof options2)[number] = options2;
       if (optionValueType === "string") {
         resultValue = joinOptions(options2, optionSeparator);
       } else if (!multiple) {
@@ -1138,8 +1143,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       if (info.type === "string" || info.type === "object") {
         optionSeparator = info.optionSeparator;
       }
-      if (this.optionsDialog.optionsUseId) {
+      const {optionsUseId, optionsUseObj} = this.optionsDialog;
+      if (optionsUseId) {
         const getOptionName = (vid: string) => {
+          if (!isTypeOf(vid, "string")) {
+            return "";
+          }
           const option = this.options.find((v) => String(v.vid) === vid);
           return option ? option.label : "";
         };
@@ -1148,7 +1157,22 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
             value.map((v) => getOptionName(v)),
             optionSeparator
           );
-        } else if (typeof value === "string") {
+        } else {
+          this.displayValue = getOptionName(value);
+        }
+      } else if (optionsUseObj) {
+        const getOptionName = (option: TableDataBase) => {
+          if (!isTypeOf(option, "object")) {
+            return "";
+          }
+          return option.mingzi;
+        };
+        if (Array.isArray(value)) {
+          this.displayValue = joinOptions(
+            value.map((v) => getOptionName(v)),
+            optionSeparator
+          );
+        } else {
           this.displayValue = getOptionName(value);
         }
       } else {

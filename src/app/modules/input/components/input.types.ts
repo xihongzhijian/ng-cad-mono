@@ -219,6 +219,7 @@ export type InputInfoOptions<T = string> = (InputInfoOption<T> | string)[];
 export interface OptionsDialog {
   optionKey?: string;
   optionsUseId?: boolean;
+  optionsUseObj?: boolean;
   optionField?: string;
   defaultValue?: CadOptionsInput["defaultValue"];
   openInNewTab?: CadOptionsInput["openInNewTab"];
