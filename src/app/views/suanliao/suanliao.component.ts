@@ -213,12 +213,22 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     const materialResult2 = result.data.materialResult;
     for (const name of bujuNames) {
       开料使用变量[name] = {};
-      const vars = {...materialResult2, ...result.data.门扇布局大小?.[name]};
+      const vars = {...materialResult2};
       for (const node of 型号选中门扇布局[name].模块节点 || []) {
         开料使用变量[name][node.层名字] = {};
-        for (const key of node.选中模块?.xiaoguotushiyongbianliang || []) {
-          if (key in vars) {
-            开料使用变量[name][node.层名字][key] = vars[key];
+        const vars2 = {...vars};
+        for (const mokuai of mokuais) {
+          if (!mokuai.info) {
+            continue;
+          }
+          const {门扇名字, 模块名字} = mokuai.info;
+          if (门扇名字 === name && 模块名字 === node.层名字) {
+            Object.assign(vars2, mokuai.suanliaogongshi);
+          }
+        }
+        for (const key of node.选中模块?.kailiaoshiyongbianliang || []) {
+          if (key in vars2) {
+            开料使用变量[name][node.层名字][key] = vars2[key];
           }
         }
       }

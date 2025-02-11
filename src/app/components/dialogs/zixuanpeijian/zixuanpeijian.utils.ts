@@ -415,8 +415,11 @@ export const calcZxpj = async (
   const dimensionNamesMap: ObjectOf<{item: ZixuanpeijianCadItem}[]> = {};
   const varsGlobal: Formulas = {};
   const tongyongGongshiCalcResult = await calc.calcFormulas(tongyongGongshi, materialResult);
+  const gongshiCalcResult = await calc.calcFormulas(gongshi, materialResult);
+  const gongshiSucceed = gongshiCalcResult?.succeedTrim || {};
+  const gongshiError = gongshiCalcResult?.error || {};
   calc.calc.mergeFormulas(materialResult, tongyongGongshiCalcResult?.succeedTrim || {});
-  calc.calc.mergeFormulas(materialResult, gongshi);
+  calc.calc.mergeFormulas(materialResult, gongshiSucceed);
   calc.calc.mergeFormulas(materialResult, inputResult);
 
   const gongshiKeys = Object.keys(gongshi);
@@ -683,7 +686,7 @@ export const calcZxpj = async (
       const 门扇名字 = info.门扇名字 || "";
       const 模块名字 = info.模块名字 || "";
       const mokuaiGongshisCurr = getNodeVars(mokuaiGongshis[门扇名字], 模块名字, true);
-      const formulas1 = {...v.formulas, ...v.dimensionVars, ...mokuaiGongshisCurr};
+      const formulas1 = {...gongshiError, ...v.formulas, ...v.dimensionVars, ...mokuaiGongshisCurr};
       replaceMenshanName(门扇名字, formulas1);
       const mokuaiVarsCurr = getNodeVars(mokuaiVars[门扇名字], 模块名字);
       const vars1 = {...materialResult, ...shuchubianliang, ...lingsanVars, ...mokuaiVarsCurr};

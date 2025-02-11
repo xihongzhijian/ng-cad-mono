@@ -34,7 +34,7 @@ export interface ZixuanpeijianTypesInfoItem extends ZixuanpeijianTypesInfoItemBa
   gongshishuru: string[][];
   xuanxiangshuru: string[][];
   shuchubianliang: string[];
-  xiaoguotushiyongbianliang: string[];
+  kailiaoshiyongbianliang: string[];
   shuchuwenben: string[][];
 }
 export type ZixuanpeijianTypesInfo = ObjectOf<ObjectOf<ZixuanpeijianTypesInfoItem>>;
