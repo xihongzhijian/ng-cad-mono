@@ -1134,6 +1134,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                 }
                 if (menshanKey !== menshanKey2 || node.层名字 !== node2.层名字) {
                   const dupVars1 = intersection(scbl1, scbl2);
+                  dupVars1.push("aaa");
                   const getDetailPart = (
                     key0: MenshanKey,
                     node0: XhmrmsbjInfoMokuaiNode,

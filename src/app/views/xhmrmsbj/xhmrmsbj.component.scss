@@ -135,10 +135,17 @@
     ol {
       width: 100%;
       box-sizing: border-box;
+      list-style-type: xhmrmsbj-error;
+      padding-inline-start: 50px;
 
       li:not(:last-child) {
         margin-bottom: 1em;
       }
     }
   }
+}
+
+@counter-style xhmrmsbj-error {
+  system: extends decimal;
+  prefix: "错误";
 }
