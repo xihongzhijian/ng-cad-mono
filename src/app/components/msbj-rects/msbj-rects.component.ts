@@ -205,8 +205,8 @@ export class MsbjRectsComponent {
         padding[0] += diff;
         padding[2] += diff;
       }
-      for (let i = 0; i < 4; i++) {
-        padding[i] = Math.max(0, padding[i]);
+      for (let j = 0; j < 4; j++) {
+        padding[j] = Math.max(0, padding[j]);
       }
       this.rectOuterStyle.update((v) => ({...v, padding: `${padding[0]}px ${padding[1]}px ${padding[2]}px ${padding[3]}px`}));
       await timeout(0);

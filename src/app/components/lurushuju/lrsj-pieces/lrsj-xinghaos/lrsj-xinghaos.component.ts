@@ -149,7 +149,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     }
 
     const mingziOld = data.mingzi;
-    const names = this.xinghaos().map((xinghao) => xinghao.mingzi);
+    const names = this.xinghaos().map((v) => v.mingzi);
     let refreshOptions = false;
     const getOptionInput = async (
       key: keyof typeof data,

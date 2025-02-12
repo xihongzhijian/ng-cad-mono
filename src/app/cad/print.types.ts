@@ -17,14 +17,14 @@ export interface PrintCadsParamsOrder {
   materialResult?: Formulas;
   unfold?: {cad: CadData; offsetStrs: string[]}[];
   bomTable?: BomTable;
-  型材物料明细?: 型材物料明细;
+  型材物料明细?: 型材物料明细List;
 }
 export interface BomTable {
   title: string;
   data: ObjectOf<any>[];
   cols: {field: string; label?: string; width?: number; link?: ObjectOf<string>}[];
 }
-export interface 型材物料明细 {
+export interface 型材物料明细List {
   items: 型材物料明细Item[];
 }
 export interface 型材物料明细Item {

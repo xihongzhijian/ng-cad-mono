@@ -138,8 +138,8 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     const info = getMenjiaoOptionInputInfo(data, key, this.menjiaoOptions(), () => this.lrsjStatus.menjiaoOptionsManager.fetch(true));
     info.style = style;
     const onChange = info.onChange;
-    info.onChange = (val: any, info: any) => {
-      onChange?.(val, info);
+    info.onChange = (val: any, info2: any) => {
+      onChange?.(val, info2);
       this.suanliaoData.update((v) => ({...v}));
     };
     if (info.optionsDialog) {
@@ -346,7 +346,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   });
   getMenjiaoCadTabLabel(key1: MenjiaoCadType) {
     const item = this.suanliaoData()[key1];
-    const isEmpty = () => {
+    const isItemEmpty = () => {
       if (item.算料CAD.length > 0) {
         return false;
       }
@@ -359,7 +359,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       return true;
     };
     let label = key1;
-    if (!isEmpty()) {
+    if (!isItemEmpty()) {
       label += "（有数据）";
     }
     return label;

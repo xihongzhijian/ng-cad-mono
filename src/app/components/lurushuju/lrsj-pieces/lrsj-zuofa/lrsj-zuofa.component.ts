@@ -11,7 +11,7 @@ import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/tabl
 import {cloneDeep} from "lodash";
 import {openSelectZuofaDialog} from "../../select-zuofa-dialog/select-zuofa-dialog.component";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
-import {get算料数据, menjiaoCadTypes, SuanliaoDataParams, 工艺做法, 算料数据, 输入, 选项} from "../../xinghao-data";
+import {get算料数据, menjiaoCadTypes, SuanliaoDataParams, 工艺做法Item, 算料数据, 输入, 选项} from "../../xinghao-data";
 import {
   copySuanliaoData,
   getMenfengInputs,
@@ -37,12 +37,12 @@ export class LrsjZuofaComponent {
   @HostBinding("class") class = ["ng-page"];
 
   fenleiName = input.required<string>();
-  zuofa = model.required<工艺做法>();
+  zuofa = model.required<工艺做法Item>();
   gotoSuanliaoData = output<算料数据>();
 
   tabs = signal<ZuofaTab[]>([{name: "算料数据"}, {name: "下单选项输入配置"}]);
 
-  async submitZuofa(fields: (keyof 工艺做法)[]) {
+  async submitZuofa(fields: (keyof 工艺做法Item)[]) {
     const fenlei = this.fenleiName();
     const zuofa = this.zuofa();
     this.lrsjStatus.submitZuofa(fenlei, zuofa, fields);

@@ -209,8 +209,8 @@ export const getMenjiaoTable = (data: MenjiaoData[]): TableRenderInfo<MenjiaoDat
         field: "门缝配置",
         width: "250px",
         getString: (value) => {
-          const data = value.门缝配置;
-          if (!data) {
+          const data2 = value.门缝配置;
+          if (!data2) {
             return "";
           }
           const map: ObjectOf<string> = {
@@ -219,7 +219,7 @@ export const getMenjiaoTable = (data: MenjiaoData[]): TableRenderInfo<MenjiaoDat
             顶部门缝: "上",
             底部门缝: "下"
           };
-          const strs = Object.entries(data)
+          const strs = Object.entries(data2)
             .map(([k, v]) => {
               if (k.includes("内间隙") && v === 0) {
                 return "";

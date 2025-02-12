@@ -217,9 +217,9 @@ export const getCadInfoInputs = (
       case "自定义属性":
         info = getDialogInput(key, async () => {
           const data2 = getData(data);
-          const result = await openCadDataAttrsDialog(dialog, {data: data2.attributes});
-          if (result) {
-            data2.attributes = result;
+          const result2 = await openCadDataAttrsDialog(dialog, {data: data2.attributes});
+          if (result2) {
+            data2.attributes = result2;
           }
         });
         break;
@@ -240,11 +240,11 @@ export const getCadInfoInputs = (
                 if (dataInfo[key]) {
                   checkedItems.push(dataInfo[key]);
                 }
-                const result = await openCadListDialog(dialog, {
+                const result2 = await openCadListDialog(dialog, {
                   data: {selectMode: "single", collection: "kailiaocadmuban", checkedItems}
                 });
-                if (result?.length) {
-                  dataInfo[key] = result[0].id;
+                if (result2?.length) {
+                  dataInfo[key] = result2[0].id;
                 }
               }
             }
@@ -314,10 +314,10 @@ export const getCadInfoInputs = (
                       if (kailiaomuban) {
                         checkedItems.push(kailiaomuban);
                       }
-                      const result = await openCadListDialog(dialog, {
+                      const result2 = await openCadListDialog(dialog, {
                         data: {selectMode: "single", collection: "kailiaocadmuban", checkedItems}
                       });
-                      const id = result?.[0]?.id;
+                      const id = result2?.[0]?.id;
                       if (id) {
                         zhankai.kailiaomuban = id;
                       }
@@ -344,18 +344,18 @@ export const getCadInfoInputs = (
       case "开料孔位配置":
         info = getDialogInput(key, async () => {
           const data2 = getData(data);
-          const result = await openKlkwpzDialog(dialog, {data: {source: data2.info[key]}});
-          if (result) {
-            data2.info[key] = result;
+          const result2 = await openKlkwpzDialog(dialog, {data: {source: data2.info[key]}});
+          if (result2) {
+            data2.info[key] = result2;
           }
         });
         break;
       case "算料单翻转":
         info = getDialogInput(key, async () => {
           const data2 = getData(data);
-          const result = await openSuanliaodanFlipDialog(dialog, {data: {items: data2.info[key]}});
-          if (result) {
-            data2.info[key] = result.items;
+          const result2 = await openSuanliaodanFlipDialog(dialog, {data: {items: data2.info[key]}});
+          if (result2) {
+            data2.info[key] = result2.items;
           }
         });
         break;
@@ -365,10 +365,10 @@ export const getCadInfoInputs = (
           info = getDialogInput(
             key,
             async () => {
-              const data2 = getData(data);
-              const result = await openCadMenfengConfigDialog(dialog, {data: {type: data2.type, items: data2.info[key]}});
-              if (result) {
-                data2.info[key] = result.items;
+              const data3 = getData(data);
+              const result2 = await openCadMenfengConfigDialog(dialog, {data: {type: data3.type, items: data3.info[key]}});
+              if (result2) {
+                data3.info[key] = result2.items;
               }
             },
             {value: Array.isArray(data2.info[key]) && data2.info[key].length > 0 ? "有数据" : ""}
@@ -431,9 +431,9 @@ export const getCadInfoInputs2 = async (
       info = getCadInfoInputs([key], data, dialog, status, parseOptionString, gongshis)[0];
       if (key === "选项" && info.type === "object") {
         const requiredKeys: string[] = [];
-        for (const {key2} of requiredOptionItems || []) {
-          if (key2) {
-            requiredKeys.push(key2);
+        for (const {key2: optionKey} of requiredOptionItems || []) {
+          if (optionKey) {
+            requiredKeys.push(optionKey);
           }
         }
         info.requiredKeys = requiredKeys;
@@ -473,8 +473,8 @@ export const getCadInfoInputs2 = async (
     }
     if (isSbjb) {
       if (cadKey === "name") {
-        const items = await http.queryMySql({table: cad.type, fields: ["mingzi"], filter: {where: {shujufenlei: cadKey}}});
-        let itemNames = items.map((v) => v.mingzi);
+        const items3 = await http.queryMySql({table: cad.type, fields: ["mingzi"], filter: {where: {shujufenlei: cadKey}}});
+        let itemNames = items3.map((v) => v.mingzi);
         if (type === "set") {
           itemNames = itemNames.filter((v) => v !== cad.name);
         }

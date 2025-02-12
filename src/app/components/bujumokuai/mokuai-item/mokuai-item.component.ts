@@ -638,13 +638,13 @@ export class MokuaiItemComponent {
     this._textInputInfoUpdateDisabled = true;
     switch (type) {
       case "模块功能":
-        for (const input of this.gongnengInputs()) {
-          input.clear();
+        for (const input2 of this.gongnengInputs()) {
+          input2.clear();
         }
         break;
       case "模块筛选":
-        for (const input of this.shaixuanInputs()) {
-          input.clear();
+        for (const input2 of this.shaixuanInputs()) {
+          input2.clear();
         }
         break;
       case "选项数据":

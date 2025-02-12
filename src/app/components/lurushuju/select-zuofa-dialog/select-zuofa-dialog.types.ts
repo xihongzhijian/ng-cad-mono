@@ -1,9 +1,9 @@
-import {工艺做法} from "../xinghao-data";
+import {工艺做法Item} from "../xinghao-data";
 
 export interface SelectZuofaInput {
   excludeXinghaos?: string[];
   excludeZuofas?: string[];
-  key?: keyof 工艺做法;
+  key?: keyof 工艺做法Item;
   multiple?: boolean;
   fenlei?: string;
 }

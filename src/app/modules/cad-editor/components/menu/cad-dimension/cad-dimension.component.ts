@@ -132,7 +132,7 @@ export class CadDimensionComponent implements OnInit, OnDestroy {
         }
 
         let location: CadDimensionEntity["location"];
-        const getOppositeLocation = (location: CadDimensionEntity["location"]) => (location === "start" ? "end" : "start");
+        const getOppositeLocation = (location2: CadDimensionEntity["location"]) => (location2 === "start" ? "end" : "start");
         if (event) {
           const point = cad.getWorldPoint(event.clientX, event.clientY);
           const distanceStart = entity.start.distanceTo(point);

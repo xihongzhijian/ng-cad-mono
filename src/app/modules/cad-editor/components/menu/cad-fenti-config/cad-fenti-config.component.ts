@@ -187,9 +187,9 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
         fentiPoints.push(point);
       }
     }
-    const setActive = (points: CadPoints) => {
-      for (const [i, point] of points.entries()) {
-        point.active = i === points.length - 1;
+    const setActive = (points2: CadPoints) => {
+      for (const [i, point] of points2.entries()) {
+        point.active = i === points2.length - 1;
         if (point.active) {
           分体拼接位置New.push(point.lines);
         }

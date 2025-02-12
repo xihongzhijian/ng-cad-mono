@@ -67,9 +67,9 @@ export class SuanliaoTestDialogComponent implements OnInit {
   }
 
   async updateInfo() {
-    const {测试用例} = this.data.data;
+    const data = this.data.data;
     this.infos = [];
-    for (const testCase of 测试用例) {
+    for (const testCase of data.测试用例) {
       const info = await getTestCaseInfo(testCase, this.data.data, this.calc);
       this.infos.push(info);
     }

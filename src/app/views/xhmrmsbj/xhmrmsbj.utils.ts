@@ -81,12 +81,12 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
             const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
             const shuruzhi2 = {...itemShuruzhi, ...nodeShuruzhi};
             let isChanged = false;
-            for (const key in shuruzhi2) {
-              if (mokuai.xuanxianggongshi.some((v) => key in v.公式)) {
+            for (const shuruzhiKey in shuruzhi2) {
+              if (mokuai.xuanxianggongshi.some((v) => shuruzhiKey in v.公式)) {
                 continue;
               }
-              if (arr.some((v) => v[0] === key)) {
-                shuruzhi[key] = shuruzhi2[key];
+              if (arr.some((v) => v[0] === shuruzhiKey)) {
+                shuruzhi[shuruzhiKey] = shuruzhi2[shuruzhiKey];
                 isChanged = true;
               }
             }
@@ -492,11 +492,11 @@ export const purgeShuchuDisabled = (infos: XhmrmsbjDataMsbjInfos) => {
         map.set(getMokuaiObjectKey(node, mokuai), item);
       }
     }
-    for (const key of Object.keys(info.输出变量禁用)) {
-      const item = map.get(key);
-      info.输出变量禁用[key] = intersection(info.输出变量禁用[key], item);
-      if (info.输出变量禁用[key].length < 1) {
-        delete info.输出变量禁用[key];
+    for (const disabledVarKey of Object.keys(info.输出变量禁用)) {
+      const item = map.get(disabledVarKey);
+      info.输出变量禁用[disabledVarKey] = intersection(info.输出变量禁用[disabledVarKey], item);
+      if (info.输出变量禁用[disabledVarKey].length < 1) {
+        delete info.输出变量禁用[disabledVarKey];
       }
     }
     if (isEmpty(info.输出变量禁用)) {
@@ -539,15 +539,15 @@ export const purgeMokuaiOptions = (infos: XhmrmsbjDataMsbjInfos) => {
         map.set(getMokuaiObjectKey(node, mokuai2), mokuai2);
       }
     }
-    for (const [key, value] of Object.entries(info.模块选项)) {
-      const mokuai = map.get(key);
+    for (const [mkxxKey, mkxxValue] of Object.entries(info.模块选项)) {
+      const mokuai = map.get(mkxxKey);
       if (!mokuai) {
-        delete info.模块选项[key];
+        delete info.模块选项[mkxxKey];
         continue;
       }
-      const options = filterMokuaiOptions(mokuai, value);
+      const options = filterMokuaiOptions(mokuai, mkxxValue);
       if (options.length < 1) {
-        delete info.模块选项[key];
+        delete info.模块选项[mkxxKey];
       }
     }
     if (isEmpty(info.模块选项)) {

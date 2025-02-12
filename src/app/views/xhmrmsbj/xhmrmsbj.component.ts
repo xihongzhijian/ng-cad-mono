@@ -306,7 +306,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   opts = signal<XhmrmsbjRequestData["opts"]>(undefined);
   isFloatingDialog = computed(() => !!this.opts()?.浮动弹窗);
   async requestDataEnd(data: XhmrmsbjRequestData) {
-    const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys} = data;
+    const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys: menshanKeysFromData} = data;
     const {id, user, localServerUrl, menshanbujus, step1Data, 模块通用配置} = data;
     const {铰扇跟随锁扇, 铰扇正面跟随锁扇正面, 铰扇背面跟随锁扇背面} = data;
     if (typeof localServerUrl === "string") {
@@ -330,7 +330,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         jiaoshanbeimianhesuoshanbeimianxiangtong: 铰扇背面跟随锁扇背面,
         zuoshujubanben: String(materialResult.做数据版本)
       },
-      menshanKeys,
+      menshanKeysFromData,
       this.step1Data.typesInfo,
       this.msbjs()
     );
@@ -338,7 +338,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.id.set(id);
     this.user.set(user);
     this.opts.set(data.opts);
-    this.menshanKeys = menshanKeys;
+    this.menshanKeys = menshanKeysFromData;
     this.tongyongFormulasCache = 模块通用配置 || null;
     const xinghao = new MrbcjfzXinghaoInfo(this.table(), {vid: 1, mingzi: String(materialResult.型号)});
     xinghao.默认板材 = 型号选中板材;
@@ -1070,8 +1070,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           if (!this.validateMorenbancai(mokuai.morenbancai)) {
             mokuaiErrors.push([{text: "未配置默认板材分组"}]);
           }
-          for (const [i, xxgs1] of mokuai.xuanxianggongshi.entries()) {
-            for (const xxgs2 of mokuai.xuanxianggongshi.slice(i + 1)) {
+          for (const [l, xxgs1] of mokuai.xuanxianggongshi.entries()) {
+            for (const xxgs2 of mokuai.xuanxianggongshi.slice(l + 1)) {
               if (canItemMatchTogether(xxgs1, xxgs2)) {
                 const keys1 = Object.keys(xxgs1.公式);
                 const keys2 = Object.keys(xxgs2.公式);
@@ -1143,11 +1143,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
                   const getDetailPart = (
                     key0: MenshanKey,
                     node0: XhmrmsbjInfoMokuaiNode,
-                    mokuai: ZixuanpeijianMokuaiItem,
+                    mokuai3: ZixuanpeijianMokuaiItem,
                     type: string
                   ): XhmrmsbjErrorDetail => {
-                    const title = getMokuaiTitle(mokuai, {门扇名字: key0, 层名字: node0.层名字});
-                    const jumpTo: XhmrmsbjErrorJumpTo = {门扇名字: key0, 层名字: node0.层名字, mokuai: mokuai.type2};
+                    const title = getMokuaiTitle(mokuai3, {门扇名字: key0, 层名字: node0.层名字});
+                    const jumpTo: XhmrmsbjErrorJumpTo = {门扇名字: key0, 层名字: node0.层名字, mokuai: mokuai3.type2};
                     const urlDetail: XhmrmsbjErrorDetail = [
                       {text: "，【"},
                       {text: "打开", jumpTo: {...jumpTo, openMokuai: true}},
@@ -1461,12 +1461,12 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           msbj = new MsbjInfo(msbjs[0], this.getNode2rectData());
         }
       }
-      const data = await this.message.json(选中布局数据.模块大小关系, {
+      const result = await this.message.json(选中布局数据.模块大小关系, {
         defaultJson: msbj?.peizhishuju.模块大小关系 ?? mokuaidaxiaoData,
         btnTexts: {reset: "重置为默认模块大小"}
       });
-      if (data) {
-        选中布局数据.模块大小关系 = data;
+      if (result) {
+        选中布局数据.模块大小关系 = result;
       }
     }
   }
@@ -1761,9 +1761,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     this.openedMokuai.set(null);
-    const msbjInfo = this.activeMsbjInfo();
-    const node = this.activeMokuaiNode();
-    if (isSaved && msbjInfo && node) {
+    const activeMsbjInfo = this.activeMsbjInfo();
+    const activeNode = this.activeMokuaiNode();
+    if (isSaved && activeMsbjInfo && activeNode) {
       const mokuai = (await this.fetchMokuais([openedMokuai.mokuai.id]))[0];
       if (mokuai) {
         const menshanbujuInfos = this.data()?.menshanbujuInfos || {};
@@ -1854,17 +1854,17 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const menshanbujuInfos = this.data()?.menshanbujuInfos || {};
     for (const key of keysOf(menshanbujuInfos)) {
       for (const node of menshanbujuInfos[key]?.模块节点 || []) {
-        const varNames = new Set<string>();
+        const varNamesSet = new Set<string>();
         for (const mokuai of node.可选模块) {
           for (const v of mokuai.gongshishuru) {
-            varNames.add(v[0]);
+            varNamesSet.add(v[0]);
           }
           for (const v of mokuai.shuchubianliang) {
-            varNames.add(v);
+            varNamesSet.add(v);
           }
         }
-        if (varNames.size > 0) {
-          varNameItem.nameGroups.push({groupName: `${key}${node.层名字}可选模块`, varNames: Array.from(varNames)});
+        if (varNamesSet.size > 0) {
+          varNameItem.nameGroups.push({groupName: `${key}${node.层名字}可选模块`, varNames: Array.from(varNamesSet)});
         }
       }
     }

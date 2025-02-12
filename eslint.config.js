@@ -125,7 +125,8 @@ export default [
       ],
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-deprecated": "warn",
-
+      "no-shadow": "off",
+      "@typescript-eslint/no-shadow": ["error",{ignoreTypeValueShadow: true}],
       "no-empty": [
         "error",
         {

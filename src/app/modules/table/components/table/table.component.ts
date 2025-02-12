@@ -150,7 +150,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       if (column) {
         label += `：${column.name || String(column.field)}`;
       }
-      const info: InputInfo = {
+      const info2: InputInfo = {
         type: "string",
         label,
         clearable: true,
@@ -161,7 +161,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         }, 100),
         style: {width: "150px"}
       };
-      return info;
+      return info2;
     });
   });
 
@@ -829,7 +829,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       return;
     }
     dataSource.filterPredicate = (data: T) => {
-      const {filterable} = this.info;
       if (!filterable || !isTypeOf(data, "object")) {
         return true;
       }

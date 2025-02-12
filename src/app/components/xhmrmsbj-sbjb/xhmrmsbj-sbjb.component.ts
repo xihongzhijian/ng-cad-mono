@@ -264,15 +264,15 @@ export class XhmrmsbjSbjbComponent {
       if (!isKeys1 && !isKeys2) {
         return;
       }
-      for (const item of this.items()) {
-        for (const item2 of item.锁边铰边数据) {
-          if (isKeys1 && item2[type] === nameBefore) {
-            item2[type] = data.名字;
+      for (const item2 of this.items()) {
+        for (const item3 of item2.锁边铰边数据) {
+          if (isKeys1 && item3[type] === nameBefore) {
+            item3[type] = data.名字;
             needsRefresh = true;
-            if (Array.isArray(item2.CAD数据)) {
-              for (let i = 0; i < item2.CAD数据.length; i++) {
-                if (item2.CAD数据[i].name === type) {
-                  item2.CAD数据[i].cadId = data._id;
+            if (Array.isArray(item3.CAD数据)) {
+              for (let i = 0; i < item3.CAD数据.length; i++) {
+                if (item3.CAD数据[i].name === type) {
+                  item3.CAD数据[i].cadId = data._id;
                 }
               }
             }

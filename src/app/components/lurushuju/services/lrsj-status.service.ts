@@ -27,7 +27,7 @@ import {
   xiaoguotuKeys,
   Xinghao,
   XinghaoRaw,
-  工艺做法,
+  工艺做法Item,
   算料数据2
 } from "../xinghao-data";
 import {
@@ -420,12 +420,12 @@ export class LrsjStatusService implements OnDestroy {
     this.updateXinghao({...xinghao});
   }
 
-  async submitZuofa(fenleiName: string, zuofa: 工艺做法 | string, fields: (keyof 工艺做法)[]) {
+  async submitZuofa(fenleiName: string, zuofa: 工艺做法Item | string, fields: (keyof 工艺做法Item)[]) {
     const xinghao = this.xinghao();
     if (!xinghao || !(await this.validateXinghaoSize())) {
       return;
     }
-    const data: Partial<工艺做法> = {};
+    const data: Partial<工艺做法Item> = {};
     const 型号 = xinghao.名字;
     if (typeof zuofa === "string") {
       const zuofa2 = xinghao.产品分类[fenleiName].find((v) => v.名字 === zuofa);
@@ -497,11 +497,11 @@ export class LrsjStatusService implements OnDestroy {
     if (xinghaos) {
       for (const xinghao of xinghaos) {
         const {menchuang, gongyi} = xinghao;
-        const menchuangs = splitOptions(menchuang);
-        const gongyis = splitOptions(gongyi);
-        const menchuangItems = xinghaoMenchuangs.items.filter((v) => menchuangs.includes(v.mingzi));
+        const menchuangs2 = splitOptions(menchuang);
+        const gongyis2 = splitOptions(gongyi);
+        const menchuangItems = xinghaoMenchuangs.items.filter((v) => menchuangs2.includes(v.mingzi));
         for (const menchuangItem of menchuangItems) {
-          const gongyiItems = menchuangItem.gongyis?.items.filter((v) => gongyis.includes(v.mingzi));
+          const gongyiItems = menchuangItem.gongyis?.items.filter((v) => gongyis2.includes(v.mingzi));
           for (const gongyiItem of gongyiItems || []) {
             if (!gongyiItem.xinghaos) {
               gongyiItem.xinghaos = new XinghaoDataList();

@@ -451,17 +451,17 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     const nodes = this.navDataSource().slice();
     const activeNode = this.activeNavNode();
     const isActiveNode = (node: DataListNavNode) => activeNode && node.id === activeNode.id;
-    const filter = (list: DataListNavNode[]) => {
-      for (const node of list) {
+    const filterNodes = (nodes2: DataListNavNode[]) => {
+      for (const node of nodes2) {
         if (node.children && node.children.length > 0) {
-          filter(node.children);
+          filterNodes(node.children);
           node.hidden = node.children.every((v) => v.hidden);
         } else {
           node.hidden = !isActiveNode(node) && !queryStringList(navQuery, [node.name]);
         }
       }
     };
-    filter(nodes);
+    filterNodes(nodes);
 
     const type = activeNode?.name;
     const counts: ObjectOf<number> = {};

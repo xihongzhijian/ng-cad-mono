@@ -69,9 +69,9 @@ export const getCadLineInputs = (
         {
           const vars = getData(data).info.vars || {};
           let value: string | undefined;
-          for (const key in vars) {
-            if (vars[key] === line.id) {
-              value = key;
+          for (const k in vars) {
+            if (vars[k] === line.id) {
+              value = k;
               break;
             }
           }
@@ -80,24 +80,24 @@ export const getCadLineInputs = (
             label: key,
             value,
             onChange: (val) => {
-              const info = getData(data).info;
+              const dataInfo = getData(data).info;
               if (val) {
-                if (!info.vars) {
-                  info.vars = {};
+                if (!dataInfo.vars) {
+                  dataInfo.vars = {};
                 }
-                for (const key in info.vars) {
-                  if (info.vars[key] === line.id) {
-                    delete info.vars[key];
+                for (const infoKey in dataInfo.vars) {
+                  if (dataInfo.vars[infoKey] === line.id) {
+                    delete dataInfo.vars[infoKey];
                   }
                 }
-                info.vars[val] = line.id;
+                dataInfo.vars[val] = line.id;
               }
             },
             validators: (control) => {
               const val = control.value;
-              const vars = getData(data).info.vars || {};
-              for (const key in vars) {
-                if (key === val && vars[key] !== line.id) {
+              const infoVars = getData(data).info.vars || {};
+              for (const varName in infoVars) {
+                if (varName === val && infoVars[varName] !== line.id) {
                   return {名字已存在: true};
                 }
               }

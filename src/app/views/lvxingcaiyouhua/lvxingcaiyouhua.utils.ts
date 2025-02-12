@@ -1,6 +1,6 @@
 import {ObjectOf} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
-import {InputData, 优化结果, 型材Bom, 铝型材, 铝型材优化结果, 铝型材余料库存} from "./lvxingcaiyouhua.types";
+import {InputData, 优化结果, 型材Bom, 铝型材Item, 铝型材优化结果, 铝型材余料库存} from "./lvxingcaiyouhua.types";
 
 export const getInputDataBoms = (data: InputData) => {
   const boms: 型材Bom[] = [];
@@ -43,7 +43,7 @@ export const calc = (data: InputData) => {
   const isBomUsable = (item: 型材Bom) => getBomCount(item) < item.要求数量;
 
   const resultItems: 优化结果[] = [];
-  const backpackDp = (boms: 型材Bom[], totalLength: number, num: number, {qieduansunhao = 0}: 铝型材) => {
+  const backpackDp = (boms: 型材Bom[], totalLength: number, num: number, {qieduansunhao = 0}: 铝型材Item) => {
     const result: {value: number; items: 型材Bom[]; cuts: number}[] = [];
     if (boms.length < 1) {
       return result;
@@ -148,10 +148,10 @@ export const calc = (data: InputData) => {
     }
     return result;
   };
-  const getTotalLength = (rawLength: number, {touweisunhao = 0, qieduansunhao = 0}: 铝型材) => {
+  const getTotalLength = (rawLength: number, {touweisunhao = 0, qieduansunhao = 0}: 铝型材Item) => {
     return rawLength - touweisunhao * 2 - qieduansunhao;
   };
-  const getRemainingLength = (totalLength: number, dpItem: ReturnType<typeof backpackDp>[number], {qieduansunhao = 0}: 铝型材) => {
+  const getRemainingLength = (totalLength: number, dpItem: ReturnType<typeof backpackDp>[number], {qieduansunhao = 0}: 铝型材Item) => {
     return totalLength - dpItem.value - (dpItem.cuts - 1) * qieduansunhao;
   };
   const bomsAll = getInputDataBoms(data);

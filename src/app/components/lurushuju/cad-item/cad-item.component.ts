@@ -511,23 +511,23 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (showCadViewer && cadContainer) {
       const containerEl = cadContainer.nativeElement;
       const collection = this.collection();
-      this.cadViewer = this.initCadViewer0(collection, data, containerEl, async (data) => {
+      this.cadViewer = this.initCadViewer0(collection, data, containerEl, async (data2) => {
         this.beforeEditCad.emit();
         if (!this.isOnline) {
-          data.info.imgUpdate = true;
+          data2.info.imgUpdate = true;
         }
         if (cad instanceof CadData) {
-          Object.assign(cad, data);
+          Object.assign(cad, data2);
         } else {
-          const exportData = exportCadData(data);
+          const exportData = exportCadData(data2);
           for (const key of ["entities", "info"] as const) {
             cad.json[key] = exportData[key];
           }
         }
         if (this.isOnline) {
-          const url = await getCadPreview(collection, data);
-          await this.http.setCad({collection, cadData: data, force: true}, true);
-          await this.http.setCadImg(data.id, url, {silent: true});
+          const url = await getCadPreview(collection, data2);
+          await this.http.setCad({collection, cadData: data2, force: true}, true);
+          await this.http.setCadImg(data2.id, url, {silent: true});
         }
         this.afterEditCad.emit();
       });

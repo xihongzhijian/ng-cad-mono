@@ -309,8 +309,8 @@ export const getMenjiaoOptionInputInfo = (
     } else if (openInNewTabKeys.includes(key)) {
       info.openInNewTab = {
         optionKey: key,
-        onOptionsChange: (options) => {
-          onOptionsChange(options);
+        onOptionsChange: (opts) => {
+          onOptionsChange(opts);
         }
       };
     }

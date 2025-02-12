@@ -505,8 +505,8 @@ export class ZixuanpeijianComponent implements OnInit {
       if (await this.message.confirm("是否编辑新的CAD？")) {
         const data2 = new CadData(resData.json);
         if (data2) {
-          const gongshis = this.data?.gongshis;
-          await openCadEditorDialog(this.dialog, {data: {data: data2, collection, center: true, gongshis}});
+          const gongshis2 = this.data?.gongshis;
+          await openCadEditorDialog(this.dialog, {data: {data: data2, collection, center: true, gongshis: gongshis2}});
         }
       }
       this.step3Refresh();

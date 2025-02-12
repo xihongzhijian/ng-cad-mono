@@ -4,7 +4,7 @@ import {calc} from "./lvxingcaiyouhua.utils";
 export interface InputData {
   型材BOM: 型材Bom[];
   不上设备的型材BOM?: 型材BomBase[];
-  铝型材: 铝型材[];
+  铝型材: 铝型材Item[];
   铝型材余料库存: 铝型材余料库存[];
 }
 export type OutputData = ReturnType<typeof calc>;
@@ -19,7 +19,7 @@ export interface 型材Bom extends 型材BomBase {
   型材颜色: string;
   型材优化分组信息: string;
 }
-export interface 铝型材 extends TableDataBase2 {
+export interface 铝型材Item extends TableDataBase2 {
   biaozhunchangdu: number;
   yuliaorukuzuixiaochangdu: number;
   qieduan90dusunhao: number;

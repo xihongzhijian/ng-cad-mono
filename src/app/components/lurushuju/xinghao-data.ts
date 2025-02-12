@@ -49,8 +49,8 @@ export const updateXinghaoFenleis = (
   }
 };
 
-export const getZuofa = (raw: 工艺做法 | null | undefined, 选项数据选项: OptionsAll) => {
-  const result: 工艺做法 = {
+export const getZuofa = (raw: 工艺做法Item | null | undefined, 选项数据选项: OptionsAll) => {
+  const result: 工艺做法Item = {
     tableId: -1,
     名字: "",
     图片: "",
@@ -75,7 +75,7 @@ export const getZuofa = (raw: 工艺做法 | null | undefined, 选项数据选�
   return result;
 };
 
-export const sortZuofas = (zuofas: 工艺做法[]) => {
+export const sortZuofas = (zuofas: 工艺做法Item[]) => {
   return zuofas.sort((a, b) => (a.排序 || 0) - (b.排序 || 0));
 };
 
@@ -150,7 +150,7 @@ export interface XinghaoRaw {
   名字: string;
   所属门窗?: string;
   所属工艺?: string;
-  产品分类?: ObjectOf<工艺做法[]>;
+  产品分类?: ObjectOf<工艺做法Item[]>;
   显示产品分类?: string[];
   订单流程?: string;
   做数据版本?: string;
@@ -160,7 +160,7 @@ export interface XinghaoRaw {
   数据已录入完成?: boolean;
 }
 export interface Xinghao extends XinghaoRaw {
-  产品分类: ObjectOf<工艺做法[]>;
+  产品分类: ObjectOf<工艺做法Item[]>;
   显示产品分类: string[];
 }
 
@@ -231,7 +231,7 @@ export interface 测试用例 {
   测试正确: boolean;
 }
 
-export interface 工艺做法 {
+export interface 工艺做法Item {
   tableId: number;
   名字: string;
   图片: string;

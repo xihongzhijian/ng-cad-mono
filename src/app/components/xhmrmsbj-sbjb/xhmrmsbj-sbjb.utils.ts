@@ -294,16 +294,16 @@ export const exportXhmrmsbjSbjbItemSbjbs = (fenlei: string, items: XhmrmsbjSbjbI
     使用背面分体: false
   };
   const sbjbItemSbjbItemKeys = keysOf(emptySbjbItemSbjbItem);
-  const sbjbItemOptionalKeys1 = getSbjbItemOptionalKeys1(fenlei);
-  const sbjbItemOptionalKeys2 = getSbjbItemOptionalKeys2(fenlei);
+  const sbjbItemOptionalKeys1Local = getSbjbItemOptionalKeys1(fenlei);
+  const sbjbItemOptionalKeys2Local = getSbjbItemOptionalKeys2(fenlei);
   const header = [
     "开启",
     "门铰",
     "门扇厚度",
     "条件",
     "包边方向",
-    ...sbjbItemOptionalKeys2.map((key) => sbjbItemSbjbItemKeys.map((key2) => key + key2)).flat(),
-    ...sbjbItemOptionalKeys1,
+    ...sbjbItemOptionalKeys2Local.map((key) => sbjbItemSbjbItemKeys.map((key2) => key + key2)).flat(),
+    ...sbjbItemOptionalKeys1Local,
     ...(show双开门扇宽生成方式Val ? ["双开门扇宽生成方式", "锁扇铰扇蓝线宽固定差值"] : []),
     "停用",
     "排序",
@@ -317,8 +317,8 @@ export const exportXhmrmsbjSbjbItemSbjbs = (fenlei: string, items: XhmrmsbjSbjbI
       item.门扇厚度,
       item.条件,
       item.包边方向,
-      ...sbjbItemOptionalKeys2.map((key) => sbjbItemSbjbItemKeys.map((key2) => item[key]?.[key2])).flat(),
-      ...sbjbItemOptionalKeys1.map((key) => item[key]),
+      ...sbjbItemOptionalKeys2Local.map((key) => sbjbItemSbjbItemKeys.map((key2) => item[key]?.[key2])).flat(),
+      ...sbjbItemOptionalKeys1Local.map((key) => item[key]),
       ...(show双开门扇宽生成方式Val ? [item.双开门扇宽生成方式, item.锁扇铰扇蓝线宽固定差值] : []),
       item.停用,
       item.排序,

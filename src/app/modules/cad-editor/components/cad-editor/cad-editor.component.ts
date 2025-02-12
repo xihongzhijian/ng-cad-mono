@@ -553,14 +553,14 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     }
     this._scrollbars().forEach((scrollbar) => {
       const inputs = scrollbar.viewport.nativeElement.querySelectorAll("app-input");
-      const input = Array.from(inputs).find((el) => {
+      const input2 = Array.from(inputs).find((el) => {
         if (el instanceof HTMLElement && queryString(val, el.dataset.label || "")) {
           return true;
         }
         return false;
       });
-      if (input) {
-        scrollbar.scrollToElement(input);
+      if (input2) {
+        scrollbar.scrollToElement(input2);
       }
     });
   });

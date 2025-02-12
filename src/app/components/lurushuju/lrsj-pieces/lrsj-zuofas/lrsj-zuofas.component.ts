@@ -16,7 +16,7 @@ import {cloneDeep} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {openSelectZuofaDialog} from "../../select-zuofa-dialog/select-zuofa-dialog.component";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
-import {getZuofa, sortZuofas, XinghaoRaw, 工艺做法} from "../../xinghao-data";
+import {getZuofa, sortZuofas, XinghaoRaw, 工艺做法Item} from "../../xinghao-data";
 import {LrsjPiece} from "../lrsj-piece";
 import {updateMenjiaoData} from "../lrsj-suanliao-data/lrsj-suanliao-data.utils";
 import {LrsjZuofaComponent} from "../lrsj-zuofa/lrsj-zuofa.component";
@@ -92,7 +92,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
       this.openZuofa(fenleiName, zuofa);
     }
   }
-  async removeZuofa(fenleiName: string, zuofa: 工艺做法) {
+  async removeZuofa(fenleiName: string, zuofa: 工艺做法Item) {
     const xinghao = this.xinghao();
     if (!xinghao || !(await this.message.confirm("确定删除选中的工艺做法吗？"))) {
       return;
@@ -101,7 +101,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
     const xinghaoRaw = await this.http.getData<XinghaoRaw>("shuju/api/removeGongyi", {名字: zuofa.名字, 型号, 产品分类: fenleiName});
     await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw?.产品分类);
   }
-  async copyZuofa(fenleiName: string, zuofa: 工艺做法) {
+  async copyZuofa(fenleiName: string, zuofa: 工艺做法Item) {
     const xinghao = this.xinghao();
     if (!xinghao) {
       return;
@@ -135,14 +135,14 @@ export class LrsjZuofasComponent extends LrsjPiece {
       await this.lrsjStatus.updateXinghaoFenlei(xinghaoRaw.产品分类);
     }
   }
-  async editZuofa(fenleiName: string, zuofa: 工艺做法) {
+  async editZuofa(fenleiName: string, zuofa: 工艺做法Item) {
     const xinghao = this.xinghao();
     if (!xinghao) {
       return;
     }
     const zuofas = xinghao.产品分类[fenleiName];
     const zuofaNew = cloneDeep(zuofa);
-    const form: InputInfo<Partial<工艺做法>>[] = [
+    const form: InputInfo<Partial<工艺做法Item>>[] = [
       {type: "string", label: "名字", model: {data: zuofaNew, key: "名字"}, validators: Validators.required},
       {
         type: "image",
@@ -172,10 +172,10 @@ export class LrsjZuofasComponent extends LrsjPiece {
     if (result) {
       const updateDatas: ObjectOf<typeof result> = {[zuofa.名字]: result};
       if (result.默认值) {
-        for (const zuofa of zuofas) {
-          if (zuofa.名字 !== zuofaNew.名字) {
-            zuofa.默认值 = false;
-            updateDatas[zuofa.名字] = {默认值: false};
+        for (const zuofa2 of zuofas) {
+          if (zuofa2.名字 !== zuofaNew.名字) {
+            zuofa2.默认值 = false;
+            updateDatas[zuofa2.名字] = {默认值: false};
           }
         }
       }
@@ -199,7 +199,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
       }
     }
   }
-  async openZuofa(fenleiName: string, zuofa: 工艺做法) {
+  async openZuofa(fenleiName: string, zuofa: 工艺做法Item) {
     const zuofaName = zuofa.名字;
     zuofa = getZuofa(zuofa, await this.lrsjStatus.zuofaOptionsManager.fetch());
     const infos = this.zuofaInfos().slice();

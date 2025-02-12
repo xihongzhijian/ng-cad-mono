@@ -24,7 +24,6 @@ export const filterSlgsList = async (slgsList: 算料公式[], vars: Formulas, c
 };
 
 export const getTestCaseInfo = async (testCase: 测试用例, data: 算料数据2, calc: CalcService) => {
-  const {算料公式} = data;
   const cads = cloneDeep(data.算料CAD);
   const info: SuanliaoTestInfo = {slgsList: [], errors: [], allVars: [], requiredVars: [], cads};
 
@@ -35,7 +34,7 @@ export const getTestCaseInfo = async (testCase: 测试用例, data: 算料数据
       delete testVars[key];
     }
   }
-  const slgsList = await filterSlgsList(算料公式, testVars, calc);
+  const slgsList = await filterSlgsList(data.算料公式, testVars, calc);
   info.slgsList = slgsList;
   const formulas: Formulas = {};
   for (const slgs of slgsList) {
@@ -110,16 +109,16 @@ export const calcTestCase = async (
   if (result.calcResult) {
     const calcResult = result.calcResult;
     const cads = data.算料CAD.map((v) => {
-      const data = new CadData(v.json);
-      let zhankai = data.zhankai[0];
+      const data2 = new CadData(v.json);
+      let zhankai = data2.zhankai[0];
       if (!zhankai) {
         zhankai = new CadZhankai();
-        zhankai.name = data.name;
+        zhankai.name = data2.name;
       }
       const numResult = Calc.calcExpress(`(${zhankai.shuliang})*(${zhankai.shuliangbeishu})`, calcResult.succeed);
       const num = numResult.error ? 1 : numResult.value;
       return {
-        data,
+        data: data2,
         info: {
           houtaiId: v._id,
           zhankai: [
