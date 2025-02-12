@@ -10,14 +10,18 @@ import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {VarNames} from "@components/var-names/var-names.types";
 import {getVarNames} from "@components/var-names/var-names.utils";
 import {CadData} from "@lucilor/cad-viewer";
+import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
+import {DataListNavNode, getNodePathSelect, moveDataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {MsbjData} from "@views/msbj/msbj.types";
 import {MsbjInfo} from "@views/msbj/msbj.utils";
 import {cloneDeep, difference} from "lodash";
+import {v4} from "uuid";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
 import {getEmptyMokuaiItem, mokuaiSubmitAfter, mokuaiSubmitBefore} from "../mokuai-item/mokuai-item.utils";
 
@@ -90,8 +94,9 @@ export class BjmkStatusService {
     return {mokuais, missingMokuais};
   }
 
-  async getMokuaiWithForm(mokuai?: Partial<MokuaiItem>, mokuaiOverride?: Partial<MokuaiItem>) {
+  async getMokuaiWithForm(mokuai?: Partial<MokuaiItem>, opts?: {mokuaiOverride?: Partial<MokuaiItem>; dataList?: DataListComponent}) {
     const data: Partial<MokuaiItem> = mokuai ? cloneDeep(mokuai) : getEmptyMokuaiItem();
+    const {mokuaiOverride, dataList} = opts || {};
     if (mokuaiOverride) {
       Object.assign(data, mokuaiOverride);
     }
@@ -99,45 +104,53 @@ export class BjmkStatusService {
     if (mokuai?.name) {
       allNames.delete(mokuai.name);
     }
-    const form: InputInfo<typeof data>[] = [
-      {
-        type: "string",
-        label: "名字",
-        model: {data, key: "name"},
-        validators: [Validators.required, (control) => (allNames.has(control.value) ? {名字不能重复: true} : null)]
-      },
-      {type: "string", label: "分类", model: {data, key: "type"}, validators: Validators.required},
-      {type: "number", label: "排序", model: {data, key: "order"}},
-      {
-        type: "image",
-        label: "效果图",
-        value: data.xiaoguotu,
-        prefix: this.imgPrefix(),
-        onChange: async (val, info) => {
-          if (val) {
-            const uploadResult = await this.http.uploadImage(val);
-            if (uploadResult) {
-              data.xiaoguotu = uploadResult.url;
-            } else {
-              data.xiaoguotu = "";
-            }
-          } else {
-            data.xiaoguotu = "";
-          }
-          info.value = data.xiaoguotu;
-        }
+    const getter = new InputInfoWithDataGetter(data, {clearable: true});
+    let nodePathSelect: ReturnType<typeof getNodePathSelect> | null = null;
+    if (dataList) {
+      const node = dataList.activeNavNode();
+      if (node) {
+        nodePathSelect = getNodePathSelect(dataList.navNodes(), node);
       }
+    }
+    const form: InputInfo[] = [
+      getter.string("name", {
+        label: "名字",
+        validators: [Validators.required, (control) => (allNames.has(control.value) ? {名字不能重复: true} : null)]
+      }),
+      ...(nodePathSelect ? [nodePathSelect.inputInfo] : []),
+      getter.string("type", {label: "分类", validators: Validators.required}),
+      getter.number("order", {label: "排序"}),
+      getter.image("xiaoguotu", this.http, {label: "效果图", prefix: this.imgPrefix()})
     ];
     const result = await this.message.form(form);
     if (result) {
+      if (dataList && nodePathSelect) {
+        const nodes = dataList.navNodes();
+        let node = dataList.activeNavNode();
+        if (node) {
+          const {from, to} = nodePathSelect.data;
+          if (to && data.type) {
+            if (!to.children) {
+              to.children = [];
+            }
+            if (!to.children.some((v) => !v.hasChild() && v.name === data.type)) {
+              node = new DataListNavNode({id: v4(), name: data.type});
+              to.children.push(node);
+            }
+          }
+          moveDataListNavNode(nodes, node, from, to);
+          await dataList.setNavNodes();
+          dataList.activeNavNode.set(node);
+        }
+      }
       return data;
     }
     return null;
   }
-  async addMukuai(mokuai?: Partial<MokuaiItem>, mokuaiOverride?: Partial<MokuaiItem>) {
+  async addMukuai(mokuai?: Partial<MokuaiItem>, opts?: {mokuaiOverride?: Partial<MokuaiItem>; dataList?: DataListComponent}) {
     let mokuai2: Partial<MokuaiItem> | undefined | null = cloneDeep(mokuai);
     if (!mokuai2) {
-      mokuai2 = await this.getMokuaiWithForm(undefined, mokuaiOverride);
+      mokuai2 = await this.getMokuaiWithForm(undefined, opts);
     }
     if (mokuai2) {
       mokuaiSubmitBefore(mokuai2);
@@ -152,8 +165,9 @@ export class BjmkStatusService {
     }
     return null;
   }
-  async editMokuai(mokuai: Partial<MokuaiItem>, noForm?: boolean) {
-    const mokuai2 = noForm ? cloneDeep(mokuai) : await this.getMokuaiWithForm(mokuai);
+  async editMokuai(mokuai: Partial<MokuaiItem>, opts?: {noForm?: boolean; dataList?: DataListComponent}) {
+    const {noForm, dataList} = opts || {};
+    const mokuai2 = noForm ? cloneDeep(mokuai) : await this.getMokuaiWithForm(mokuai, {dataList});
     if (mokuai2) {
       mokuaiSubmitBefore(mokuai2);
       let mokuai3 = await this.http.getData<MokuaiItem>("ngcad/editPeijianmokuai", {item: mokuai2});
@@ -168,7 +182,7 @@ export class BjmkStatusService {
   }
   async copyMokuai(mokuai: MokuaiItem) {
     const names = this.mokuaisManager.items().map((v) => v.name);
-    const mokuai2 = await this.getMokuaiWithForm(mokuai, {name: getCopyName(names, mokuai.name)});
+    const mokuai2 = await this.getMokuaiWithForm(mokuai, {mokuaiOverride: {name: getCopyName(names, mokuai.name)}});
     if (mokuai2) {
       if (mokuai2.cads) {
         const cadIdMap = new Map<string, string>();

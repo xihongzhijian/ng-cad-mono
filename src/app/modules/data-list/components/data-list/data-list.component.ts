@@ -49,6 +49,7 @@ import {
   getDataListNavNodeList,
   getDataListNavNodePath,
   getDataListNavNodesFlat,
+  getNodePathSelect,
   moveDataListNavNode,
   sortDataListItems,
   sortDataListNavNodeList,
@@ -101,7 +102,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
 
   private _navCollection: CadCollection = "ngcadNavs";
   private _navDataId = "";
-  navDataSource = signal<DataListNavNode[]>([]);
+  navNodes = signal<DataListNavNode[]>([]);
   childrenAccessor = ({children}: DataListNavNode) => children || [];
   navNodehasChild = (_: number, node: DataListNavNode) => node.hasChild();
   navNodeTrackBy = (_: number, node: DataListNavNode) => node.id;
@@ -145,10 +146,10 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
     if (data) {
       this._navDataId = data._id;
-      this.navDataSource.set(getDataListNavNodeList(data.data || []));
+      this.navNodes.set(getDataListNavNodeList(data.data || []));
     } else {
       this._navDataId = "";
-      this.navDataSource.set([]);
+      this.navNodes.set([]);
     }
   }
   async setNavNodes() {
@@ -156,12 +157,12 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       this.message.error("未找到数据");
       return;
     }
-    const data = this.navDataSource();
+    const data = this.navNodes();
     sortDataListNavNodeList(data);
     updateDataListNavNodeList(data, this.itemsAll());
-    this.navDataSource.set([]);
+    this.navNodes.set([]);
     await timeout(0);
-    this.navDataSource.set(data);
+    this.navNodes.set(data);
     const activeNavNode = this.activeNavNode();
     if (activeNavNode) {
       this.activeNavNode.set(null);
@@ -173,71 +174,32 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     if (!type) {
       return;
     }
-    const node = findActiveDataListNavNode(this.navDataSource(), type);
+    const node = findActiveDataListNavNode(this.navNodes(), type);
     if (node) {
       this.activeNavNode.set(node);
     }
   }
 
-  async getNavNodeItem(data?: DataListNavNode, to?: DataListNavNode | null) {
-    const id = data ? data.id : null;
-    if (data) {
-      data = cloneDeep(data);
+  async getNavNodeItem(node?: DataListNavNode, to?: DataListNavNode | null) {
+    const id = node ? node.id : null;
+    if (node) {
+      node = cloneDeep(node);
     } else {
-      data = new DataListNavNode({id: v4(), name: "", children: []});
+      node = new DataListNavNode({id: v4(), name: ""});
     }
     const names: string[] = [];
-    const nodes = this.navDataSource();
-    for (const node of getDataListNavNodesFlat(nodes)) {
-      if (id && node.id === id) {
+    const nodes = this.navNodes();
+    for (const node2 of getDataListNavNodesFlat(nodes)) {
+      if (id && node2.id === id) {
         continue;
       }
-      if (!node.isVirtual) {
-        names.push(node.name);
+      if (!node2.isVirtual) {
+        names.push(node2.name);
       }
     }
 
-    const pathOptions: string[] = [];
-    const pathMap = new Map<string, DataListNavNode | null>();
-    const stringifyPath = (path: DataListNavNode[]) => path.map((v) => v.name).join("/");
-    const getNodePathInfos = function* (node: DataListNavNode, parentPath: DataListNavNode[] = []): Generator<{path: DataListNavNode[]}> {
-      if (data && node.id === data.id) {
-        return;
-      }
-      const path = [...parentPath, node];
-      yield {path};
-      if (node.children && node.children.length > 0) {
-        for (const child of node.children) {
-          yield* getNodePathInfos(child, path);
-        }
-      }
-    };
-    for (const node of nodes) {
-      if (node.isVirtual) {
-        continue;
-      }
-      for (const info of getNodePathInfos(node)) {
-        const node2 = info.path.at(-1);
-        if (node2) {
-          const name = stringifyPath(info.path);
-          pathOptions.push(name);
-          pathMap.set(name, node2);
-        }
-      }
-    }
-    let path2: ReturnType<typeof getDataListNavNodePath>;
-    if (to) {
-      path2 = getDataListNavNodePath(nodes, to);
-    } else {
-      path2 = getDataListNavNodePath(nodes, data).slice(0, -1);
-    }
-    const path = stringifyPath(path2);
-    const from = path2.at(-1) || null;
-    if (!to) {
-      to = from;
-    }
-
-    const getter = new InputInfoWithDataGetter(data);
+    const getter = new InputInfoWithDataGetter(node, {clearable: true});
+    const nodePathSelect = getNodePathSelect(nodes, node, to);
     const form: InputInfo<DataListNavNode>[] = [
       getter.string("name", {
         label: "名字",
@@ -252,25 +214,15 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
           }
         ]
       }),
-      {
-        type: "select",
-        label: "上一级分类",
-        clearable: true,
-        options: pathOptions,
-        multiple: false,
-        optionsDialog: {useLocalOptions: true},
-        value: path,
-        onChange: (val) => {
-          to = pathMap.get(val);
-        }
-      },
+      nodePathSelect.inputInfo,
       getter.number("order", {label: "排序"})
     ];
     const result = await this.message.form(form);
     if (result) {
-      moveDataListNavNode(nodes, data, from, to);
-      this.activeNavNode.set(data);
-      return data;
+      const {from, to: to2} = nodePathSelect.data;
+      moveDataListNavNode(nodes, node, from, to2);
+      this.activeNavNode.set(node);
+      return node;
     }
     return null;
   }
@@ -322,7 +274,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       }
       return false;
     };
-    remove(this.navDataSource());
+    remove(this.navNodes());
     await this.setNavNodes();
   }
   clickNavNode(node: DataListNavNode) {
@@ -404,7 +356,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   });
   private async _onItemsAllChange(itemsAll: T[]) {
     await this.untilInited();
-    updateDataListNavNodeList(this.navDataSource(), itemsAll);
+    updateDataListNavNodeList(this.navNodes(), itemsAll);
     this.filter();
   }
 
@@ -434,7 +386,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       return;
     }
     const treeEl = this.navNodesTreeEl()?.nativeElement;
-    const path = getDataListNavNodePath(this.navDataSource(), activeNode);
+    const path = getDataListNavNodePath(this.navNodes(), activeNode);
     for (const [i, node] of path.entries()) {
       this.navNodesTree().expand(node);
       if (i === path.length - 1) {
@@ -448,7 +400,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
 
   filter() {
     const navQuery = this.navQuery();
-    const nodes = this.navDataSource().slice();
+    const nodes = this.navNodes().slice();
     const activeNode = this.activeNavNode();
     const isActiveNode = (node: DataListNavNode) => activeNode && node.id === activeNode.id;
     const filterNodes = (nodes2: DataListNavNode[]) => {
@@ -513,7 +465,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       return countTotal;
     };
     setCount(nodes);
-    this.navDataSource.set(nodes);
+    this.navNodes.set(nodes);
   }
 
   async importNavNodes() {
@@ -531,11 +483,11 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       return;
     }
     const dataList = getDataListNavNodeList(nodes);
-    this.navDataSource.set(dataList);
+    this.navNodes.set(dataList);
     this.setNavNodes();
   }
   async exportNavNodes() {
-    const nodes = this.navDataSource().map((node) => node.export());
+    const nodes = this.navNodes().map((node) => node.export());
     downloadByString(JSON.stringify(nodes), {filename: `${this.navDataTitle()}.json`});
   }
 }

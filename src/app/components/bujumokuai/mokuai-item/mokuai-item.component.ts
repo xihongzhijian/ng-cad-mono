@@ -609,7 +609,7 @@ export class MokuaiItemComponent {
       }
     }
     forceUpdateKeys.clear();
-    await this.bjmkStatus.editMokuai(mokuaiNew, true);
+    await this.bjmkStatus.editMokuai(mokuaiNew, {noForm: true});
     this.isSaved.set(true);
   }
   async saveAs() {

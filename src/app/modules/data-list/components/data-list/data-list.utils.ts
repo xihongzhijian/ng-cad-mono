@@ -1,4 +1,5 @@
 import {ObjectOf} from "@lucilor/utils";
+import {InputInfoSelectSingle} from "@modules/input/components/input.types";
 import {isEqual} from "lodash";
 import {v4} from "uuid";
 import {DataListItem, DataListNavNodeRaw} from "./data-list.types";
@@ -282,4 +283,60 @@ export const sortDataListItems = <T extends DataListItem>(items: T[]) => {
     }
   }
   return sortedItems;
+};
+
+export const getNodePathSelect = (nodes: DataListNavNode[], node: DataListNavNode, to?: DataListNavNode | null) => {
+  const pathOptions: string[] = [];
+  const pathMap = new Map<string, DataListNavNode | null>();
+  const stringifyPath = (path: DataListNavNode[]) => path.map((v) => v.name).join("/");
+  const getNodePathInfos = function* (node2: DataListNavNode, parentPath: DataListNavNode[] = []): Generator<{path: DataListNavNode[]}> {
+    if (node && node2.id === node.id) {
+      return;
+    }
+    const path = [...parentPath, node2];
+    yield {path};
+    if (node2.children && node2.children.length > 0) {
+      for (const child of node2.children) {
+        yield* getNodePathInfos(child, path);
+      }
+    }
+  };
+  for (const node2 of nodes) {
+    if (node2.isVirtual) {
+      continue;
+    }
+    for (const info of getNodePathInfos(node2)) {
+      const node3 = info.path.at(-1);
+      if (node3) {
+        const name = stringifyPath(info.path);
+        pathOptions.push(name);
+        pathMap.set(name, node3);
+      }
+    }
+  }
+  let path2: ReturnType<typeof getDataListNavNodePath>;
+  if (to) {
+    path2 = getDataListNavNodePath(nodes, to);
+  } else {
+    path2 = getDataListNavNodePath(nodes, node).slice(0, -1);
+  }
+  const path = stringifyPath(path2);
+  const from = path2.at(-1) || null;
+  if (!to) {
+    to = from;
+  }
+  const data = {from, to};
+  const inputInfo: InputInfoSelectSingle = {
+    type: "select",
+    label: "上一级分类",
+    clearable: true,
+    options: pathOptions,
+    multiple: false,
+    optionsDialog: {useLocalOptions: true},
+    value: path,
+    onChange: (val) => {
+      data.to = pathMap.get(val) ?? null;
+    }
+  };
+  return {inputInfo, data};
 };

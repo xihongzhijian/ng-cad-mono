@@ -111,13 +111,13 @@ export interface InputInfoSelectBase<T = any, K = any> extends InputInfoBase<T> 
   optionsDialog?: OptionsDialog;
   openInNewTab?: {optionKey: string; onOptionsChange: (options: GetOptionsResultItem[]) => void};
 }
-export interface InputInfoSelectSingle<T = any, K = any> extends InputInfoSelectBase<T> {
+export interface InputInfoSelectSingle<T = any, K = any> extends InputInfoSelectBase<T, K> {
   value?: Value<K>;
   optionText?: string | ((val: string) => string);
   multiple?: false;
   onChange?: (val: K, info: this) => void;
 }
-export interface InputInfoSelectMultiple<T = any, K = string> extends InputInfoSelectBase<T> {
+export interface InputInfoSelectMultiple<T = any, K = string> extends InputInfoSelectBase<T, K> {
   value?: Value<K[]>;
   optionText?: string | ((val: string[]) => string);
   multiple: true;

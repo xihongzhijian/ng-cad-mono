@@ -128,10 +128,11 @@ export class MokuaikuComponent implements OnInit {
   }
 
   async addMukuai(mokuai?: Partial<MokuaiItem>) {
-    const mokuai2 = await this.bjmkStatus.addMukuai(mokuai, {type: this.mokuaiActiveNavNode()?.name});
+    const dataList = this.dataList();
+    const mokuai2 = await this.bjmkStatus.addMukuai(mokuai, {mokuaiOverride: {type: this.mokuaiActiveNavNode()?.name}, dataList});
     if (mokuai2) {
       if (mokuai2.type) {
-        this.dataList()?.updateActiveNavNode(mokuai2.type);
+        dataList?.updateActiveNavNode(mokuai2.type);
       }
       this.enterMokuai(mokuai2);
     }
@@ -139,11 +140,11 @@ export class MokuaikuComponent implements OnInit {
   async editMokuai(mokuai: MokuaiItem) {
     const dataList = this.dataList();
     const i = dataList?.getItemIndex((v) => v.id === mokuai.id) ?? -1;
-    await this.bjmkStatus.editMokuai(mokuai);
+    await this.bjmkStatus.editMokuai(mokuai, {dataList});
     await timeout(0);
     const j = dataList?.getItemIndex((v) => v.id === mokuai.id) ?? -1;
     if (i >= 0 && j >= 0 && i !== j) {
-      this.dataList()?.scrollToItem(`[data-id="${mokuai.id}"]`);
+      dataList?.scrollToItem(`[data-id="${mokuai.id}"]`);
     }
   }
   async copyMokuai(item: MokuaiItem) {
