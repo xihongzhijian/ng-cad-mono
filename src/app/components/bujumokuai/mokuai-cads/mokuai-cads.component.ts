@@ -255,7 +255,7 @@ export class MokuaiCadsComponent {
     await timeout(0);
     const j = dataList?.getItemIndex((v) => v.id === id) ?? -1;
     if (i >= 0 && j >= 0 && i !== j) {
-      this.dataList()?.scrollToItem(`[data-id="${id}"]`);
+      this.dataList()?.scrollToItemWithId(id);
     }
   }
   clickCad(i: number) {

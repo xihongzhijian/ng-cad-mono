@@ -22,7 +22,7 @@ import {environment} from "@env";
 import {timeout} from "@lucilor/utils";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
 import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
-import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
+import {DataListNavNode, findDataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@modules/data-list/data-list.module";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -144,7 +144,7 @@ export class MokuaikuComponent implements OnInit {
     await timeout(0);
     const j = dataList?.getItemIndex((v) => v.id === mokuai.id) ?? -1;
     if (i >= 0 && j >= 0 && i !== j) {
-      dataList?.scrollToItem(`[data-id="${mokuai.id}"]`);
+      dataList?.scrollToItemWithId(String(mokuai.id));
     }
   }
   async copyMokuai(item: MokuaiItem) {
@@ -252,6 +252,20 @@ export class MokuaikuComponent implements OnInit {
   }
   unselectMokuai(mokuai: MokuaiItem) {
     this.selectedMokuaiIds.update((v) => v.filter((v2) => v2 !== mokuai.id));
+  }
+  async locateMokuai(mokuai: MokuaiItem) {
+    const dataList = this.dataList();
+    if (!dataList) {
+      return;
+    }
+    const nodes = dataList.navNodes();
+    const node = findDataListNavNode(nodes, (v) => v.name === mokuai.type);
+    if (node) {
+      dataList.clickNavNode(node);
+    }
+    await timeout(0);
+    dataList.scrollToItemWithId(String(mokuai.id));
+    this.mokuaiActiveItem.set(mokuai);
   }
 
   showXhmrmsbjsUsingMokuai(mokuai: MokuaiItem) {

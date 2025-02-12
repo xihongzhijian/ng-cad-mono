@@ -371,6 +371,9 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       scrollbar.scrollToElement(el);
     }
   }
+  scrollToItemWithId(id: string) {
+    this.scrollToItem(`[data-id="${id}"]`);
+  }
   getItemIndex(compareFn: (item: T) => boolean) {
     return this.itemsAll().findIndex((item) => compareFn(item));
   }
