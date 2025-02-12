@@ -287,6 +287,17 @@ export const validateCad = (collection: CadCollection, data: CadData, noInfo?: b
       result.errors.push("分体拼接位置存在无效数据");
     }
   }
+  if (data.分体对应线.length > 0) {
+    let isIncomplete = false;
+    for (const group of data.分体对应线) {
+      if (group.length === 1) {
+        isIncomplete = true;
+      }
+    }
+    if (isIncomplete) {
+      result.errors.push("分体对应线没有设置完");
+    }
+  }
   if (!isEmpty(data.blocks) || data.entities.insert.length > 0) {
     result.errors.push("不能包含块");
   }

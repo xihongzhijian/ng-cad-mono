@@ -265,6 +265,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
   }
   private _pairedLinesInfo: {
     onCadEntitiesSelect: CadEventCallBack<"entitiesselect">;
+    onCadEntitiesUnselect: CadEventCallBack<"entitiesunselect">;
   } | null = null;
   selectPairedLines(i: number) {
     this.status.toggleCadStatus(new CadStatusFentiPairedLines(i));
@@ -275,7 +276,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
       const viewer = this.status.cad;
       const info = getCadFentiInfo(viewer.data);
       const {rawEntities, fentiEntities} = info;
-      const pairedLinesList = this.pairedLinesList().slice();
+      let pairedLinesList = this.pairedLinesList().slice();
       let pairedLinesPrev = pairedLinesList[cadStatus.index];
       const rawIds: string[] = [];
       const fentiIds: string[] = [];
@@ -296,6 +297,15 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
         this.status.blur(toBlur);
       };
       setLines(pairedLinesPrev);
+
+      const updateLines = (lines: string[]) => {
+        pairedLinesList[cadStatus.index] = lines;
+        pairedLinesList = [...pairedLinesList];
+        this.status.cad.data.分体对应线 = pairedLinesList;
+        this.pairedLinesList.set(pairedLinesList);
+        setLines(lines);
+        pairedLinesPrev = lines;
+      };
 
       this._pairedLinesInfo = {
         onCadEntitiesSelect: (entities) => {
@@ -333,19 +343,21 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
           } else if (fentiSelectedPrev.length > 0) {
             pairedLines.push(fentiSelectedPrev[0]);
           }
-          pairedLinesList[cadStatus.index] = pairedLines;
-          this.status.cad.data.分体对应线 = pairedLinesList;
-          this.pairedLinesList.set(pairedLinesList);
-          setLines(pairedLines);
-          pairedLinesPrev = pairedLines;
+          updateLines(pairedLines);
+        },
+        onCadEntitiesUnselect: (entities) => {
+          const pairedLines = pairedLinesPrev.filter((v) => !entities.find((e) => e.id === v));
+          updateLines(pairedLines);
         }
       };
       viewer.on("entitiesselect", this._pairedLinesInfo.onCadEntitiesSelect);
+      viewer.on("entitiesunselect", this._pairedLinesInfo.onCadEntitiesUnselect);
     },
     () => {
       if (this._pairedLinesInfo) {
         const viewer = this.status.cad;
         viewer.off("entitiesselect", this._pairedLinesInfo.onCadEntitiesSelect);
+        viewer.off("entitiesunselect", this._pairedLinesInfo.onCadEntitiesUnselect);
         this._pairedLinesInfo = null;
         this.status.focus();
       }
