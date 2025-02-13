@@ -32,3 +32,8 @@ export const intersectionKeysTranslate: Record<IntersectionKey, string> = {
   指定分体位置: "指定分体位置",
   指定位置不折: "指定位置不折"
 };
+
+export interface FentiDuiyingxianItem {
+  ids: string[];
+  dl: number;
+}

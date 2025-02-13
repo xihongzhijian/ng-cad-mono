@@ -12,7 +12,7 @@ import {
   separateArray,
   separateObject
 } from "../cad-utils";
-import {CadDataInfo, intersectionKeys} from "./cad-data.types";
+import {CadDataInfo, FentiDuiyingxianItem, intersectionKeys} from "./cad-data.types";
 import {CadEntities, tryGetCadEntity} from "./cad-entities";
 import {CadCircle, CadDimension, CadEntity, CadLine} from "./cad-entity";
 import {CadDimensionLinear} from "./cad-entity/cad-dimension-linear";
@@ -168,7 +168,7 @@ export class CadData {
   自动生成双折宽双折高公式 = true;
   装配示意图自动拼接锁边铰边 = "";
   分体拼接位置: string[][][] = [];
-  分体对应线: string[][] = [];
+  分体对应线: FentiDuiyingxianItem[] = [];
 
   constructor(data?: ObjectOf<any>, resetIds = false) {
     this._entities = new CadEntities();
@@ -347,10 +347,12 @@ export class CadData {
       v.resetIds(entitiesOnly);
     });
     const idMap = this.entities.idMap;
-    const fentiIdKeys = ["分体对应线"] as const;
     const fentiIdKeys2 = ["分体拼接位置"] as const;
-    for (const key of [...intersectionKeys, ...fentiIdKeys]) {
+    for (const key of intersectionKeys) {
       this[key] = this[key].map((v) => v.map((id) => idMap[id] || id));
+    }
+    for (const item of this.分体对应线) {
+      item.ids = item.ids.map((id) => idMap[id] || id);
     }
     for (const key of [...fentiIdKeys2]) {
       this[key] = this[key].map((v) => v.map((v2) => v2.map((id) => idMap[id] || id)));

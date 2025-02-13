@@ -6,6 +6,7 @@ import {selectFiles, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
+import {getInputInfoGroup} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
@@ -219,40 +220,51 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
     const index = this.status.findCadStatus((v) => v instanceof CadStatusFentiPairedLines)?.index;
     const list = this.pairedLinesList();
     return list.map((v, i) => {
-      const info: InputInfo = {
-        type: "string",
-        label: "分体对应线",
-        value: v.length > 1 ? "已指定" : "未指定",
-        selectOnly: true,
-        suffixIcons: [
-          {
-            name: "linear_scale",
-            isDefault: true,
-            color: i === index ? "accent" : "primary",
-            onClick: () => this.selectPairedLines(i)
-          },
-          {
-            name: "add_circle",
-            color: "primary",
-            onClick: () => this.addPairedLines(i + 1)
-          },
-          {
-            name: "remove_circle",
-            color: "primary",
-            onClick: () => this.removePairedLines(i)
+      const infos: InputInfo[] = [
+        {
+          type: "string",
+          label: "分体对应线",
+          value: v.ids.length > 1 ? "已指定" : "未指定",
+          selectOnly: true,
+          suffixIcons: [
+            {
+              name: "linear_scale",
+              isDefault: true,
+              color: i === index ? "accent" : "primary",
+              onClick: () => this.selectPairedLines(i)
+            },
+            {
+              name: "add_circle",
+              color: "primary",
+              onClick: () => this.addPairedLines(i + 1)
+            },
+            {
+              name: "remove_circle",
+              color: "primary",
+              onClick: () => this.removePairedLines(i)
+            }
+          ]
+        },
+        {
+          type: "number",
+          label: "分体变化线长",
+          value: v.dl,
+          onChange: (val) => {
+            v.dl = val;
+            this.pairedLinesList.set([...list]);
           }
-        ],
-        style: {width: "100%"}
-      };
-      return info;
+        }
+      ];
+      return getInputInfoGroup(infos, {style: {width: "100%"}});
     });
   });
   addPairedLines(i?: number) {
     const pairedLinesList = this.pairedLinesList().slice();
+    const item: (typeof pairedLinesList)[number] = {ids: [], dl: 0};
     if (typeof i === "number") {
-      pairedLinesList.splice(i, 0, []);
+      pairedLinesList.splice(i, 0, item);
     } else {
-      pairedLinesList.push([]);
+      pairedLinesList.push(item);
     }
     this.status.cad.data.分体对应线 = pairedLinesList;
     this.pairedLinesList.set(pairedLinesList);
@@ -277,12 +289,12 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
       const info = getCadFentiInfo(viewer.data);
       const {rawEntities, fentiEntities} = info;
       let pairedLinesList = this.pairedLinesList().slice();
-      let pairedLinesPrev = pairedLinesList[cadStatus.index];
+      let pairedLineIdsPrev = pairedLinesList[cadStatus.index].ids;
       const rawIds: string[] = [];
       const fentiIds: string[] = [];
       viewer.unselectAll();
 
-      const setLines = (lines: typeof pairedLinesPrev) => {
+      const setLines = (lines: typeof pairedLineIdsPrev) => {
         const toFocus = new CadEntities();
         const toBlur = new CadEntities();
         toFocus.merge(rawEntities).merge(fentiEntities);
@@ -296,15 +308,15 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
         });
         this.status.blur(toBlur);
       };
-      setLines(pairedLinesPrev);
+      setLines(pairedLineIdsPrev);
 
-      const updateLines = (lines: string[]) => {
-        pairedLinesList[cadStatus.index] = lines;
+      const updateLines = (lines: typeof pairedLineIdsPrev) => {
+        pairedLinesList[cadStatus.index].ids = lines;
         pairedLinesList = [...pairedLinesList];
         this.status.cad.data.分体对应线 = pairedLinesList;
         this.pairedLinesList.set(pairedLinesList);
         setLines(lines);
-        pairedLinesPrev = lines;
+        pairedLineIdsPrev = lines;
       };
 
       this._pairedLinesInfo = {
@@ -315,13 +327,13 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
           const fentiSelectedPrev: string[] = [];
           rawEntities.forEach((e) => {
             rawIds.push(e.id);
-            if (pairedLinesPrev.includes(e.id)) {
+            if (pairedLineIdsPrev.includes(e.id)) {
               rawSelectedPrev.push(e.id);
             }
           }, true);
           fentiEntities.forEach((e) => {
             fentiIds.push(e.id);
-            if (pairedLinesPrev.includes(e.id)) {
+            if (pairedLineIdsPrev.includes(e.id)) {
               fentiSelectedPrev.push(e.id);
             }
           }, true);
@@ -332,7 +344,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
               fentiSelected.push(e.id);
             }
           });
-          const pairedLines: typeof pairedLinesPrev = [];
+          const pairedLines: typeof pairedLineIdsPrev = [];
           if (rawSelected.length > 0) {
             pairedLines.push(rawSelected[0]);
           } else if (rawSelectedPrev.length > 0) {
@@ -346,7 +358,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
           updateLines(pairedLines);
         },
         onCadEntitiesUnselect: (entities) => {
-          const pairedLines = pairedLinesPrev.filter((v) => !entities.find((e) => e.id === v));
+          const pairedLines = pairedLineIdsPrev.filter((v) => !entities.find((e) => e.id === v));
           updateLines(pairedLines);
         }
       };

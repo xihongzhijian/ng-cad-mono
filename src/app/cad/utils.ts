@@ -289,8 +289,8 @@ export const validateCad = (collection: CadCollection, data: CadData, noInfo?: b
   }
   if (data.分体对应线.length > 0) {
     let isIncomplete = false;
-    for (const group of data.分体对应线) {
-      if (group.length === 1) {
+    for (const item of data.分体对应线) {
+      if (item.ids.length === 1) {
         isIncomplete = true;
       }
     }
