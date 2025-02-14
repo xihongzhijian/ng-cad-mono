@@ -1,6 +1,6 @@
 import {Injectable, signal, untracked, WritableSignal} from "@angular/core";
 import {local} from "@app/app.common";
-import {CadViewerConfig} from "@lucilor/cad-viewer";
+import {CadViewerConfig, getDefalutCadViewerConfig} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {cloneDeep, isEqual} from "lodash";
@@ -39,25 +39,16 @@ export class AppConfigService {
   noUser = false;
 
   constructor(private http: CadDataService) {
+    const defaultCadViewerConfig = getDefalutCadViewerConfig();
     const defaultConfig: AppConfig = {
+      ...defaultCadViewerConfig,
       width: innerWidth,
       height: innerHeight,
       backgroundColor: "black",
-      reverseSimilarColor: true,
-      validateLines: false,
-      padding: [0],
-      dragAxis: "xy",
-      selectMode: "multiple",
       entityDraggable: ["MTEXT", "DIMENSION"],
-      hideDimensions: false,
       lineGongshi: 8,
-      hideLineLength: false,
-      hideLineGongshi: false,
       minLinewidth: 2,
       fontStyle: {family: "微软雅黑", weight: "normal"},
-      dimStyle: {},
-      enableZoom: true,
-      dashedLinePadding: 2,
       // 分界线
       infoTabIndex: 0,
       leftMenuWidth: 200,

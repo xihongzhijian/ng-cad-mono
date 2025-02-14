@@ -233,6 +233,14 @@ export class AppStatusService {
     }
     this.setCadStatuses(statusesCurr);
   }
+  enterCadStatus(status: CadStatus) {
+    if (!this.hasCadStatus((v) => v.isEquals(status))) {
+      this.setCadStatuses([...this.cadStatuses(), status]);
+    }
+  }
+  leaveCadStatus(status: CadStatus) {
+    this.setCadStatuses(this.cadStatuses().filter((v) => !v.isEquals(status)));
+  }
   getCadStatusEffect<T extends CadStatus>(
     predicate: (v: CadStatus) => v is T,
     onEnter: (cadStatus: T) => MaybePromise<void>,
@@ -613,6 +621,7 @@ export class AppStatusService {
       e.selectable = !(e instanceof CadHatch);
       e.selected = (typeof selected === "function" ? selected(e) : selected) ?? false;
       e.opacity = 1;
+      e.highlighted = false;
     });
   }
 
@@ -626,6 +635,7 @@ export class AppStatusService {
       e.selectable = false;
       e.selected = (typeof selected === "function" ? selected(e) : selected) ?? false;
       e.opacity = 0.3;
+      e.highlighted = false;
     });
   }
 
@@ -818,6 +828,7 @@ export class AppStatusService {
     const points: Point[] = [];
     const cad = this.cad;
     const dimensionsAll = cad.data.getAllEntities().dimension;
+    const highlightedEntities = new CadEntities();
     if (!dimensions) {
       dimensions = dimensionsAll;
     }
@@ -837,6 +848,7 @@ export class AppStatusService {
           line.highlighted = true;
           points.push(getDimensionLinePoint(line, info.location, dimension.axis));
           esCurr.push(line);
+          highlightedEntities.add(line);
         }
         if (esPrev) {
           for (const e of esPrev) {
@@ -866,6 +878,7 @@ export class AppStatusService {
       }
     }
     this.setCadPoints(points.map((v) => ({point: v, lines: [], selected: false})));
+    return highlightedEntities;
   }
 
   highlightLineTexts(entities?: CadEntities) {
@@ -873,6 +886,7 @@ export class AppStatusService {
     if (!entities) {
       entities = cad.data.getAllEntities();
     }
+    const highlightedEntities = new CadEntities();
     entities.forEach((e) => {
       if (!(e instanceof CadLineLike)) {
         return;
@@ -886,9 +900,11 @@ export class AppStatusService {
       });
       if (selectedMtexts.length > 0) {
         e.highlighted = true;
+        highlightedEntities.add(e);
       } else {
         e.highlighted = false;
       }
     });
+    return highlightedEntities;
   }
 }

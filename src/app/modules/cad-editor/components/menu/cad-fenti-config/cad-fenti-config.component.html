@@ -10,6 +10,6 @@
   }
   <button mat-raised-button color="primary" (click)="addPairedLines()">添加分体对应线</button>
   @for (info of pairedLinesListInputInfos(); track $index) {
-    <app-input [info]="info"></app-input>
+    <app-input class="cad-fenti-paired-lines-item" [info]="info"></app-input>
   }
 </div>

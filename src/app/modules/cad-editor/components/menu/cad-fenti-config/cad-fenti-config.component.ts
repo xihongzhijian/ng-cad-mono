@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, computed, effect, forwardRef, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {environment} from "@env";
-import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
+import {CadData, CadEntities, CadEventCallBack, CadViewerConfig} from "@lucilor/cad-viewer";
 import {selectFiles, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -12,6 +12,7 @@ import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
 import {CadStatusDrawLine} from "@services/cad-status";
 import {isEqual} from "lodash";
+import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   addCadFentiEntities,
   addCadFentiSeparator,
@@ -23,7 +24,7 @@ import {
 
 @Component({
   selector: "app-cad-fenti-config",
-  imports: [forwardRef(() => InputComponent), MatButtonModule],
+  imports: [forwardRef(() => InputComponent), MatButtonModule, NgScrollbarModule],
   templateUrl: "./cad-fenti-config.component.html",
   styleUrl: "./cad-fenti-config.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -278,6 +279,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
   private _pairedLinesInfo: {
     onCadEntitiesSelect: CadEventCallBack<"entitiesselect">;
     onCadEntitiesUnselect: CadEventCallBack<"entitiesunselect">;
+    hotKeys: CadViewerConfig["hotKeys"];
   } | null = null;
   selectPairedLines(i: number) {
     this.status.toggleCadStatus(new CadStatusFentiPairedLines(i));
@@ -319,6 +321,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
         pairedLineIdsPrev = lines;
       };
 
+      const hotKeys = viewer.getConfig("hotKeys");
       this._pairedLinesInfo = {
         onCadEntitiesSelect: (entities) => {
           const rawSelected: string[] = [];
@@ -360,16 +363,19 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
         onCadEntitiesUnselect: (entities) => {
           const pairedLines = pairedLineIdsPrev.filter((v) => !entities.find((e) => e.id === v));
           updateLines(pairedLines);
-        }
+        },
+        hotKeys
       };
       viewer.on("entitiesselect", this._pairedLinesInfo.onCadEntitiesSelect);
       viewer.on("entitiesunselect", this._pairedLinesInfo.onCadEntitiesUnselect);
+      viewer.setConfig("hotKeys", {...hotKeys, unSelectAll: []});
     },
     () => {
       if (this._pairedLinesInfo) {
         const viewer = this.status.cad;
         viewer.off("entitiesselect", this._pairedLinesInfo.onCadEntitiesSelect);
         viewer.off("entitiesunselect", this._pairedLinesInfo.onCadEntitiesUnselect);
+        viewer.setConfig("hotKeys", this._pairedLinesInfo.hotKeys);
         this._pairedLinesInfo = null;
         this.status.focus();
       }
