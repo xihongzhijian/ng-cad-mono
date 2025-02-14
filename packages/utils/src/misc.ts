@@ -71,3 +71,33 @@ export const getElementVisiblePercentage = (el: HTMLElement, parentEl = document
 
 export const px2mm = (px: number, dpi: number) => (px * 25.4) / dpi;
 export const mm2px = (mm: number, dpi: number) => (mm * dpi) / 25.4;
+
+export interface WaitForOpts {
+  interval?: number;
+  timeout?: number;
+}
+export const waitFor = async <T>(getter: () => T | null, opts?: WaitForOpts) => {
+  const defaultOpts: Required<WaitForOpts> = {
+    interval: 500,
+    timeout: 10000
+  };
+  opts = {...defaultOpts, ...opts};
+  return new Promise<NonNullable<T>>((resolve, reject) => {
+    const val = getter();
+    if (!isTypeOf(val, ["undefined", "null", "NaN"])) {
+      resolve(val as NonNullable<T>);
+    } else {
+      const i = setInterval(() => {
+        const val2 = getter();
+        if (val2) {
+          clearInterval(i);
+          resolve(val2);
+        }
+      }, opts.interval);
+      setTimeout(() => {
+        clearInterval(i);
+        reject(new Error("Timeout!"));
+      }, opts.timeout);
+    }
+  });
+};
