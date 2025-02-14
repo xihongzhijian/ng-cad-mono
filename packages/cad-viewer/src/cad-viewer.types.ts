@@ -6,6 +6,16 @@ export interface CadViewerFont {
   url: string;
 }
 
+export interface CadViewerHotKey {
+  key: string;
+  ctrl?: boolean;
+  alt?: boolean;
+  shift?: boolean;
+}
+
+export type CadViewerSelectMode = "none" | "single" | "multiple";
+export type CadViewerDragAxis = "" | "x" | "y" | "xy";
+
 export interface CadViewerConfig {
   width: number; // 宽
   height: number; // 高
@@ -25,6 +35,38 @@ export interface CadViewerConfig {
   dimStyle: CadDimensionStyle; // 全局标注样式
   enableZoom: boolean; // 是否启用缩放
   dashedLinePadding: number | number[]; // 虚线前后留白
+  hotKeys: {
+    selectAll: CadViewerHotKey[];
+    unSelectAll: CadViewerHotKey[];
+    copyEntities: CadViewerHotKey[];
+    pasteEntities: CadViewerHotKey[];
+    deleteEntities: CadViewerHotKey[];
+  };
 }
-export type CadViewerSelectMode = "none" | "single" | "multiple";
-export type CadViewerDragAxis = "" | "x" | "y" | "xy";
+export const getDefalutCadViewerConfig = (): CadViewerConfig => ({
+  width: 300,
+  height: 150,
+  backgroundColor: "white",
+  padding: [0],
+  reverseSimilarColor: true,
+  validateLines: false,
+  selectMode: "multiple",
+  dragAxis: "xy",
+  entityDraggable: true,
+  hideDimensions: false,
+  lineGongshi: 0,
+  hideLineLength: false,
+  hideLineGongshi: false,
+  minLinewidth: 1,
+  fontStyle: {},
+  dimStyle: {},
+  enableZoom: true,
+  dashedLinePadding: 2,
+  hotKeys: {
+    selectAll: [{key: "a", ctrl: true}],
+    unSelectAll: [{key: "Escape"}],
+    copyEntities: [{key: "c", ctrl: true}],
+    pasteEntities: [{key: "v", ctrl: true}, {key: "Enter"}],
+    deleteEntities: [{key: "Delete"}, {key: "Backspace"}]
+  }
+});

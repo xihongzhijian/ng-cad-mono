@@ -239,34 +239,30 @@ function onPointerLeave(this: CadViewer, event: PointerEvent) {
 
 function onKeyDown(this: CadViewer, event: KeyboardEvent) {
   this.emit("keydown", event);
-  const {key, ctrlKey} = event;
-  if (key === "Escape") {
-    this.unselectAll();
-    event.preventDefault();
-  } else if (ctrlKey) {
-    if (key === "a") {
+  const hotKeys = this.getConfig("hotKeys");
+  const checkHotKey = (type: keyof typeof hotKeys) => {
+    const isHotKey = hotKeys[type].some(
+      (k) => k.key === event.key && !!k.ctrl === !!event.ctrlKey && !!k.alt === !!event.altKey && !!k.shift === !!event.shiftKey
+    );
+    if (isHotKey) {
       event.preventDefault();
-      this.selectAll();
-    } else if (key === "c") {
-      event.preventDefault();
-      this.entitiesCopied = this.selected().clone(true);
-      this.emit("entitiescopy", this.entitiesCopied);
-    } else if (key === "v") {
-      event.preventDefault();
-      if (this.entitiesCopied) {
-        this.emit("entitiespaste", this.entitiesCopied);
-        this.entitiesCopied = undefined;
-      }
     }
-  } else if (key === "Delete" || key === "Backspace") {
-    event.preventDefault();
-    this.remove(this.selected());
-  } else if (key === "Enter") {
+    return isHotKey;
+  };
+  if (checkHotKey("selectAll")) {
+    this.selectAll();
+  } else if (checkHotKey("unSelectAll")) {
+    this.unselectAll();
+  } else if (checkHotKey("copyEntities")) {
+    this.entitiesCopied = this.selected().clone(true);
+    this.emit("entitiescopy", this.entitiesCopied);
+  } else if (checkHotKey("pasteEntities")) {
     if (this.entitiesCopied) {
-      event.preventDefault();
       this.emit("entitiespaste", this.entitiesCopied);
       this.entitiesCopied = undefined;
     }
+  } else if (checkHotKey("deleteEntities")) {
+    this.remove(this.selected());
   }
 }
 

@@ -24,30 +24,11 @@ import {entityTypes} from "./cad-data/cad-types";
 import {CadStylizer} from "./cad-stylizer";
 import {getVectorFromArray, toFixedTrim} from "./cad-utils";
 import {CadEventCallBack, CadEvents, controls} from "./cad-viewer-controls";
-import {CadViewerConfig, CadViewerFont} from "./cad-viewer.types";
+import {CadViewerConfig, CadViewerFont, getDefalutCadViewerConfig} from "./cad-viewer.types";
 import {drawArc, drawCircle, drawDimensionLinear, drawImage, drawLeader, drawLine, drawShape, drawText} from "./draw";
 
 const getConfigProxy = (config: Partial<CadViewerConfig> = {}) => {
-  const defalutConfig: CadViewerConfig = {
-    width: 300,
-    height: 150,
-    backgroundColor: "white",
-    padding: [0],
-    reverseSimilarColor: true,
-    validateLines: false,
-    selectMode: "multiple",
-    dragAxis: "xy",
-    entityDraggable: true,
-    hideDimensions: false,
-    lineGongshi: 0,
-    hideLineLength: false,
-    hideLineGongshi: false,
-    minLinewidth: 1,
-    fontStyle: {},
-    dimStyle: {},
-    enableZoom: true,
-    dashedLinePadding: 2
-  };
+  const defalutConfig = getDefalutCadViewerConfig();
   for (const key in config) {
     if (key in defalutConfig) {
       (defalutConfig as any)[key] = config[key as keyof CadViewerConfig];
