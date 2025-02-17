@@ -354,9 +354,6 @@ export class XhmrmsbjSbjbComponent {
         error.details.push([{text: result.errorMsg}]);
       }
       const {item, name, item2New, qiliaoPrev, qiliaoCurr, fentiCad1, fentiCad2} = form;
-      if ((item2New.使用正面分体 || item2New.使用背面分体) && (!qiliaoCurr || !qiliaoCurr.fenti1 || !qiliaoCurr.fenti2)) {
-        error.details.push([{text: "请选择分体"}]);
-      }
       if (await alertError(this.message, error)) {
         return;
       }
@@ -758,7 +755,6 @@ export class XhmrmsbjSbjbComponent {
 
   async validate() {
     const items = this.items();
-    const qiliaos = this.qiliaosManager.items();
     const errItems: {i: number; j: number; errKeys: string[]; errMsgs: string[]}[] = [];
     for (const [i, item] of items.entries()) {
       const items2 = getSortedItems(item.锁边铰边数据, (v) => v.排序 ?? 0);
@@ -767,14 +763,7 @@ export class XhmrmsbjSbjbComponent {
         const errMsgs: string[] = [];
         for (const key of getSbjbItemCadKeys(item.产品分类)) {
           if (isSbjbItemOptionalKeys2(key)) {
-            if (item2[key]?.名字) {
-              if (item2[key]?.使用正面分体 || item2[key]?.使用背面分体) {
-                const qiliao = qiliaos.find((v) => v.name === item2[key]?.名字);
-                if (!qiliao?.fenti1 || !qiliao?.fenti2) {
-                  errMsgs.push("未选择分体");
-                }
-              }
-            } else {
+            if (!item2[key]?.名字) {
               errKeys.push(key);
             }
           } else if (!item2[key]) {

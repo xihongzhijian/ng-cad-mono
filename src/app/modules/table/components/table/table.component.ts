@@ -788,7 +788,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (!descriptor && item instanceof Object) {
       descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(item), event.column.field);
     }
-    if (descriptor?.set || descriptor?.writable) {
+    if (!descriptor || descriptor?.set || descriptor?.writable) {
       info.model = {data: item, key: column.field};
     } else {
       info.value = item[column.field];

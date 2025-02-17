@@ -31,5 +31,8 @@
     @for (info of inputInfos(); track $index) {
       <app-input [info]="info"></app-input>
     }
+    @if (msbjInfo()?.raw?.xiaoguotu; as xiaoguotu) {
+      <app-image class="flex-110" style="height: 0" [src]="xiaoguotu" [prefix]="remoteFilePath"></app-image>
+    }
   </div>
 </div>

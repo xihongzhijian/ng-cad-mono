@@ -755,7 +755,11 @@ const getUnfoldCadViewers = async (
       const cadRect = cad.getBoundingRect();
       const dx = imgRect.x - cadRect.x;
       const dy = imgRect.y - cadRect.y;
-      const scale = Math.min(1, imgRect.width / cadRect.width, imgRect.height / cadRect.height);
+      const scaleFactor = Math.min(1, imgRect.width / cadRect.width, imgRect.height / cadRect.height);
+      const scale = [scaleFactor, scaleFactor];
+      if (cad.attributes.算料单翻转) {
+        scale[0] *= -1;
+      }
       cad.transform({translate: [dx, dy], scale, origin: [cadRect.x, cadRect.y]}, true);
 
       const startLines = [];

@@ -15,7 +15,7 @@ import {
 import {ValidatorFn, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
-import {setGlobal} from "@app/app.common";
+import {remoteFilePath, setGlobal} from "@app/app.common";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
@@ -25,6 +25,7 @@ import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableUpdateParams} from "@modules/http/services/cad-data.service.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -37,7 +38,7 @@ import {getEmpty模块大小配置, MsbjInfo} from "./msbj.utils";
   selector: "app-msbj",
   templateUrl: "./msbj.component.html",
   styleUrls: ["./msbj.component.scss"],
-  imports: [InputComponent, MatButtonModule, MsbjRectsComponent],
+  imports: [ImageComponent, InputComponent, MatButtonModule, MsbjRectsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MsbjComponent {
@@ -57,6 +58,7 @@ export class MsbjComponent {
   closeOut = output<MsbjCloseEvent>({alias: "close"});
 
   production = environment.production;
+  remoteFilePath = remoteFilePath;
   table = signal("p_menshanbuju");
   msbjInfo = signal<MsbjInfo | null>(null);
   dataField = signal<keyof Omit<MsbjData, keyof TableDataBase>>("peizhishuju");
