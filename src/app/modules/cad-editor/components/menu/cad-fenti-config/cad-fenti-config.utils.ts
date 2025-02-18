@@ -31,7 +31,7 @@ export const getCadFentiInfo = (data: CadData): CadFentiInfo => {
   return {separators, rawEntities, fentiEntities};
 };
 
-export const fentiSpace = 150;
+export const fentiSpace = 100;
 
 export const addCadFentiSeparator = async (viewer: CadViewer, info?: CadFentiInfo) => {
   if (!info) {
@@ -54,9 +54,10 @@ export const setCadFentiSeparator = (line: CadLineLike, info: CadFentiInfo) => {
   line.线功能 = "CAD分体区分隔线";
   line.layer = "不显示";
   line.setColor("lime");
+  line.hideLength = true;
   const rawRect = info.rawEntities.getBoundingRect();
-  line.start.set(rawRect.right + fentiSpace, rawRect.bottom - 300);
-  line.end.set(rawRect.right + fentiSpace, rawRect.top + 300);
+  line.start.set(rawRect.right + fentiSpace, rawRect.bottom - 200);
+  line.end.set(rawRect.right + fentiSpace, rawRect.top + 200);
 };
 
 export const removeCadFentiSeparator = async (viewer: CadViewer) => {
@@ -69,7 +70,6 @@ export const removeCadFentiSeparator = async (viewer: CadViewer) => {
   if (fentiEntities.length > 0) {
     return result.addWarningStr("有分体线时不能删除分体区分隔线");
   }
-  viewer.data.分体拼接位置 = [];
   viewer.data.分体对应线 = [];
   await viewer.remove(...separators);
   return result;

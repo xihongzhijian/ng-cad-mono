@@ -83,7 +83,6 @@ const propertyKeys: (keyof CadData)[] = [
   "默认开料板材厚度",
   "自动生成双折宽双折高公式",
   "装配示意图自动拼接锁边铰边",
-  "分体拼接位置",
   "分体对应线"
 ];
 
@@ -167,7 +166,6 @@ export class CadData {
   默认开料板材厚度 = "";
   自动生成双折宽双折高公式 = true;
   装配示意图自动拼接锁边铰边 = "";
-  分体拼接位置: string[][][] = [];
   分体对应线: FentiDuiyingxianItem[] = [];
 
   constructor(data?: ObjectOf<any>, resetIds = false) {
@@ -347,15 +345,11 @@ export class CadData {
       v.resetIds(entitiesOnly);
     });
     const idMap = this.entities.idMap;
-    const fentiIdKeys2 = ["分体拼接位置"] as const;
     for (const key of intersectionKeys) {
       this[key] = this[key].map((v) => v.map((id) => idMap[id] || id));
     }
     for (const item of this.分体对应线) {
       item.ids = item.ids.map((id) => idMap[id] || id);
-    }
-    for (const key of [...fentiIdKeys2]) {
-      this[key] = this[key].map((v) => v.map((v2) => v2.map((id) => idMap[id] || id)));
     }
     if (this.info.激光开料标记线) {
       for (const v of this.info.激光开料标记线) {

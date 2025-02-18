@@ -5,9 +5,6 @@
   <button mat-raised-button color="primary" (click)="drawFentiLines()">画分体线</button>
   <button mat-raised-button color="primary" (click)="copyFenti()">复制选中线为分体</button>
   <button mat-raised-button color="primary" (click)="uploadFenti()">上传dxf为分体</button>
-  @for (info of pinjieLocsInputInfos(); track $index) {
-    <app-input [info]="info"></app-input>
-  }
   <button mat-raised-button color="primary" (click)="addPairedLines()">添加分体对应线</button>
   @for (info of pairedLinesListInputInfos(); track $index) {
     <app-input class="cad-fenti-paired-lines-item" [info]="info"></app-input>

@@ -29,7 +29,7 @@ import {CadFentiInfo, getCadFentiInfo} from "@modules/cad-editor/components/menu
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {difference, isEmpty} from "lodash";
+import {difference, intersection, isEmpty} from "lodash";
 import {CadCollection} from "./collections";
 import {cadDimensionOptions} from "./options";
 
@@ -265,28 +265,6 @@ export const validateCad = (collection: CadCollection, data: CadData, noInfo?: b
     }
   }
   const fentiInfo = getCadFentiInfo(data);
-  if (data.分体拼接位置.length > 0) {
-    if (data.分体拼接位置.length < 2) {
-      result.errors.push("分体拼接位置数量小于2");
-    }
-    let isIncomplete = false;
-    let hasInvalidPoint = false;
-    for (const group of data.分体拼接位置) {
-      if (group.length < 2) {
-        isIncomplete = true;
-      }
-      const idsToFind: string[] = group.flat();
-      if (difference(idsToFind, idsAll).length > 0) {
-        hasInvalidPoint = true;
-      }
-    }
-    if (isIncomplete) {
-      result.errors.push("分体拼接位置没有设置完");
-    }
-    if (hasInvalidPoint) {
-      result.errors.push("分体拼接位置存在无效数据");
-    }
-  }
   if (data.分体对应线.length > 0) {
     let isIncomplete = false;
     for (const item of data.分体对应线) {
@@ -296,6 +274,19 @@ export const validateCad = (collection: CadCollection, data: CadData, noInfo?: b
     }
     if (isIncomplete) {
       result.errors.push("分体对应线没有设置完");
+    }
+    const cemianTypes = ["锁边侧面", "铰边侧面", "插销边侧面", "中锁边侧面", "中铰边侧面"];
+    if (cemianTypes.includes(data.type)) {
+      const lines = sortLines(fentiInfo.rawEntities, tol)[0];
+      if (lines && lines.length > 0) {
+        const ids = [lines[0].id];
+        if (lines[0].length > 1) {
+          ids.push(lines[lines.length - 1].id);
+        }
+        if (intersection(data.分体对应线.map((v) => v.ids).flat(), ids).length !== ids.length) {
+          result.errors.push("分体对应线必须包含【第一根线】和【最后一根线】，请检查");
+        }
+      }
     }
   }
   if (!isEmpty(data.blocks) || data.entities.insert.length > 0) {
