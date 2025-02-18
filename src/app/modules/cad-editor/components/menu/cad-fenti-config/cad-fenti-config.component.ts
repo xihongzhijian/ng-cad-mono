@@ -109,7 +109,8 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
           onChange: (val) => {
             v.dl = val;
             this.pairedLinesList.set([...list]);
-          }
+          },
+          onClick: () => this.selectPairedLines(i)
         }
       ];
       return getInputInfoGroup(infos, {style: {width: "100%"}});

@@ -11,6 +11,7 @@ import {
   InputInfo,
   InputInfoArray,
   InputInfoBoolean,
+  InputInfoCommon,
   InputInfoGroup,
   InputInfoImage,
   InputInfoNumber,
@@ -309,7 +310,7 @@ export const getInputInfosFromTableRenderCols = <T>(
     } else {
       extra2 = extra;
     }
-    const base: Omit<InputInfo<T>, "type" | "onChange"> = {
+    const base: InputInfoCommon<InputInfo<T>> = {
       name: col.field,
       label: col.title,
       ...extra2

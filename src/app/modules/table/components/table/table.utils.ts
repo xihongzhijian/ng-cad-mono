@@ -1,5 +1,5 @@
 import {TableRenderData, TableRenderDataColumn} from "@modules/http/services/cad-data.service.types";
-import {InputInfo, InputInfoPart} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoCommon, InputInfoPart} from "@modules/input/components/input.types";
 import {ColumnInfo, TableRenderInfo} from "./table.types";
 
 export const convertTableRenderData = <T>(data: TableRenderData, info: TableRenderInfo<T>) => {
@@ -73,7 +73,7 @@ export const getInputInfosFromTableColumns = <T>(
       extra2 = extra;
     }
     const field = column.field as string;
-    const base: Omit<InputInfo<T>, "type" | "onChange"> = {
+    const base: InputInfoCommon<InputInfo<T>> = {
       name: field,
       label: column.name || field,
       ...extra2

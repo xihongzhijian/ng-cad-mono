@@ -38,6 +38,7 @@ export interface InputInfoBase<T = any> {
   displayValue?: Value<string>;
   filterValuesGetter?: (option: InputInfoOption<T>) => string[];
   onChange?: (val: any, info: this) => void;
+  onClick?: (info: this) => void;
   info?: ObjectOf<any>;
 }
 
@@ -208,7 +209,8 @@ export type InputInfo<T = any> =
   | InputInfoButton<T>
   | InputInfoList<T>
   | InputInfoGroup<T>;
-export type InputInfoPart<R extends InputInfo = InputInfo> = Partial<Omit<R, "type" | "onChange">> & {
+export type InputInfoCommon<R extends InputInfo = InputInfo> = Omit<R, "type" | "onChange" | "onClick">;
+export type InputInfoPart<R extends InputInfo = InputInfo> = Partial<InputInfoCommon<R>> & {
   onChange?: (val: any, info: R) => void;
 };
 

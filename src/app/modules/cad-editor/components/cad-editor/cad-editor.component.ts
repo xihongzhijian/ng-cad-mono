@@ -27,7 +27,7 @@ import {openCadDimensionForm} from "@app/cad/utils";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEntities, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
-import {queryString, timeout, waitFor} from "@lucilor/utils";
+import {queryString, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadConsoleComponent} from "@modules/cad-console/components/cad-console/cad-console.component";
 import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
@@ -47,7 +47,7 @@ import {CadPointsComponent} from "../cad-points/cad-points.component";
 import {CadAssembleComponent} from "../menu/cad-assemble/cad-assemble.component";
 import {CadDimensionComponent} from "../menu/cad-dimension/cad-dimension.component";
 import {CadFentiConfigComponent} from "../menu/cad-fenti-config/cad-fenti-config.component";
-import {CadStatusFentiConfig, CadStatusFentiPairedLines} from "../menu/cad-fenti-config/cad-fenti-config.utils";
+import {CadStatusFentiConfig} from "../menu/cad-fenti-config/cad-fenti-config.utils";
 import {CadInfoComponent} from "../menu/cad-info/cad-info.component";
 import {CadLineComponent} from "../menu/cad-line/cad-line.component";
 import {openCadLineForm} from "../menu/cad-line/cad-line.utils";
@@ -422,7 +422,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     this._highlightEntities();
     await this.status.updateCadTotalLength();
   };
-  private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (event, entity) => {
+  private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (_, entity) => {
     const collection = this.status.collection$.value;
     const cad = this.status.cad;
     const gongshis = this.status.openCadOptions().gongshis;
@@ -434,32 +434,8 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       openCadDimensionForm(collection, this.message, cad, entity);
     }
   };
-  private _onEntitySelect: CadEventCallBack<"entitiesselect"> = async () => {
-    const highlightedEntities = await this._highlightEntities();
-    const data = this.status.cad.data;
-    let index = -1;
-    highlightedEntities.find((e) => {
-      index = data.分体对应线.findIndex((v) => v.ids.includes(e.id));
-      return index >= 0;
-    });
-    if (index >= 0) {
-      this.status.enterCadStatus(new CadStatusFentiConfig());
-      this.status.toggleCadStatus(new CadStatusFentiPairedLines(index));
-      let target: HTMLElement | undefined;
-      try {
-        target = await waitFor(() => {
-          const targets = this.el.nativeElement.querySelectorAll(".cad-fenti-paired-lines-item");
-          const target2 = targets[index];
-          if (target2 instanceof HTMLElement) {
-            return target2;
-          }
-          return null;
-        });
-      } catch {}
-      if (target) {
-        this._scrollbar.scrollToElement(target);
-      }
-    }
+  private _onEntitySelect: CadEventCallBack<"entitiesselect"> = () => {
+    this._highlightEntities();
   };
   private _onEntityUnselect: CadEventCallBack<"entitiesunselect"> = () => {
     this._highlightEntities();

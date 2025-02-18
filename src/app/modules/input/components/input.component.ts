@@ -853,6 +853,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         this.selectOptions(this.model.key);
       }
     }
+    this.info.onClick?.(this as any);
     this.click.emit(event);
   }
 
