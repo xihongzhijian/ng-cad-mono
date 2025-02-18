@@ -1020,11 +1020,10 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
     const data = this.data();
     const isFromOrder = this.isFromOrder();
-    if (!data || isFromOrder) {
+    if (!data || isFromOrder || !data.isVersion2024) {
       this.errors.set([]);
       return true;
     }
-    const isVersion2024 = data.isVersion2024;
     const errors: XhmrmsbjError[] = [];
     const errorXuanzhongMenshans: XhmrmsbjError = {content: "布局中存在未选中的模块", details: []};
     errors.push(errorXuanzhongMenshans);
@@ -1045,7 +1044,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     for (const [i, {menshanKey, msbjInfo}] of msbjInfos.entries()) {
       const errorXuanzhongNodeNames: string[] = [];
-      if (msbjInfo.选中布局数据 && isVersion2024) {
+      if (msbjInfo.选中布局数据) {
         const formulasList = getMkdxpzSlgsFormulasList(msbjInfo.选中布局数据.模块大小配置);
         const formulasKeys = getNodeFormulasKeys(msbjInfo.模块节点?.map((v) => v.层名字) || []);
         if (!formulasKeys.every((key) => formulasList.every((v) => !!v[key]))) {
@@ -1098,7 +1097,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
               const valueInfo = await this.getValueInfo2(key, formulas, getShuruzhi(msbjInfo, node, mokuai));
               value = valueInfo.value;
             }
-            if (!value && isVersion2024) {
+            if (!value) {
               missingVars.push();
             }
           }
