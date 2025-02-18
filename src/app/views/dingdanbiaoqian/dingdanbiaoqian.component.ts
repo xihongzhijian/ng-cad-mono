@@ -28,6 +28,7 @@ import {
   splitShuangxiangCad
 } from "@app/cad/utils";
 import {Formulas} from "@app/utils/calc";
+import {getDateTimeString} from "@app/utils/get-value";
 import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {CalcZxpjResult, ZixuanpeijianCadItem, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
@@ -45,7 +46,6 @@ import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {cloneDeep, isEmpty} from "lodash";
-import {DateTime} from "luxon";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
 import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
@@ -278,7 +278,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         };
       });
       this.orders.set(orders);
-      document.title = `${orders[0].code}_${DateTime.now().toFormat("yyyyMMdd")}`;
+      document.title = `${orders[0].code}_${getDateTimeString()}`;
       await this.splitOrders();
       const barcodeResult = getOrderBarcode(".barcode", {displayValue: false, margin: 0, width: 2, height: 30});
       if (barcodeResult.error) {

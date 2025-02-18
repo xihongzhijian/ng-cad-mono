@@ -13,6 +13,7 @@ import {
   viewChild
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTreeModule} from "@angular/material/tree";
@@ -28,6 +29,7 @@ import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.mod
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
+import {MessageService} from "@modules/message/services/message.service";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {MokuaiItemComponent} from "../mokuai-item/mokuai-item.component";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
@@ -41,6 +43,7 @@ import {MokuaikuCloseEvent} from "./mokuaiku.types";
     FloatingDialogModule,
     ImageComponent,
     MatButtonModule,
+    MatCheckboxModule,
     MatDividerModule,
     MatIconModule,
     MatTreeModule,
@@ -54,6 +57,7 @@ import {MokuaikuCloseEvent} from "./mokuaiku.types";
 export class MokuaikuComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);
   private http = inject(CadDataService);
+  private message = inject(MessageService);
   private route = inject(ActivatedRoute);
 
   @HostBinding("class") class = ["ng-page"];
@@ -158,6 +162,41 @@ export class MokuaikuComponent implements OnInit {
   }
   clickMokuaiItem(item: MokuaiItem) {
     this.mokuaiActiveItem.set(item);
+  }
+
+  mokuaisSelectedIndexs = signal<number[]>([]);
+  mokuaisSelectedIndexsEff = effect(() => {
+    this.mokuais();
+    this.mokuaisSelectedIndexs.set([]);
+  });
+  toggleMokuaisSelected(index: number) {
+    const indexs = this.mokuaisSelectedIndexs();
+    if (indexs.includes(index)) {
+      this.mokuaisSelectedIndexs.set(indexs.filter((i) => i !== index));
+    } else {
+      this.mokuaisSelectedIndexs.set([...indexs, index]);
+    }
+  }
+  selectAllMokuais() {
+    const indexs = this.mokuaisSelectedIndexs();
+    if (indexs.length === this.mokuais().length) {
+      this.mokuaisSelectedIndexs.set([]);
+    } else {
+      this.mokuaisSelectedIndexs.set(this.mokuais().map((_, i) => i));
+    }
+  }
+
+  exportMokuais() {
+    const mokuaisAll = this.mokuais();
+    const ids = this.mokuaisSelectedIndexs().map((i) => mokuaisAll[i].id);
+    if (ids.length < 1) {
+      this.message.error("请选择要导出的模块");
+      return;
+    }
+    this.bjmkStatus.exportMokuais(ids);
+  }
+  importMokuais() {
+    this.bjmkStatus.importMokuais();
   }
 
   bancaiListData = signal<BancaiListData | null>(null);

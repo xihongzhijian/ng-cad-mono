@@ -21,7 +21,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {Formulas} from "@app/utils/calc";
 import {ResultWithErrors} from "@app/utils/error-message";
-import {getCopyName, getValue, getValueString, Value} from "@app/utils/get-value";
+import {getCopyName, getDateTimeString, getValue, getValueString, Value} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
@@ -37,7 +37,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {cloneDeep} from "lodash";
-import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {v4} from "uuid";
 import {算料公式, 输入} from "../../../../components/lurushuju/xinghao-data";
@@ -300,7 +299,7 @@ export class SuanliaogongshiComponent {
       return;
     }
     const gongshi = data.from;
-    const names = [this.title(), DateTime.now().toFormat("yyyyMMdd")];
+    const names = [this.title(), getDateTimeString()];
     const name0 = getValue(this.exportFilename(), this.message);
     if (name0) {
       names.unshift(name0);

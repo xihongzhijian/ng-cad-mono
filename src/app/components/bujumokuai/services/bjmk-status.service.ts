@@ -4,7 +4,7 @@ import {filePathUrl} from "@app/app.common";
 import {getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {FetchManager} from "@app/utils/fetch-manager";
-import {getCopyName} from "@app/utils/get-value";
+import {getCopyName, getDateTimeString} from "@app/utils/get-value";
 import {ItemsManager} from "@app/utils/items-manager";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {VarNames} from "@components/var-names/var-names.types";
@@ -180,23 +180,26 @@ export class BjmkStatusService {
     }
     return null;
   }
+  private _copyMokuaiBefore(mokuai: Partial<MokuaiItem>) {
+    if (mokuai.cads) {
+      const cadIdMap = new Map<string, string>();
+      mokuai.cads = mokuai.cads.map((v) => {
+        const idPrev = v._id;
+        const cad = new CadData(v.json).clone(true);
+        cadIdMap.set(idPrev, cad.id);
+        delete cad.info.imgId;
+        return getHoutaiCad(cad);
+      });
+      for (const item of Object.values(mokuai.morenbancai || {})) {
+        item.CAD = item.CAD.map((v) => cadIdMap.get(v) || v);
+      }
+    }
+  }
   async copyMokuai(mokuai: MokuaiItem) {
     const names = this.mokuaisManager.items().map((v) => v.name);
     const mokuai2 = await this.getMokuaiWithForm(mokuai, {mokuaiOverride: {name: getCopyName(names, mokuai.name)}});
     if (mokuai2) {
-      if (mokuai2.cads) {
-        const cadIdMap = new Map<string, string>();
-        mokuai2.cads = mokuai2.cads.map((v) => {
-          const idPrev = v._id;
-          const cad = new CadData(v.json).clone(true);
-          cadIdMap.set(idPrev, cad.id);
-          delete cad.info.imgId;
-          return getHoutaiCad(cad);
-        });
-        for (const item of Object.values(mokuai2.morenbancai || {})) {
-          item.CAD = item.CAD.map((v) => cadIdMap.get(v) || v);
-        }
-      }
+      this._copyMokuaiBefore(mokuai2);
       const mokuai3 = await this.http.getData<MokuaiItem>("ngcad/copyPeijianmokuai", {item: mokuai2});
       if (mokuai3) {
         this.mokuaisManager.refresh({add: [mokuai3]});
@@ -234,5 +237,27 @@ export class BjmkStatusService {
     if (url) {
       open(url);
     }
+  }
+
+  async exportMokuais(ids: number[]) {
+    const itmes = await this.http.getData<MokuaiItem[]>("ngcad/exportPeijianmokuais", {ids});
+    if (!itmes) {
+      return;
+    }
+    await this.message.exportData(itmes, `配件模块_${getDateTimeString()}`);
+  }
+  async importMokuais() {
+    this.message.importData<MokuaiItem[]>(true, async (items) => {
+      const names = this.mokuaisManager.items().map((v) => v.name);
+      for (const item of items) {
+        this._copyMokuaiBefore(item);
+        item.name = getCopyName(names, item.name);
+        names.push(item.name);
+      }
+      const items2 = await this.http.getData<MokuaiItem[]>("ngcad/importPeijianmokuais", {items});
+      if (items2) {
+        this.mokuaisManager.refresh({add: items2});
+      }
+    });
   }
 }

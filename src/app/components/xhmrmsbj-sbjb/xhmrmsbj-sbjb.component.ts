@@ -18,7 +18,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {alertError, ErrorItem, getNamesStr, ResultWithErrors} from "@app/utils/error-message";
-import {getCopyName, getValueString} from "@app/utils/get-value";
+import {getCopyName, getDateTimeString, getValueString} from "@app/utils/get-value";
 import {ItemsManager} from "@app/utils/items-manager";
 import {getSortedItems} from "@app/utils/sort-items";
 import {Qiliao, QiliaoTableData} from "@app/utils/table-data/table-data.qiliao";
@@ -42,7 +42,6 @@ import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/compon
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {cloneDeep, difference, isEqual} from "lodash";
-import {DateTime} from "luxon";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   FentiCadTemplateData,
@@ -711,7 +710,7 @@ export class XhmrmsbjSbjbComponent {
       const {产品分类, 锁边铰边数据} = item;
       sheets.push({title: 产品分类, dataArray: exportXhmrmsbjSbjbItemSbjbs(产品分类, 锁边铰边数据)});
     }
-    const name = [this.xinghaoName(), "锁边铰边", DateTime.now().toFormat("yyyyMMdd")].join("_");
+    const name = [this.xinghaoName(), "锁边铰边", getDateTimeString()].join("_");
     await this.http.exportExcel({data: {name, sheets}});
   }
   async import() {

@@ -5,6 +5,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal} from "@app/app.common";
 import {CadExportParams, CadPortable, CadSourceParams, ExportType} from "@app/cad/portable";
+import {getDateTimeString} from "@app/utils/get-value";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {ProgressBar, ProgressBarStatus} from "@components/progress-bar/progress-bar.utils";
 import {CadData} from "@lucilor/cad-viewer";
@@ -15,7 +16,6 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {DateTime} from "luxon";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
 import {ExportCache} from "./export.types";
 
@@ -236,7 +236,7 @@ export class ExportComponent implements OnInit {
       const step = 20;
       let sum = 0;
       let success = true;
-      filename0 += `@${DateTime.now().toFormat("yyyy-MM-dd")}`;
+      filename0 += `@${getDateTimeString()}`;
       for (const [i, ids] of idsList.entries()) {
         const cads: CadData[] = [];
         const total2 = ids.length;

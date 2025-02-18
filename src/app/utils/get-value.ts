@@ -1,4 +1,5 @@
 import {MessageService} from "@modules/message/services/message.service";
+import {DateTime, LocaleOptions} from "luxon";
 
 export type Value<T> = T | (() => T);
 
@@ -84,3 +85,8 @@ export const getNameWithSuffix = (names: string[], name: string, suffix: string,
 };
 export const getInsertName = (names: string[], name: string) => getNameWithSuffix(names, name, "", 1);
 export const getCopyName = (names: string[], name: string) => getNameWithSuffix(names, name, "_复制", 0);
+
+export const getDateTimeString = (params?: {dateTime?: DateTime; fmt?: string; opts?: LocaleOptions}) => {
+  const {dateTime = DateTime.now(), fmt = "yyyyMMdd", opts} = params || {};
+  return dateTime.toFormat(fmt, opts);
+};
