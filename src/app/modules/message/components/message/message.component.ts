@@ -30,7 +30,15 @@ import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {createJSONEditor, JSONContent, Mode} from "vanilla-jsoneditor";
-import {ButtonMessageData, FormMessageData, MessageBeforeCloseEvent, MessageData, MessageOutput} from "./message.types";
+import {
+  ButtonMessageData,
+  ButtonMessageDataButton,
+  FormMessageData,
+  MessageBeforeCloseEvent,
+  MessageData,
+  MessageDataButton,
+  MessageOutput
+} from "./message.types";
 import {validateForm} from "./message.utils";
 
 @Component({
@@ -260,7 +268,10 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     } else if (type === "editor") {
       await this.close(closeType, this.data.content);
     } else if (type === "button" && button) {
-      await this.close(closeType, typeof button === "string" ? button : button.value);
+      if (typeof button === "object") {
+        this.clickButton(button);
+      }
+      await this.close(closeType, typeof button === "object" ? button.value : button);
     } else if (type === "json" && this.jsonEditor) {
       const editor = this.jsonEditor;
       const errors = editor.validate();
@@ -291,8 +302,13 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  getButtonLabel(button: ButtonMessageData["buttons"][0]) {
+  getButtonLabel<T extends string>(button: string | ButtonMessageDataButton<T>) {
     return typeof button === "string" ? button : button.label;
+  }
+  clickButton<T extends string>(button: MessageDataButton<T>) {
+    if (typeof button === "object") {
+      button.onClick?.();
+    }
   }
 
   @HostListener("window:keyup", ["$event"])

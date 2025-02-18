@@ -8,12 +8,23 @@
     </div>
   }
   @default {
-    @if (titleHTML(); as title) {
-      <div mat-dialog-title [class]="titleClass()" [innerHTML]="title"></div>
-    }
-    @if (subTitleHTML(); as subTitle) {
-      <div mat-dialog-title class="sub-title" [innerHTML]="subTitle"></div>
-    }
+    <div class="toolbar">
+      @if (titleHTML(); as title) {
+        <div mat-dialog-title [class]="titleClass()" [innerHTML]="title"></div>
+      }
+      @if (subTitleHTML(); as subTitle) {
+        <div mat-dialog-title class="sub-title" [innerHTML]="subTitle"></div>
+      }
+      @if (data.titleBtns; as btns) {
+        <div class="toolbar">
+          @for (btn of btns; track $index) {
+            <button mat-raised-button color="primary" (click)="clickButton(btn)">
+              {{ btn.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
   }
 }
 <div mat-dialog-content [class]="data.type">

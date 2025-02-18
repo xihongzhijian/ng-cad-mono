@@ -105,6 +105,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   @Input() validators?: CadItemValidators;
   @Input() cadForm?: CadItemForm<T>;
   @Input() mokuaiName?: string;
+  @Input() formTitleBtns?: CadItemButton<T>[];
   @Output() beforeEditCad = new EventEmitter<void>();
   @Output() afterEditCad = new EventEmitter<void>();
 
@@ -295,7 +296,14 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     const collection = this.collection();
     const {http, dialog, status, message, validators} = this;
     const noFixedType = this.noFixedType;
-    const data2 = await openCadForm(yaoqiu, collection, data, http, dialog, status, message, true, {validators, noFixedType});
+    const formTitleBtns = this.formTitleBtns || [];
+    const data2 = await openCadForm(yaoqiu, collection, data, http, dialog, status, message, true, {
+      validators,
+      noFixedType,
+      formMessageData: {
+        titleBtns: formTitleBtns.map((v) => ({label: v.name, onClick: () => v.onClick(this)}))
+      }
+    });
     if (!data2) {
       return;
     }

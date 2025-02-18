@@ -2,12 +2,18 @@ import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {JSONEditorPropsOptional} from "vanilla-jsoneditor";
 
-export interface BaseMessageData {
+export interface MessageDataButton<T extends string = string> {
+  label: T;
+  onClick?: () => void;
+}
+
+export interface BaseMessageData<R extends string = string> {
   title?: string;
   content?: any;
   disableCancel?: boolean;
   titleClass?: string;
   beforeClose?: (event: MessageBeforeCloseEvent) => MaybePromise<boolean>;
+  titleBtns?: MessageDataButton<R>[];
 }
 export interface MessageBeforeCloseEvent {
   type: "submit" | "cancel";
@@ -35,9 +41,12 @@ export interface ConfirmMessageData extends BaseMessageData, ConfirmBaseMessageD
   type: "confirm";
 }
 
+export interface ButtonMessageDataButton<T extends string = string> extends MessageDataButton<T> {
+  value: string;
+}
 export interface ButtonMessageData<R extends string = string, S extends string = "取消"> extends BaseMessageData {
   type: "button";
-  buttons: (R | {label: R; value: string})[];
+  buttons: (string | ButtonMessageDataButton<R>)[];
   btnTexts?: {cancel?: S};
 }
 

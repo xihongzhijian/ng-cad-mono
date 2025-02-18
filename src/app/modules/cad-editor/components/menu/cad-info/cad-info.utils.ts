@@ -507,7 +507,13 @@ export const openCadForm = async (
   status: AppStatusService,
   message: MessageService,
   parseOptionString: boolean,
-  opts?: {gongshis?: 算料公式[] | null; validators?: CadFormValidators; noFixedType?: boolean}
+  opts?: {
+    gongshis?: 算料公式[] | null;
+    validators?: CadFormValidators;
+    noFixedType?: boolean;
+    formMessageData?: Parameters<typeof message.form>[1];
+    formMessageOthers?: Parameters<typeof message.form>[2];
+  }
 ) => {
   const {gongshis, validators, noFixedType} = opts || {};
   const data2 = data?.clone() || new CadData();
@@ -525,7 +531,8 @@ export const openCadForm = async (
   if (name) {
     title += `【${name}】`;
   }
-  const result = await message.form(form, {title});
+  const {formMessageData, formMessageOthers} = opts || {};
+  const result = await message.form(form, {title, ...formMessageData}, formMessageOthers);
   if (result) {
     if (yaoqiu && !noFixedType) {
       data2.type = yaoqiu.CAD分类;

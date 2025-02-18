@@ -184,6 +184,24 @@ export class XhmrmsbjSbjbComponent {
     ];
     return buttons;
   });
+  cadFormTitleBtns = computed((): CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] => [
+    {
+      name: "哪些型号在用",
+      onClick: async ({customInfo}) => {
+        const cadId = this.cadInfos()[customInfo.index].cadId;
+        if (cadId) {
+          await this.showXinghaosUsingSbjbCad(cadId);
+        }
+      }
+    }
+  ]);
+  async showXinghaosUsingSbjbCad(cadId: string) {
+    const data = await this.http.getData<{url: string}>("shuju/api/showXinghaosUsingSbjbCad", {cadId});
+    const url = data?.url;
+    if (url) {
+      open(url);
+    }
+  }
   async editSbjbItemSbjbItem(index: number) {
     const item = this.activeSbjbItem();
     if (!item) {
