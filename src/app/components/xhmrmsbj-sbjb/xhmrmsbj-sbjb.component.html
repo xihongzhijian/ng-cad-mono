@@ -74,7 +74,10 @@
 
 @if (sbjbItemSbjbItemForm(); as form) {
   <app-floating-dialog [maximized]="true" width="50%" noTitle (close)="closeSbjbItemSbjbItemForm(false)">
-    <div class="title">{{ form.title }}</div>
+    <div class="toolbar">
+      <div class="title">{{ form.title }}</div>
+      <button mat-flat-button (click)="showXinghaosUsingSbjbCad(form.index)">{{ showXinghaosUsingSbjbCadBtnName }}</button>
+    </div>
     <ng-scrollbar>
       <div class="toolbar vertical">
         @for (info of form.inputInfos; track $index) {

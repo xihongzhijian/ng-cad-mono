@@ -86,6 +86,7 @@ export interface XhmrmsbjSbjbCadInfoGrouped extends XhmrmsbjSbjbCadInfo {
 }
 
 export interface SbjbItemSbjbItemForm {
+  index: number;
   title: string;
   inputInfos: InputInfo<XhmrmsbjSbjbItemSbjbItem>[];
   item: XhmrmsbjSbjbItemSbjb;

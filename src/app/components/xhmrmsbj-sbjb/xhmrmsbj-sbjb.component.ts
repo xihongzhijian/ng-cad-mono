@@ -186,10 +186,11 @@ export class XhmrmsbjSbjbComponent {
   });
   cadItemFormTitleBtns = computed((): CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] => [
     {
-      name: "哪些型号在用",
+      name: this.showXinghaosUsingSbjbCadBtnName,
       onClick: async ({customInfo}) => await this.showXinghaosUsingSbjbCad(customInfo.index)
     }
   ]);
+  showXinghaosUsingSbjbCadBtnName = "哪些型号在用";
   async showXinghaosUsingSbjbCad(index: number) {
     const cadId = this.cadInfos()[index].cadId;
     if (cadId) {
@@ -215,7 +216,7 @@ export class XhmrmsbjSbjbComponent {
     const {form: inputInfos, data: item2New} = await getXhmrmsbjSbjbItemSbjbItemForm(item2);
     const qiliaoPrev = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
     const qiliaoCurr = cloneDeep(qiliaoPrev);
-    const form: SbjbItemSbjbItemForm = {title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr};
+    const form: SbjbItemSbjbItemForm = {index, title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr};
     if (qiliaoCurr) {
       if (qiliaoCurr.fenti1?.id) {
         form.fentiCad1 = this.qiliaoCadMap.get(qiliaoCurr.fenti1.id);
