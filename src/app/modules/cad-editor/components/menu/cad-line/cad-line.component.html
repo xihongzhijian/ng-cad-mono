@@ -1,18 +1,18 @@
 <div class="toolbar">
-  <button mat-flat-button [style.z-index]="data ? '1' : '0'" [color]="isDrawingLine() ? 'accent' : 'primary'" (click)="drawLine()">
+  <button mat-flat-button [style.z-index]="data ? '1' : '0'" [class.accent]="isDrawingLine()" (click)="drawLine()">
     {{ drawLineName }}
   </button>
-  <button mat-flat-button [style.z-index]="data ? '1' : '0'" [color]="isMovingLines() ? 'accent' : 'primary'" (click)="moveLines()">
+  <button mat-flat-button [style.z-index]="data ? '1' : '0'" [class.accent]="isMovingLines()" (click)="moveLines()">
     {{ moveLinesName }}
   </button>
-  <button mat-flat-button [style.z-index]="data ? '1' : '0'" [color]="isCuttingLine() ? 'accent' : 'primary'" (click)="cutLine()">
+  <button mat-flat-button [style.z-index]="data ? '1' : '0'" [class.accent]="isCuttingLine()" (click)="cutLine()">
     {{ cutLineName }}
   </button>
   <button mat-flat-button (click)="autoFix()">修正</button>
   <button
     mat-flat-button
     [style.z-index]="data ? '1' : '0'"
-    [color]="isAddingWHDashedLines() ? 'accent' : 'primary'"
+    [class.accent]="isAddingWHDashedLines()"
     [disabled]="!canAddWHDashedLines()"
     (click)="toggleWHDashedLines()"
   >
@@ -82,7 +82,7 @@
         <color-circle
           [width]="202"
           [circleSpacing]="10"
-          [color]="colorValue"
+          [class.accent]="colorValue"
           [colors]="selectableColors"
           (onChangeComplete)="setLineColor($event)"
           appClickStop

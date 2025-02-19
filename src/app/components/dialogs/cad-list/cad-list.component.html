@@ -6,7 +6,7 @@
     <app-input [info]="info"></app-input>
   }
   @if (!data.source) {
-    <button mat-flat-button [color]="multiDeleting() ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
+    <button mat-flat-button [class.accent]="multiDeleting()" (click)="toggleMultiDeleting()">批量删除</button>
     <button mat-flat-button (click)="advancedSearch()">高级搜索</button>
     <button mat-flat-button (click)="search()">刷新</button>
     <button mat-flat-button (click)="addCad()">添加</button>
@@ -18,9 +18,7 @@
     }
     <button mat-flat-button (click)="openImportPage()">导入CAD</button>
     <button mat-flat-button (click)="openExportPage()">导出CAD</button>
-    <button mat-flat-button [color]="cadItemForm().noDefaultTexts ? 'primary' : 'accent'" (click)="toggleShowCadItemFormTexts()">
-      显示详细信息
-    </button>
+    <button mat-flat-button [class.accent]="cadItemForm().noDefaultTexts" (click)="toggleShowCadItemFormTexts()">显示详细信息</button>
   }
   @for (btn of data.toolbarBtns; track $index) {
     <button mat-flat-button (click)="btn.onClick?.(this)">{{ btn.name }}</button>

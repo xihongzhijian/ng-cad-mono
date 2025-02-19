@@ -113,7 +113,7 @@
                           <button
                             class="no-print"
                             mat-flat-button
-                            [color]="calcResults().at(order.mokuaiInfo.index)?.fulfilled ? 'primary' : 'accent'"
+                            [class.accent]="calcResults().at(order.mokuaiInfo.index)?.fulfilled ? 'primary' : 'accent'"
                             (click)="editMokuaiFormulas(order.mokuaiInfo.index)"
                           >
                             编辑

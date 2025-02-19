@@ -29,13 +29,13 @@
         <button mat-stroked-button (click)="import()">导入</button>
       }
       @if (toolbarButtons.editModeToggle) {
-        <button mat-stroked-button [color]="info.editMode ? 'accent' : 'primary'" (click)="toggleEditMode()">编辑</button>
+        <button mat-stroked-button [class.accent]="info.editMode" (click)="toggleEditMode()">编辑</button>
       }
       @for (button of toolbarButtons.extra; track $index) {
         @if (!button.hidden) {
           <button
             mat-stroked-button
-            [color]="button.color"
+            [class.accent]="button.color"
             [class]="button.class"
             [style]="button.style"
             (click)="onToolbarBtnClick(button)"
@@ -129,7 +129,7 @@
                       @if (!button.hidden) {
                         <button
                           mat-stroked-button
-                          [color]="button.color"
+                          [class.accent]="button.color"
                           [class]="button.class"
                           [style]="button.style"
                           (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"

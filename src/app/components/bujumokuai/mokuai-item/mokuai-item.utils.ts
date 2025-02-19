@@ -30,8 +30,8 @@ export const getMokuaiCustomData = (raw: MokuaiItemCustomData | null | undefined
   return result;
 };
 export const updateMokuaiCustomData = (data: MokuaiItemCustomData, 选项数据选项: OptionsAll | null) => {
-  const optionsOld = data.选项数据;
   if (选项数据选项) {
+    const optionsOld = data.选项数据;
     data.选项数据 = [];
     for (const key in 选项数据选项) {
       const item = optionsOld.find((v) => v.名字 === key);
@@ -49,6 +49,7 @@ export const updateMokuaiCustomData = (data: MokuaiItemCustomData, 选项数据�
 
 export const mokuaiSubmitBefore = (item: Partial<MokuaiItem>) => {
   if (item.自定义数据) {
+    updateMokuaiCustomData(item.自定义数据, null);
     delete item.自定义数据.下单时需要满足选项[""];
   }
 };

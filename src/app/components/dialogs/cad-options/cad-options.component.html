@@ -15,11 +15,9 @@
 </div>
 @if (data.typeFiltering) {
   <div class="toolbar">
-    <button mat-flat-button [color]="activeOptionTypes().length < 1 ? 'accent' : 'primary'" (click)="toggleActiveOptionType(null)">
-      全部
-    </button>
+    <button mat-flat-button [class.accent]="activeOptionTypes().length < 1" (click)="toggleActiveOptionType(null)">全部</button>
     @for (type of optionTypesManager.data(); track $index) {
-      <button mat-flat-button [color]="activeOptionTypes().includes(type) ? 'accent' : 'primary'" (click)="toggleActiveOptionType(type)">
+      <button mat-flat-button [class.accent]="activeOptionTypes().includes(type)" (click)="toggleActiveOptionType(type)">
         {{ type }}
       </button>
     }
@@ -33,12 +31,7 @@
       <div class="option border item" [class.checked]="item.checked" (click)="onCheckboxChange(i)">
         <div class="toolbar">
           @if (data.defaultValue) {
-            <button
-              mat-button
-              [color]="data.defaultValue.value === item.name ? 'accent' : 'primary'"
-              appClickStop
-              (click)="setDefaultValue(i)"
-            >
+            <button mat-button [class.accent]="data.defaultValue.value === item.name" appClickStop (click)="setDefaultValue(i)">
               默认值
             </button>
           }

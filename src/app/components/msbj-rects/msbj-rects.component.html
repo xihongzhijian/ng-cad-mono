@@ -16,7 +16,7 @@
   </div>
   <div class="toolbar hidden-if-empty">
     @for (info of bujuRectInfos(); track $index) {
-      <button mat-button [color]="info.raw.vid === activeRectInfo()?.raw?.vid ? 'accent' : 'primary'" (click)="onRectClick(info)">
+      <button mat-button [class.accent]="info.raw.vid === activeRectInfo()?.raw?.vid" (click)="onRectClick(info)">
         {{ info.name }}
       </button>
     }

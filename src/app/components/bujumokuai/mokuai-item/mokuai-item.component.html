@@ -96,10 +96,8 @@
         <button mat-flat-button (click)="importCads()">导入</button>
         <button mat-flat-button (click)="exportCads()">导出</button>
         <button mat-flat-button (click)="clearData('配件CAD')">清空</button>
-        <button mat-flat-button [color]="hideCadFormDefaultTexts() ? 'accent' : 'primary'" (click)="toggleHideCadFormDefaultTexts()">
-          隐藏详细信息
-        </button>
-        <button mat-flat-button [color]="cadDragEnabled() ? 'accent' : 'primary'" (click)="toggleCadDragEnabled()">拖动排序</button>
+        <button mat-flat-button [class.accent]="hideCadFormDefaultTexts()" (click)="toggleHideCadFormDefaultTexts()">隐藏详细信息</button>
+        <button mat-flat-button [class.accent]="cadDragEnabled()" (click)="toggleCadDragEnabled()">拖动排序</button>
       </div>
       <div
         class="items"

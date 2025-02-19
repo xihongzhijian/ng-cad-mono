@@ -2,7 +2,7 @@
   <div class="nav flex-column">
     <div class="toolbar">
       <app-input [info]="navQueryInputInfo()"></app-input>
-      <button mat-stroked-button [color]="navEditMode() ? 'accent' : 'primary'" (click)="toggleNavEditMode()">开启编辑</button>
+      <button mat-stroked-button [class.accent]="navEditMode()" (click)="toggleNavEditMode()">开启编辑</button>
       @if (navEditMode()) {
         <button mat-stroked-button (click)="addNavNode()">添加1级</button>
       }

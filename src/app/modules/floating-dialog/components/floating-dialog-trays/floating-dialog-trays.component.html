@@ -3,7 +3,7 @@
     <button
       mat-button
       class="tray"
-      [color]="dialog.active() ? 'primary' : ''"
+      [class.accent]="dialog.active() ? 'primary' : ''"
       [appContextMenuTrigger]="contextMenu"
       (contextMenu)="onContextMenu(i)"
       (click)="clickTray(dialog)"

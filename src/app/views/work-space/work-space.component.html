@@ -3,7 +3,7 @@
   <button mat-flat-button (click)="clear()">清空</button>
   <button mat-flat-button (click)="import()">导入</button>
   <button mat-flat-button (click)="export()">导出</button>
-  <button mat-flat-button [color]="showMoreButtons ? 'accent' : 'primary'" (click)="showMoreButtons = !showMoreButtons">编辑</button>
+  <button mat-flat-button [class.accent]="showMoreButtons" (click)="showMoreButtons = !showMoreButtons">编辑</button>
   <button mat-flat-button (click)="importDefaultWorkData()">加载默认配置</button>
   @if (defaultWorkDataFormInfo) {
     <button mat-flat-button (click)="setDefaultWorkData()">保存默认配置</button>

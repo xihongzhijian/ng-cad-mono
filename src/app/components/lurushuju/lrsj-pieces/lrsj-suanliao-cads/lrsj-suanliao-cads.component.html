@@ -13,8 +13,8 @@
         </button>
       </div>
       <app-input style="width: 0; flex: 0 1 180px" [info]="suanliaoCadsSearch()"></app-input>
-      <button mat-flat-button [color]="isCadsReversed() ? 'accent' : 'primary'" (click)="toggleCadsReversed(true)">升序</button>
-      <button mat-flat-button [color]="isCadsReversed() ? 'primary' : 'accent'" (click)="toggleCadsReversed(false)">降序</button>
+      <button mat-flat-button [class.accent]="isCadsReversed()" (click)="toggleCadsReversed(true)">升序</button>
+      <button mat-flat-button [class.accent]="isCadsReversed() ? 'primary' : 'accent'" (click)="toggleCadsReversed(false)">降序</button>
       <div class="flex-110"></div>
       <div class="toolbar">
         @if (isKailiao()) {

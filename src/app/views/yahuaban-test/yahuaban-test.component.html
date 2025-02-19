@@ -17,7 +17,7 @@
           <div class="sub-form-field">
             <div class="toolbar">
               <div class="label">公式输入</div>
-              <button mat-flat-button [color]="showGssrTable() ? 'accent' : 'primary'" (click)="toggleGssrTable()">编辑公式输入</button>
+              <button mat-flat-button [class.accent]="showGssrTable()" (click)="toggleGssrTable()">编辑公式输入</button>
             </div>
             <div class="toolbar">
               @for (info of gssrInputInfos(); track $index) {

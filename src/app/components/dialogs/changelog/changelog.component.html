@@ -18,7 +18,7 @@
           <div class="toolbar">
             <div class="time">{{ item.author }} {{ "@" }} {{ item.time + "\n" }}</div>
             @if (item.details) {
-              <button mat-icon-button [color]="item.showDetails ? 'accent' : 'primary'" (click)="item.showDetails = !item.showDetails">
+              <button mat-icon-button [class.accent]="item.showDetails" (click)="item.showDetails = !item.showDetails">
                 <mat-icon>more_horiz</mat-icon>
               </button>
             }

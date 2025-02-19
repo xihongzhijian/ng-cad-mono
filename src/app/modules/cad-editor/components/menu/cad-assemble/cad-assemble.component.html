@@ -1,6 +1,6 @@
 <div class="toolbar">
   @if (showPointsAssemble()) {
-    <button mat-flat-button [color]="pointsAssembling() ? 'accent' : 'primary'" (click)="pointsAssemble()">按点装配</button>
+    <button mat-flat-button [class.accent]="pointsAssembling()" (click)="pointsAssemble()">按点装配</button>
   } @else {
     <button mat-flat-button (click)="directAssemble()">快速装配</button>
   }

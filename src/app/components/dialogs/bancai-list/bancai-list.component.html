@@ -3,7 +3,7 @@
 </div>
 <div class="toolbar">
   @for (type of bancaiTypes(); track $index) {
-    <button mat-flat-button [color]="activeBancaiType() === type ? 'accent' : 'primary'" (click)="activeBancaiType.set(type)">
+    <button mat-flat-button [class.accent]="activeBancaiType() === type" (click)="activeBancaiType.set(type)">
       {{ type }}
     </button>
   }

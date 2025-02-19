@@ -11,7 +11,7 @@
           @for (item of typesInfo | keyvalue: returnZero; track $index) {
             @if (typesInfoType1[item.key] && !typesInfoType1[item.key].hidden) {
               <div>
-                <button #typesButton mat-flat-button [color]="type1 === item.key ? 'accent' : 'primary'" (click)="setTypesInfo1(item.key)">
+                <button #typesButton mat-flat-button [class.accent]="type1 === item.key" (click)="setTypesInfo1(item.key)">
                   {{ item.key }}
                 </button>
               </div>
@@ -154,11 +154,7 @@
         <div class="flex-column">
           <div class="toolbar">
             <app-input [info]="lingsanTypesSearchInput"></app-input>
-            <button
-              mat-stroked-button
-              [color]="lingsanTypesEditMode ? 'accent' : 'primary'"
-              (click)="lingsanTypesEditMode = !lingsanTypesEditMode"
-            >
+            <button mat-stroked-button [class.accent]="lingsanTypesEditMode" (click)="lingsanTypesEditMode = !lingsanTypesEditMode">
               开启编辑
             </button>
             @if (lingsanTypesEditMode) {
@@ -197,7 +193,7 @@
                 <div class="toolbar">
                   <button
                     mat-button
-                    [color]="node.name === lingsanCadType ? 'primary' : ''"
+                    [class.accent]="node.name === lingsanCadType ? 'primary' : ''"
                     [attr.data-id]="node.id"
                     (click)="setLingsanCadType(node.name)"
                     matTreeNodeToggle
@@ -229,7 +225,7 @@
         <div class="flex-column flex-110">
           <div class="toolbar">
             <app-input [info]="lingsanCadsSearchInput" style="width: 100px; flex: 1 1 0"></app-input>
-            <button mat-flat-button [color]="multiDeleting ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
+            <button mat-flat-button [class.accent]="multiDeleting" (click)="toggleMultiDeleting()">批量删除</button>
             @if (getCadYaoqiu()?.["有帮助文档"]) {
               <button mat-flat-button (click)="getCadYaoqiu()?.['打开帮助文档']()">帮助文档</button>
             }

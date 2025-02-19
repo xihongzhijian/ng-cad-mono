@@ -18,7 +18,7 @@
         </button>
         <mat-hint [align]="'start'">
           <button mat-flat-button (click)="editDimension(i)">编辑</button>
-          <button mat-flat-button [color]="dimLineSelecting() === i ? 'accent' : 'primary'" (click)="selectDimLine(i)">选线</button>
+          <button mat-flat-button [class.accent]="dimLineSelecting() === i" (click)="selectDimLine(i)">选线</button>
           <label>隐藏尺寸线</label>
           <mat-slide-toggle [checked]="getHideDimLines(i)" (change)="setHideDimLines($event, i)"></mat-slide-toggle>
         </mat-hint>
@@ -26,7 +26,7 @@
     </div>
   }
   <div class="toolbar">
-    <button mat-flat-button [color]="isAddingDimension() ? 'accent' : 'primary'" (click)="addDimensionLinear()">添加线性标注</button>
+    <button mat-flat-button [class.accent]="isAddingDimension()" (click)="addDimensionLinear()">添加线性标注</button>
     <button mat-flat-button (click)="editAllDimensions()">修改全部标注</button>
   </div>
 </form>

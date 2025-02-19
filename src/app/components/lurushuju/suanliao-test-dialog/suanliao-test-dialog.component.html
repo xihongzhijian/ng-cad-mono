@@ -65,7 +65,7 @@
       <button mat-flat-button (click)="exportTestCases()">导出测试数据</button>
       <button mat-flat-button (click)="calcTestCases()">计算所有</button>
       <button mat-flat-button (click)="print()">打印所有</button>
-      <button mat-flat-button [color]="allSlgsInfo ? 'accent' : 'primary'" (click)="toggleSlgsAll()">所有算料公式</button>
+      <button mat-flat-button [class.accent]="allSlgsInfo" (click)="toggleSlgsAll()">所有算料公式</button>
       <mat-divider vertical class="placeholder large"></mat-divider>
       <button mat-flat-button (click)="submit()">提交并关闭</button>
     </div>

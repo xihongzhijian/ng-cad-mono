@@ -584,14 +584,15 @@
           <color-circle
             [width]="202"
             [circleSpacing]="10"
-            [color]="colorStr"
+            [class.accent]="colorStr"
             [colors]="colorOptions"
             (onChangeComplete)="onColorChange($event.color)"
             appClickStop
           ></color-circle>
         }
         @if (!info.optionsOnly) {
-          <color-chrome #colorChrome [color]="colorStr" (onChangeComplete)="onColorChange($event.color)" appClickStop> </color-chrome>
+          <color-chrome #colorChrome [class.accent]="colorStr" (onChangeComplete)="onColorChange($event.color)" appClickStop>
+          </color-chrome>
         }
       </mat-menu>
       <ng-container matSuffix>

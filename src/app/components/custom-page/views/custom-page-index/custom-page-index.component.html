@@ -15,7 +15,7 @@
         <button mat-flat-button (click)="import()">导入</button>
         <button mat-flat-button (click)="export()">导出</button>
         <button mat-flat-button (click)="preview()">预览</button>
-        <button mat-flat-button [color]="isSaved() ? 'primary' : 'accent'" (click)="save()">保存</button>
+        <button mat-flat-button [class.accent]="isSaved()" (click)="save()">保存</button>
       }
       @case ("view") {
         <button mat-flat-button (click)="preview()">预览</button>

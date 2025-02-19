@@ -29,9 +29,7 @@
     <ng-scrollbar class="enable-x">
       <div class="flex-column">
         <div class="toolbar">
-          <button mat-flat-button [color]="showCadFormDefaultTexts() ? 'accent' : 'primary'" (click)="toggleShowCadFormDefaultTexts()">
-            显示详细信息
-          </button>
+          <button mat-flat-button [class.accent]="showCadFormDefaultTexts()" (click)="toggleShowCadFormDefaultTexts()">显示详细信息</button>
           <button mat-flat-button (click)="importItemCads()">导入</button>
           <button mat-flat-button (click)="exportItemCads()">导出</button>
         </div>
