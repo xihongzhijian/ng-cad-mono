@@ -1,4 +1,5 @@
 import {CadData, CadDimension, CadImage, CadLineLike, CadMtext, CadViewer, CadViewerConfig} from "@lucilor/cad-viewer";
+import {getCadFentiInfo} from "@modules/cad-editor/components/menu/cad-fenti-config/cad-fenti-config.utils";
 import {CadCollection} from "./collections";
 import {prepareCadViewer} from "./utils";
 
@@ -27,10 +28,27 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
   cad.appendTo(document.body);
   await prepareCadViewer(cad);
   cad.data = data.clone();
+  const {rawEntities, fentiEntities} = getCadFentiInfo(cad.data);
+  let fentiMtext: CadMtext | undefined;
+  if (fentiEntities.length > 0) {
+    cad.data.entities = rawEntities;
+    fentiMtext = new CadMtext();
+  }
   for (const e of cad.data.entities.dimension) {
     e.calcBoundingRect = true;
   }
   await cad.render();
+  if (fentiMtext) {
+    fentiMtext.text = "有分体";
+    fentiMtext.setColor("#ffca1c");
+    fentiMtext.fontStyle.size = 35;
+    fentiMtext.anchor.set(0.5, 0);
+    fentiMtext.calcBoundingRectForce = true;
+    const rect = cad.data.getBoundingRect();
+    fentiMtext.insert.set(rect.x, rect.bottom - 10);
+    cad.data.entities.add(fentiMtext);
+    cad.render(fentiMtext);
+  }
   if (params.autoSize) {
     const {width, height} = cad.data.getBoundingRect();
     cad.resize(width, height);
