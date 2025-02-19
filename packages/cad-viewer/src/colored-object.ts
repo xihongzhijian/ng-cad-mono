@@ -1,9 +1,9 @@
 import {ObjectOf} from "@lucilor/utils";
-import Color from "color";
+import Color, {ColorInstance} from "color";
 import {isEqual} from "lodash";
 
 export class ColoredObject {
-  private _color: Color;
+  private _color: ColorInstance;
   byLayerColor?: boolean;
 
   constructor(...params: Parameters<typeof Color>) {

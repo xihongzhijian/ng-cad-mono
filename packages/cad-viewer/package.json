@@ -1,6 +1,6 @@
 {
   "name": "@lucilor/cad-viewer",
-  "version": "3.27.1",
+  "version": "3.27.2",
   "description": "cad-viewer",
   "type": "module",
   "main": "lib/index.js",
@@ -42,7 +42,7 @@
   "dependencies": {
     "@lucilor/utils": "workspace:^",
     "@svgdotjs/svg.js": "3.2.4",
-    "color": "^4.2.3",
+    "color": "^5.0.0",
     "events": "^3.3.0",
     "lodash": "^4.17.21",
     "uuid": "^11.0.5"

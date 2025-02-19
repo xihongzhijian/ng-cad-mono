@@ -1,5 +1,5 @@
 import {keysOf} from "@lucilor/utils";
-import Color from "color";
+import Color, {ColorInstance} from "color";
 import {cloneDeep} from "lodash";
 import {CadDimension, CadEntity, CadHatch, CadLine, CadLineLike, CadMtext} from "./cad-data/cad-entity";
 import {CadDimensionStyle, CadStyle, FontStyle} from "./cad-data/cad-styles";
@@ -71,7 +71,7 @@ export class CadStylizer {
     return result;
   }
 
-  static correctColor(color: Color, config: CadViewerConfig, threshold = 5) {
+  static correctColor(color: ColorInstance, config: CadViewerConfig, threshold = 5) {
     const {reverseSimilarColor, backgroundColor} = config;
     if (reverseSimilarColor) {
       const color2 = new Color(backgroundColor);
@@ -82,7 +82,7 @@ export class CadStylizer {
     return color;
   }
 
-  static getColorStyle(color: Color, a = 1) {
+  static getColorStyle(color: ColorInstance, a = 1) {
     const arr = [color.red(), color.green(), color.blue()].map((v) => v * 255);
     if (a > 0 && a < 1) {
       return `rgba(${[...arr, a].join(",")})`;

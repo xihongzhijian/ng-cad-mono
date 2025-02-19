@@ -7,7 +7,7 @@ import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options
 import {EditFormulasInput} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
-import Color from "color";
+import {ColorInstance} from "color";
 import {Properties} from "csstype";
 
 export interface InputInfoBase<T = any> extends StyledItem {
@@ -134,10 +134,10 @@ export interface InputInfoCoordinate<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoColor<T = any> extends InputInfoBase<T> {
   type: "color";
-  value?: Value<Color>;
-  options?: Color[];
+  value?: Value<ColorInstance>;
+  options?: ColorInstance[];
   optionsOnly?: boolean;
-  onChange?: (val: Color, info: this) => void;
+  onChange?: (val: ColorInstance, info: this) => void;
 }
 
 export interface InputInfoFile<T = any> extends InputInfoBase<T> {

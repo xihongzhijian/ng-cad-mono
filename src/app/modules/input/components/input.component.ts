@@ -51,7 +51,7 @@ import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.type
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import Color from "color";
+import Color, {ColorInstance} from "color";
 import {Properties} from "csstype";
 import {intersectionWith, isEmpty, isEqual} from "lodash";
 import {Color as NgxColor} from "ngx-color";
@@ -1042,7 +1042,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return [null, undefined, ""].includes(value);
   }
 
-  setColor(color: Color | string | undefined | null) {
+  setColor(color: ColorInstance | string | undefined | null) {
     const value = typeof color === "string" ? color : color?.string();
     try {
       const c = new Color(value);

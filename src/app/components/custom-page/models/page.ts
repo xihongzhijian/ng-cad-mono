@@ -1,6 +1,6 @@
 import {Trbl} from "@app/utils/trbl";
 import {isTypeOf, Point} from "@lucilor/utils";
-import Color from "color";
+import Color, {ColorInstance} from "color";
 import {Properties, Property} from "csstype";
 import {cloneDeep} from "lodash";
 import {PageOrientation} from "pdfmake/interfaces";
@@ -150,8 +150,8 @@ export interface PageConfig {
   orientation: Page["orientation"];
   width: number;
   height: number;
-  backgroundInnerColor: Color;
-  backgroundOuterColor: Color;
-  workSpaceBgColor: Color;
+  backgroundInnerColor: ColorInstance;
+  backgroundOuterColor: ColorInstance;
+  workSpaceBgColor: ColorInstance;
   padding: Page["padding"];
 }
