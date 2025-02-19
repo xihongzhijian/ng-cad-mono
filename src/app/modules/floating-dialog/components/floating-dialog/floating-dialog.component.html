@@ -20,7 +20,7 @@
       <div class="title toolbar" cdkDragHandle [appContextMenuTrigger]="contextMenu">
         <div class="text long"><ng-content select="[appFloatingDialogTitle]"></ng-content></div>
         @for (btn of titleBtns(); track $index) {
-          <button mat-icon-button color="primary" (click)="btn.action()">
+          <button mat-icon-button (click)="btn.action()">
             <mat-icon>{{ btn.icon }}</mat-icon>
           </button>
         }

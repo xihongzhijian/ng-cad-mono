@@ -15,8 +15,8 @@
             </div>
           }
           <div class="toolbar">
-            <button mat-icon-button color="primary" (click)="addLayer(i)"><mat-icon>add_circle</mat-icon></button>
-            <button mat-icon-button color="primary" (click)="removeLayer(i)"><mat-icon>remove_circle</mat-icon></button>
+            <button mat-icon-button (click)="addLayer(i)"><mat-icon>add_circle</mat-icon></button>
+            <button mat-icon-button (click)="removeLayer(i)"><mat-icon>remove_circle</mat-icon></button>
           </div>
         </div>
       }
@@ -26,10 +26,10 @@
 
 @if (forms.length < 1) {
   <div class="toolbar">
-    <button mat-raised-button color="primary" (click)="addLayer()">新建图层</button>
+    <button mat-flat-button (click)="addLayer()">新建图层</button>
   </div>
 }
 <div class="toolbar">
-  <button mat-raised-button color="primary" (click)="submit()">确定</button>
-  <button mat-raised-button color="primary" (click)="cancel()">取消</button>
+  <button mat-flat-button (click)="submit()">确定</button>
+  <button mat-flat-button (click)="cancel()">取消</button>
 </div>

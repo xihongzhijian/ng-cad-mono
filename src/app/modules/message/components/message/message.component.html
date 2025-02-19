@@ -18,7 +18,7 @@
       @if (data.titleBtns; as btns) {
         <div class="toolbar">
           @for (btn of btns; track $index) {
-            <button mat-raised-button color="primary" (click)="clickButton(btn)">
+            <button mat-flat-button color="primary" (click)="clickButton(btn)">
               {{ btn.label }}
             </button>
           }
@@ -66,13 +66,13 @@
       <ng-container *ngTemplateOutlet="formBtns"></ng-container>
     }
     @case ("book") {
-      <button mat-raised-button (click)="setPage(page() - 1)" [disabled]="page() <= pageMin()">
+      <button mat-flat-button (click)="setPage(page() - 1)" [disabled]="page() <= pageMin()">
         {{ data.btnTexts?.prev || "上一页" }}
       </button>
-      <button mat-raised-button (click)="setPage(page() + 1)" [disabled]="page() >= pageMax()">
+      <button mat-flat-button (click)="setPage(page() + 1)" [disabled]="page() >= pageMax()">
         {{ data.btnTexts?.prev || "下一页" }}
       </button>
-      <button mat-raised-button (click)="cancel()">
+      <button mat-flat-button (click)="cancel()">
         {{ data.btnTexts?.exit || "退出" }}
       </button>
     }
@@ -84,7 +84,7 @@
     }
     @case ("button") {
       @for (button of data.buttons; track $index) {
-        <button mat-raised-button color="primary" (click)="submit(button)">
+        <button mat-flat-button (click)="submit(button)">
           {{ getButtonLabel(button) }}
         </button>
       }
@@ -94,14 +94,14 @@
 </div>
 
 <ng-template #submitBtn>
-  <button mat-raised-button color="primary" (click)="submit()">
+  <button mat-flat-button (click)="submit()">
     {{ btnTextSubmit() }}
   </button>
 </ng-template>
 
 <ng-template #cancelBtn>
   @if (!data.disableCancel) {
-    <button mat-raised-button color="primary" (click)="cancel()">
+    <button mat-flat-button (click)="cancel()">
       {{ btnTextCancel() }}
     </button>
   }
@@ -110,12 +110,12 @@
 <ng-template #formBtn>
   @if (data.type === "form") {
     @if (data.resetable) {
-      <button mat-raised-button color="accent" (click)="reset()">
+      <button mat-flat-button class="accent" (click)="reset()">
         {{ btnTextReset() }}
       </button>
     }
     @if (data.autoFill) {
-      <button mat-raised-button color="primary" (click)="autoFill()">
+      <button mat-flat-button (click)="autoFill()">
         {{ btnTextAutoFill() }}
       </button>
     }

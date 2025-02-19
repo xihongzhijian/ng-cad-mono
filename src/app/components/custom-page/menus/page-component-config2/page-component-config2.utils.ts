@@ -168,7 +168,6 @@ export const getImageInputs = (
           suffixIcons: [
             {
               name: "upload_file",
-              color: "primary",
               onClick: async () => {
                 const files = await selectFiles({accept: "image/*"});
                 const file = files?.[0];

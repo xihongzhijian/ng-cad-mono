@@ -26,16 +26,16 @@
                   <div class="name" (click)="openZuofa(fenlei, zuofa)">{{ zuofa["名字"] }}</div>
                   @if (editMode()) {
                     <div class="toolbar center">
-                      <button mat-button color="primary" (click)="editZuofa(fenlei, zuofa)">编辑</button>
-                      <button mat-button color="primary" (click)="copyZuofa(fenlei, zuofa)">复制</button>
-                      <button mat-button color="primary" (click)="removeZuofa(fenlei, zuofa)">删除</button>
+                      <button mat-button (click)="editZuofa(fenlei, zuofa)">编辑</button>
+                      <button mat-button (click)="copyZuofa(fenlei, zuofa)">复制</button>
+                      <button mat-button (click)="removeZuofa(fenlei, zuofa)">删除</button>
                     </div>
                   }
                 </div>
               }
               <div class="item border link" (click)="addZuofa(fenlei)">
                 <div class="add-btn toolbar center flex-110">
-                  <button mat-icon-button color="primary"><mat-icon>add</mat-icon></button>
+                  <button mat-icon-button><mat-icon>add</mat-icon></button>
                 </div>
               </div>
             </div>

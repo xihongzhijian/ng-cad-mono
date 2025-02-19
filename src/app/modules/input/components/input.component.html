@@ -73,19 +73,19 @@
         }
       </mat-autocomplete>
       @if (info.optionsDialog && !info.readonly && !info.disabled) {
-        <button matSuffix mat-icon-button color="primary" (click)="selectOptions(model.key)">
+        <button matSuffix mat-icon-button (click)="selectOptions(model.key)">
           <mat-icon>list</mat-icon>
         </button>
       }
       @if (info.copyable) {
-        <button matSuffix mat-icon-button color="primary" (click)="copy()">
+        <button matSuffix mat-icon-button (click)="copy()">
           <mat-icon>content_copy</mat-icon>
         </button>
       }
       <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
       <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
       @if (info.clearable) {
-        <button matSuffix mat-icon-button color="primary" (click)="clear()">
+        <button matSuffix mat-icon-button (click)="clear()">
           <mat-icon>close</mat-icon>
         </button>
       }
@@ -121,7 +121,7 @@
         [placeholder]="info.placeholder || ''"
       />
       @if (info.copyable) {
-        <button matSuffix mat-icon-button color="primary" (click)="copy()">
+        <button matSuffix mat-icon-button (click)="copy()">
           <mat-icon>content_copy</mat-icon>
         </button>
       }
@@ -135,19 +135,19 @@
       <div class="label">
         <span>{{ info.label }}</span>
         @if (info.clearable) {
-          <button mat-button color="primary" (click)="clear()">清空</button>
+          <button mat-button (click)="clear()">清空</button>
         }
       </div>
       @if (info.parseString) {
         <mat-form-field>
           <textarea matInput rows="1" class="flex-110" [(ngModel)]="objectString"></textarea>
-          <button mat-button matSuffix color="primary" (click)="parseObjectString('replace')">全部替换</button>
-          <button mat-button matSuffix color="primary" (click)="parseObjectString('append')">没有的插入</button>
+          <button mat-button matSuffix (click)="parseObjectString('replace')">全部替换</button>
+          <button mat-button matSuffix (click)="parseObjectString('append')">没有的插入</button>
         </mat-form-field>
       }
       @if (!info.keysReadonly && keysOf(value)["length"] === 0) {
         <div>
-          <button mat-icon-button color="primary" (click)="objectAdd2(value, '')">
+          <button mat-icon-button (click)="objectAdd2(value, '')">
             <mat-icon>add_circle</mat-icon>
           </button>
         </div>
@@ -190,7 +190,7 @@
             </mat-autocomplete>
             <mat-error>{{ getErrorMsgKey(item.key) }}</mat-error>
             @if (info.clearable) {
-              <button mat-icon-button matSuffix color="primary" (click)="changeObjectKey2(value, item.key, '')">
+              <button mat-icon-button matSuffix (click)="changeObjectKey2(value, item.key, '')">
                 <mat-icon>close</mat-icon>
               </button>
             }
@@ -216,16 +216,16 @@
             />
             <ng-container matSuffix>
               @if (optionsDialog) {
-                <button mat-icon-button color="primary" (click)="selectOptions(model.key, item.key)">
+                <button mat-icon-button (click)="selectOptions(model.key, item.key)">
                   <mat-icon>list</mat-icon>
                 </button>
               }
               @if (!info.keysReadonly) {
-                <button mat-icon-button color="primary" (click)="objectAdd2(value, '', '')">
+                <button mat-icon-button (click)="objectAdd2(value, '', '')">
                   <mat-icon>add_circle</mat-icon>
                 </button>
                 @if (!info.requiredKeys?.includes(item.key)) {
-                  <button mat-icon-button color="primary" (click)="objectRemove2(value, item.key)">
+                  <button mat-icon-button (click)="objectRemove2(value, item.key)">
                     <mat-icon>remove_circle</mat-icon>
                   </button>
                 }
@@ -233,7 +233,7 @@
               <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
               <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
               @if (info.clearable) {
-                <button mat-icon-button color="primary" (click)="changeObjectValue2(value, item.key, '')">
+                <button mat-icon-button (click)="changeObjectValue2(value, item.key, '')">
                   <mat-icon>close</mat-icon>
                 </button>
               }
@@ -250,12 +250,12 @@
       <div class="label">
         <span>{{ info.label }}</span>
         @if (info.clearable) {
-          <button mat-button color="primary" (click)="clear()">清空</button>
+          <button mat-button (click)="clear()">清空</button>
         }
       </div>
       @if (value.length === 0 && !info.readonly) {
         <div>
-          <button mat-icon-button color="primary" (click)="arrayAdd(value, '')">
+          <button mat-icon-button (click)="arrayAdd(value, '')">
             <mat-icon>add_circle</mat-icon>
           </button>
         </div>
@@ -282,17 +282,17 @@
           />
           <ng-container matSuffix>
             @if (!info.readonly) {
-              <button mat-icon-button color="primary" (click)="arrayAdd(value, '', j + 1)">
+              <button mat-icon-button (click)="arrayAdd(value, '', j + 1)">
                 <mat-icon>add_circle</mat-icon>
               </button>
-              <button mat-icon-button color="primary" (click)="arrayRemove(value, j)">
+              <button mat-icon-button (click)="arrayRemove(value, j)">
                 <mat-icon>remove_circle</mat-icon>
               </button>
             }
             <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
             <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
             @if (info.clearable) {
-              <button mat-icon-button color="primary" (click)="value[j] = ''">
+              <button mat-icon-button (click)="value[j] = ''">
                 <mat-icon>close</mat-icon>
               </button>
             }
@@ -434,28 +434,28 @@
         }
         <ng-container matSuffix>
           @if (info.openInNewTab) {
-            <button mat-icon-button color="primary" appClickStop (click)="openInNewTab()">
+            <button mat-icon-button appClickStop (click)="openInNewTab()">
               <mat-icon>open_in_new</mat-icon>
             </button>
           }
           @if (info.optionsDialog && !info.readonly && !info.disabled) {
-            <button mat-icon-button color="primary" (click)="selectOptions(model.key)">
+            <button mat-icon-button (click)="selectOptions(model.key)">
               <mat-icon>list</mat-icon>
             </button>
             @if (info.copyable !== false) {
-              <button mat-icon-button color="primary" (click)="copy()">
+              <button mat-icon-button (click)="copy()">
                 <mat-icon>content_copy</mat-icon>
               </button>
             }
           } @else if (info.copyable) {
-            <button mat-icon-button color="primary" (click)="copy()">
+            <button mat-icon-button (click)="copy()">
               <mat-icon>content_copy</mat-icon>
             </button>
           }
           <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
           <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
           @if (info.clearable) {
-            <button appClickStop mat-icon-button color="primary" (click)="clear()">
+            <button appClickStop mat-icon-button (click)="clear()">
               <mat-icon>close</mat-icon>
             </button>
           }
@@ -519,7 +519,7 @@
           [disabled]="info.disabled || false"
         />
         <ng-container matSuffix>
-          <button mat-icon-button color="primary" [matMenuTriggerFor]="editable ? anchor : null">
+          <button mat-icon-button [matMenuTriggerFor]="editable ? anchor : null">
             <mat-icon>list</mat-icon>
           </button>
           <mat-menu #anchor="matMenu">
@@ -549,7 +549,7 @@
           [disabled]="info.disabled || false"
         />
         <ng-container matSuffix>
-          <button mat-icon-button color="primary" [matMenuTriggerFor]="editable ? anchor : null">
+          <button mat-icon-button [matMenuTriggerFor]="editable ? anchor : null">
             <mat-icon>list</mat-icon>
           </button>
           <mat-menu #anchor="matMenu">
@@ -598,7 +598,7 @@
         <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
         <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
         @if (info.clearable) {
-          <button mat-icon-button color="primary" (click)="clear()">
+          <button mat-icon-button (click)="clear()">
             <mat-icon>close</mat-icon>
           </button>
         }
@@ -616,11 +616,11 @@
       }
       <input matInput readonly [value]="fileName" [errorStateMatcher]="getErrorStateMatcher()" (click)="selectFile()" />
       <ng-container matSuffix>
-        <button mat-icon-button color="primary" (click)="selectFile()">
+        <button mat-icon-button (click)="selectFile()">
           <mat-icon>file_open</mat-icon>
         </button>
         @if (info.clearable) {
-          <button mat-icon-button color="primary" (click)="clear()">
+          <button mat-icon-button (click)="clear()">
             <mat-icon>close</mat-icon>
           </button>
         }
@@ -639,7 +639,7 @@
       <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
       <app-image [src]="value" [bigPicSrc]="info.bigPicSrc" [prefix]="info.prefix" (click)="selectFile()"></app-image>
       @if (info.clearable) {
-        <button mat-button color="primary" (click)="clear()">删除图片</button>
+        <button mat-button (click)="clear()">删除图片</button>
       }
       <mat-error>{{ getErrorMsg() }}</mat-error>
     </mat-form-field>
@@ -665,11 +665,11 @@
       />
       <ng-container matSuffix>
         @if (!info.readonly && !info.disabled) {
-          <button mat-icon-button color="primary" (click)="editFormulas()">
+          <button mat-icon-button (click)="editFormulas()">
             <mat-icon>edit</mat-icon>
           </button>
         }
-        <button mat-icon-button color="primary" (click)="copy()">
+        <button mat-icon-button (click)="copy()">
           <mat-icon>content_copy</mat-icon>
         </button>
       </ng-container>
@@ -679,7 +679,7 @@
   @case ("button") {
     <div class="buttons">
       @for (button of info.buttons; track $index) {
-        <button mat-raised-button [color]="button.color" (click)="button.onClick?.()">{{ button.name }}</button>
+        <button mat-flat-button [class]="button.class" [style]="button.style" (click)="button.onClick?.()">{{ button.name }}</button>
       }
     </div>
     <ng-template [ngTemplateOutlet]="footer"></ng-template>
@@ -742,14 +742,14 @@
 
 <ng-template #suffixIconsTmp>
   @for (icon of info.suffixIcons; track $index) {
-    <button mat-icon-button [color]="icon.color || 'primary'" (click)="icon.onClick?.()">
+    <button mat-icon-button [class]="icon.class" [style]="icon.style" (click)="icon.onClick?.()">
       <mat-icon>{{ icon.name }}</mat-icon>
     </button>
   }
 </ng-template>
 <ng-template #suffixTextsTmp>
   @for (text of info.suffixTexts; track $index) {
-    <span [style.color]="text.color">
+    <span [class]="text.class" [style]="text.style">
       {{ text.name }}
     </span>
   }

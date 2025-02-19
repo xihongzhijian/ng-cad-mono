@@ -82,7 +82,7 @@
 .page-component-control {
   --border-width: 2px;
   --border-style: solid;
-  --border-color: var(--primary-color);
+  --border-color: var(--mat-sys-primary);
   --padding: 5px;
   --point-size: 5px;
   --rotate-point-size: 24px;
@@ -107,7 +107,7 @@
   padding: var(--padding);
 
   &.locked {
-    --border-color: var(--accent-color);
+    --border-color: var(--mat-sys-tertiary);
   }
 
   > * {
@@ -227,7 +227,7 @@
   .helper {
     position: absolute;
     --helper-size: 1px;
-    background: var(--accent-color);
+    background: var(--mat-sys-tertiary);
     opacity: 0.75;
     &.axis-x {
       top: 0;

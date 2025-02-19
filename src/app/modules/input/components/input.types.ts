@@ -1,7 +1,6 @@
 import {AbstractControl, AbstractControlOptions, ValidationErrors} from "@angular/forms";
-import {ThemePalette} from "@angular/material/core";
 import {FloatLabelType} from "@angular/material/form-field";
-import {OptionSeparator} from "@app/app.common";
+import {OptionSeparator, StyledItem} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {Value} from "@app/utils/get-value";
 import {CadOptionsInput, CadOptionsOutput} from "@components/dialogs/cad-options/cad-options.types";
@@ -11,7 +10,7 @@ import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.type
 import Color from "color";
 import {Properties} from "csstype";
 
-export interface InputInfoBase<T = any> {
+export interface InputInfoBase<T = any> extends StyledItem {
   label: string;
   floatLabel?: FloatLabelType;
   model?: {data: T | (() => T); key: keyof T};
@@ -31,8 +30,6 @@ export interface InputInfoBase<T = any> {
   noInitialValidate?: boolean;
   forceValidateNum?: number; // change this to trigger validation
   name?: string;
-  class?: string | string[];
-  style?: Properties;
   inputTextAlign?: Properties["textAlign"];
   hidden?: boolean;
   displayValue?: Value<string>;
@@ -168,15 +165,13 @@ export interface InputInfoFormulas<T = any> extends InputInfoBase<T> {
   onChange?: (val: Formulas, info: this) => void;
 }
 
-export interface InputInfoButtonInfo {
+export interface InputInfoButtonInfo extends StyledItem {
   name: string;
   onClick?: () => MaybePromise<{isValueChanged?: boolean} | void | null>;
-  color?: ThemePalette;
   isDefault?: boolean;
 }
-export interface InputInfoTextInfo {
+export interface InputInfoTextInfo extends StyledItem {
   name: string;
-  color?: ThemePalette;
 }
 export interface InputInfoButton<T = any> extends InputInfoBase<T> {
   type: "button";

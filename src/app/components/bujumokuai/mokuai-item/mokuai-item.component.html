@@ -1,12 +1,12 @@
 <div class="toolbar">
   <div class="title">{{ mokuai().name }}</div>
   <div class="flex-110"></div>
-  <button mat-raised-button color="primary" (click)="showXhmrmsbjsUsingMokuai()">哪些型号使用这个模块</button>
+  <button mat-flat-button (click)="showXhmrmsbjsUsingMokuai()">哪些型号使用这个模块</button>
   <mat-divider></mat-divider>
-  <button mat-raised-button color="primary" (click)="openDdbq()">测试</button>
-  <button mat-raised-button color="primary" (click)="saveAs()">另存为</button>
-  <button mat-raised-button color="primary" (click)="save()">保存</button>
-  <button mat-raised-button color="primary" (click)="close()">关闭</button>
+  <button mat-flat-button (click)="openDdbq()">测试</button>
+  <button mat-flat-button (click)="saveAs()">另存为</button>
+  <button mat-flat-button (click)="save()">保存</button>
+  <button mat-flat-button (click)="close()">关闭</button>
 </div>
 <ng-scrollbar>
   <ng-scrollbar class="enable-x">
@@ -19,9 +19,9 @@
       <div class="item-bancai flex-column">
         <div class="toolbar">
           <div class="title">板材分组</div>
-          <button mat-raised-button color="primary" (click)="editMrbcjfz()">编辑</button>
+          <button mat-flat-button (click)="editMrbcjfz()">编辑</button>
           <!-- @if (morenbancaiInputInfos().length < 1) {
-                <button mat-icon-button color="primary" (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
+                <button mat-icon-button  (click)="addMorenbancai()"><mat-icon>add</mat-icon></button>
               } -->
         </div>
         @for (info of morenbancaiInputInfos(); track $index) {
@@ -31,7 +31,7 @@
       <div class="mokuai-gongneng flex-column">
         <div class="toolbar">
           <div class="title">模块功能</div>
-          <button mat-raised-button color="primary" (click)="clearData('模块功能')">清空</button>
+          <button mat-flat-button (click)="clearData('模块功能')">清空</button>
         </div>
         <ng-scrollbar>
           <div class="box">
@@ -46,7 +46,7 @@
       <div class="mokuai-shaixuan flex-column">
         <div class="toolbar">
           <div class="title">模块筛选</div>
-          <button mat-raised-button color="primary" (click)="clearData('模块筛选')">清空</button>
+          <button mat-flat-button (click)="clearData('模块筛选')">清空</button>
         </div>
         <ng-scrollbar>
           <div class="box">
@@ -61,7 +61,7 @@
       <div class="flex-column">
         <div class="toolbar">
           <div class="title">选项数据</div>
-          <button mat-raised-button color="primary" (click)="clearData('选项数据')">清空</button>
+          <button mat-flat-button (click)="clearData('选项数据')">清空</button>
         </div>
         <app-table
           class="xuanxiang-table flex-110"
@@ -92,14 +92,14 @@
     <div class="cads flex-column">
       <div class="toolbar">
         <div class="title">模块的所有配件CAD</div>
-        <button mat-raised-button color="primary" (click)="selectCads()">选择CAD</button>
-        <button mat-raised-button color="primary" (click)="importCads()">导入</button>
-        <button mat-raised-button color="primary" (click)="exportCads()">导出</button>
-        <button mat-raised-button color="primary" (click)="clearData('配件CAD')">清空</button>
-        <button mat-raised-button [color]="hideCadFormDefaultTexts() ? 'accent' : 'primary'" (click)="toggleHideCadFormDefaultTexts()">
+        <button mat-flat-button (click)="selectCads()">选择CAD</button>
+        <button mat-flat-button (click)="importCads()">导入</button>
+        <button mat-flat-button (click)="exportCads()">导出</button>
+        <button mat-flat-button (click)="clearData('配件CAD')">清空</button>
+        <button mat-flat-button [color]="hideCadFormDefaultTexts() ? 'accent' : 'primary'" (click)="toggleHideCadFormDefaultTexts()">
           隐藏详细信息
         </button>
-        <button mat-raised-button [color]="cadDragEnabled() ? 'accent' : 'primary'" (click)="toggleCadDragEnabled()">拖动排序</button>
+        <button mat-flat-button [color]="cadDragEnabled() ? 'accent' : 'primary'" (click)="toggleCadDragEnabled()">拖动排序</button>
       </div>
       <div
         class="items"
@@ -133,8 +133,8 @@
     <div class="flex-column" appFloatingDialogBody>
       <app-mokuai-cads #mokuaiCads class="flex-110" selectable [(selectedCads)]="cads"></app-mokuai-cads>
       <div class="toolbar center">
-        <button mat-raised-button color="primary" (click)="closeCadsDialog(mokuaiCads)">确定</button>
-        <button mat-raised-button color="primary" (click)="closeCadsDialog(null)">取消</button>
+        <button mat-flat-button (click)="closeCadsDialog(mokuaiCads)">确定</button>
+        <button mat-flat-button (click)="closeCadsDialog(null)">取消</button>
       </div>
     </div>
   </app-floating-dialog>

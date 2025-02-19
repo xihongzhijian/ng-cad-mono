@@ -4,12 +4,12 @@
       <app-input [info]="navQueryInputInfo()"></app-input>
       <button mat-stroked-button [color]="navEditMode() ? 'accent' : 'primary'" (click)="toggleNavEditMode()">开启编辑</button>
       @if (navEditMode()) {
-        <button mat-stroked-button color="primary" (click)="addNavNode()">添加1级</button>
+        <button mat-stroked-button (click)="addNavNode()">添加1级</button>
       }
     </div>
     <div class="toolbar">
-      <button mat-stroked-button color="primary" (click)="importNavNodes()">导入</button>
-      <button mat-stroked-button color="primary" (click)="exportNavNodes()">导出</button>
+      <button mat-stroked-button (click)="importNavNodes()">导入</button>
+      <button mat-stroked-button (click)="exportNavNodes()">导出</button>
     </div>
     <ng-scrollbar #navNodesScrollbar>
       <mat-tree #navNodesTree [dataSource]="navNodes()" [childrenAccessor]="childrenAccessor" [trackBy]="navNodeTrackBy">
@@ -37,7 +37,7 @@
           <button
             mat-button
             class="nav-title"
-            [color]="activeNavNode()?.id === node.id ? 'primary' : ''"
+            [class.plain]="activeNavNode()?.id !== node.id"
             [attr.data-id]="node.id"
             (click)="clickNavNode(node)"
           >
@@ -58,12 +58,12 @@
             <div class="nav-edit toolbar compact">
               @if (node.isVirtual) {
                 @if (!node.hasChild()) {
-                  <button mat-button color="primary" (click)="editNavNode(node)">编辑</button>
+                  <button mat-button (click)="editNavNode(node)">编辑</button>
                 }
               } @else {
-                <button mat-button color="primary" (click)="addNavNode(node)">添加{{ node.level + 2 }}级</button>
-                <button mat-button color="primary" (click)="editNavNode(node)">编辑</button>
-                <button mat-button color="primary" (click)="removeNavNode(node)">删除</button>
+                <button mat-button (click)="addNavNode(node)">添加{{ node.level + 2 }}级</button>
+                <button mat-button (click)="editNavNode(node)">编辑</button>
+                <button mat-button (click)="removeNavNode(node)">删除</button>
               }
             </div>
           }
@@ -77,7 +77,7 @@
       @for (info of itemQueryInputInfos(); track $index) {
         <app-input [info]="info"></app-input>
       }
-      <button mat-raised-button color="primary" (click)="toggleSortItems()">{{ sortItems() ? "名字排序" : "原始排序" }}</button>
+      <button mat-flat-button (click)="toggleSortItems()">{{ sortItems() ? "名字排序" : "原始排序" }}</button>
       <ng-content select="[appDataListToolbar]"></ng-content>
     </div>
     <ng-scrollbar #itemsScrollbar>

@@ -34,7 +34,6 @@ const matDialogOptions: MatDialogConfig = {
   disableClose: true
 };
 const matFormFieldOptions: MatFormFieldDefaultOptions = {
-  // appearance: "fill",
   floatLabel: "always"
 };
 const matIconDefaultOptions: MatIconDefaultOptions = {fontSet: "material-symbols-rounded"};

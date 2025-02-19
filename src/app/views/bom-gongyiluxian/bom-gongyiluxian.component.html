@@ -1,8 +1,8 @@
 <div class="toolbar no-print">
-  <button mat-raised-button color="primary" (click)="print()">打印</button>
-  <button mat-raised-button color="primary" (click)="exportExcel()">导出Excel</button>
+  <button mat-flat-button (click)="print()">打印</button>
+  <button mat-flat-button (click)="exportExcel()">导出Excel</button>
   @if (!environment.production) {
-    <button mat-raised-button color="primary" (click)="clearCache()">clear cache</button>
+    <button mat-flat-button (click)="clearCache()">clear cache</button>
     <mat-slide-toggle [(ngModel)]="noCad">no cad</mat-slide-toggle>
   }
 </div>

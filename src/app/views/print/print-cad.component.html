@@ -1,6 +1,6 @@
 @if (!toolbarVisible) {
   <div class="toolbar-toggle" [@toolbarToggleEnter] [@toolbarToggleLeave]>
-    <button mat-icon-button color="accent" (click)="toggleToolbarVisible()"><mat-icon>expand_more</mat-icon></button>
+    <button mat-icon-button class="accent" (click)="toggleToolbarVisible()"><mat-icon>expand_more</mat-icon></button>
   </div>
 }
 @if (toolbarVisible) {
@@ -8,8 +8,8 @@
     @if (showDxfInput) {
       <input #uploadDxfInput type="file" hidden accept=".dxf" (input)="uploadDxf($event)" />
       <input #uploadJsonInput type="file" hidden accept=".json" (input)="uploadDxf($event)" />
-      <button mat-raised-button color="primary" (click)="uploadDxfInput.click()">上传dxf</button>
-      <button mat-raised-button color="primary" (click)="uploadJsonInput.click()">上传json</button>
+      <button mat-flat-button (click)="uploadDxfInput.click()">上传dxf</button>
+      <button mat-flat-button (click)="uploadJsonInput.click()">上传json</button>
       <mat-form-field style="flex: 0 0 250px">
         <mat-label>字体</mat-label>
         <input type="text" matInput [(ngModel)]="fontFamily" [matAutocomplete]="auto" />
@@ -21,30 +21,30 @@
       </mat-form-field>
     }
     @if (enableZixuanpeijian) {
-      <button mat-raised-button color="primary" (click)="toggleMode()">{{ mode === "edit" ? "退出" : "来图单自选配件" }}</button>
-      <button mat-raised-button color="primary" (click)="downloadDxf(false)" [disabled]="!downloadUrl">下载自选配件dxf</button>
+      <button mat-flat-button (click)="toggleMode()">{{ mode === "edit" ? "退出" : "来图单自选配件" }}</button>
+      <button mat-flat-button (click)="downloadDxf(false)" [disabled]="!downloadUrl">下载自选配件dxf</button>
       @if (mode === "edit") {
-        <button mat-raised-button color="primary" (click)="openZixuanpeijianDialog()">查看已选配件</button>
-        <button mat-raised-button color="primary" (click)="setOrderZixuanpeijian()">保存自选配件</button>
-        <button mat-raised-button color="primary" (click)="resetTranslate()">重置自选配件位置</button>
-        <button mat-raised-button color="primary" (click)="addCommentText()">添加备注</button>
+        <button mat-flat-button (click)="openZixuanpeijianDialog()">查看已选配件</button>
+        <button mat-flat-button (click)="setOrderZixuanpeijian()">保存自选配件</button>
+        <button mat-flat-button (click)="resetTranslate()">重置自选配件位置</button>
+        <button mat-flat-button (click)="addCommentText()">添加备注</button>
       }
     }
     @if (mode !== "edit") {
-      <button mat-raised-button color="primary" (click)="downloadDxf(true)" [disabled]="!downloadUrl">下载原始dxf</button>
-      <button mat-raised-button color="primary" (click)="print()">打印</button>
-      <button mat-raised-button color="primary" (click)="openCadMuban()">打开cad模板</button>
-      <button mat-raised-button color="primary" (click)="saveAsImage()">保存成图片</button>
+      <button mat-flat-button (click)="downloadDxf(true)" [disabled]="!downloadUrl">下载原始dxf</button>
+      <button mat-flat-button (click)="print()">打印</button>
+      <button mat-flat-button (click)="openCadMuban()">打开cad模板</button>
+      <button mat-flat-button (click)="saveAsImage()">保存成图片</button>
       @if (showSavePdf) {
-        <button mat-raised-button color="primary" (click)="savePdf()">保存PDF</button>
+        <button mat-flat-button (click)="savePdf()">保存PDF</button>
       }
     }
     @if (!production) {
       <mat-slide-toggle [(ngModel)]="checkEmpty">checkEmpty</mat-slide-toggle>
-      <button mat-raised-button color="primary" (click)="clearHttpCache()">clearHttpCache</button>
-      <button mat-raised-button color="primary" (click)="resetTextMap()">resetTextMap</button>
+      <button mat-flat-button (click)="clearHttpCache()">clearHttpCache</button>
+      <button mat-flat-button (click)="resetTextMap()">resetTextMap</button>
     }
-    <button mat-icon-button color="accent" (click)="toggleToolbarVisible()"><mat-icon>expand_less</mat-icon></button>
+    <button mat-icon-button class="accent" (click)="toggleToolbarVisible()"><mat-icon>expand_less</mat-icon></button>
   </div>
 }
 <div class="content" style="display: flex">

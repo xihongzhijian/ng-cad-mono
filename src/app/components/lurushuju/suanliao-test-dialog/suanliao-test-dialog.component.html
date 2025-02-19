@@ -60,14 +60,14 @@
   <div class="flex-110 flex-column">
     <div class="toolbar">
       <div class="title text long">测试</div>
-      <button mat-raised-button color="primary" (click)="addTestCase()">添加测试</button>
-      <button mat-raised-button color="primary" (click)="importTestCases()">导入测试数据</button>
-      <button mat-raised-button color="primary" (click)="exportTestCases()">导出测试数据</button>
-      <button mat-raised-button color="primary" (click)="calcTestCases()">计算所有</button>
-      <button mat-raised-button color="primary" (click)="print()">打印所有</button>
-      <button mat-raised-button [color]="allSlgsInfo ? 'accent' : 'primary'" (click)="toggleSlgsAll()">所有算料公式</button>
+      <button mat-flat-button (click)="addTestCase()">添加测试</button>
+      <button mat-flat-button (click)="importTestCases()">导入测试数据</button>
+      <button mat-flat-button (click)="exportTestCases()">导出测试数据</button>
+      <button mat-flat-button (click)="calcTestCases()">计算所有</button>
+      <button mat-flat-button (click)="print()">打印所有</button>
+      <button mat-flat-button [color]="allSlgsInfo ? 'accent' : 'primary'" (click)="toggleSlgsAll()">所有算料公式</button>
       <mat-divider vertical class="placeholder large"></mat-divider>
-      <button mat-raised-button color="primary" (click)="submit()">提交并关闭</button>
+      <button mat-flat-button (click)="submit()">提交并关闭</button>
     </div>
     <ng-scrollbar>
       @if (allSlgsInfo) {
@@ -80,17 +80,17 @@
               <div class="text short">{{ testCase["名字"] }}</div>
               <app-input [info]="getTestCaseInput(i)"></app-input>
               <div class="text long">{{ getTimeStr(testCase["时间"]) }}</div>
-              <button mat-raised-button color="primary" (click)="calcTestCaseI(i)">计算</button>
-              <button mat-raised-button color="primary" (click)="print(i)">打印</button>
-              <button mat-raised-button color="primary" (click)="copyTestCase(i)">复制</button>
-              <button mat-raised-button color="primary" (click)="removeTestCase(i)">删除</button>
+              <button mat-flat-button (click)="calcTestCaseI(i)">计算</button>
+              <button mat-flat-button (click)="print(i)">打印</button>
+              <button mat-flat-button (click)="copyTestCase(i)">复制</button>
+              <button mat-flat-button (click)="removeTestCase(i)">删除</button>
             </div>
             @if (infos[i]) {
               <div class="flex-row" style="width: 100%">
                 <div class="test-cases item">
                   <div class="toolbar">
                     <div class="text long">测试数据</div>
-                    <button mat-button color="primary" (click)="editTestCase(i)">编辑</button>
+                    <button mat-button (click)="editTestCase(i)">编辑</button>
                   </div>
                   @if (infos[i].errors.length > 0) {
                     <div class="flex-column" style="width: 100%">

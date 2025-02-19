@@ -20,8 +20,8 @@
   @if (compact(); as compact) {
     @if (!compact.noToolbar) {
       <div class="toolbar">
-        <button mat-button color="primary" (click)="toggleCompactEditOn()">{{ compact.editOn ? "关闭" : "直接" }}编辑</button>
-        <button mat-button color="primary" (click)="openEditFormulasDialog()">弹窗编辑</button>
+        <button mat-button (click)="toggleCompactEditOn()">{{ compact.editOn ? "关闭" : "直接" }}编辑</button>
+        <button mat-button (click)="openEditFormulasDialog()">弹窗编辑</button>
       </div>
     }
     <div style="padding: 5px">
@@ -49,8 +49,8 @@
         <div class="formulas-input">
           <app-input [info]="formulasInputInfo()"></app-input>
           <div class="toolbar" style="margin-top: -10px">
-            <button mat-raised-button color="primary" (click)="addFormulas()">批量添加</button>
-            <button mat-raised-button color="primary" (click)="test(true)">测试</button>
+            <button mat-flat-button (click)="addFormulas()">批量添加</button>
+            <button mat-flat-button (click)="test(true)">测试</button>
           </div>
         </div>
       }
@@ -58,20 +58,20 @@
       <div class="flex-column flex-110">
         <div class="toolbar">
           <div>公式</div>
-          <button mat-raised-button color="primary" (click)="addFormula()">添加</button>
-          <button mat-raised-button color="primary" (click)="test(false)">测试</button>
-          <button mat-raised-button color="primary" (click)="import(true)">导入替换</button>
-          <button mat-raised-button color="primary" (click)="import(false)">导入添加</button>
-          <button mat-raised-button color="primary" (click)="export()">导出</button>
+          <button mat-flat-button (click)="addFormula()">添加</button>
+          <button mat-flat-button (click)="test(false)">测试</button>
+          <button mat-flat-button (click)="import(true)">导入替换</button>
+          <button mat-flat-button (click)="import(false)">导入添加</button>
+          <button mat-flat-button (click)="export()">导出</button>
         </div>
         <div class="formulas-list" cdkDropList [cdkDropListData]="formulaList" (cdkDropListDropped)="dropFormula($event)">
           @for (formula of formulaList(); track i; let i = $index) {
             <div class="formula" cdkDrag cdkDragLockAxis="y">
               <div class="drag-placeholder" cdkDragHandle></div>
-              <button mat-icon-button color="primary" (click)="addFormula(i + 1)">
+              <button mat-icon-button (click)="addFormula(i + 1)">
                 <mat-icon>add_circle</mat-icon>
               </button>
-              <button mat-icon-button color="primary" (click)="removeFormula(i)">
+              <button mat-icon-button (click)="removeFormula(i)">
                 <mat-icon>remove_circle</mat-icon>
               </button>
               <app-input class="key" [info]="formulaListInputInfos()[i][0]"></app-input>

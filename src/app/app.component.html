@@ -2,7 +2,9 @@
 <app-spinner></app-spinner>
 @if (!isProd) {
   <div class="nav no-print" cdkDrag>
-    <mat-icon color="primary" [matMenuTriggerFor]="links">apps</mat-icon>
+    <button mat-icon-button [matMenuTriggerFor]="links">
+      <mat-icon>apps</mat-icon>
+    </button>
     <mat-menu #links="matMenu">
       <button mat-menu-item (click)="changeProject()">更换项目</button>
       @for (routeInfo of routesInfo(); track $index) {

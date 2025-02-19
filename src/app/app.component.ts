@@ -1,5 +1,6 @@
 import {CdkDrag} from "@angular/cdk/drag-drop";
 import {ChangeDetectionStrategy, Component, computed, HostListener, inject} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
@@ -16,7 +17,7 @@ import {routesInfo} from "./routing/routes-info";
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
-  imports: [RouterOutlet, SpinnerComponent, CdkDrag, MatIconModule, MatMenuModule, MessageTestComponent],
+  imports: [CdkDrag, MatButtonModule, MatIconModule, MatMenuModule, MessageTestComponent, RouterOutlet, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {

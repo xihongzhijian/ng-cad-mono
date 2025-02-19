@@ -7,12 +7,12 @@
     <mat-divider class="placeholder large"></mat-divider>
     @if (inputData || !isFromOrder) {
       @if (inputData) {
-        <button mat-raised-button color="primary" (click)="submit()">确定</button>
+        <button mat-flat-button (click)="submit()">确定</button>
       } @else {
-        <button mat-raised-button color="primary" (click)="submit()">提交</button>
+        <button mat-flat-button (click)="submit()">提交</button>
       }
       @if (closeable) {
-        <button mat-raised-button color="primary" (click)="close()">取消</button>
+        <button mat-flat-button (click)="close()">取消</button>
       }
     }
   </div>
@@ -71,8 +71,8 @@
       <div class="bancai-info flex-row">
         <div class="title">{{ key }}:</div>
         <div class="bancai-text" [style]="getBancaiStyle(key)">{{ xinghao.getBancaiTitle(key, "请选择") }}</div>
-        <button mat-raised-button color="primary" (click)="editBancaiForm(key)">编辑</button>
-        <button mat-raised-button color="primary" (click)="emptyBancaiForm(key)">清空</button>
+        <button mat-flat-button (click)="editBancaiForm(key)">编辑</button>
+        <button mat-flat-button (click)="emptyBancaiForm(key)">清空</button>
       </div>
       <div class="bancai-attrs flex-column">
         @for (group of xinghao.inputInfos[key]; track $index) {
@@ -96,7 +96,7 @@
               <app-cad-image [id]="id" [data]="cads[id].data"></app-cad-image>
               <div class="toolbar center">
                 <div>{{ cads[id].data.name }}</div>
-                <button mat-icon-button color="primary" appClickStop (click)="openCad(cads[id])">
+                <button mat-icon-button appClickStop (click)="openCad(cads[id])">
                   <mat-icon>open_in_new</mat-icon>
                 </button>
               </div>
@@ -134,7 +134,7 @@
           <app-cad-image [id]="item.value.id" [data]="item.value.data"></app-cad-image>
           <div class="toolbar center">
             <div>{{ item.value.data.name }}</div>
-            <button mat-icon-button color="primary" appClickStop (click)="openCad(item.value)">
+            <button mat-icon-button appClickStop (click)="openCad(item.value)">
               <mat-icon>open_in_new</mat-icon>
             </button>
           </div>

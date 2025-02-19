@@ -1,6 +1,6 @@
 <div class="toolbar hidden-if-empty">
   @if (items().length < 1) {
-    <button mat-icon-button color="primary" (click)="addItem()">
+    <button mat-icon-button (click)="addItem()">
       <mat-icon>add_circle</mat-icon>
     </button>
   }
@@ -12,10 +12,10 @@
         <app-input [info]="info"></app-input>
       }
       <div class="toolbar">
-        <button mat-icon-button color="primary" (click)="addItem(i + 1)">
+        <button mat-icon-button (click)="addItem(i + 1)">
           <mat-icon>add_circle</mat-icon>
         </button>
-        <button mat-icon-button color="primary" (click)="removeItem(i)">
+        <button mat-icon-button (click)="removeItem(i)">
           <mat-icon>remove_circle</mat-icon>
         </button>
       </div>
@@ -23,6 +23,6 @@
   }
 </ng-scrollbar>
 <div class="toolbar center">
-  <button mat-raised-button color="primary" (click)="submit()">确定</button>
-  <button mat-raised-button color="primary" (click)="close()">取消</button>
+  <button mat-flat-button (click)="submit()">确定</button>
+  <button mat-flat-button (click)="close()">取消</button>
 </div>

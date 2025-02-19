@@ -1,12 +1,12 @@
 <div class="toolbar">
   @if (canGroup()) {
-    <button mat-stroked-button color="primary" (click)="group()">分组</button>
+    <button mat-stroked-button (click)="group()">分组</button>
   }
   @if (canUngroup()) {
-    <button mat-stroked-button color="primary" (click)="ungroup()">拆分</button>
+    <button mat-stroked-button (click)="ungroup()">拆分</button>
   }
-  <button mat-stroked-button color="primary" (click)="copyAndPaste()">复制</button>
-  <button mat-stroked-button color="primary" (click)="remove()">删除</button>
+  <button mat-stroked-button (click)="copyAndPaste()">复制</button>
+  <button mat-stroked-button (click)="remove()">删除</button>
 </div>
 <ng-scrollbar class="enable-x">
   <ng-container *ngTemplateOutlet="componentsTpl; context: {$implicit: components(), level: 0, id: 'main'}"></ng-container>

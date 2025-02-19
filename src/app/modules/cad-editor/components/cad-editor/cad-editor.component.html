@@ -15,7 +15,7 @@
     <div class="menu left" [style.width.px]="leftMenuWidth()" [@closeLeft]="showLeftMenu() ? 'open' : 'closed'">
       <div class="toolbar" style="width: 100%">
         @if (!openCadOptions().isLocal) {
-          <button mat-raised-button color="accent" (click)="save()">保存</button>
+          <button mat-flat-button class="accent" (click)="save()">保存</button>
         }
         <div class="flex-110"></div>
         <button mat-icon-button class="menu-icon left" [class.closed]="!showLeftMenu()" (click)="toggleLeftMenu()">
@@ -49,13 +49,13 @@
         @switch (name) {
           @case ("cadInfo") {
             <div class="sub-menu">
-              <div style="padding: 10px; font-size: 1.2em">CAD总长: {{ cadLength() }}</div>
+              <div style="padding: 10px">CAD总长: {{ cadLength() }}</div>
               <div class="toolbar" style="position: relative">
                 <mat-slide-toggle [checked]="multiSelect" (change)="toggleMultiSelect()">
                   实体{{ multiSelect ? "多选" : "单选" }}
                 </mat-slide-toggle>
                 <div class="flex-110"></div>
-                <button mat-icon-button color="primary" (pointerenter)="showMenuSearch()">
+                <button mat-icon-button (pointerenter)="showMenuSearch()">
                   <mat-icon>search</mat-icon>
                 </button>
                 @if (menuSearchShown()) {
@@ -128,7 +128,7 @@
     @if (params()?.suanliaogongshiInfo; as suanliaogongshiInfo) {
       <div #suanliaogongshi class="suanliaogongshi menu" [class.mini]="!showSuanliaogongshi()" [style.left.px]="suanliaogongshiLeft()">
         <div class="toolbar">
-          <button mat-raised-button color="primary" (click)="toggleSuanliaogongshi()">
+          <button mat-flat-button (click)="toggleSuanliaogongshi()">
             {{ showSuanliaogongshi() ? "隐藏" : "显示" }}
           </button>
         </div>
@@ -138,7 +138,7 @@
     @if (params()?.suanliaoTablesInfo; as suanliaoTablesInfo) {
       <div #suanliaoTables class="suanliao-tables menu" [class.mini]="!showSuanliaoTables()" [style.left.px]="suanliaoTablesLeft()">
         <div class="toolbar">
-          <button mat-raised-button color="primary" (click)="toggleSuanliaoTables()">
+          <button mat-flat-button (click)="toggleSuanliaoTables()">
             {{ showSuanliaoTables() ? "隐藏" : "显示" }}
           </button>
         </div>

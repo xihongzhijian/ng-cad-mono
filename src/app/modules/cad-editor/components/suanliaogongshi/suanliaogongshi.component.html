@@ -2,11 +2,11 @@
   <div class="gongshis flex-column">
     <div class="toolbar">
       <div class="title" [style]="info().slgs?.titleStyle">{{ gongshiTitle() }}</div>
-      <button mat-stroked-button color="primary" (click)="addGongshi()">添加</button>
-      <button mat-stroked-button color="primary" (click)="viewAllGonshis()">全部</button>
-      <button mat-stroked-button color="primary" (click)="importGonshis()">导入</button>
-      <button mat-stroked-button color="primary" (click)="exportGongshis()">导出</button>
-      <button mat-stroked-button color="primary" (click)="clearGongshis()">清空</button>
+      <button mat-stroked-button (click)="addGongshi()">添加</button>
+      <button mat-stroked-button (click)="viewAllGonshis()">全部</button>
+      <button mat-stroked-button (click)="importGonshis()">导入</button>
+      <button mat-stroked-button (click)="exportGongshis()">导出</button>
+      <button mat-stroked-button (click)="clearGongshis()">清空</button>
     </div>
     @if (noScroll()) {
       <ng-container *ngTemplateOutlet="content"></ng-container>
@@ -25,13 +25,13 @@
             <div class="toolbar compact">
               <div class="gongshi-name text short">{{ gongshi["名字"] }}</div>
               @if (gongshiInfo().at(i)?.compact?.editOn) {
-                <button mat-button color="primary" (click)="editGongshiEnd(i, null, true)">关闭编辑</button>
+                <button mat-button (click)="editGongshiEnd(i, null, true)">关闭编辑</button>
               } @else {
-                <button mat-button color="primary" (click)="editGongshiStart(i)">直接编辑</button>
+                <button mat-button (click)="editGongshiStart(i)">直接编辑</button>
               }
-              <button mat-button color="primary" (click)="editGongshi(i)">弹窗编辑</button>
-              <button mat-button color="primary" (click)="copyGongshi(i)">复制</button>
-              <button mat-button color="primary" (click)="removeGongshi(i)">删除</button>
+              <button mat-button (click)="editGongshi(i)">弹窗编辑</button>
+              <button mat-button (click)="copyGongshi(i)">复制</button>
+              <button mat-button (click)="removeGongshi(i)">删除</button>
             </div>
             @if (slgsInfos()[i]; as info) {
               <app-text-info [infos]="info.textInfos"></app-text-info>

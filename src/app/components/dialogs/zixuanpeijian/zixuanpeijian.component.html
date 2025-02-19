@@ -1,6 +1,6 @@
 <div class="toolbar right">
-  <button mat-raised-button color="primary" (click)="submit()">{{ summitBtnText }}</button>
-  <button mat-raised-button color="primary" (click)="cancel()">取消</button>
+  <button mat-flat-button (click)="submit()">{{ summitBtnText }}</button>
+  <button mat-flat-button (click)="cancel()">取消</button>
 </div>
 
 <div class="flex-row flex-110 scrollbar-container">
@@ -11,12 +11,7 @@
           @for (item of typesInfo | keyvalue: returnZero; track $index) {
             @if (typesInfoType1[item.key] && !typesInfoType1[item.key].hidden) {
               <div>
-                <button
-                  #typesButton
-                  mat-raised-button
-                  [color]="type1 === item.key ? 'accent' : 'primary'"
-                  (click)="setTypesInfo1(item.key)"
-                >
+                <button #typesButton mat-flat-button [color]="type1 === item.key ? 'accent' : 'primary'" (click)="setTypesInfo1(item.key)">
                   {{ item.key }}
                 </button>
               </div>
@@ -40,7 +35,7 @@
                         ></app-image>
                       </div>
                       <div class="title flex-row flex-110">
-                        <button mat-icon-button color="primary" [disabled]="item.value.disableAdd" (click)="addMokuaiItem(type1, item.key)">
+                        <button mat-icon-button [disabled]="item.value.disableAdd" (click)="addMokuaiItem(type1, item.key)">
                           <mat-icon>add_circle</mat-icon>
                         </button>
                         <div class="name">{{ item.key }}</div>
@@ -70,14 +65,14 @@
                     <app-image class="xiaoguotu" [src]="item.xiaoguotu" [bigPicSrc]="item.xiaoguotu" [prefix]="urlPrefix"></app-image>
                   </div>
                   <div class="title flex-row flex-110" cdkDragHandle>
-                    <button mat-icon-button color="primary" (click)="removeMokuaiItem(i)">
+                    <button mat-icon-button (click)="removeMokuaiItem(i)">
                       <mat-icon>remove_circle</mat-icon>
                     </button>
                     <div class="name">{{ getMokuaiTitle(item) }}</div>
                   </div>
                   <div class="toolbar">
                     @if (data?.["可替换模块"]) {
-                      <button mat-raised-button color="primary" (click)="setReplaceableMokuais(item)">可替换模块</button>
+                      <button mat-flat-button (click)="setReplaceableMokuais(item)">可替换模块</button>
                     }
                   </div>
                   <div class="desc" cdkDragHandle>{{ item.mokuaishuoming }}</div>
@@ -119,15 +114,15 @@
     @case (2) {
       <div class="step-2 flex-column flex-110">
         <div class="toolbar">
-          <button mat-raised-button color="primary" (click)="setStep(1)">选择模块配件</button>
-          <button mat-raised-button color="primary" (click)="setStep(3)">选择零散配件</button>
+          <button mat-flat-button (click)="setStep(1)">选择模块配件</button>
+          <button mat-flat-button (click)="setStep(3)">选择零散配件</button>
           <div class="divider"></div>
-          <button mat-raised-button color="primary" (click)="selectAllBancai()">全部选择板材</button>
-          <button mat-raised-button color="primary" (click)="selectAllCailiao()">全部选择材料</button>
-          <button mat-raised-button color="primary" (click)="selectAllHoudu()">全部选择厚度</button>
+          <button mat-flat-button (click)="selectAllBancai()">全部选择板材</button>
+          <button mat-flat-button (click)="selectAllCailiao()">全部选择材料</button>
+          <button mat-flat-button (click)="selectAllHoudu()">全部选择厚度</button>
           <div class="divider"></div>
-          <button mat-raised-button color="primary" (click)="allFetch()">刷新数据</button>
-          <button mat-raised-button color="primary" (click)="openMokuaiUrl()">查看配件模块数据</button>
+          <button mat-flat-button (click)="allFetch()">刷新数据</button>
+          <button mat-flat-button (click)="openMokuaiUrl()">查看配件模块数据</button>
         </div>
         <ng-template [ngTemplateOutlet]="dropdownList"></ng-template>
         <ng-scrollbar class="flex-row">
@@ -167,7 +162,7 @@
               开启编辑
             </button>
             @if (lingsanTypesEditMode) {
-              <button mat-stroked-button color="primary" (click)="addLingsanCadType()">添加1级</button>
+              <button mat-stroked-button (click)="addLingsanCadType()">添加1级</button>
             }
           </div>
           <ng-template #nodeTitle [appTypedTemplate]="{$implicit: lingsanTypesDataSource.data[0]}" let-node>
@@ -185,9 +180,9 @@
           <ng-template #nodeEdit [appTypedTemplate]="{$implicit: lingsanTypesDataSource.data[0]}" let-node>
             @if (lingsanTypesEditMode && !isVirtualNode(node)) {
               <div class="flex-110 toolbar right compact">
-                <button mat-button color="primary" (click)="addLingsanCadType(node)">添加{{ node.level + 2 }}级</button>
-                <button mat-button color="primary" (click)="editLingsanCadType(node)">编辑</button>
-                <button mat-button color="primary" (click)="removeLingsanCadType(node)">删除</button>
+                <button mat-button (click)="addLingsanCadType(node)">添加{{ node.level + 2 }}级</button>
+                <button mat-button (click)="editLingsanCadType(node)">编辑</button>
+                <button mat-button (click)="removeLingsanCadType(node)">删除</button>
               </div>
             }
           </ng-template>
@@ -234,20 +229,18 @@
         <div class="flex-column flex-110">
           <div class="toolbar">
             <app-input [info]="lingsanCadsSearchInput" style="width: 100px; flex: 1 1 0"></app-input>
-            <button mat-raised-button [color]="multiDeleting ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
+            <button mat-flat-button [color]="multiDeleting ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
             @if (getCadYaoqiu()?.["有帮助文档"]) {
-              <button mat-raised-button color="primary" (click)="getCadYaoqiu()?.['打开帮助文档']()">帮助文档</button>
+              <button mat-flat-button (click)="getCadYaoqiu()?.['打开帮助文档']()">帮助文档</button>
             }
             @if (getCadYaoqiu()?.["有导入参考dxf模板"]) {
-              <button mat-raised-button color="primary" (click)="getCadYaoqiu()?.['下载导入参考dxf模板'](downloadApi)">
-                下载导入cad模板
-              </button>
+              <button mat-flat-button (click)="getCadYaoqiu()?.['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
             }
-            <button mat-raised-button color="primary" (click)="openImportPage(false)">导入CAD</button>
-            <button mat-raised-button color="primary" (click)="openImportPage(true)">保留分类导入CAD</button>
-            <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
-            <button mat-raised-button color="primary" (click)="step3Refresh()">刷新</button>
-            <button mat-raised-button color="primary" (click)="step3Add()">添加</button>
+            <button mat-flat-button (click)="openImportPage(false)">导入CAD</button>
+            <button mat-flat-button (click)="openImportPage(true)">保留分类导入CAD</button>
+            <button mat-flat-button (click)="openExportPage()">导出CAD</button>
+            <button mat-flat-button (click)="step3Refresh()">刷新</button>
+            <button mat-flat-button (click)="step3Add()">添加</button>
           </div>
           <ng-scrollbar #lingsanLeftScrollbar>
             <div class="lingsan-cads">
@@ -282,7 +275,7 @@
                 <div class="lingsan-cad">
                   <app-cad-image id="" [data]="item.data"></app-cad-image>
                   <div class="title flex-row flex-110">
-                    <button mat-icon-button color="primary" (click)="removeLingsanItem(i)">
+                    <button mat-icon-button (click)="removeLingsanItem(i)">
                       <mat-icon>remove_circle</mat-icon>
                     </button>
                     <div class="name text-ellipsis" [matTooltip]="item.data.name" matTooltipPosition="above">
@@ -334,7 +327,7 @@
       </div>
       <div class="title" (click)="openCad(cad, false, false)">
         @if (type === "零散") {
-          <button mat-icon-button color="primary" (click)="removeLingsanItem(i)" appClickStop>
+          <button mat-icon-button (click)="removeLingsanItem(i)" appClickStop>
             <mat-icon>remove_circle</mat-icon>
           </button>
         }
@@ -358,10 +351,10 @@
               }
             }
             @case ("零散") {
-              <button mat-icon-button color="primary" (click)="addZhankai(type, i, j, k)">
+              <button mat-icon-button (click)="addZhankai(type, i, j, k)">
                 <mat-icon>add_circle</mat-icon>
               </button>
-              <button [disabled]="k === 0" mat-icon-button color="primary" (click)="removeZhankai(type, i, j, k)">
+              <button [disabled]="k === 0" mat-icon-button (click)="removeZhankai(type, i, j, k)">
                 <mat-icon>remove_circle</mat-icon>
               </button>
               @if (lingsanInputInfos[i]) {
@@ -405,8 +398,8 @@
       }
       <div class="toolbar">
         @if (type !== "模块") {
-          <button mat-raised-button color="primary" (click)="openKlkwpzDialog(cad)">开料孔位配置</button>
-          <button mat-raised-button color="primary" (click)="openKlcsDialog(cad)">切内空参数</button>
+          <button mat-flat-button (click)="openKlkwpzDialog(cad)">开料孔位配置</button>
+          <button mat-flat-button (click)="openKlcsDialog(cad)">切内空参数</button>
         }
       </div>
     </div>

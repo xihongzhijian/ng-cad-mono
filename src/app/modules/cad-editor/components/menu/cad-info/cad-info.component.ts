@@ -12,7 +12,7 @@ import {
 } from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MatOptionModule, ThemePalette} from "@angular/material/core";
+import {MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
@@ -356,15 +356,15 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     return null;
   }
 
-  baseLineInfos = signal<{data: CadBaseLine; color: ThemePalette}[]>([]);
+  baseLineInfos = signal<{data: CadBaseLine; class: string}[]>([]);
   updateBaseLineInfos() {
     this.baseLineInfos.set(
       this.data().baseLines.map((baseLine, i) => {
-        let color: ThemePalette = "primary";
+        let cls = "";
         if (this.status.hasCadStatus((v) => v instanceof CadStatusSelectBaseline && i === v.index)) {
-          color = "accent";
+          cls = "accent";
         }
-        return {data: baseLine, color};
+        return {data: baseLine, class: cls};
       })
     );
   }
@@ -391,15 +391,15 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.status.toggleCadStatus(new CadStatusSelectBaseline(i));
   }
 
-  jointPointInfos = signal<{data: CadJointPoint; color: ThemePalette}[]>([]);
+  jointPointInfos = signal<{data: CadJointPoint; class: string}[]>([]);
   updateJointPointInfos() {
     this.jointPointInfos.set(
       this.data().jointPoints.map((jointPoint, i) => {
-        let color: ThemePalette = "primary";
+        let cls = "";
         if (this.status.hasCadStatus((v) => v instanceof CadStatusSelectJointpoint && i === v.index)) {
-          color = "accent";
+          cls = "accent";
         }
-        return {data: jointPoint, color};
+        return {data: jointPoint, class: cls};
       })
     );
   }
@@ -446,21 +446,19 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
               {
                 name: "linear_scale",
                 isDefault: true,
-                color: this.getPointColor(i, key),
+                class: this.getPointClass(i, key),
                 onClick: () => {
                   this.selectPoint(i, key);
                 }
               },
               {
                 name: "add_circle",
-                color: "primary",
                 onClick: () => {
                   this.addIntersectionValue(key, i + 1);
                 }
               },
               {
                 name: "remove_circle",
-                color: "primary",
                 onClick: () => {
                   this.removeIntersectionValue(key, i);
                 }
@@ -571,18 +569,18 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.status.toggleCadStatus(new CadStatusIntersection("激光开料标记线", i));
   }
 
-  getPointColor(i: number, key: IntersectionKey) {
+  getPointClass(i: number, key: IntersectionKey) {
     if (this.status.hasCadStatus((v) => v instanceof CadStatusIntersection && v.info === key && i === v.index)) {
       return "accent";
     }
-    return "primary";
+    return "";
   }
 
-  getBjxPointColor(i: number) {
+  getBjxPointClass(i: number) {
     if (this.status.hasCadStatus((v) => v instanceof CadStatusIntersection && v.info === "激光开料标记线" && i === v.index)) {
       return "accent";
     }
-    return "primary";
+    return "";
   }
 
   copyCadId(cad: CadData) {

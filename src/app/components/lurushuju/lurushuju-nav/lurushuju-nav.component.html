@@ -1,6 +1,6 @@
 @if (!xinghao() && editMode()) {
   <div class="toolbar">
-    <button mat-stroked-button color="primary" (click)="addXinghaoMenchaung()">添加门窗</button>
+    <button mat-stroked-button (click)="addXinghaoMenchaung()">添加门窗</button>
   </div>
 }
 <ng-scrollbar>
@@ -24,13 +24,13 @@
       <div class="fenlei-list">
         @for (fenleiInfo of fenleiInfos(); track i; let i = $index) {
           <div class="toolbar compact">
-            <button mat-button class="name" [class.active]="fenleiInfo.active" (click)="clickFenleiZuofa(i)">
+            <button mat-button class="plain name" [class.active]="fenleiInfo.active" (click)="clickFenleiZuofa(i)">
               {{ fenleiInfo.name }}
             </button>
             <div class="zuofa-list">
               @for (zuofaInfo of fenleiInfo.zuofas; track j; let j = $index) {
                 <div class="toolbar compact">
-                  <button mat-button class="name" [class.active]="zuofaInfo.active" (click)="clickFenleiZuofa(i, j)">
+                  <button mat-button class="plain name" [class.active]="zuofaInfo.active" (click)="clickFenleiZuofa(i, j)">
                     {{ zuofaInfo.name }}
                   </button>
                 </div>
@@ -41,7 +41,7 @@
       </div>
       @if (pieceInfos().zuofas.show) {
         <div class="toolbar">
-          <button mat-raised-button color="primary" (click)="selectFenleis()">增加产品分类</button>
+          <button mat-flat-button (click)="selectFenleis()">增加产品分类</button>
         </div>
       }
     } @else {
@@ -56,9 +56,9 @@
                 </div>
                 @if (editMode()) {
                   <div class="toolbar compact">
-                    <button mat-button color="primary" (click)="editXinghaoMenchaung(i)">编辑</button>
-                    <button mat-button color="primary" (click)="removeXinghaoMenchaung(i)">删除</button>
-                    <button mat-button color="primary" (click)="addXinghaoGongyi(i)">添加工艺</button>
+                    <button mat-button (click)="editXinghaoMenchaung(i)">编辑</button>
+                    <button mat-button (click)="removeXinghaoMenchaung(i)">删除</button>
+                    <button mat-button (click)="addXinghaoGongyi(i)">添加工艺</button>
                   </div>
                 }
               </div>
@@ -76,8 +76,8 @@
                         </div>
                         @if (editMode()) {
                           <div class="toolbar compact">
-                            <button mat-button color="primary" (click)="editXinghaoGongyi(i, j)">编辑</button>
-                            <button mat-button color="primary" (click)="removeXinghaoGongyi(i, j)">删除</button>
+                            <button mat-button (click)="editXinghaoGongyi(i, j)">编辑</button>
+                            <button mat-button (click)="removeXinghaoGongyi(i, j)">删除</button>
                           </div>
                         }
                       </div>
@@ -93,7 +93,7 @@
     @if (suanliaoDataInfo(); as info) {
       <div class="toolbar vertical">
         @for (name of suanliaoDataBtnNames; track $index) {
-          <button mat-raised-button color="primary" (click)="clickSuanliaoDataBtnName(name)">{{ name }}</button>
+          <button mat-flat-button (click)="clickSuanliaoDataBtnName(name)">{{ name }}</button>
         }
       </div>
     }

@@ -6,31 +6,31 @@
     <app-input [info]="info"></app-input>
   }
   @if (!data.source) {
-    <button mat-raised-button [color]="multiDeleting() ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
-    <button mat-raised-button color="primary" (click)="advancedSearch()">高级搜索</button>
-    <button mat-raised-button color="primary" (click)="search()">刷新</button>
-    <button mat-raised-button color="primary" (click)="addCad()">添加</button>
+    <button mat-flat-button [color]="multiDeleting() ? 'accent' : 'primary'" (click)="toggleMultiDeleting()">批量删除</button>
+    <button mat-flat-button (click)="advancedSearch()">高级搜索</button>
+    <button mat-flat-button (click)="search()">刷新</button>
+    <button mat-flat-button (click)="addCad()">添加</button>
     @if (data.yaoqiu?.["有帮助文档"]) {
-      <button mat-raised-button color="primary" (click)="data.yaoqiu?.['打开帮助文档']()">帮助文档</button>
+      <button mat-flat-button (click)="data.yaoqiu?.['打开帮助文档']()">帮助文档</button>
     }
     @if (data.yaoqiu?.["有导入参考dxf模板"]) {
-      <button mat-raised-button color="primary" (click)="data.yaoqiu?.['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
+      <button mat-flat-button (click)="data.yaoqiu?.['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
     }
-    <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
-    <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
-    <button mat-raised-button [color]="cadItemForm().noDefaultTexts ? 'primary' : 'accent'" (click)="toggleShowCadItemFormTexts()">
+    <button mat-flat-button (click)="openImportPage()">导入CAD</button>
+    <button mat-flat-button (click)="openExportPage()">导出CAD</button>
+    <button mat-flat-button [color]="cadItemForm().noDefaultTexts ? 'primary' : 'accent'" (click)="toggleShowCadItemFormTexts()">
       显示详细信息
     </button>
   }
   @for (btn of data.toolbarBtns; track $index) {
-    <button mat-raised-button color="primary" (click)="btn.onClick?.(this)">{{ btn.name }}</button>
+    <button mat-flat-button (click)="btn.onClick?.(this)">{{ btn.name }}</button>
   }
   <mat-divider vertical class="placeholder large"></mat-divider>
   <div class="spinner-container">
-    <button mat-raised-button color="primary" (click)="submit()">确定</button>
+    <button mat-flat-button (click)="submit()">确定</button>
     <app-spinner [id]="loaderIdSubmit" [inline]="true"></app-spinner>
   </div>
-  <button mat-raised-button color="primary" (click)="close()">取消</button>
+  <button mat-flat-button (click)="close()">取消</button>
 </div>
 <div class="toolbar">
   <mat-slide-toggle [checked]="showCheckedOnly()" (change)="toggleShowCheckedOnly($event)">

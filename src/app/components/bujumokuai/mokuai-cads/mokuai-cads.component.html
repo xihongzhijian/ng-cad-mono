@@ -9,21 +9,21 @@
   (navNameChange)="onNavNameChange($event)"
 >
   <ng-container appDataListToolbar>
-    <button mat-raised-button color="primary" (click)="refreshCads()">刷新</button>
-    <button mat-raised-button color="primary" (click)="addCad()">添加</button>
-    <button mat-raised-button [color]="cadsEditMode() ? 'accent' : 'primary'" (click)="toggleCadsEditMode()">编辑</button>
-    <button mat-raised-button color="primary" (click)="removeCads()">批量删除</button>
-    <button mat-raised-button color="primary" (click)="copyCads()">批量复制</button>
+    <button mat-flat-button (click)="refreshCads()">刷新</button>
+    <button mat-flat-button (click)="addCad()">添加</button>
+    <button mat-flat-button [class.accent]="cadsEditMode()" (click)="toggleCadsEditMode()">编辑</button>
+    <button mat-flat-button (click)="removeCads()">批量删除</button>
+    <button mat-flat-button (click)="copyCads()">批量复制</button>
     @if (cadYaoqiu()?.["有帮助文档"]) {
-      <button mat-raised-button color="primary" (click)="cadYaoqiu()?.['打开帮助文档']()">帮助文档</button>
+      <button mat-flat-button (click)="cadYaoqiu()?.['打开帮助文档']()">帮助文档</button>
     }
     @if (cadYaoqiu()?.["有导入参考dxf模板"]) {
-      <button mat-raised-button color="primary" (click)="cadYaoqiu()?.['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
+      <button mat-flat-button (click)="cadYaoqiu()?.['下载导入参考dxf模板'](downloadApi)">下载导入cad模板</button>
     }
-    <button mat-raised-button color="primary" (click)="openImportPage()">导入CAD</button>
-    <button mat-raised-button color="primary" (click)="openExportPage()">导出CAD</button>
-    <button mat-raised-button color="primary">导入</button>
-    <button mat-raised-button color="primary">导出</button>
+    <button mat-flat-button (click)="openImportPage()">导入CAD</button>
+    <button mat-flat-button (click)="openExportPage()">导出CAD</button>
+    <button mat-flat-button>导入</button>
+    <button mat-flat-button>导出</button>
   </ng-container>
   <div class="data-items items" appDataListItems>
     @for (cad of cads(); track i; let i = $index) {
@@ -61,7 +61,7 @@
           <div class="data-item item link">
             <app-cad-image id="" [data]="cad"></app-cad-image>
             <div class="toolbar">
-              <button mat-icon-button color="primary" (click)="unselectCad(i)">
+              <button mat-icon-button (click)="unselectCad(i)">
                 <mat-icon>remove_circle</mat-icon>
               </button>
               <div class="text long" [matTooltip]="cad.name" matTooltipPosition="above">

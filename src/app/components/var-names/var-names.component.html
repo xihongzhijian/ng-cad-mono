@@ -2,7 +2,7 @@
   <div class="var-names-groups flex-column flex-110" [style.--var-width.px]="item.width" [style.--names-per-row]="namesPerRow()">
     <div class="toolbar">
       <div class="title">系统变量</div>
-      <button mat-raised-button color="primary" (click)="openDoc()">
+      <button mat-flat-button (click)="openDoc()">
         帮助文档
         <mat-icon>open_in_new</mat-icon>
       </button>
@@ -16,7 +16,7 @@
           <div class="name">{{ group.groupName }}</div>
           <div class="var-names toolbar">
             @for (name of group.varNames; track $index) {
-              <button mat-button color="primary" (click)="clickVarName(name)">{{ name }}</button>
+              <button mat-button (click)="clickVarName(name)">{{ name }}</button>
             }
           </div>
         </div>

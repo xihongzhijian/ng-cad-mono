@@ -87,17 +87,15 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
             {
               name: "linear_scale",
               isDefault: true,
-              color: i === index ? "accent" : "primary",
+              class: i === index ? "accent" : "",
               onClick: () => this.selectPairedLines(i)
             },
             {
               name: "add_circle",
-              color: "primary",
               onClick: () => this.addPairedLines(i + 1)
             },
             {
               name: "remove_circle",
-              color: "primary",
               onClick: () => this.removePairedLines(i)
             }
           ]

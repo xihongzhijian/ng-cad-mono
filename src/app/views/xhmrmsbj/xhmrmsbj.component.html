@@ -2,45 +2,45 @@
   <div class="toolbar">
     @if (tabNames().length > 1) {
       @for (name of tabNames(); track $index) {
-        <button mat-raised-button [color]="name === activeTabName() ? 'accent' : 'primary'" (click)="setActiveTabName(name)">
+        <button mat-flat-button [class.accent]="name === activeTabName()" (click)="setActiveTabName(name)">
           {{ name }}
         </button>
       }
       <mat-divider vertical class="large placeholder"></mat-divider>
     }
     @if (!isFromOrder()) {
-      <button mat-raised-button color="primary" (click)="openMokuaikuInNew()">模块库</button>
-      <button mat-raised-button color="primary" (click)="openPeijiankuInNew()">配件库</button>
+      <button mat-flat-button (click)="openMokuaikuInNew()">模块库</button>
+      <button mat-flat-button (click)="openPeijiankuInNew()">配件库</button>
       <mat-divider vertical class="large placeholder"></mat-divider>
     }
     @if (isFromOrder()) {
-      <button mat-raised-button color="primary" (click)="openMokuais()">查看数据</button>
+      <button mat-flat-button (click)="openMokuais()">查看数据</button>
       @if (canEditMokuaidaxiao()) {
-        <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
-        <button mat-raised-button color="primary" (click)="refreshMokuaidaxiao()">更新模块大小配置</button>
+        <button mat-flat-button (click)="editMokuaidaxiao()">模块大小</button>
+        <button mat-flat-button (click)="refreshMokuaidaxiao()">更新模块大小配置</button>
       }
-      <button mat-raised-button color="primary" (click)="resetMokuaiInputs(true)">全部恢复默认</button>
+      <button mat-flat-button (click)="resetMokuaiInputs(true)">全部恢复默认</button>
     } @else {
       @switch (activeTabName()) {
         @case ("可选锁边铰边") {
-          <button mat-raised-button color="primary" (click)="sbjb()?.addSbjbItemSbjb()">添加</button>
-          <button mat-raised-button color="primary" (click)="sbjb()?.removeSbjbItemSbjbs()">删除</button>
-          <button mat-raised-button color="primary" (click)="sbjb()?.import()">导入</button>
-          <button mat-raised-button color="primary" (click)="sbjb()?.export()">导出</button>
+          <button mat-flat-button (click)="sbjb()?.addSbjbItemSbjb()">添加</button>
+          <button mat-flat-button (click)="sbjb()?.removeSbjbItemSbjbs()">删除</button>
+          <button mat-flat-button (click)="sbjb()?.import()">导入</button>
+          <button mat-flat-button (click)="sbjb()?.export()">导出</button>
         }
         @case ("门扇模块") {
           @if (!isFromOrder()) {
-            <button mat-raised-button color="primary" (click)="setMsbj()">更换布局</button>
+            <button mat-flat-button (click)="setMsbj()">更换布局</button>
           }
           @if (canEditMokuaidaxiao()) {
-            <button mat-raised-button color="primary" (click)="editMokuaidaxiao()">模块大小</button>
+            <button mat-flat-button (click)="editMokuaidaxiao()">模块大小</button>
           }
           <mat-divider vertical class="large placeholder"></mat-divider>
         }
       }
-      <button mat-raised-button color="primary" (click)="submit()">保存</button>
+      <button mat-flat-button (click)="submit()">保存</button>
       @if (cancelable()) {
-        <button mat-raised-button color="primary" (click)="cancel()">关闭</button>
+        <button mat-flat-button (click)="cancel()">关闭</button>
       }
     }
     <div class="title" [class]="canOpenXhmrmsbj() ? 'link text' : ''" (click)="openXhmrmsbj()">{{ xinghao()?.raw?.mingzi }}</div>
@@ -67,18 +67,14 @@
       }
       <mat-divider class="placeholder"></mat-divider>
       <ng-scrollbar>
-        <div class="flex-column menshan-options">
+        <div class="menshan-options flex-column">
           @for (item of menshanbujuItems(); track $index) {
-            <div
-              class="flex-column menshan-option"
-              [class]="{active: activeMenshanKey() === item.key}"
-              (click)="activeMenshanKey.set(item.key)"
-            >
+            <div class="menshan-option item" [class]="{active: activeMenshanKey() === item.key}" (click)="activeMenshanKey.set(item.key)">
               <div style="font-weight: bold">{{ item.key }}</div>
               @if (item.info["选中布局数据"]; as data2) {
                 <div [class]="canOpenMsbj() ? 'link text' : ''" appClickStop (click)="openMsbj(data2.vid)">布局：{{ data2.name }}</div>
               }
-              <button mat-stroked-button color="primary" (click)="copyMsbjInfo(item.info)">复制</button>
+              <button mat-stroked-button (click)="copyMsbjInfo(item.info)">复制</button>
             </div>
           }
         </div>
@@ -103,7 +99,7 @@
           }
           <app-input [info]="kexuanmokuaiSearchInputInfo()"></app-input>
           @if (!isFromOrder()) {
-            <button mat-raised-button color="primary" (click)="setKexuanmokuai()">编辑</button>
+            <button mat-flat-button (click)="setKexuanmokuai()">编辑</button>
           }
         </div>
       }
@@ -142,7 +138,7 @@
               <div class="toolbar">
                 <div class="title">模块选项</div>
                 <div class="flex-110"></div>
-                <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
+                <button mat-flat-button (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
               </div>
               <div class="items">
                 @for (info of mokuaiOptionInfos(); track i; let i = $index) {
@@ -164,7 +160,7 @@
               <div class="title">模块输入</div>
               <div class="flex-110"></div>
               @if (isFromOrder()) {
-                <button mat-raised-button color="primary" (click)="resetMokuaiInputs()">恢复默认</button>
+                <button mat-flat-button (click)="resetMokuaiInputs()">恢复默认</button>
               }
             </div>
             @if (!isFromOrder()) {
@@ -179,7 +175,7 @@
               <div class="toolbar">
                 <div class="title">模块输出</div>
                 <div class="flex-110"></div>
-                <button mat-raised-button color="primary" (click)="setAllMokuaiShuruDisabled(false)">全部关闭</button>
+                <button mat-flat-button (click)="setAllMokuaiShuruDisabled(false)">全部关闭</button>
               </div>
               <div class="items">
                 @for (info of mokuaiInputInfosOutput(); track $index) {
@@ -217,7 +213,7 @@
         <div class="toolbar">
           <div class="title">型号板材分组</div>
           @if (!isFromOrder()) {
-            <button mat-raised-button color="primary" (click)="openMrbcjfzDialog()">编辑</button>
+            <button mat-flat-button (click)="openMrbcjfzDialog()">编辑</button>
           }
         </div>
         <div class="xinghao-info flex-column">
@@ -287,11 +283,11 @@
         }
         <div class="flex-110"></div>
         @if (!isFromOrder()) {
-          <button mat-icon-button color="primary" (click)="showXhmrmsbjsUsingMokuai(mokuai)">
+          <button mat-icon-button (click)="showXhmrmsbjsUsingMokuai(mokuai)">
             <mat-icon>link</mat-icon>
           </button>
         }
-        <button mat-icon-button color="primary" (click)="mokuaiImage.showBigPic()">
+        <button mat-icon-button (click)="mokuaiImage.showBigPic()">
           <mat-icon>zoom_in</mat-icon>
         </button>
       </div>
@@ -313,7 +309,7 @@
           } @else {
             <div class="title" [innerHTML]="getMokuaiTitle(mokuai, false)"></div>
           }
-          <button mat-icon-button color="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
+          <button mat-icon-button class="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
         }
       </div>
     </div>

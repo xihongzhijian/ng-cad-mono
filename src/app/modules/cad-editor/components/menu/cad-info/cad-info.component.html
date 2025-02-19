@@ -5,16 +5,16 @@
   }
   @for (info of baseLineInfos(); track $index; let j = $index) {
     <div>
-      <mat-form-field [color]="info.color">
+      <mat-form-field>
         <mat-label>基准</mat-label>
         <input matInput type="text" [(ngModel)]="info.data.name" (change)="updateBaseLineInfos()" name="baseLineName" />
-        <button mat-icon-button matSuffix [color]="info.color" (click)="selectBaseLine(j)">
+        <button mat-icon-button matSuffix [class]="info.class" (click)="selectBaseLine(j)">
           <mat-icon>linear_scale</mat-icon>
         </button>
-        <button mat-icon-button matSuffix color="primary" (click)="addBaseLine(j)">
+        <button mat-icon-button matSuffix (click)="addBaseLine(j)">
           <mat-icon>add_circle</mat-icon>
         </button>
-        <button mat-icon-button matSuffix color="primary" (click)="removeBaseLine(j)">
+        <button mat-icon-button matSuffix (click)="removeBaseLine(j)">
           <mat-icon>remove_circle</mat-icon>
         </button>
         <mat-hint [align]="'start'">x:{{ info.data.valueX.toFixed(2) }}, y:{{ info.data.valueY.toFixed(2) }}</mat-hint>
@@ -23,16 +23,16 @@
   }
   @for (info of jointPointInfos(); track $index; let j = $index) {
     <div>
-      <mat-form-field [color]="info.color">
+      <mat-form-field>
         <mat-label>连接点</mat-label>
         <input matInput type="text" [(ngModel)]="info.data.name" (change)="updateJointPointInfos()" name="jointPointName" />
-        <button mat-icon-button matSuffix [color]="info.color" (click)="selectJointPoint(j)">
+        <button mat-icon-button matSuffix [class]="info.class" (click)="selectJointPoint(j)">
           <mat-icon>linear_scale</mat-icon>
         </button>
-        <button mat-icon-button matSuffix color="primary" (click)="addJointPoint(j)">
+        <button mat-icon-button matSuffix (click)="addJointPoint(j)">
           <mat-icon>add_circle</mat-icon>
         </button>
-        <button mat-icon-button matSuffix color="primary" (click)="removeJointPoint(j)">
+        <button mat-icon-button matSuffix (click)="removeJointPoint(j)">
           <mat-icon>remove_circle</mat-icon>
         </button>
         <mat-hint [align]="'start'">x:{{ info.data.valueX.toFixed(2) }}, y:{{ info.data.valueY.toFixed(2) }}</mat-hint>
@@ -47,7 +47,7 @@
       <div class="label">{{ intersectionKeysTranslate[key] }}</div>
       @if (data()[key].length === 0) {
         <div>
-          <button mat-icon-button color="primary" (click)="addIntersectionValue(key)">
+          <button mat-icon-button (click)="addIntersectionValue(key)">
             <mat-icon>add_circle</mat-icon>
           </button>
         </div>
@@ -65,7 +65,7 @@
     <div class="label">激光开料标记线</div>
     @if (data().info["激光开料标记线"]?.length === 0) {
       <div>
-        <button mat-icon-button color="primary" (click)="arrayAdd2(data().info, '激光开料标记线', emptyBjxItem)">
+        <button mat-icon-button (click)="arrayAdd2(data().info, '激光开料标记线', emptyBjxItem)">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
@@ -78,23 +78,17 @@
               <mat-option [value]="type">{{ type }}</mat-option>
             }
           </mat-select>
-          <button mat-icon-button matSuffix [color]="getBjxPointColor(j)" (click)="$event.stopPropagation(); selectBjxPoint(j)">
+          <button mat-icon-button matSuffix [class]="getBjxPointClass(j)" (click)="$event.stopPropagation(); selectBjxPoint(j)">
             <mat-icon>linear_scale</mat-icon>
           </button>
           <button
             mat-icon-button
             matSuffix
-            color="primary"
             (click)="$event.stopPropagation(); arrayAdd2(data().info, '激光开料标记线', emptyBjxItem, j + 1)"
           >
             <mat-icon>add_circle</mat-icon>
           </button>
-          <button
-            mat-icon-button
-            matSuffix
-            color="primary"
-            (click)="$event.stopPropagation(); arrayRemove2(data().info, '激光开料标记线', j)"
-          >
+          <button mat-icon-button matSuffix (click)="$event.stopPropagation(); arrayRemove2(data().info, '激光开料标记线', j)">
             <mat-icon>remove_circle</mat-icon>
           </button>
         </mat-form-field>

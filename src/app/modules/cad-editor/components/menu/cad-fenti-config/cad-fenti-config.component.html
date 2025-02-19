@@ -1,11 +1,11 @@
 <div class="toolbar vertical left">
   @if (!prod) {
-    <button mat-raised-button color="primary" (click)="emptyFenti()">emptyFenti</button>
+    <button mat-flat-button (click)="emptyFenti()">emptyFenti</button>
   }
-  <button mat-raised-button color="primary" (click)="drawFentiLines()">画分体线</button>
-  <button mat-raised-button color="primary" (click)="copyFenti()">复制选中线为分体</button>
-  <button mat-raised-button color="primary" (click)="uploadFenti()">上传dxf为分体</button>
-  <button mat-raised-button color="primary" (click)="addPairedLines()">添加分体对应线</button>
+  <button mat-flat-button (click)="drawFentiLines()">画分体线</button>
+  <button mat-flat-button (click)="copyFenti()">复制选中线为分体</button>
+  <button mat-flat-button (click)="uploadFenti()">上传dxf为分体</button>
+  <button mat-flat-button (click)="addPairedLines()">添加分体对应线</button>
   @for (info of pairedLinesListInputInfos(); track $index) {
     <app-input class="cad-fenti-paired-lines-item" [info]="info"></app-input>
   }

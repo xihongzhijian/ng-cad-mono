@@ -1,7 +1,7 @@
 <div class="toolbar right">
   <div class="toolbar center flex-110 link text" (click)="openCad()">{{ data.data?.name }}</div>
-  <button mat-raised-button color="primary" (click)="close(true)" [disabled]="!canClose()">保存并关闭</button>
-  <button mat-raised-button color="primary" (click)="save()">保存</button>
-  <button mat-raised-button color="primary" (click)="close(false)" [disabled]="!canClose()">关闭</button>
+  <button mat-flat-button (click)="close(true)" [disabled]="!canClose()">保存并关闭</button>
+  <button mat-flat-button (click)="save()">保存</button>
+  <button mat-flat-button (click)="close(false)" [disabled]="!canClose()">关闭</button>
 </div>
 <app-cad-editor [params]="cadEditorParams()"></app-cad-editor>

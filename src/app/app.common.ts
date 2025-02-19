@@ -1,6 +1,7 @@
 import {AbstractControlOptions, FormControl, FormControlOptions, FormControlState, FormGroup} from "@angular/forms";
 import {environment} from "@env";
 import {LocalStorage, log, ObjectOf, SessionStorage, Timer} from "@lucilor/utils";
+import {Properties} from "csstype";
 import JsBarcode from "jsbarcode";
 import {TDocumentInformation} from "pdfmake/interfaces";
 
@@ -271,3 +272,8 @@ export const getArray = <T>(validators: T | T[] | null | undefined) => {
   }
   return [validators];
 };
+
+export interface StyledItem {
+  class?: string | string[];
+  style?: Properties;
+}

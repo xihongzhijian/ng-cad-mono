@@ -1,7 +1,7 @@
 @if (selectable()) {
   <div class="toolbar right">
-    <button mat-raised-button color="primary" (click)="close(true)">确定</button>
-    <button mat-raised-button color="primary" (click)="close()">取消</button>
+    <button mat-flat-button (click)="close(true)">确定</button>
+    <button mat-flat-button (click)="close()">取消</button>
   </div>
 }
 <div class="flex-row flex-110">
@@ -14,13 +14,13 @@
     (navNameChange)="onNavNameChange($event)"
   >
     <ng-container appDataListToolbar>
-      <button mat-raised-button color="primary" (click)="refreshMokuais()">刷新</button>
+      <button mat-flat-button (click)="refreshMokuais()">刷新</button>
       @if (!selectable()) {
-        <button mat-raised-button color="primary" (click)="addMukuai()">添加</button>
-        <button mat-raised-button [color]="mokuaiEditMode() ? 'accent' : 'primary'" (click)="toggleMokuaiEditMode()">编辑</button>
-        <button mat-raised-button color="primary" (click)="importMokuais()">导入</button>
-        <button mat-raised-button color="primary" (click)="exportMokuais()">导出</button>
-        <button mat-raised-button color="primary" (click)="selectAllMokuais()">全选</button>
+        <button mat-flat-button (click)="addMukuai()">添加</button>
+        <button mat-flat-button [class.accent]="mokuaiEditMode()" (click)="toggleMokuaiEditMode()">编辑</button>
+        <button mat-flat-button (click)="importMokuais()">导入</button>
+        <button mat-flat-button (click)="exportMokuais()">导出</button>
+        <button mat-flat-button (click)="selectAllMokuais()">全选</button>
       }
     </ng-container>
     <div class="data-items items" appDataListItems>
@@ -32,10 +32,10 @@
           (click)="clickMokuaiItem(mokuai)"
         >
           <div class="float-top toolbar right">
-            <button mat-icon-button color="primary" (click)="showXhmrmsbjsUsingMokuai(mokuai)">
+            <button mat-icon-button (click)="showXhmrmsbjsUsingMokuai(mokuai)">
               <mat-icon>link</mat-icon>
             </button>
-            <button mat-icon-button color="primary" (click)="mokuaiImage.showBigPic()">
+            <button mat-icon-button (click)="mokuaiImage.showBigPic()">
               <mat-icon>zoom_in</mat-icon>
             </button>
             @if (selectedMokuaiIds().includes(mokuai.id)) {
@@ -52,7 +52,7 @@
           ></app-image>
           @if (selectable()) {
             <div class="toolbar">
-              <button mat-icon-button color="primary" (click)="enterMokuai(mokuai)"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button (click)="enterMokuai(mokuai)"><mat-icon>edit</mat-icon></button>
               <div class="text wrap">{{ mokuai.name }}</div>
             </div>
           } @else {
@@ -63,9 +63,9 @@
           }
           @if (mokuaiEditMode()) {
             <div class="toolbar compact center">
-              <button mat-button color="primary" (click)="editMokuai(mokuai)">编辑</button>
-              <button mat-button color="primary" (click)="copyMokuai(mokuai)">复制</button>
-              <button mat-button color="primary" (click)="removeMokuai(mokuai)">删除</button>
+              <button mat-button (click)="editMokuai(mokuai)">编辑</button>
+              <button mat-button (click)="copyMokuai(mokuai)">复制</button>
+              <button mat-button (click)="removeMokuai(mokuai)">删除</button>
             </div>
           }
         </div>
@@ -82,9 +82,9 @@
             <div class="item">
               <app-image [src]="mokuai.xiaoguotu" [prefix]="imgPrefix()"></app-image>
               <div class="name toolbar center">
-                <button mat-icon-button color="primary" (click)="locateMokuai(mokuai)"><mat-icon>file_open</mat-icon></button>
-                <button mat-icon-button color="primary" (click)="unselectMokuai(mokuai)"><mat-icon>remove_circle</mat-icon></button>
-                <button mat-icon-button color="primary" (click)="enterMokuai(mokuai)"><mat-icon>edit</mat-icon></button>
+                <button mat-icon-button (click)="locateMokuai(mokuai)"><mat-icon>file_open</mat-icon></button>
+                <button mat-icon-button (click)="unselectMokuai(mokuai)"><mat-icon>remove_circle</mat-icon></button>
+                <button mat-icon-button (click)="enterMokuai(mokuai)"><mat-icon>edit</mat-icon></button>
                 <div>{{ mokuai.name }}</div>
               </div>
             </div>

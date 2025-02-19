@@ -1,6 +1,6 @@
 <div class="toolbar">
-  <button mat-raised-button color="primary" (click)="close(true)">确定</button>
-  <button mat-raised-button (click)="close(false)">取消</button>
+  <button mat-flat-button (click)="close(true)">确定</button>
+  <button mat-flat-button (click)="close(false)">取消</button>
 </div>
 <ng-scrollbar>
   @for (info of inputInfos; track $index) {

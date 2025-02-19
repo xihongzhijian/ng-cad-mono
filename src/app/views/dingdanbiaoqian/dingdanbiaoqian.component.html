@@ -112,7 +112,7 @@
                         @if (info.title === "测试数据") {
                           <button
                             class="no-print"
-                            mat-raised-button
+                            mat-flat-button
                             [color]="calcResults().at(order.mokuaiInfo.index)?.fulfilled ? 'primary' : 'accent'"
                             (click)="editMokuaiFormulas(order.mokuaiInfo.index)"
                           >
@@ -221,11 +221,11 @@
 
 <div class="toolbar toolbar no-print">
   @if (type() === "配件模块") {
-    <button mat-raised-button color="primary" (click)="calcMokuais()">计算</button>
+    <button mat-flat-button (click)="calcMokuais()">计算</button>
   }
-  <button mat-raised-button color="primary" (click)="print()">打印</button>
+  <button mat-flat-button (click)="print()">打印</button>
   @if (!production) {
-    <button mat-raised-button color="primary" (click)="clearHttpCache()">clearHttpCache</button>
+    <button mat-flat-button (click)="clearHttpCache()">clearHttpCache</button>
     @for (info of configInputInfos(); track $index) {
       <app-input [info]="info"></app-input>
     }

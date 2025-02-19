@@ -11,7 +11,7 @@
   cursor: move;
   &.active,
   &.hover {
-    color: var(--primary-color);
+    color: var(--mat-sys-primary);
   }
 
   .name {

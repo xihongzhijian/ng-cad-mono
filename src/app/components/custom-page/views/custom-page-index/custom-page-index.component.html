@@ -11,14 +11,14 @@
     }
     @switch (mode()) {
       @case ("design") {
-        <button mat-raised-button color="primary" (click)="clearPage()">清空</button>
-        <button mat-raised-button color="primary" (click)="import()">导入</button>
-        <button mat-raised-button color="primary" (click)="export()">导出</button>
-        <button mat-raised-button color="primary" (click)="preview()">预览</button>
-        <button mat-raised-button [color]="isSaved() ? 'primary' : 'accent'" (click)="save()">保存</button>
+        <button mat-flat-button (click)="clearPage()">清空</button>
+        <button mat-flat-button (click)="import()">导入</button>
+        <button mat-flat-button (click)="export()">导出</button>
+        <button mat-flat-button (click)="preview()">预览</button>
+        <button mat-flat-button [color]="isSaved() ? 'primary' : 'accent'" (click)="save()">保存</button>
       }
       @case ("view") {
-        <button mat-raised-button color="primary" (click)="preview()">预览</button>
+        <button mat-flat-button (click)="preview()">预览</button>
       }
     }
   </div>
@@ -50,27 +50,13 @@
   @if (mode() === "design") {
     <div class="menus">
       <div class="toolbar vertical">
-        <button mat-icon-button color="primary" matTooltip="打开帮助文档" matTooltipPosition="left" (click)="openDoc()">
+        <button mat-icon-button matTooltip="打开帮助文档" matTooltipPosition="left" (click)="openDoc()">
           <mat-icon>help</mat-icon>
         </button>
-        <button
-          mat-icon-button
-          color="primary"
-          matTooltip="撤销(ctrl+z)"
-          matTooltipPosition="left"
-          [disabled]="!canUndo()"
-          (click)="undo()"
-        >
+        <button mat-icon-button matTooltip="撤销(ctrl+z)" matTooltipPosition="left" [disabled]="!canUndo()" (click)="undo()">
           <mat-icon>undo</mat-icon>
         </button>
-        <button
-          mat-icon-button
-          color="primary"
-          matTooltip="恢复(ctrl+y)"
-          matTooltipPosition="left"
-          [disabled]="!canRedo()"
-          (click)="redo()"
-        >
+        <button mat-icon-button matTooltip="恢复(ctrl+y)" matTooltipPosition="left" [disabled]="!canRedo()" (click)="redo()">
           <mat-icon>redo</mat-icon>
         </button>
       </div>

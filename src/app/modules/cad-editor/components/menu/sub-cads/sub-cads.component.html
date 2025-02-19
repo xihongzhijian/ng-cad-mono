@@ -38,11 +38,11 @@
       <span class="section-title">装配CAD</span>
       <div class="toolbar">
         @if (isAllComponentsSelected()) {
-          <button mat-flat-button color="primary" [disabled]="!componentsSelectable" (click)="selectAllComponents()">全选</button>
+          <button mat-flat-button [disabled]="!componentsSelectable" (click)="selectAllComponents()">全选</button>
         } @else {
-          <button mat-flat-button color="primary" [disabled]="!componentsSelectable" (click)="unselectAllComponents()">全不选</button>
+          <button mat-flat-button [disabled]="!componentsSelectable" (click)="unselectAllComponents()">全不选</button>
         }
-        <button mat-flat-button color="primary" (click)="deleteSelectedComponents()">删除已选</button>
+        <button mat-flat-button (click)="deleteSelectedComponents()">删除已选</button>
       </div>
       <div class="checkbox-group add-empty-msg">
         @for (item of components; track i; let i = $index) {

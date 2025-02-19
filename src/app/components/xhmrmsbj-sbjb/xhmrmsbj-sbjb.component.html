@@ -7,7 +7,7 @@
           @if (item["锁边铰边数据"].length < 1) {
             <span class="error">（没有数据）</span>
           }
-          <button mat-stroked-button color="primary" (click)="copySbjbItems(item)">复制</button>
+          <button mat-stroked-button (click)="copySbjbItems(item)">复制</button>
         </div>
       }
     </div>
@@ -29,11 +29,11 @@
     <ng-scrollbar class="enable-x">
       <div class="flex-column">
         <div class="toolbar">
-          <button mat-raised-button [color]="showCadFormDefaultTexts() ? 'accent' : 'primary'" (click)="toggleShowCadFormDefaultTexts()">
+          <button mat-flat-button [color]="showCadFormDefaultTexts() ? 'accent' : 'primary'" (click)="toggleShowCadFormDefaultTexts()">
             显示详细信息
           </button>
-          <button mat-raised-button color="primary" (click)="importItemCads()">导入</button>
-          <button mat-raised-button color="primary" (click)="exportItemCads()">导出</button>
+          <button mat-flat-button (click)="importItemCads()">导入</button>
+          <button mat-flat-button (click)="exportItemCads()">导出</button>
         </div>
         @for (group of cadInfoGroups(); track $index) {
           <div class="flex-row">
@@ -88,8 +88,8 @@
       </div>
     </ng-scrollbar>
     <div class="toolbar center">
-      <button mat-raised-button color="primary" (click)="closeSbjbItemSbjbItemForm(true)">确定</button>
-      <button mat-raised-button color="primary" (click)="closeSbjbItemSbjbItemForm(false)">取消</button>
+      <button mat-flat-button (click)="closeSbjbItemSbjbItemForm(true)">确定</button>
+      <button mat-flat-button (click)="closeSbjbItemSbjbItemForm(false)">取消</button>
     </div>
   </app-floating-dialog>
 }

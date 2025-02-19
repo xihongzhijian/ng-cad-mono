@@ -26,8 +26,9 @@
   .menshan-option {
     justify-content: center;
     align-items: center;
-    height: 100px;
+    min-height: 100px;
     cursor: pointer;
+    padding: 2px;
     &:not(:last-child) {
       border-bottom: var(--border);
     }

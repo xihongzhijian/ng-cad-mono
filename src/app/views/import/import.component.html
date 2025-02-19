@@ -7,32 +7,24 @@
             <div class="spinner-container">
               <div class="toolbar">
                 @if (isSbjbType()) {
-                  <button
-                    mat-raised-button
-                    color="primary"
-                    (click)="importDxf(false, loaderIds.importLoader, null, true)"
-                    [disabled]="!canSubmit(false)"
-                  >
+                  <button mat-flat-button (click)="importDxf(false, loaderIds.importLoader, null, true)" [disabled]="!canSubmit(false)">
                     导入替换
                   </button>
                 }
-                <button mat-raised-button color="primary" (click)="importDxf(false, loaderIds.importLoader)" [disabled]="!canSubmit(false)">
-                  导入添加
-                </button>
+                <button mat-flat-button (click)="importDxf(false, loaderIds.importLoader)" [disabled]="!canSubmit(false)">导入添加</button>
               </div>
               <app-spinner [id]="loaderIds.importLoader" [inline]="true"></app-spinner>
             </div>
           } @else {
             <div class="spinner-container">
-              <button mat-raised-button color="primary" (click)="importDxf(false, loaderIds.importLoader)" [disabled]="!canSubmit(false)">
+              <button mat-flat-button (click)="importDxf(false, loaderIds.importLoader)" [disabled]="!canSubmit(false)">
                 导入框型锁边铰边
               </button>
               <app-spinner [id]="loaderIds.importLoader" [inline]="true"></app-spinner>
             </div>
             <div class="spinner-container">
               <button
-                mat-raised-button
-                color="primary"
+                mat-flat-button
                 (click)="importDxf(false, loaderIds.reimportLoader, sourceFile)"
                 [disabled]="!sourceCad || !canSubmit(true)"
               >
@@ -53,20 +45,14 @@
         <div class="item import-config">
           <div class="toolbar center">
             <div class="spinner-container">
-              <button
-                mat-raised-button
-                color="primary"
-                (click)="importDxf(true, loaderIds.importSuanliaoLoader)"
-                [disabled]="!canSubmit(true)"
-              >
+              <button mat-flat-button (click)="importDxf(true, loaderIds.importSuanliaoLoader)" [disabled]="!canSubmit(true)">
                 替换导入型号算料dxf文件
               </button>
               <app-spinner [id]="loaderIds.importSuanliaoLoader" [inline]="true"></app-spinner>
             </div>
             <div class="spinner-container">
               <button
-                mat-raised-button
-                color="primary"
+                mat-flat-button
                 (click)="importDxf(true, loaderIds.reimportSuanliaoLoader, sourceFile)"
                 [disabled]="!sourceCad || !canSubmit(true)"
               >
@@ -87,10 +73,10 @@
 
     <div class="toolbar">
       <div class="spinner-container">
-        <button mat-raised-button (click)="downloadSourceCad()" [disabled]="!sourceCad() || !cadsParsed()">下载dxf文件</button>
+        <button mat-flat-button (click)="downloadSourceCad()" [disabled]="!sourceCad() || !cadsParsed()">下载dxf文件</button>
         <app-spinner [id]="loaderIds.downloadSourceCad" [inline]="true"></app-spinner>
       </div>
-      <button mat-raised-button (click)="downloadBatchCheckData()" [disabled]="!batchCheckData() || !cadsParsed()">下载json数据</button>
+      <button mat-flat-button (click)="downloadBatchCheckData()" [disabled]="!batchCheckData() || !cadsParsed()">下载json数据</button>
     </div>
     <div class="cads">
       @for (cad of cads(); track $index) {

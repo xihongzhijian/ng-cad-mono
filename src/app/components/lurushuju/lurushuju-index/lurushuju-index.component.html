@@ -5,7 +5,7 @@
         @if (btn.type === "text") {
           <div [class]="btn.class" [style]="btn.style">{{ btn.name }}</div>
         } @else {
-          <button mat-raised-button [class]="btn.class" [style]="btn.style" [color]="btn.color" (click)="onToolbarBtnClick(btn)">
+          <button mat-flat-button [class]="btn.class" [style]="btn.style" [color]="btn.color" (click)="onToolbarBtnClick(btn)">
             {{ btn.name }}
           </button>
         }
@@ -14,7 +14,7 @@
       }
     }
   }
-  <button mat-raised-button color="primary" [matMenuTriggerFor]="links">更多</button>
+  <button mat-flat-button [matMenuTriggerFor]="links">更多</button>
   <mat-menu #links="matMenu">
     <button mat-menu-item (click)="showChangelog()"><app-about appClickStop></app-about></button>
     <ng-scrollbar>

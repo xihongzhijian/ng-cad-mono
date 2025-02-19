@@ -41,8 +41,8 @@
 @if (!lvxingcaiyouhuaInfo()) {
   <div class="menu toolbar no-print flex-column">
     <div class="toolbar">
-      <button mat-raised-button color="primary" (click)="export()">导出</button>
-      <button mat-raised-button color="primary" (click)="print()">打印</button>
+      <button mat-flat-button (click)="export()">导出</button>
+      <button mat-flat-button (click)="print()">打印</button>
     </div>
     <div class="flex-110 flex-column">
       @if (xikongTableInfo(); as info) {

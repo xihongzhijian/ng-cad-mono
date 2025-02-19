@@ -3,9 +3,9 @@
     @for (item of formData; track i; let i = $index) {
       <mat-card class="item" (click)="printItem(item.item)">
         <div class="toolbar">
-          <button mat-raised-button color="primary" (click)="addItem(i)">新增</button>
-          <button mat-raised-button color="primary" (click)="addItem(i, item.item)">复制</button>
-          <button mat-raised-button color="primary" (click)="removeItem(i)">删除</button>
+          <button mat-flat-button (click)="addItem(i)">新增</button>
+          <button mat-flat-button (click)="addItem(i, item.item)">复制</button>
+          <button mat-flat-button (click)="removeItem(i)">删除</button>
         </div>
         @for (info of item.inputs1; track $index) {
           <app-input [info]="info"></app-input>
@@ -21,7 +21,7 @@
     @if (formData.length < 1) {
       <mat-card class="item">
         <div class="toolbar">
-          <button mat-raised-button color="primary" (click)="addItem(0)">新增</button>
+          <button mat-flat-button (click)="addItem(0)">新增</button>
         </div>
       </mat-card>
     }

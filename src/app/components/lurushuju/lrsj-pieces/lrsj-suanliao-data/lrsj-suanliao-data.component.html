@@ -12,9 +12,9 @@
                 <div class="flex-column flex-110" style="width: 0">
                   <ng-template #btns>
                     <div class="toolbar">
-                      <button mat-raised-button color="primary" (click)="gotoSuanliaoCads(key1)">算料公式CAD配置</button>
-                      <button mat-raised-button color="primary" (click)="copy(key1)">复制</button>
-                      <button mat-raised-button color="primary" (click)="empty(key1)">清空</button>
+                      <button mat-flat-button (click)="gotoSuanliaoCads(key1)">算料公式CAD配置</button>
+                      <button mat-flat-button (click)="copy(key1)">复制</button>
+                      <button mat-flat-button (click)="empty(key1)">清空</button>
                     </div>
                   </ng-template>
                   @if (!production) {
@@ -58,7 +58,7 @@
                           ></app-cad-item>
                         }
                         <div class="flex-row" style="align-items: center">
-                          <button mat-raised-button color="primary" (click)="selectShiyituCad(key1)">选择</button>
+                          <button mat-flat-button (click)="selectShiyituCad(key1)">选择</button>
                         </div>
                       } @else {
                         <div class="empty-cad item link" (click)="selectShiyituCad(key1)">

@@ -1,16 +1,16 @@
 <div class="toolbar">
-  <button mat-raised-button [style.z-index]="data ? '1' : '0'" [color]="isDrawingLine() ? 'accent' : 'primary'" (click)="drawLine()">
+  <button mat-flat-button [style.z-index]="data ? '1' : '0'" [color]="isDrawingLine() ? 'accent' : 'primary'" (click)="drawLine()">
     {{ drawLineName }}
   </button>
-  <button mat-raised-button [style.z-index]="data ? '1' : '0'" [color]="isMovingLines() ? 'accent' : 'primary'" (click)="moveLines()">
+  <button mat-flat-button [style.z-index]="data ? '1' : '0'" [color]="isMovingLines() ? 'accent' : 'primary'" (click)="moveLines()">
     {{ moveLinesName }}
   </button>
-  <button mat-raised-button [style.z-index]="data ? '1' : '0'" [color]="isCuttingLine() ? 'accent' : 'primary'" (click)="cutLine()">
+  <button mat-flat-button [style.z-index]="data ? '1' : '0'" [color]="isCuttingLine() ? 'accent' : 'primary'" (click)="cutLine()">
     {{ cutLineName }}
   </button>
-  <button mat-raised-button color="primary" (click)="autoFix()">修正</button>
+  <button mat-flat-button (click)="autoFix()">修正</button>
   <button
-    mat-raised-button
+    mat-flat-button
     [style.z-index]="data ? '1' : '0'"
     [color]="isAddingWHDashedLines() ? 'accent' : 'primary'"
     [disabled]="!canAddWHDashedLines()"
@@ -300,7 +300,7 @@
     <mat-form-field>
       <mat-label>条件取值</mat-label>
       <input matInput type="text" disabled />
-      <button mat-icon-button matSuffix color="primary" (click)="editTiaojianquzhi()">
+      <button mat-icon-button matSuffix (click)="editTiaojianquzhi()">
         <mat-icon>list</mat-icon>
       </button>
     </mat-form-field>

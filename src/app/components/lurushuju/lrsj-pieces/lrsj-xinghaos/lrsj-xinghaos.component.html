@@ -1,7 +1,7 @@
 <div class="toolbar">
-  <button mat-raised-button color="primary" (click)="selectAllXinghaos()">全选</button>
-  <button mat-raised-button color="primary" (click)="selectXinghaosGongyi()">批量选择工艺</button>
-  <button mat-raised-button color="primary" (click)="addXinghao()">新建型号</button>
+  <button mat-flat-button (click)="selectAllXinghaos()">全选</button>
+  <button mat-flat-button (click)="selectXinghaosGongyi()">批量选择工艺</button>
+  <button mat-flat-button (click)="addXinghao()">新建型号</button>
   @for (info of xinghaoFilterForm(); track $index) {
     <app-input [info]="info"></app-input>
   }
@@ -24,9 +24,9 @@
           </div>
           @if (editMode()) {
             <div class="toolbar center">
-              <button mat-button color="primary" (click)="editXinghao(xinghao)">编辑</button>
-              <button mat-button color="primary" (click)="copyXinghao(xinghao)">复制</button>
-              <button mat-button color="primary" (click)="removeXinghao(xinghao)">删除</button>
+              <button mat-button (click)="editXinghao(xinghao)">编辑</button>
+              <button mat-button (click)="copyXinghao(xinghao)">复制</button>
+              <button mat-button (click)="removeXinghao(xinghao)">删除</button>
             </div>
           }
         </div>

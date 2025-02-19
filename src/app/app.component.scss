@@ -4,9 +4,5 @@
   left: 0;
   cursor: pointer;
   z-index: calc(var(--top-z-index) + 1);
-
-  .mat-icon {
-    width: 30px;
-    height: 30px;
-  }
+  --mat-icon-size: 27px;
 }

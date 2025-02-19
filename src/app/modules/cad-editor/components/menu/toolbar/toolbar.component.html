@@ -1,6 +1,6 @@
 <div class="flex-column">
   <div class="toolbar">
-    <button mat-button [matMenuTriggerFor]="file">文件</button>
+    <button mat-button class="plain" [matMenuTriggerFor]="file">文件</button>
     <mat-menu #file="matMenu">
       @if (openCadOptions().isLocal === false) {
         <button mat-menu-item (click)="clickBtn('q')">新建<span class="shortcut">Ctrl + Q</span></button>
@@ -22,7 +22,7 @@
       <button mat-menu-item (click)="clickBtn('4')">切料CAD<span class="shortcut">Ctrl + 4</span></button>
     </mat-menu>
 
-    <button mat-button [matMenuTriggerFor]="edit" [disabled]="!isStatusNormal()">编辑</button>
+    <button mat-button class="plain" [matMenuTriggerFor]="edit" [disabled]="!isStatusNormal()">编辑</button>
     <mat-menu #edit="matMenu">
       @if (env.beta) {
         <button mat-menu-item (click)="openCadLayerDialog()">图层</button>
@@ -43,32 +43,32 @@
       <button mat-menu-item (click)="scaleComponents()">放大装配CAD</button>
     </mat-menu>
 
-    <button mat-button [matMenuTriggerFor]="view" [disabled]="!isStatusNormal">视图</button>
+    <button mat-button class="plain" [matMenuTriggerFor]="view" [disabled]="!isStatusNormal">视图</button>
     <mat-menu #view="matMenu">
       <button mat-menu-item (click)="setPointSize()">设置选取点大小</button>
     </mat-menu>
 
-    <button mat-button><app-about></app-about></button>
+    <button mat-button class="plain"><app-about></app-about></button>
     <mat-divider vertical></mat-divider>
 
-    <button mat-button (click)="toggleShowLineLength()" [disabled]="!isStatusNormal">
+    <button mat-button class="plain" (click)="toggleShowLineLength()" [disabled]="!isStatusNormal">
       {{ getConfig("hideLineLength") ? "隐藏" : "显示" }}线长
     </button>
-    <button mat-button (click)="toggleShowLineGongshi()" [disabled]="!isStatusNormal">
+    <button mat-button class="plain" (click)="toggleShowLineGongshi()" [disabled]="!isStatusNormal">
       {{ getConfig("hideLineGongshi") ? "隐藏" : "显示" }}公式
     </button>
-    <button mat-button (click)="toggleShowDimensions()" [disabled]="!isStatusNormal">
+    <button mat-button class="plain" (click)="toggleShowDimensions()" [disabled]="!isStatusNormal">
       {{ getConfig("hideDimensions") ? "隐藏" : "显示" }}标注
     </button>
-    <button mat-button (click)="toggleValidateLines()" [disabled]="!isStatusNormal">
+    <button mat-button class="plain" (click)="toggleValidateLines()" [disabled]="!isStatusNormal">
       {{ getConfig("validateLines") ? "" : "不" }}验证线段
     </button>
-    <button mat-button (click)="resetLineLength()" [disabled]="!isStatusNormal">重置线长</button>
-    <button mat-button (click)="setKailiaofangshi()" [disabled]="!isStatusNormal">首尾开料使用线长</button>
-    <button mat-button (click)="highlightTjqz()">高亮条件取值的线</button>
+    <button mat-button class="plain" (click)="resetLineLength()" [disabled]="!isStatusNormal">重置线长</button>
+    <button mat-button class="plain" (click)="setKailiaofangshi()" [disabled]="!isStatusNormal">首尾开料使用线长</button>
+    <button mat-button class="plain" (click)="highlightTjqz()">高亮条件取值的线</button>
 
     @if (canLeave()) {
-      <button mat-raised-button color="accent" (click)="leaveCadStatus()">
+      <button mat-flat-button class="accent" (click)="leaveCadStatus()">
         退出{{ statusName() }}
         @if (canLeaveWithEsc()) {
           <span>(Esc)</span>
@@ -76,7 +76,7 @@
       </button>
     }
     @if (canConfirm()) {
-      <button mat-raised-button color="accent" (click)="leaveCadStatus(true)">
+      <button mat-flat-button class="accent" (click)="leaveCadStatus(true)">
         确认
         @if (canConfirmWithEnter()) {
           <span>(Enter)</span>
@@ -85,15 +85,15 @@
     }
   </div>
   <div class="toolbar">
-    <button mat-button (click)="editZhankai()">展开</button>
-    <button mat-button (click)="editTiaojianquzhi()">条件取值</button>
-    <button mat-button (click)="editLineInfo()">线属性弹窗</button>
+    <button mat-button class="plain" (click)="editZhankai()">展开</button>
+    <button mat-button class="plain" (click)="editTiaojianquzhi()">条件取值</button>
+    <button mat-button class="plain" (click)="editLineInfo()">线属性弹窗</button>
     @if (canOpenKailiaoConfig) {
-      <button mat-button (click)="openKailiaoConfig()">线开料设置</button>
+      <button mat-button class="plain" (click)="openKailiaoConfig()">线开料设置</button>
     }
     @if (data.type === "包边正面") {
-      <button mat-button (click)="editBbzhmkgz()">修改包边正面宽规则</button>
+      <button mat-button class="plain" (click)="editBbzhmkgz()">修改包边正面宽规则</button>
     }
-    <button mat-button [color]="cadFentiOn() ? 'accent' : ''" (click)="toggleCadFentiOn()">分体设置</button>
+    <button mat-button class="plain" [class.accent]="cadFentiOn()" (click)="toggleCadFentiOn()">分体设置</button>
   </div>
 </div>

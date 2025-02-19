@@ -35,7 +35,7 @@
       <div class="toolbar">
         <div class="title">{{ set.title }}</div>
         <div class="flex-110"></div>
-        <button mat-raised-button color="primary" (click)="set.add()">添加</button>
+        <button mat-flat-button (click)="set.add()">添加</button>
       </div>
       <ng-scrollbar>
         <div class="items">
@@ -44,18 +44,18 @@
               <div class="toolbar compact">
                 <div>{{ info.item["名字"] }}</div>
                 <div class="flex-110"></div>
-                <button mat-button color="primary" (click)="set.remove(j)">删除</button>
-                <button mat-button color="primary" (click)="set.copy(j)">复制</button>
+                <button mat-button (click)="set.remove(j)">删除</button>
+                <button mat-button (click)="set.copy(j)">复制</button>
               </div>
               @for (inputInfo of info.inputInfos; track $index) {
                 <app-input class="text" [info]="inputInfo"></app-input>
               }
               @if (info.item.cad) {
                 <div class="toolbar">
-                  <button mat-raised-button color="primary" (click)="set.setCad(j)">选择CAD</button>
+                  <button mat-flat-button (click)="set.setCad(j)">选择CAD</button>
                   @if (info.item.cad.id) {
-                    <button mat-raised-button color="primary" (click)="set.editCad(j)">编辑CAD</button>
-                    <button mat-raised-button color="primary" (click)="set.removeCad(j)">删除CAD</button>
+                    <button mat-flat-button (click)="set.editCad(j)">编辑CAD</button>
+                    <button mat-flat-button (click)="set.removeCad(j)">删除CAD</button>
                   }
                 </div>
                 @if (info.cad?.name; as cadName) {

@@ -3,7 +3,7 @@
     <div class="text short">{{ prefix }}</div>
   }
   @for (button of buttons2; track $index) {
-    <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="button.onClick(this)">
+    <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="button.onClick(this)">
       {{ button.name }}
     </button>
   }
@@ -21,7 +21,7 @@
     <div class="name-text link" [class.error]="!!errorMsgs['名字']" (dblclick)="editCadForm()">
       {{ cadName }}
     </div>
-    <button class="name-btn" mat-icon-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="copyName()">
+    <button class="name-btn" mat-icon-button appClickStop [onClickStopped]="onClickStopped" (click)="copyName()">
       <mat-icon>content_copy</mat-icon>
     </button>
   </div>
@@ -60,20 +60,18 @@
     @if (!hideButtons) {
       <div class="toolbar compact hidden-if-empty">
         @if (cadViewer) {
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="centerCad()">居中</button>
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="centerCad()">居中</button>
         }
         @if (!editDisabled) {
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="editCad()">编辑</button>
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="editCad()">编辑</button>
         }
         @for (button of buttons; track $index) {
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="button.onClick(this)">
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="button.onClick(this)">
             {{ button.name }}
           </button>
         }
         @if (!editDisabled) {
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="toggleShowLineLength()">
-            隐藏线长数字
-          </button>
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="toggleShowLineLength()">隐藏线长数字</button>
         }
       </div>
     }
@@ -109,11 +107,11 @@
           <div class="fenti-cad toolbar">
             <div>{{ item.key }}:</div>
             @if (item.value) {
-              <button mat-raised-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="selectFentiCad()">
+              <button mat-flat-button appClickStop [onClickStopped]="onClickStopped" (click)="selectFentiCad()">
                 {{ item.value["名字"] }}
               </button>
             } @else {
-              <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="selectFentiCad()">不做分体</button>
+              <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="selectFentiCad()">不做分体</button>
             }
           </div>
         }
@@ -122,7 +120,7 @@
   </div>
   @if (showMuban) {
     <div class="divider" [style]="{height: cadHeight + 'px'}">
-      <mat-icon color="primary">link</mat-icon>
+      <mat-icon>link</mat-icon>
     </div>
     <div class="cad item">
       <div #mubanContainer class="cad-container flex-row">
@@ -140,15 +138,13 @@
       @if (mubanId) {
         <div class="toolbar compact">
           @if (mubanViewer) {
-            <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="centerMuban()">居中</button>
+            <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="centerMuban()">居中</button>
           }
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="uploadMuban()">上传</button>
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="editMuban()">编辑</button>
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="editMubanInNewTab()">
-            新窗口编辑
-          </button>
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="refreshMuban()">刷新</button>
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="removeMuban()">删除</button>
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="uploadMuban()">上传</button>
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="editMuban()">编辑</button>
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="editMubanInNewTab()">新窗口编辑</button>
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="refreshMuban()">刷新</button>
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="removeMuban()">删除</button>
         </div>
         <div class="inputs flex-column">
           @for (group of mubanInputs; track $index) {
@@ -170,7 +166,7 @@
           软件自动开料
         </div>
         <div class="toolbar compact">
-          <button mat-button color="primary" appClickStop [onClickStopped]="onClickStopped" (click)="uploadMuban()">上传</button>
+          <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="uploadMuban()">上传</button>
         </div>
       }
     </div>

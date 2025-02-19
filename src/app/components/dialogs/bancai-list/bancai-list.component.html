@@ -3,13 +3,13 @@
 </div>
 <div class="toolbar">
   @for (type of bancaiTypes(); track $index) {
-    <button mat-raised-button [color]="activeBancaiType() === type ? 'accent' : 'primary'" (click)="activeBancaiType.set(type)">
+    <button mat-flat-button [color]="activeBancaiType() === type ? 'accent' : 'primary'" (click)="activeBancaiType.set(type)">
       {{ type }}
     </button>
   }
   <div class="flex-110"></div>
   @if (data.multi) {
-    <button mat-raised-button color="primary" (click)="selectAll()">全选当前数据</button>
+    <button mat-flat-button (click)="selectAll()">全选当前数据</button>
   }
 </div>
 <ng-scrollbar>
@@ -26,6 +26,6 @@
   </div>
 </ng-scrollbar>
 <div class="toolbar">
-  <button mat-raised-button color="primary" (click)="submit()">确定</button>
-  <button mat-raised-button color="primary" (click)="cancel()">取消</button>
+  <button mat-flat-button (click)="submit()">确定</button>
+  <button mat-flat-button (click)="cancel()">取消</button>
 </div>

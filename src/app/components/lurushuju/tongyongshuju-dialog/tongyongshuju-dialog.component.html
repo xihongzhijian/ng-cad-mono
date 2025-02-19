@@ -1,5 +1,5 @@
 <div class="toolbar right">
-  <button mat-raised-button color="primary" (click)="close()">关闭</button>
+  <button mat-flat-button (click)="close()">关闭</button>
 </div>
 <div class="flex-110 flex-row">
   <div class="table-list">
@@ -14,10 +14,10 @@
           <div class="table-item item-list" [class]="{active: item.active}">
             <div class="name" (click)="clickTableListItem(i)">{{ item.mingzi }}</div>
             <!-- @if (item.xiaodaohang) {
-              <button mat-button color="primary" (click)="editTableListItem(i)">编辑</button>
+              <button mat-button  (click)="editTableListItem(i)">编辑</button>
             }
             @if (item.bangzhuwendang) {
-              <button mat-button color="primary" (click)="helpTableListItem(i)">帮助</button>
+              <button mat-button  (click)="helpTableListItem(i)">帮助</button>
             } -->
           </div>
         }
@@ -31,10 +31,10 @@
     @if (activeItem) {
       <div class="toolbar right">
         @if (tableData[activeItem.index].xiaodaohang) {
-          <button mat-button color="primary" (click)="editTableListItem(activeItem.index)">编辑</button>
+          <button mat-button (click)="editTableListItem(activeItem.index)">编辑</button>
         }
         @if (tableData[activeItem.index].bangzhuwendang) {
-          <button mat-button color="primary" (click)="helpTableListItem(activeItem.index)">帮助</button>
+          <button mat-button (click)="helpTableListItem(activeItem.index)">帮助</button>
         }
       </div>
       <ng-scrollbar>
@@ -57,7 +57,7 @@
     <app-spinner [id]="cadListLoader"></app-spinner>
     @if (activeCadList && activeItem && isDataHaveCad(tableData[activeItem.index])) {
       <div class="toolbar">
-        <button mat-raised-button color="primary" (click)="addCadFromList()">从配件库选择</button>
+        <button mat-flat-button (click)="addCadFromList()">从配件库选择</button>
       </div>
       <ng-scrollbar>
         <div class="items">

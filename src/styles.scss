@@ -212,14 +212,14 @@ input[type="number"] {
 
 .super {
   vertical-align: super !important;
-  font-size: 0.5em;
-  color: var(--accent-color);
+  font-size: 0.75em;
+  color: var(--mat-sys-tertiary);
 }
 
 :root {
   --title-size: 1.5rem;
   --title-padding: 0.5em;
-  --border: 1px solid black;
+  --border: 1px solid var(--mat-sys-on-surface);
   --top-z-index: 99999;
   --cad-image-width: 300px;
   --cad-image-height: 150px;

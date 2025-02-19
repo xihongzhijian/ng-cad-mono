@@ -82,7 +82,7 @@
                 <app-input #bancaiInfoInput class="flex-110" [info]="inputInfo"></app-input>
               }
               <div>
-                <button mat-raised-button [color]="bancaiInfo.oversized ? 'accent' : 'primary'" (click)="openCadsDialog(i, j)">
+                <button mat-flat-button [color]="bancaiInfo.oversized ? 'accent' : 'primary'" (click)="openCadsDialog(i, j)">
                   开料CAD
                 </button>
               </div>
@@ -97,8 +97,8 @@
   <div class="toolbar">
     <div class="spinner-container">
       <div class="toolbar">
-        <button mat-raised-button color="primary" (click)="selectCadsToSubmit()">选择cad开料</button>
-        <button mat-raised-button color="primary" (click)="submit()">{{ type }}</button>
+        <button mat-flat-button (click)="selectCadsToSubmit()">选择cad开料</button>
+        <button mat-flat-button (click)="submit()">{{ type }}</button>
       </div>
       <app-spinner [id]="submitLoaderId" [inline]="true"></app-spinner>
     </div>

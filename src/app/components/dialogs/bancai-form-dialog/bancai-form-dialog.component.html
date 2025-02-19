@@ -9,9 +9,9 @@
 ></app-bancai-form>
 <div matDialogActions>
   @if (!prod) {
-    <button mat-raised-button color="primary" (click)="selectRandom()">rand</button>
-    <button mat-raised-button color="primary" (click)="selectFirst()">first</button>
+    <button mat-flat-button (click)="selectRandom()">rand</button>
+    <button mat-flat-button (click)="selectFirst()">first</button>
   }
-  <button mat-raised-button color="primary" (click)="submit()">确定</button>
-  <button mat-raised-button color="primary" (click)="cancel()">取消</button>
+  <button mat-flat-button (click)="submit()">确定</button>
+  <button mat-flat-button (click)="cancel()">取消</button>
 </div>

@@ -12,13 +12,13 @@
   <div class="fenlei-container flex-column flex-110" cdkDropListGroup>
     <div class="toolbar">
       @if (closable()) {
-        <button mat-raised-button color="primary" (click)="close(true)">确定</button>
-        <button mat-raised-button color="primary" (click)="close()">取消</button>
+        <button mat-flat-button (click)="close(true)">确定</button>
+        <button mat-flat-button (click)="close()">取消</button>
       } @else {
-        <button mat-raised-button color="primary" (click)="submit()">提交</button>
+        <button mat-flat-button (click)="submit()">提交</button>
       }
       @if (!production) {
-        <button mat-raised-button color="primary" (click)="generateRects({resetColors: true})">重新生成矩形</button>
+        <button mat-flat-button (click)="generateRects({resetColors: true})">重新生成矩形</button>
         <!-- <div>颜色范围</div>
           <div class="flex-row" style="height: 64px; align-items: flex-end">
             <mat-slider [min]="0" [max]="255" discrete style="width: 300px">

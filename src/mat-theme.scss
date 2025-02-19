@@ -1,30 +1,81 @@
 @use "@angular/material" as mat;
 
-@include mat.elevation-classes();
-@include mat.app-background();
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$rose-palette
+      ),
+      typography: "Roboto, 微软雅黑, sans-serif",
+      density: -1
+    )
+  );
 
-$app-typography: mat.m2-define-rem-typography-config(
-  $font-family: "Roboto, 微软雅黑, sans-serif"
-);
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$warn: mat.m2-define-palette(mat.$m2-red-palette);
-$app-theme: mat.m2-define-light-theme(
-  (
-    color: (
-      primary: $primary,
-      accent: $accent,
-      warn: $warn
-    ),
-    typography: $app-typography,
-    density: 0
-  )
-);
-@include mat.all-component-themes($app-theme);
-@include mat.typography-hierarchy($app-typography);
+  @include mat.icon-button-overrides(
+    (
+      // ? not working
+      icon-size: var(--mat-icon-size),
+      icon-color: var(--mat-sys-primary)
+    )
+  );
 
-$primary-color: mat.m2-get-color-from-palette($primary);
-$accent-color: mat.m2-get-color-from-palette($accent);
+  @include mat.form-field-overrides(
+    (
+      filled-label-text-size: calc(var(--mat-sys-body-large-size) * 1.125),
+      filled-label-text-color: var(--mat-sys-primary),
+      filled-hover-label-text-color: var(--mat-sys-primary),
+      outlined-label-text-size: calc(var(--mat-sys-body-large-size) * 1.125)
+    )
+  );
+
+  @include mat.snack-bar-overrides(
+    (
+      container-color: var(--mat-sys-primary),
+      supporting-text-color: var(--mat-sys-on-primary)
+    )
+  );
+
+  @include mat.dialog-overrides(
+    (
+      container-max-width: 100vw
+    )
+  );
+
+  & {
+    font: var(--mat-sys-body-large);
+  }
+}
+
+.plain {
+  @include mat.button-overrides(
+    (
+      text-label-text-color: var(--mat-sys-on-surface)
+    )
+  );
+
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--mat-sys-on-surface)
+    )
+  );
+}
+.accent {
+  @include mat.button-overrides(
+    (
+      text-label-text-color: var(--mat-sys-tertiary),
+      filled-label-text-color: var(--mat-sys-on-tertiary),
+      filled-container-color: var(--mat-sys-tertiary)
+    )
+  );
+
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--mat-sys-tertiary)
+    )
+  );
+}
 
 .mat-mdc-form-field {
   width: 100%;
@@ -45,26 +96,11 @@ $accent-color: mat.m2-get-color-from-palette($accent);
     }
   }
 
-  &.empty {
-    .mdc-line-ripple::before {
-      border-bottom-color: red;
-      border-bottom-width: 2px;
-    }
-  }
-
   .mdc-text-field,
   .mat-mdc-form-field-hint-wrapper,
   .mat-mdc-form-field-error-wrapper {
     padding: 0 5px;
   }
-}
-
-.mat-mdc-dialog-container {
-  --mdc-dialog-supporting-text-color: black;
-}
-
-.mat-mdc-snack-bar-container {
-  --mdc-snackbar-container-color: #{$primary-color};
 }
 
 .mat-mdc-button.mdc-button {
@@ -79,12 +115,6 @@ $accent-color: mat.m2-get-color-from-palette($accent);
   }
 }
 
-.mat-mdc-option .mdc-list-item__primary-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .mat-mdc-menu-item {
   display: flex !important;
   justify-content: space-between;
@@ -93,7 +123,7 @@ $accent-color: mat.m2-get-color-from-palette($accent);
   .shortcut {
     text-align: right;
     font-size: 0.75rem;
-    color: #868686;
+    color: var(--mat-sys-outline-variant);
     margin-left: 10px;
   }
 }
@@ -170,19 +200,6 @@ mat-tab-group.hide-first-tab {
 }
 
 :root {
-  --primary-color: #{$primary-color};
-  --accent-color: #{$accent-color};
   --mat-divider-margin: 5px;
   --mat-icon-size: 24px;
-  --mat-form-field-container-text-size: 1rem;
-  --mat-select-trigger-text-size: 1rem;
-  --mat-option-label-text-size: 1rem;
-  --mdc-filled-text-field-label-text-color: #{$primary-color};
-  --mdc-filled-text-field-focus-label-text-color: #{$primary-color};
-  --mdc-filled-text-field-label-text-size: 1.125rem;
-  --mdc-outlined-text-field-label-text-color: #{$primary-color};
-  --mdc-outlined-text-field-focus-label-text-color: #{$primary-color};
-  --mdc-outlined-text-field-label-text-size: 1.125rem;
-  --mat-dialog-container-max-width: 100vw;
-  --mat-divider-color: rgba(0, 0, 0, 0.7);
 }

@@ -6,8 +6,8 @@
         <div class="divider"></div>
         <div class="title">{{ item.mingzi }}</div>
         <div class="flex-110"></div>
-        <button mat-raised-button color="primary" (click)="save()">保存</button>
-        <button mat-raised-button color="primary" (click)="calcYahuaban()">计算</button>
+        <button mat-flat-button (click)="save()">保存</button>
+        <button mat-flat-button (click)="calcYahuaban()">计算</button>
       </div>
       <ng-scrollbar>
         <div class="item">
@@ -17,7 +17,7 @@
           <div class="sub-form-field">
             <div class="toolbar">
               <div class="label">公式输入</div>
-              <button mat-raised-button [color]="showGssrTable() ? 'accent' : 'primary'" (click)="toggleGssrTable()">编辑公式输入</button>
+              <button mat-flat-button [color]="showGssrTable() ? 'accent' : 'primary'" (click)="toggleGssrTable()">编辑公式输入</button>
             </div>
             <div class="toolbar">
               @for (info of gssrInputInfos(); track $index) {

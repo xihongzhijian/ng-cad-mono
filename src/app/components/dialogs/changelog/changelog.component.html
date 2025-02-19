@@ -1,7 +1,7 @@
 <div class="toolbar">
-  <button mat-raised-button color="primary" (click)="close()">关闭</button>
-  <button mat-raised-button color="primary" (click)="openCommits()">查看详细<mat-icon>open_in_new</mat-icon></button>
-  <button mat-raised-button color="primary" (click)="toggleEnvBeta()">切换到{{ env.beta ? "正式" : "测试" }}版</button>
+  <button mat-flat-button (click)="close()">关闭</button>
+  <button mat-flat-button (click)="openCommits()">查看详细<mat-icon>open_in_new</mat-icon></button>
+  <button mat-flat-button (click)="toggleEnvBeta()">切换到{{ env.beta ? "正式" : "测试" }}版</button>
 </div>
 
 <ng-scrollbar>
@@ -22,7 +22,7 @@
                 <mat-icon>more_horiz</mat-icon>
               </button>
             }
-            <button mat-icon-button color="primary" (click)="openCommit(item)"><mat-icon>open_in_new</mat-icon></button>
+            <button mat-icon-button (click)="openCommit(item)"><mat-icon>open_in_new</mat-icon></button>
           </div>
           <span class="message">{{ item.message }}</span>
           @if (item.showDetails && item.details) {

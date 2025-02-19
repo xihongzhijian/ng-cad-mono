@@ -1,6 +1,6 @@
 <form class="header">
   <div>
-    <button mat-raised-button color="primary" (click)="search()">搜索</button>
+    <button mat-flat-button (click)="search()">搜索</button>
   </div>
   <mat-form-field style="width: 100%">
     <mat-label>按名字搜索</mat-label>
@@ -42,8 +42,8 @@
         <mat-card-content>
           <app-cad-image [id]="item.data.id"></app-cad-image>
           <div class="toolbar">
-            <button mat-raised-button color="primary" (click)="restore(i)">恢复备份</button>
-            <button mat-raised-button color="primary" (click)="remove(i)">删除备份</button>
+            <button mat-flat-button (click)="restore(i)">恢复备份</button>
+            <button mat-flat-button (click)="remove(i)">删除备份</button>
           </div>
         </mat-card-content>
       </mat-card>

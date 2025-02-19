@@ -3,7 +3,7 @@
   <div class="title">最近一次孔位开料结果</div>
 </div>
 <div class="toolbar">
-  <button mat-raised-button color="primary" (click)="close()">关闭</button>
+  <button mat-flat-button (click)="close()">关闭</button>
   <mat-slide-toggle [(ngModel)]="showIds">{{ showIds() ? "" : "不" }}显示id</mat-slide-toggle>
   <mat-slide-toggle [checked]="form().strictFilter" (change)="onStrictFilterChange($event)">
     {{ form().strictFilter ? "精确" : "模糊" }}搜索

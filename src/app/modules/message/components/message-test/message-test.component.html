@@ -1,5 +1,5 @@
 @for (btn of btns | keyvalue: returnZero; track $index) {
-  <button mat-raised-button color="primary" (click)="openMessage(btn.key, btn.value)">
+  <button mat-flat-button (click)="openMessage(btn.key, btn.value)">
     {{ btn.key }}
   </button>
 }
