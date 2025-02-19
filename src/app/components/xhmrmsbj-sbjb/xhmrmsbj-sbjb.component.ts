@@ -184,22 +184,20 @@ export class XhmrmsbjSbjbComponent {
     ];
     return buttons;
   });
-  cadFormTitleBtns = computed((): CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] => [
+  cadItemFormTitleBtns = computed((): CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] => [
     {
       name: "哪些型号在用",
-      onClick: async ({customInfo}) => {
-        const cadId = this.cadInfos()[customInfo.index].cadId;
-        if (cadId) {
-          await this.showXinghaosUsingSbjbCad(cadId);
-        }
-      }
+      onClick: async ({customInfo}) => await this.showXinghaosUsingSbjbCad(customInfo.index)
     }
   ]);
-  async showXinghaosUsingSbjbCad(cadId: string) {
-    const data = await this.http.getData<{url: string}>("shuju/api/showXinghaosUsingSbjbCad", {cadId});
-    const url = data?.url;
-    if (url) {
-      open(url);
+  async showXinghaosUsingSbjbCad(index: number) {
+    const cadId = this.cadInfos()[index].cadId;
+    if (cadId) {
+      const data = await this.http.getData<{url: string}>("shuju/api/showXinghaosUsingSbjbCad", {cadId});
+      const url = data?.url;
+      if (url) {
+        open(url);
+      }
     }
   }
   async editSbjbItemSbjbItem(index: number) {
@@ -266,7 +264,8 @@ export class XhmrmsbjSbjbComponent {
               }
             }
           }
-        ]
+        ],
+        cadItemFormTitleBtns: this.cadItemFormTitleBtns()
       }
     });
     const cad2 = result?.[0];

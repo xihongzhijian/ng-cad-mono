@@ -132,9 +132,15 @@
     }
 
     .text {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      &:not(.wrap) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      &.wrap {
+        width: 0;
+        flex: 1 1 0;
+      }
       &.center {
         text-align: center;
       }

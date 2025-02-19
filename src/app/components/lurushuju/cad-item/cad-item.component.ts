@@ -83,6 +83,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   @Input({required: true}) cad: HoutaiCad | CadData = new CadData();
   @Input({required: true}) buttons: CadItemButton<T>[] = [];
   @Input() buttons2: CadItemButton<T>[] = [];
+  @Input() formTitleBtns?: CadItemButton<T>[];
   @Input() hideButtons = false;
   collection = input<CadCollection>("cad");
   @Input({required: true}) customInfo!: T;
@@ -105,7 +106,6 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   @Input() validators?: CadItemValidators;
   @Input() cadForm?: CadItemForm<T>;
   @Input() mokuaiName?: string;
-  @Input() formTitleBtns?: CadItemButton<T>[];
   @Output() beforeEditCad = new EventEmitter<void>();
   @Output() afterEditCad = new EventEmitter<void>();
 

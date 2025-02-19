@@ -45,12 +45,12 @@
                     [cad]="cad"
                     [buttons]="[]"
                     [buttons2]="cadButtons2()"
+                    [formTitleBtns]="cadItemFormTitleBtns()"
                     [customInfo]="{index: info.originalIndex}"
                     [yaoqiu]="cadYaoqius()[cad.type]"
                     [titlePrefix]="info.title + '：'"
                     [cadForm]="info.cadForm"
                     [isOnline]="{isFetched: false}"
-                    [formTitleBtns]="cadFormTitleBtns()"
                   ></app-cad-item>
                 } @else {
                   <div class="empty-cad link" (click)="selectSbjbItemSbjbCad(info.originalIndex)">
