@@ -13,6 +13,19 @@ html {
     )
   );
 
+  @include mat.button-overrides(
+    (
+      filled-container-shape: var(--mat-sys-corner-medium),
+      filled-horizontal-padding: 8px,
+      outlined-container-shape: var(--filled-container-shape),
+      outlined-horizontal-padding: var(--filled-horizontal-padding),
+      protected-container-shape: var(--filled-container-shape),
+      protected-horizontal-padding: var(--filled-horizontal-padding),
+      text-container-shape: var(--filled-container-shape),
+      text-horizontal-padding: var(--filled-horizontal-padding)
+    )
+  );
+
   @include mat.icon-button-overrides(
     (
       // ? not working
@@ -39,12 +52,14 @@ html {
 
   @include mat.dialog-overrides(
     (
-      container-max-width: 100vw
+      container-max-width: 100vw,
+      container-elevation-shadow: var(--mat-sys-level5)
     )
   );
 
   & {
     font: var(--mat-sys-body-large);
+    font-size: 15px;
   }
 }
 
@@ -103,6 +118,9 @@ html {
   }
 }
 
+button.mdc-button {
+  min-width: 60px;
+}
 .mat-mdc-button.mdc-button {
   min-width: unset;
 }
