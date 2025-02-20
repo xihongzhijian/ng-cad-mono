@@ -31,7 +31,7 @@ export class FloatingDialogTraysComponent implements OnDestroy {
     this.manager.limits.set({});
   }
 
-  dialogs = computed(() => this.manager.dialogs().filter((v) => !v.noTitle));
+  dialogs = computed(() => this.manager.dialogs().filter((v) => !v.noTitle()));
 
   contextMenuBtns = computed(() => {
     const btns: {name: string; action: () => void}[] = [];

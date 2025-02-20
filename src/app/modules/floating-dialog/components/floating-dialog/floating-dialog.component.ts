@@ -14,12 +14,13 @@ import {
   OnInit,
   output,
   signal,
+  untracked,
   viewChild
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
-import {TrblLike} from "@app/utils/trbl";
+import {getTrbl, TrblLike} from "@app/utils/trbl";
 import {ObjectOf} from "@lucilor/utils";
 import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {Properties} from "csstype";
@@ -62,21 +63,35 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
 
   minimizedEff = effect(() => {
     const minimized = this.minimized();
-    if (minimized) {
-      this.active.set(false);
-    }
-    this.manager.dialogs.update((v) => [...v]);
+    untracked(() => {
+      const dialogs = this.manager.dialogs();
+      if (minimized) {
+        this.active.set(false);
+        const dialog = dialogs.find((v) => !v.minimized());
+        if (dialog) {
+          dialog.beActive();
+        }
+      } else {
+        this.beActive();
+      }
+      this.manager.dialogs.set([...dialogs]);
+    });
   });
   maximizedEff = effect(() => {
-    if (this.maximized()) {
-      if (!this.class.includes("backdrop")) {
-        this.class = [...this.class, "backdrop"];
+    const maximized = this.maximized();
+    untracked(() => {
+      if (maximized) {
+        if (!this.class.includes("backdrop")) {
+          this.class = [...this.class, "backdrop"];
+        }
+        this._positionBefore.set({...this.position()});
+      } else {
+        if (this.class.includes("backdrop")) {
+          this.class = this.class.filter((v) => v !== "backdrop");
+        }
+        this.position.set(this._positionBefore());
       }
-    } else {
-      if (this.class.includes("backdrop")) {
-        this.class = this.class.filter((v) => v !== "backdrop");
-      }
-    }
+    });
   });
 
   private _parentEl = signal<HTMLElement | null>(null);
@@ -126,28 +141,18 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   }
   style = computed(() => {
     const style: Properties = {};
-    const widthInput = this.getPxStr(this.width());
-    const heightInput = this.getPxStr(this.height());
     if (this.maximized()) {
       this._windowResizeNum();
-      const margin = 50;
+      const margin = getTrbl(this.maximizedMargin());
       style.left = "50%";
       style.top = "50%";
       style.transform = "translate(-50%, -50%)";
-      if (widthInput && widthInput !== "auto") {
-        style.width = `${widthInput}`;
-      } else {
-        const left = margin;
-        const right = window.innerWidth - margin;
-        style.width = `${right - left}px`;
-      }
-      if (heightInput && heightInput !== "auto") {
-        style.height = `${heightInput}`;
-      } else {
-        const top = margin;
-        const bottom = window.innerHeight - margin;
-        style.height = `${bottom - top}px`;
-      }
+      const left = margin[3];
+      const right = window.innerWidth - margin[1];
+      style.width = `${right - left}px`;
+      const top = margin[0];
+      const bottom = window.innerHeight - margin[2];
+      style.height = `${bottom - top}px`;
     } else {
       const {x: sizeX, y: sizeY} = this.size();
       style.width = sizeX > 0 ? `${sizeX}px` : this.getPxStr(this.width());
@@ -232,24 +237,9 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   }
   toggleMinimized() {
     this.minimized.update((v) => !v);
-    if (this.minimized()) {
-      this.active.set(false);
-      const dialog = this.manager.dialogs().find((v) => !v.minimized());
-      if (dialog) {
-        dialog.beActive();
-      }
-    } else {
-      this.beActive();
-    }
   }
   toggleMaximized() {
     this.maximized.update((v) => !v);
-    if (this.maximized()) {
-      this._positionBefore.set({...this.position()});
-      this.position.set({x: 0, y: 0});
-    } else {
-      this.position.set(this._positionBefore());
-    }
   }
 
   dragDisabled = computed(() => this.maximized());

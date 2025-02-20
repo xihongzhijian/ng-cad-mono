@@ -7,18 +7,18 @@
     <mat-slide-toggle [(ngModel)]="xikongOptions.codeFormat" (change)="onXikongOptionsChange()">格式化</mat-slide-toggle>
     <mat-slide-toggle [(ngModel)]="xikongOptions.autoWrap" (change)="onXikongOptionsChange()">自动换行</mat-slide-toggle>
     <div class="links">
-      <button mat-flat-button (click)="getXikongData(true)">下载文件</button>
-      <button mat-flat-button (click)="setType('激光开料排版')">前往激光开料</button>
+      <button mat-button (click)="getXikongData(true)">下载文件</button>
+      <button mat-button (click)="setType('激光开料排版')">前往激光开料</button>
     </div>
   }
   @if (!isShowXikong) {
     <mat-slide-toggle [(ngModel)]="autoGuige" (change)="onAutoGuigeChange()">自动选择最合适的板材规格</mat-slide-toggle>
     <div class="links">
-      <button mat-flat-button [matMenuTriggerFor]="xikongFile">铝型材cnc铣孔文件</button>
-      <button mat-flat-button (click)="openDdbq(true, true)">铝型材标签</button>
-      <button mat-flat-button (click)="openDdbq(true, false)">订单标签带条码</button>
-      <button mat-flat-button [disabled]="downloadHistory.length < 1" [matMenuTriggerFor]="downloadHistoryList">下载记录</button>
-      <button mat-flat-button (click)="getDakongSummary()">最近一次孔位开料结果</button>
+      <button mat-button class="plain" [matMenuTriggerFor]="xikongFile">铝型材cnc铣孔文件</button>
+      <button mat-button class="plain" (click)="openDdbq(true, true)">铝型材标签</button>
+      <button mat-button class="plain" (click)="openDdbq(true, false)">订单标签带条码</button>
+      <button mat-button class="plain" [disabled]="downloadHistory.length < 1" [matMenuTriggerFor]="downloadHistoryList">下载记录</button>
+      <button mat-button class="plain" (click)="getDakongSummary()">最近一次孔位开料结果</button>
     </div>
     <mat-menu #downloadHistoryList="matMenu">
       @for (item of downloadHistory; track $index) {
@@ -69,11 +69,15 @@
           <div class="flex-row">
             <div class="title">{{ info.code }}</div>
             <div class="links">
-              <button mat-flat-button [disabled]="!info.shangxiazouxianUrl" (click)="open(info.shangxiazouxianUrl)">上下走线</button>
-              <button mat-flat-button [disabled]="!info.kailiaokongweipeizhiUrl" (click)="open(info.kailiaokongweipeizhiUrl)">
+              <button mat-button class="plain" [disabled]="!info.shangxiazouxianUrl" (click)="open(info.shangxiazouxianUrl)">
+                上下走线
+              </button>
+              <button mat-button class="plain" [disabled]="!info.kailiaokongweipeizhiUrl" (click)="open(info.kailiaokongweipeizhiUrl)">
                 开料孔位配置
               </button>
-              <button mat-flat-button [disabled]="!info.kailiaocanshuzhiUrl" (click)="open(info.kailiaocanshuzhiUrl)">开料参数</button>
+              <button mat-button class="plain" [disabled]="!info.kailiaocanshuzhiUrl" (click)="open(info.kailiaocanshuzhiUrl)">
+                开料参数
+              </button>
             </div>
           </div>
           @for (bancaiInfo of info.bancaiInfos; track j; let j = $index) {
