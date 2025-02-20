@@ -78,24 +78,24 @@ export class LurushujuIndexComponent {
     const xinghaoSizeText = this.xinghaoSizeText();
     const xinghaoSizeClass = this.lrsjStatus.isXinghaoSizeExceeded() ? ["error"] : [];
     return [
-      {name: "添加", color: "primary"},
-      {name: "编辑", color: this.lrsjStatus.editMode() ? "accent" : "primary"},
-      {name: "复制做法", color: "primary", hidden: !pieceInfos.zuofas.show},
-      {name: "返回", color: "primary", style: {display: this.lrsjStatus.canGoBack() ? "" : "none"}},
+      {name: "添加"},
+      {name: "编辑", accent: this.lrsjStatus.editMode()},
+      {name: "复制做法", hidden: !pieceInfos.zuofas.show},
+      {name: "返回", style: {display: this.lrsjStatus.canGoBack() ? "" : "none"}},
       {name: ""},
-      {name: "通用数据", color: "primary"},
-      {name: "通用公式", color: "primary"},
+      {name: "通用数据"},
+      {name: "通用公式"},
       {name: ""},
-      {name: "配件库", color: "primary"},
-      {name: "模块库", color: "primary"},
-      {name: "从其他做法复制", color: "primary", hidden: !pieceInfos.suanliaoCads.show},
-      {name: "", class: [""]},
-      {name: "型号专用公式", color: "primary", hidden: !xinghao},
-      {name: "型号专用CAD", color: "primary", hidden: !xinghao},
+      {name: "配件库"},
+      {name: "模块库"},
+      {name: "从其他做法复制", hidden: !pieceInfos.suanliaoCads.show},
+      {name: ""},
+      {name: "型号专用公式", hidden: !xinghao},
+      {name: "型号专用CAD", hidden: !xinghao},
       {name: "", class: ["flex-110"]},
       {name: environment.beta ? "测试版" : "正式版", type: "text"},
       {name: xinghaoSizeText, type: "text", class: xinghaoSizeClass, hidden: !xinghaoSizeText},
-      {name: "测试", color: "primary"}
+      {name: "测试"}
     ];
   });
   async onToolbarBtnClick(btn: ToolbarBtn) {

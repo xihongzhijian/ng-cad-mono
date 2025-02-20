@@ -2,7 +2,7 @@ import {Properties} from "csstype";
 
 export interface ToolbarBtn {
   name: string;
-  color?: string;
+  accent?: boolean;
   class?: string[];
   style?: Properties;
   hidden?: boolean;

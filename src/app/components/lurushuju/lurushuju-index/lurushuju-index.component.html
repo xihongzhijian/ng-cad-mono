@@ -5,7 +5,7 @@
         @if (btn.type === "text") {
           <div [class]="btn.class" [style]="btn.style">{{ btn.name }}</div>
         } @else {
-          <button mat-flat-button [class]="btn.class" [style]="btn.style" [class.accent]="btn.color" (click)="onToolbarBtnClick(btn)">
+          <button mat-flat-button [class]="btn.class" [style]="btn.style" [class.accent]="btn.accent" (click)="onToolbarBtnClick(btn)">
             {{ btn.name }}
           </button>
         }
