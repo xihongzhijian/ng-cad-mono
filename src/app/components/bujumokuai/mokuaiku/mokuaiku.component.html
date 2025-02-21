@@ -52,7 +52,7 @@
           ></app-image>
           @if (selectable()) {
             <div class="toolbar">
-              <button mat-icon-button (click)="enterMokuai(mokuai)"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button (click)="enterMokuai(mokuai, true)"><mat-icon>edit</mat-icon></button>
               <div class="text wrap">{{ mokuai.name }}</div>
             </div>
           } @else {
@@ -84,7 +84,7 @@
               <div class="name toolbar center">
                 <button mat-icon-button (click)="locateMokuai(mokuai)"><mat-icon>file_open</mat-icon></button>
                 <button mat-icon-button (click)="unselectMokuai(mokuai)"><mat-icon>remove_circle</mat-icon></button>
-                <button mat-icon-button (click)="enterMokuai(mokuai)"><mat-icon>edit</mat-icon></button>
+                <button mat-icon-button (click)="enterMokuai(mokuai, true)"><mat-icon>edit</mat-icon></button>
                 <div>{{ mokuai.name }}</div>
               </div>
             </div>
@@ -95,8 +95,13 @@
   }
 </div>
 
-@if (currMokuai(); as mokuai) {
-  <app-floating-dialog [maximized]="true" noTitle>
-    <app-mokuai-item [mokuai]="mokuai" [bancaiListData]="bancaiListData()" (close)="closeMokuai()"></app-mokuai-item>
+@if (openedMokuai(); as openedMokuai) {
+  <app-floating-dialog [maximized]="true" [maximizedMargin]="openedMokuai.closable ? 'default' : 0" noTitle>
+    <app-mokuai-item
+      [id]="openedMokuai.id"
+      [bancaiListData]="bancaiListData()"
+      [closable]="openedMokuai.closable"
+      (close)="closeMokuai()"
+    ></app-mokuai-item>
   </app-floating-dialog>
 }

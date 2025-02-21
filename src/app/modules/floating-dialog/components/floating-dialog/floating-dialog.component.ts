@@ -55,7 +55,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   pinned = model<boolean>(false);
   minimized = model<boolean>(false);
   maximized = model<boolean>(false);
-  maximizedMargin = input<TrblLike>(50);
+  maximizedMargin = input<TrblLike | "default">("default");
   close = output();
 
   dialogEl = viewChild.required<ElementRef<HTMLElement>>("dialogEl");
@@ -143,7 +143,11 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
     const style: Properties = {};
     if (this.maximized()) {
       this._windowResizeNum();
-      const margin = getTrbl(this.maximizedMargin());
+      let maximizedMargin = this.maximizedMargin();
+      if (maximizedMargin === "default") {
+        maximizedMargin = 50;
+      }
+      const margin = getTrbl(maximizedMargin);
       style.left = "50%";
       style.top = "50%";
       style.transform = "translate(-50%, -50%)";

@@ -33,7 +33,7 @@ import {canItemMatchTogether, matchMongoData} from "@app/utils/mongo";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
-import {MokuaiItem, MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
+import {MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
 import {MokuaikuComponent} from "@components/bujumokuai/mokuaiku/mokuaiku.component";
 import {MokuaikuCloseEvent} from "@components/bujumokuai/mokuaiku/mokuaiku.types";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
@@ -1736,22 +1736,17 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
   }
 
-  openedMokuai = signal<{mokuai0: ZixuanpeijianMokuaiItem; mokuai: MokuaiItem; bancaiListData: BancaiListData} | null>(null);
+  openedMokuai = signal<{mokuai: ZixuanpeijianMokuaiItem; bancaiListData: BancaiListData} | null>(null);
   bancaiListDataManager = new FetchManager(null, () => this.http.getBancaiList());
   async openMokuai(mokuai: ZixuanpeijianMokuaiItem) {
     const bancaiListData = await this.bancaiListDataManager.fetch();
     if (!bancaiListData) {
       return;
     }
-    const mokuai2 = await this.bjmkStatus.fetchMokuai(mokuai.id);
-    if (!mokuai2) {
-      await this.message.error("该模块已被删除或停用");
-      return;
-    }
     if (this.isFromOrder()) {
-      this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: mokuai2.id}});
+      this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: mokuai.id}});
     } else {
-      this.openedMokuai.set({mokuai0: mokuai, mokuai: mokuai2, bancaiListData});
+      this.openedMokuai.set({mokuai, bancaiListData});
     }
   }
   async closeMokuai({isSaved}: MokuaiItemCloseEvent) {

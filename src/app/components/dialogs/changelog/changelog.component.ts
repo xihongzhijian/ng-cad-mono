@@ -95,7 +95,7 @@ export class ChangelogComponent implements OnInit {
   }
 
   openCommits() {
-    window.open("https://github.com/Lucilor/ng-cad-mono/commits/master", "_blank");
+    window.open("https://github.com/xihongzhijian/ng-cad-mono/commits/master", "_blank");
   }
 
   openCommit(item: (typeof this.changelog)[number]) {

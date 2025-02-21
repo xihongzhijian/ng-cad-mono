@@ -1,5 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -90,20 +91,28 @@ export class MokuaiItemComponent {
 
   collection = this.bjmkStatus.collection;
 
-  mokuaiIn = input.required<MokuaiItem>({alias: "mokuai"});
+  id = input.required<number>();
   bancaiListData = input.required<BancaiListData | null>();
+  closable = input(false, {transform: booleanAttribute});
   closeOut = output<MokuaiItemCloseEvent>({alias: "close"});
 
   imgPrefix = this.bjmkStatus.imgPrefix;
   mokuai = signal<MokuaiItem>(getEmptyMokuaiItem());
-  mokuaiEff = effect(() => {
-    const mokuai = cloneDeep(this.mokuaiIn());
-    if (mokuai.自定义数据) {
-      const optionsAll = this.bjmkStatus.mokuaiOptionsManager.data();
-      updateMokuaiCustomData(mokuai.自定义数据, optionsAll);
+  mokuaiOld = signal<MokuaiItem>(getEmptyMokuaiItem());
+  mokuaiEff = effect(async () => {
+    const mokuai = await this.bjmkStatus.fetchMokuai(this.id());
+    if (mokuai) {
+      if (mokuai.自定义数据) {
+        const optionsAll = this.bjmkStatus.mokuaiOptionsManager.data();
+        updateMokuaiCustomData(mokuai.自定义数据, optionsAll);
+      }
+      mokuaiSubmitAfter(mokuai);
+      this.mokuai.set(mokuai);
+    } else {
+      this.mokuai.set(getEmptyMokuaiItem());
+      this.message.error("该模块已被删除或停用");
     }
-    mokuaiSubmitAfter(mokuai);
-    this.mokuai.set(mokuai);
+    this.mokuaiOld.set(cloneDeep(this.mokuai()));
   });
   async editMokuai() {
     const mokuai = this.mokuai();
@@ -242,6 +251,9 @@ export class MokuaiItemComponent {
   mrbcjfzInputData = computed(() => {
     const mokuai = this.mokuai();
     const data = this._mrbcjfzResponseData();
+    if (!data) {
+      return null;
+    }
     const morenbancai = cloneDeep(mokuai.morenbancai || {});
     const inputData: MrbcjfzInputData = {
       xinghao: mokuai.name,
@@ -598,7 +610,7 @@ export class MokuaiItemComponent {
     if (!mokuai) {
       return;
     }
-    const mokuaiOld = this.mokuaiIn();
+    const mokuaiOld = this.mokuaiOld();
     const mokuaiNew: Partial<MokuaiItem> = {id: mokuai.id, name: mokuai.name};
     const forceUpdateKeys = this.forceUpdateKeys;
     for (const key of keysOf(mokuai)) {

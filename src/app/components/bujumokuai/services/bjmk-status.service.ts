@@ -1,4 +1,4 @@
-import {effect, inject, Injectable, signal, untracked} from "@angular/core";
+import {inject, Injectable, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {filePathUrl} from "@app/app.common";
 import {getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
@@ -58,28 +58,11 @@ export class BjmkStatusService {
 
   mokuaisManager = new ItemsManager(
     async () => {
-      const focusMokuaiIds: number[] = [];
-      const mokuai = this.currMokuai();
-      if (mokuai) {
-        focusMokuaiIds.push(mokuai.id);
-      }
-      const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {focusMokuaiIds})) || [];
+      const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {compact: true})) || [];
       return mokuais;
     },
     (item1, item2) => item1.id === item2.id
   );
-  currMokuai = signal<MokuaiItem | null>(null);
-  mokuaisAllEff = effect(() => {
-    const noFetch = this.mokuaisManager.fetchManager.noFetch;
-    this.mokuaisManager.fetchManager.noFetch = true;
-    const mokuais = this.mokuaisManager.items();
-    this.mokuaisManager.fetchManager.noFetch = noFetch;
-    const currMokuai = untracked(() => this.currMokuai());
-    if (currMokuai) {
-      const currMokuai2 = mokuais.find((v) => v.id === currMokuai.id) || null;
-      this.currMokuai.set(currMokuai2);
-    }
-  });
   async fetchMokuais(ids: number[]) {
     const mokuais = (await this.http.getData<MokuaiItem[]>("ngcad/getPeijianmokuais", {mokuaiIds: ids})) || [];
     return mokuais;

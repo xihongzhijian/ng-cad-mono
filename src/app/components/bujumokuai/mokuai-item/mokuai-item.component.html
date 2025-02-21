@@ -6,7 +6,9 @@
   <button mat-flat-button (click)="openDdbq()">测试</button>
   <button mat-flat-button (click)="saveAs()">另存为</button>
   <button mat-flat-button (click)="save()">保存</button>
-  <button mat-flat-button (click)="close()">关闭</button>
+  @if (closable()) {
+    <button mat-flat-button (click)="close()">关闭</button>
+  }
 </div>
 <ng-scrollbar>
   <ng-scrollbar class="enable-x">
@@ -138,16 +140,18 @@
   </app-floating-dialog>
 }
 
-<app-floating-dialog [maximized]="true" [minimized]="!showMrbcjfzDialog()" [active]="showMrbcjfzDialog()" noTitle>
-  <div class="flex-column" appFloatingDialogBody>
-    <app-mrbcjfz
-      #mrbcjfz
-      class="flex-110"
-      closeable
-      [table]="mrbcjfzTable()"
-      [inputData]="mrbcjfzInputData()"
-      (dataSubmit)="onMrbcjfSubmit($event)"
-      (dataClose)="onMrbcjfClose()"
-    ></app-mrbcjfz>
-  </div>
-</app-floating-dialog>
+@if (mrbcjfzInputData(); as inputData) {
+  <app-floating-dialog [maximized]="showMrbcjfzDialog()" [minimized]="!showMrbcjfzDialog()" [active]="showMrbcjfzDialog()" noTitle>
+    <div class="flex-column" appFloatingDialogBody>
+      <app-mrbcjfz
+        #mrbcjfz
+        class="flex-110"
+        closeable
+        [table]="mrbcjfzTable()"
+        [inputData]="inputData"
+        (dataSubmit)="onMrbcjfSubmit($event)"
+        (dataClose)="onMrbcjfClose()"
+      ></app-mrbcjfz>
+    </div>
+  </app-floating-dialog>
+}

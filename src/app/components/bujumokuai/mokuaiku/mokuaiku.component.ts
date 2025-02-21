@@ -70,10 +70,10 @@ export class MokuaikuComponent implements OnInit {
 
   constructor() {
     setGlobal("mkk", this);
+    this.bjmkStatus.mokuaisManager.fetchManager.noFetch = true;
   }
 
   async ngOnInit() {
-    await this.bjmkStatus.mokuaisManager.fetch();
     this._saveInfoLock.set(true);
     if (!this.production) {
       this.loadInfo();
@@ -81,11 +81,10 @@ export class MokuaikuComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const {mokuaiId} = params;
       if (mokuaiId) {
-        const mokuai = this.bjmkStatus.mokuaisManager.items().find((v) => v.id === +mokuaiId);
-        if (mokuai) {
-          this.dataList()?.updateActiveNavNode(mokuai.type);
-          this.enterMokuai(mokuai);
-        }
+        this.enterMokuai(Number(mokuaiId), false);
+      } else {
+        this.bjmkStatus.mokuaisManager.fetchManager.noFetch = false;
+        this.bjmkStatus.mokuaisManager.fetch();
       }
     });
   }
@@ -115,20 +114,24 @@ export class MokuaikuComponent implements OnInit {
     this.mokuaiEditMode.update((v) => !v);
   }
 
-  currMokuai = this.bjmkStatus.currMokuai;
-  async enterMokuai(item: MokuaiItem) {
+  openedMokuai = signal<{id: number; closable: boolean; item?: MokuaiItem} | null>(null);
+  async enterMokuai(id: number | MokuaiItem, closable: boolean) {
     if (!this.bancaiListData()) {
       await this.getBancaiListData();
     }
-    this.currMokuai.set(await this.bjmkStatus.fetchMokuai(item.id));
+    if (typeof id === "object") {
+      this.openedMokuai.set({id: id.id, closable, item: id});
+    } else {
+      this.openedMokuai.set({id, closable});
+    }
   }
   closeMokuai() {
-    const currMokuai = this.currMokuai();
+    const openedMokuai = this.openedMokuai();
     const type = this.mokuaiActiveNavNode()?.name;
-    if (type && currMokuai && type !== currMokuai.type) {
-      this.dataList()?.updateActiveNavNode(currMokuai.type);
+    if (type && openedMokuai?.item && type !== openedMokuai.item.type) {
+      this.dataList()?.updateActiveNavNode(openedMokuai.item.type);
     }
-    this.currMokuai.set(null);
+    this.openedMokuai.set(null);
   }
 
   async addMukuai(mokuai?: Partial<MokuaiItem>) {
@@ -138,7 +141,7 @@ export class MokuaikuComponent implements OnInit {
       if (mokuai2.type) {
         dataList?.updateActiveNavNode(mokuai2.type);
       }
-      this.enterMokuai(mokuai2);
+      this.enterMokuai(mokuai2, true);
     }
   }
   async editMokuai(mokuai: MokuaiItem) {
@@ -215,7 +218,7 @@ export class MokuaikuComponent implements OnInit {
       mokuaiActiveItemType: this.mokuaiActiveNavNode(),
       mokuaiEditMode: this.mokuaiEditMode(),
       mokuaiItemQuery: dataList?.itemQuery() || "",
-      currMokuaiItem: this.currMokuai()?.id
+      currMokuaiItem: this.openedMokuai()?.id
     };
   }
   setInfo(info: ReturnType<typeof this.getInfo>) {
@@ -231,7 +234,7 @@ export class MokuaikuComponent implements OnInit {
     this.mokuaiEditMode.set(info.mokuaiEditMode);
     const item = this.mokuaisAll().find((v) => v.id === info.currMokuaiItem);
     if (item) {
-      this.enterMokuai(item);
+      this.enterMokuai(item, true);
     }
   }
   private _infoKey = "mokuaikuInfo";
@@ -279,7 +282,7 @@ export class MokuaikuComponent implements OnInit {
     if (this.selectable()) {
       this.selectMokuai(mokuai);
     } else {
-      this.enterMokuai(mokuai);
+      this.enterMokuai(mokuai, true);
     }
   }
   selectMokuai(mokuai: MokuaiItem) {

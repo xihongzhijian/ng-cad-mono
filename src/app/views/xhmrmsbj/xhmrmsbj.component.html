@@ -326,7 +326,7 @@
   <app-floating-dialog [maximized]="true" noTitle>
     <app-mokuai-item
       #mokuaiItem
-      [mokuai]="openedMokuai.mokuai"
+      [id]="openedMokuai.mokuai.id"
       [bancaiListData]="openedMokuai.bancaiListData"
       (close)="closeMokuai($event)"
     ></app-mokuai-item>
