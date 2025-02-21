@@ -17,12 +17,12 @@ html {
     (
       filled-container-shape: var(--mat-sys-corner-medium),
       filled-horizontal-padding: 8px,
-      outlined-container-shape: var(--filled-container-shape),
-      outlined-horizontal-padding: var(--filled-horizontal-padding),
-      protected-container-shape: var(--filled-container-shape),
-      protected-horizontal-padding: var(--filled-horizontal-padding),
-      text-container-shape: var(--filled-container-shape),
-      text-horizontal-padding: var(--filled-horizontal-padding)
+      outlined-container-shape: var(--mat-sys-corner-medium),
+      outlined-horizontal-padding: 8px,
+      protected-container-shape: var(--mat-sys-corner-medium),
+      protected-horizontal-padding: 8px,
+      text-container-shape: var(--mat-sys-corner-medium),
+      text-horizontal-padding: 8px
     )
   );
 
