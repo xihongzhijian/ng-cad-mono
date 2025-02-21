@@ -192,9 +192,9 @@ export class XhmrmsbjSbjbComponent {
   ]);
   showXinghaosUsingSbjbCadBtnName = "哪些型号在用";
   async showXinghaosUsingSbjbCad(index: number) {
-    const cadId = this.cadInfos()[index].cadId;
-    if (cadId) {
-      const data = await this.http.getData<{url: string}>("shuju/api/showXinghaosUsingSbjbCad", {cadId});
+    const cadName = this.cadInfos()[index].cad?.name || "";
+    if (cadName) {
+      const data = await this.http.getData<{url: string}>("shuju/api/showXinghaosUsingSbjbCad", {cadName});
       const url = data?.url;
       if (url) {
         open(url);
