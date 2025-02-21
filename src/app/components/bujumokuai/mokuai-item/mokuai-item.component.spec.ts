@@ -3,7 +3,6 @@ import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import bancaifenzuIndex from "@assets/json/bancaifenzuIndex.json";
 import {MokuaiItemComponent} from "./mokuai-item.component";
-import {getEmptyMokuaiItem} from "./mokuai-item.utils";
 
 describe("MokuaiItemComponent", () => {
   let component: MokuaiItemComponent;
@@ -18,7 +17,7 @@ describe("MokuaiItemComponent", () => {
     fixture = TestBed.createComponent(MokuaiItemComponent);
     component = fixture.componentInstance;
     const ref = fixture.componentRef;
-    ref.setInput("mokuai", getEmptyMokuaiItem());
+    ref.setInput("id", 0);
     ref.setInput("bancaiListData", bancaifenzuIndex.bancaiList);
     fixture.detectChanges();
   });
