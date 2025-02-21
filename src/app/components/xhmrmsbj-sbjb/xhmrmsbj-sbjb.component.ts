@@ -187,18 +187,22 @@ export class XhmrmsbjSbjbComponent {
   cadItemFormTitleBtns = computed((): CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] => [
     {
       name: this.showXinghaosUsingSbjbCadBtnName,
-      onClick: async ({customInfo}) => await this.showXinghaosUsingSbjbCad(customInfo.index)
+      onClick: async (component) => {
+        const cadName = component.cadName;
+        if (cadName) {
+          await this.showXinghaosUsingSbjbCad(cadName);
+        } else {
+          await this.message.error("没有Cad数据");
+        }
+      }
     }
   ]);
   showXinghaosUsingSbjbCadBtnName = "哪些型号在用";
-  async showXinghaosUsingSbjbCad(index: number) {
-    const cadName = this.cadInfos()[index].cad?.name || "";
-    if (cadName) {
-      const data = await this.http.getData<{url: string}>("shuju/api/showXinghaosUsingSbjbCad", {cadName});
-      const url = data?.url;
-      if (url) {
-        open(url);
-      }
+  async showXinghaosUsingSbjbCad(cadName: string) {
+    const data = await this.http.getData<{url: string}>("shuju/api/showXinghaosUsingSbjbCad", {cadName});
+    const url = data?.url;
+    if (url) {
+      open(url);
     }
   }
   async editSbjbItemSbjbItem(index: number) {
@@ -212,11 +216,12 @@ export class XhmrmsbjSbjbComponent {
       return;
     }
     const item2 = item[name];
-    const title = `${name}：${item2?.名字 || ""}`;
+    const cadName = item2?.名字 || "";
+    const title = `${name}：${cadName}`;
     const {form: inputInfos, data: item2New} = await getXhmrmsbjSbjbItemSbjbItemForm(item2);
     const qiliaoPrev = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
     const qiliaoCurr = cloneDeep(qiliaoPrev);
-    const form: SbjbItemSbjbItemForm = {index, title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr};
+    const form: SbjbItemSbjbItemForm = {title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr, cadName};
     if (qiliaoCurr) {
       if (qiliaoCurr.fenti1?.id) {
         form.fentiCad1 = this.qiliaoCadMap.get(qiliaoCurr.fenti1.id);

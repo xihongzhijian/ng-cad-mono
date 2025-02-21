@@ -86,7 +86,6 @@ export interface XhmrmsbjSbjbCadInfoGrouped extends XhmrmsbjSbjbCadInfo {
 }
 
 export interface SbjbItemSbjbItemForm {
-  index: number;
   title: string;
   inputInfos: InputInfo<XhmrmsbjSbjbItemSbjbItem>[];
   item: XhmrmsbjSbjbItemSbjb;
@@ -97,6 +96,7 @@ export interface SbjbItemSbjbItemForm {
   qiliaoCurr?: Qiliao;
   fentiCad1?: CadData;
   fentiCad2?: CadData;
+  cadName: string;
 }
 
 export interface FentiCadTemplateData {
