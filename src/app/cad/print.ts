@@ -1183,8 +1183,8 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
     addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
 
     const img = new CadImage();
-    img.position.set(x + cellPadding, y - cellPadding);
-    img.anchor.set(0, 0);
+    img.position.set(x + widths[0] / 2, y - lineHeight / 2);
+    img.anchor.set(0.5, 0.5);
     img.targetSize = new Point(widths[0] - cellPadding * 2, lineHeight - cellPadding * 2);
     await setImageUrl(img, items[0].截面图);
     data.entities.add(img);
