@@ -392,20 +392,19 @@ export const drawImage = async (draw: Container, e: CadImage, i = 0) => {
       case "fill":
         break;
       case "scale-down": {
-        let scaleX2 = scaleX;
-        let scaleY2 = scaleY;
-        if (sourceRatio >= targetRatio) {
-          scaleY2 = scaleX2 *= tw / sw;
+        if (sw <= tw || sh <= th) {
+          scaleX = scaleY = 1;
+        } else if (sourceRatio >= targetRatio) {
+          scaleY = scaleX;
         } else {
-          scaleX2 = scaleY2 *= th / sh;
-        }
-        if (scaleX > scaleX2) {
-          scaleX = scaleX2;
-          scaleY = scaleY2;
+          scaleX = scaleY;
         }
         break;
       }
       case "none":
+        scaleX = 1;
+        scaleY = 1;
+        break;
       default:
         break;
     }
