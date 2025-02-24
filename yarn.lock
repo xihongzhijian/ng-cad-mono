@@ -5504,10 +5504,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/types@npm:8.24.1, @typescript-eslint/types@npm:^8.24.1":
+"@typescript-eslint/types@npm:8.24.1":
   version: 8.24.1
   resolution: "@typescript-eslint/types@npm:8.24.1"
   checksum: 10c0/ebb40ce16c746ef236dbcc25cb2e6950753ca6fb34d04ed7d477016370de1fdaf7402ed4569673c6ff14bf60af7124ff45c6ddd9328d2f8c94dc04178368e2a3
+  languageName: node
+  linkType: hard
+
+"@typescript-eslint/types@npm:^8.25.0":
+  version: 8.25.0
+  resolution: "@typescript-eslint/types@npm:8.25.0"
+  checksum: 10c0/b39addbee4be4d66e3089c2d01f9f1d69cedc13bff20e4fa9ed0ca5a0e7591d7c6e41ab3763c8c35404f971bc0fbf9f7867dbc2832740e5b63ee0049d60289f5
   languageName: node
   linkType: hard
 
@@ -12274,7 +12281,7 @@ __metadata:
     "@types/uuid": "npm:^10.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.24.1"
     "@typescript-eslint/parser": "npm:^8.24.1"
-    "@typescript-eslint/types": "npm:^8.24.1"
+    "@typescript-eslint/types": "npm:^8.25.0"
     "@typescript-eslint/utils": "npm:^8.24.1"
     angular-animations: "npm:^0.11.0"
     axios: "npm:^1.7.9"
