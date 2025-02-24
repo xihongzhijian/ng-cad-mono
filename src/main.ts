@@ -13,6 +13,7 @@ import {HttpModule} from "@modules/http/http.module";
 import {MessageModule} from "@modules/message/message.module";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {QuillModule} from "ngx-quill";
+import {provideScrollbarPolyfill} from "ngx-scrollbar";
 import {AppComponent} from "./app/app.component";
 import {AppRoutingModule} from "./app/routing/app-routing.module";
 
@@ -84,7 +85,8 @@ bootstrapApplication(AppComponent, {
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: matFormFieldOptions},
     {provide: MAT_ICON_DEFAULT_OPTIONS, useValue: matIconDefaultOptions},
     {provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipOptions},
-    provideAnimations()
+    provideAnimations(),
+    provideScrollbarPolyfill("assets/scroll-timeline-polyfill.js")
   ]
 }).catch((err) => {
   console.error(err);
