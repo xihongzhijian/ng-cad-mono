@@ -55,7 +55,7 @@
     "md5": "^2.3.0",
     "ngx-color": "^10.0.0",
     "ngx-infinite-scroll": "^19.0.0",
-    "ngx-quill": "^27.0.0",
+    "ngx-quill": "^27.0.1",
     "ngx-scrollbar": "^18.0.0",
     "ngx-ui-loader": "^13.0.0",
     "pdfmake": "^0.2.18",

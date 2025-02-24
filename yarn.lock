@@ -12306,7 +12306,7 @@ __metadata:
     minimist: "npm:^1.2.8"
     ngx-color: "npm:^10.0.0"
     ngx-infinite-scroll: "npm:^19.0.0"
-    ngx-quill: "npm:^27.0.0"
+    ngx-quill: "npm:^27.0.1"
     ngx-scrollbar: "npm:^18.0.0"
     ngx-ui-loader: "npm:^13.0.0"
     pdfmake: "npm:^0.2.18"
@@ -12350,16 +12350,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-quill@npm:^27.0.0":
-  version: 27.0.0
-  resolution: "ngx-quill@npm:27.0.0"
+"ngx-quill@npm:^27.0.1":
+  version: 27.0.1
+  resolution: "ngx-quill@npm:27.0.1"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
     "@angular/core": ^19.0.0
     quill: ^2.0.0
     rxjs: ^7.0.0
-  checksum: 10c0/eed849dec0c021a7629a03736a2a63bc3383bcc5904a42ef3371c2ba7b5c86f3bc3f1e519536a1953644d31b3c8a05c0e0e07756a8ed85f9d30e951a068cfd85
+  checksum: 10c0/f8fcc796686d83ad37adee49f5f32507328ff7d9e6fe5e8aa9da7fd9c36d8d7dcdc6e0ffdb06993515f05b0e5427849b662a3c2364c683f385419e844f7b5438
   languageName: node
   linkType: hard
 
