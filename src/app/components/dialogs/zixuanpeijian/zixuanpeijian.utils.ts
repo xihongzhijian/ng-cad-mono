@@ -20,7 +20,7 @@ import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
 import {getNodeFormulasKey, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {matchConditions} from "@views/suanliao/suanliao.utils";
 import {XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
-import {getMokuaiFormulas, getMokuaiShuchuVars, getShuruzhi, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
+import {getMokuaiFormulas, getMokuaiShuchuVars, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {cloneDeep, difference, intersection, isEmpty, isEqual, union} from "lodash";
 import md5 from "md5";
 import {openDrawCadDialog} from "../draw-cad/draw-cad.component";
@@ -469,13 +469,6 @@ export const calcZxpj = async (
     const result = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, vars);
     return result?.formulas || item.suanliaogongshi;
   };
-  const getMokuaiInfoShuruzhi = (item: ZixuanpeijianMokuaiItem) => {
-    const info = getMokuaiInfo(xhmrmsbj?.menshanbujuInfos || {}, item);
-    if (!info.msbjInfo || !info.node) {
-      return {};
-    }
-    return getShuruzhi(info.msbjInfo, info.node, item);
-  };
 
   const duplicateMokuaiSlgsVars: {mokuai: ZixuanpeijianMokuaiItem; vars: string[]}[] = [];
   for (const [i, item1] of mokuais.entries()) {
@@ -610,7 +603,6 @@ export const calcZxpj = async (
     if (useCeshishuju && item.ceshishuju) {
       calc.calc.mergeFormulas(formulas, item.ceshishuju);
     }
-    calc.calc.mergeFormulas(formulas, getMokuaiInfoShuruzhi(item));
     const dimensionVars = getCadDimensionVars(item.cads);
     toCalc1Item.formulas = formulas;
     toCalc1Item.dimensionVars = dimensionVars;
@@ -1012,7 +1004,6 @@ export const calcZxpj = async (
 };
 
 export const getNodeVars = (formulas: Formulas, nodeName: string, exclusive = false) => {
-  formulas = {...formulas};
   const result = exclusive ? {} : {...formulas};
   for (const key of nodeFormulasKeysRaw) {
     const key2 = getNodeFormulasKey(nodeName, key);

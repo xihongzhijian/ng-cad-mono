@@ -118,7 +118,6 @@ import {
   xhmrmsbjTabNames
 } from "./xhmrmsbj.types";
 import {
-  getMokuaiFormulas,
   getMokuaiFormulasRaw,
   getMokuaiOptions,
   getMokuaiShuchuVars,
@@ -878,22 +877,17 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!data || !msbjInfo || !mokuai) {
       return infos;
     }
-    const materialResult = this.materialResult();
+    const lastSuanliao = this.lastSuanliaoManager.data();
+    const vars = {...lastSuanliao?.output.materialResult};
+    const mokuai2 = lastSuanliao?.output.配件模块CAD.find((v) => isMokuaiItemEqual(v, mokuai));
+    Object.assign(vars, mokuai2?.suanliaogongshi);
     const inputs = this.mokuaiInputInfosInput();
     const names = (mokuai.自定义数据?.下单显示.split("+") || []).filter((v) => !inputs.some((v2) => v2.label === v));
-    const formulas: Formulas = {};
-    Object.assign(data.getCommonFormulas(materialResult));
-    Object.assign(formulas, getMokuaiFormulas(msbjInfo, node, mokuai, null).formulas);
-    replaceMenshanName(this.activeMenshanKey(), formulas);
-    try {
-      const res = this.calc.calc.calcFormulas(formulas, materialResult);
-      Object.assign(materialResult, res.succeedTrim);
-    } catch {}
     for (const name of names) {
       if (!name) {
         continue;
       }
-      infos.push({type: "string", label: name, readonly: true, value: getValueString(materialResult[name])});
+      infos.push({type: "string", label: name, readonly: true, value: getValueString(vars[name])});
     }
     return infos;
   });

@@ -17,7 +17,7 @@ import {CalcService} from "@services/calc.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {getMkdxpzSlgsFormulas, getNodeFormulasKey, getNodeFormulasKeys, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {LastSuanliao} from "@views/suanliao/suanliao.types";
-import {getMokuaiFormulas, getShuruzhi, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
+import {getMokuaiFormulas, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {Properties} from "csstype";
 import {NgScrollbar} from "ngx-scrollbar";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
@@ -73,8 +73,7 @@ export class XhmrmsbjMokuaisComponent {
             return 门扇名字 === key && 模块名字 === node.层名字 && v.weiyima === mokuai.weiyima;
           });
           const cads: CadData[] = [];
-          const shuruzhi = getShuruzhi(value, node, mokuai);
-          const formulas = {...shuruzhi, ...getMokuaiFormulas(value, node, mokuai, materialResult).formulas};
+          const formulas = {...getMokuaiFormulas(value, node, mokuai, materialResult).formulas};
           const formulas2 = {...output.materialResult, ...mokuaidaxiaoResult};
           if (mokuai2) {
             Calc.mergeFormulas(formulas2, mokuai2.suanliaogongshi);
@@ -96,7 +95,7 @@ export class XhmrmsbjMokuaisComponent {
             formulas2[key2] = formulas2[getNodeFormulasKey(node.层名字, key2)];
           }
           replaceMenshanName(key, gongshi);
-          Calc.mergeFormulas(formulas, gongshi, shuruzhi);
+          Calc.mergeFormulas(formulas, gongshi);
           const gongshiResult = this.calc.calc.calcFormulas(formulas, formulas2);
           Calc.mergeFormulas(formulas2, gongshiResult.succeedTrim);
           for (const key2 of nodeFormulasKeysRaw) {
