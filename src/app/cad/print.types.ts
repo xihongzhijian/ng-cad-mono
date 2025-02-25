@@ -26,6 +26,7 @@ export interface BomTable {
 }
 export interface 型材物料明细List {
   items: 型材物料明细Item[];
+  compact?: boolean;
 }
 export interface 型材物料明细Item {
   截面图: string;

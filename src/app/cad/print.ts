@@ -323,7 +323,7 @@ const getWrapedText = (cad: CadViewer, source: string, mtext: CadMtext, options:
       end++;
     } else {
       if (start === end - 1) {
-        throw new Error("文字自动换行时出错");
+        return [source];
       }
       let text = source.slice(start, end - 1);
       const text2 = source.slice(end - 1);
@@ -1121,42 +1121,6 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
     return;
   }
 
-  const items0 = 型材物料明细.items;
-  const items1: typeof items0 = [];
-  const itemsGroup: (typeof items0)[] = [];
-  for (const item of items0) {
-    const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色", "型材长度", "是横料", "左切角", "右切角"];
-    const itemPrev = items1.find((v) => keys.every((k) => v[k] === item[k]));
-    if (itemPrev) {
-      itemPrev.要求数量 += item.要求数量;
-    } else {
-      items1.push(cloneDeep(item));
-    }
-  }
-  for (const item of items1) {
-    const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色"];
-    const itemsPrev = itemsGroup.find((v) => {
-      if (!v.find((v2) => keys.every((k) => v2[k] === item[k]))) {
-        return false;
-      }
-      const target = v.find((v2) => v2.是横料 === item.是横料);
-      return !target || target.型材长度 === item.型材长度;
-    });
-    if (itemsPrev) {
-      itemsPrev.push(item);
-    } else {
-      itemsGroup.push([item]);
-    }
-  }
-  itemsGroup.sort((a, b) => a[0].铝型材.localeCompare(b[0].铝型材));
-
-  const lineHeight = 119;
-  const rowWidth = lines.rect.width;
-  const widths = [180, 120, 80, 140, 80];
-  widths.push(rowWidth - widths.reduce((a, b) => a + b, 0));
-  const cellPadding = 10;
-  let x = lines.rect.left;
-  let y = lines.rect.top;
   const ps: Promise<void>[] = [];
   const addLine = (x1: number, y1: number, x2: number, y2: number) => {
     const line = new CadLine({start: [x1, y1], end: [x2, y2]});
@@ -1172,78 +1136,160 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
     ps.push(cad.render(mtext));
     return mtext;
   };
+  const cellPadding = 10;
+  const x0 = lines.rect.left;
+  const y0 = lines.rect.top;
+  let x = x0;
+  let y = y0;
+  const rowWidth = lines.rect.width;
+  let widths: number[] = [];
   const getWidth = (i: number) => widths.slice(0, i === -1 ? undefined : i + 1).reduce((a, b) => a + b, 0);
-  for (const w of widths) {
-    x += w;
-    addLine(x, y, x, y - lineHeight * itemsGroup.length);
-  }
-  x = lines.rect.left;
-  for (const items of itemsGroup) {
-    addLine(x, y - lineHeight, x + rowWidth, y - lineHeight);
-    addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
-
-    const img = new CadImage();
-    img.position.set(x + widths[0] / 2, y - lineHeight / 2);
-    img.anchor.set(0.5, 0.5);
-    img.targetSize = new Point(widths[0] - cellPadding * 2, lineHeight - cellPadding * 2);
-    img.objectFit = "contain";
-    await setImageUrl(img, items[0].截面图);
-    data.entities.add(img);
-    ps.push(cad.render(img));
-    x += widths[0];
-
-    addText(widths[1], items[0].铝型材, [x + widths[1] / 2, y - lineHeight / 2], [0.5, 0.5], {size: 40});
-    x += widths[1];
-
-    addText(widths[2], "横料", [x + widths[2] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: 30});
-    addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: 30});
-    x += widths[2];
-
-    const get切角Str = (items2: typeof items) => {
-      const 双45Count = items2.filter((v) => v.左切角 === "45" && v.右切角 === "45").length;
-      if (双45Count > 0) {
-        return "双45";
-      }
-      const 单45Count = items2.filter((v) => v.左切角 === "45" || v.右切角 === "45").length - 双45Count;
-      if (单45Count > 0) {
-        return "单45";
-      }
-      const 双90Count = items2.filter((v) => v.左切角 === "90" && v.右切角 === "90").length;
-      if (双90Count > 0) {
-        return "双90";
-      }
-      return "";
-    };
-
-    const 横料 = items.filter((v) => v.是横料 === "是");
-    const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
-    if (横料Count > 0) {
-      const text = `${横料[0].型材长度}=${横料Count}`;
-      addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: 30});
+  let fontSizeText = 30;
+  let fontSizeTitle = 40;
+  let lineHeight = 0;
+  const drawRowTexts = (texts: string[], fontSize = fontSizeText) => {
+    for (const [i, text] of texts.entries()) {
+      addText(widths[i], text, [x + widths[i] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSize});
+      x += widths[i];
     }
-    const 竖料 = items.filter((v) => v.是横料 === "否");
-    const 竖料Count = 竖料.reduce((a, b) => a + b.要求数量, 0);
-    if (竖料Count > 0) {
-      const text = `${竖料[0].型材长度}=${竖料Count}`;
-      addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: 30});
-    }
-    x += widths[3];
-
-    const 横料切角Str = get切角Str(横料);
-    if (横料切角Str) {
-      addText(widths[4], 横料切角Str, [x + widths[4] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: 30});
-    }
-    const 竖料切角Str = get切角Str(竖料);
-    if (竖料切角Str) {
-      addText(widths[4], 竖料切角Str, [x + widths[4] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: 30});
-    }
-    x += widths[4];
-
-    addText(widths[5], items[0].型材颜色, [x + widths[5] / 2, y - lineHeight / 2], [0.5, 0.5], {size: 30});
-
-    x = lines.rect.left;
+    x = x0;
     y -= lineHeight;
+    addLine(x, y, x + rowWidth, y);
+  };
+  if (型材物料明细.compact) {
+    const items = 型材物料明细.items;
+    widths = [200, 100];
+    widths.splice(1, 0, rowWidth - widths.reduce((a, b) => a + b, 0));
+    lineHeight = 45;
+    fontSizeText = 25;
+    fontSizeTitle = 35;
+    addText(rowWidth, "门扇主体", [x + rowWidth / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeTitle});
+    y -= lineHeight;
+    addLine(x, y, x + rowWidth, y);
+    drawRowTexts(["规格型号", "颜色", "备注"]);
+    const textsGroup: string[][] = [];
+    for (const item of items) {
+      const texts = [item.铝型材, item.型材颜色, `${item.左切角}-${item.右切角}`];
+      if (!textsGroup.some((v) => v.every((v2, i) => v2 === texts[i]))) {
+        textsGroup.push(texts);
+      }
+    }
+    for (const w of widths) {
+      x += w;
+      addLine(x, y + lineHeight, x, y - lineHeight * textsGroup.length);
+    }
+    x = x0;
+    for (const texts of textsGroup) {
+      drawRowTexts(texts);
+    }
+  } else {
+    const items0 = 型材物料明细.items;
+    const items1: typeof items0 = [];
+    const itemsGroup: (typeof items0)[] = [];
+    for (const item of items0) {
+      const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色", "型材长度", "是横料", "左切角", "右切角"];
+      const itemPrev = items1.find((v) => keys.every((k) => v[k] === item[k]));
+      if (itemPrev) {
+        itemPrev.要求数量 += item.要求数量;
+      } else {
+        items1.push(cloneDeep(item));
+      }
+    }
+    for (const item of items1) {
+      const keys: (keyof 型材物料明细Item)[] = ["铝型材", "型材颜色"];
+      const itemsPrev = itemsGroup.find((v) => {
+        if (!v.find((v2) => keys.every((k) => v2[k] === item[k]))) {
+          return false;
+        }
+        const target = v.find((v2) => v2.是横料 === item.是横料);
+        return !target || target.型材长度 === item.型材长度;
+      });
+      if (itemsPrev) {
+        itemsPrev.push(item);
+      } else {
+        itemsGroup.push([item]);
+      }
+    }
+    itemsGroup.sort((a, b) => a[0].铝型材.localeCompare(b[0].铝型材));
+
+    widths = [180, 120, 80, 140, 80];
+    widths.push(rowWidth - widths.reduce((a, b) => a + b, 0));
+    lineHeight = 119;
+    fontSizeText = 30;
+    fontSizeTitle = 40;
+    for (const w of widths) {
+      x += w;
+      addLine(x, y, x, y - lineHeight * itemsGroup.length);
+    }
+    x = x0;
+    for (const items of itemsGroup) {
+      addLine(x, y - lineHeight, x + rowWidth, y - lineHeight);
+      addLine(x + getWidth(1), y - lineHeight / 2, x + getWidth(-2), y - lineHeight / 2);
+
+      const img = new CadImage();
+      img.position.set(x + widths[0] / 2, y - lineHeight / 2);
+      img.anchor.set(0.5, 0.5);
+      img.targetSize = new Point(widths[0] - cellPadding * 2, lineHeight - cellPadding * 2);
+      img.objectFit = "contain";
+      await setImageUrl(img, items[0].截面图);
+      data.entities.add(img);
+      ps.push(cad.render(img));
+      x += widths[0];
+
+      addText(widths[1], items[0].铝型材, [x + widths[1] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeTitle});
+      x += widths[1];
+
+      addText(widths[2], "横料", [x + widths[2] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+      addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+      x += widths[2];
+
+      const get切角Str = (items2: typeof items) => {
+        const 双45Count = items2.filter((v) => v.左切角 === "45" && v.右切角 === "45").length;
+        if (双45Count > 0) {
+          return "双45";
+        }
+        const 单45Count = items2.filter((v) => v.左切角 === "45" || v.右切角 === "45").length - 双45Count;
+        if (单45Count > 0) {
+          return "单45";
+        }
+        const 双90Count = items2.filter((v) => v.左切角 === "90" && v.右切角 === "90").length;
+        if (双90Count > 0) {
+          return "双90";
+        }
+        return "";
+      };
+
+      const 横料 = items.filter((v) => v.是横料 === "是");
+      const 横料Count = 横料.reduce((a, b) => a + b.要求数量, 0);
+      if (横料Count > 0) {
+        const text = `${横料[0].型材长度}=${横料Count}`;
+        addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+      }
+      const 竖料 = items.filter((v) => v.是横料 === "否");
+      const 竖料Count = 竖料.reduce((a, b) => a + b.要求数量, 0);
+      if (竖料Count > 0) {
+        const text = `${竖料[0].型材长度}=${竖料Count}`;
+        addText(widths[3], text, [x + widths[3] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+      }
+      x += widths[3];
+
+      const 横料切角Str = get切角Str(横料);
+      if (横料切角Str) {
+        addText(widths[4], 横料切角Str, [x + widths[4] / 2, y - lineHeight * 0.25], [0.5, 0.5], {size: fontSizeText});
+      }
+      const 竖料切角Str = get切角Str(竖料);
+      if (竖料切角Str) {
+        addText(widths[4], 竖料切角Str, [x + widths[4] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
+      }
+      x += widths[4];
+
+      addText(widths[5], items[0].型材颜色, [x + widths[5] / 2, y - lineHeight / 2], [0.5, 0.5], {size: fontSizeText});
+
+      x = lines.rect.left;
+      y -= lineHeight;
+    }
   }
+
   await Promise.all(ps);
   lines.locator.visible = false;
   await cad.render(lines.locator);
