@@ -29,8 +29,9 @@ import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
 import {XuanxiangTableData} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {emptyXuanxiangItem, getXuanxiangItem, getXuanxiangTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {选项} from "@components/lurushuju/xinghao-data";
+import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
+import {keysOf, ObjectOf, timeout, waitFor} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -42,18 +43,18 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {CellChangeEvent, RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzDataSubmitEvent, MrbcjfzInfo, MrbcjfzInputData, MrbcjfzResponseData} from "@views/mrbcjfz/mrbcjfz.types";
 import {getEmptyMrbcjfzInfo, isMrbcjfzInfoEmpty2, MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
-import {clone, cloneDeep, intersection, isEmpty, isEqual} from "lodash";
+import {clone, cloneDeep, intersection, isEmpty, isEqual, uniqueId} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {firstValueFrom, Subject} from "rxjs";
 import {CadItemComponent} from "../../lurushuju/cad-item/cad-item.component";
 import {MokuaiCadsComponent} from "../mokuai-cads/mokuai-cads.component";
 import {BjmkStatusService} from "../services/bjmk-status.service";
-import {MokuaiItem, MokuaiItemCadInfo, MokuaiItemCloseEvent, MokuaiItemCustomData} from "./mokuai-item.types";
+import {MokuaiItem, MokuaiItemCadInfo, MokuaiItemCloseEvent, MokuaiItemCustomData, NodeTextReplacerItem} from "./mokuai-item.types";
 import {getEmptyMokuaiItem, getMokuaiCustomData, mokuaiSubmitAfter, updateMokuaiCustomData} from "./mokuai-item.utils";
 
 @Component({
@@ -672,5 +673,154 @@ export class MokuaiItemComponent {
     }
     this._textInputInfoUpdateDisabled = false;
     this.mokuai.update((v) => ({...v}));
+  }
+
+  nodeTextReplacerOpened = signal(false);
+  nodeTextReplacerItems = signal<NodeTextReplacerItem[]>([]);
+  nodeText = computed(() => this.mokuai().node);
+  nodeTextReplacerItemNameMap = computed(() => {
+    const items = this.nodeTextReplacerItems();
+    const map = new Map<string, number[]>();
+    for (const [i, item] of items.entries()) {
+      const indexs = map.get(item.from);
+      if (indexs) {
+        indexs.push(i);
+      } else {
+        map.set(item.from, [i]);
+      }
+    }
+    return map;
+  });
+  nodeTextReplacerTableInfo = computed(() => {
+    const info: TableRenderInfo<NodeTextReplacerItem> = {
+      data: this.nodeTextReplacerItems(),
+      columns: [
+        {type: "number", field: "id", name: "序号", width: "50px", getString: (_, i) => String(i + 1)},
+        {
+          type: "string",
+          field: "from",
+          name: "公式名字",
+          editable: true,
+          validators: Validators.required,
+          validators2: ({item}) => {
+            if (!item.from) {
+              return {required: true};
+            }
+            const map = this.nodeTextReplacerItemNameMap();
+            for (const [key, value] of map.entries()) {
+              if (key === item.from && value.length > 1) {
+                return {名字不能重复: true};
+              }
+            }
+            return null;
+          }
+        },
+        {
+          type: "string",
+          field: "to",
+          name: "替换成",
+          editable: true,
+          validators: Validators.required,
+          validators2: ({item}) => {
+            if (item.from === item.to) {
+              return {不能与原名字相同: true};
+            }
+            return null;
+          }
+        },
+        {type: "number", field: "count", name: "有多少个需要替换的地方"},
+        {
+          type: "string",
+          field: "fulfilled",
+          name: "结果",
+          width: "80px",
+          getString: (v) => {
+            if (typeof v.fulfilled === "boolean") {
+              return v.fulfilled ? "成功" : "失败";
+            } else {
+              return "N/A";
+            }
+          }
+        }
+      ],
+      editMode: true,
+      rowSelection: {mode: "multiple"},
+      toolbarButtons: {
+        add: true,
+        remove: true,
+        extra: [
+          {event: "replace", title: "开始替换", onClick: () => this.replaceNodeText()},
+          {
+            event: "showText",
+            hidden: environment.production,
+            onClick: async () => {
+              const text = await this.getNodeText();
+              if (text) {
+                this.message.alert(text);
+              }
+            }
+          }
+        ]
+      },
+      newItem: () => ({id: uniqueId(), from: "", to: "", count: 0})
+    };
+    return info;
+  });
+  nodeTextReplacerTable = viewChild<TableComponent<NodeTextReplacerItem>>("nodeTextReplacerTable");
+  async getNodeText() {
+    const text = this.nodeText();
+    if (!text) {
+      await this.message.error("效果图公式数据为空！");
+    }
+    return text;
+  }
+  async setNodeText(text: string) {
+    this.mokuai.update((v) => ({...v, node: text}));
+  }
+  async openNodeTextReplacer() {
+    if (!(await this.getNodeText())) {
+      return;
+    }
+    this.nodeTextReplacerOpened.set(true);
+    if (this.nodeTextReplacerItems().length < 1) {
+      try {
+        const table = await waitFor(() => this.nodeTextReplacerTable());
+        table.addItem();
+      } catch {}
+    }
+  }
+  closeNodeTextReplacer() {
+    this.nodeTextReplacerOpened.set(false);
+    this.nodeTextReplacerItems.set([]);
+  }
+  onNodeTextReplacerTableCellChange(event: CellChangeEvent<NodeTextReplacerItem>) {
+    const text = this.nodeText();
+    const {item} = event;
+    if (text) {
+      item.count = text.matchAll(new RegExp(`"${item.from}"`, "g")).toArray().length;
+    }
+    item.fulfilled = undefined;
+    this.nodeTextReplacerItems.update((v) => [...v]);
+  }
+  async replaceNodeText() {
+    const text0 = await this.getNodeText();
+    if (!text0) {
+      return;
+    }
+    let text = text0;
+    const items = this.nodeTextReplacerItems();
+    for (const item of items) {
+      const {from, to} = item;
+      if (!from || !to || from === to) {
+        continue;
+      }
+      try {
+        text = text.replaceAll(`"${from}"`, `"${to}"`);
+        item.fulfilled = true;
+      } catch {}
+    }
+    this.nodeTextReplacerItems.update((v) => [...v]);
+    this.setNodeText(text);
+    await this.message.alert("替换完成");
   }
 }

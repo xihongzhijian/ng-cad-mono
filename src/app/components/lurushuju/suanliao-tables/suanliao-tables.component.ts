@@ -29,18 +29,11 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
         type: "button",
         field: "孔位配置",
         width: "150px",
-        buttons: [
-          {event: "界面编辑", color: "primary"},
-          {event: "JSON编辑", color: "primary", hidden: true},
-          {event: "删除", color: "primary"}
-        ]
+        buttons: [{event: "界面编辑"}, {event: "JSON编辑", hidden: true}, {event: "删除"}]
       }
     ],
     toolbarButtons: {
-      extra: [
-        {event: "编辑", color: "primary"},
-        {event: "刷新", color: "primary"}
-      ]
+      extra: [{event: "编辑"}, {event: "刷新"}]
     }
   };
   klcsTable: TableRenderInfo<KlcsData> = {
@@ -53,18 +46,11 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
         type: "button",
         field: "参数",
         width: "150px",
-        buttons: [
-          {event: "界面编辑", color: "primary"},
-          {event: "JSON编辑", color: "primary", hidden: true},
-          {event: "删除", color: "primary"}
-        ]
+        buttons: [{event: "界面编辑"}, {event: "JSON编辑", hidden: true}, {event: "删除"}]
       }
     ],
     toolbarButtons: {
-      extra: [
-        {event: "编辑", color: "primary"},
-        {event: "刷新", color: "primary"}
-      ]
+      extra: [{event: "编辑"}, {event: "刷新"}]
     }
   };
 

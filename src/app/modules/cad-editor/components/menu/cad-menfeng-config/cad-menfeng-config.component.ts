@@ -97,7 +97,7 @@ export class CadMenfengConfigComponent {
       title: "",
       data: this.items(),
       toolbarButtons: {
-        extra: [{event: "add", title: "添加", color: "primary", onClick: () => this.addMenfengConfigItem()}]
+        extra: [{event: "add", title: "添加", onClick: () => this.addMenfengConfigItem()}]
       },
       columns: [
         {field: "产品分类", type: "string", getString: (v) => getOptionStr("产品分类", v.产品分类)},

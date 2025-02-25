@@ -113,7 +113,7 @@ export class BomGongyiluxianComponent implements OnInit {
         type: "button",
         field: "children",
         name: "操作",
-        buttons: [{event: "add", title: "添加", color: "primary"}],
+        buttons: [{event: "add", title: "添加", class: "primary"}],
         width: "80px"
       });
     }

@@ -2,6 +2,7 @@ import {ZixuanpeijianTypesInfoItemBase} from "@components/dialogs/zixuanpeijian/
 import {选项} from "@components/lurushuju/xinghao-data";
 import {ObjectOf} from "@lucilor/utils";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {TableRenderInfo} from "@modules/table/components/table/table.types";
 
 export interface MokuaiItem extends ZixuanpeijianTypesInfoItemBase {
   name: string;
@@ -31,4 +32,15 @@ export interface MokuaiItemCloseEvent {
 
 export interface MokuaiItemCadInfo {
   index: number;
+}
+
+export interface NodeTextReplacerItem {
+  id: string;
+  from: string;
+  to: string;
+  count: number;
+  fulfilled?: boolean;
+}
+export interface NodeTextReplacerData {
+  tableInfo: TableRenderInfo<NodeTextReplacerItem>;
 }

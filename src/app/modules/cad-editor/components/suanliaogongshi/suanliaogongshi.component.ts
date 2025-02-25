@@ -105,18 +105,12 @@ export class SuanliaogongshiComponent {
         {
           type: "button",
           field: "操作",
-          buttons: [
-            {event: "编辑", color: "primary"},
-            {event: "删除", color: "primary"}
-          ]
+          buttons: [{event: "编辑"}, {event: "删除"}]
         }
       ],
       data: getSortedItems(info.data.输入数据 || [], (v) => v.排序 ?? 0),
       toolbarButtons: {
-        extra: [
-          {event: "添加", color: "primary"},
-          {event: "全部", color: "primary", hidden: info.isFromSelf}
-        ]
+        extra: [{event: "添加"}, {event: "全部", hidden: info.isFromSelf}]
       }
     };
     return tableInfo;

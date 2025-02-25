@@ -35,10 +35,7 @@ export const getXuanxiangTable = (
         type: "button",
         field: "操作",
         style: {flex: "1 1 150px"},
-        buttons: [
-          {event: "编辑", color: "primary"},
-          {event: "清空数据", color: "primary"}
-        ]
+        buttons: [{event: "编辑"}, {event: "清空数据"}]
       }
     ],
     data,
@@ -137,14 +134,11 @@ export const getShuruTable = (
       {
         type: "button",
         field: "操作",
-        buttons: [
-          {event: "编辑", color: "primary"},
-          {event: "删除", color: "primary"}
-        ]
+        buttons: [{event: "编辑"}, {event: "删除"}]
       }
     ],
     data: getSortedItems(data, (v) => v.排序 ?? 0),
-    toolbarButtons: {extra: [{event: "添加", color: "primary"}]},
+    toolbarButtons: {extra: [{event: "添加"}]},
     ...others
   };
 };
@@ -238,20 +232,12 @@ export const getMenjiaoTable = (data: MenjiaoData[]): TableRenderInfo<MenjiaoDat
         field: "操作",
         width: "150px",
         stickyEnd: true,
-        buttons: [
-          {event: "编辑", color: "primary"},
-          {event: "编辑排序", color: "primary"},
-          {event: "复制", color: "primary"},
-          {event: "删除", color: "primary"}
-        ]
+        buttons: [{event: "编辑"}, {event: "编辑排序"}, {event: "复制"}, {event: "删除"}]
       }
     ],
     data,
     toolbarButtons: {
-      extra: [
-        {event: "添加", color: "primary"},
-        {event: "从其他做法选择", title: "从其他做法选择门铰锁边铰边", color: "primary"}
-      ]
+      extra: [{event: "添加"}, {event: "从其他做法选择", title: "从其他做法选择门铰锁边铰边"}]
     }
   };
 };

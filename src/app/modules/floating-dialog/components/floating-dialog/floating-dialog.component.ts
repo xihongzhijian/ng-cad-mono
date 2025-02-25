@@ -56,6 +56,10 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   minimized = model<boolean>(false);
   maximized = model<boolean>(false);
   maximizedMargin = input<TrblLike | "default">("default");
+  noPin = input(false, {transform: booleanAttribute});
+  noMinimize = input(false, {transform: booleanAttribute});
+  noMaximize = input(false, {transform: booleanAttribute});
+  noClose = input(false, {transform: booleanAttribute});
   close = output();
 
   dialogEl = viewChild.required<ElementRef<HTMLElement>>("dialogEl");
@@ -169,39 +173,47 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
 
   titleBtns = computed(() => {
     const btns: {icon: string; action: () => void}[] = [];
-    if (this.pinned()) {
+    if (!this.noPin()) {
+      if (this.pinned()) {
+        btns.push({
+          icon: "keep_off",
+          action: () => {
+            this.pinned.set(false);
+          }
+        });
+      } else {
+        btns.push({
+          icon: "keep",
+          action: () => {
+            this.pinned.set(true);
+          }
+        });
+      }
+    }
+    if (!this.noMinimize()) {
       btns.push({
-        icon: "keep_off",
+        icon: "remove",
         action: () => {
-          this.pinned.set(false);
-        }
-      });
-    } else {
-      btns.push({
-        icon: "keep",
-        action: () => {
-          this.pinned.set(true);
+          this.toggleMinimized();
         }
       });
     }
-    btns.push({
-      icon: "remove",
-      action: () => {
-        this.toggleMinimized();
-      }
-    });
-    btns.push({
-      icon: this.maximized() ? "stack" : "check_box_outline_blank",
-      action: () => {
-        this.toggleMaximized();
-      }
-    });
-    btns.push({
-      icon: "close",
-      action: () => {
-        this.close.emit();
-      }
-    });
+    if (!this.noMaximize()) {
+      btns.push({
+        icon: this.maximized() ? "stack" : "check_box_outline_blank",
+        action: () => {
+          this.toggleMaximized();
+        }
+      });
+    }
+    if (!this.noClose()) {
+      btns.push({
+        icon: "close",
+        action: () => {
+          this.close.emit();
+        }
+      });
+    }
     return btns;
   });
   contextMenuBtns = computed(() => {

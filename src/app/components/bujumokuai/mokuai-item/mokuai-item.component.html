@@ -1,6 +1,7 @@
 <div class="toolbar">
   <div class="title">{{ mokuai().name }}</div>
   <div class="flex-110"></div>
+  <button mat-flat-button (click)="openNodeTextReplacer()">效果图公式替换</button>
   <button mat-flat-button (click)="showXhmrmsbjsUsingMokuai()">哪些型号使用这个模块</button>
   <mat-divider></mat-divider>
   <button mat-flat-button (click)="openDdbq()">测试</button>
@@ -153,5 +154,17 @@
         (dataClose)="onMrbcjfClose()"
       ></app-mrbcjfz>
     </div>
+  </app-floating-dialog>
+}
+
+@if (nodeTextReplacerOpened()) {
+  <app-floating-dialog width="50%" height="50%" left="25%" top="25%" noMinimize (close)="closeNodeTextReplacer()">
+    <div appFloatingDialogTitle>效果图公式替换</div>
+    <app-table
+      #nodeTextReplacerTable
+      class="flex-110"
+      [info]="nodeTextReplacerTableInfo()"
+      (cellChange)="onNodeTextReplacerTableCellChange($event)"
+    ></app-table>
   </app-floating-dialog>
 }

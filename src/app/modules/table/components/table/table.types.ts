@@ -1,5 +1,4 @@
-import {AbstractControlOptions} from "@angular/forms";
-import {ThemePalette} from "@angular/material/core";
+import {AbstractControlOptions, ValidationErrors} from "@angular/forms";
 import {MatTableDataSource} from "@angular/material/table";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {InputInfoOptions} from "@modules/input/components/input.types";
@@ -50,12 +49,13 @@ export interface RowSelection {
 export interface TableButton<T = void> {
   event: string;
   title?: string;
-  color?: ThemePalette;
   class?: string | string[];
   style?: Properties;
   hidden?: boolean;
   onClick?: (params: T) => void;
 }
+
+export type TableItemValidator<T> = (data: RowButtonEventBase<T>) => ValidationErrors | null;
 
 export interface ColumnInfoBase<T> {
   field: keyof T;
@@ -67,8 +67,9 @@ export interface ColumnInfoBase<T> {
   stickyEnd?: boolean;
   hidden?: boolean;
   style?: Properties;
-  getString?: (value: T) => string;
+  getString?: (value: T, index: number) => string;
   validators?: AbstractControlOptions["validators"];
+  validators2?: TableItemValidator<T> | TableItemValidator<T>[];
 }
 
 export interface ColumnInfoNormal<T> extends ColumnInfoBase<T> {

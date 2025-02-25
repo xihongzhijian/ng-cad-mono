@@ -22,7 +22,7 @@ import {
   ViewChild,
   viewChildren
 } from "@angular/core";
-import {FormControl} from "@angular/forms";
+import {FormControl, ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatOptionModule} from "@angular/material/core";
@@ -35,7 +35,7 @@ import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slid
 import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatTable, MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
-import {getFilepathUrl, joinOptions, splitOptions} from "@app/app.common";
+import {getArray, getFilepathUrl, joinOptions, splitOptions} from "@app/app.common";
 import {getValueString} from "@app/utils/get-value";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
@@ -413,9 +413,14 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     }
     const valueAfter = item[field];
     if (!isEqual(valueBefore, valueAfter)) {
+      const errors: ValidationErrors = {};
       const control = new FormControl(valueAfter, column.validators);
+      for (const validator of getArray(column.validators2)) {
+        const errors2 = validator({column, item, rowIdx, colIdx});
+        Object.assign(errors, errors2);
+      }
       const item2 = item as TableDataBase;
-      if (onlineMode && isEmpty(control.errors)) {
+      if (onlineMode && isEmpty(control.errors) && isEmpty(errors)) {
         this.http.tableUpdate({table: onlineMode.tableName, data: {vid: item2.vid, [field]: valueAfter}});
       }
       this.cellChange.emit({column, item, colIdx, rowIdx, value: valueAfter});
@@ -736,12 +741,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const columns = this.info.columns.filter((v) => !v.hidden);
     data.push(columns.map((v) => v.name || (v.field as string)));
     const addRows = (source: any[]) => {
-      for (const item of source) {
+      for (const [i, item] of source.entries()) {
         const row: string[] = [];
         for (const column of columns) {
           let value = item[column.field];
           if (column.type === "link") {
-            value = this.getValueString(item, column);
+            value = this.getValueString(item, column, i);
           }
           if (typeof value === "string") {
             row.push(value);
@@ -793,15 +798,21 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     } else {
       info.value = item[column.field];
     }
-    info.validators = column.validators;
+    const {rowIdx, colIdx} = event;
+    info.validators = [
+      ...getArray(column.validators),
+      ...getArray(column.validators2).map((validator) => {
+        return () => validator({column, item, rowIdx, colIdx});
+      })
+    ];
     info.style = {width: "0", flex: "1 1 0"};
     return info;
   }
 
-  getValueString(item: T, column: ColumnInfo<T>) {
+  getValueString(item: T, column: ColumnInfo<T>, index: number) {
     const {getString} = column;
     if (typeof getString === "function") {
-      return getString(item);
+      return getString(item, index);
     }
     const value = item[column.field];
 

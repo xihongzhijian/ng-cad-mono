@@ -178,9 +178,9 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
         width: "160px",
         stickyEnd: true,
         buttons: [
-          {event: "edit", title: "编辑", color: "primary"},
-          {event: "delete", title: "删除", color: "primary"},
-          {event: "copy", title: "复制", color: "primary"}
+          {event: "edit", title: "编辑"},
+          {event: "delete", title: "删除"},
+          {event: "copy", title: "复制"}
         ]
       }
     ],

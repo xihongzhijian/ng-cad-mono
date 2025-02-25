@@ -33,13 +33,7 @@
       }
       @for (button of toolbarButtons.extra; track $index) {
         @if (!button.hidden) {
-          <button
-            mat-stroked-button
-            [class.accent]="button.color"
-            [class]="button.class"
-            [style]="button.style"
-            (click)="onToolbarBtnClick(button)"
-          >
+          <button mat-stroked-button [class]="button.class" [style]="button.style" (click)="onToolbarBtnClick(button)">
             {{ button.title || button.event }}
           </button>
         }
@@ -117,19 +111,18 @@
                       />
                     </mat-form-field>
                   } @else {
-                    <span [innerHTML]="getValueString(item, column)"></span>
+                    <span [innerHTML]="getValueString(item, column, rowIdx)"></span>
                   }
                 }
                 @case ("button") {
                   @if (column.showValue) {
-                    <div><span [innerHTML]="getValueString(item, column)"></span></div>
+                    <div><span [innerHTML]="getValueString(item, column, rowIdx)"></span></div>
                   }
                   <div class="toolbar">
                     @for (button of getColumnButtons(column); track $index) {
                       @if (!button.hidden) {
                         <button
                           mat-stroked-button
-                          [class.accent]="button.color"
                           [class]="button.class"
                           [style]="button.style"
                           (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"
@@ -147,7 +140,7 @@
                         type="text"
                         matInput
                         readonly
-                        [value]="getValueString(item, column)"
+                        [value]="getValueString(item, column, rowIdx)"
                         (focus)="onCellFocus($event, colIdx, rowIdx, item)"
                         (blur)="onCellBlur($event, colIdx, rowIdx, item)"
                       />
@@ -156,7 +149,7 @@
                       </button>
                     </mat-form-field>
                   } @else {
-                    <span [innerHTML]="getValueString(item, column)"></span>
+                    <span [innerHTML]="getValueString(item, column, rowIdx)"></span>
                   }
                 }
                 @case ("image") {
@@ -201,7 +194,7 @@
                       ></app-input>
                     }
                   } @else {
-                    <span [innerHTML]="getValueString(item, column)"></span>
+                    <span [innerHTML]="getValueString(item, column, rowIdx)"></span>
                   }
                 }
               }
