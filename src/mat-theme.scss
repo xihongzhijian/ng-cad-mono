@@ -1,13 +1,19 @@
 @use "@angular/material" as mat;
-@use "./mat-theme-colors.scss";
+@use "./mat-theme-colors.scss" as mat-colors;
 
 html {
+  color-scheme: light;
   @include mat.theme(
     (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$rose-palette
+      ),
       typography: "Roboto, 微软雅黑, sans-serif",
       density: -1
     )
   );
+  @include mat-colors.light;
 
   @include mat.button-overrides(
     (

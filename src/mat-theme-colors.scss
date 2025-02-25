@@ -4,8 +4,7 @@
 
 @use "@angular/material" as mat;
 
-/* Light Theme */
-html {
+@mixin light {
   @include mat.theme-overrides(
     (
       primary: #005cbb,
@@ -68,7 +67,7 @@ html {
 }
 
 /* Dark Theme */
-.dark {
+@mixin dark {
   @include mat.theme-overrides(
     (
       primary: #abc7ff,
