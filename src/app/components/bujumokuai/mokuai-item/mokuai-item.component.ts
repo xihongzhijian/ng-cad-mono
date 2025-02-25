@@ -31,7 +31,7 @@ import {emptyXuanxiangItem, getXuanxiangItem, getXuanxiangTable} from "@componen
 import {选项} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf, timeout, waitFor} from "@lucilor/utils";
+import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -691,6 +691,39 @@ export class MokuaiItemComponent {
     }
     return map;
   });
+  nodeTextVars = computed(() => {
+    const reg = /"(numF|f)ormula":"([^"]+)"/g;
+    const text = this.nodeText();
+    const vars: string[] = [];
+    if (!text) {
+      return vars;
+    }
+    return text
+      .matchAll(reg)
+      .toArray()
+      .map((v) => v[2]);
+  });
+  updateNodeTextReplacerItemCount(item: NodeTextReplacerItem) {
+    const text = this.nodeText();
+    if (!text) {
+      item.count = 0;
+    } else {
+      item.count = text.matchAll(new RegExp(`"${item.from}"`, "g")).toArray().length;
+    }
+  }
+  addNodeTextReplacerItem(varName?: string) {
+    const item: NodeTextReplacerItem = {id: uniqueId(), from: "", to: "", count: 0};
+    if (varName) {
+      const items = this.nodeTextReplacerItems();
+      if (items.some((v) => v.from === varName)) {
+        this.message.snack("已有该变量");
+        return;
+      }
+      item.from = varName;
+    }
+    this.updateNodeTextReplacerItemCount(item);
+    this.nodeTextReplacerItems.update((v) => [...v, item]);
+  }
   nodeTextReplacerTableInfo = computed(() => {
     const info: TableRenderInfo<NodeTextReplacerItem> = {
       data: this.nodeTextReplacerItems(),
@@ -766,7 +799,6 @@ export class MokuaiItemComponent {
     };
     return info;
   });
-  nodeTextReplacerTable = viewChild<TableComponent<NodeTextReplacerItem>>("nodeTextReplacerTable");
   async getNodeText() {
     const text = this.nodeText();
     if (!text) {
@@ -782,23 +814,14 @@ export class MokuaiItemComponent {
       return;
     }
     this.nodeTextReplacerOpened.set(true);
-    if (this.nodeTextReplacerItems().length < 1) {
-      try {
-        const table = await waitFor(() => this.nodeTextReplacerTable());
-        table.addItem();
-      } catch {}
-    }
   }
   closeNodeTextReplacer() {
     this.nodeTextReplacerOpened.set(false);
     this.nodeTextReplacerItems.set([]);
   }
   onNodeTextReplacerTableCellChange(event: CellChangeEvent<NodeTextReplacerItem>) {
-    const text = this.nodeText();
     const {item} = event;
-    if (text) {
-      item.count = text.matchAll(new RegExp(`"${item.from}"`, "g")).toArray().length;
-    }
+    this.updateNodeTextReplacerItemCount(item);
     item.fulfilled = undefined;
     this.nodeTextReplacerItems.update((v) => [...v]);
   }
