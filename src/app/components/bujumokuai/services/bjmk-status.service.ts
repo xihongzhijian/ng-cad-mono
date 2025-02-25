@@ -78,7 +78,10 @@ export class BjmkStatusService {
   }
 
   async getMokuaiWithForm(mokuai?: Partial<MokuaiItem>, opts?: {mokuaiOverride?: Partial<MokuaiItem>; dataList?: DataListComponent}) {
-    const data: Partial<MokuaiItem> = mokuai ? cloneDeep(mokuai) : getEmptyMokuaiItem();
+    const data: MokuaiItem = getEmptyMokuaiItem();
+    if (mokuai) {
+      Object.assign(data, cloneDeep(mokuai));
+    }
     const {mokuaiOverride, dataList} = opts || {};
     if (mokuaiOverride) {
       Object.assign(data, mokuaiOverride);
@@ -180,7 +183,11 @@ export class BjmkStatusService {
   }
   async copyMokuai(mokuai: MokuaiItem) {
     const names = this.mokuaisManager.items().map((v) => v.name);
-    const mokuai2 = await this.getMokuaiWithForm(mokuai, {mokuaiOverride: {name: getCopyName(names, mokuai.name)}});
+    let mokuai2 = await this.fetchMokuai(mokuai.id);
+    if (!mokuai2) {
+      return;
+    }
+    mokuai2 = await this.getMokuaiWithForm(mokuai2, {mokuaiOverride: {name: getCopyName(names, mokuai.name)}});
     if (mokuai2) {
       this._copyMokuaiBefore(mokuai2);
       const mokuai3 = await this.http.getData<MokuaiItem>("ngcad/copyPeijianmokuai", {item: mokuai2});
