@@ -1,5 +1,5 @@
 import {remoteHost} from "@app/app.common";
-import {Formulas} from "@app/utils/calc";
+import {Formulas, toFixed} from "@app/utils/calc";
 import {ProjectConfig} from "@app/utils/project-config";
 import {getCalcZhankaiText} from "@app/utils/zhankai";
 import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
@@ -661,7 +661,9 @@ export const getCadPaokengText = (
 ) => {
   const arr: string[] = [];
   for (const zhankai of calcZhankai) {
-    arr.push(`${zhankai.calcW}×${zhankai.calcH}=${zhankai.num}`);
+    const calcW = toFixed(zhankai.calcW, 1);
+    const calcH = toFixed(zhankai.calcH, 1);
+    arr.push(`${calcW}×${calcH}=${zhankai.num}`);
   }
   const arr2 = [];
   const 指定位置刨坑表示方法 = projectConfig.get("指定位置刨坑表示方法", "箭头") === "箭头" ? "刨坑(箭头)" : "刨坑";
