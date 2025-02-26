@@ -121,7 +121,7 @@ export class Calc {
       pairs[v] = 0;
     }
     const {error} = this.calcExpress(expression, pairs);
-    result.valid = error !== null;
+    result.valid = error === null;
     result.error = error;
     return result;
   }

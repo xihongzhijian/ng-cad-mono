@@ -211,6 +211,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   sbjb = viewChild(XhmrmsbjSbjbComponent);
   sbjbItems = computed(() => this.sbjb()?.items() || []);
   mfpz = viewChild(MenfengPeizhiComponent);
+  xhpz = viewChild(XhmrmsbjXinghaoConfigComponent);
 
   constructor() {
     setGlobal("xhmrmsbj", this);
@@ -1246,6 +1247,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (mfpz) {
       if (!(await mfpz.submit())) {
         this.activeTabName.set("门缝配置");
+        return;
+      }
+    }
+    const xhpz = this.xhpz();
+    if (xhpz) {
+      if (!(await xhpz.submit())) {
+        this.activeTabName.set("型号配置");
         return;
       }
     }

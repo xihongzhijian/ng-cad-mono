@@ -377,10 +377,10 @@ export class MokuaiItemComponent {
     this.mokuai.update((v) => ({...v}));
   }
 
-  xuanxiangTable = computed(() => getXuanxiangTable(this.mokuai().自定义数据?.选项数据 || [], {title: ""}, true));
+  xuanxiangTable = computed(() => getXuanxiangTable(this.mokuai().自定义数据?.选项数据 || [], {title: ""}, {use输出变量: true}));
   async getXuanxiangItem(data0?: 选项) {
     const optionsAll = await this.bjmkStatus.mokuaiOptionsManager.fetch();
-    return await getXuanxiangItem(this.message, optionsAll, this.xuanxiangTable().data, data0, true);
+    return await getXuanxiangItem(this.message, optionsAll, this.xuanxiangTable().data, data0, {use输出变量: true});
   }
   async onXuanxiangToolbar(event: ToolbarButtonEvent) {
     switch (event.button.event) {

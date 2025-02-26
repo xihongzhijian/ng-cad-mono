@@ -1,4 +1,5 @@
 import {Validators} from "@angular/forms";
+import {Calc} from "@app/utils/calc";
 import {getArrayString} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
@@ -15,8 +16,9 @@ import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} f
 export const getXuanxiangTable = (
   data: XuanxiangTableData[],
   others?: Partial<TableRenderInfo<XuanxiangTableData>>,
-  use输出变量 = false
+  opts?: {use输出变量?: boolean; use条件?: boolean}
 ): TableRenderInfo<XuanxiangTableData> => {
+  const {use输出变量, use条件} = opts ?? {};
   return {
     title: "选项数据",
     inlineTitle: true,
@@ -31,6 +33,7 @@ export const getXuanxiangTable = (
         }
       },
       {type: "boolean", field: "输出变量", style: {flex: "1 1 80px"}, hidden: !use输出变量},
+      {type: "string", field: "条件", style: {flex: "1 1 200px"}, hidden: !use条件},
       {
         type: "button",
         field: "操作",
@@ -43,9 +46,16 @@ export const getXuanxiangTable = (
     ...others
   };
 };
-export const getXuanxiangItem = async (message: MessageService, options: OptionsAll, list: 选项[], data0?: 选项, use输出变量 = false) => {
+export const getXuanxiangItem = async (
+  message: MessageService,
+  options: OptionsAll,
+  list: 选项[],
+  data0?: 选项,
+  opts?: {use输出变量?: boolean; use条件?: boolean}
+) => {
   const data: 选项 = {名字: "", 可选项: [], ...data0};
   const names = list.map((v) => v.名字);
+  const {use输出变量, use条件} = opts ?? {};
   const form: InputInfo<typeof data>[] = [
     {
       type: "select",
@@ -86,6 +96,16 @@ export const getXuanxiangItem = async (message: MessageService, options: Options
             return item;
           });
         }
+      }
+    },
+    {
+      type: "string",
+      label: "条件",
+      model: {data, key: "条件"},
+      hidden: !use条件,
+      validators: (control) => {
+        const result = Calc.validateExpression(control.value);
+        return result.valid ? null : {语法错误: true};
       }
     },
     {type: "boolean", label: "输出变量", model: {data, key: "输出变量"}, hidden: !use输出变量}
