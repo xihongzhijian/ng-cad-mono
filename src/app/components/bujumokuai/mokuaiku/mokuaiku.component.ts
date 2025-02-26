@@ -203,6 +203,7 @@ export class MokuaikuComponent implements OnInit {
   }
 
   bancaiListData = signal<BancaiListData | null>(null);
+  bancaiListDataRefresh = signal(() => this.http.getBancaiList());
   async getBancaiListData() {
     const result = await this.http.getBancaiList();
     if (result) {

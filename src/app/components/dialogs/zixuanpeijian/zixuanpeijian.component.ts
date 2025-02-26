@@ -1307,8 +1307,27 @@ export class ZixuanpeijianComponent implements OnInit {
     }
   }
 
+  async bancaiListRefresh() {
+    const typesInfo: Parameters<typeof getZixuanpeijianCads>[2] = {};
+    this.result.模块.forEach(({type1, type2, id}) => {
+      if (!typesInfo[type1]) {
+        typesInfo[type1] = {};
+      }
+      if (!typesInfo[type1][type2]) {
+        typesInfo[type1][type2] = {id};
+      }
+    });
+    const zxpjCads = await getZixuanpeijianCads(this.http, {spinner: this.spinnerId}, typesInfo, this.materialResult);
+    if (zxpjCads) {
+      this.bancaiList = zxpjCads.bancais;
+    }
+    return [];
+  }
+
   async openBancaiListDialog(info: ZixuanpeijianInfo) {
-    const bancai = await openBancaiListDialog(this.dialog, {data: {list: this.bancaiList, checkedItems: info.bancai ? [info.bancai] : []}});
+    const bancai = await openBancaiListDialog(this.dialog, {
+      data: {list: this.bancaiList, listRefresh: () => this.bancaiListRefresh(), checkedItems: info.bancai ? [info.bancai] : []}
+    });
     if (!bancai?.[0]) {
       return;
     }
@@ -1340,7 +1359,7 @@ export class ZixuanpeijianComponent implements OnInit {
     const bancaiName = this._getCurrBancaiName();
     const bancaiPrev = this.bancaiList.find((v) => v.mingzi === bancaiName);
     const bancai = await openBancaiListDialog(this.dialog, {
-      data: {list: this.bancaiList, checkedItems: bancaiPrev ? [bancaiPrev] : []}
+      data: {list: this.bancaiList, listRefresh: () => this.bancaiListRefresh(), checkedItems: bancaiPrev ? [bancaiPrev] : []}
     });
     if (!bancai?.[0]) {
       return;

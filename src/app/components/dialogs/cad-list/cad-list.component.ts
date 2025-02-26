@@ -15,7 +15,6 @@ import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
@@ -54,7 +53,6 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
     forwardRef(() => InputComponent),
     MatButtonModule,
     MatCheckboxModule,
-    MatDividerModule,
     MatIconModule,
     MatPaginatorModule,
     MatSlideToggleModule,

@@ -1,12 +1,13 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, Inject, signal} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, Inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {session, setGlobal} from "@app/app.common";
-import {queryString} from "@lucilor/utils";
+import {MaybePromise, queryString} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
+import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {debounce, isEqual} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {InputComponent} from "../../../modules/input/components/input.component";
@@ -16,10 +17,12 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-bancai-list",
   templateUrl: "./bancai-list.component.html",
   styleUrls: ["./bancai-list.component.scss"],
-  imports: [InputComponent, MatButtonModule, NgScrollbar, MatCheckboxModule, MatTooltipModule],
+  imports: [InputComponent, MatButtonModule, MatCheckboxModule, MatTooltipModule, NgScrollbar],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BancaiListComponent {
+  private spinner = inject(SpinnerService);
+
   @HostBinding("class") class = "ng-page";
 
   constructor(
@@ -83,9 +86,10 @@ export class BancaiListComponent {
     }
     return bancai.bancaileixing === type;
   }
+  listRefreshed = signal<BancaiList[] | null>(null);
   list = computed(() => {
     const checkedItemNames = this.checkedItems().map((v) => v.mingzi) || [];
-    let list = this.data.list;
+    let list = this.listRefreshed() || this.data.list;
     if (this.data.multi) {
       list = [{mingzi: "全部", cailiaoList: [], houduList: [], guigeList: []}, ...list];
     }
@@ -152,6 +156,13 @@ export class BancaiListComponent {
       this.checkedItems.set(list1.map((v) => v.bancai));
     }
   }
+
+  async refresh() {
+    this.spinner.show(this.spinner.defaultLoaderId);
+    const listRefreshed = await this.data.listRefresh();
+    this.spinner.hide(this.spinner.defaultLoaderId);
+    this.listRefreshed.set(listRefreshed);
+  }
 }
 
 export const openBancaiListDialog = getOpenDialogFunc<BancaiListComponent, BancaiListInput, BancaiListOutput>(BancaiListComponent, {
@@ -161,6 +172,7 @@ export const openBancaiListDialog = getOpenDialogFunc<BancaiListComponent, Banca
 
 export interface BancaiListInput {
   list: BancaiList[];
+  listRefresh: () => MaybePromise<BancaiList[]>;
   checkedItems?: BancaiList[];
   multi?: boolean;
 }

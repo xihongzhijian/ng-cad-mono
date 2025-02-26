@@ -84,7 +84,7 @@
   }
 
   .toolbar {
-    --large-placeholder-size: 30px;
+    --placeholder-size: 30px;
     display: flex;
     flex-wrap: wrap;
     > .mdc-button {
@@ -182,13 +182,8 @@
       }
     }
 
-    .mat-divider {
-      &.large {
-        flex: 0 1 var(--large-placeholder-size);
-      }
-      &.flex-110 {
-        flex: 1 1 0;
-      }
+    .placeholder {
+      flex: 0 1 var(--placeholder-size);
     }
   }
 

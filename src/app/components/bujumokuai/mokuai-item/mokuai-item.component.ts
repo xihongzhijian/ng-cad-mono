@@ -31,7 +31,7 @@ import {emptyXuanxiangItem, getXuanxiangItem, getXuanxiangTable} from "@componen
 import {选项} from "@components/lurushuju/xinghao-data";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf, timeout} from "@lucilor/utils";
+import {keysOf, MaybePromise, ObjectOf, timeout} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -94,6 +94,7 @@ export class MokuaiItemComponent {
 
   id = input.required<number>();
   bancaiListData = input.required<BancaiListData | null>();
+  bancaiListDataRefresh = input.required<() => MaybePromise<BancaiListData | null>>();
   closable = input(false, {transform: booleanAttribute});
   closeOut = output<MokuaiItemCloseEvent>({alias: "close"});
 
@@ -199,6 +200,7 @@ export class MokuaiItemComponent {
           houduList: val.可选厚度
         },
         bancaiList,
+        bancaiListRefrersh: async () => (await this.bancaiListDataRefresh()())?.bancais || [],
         key,
         extraInputInfos,
         noTitle: true

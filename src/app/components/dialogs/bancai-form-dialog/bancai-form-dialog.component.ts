@@ -3,6 +3,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
 import {BancaiFormData} from "@components/bancai-form/bancai-form.component";
 import {environment} from "@env";
+import {MaybePromise} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -71,6 +72,7 @@ export class BancaiFormDialogComponent {
 export interface BancaiFormInput {
   data: BancaiFormData;
   bancaiList: BancaiList[];
+  bancaiListRefrersh: () => MaybePromise<BancaiList[]>;
   key: string;
   extraInputInfos?: InputInfo[][];
   noTitle?: boolean;

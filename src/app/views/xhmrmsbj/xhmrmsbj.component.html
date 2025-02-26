@@ -6,12 +6,12 @@
           {{ name }}
         </button>
       }
-      <mat-divider vertical class="large placeholder"></mat-divider>
+      <div class="placeholder"></div>
     }
     @if (!isFromOrder()) {
       <button mat-flat-button (click)="openMokuaikuInNew()">模块库</button>
       <button mat-flat-button (click)="openPeijiankuInNew()">配件库</button>
-      <mat-divider vertical class="large placeholder"></mat-divider>
+      <div class="placeholder"></div>
     }
     @if (isFromOrder()) {
       <button mat-flat-button (click)="openMokuais()">查看数据</button>
@@ -35,7 +35,7 @@
           @if (canEditMokuaidaxiao()) {
             <button mat-flat-button (click)="editMokuaidaxiao()">模块大小</button>
           }
-          <mat-divider vertical class="large placeholder"></mat-divider>
+          <div class="placeholder"></div>
         }
       }
       <button mat-flat-button (click)="submit()">保存</button>
@@ -328,6 +328,7 @@
       #mokuaiItem
       [id]="openedMokuai.mokuai.id"
       [bancaiListData]="openedMokuai.bancaiListData"
+      [bancaiListDataRefresh]="bancaiListDataRefresh()"
       closable
       (close)="closeMokuai($event)"
     ></app-mokuai-item>

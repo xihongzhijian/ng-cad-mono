@@ -23,7 +23,7 @@
   @for (btn of data.toolbarBtns; track $index) {
     <button mat-flat-button (click)="btn.onClick?.(this)">{{ btn.name }}</button>
   }
-  <mat-divider vertical class="placeholder large"></mat-divider>
+  <div class="placeholder"></div>
   <div class="spinner-container">
     <button mat-flat-button (click)="submit()">确定</button>
     <app-spinner [id]="loaderIdSubmit" [inline]="true"></app-spinner>

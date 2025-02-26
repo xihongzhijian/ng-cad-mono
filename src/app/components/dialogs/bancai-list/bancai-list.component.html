@@ -7,10 +7,11 @@
       {{ type }}
     </button>
   }
-  <div class="flex-110"></div>
+  <div class="placeholder"></div>
   @if (data.multi) {
     <button mat-flat-button (click)="selectAll()">全选当前数据</button>
   }
+  <button mat-flat-button (click)="refresh()">刷新</button>
 </div>
 <ng-scrollbar>
   <div class="bancai-list items items-per-row">

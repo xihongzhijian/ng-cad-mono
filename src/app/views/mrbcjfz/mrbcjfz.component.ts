@@ -367,6 +367,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
           houduList: info.可选厚度
         },
         bancaiList: this.bancaiList,
+        bancaiListRefrersh: async () => (await this.bancaiListManager.fetch(true))?.bancais || [],
         key,
         extraInputInfos: [[this.xinghao.get板材分组别名InputInfo(key, true)]]
       }

@@ -1,10 +1,10 @@
 <div class="toolbar">
   <div class="title">优化单号：{{ code() }}</div>
-  <mat-divider vertical class="large"></mat-divider>
+  <div class="placeholder"></div>
   <button mat-flat-button (click)="calc()">计算</button>
   <button mat-flat-button (click)="getOptimizeDataCode()">请求数据</button>
   <button mat-flat-button (click)="selectAllBoms()">全选</button>
-  <mat-divider vertical class="large"></mat-divider>
+  <div class="placeholder"></div>
   <button mat-flat-button (click)="setOptimizeData()">按选中加工料优化排产</button>
   <button mat-flat-button (click)="youhuaInfoHidden.set(!youhuaInfoHidden())">{{ youhuaInfoHidden() ? "隐藏" : "显示" }}生产工单</button>
   <!-- <button mat-flat-button  (click)="unsetOptimizeData()">取消优化</button> -->

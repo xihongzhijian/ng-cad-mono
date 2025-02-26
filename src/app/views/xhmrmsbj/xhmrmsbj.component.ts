@@ -1740,6 +1740,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   openedMokuai = signal<{mokuai: ZixuanpeijianMokuaiItem; bancaiListData: BancaiListData} | null>(null);
   bancaiListDataManager = new FetchManager(null, () => this.http.getBancaiList());
+  bancaiListDataRefresh = signal(() => this.http.getBancaiList());
   async openMokuai(mokuai: ZixuanpeijianMokuaiItem) {
     const bancaiListData = await this.bancaiListDataManager.fetch();
     if (!bancaiListData) {

@@ -3,6 +3,7 @@ import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {joinOptions} from "@app/app.common";
 import {openBancaiListDialog} from "@components/dialogs/bancai-list/bancai-list.component";
+import {MaybePromise} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
 import {validateForm} from "@modules/message/components/message/message.utils";
@@ -19,6 +20,7 @@ export class BancaiFormComponent {
   private dialog = inject(MatDialog);
 
   bancaiListIn = input.required<BancaiList[]>({alias: "bancaiList"});
+  bancaiListRefresh = input.required<() => MaybePromise<BancaiList[]>>();
   extraInputInfos = input<InputInfo[][]>();
   key = input.required<string>();
   data = model<BancaiFormData>({bancai: "", cailiao: "", houdu: ""});
@@ -58,6 +60,7 @@ export class BancaiFormComponent {
   inputInfos = computed(() => {
     const data = {...this.data()};
     const bancaiList = this.bancaiList();
+    const bancaiListRefresh = this.bancaiListRefresh();
     const checkedItem = this.checkedItem();
     const onChange = () => {
       this.data.set(data);
@@ -76,7 +79,7 @@ export class BancaiFormComponent {
               isDefault: true,
               onClick: async () => {
                 const result = await openBancaiListDialog(this.dialog, {
-                  data: {list: bancaiList, checkedItems: checkedItem ? [checkedItem] : undefined}
+                  data: {list: this.bancaiList(), listRefresh: bancaiListRefresh, checkedItems: checkedItem ? [checkedItem] : undefined}
                 });
                 if (result) {
                   data.bancai = result[0]?.mingzi;
@@ -120,7 +123,9 @@ export class BancaiFormComponent {
                 if (bancaiListNames.includes("全部")) {
                   checkedItems.push({mingzi: "全部", cailiaoList: [], guigeList: [], houduList: []});
                 }
-                const result = await openBancaiListDialog(this.dialog, {data: {list: bancaiList, checkedItems, multi: true}});
+                const result = await openBancaiListDialog(this.dialog, {
+                  data: {list: bancaiList, listRefresh: bancaiListRefresh, checkedItems, multi: true}
+                });
                 if (result) {
                   data.bancaiList = result.map((v) => v.mingzi);
                   this.data.set(data);

@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {ActivatedRoute, Router} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
@@ -19,7 +18,7 @@ import {calc, getInputDataBoms, getNum} from "./lvxingcaiyouhua.utils";
 
 @Component({
   selector: "app-lvxingcaiyouhua",
-  imports: [InputComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule, PrintTableComponent],
+  imports: [InputComponent, MatButtonModule, MatIconModule, NgScrollbarModule, PrintTableComponent],
   templateUrl: "./lvxingcaiyouhua.component.html",
   styleUrl: "./lvxingcaiyouhua.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
