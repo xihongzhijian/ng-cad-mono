@@ -1,15 +1,5 @@
 :host {
-  display: flex;
   flex: 1 1 0;
-}
-
-.rect-outer {
-  .toolbar {
-    --mdc-text-button-label-text-size: var(--title-size);
-    button {
-      min-width: 40px;
-    }
-  }
 }
 
 .rects {
@@ -33,5 +23,12 @@
         writing-mode: vertical-lr;
       }
     }
+  }
+}
+
+.rect-buju {
+  --mdc-text-button-label-text-size: var(--title-size);
+  button {
+    min-width: 40px;
   }
 }

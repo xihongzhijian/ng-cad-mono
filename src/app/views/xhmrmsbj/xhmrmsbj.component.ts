@@ -60,7 +60,7 @@ import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.com
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
 import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
-import {VarNameItem} from "@components/var-names/var-names.types";
+import {VarNameItem, VarNameItemNameItem} from "@components/var-names/var-names.types";
 import {XhmrmsbjSbjbComponent} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.component";
 import {getElementVisiblePercentage, keysOf, ObjectOf, Point, queryString, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
@@ -1844,12 +1844,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const activeKey = this.activeMenshanKey();
     const varNames = await this.bjmkStatus.varNamesManager.fetch();
-    const varNameItem = varNames.find((v) => v.门扇位置 === activeKey) || {};
-    if (!Array.isArray(varNameItem.nameGroups)) {
-      varNameItem.nameGroups = [];
-    }
+    const varNameItem = cloneDeep(varNames.find((v) => v.门扇位置 === activeKey) || {});
+    const nameGroups: VarNameItemNameItem[] = [];
     const menshanbujuInfos = this.data()?.menshanbujuInfos || {};
     for (const key of keysOf(menshanbujuInfos)) {
+      const nameGroups2: typeof nameGroups = [];
       for (const node of menshanbujuInfos[key]?.模块节点 || []) {
         const varNamesSet = new Set<string>();
         for (const mokuai of node.可选模块) {
@@ -1861,10 +1860,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           }
         }
         if (varNamesSet.size > 0) {
-          varNameItem.nameGroups.push({groupName: `${key}${node.层名字}可选模块`, varNames: Array.from(varNamesSet)});
+          nameGroups2.push({groupName: `${key}${node.层名字}可选模块`, varNames: Array.from(varNamesSet)});
         }
       }
+      nameGroups2.sort((a, b) => a.groupName.localeCompare(b.groupName));
+      nameGroups.push(...nameGroups2);
     }
+    varNameItem.nameGroups = [...(varNameItem.nameGroups || []), ...nameGroups];
     const dxpz = 选中布局数据.模块大小配置 || getEmpty模块大小配置();
     const nodes = msbjInfo.模块节点 || [];
     justifyMkdxpz(dxpz, nodes.map((v) => v.层名字) || []);

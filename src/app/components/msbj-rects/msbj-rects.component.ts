@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   ElementRef,
+  HostBinding,
   HostListener,
   input,
   model,
@@ -35,6 +36,8 @@ export class MsbjRectsComponent {
   generateRectsStart = output();
   generateRectsEnd = output<GenerateRectsEndEvent>();
   activeRectInfo = model<MsbjRectInfo | null>(null);
+
+  @HostBinding("class") class = "ng-page";
 
   rgbMin = 200;
   rgbMax = 245;
@@ -125,6 +128,7 @@ export class MsbjRectsComponent {
     });
   });
   rectOuter = viewChild<ElementRef<HTMLDivElement>>("rectOuter");
+  rectOuterPadding = signal(getTrbl(0));
   rectOuterStyle = signal<Properties>({});
   async generateRects(opts?: GenerateRectsOpts) {
     this.generateRectsStart.emit();
@@ -208,6 +212,7 @@ export class MsbjRectsComponent {
       for (let j = 0; j < 4; j++) {
         padding[j] = Math.max(0, padding[j]);
       }
+      this.rectOuterPadding.set(padding);
       this.rectOuterStyle.update((v) => ({...v, padding: `${padding[0]}px ${padding[1]}px ${padding[2]}px ${padding[3]}px`}));
       await timeout(0);
       this.rectOuterStyle.update((v) => ({...v, opacity: "1"}));
@@ -223,6 +228,11 @@ export class MsbjRectsComponent {
       return [];
     }
     return this.rectInfosRelative().filter((v) => v.raw.isBuju);
+  });
+  bujuRectStyle = computed(() => {
+    const padding = this.rectOuterPadding();
+    const style: Properties = {marginTop: `-${padding[2]}px`};
+    return style;
   });
 
   onRectClick(info: MsbjRectInfo) {

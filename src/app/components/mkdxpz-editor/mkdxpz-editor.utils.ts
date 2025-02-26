@@ -13,3 +13,5 @@ export const getNodesTable = (nodes: XhmrmsbjInfoMokuaiNode[]) => {
   };
   return info;
 };
+
+export const getVarNameGroupName = (menshanKey: string, nodeName: string) => `${menshanKey}${nodeName}可选模块`;

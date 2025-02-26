@@ -8,8 +8,12 @@ export interface VarNameItemRaw {
 }
 
 export type VarNames = VarNameItem[];
+export interface VarNameItemNameItem {
+  groupName: string;
+  varNames: string[];
+}
 export interface VarNameItem {
-  nameGroups?: {groupName: string; varNames: string[]}[];
+  nameGroups?: VarNameItemNameItem[];
   width?: number;
   门扇位置?: string;
 }

@@ -19,6 +19,7 @@ import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa
 import {getShuruItem, getShuruTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {输入} from "@components/lurushuju/xinghao-data";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
+import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
 import {VarNamesComponent} from "@components/var-names/var-names.component";
 import {VarNameItem} from "@components/var-names/var-names.types";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
@@ -29,7 +30,7 @@ import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/tabl
 import {justifyMkdxpzSlgs} from "@views/msbj/msbj.utils";
 import {cloneDeep} from "lodash";
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "./mkdxpz-editor.types";
-import {getNodesTable} from "./mkdxpz-editor.utils";
+import {getNodesTable, getVarNameGroupName} from "./mkdxpz-editor.utils";
 
 @Component({
   selector: "app-mkdxpz-editor",
@@ -148,6 +149,15 @@ export class MkdxpzEditorComponent {
           await this.updateShuru();
         }
         break;
+    }
+  }
+
+  varNamesComponent = viewChild(VarNamesComponent);
+  onActiveRectInfoChange(info: MsbjRectInfo | null) {
+    const varNamesComponent = this.varNamesComponent();
+    const menshanKey = this.varNameItem().门扇位置;
+    if (menshanKey && varNamesComponent && info) {
+      varNamesComponent.scrollToGroup(getVarNameGroupName(menshanKey, info.name));
     }
   }
 

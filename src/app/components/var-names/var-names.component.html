@@ -12,7 +12,7 @@
         @if (i > 0) {
           <mat-divider></mat-divider>
         }
-        <div class="var-names-group flex-column">
+        <div class="var-names-group flex-column" [class.active]="activeNameGroupIndexs().includes(i)">
           <div class="name">{{ group.groupName }}</div>
           <div class="var-names toolbar">
             @for (name of group.varNames; track $index) {

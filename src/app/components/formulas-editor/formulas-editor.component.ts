@@ -126,7 +126,7 @@ export class FormulasEditorComponent {
           if (result.data) {
             this.parseFormulaList(result.data);
           }
-          this.submitFormulas();
+          this.submitFormulas(this.formulaList(), true);
         }
       }
     };

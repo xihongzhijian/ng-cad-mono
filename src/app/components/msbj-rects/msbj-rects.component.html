@@ -14,11 +14,11 @@
       </div>
     }
   </div>
-  <div class="toolbar hidden-if-empty">
-    @for (info of bujuRectInfos(); track $index) {
-      <button mat-button [class.accent]="info.raw.vid === activeRectInfo()?.raw?.vid" (click)="onRectClick(info)">
-        {{ info.name }}
-      </button>
-    }
-  </div>
+</div>
+<div class="rect-buju toolbar center hidden-if-empty" [style]="bujuRectStyle()">
+  @for (info of bujuRectInfos(); track $index) {
+    <button mat-button [class.accent]="info.raw.vid === activeRectInfo()?.raw?.vid" (click)="onRectClick(info)">
+      {{ info.name }}
+    </button>
+  }
 </div>
