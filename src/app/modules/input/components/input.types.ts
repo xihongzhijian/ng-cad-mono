@@ -69,9 +69,9 @@ export interface InputInfoNumber<T = any> extends InputInfoBase<T> {
 
 export type KeyValidatorFn = (control: AbstractControl, objValue: string) => ValidationErrors | null;
 export type ValueValidatorFn = (control: AbstractControl, objKey: string) => ValidationErrors | null;
-export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
+export interface InputInfoObject<T = any, K = string, R = any> extends InputInfoBase<T> {
   type: "object";
-  value?: Value<ObjectOf<any>>;
+  value?: Value<ObjectOf<R>>;
   options?: Value<InputInfoOptions<K>>;
   optionValueType?: "string" | "array";
   optionsDialog?: OptionsDialog;
@@ -85,7 +85,7 @@ export interface InputInfoObject<T = any, K = string> extends InputInfoBase<T> {
   parseString?: boolean;
   requiredKeys?: string[];
   optionType?: "选项" | "模块选项";
-  onChange?: <R>(val: ObjectOf<R>, info: this) => void;
+  onChange?: (val: ObjectOf<R>, info: this) => void;
 }
 
 export interface InputInfoArray<T = any> extends InputInfoBase<T> {
@@ -219,6 +219,7 @@ export interface OptionsDialog {
   optionsUseObj?: boolean;
   optionField?: string;
   defaultValue?: CadOptionsInput["defaultValue"];
+  optionOptions?: CadOptionsInput["optionOptions"];
   openInNewTab?: CadOptionsInput["openInNewTab"];
   useLocalOptions?: CadOptionsInput["useLocalOptions"];
   nameField?: CadOptionsInput["nameField"];

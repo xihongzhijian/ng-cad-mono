@@ -4,7 +4,6 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {Calc} from "@app/utils/calc";
 import {ResultWithErrors} from "@app/utils/error-message";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
@@ -141,13 +140,13 @@ export class XhmrmsbjXinghaoConfigComponent {
   }
 
   xuanxiangs = computed(() => this.data()?.xinghaoConfig.选项 || []);
-  xuanxiangTable = computed(() => getXuanxiangTable(this.xuanxiangs(), {title: "型号选项"}, {use条件: true}));
+  xuanxiangTable = computed(() => getXuanxiangTable(this.xuanxiangs(), {title: "型号选项"}));
   async onXuanxiangToolbar(event: ToolbarButtonEvent) {
     const data = this.data();
     switch (event.button.event) {
       case "添加": {
         const options = await this.bjmk.xinghaoOptionsManager.fetch();
-        const item = await getXuanxiangItem(this.message, options, this.xuanxiangs(), undefined, {use条件: true});
+        const item = await getXuanxiangItem(this.message, options, this.xuanxiangs(), undefined, {useOptionOptions: true});
         if (item && data) {
           const config = data.xinghaoConfig;
           config.选项 = [...(config.选项 || []), item];
@@ -162,7 +161,7 @@ export class XhmrmsbjXinghaoConfigComponent {
       case "编辑":
         {
           const options = await this.bjmk.xinghaoOptionsManager.fetch();
-          const item = await getXuanxiangItem(this.message, options, this.xuanxiangs(), event.item, {use条件: true});
+          const item = await getXuanxiangItem(this.message, options, this.xuanxiangs(), event.item, {useOptionOptions: true});
           if (item && data) {
             const config = data.xinghaoConfig;
             config.选项 = config.选项.map((v, i) => (i === event.rowIdx ? item : v));
@@ -442,15 +441,6 @@ export class XhmrmsbjXinghaoConfigComponent {
       return true;
     }
     const result = new ResultWithErrors(null);
-    for (const item of xinghaoConfig.选项) {
-      if (item.条件) {
-        const expReuslt = Calc.validateExpression(item.条件);
-        if (!expReuslt.valid) {
-          result.addErrorStr("型号选项条件有语法错误");
-          break;
-        }
-      }
-    }
     return await result.check(this.message);
   }
 }

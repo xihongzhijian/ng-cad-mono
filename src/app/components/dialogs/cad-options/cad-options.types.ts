@@ -2,6 +2,7 @@ import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
+import {InputInfoObject, InputInfoPart} from "@modules/input/components/input.types";
 
 export interface CadOptionsInput {
   data?: CadData;
@@ -15,6 +16,7 @@ export interface CadOptionsInput {
   nameField?: string;
   options?: GetOptionsResultItem[];
   defaultValue?: {value?: string; required?: boolean};
+  optionOptions?: {value?: ObjectOf<ObjectOf<string> | undefined>; info?: InputInfoPart<InputInfoObject<string, string, string>>};
   openInNewTab?: boolean;
   useLocalOptions?: boolean;
   info?: ObjectOf<any>;
@@ -25,6 +27,7 @@ export interface CadOptionsInput {
 export interface CadOptionsOutput {
   options: TableDataBase[];
   defaultValue?: string;
+  optionOptions?: ObjectOf<ObjectOf<string> | undefined>;
 }
 
 export interface CadOptionsPageDataItem extends GetOptionsResultItem {

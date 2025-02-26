@@ -867,7 +867,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       return;
     }
     const data = this.model.data;
-    const {optionField, optionsUseId, optionsUseObj, defaultValue, onChange, useLocalOptions} = optionsDialog;
+    const {optionField, optionsUseId, optionsUseObj, onChange, useLocalOptions} = optionsDialog;
     if (optionsDialog.optionKey) {
       optionKey = optionsDialog.optionKey;
     }
@@ -931,16 +931,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       });
     }
     const dialogData: CadOptionsInput = {
+      ...optionsDialog,
       data,
       name: optionKey || "",
       multi: multiple,
-      defaultValue,
       fields,
-      options,
-      openInNewTab: optionsDialog.openInNewTab,
-      nameField: optionsDialog.nameField,
-      info: optionsDialog.info,
-      noImage: optionsDialog.noImage
+      options
     };
     if (optionsUseId) {
       dialogData.checkedVids = checked.map((v) => Number(v));

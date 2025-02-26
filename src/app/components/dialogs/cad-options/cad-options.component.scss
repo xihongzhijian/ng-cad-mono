@@ -8,15 +8,13 @@
 }
 
 .options {
-  --item-image-height: 150px;
-
   .option {
     cursor: pointer;
     transition: 0.3s;
     width: 250px;
     margin: 5px;
     --border: 1px solid black;
-    padding-right: 5px;
+    padding: 3px;
     &.checked {
       background-color: lightgray;
     }
@@ -26,6 +24,14 @@
         width: auto;
         max-width: 100%;
       }
+    }
+
+    app-image {
+      flex: 0 0 150px;
+    }
+
+    app-input {
+      width: 100%;
     }
   }
 }

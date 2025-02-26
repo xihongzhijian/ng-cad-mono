@@ -1,5 +1,4 @@
 import {Validators} from "@angular/forms";
-import {Calc} from "@app/utils/calc";
 import {getArrayString} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
@@ -11,14 +10,15 @@ import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/compon
 import {convertOptions, getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
+import {keyBy, mapValues} from "lodash";
 import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} from "./lrsj-zuofa.types";
 
 export const getXuanxiangTable = (
   data: XuanxiangTableData[],
   others?: Partial<TableRenderInfo<XuanxiangTableData>>,
-  opts?: {use输出变量?: boolean; use条件?: boolean}
+  opts?: {use输出变量?: boolean}
 ): TableRenderInfo<XuanxiangTableData> => {
-  const {use输出变量, use条件} = opts ?? {};
+  const {use输出变量} = opts ?? {};
   return {
     title: "选项数据",
     inlineTitle: true,
@@ -33,7 +33,6 @@ export const getXuanxiangTable = (
         }
       },
       {type: "boolean", field: "输出变量", style: {flex: "1 1 80px"}, hidden: !use输出变量},
-      {type: "string", field: "条件", style: {flex: "1 1 200px"}, hidden: !use条件},
       {
         type: "button",
         field: "操作",
@@ -51,11 +50,11 @@ export const getXuanxiangItem = async (
   options: OptionsAll,
   list: 选项[],
   data0?: 选项,
-  opts?: {use输出变量?: boolean; use条件?: boolean}
+  opts?: {use输出变量?: boolean; useOptionOptions?: boolean}
 ) => {
   const data: 选项 = {名字: "", 可选项: [], ...data0};
   const names = list.map((v) => v.名字);
-  const {use输出变量, use条件} = opts ?? {};
+  const {use输出变量, useOptionOptions} = opts ?? {};
   const form: InputInfo<typeof data>[] = [
     {
       type: "select",
@@ -87,25 +86,24 @@ export const getXuanxiangItem = async (
         optionKey: data.名字,
         openInNewTab: true,
         defaultValue: {value: data.可选项.find((v) => v.morenzhi)?.mingzi, required: true},
+        optionOptions: useOptionOptions
+          ? {value: mapValues(keyBy(data.可选项, "vid"), "options"), info: {optionType: "选项", optionMultiple: true, optionsDialog: {}}}
+          : undefined,
         onChange: (val) => {
           data.可选项 = val.options.map((v) => {
             const item: 选项["可选项"][number] = {...v};
             if (item.mingzi === val.defaultValue) {
               item.morenzhi = true;
             }
+            const optionOption = val.optionOptions?.[item.vid];
+            if (optionOption) {
+              item.options = optionOption;
+            } else {
+              delete item.options;
+            }
             return item;
           });
         }
-      }
-    },
-    {
-      type: "string",
-      label: "条件",
-      model: {data, key: "条件"},
-      hidden: !use条件,
-      validators: (control) => {
-        const result = Calc.validateExpression(control.value);
-        return result.valid ? null : {语法错误: true};
       }
     },
     {type: "boolean", label: "输出变量", model: {data, key: "输出变量"}, hidden: !use输出变量}

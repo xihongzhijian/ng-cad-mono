@@ -168,13 +168,13 @@ export interface 可选项 {
   vid: number;
   mingzi: string;
   morenzhi?: boolean;
+  options?: ObjectOf<string>;
 }
 
 export interface 选项 {
   名字: string;
   可选项: 可选项[];
   输出变量?: boolean;
-  条件?: string;
 }
 
 export interface 输入 {

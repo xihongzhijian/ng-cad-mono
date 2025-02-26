@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   forwardRef,
   HostBinding,
   inject,
@@ -17,15 +18,15 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {filePathUrl} from "@app/app.common";
 import {FetchManager} from "@app/utils/fetch-manager";
-import {queryString, timeout} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, queryString, timeout} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsParamsSingle, GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 import {DataAndCount} from "@modules/http/services/http.service.types";
-import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoObject} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
-import {cloneDeep, debounce} from "lodash";
+import {cloneDeep, debounce, isEmpty} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
 import {InputComponent} from "../../../modules/input/components/input.component";
@@ -81,6 +82,55 @@ export class CadOptionsComponent implements AfterViewInit {
     await this.getData(1);
   }
 
+  optionOptionsCache = new Map<string, ObjectOf<string>>();
+  optionOptions = signal<ObjectOf<string>[]>([]);
+  optionOptionsEff = effect(() => {
+    if (!this.data.optionOptions) {
+      return;
+    }
+    const {value} = this.data.optionOptions || {};
+    const arr: ReturnType<typeof this.optionOptions> = [];
+    for (const [i, item] of this.pageData().entries()) {
+      const key = String(item.vid);
+      const cacheValue = this.optionOptionsCache.get(key);
+      if (cacheValue) {
+        arr[i] = cacheValue;
+      } else if (value?.[key] && isTypeOf(value[key], "object")) {
+        arr[i] = value[key];
+      }
+      if (!isTypeOf(arr[i], "object")) {
+        arr[i] = {};
+      }
+      if (isEmpty(arr[i])) {
+        arr[i][""] = "";
+      }
+    }
+    this.optionOptions.set(arr);
+  });
+  optionOptionsInputInfos = computed(() => {
+    const infos: InputInfoObject<string, string, string>[] = [];
+    if (!this.data.optionOptions) {
+      return infos;
+    }
+    const items = this.pageData();
+    const optionOptions = this.optionOptions();
+    for (const [i, optionOption] of optionOptions.entries()) {
+      const item = items[i];
+      infos.push({
+        type: "object",
+        label: "选项",
+        value: optionOption,
+        onChange: (val) => {
+          this.optionOptionsCache.set(String(item.vid), val);
+          optionOptions[i] = val;
+          this.optionOptions.update((v) => [...v]);
+        },
+        ...this.data.optionOptions.info
+      });
+    }
+    return infos;
+  });
+
   async submit() {
     const result: CadOptionsOutput = {
       options: []
@@ -94,9 +144,21 @@ export class CadOptionsComponent implements AfterViewInit {
       result.defaultValue = value;
     }
     result.options = [];
-    for (const item of this.pageData()) {
+    for (const [i, item] of this.pageData().entries()) {
       if (item.checked) {
         result.options.push({vid: item.vid, mingzi: item.name});
+      }
+      if (this.data.optionOptions) {
+        if (!result.optionOptions) {
+          result.optionOptions = {};
+        }
+        const optionOption = this.optionOptions()[i];
+        if (isTypeOf(optionOption, "object")) {
+          delete optionOption[""];
+        }
+        if (!isEmpty(optionOption)) {
+          result.optionOptions[item.vid] = optionOption;
+        }
       }
     }
     if (this.checkedIdsOthers.size > 0) {

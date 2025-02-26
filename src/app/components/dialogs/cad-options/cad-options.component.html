@@ -45,6 +45,9 @@
             <div class="flex-110">{{ item.label || item.name }}</div>
           </div>
         </div>
+        @if (optionOptionsInputInfos()[i]; as info) {
+          <app-input appClickStop [info]="info"></app-input>
+        }
       </div>
     }
   </div>
