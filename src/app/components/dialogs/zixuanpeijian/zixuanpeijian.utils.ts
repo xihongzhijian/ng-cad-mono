@@ -9,7 +9,7 @@ import zixuanpeijianTypesInfo from "@assets/json/zixuanpeijianTypesInfo.json";
 import {MokuaiItem} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
 import {getMokuaiCustomData} from "@components/bujumokuai/mokuai-item/mokuai-item.utils";
 import {CadData, CadMtext, CadZhankai, setLinesLength} from "@lucilor/cad-viewer";
-import {ObjectOf} from "@lucilor/utils";
+import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
@@ -1004,6 +1004,9 @@ export const calcZxpj = async (
 };
 
 export const getNodeVars = (formulas: Formulas, nodeName: string, exclusive = false) => {
+  if (!isTypeOf(formulas, "object")) {
+    formulas = {};
+  }
   const result = exclusive ? {} : {...formulas};
   for (const key of nodeFormulasKeysRaw) {
     const key2 = getNodeFormulasKey(nodeName, key);

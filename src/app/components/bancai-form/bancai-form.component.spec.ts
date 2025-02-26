@@ -18,6 +18,7 @@ describe("BancaiFormComponent", () => {
     const ref = fixture.componentRef;
     ref.setInput("key", "");
     ref.setInput("bancaiList", []);
+    ref.setInput("bancaiListRefresh", () => []);
     fixture.detectChanges();
   });
 

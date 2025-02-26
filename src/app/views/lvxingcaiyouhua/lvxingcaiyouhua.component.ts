@@ -85,7 +85,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     if (pt && this.calcResult()) {
       input.不上设备的型材BOM = [];
       for (const table of pt.tables()) {
-        const selectedIds = table.getSelectedRows().map((v) => v.BOM唯一码);
+        const selectedIds = table.getSelectedItems().map((v) => v.BOM唯一码);
         for (const item of table.info.data) {
           if (!selectedIds.includes(item.BOM唯一码)) {
             input.不上设备的型材BOM.push({BOM唯一码: item.BOM唯一码, 要求数量: item.数量});
@@ -201,7 +201,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     await timeout(0);
     const bomIds = getInputDataBoms(inputData).map((v) => v.BOM唯一码);
     for (const table of pt.tables()) {
-      table.setSelectedRows(table.info.data.filter((v) => bomIds.includes(v.BOM唯一码)));
+      table.setSelectedItems(table.info.data.filter((v) => bomIds.includes(v.BOM唯一码)));
     }
   }
   async unsetOptimizeData() {

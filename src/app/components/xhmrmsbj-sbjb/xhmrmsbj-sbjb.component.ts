@@ -662,7 +662,7 @@ export class XhmrmsbjSbjbComponent {
     if (!table || !item2) {
       return;
     }
-    const selected = table.rowSelection.selected;
+    const selected = table.getSelectedItems().map((v) => v.originalIndex);
     if (selected.length < 1) {
       await this.message.error("请先选择要删除的数据");
       return;

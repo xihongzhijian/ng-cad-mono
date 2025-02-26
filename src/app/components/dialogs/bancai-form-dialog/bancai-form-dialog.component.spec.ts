@@ -8,6 +8,7 @@ import {BancaiFormDialogComponent, BancaiFormInput} from "./bancai-form-dialog.c
 const data: BancaiFormInput = {
   data: {bancai: "", cailiao: "", houdu: ""},
   bancaiList: bancaifenzuIndexData.bancaiList,
+  bancaiListRefrersh: () => bancaifenzuIndexData.bancaiList,
   key: "a"
 };
 

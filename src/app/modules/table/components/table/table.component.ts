@@ -95,7 +95,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   @Input() info: TableRenderInfo<T> = {data: [], columns: []};
   @Output() rowButtonClick = new EventEmitter<RowButtonEvent<T>>();
-  @Output() rowSelectionChange = new EventEmitter<RowSelectionChange>();
+  @Output() rowSelectionChange = new EventEmitter<RowSelectionChange<T>>();
   @Output() cellFocus = new EventEmitter<CellEvent<T>>();
   @Output() cellBlur = new EventEmitter<CellEvent<T>>();
   @Output() cellChange = new EventEmitter<CellChangeEvent<T>>();
@@ -103,7 +103,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   @Output() toolbarButtonClick = new EventEmitter<ToolbarButtonEvent>();
   @Output() filterAfter = new EventEmitter<FilterAfterEvent<T>>();
 
-  rowSelection: SelectionModel<number>;
+  protected _rowSelection: SelectionModel<T>;
   columnFields: (keyof T | "select")[] = [];
   @ViewChild(MatTable) table?: MatTable<T>;
   @ViewChild(MatSort) sort?: MatSort;
@@ -185,17 +185,17 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   ) {
     this.editing = {colIdx: -1, rowIdx: -1, value: ""};
     this.infoDiffer = this.differs.find(this.info).create();
-    this.rowSelection = this._initRowSelection();
+    this._rowSelection = this._initRowSelection();
   }
   private _rowSelectionSubscription?: Subscription;
   private _initRowSelection() {
     this._rowSelectionSubscription?.unsubscribe();
     const rowSelection = this.info.rowSelection;
-    const model = new SelectionModel<number>(rowSelection?.mode === "multiple", []);
+    const model = new SelectionModel<T>(rowSelection?.mode === "multiple", []);
     this._rowSelectionSubscription = model.changed.subscribe(() => {
-      this.rowSelectionChange.emit({indexs: model.selected});
+      this.rowSelectionChange.emit({items: model.selected});
     });
-    this.rowSelection = model;
+    this._rowSelection = model;
     return model;
   }
 
@@ -262,54 +262,46 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   isAllSelected() {
-    const {rowSelection} = this;
+    const {_rowSelection: rowSelection} = this;
     const numSelected = rowSelection.selected.length;
     const numRows = this.dataSource.data.length;
     return numSelected > 0 && numSelected >= numRows;
   }
   isPartiallySelected() {
-    const {rowSelection} = this;
+    const {_rowSelection: rowSelection} = this;
     const numSelected = rowSelection.selected.length;
     const numRows = this.dataSource.data.length;
     return numSelected > 0 && numSelected < numRows;
   }
 
   masterToggle() {
-    const {info, rowSelection} = this;
     if (this.isAllSelected()) {
-      rowSelection.clear();
+      this.setSelectedItems([]);
     } else {
-      info.data.forEach((_, i) => rowSelection.select(i));
+      this.setSelectedItems(this.info.data);
     }
   }
-  toggleRowSelection(rowIdx: number) {
-    this.rowSelection.toggle(rowIdx);
-    this.rowSelectionChange.emit({indexs: this.rowSelection.selected});
+  toggleRowSelection(item: T) {
+    this._rowSelection.toggle(item);
+    this.rowSelectionChange.emit({items: this._rowSelection.selected});
   }
-  getSelectedRows() {
+  getSelectedItems() {
     const rows: T[] = [];
-    for (const index of this.rowSelection.selected) {
-      rows.push(this.info.data[index]);
+    for (const item of this._rowSelection.selected) {
+      rows.push(item);
     }
     return rows;
   }
-  setSelectedRows(rows: T[]) {
-    const indexs: number[] = [];
-    for (const row of rows) {
-      const index = this.info.data.findIndex((v) => v === row);
-      if (index >= 0) {
-        indexs.push(index);
-      }
-    }
-    this.rowSelection.setSelection(...indexs);
+  setSelectedItems(items: T[]) {
+    this._rowSelection.setSelection(...items);
     this.cd.detectChanges();
-    this.rowSelectionChange.emit({indexs: this.rowSelection.selected});
+    this.rowSelectionChange.emit({items: this._rowSelection.selected});
   }
   selectAllRows() {
-    this.setSelectedRows(this.info.data);
+    this.setSelectedItems(this.info.data);
   }
   deselectAllRows() {
-    this.setSelectedRows([]);
+    this.setSelectedItems([]);
   }
 
   async addItem(rowIdx?: number) {
@@ -352,7 +344,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   async removeItem(index?: number) {
-    const {info, rowSelection} = this;
+    const {info, _rowSelection: rowSelection} = this;
     const {onlineMode, isTree, data} = info;
     if (onlineMode) {
       const vids = rowSelection.selected.map((v) => Number((v as any).vid));
@@ -374,13 +366,13 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         data.splice(index, 1);
       } else {
         const toRemove: number[] = [];
-        data.forEach((_, i) => {
-          if (rowSelection.isSelected(i)) {
+        data.forEach((item, i) => {
+          if (rowSelection.isSelected(item)) {
             toRemove.unshift(i);
           }
         });
         toRemove.forEach((v) => data.splice(v, 1));
-        rowSelection.clear();
+        this.setSelectedItems([]);
       }
       this.dataSource.data = data;
       this.updateCellInputInfos();
@@ -447,12 +439,9 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   export() {
-    const selectedIndexs = this.rowSelection.selected;
-    let selectedItems: T[];
-    if (selectedIndexs.length < 1) {
+    let selectedItems = this._rowSelection.selected;
+    if (selectedItems.length < 1) {
       selectedItems = this.info.data;
-    } else {
-      selectedItems = selectedIndexs.map((v) => this.info.data[v]);
     }
     if (typeof this.info.dataTransformer === "function") {
       selectedItems = this.info.dataTransformer("export", selectedItems);
@@ -548,7 +537,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const classes = new Set(["column-type-" + column.type]);
     const {activeRows, rowSelection, getCellClass} = this.info;
     let active = activeRows?.includes(rowIdx);
-    if (!active && rowSelection && !rowSelection.noActive && this.rowSelection.isSelected(rowIdx)) {
+    if (!active && rowSelection && !rowSelection.noActive && item && this._rowSelection.isSelected(item)) {
       active = true;
     }
     if (active) {

@@ -20,7 +20,7 @@
         <button mat-stroked-button (click)="addItem()">添加</button>
       }
       @if (toolbarButtons.remove) {
-        <button mat-stroked-button (click)="removeItem()" [disabled]="rowSelection.selected.length < 1">删除</button>
+        <button mat-stroked-button (click)="removeItem()" [disabled]="_rowSelection.selected.length < 1">删除</button>
       }
       @if (toolbarButtons.export) {
         <button mat-stroked-button (click)="export()">导出</button>
@@ -53,12 +53,12 @@
       <div>
         <ng-container matColumnDef="select" sticky>
           <mat-header-cell *matHeaderCellDef [style]="getCheckBoxStyle()">
-            @if (rowSelection.isMultipleSelection()) {
+            @if (_rowSelection.isMultipleSelection()) {
               <mat-checkbox (change)="masterToggle()" [checked]="isAllSelected()" [indeterminate]="isPartiallySelected()"></mat-checkbox>
             }
           </mat-header-cell>
           <mat-cell *matCellDef="let item; let rowIdx = index" [style]="getCheckBoxStyle()">
-            <mat-checkbox appClickStop (change)="toggleRowSelection(rowIdx)" [checked]="rowSelection.isSelected(rowIdx)"> </mat-checkbox>
+            <mat-checkbox appClickStop (change)="toggleRowSelection(item)" [checked]="_rowSelection.isSelected(item)"> </mat-checkbox>
           </mat-cell>
         </ng-container>
 

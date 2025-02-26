@@ -11,6 +11,7 @@ const bancais: BancaiList[] = [
 ];
 const data: BancaiListInput = {
   list: bancais,
+  listRefresh: () => bancais,
   checkedItems: bancais
 };
 

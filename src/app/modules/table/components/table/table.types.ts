@@ -146,8 +146,8 @@ export interface RowButtonEvent<T> {
   colIdx: number;
   rowIdx: number;
 }
-export interface RowSelectionChange {
-  indexs: number[];
+export interface RowSelectionChange<T> {
+  items: T[];
 }
 
 export interface CellEvent<T> {

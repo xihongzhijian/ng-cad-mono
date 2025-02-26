@@ -75,7 +75,7 @@ export class CadKailiaoConfigComponent {
     const data = this.multiSetData();
     let isChanged = false;
     for (const table of this.lineTableComponents()) {
-      for (const item of table.getSelectedRows()) {
+      for (const item of table.getSelectedItems()) {
         item.zhankaifangshi = data.展开方式;
         item.zidingzhankaichang = data.指定展开长;
         isChanged = true;
