@@ -242,9 +242,10 @@ $info-border: solid 1px black;
 }
 
 .配件模块 {
-  --title-size: 1.2em;
-  --title-padding: 3px 0;
   .title {
+    font-size: 1.2rem;
+    line-height: 1.25rem;
+    padding: 3px 0;
     align-items: center;
   }
 

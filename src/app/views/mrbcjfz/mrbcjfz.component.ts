@@ -35,7 +35,6 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppStatusService} from "@services/app-status.service";
-import {Properties} from "csstype";
 import {isEmpty, uniqueId} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, first, lastValueFrom} from "rxjs";
@@ -420,13 +419,13 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     return errors;
   }
 
-  getBancaiStyle(key: string) {
+  getBancaiClass(key: string) {
     const info = this.xinghao.默认板材[key];
-    const style: Properties = {};
+    const classes = [];
     if (!isEmpty(this.validateBancai(key, info))) {
-      style.color = "red";
+      classes.push("error");
     }
-    return style;
+    return classes;
   }
 
   selectBancaiKey(key: string) {

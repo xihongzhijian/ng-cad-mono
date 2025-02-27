@@ -42,11 +42,11 @@ export class CalcService {
     let err: string = "";
     if (error instanceof CalcSelfReferenceError) {
       err = error.message + "<br><br>";
-      err += `${error.varName}<span style='color:red'> => </span>${error.varValue}`;
+      err += `${error.varName}<span class="error"> => </span>${error.varValue}`;
     } else if (error instanceof CalcCircularReferenceError) {
       err = error.message + "<br><br>";
-      err += `${error.varName1}<span style='color:red'> => </span>${error.varValue1}<br>`;
-      err += `${error.varName2}<span style='color:red'> => </span>${error.varValue2}`;
+      err += `${error.varName1}<span class="error"> => </span>${error.varValue1}<br>`;
+      err += `${error.varName2}<span class="error"> => </span>${error.varValue2}`;
     } else {
       console.error(error);
     }
@@ -73,8 +73,9 @@ export class CalcService {
       return "";
     }
     const {code = "", title = "", prefix = "", suffix = "", title2 = "错误！请检查："} = errorMsg;
-    let str = `${prefix}<h2>${title}${title2}${code}<br/>1、<span style="color:red">公式匹配</span>是否正确；`;
-    str += `2、<span style="color:red">公式书写</span>是否正确！</h2><br/><br/>`;
+    let str = `${prefix}<div class="title small bold">${title}${title2}${code}<br/>1、<span class="accent">公式匹配</span>是否正确；`;
+    str += `2、<span class="accent">公式书写</span>是否正确；`;
+    str += `3、是否关闭了公式输出！</div><br/><br/>`;
     str += suffix;
 
     const vars = result.succeed;
@@ -89,7 +90,7 @@ export class CalcService {
       const calcRes = Calc.replaceVars(value.toString(), vars);
 
       const calcV = key in vars ? vars[key] : "";
-      str += `公式: <span style="color:red"> ${key} = ${value}</span>, 计算结果: <span style="color:red">${calcRes}</span>`;
+      str += `公式: <span class="accent"> ${key} = ${value}</span>, 计算结果: <span class="accent">${calcRes}</span>`;
       if (calcV) {
         str += ` = ${calcV}<br/>`;
       } else {

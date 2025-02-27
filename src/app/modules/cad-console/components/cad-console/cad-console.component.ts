@@ -327,7 +327,7 @@ export class CadConsoleComponent {
           }
         }
         if (!data) {
-          this.message.alert(`找不到命令: <span style="color:red">${name}</span>`);
+          this.message.alert(`找不到命令: <span class="error">${name}</span>`);
           return;
         }
       }

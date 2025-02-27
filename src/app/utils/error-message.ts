@@ -13,11 +13,11 @@ export type ErrorDetail<T extends ErrorDetailText = ErrorDetailText> = T[];
 export interface ErrorDetailText {
   text?: string;
   br?: boolean;
-  color?: string;
+  className?: string;
   hiddenWhenAlert?: boolean;
 }
 
-export const getNameDetail = (name: string, color?: string): ErrorDetail => [{text: "【"}, {text: name, color}, {text: "】"}];
+export const getNameDetail = (name: string, className?: string): ErrorDetail => [{text: "【"}, {text: name, className}, {text: "】"}];
 
 export const getNamesDetail = (names: string[], color?: string): ErrorDetail => names.map((v) => getNameDetail(v, color)).flat();
 
@@ -31,9 +31,9 @@ export const checkDuplicateVars = (
   const duplicateVars = intersection(vars1, vars2);
   if (duplicateVars.length > 0) {
     const detail: ErrorDetail = [
-      ...getNameDetail(name1, "red"),
+      ...getNameDetail(name1, "error"),
       {text: "与"},
-      ...getNameDetail(name2, "red"),
+      ...getNameDetail(name2, "error"),
       {
         text: `重复：${duplicateVars.join("，")}`
       }
@@ -46,13 +46,13 @@ export const checkDuplicateVars = (
 
 export const getErrorDetailStr = (detail: ErrorDetail) => {
   let str = "";
-  for (const {text, br, color, hiddenWhenAlert} of detail) {
+  for (const {text, br, className, hiddenWhenAlert} of detail) {
     if (br) {
       str += "<br>";
     } else if (text && !hiddenWhenAlert) {
-      if (color) {
+      if (className) {
         const span = document.createElement("span");
-        span.style.color = color;
+        span.className = className;
         span.textContent = text;
         str += span.outerHTML;
       } else {

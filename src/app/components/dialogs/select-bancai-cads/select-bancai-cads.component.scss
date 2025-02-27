@@ -13,13 +13,11 @@
 .order {
   display: flex;
   flex-direction: column;
-  --title-size: 1.5em;
 }
 
 .cads {
   display: flex;
   flex-direction: column;
-  --title-size: 1.2em;
 
   .cad-group {
     display: flex;

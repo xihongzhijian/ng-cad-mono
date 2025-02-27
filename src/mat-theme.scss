@@ -55,7 +55,9 @@ html {
   @include mat.dialog-overrides(
     (
       container-max-width: 100vw,
-      container-elevation-shadow: var(--mat-sys-level5)
+      container-elevation-shadow: var(--mat-sys-level5),
+      supporting-text-color: var(--mat-sys-on-surface),
+      supporting-text-size: var(--mat-sys-body-large-size)
     )
   );
 

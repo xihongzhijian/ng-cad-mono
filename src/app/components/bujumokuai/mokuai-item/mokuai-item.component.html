@@ -3,7 +3,7 @@
   <div class="flex-110"></div>
   <button mat-flat-button (click)="openNodeTextReplacer()">效果图公式替换</button>
   <button mat-flat-button (click)="showXhmrmsbjsUsingMokuai()">哪些型号使用这个模块</button>
-  <mat-divider></mat-divider>
+  <div class="placeholder"></div>
   <button mat-flat-button (click)="openDdbq()">测试</button>
   <button mat-flat-button (click)="saveAs()">另存为</button>
   <button mat-flat-button (click)="save()">保存</button>
@@ -92,7 +92,7 @@
       }
     </div>
     <mat-divider vertical></mat-divider>
-    <div class="cads flex-column">
+    <div class="cads flex-column flex-110">
       <div class="toolbar">
         <div class="title">模块的所有配件CAD</div>
         <button mat-flat-button (click)="selectCads()">选择CAD</button>
@@ -113,7 +113,6 @@
         @for (cad of cads(); track i; let i = $index) {
           <app-cad-item
             cdkDrag
-            class="item"
             [cad]="cad"
             [collection]="collection"
             [buttons]="cadButtons()"

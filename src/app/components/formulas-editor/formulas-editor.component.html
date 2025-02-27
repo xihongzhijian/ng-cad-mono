@@ -1,3 +1,10 @@
+@if (closable()) {
+  <div class="toolbar right">
+    <button mat-flat-button (click)="submit()">确定</button>
+    <button mat-flat-button (click)="cancel()">取消</button>
+  </div>
+}
+
 @if (compact()) {
   @if (noScroll()) {
     <ng-container [ngTemplateOutlet]="compactContent"></ng-container>
@@ -91,24 +98,24 @@
 </ng-template>
 
 @if (testResult(); as testResult) {
-  <div #testResultEl style="display: none">
-    <div style="font-size: 18px; overflow: hidden">
-      <div style="margin-bottom: 15px">
-        <div style="color: darkturquoise; margin-bottom: 10px">成功结果</div>
-        <div class="add-empty-msg">
-          @for (item of testResult.succeed | keyvalue: returnZero; track $index) {
-            <div style="margin-bottom: 5px">{{ item.key }} = {{ item.value }}</div>
-          }
-        </div>
+  <app-floating-dialog [maximized]="true" noTitle>
+    <div class="toolbar">
+      <div class="title">计算结果</div>
+      <button mat-flat-button (click)="closeTestResult()">关闭</button>
+    </div>
+    <div class="test-result item">
+      <div class="title text success">成功结果</div>
+      <div class="item add-empty-msg">
+        @for (item of testResult.succeed | keyvalue: returnZero; track $index) {
+          <div class="text">{{ item.key }} = {{ item.value }}</div>
+        }
       </div>
-      <div>
-        <div style="color: red; margin-bottom: 10px">失败结果</div>
-        <div class="add-empty-msg">
-          @for (item of testResult.error | keyvalue: returnZero; track $index) {
-            <div style="margin-bottom: 5px">{{ item.key }} = {{ item.value }}</div>
-          }
-        </div>
+      <div class="title text error">失败结果</div>
+      <div class="item add-empty-msg">
+        @for (item of testResult.error | keyvalue: returnZero; track $index) {
+          <div class="text">{{ item.key }} = {{ item.value }}</div>
+        }
       </div>
     </div>
-  </div>
+  </app-floating-dialog>
 }

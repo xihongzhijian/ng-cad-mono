@@ -86,7 +86,7 @@ export class MessageService {
   async error(message: string | MessageDataParams<AlertMessageData>, others: MessageDataParams2<AlertMessageData> = {}) {
     const data = this._getData(message, "alert");
     if (!data.title) {
-      data.title = `<span style="color:red">错误</span>`;
+      data.title = `<span class="error">错误</span>`;
     }
     return await this.open({data, width: "80vw", ...others});
   }

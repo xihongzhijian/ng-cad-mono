@@ -96,10 +96,6 @@
   }
 }
 
-:host-context(.mat-tab-label) {
-  color: red;
-}
-
 :host ::ng-deep {
   .mat-mdc-tab {
     min-width: unset !important;

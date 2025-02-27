@@ -1,5 +1,4 @@
 .floating-dialog-container {
-  --title-size: 1.2em;
   --handle-size: 5px;
   --z-index-base: calc(var(--top-z-index) - 3 + var(--offset-z-index, 0));
   position: fixed;

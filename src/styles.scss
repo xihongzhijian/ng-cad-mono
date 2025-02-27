@@ -217,7 +217,6 @@ input[type="number"] {
 }
 
 :root {
-  --title-size: 1.5rem;
   --title-padding: 0.5em;
   --border: 1px solid var(--mat-sys-on-surface);
   --top-z-index: 99999;
@@ -226,8 +225,11 @@ input[type="number"] {
 }
 
 .title {
-  font-size: var(--title-size);
+  font: var(--mat-sys-title-large);
   padding: var(--title-padding);
+  &.small {
+    font: var(--mat-sys-title-medium);
+  }
   &.center {
     text-align: center;
   }

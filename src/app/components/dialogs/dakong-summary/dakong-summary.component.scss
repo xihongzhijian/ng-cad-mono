@@ -16,8 +16,6 @@
 }
 
 .dakong-summary {
-  --title-size: 1.2rem;
-
   .dakong-summary-table {
     border: var(--border);
 
@@ -42,22 +40,6 @@
       overflow: hidden;
       &:not(:last-child) {
         border-right: var(--border);
-      }
-
-      > * {
-        text-overflow: ellipsis;
-        overflow: hidden;
-      }
-      &.error {
-        white-space: pre-wrap;
-        text-align: left;
-      }
-
-      .success {
-        color: green;
-      }
-      .error {
-        color: red;
       }
     }
   }

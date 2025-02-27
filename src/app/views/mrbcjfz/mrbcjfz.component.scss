@@ -10,15 +10,12 @@
 }
 
 .bancai {
-  --title-size: 1rem;
   &.active {
     background-color: var(--active-color);
   }
 
   .bancai-info {
     align-items: center;
-    font-size: 17px;
-    font-weight: bold;
     > :not(:last-child) {
       margin-right: 10px;
     }
@@ -43,8 +40,4 @@
   .error {
     margin: 3px 0;
   }
-}
-
-.tips {
-  color: red;
 }

@@ -1,6 +1,5 @@
 :host {
   padding: 10px;
-  --title-size: 1.2rem;
   --mkdxpz-formulas-width: 290px;
 }
 
@@ -38,6 +37,13 @@
     &.active {
       background-color: lightgray;
     }
+
+    .title {
+      padding: 0;
+    }
+    .text {
+      font: var(--mat-sys-body-medium);
+    }
   }
 }
 
@@ -71,11 +77,6 @@
 
   .mokuai-xiaoguotu {
     height: 150px;
-  }
-
-  .title {
-    --title-size: 14px;
-    --title-padding: 0;
   }
 }
 

@@ -46,7 +46,7 @@
             <ng-container [ngTemplateOutlet]="content3"></ng-container>
           </ng-scrollbar>
         }
-        <div class="tips">企料不分组则程序自动分组为：门扇板材</div>
+        <div class="error">企料不分组则程序自动分组为：门扇板材</div>
         <mat-divider></mat-divider>
       }
       @if (noScroll) {
@@ -67,9 +67,9 @@
       <mat-divider></mat-divider>
     }
     <div class="bancai flex-column" [class]="{active: key === activeBancaiKey}" (click)="selectBancaiKey(key)">
-      <div class="bancai-info flex-row">
-        <div class="title">{{ key }}:</div>
-        <div class="bancai-text" [style]="getBancaiStyle(key)">{{ xinghao.getBancaiTitle(key, "请选择") }}</div>
+      <div class="bancai-info toolbar">
+        <div class="title small bold">{{ key }}:</div>
+        <div class="title small bold" [class]="getBancaiClass(key)">{{ xinghao.getBancaiTitle(key, "请选择") }}</div>
         <button mat-flat-button (click)="editBancaiForm(key)">编辑</button>
         <button mat-flat-button (click)="emptyBancaiForm(key)">清空</button>
       </div>

@@ -13,7 +13,7 @@
       @for (group of order.cads; track $index) {
         <div class="cads">
           @if (group[0]) {
-            <div class="title">{{ group[0].bancai.mingzi }}({{ group[0].bancai.guige?.join(" × ") }})</div>
+            <div class="title small">{{ group[0].bancai.mingzi }}({{ group[0].bancai.guige?.join(" × ") }})</div>
           }
           <div class="cad-group">
             @for (cad of group; track $index) {
@@ -21,7 +21,7 @@
                 <mat-checkbox [(ngModel)]="cad.checked" [disabled]="!data.editDisabled && cad.disabled">
                   <span [class.disabled]="cad.disabled">{{ cad.name }}</span>
                   @if (cad.oversized) {
-                    <span style="color: red">(尺寸超出规格：{{ cad.width }} × {{ cad.height }})</span>
+                    <span class="error">(尺寸超出规格：{{ cad.width }} × {{ cad.height }})</span>
                   }
                 </mat-checkbox>
               </div>

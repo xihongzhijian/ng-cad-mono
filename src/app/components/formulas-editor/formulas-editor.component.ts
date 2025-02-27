@@ -6,13 +6,13 @@ import {
   Component,
   computed,
   effect,
-  ElementRef,
   forwardRef,
+  HostBinding,
   inject,
   input,
   model,
-  signal,
-  viewChild
+  output,
+  signal
 } from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -27,7 +27,7 @@ import {FormulasComponent} from "@components/formulas/formulas.component";
 import {FormulaInfo} from "@components/formulas/formulas.types";
 import {VarNamesComponent} from "@components/var-names/var-names.component";
 import {VarNameItem} from "@components/var-names/var-names.types";
-import {timeout} from "@lucilor/utils";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {CalcService} from "@services/calc.service";
@@ -44,6 +44,7 @@ import {FormulasCompactConfig, FormulasValidatorFn} from "./formulas-editor.type
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
+    FloatingDialogModule,
     FormulasComponent,
     forwardRef(() => InputComponent),
     KeyValuePipe,
@@ -61,6 +62,8 @@ export class FormulasEditorComponent {
   private dialog = inject(MatDialog);
   private message = inject(MessageService);
 
+  @HostBinding("class") class = "ng-page";
+
   formulas = model<Formulas | null | undefined>({alias: "formulas"});
   formulasTextIn = input("", {alias: "formulasText"});
   vars = input<Formulas>({});
@@ -72,6 +75,8 @@ export class FormulasEditorComponent {
   noScroll = input(false, {transform: booleanAttribute});
   compact = model<FormulasCompactConfig>();
   dataName = input("公式");
+  closable = input(false, {transform: booleanAttribute});
+  close = output<Formulas | null>();
 
   constructor() {
     setGlobal("formulasEditor", this);
@@ -279,7 +284,6 @@ export class FormulasEditorComponent {
   }
 
   testResult = signal<CalcResult | null>(null);
-  testResultEl = viewChild<ElementRef<HTMLElement>>("testResultEl");
   async test(parseText: boolean) {
     let list: string[][];
     if (parseText) {
@@ -298,10 +302,10 @@ export class FormulasEditorComponent {
     const result = await this.calc.calcFormulas(submitResult.data, this.vars());
     if (result) {
       this.testResult.set(result);
-      await timeout(200);
-      this.message.alert({title: "计算结果", content: this.testResultEl()?.nativeElement.innerHTML});
-      this.testResult.set(null);
     }
+  }
+  closeTestResult() {
+    this.testResult.set(null);
   }
 
   returnZero() {
@@ -323,5 +327,16 @@ export class FormulasEditorComponent {
   }
   export() {
     this.message.exportData(this.formulaList(), this.dataName());
+  }
+
+  async submit() {
+    const result = await this.submitFormulas();
+    if (!result.fulfilled) {
+      return;
+    }
+    this.close.emit(result.data);
+  }
+  cancel() {
+    this.close.emit(null);
   }
 }

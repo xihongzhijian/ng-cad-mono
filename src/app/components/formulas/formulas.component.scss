@@ -9,7 +9,7 @@
 
     .formula-key {
       text-align: right;
-      color: #2186da;
+      color: var(--mat-sys-primary);
     }
 
     .formula-value {
@@ -25,10 +25,10 @@
     }
     .formula-neq::after {
       content: "≠";
-      color: red;
+      color: var(--mat-sys-error);
     }
     .formula-neq + .formula-value {
-      color: red;
+      color: var(--mat-sys-error);
     }
 
     app-input {

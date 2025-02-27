@@ -24,13 +24,13 @@ import {ResultWithErrors} from "@app/utils/error-message";
 import {getCopyName, getDateTimeString, getValue, getValueString, Value} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {getSortedItems} from "@app/utils/sort-items";
-import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasEditorComponent} from "@components/formulas-editor/formulas-editor.component";
 import {FormulasCompactConfig, FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {TextInfoComponent} from "@components/text-info/text-info.component";
 import {TextInfo} from "@components/text-info/text-info.types";
 import {isTypeOf} from "@lucilor/utils";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -38,6 +38,7 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
+import {lastValueFrom, Subject, take} from "rxjs";
 import {v4} from "uuid";
 import {算料公式, 输入} from "../../../../components/lurushuju/xinghao-data";
 import {openSuanliaogongshiDialog} from "../dialogs/suanliaogongshi-dialog/suanliaogongshi-dialog.component";
@@ -46,6 +47,7 @@ import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.
 @Component({
   selector: "app-suanliaogongshi",
   imports: [
+    FloatingDialogModule,
     FormulasEditorComponent,
     MatButtonModule,
     MatCardModule,
@@ -93,7 +95,7 @@ export class SuanliaogongshiComponent {
     const tableInfo: TableRenderInfo<ShuruTableDataSorted> = {
       title: "输入显示",
       subTitle: "注意：有输入时，相同名字的公式无效",
-      subTitleStyle: {color: "red"},
+      subTitleStyle: {color: "var(--mat-sys-error)"},
       inlineTitle: true,
       columns: [
         {type: "string", field: "名字"},
@@ -120,39 +122,56 @@ export class SuanliaogongshiComponent {
     return 0;
   }
 
-  gongshiTitle = computed(() => this.info().slgs?.title || "算料公式");
-  async getGongshiItem(data0?: 算料公式) {
-    let data: 算料公式;
-    if (data0) {
-      data = cloneDeep(data0);
+  formulasEditorData = signal<{item: 算料公式; extraInputInfos: InputInfo[]} | null>(null);
+  formulasEditorClose$ = new Subject<{item: 算料公式} | null>();
+  openFormulasEditor(item0?: 算料公式) {
+    const data = this.formulasEditorData();
+    if (data) {
+      return;
+    }
+    let item: 算料公式;
+    if (item0) {
+      item = cloneDeep(item0);
     } else {
-      data = {_id: v4(), 名字: "", 条件: [], 选项: {}, 公式: {}};
+      item = {_id: v4(), 名字: "", 条件: [], 选项: {}, 公式: {}};
     }
-    if (!isTypeOf(data.选项, "object")) {
-      data.选项 = {};
+    if (!isTypeOf(item.选项, "object")) {
+      item.选项 = {};
     }
-    const result = await openEditFormulasDialog(this.dialog, {
-      data: {
-        formulas: data.公式,
-        varNameItem: this.info().varNameItem,
-        extraInputInfos: [
-          {type: "string", label: "名字", model: {data, key: "名字"}, validators: Validators.required},
-          {
-            type: "object",
-            label: "选项",
-            model: {data, key: "选项"},
-            optionsDialog: {},
-            optionMultiple: true
-          },
-          {type: "array", label: "条件", model: {data, key: "条件"}}
-        ]
-      }
+    this.formulasEditorData.set({
+      item,
+      extraInputInfos: [
+        {type: "string", label: "名字", model: {data: item, key: "名字"}, validators: Validators.required},
+        {
+          type: "object",
+          label: "选项",
+          model: {data: item, key: "选项"},
+          optionsDialog: {},
+          optionMultiple: true
+        },
+        {type: "array", label: "条件", model: {data: item, key: "条件"}}
+      ]
     });
-    if (result) {
-      data.公式 = result;
-      return data;
+  }
+  closeFormulasEditor(formulas: Formulas | null) {
+    const data = this.formulasEditorData();
+    if (!data) {
+      return;
     }
-    return null;
+    if (formulas) {
+      data.item.公式 = formulas;
+      this.formulasEditorClose$.next({item: data.item});
+    } else {
+      this.formulasEditorClose$.next(null);
+    }
+    this.formulasEditorData.set(null);
+  }
+
+  gongshiTitle = computed(() => this.info().slgs?.title || "算料公式");
+  async getGongshiItem(item0?: 算料公式) {
+    this.openFormulasEditor(item0);
+    const result = await lastValueFrom(this.formulasEditorClose$.pipe(take(1)));
+    return result ? result.item : null;
   }
   justifyGongshi(item: 算料公式) {
     this.info().slgs?.justify?.(item);

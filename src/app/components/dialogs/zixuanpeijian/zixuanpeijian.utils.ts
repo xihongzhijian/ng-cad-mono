@@ -198,7 +198,7 @@ export const getMokuaiTitleBase = (
   arr.push(mokuaiName);
   if (xhmrmsbjUrl) {
     const link = getLink(xhmrmsbjUrl, opts.xhmrmsbj?.name || "");
-    arr.unshift(link);
+    arr.unshift(`型号：${link}<br>`);
   }
   return arr.join("");
 };

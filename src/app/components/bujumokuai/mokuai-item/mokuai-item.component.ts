@@ -131,7 +131,7 @@ export class MokuaiItemComponent {
   slgsInfo = computed(() => {
     const info: SuanliaogongshiInfo = {
       data: {算料公式: this.gongshis()},
-      slgs: {title: "模块公式", titleStyle: {fontSize: "1.2em", fontWeight: "bold"}}
+      slgs: {title: "模块公式"}
     };
     return info;
   });

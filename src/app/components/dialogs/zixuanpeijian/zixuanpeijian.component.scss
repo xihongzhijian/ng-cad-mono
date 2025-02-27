@@ -1,6 +1,5 @@
 :host {
   padding: 20px;
-  --title-size: 1rem;
 }
 
 .types-info {
@@ -123,7 +122,7 @@ $border: 1px solid lightgray;
   app-cad-item {
     --border: 1px solid transparent;
     &.active {
-      --border: 1px solid red;
+      --border: 1px solid var(--mat-sys-tertiary);
     }
   }
 }

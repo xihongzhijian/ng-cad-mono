@@ -14,20 +14,17 @@
     align-items: center;
     box-sizing: border-box;
     &.active {
-      border: 2px solid red;
+      border: 2px solid var(--mat-sys-tertiary);
     }
 
-    .title {
-      &.small {
-        font-size: 14px;
-        writing-mode: vertical-lr;
-      }
+    .option-name {
+      writing-mode: vertical-lr;
     }
   }
 }
 
 .rect-buju {
-  --mdc-text-button-label-text-size: var(--title-size);
+  --mdc-text-button-label-text-size: var(--mat-sys-title-large-size);
   button {
     min-width: 40px;
   }

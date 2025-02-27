@@ -70,7 +70,7 @@
         <div class="menshan-options flex-column">
           @for (item of menshanbujuItems(); track $index) {
             <div class="menshan-option item" [class]="{active: activeMenshanKey() === item.key}" (click)="activeMenshanKey.set(item.key)">
-              <div style="font-weight: bold">{{ item.key }}</div>
+              <div class="title small bold">{{ item.key }}</div>
               @if (item.info["选中布局数据"]; as data2) {
                 <div [class]="canOpenMsbj() ? 'link text' : ''" appClickStop (click)="openMsbj(data2.vid)">布局：{{ data2.name }}</div>
               }
@@ -253,7 +253,7 @@
                 @for (detail of error.details; track $index) {
                   <li class="text">
                     @for (item of detail; track $index) {
-                      <span [style.color]="item.color">
+                      <span [class]="item.className">
                         @if (item.br) {
                           <br />
                         } @else if (item.jumpTo) {
@@ -302,12 +302,12 @@
       ></app-image>
       <div class="flex-row" style="align-items: center">
         @if (isFromOrder()) {
-          <div class="title center flex-110" [innerHTML]="getMokuaiTitle(mokuai, true)"></div>
+          <div class="center flex-110" [innerHTML]="getMokuaiTitle(mokuai, true)"></div>
         } @else {
           @if (data()?.isVersion2024) {
-            <div class="title link text" (click)="openMokuai(mokuai)">{{ getMokuaiTitle(mokuai, false) }}</div>
+            <div class="link text" (click)="openMokuai(mokuai)">{{ getMokuaiTitle(mokuai, false) }}</div>
           } @else {
-            <div class="title" [innerHTML]="getMokuaiTitle(mokuai, false)"></div>
+            <div class="text" [innerHTML]="getMokuaiTitle(mokuai, false)"></div>
           }
           <button mat-icon-button class="accent" (click)="removeMokuai(mokuai)"><mat-icon>cancel</mat-icon></button>
         }

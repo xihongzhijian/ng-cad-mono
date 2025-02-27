@@ -46,7 +46,7 @@ export class HttpService {
 
   protected error(msg: string, silent: boolean, title = "网络请求错误") {
     if (!silent) {
-      this.message.error({content: msg, title: `<span style="color:red">${title}</span>`});
+      this.message.error({content: msg, title: `<span class="error">${title}</span>`});
     }
   }
 

@@ -62,3 +62,16 @@
     ></app-table>
   </div>
 }
+
+@if (formulasEditorData(); as data) {
+  <app-floating-dialog [maximized]="true" noTitle>
+    <app-formulas-editor
+      [formulas]="data.item['公式']"
+      [extraInputInfos]="data.extraInputInfos"
+      [varNameItem]="info().varNameItem"
+      closable
+      (close)="closeFormulasEditor($event)"
+    >
+    </app-formulas-editor>
+  </app-floating-dialog>
+}

@@ -42,7 +42,7 @@ button {
 
   &.active {
     .title {
-      background-color: red;
+      background-color: var(--mat-sys-tertiary);
     }
   }
 }

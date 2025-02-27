@@ -188,12 +188,11 @@
   }
 
   .success {
-    color: green;
+    color: var(--mat-sys-primary);
   }
 
-  .error,
-  button.error {
-    color: red;
+  .error {
+    color: var(--mat-sys-error);
   }
 
   .link {
@@ -214,6 +213,11 @@
     margin-block-start: 0;
     margin-block-end: 0;
     padding-inline-start: 20px;
+  }
+
+  .text.accent,
+  span.accent {
+    color: var(--mat-sys-tertiary);
   }
 }
 

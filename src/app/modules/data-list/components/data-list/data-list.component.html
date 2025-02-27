@@ -46,7 +46,7 @@
               (排序{{ node.order }})
             } @else {
               @if (itemQuery()) {
-                <span style="color: red">(搜到{{ node.itemCount }}个)</span>
+                <span class="accent">(搜到{{ node.itemCount }}个)</span>
               } @else {
                 ({{ node.itemCount }}个)
               }

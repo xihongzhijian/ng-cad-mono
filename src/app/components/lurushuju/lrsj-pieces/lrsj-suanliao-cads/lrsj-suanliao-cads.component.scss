@@ -7,7 +7,7 @@ app-suanliaogongshi {
 
   ::ng-deep {
     .name-error .name button:nth-child(1) {
-      color: red;
+      color: var(--mat-sys-error);
     }
   }
 }

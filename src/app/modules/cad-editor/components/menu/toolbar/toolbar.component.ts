@@ -392,7 +392,7 @@ export class ToolbarComponent {
     const data = this.status.cad.data;
     const yes = await this.message.confirm({
       title: "重设ID",
-      content: `重新生成<span style="color:red">${data.name}</span>的所有实体ID，是否确定？`
+      content: `重新生成<span class="error">${data.name}</span>的所有实体ID，是否确定？`
     });
     if (!yes) {
       return;

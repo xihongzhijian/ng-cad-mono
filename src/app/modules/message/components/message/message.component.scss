@@ -49,17 +49,4 @@ iframe {
       height: var(--json-editor-height);
     }
   }
-
-  .message-list {
-    --title-size: 1em;
-    --title-padding: 0;
-
-    .error {
-      color: red;
-    }
-
-    .success {
-      color: green;
-    }
-  }
 }

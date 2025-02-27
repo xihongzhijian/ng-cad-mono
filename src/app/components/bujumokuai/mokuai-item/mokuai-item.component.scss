@@ -13,11 +13,6 @@
     }
   }
 
-  .title {
-    font-size: 1.2em;
-    font-weight: bold;
-  }
-
   .item-basic {
     width: 250px;
     --item-height: 100%;
@@ -39,24 +34,6 @@
 
   .xuanxiang-table {
     width: 560px;
-  }
-}
-
-.item-cads {
-  .title {
-    font-size: 1.2em;
-    font-weight: bold;
-  }
-
-  .cads {
-    flex: 1 1 0;
-
-    .item {
-      padding: 3px;
-      &.active {
-        border: 1px solid red;
-      }
-    }
   }
 }
 
