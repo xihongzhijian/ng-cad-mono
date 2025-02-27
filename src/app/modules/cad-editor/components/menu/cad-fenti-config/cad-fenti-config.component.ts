@@ -1,7 +1,8 @@
 import {ChangeDetectionStrategy, Component, computed, effect, forwardRef, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
+import {toFixed} from "@app/utils/func";
 import {environment} from "@env";
-import {CadData, CadEntities, CadEventCallBack, CadViewerConfig} from "@lucilor/cad-viewer";
+import {CadData, CadEntities, CadEventCallBack, CadLineLike, CadViewerConfig} from "@lucilor/cad-viewer";
 import {selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -73,14 +74,32 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
     const data = this.status.cadData();
     this.pairedLinesList.set(data.分体对应线.slice());
   });
+  pairedLinesLineLengths = computed(() => {
+    const lengths: string[] = [];
+    const l = this.status.cadTotalLength();
+    console.log(l);
+    const {rawEntities} = getCadFentiInfo(this.status.cad.data);
+    for (const item of this.pairedLinesList()) {
+      for (const id of item.ids) {
+        const entity = rawEntities.find(id);
+        if (entity instanceof CadLineLike) {
+          lengths.push(toFixed(entity.length, 2));
+          break;
+        }
+      }
+    }
+    return lengths;
+  });
   pairedLinesListInputInfos = computed(() => {
     const index = this.status.findCadStatus((v) => v instanceof CadStatusFentiPairedLines)?.index;
     const list = this.pairedLinesList();
+    const lengths = this.pairedLinesLineLengths();
     return list.map((v, i) => {
+      const length = lengths[i] ? `(${lengths[i]})` : "";
       const infos: InputInfo[] = [
         {
           type: "string",
-          label: "分体对应线",
+          label: "分体对应线" + length,
           value: v.ids.length > 1 ? "已指定" : "未指定",
           selectOnly: true,
           suffixIcons: [
@@ -102,10 +121,22 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
         },
         {
           type: "number",
-          label: "分体线长变化",
+          label: "线长调整",
           value: v.dl,
           onChange: (val) => {
             v.dl = val;
+            this.pairedLinesList.set([...list]);
+          },
+          onClick: () => this.selectPairedLines(i)
+        },
+        {
+          type: "boolean",
+          label: "拼接位",
+          class: v.isPinjie ? "accent" : "",
+          style: {flex: "0 1 75px"},
+          value: v.isPinjie,
+          onChange: (val) => {
+            v.isPinjie = val;
             this.pairedLinesList.set([...list]);
           },
           onClick: () => this.selectPairedLines(i)

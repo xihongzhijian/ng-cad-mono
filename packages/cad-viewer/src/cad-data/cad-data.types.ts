@@ -36,4 +36,5 @@ export const intersectionKeysTranslate: Record<IntersectionKey, string> = {
 export interface FentiDuiyingxianItem {
   ids: string[];
   dl: number;
+  isPinjie?: boolean;
 }

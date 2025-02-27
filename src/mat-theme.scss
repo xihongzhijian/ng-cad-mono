@@ -31,7 +31,7 @@ html {
   @include mat.icon-button-overrides(
     (
       // ? not working
-      icon-size: var(--mat-icon-size),
+      icon-size: 24px,
       icon-color: var(--mat-sys-primary)
     )
   );
@@ -92,6 +92,25 @@ html {
       icon-color: var(--mat-sys-tertiary)
     )
   );
+
+  @include mat.form-field-overrides(
+    (
+      filled-caret-color: var(--mat-sys-tertiary),
+      filled-focus-active-indicator-color: var(--mat-sys-tertiary),
+      filled-focus-label-text-color: var(--mat-sys-tertiary),
+      filled-label-text-color: var(--mat-sys-tertiary),
+      filled-hover-label-text-color: var(--mat-sys-tertiary),
+      filled-active-indicator-color: var(--mat-sys-tertiary),
+      filled-hover-active-indicator-color: var(--mat-sys-tertiary),
+      outlined-caret-color: var(--mat-sys-tertiary),
+      outlined-focus-outline-color: var(--mat-sys-tertiary),
+      outlined-focus-label-text-color: var(--mat-sys-tertiary),
+      outlined-label-text-color: var(--mat-sys-tertiary),
+      outlined-hover-label-text-color: var(--mat-sys-tertiary),
+      outlined-outline-color: var(--mat-sys-tertiary),
+      outlined-hover-outline-color: var(--mat-sys-tertiary)
+    )
+  );
 }
 
 .mat-mdc-form-field {
@@ -101,16 +120,6 @@ html {
   .mat-mdc-form-field-icon-prefix,
   .mat-mdc-form-field-icon-suffix {
     display: flex;
-
-    .mat-mdc-icon-button {
-      width: inherit;
-      height: inherit;
-      padding: 0;
-
-      .mat-mdc-button-touch-target {
-        display: none;
-      }
-    }
   }
 
   .mdc-text-field,
@@ -179,19 +188,13 @@ mat-divider {
   }
 }
 
-.mat-icon {
-  width: var(--mat-icon-size) !important;
-  height: var(--mat-icon-size) !important;
-  font-size: var(--mat-icon-size) !important;
-}
-.mat-mdc-icon-button.mat-mdc-button-base {
-  width: var(--mat-icon-size) !important;
-  height: var(--mat-icon-size) !important;
-  padding: var(--mat-icon-padding) !important;
-}
-.mat-mdc-icon-button .mat-mdc-button-touch-target {
-  width: var(--mat-icon-size) !important;
-  height: var(--mat-icon-size) !important;
+.mat-mdc-icon-button {
+  --mdc-icon-button-state-layer-size: var(--mat-icon-size);
+  --mdc-icon-button-icon-size: var(--mat-icon-size);
+  .mat-mdc-button-touch-target {
+    width: var(--mdc-icon-button-state-layer-size) !important;
+    height: var(--mdc-icon-button-state-layer-size) !important;
+  }
 }
 
 .cdk-overlay-container {

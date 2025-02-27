@@ -149,7 +149,11 @@ export const openCadLineForm = async (
     let toChange = [line];
     if (isLine && result.线长 !== lineLength) {
       toChange = cad.data.entities.line;
-      setLinesLength(cad.data, [line], result.线长);
+      if (cad === status.cad) {
+        status.setLinesLength([line], result.线长);
+      } else {
+        setLinesLength(data, [line], result.线长);
+      }
     }
     await cad.render(toChange);
   } else {

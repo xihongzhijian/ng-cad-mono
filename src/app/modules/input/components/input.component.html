@@ -307,7 +307,12 @@
     @if (info.appearance === "switch") {
       <div class="switch-container" [class]="{empty: isEmpty(value)}">
         <div>{{ info.label }}</div>
-        <mat-slide-toggle [(ngModel)]="value" [disabled]="!!(info.disabled || info.readonly)" (change)="onChange()"></mat-slide-toggle>
+        <mat-slide-toggle
+          [(ngModel)]="value"
+          [disabled]="!!(info.disabled || info.readonly)"
+          (change)="onChange()"
+          (click)="onClick($event)"
+        ></mat-slide-toggle>
       </div>
     } @else {
       <mat-form-field [class]="{empty: isEmpty(value)}">
@@ -319,7 +324,7 @@
         }
         @if (info.appearance === "radio") {
           <input matInput hidden />
-          <mat-radio-group [(ngModel)]="value" (change)="onChange()">
+          <mat-radio-group [(ngModel)]="value" (change)="onChange()" (click)="onClick($event)">
             <mat-radio-button [value]="true" [disabled]="info.disabled || info.readonly">是</mat-radio-button>
             <mat-radio-button [value]="false" [disabled]="info.disabled || info.readonly">否</mat-radio-button>
           </mat-radio-group>
@@ -327,9 +332,10 @@
           <mat-select
             [errorStateMatcher]="getErrorStateMatcher()"
             [disabled]="info.disabled || false"
+            [placeholder]="info.placeholder || ''"
             [value]="value ? true : false"
             (selectionChange)="onBooleanSelectChange($event)"
-            [placeholder]="info.placeholder || ''"
+            (click)="onClick($event)"
           >
             <ng-scrollbar matSelectViewport>
               <mat-option [value]="true" [disabled]="info.readonly">是</mat-option>
@@ -352,6 +358,7 @@
             [checked]="isListOptionsSelectedAll()"
             [indeterminate]="isListOptionsSelectedPartial()"
             (change)="toggleListOptionsSelectAll()"
+            (click)="onClick($event)"
             >全选</mat-checkbox
           >
         }
@@ -360,6 +367,7 @@
           [disabled]="info.disabled"
           [multiple]="info.multiple"
           (selectionChange)="onListSelectionChange($event)"
+          (click)="onClick($event)"
         >
           @for (option of options; track $index) {
             <mat-list-option [value]="option.value" [disabled]="info.readonly || option.disabled">
@@ -400,6 +408,7 @@
               [(ngModel)]="value"
               multiple
               (selectionChange)="onChange()"
+              (click)="onClick($event)"
             >
               <ng-scrollbar matSelectViewport>
                 @if (optionText) {
@@ -418,6 +427,7 @@
               [errorStateMatcher]="getErrorStateMatcher()"
               [(ngModel)]="value"
               (selectionChange)="onChange()"
+              (click)="onClick($event)"
             >
               <ng-scrollbar matSelectViewport>
                 @if (optionText) {

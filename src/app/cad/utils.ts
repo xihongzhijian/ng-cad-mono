@@ -288,6 +288,9 @@ export const validateCad = (collection: CadCollection, data: CadData, noInfo?: b
         }
       }
     }
+    if (data.分体对应线.some((v) => v.isPinjie && v.ids.length < 2)) {
+      result.errors.push("分体对应线是拼接线，必须同时指定两个位置");
+    }
   }
   if (!isEmpty(data.blocks) || data.entities.insert.length > 0) {
     result.errors.push("不能包含块");
