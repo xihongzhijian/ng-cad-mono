@@ -32,10 +32,10 @@
       border-bottom: var(--border);
     }
     &:hover {
-      background-color: lightgray;
+      background-color: var(--mat-sys-outline-variant);
     }
     &.active {
-      background-color: lightgray;
+      background-color: var(--mat-sys-outline-variant);
     }
 
     .title {
@@ -54,7 +54,7 @@
   cursor: pointer;
   position: relative;
   &.active {
-    background-color: lightgray;
+    background-color: var(--mat-sys-outline-variant);
   }
 
   .mokuai-top {
@@ -65,13 +65,13 @@
   }
 
   .active-sign {
-    color: rgb(224, 46, 42);
+    color: var(--mat-sys-tertiary);
   }
 
   .default-sign {
-    color: black;
+    color: var(--mat-sys-on-surface);
     &.active {
-      color: rgb(224, 46, 42);
+      color: var(--mat-sys-tertiary);
     }
   }
 
@@ -132,7 +132,7 @@
 
   .error {
     width: 100%;
-    color: black;
+    color: var(--mat-sys-on-surface);
 
     ol {
       width: 100%;

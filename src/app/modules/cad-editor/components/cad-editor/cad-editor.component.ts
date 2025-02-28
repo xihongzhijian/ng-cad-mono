@@ -242,18 +242,21 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   tabIndexPrev = -1;
 
   cadFentiOn = computed(() => this.status.hasCadStatus((v) => v instanceof CadStatusFentiConfig));
+  tabFentiIndexPrev = -1;
   cadFentiOnEff = effect(() => {
     const fentiTabIndex = 4;
     const tabIndexCurr = untracked(() => this.tabIndex());
     if (this.cadFentiOn()) {
       setTimeout(() => {
-        this.tabIndexPrev = tabIndexCurr;
+        this._disableNextInfoTabIndexSync = true;
+        this.tabFentiIndexPrev = tabIndexCurr;
         this.tabIndex.set(fentiTabIndex);
       }, 0);
     } else {
-      if (this.tabIndexPrev >= 0 && tabIndexCurr === fentiTabIndex) {
-        this.tabIndex.set(this.tabIndexPrev);
-        this.tabIndexPrev = -1;
+      if (this.tabFentiIndexPrev >= 0 && tabIndexCurr === fentiTabIndex) {
+        this._disableNextInfoTabIndexSync = true;
+        this.tabIndex.set(this.tabFentiIndexPrev);
+        this.tabFentiIndexPrev = -1;
       }
     }
   });
@@ -349,26 +352,28 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   infoTabGroup = viewChild(MatTabGroup);
   infoTabGroupEff = effect(() => {
     const infoTabGroup = this.infoTabGroup();
-    const setInfoTabs = () => {
-      const {infoTabIndex, scroll} = this.config.getConfig();
-      if (infoTabGroup && typeof infoTabIndex === "number" && infoTabIndex >= 0) {
-        infoTabGroup.selectedIndex = infoTabIndex;
-      }
-      if (scroll) {
-        this._setTabScroll();
-      }
-    };
-    setInfoTabs();
-    infoTabGroup?.animationDone.pipe(take(1)).subscribe(() => {
-      setTimeout(() => {
-        setInfoTabs();
-      }, 0);
-    });
-    const sub = this.config.configChange$.subscribe(({isUserConfig}) => {
-      if (isUserConfig) {
-        setInfoTabs();
-        sub.unsubscribe();
-      }
+    untracked(() => {
+      const setInfoTabs = () => {
+        const {infoTabIndex, scroll} = this.config.getConfig();
+        if (infoTabGroup && typeof infoTabIndex === "number" && infoTabIndex >= 0) {
+          infoTabGroup.selectedIndex = infoTabIndex;
+        }
+        if (scroll) {
+          this._setTabScroll();
+        }
+      };
+      setInfoTabs();
+      infoTabGroup?.animationDone.pipe(take(1)).subscribe(() => {
+        setTimeout(() => {
+          setInfoTabs();
+        }, 0);
+      });
+      const sub = this.config.configChange$.subscribe(({isUserConfig}) => {
+        if (isUserConfig) {
+          setInfoTabs();
+          sub.unsubscribe();
+        }
+      });
     });
   });
 
@@ -519,8 +524,13 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     this.status.cad.center();
   }
 
+  private _disableNextInfoTabIndexSync = false;
   onInfoTabChange({index}: MatTabChangeEvent) {
-    this.config.setConfig("infoTabIndex", index);
+    const sync = !this._disableNextInfoTabIndexSync;
+    this.config.setConfig("infoTabIndex", index, {sync});
+    if (this._disableNextInfoTabIndexSync) {
+      this._disableNextInfoTabIndexSync = false;
+    }
     this._setTabScroll();
   }
 

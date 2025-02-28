@@ -1,5 +1,6 @@
 @use "app/modules/message/styles.scss";
 @use "ng-page.scss";
+@use "sass:color";
 
 .hljs,
 pre {
@@ -26,7 +27,7 @@ body.ng-page {
 
 .add-empty-msg:empty::after {
   content: "空空如也";
-  color: #888888;
+  color: var(--mat-sys-outline);
   font-size: 1em;
 }
 
@@ -45,7 +46,7 @@ body.ng-page {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: black;
+    color: var(--mat-sys-on-surface);
   }
 }
 
@@ -57,8 +58,8 @@ ng-scrollbar.ng-scrollbar {
   --scrollbar-viewport-margin: 0;
   --scrollbar-track-color: transparent;
   --scrollbar-wrapper-color: transparent;
-  --scrollbar-thumb-color: rgba(0, 0, 0, 0.3);
-  --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.5);
+  --scrollbar-thumb-color: var(--mat-sys-outline-variant);
+  --scrollbar-thumb-hover-color: var(--mat-sys-outline);
   --scrollbar-size: 8px;
   --scrollbar-hover-size: 12px;
   --scrollbar-thumb-transition: height ease-out 150ms, width ease-out 150ms;
@@ -87,7 +88,7 @@ ng-scrollbar.ng-scrollbar {
   width: 100%;
   display: flex;
   flex-direction: column;
-  border: 1px solid gray;
+  border: 1px solid var(--mat-sys-outline);
   border-radius: 20px;
   box-sizing: border-box;
   padding: 5px;
@@ -98,15 +99,15 @@ ng-scrollbar.ng-scrollbar {
 }
 .sub-form-field {
   .label {
-    color: black;
+    color: var(--mat-sys-on-surface);
     display: flex;
     align-items: center;
   }
 }
 
 .drag-placeholder {
-  background: #ccc;
-  border: dotted 3px #999;
+  background: var(--mat-sys-outline-variant);
+  border: dotted 3px var(--mat-sys-outline);
   width: 30px;
   height: 40px;
   box-sizing: border-box;

@@ -45,7 +45,7 @@
 }
 
 .content .table-container app-table {
-  --border: 1px solid black;
+  --border: 1px solid var(--mat-sys-on-surface);
   --row-min-height: 36px;
   --row-max-height: 36px;
   --cell-active-color: #b2b2b2;

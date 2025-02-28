@@ -6,6 +6,7 @@ import {
   ElementRef,
   HostBinding,
   HostListener,
+  inject,
   input,
   model,
   output,
@@ -17,6 +18,8 @@ import {setGlobal} from "@app/app.common";
 import {getTrbl, TrblLike} from "@app/utils/trbl";
 import {Debounce} from "@decorators/debounce";
 import {ObjectOf, Rectangle, timeout} from "@lucilor/utils";
+import {AppStatusService} from "@services/app-status.service";
+import Color from "color";
 import {Properties} from "csstype";
 import {cloneDeep, random} from "lodash";
 import {ClickStopPropagationDirective} from "../../modules/directives/click-stop-propagation.directive";
@@ -30,6 +33,8 @@ import {MsbjRectInfo, MsbjRectInfoRaw, MsbjRectSelectType} from "./msbj-rects.ty
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MsbjRectsComponent {
+  private status = inject(AppStatusService);
+
   rectInfos = input.required<MsbjRectInfoRaw[]>();
   padding = input<TrblLike>(0);
   selectType = input<MsbjRectSelectType>("all");
@@ -153,7 +158,7 @@ export class MsbjRectsComponent {
     const randRGB = () => random(this.rgbMin, this.rgbMax);
     let i = 0;
     const altColors = this.altColors;
-    const randColor = () => {
+    const randColorStr = () => {
       if (i < altColors.length) {
         return altColors[i++];
       }
@@ -170,13 +175,24 @@ export class MsbjRectsComponent {
         if (rectColors[raw.vid]) {
           infoRelative.bgColor = rectColors[raw.vid];
         } else {
-          let color: string;
+          let colorStr: string;
           const list = Object.values(rectColors);
           do {
-            color = randColor();
-          } while (list.includes(color));
-          infoRelative.bgColor = color;
-          rectColors[raw.vid] = color;
+            colorStr = randColorStr();
+          } while (list.includes(colorStr));
+          let color = new Color(colorStr);
+          if (this.status.isDrakMode()) {
+            if (color.isLight()) {
+              color = color.darken(0.5);
+            }
+          } else {
+            if (color.isDark()) {
+              color = color.lighten(0.5);
+            }
+          }
+          colorStr = color.rgb().string();
+          infoRelative.bgColor = colorStr;
+          rectColors[raw.vid] = colorStr;
         }
         if (!infoAbsolute.name) {
           let name: string;

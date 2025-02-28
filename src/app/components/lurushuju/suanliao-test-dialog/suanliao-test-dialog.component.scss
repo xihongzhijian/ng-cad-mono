@@ -13,9 +13,9 @@
   padding: 5px;
 }
 :host.printing .test-case-card {
-  border: 1px solid black;
+  border: 1px solid var(--mat-sys-on-surface);
   &:hover {
-    border: 1px solid black;
+    border: 1px solid var(--mat-sys-on-surface);
   }
 }
 

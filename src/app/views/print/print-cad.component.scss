@@ -37,7 +37,7 @@ $bg-color: #616161;
     padding: 10px 10px 10px 10px;
 
     .text {
-      color: white;
+      color: var(--mat-sys-surface);
       text-align: center;
     }
     .title {
@@ -47,7 +47,7 @@ $bg-color: #616161;
     app-image {
       flex: 1 1 0;
       cursor: pointer;
-      background-color: white;
+      background-color: var(--mat-sys-surface);
     }
   }
 
@@ -57,7 +57,7 @@ $bg-color: #616161;
   }
 
   .输出变量 {
-    background-color: white;
+    background-color: var(--mat-sys-surface);
     margin: 0 10px;
     padding: 5px;
     position: absolute;

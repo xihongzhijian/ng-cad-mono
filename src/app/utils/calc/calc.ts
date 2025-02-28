@@ -137,7 +137,7 @@ export class Calc {
         if (!error) {
           error = "语法错误";
         }
-        errors.push(`${value} ,<span style='color:red'>${error}</span>`);
+        errors.push(`${value} ,<span class="error">${error}</span>`);
       }
     }
     if (errors.length > 0) {

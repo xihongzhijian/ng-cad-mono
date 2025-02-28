@@ -16,7 +16,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  background-color: white;
+  background-color: var(--mat-sys-surface);
 }
 app-lrsj-suanliao-data.hidden:has(+ app-lrsj-suanliao-cads:not(.hidden)),
 app-lrsj-suanliao-data:not(.hidden) + app-lrsj-suanliao-cads.hidden {

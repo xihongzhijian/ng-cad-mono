@@ -111,4 +111,9 @@ export class AppComponent {
       el.select();
     }
   }
+
+  isDarkMode = this.status.isDrakMode;
+  toggleDarkMode() {
+    this.isDarkMode.update((v) => !v);
+  }
 }

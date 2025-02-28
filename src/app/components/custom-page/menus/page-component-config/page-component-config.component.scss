@@ -7,7 +7,7 @@
   width: 100%;
 }
 .item {
-  color: black;
+  color: var(--mat-sys-on-surface);
   cursor: move;
   &.active,
   &.hover {
@@ -21,7 +21,7 @@
     --level-size: 5px;
 
     .level {
-      background: black;
+      background: var(--mat-sys-on-surface);
       width: var(--level-size);
       height: 1px;
       margin: 0;
@@ -31,7 +31,7 @@
         display: block;
         width: 1px;
         height: 20px;
-        background: black;
+        background: var(--mat-sys-on-surface);
         transform: translateY(-100%);
       }
     }

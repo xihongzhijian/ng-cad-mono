@@ -30,7 +30,7 @@
   padding: 10px;
   margin: 10px;
   border: var(--border);
-  background-color: white;
+  background-color: var(--mat-sys-surface);
 
   :not(.out-of-page) {
     font-family: "宋体";
@@ -131,7 +131,7 @@ $cads-border: solid 1px grey;
   }
 }
 
-$info-border: solid 1px black;
+$info-border: solid 1px var(--mat-sys-on-surface);
 .info {
   display: flex;
   flex-wrap: wrap;
@@ -267,8 +267,8 @@ $info-border: solid 1px black;
 }
 .form {
   flex: 0 0 auto;
-  background-color: white;
-  box-shadow: 1px 1px 10px 1px rgba(0, 0, 0, 0.3);
+  background-color: var(--mat-sys-surface);
+  box-shadow: var(--mat-sys-level1);
   --label-width: auto;
   --label-height: 16px;
   --value-height: 17px;
@@ -302,7 +302,7 @@ $info-border: solid 1px black;
     flex-direction: row;
     align-items: center;
     flex: 1 1 0;
-    --border: 1px solid black;
+    --border: 1px solid var(--mat-sys-on-surface);
 
     > * {
       margin: 0;
@@ -357,7 +357,7 @@ $info-border: solid 1px black;
   --label-width: 45px;
 
   .item {
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid var(--mat-sys-on-surface);
 
     .value {
       font-weight: bold;
@@ -408,7 +408,7 @@ $info-border: solid 1px black;
   --label-height: 15px;
   --value-height: 15px;
   --label-width: 70px;
-  --border: 1px solid black;
+  --border: 1px solid var(--mat-sys-on-surface);
 
   .title {
     padding: 0 0 2px 0;

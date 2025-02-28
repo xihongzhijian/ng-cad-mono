@@ -4,8 +4,8 @@
       <mat-card class="card">
         <div class="zhankai-form">
           <div class="toolbar">
-            <button mat-flat-button (click)="copyItem(i)">复制</button>
-            <button mat-flat-button (click)="removeItem(i)">删除</button>
+            <button mat-button (click)="copyItem(i)">复制</button>
+            <button mat-button (click)="removeItem(i)">删除</button>
           </div>
           <div class="fullwidth" style="display: flex; align-items: center">
             <mat-checkbox
@@ -13,7 +13,7 @@
               [checked]="checkedIndices.has(i)"
               (change)="onCheckboxChange($event, i)"
             ></mat-checkbox>
-            <mat-form-field style="font-weight: bold; color: #ff5e00">
+            <mat-form-field style="font-weight: bold">
               <mat-label>名字</mat-label>
               <input matInput type="text" [(ngModel)]="item.name" (input)="validate()" name="name" [errorStateMatcher]="nameMatcher" />
               @if (nameErrorMsg[i]) {

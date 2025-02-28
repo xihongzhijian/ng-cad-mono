@@ -832,7 +832,7 @@ export const generateLineTexts2 = (data: CadData) => {
 };
 
 export const uploadAndReplaceCad = async (file: File, data: CadData, isMain: boolean, message: MessageService, http: CadDataService) => {
-  const content = `确定要上传<span style="color:red">${file.name}</span>并替换<span style="color:red">${data.name}</span>的数据吗？`;
+  const content = `确定要上传<span class="error">${file.name}</span>并替换<span class="error">${data.name}</span>的数据吗？`;
   const yes = await message.confirm(content);
   if (yes) {
     const resData = await http.uploadDxf(file);

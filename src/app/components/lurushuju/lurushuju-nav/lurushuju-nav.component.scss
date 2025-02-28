@@ -18,7 +18,8 @@
 .menchaungs {
   .menchuang-header {
     width: 100%;
-    background-color: rgb(237, 191, 95);
+    background-color: var(--mat-sys-primary-fixed);
+    color: var(--mat-sys-on-primary-fixed);
     padding: 5px;
     align-items: center;
 
@@ -38,7 +39,7 @@
     padding: 5px;
     &.active,
     &:hover {
-      background-color: lightgray;
+      background-color: var(--mat-sys-outline-variant);
     }
 
     .gongyi-header {
@@ -66,7 +67,7 @@
     width: 100%;
     justify-content: flex-start;
     &.active {
-      background: lightgray;
+      background: var(--mat-sys-outline-variant);
     }
   }
 }

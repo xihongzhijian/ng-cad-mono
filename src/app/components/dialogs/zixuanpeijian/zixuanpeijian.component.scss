@@ -12,7 +12,7 @@
   flex-wrap: wrap;
 }
 
-$border: 1px solid lightgray;
+$border: 1px solid var(--mat-sys-outline-variant);
 .types-info-item {
   padding: 5px;
   flex: 0 0 33.33%;
@@ -44,7 +44,7 @@ $border: 1px solid lightgray;
     position: absolute;
     left: 0;
     bottom: 5px;
-    color: white;
+    color: var(--mat-sys-surface);
   }
 }
 

@@ -27,7 +27,7 @@
 .floating-dialog {
   position: fixed;
   z-index: var(--z-index-base);
-  background-color: white;
+  background-color: var(--mat-sys-surface);
   box-shadow: var(--mat-sys-level4);
   --corner-size: var(--mat-sys-corner-extra-large);
   border-radius: var(--corner-size);

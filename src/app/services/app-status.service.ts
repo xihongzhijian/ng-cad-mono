@@ -915,4 +915,16 @@ export class AppStatusService {
     });
     return highlightedEntities;
   }
+
+  private _isDrakModeKey = "isDrakMode";
+  isDrakMode = signal(local.load(this._isDrakModeKey) ?? false);
+  isDrakModeEff = effect(() => {
+    const isDrakMode = this.isDrakMode();
+    local.save(this._isDrakModeKey, isDrakMode);
+    if (isDrakMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  });
 }

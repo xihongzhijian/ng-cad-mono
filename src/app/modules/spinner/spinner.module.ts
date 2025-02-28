@@ -32,9 +32,9 @@ const spinnerTypeList = new ListRandom(spinnerTypes);
 @NgModule({
   imports: [
     NgxUiLoaderModule.forRoot({
-      fgsColor: "#2196f3",
-      bgsColor: "#2196f3",
-      pbColor: "#2196f3",
+      fgsColor: "var(--mat-sys-primary)",
+      bgsColor: "var(--mat-sys-primary)",
+      pbColor: "var(--mat-sys-primary)",
       fgsType: spinnerTypeList.next(),
       bgsType: spinnerTypeList.next(),
       bgsSize: 30,

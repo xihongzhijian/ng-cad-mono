@@ -14,5 +14,12 @@
       }
       <app-message-test></app-message-test>
     </mat-menu>
+    <button mat-icon-button (click)="toggleDarkMode()">
+      @if (isDarkMode()) {
+        <mat-icon>light_mode</mat-icon>
+      } @else {
+        <mat-icon>dark_mode</mat-icon>
+      }
+    </button>
   </div>
 }

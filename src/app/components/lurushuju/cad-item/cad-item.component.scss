@@ -50,7 +50,7 @@
     .key {
       flex: 0 0 auto;
       &.disabled {
-        color: gray;
+        color: var(--mat-sys-outline);
       }
     }
 
