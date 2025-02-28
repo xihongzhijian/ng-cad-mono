@@ -234,8 +234,16 @@ export class AppStatusService {
     this.setCadStatuses(statusesCurr);
   }
   enterCadStatus(status: CadStatus) {
-    if (!this.hasCadStatus((v) => v.isEquals(status))) {
-      this.setCadStatuses([...this.cadStatuses(), status]);
+    const statuses = this.cadStatuses();
+    const status1 = statuses.find((v) => v.isEquals(status));
+    if (status1) {
+      return;
+    }
+    const status2 = statuses.find((v) => v.name === status.name);
+    if (status2) {
+      this.setCadStatuses([...statuses.filter((v) => v.name !== status.name), status]);
+    } else {
+      this.setCadStatuses([...statuses, status]);
     }
   }
   leaveCadStatus(status: CadStatus) {

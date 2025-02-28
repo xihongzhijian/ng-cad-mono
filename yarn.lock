@@ -5159,15 +5159,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jquery@npm:^3.5.32":
-  version: 3.5.32
-  resolution: "@types/jquery@npm:3.5.32"
-  dependencies:
-    "@types/sizzle": "npm:*"
-  checksum: 10c0/4a17ad6819b89026c21323656ab01b0b263f9d470910a87c8740920ff98319d503c7352b85b50134a39724ecbfccabc73aa4c741dfdd460cf8bbe714f9259054
-  languageName: node
-  linkType: hard
-
 "@types/json-schema@npm:*, @types/json-schema@npm:^7.0.15":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -5352,13 +5343,6 @@ __metadata:
   version: 8.1.1
   resolution: "@types/sinonjs__fake-timers@npm:8.1.1"
   checksum: 10c0/e2e6c425a548177c0930c2f9b82d3951956c9701b9ebf59623d5ad2c3229c523d3c0d598e79fe7392a239657abd3dbe3676be0650ce438bcd1199ee3b617a4d7
-  languageName: node
-  linkType: hard
-
-"@types/sizzle@npm:*":
-  version: 2.3.9
-  resolution: "@types/sizzle@npm:2.3.9"
-  checksum: 10c0/db0277ff62e8ebe6cdae2020fd045fd7fd19f29a3a2ce13c555b14fb00e105e79004883732118b9f2e8b943cb302645e9eddb4e7bdeef1a171da679cd4c32b72
   languageName: node
   linkType: hard
 
@@ -10800,13 +10784,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jquery@npm:^3.7.1":
-  version: 3.7.1
-  resolution: "jquery@npm:3.7.1"
-  checksum: 10c0/808cfbfb758438560224bf26e17fcd5afc7419170230c810dd11f5c1792e2263e2970cca8d659eb84fcd9acc301edb6d310096e450277d54be4f57071b0c82d9
-  languageName: node
-  linkType: hard
-
 "js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -12272,7 +12249,6 @@ __metadata:
     "@types/color": "npm:^4.2.0"
     "@types/jasmine": "npm:~5.1.7"
     "@types/jasminewd2": "npm:~2.0.13"
-    "@types/jquery": "npm:^3.5.32"
     "@types/lodash": "npm:^4.17.15"
     "@types/luxon": "npm:^3.4.2"
     "@types/md5": "npm:^2.3.5"
@@ -12303,7 +12279,6 @@ __metadata:
     html-to-image: "npm:^1.11.13"
     jasmine-core: "npm:~5.6.0"
     jasmine-spec-reporter: "npm:~7.0.0"
-    jquery: "npm:^3.7.1"
     jsbarcode: "npm:^3.11.6"
     karma: "npm:~6.4.4"
     karma-chrome-launcher: "npm:~3.2.0"

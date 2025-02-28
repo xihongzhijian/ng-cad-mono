@@ -349,19 +349,17 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   infoTabGroup = viewChild(MatTabGroup);
   infoTabGroupEff = effect(() => {
     const infoTabGroup = this.infoTabGroup();
-    if (!infoTabGroup) {
-      return;
-    }
     const setInfoTabs = () => {
       const {infoTabIndex, scroll} = this.config.getConfig();
-      if (typeof infoTabIndex === "number" && infoTabIndex >= 0) {
+      if (infoTabGroup && typeof infoTabIndex === "number" && infoTabIndex >= 0) {
         infoTabGroup.selectedIndex = infoTabIndex;
       }
       if (scroll) {
         this._setTabScroll();
       }
     };
-    infoTabGroup.animationDone.pipe(take(1)).subscribe(() => {
+    setInfoTabs();
+    infoTabGroup?.animationDone.pipe(take(1)).subscribe(() => {
       setTimeout(() => {
         setInfoTabs();
       }, 0);
@@ -381,11 +379,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
 
   private _scrollbars = viewChildren(NgScrollbar);
   private get _scrollbar() {
-    const scrollbar = this._scrollbars().at(this.tabIndex());
-    if (!scrollbar) {
-      throw new Error("Failed to access scrollbar component.");
-    }
-    return scrollbar;
+    return this._scrollbars().at(this.tabIndex());
   }
   scrollbarEff = effect(() => {
     setTimeout(() => {
@@ -397,7 +391,8 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   private _scrollChangeLock = false;
 
   onScrollChange = debounce(() => {
-    if (this._scrollChangeLock) {
+    const scrollbar = this._scrollbar;
+    if (this._scrollChangeLock || !scrollbar) {
       return;
     }
     const scroll = this.config.getConfig("scroll");
@@ -463,11 +458,15 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   }
 
   private async _setTabScroll() {
+    const scrollbar = this._scrollbar;
+    if (!scrollbar) {
+      return;
+    }
     const scroll = this.config.getConfig("scroll");
     const key = "tab" + this.tabIndex();
     if (scroll[key] !== undefined) {
       this._scrollChangeLock = true;
-      this._scrollbar.scrollTo({top: scroll[key]});
+      scrollbar.scrollTo({top: scroll[key]});
       this._scrollChangeLock = false;
     }
   }

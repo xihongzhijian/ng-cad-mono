@@ -1,9 +1,20 @@
-import {ChangeDetectionStrategy, Component, computed, effect, forwardRef, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  forwardRef,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal
+} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {toFixed} from "@app/utils/func";
 import {environment} from "@env";
 import {CadData, CadEntities, CadEventCallBack, CadLineLike, CadViewerConfig} from "@lucilor/cad-viewer";
-import {selectFiles} from "@lucilor/utils";
+import {selectFiles, waitFor} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -28,6 +39,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadFentiConfigComponent implements OnInit, OnDestroy {
+  el = inject<ElementRef<HTMLElement>>(ElementRef);
   http = inject(CadDataService);
   message = inject(MessageService);
   status = inject(AppStatusService);
@@ -76,8 +88,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
   });
   pairedLinesLineLengths = computed(() => {
     const lengths: string[] = [];
-    const l = this.status.cadTotalLength();
-    console.log(l);
+    this.status.cadTotalLength();
     const {rawEntities} = getCadFentiInfo(this.status.cad.data);
     for (const item of this.pairedLinesList()) {
       for (const id of item.ids) {
@@ -107,7 +118,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
               name: "linear_scale",
               isDefault: true,
               class: i === index ? "accent" : "",
-              onClick: () => this.selectPairedLines(i)
+              onClick: () => this.togglePairedLines(i)
             },
             {
               name: "add_circle",
@@ -127,7 +138,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
             v.dl = val;
             this.pairedLinesList.set([...list]);
           },
-          onClick: () => this.selectPairedLines(i)
+          onClick: () => this.togglePairedLines(i)
         },
         {
           type: "boolean",
@@ -139,7 +150,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
             v.isPinjie = val;
             this.pairedLinesList.set([...list]);
           },
-          onClick: () => this.selectPairedLines(i)
+          onClick: () => this.togglePairedLines(i)
         }
       ];
       return getInputInfoGroup(infos, {style: {width: "100%"}});
@@ -151,23 +162,40 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
     if (typeof i === "number") {
       pairedLinesList.splice(i, 0, item);
     } else {
-      pairedLinesList.push(item);
+      i = pairedLinesList.push(item) - 1;
     }
     this.status.cad.data.分体对应线 = pairedLinesList;
     this.pairedLinesList.set(pairedLinesList);
+    this.selectPairedLines(i);
   }
   removePairedLines(i: number) {
     const pairedLinesList = this.pairedLinesList().slice();
     pairedLinesList.splice(i, 1);
     this.status.cad.data.分体对应线 = pairedLinesList;
     this.pairedLinesList.set(pairedLinesList);
+    this.deselectPairedLines(i);
+    const status = this.status.findCadStatus((v) => v instanceof CadStatusFentiPairedLines);
+    if (status && status.index > i) {
+      this.togglePairedLines(status.index - 1);
+    }
   }
   private _pairedLinesInfo: {
     onCadEntitiesSelect: CadEventCallBack<"entitiesselect">;
     onCadEntitiesUnselect: CadEventCallBack<"entitiesunselect">;
     hotKeys: CadViewerConfig["hotKeys"];
   } | null = null;
-  selectPairedLines(i: number) {
+  async selectPairedLines(i: number) {
+    this.status.enterCadStatus(new CadStatusFentiPairedLines(i));
+    const el = this.el.nativeElement;
+    const target = await waitFor(() => el.querySelectorAll(".cad-fenti-paired-lines-item").item(i));
+    if (target) {
+      target.scrollIntoView({behavior: "smooth"});
+    }
+  }
+  async deselectPairedLines(i: number) {
+    this.status.leaveCadStatus(new CadStatusFentiPairedLines(i));
+  }
+  async togglePairedLines(i: number) {
     this.status.toggleCadStatus(new CadStatusFentiPairedLines(i));
   }
   pairedLinesStatusEff = this.status.getCadStatusEffect(

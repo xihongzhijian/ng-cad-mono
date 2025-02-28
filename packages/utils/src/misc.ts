@@ -76,28 +76,39 @@ export interface WaitForOpts {
   interval?: number;
   timeout?: number;
 }
-export const waitFor = async <T>(getter: () => T | null, opts?: WaitForOpts) => {
+export const waitFor = async <T>(getter: () => T | null | undefined, opts?: WaitForOpts) => {
   const defaultOpts: Required<WaitForOpts> = {
-    interval: 500,
+    interval: 100,
     timeout: 10000
   };
   opts = {...defaultOpts, ...opts};
-  return new Promise<NonNullable<T>>((resolve, reject) => {
+  const getVal = () => {
     const val = getter();
-    if (!isTypeOf(val, ["undefined", "null", "NaN"])) {
-      resolve(val as NonNullable<T>);
-    } else {
-      const i = setInterval(() => {
-        const val2 = getter();
-        if (val2) {
-          clearInterval(i);
-          resolve(val2);
-        }
-      }, opts.interval);
-      setTimeout(() => {
-        clearInterval(i);
-        reject(new Error("Timeout!"));
-      }, opts.timeout);
+    if (val === null || val === undefined) {
+      return null;
     }
+    return val;
+  };
+  let val = getVal();
+  if (val !== null) {
+    return val;
+  }
+  await timeout(0);
+  val = getVal();
+  if (val !== null) {
+    return val;
+  }
+  return new Promise<NonNullable<T>>((resolve, reject) => {
+    const i = setInterval(() => {
+      val = getVal();
+      if (val !== null) {
+        clearInterval(i);
+        resolve(val);
+      }
+    }, opts.interval);
+    setTimeout(() => {
+      clearInterval(i);
+      reject(new Error("Timeout!"));
+    }, opts.timeout);
   });
 };
