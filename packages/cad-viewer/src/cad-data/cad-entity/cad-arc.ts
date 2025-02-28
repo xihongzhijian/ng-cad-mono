@@ -1,4 +1,4 @@
-import {Angle, Arc, Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
+import {Angle, Arc, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {getVectorFromArray, purgeObject} from "../../cad-utils";
 import {EntityType} from "../cad-types";
 import {CadLineLike} from "./cad-line-like";
@@ -45,7 +45,6 @@ export class CadArc extends CadLineLike {
   }
 
   protected _transform(matrix: MatrixLike) {
-    matrix = new Matrix(matrix);
     const curve = this.curve;
     curve.transform(matrix);
     this.center = curve.center;

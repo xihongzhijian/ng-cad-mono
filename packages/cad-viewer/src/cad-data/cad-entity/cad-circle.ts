@@ -1,4 +1,4 @@
-import {Angle, Arc, Matrix, ObjectOf, Point, Rectangle} from "@lucilor/utils";
+import {Angle, Arc, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {getVectorFromArray, purgeObject} from "../../cad-utils";
 import {EntityType} from "../cad-types";
 import {CadLineLike} from "./cad-line-like";
@@ -36,7 +36,7 @@ export class CadCircle extends CadLineLike {
     this.radius = data.radius ?? 0;
   }
 
-  protected _transform(matrix: Matrix) {
+  protected _transform(matrix: MatrixLike) {
     this.center.transform(matrix);
   }
 

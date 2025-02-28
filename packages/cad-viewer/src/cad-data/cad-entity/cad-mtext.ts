@@ -1,4 +1,4 @@
-import {Matrix, ObjectOf, Point, Rectangle} from "@lucilor/utils";
+import {Matrix, MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {cloneDeep, isEqual} from "lodash";
 import {getVectorFromArray, purgeObject} from "../../cad-utils";
 import {FontStyle} from "../cad-styles";
@@ -49,8 +49,15 @@ export class CadMtext extends CadEntity {
     };
   }
 
-  protected _transform(matrix: Matrix, isFromParent?: boolean) {
+  protected _transform(matrix: MatrixLike, isFromParent?: boolean) {
     this.insert.transform(matrix);
+    const scale = new Matrix(matrix).scale();
+    if (scale[0] < 0) {
+      this.anchor.x = 1 - this.anchor.x;
+    }
+    if (scale[1] < 0) {
+      this.anchor.y = 1 - this.anchor.y;
+    }
     const m = new Matrix(matrix);
     if (this.info.isLengthText || this.info.isGongshiText) {
       if (!isFromParent) {
