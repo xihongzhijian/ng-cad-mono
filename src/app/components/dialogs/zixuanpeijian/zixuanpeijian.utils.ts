@@ -750,6 +750,9 @@ export const calcZxpj = async (
   const negativeMokuaiVars: string[] = [];
   for (const [menshanKey, vars] of Object.entries(mokuaiVars)) {
     for (const [name, value] of Object.entries(vars)) {
+      if (!/.+总[宽高]/.test(name)) {
+        continue;
+      }
       const n = Number(value);
       if (!(n > 0)) {
         negativeMokuaiVars.push(`${menshanKey} ${name} = ${n}`);
@@ -757,7 +760,7 @@ export const calcZxpj = async (
     }
   }
   if (negativeMokuaiVars.length > 0) {
-    const msg = `模块的总宽总高不能是负数`;
+    const msg = `模块的总宽总高必须大于0`;
     await message.error({content: msg, details: negativeMokuaiVars});
     return {fulfilled: false, error: {message: msg, details: negativeMokuaiVars}};
   }
