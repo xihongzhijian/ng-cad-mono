@@ -15,8 +15,9 @@
   &:not(:last-child) {
     border-bottom: var(--border);
   }
-  &.active {
-    background-color: lightgray;
+  &.active,
+  &:hover {
+    background-color: var(--mat-sys-outline-variant);
   }
 }
 

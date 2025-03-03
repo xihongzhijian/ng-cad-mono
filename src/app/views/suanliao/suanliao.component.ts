@@ -62,6 +62,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.wmm.postMessage("suanliaoReady");
+    document.documentElement.classList.remove("dark");
   }
 
   ngOnDestroy() {

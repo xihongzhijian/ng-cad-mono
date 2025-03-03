@@ -1,7 +1,7 @@
 @use "@angular/material" as mat;
 @use "./mat-theme-colors.scss" as mat-colors;
 
-html {
+:root {
   @include mat.theme(
     (
       color: (
@@ -66,12 +66,10 @@ html {
   & {
     font: var(--mat-sys-body-large);
     font-size: 15px;
-    color: var(--mat-sys-on-surface);
-    background-color: var(--mat-sys-surface);
   }
 }
 
-html {
+:root {
   color-scheme: light;
   @include mat-colors.light;
   &.dark {

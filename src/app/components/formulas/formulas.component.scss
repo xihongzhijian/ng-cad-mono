@@ -3,17 +3,12 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    color: black;
     padding: 3px 0;
     align-items: center;
 
     .formula-key {
       text-align: right;
       color: var(--mat-sys-primary);
-    }
-
-    .formula-value {
-      color: black;
     }
 
     .formula-eq,

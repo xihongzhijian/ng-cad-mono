@@ -185,7 +185,7 @@ export const getMokuaiTitleBase = (
     const a = document.createElement("a");
     a.target = "_blank";
     a.href = url;
-    a.style.color = "black";
+    a.style.color = "var(--mat-sys-on-surface)";
     a.textContent = title;
     return a.outerHTML;
   };
