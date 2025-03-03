@@ -10982,7 +10982,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonpath-plus@npm:^9.0.0 || ^10.2.0":
+"jsonpath-plus@npm:^10.3.0":
   version: 10.3.0
   resolution: "jsonpath-plus@npm:10.3.0"
   dependencies:
@@ -12304,7 +12304,7 @@ __metadata:
     tsx: "npm:^4.19.3"
     typescript: "npm:~5.7.3"
     uuid: "npm:^11.1.0"
-    vanilla-jsoneditor: "npm:^2.4.0"
+    vanilla-jsoneditor: "npm:^3.0.0"
     zone.js: "npm:~0.15.0"
   languageName: unknown
   linkType: soft
@@ -15849,9 +15849,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vanilla-jsoneditor@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "vanilla-jsoneditor@npm:2.4.0"
+"vanilla-jsoneditor@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "vanilla-jsoneditor@npm:3.0.0"
   dependencies:
     "@codemirror/autocomplete": "npm:^6.18.1"
     "@codemirror/commands": "npm:^6.7.1"
@@ -15872,14 +15872,14 @@ __metadata:
     immutable-json-patch: "npm:^6.0.1"
     jmespath: "npm:^0.16.0"
     json-source-map: "npm:^0.6.1"
-    jsonpath-plus: "npm:^9.0.0 || ^10.2.0"
+    jsonpath-plus: "npm:^10.3.0"
     jsonrepair: "npm:^3.0.0"
     lodash-es: "npm:^4.17.21"
     memoize-one: "npm:^6.0.0"
     natural-compare-lite: "npm:^1.4.0"
     svelte: "npm:^3.54.0 || ^4.0.0 || ^5.0.0"
     vanilla-picker: "npm:^2.12.3"
-  checksum: 10c0/299af9d74f49ca9855187f50685ffabc14966bd628b7076463d8af1bc73227ddf2719d9acb4874b6b691e04e001ea9ea649bc989f3a4774bb4ea197918529218
+  checksum: 10c0/a3bb47dd496d6b0d6b3a1b46960b2eebbc30d1748e0cf07275019a564fabf4ef2c324cbc0aa706cea42e537d11ba4da20a28feee9004e7732c98967d70bcf0bb
   languageName: node
   linkType: hard
 
