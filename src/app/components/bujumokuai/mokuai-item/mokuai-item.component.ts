@@ -696,14 +696,14 @@ export class MokuaiItemComponent {
   nodeTextVars = computed(() => {
     const reg = /"(numF|f)ormula":"([^"]+)"/g;
     const text = this.nodeText();
-    const vars: string[] = [];
+    const vars = new Set<string>();
     if (!text) {
       return vars;
     }
-    return text
-      .matchAll(reg)
-      .toArray()
-      .map((v) => v[2]);
+    text.matchAll(reg).forEach((v) => {
+      vars.add(v[2]);
+    });
+    return vars;
   });
   updateNodeTextReplacerItemCount(item: NodeTextReplacerItem) {
     const text = this.nodeText();
@@ -727,6 +727,8 @@ export class MokuaiItemComponent {
     this.nodeTextReplacerItems.update((v) => [...v, item]);
   }
   nodeTextReplacerTableInfo = computed(() => {
+    const table = this.nodeTextReplacerTable();
+    const selectedItems = table?.getSelectedItems();
     const info: TableRenderInfo<NodeTextReplacerItem> = {
       data: this.nodeTextReplacerItems(),
       columns: [
@@ -779,12 +781,13 @@ export class MokuaiItemComponent {
         }
       ],
       editMode: true,
-      rowSelection: {mode: "multiple"},
+      rowSelection: {mode: "multiple", selectedItems},
       toolbarButtons: {
         add: true,
         remove: true,
         extra: [
-          {event: "replace", title: "开始替换", onClick: () => this.replaceNodeText()},
+          {event: "replace", title: "开始替换", onClick: () => this.replaceNodeVars()},
+          {event: "remove", title: "将选中公式替换为空", onClick: () => this.removeNodeVars()},
           {
             event: "showText",
             hidden: environment.production,
@@ -801,6 +804,7 @@ export class MokuaiItemComponent {
     };
     return info;
   });
+  nodeTextReplacerTable = viewChild<TableComponent<NodeTextReplacerItem>>("nodeTextReplacerTable");
   async getNodeText() {
     const text = this.nodeText();
     if (!text) {
@@ -827,7 +831,7 @@ export class MokuaiItemComponent {
     item.fulfilled = undefined;
     this.nodeTextReplacerItems.update((v) => [...v]);
   }
-  async replaceNodeText() {
+  async replaceNodeVars() {
     const text0 = await this.getNodeText();
     if (!text0) {
       return;
@@ -846,6 +850,32 @@ export class MokuaiItemComponent {
     }
     this.nodeTextReplacerItems.update((v) => [...v]);
     this.setNodeText(text);
-    await this.message.alert("替换完成");
+    await this.message.snack("替换完成");
+  }
+  async removeNodeVars() {
+    const text0 = await this.getNodeText();
+    const table = this.nodeTextReplacerTable();
+    if (!text0 || !table) {
+      return;
+    }
+    const items = table.getSelectedItems();
+    if (items.length < 1) {
+      await this.message.error("没有选中");
+      return;
+    }
+    let text = text0;
+    for (const item of items) {
+      const {from} = item;
+      if (!from) {
+        continue;
+      }
+      try {
+        text = text.replaceAll(`"${from}"`, `""`);
+        item.count = 0;
+      } catch {}
+    }
+    this.nodeTextReplacerItems.update((v) => [...v]);
+    this.setNodeText(text);
+    await this.message.snack("替换完成");
   }
 }

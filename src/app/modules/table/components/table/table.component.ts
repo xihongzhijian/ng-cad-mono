@@ -196,6 +196,9 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       this.rowSelectionChange.emit({items: model.selected});
     });
     this._rowSelection = model;
+    if (rowSelection?.selectedItems) {
+      model.select(...rowSelection.selectedItems);
+    }
     return model;
   }
 

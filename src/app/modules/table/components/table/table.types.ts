@@ -16,7 +16,7 @@ export interface TableRenderInfo<T> {
   editMode?: boolean;
   sortable?: boolean;
   filterable?: boolean | TableRenderInfoFilterable<T>;
-  rowSelection?: RowSelection;
+  rowSelection?: RowSelection<T>;
   activeRows?: number[];
   dataTransformer?: DataTransformer<T>;
   toolbarButtons?: {
@@ -40,10 +40,11 @@ export interface TableRenderInfoFilterable<T> {
   fields?: (keyof T)[];
 }
 
-export interface RowSelection {
+export interface RowSelection<T> {
   mode: "single" | "multiple";
   hideCheckBox?: boolean;
   noActive?: boolean;
+  selectedItems?: T[];
 }
 
 export interface TableButton<T = void> {
