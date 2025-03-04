@@ -55,6 +55,7 @@ export const mokuaiSubmitBefore = (item: Partial<MokuaiItem>) => {
 };
 export const mokuaiSubmitAfter = (item: MokuaiItem) => {
   if (item.自定义数据) {
+    updateMokuaiCustomData(item.自定义数据, null);
     if (isEmpty(item.自定义数据.下单时需要满足选项)) {
       item.自定义数据.下单时需要满足选项[""] = "";
     }

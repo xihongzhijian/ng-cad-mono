@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, Inject} from "@angular/core";
+import {AfterViewInit, ChangeDetectionStrategy, Component, HostBinding, inject, Inject, signal} from "@angular/core";
 import {FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -28,21 +28,25 @@ export interface LoginResponse {
   selector: "app-login-form",
   templateUrl: "./login-form.component.html",
   styleUrls: ["./login-form.component.scss"],
-  imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule]
+  imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginFormComponent implements AfterViewInit {
+  private message = inject(MessageService);
+  private spinner = inject(SpinnerService);
+
+  @HostBinding("class") class = "ng-page";
+
   form = getFormGroup({
     user: getFormControl(""),
     password: getFormControl("")
   });
-  passwordVisible = false;
+  passwordVisible = signal(false);
   shownSpinners: SpinnerService["shownSpinners"] = {};
 
   constructor(
     public dialogRef: MatDialogRef<LoginFormComponent, boolean>,
-    @Inject(MAT_DIALOG_DATA) public data: LoginFormData,
-    private message: MessageService,
-    private spinner: SpinnerService
+    @Inject(MAT_DIALOG_DATA) public data: LoginFormData
   ) {
     if (!this.data) {
       this.data = {project: {id: "?", name: "???"}, baseUrl: ""};
@@ -103,10 +107,9 @@ export class LoginFormComponent implements AfterViewInit {
     open(`${this.data.baseUrl}signUp/index`);
   }
 
-  togglePasswordVisible(event: Event) {
-    this.passwordVisible = !this.passwordVisible;
-    event.stopPropagation();
+  togglePasswordVisible() {
+    this.passwordVisible.update((v) => !v);
   }
 }
 
-export const openLoginFormDialog = getOpenDialogFunc<LoginFormComponent, LoginFormData, boolean>(LoginFormComponent);
+export const openLoginFormDialog = getOpenDialogFunc<LoginFormComponent, LoginFormData, boolean>(LoginFormComponent, {width: "50%"});
