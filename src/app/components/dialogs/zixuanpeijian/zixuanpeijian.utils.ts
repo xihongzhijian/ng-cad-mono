@@ -2,6 +2,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {getCadTotalLength, getShuangxiangLineRects, setShuangxiangLineRects, splitShuangxiangCad} from "@app/cad/utils";
 import {Formulas, toFixed} from "@app/utils/calc";
 import {getNamesStr} from "@app/utils/error-message";
+import {getLinkStr} from "@app/utils/get-value";
 import {matchCadData} from "@app/utils/mongo";
 import {nameEquals} from "@app/utils/zhankai";
 import zxpjTestData from "@assets/json/zixuanpeijian.json";
@@ -153,23 +154,47 @@ export const getMsbjInfoTitle = (opts: GetMsbjInfoTitleOpts) => {
   return arr.join("");
 };
 
-export interface GetMokuaiTitleOpts {
+export const getXhmrmsbjTitle = (xhmrmsbj: XhmrmsbjData | null | undefined, opts: {status?: AppStatusService} = {}) => {
+  if (!xhmrmsbj) {
+    return "";
+  }
+  let str = "型号：";
+  const {status} = opts;
+  const name = xhmrmsbj.name || "";
+  if (status) {
+    const url = status.getUrl(["/型号默认门扇布局"], {queryParams: {id: xhmrmsbj.id}});
+    str += getLinkStr(url, name);
+  } else {
+    str += name;
+  }
+  return str;
+};
+
+export interface GetMokuaiTitleOptsBase {
   门扇名字?: string;
   层名字?: string;
   mokuaiNameShort?: boolean;
   xhmrmsbj?: XhmrmsbjData | null;
 }
-export const getMokuaiTitleBase = (
-  item: ZixuanpeijianMokuaiItem,
-  opts: GetMokuaiTitleOpts & {mokuaiUrl?: string; xhmrmsbjUrl?: string} = {}
-) => {
+export interface GetMokuaiTitleOptsNormal extends GetMokuaiTitleOptsBase {
+  status?: undefined;
+  isVersion2024?: undefined;
+}
+export interface GetMokuaiTitleOptsWithUrl extends GetMokuaiTitleOptsBase {
+  status: AppStatusService;
+  isVersion2024: boolean;
+}
+export type GetMokuaiTitleOpts = GetMokuaiTitleOptsNormal | GetMokuaiTitleOptsWithUrl;
+export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | null | undefined, opts: GetMokuaiTitleOpts = {}) => {
+  if (!item) {
+    return "";
+  }
   const {type1, type2, info} = item;
   if (!type1 && !type2) {
     return "";
   }
   const arr: string[] = [];
   let {门扇名字, 层名字} = opts;
-  const {mokuaiNameShort, mokuaiUrl, xhmrmsbjUrl} = opts;
   if (!门扇名字) {
     门扇名字 = info?.门扇名字;
   }
@@ -181,52 +206,20 @@ export const getMokuaiTitleBase = (
     arr.push(msbjInfoTitle);
   }
   let mokuaiName = type2;
-  const getLink = (url: string, title: string) => {
-    const a = document.createElement("a");
-    a.target = "_blank";
-    a.href = url;
-    a.style.color = "var(--mat-sys-on-surface)";
-    a.textContent = title;
-    return a.outerHTML;
-  };
-  if (mokuaiUrl) {
-    mokuaiName = getLink(mokuaiUrl, mokuaiName);
+  const {xhmrmsbj, status, isVersion2024} = opts;
+  if (status && isVersion2024) {
+    const mokuaiUrl = status.getUrl(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: item.id}});
+    mokuaiName = getLinkStr(mokuaiUrl, mokuaiName);
   }
-  if (!mokuaiNameShort) {
+  if (!opts.mokuaiNameShort) {
     mokuaiName = `模块【${mokuaiName}】`;
   }
   arr.push(mokuaiName);
-  if (xhmrmsbjUrl) {
-    const link = getLink(xhmrmsbjUrl, opts.xhmrmsbj?.name || "");
-    arr.unshift(`型号：${link}<br>`);
+  const xhmrmsbjTitle = getXhmrmsbjTitle(xhmrmsbj, {status});
+  if (xhmrmsbjTitle) {
+    arr.unshift(xhmrmsbjTitle);
   }
   return arr.join("");
-};
-export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null, opts?: GetMokuaiTitleOpts) => {
-  if (!item) {
-    return "";
-  }
-  return getMokuaiTitleBase(item, opts);
-};
-export const getMokuaiTitleWithUrl = (
-  status: AppStatusService,
-  isVersion2024: boolean,
-  item: ZixuanpeijianMokuaiItem | undefined | null,
-  opts?: GetMokuaiTitleOpts
-) => {
-  if (!item) {
-    return "";
-  }
-  if (!isVersion2024) {
-    return getMokuaiTitle(item, opts);
-  }
-  const mokuaiUrl = status.getUrl(["/布局模块"], {queryParams: {page: "模块库", mokuaiId: item.id}});
-  const opts2: Parameters<typeof getMokuaiTitleBase>[1] = {...opts, mokuaiUrl};
-  if (opts?.xhmrmsbj) {
-    const xhmrmsbjUrl = status.getUrl(["/型号默认门扇布局"], {queryParams: {id: opts.xhmrmsbj.id}});
-    opts2.xhmrmsbjUrl = xhmrmsbjUrl;
-  }
-  return getMokuaiTitleBase(item, opts2);
 };
 
 export const getStep1Data = async (
@@ -459,7 +452,7 @@ export const calcZxpj = async (
   };
 
   const getCalcMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null) =>
-    getMokuaiTitleWithUrl(status, isVersion2024, item, {xhmrmsbj: options?.xhmrmsbj});
+    getMokuaiTitle(item, {xhmrmsbj: options?.xhmrmsbj, status, isVersion2024});
   const xhmrmsbj = optionsAll.xhmrmsbj;
   const getMokuaiInfoScbl2 = (item: ZixuanpeijianMokuaiItem) => {
     return getMokuaiInfoScbl(xhmrmsbj?.menshanbujuInfos || {}, item);
@@ -748,19 +741,33 @@ export const calcZxpj = async (
   }
 
   const negativeMokuaiVars: string[] = [];
-  for (const [menshanKey, vars] of Object.entries(mokuaiVars)) {
-    for (const [name, value] of Object.entries(vars)) {
-      if (!/.+总[宽高]/.test(name)) {
-        continue;
+  for (const v of toCalc1) {
+    const mokuaiTitle = getMokuaiTitle(v.item, {status, isVersion2024});
+    const {门扇名字, 模块名字} = v.item.info || {};
+    if (!门扇名字 || !模块名字) {
+      continue;
+    }
+    const varsArr: string[] = [];
+    for (const [name, value] of Object.entries(v.succeedTrim)) {
+      for (const key of nodeFormulasKeysRaw) {
+        const name2 = getNodeFormulasKey(模块名字, key);
+        if (name2 === name) {
+          const n = Number(value);
+          if (!(n > 0)) {
+            varsArr.push(`${name} = ${n}`);
+            varsArr.push(`${name}1 = ${n}?`);
+          }
+          break;
+        }
       }
-      const n = Number(value);
-      if (!(n > 0)) {
-        negativeMokuaiVars.push(`${menshanKey} ${name} = ${n}`);
-      }
+    }
+    if (varsArr.length > 0) {
+      negativeMokuaiVars.push(`${mokuaiTitle}<br>${varsArr.join("<br>")}`);
     }
   }
   if (negativeMokuaiVars.length > 0) {
-    const msg = `模块的总宽总高必须大于0`;
+    const xhmrmsbjTitle = getXhmrmsbjTitle(xhmrmsbj, {status});
+    const msg = `${xhmrmsbjTitle}<br>模块的总宽总高必须大于0`;
     await message.error({content: msg, details: negativeMokuaiVars});
     return {fulfilled: false, error: {message: msg, details: negativeMokuaiVars}};
   }

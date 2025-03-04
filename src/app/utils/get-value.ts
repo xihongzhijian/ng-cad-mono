@@ -90,3 +90,12 @@ export const getDateTimeString = (params?: {dateTime?: DateTime; fmt?: string; o
   const {dateTime = DateTime.now(), fmt = "yyyyMMdd", opts} = params || {};
   return dateTime.toFormat(fmt, opts);
 };
+
+export const getLinkStr = (url: string, title: string) => {
+  const a = document.createElement("a");
+  a.target = "_blank";
+  a.href = url;
+  a.classList.add("text");
+  a.textContent = title;
+  return a.outerHTML;
+};

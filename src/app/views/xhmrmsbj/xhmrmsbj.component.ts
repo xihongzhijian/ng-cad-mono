@@ -43,7 +43,6 @@ import {Step1Data, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeij
 import {
   getFromulasFromString,
   getMokuaiTitle,
-  getMokuaiTitleWithUrl,
   getMsbjInfoTitle,
   getStep1Data,
   isMokuaiItemEqual,
@@ -1708,7 +1707,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   getMokuaiTitle(mokuai: ZixuanpeijianMokuaiItem | null, withUrl: boolean) {
     if (withUrl) {
-      const url = getMokuaiTitleWithUrl(this.status, !!this.data()?.isVersion2024, mokuai, {mokuaiNameShort: true});
+      const url = getMokuaiTitle(mokuai, {mokuaiNameShort: true, status: this.status, isVersion2024: !!this.data()?.isVersion2024});
       return this.domSanitizer.bypassSecurityTrustHtml(url);
     } else {
       return getMokuaiTitle(mokuai, {mokuaiNameShort: true});

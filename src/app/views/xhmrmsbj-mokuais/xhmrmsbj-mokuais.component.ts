@@ -7,7 +7,7 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {Calc} from "@app/utils/calc";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
-import {getMokuaiTitleWithUrl, replaceMenshanName} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
+import {getMokuaiTitle, replaceMenshanName} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {FormulaInfo} from "@components/formulas/formulas.types";
 import {getFormulaInfos} from "@components/formulas/formulas.utils";
 import {CadData} from "@lucilor/cad-viewer";
@@ -45,7 +45,7 @@ export class XhmrmsbjMokuaisComponent {
   ) {}
 
   getMokuaiTitle(mokuai: ZixuanpeijianMokuaiItem) {
-    const url = getMokuaiTitleWithUrl(this.status, this.data.isVersion2024, mokuai);
+    const url = getMokuaiTitle(mokuai, {status: this.status, isVersion2024: this.data.isVersion2024});
     return this.domSanitizer.bypassSecurityTrustHtml(url);
   }
 

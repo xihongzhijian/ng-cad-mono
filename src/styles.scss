@@ -274,3 +274,7 @@ input[type="number"] {
     background-image: url("/n/static/images/selected.png");
   }
 }
+
+a.text {
+  color: var(--mat-sys-on-surface);
+}

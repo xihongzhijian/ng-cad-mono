@@ -1,4 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {provideRouter} from "@angular/router";
 import {MsbjRectsComponent} from "./msbj-rects.component";
 
 describe("MsbjRectsComponent", () => {
@@ -7,7 +8,8 @@ describe("MsbjRectsComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MsbjRectsComponent]
+      imports: [MsbjRectsComponent],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MsbjRectsComponent);
