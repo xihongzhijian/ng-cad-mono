@@ -12,7 +12,6 @@ export interface MsbjData extends ZuoshujuTableData {
   peizhishuju?: string | MsbjPeizhishuju;
   node?: string;
   menshanweizhi?: string;
-  xiaoguotu?: string;
 }
 
 export interface Node2rectData {

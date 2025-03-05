@@ -1,25 +1,21 @@
 .progress-bar {
+  --progress-bar-width: 100%;
+  --progress-bar-height: 50px;
   position: relative;
-  width: 100%;
-  height: 50px;
-  border-radius: 25px;
-  line-height: 50px;
-  font-size: 20px;
-  box-shadow:
-    0 4px 8px 0px rgb(0 0 0 / 20%),
-    0 6px 20px 0px rgb(0 0 0 / 19%);
+  width: var(--progress-bar-width);
+  height: var(--progress-bar-height);
+  border-radius: calc(var(--progress-bar-height) / 2);
+  line-height: var(--progress-bar-height);
+  font-size: calc(var(--progress-bar-height) / 2.5);
+  box-shadow: var(--mat-sys-level2);
   transition: 0.3s;
   cursor: pointer;
   overflow: hidden;
   &:hover {
-    box-shadow:
-      0 4px 8px 0px rgb(0 0 0 / 36%),
-      0 6px 20px 6px rgb(0 0 0 / 19%);
+    box-shadow: var(--mat-sys-level3);
   }
   &:active {
-    box-shadow:
-      0 4px 8px 0px rgb(0 0 0 / 20%),
-      0 6px 20px 0px rgb(0 0 0 / 19%);
+    box-shadow: var(--mat-sys-level4);
   }
 
   .progress-bar-msg {
@@ -43,39 +39,23 @@
     right: 0;
     width: 50%;
     height: 100%;
-    background-color: white;
     transition: 0.3s;
+    background-color: var(--mat-sys-surface);
     mix-blend-mode: soft-light;
   }
 
-  &.progress {
-    background: linear-gradient(90deg, #496eaa, #21eaff, #d82dc4, #21eaff, #496eaa);
-    background-size: 1500% 300%;
-    animation: progress 50s ease infinite;
-  }
+  &.progress,
   &.success {
-    background-color: green;
-    color: white;
+    background-color: var(--mat-sys-primary);
+    color: var(--mat-sys-on-primary);
   }
   &.error {
-    background-color: red;
-    color: white;
+    background-color: var(--mat-sys-error);
+    color: var(--mat-sys-on-error);
   }
   &.warning {
-    background-color: yellow;
-    color: black;
-  }
-}
-
-@keyframes progress {
-  0% {
-    background-position: 0% 0%;
-  }
-  50% {
-    background-position: 50% 100%;
-  }
-  100% {
-    background-position: 100% 0%;
+    background-color: var(--mat-sys-tertiary);
+    color: var(--mat-sys-on-tertiary);
   }
 }
 
@@ -102,11 +82,9 @@ $slide-px: 3px;
   57%,
   100% {
     text-shadow:
-      0 0 4px #ff5fff,
-      0 0 11px #ff5fff,
-      0 0 19px #fa71bc,
-      0 0 40px #fa71bc,
-      0 0 50px #e969f9;
+      0 0 4px var(--mat-sys-on-primary),
+      0 0 12px var(--mat-sys-primary),
+      0 0 24px var(--mat-sys-tertiary);
   }
   20%,
   24%,

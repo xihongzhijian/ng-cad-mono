@@ -46,7 +46,7 @@ export interface ButtonMessageDataButton<T extends string = string> extends Mess
 }
 export interface ButtonMessageData<R extends string = string, S extends string = "取消"> extends BaseMessageData {
   type: "button";
-  buttons: (string | ButtonMessageDataButton<R>)[];
+  buttons: (R | ButtonMessageDataButton<R>)[];
   btnTexts?: {cancel?: S};
 }
 

@@ -9,7 +9,6 @@ import {XhmrmsbjXinghaoConfig} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xin
 import {difference, intersection, isEmpty, mapValues} from "lodash";
 import {
   MenshanFollowerKey,
-  menshanFollowersKeys,
   MenshanKey,
   Shuruzhi,
   XhmrmsbjDataMsbjInfos,
@@ -160,8 +159,11 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
       xinghaopeizhi: this.stringifyField("xinghaoConfig")
     };
     const {raw} = this;
-    for (const key of menshanFollowersKeys) {
-      (data as any)[key] = raw[key];
+    if (this.getHasSeparateMenshanFollowerKeys()) {
+      data.jiaoshanzhengmianhesuoshanzhengmianxiangtong = raw.jiaoshanzhengmianhesuoshanzhengmianxiangtong;
+      data.jiaoshanbeimianhesuoshanbeimianxiangtong = raw.jiaoshanbeimianhesuoshanbeimianxiangtong;
+    } else {
+      data.jiaoshanbujuhesuoshanxiangtong = raw.jiaoshanbujuhesuoshanxiangtong;
     }
     return data;
   }

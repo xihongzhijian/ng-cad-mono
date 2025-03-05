@@ -60,6 +60,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   noMinimize = input(false, {transform: booleanAttribute});
   noMaximize = input(false, {transform: booleanAttribute});
   noClose = input(false, {transform: booleanAttribute});
+  onlyClose = input(false, {transform: booleanAttribute});
   close = output();
 
   dialogEl = viewChild.required<ElementRef<HTMLElement>>("dialogEl");
@@ -173,7 +174,8 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
 
   titleBtns = computed(() => {
     const btns: {icon: string; action: () => void}[] = [];
-    if (!this.noPin()) {
+    const onlyClose = this.onlyClose();
+    if (!onlyClose && !this.noPin()) {
       if (this.pinned()) {
         btns.push({
           icon: "keep_off",
@@ -190,7 +192,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
         });
       }
     }
-    if (!this.noMinimize()) {
+    if (!onlyClose && !this.noMinimize()) {
       btns.push({
         icon: "remove",
         action: () => {
@@ -198,7 +200,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
         }
       });
     }
-    if (!this.noMaximize()) {
+    if (!onlyClose && !this.noMaximize()) {
       btns.push({
         icon: this.maximized() ? "stack" : "check_box_outline_blank",
         action: () => {

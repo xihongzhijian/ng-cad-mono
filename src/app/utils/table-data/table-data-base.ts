@@ -4,6 +4,7 @@ import {tryParseJson} from "../json-helper";
 export interface TableDataBase {
   vid: number;
   mingzi: string;
+  xiaoguotu?: string;
 }
 
 export interface TableDataBase2 extends TableDataBase {
