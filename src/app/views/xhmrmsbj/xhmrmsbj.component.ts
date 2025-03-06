@@ -1626,6 +1626,10 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return await this.wmm.waitForMessage<LastSuanliao | null>("getLastSuanliaoEnd");
   });
   materialResult = computed(() => this.lastSuanliaoManager.data()?.output.materialResult || {});
+  updateLastSuanliaoStart(data: LastSuanliao | null) {
+    this.lastSuanliaoManager.setData(data);
+    return {action: "updateLastSuanliaoEnd"};
+  }
 
   getOrderData() {
     const data = this.data();
@@ -1668,7 +1672,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   async openMokuais() {
     const xhmrmsbj = this.data();
     const xinghao = this.xinghao();
-    const lastSuanliao = await this.lastSuanliaoManager.fetch();
+    const lastSuanliao = await this.lastSuanliaoManager.fetch(true);
     if (!xhmrmsbj || !xinghao || !lastSuanliao) {
       return;
     }
@@ -2085,6 +2089,10 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         ...this.mokuaiInputInfosFormulas().map((v, i) => getInfo(v, "下单显示", i))
       ]
     };
+  }
+  getFloatingDialogInputsStart() {
+    this.lastSuanliaoManager.fetch(true);
+    return {action: "getFloatingDialogInputsEnd", data: this.getFloatingDialogInputs()};
   }
   floatingDialogInputsEff = effect(() => {
     this.wmm.postMessage("updateFloatingDialogInputsStart", this.getFloatingDialogInputs());
