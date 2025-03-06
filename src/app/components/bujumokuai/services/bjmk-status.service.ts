@@ -23,7 +23,7 @@ import {MsbjInfo} from "@views/msbj/msbj.utils";
 import {cloneDeep, difference} from "lodash";
 import {v4} from "uuid";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
-import {getEmptyMokuaiItem, mokuaiSubmitAfter, mokuaiSubmitBefore} from "../mokuai-item/mokuai-item.utils";
+import {mokuaiSubmitAfter, mokuaiSubmitBefore} from "../mokuai-item/mokuai-item.utils";
 
 @Injectable({
   providedIn: "root"
@@ -78,10 +78,13 @@ export class BjmkStatusService {
   }
 
   async getMokuaiWithForm(mokuai?: Partial<MokuaiItem>, opts?: {mokuaiOverride?: Partial<MokuaiItem>; dataList?: DataListComponent}) {
-    const data: MokuaiItem = getEmptyMokuaiItem();
-    if (mokuai) {
-      Object.assign(data, cloneDeep(mokuai));
-    }
+    const data: Partial<MokuaiItem> = {
+      id: mokuai?.id,
+      name: mokuai?.name,
+      type: mokuai?.type,
+      order: mokuai?.order,
+      xiaoguotu: mokuai?.xiaoguotu
+    };
     const {mokuaiOverride, dataList} = opts || {};
     if (mokuaiOverride) {
       Object.assign(data, mokuaiOverride);
@@ -151,20 +154,28 @@ export class BjmkStatusService {
     }
     return null;
   }
-  async editMokuai(mokuai: Partial<MokuaiItem>, opts?: {noForm?: boolean; dataList?: DataListComponent}) {
-    const {noForm, dataList} = opts || {};
-    const mokuai2 = noForm ? cloneDeep(mokuai) : await this.getMokuaiWithForm(mokuai, {dataList});
-    if (mokuai2) {
-      mokuaiSubmitBefore(mokuai2);
-      let mokuai3 = await this.http.getData<MokuaiItem>("ngcad/editPeijianmokuai", {item: mokuai2});
-      if (mokuai3) {
-        mokuaiSubmitAfter(mokuai3);
-        this.mokuaisManager.refresh({update: [mokuai3]});
+  async editMokuai(mokuai: Partial<MokuaiItem>, opts?: {noForm?: boolean; dataList?: DataListComponent; isCompact?: boolean}) {
+    const {noForm, dataList, isCompact} = opts || {};
+    if (!noForm) {
+      const mokuai2 = await this.getMokuaiWithForm(mokuai, {dataList});
+      if (mokuai2) {
+        if (isCompact) {
+          mokuai = mokuai2;
+        } else {
+          Object.assign(mokuai, mokuai2);
+        }
+      } else {
+        return null;
       }
-      mokuai3 = this.mokuaisManager.items().find((v) => v.id === mokuai3?.id) || null;
-      return mokuai3;
     }
-    return null;
+    mokuaiSubmitBefore(mokuai);
+    let mokuai2 = await this.http.getData<MokuaiItem>("ngcad/editPeijianmokuai", {item: mokuai});
+    if (mokuai2) {
+      mokuaiSubmitAfter(mokuai2);
+      this.mokuaisManager.refresh({update: [mokuai2]});
+    }
+    mokuai2 = this.mokuaisManager.items().find((v) => v.id === mokuai2?.id) || null;
+    return mokuai2;
   }
   private _copyMokuaiBefore(mokuai: Partial<MokuaiItem>) {
     if (mokuai.cads) {
@@ -183,19 +194,20 @@ export class BjmkStatusService {
   }
   async copyMokuai(mokuai: MokuaiItem) {
     const names = this.mokuaisManager.items().map((v) => v.name);
-    let mokuai2 = await this.fetchMokuai(mokuai.id);
+    const mokuai2 = await this.fetchMokuai(mokuai.id);
     if (!mokuai2) {
       return;
     }
-    mokuai2 = await this.getMokuaiWithForm(mokuai2, {mokuaiOverride: {name: getCopyName(names, mokuai.name)}});
-    if (mokuai2) {
-      this._copyMokuaiBefore(mokuai2);
-      const mokuai3 = await this.http.getData<MokuaiItem>("ngcad/copyPeijianmokuai", {item: mokuai2});
-      if (mokuai3) {
-        this.mokuaisManager.refresh({add: [mokuai3]});
-      }
-      return this.mokuaisManager.items().find((v) => v.id === mokuai3?.id) || null;
+    const mokuai2WithForm = await this.getMokuaiWithForm(mokuai2, {mokuaiOverride: {name: getCopyName(names, mokuai.name)}});
+    if (mokuai2WithForm) {
+      Object.assign(mokuai2, mokuai2WithForm);
     }
+    this._copyMokuaiBefore(mokuai2);
+    const mokuai3 = await this.http.getData<MokuaiItem>("ngcad/copyPeijianmokuai", {item: mokuai2});
+    if (mokuai3) {
+      this.mokuaisManager.refresh({add: [mokuai3]});
+    }
+    return this.mokuaisManager.items().find((v) => v.id === mokuai3?.id) || null;
     return null;
   }
   async removeMokuai(mokuai: MokuaiItem) {

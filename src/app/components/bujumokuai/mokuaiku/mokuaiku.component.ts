@@ -147,7 +147,7 @@ export class MokuaikuComponent implements OnInit {
   async editMokuai(mokuai: MokuaiItem) {
     const dataList = this.dataList();
     const i = dataList?.getItemIndex((v) => v.id === mokuai.id) ?? -1;
-    await this.bjmkStatus.editMokuai(mokuai, {dataList});
+    await this.bjmkStatus.editMokuai(mokuai, {dataList, isCompact: true});
     await timeout(0);
     const j = dataList?.getItemIndex((v) => v.id === mokuai.id) ?? -1;
     if (i >= 0 && j >= 0 && i !== j) {
