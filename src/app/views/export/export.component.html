@@ -14,9 +14,8 @@
   }
   @if (showBtns2()) {
     <button mat-flat-button (click)="exportCads('导出选中')">导出选中</button>
-  } @else {
-    <button mat-flat-button (click)="exportCads('自由选择')">自由选择</button>
   }
+  <button mat-flat-button (click)="exportCads('自由选择')">自由选择</button>
   <button mat-flat-button (click)="exportCads('导出所有')">导出所有</button>
 </div>
 <app-progress-bar [progressBar]="progressBar"></app-progress-bar>

@@ -878,4 +878,9 @@ export class MokuaiItemComponent {
     this.setNodeText(text);
     await this.message.snack("替换完成");
   }
+
+  export() {
+    const id = this.mokuai().id;
+    this.bjmkStatus.exportMokuais([id]);
+  }
 }

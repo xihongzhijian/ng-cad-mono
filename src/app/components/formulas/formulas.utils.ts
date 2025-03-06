@@ -1,5 +1,4 @@
 import {Formulas} from "@app/utils/calc";
-import {toFixed} from "@app/utils/func";
 import {输入} from "@components/lurushuju/xinghao-data";
 import {isBetween} from "@lucilor/utils";
 import {CalcService} from "@services/calc.service";
@@ -15,7 +14,7 @@ export const getFormulaInfos = (
   const getValues = (val: string | number) => {
     const values: FormulaInfo["values"] = [];
     if (typeof val === "number") {
-      values.push({eq: true, name: toFixed(val, 2)});
+      values.push({eq: true, name: String(val)});
     } else if (typeof val === "string") {
       val = val.trim();
       const valReplaced = val.replaceAll(/^(.*)扇.面蓝线宽/g, "$1扇蓝线宽");

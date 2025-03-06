@@ -193,6 +193,36 @@ export class CadListComponent implements AfterViewInit {
     ];
     return form;
   });
+  async getCadYaoqiu() {
+    if (!this.data.yaoqiu) {
+      this.data.yaoqiu = await this.status.fetchAndGetCadYaoqiu("配件库");
+    }
+    return this.data.yaoqiu;
+  }
+  async getDataSearch() {
+    const search = {...this.data.search};
+    const {standaloneSearch} = this.data;
+    const searchNameInput = this.searchNameInput();
+    const searchField = this.searchField();
+    if (!standaloneSearch || searchNameInput) {
+      if (!search[searchField] || searchNameInput) {
+        search[searchField] = searchNameInput;
+      }
+    }
+    const yaoqiu = await this.getCadYaoqiu();
+    if (this.data.fixedSearch) {
+      Object.assign(search, this.data.fixedSearch);
+    }
+    if (yaoqiu?.选择CAD弹窗筛选数据要求) {
+      search.$where = yaoqiu.选择CAD弹窗筛选数据要求;
+    }
+    for (const key of Object.keys(search)) {
+      if ([null, undefined, ""].includes(search[key])) {
+        delete search[key];
+      }
+    }
+    return search;
+  }
   async getData(page: number, options: CadData["options"] = {}, matchType: "and" | "or" = "and") {
     const paginator = this.paginator();
     if (!paginator) {
@@ -202,8 +232,7 @@ export class CadListComponent implements AfterViewInit {
     let result: Awaited<ReturnType<CadDataService["getCad"]>>;
     const pageData: ReturnType<typeof this.pageData> = [];
     this.length.set(0);
-    const {collection, standaloneSearch} = this.data;
-    const searchField = this.searchField();
+    const {collection} = this.data;
     const searchNameInput = this.searchNameInput();
     const searchOptions = this.searchOptions();
     if (this.data.source) {
@@ -215,28 +244,17 @@ export class CadListComponent implements AfterViewInit {
       const cads = cadsAll.slice((page - 1) * limit, page * limit);
       result = {cads, total};
     } else {
-      const search = {...this.data.search};
-      if (!standaloneSearch || searchNameInput) {
-        if (!search[searchField] || searchNameInput) {
-          search[searchField] = searchNameInput;
-        }
-      }
-      const params: GetCadParams = {collection, page, limit, search};
+      const params: GetCadParams = {collection, page, limit};
       params.qiliao = this.data.qiliao;
       params.options = options;
       params.optionsMatchType = matchType;
+      params.search = await this.getDataSearch();
       if (!this.data.yaoqiu) {
         this.data.yaoqiu = await this.status.fetchAndGetCadYaoqiu("配件库");
       }
       params.fields = getCadQueryFields(this.data.yaoqiu);
       if (this.showCheckedOnly()) {
         params.ids = this.checkedItems().slice();
-      }
-      if (this.data.fixedSearch) {
-        params.search = {...params.search, ...this.data.fixedSearch};
-      }
-      if (this.data.yaoqiu?.选择CAD弹窗筛选数据要求) {
-        params.search = {...params.search, $where: this.data.yaoqiu.选择CAD弹窗筛选数据要求};
       }
       const searchOptions2 = {...searchOptions};
       for (const key of Object.keys(searchOptions2)) {
@@ -456,10 +474,11 @@ export class CadListComponent implements AfterViewInit {
     }
   }
 
-  openExportPage() {
+  async openExportPage() {
     const ids = this.checkedItems().slice();
     const {collection} = this.data;
-    openExportPage(this.status, {collection, ids, search: this.data.search, lurushuju: true});
+    const search = await this.getDataSearch();
+    openExportPage(this.status, {collection, ids, search, lurushuju: true});
   }
 
   cadItemButtons = computed(() => {

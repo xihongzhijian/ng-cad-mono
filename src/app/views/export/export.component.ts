@@ -191,7 +191,9 @@ export class ExportComponent implements OnInit {
           if (!search) {
             search = {分类: "^.+$"};
           }
-          const cads = await openCadListDialog(this.dialog, {data: {selectMode: "multiple", collection, search}});
+          const cads = await openCadListDialog(this.dialog, {
+            data: {selectMode: "multiple", collection, search}
+          });
           if (cads) {
             idsList = [cads.map((v) => v.id)];
             filename0 = "自由选择";
