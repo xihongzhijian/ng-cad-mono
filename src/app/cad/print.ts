@@ -426,7 +426,7 @@ export const configCadDataForPrint = async (
     if ((e.fontStyle.size || -1) < 24) {
       e.fontStyle.weight = "bolder";
     }
-    if ([" ×  = 1", "=1"].includes(e.text)) {
+    if ([" ×  = 1", "=1"].includes(e.text) || !/\S+/.test(e.text)) {
       e.visible = false;
     }
 
