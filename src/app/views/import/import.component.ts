@@ -26,7 +26,7 @@ import {NgScrollbar} from "ngx-scrollbar";
 import {v4} from "uuid";
 import {ProgressBarComponent} from "../../components/progress-bar/progress-bar.component";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
-import {ImportCache, ImportComponentConfig, ImportComponentConfigName, importComponentConfigNames} from "./import.types";
+import {ImportCache, ImportComponentConfig, ImportComponentConfigName} from "./import.types";
 import {BatchUploadChecker} from "./import.utils";
 
 @Component({
@@ -120,29 +120,20 @@ export class ImportComponent implements OnInit {
         onChange: (val) => {
           config.update((v) => ({...v, [key]: val}));
         },
-        model: {data: this.importConfigNormal, key},
         hidden: hiddenKeys.includes(key)
       });
     }
     return infos;
   };
   normalHiddenKeys = computed(() => {
-    const hiddenKeys: ImportComponentConfigName[] = [];
-    const importCache = this.importCache();
-    const toPush = new Set<ImportComponentConfigName>(importComponentConfigNames);
-    if (importCache?.yaoqiu?.CAD分类.includes("算料单示意图")) {
-      toPush.delete("noFilterEntities");
-    }
-    hiddenKeys.push(...toPush);
-    return hiddenKeys;
+    return [];
   });
   importNormalInputs = computed(() => {
     const infos = this._getImportInputInfos(this.importConfigNormal, this.normalHiddenKeys());
     return infos;
   });
   suanliaoHiddenKeys = computed(() => {
-    const hiddenKeys: ImportComponentConfigName[] = ["noFilterEntities"];
-    return hiddenKeys;
+    return [];
   });
   importSuanliaoInputs = computed(() => {
     const infos = this._getImportInputInfos(this.importConfigSuanliao, this.suanliaoHiddenKeys());

@@ -109,7 +109,7 @@ export const filterCadEntitiesToSave = (data: CadData) => {
   const minLineLength = getCadMinLineLength(data);
   let entities = data.entities;
   const count = entities.line.length + entities.arc.length;
-  if (count >= 200) {
+  if (count >= 350) {
     entities = entities.filter((e) => {
       if (e instanceof CadLine || e instanceof CadArc) {
         if (minLineLength <= 0 || dimRefLines.includes(e.id)) {
