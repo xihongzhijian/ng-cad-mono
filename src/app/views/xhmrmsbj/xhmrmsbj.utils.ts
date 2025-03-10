@@ -424,6 +424,9 @@ export const getMokuaiFormulas = (
   const optionValues = getMokuaiXxsjValues(info, node, mokuai);
   const optionFormulas = mapValues(optionValues, (v) => `"${v}"`);
   const duplicateVars = new Set<string>();
+  Object.assign(formulas, mokuai.suanliaogongshi);
+  setFormulas(getShuruzhi(info, node, mokuai));
+  const xxgsFormulas: Formulas = {};
   let xxgsList = mokuai.xuanxianggongshi;
   if (xxgsList.length > 0 && materialResult) {
     xxgsList = matchMongoData(xxgsList, {...materialResult, ...optionValues});
@@ -431,18 +434,16 @@ export const getMokuaiFormulas = (
   if (xxgsList.length > 0) {
     for (const xxgs of xxgsList) {
       for (const [key, value] of Object.entries(xxgs.公式)) {
-        if (isTypeOf(formulas[key], ["null", "undefined"])) {
-          formulas[key] = value;
+        if (isTypeOf(xxgsFormulas[key], ["null", "undefined"])) {
+          xxgsFormulas[key] = value;
         } else {
           duplicateVars.add(key);
         }
       }
+      Object.assign(xxgsFormulas, xxgs.公式);
       Object.assign(formulas, xxgs.公式);
       setFormulas(getShuruzhi(info, node, mokuai, xxgs._id));
     }
-  } else {
-    Object.assign(formulas, mokuai.suanliaogongshi);
-    setFormulas(getShuruzhi(info, node, mokuai));
   }
   Object.assign(formulas, optionFormulas);
   return {formulas, duplicateVars: Array.from(duplicateVars)};

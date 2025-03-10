@@ -249,9 +249,6 @@ export class CadListComponent implements AfterViewInit {
       params.options = options;
       params.optionsMatchType = matchType;
       params.search = await this.getDataSearch();
-      if (!this.data.yaoqiu) {
-        this.data.yaoqiu = await this.status.fetchAndGetCadYaoqiu("配件库");
-      }
       params.fields = getCadQueryFields(this.data.yaoqiu);
       if (this.showCheckedOnly()) {
         params.ids = this.checkedItems().slice();
@@ -301,20 +298,39 @@ export class CadListComponent implements AfterViewInit {
 
   toggleSelectAll() {
     if (this.allChecked()) {
-      this.pageData.update((v) => v.map((v2) => ({...v2, checked: false})));
-      this.checkedItems.set([]);
+      if (this.multiDeleting()) {
+        this.pageData.update((v) => v.map((v2) => ({...v2, toDelete: false})));
+      } else {
+        this.pageData.update((v) => v.map((v2) => ({...v2, checked: false})));
+        this.syncCheckedItems();
+      }
     } else {
-      this.pageData.update((v) => v.map((v2) => ({...v2, checked: true})));
-      this.syncCheckedItems();
+      if (this.multiDeleting()) {
+        this.pageData.update((v) => v.map((v2) => ({...v2, toDelete: true})));
+      } else {
+        this.pageData.update((v) => v.map((v2) => ({...v2, checked: true})));
+        this.syncCheckedItems();
+      }
     }
   }
 
-  allChecked = computed(() => this.pageData().every((v) => v.checked));
-  partiallyChecked = computed(() => {
-    if (this.checkedInOtherPages()) {
-      return true;
+  allChecked = computed(() => {
+    if (this.multiDeleting()) {
+      return this.pageData().every((v) => v.toDelete);
+    } else {
+      return this.pageData().every((v) => v.checked);
     }
-    const ckeckedNum = this.pageData().filter((v) => v.checked).length;
+  });
+  partiallyChecked = computed(() => {
+    let ckeckedNum: number;
+    if (this.multiDeleting()) {
+      ckeckedNum = this.pageData().filter((v) => v.toDelete).length;
+    } else {
+      if (this.checkedInOtherPages()) {
+        return true;
+      }
+      ckeckedNum = this.pageData().filter((v) => v.checked).length;
+    }
     return ckeckedNum > 0 && ckeckedNum < this.pageData.length;
   });
 

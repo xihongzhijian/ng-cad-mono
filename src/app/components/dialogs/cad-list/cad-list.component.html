@@ -37,7 +37,7 @@
       <span>（其他页已选）</span>
     }
   </mat-slide-toggle>
-  @if (data.selectMode === "multiple") {
+  @if (data.selectMode === "multiple" || multiDeleting()) {
     <mat-checkbox [checked]="allChecked()" [indeterminate]="partiallyChecked()" (change)="toggleSelectAll()">全选</mat-checkbox>
   }
   @for (info of searchForm2(); track $index) {
