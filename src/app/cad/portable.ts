@@ -22,17 +22,15 @@ import {
 } from "@lucilor/cad-viewer";
 import {keysOf, Line, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {cadFields} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
+import {MongodbDataBase2} from "@modules/http/services/cad-data.service.types";
 import {AppUser} from "@services/app-status.types";
 import {ImportCache} from "@views/import/import.types";
 import {difference, intersection, isEqual, uniqueId} from "lodash";
 import {CadCollection} from "./collections";
 import {autoShuangxiangzhewan, generateLineTexts2, isShiyitu, showIntersections} from "./utils";
 
-export interface Slgs {
-  名字: string;
-  分类: string;
-  条件: string[];
-  选项: ObjectOf<string>;
+export interface Slgs extends MongodbDataBase2 {
+  分类?: string;
   公式: ObjectOf<string>;
 }
 
@@ -293,21 +291,20 @@ export class CadPortable {
               公式[key] = 公式[key].replaceAll("\n", "");
             }
           }
-          const slgsData: ObjectOf<any> = {公式: getObject(suanliaoMatch[1], "=")};
+          const slgsData: Slgs = {_id: uniqueId(), 名字: "", 分类: "", 条件: [], 选项: {}, 公式: getObject(suanliaoMatch[1], "=")};
           const errors: string[] = [];
           sourceCadMap.slgses[obj.名字] = {text: e};
           for (const key in obj) {
             const value = obj[key];
-            const key2 = cadFields[key as keyof typeof cadFields];
             if (key === "条件") {
               slgsData.条件 = value ? [value] : [];
-            } else if (key2 && cadIncludeFields.includes(key2 as any)) {
+            } else if (cadIncludeFields.includes(key as any)) {
               if (value === "是") {
-                (slgsData[key] as boolean) = true;
+                (slgsData as any)[key] = true;
               } else if (value === "否") {
-                (slgsData[key] as boolean) = false;
+                ((slgsData as any)[key] as boolean) = false;
               } else {
-                (slgsData[key] as string) = value;
+                ((slgsData as any)[key] as string) = value;
               }
             } else if (key !== "唯一码") {
               if (!slgsData.选项) {
@@ -316,7 +313,7 @@ export class CadPortable {
               slgsData.选项[key] = value;
             }
           }
-          slgses.push({data: slgsData as Slgs, errors});
+          slgses.push({data: slgsData, errors});
           continue;
         }
         const xinghaoMatch = text.match(/^型号:([\w\W]*)/);
