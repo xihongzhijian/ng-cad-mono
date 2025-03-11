@@ -54,6 +54,7 @@
                 <mat-slide-toggle [checked]="multiSelect" (change)="toggleMultiSelect()">
                   实体{{ multiSelect ? "多选" : "单选" }}
                 </mat-slide-toggle>
+                <button mat-flat-button (click)="refreshTabs()">刷新属性</button>
                 <div class="flex-110"></div>
                 <button mat-icon-button (pointerenter)="showMenuSearch()">
                   <mat-icon>search</mat-icon>
@@ -64,41 +65,43 @@
                   </div>
                 }
               </div>
-              <mat-tab-group
-                #infoTabs
-                [disablePagination]="true"
-                dynamicHeight
-                [(selectedIndex)]="tabIndex"
-                (selectedTabChange)="onInfoTabChange($event)"
-              >
-                <mat-tab label="CAD">
-                  <ng-scrollbar>
-                    <app-cad-info></app-cad-info>
-                  </ng-scrollbar>
-                </mat-tab>
-                <mat-tab label="线段">
-                  <ng-scrollbar>
-                    <app-cad-line></app-cad-line>
-                  </ng-scrollbar>
-                </mat-tab>
-                <mat-tab label="文本">
-                  <ng-scrollbar>
-                    <app-cad-mtext></app-cad-mtext>
-                  </ng-scrollbar>
-                </mat-tab>
-                <mat-tab label="标注">
-                  <ng-scrollbar>
-                    <app-cad-dimension></app-cad-dimension>
-                  </ng-scrollbar>
-                </mat-tab>
-                @if (cadFentiOn()) {
-                  <mat-tab label="分体">
+              @if (showTabs()) {
+                <mat-tab-group
+                  #infoTabs
+                  [disablePagination]="true"
+                  dynamicHeight
+                  [(selectedIndex)]="tabIndex"
+                  (selectedTabChange)="onInfoTabChange($event)"
+                >
+                  <mat-tab label="CAD">
                     <ng-scrollbar>
-                      <app-cad-fenti-config></app-cad-fenti-config>
+                      <app-cad-info></app-cad-info>
                     </ng-scrollbar>
                   </mat-tab>
-                }
-              </mat-tab-group>
+                  <mat-tab label="线段">
+                    <ng-scrollbar>
+                      <app-cad-line></app-cad-line>
+                    </ng-scrollbar>
+                  </mat-tab>
+                  <mat-tab label="文本">
+                    <ng-scrollbar>
+                      <app-cad-mtext></app-cad-mtext>
+                    </ng-scrollbar>
+                  </mat-tab>
+                  <mat-tab label="标注">
+                    <ng-scrollbar>
+                      <app-cad-dimension></app-cad-dimension>
+                    </ng-scrollbar>
+                  </mat-tab>
+                  @if (cadFentiOn()) {
+                    <mat-tab label="分体">
+                      <ng-scrollbar>
+                        <app-cad-fenti-config></app-cad-fenti-config>
+                      </ng-scrollbar>
+                    </mat-tab>
+                  }
+                </mat-tab-group>
+              }
             </div>
           }
           @case ("cadAssemble") {

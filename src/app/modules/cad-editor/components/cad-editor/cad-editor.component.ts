@@ -593,6 +593,13 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       this.hideMenuSearch();
     }
   }
+
+  showTabs = signal(true);
+  async refreshTabs() {
+    this.showTabs.set(false);
+    await timeout(0);
+    this.showTabs.set(true);
+  }
 }
 
 type Dragkey = keyof Pick<AppConfig, "leftMenuWidth" | "rightMenuWidth">;
