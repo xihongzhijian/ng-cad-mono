@@ -2,7 +2,7 @@
   <div class="nav flex-column">
     <div class="toolbar">
       <app-input [info]="navQueryInputInfo()"></app-input>
-      <button mat-stroked-button [class.accent]="navEditMode()" (click)="toggleNavEditMode()">开启编辑</button>
+      <button mat-stroked-button [class.accent]="navEditMode()" (click)="toggleNavEditMode()">编辑分类</button>
       @if (navEditMode()) {
         <button mat-stroked-button (click)="addNavNode()">添加1级</button>
       }
@@ -15,18 +15,25 @@
       <mat-tree #navNodesTree [dataSource]="navNodes()" [childrenAccessor]="childrenAccessor" [trackBy]="navNodeTrackBy">
         <mat-nested-tree-node *matTreeNodeDef="let node" [class.hidden]="node.hidden">
           <div class="toolbar">
-            <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
+            <button mat-icon-button disabled style="opacity: 0">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+            <div>
+              <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
+            </div>
             <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
           </div>
         </mat-nested-tree-node>
-        <mat-nested-tree-node *matTreeNodeDef="let node; when: navNodehasChild" [class.hidden]="node.hidden">
+        <mat-nested-tree-node *matTreeNodeDef="let node; when: navNodehasChild" [class.hidden]="node.hidden" isExpandable>
           <div class="toolbar">
-            <button mat-icon-button matTreeNodeToggle>
-              <mat-icon class="mat-icon-rtl-mirror">
+            <button mat-icon-button matTreeNodeToggle (click)="clickNavNode(node)">
+              <mat-icon>
                 {{ navNodesTree.isExpanded(node) ? "expand_more" : "chevron_right" }}
               </mat-icon>
             </button>
-            <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
+            <div matTreeNodeToggle>
+              <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
+            </div>
             <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
           </div>
           <div [class.hidden]="!navNodesTree.isExpanded(node)" role="group">
@@ -36,19 +43,20 @@
         <ng-template #nodeTitle [appTypedTemplate]="{$implicit: navNodes()[0]}" let-node>
           <button
             mat-button
-            class="nav-title"
-            [class.plain]="activeNavNode()?.id !== node.id"
+            class="nav-title plain"
+            [class.accent]="activeNavNode()?.id === node.id"
             [attr.data-id]="node.id"
             (click)="clickNavNode(node)"
           >
-            {{ node.name }}
             @if (navEditMode()) {
-              (排序{{ node.order }})
-            } @else {
+              <span>({{ node.order }})</span>
+            }
+            <span>{{ node.name }}</span>
+            @if (node.itemCounts.self > 0) {
               @if (itemQuery()) {
-                <span class="accent">(搜到{{ node.itemCount }}个)</span>
+                <span class="accent">(搜到{{ node.itemCounts.selfQuery }}个)</span>
               } @else {
-                ({{ node.itemCount }}个)
+                <span>({{ node.itemCounts.self }}个)</span>
               }
             }
           </button>
@@ -63,6 +71,7 @@
               } @else {
                 <button mat-button (click)="addNavNode(node)">添加{{ node.level + 2 }}级</button>
                 <button mat-button (click)="editNavNode(node)">编辑</button>
+                <button mat-button (click)="moveNavNode(node)">移动</button>
                 <button mat-button (click)="removeNavNode(node)">删除</button>
               }
             </div>
@@ -85,3 +94,68 @@
     </ng-scrollbar>
   </div>
 </div>
+
+@if (nodeSelector(); as selector) {
+  <app-floating-dialog width="50%" height="90%" left="25%" top="5%" backdrop noPin noMinimize (close)="closeNodeSelector(false)">
+    <ng-container appFloatingDialogTitle>{{ selector.title }}</ng-container>
+    <div class="toolbar">
+      <app-input class="flex-110" [info]="nodeSelectorQueryInputInfo()"></app-input>
+      <button mat-flat-button (click)="addNavNode(null, true)">添加1级</button>
+      @if (selector.mode === "parent") {
+        <button mat-flat-button (click)="closeNodeSelector(true, true)">移动到顶层</button>
+      }
+      <button mat-flat-button (click)="closeNodeSelector(true)">移动到选中分类</button>
+      <button mat-flat-button (click)="closeNodeSelector(false)">取消</button>
+    </div>
+    <ng-scrollbar #nodeSelectorScrollbar>
+      <mat-tree #nodeSelectorTree [dataSource]="selector.nodes" [childrenAccessor]="childrenAccessor" [trackBy]="navNodeTrackBy">
+        <mat-nested-tree-node *matTreeNodeDef="let node" [class.hidden]="node.hidden">
+          <div class="toolbar">
+            <button mat-icon-button disabled style="opacity: 0">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+            <div class="toolbar flex-110">
+              <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
+            </div>
+          </div>
+        </mat-nested-tree-node>
+        <mat-nested-tree-node *matTreeNodeDef="let node; when: navNodehasChild" [class.hidden]="node.hidden" isExpandable>
+          <div class="toolbar">
+            <button mat-icon-button matTreeNodeToggle>
+              <mat-icon>
+                {{ nodeSelectorTree.isExpanded(node) ? "expand_more" : "chevron_right" }}
+              </mat-icon>
+            </button>
+            <div class="toolbar flex-110" matTreeNodeToggle>
+              <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
+            </div>
+          </div>
+          <div [class.hidden]="!nodeSelectorTree.isExpanded(node)" role="group">
+            <ng-container matTreeNodeOutlet></ng-container>
+          </div>
+        </mat-nested-tree-node>
+        <ng-template #nodeTitle [appTypedTemplate]="{$implicit: navNodes()[0]}" let-node>
+          <button
+            mat-button
+            class="nav-title plain"
+            [class.accent]="selector.selectedNode?.id === node.id"
+            [attr.data-id]="node.id"
+            (click)="clickNodeSelectorNode(node)"
+          >
+            <span>{{ node.name }}</span>
+            @if (node.itemCounts.self > 0) {
+              @if (itemQuery()) {
+                <span class="accent">(搜到{{ node.itemCounts.selfQuery }}个)</span>
+              } @else {
+                <span>({{ node.itemCounts.self }}个)</span>
+              }
+            }
+          </button>
+          <div appClickStop>
+            <button mat-button (click)="addNavNode(node, true)">添加{{ node.level + 2 }}级</button>
+          </div>
+        </ng-template>
+      </mat-tree>
+    </ng-scrollbar>
+  </app-floating-dialog>
+}

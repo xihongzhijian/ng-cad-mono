@@ -11,7 +11,6 @@ import {VarNames} from "@components/var-names/var-names.types";
 import {getVarNames} from "@components/var-names/var-names.utils";
 import {CadData} from "@lucilor/cad-viewer";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
-import {DataListNavNode, getNodePathSelect, moveDataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -21,7 +20,6 @@ import {AppStatusService} from "@services/app-status.service";
 import {MsbjData} from "@views/msbj/msbj.types";
 import {MsbjInfo} from "@views/msbj/msbj.utils";
 import {cloneDeep, difference} from "lodash";
-import {v4} from "uuid";
 import {MokuaiItem} from "../mokuai-item/mokuai-item.types";
 import {mokuaiSubmitAfter, mokuaiSubmitBefore} from "../mokuai-item/mokuai-item.utils";
 
@@ -77,7 +75,7 @@ export class BjmkStatusService {
     return {mokuais, missingMokuais};
   }
 
-  async getMokuaiWithForm(mokuai?: Partial<MokuaiItem>, opts?: {mokuaiOverride?: Partial<MokuaiItem>; dataList?: DataListComponent}) {
+  async getMokuaiWithForm(mokuai?: Partial<MokuaiItem>, opts?: {mokuaiOverride?: Partial<MokuaiItem>}) {
     const data: Partial<MokuaiItem> = {
       id: mokuai?.id,
       name: mokuai?.name,
@@ -85,7 +83,7 @@ export class BjmkStatusService {
       order: mokuai?.order,
       xiaoguotu: mokuai?.xiaoguotu
     };
-    const {mokuaiOverride, dataList} = opts || {};
+    const {mokuaiOverride} = opts || {};
     if (mokuaiOverride) {
       Object.assign(data, mokuaiOverride);
     }
@@ -94,44 +92,16 @@ export class BjmkStatusService {
       allNames.delete(mokuai.name);
     }
     const getter = new InputInfoWithDataGetter(data, {clearable: true});
-    let nodePathSelect: ReturnType<typeof getNodePathSelect> | null = null;
-    if (dataList) {
-      const node = dataList.activeNavNode();
-      if (node) {
-        nodePathSelect = getNodePathSelect(dataList.navNodes(), node);
-      }
-    }
     const form: InputInfo[] = [
       getter.string("name", {
         label: "名字",
         validators: [Validators.required, (control) => (allNames.has(control.value) ? {名字不能重复: true} : null)]
       }),
-      ...(nodePathSelect ? [nodePathSelect.inputInfo] : []),
-      getter.string("type", {label: "分类", validators: Validators.required}),
       getter.number("order", {label: "排序"}),
       getter.image("xiaoguotu", this.http, {label: "效果图", prefix: this.imgPrefix()})
     ];
     const result = await this.message.form(form);
     if (result) {
-      if (dataList && nodePathSelect) {
-        const nodes = dataList.navNodes();
-        let node = dataList.activeNavNode();
-        if (node) {
-          const {from, to} = nodePathSelect.data;
-          if (to && data.type) {
-            if (!to.children) {
-              to.children = [];
-            }
-            if (!to.children.some((v) => !v.hasChild() && v.name === data.type)) {
-              node = new DataListNavNode({id: v4(), name: data.type});
-              to.children.push(node);
-            }
-          }
-          moveDataListNavNode(nodes, node, from, to);
-          await dataList.setNavNodes();
-          dataList.activeNavNode.set(node);
-        }
-      }
       return data;
     }
     return null;
@@ -154,10 +124,10 @@ export class BjmkStatusService {
     }
     return null;
   }
-  async editMokuai(mokuai: Partial<MokuaiItem>, opts?: {noForm?: boolean; dataList?: DataListComponent; isCompact?: boolean}) {
-    const {noForm, dataList, isCompact} = opts || {};
+  async editMokuai(mokuai: Partial<MokuaiItem>, opts?: {noForm?: boolean; isCompact?: boolean}) {
+    const {noForm, isCompact} = opts || {};
     if (!noForm) {
-      const mokuai2 = await this.getMokuaiWithForm(mokuai, {dataList});
+      const mokuai2 = await this.getMokuaiWithForm(mokuai);
       if (mokuai2) {
         if (isCompact) {
           mokuai = mokuai2;
@@ -176,6 +146,19 @@ export class BjmkStatusService {
     }
     mokuai2 = this.mokuaisManager.items().find((v) => v.id === mokuai2?.id) || null;
     return mokuai2;
+  }
+  async editMokuais(mokuais: Partial<MokuaiItem>[]) {
+    for (const mokuai of mokuais) {
+      mokuaiSubmitBefore(mokuai);
+    }
+    const mokuais2 = await this.http.getData<MokuaiItem[]>("ngcad/editPeijianmokuais", {items: mokuais});
+    if (mokuais2) {
+      for (const mokuai of mokuais2) {
+        mokuaiSubmitAfter(mokuai);
+      }
+      this.mokuaisManager.refresh({update: mokuais2});
+    }
+    return mokuais2;
   }
   private _copyMokuaiBefore(mokuai: Partial<MokuaiItem>) {
     if (mokuai.cads) {
@@ -201,6 +184,8 @@ export class BjmkStatusService {
     const mokuai2WithForm = await this.getMokuaiWithForm(mokuai2, {mokuaiOverride: {name: getCopyName(names, mokuai.name)}});
     if (mokuai2WithForm) {
       Object.assign(mokuai2, mokuai2WithForm);
+    } else {
+      return null;
     }
     this._copyMokuaiBefore(mokuai2);
     const mokuai3 = await this.http.getData<MokuaiItem>("ngcad/copyPeijianmokuai", {item: mokuai2});
@@ -208,15 +193,28 @@ export class BjmkStatusService {
       this.mokuaisManager.refresh({add: [mokuai3]});
     }
     return this.mokuaisManager.items().find((v) => v.id === mokuai3?.id) || null;
-    return null;
   }
   async removeMokuai(mokuai: MokuaiItem) {
     if (!(await this.message.confirm(`是否确定删除【${mokuai.name}】?`))) {
       return;
     }
-    const result = await this.http.getData<boolean>("ngcad/removePeijianmokuai", {item: mokuai});
+    const result = await this.http.getData<boolean>("ngcad/removePeijianmokuai", {id: mokuai.id});
     if (result) {
       this.mokuaisManager.refresh({remove: [mokuai]});
+    }
+    return result;
+  }
+  async removeMokuais(mokuais: MokuaiItem[]) {
+    if (mokuais.length < 1) {
+      await this.message.alert("请选择要删除的模块");
+      return [];
+    }
+    if (!(await this.message.confirm(`是否确定删除这${mokuais.length}个模块?`))) {
+      return;
+    }
+    const result = await this.http.getData<boolean>("ngcad/removePeijianmokuais", {ids: mokuais.map((v) => v.id)});
+    if (result) {
+      this.mokuaisManager.refresh({remove: mokuais});
     }
     return result;
   }

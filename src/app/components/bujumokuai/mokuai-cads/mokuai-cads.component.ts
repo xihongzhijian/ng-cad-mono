@@ -295,6 +295,15 @@ export class MokuaiCadsComponent {
   unselectCad(i: number) {
     this.selectedCads.update((v) => v.filter((_, index) => index !== i));
   }
+  selectAllCads() {
+    const indexs = this.selectedCadIndexs();
+    const cads = this.cads();
+    if (indexs.length === cads.length) {
+      this.selectedCadIndexs.set([]);
+    } else {
+      this.selectedCadIndexs.set(cads.map((_, i) => i));
+    }
+  }
 
   async openImportPage() {
     const collection = this.bjmkStatus.collection;

@@ -18,6 +18,8 @@
       @if (!selectable()) {
         <button mat-flat-button (click)="addMukuai()">添加</button>
         <button mat-flat-button [class.accent]="mokuaiEditMode()" (click)="toggleMokuaiEditMode()">编辑</button>
+        <button mat-flat-button (click)="removeMokuais()">删除</button>
+        <button mat-flat-button (click)="moveMokuais()">移动</button>
         <button mat-flat-button (click)="importMokuais()">导入</button>
         <button mat-flat-button (click)="exportMokuais()">导出</button>
         <button mat-flat-button (click)="selectAllMokuais()">全选</button>

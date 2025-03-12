@@ -854,6 +854,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       }
     }
     this.info.onClick?.(this as any);
+    this.cd.markForCheck();
     this.click.emit(event);
   }
 

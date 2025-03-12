@@ -159,7 +159,7 @@
 
 @if (nodeTextReplacerOpened()) {
   <app-floating-dialog width="50%" height="50%" left="25%" top="25%" noMinimize (close)="closeNodeTextReplacer()">
-    <div appFloatingDialogTitle>效果图公式替换</div>
+    <ng-container appFloatingDialogTitle>效果图公式替换</ng-container>
     <div class="toolbar">
       <div>已知变量</div>
       @for (name of nodeTextVars(); track $index) {

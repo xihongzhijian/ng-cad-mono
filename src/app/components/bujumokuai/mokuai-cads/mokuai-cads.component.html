@@ -22,8 +22,7 @@
     }
     <button mat-flat-button (click)="openImportPage()">导入CAD</button>
     <button mat-flat-button (click)="openExportPage()">导出CAD</button>
-    <button mat-flat-button>导入</button>
-    <button mat-flat-button>导出</button>
+    <button mat-flat-button (click)="selectAllCads()">全选</button>
   </ng-container>
   <div class="data-items items" appDataListItems>
     @for (cad of cads(); track i; let i = $index) {

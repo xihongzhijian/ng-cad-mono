@@ -43,6 +43,7 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
 
   id = uniqueId("floatingDialog");
   name = input<string>("");
+  backdrop = input(false, {transform: booleanAttribute});
   width = model<string | number>("auto");
   height = model<string | number>("auto");
   top = input<string | number | null>(0);

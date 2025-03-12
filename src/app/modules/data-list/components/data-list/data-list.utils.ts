@@ -1,8 +1,7 @@
 import {ObjectOf} from "@lucilor/utils";
-import {InputInfoSelectSingle} from "@modules/input/components/input.types";
 import {isEqual} from "lodash";
 import {v4} from "uuid";
-import {DataListItem, DataListNavNodeRaw} from "./data-list.types";
+import {DataListItem, DataListNavNodeItemCounts, DataListNavNodeRaw} from "./data-list.types";
 
 export class DataListNavNode {
   id = "";
@@ -12,7 +11,7 @@ export class DataListNavNode {
   children?: DataListNavNode[];
 
   level = 0;
-  itemCount = 0;
+  itemCounts: DataListNavNodeItemCounts = {self: 0, children: 0, selfQuery: null, childrenQuery: null};
   hidden?: boolean;
   isVirtual?: boolean;
 
@@ -22,9 +21,6 @@ export class DataListNavNode {
 
   hasChild() {
     return this.children && this.children.length > 0;
-  }
-  isLeaf() {
-    return !this.hasChild() && this.itemCount > 0;
   }
 
   import(data: DataListNavNodeRaw) {
@@ -70,7 +66,7 @@ export const getDataListNavNodeList = (rawList: DataListNavNodeRaw[]) => {
   return node.children || [];
 };
 
-export const sortDataListNavNodeList = (list: DataListNavNode[]) => {
+export const sortDataListNavNodeListFlat = (list: DataListNavNode[]) => {
   list.sort((a, b) => {
     const orderA = a.name === unknownNodeName ? Infinity : (a.order ?? 0);
     const orderB = b.name === unknownNodeName ? Infinity : (b.order ?? 0);
@@ -80,6 +76,9 @@ export const sortDataListNavNodeList = (list: DataListNavNode[]) => {
       return orderA - orderB;
     }
   });
+};
+export const sortDataListNavNodeList = (list: DataListNavNode[]) => {
+  sortDataListNavNodeListFlat(list);
   for (const node of list) {
     if (node.children) {
       sortDataListNavNodeList(node.children);
@@ -124,11 +123,7 @@ export const updateDataListNavNodeList = (list: DataListNavNode[], items: DataLi
     }
     node.isVirtual = true;
     if (updateNavNodes) {
-      node.children = Array.from(typesToAdd).map((name) => new DataListNavNode({id: v4(), name, isVirtual: true}));
-    } else {
-      for (const child of node.children || []) {
-        child.isVirtual = true;
-      }
+      node.children = Array.from(typesToAdd).map((name) => new DataListNavNode({id: v4(), name}));
     }
   } else {
     const i = list.findIndex((v) => v.name === unknownNodeName);
@@ -140,22 +135,27 @@ export const updateDataListNavNodeList = (list: DataListNavNode[], items: DataLi
   return {updateNavNodes};
 };
 
+export const findDataListNavNodes = (
+  list: DataListNavNode[],
+  predicate: (node: DataListNavNode, index: number, arr: DataListNavNode[]) => boolean
+): DataListNavNode[] => {
+  const nodes: DataListNavNode[] = [];
+  for (const node of list) {
+    if (predicate(node, 0, list)) {
+      nodes.push(node);
+    }
+    if (node.children) {
+      const result = findDataListNavNodes(node.children, predicate);
+      nodes.push(...result);
+    }
+  }
+  return nodes;
+};
 export const findDataListNavNode = (
   list: DataListNavNode[],
   predicate: (node: DataListNavNode, index: number, arr: DataListNavNode[]) => boolean
-): DataListNavNode | null => {
-  for (const node of list) {
-    if (predicate(node, 0, list)) {
-      return node;
-    }
-    if (node.children) {
-      const result = findDataListNavNode(node.children, predicate);
-      if (result) {
-        return result;
-      }
-    }
-  }
-  return null;
+) => {
+  return findDataListNavNodes(list, predicate).at(0) || null;
 };
 export const findActiveDataListNavNode = (list: DataListNavNode[], type: string) => {
   return findDataListNavNode(list, (node) => !node.hasChild() && node.name === type);
@@ -189,12 +189,7 @@ export const getDataListNavNodesFlat = function* (nodes: DataListNavNode[]): Gen
   }
 };
 
-export const moveDataListNavNode = (
-  nodes: DataListNavNode[],
-  node: DataListNavNode,
-  from: DataListNavNode | null,
-  to: DataListNavNode | null
-) => {
+export const moveDataListNavNode = (nodes: DataListNavNode[], node: DataListNavNode, to: DataListNavNode | null) => {
   const removeNode = (parent: DataListNavNode[] | DataListNavNode, ...children: DataListNavNode[]) => {
     if (parent instanceof DataListNavNode) {
       if (!parent.children) {
@@ -218,12 +213,15 @@ export const moveDataListNavNode = (
     }
     for (const child of children) {
       child.level = level;
-      delete child.isVirtual;
       if (!parent.some((v) => v.id === child.id)) {
         parent.push(child);
       }
     }
+    sortDataListNavNodeListFlat(parent);
   };
+
+  const path = getDataListNavNodePath(nodes, node);
+  const from = path.at(-2) || null;
 
   if (from !== to) {
     if (from) {
@@ -233,19 +231,7 @@ export const moveDataListNavNode = (
     }
   }
   if (to) {
-    if (to.isLeaf()) {
-      const toPath = getDataListNavNodePath(nodes, to);
-      const to2 = toPath.at(-2);
-      if (to2) {
-        const to3 = to.clone(true);
-        to3.name += "_软件生成";
-        addNode(to3, to, node);
-        removeNode(to2, to);
-        addNode(to2, to3);
-      }
-    } else {
-      addNode(to, node);
-    }
+    addNode(to, node);
   } else {
     addNode(nodes, node);
   }
@@ -283,60 +269,4 @@ export const sortDataListItems = <T extends DataListItem>(items: T[]) => {
     }
   }
   return sortedItems;
-};
-
-export const getNodePathSelect = (nodes: DataListNavNode[], node: DataListNavNode, to?: DataListNavNode | null) => {
-  const pathOptions: string[] = [];
-  const pathMap = new Map<string, DataListNavNode | null>();
-  const stringifyPath = (path: DataListNavNode[]) => path.map((v) => v.name).join("/");
-  const getNodePathInfos = function* (node2: DataListNavNode, parentPath: DataListNavNode[] = []): Generator<{path: DataListNavNode[]}> {
-    if (node && node2.id === node.id) {
-      return;
-    }
-    const path = [...parentPath, node2];
-    yield {path};
-    if (node2.children && node2.children.length > 0) {
-      for (const child of node2.children) {
-        yield* getNodePathInfos(child, path);
-      }
-    }
-  };
-  for (const node2 of nodes) {
-    if (node2.isVirtual) {
-      continue;
-    }
-    for (const info of getNodePathInfos(node2)) {
-      const node3 = info.path.at(-1);
-      if (node3) {
-        const name = stringifyPath(info.path);
-        pathOptions.push(name);
-        pathMap.set(name, node3);
-      }
-    }
-  }
-  let path2: ReturnType<typeof getDataListNavNodePath>;
-  if (to) {
-    path2 = getDataListNavNodePath(nodes, to);
-  } else {
-    path2 = getDataListNavNodePath(nodes, node).slice(0, -1);
-  }
-  const path = stringifyPath(path2);
-  const from = path2.at(-1) || null;
-  if (!to) {
-    to = from;
-  }
-  const data = {from, to};
-  const inputInfo: InputInfoSelectSingle = {
-    type: "select",
-    label: "上一级分类",
-    clearable: true,
-    options: pathOptions,
-    multiple: false,
-    optionsDialog: {useLocalOptions: true},
-    value: path,
-    onChange: (val) => {
-      data.to = pathMap.get(val) ?? null;
-    }
-  };
-  return {inputInfo, data};
 };

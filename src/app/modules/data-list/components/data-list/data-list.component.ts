@@ -24,8 +24,10 @@ import {session} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {getValueString} from "@app/utils/get-value";
 import {environment} from "@env";
-import {downloadByString, getElementVisiblePercentage, ObjectOf, queryString, queryStringList, selectFiles, timeout} from "@lucilor/utils";
+import {downloadByString, getElementVisiblePercentage, queryString, queryStringList, selectFiles, timeout, waitFor} from "@lucilor/utils";
+import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
@@ -33,7 +35,7 @@ import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
-import {BehaviorSubject, filter, firstValueFrom} from "rxjs";
+import {BehaviorSubject, filter, firstValueFrom, lastValueFrom, Subject, take} from "rxjs";
 import {v4} from "uuid";
 import {
   DataListItem,
@@ -41,15 +43,17 @@ import {
   DataListNavNameChangeEvent,
   DataListNavNodeRaw,
   DataListQueryItemField as DataListqueryItemFieldInfo,
-  dataListQueryItemFieldsDefault as dataListqueryItemFieldInfosDefault
+  dataListQueryItemFieldsDefault as dataListqueryItemFieldInfosDefault,
+  NodeSelectorMode
 } from "./data-list.types";
 import {
   DataListNavNode,
   findActiveDataListNavNode,
+  findDataListNavNode,
+  findDataListNavNodes,
   getDataListNavNodeList,
   getDataListNavNodePath,
   getDataListNavNodesFlat,
-  getNodePathSelect,
   moveDataListNavNode,
   sortDataListItems,
   sortDataListNavNodeList,
@@ -59,6 +63,8 @@ import {
 @Component({
   selector: "app-data-list",
   imports: [
+    ClickStopPropagationDirective,
+    FloatingDialogModule,
     InputComponent,
     MatButtonModule,
     MatDividerModule,
@@ -115,15 +121,15 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       value: this.navQuery(),
       onInput: debounce((val) => {
         this.navQuery.set(val);
-        this.filter();
+        this.filterNavNodes();
       }, 200),
       style: {width: "160px"}
     };
     return info;
   });
   navNodesTree = viewChild.required<MatTree<DataListNavNode, DataListNavNode>>("navNodesTree");
-  navNodesTreeEl = viewChild("navNodesTree", {read: ElementRef});
-  navNodesScrollbar = viewChild<NgScrollbar>("navNodesScrollbar");
+  navNodesTreeEl = viewChild.required<unknown, ElementRef<HTMLElement>>("navNodesTree", {read: ElementRef});
+  navNodesScrollbar = viewChild.required<NgScrollbar>("navNodesScrollbar");
 
   private _navEditModeKey = "dataListNavEditMode";
   navEditMode = model<boolean>(session.load(this._navEditModeKey) || false);
@@ -168,7 +174,12 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       this.activeNavNode.set(null);
       this.updateActiveNavNode(activeNavNode.name);
     }
-    await this.http.mongodbUpdate<DataListNavData>(this._navCollection, {_id: this._navDataId, data: data.map((node) => node.export())});
+    await this.http.mongodbUpdate<DataListNavData>(
+      this._navCollection,
+      {_id: this._navDataId, data: data.map((node) => node.export())},
+      {},
+      {spinner: false}
+    );
   }
   updateActiveNavNode(type = this.activeNavNode()?.name) {
     if (!type) {
@@ -180,7 +191,123 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
 
-  async getNavNodeItem(node?: DataListNavNode, to?: DataListNavNode | null) {
+  nodeSelector = signal<{
+    mode: NodeSelectorMode;
+    nodes: DataListNavNode[];
+    title: string;
+    currentNode: DataListNavNode | null;
+    selectedNode: DataListNavNode | null;
+    excludeIds?: string[];
+  } | null>(null);
+  nodeSelectorClose$ = new Subject<{node: DataListNavNode | null; submit: boolean}>();
+  nodeSelectorQuery = signal("");
+  nodeSelectorQueryInputInfo = computed(() => {
+    const info: InputInfo = {
+      type: "string",
+      label: "搜索",
+      clearable: true,
+      value: this.nodeSelectorQuery(),
+      onInput: debounce((val) => {
+        this.nodeSelectorQuery.set(val);
+        this.filterNodeSelectorNodes();
+      }, 200)
+    };
+    return info;
+  });
+  nodeSelectorTree = viewChild<MatTree<DataListNavNode, DataListNavNode>>("nodeSelectorTree");
+  nodeSelectorTreeEl = viewChild("nodeSelectorTree", {read: ElementRef});
+  nodeSelectorScrollbar = viewChild<NgScrollbar>("nodeSelectorScrollbar");
+  filterNodeSelectorNodes() {
+    const selector = this.nodeSelector();
+    if (!selector) {
+      return;
+    }
+    const {nodes, excludeIds} = selector;
+    const query = this.nodeSelectorQuery();
+    selector.nodes = this.filterNodes(nodes, query, null, false, excludeIds);
+  }
+  updateNodeSelectorEff = effect(() => {
+    this.navNodes();
+    untracked(() => this.updateNodeSelector());
+  });
+  async updateNodeSelector() {
+    const selector = this.nodeSelector();
+    if (!selector) {
+      return;
+    }
+    const nodes = cloneDeep(this.navNodes());
+    selector.nodes = nodes;
+    selector.currentNode = findDataListNavNode(nodes, (v) => v.id === selector.currentNode?.id) || null;
+    selector.selectedNode = findDataListNavNode(nodes, (v) => v.id === selector.selectedNode?.id) || null;
+    this.filterNodeSelectorNodes();
+  }
+  async openNodeSelector(mode: NodeSelectorMode, title: string, selectedNode: DataListNavNode | null, excludeIds?: string[]) {
+    this.nodeSelector.set({mode, nodes: [], title, currentNode: selectedNode, selectedNode, excludeIds});
+    this.updateNodeSelector();
+  }
+  async closeNodeSelector(submit: boolean, moveToRoot = false) {
+    const selector = this.nodeSelector();
+    if (!selector) {
+      return;
+    }
+    const {selectedNode, currentNode} = selector;
+    if (submit) {
+      if (moveToRoot) {
+        if (!selectedNode) {
+          this.message.alert("已经在顶层");
+          return;
+        } else {
+          if (!(await this.message.confirm("是否确定移动到顶层？"))) {
+            return;
+          }
+          selector.selectedNode = null;
+        }
+      } else {
+        if (selectedNode) {
+          if (selectedNode === currentNode) {
+            this.message.alert("已经在选中分类");
+            return;
+          } else if (!(await this.message.confirm(`是否确定移动到【${selectedNode.name}】？`))) {
+            return;
+          }
+        } else {
+          await this.message.alert("没有选中");
+          return;
+        }
+      }
+    }
+    this.nodeSelector.set(null);
+    this.nodeSelectorClose$.next({node: selector.selectedNode, submit});
+  }
+  async selectNode(mode: NodeSelectorMode, title: string, selectedNode: DataListNavNode | null, excludeIds?: string[]) {
+    this.openNodeSelector(mode, title, selectedNode, excludeIds);
+    return await lastValueFrom(this.nodeSelectorClose$.pipe(take(1)));
+  }
+  clickNodeSelectorNode(node: DataListNavNode) {
+    const selector = this.nodeSelector();
+    if (!selector) {
+      return;
+    }
+    selector.selectedNode = node;
+  }
+  scrollToNodeSelectorNode(node: DataListNavNode) {
+    const selector = this.nodeSelector();
+    const tree = this.nodeSelectorTree();
+    const treeEl = this.nodeSelectorTreeEl()?.nativeElement;
+    if (!selector || !tree || !treeEl) {
+      return;
+    }
+    const path = getDataListNavNodePath(selector.nodes, node);
+    for (const node2 of path) {
+      tree.expand(node2);
+    }
+    const nodeEl = treeEl.querySelector(`[data-id="${node.id}"]`);
+    if (nodeEl instanceof HTMLElement && getElementVisiblePercentage(nodeEl) < 1) {
+      this.nodeSelectorScrollbar()?.scrollToElement(nodeEl);
+    }
+  }
+
+  async getNavNodeItem(node?: DataListNavNode, to: DataListNavNode | null = null) {
     const id = node ? node.id : null;
     if (node) {
       node = cloneDeep(node);
@@ -199,7 +326,6 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
 
     const getter = new InputInfoWithDataGetter(node, {clearable: true});
-    const nodePathSelect = getNodePathSelect(nodes, node, to);
     const form: InputInfo<DataListNavNode>[] = [
       getter.string("name", {
         label: "名字",
@@ -214,27 +340,27 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
           }
         ]
       }),
-      nodePathSelect.inputInfo,
       getter.number("order", {label: "排序"})
     ];
     const result = await this.message.form(form);
     if (result) {
-      const {from, to: to2} = nodePathSelect.data;
-      moveDataListNavNode(nodes, node, from, to2);
+      moveDataListNavNode(nodes, node, to);
       this.activeNavNode.set(node);
       return node;
     }
     return null;
   }
-  async addNavNode(nodeParent?: DataListNavNode) {
+  async addNavNode(nodeParent?: DataListNavNode | null, fromNodeSelector = false) {
+    if (nodeParent && fromNodeSelector) {
+      nodeParent = findDataListNavNode(this.navNodes(), (v) => v.id === nodeParent?.id);
+    }
     const node = await this.getNavNodeItem(undefined, nodeParent);
     if (!node) {
       return;
     }
     await this.setNavNodes();
-    setTimeout(() => {
-      this.navNodesTree().expand(node);
-    }, 0);
+    this.navNodesTree().expand(node);
+    this.scrollToNavNode(node);
   }
   async editNavNode(node: DataListNavNode) {
     const node2 = await this.getNavNodeItem(node);
@@ -246,16 +372,33 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       if (nameOld !== nameNew) {
         this.navNameChange.emit({before: nameOld, after: nameNew});
       }
+      this.scrollToNavNode(node);
+    }
+  }
+  async moveNavNode(node: DataListNavNode) {
+    const path = getDataListNavNodePath(this.navNodes(), node);
+    const parentNode = path.at(-2) || null;
+    const {node: parentNode2, submit} = await this.selectNode("parent", `分类：${node.name}`, parentNode, [node.id]);
+    if (submit) {
+      const nodes = this.navNodes();
+      const to = findDataListNavNode(nodes, (v) => v.id === parentNode2?.id) || null;
+      moveDataListNavNode(nodes, node, to);
+      await this.setNavNodes();
+      this.filterNavNodes();
     }
   }
   async removeNavNode(node: DataListNavNode) {
-    if (node.children && node.children.length > 0) {
-      await this.message.error(`【${node.name}】下面有子节点，不能删除`);
-      return;
-    }
-    if (node.itemCount > 0) {
-      await this.message.error(`【${node.name}】下面有数据，不能删除`);
-      return;
+    const nodes = findDataListNavNodes(this.navNodes(), (v) => v.name === node.name);
+    if (nodes.length < 2) {
+      if (node.children && node.children.length > 0) {
+        await this.message.error(`【${node.name}】下面有子节点，不能删除`);
+        return;
+      }
+      const counts = node.itemCounts;
+      if (counts.self > 0 || counts.children > 0) {
+        await this.message.error(`【${node.name}】下面有数据，不能删除`);
+        return;
+      }
     }
     if (!(await this.message.confirm(`是否确定删除【${node.name}】?`))) {
       return;
@@ -277,14 +420,25 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     remove(this.navNodes());
     await this.setNavNodes();
   }
+  clickedNavNode = signal<DataListNavNode | null>(null);
   clickNavNode(node: DataListNavNode) {
-    if (node.hasChild()) {
-      this.navNodesTree().toggle(node);
-      setTimeout(() => {
-        this.filter();
-      }, 0);
-    } else {
-      this.activeNavNode.set(node);
+    this.clickedNavNode.set(node);
+    this.activeNavNode.set(node);
+    // if (node.hasChild()) {
+    //   setTimeout(() => {
+    //     this.filterNavNodes();
+    //   }, 0);
+    // }
+  }
+  async scrollToNavNode(node: DataListNavNode) {
+    const path = getDataListNavNodePath(this.navNodes(), node);
+    for (const node2 of path) {
+      this.navNodesTree().expand(node2);
+    }
+    const treeEl = this.navNodesTreeEl().nativeElement;
+    const nodeEl = await waitFor(() => treeEl?.querySelector(`[data-id="${node.id}"]`));
+    if (nodeEl instanceof HTMLElement && getElementVisiblePercentage(nodeEl) < 1) {
+      this.navNodesScrollbar().scrollToElement(nodeEl);
     }
   }
 
@@ -308,7 +462,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
         value: this.itemQueryType(),
         onChange: (val) => {
           this.itemQueryType.set(val);
-          this.filter();
+          this.filterNavNodes();
         },
         style: {width: "170px"}
       },
@@ -322,7 +476,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
         value: this.itemQueryTypeField(),
         onChange: (val) => {
           this.itemQueryTypeField.set(val);
-          this.filter();
+          this.filterNavNodes();
         },
         style: {width: "200px"}
       } satisfies InputInfoSelect<keyof T, keyof T>,
@@ -333,7 +487,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
         value: this.itemQuery(),
         onInput: debounce((val) => {
           this.itemQuery.set(val);
-          this.filter();
+          this.filterNavNodes();
         }, 200),
         style: {width: "160px"}
       }
@@ -357,7 +511,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   private async _onItemsAllChange(itemsAll: T[]) {
     await this.untilInited();
     updateDataListNavNodeList(this.navNodes(), itemsAll);
-    this.filter();
+    this.filterNavNodes();
   }
 
   itemsScrollbar = viewChild<NgScrollbar>("itemsScrollbar");
@@ -384,91 +538,109 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   });
   private async _onActiveNavNodeChange(activeNode: DataListNavNode | null) {
     await this.untilInited();
-    this.filter();
-    if (!activeNode) {
+    this.filterNavNodes();
+    if (!activeNode || this.clickedNavNode()) {
       return;
     }
-    const treeEl = this.navNodesTreeEl()?.nativeElement;
-    const path = getDataListNavNodePath(this.navNodes(), activeNode);
-    for (const [i, node] of path.entries()) {
-      this.navNodesTree().expand(node);
-      if (i === path.length - 1) {
-        const nodeEl = treeEl?.querySelector(`[data-id="${node.id}"]`);
-        if (nodeEl instanceof HTMLElement && getElementVisiblePercentage(nodeEl) < 1) {
-          this.navNodesScrollbar()?.scrollToElement(nodeEl);
-        }
-      }
-    }
+    this.scrollToNavNode(activeNode);
   }
 
-  filter() {
-    const navQuery = this.navQuery();
-    const nodes = this.navNodes().slice();
+  filterNavNodes() {
+    const nodes = this.navNodes();
+    const query = this.navQuery();
     const activeNode = this.activeNavNode();
-    const isActiveNode = (node: DataListNavNode) => activeNode && node.id === activeNode.id;
+    const nodes2 = this.filterNodes(nodes, query, activeNode, true);
+    this.navNodes.set(nodes2);
+  }
+  filterNodes(nodes: DataListNavNode[], query: string, activeNode: DataListNavNode | null, withItems: boolean, excludeIds?: string[]) {
+    const activeNodePath = activeNode ? getDataListNavNodePath(nodes, activeNode) : [];
+    const isActiveNode = (node: DataListNavNode) => activeNodePath.some((v) => v.id === node.id);
     const filterNodes = (nodes2: DataListNavNode[]) => {
       for (const node of nodes2) {
+        if (excludeIds?.includes(node.id)) {
+          node.hidden = true;
+          continue;
+        }
         if (node.children && node.children.length > 0) {
           filterNodes(node.children);
-          node.hidden = node.children.every((v) => v.hidden);
+          if (queryStringList(query, [node.name])) {
+            node.hidden = false;
+          } else {
+            node.hidden = node.children.every((v) => v.hidden);
+          }
         } else {
-          node.hidden = !isActiveNode(node) && !queryStringList(navQuery, [node.name]);
+          node.hidden = !isActiveNode(node) && !queryStringList(query, [node.name]);
         }
       }
     };
     filterNodes(nodes);
 
     const type = activeNode?.name;
-    const counts: ObjectOf<number> = {};
+    const counts = new Map<string, number>();
+    const countsQuery = new Map<string, number>();
+    const addCount = (map: Map<string, number>, key: string) => {
+      map.set(key, (map.get(key) || 0) + 1);
+    };
     const itemsAll = this.itemsAll();
-    const itemQuery = this.itemQuery();
-    const itemQueryType = this.itemQueryType();
-    const itemQueryField = this.itemQueryTypeField();
-    const navNodesHideEmpty = !!itemQuery;
-    const items: T[] = [];
-    for (const item of itemsAll) {
-      let isMatched = true;
-      if (itemQueryType === "搜索选中分类" && activeNode && !activeNode.hidden && navNodesHideEmpty) {
-        isMatched = item.type === type;
-      }
-      if (itemQueryField && itemQueryField in item) {
-        const val = getValueString(item[itemQueryField]);
-        isMatched = isMatched && queryString(itemQuery, val);
-      } else {
-        isMatched = false;
-      }
-      if (isMatched) {
-        if (item.type === type) {
-          items.push(item);
+    let navNodesHideEmpty = false;
+    if (withItems) {
+      const itemQuery = this.itemQuery();
+      const itemQueryType = this.itemQueryType();
+      const itemQueryField = this.itemQueryTypeField();
+      navNodesHideEmpty = !!itemQuery;
+      const items: T[] = [];
+      for (const item of itemsAll) {
+        addCount(counts, item.type);
+        let isMatched = true;
+        if (itemQueryType === "搜索选中分类" && activeNode && !activeNode.hidden && navNodesHideEmpty) {
+          isMatched = item.type === type;
         }
-        if (item.type in counts) {
-          counts[item.type]++;
+        if (itemQueryField && itemQueryField in item) {
+          const val = getValueString(item[itemQueryField]);
+          isMatched = isMatched && queryString(itemQuery, val);
         } else {
-          counts[item.type] = 1;
+          isMatched = false;
         }
+        if (isMatched) {
+          if (item.type === type) {
+            items.push(item);
+          }
+          addCount(countsQuery, item.type);
+        }
+      }
+      this.items.set(items);
+    } else {
+      for (const item of itemsAll) {
+        addCount(counts, item.type);
+        addCount(countsQuery, item.type);
       }
     }
-    this.items.set(items);
 
     const setCount = (list: DataListNavNode[]) => {
-      let countTotal = 0;
+      let countChildren = 0;
+      let countChildrenQuery = 0;
       for (const node of list) {
-        let count = 0;
+        let countChildren2 = 0;
+        let countChildrenQuery2 = 0;
         if (node.children && node.children.length > 0) {
-          count += setCount(node.children);
-        } else if (node.name in counts) {
-          count = counts[node.name];
+          const res = setCount(node.children);
+          countChildren2 = res.countChildren;
+          countChildrenQuery2 = res.countChildrenQuery;
         }
-        node.itemCount = count;
-        countTotal += count;
-        if (navNodesHideEmpty && count < 1 && !isActiveNode(node)) {
-          node.hidden = true;
+        node.itemCounts.self = counts.get(node.name) || 0;
+        node.itemCounts.selfQuery = countsQuery.get(node.name) || 0;
+        node.itemCounts.children = countChildren2;
+        node.itemCounts.childrenQuery = countChildrenQuery2;
+        countChildren += node.itemCounts.self + countChildren2;
+        countChildrenQuery += node.itemCounts.selfQuery + countChildrenQuery2;
+        if (navNodesHideEmpty && !isActiveNode(node)) {
+          node.hidden = node.itemCounts.selfQuery + node.itemCounts.childrenQuery === 0;
         }
       }
-      return countTotal;
+      return {countChildren, countChildrenQuery};
     };
     setCount(nodes);
-    this.navNodes.set(nodes);
+    return [...nodes];
   }
 
   async importNavNodes() {

@@ -136,7 +136,12 @@ export class MokuaikuComponent implements OnInit {
 
   async addMukuai(mokuai?: Partial<MokuaiItem>) {
     const dataList = this.dataList();
-    const mokuai2 = await this.bjmkStatus.addMukuai(mokuai, {mokuaiOverride: {type: this.mokuaiActiveNavNode()?.name}, dataList});
+    const activeNode = this.mokuaiActiveNavNode();
+    if (!activeNode) {
+      await this.message.alert("请先选择分类");
+      return;
+    }
+    const mokuai2 = await this.bjmkStatus.addMukuai(mokuai, {mokuaiOverride: {type: activeNode.name}, dataList});
     if (mokuai2) {
       if (mokuai2.type) {
         dataList?.updateActiveNavNode(mokuai2.type);
@@ -147,7 +152,7 @@ export class MokuaikuComponent implements OnInit {
   async editMokuai(mokuai: MokuaiItem) {
     const dataList = this.dataList();
     const i = dataList?.getItemIndex((v) => v.id === mokuai.id) ?? -1;
-    await this.bjmkStatus.editMokuai(mokuai, {dataList, isCompact: true});
+    await this.bjmkStatus.editMokuai(mokuai, {isCompact: true});
     await timeout(0);
     const j = dataList?.getItemIndex((v) => v.id === mokuai.id) ?? -1;
     if (i >= 0 && j >= 0 && i !== j) {
@@ -159,6 +164,33 @@ export class MokuaikuComponent implements OnInit {
   }
   async removeMokuai(item: MokuaiItem) {
     await this.bjmkStatus.removeMokuai(item);
+  }
+  async removeMokuais() {
+    const items = this.selectedMokuais();
+    await this.bjmkStatus.removeMokuais(items);
+  }
+  async moveMokuais() {
+    const items = this.selectedMokuais();
+    if (items.length < 1) {
+      await this.message.alert("请选择要移动的模块");
+      return;
+    }
+    const dataList = this.dataList();
+    if (!dataList) {
+      return;
+    }
+    const node = this.mokuaiActiveNavNode();
+    if (!node) {
+      await this.message.alert("请先选择分类");
+      return;
+    }
+    const title = `模块：${items.map((v) => v.name).join("，")} `;
+    const {node: node2, submit} = await dataList.selectNode("leaf", title, node);
+    if (!submit || !node2) {
+      return;
+    }
+    const mokuais: Partial<MokuaiItem>[] = items.map((v) => ({id: v.id, type: node2.name}));
+    await this.bjmkStatus.editMokuais(mokuais);
   }
   refreshMokuais() {
     this.bjmkStatus.mokuaisManager.fetch(true);
@@ -182,10 +214,11 @@ export class MokuaikuComponent implements OnInit {
   }
   selectAllMokuais() {
     const indexs = this.mokuaisSelectedIndexs();
-    if (indexs.length === this.mokuais().length) {
+    const mokuais = this.mokuais();
+    if (indexs.length === mokuais.length) {
       this.mokuaisSelectedIndexs.set([]);
     } else {
-      this.mokuaisSelectedIndexs.set(this.mokuais().map((_, i) => i));
+      this.mokuaisSelectedIndexs.set(mokuais.map((_, i) => i));
     }
   }
 
@@ -193,7 +226,7 @@ export class MokuaikuComponent implements OnInit {
     const mokuaisAll = this.mokuais();
     const ids = this.mokuaisSelectedIndexs().map((i) => mokuaisAll[i].id);
     if (ids.length < 1) {
-      this.message.error("请选择要导出的模块");
+      this.message.alert("请选择要导出的模块");
       return;
     }
     this.bjmkStatus.exportMokuais(ids);
@@ -261,16 +294,21 @@ export class MokuaikuComponent implements OnInit {
   });
   selectedMokuaiIds = signal<number[]>([]);
   selectedMokuais = computed(() => {
-    const ids = this.selectedMokuaiIds();
-    const mokuais = this.bjmkStatus.mokuaisManager.items();
-    const selectedMokuais: MokuaiItem[] = [];
-    for (const id of ids) {
-      const mokuai = mokuais.find((v) => v.id === id);
-      if (mokuai) {
-        selectedMokuais.push(mokuai);
+    const mokuais = this.mokuais();
+    if (this.selectable()) {
+      const ids = this.selectedMokuaiIds();
+      const selectedMokuais: MokuaiItem[] = [];
+      for (const id of ids) {
+        const mokuai = mokuais.find((v) => v.id === id);
+        if (mokuai) {
+          selectedMokuais.push(mokuai);
+        }
       }
+      return selectedMokuais;
+    } else {
+      const indexs = this.mokuaisSelectedIndexs();
+      return indexs.map((i) => mokuais[i]);
     }
-    return selectedMokuais;
   });
   close(submit = false) {
     if (!this.selectable()) {

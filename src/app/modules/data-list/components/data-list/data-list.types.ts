@@ -13,6 +13,13 @@ export interface DataListNavData extends MongodbDataBase {
   data?: DataListNavNodeRaw[];
 }
 
+export interface DataListNavNodeItemCounts {
+  self: number;
+  children: number;
+  selfQuery: number | null;
+  childrenQuery: number | null;
+}
+
 export interface DataListItem {
   id: number | string;
   name: string;
@@ -33,3 +40,5 @@ export const dataListQueryItemFieldsDefault: DataListQueryItemField[] = [
   {field: "name", title: "名字"},
   {field: "type", title: "分类"}
 ];
+
+export type NodeSelectorMode = "parent" | "leaf";

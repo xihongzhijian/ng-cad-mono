@@ -72,7 +72,7 @@
     flex-direction: column;
   }
   &.readonly {
-    --mdc-filled-text-field-container-color: #d3d3d3;
+    --mdc-filled-text-field-container-color: var(--mat-sys-outline-variant);
   }
 }
 
