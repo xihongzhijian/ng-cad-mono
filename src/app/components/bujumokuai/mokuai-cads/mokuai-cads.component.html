@@ -12,8 +12,11 @@
     <button mat-flat-button (click)="refreshCads()">刷新</button>
     <button mat-flat-button (click)="addCad()">添加</button>
     <button mat-flat-button [class.accent]="cadsEditMode()" (click)="toggleCadsEditMode()">编辑</button>
-    <button mat-flat-button (click)="removeCads()">批量删除</button>
-    <button mat-flat-button (click)="copyCads()">批量复制</button>
+    <button mat-flat-button (click)="copyCads()">复制</button>
+    <button mat-flat-button (click)="removeCads()">删除</button>
+    @if (canMoveCads()) {
+      <button mat-flat-button (click)="moveCads()">移动</button>
+    }
     @if (cadYaoqiu()?.["有帮助文档"]) {
       <button mat-flat-button (click)="cadYaoqiu()?.['打开帮助文档']()">帮助文档</button>
     }

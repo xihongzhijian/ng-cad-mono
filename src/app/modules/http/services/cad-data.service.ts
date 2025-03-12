@@ -25,6 +25,7 @@ import {
   MongodbCopyOptions,
   MongodbDataBase,
   MongodbInsertOptions,
+  MongodbUpdateData,
   QueryMongodbParams,
   QueryMysqlParams,
   SetCadParams,
@@ -414,11 +415,23 @@ export class CadDataService extends HttpService {
   }
   async mongodbUpdate<T extends MongodbDataBase>(
     collection: CadCollection,
-    data: Partial<T> & {_id: string},
+    data: MongodbUpdateData<T>,
     extraData?: Partial<T>,
     options?: HttpOptions
   ) {
     const response = await this.post("ngcad/mongodbTableUpdate", {collection, data, extraData}, options);
+    if (response?.code === 0) {
+      return true;
+    }
+    return false;
+  }
+  async mongodbUpdateMulti<T extends MongodbDataBase>(
+    collection: CadCollection,
+    datas: MongodbUpdateData<T>[],
+    extraData?: Partial<T>,
+    options?: HttpOptions
+  ) {
+    const response = await this.post("ngcad/mongodbTableUpdateMulti", {collection, datas, extraData}, options);
     if (response?.code === 0) {
       return true;
     }

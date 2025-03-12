@@ -23,6 +23,7 @@ import {getNameWithSuffix} from "@app/utils/get-value";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton, CadItemIsOnlineInfo, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
+import {isSbjbType} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
@@ -31,7 +32,7 @@ import {DataListNavNameChangeEvent, DataListQueryItemField} from "@modules/data-
 import {DataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@modules/data-list/data-list.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
+import {HoutaiCad, MongodbUpdateData} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -243,6 +244,41 @@ export class MokuaiCadsComponent {
     if (success) {
       this.bjmkStatus.cadsManager.refresh({remove: cads});
     }
+  }
+  canMoveCads = computed(() => {
+    const dataList = this.dataList();
+    if (!dataList) {
+      return false;
+    }
+    const node = this.activeNavNode();
+    if (!node) {
+      return false;
+    }
+    return !isSbjbType(node.name);
+  });
+  async moveCads() {
+    const cads = await this._getSelectedCads();
+    const dataList = this.dataList();
+    if (!cads || !dataList) {
+      return;
+    }
+    const node = this.activeNavNode();
+    if (!node) {
+      await this.message.alert("请先选择分类");
+      return;
+    }
+    const title = `CAD：${cads.map((v) => v.name).join("，")} `;
+    const {node: node2, submit} = await dataList.selectNode("leaf", title, node);
+    if (!submit || !node2) {
+      return;
+    }
+    const datas: MongodbUpdateData<HoutaiCad>[] = [];
+    for (const cad of cads) {
+      cad.type = node2.name;
+      datas.push({_id: cad.id, 分类: cad.type});
+    }
+    await this.http.mongodbUpdateMulti(this.bjmkStatus.collection, datas);
+    this.bjmkStatus.cadsManager.refresh({update: cads});
   }
   refreshCads() {
     this.bjmkStatus.cadsManager.fetch(true);

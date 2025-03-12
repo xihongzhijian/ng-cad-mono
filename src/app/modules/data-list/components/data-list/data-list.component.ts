@@ -224,7 +224,15 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
     const {nodes, excludeIds} = selector;
     const query = this.nodeSelectorQuery();
-    selector.nodes = this.filterNodes(nodes, query, null, false, excludeIds);
+    selector.nodes = this.filterNodes(nodes, query, null, false, (node) => {
+      if (excludeIds?.includes(node.id)) {
+        return false;
+      }
+      if (node.isVirtual) {
+        return false;
+      }
+      return true;
+    });
   }
   updateNodeSelectorEff = effect(() => {
     this.navNodes();
@@ -552,12 +560,18 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     const nodes2 = this.filterNodes(nodes, query, activeNode, true);
     this.navNodes.set(nodes2);
   }
-  filterNodes(nodes: DataListNavNode[], query: string, activeNode: DataListNavNode | null, withItems: boolean, excludeIds?: string[]) {
+  filterNodes(
+    nodes: DataListNavNode[],
+    query: string,
+    activeNode: DataListNavNode | null,
+    withItems: boolean,
+    filterFn?: (node: DataListNavNode) => boolean
+  ) {
     const activeNodePath = activeNode ? getDataListNavNodePath(nodes, activeNode) : [];
     const isActiveNode = (node: DataListNavNode) => activeNodePath.some((v) => v.id === node.id);
     const filterNodes = (nodes2: DataListNavNode[]) => {
       for (const node of nodes2) {
-        if (excludeIds?.includes(node.id)) {
+        if (typeof filterFn === "function" && !filterFn(node)) {
           node.hidden = true;
           continue;
         }

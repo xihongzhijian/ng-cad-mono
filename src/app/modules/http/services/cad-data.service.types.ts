@@ -159,6 +159,8 @@ export interface MongodbDataFilterable {
   条件: string[];
 }
 
+export type MongodbUpdateData<T extends MongodbDataBase = MongodbDataBase> = Partial<T> & {_id: string};
+
 export interface BancaiListData {
   bancais: BancaiList[];
   bancaiKeys: string[];
