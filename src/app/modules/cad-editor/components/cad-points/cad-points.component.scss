@@ -1,5 +1,6 @@
 .point {
   position: fixed;
+  border: 1px solid var(--mat-sys-on-surface);
   border-radius: 20px;
   background-color: var(--mat-sys-surface);
   cursor: pointer;
@@ -8,7 +9,6 @@
   animation: point 2.2s linear infinite;
   --active-color: var(--mat-sys-primary);
   &:hover {
-    opacity: 0.9;
     background-color: var(--active-color);
   }
   &.active {
