@@ -66,7 +66,7 @@ export class FentiCadDialogComponent {
   }
 
   removeCad(component: CadItemComponent<FentiCadItemInfo>) {
-    const {key} = component.customInfo || {};
+    const {key} = component.customInfo() || {};
     if (!key || !this.data.data[key]) {
       return;
     }

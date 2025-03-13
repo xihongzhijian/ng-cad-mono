@@ -21,7 +21,7 @@ import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slid
 import {imgCadEmpty} from "@app/app.common";
 import {getCadQueryFields, setCadData, validateCad} from "@app/cad/cad-shujuyaoqiu";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
-import {CadItemButton, CadItemForm} from "@components/lurushuju/cad-item/cad-item.types";
+import {CadItemButton, CadItemForm, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
@@ -508,7 +508,7 @@ export class CadListComponent implements AfterViewInit {
   toggleShowCadItemFormTexts() {
     this.cadItemForm.update((v) => ({...v, noDefaultTexts: !v.noDefaultTexts}));
   }
-  getItemSelectable(item: CadListPageItem): CadItemComponent<CadListItemInfo>["selectable"] {
+  getItemSelectable(item: CadListPageItem): CadItemSelectable<CadListItemInfo> | undefined {
     if (this.multiDeleting()) {
       return {selected: item.toDelete, onChange: this.onSelectChange.bind(this)};
     } else if (this.data.selectMode !== "none") {
@@ -523,7 +523,7 @@ export class CadListComponent implements AfterViewInit {
     this.data.afterEditCad?.(data);
   }
   onSelectChange(component: CadItemComponent<CadListItemInfo>) {
-    const {index: i} = component.customInfo;
+    const {index: i} = component.customInfo();
     const {selectMode} = this.data;
     const multiDeleting = this.multiDeleting();
     let needsSync = false;
@@ -576,7 +576,7 @@ export class CadListComponent implements AfterViewInit {
     this.pageData.update((v) => v.map((v2) => ({...v2, toDelete: false})));
   }
   afterFetch(component: CadItemComponent<CadListItemInfo>) {
-    const {index: i} = component.customInfo;
+    const {index: i} = component.customInfo();
     this.pageData.update((v) => v.map((v2, j) => (i === j ? {...v2, isFetched: true} : v2)));
   }
   async addCad() {
@@ -599,7 +599,7 @@ export class CadListComponent implements AfterViewInit {
     }
   }
   async copyCad(component: CadItemComponent<CadListItemInfo>) {
-    const {index: i} = component.customInfo;
+    const {index: i} = component.customInfo();
     const item = this.pageData()[i];
     if (!(await this.message.confirm(`是否确定复制【${item.data.名字}】？`))) {
       return;
@@ -616,7 +616,7 @@ export class CadListComponent implements AfterViewInit {
     }
   }
   async deleteCad(component: CadItemComponent<CadListItemInfo>) {
-    const {index: i} = component.customInfo;
+    const {index: i} = component.customInfo();
     const item = this.pageData()[i];
     if (!(await this.message.confirm(`是否确定删除【${item.data.名字}】？`))) {
       return;

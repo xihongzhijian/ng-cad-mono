@@ -217,7 +217,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     return buttons;
   });
   mubanExtraData = computed(() => {
-    const data: CadItemComponent["mubanExtraData"] = {};
+    const data: Partial<CadData> = {};
     const options = this.suanliaoDataParams()?.选项;
     if (options) {
       data.options = options;
@@ -237,7 +237,8 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     if (!data) {
       return;
     }
-    const {cad, cadName} = component;
+    const cad = component.cad();
+    const cadName = component.cadName();
     if (!(await this.message.confirm(`确定复制【${cadName}】吗？`))) {
       return;
     }
@@ -252,10 +253,10 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
       if (!result) {
         return;
       }
-      component.mubanId = result.id;
+      component.setMubanId(result.id);
       component.mubanData = cadData;
     }
-    data.算料CAD.splice(component.customInfo.index + 1, 0, cad2);
+    data.算料CAD.splice(component.customInfo().index + 1, 0, cad2);
     this.updateSuanliaoData();
   }
   async removeCad(component: CadItemComponent<SuanliaoCadItemInfo>) {
@@ -263,10 +264,11 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     if (!data) {
       return;
     }
-    const {cadName, mubanId} = component;
+    const cadName = component.cadName();
     if (!(await this.message.confirm(`删除【${cadName}】将同时删除对应的孔位配置、开料参数、开料模板，确定删除吗？`))) {
       return;
     }
+    const mubanId = component.mubanId();
     if (mubanId) {
       await this.http.mongodbDelete("kailiaocadmuban", {id: mubanId});
     }
@@ -277,7 +279,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
       await this.http.mongodbDelete("kailiaocanshu", {filter: {...params, 名字: cadName + "中空参数"}});
       this.suanliaoTables()?.update();
     }
-    data.算料CAD.splice(component.customInfo.index, 1);
+    data.算料CAD.splice(component.customInfo().index, 1);
     this.updateSuanliaoData();
   }
 
@@ -286,7 +288,10 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     if (!suanliaoTables) {
       return;
     }
-    const resData = await this.http.mongodbInsert(suanliaoTables.klkwpzCollection, {...this.suanliaoDataParams(), 名字: component.cadName});
+    const resData = await this.http.mongodbInsert(suanliaoTables.klkwpzCollection, {
+      ...this.suanliaoDataParams(),
+      名字: component.cadName()
+    });
     if (resData) {
       suanliaoTables.updateKlkwpzTable();
     }

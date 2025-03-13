@@ -194,7 +194,7 @@ export class MokuaiCadsComponent {
     }
   }
   async copyCad(component: CadItemComponent<MokuaiCadItemInfo>) {
-    const {index} = component.customInfo;
+    const {index} = component.customInfo();
     const cad = this.cads()[index];
     const collection = this.collection;
     const items = await this.http.mongodbCopy<HoutaiCad>(collection, [cad.id]);
@@ -204,7 +204,7 @@ export class MokuaiCadsComponent {
     }
   }
   async removeCad(component: CadItemComponent<MokuaiCadItemInfo>) {
-    const {index} = component.customInfo;
+    const {index} = component.customInfo();
     const cad = this.cads()[index];
     if (!(await this.message.confirm(`是否确定删除【${cad.name}】？`))) {
       return;

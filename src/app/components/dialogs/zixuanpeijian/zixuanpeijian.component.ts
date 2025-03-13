@@ -18,7 +18,7 @@ import {toFixed} from "@app/utils/func";
 import {getNameWithSuffix} from "@app/utils/get-value";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
-import {CadItemButton} from "@components/lurushuju/cad-item/cad-item.types";
+import {CadItemButton, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
 import {Debounce} from "@decorators/debounce";
 import {environment} from "@env";
 import {CadData, CadLine, CadLineLike, CadMtext, CadViewer, CadViewerConfig, setLinesLength} from "@lucilor/cad-viewer";
@@ -956,7 +956,7 @@ export class ZixuanpeijianComponent implements OnInit {
 
   async addLingsanItem(component: CadItemComponent<LingsanCadItemInfo>) {
     const type = this.lingsanCadType;
-    const {index: i} = component.customInfo;
+    const {index: i} = component.customInfo();
     const {multiDeleting} = this;
     if (this.data?.readonly || multiDeleting) {
       return;
@@ -1488,7 +1488,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   async copyLingsanCad(component: CadItemComponent<LingsanCadItemInfo>) {
-    const {index} = component.customInfo;
+    const {index} = component.customInfo();
     const item = this.lingsanCads[this.lingsanCadType]?.[index];
     if (!item) {
       return;
@@ -1506,7 +1506,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   async deleteLingsanCad(component: CadItemComponent<LingsanCadItemInfo>) {
-    const {index} = component.customInfo;
+    const {index} = component.customInfo();
     const item = this.lingsanCads[this.lingsanCadType]?.[index];
     if (!item || !(await this.message.confirm(`是否确定删除【${item.data.name}】？`))) {
       return;
@@ -1517,7 +1517,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   afterFetch(component: CadItemComponent<LingsanCadItemInfo>) {
-    const {index} = component.customInfo;
+    const {index} = component.customInfo();
     const item = this.lingsanCads[this.lingsanCadType]?.[index];
     if (!item) {
       return;
@@ -1526,7 +1526,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   onLingsanItemClickAll(component: CadItemComponent<LingsanCadItemInfo>) {
-    const {index} = component.customInfo;
+    const {index} = component.customInfo();
     const {multiDeleting} = this;
     if (multiDeleting) {
       return;
@@ -1536,7 +1536,7 @@ export class ZixuanpeijianComponent implements OnInit {
     }
   }
 
-  getLingsanItemSelectable(item: ZixuanpeijianlingsanCadItem): CadItemComponent<LingsanCadItemInfo>["selectable"] {
+  getLingsanItemSelectable(item: ZixuanpeijianlingsanCadItem): CadItemSelectable<LingsanCadItemInfo> | undefined {
     if (this.multiDeleting) {
       return {selected: item.toDelete, onChange: () => (item.toDelete = !item.toDelete)};
     }

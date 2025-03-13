@@ -22,6 +22,7 @@ import {MatTabChangeEvent, MatTabsModule} from "@angular/material/tabs";
 import {filterCad} from "@app/cad/cad-shujuyaoqiu";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
+import {FentiCadDialogInput} from "@components/lurushuju/fenti-cad-dialog/fenti-cad-dialog.types";
 import {get双开门扇宽生成方式Inputs} from "@components/lurushuju/services/lrsj-status.utils";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
@@ -37,6 +38,7 @@ import {convertOptions, getInputInfoGroup} from "@modules/input/components/input
 import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {OpenCadOptions} from "@services/app-status.types";
 import {MrbcjfzComponent} from "@views/mrbcjfz/mrbcjfz.component";
 import {MrbcjfzInputData} from "@views/mrbcjfz/mrbcjfz.types";
 import {filterCad as filterCad2} from "@views/mrbcjfz/mrbcjfz.utils";
@@ -437,22 +439,22 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     return name;
   }
   async addKwpz(component: CadItemComponent<MenjiaoCadItemInfo>) {
-    const {key1} = component.customInfo;
+    const {key1} = component.customInfo();
     const suanliaoDataParams = this.key1Infos()[key1].suanliaoDataParams;
     const response = await this.http.mongodbInsert("kailiaokongweipeizhi", {
       ...suanliaoDataParams,
-      名字: this.getTableCadName(component.cadName)
+      名字: this.getTableCadName(component.cadName())
     });
     if (response) {
       this.getSuanliaoTables(key1)?.updateKlkwpzTable();
     }
   }
   async addKlcs(component: CadItemComponent<MenjiaoCadItemInfo>) {
-    const {key1} = component.customInfo;
+    const {key1} = component.customInfo();
     const suanliaoDataParams = this.key1Infos()[key1].suanliaoDataParams;
     const response = await this.http.mongodbInsert<HoutaiData>("kailiaocanshu", {
       ...suanliaoDataParams,
-      名字: this.getTableCadName(component.cadName) + "中空参数",
+      名字: this.getTableCadName(component.cadName()) + "中空参数",
       分类: "切中空"
     });
     if (response) {
@@ -504,10 +506,10 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     }
   }
   async selectCad(component: CadItemComponent<MenjiaoCadItemInfo>) {
-    await this.selectCad0(component.customInfo);
+    await this.selectCad0(component.customInfo());
   }
   async removeCad(component: CadItemComponent<MenjiaoCadItemInfo>) {
-    const {key1, key2, key3} = component.customInfo;
+    const {key1, key2, key3} = component.customInfo();
     const data = this.suanliaoData()[key1][key2][key3];
     if (!data.cad || !(await this.message.confirm(`确定删除【${data.cad.名字}】吗？`))) {
       return;
@@ -528,7 +530,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
       return;
     }
     if (typeof key1 !== "string") {
-      key1 = key1.customInfo.key1;
+      key1 = key1.customInfo().key1;
     }
     const suanliaoData = this.suanliaoData();
     const data = suanliaoData[key1].示意图CAD;
@@ -557,7 +559,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     }
   }
   async removeShiyituCad(component: CadItemComponent<MenjiaoShiyituCadItemInfo>) {
-    const {key1, index} = component.customInfo;
+    const {key1, index} = component.customInfo();
     const suanliaoData = this.suanliaoData();
     const data = suanliaoData[key1].示意图CAD;
     const cad = data.算料单示意图[index];
@@ -568,7 +570,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     updateMenjiaoData(this.suanliaoData);
   }
 
-  getOpenCadOptions(key1: MenjiaoCadType): CadItemComponent["openCadOptions"] {
+  getOpenCadOptions(key1: MenjiaoCadType): OpenCadOptions {
     const info = this.key1Infos()[key1];
     return {
       suanliaogongshiInfo: info.suanliaogongshiInfo,
@@ -578,7 +580,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   afterEditCad(key1: MenjiaoCadType) {
     this.getSuanliaoTables(key1)?.update();
   }
-  getFentiDialogInput(key1: MenjiaoCadType, key2: string, key3: string): CadItemComponent["fentiDialogInput"] {
+  getFentiDialogInput(key1: MenjiaoCadType, key2: string, key3: string): FentiCadDialogInput | undefined {
     if (key2 === "企料CAD") {
       const item = this.suanliaoData()[key1];
       return {

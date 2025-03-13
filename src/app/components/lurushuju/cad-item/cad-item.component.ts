@@ -1,22 +1,24 @@
 import {KeyValuePipe} from "@angular/common";
 import {
   booleanAttribute,
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   ElementRef,
-  EventEmitter,
   forwardRef,
   HostBinding,
   HostListener,
+  inject,
   input,
-  Input,
-  OnChanges,
+  model,
   OnDestroy,
   OnInit,
-  Output,
-  QueryList,
-  SimpleChanges,
-  ViewChild,
-  ViewChildren
+  output,
+  OutputRefSubscription,
+  untracked,
+  viewChild,
+  viewChildren
 } from "@angular/core";
 import {ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -47,7 +49,6 @@ import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
 import csstype from "csstype";
 import {isEmpty} from "lodash";
-import {Subscription} from "rxjs";
 import {openFentiCadDialog} from "../fenti-cad-dialog/fenti-cad-dialog.component";
 import {FentiCadDialogInput} from "../fenti-cad-dialog/fenti-cad-dialog.types";
 import {算料公式} from "../xinghao-data";
@@ -65,9 +66,15 @@ import {CadItemButton, CadItemForm, CadItemIsOnlineInfo, CadItemSelectable, CadI
     MatIconModule
   ],
   templateUrl: "./cad-item.component.html",
-  styleUrl: "./cad-item.component.scss"
+  styleUrl: "./cad-item.component.scss",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDestroy {
+export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
   cadWidth = 300;
   cadHeight = 150;
 
@@ -80,38 +87,38 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   @HostBinding("style") style: csstype.Properties = {};
   @HostBinding("class") class: string[] = [];
 
-  @Input({required: true}) cad: HoutaiCad | CadData = new CadData();
-  @Input({required: true}) buttons: CadItemButton<T>[] = [];
-  @Input() buttons2: CadItemButton<T>[] = [];
-  @Input() formTitleBtns?: CadItemButton<T>[];
-  @Input() hideButtons = false;
+  cad = model.required<HoutaiCad | CadData>();
+  buttons = input.required<CadItemButton<T>[]>();
+  buttons2 = input<CadItemButton<T>[]>();
+  formTitleBtns = input<CadItemButton<T>[]>();
+  hideButtons = input(false, {transform: booleanAttribute});
   collection = input<CadCollection>("cad");
-  @Input({required: true}) customInfo!: T;
-  @Input({required: true}) yaoqiu: Cad数据要求 | undefined | null;
-  @Input() gongshis: 算料公式[] | null | undefined;
-  @Input() fentiDialogInput?: FentiCadDialogInput;
-  @Input() mubanExtraData: Partial<CadData> = {};
-  @Input() openCadOptions?: OpenCadOptions;
-  @Input() showMuban?: boolean;
-  @Input() titlePrefix?: string;
-  @Input() isOnline?: CadItemIsOnlineInfo<T>;
-  @Input({transform: booleanAttribute}) isLocal?: boolean;
-  @Input() selectable?: CadItemSelectable<T>;
-  @Input({transform: booleanAttribute}) editDisabled?: boolean;
-  @Input({transform: booleanAttribute}) noFixedType?: boolean;
-  @Input() events?: {
+  customInfo = input.required<T>();
+  yaoqiu = input.required<Cad数据要求 | undefined | null>();
+  gongshis = input<算料公式[] | null | undefined>();
+  fentiDialogInput = input<FentiCadDialogInput>();
+  mubanExtraData = input<Partial<CadData>>();
+  openCadOptions = input<OpenCadOptions>();
+  showMuban = input(false, {transform: booleanAttribute});
+  titlePrefix = input<string>();
+  isOnline = input<CadItemIsOnlineInfo<T>>();
+  isLocal = input(false, {transform: booleanAttribute});
+  selectable = input<CadItemSelectable<T>>();
+  editDisabled = input(false, {transform: booleanAttribute});
+  noFixedType = input(false, {transform: booleanAttribute});
+  events = input<{
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
-  };
-  @Input() validators?: CadItemValidators;
-  @Input() cadForm?: CadItemForm<T>;
-  @Input() mokuaiName?: string;
-  @Output() beforeEditCad = new EventEmitter<void>();
-  @Output() afterEditCad = new EventEmitter<void>();
+  }>();
+  validators = input<CadItemValidators>();
+  cadForm = input<CadItemForm<T>>();
+  mokuaiName = input<string>();
+  beforeEditCad = output();
+  afterEditCad = output();
 
-  @ViewChild("cadContainer") cadContainer?: ElementRef<HTMLDivElement>;
-  @ViewChild("mubanContainer") mubanContainer?: ElementRef<HTMLDivElement>;
-  @ViewChildren(forwardRef(() => InputComponent)) inputComponents?: QueryList<InputComponent>;
+  cadContainer = viewChild<ElementRef<HTMLDivElement>>("cadContainer");
+  mubanContainer = viewChild<ElementRef<HTMLDivElement>>("mubanContainer");
+  inputComponents = viewChildren(forwardRef(() => InputComponent));
   cadViewer?: CadViewer;
   mubanViewer?: CadViewer;
   showMubanViewer = false;
@@ -122,23 +129,12 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   isOnlineFetched = false;
   showCadViewer = false;
 
-  constructor(
-    private message: MessageService,
-    private dialog: MatDialog,
-    private http: CadDataService,
-    private status: AppStatusService
-  ) {}
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.cad) {
-      this.cadData = undefined;
-      this.update();
-    }
-  }
-
-  private _afterEditCadSubscription?: Subscription;
+  private _afterEditCadSubscription?: OutputRefSubscription;
   ngOnInit() {
     this._afterEditCadSubscription = this.afterEditCad.subscribe(() => {
+      const cad = this.cad();
+      this.cad.set(getHoutaiCad());
+      this.cad.set(cad);
       this.validate();
     });
   }
@@ -149,23 +145,29 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     this.mubanViewer?.destroy();
   }
 
-  get cadId() {
-    return this.cad instanceof CadData ? this.cad.id : this.cad._id;
-  }
-  get cadName() {
-    return this.cad instanceof CadData ? this.cad.name : this.cad.名字;
-  }
-  get cadTitle() {
-    return `${this.titlePrefix || ""}${this.cadName}`;
-  }
-  get mubanId() {
-    if (this.cad instanceof CadData) {
-      return this.cad.zhankai[0]?.kailiaomuban || "";
+  cadEff = effect(() => {
+    this.cad();
+    this.cadData = undefined;
+    untracked(() => this.update());
+  });
+
+  cadId = computed(() => {
+    const cad = this.cad();
+    return cad instanceof CadData ? cad.id : cad._id;
+  });
+  cadName = computed(() => {
+    const cad = this.cad();
+    return cad instanceof CadData ? cad.name : cad.名字;
+  });
+  mubanId = computed(() => {
+    const cad = this.cad();
+    if (cad instanceof CadData) {
+      return cad.zhankai[0]?.kailiaomuban || "";
     }
-    return this.cad.json.zhankai?.[0]?.kailiaomuban || "";
-  }
-  set mubanId(value: string) {
-    const {cad} = this;
+    return cad?.json?.zhankai?.[0]?.kailiaomuban || "";
+  });
+  setMubanId(value: string) {
+    const cad = this.cad();
     if (!cad) {
       return;
     }
@@ -186,31 +188,33 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       }
       cad.json.zhankai[0].kailiaomuban = value;
     }
+    this.afterEditCad.emit();
   }
-  get zhankai() {
-    const {cad} = this;
+  zhankai = computed(() => {
+    const cad = this.cad();
     let zhankai: any;
     if (cad instanceof CadData) {
       zhankai = cad.zhankai[0];
     } else {
-      if (cad.json.zhankai && cad.json.zhankai[0]) {
+      if (cad?.json?.zhankai && cad.json.zhankai[0]) {
         zhankai = cad.json.zhankai[0];
       }
     }
     return zhankai as CadZhankai | undefined;
-  }
+  });
 
   centerCad() {
     this.cadViewer?.center();
   }
 
   async onlineFetch(compact = false) {
-    const {isOnline, yaoqiu} = this;
+    const isOnline = this.isOnline();
     if (!isOnline || isOnline.isFetched) {
       return;
     }
+    const yaoqiu = this.yaoqiu();
     this.beforeEditCad.emit();
-    const params: QueryMongodbParams = {collection: this.collection(), where: {_id: this.cadId}};
+    const params: QueryMongodbParams = {collection: this.collection(), where: {_id: this.cadId()}};
     if (compact && yaoqiu) {
       const fields: string[] = [];
       for (const {cadKey} of yaoqiu.CAD弹窗修改属性) {
@@ -223,10 +227,11 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     }
     const data = (await this.http.queryMongodb<HoutaiCad>(params, {spinner: false}))[0];
     if (data) {
-      if (this.cad instanceof CadData) {
-        Object.assign(this.cad, new CadData(data.json));
+      const cad = this.cad();
+      if (cad instanceof CadData) {
+        Object.assign(cad, new CadData(data.json));
       } else {
-        Object.assign(this.cad, data);
+        Object.assign(cad, data);
       }
       this.afterEditCad.emit();
       isOnline.afterFetch?.(this);
@@ -234,7 +239,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async editCad() {
-    const {cad, isOnline} = this;
+    const cad = this.cad();
     if (!cad) {
       return;
     }
@@ -246,9 +251,9 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         collection: this.collection(),
         data: cadData,
         center: true,
-        isLocal: this.isLocal || !isOnline,
-        gongshis: this.gongshis,
-        mokuaiName: this.mokuaiName,
+        isLocal: this.isLocal() || !this.isOnline(),
+        gongshis: this.gongshis(),
+        mokuaiName: this.mokuaiName(),
         validator: (data) => {
           return {...this.validateZhankai(data), ...this.validateName(data)};
         },
@@ -273,15 +278,15 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async editCadForm() {
-    const onEdit = this.cadForm?.onEdit;
+    const onEdit = this.cadForm()?.onEdit;
     if (typeof onEdit === "function") {
       await onEdit(this);
       return;
     }
-    if (this.editDisabled) {
+    if (this.editDisabled()) {
       return;
     }
-    const {cad, isOnline, yaoqiu} = this;
+    const cad = this.cad();
     if (!cad) {
       return;
     }
@@ -294,9 +299,11 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     }
     this.beforeEditCad.emit();
     const collection = this.collection();
-    const {http, dialog, status, message, validators} = this;
-    const noFixedType = this.noFixedType;
-    const formTitleBtns = this.formTitleBtns || [];
+    const {http, dialog, status, message} = this;
+    const yaoqiu = this.yaoqiu();
+    const validators = this.validators();
+    const noFixedType = this.noFixedType();
+    const formTitleBtns = this.formTitleBtns() || [];
     const data2 = await openCadForm(yaoqiu, collection, data, http, dialog, status, message, true, {
       validators,
       noFixedType,
@@ -315,7 +322,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     } else {
       Object.assign(cad, getHoutaiCad(data2));
     }
-    if (isOnline) {
+    if (this.isOnline()) {
       await this.http.setCad({collection: this.collection(), cadData: data2, force: true}, true);
     }
     await this.initCadViewer();
@@ -337,11 +344,13 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (!cadData) {
       return;
     }
-    const {cad, mubanId, mubanExtraData} = this;
+    const cad = this.cad();
+    const mubanId = this.mubanId();
     if (mubanId) {
       cadData.id = mubanId;
     }
     cadData.type = typeOptions[0];
+    const mubanExtraData = this.mubanExtraData;
     if (mubanExtraData) {
       Object.assign(cadData, mubanExtraData);
     }
@@ -362,14 +371,14 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (!result) {
       return;
     }
-    this.mubanId = result.id;
+    this.setMubanId(cadData.id);
     this.mubanData = result;
     await timeout(0);
     await this.initMubanViewer();
   }
 
   async getMubanData() {
-    const {mubanId} = this;
+    const mubanId = this.mubanId();
     if (!mubanId) {
       this.mubanData = undefined;
       return undefined;
@@ -377,19 +386,18 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     const resultData = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId}, {silent: true});
     const mubanData = resultData.cads[0] as CadData | undefined;
     if (!mubanData) {
-      this.message.error(`【${this.cadName}】的模板不存在`);
+      this.message.error(`【${this.cadName()}】的模板不存在`);
     }
     this.mubanData = mubanData;
     if (mubanData) {
       generateLineTexts2(mubanData);
     } else {
-      this.mubanId = "";
+      this.setMubanId("");
     }
     return mubanData;
   }
 
   async editMuban() {
-    const {mubanExtraData} = this;
     let {mubanData} = this;
     if (!mubanData) {
       mubanData = await this.getMubanData();
@@ -402,8 +410,8 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         data: mubanData,
         center: true,
         collection: "kailiaocadmuban",
-        extraData: mubanExtraData,
-        gongshis: this.gongshis,
+        extraData: this.mubanExtraData(),
+        gongshis: this.gongshis(),
         ...this.openCadOptions
       }
     });
@@ -414,7 +422,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async editMubanInNewTab() {
-    const {mubanId} = this;
+    const mubanId = this.mubanId();
     if (!mubanId) {
       return;
     }
@@ -433,7 +441,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async removeMuban() {
-    const {mubanId} = this;
+    const mubanId = this.mubanId();
     if (!mubanId) {
       return;
     }
@@ -441,7 +449,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       return;
     }
     if (await this.http.mongodbDelete("kailiaocadmuban", {id: mubanId})) {
-      this.mubanId = "";
+      this.setMubanId("");
       this.mubanData = undefined;
       await this.initMubanViewer();
     }
@@ -474,7 +482,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
         entity = entity.parent;
       }
       if (entity instanceof CadLineLike) {
-        const result = await openCadLineForm(collection, this.status, this.message, cadViewer, entity, this.gongshis);
+        const result = await openCadLineForm(collection, this.status, this.message, cadViewer, entity, this.gongshis());
         if (result) {
           afterDblClickForm(data);
         }
@@ -499,13 +507,14 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
 
   async initCadViewer() {
     this.cadViewer?.destroy();
-    const {cad, showCadViewer} = this;
+    const cad = this.cad();
     if (!cad) {
       return;
     }
+    const showCadViewer = this.showCadViewer;
     if (showCadViewer) {
       await this.onlineFetch();
-    } else if (this.isOnline) {
+    } else if (this.isOnline()) {
       if (cad instanceof CadData) {
         cad.info.incomplete = true;
       } else {
@@ -515,11 +524,10 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
     this.cadData = data;
     generateLineTexts2(data);
-    const cadContainer = this.cadContainer;
+    const cadContainer = this.cadContainer()?.nativeElement;
     if (showCadViewer && cadContainer) {
-      const containerEl = cadContainer.nativeElement;
       const collection = this.collection();
-      this.cadViewer = this.initCadViewer0(collection, data, containerEl, async (data2) => {
+      this.cadViewer = this.initCadViewer0(collection, data, cadContainer, async (data2) => {
         this.beforeEditCad.emit();
         if (!this.isOnline) {
           data2.info.imgUpdate = true;
@@ -532,7 +540,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
             cad.json[key] = exportData[key];
           }
         }
-        if (this.isOnline) {
+        if (this.isOnline()) {
           const url = await getCadPreview(collection, data2);
           await this.http.setCad({collection, cadData: data2, force: true}, true);
           await this.http.setCadImg(data2.id, url, {silent: true});
@@ -547,7 +555,8 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (!this.showMuban) {
       return;
     }
-    const {cad, mubanContainer, showMubanViewer} = this;
+    const {cad, showMubanViewer} = this;
+    const mubanContainer = this.mubanContainer()?.nativeElement;
     if (!cad || !mubanContainer) {
       return;
     }
@@ -557,8 +566,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     if (showMubanViewer) {
       const {mubanData} = this;
       if (mubanData) {
-        const containerEl = mubanContainer.nativeElement;
-        this.mubanViewer = this.initCadViewer0("kailiaocadmuban", mubanData, containerEl, () => {
+        this.mubanViewer = this.initCadViewer0("kailiaocadmuban", mubanData, mubanContainer, () => {
           this.http.setCad({collection: "kailiaocadmuban", cadData: mubanData, force: true}, true);
         });
       }
@@ -568,7 +576,8 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
 
   async updateMubanInputs() {
     this.mubanInputs = [];
-    const {cad, mubanData} = this;
+    const cad = this.cad();
+    const mubanData = this.mubanData;
     if (!cad || !mubanData) {
       return;
     }
@@ -640,7 +649,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async selectFentiCad() {
-    const {fentiDialogInput} = this;
+    const fentiDialogInput = this.fentiDialogInput();
     if (!fentiDialogInput) {
       return;
     }
@@ -648,7 +657,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   validateZhankai(data: CadData): ValidationErrors | null {
-    const {validators} = this;
+    const validators = this.validators();
     const zhankai = data.zhankai[0];
     if (validators?.zhankai) {
       if (!zhankai.zhankaigao) {
@@ -658,7 +667,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     return null;
   }
   validateName(data: CadData): ValidationErrors | null {
-    const {validators} = this;
+    const validators = this.validators();
     if (validators?.name) {
       const errors = validators.name(data);
       if (!isEmpty(errors)) {
@@ -668,7 +677,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
     return null;
   }
   validate() {
-    const inputs = this.inputComponents?.toArray() || [];
+    const inputs = this.inputComponents();
     const errors: string[] = [];
     this.errorMsgs = {};
     const {cadName} = this;
@@ -699,7 +708,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   getCadInfoStr(item: Cad数据要求Item) {
-    const {cad} = this;
+    const cad = this.cad();
     if (item.cadKey) {
       let value = cad instanceof CadData ? cad[item.cadKey] : cad.json[item.cadKey];
       if (item.key2) {
@@ -707,12 +716,12 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       }
       return getValueString(value, {separator: "\n", separatorKv: "："});
     } else if (item.key === "展开信息") {
-      const zhankai = this.zhankai;
+      const zhankai = this.zhankai();
       if (zhankai) {
         return `${zhankai.zhankaikuan || ""} × ${zhankai.zhankaigao || ""} = ${zhankai.shuliang || ""}`;
       }
     } else if (item.key === "激光开料CAD模板") {
-      const zhankai = this.zhankai;
+      const zhankai = this.zhankai();
       if (zhankai) {
         return zhankai.kailiaomuban;
       }
@@ -721,7 +730,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async onCadImageClick() {
-    if (this.editDisabled) {
+    if (this.editDisabled()) {
       return;
     }
     this.showCadViewer = true;
@@ -730,7 +739,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   onCadInfoChange(event: DataInfoChnageEvent) {
-    const {cad} = this;
+    const cad = this.cad();
     this.beforeEditCad.emit();
     if (cad instanceof CadData) {
       cad.info = event.info;
@@ -747,7 +756,7 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
   }
 
   async copyName() {
-    await this.message.copyText(this.cadName, {successText: "已复制名字"});
+    await this.message.copyText(this.cadName(), {successText: "已复制名字"});
   }
 
   async toggleShowLineLength() {
@@ -755,14 +764,14 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
       return;
     }
     await this.onlineFetch();
-    const cad = this.cad;
+    const cad = this.cad();
     const toggle = async (data: CadData) => {
       data.entities.forEach((e) => {
         if (e instanceof CadLineLike) {
           e.hideLength = !e.hideLength;
         }
       });
-      const isOnline = this.isOnline;
+      const isOnline = this.isOnline();
       const collection = this.collection();
       if (isOnline) {
         await this.http.setCad({collection, cadData: data, force: true}, true);
@@ -789,11 +798,11 @@ export class CadItemComponent<T = undefined> implements OnChanges, OnInit, OnDes
 
   @HostListener("click", ["$event"])
   onHostClick(event: MouseEvent) {
-    this.events?.clickAll?.(this, event);
-    this.events?.clickBlank?.(this, event);
+    this.events()?.clickAll?.(this, event);
+    this.events()?.clickBlank?.(this, event);
   }
 
   onClickStopped = ((event: MouseEvent) => {
-    this.events?.clickAll?.(this, event);
+    this.events()?.clickAll?.(this, event);
   }).bind(this);
 }

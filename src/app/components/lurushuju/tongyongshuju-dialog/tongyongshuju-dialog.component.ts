@@ -253,7 +253,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async copyCad(component: CadItemComponent<TongyongshujuCadItemInfo>) {
-    const item = this.activeCadList?.data[component.customInfo.index];
+    const item = this.activeCadList?.data[component.customInfo().index];
     if (!item || !(await this.message.confirm("确定复制该CAD吗？"))) {
       return;
     }
@@ -264,7 +264,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async deleteCad(component: CadItemComponent<TongyongshujuCadItemInfo>) {
-    const item = this.activeCadList?.data[component.customInfo.index];
+    const item = this.activeCadList?.data[component.customInfo().index];
     if (!item || !(await this.message.confirm("确定删除该CAD吗？"))) {
       return;
     }

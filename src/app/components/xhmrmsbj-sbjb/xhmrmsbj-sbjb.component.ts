@@ -156,7 +156,7 @@ export class XhmrmsbjSbjbComponent {
             extraTexts.push({key, value: getValueString(item2?.[key])});
           }
           info.cadForm.extraTexts = extraTexts;
-          info.cadForm.onEdit = ({customInfo}) => this.editSbjbItemSbjbItem(customInfo.index);
+          info.cadForm.onEdit = (c) => this.editSbjbItemSbjbItem(c.customInfo().index);
           info.item2 = item2;
           info.qiliao = qiliaos.find((v) => v.name === item2?.名字);
         }
@@ -179,8 +179,8 @@ export class XhmrmsbjSbjbComponent {
   });
   cadButtons2 = computed(() => {
     const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbCadInfo>[] = [
-      {name: "选择", onClick: ({customInfo}) => this.selectSbjbItemSbjbCad(customInfo.index)},
-      {name: "删除", onClick: ({customInfo}) => this.deselectSbjbItemSbjbCad(customInfo.index)}
+      {name: "选择", onClick: (c) => this.selectSbjbItemSbjbCad(c.customInfo().index)},
+      {name: "删除", onClick: (c) => this.deselectSbjbItemSbjbCad(c.customInfo().index)}
     ];
     return buttons;
   });
@@ -188,7 +188,7 @@ export class XhmrmsbjSbjbComponent {
     {
       name: this.showXinghaosUsingSbjbCadBtnName,
       onClick: async (component) => {
-        const cadName = component.cadName;
+        const cadName = component.cadName();
         if (cadName) {
           await this.showXinghaosUsingSbjbCad(cadName);
         } else {
@@ -458,8 +458,8 @@ export class XhmrmsbjSbjbComponent {
   }
   fentiCadButtons2 = computed(() => {
     const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbFentiCadInfo>[] = [
-      {name: "选择", onClick: ({customInfo}) => this.chooseFentiCad(customInfo)},
-      {name: "删除", onClick: ({customInfo}) => this.removeFentiCad(customInfo)}
+      {name: "选择", onClick: (c) => this.chooseFentiCad(c.customInfo())},
+      {name: "删除", onClick: (c) => this.removeFentiCad(c.customInfo())}
     ];
     return buttons;
   });

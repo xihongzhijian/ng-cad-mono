@@ -426,11 +426,11 @@ export class MokuaiItemComponent {
     const buttons: CadItemButton<MokuaiItemCadInfo>[] = [
       {
         name: "复制",
-        onClick: ({customInfo}) => {
-          this.copyCad(customInfo.index);
+        onClick: (c) => {
+          this.copyCad(c.customInfo().index);
         }
       },
-      {name: "删除", onClick: ({customInfo}) => this.unselectCad(customInfo.index)}
+      {name: "删除", onClick: (c) => this.unselectCad(c.customInfo().index)}
     ];
     return buttons;
   });
