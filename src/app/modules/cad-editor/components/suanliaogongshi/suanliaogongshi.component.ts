@@ -431,14 +431,16 @@ export class SuanliaogongshiComponent {
   });
 
   formulasEditors = viewChildren(FormulasEditorComponent);
-  async submit() {
+  async submit(silent = false) {
     const result = new ResultWithErrors(null);
     const editors = this.formulasEditors();
     for (const editor of editors) {
       const result2 = await editor.submitFormulas(editor.formulaList(), true);
       result.learnFrom(result2);
     }
-    await result.alertError(this.message);
+    if (!silent) {
+      await result.alertError(this.message);
+    }
     return result;
   }
   async close(submit = false) {

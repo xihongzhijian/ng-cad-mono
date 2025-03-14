@@ -20,7 +20,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {replaceChars, setGlobal} from "@app/app.common";
-import {CalcResult, Formulas} from "@app/utils/calc";
+import {Calc, CalcResult, Formulas} from "@app/utils/calc";
 import {ResultWithErrors} from "@app/utils/error-message";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasComponent} from "@components/formulas/formulas.component";
@@ -98,7 +98,14 @@ export class FormulasEditorComponent {
     };
     return list.map<InputInfo[]>((arr) => [
       {type: "string", label: "", model: {key: "0", data: arr}, onChange, validators: () => this.validateVarName(arr[0], list)},
-      {type: "string", label: "", textarea: {autosize: {minRows: 1, maxRows: 5}}, model: {key: "1", data: arr}, onChange}
+      {
+        type: "string",
+        label: "",
+        textarea: {autosize: {minRows: 1, maxRows: 5}},
+        model: {key: "1", data: arr},
+        onChange,
+        validators: () => this.validateVarExp(arr[1])
+      }
     ]);
   });
   formulasText = signal("");
@@ -173,11 +180,11 @@ export class FormulasEditorComponent {
     const result = new ResultWithErrors<string[][] | null>(null);
     const list2: typeof list = [];
     for (const arr of list) {
-      const errors2 = this.validateVarName(arr[0], list);
+      const errors2 = {...this.validateVarName(arr[0], list), ...this.validateVarExp(arr[1])};
       if (isEmpty(errors2)) {
         list2.push(arr);
       } else {
-        result.addErrorStr(`公式 ${arr[0]} = ${arr[1]} 有错：${Object.keys(errors2).join(", ")}`);
+        result.addErrorStr(`公式【${arr[0]}】有错：${Object.keys(errors2).join(", ")}`);
       }
     }
     if (result.fulfilled) {
@@ -221,6 +228,13 @@ export class FormulasEditorComponent {
     }
     if (/^[0-9]/.test(varName)) {
       return {公式名不能以数字开头: true};
+    }
+    return null;
+  }
+  validateVarExp(varExp: string): ValidationErrors | null {
+    const {error} = Calc.validateExpression(varExp);
+    if (error) {
+      return {语法错误: true};
     }
     return null;
   }

@@ -1,5 +1,17 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, model, signal} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  HostBinding,
+  inject,
+  input,
+  model,
+  signal,
+  untracked,
+  viewChildren
+} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -326,14 +338,14 @@ export class XhmrmsbjXinghaoConfigComponent {
 
   cadMap = signal(new Map<string, CadData>());
   cadMapEff = effect(async () => {
-    const map: ReturnType<typeof this.cadMap> = new Map();
+    const map = new Map(untracked(() => this.cadMap()));
     const xinghaoConfig = this.data()?.xinghaoConfig;
     if (xinghaoConfig) {
       const ids = new Set<string>();
       for (const key of keysOf(xinghaoConfig.企料结构配置)) {
         const items = xinghaoConfig.企料结构配置[key];
         for (const item of items || []) {
-          if (item.cad?.id) {
+          if (item.cad?.id && !map.has(item.cad.id)) {
             ids.add(item.cad.id);
           }
         }
@@ -435,12 +447,17 @@ export class XhmrmsbjXinghaoConfigComponent {
     )
   ]);
 
+  slgsComponents = viewChildren(SuanliaogongshiComponent);
   async submit() {
     const xinghaoConfig = this.data()?.xinghaoConfig;
     if (!xinghaoConfig) {
       return true;
     }
     const result = new ResultWithErrors(null);
+    for (const c of this.slgsComponents()) {
+      const result2 = await c.submit(true);
+      result.learnFrom(result2);
+    }
     return await result.check(this.message);
   }
 }
