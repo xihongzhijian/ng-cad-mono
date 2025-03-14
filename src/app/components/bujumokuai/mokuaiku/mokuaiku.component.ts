@@ -294,8 +294,8 @@ export class MokuaikuComponent implements OnInit {
   });
   selectedMokuaiIds = signal<number[]>([]);
   selectedMokuais = computed(() => {
-    const mokuais = this.mokuais();
     if (this.selectable()) {
+      const mokuais = this.mokuaisAll();
       const ids = this.selectedMokuaiIds();
       const selectedMokuais: MokuaiItem[] = [];
       for (const id of ids) {
@@ -306,6 +306,7 @@ export class MokuaikuComponent implements OnInit {
       }
       return selectedMokuais;
     } else {
+      const mokuais = this.mokuais();
       const indexs = this.mokuaisSelectedIndexs();
       return indexs.map((i) => mokuais[i]);
     }
