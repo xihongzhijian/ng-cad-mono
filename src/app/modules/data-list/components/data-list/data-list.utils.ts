@@ -11,7 +11,7 @@ export class DataListNavNode {
   children?: DataListNavNode[];
 
   level = 0;
-  itemCounts: DataListNavNodeItemCounts = {self: 0, children: 0, selfQuery: null, childrenQuery: null};
+  itemCounts: DataListNavNodeItemCounts = {self: 0, children: 0, selfQuery: 0, childrenQuery: 0};
   hidden?: boolean;
   isVirtual?: boolean;
 

@@ -16,8 +16,8 @@ export interface DataListNavData extends MongodbDataBase {
 export interface DataListNavNodeItemCounts {
   self: number;
   children: number;
-  selfQuery: number | null;
-  childrenQuery: number | null;
+  selfQuery: number;
+  childrenQuery: number;
 }
 
 export interface DataListItem {

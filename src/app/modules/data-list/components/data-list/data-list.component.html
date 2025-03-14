@@ -10,6 +10,8 @@
     <div class="toolbar">
       <button mat-stroked-button (click)="importNavNodes()">导入</button>
       <button mat-stroked-button (click)="exportNavNodes()">导出</button>
+      <button mat-stroked-button (click)="navNodesTree.expandAll()">展开</button>
+      <button mat-stroked-button (click)="navNodesTree.collapseAll()">收起</button>
     </div>
     <ng-scrollbar #navNodesScrollbar>
       <mat-tree #navNodesTree [dataSource]="navNodes()" [childrenAccessor]="childrenAccessor" [trackBy]="navNodeTrackBy">

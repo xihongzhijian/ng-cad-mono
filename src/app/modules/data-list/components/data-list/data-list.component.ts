@@ -24,7 +24,7 @@ import {session} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {getValueString} from "@app/utils/get-value";
 import {environment} from "@env";
-import {downloadByString, getElementVisiblePercentage, queryString, queryStringList, selectFiles, timeout, waitFor} from "@lucilor/utils";
+import {downloadByString, getElementVisiblePercentage, queryStringList, selectFiles, timeout, waitFor} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -428,15 +428,8 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     remove(this.navNodes());
     await this.setNavNodes();
   }
-  clickedNavNode = signal<DataListNavNode | null>(null);
   clickNavNode(node: DataListNavNode) {
-    this.clickedNavNode.set(node);
     this.activeNavNode.set(node);
-    // if (node.hasChild()) {
-    //   setTimeout(() => {
-    //     this.filterNavNodes();
-    //   }, 0);
-    // }
   }
   async scrollToNavNode(node: DataListNavNode) {
     const path = getDataListNavNodePath(this.navNodes(), node);
@@ -452,7 +445,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
 
   itemQuery = signal("");
   itemQueryTypes = ["搜索所有分类", "搜索选中分类"] as const;
-  itemQueryType = signal<(typeof this.itemQueryTypes)[number]>("搜索选中分类");
+  itemQueryType = signal<(typeof this.itemQueryTypes)[number]>("搜索所有分类");
   itemQueryTypeField = signal<keyof T>("name");
   itemQueryTypeFieldEff = effect(() => {
     const fields = this.queryItemFieldInfos().map((v) => v.field);
@@ -547,7 +540,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   private async _onActiveNavNodeChange(activeNode: DataListNavNode | null) {
     await this.untilInited();
     this.filterNavNodes();
-    if (!activeNode || this.clickedNavNode()) {
+    if (!activeNode) {
       return;
     }
     this.scrollToNavNode(activeNode);
@@ -597,11 +590,13 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     };
     const itemsAll = this.itemsAll();
     let navNodesHideEmpty = false;
+    let itemsQueried = false;
     if (withItems) {
       const itemQuery = this.itemQuery();
       const itemQueryType = this.itemQueryType();
       const itemQueryField = this.itemQueryTypeField();
       navNodesHideEmpty = !!itemQuery;
+      itemsQueried = !!itemQuery;
       const items: T[] = [];
       for (const item of itemsAll) {
         addCount(counts, item.type);
@@ -611,7 +606,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
         }
         if (itemQueryField && itemQueryField in item) {
           const val = getValueString(item[itemQueryField]);
-          isMatched = isMatched && queryString(itemQuery, val);
+          isMatched = isMatched && val.includes(itemQuery);
         } else {
           isMatched = false;
         }
@@ -654,6 +649,13 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
       return {countChildren, countChildrenQuery};
     };
     setCount(nodes);
+    if (itemsQueried) {
+      this.navNodesTree().expandAll();
+      const foundNodes = findDataListNavNodes(nodes, (v) => !v.hidden && v.itemCounts.selfQuery > 0);
+      if (foundNodes.length > 0 && !foundNodes.some((v) => v.id === activeNode?.id)) {
+        this.activeNavNode.set(foundNodes[0]);
+      }
+    }
     return [...nodes];
   }
 
