@@ -17,6 +17,7 @@ import {
 } from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTree, MatTreeModule} from "@angular/material/tree";
@@ -44,6 +45,7 @@ import {
   DataListNavNodeRaw,
   DataListQueryItemField as DataListqueryItemFieldInfo,
   dataListQueryItemFieldsDefault as dataListqueryItemFieldInfosDefault,
+  DataListSelectMode,
   NodeSelectorMode
 } from "./data-list.types";
 import {
@@ -67,6 +69,7 @@ import {
     FloatingDialogModule,
     InputComponent,
     MatButtonModule,
+    MatCheckboxModule,
     MatDividerModule,
     MatIconModule,
     MatTreeModule,
@@ -88,6 +91,8 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   navDataTitle = input.required<string>();
   itemsAllIn = input<T[]>([], {alias: "itemsAll"});
   queryItemFieldInfos = input<DataListqueryItemFieldInfo<T>[]>(dataListqueryItemFieldInfosDefault);
+  selectMode = input<DataListSelectMode>("none");
+  selectedNavNodes = model<DataListNavNode[]>([]);
   items = model<T[]>([]);
   activeNavNode = model<DataListNavNode | null>(null);
   navNameChange = output<DataListNavNameChangeEvent>();
@@ -138,6 +143,44 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   });
   toggleNavEditMode() {
     this.navEditMode.update((v) => !v);
+  }
+
+  canSelectNavNode = computed(() => this.selectMode() !== "none");
+  selectNavNode(node: DataListNavNode) {
+    const nodes = this.selectedNavNodes();
+    switch (this.selectMode()) {
+      case "none":
+        break;
+      case "single":
+        if (nodes.includes(node)) {
+          this.selectedNavNodes.set([]);
+        } else {
+          this.selectedNavNodes.set([node]);
+        }
+        break;
+      case "multiple":
+        if (nodes.includes(node)) {
+          this.selectedNavNodes.set(nodes.filter((v) => v !== node));
+        } else {
+          this.selectedNavNodes.set([...nodes, node]);
+        }
+        break;
+    }
+  }
+  selectNavNodeChildren(node: DataListNavNode) {
+    const nodes = this.selectedNavNodes();
+    const children = getDataListNavNodesFlat(node.children || []).toArray();
+    switch (this.selectMode()) {
+      case "none":
+      case "single":
+        break;
+      case "multiple":
+        if (children.every((v) => nodes.includes(v))) {
+          this.selectedNavNodes.set(nodes.filter((v) => !children.includes(v)));
+        } else {
+          this.selectedNavNodes.set([...nodes, ...children]);
+        }
+    }
   }
 
   async getNavNodes() {
@@ -433,7 +476,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   }
   async scrollToNavNode(node: DataListNavNode) {
     const path = getDataListNavNodePath(this.navNodes(), node);
-    for (const node2 of path) {
+    for (const node2 of path.slice(0, -1)) {
       this.navNodesTree().expand(node2);
     }
     const treeEl = this.navNodesTreeEl().nativeElement;

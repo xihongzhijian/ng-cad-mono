@@ -22,7 +22,7 @@ import {session, setGlobal} from "@app/app.common";
 import {environment} from "@env";
 import {timeout} from "@lucilor/utils";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
-import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
+import {DataListNavNameChangeEvent, DataListSelectMode} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode, findDataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@modules/data-list/data-list.module";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -93,6 +93,8 @@ export class MokuaikuComponent implements OnInit {
   mokuaiActiveNavNode = signal<DataListNavNode | null>(null);
   mokuaiActiveItem = signal<MokuaiItem | null>(null);
   mokuaisAll = this.bjmkStatus.mokuaisManager.items;
+  navNodeSelectMode = signal<DataListSelectMode>("none");
+  navNodesSelected = signal<DataListNavNode[]>([]);
   mokuais = signal<MokuaiItem[]>([]);
   imgPrefix = this.bjmkStatus.imgPrefix;
   dataList = viewChild(DataListComponent);
@@ -223,11 +225,28 @@ export class MokuaikuComponent implements OnInit {
   }
 
   exportMokuais() {
-    const mokuaisAll = this.mokuais();
-    const ids = this.mokuaisSelectedIndexs().map((i) => mokuaisAll[i].id);
+    const mokuais = this.mokuais();
+    let ids = this.mokuaisSelectedIndexs().map((i) => mokuais[i].id);
     if (ids.length < 1) {
-      this.message.alert("请选择要导出的模块");
-      return;
+      const mode = this.navNodeSelectMode();
+      if (mode === "none") {
+        this.navNodeSelectMode.set("multiple");
+        this.navNodesSelected.set([]);
+        return;
+      } else {
+        const nodeNames = this.navNodesSelected().map((v) => v.name);
+        ids = [];
+        for (const mokuai of this.mokuaisAll()) {
+          if (nodeNames.includes(mokuai.type)) {
+            ids.push(mokuai.id);
+          }
+        }
+        this.navNodeSelectMode.set("none");
+        this.navNodesSelected.set([]);
+        if (ids.length < 1) {
+          return;
+        }
+      }
     }
     this.bjmkStatus.exportMokuais(ids);
   }

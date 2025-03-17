@@ -20,7 +20,7 @@
             <button mat-icon-button disabled style="opacity: 0">
               <mat-icon>chevron_right</mat-icon>
             </button>
-            <div>
+            <div class="toolbar">
               <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
             </div>
             <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
@@ -33,7 +33,7 @@
                 {{ navNodesTree.isExpanded(node) ? "expand_more" : "chevron_right" }}
               </mat-icon>
             </button>
-            <div matTreeNodeToggle>
+            <div class="toolbar" matTreeNodeToggle>
               <ng-container *ngTemplateOutlet="nodeTitle; context: {$implicit: node}"></ng-container>
             </div>
             <ng-container *ngTemplateOutlet="nodeEdit; context: {$implicit: node}"></ng-container>
@@ -62,6 +62,12 @@
               }
             }
           </button>
+          @if (canSelectNavNode()) {
+            <div class="toolbar" appClickStop>
+              <mat-checkbox [checked]="selectedNavNodes().includes(node)" (change)="selectNavNode(node)"></mat-checkbox>
+              <button mat-button (click)="selectNavNodeChildren(node)">全选下级</button>
+            </div>
+          }
         </ng-template>
         <ng-template #nodeEdit [appTypedTemplate]="{$implicit: navNodes()[0]}" let-node>
           @if (navEditMode()) {

@@ -42,3 +42,4 @@ export const dataListQueryItemFieldsDefault: DataListQueryItemField[] = [
 ];
 
 export type NodeSelectorMode = "parent" | "leaf";
+export type DataListSelectMode = "none" | "single" | "multiple";

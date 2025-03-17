@@ -9,6 +9,8 @@
     [navDataName]="navDataName"
     navDataTitle="模块库分类"
     [itemsAll]="mokuaisAll()"
+    [selectMode]="navNodeSelectMode()"
+    [(selectedNavNodes)]="navNodesSelected"
     [(items)]="mokuais"
     [(activeNavNode)]="mokuaiActiveNavNode"
     (navNameChange)="onNavNameChange($event)"
