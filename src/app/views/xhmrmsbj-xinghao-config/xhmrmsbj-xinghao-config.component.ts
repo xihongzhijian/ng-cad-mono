@@ -281,7 +281,12 @@ export class XhmrmsbjXinghaoConfigComponent {
       return;
     }
     const result = await openCadListDialog(this.dialog, {
-      data: {selectMode: "single", collection: "peijianCad", fixedSearch: getSuanliaoConfigItemCadSearch(title)}
+      data: {
+        selectMode: "single",
+        checkedItems: cad.id ? [cad.id] : [],
+        collection: "peijianCad",
+        fixedSearch: getSuanliaoConfigItemCadSearch(title)
+      }
     });
     const data = result?.[0];
     if (data) {

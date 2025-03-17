@@ -20,6 +20,7 @@ import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/pag
 import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {imgCadEmpty} from "@app/app.common";
 import {getCadQueryFields, setCadData, validateCad} from "@app/cad/cad-shujuyaoqiu";
+import {getDateTimeString} from "@app/utils/get-value";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton, CadItemForm, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
@@ -223,45 +224,57 @@ export class CadListComponent implements AfterViewInit {
     }
     return search;
   }
-  async getData(page: number, options: CadData["options"] = {}, matchType: "and" | "or" = "and") {
+  async getCadParams(page?: number, options: CadData["options"] = {}, matchType: "and" | "or" = "and") {
     const paginator = this.paginator();
     if (!paginator) {
       return null;
     }
+    const {collection} = this.data;
     const limit = paginator.pageSize;
+    const params: GetCadParams = {collection, page, limit};
+    params.qiliao = this.data.qiliao;
+    params.options = options;
+    params.optionsMatchType = matchType;
+    params.search = await this.getDataSearch();
+    params.fields = getCadQueryFields(this.data.yaoqiu);
+    if (this.showCheckedOnly()) {
+      params.ids = this.checkedItems().slice();
+    }
+    const searchOptions = this.searchOptions();
+    const searchOptions2 = {...searchOptions};
+    for (const key of Object.keys(searchOptions2)) {
+      if (!searchOptions2[key]) {
+        delete searchOptions2[key];
+      }
+    }
+    if (Object.keys(searchOptions2).length > 0) {
+      params.options = searchOptions2;
+      params.optionsMatchLoose = true;
+    }
+    return params;
+  }
+  async getData(page: number, options: CadData["options"] = {}, matchType: "and" | "or" = "and") {
     let result: Awaited<ReturnType<CadDataService["getCad"]>>;
     const pageData: ReturnType<typeof this.pageData> = [];
     this.length.set(0);
-    const {collection} = this.data;
-    const searchNameInput = this.searchNameInput();
-    const searchOptions = this.searchOptions();
     if (this.data.source) {
+      const searchNameInput = this.searchNameInput();
       let cadsAll = this.data.source;
       if (searchNameInput) {
         cadsAll = cadsAll.filter((v) => queryStringList(searchNameInput, [v.name, v.id]));
       }
       const total = cadsAll.length;
+      const paginator = this.paginator();
+      if (!paginator) {
+        return null;
+      }
+      const limit = paginator.pageSize;
       const cads = cadsAll.slice((page - 1) * limit, page * limit);
       result = {cads, total};
     } else {
-      const params: GetCadParams = {collection, page, limit};
-      params.qiliao = this.data.qiliao;
-      params.options = options;
-      params.optionsMatchType = matchType;
-      params.search = await this.getDataSearch();
-      params.fields = getCadQueryFields(this.data.yaoqiu);
-      if (this.showCheckedOnly()) {
-        params.ids = this.checkedItems().slice();
-      }
-      const searchOptions2 = {...searchOptions};
-      for (const key of Object.keys(searchOptions2)) {
-        if (!searchOptions2[key]) {
-          delete searchOptions2[key];
-        }
-      }
-      if (Object.keys(searchOptions2).length > 0) {
-        params.options = searchOptions2;
-        params.optionsMatchLoose = true;
+      const params = await this.getCadParams(page, options, matchType);
+      if (!params) {
+        return null;
       }
       result = await this.http.getCad(params);
     }
@@ -489,12 +502,52 @@ export class CadListComponent implements AfterViewInit {
       this.search();
     }
   }
-
   async openExportPage() {
     const ids = this.checkedItems().slice();
     const {collection} = this.data;
     const search = await this.getDataSearch();
     openExportPage(this.status, {collection, ids, search, lurushuju: true});
+  }
+
+  async importCads() {
+    this.message.importData<ObjectOf<any>[]>(true, async (cads) => {
+      const {collection} = this.data;
+      const yaoqiu = await this.getCadYaoqiu();
+      let needsRefresh = false;
+      for (const cad of cads) {
+        const cad2 = new CadData(cad);
+        setCadData(cad2, yaoqiu, "set");
+        const cad3 = await this.http.setCad({collection, cadData: cad2}, false);
+        if (cad3) {
+          needsRefresh = true;
+        }
+      }
+      if (needsRefresh) {
+        await this.search();
+      }
+    });
+  }
+  async exportCads(all: boolean) {
+    let params: GetCadParams | null;
+    if (all) {
+      params = await this.getCadParams();
+      if (!params) {
+        return;
+      }
+      delete params.fields;
+    } else {
+      const ids = this.checkedItems().slice();
+      if (ids.length < 1) {
+        await this.message.alert("请选择要导出的cad");
+        return;
+      }
+      const {collection} = this.data;
+      params = {ids, collection};
+    }
+    const {cads} = await this.http.getCad(params);
+    const title = getDateTimeString();
+    const cads2 = cads.map((v) => v.export());
+    await this.message.exportData(cads2, `cads_${title}`);
   }
 
   cadItemButtons = computed(() => {

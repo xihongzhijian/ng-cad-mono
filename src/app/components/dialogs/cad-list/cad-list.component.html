@@ -18,6 +18,9 @@
     }
     <button mat-flat-button (click)="openImportPage()">导入CAD</button>
     <button mat-flat-button (click)="openExportPage()">导出CAD</button>
+    <button mat-flat-button (click)="importCads()">导入jsCAD</button>
+    <button mat-flat-button (click)="exportCads(true)">导出所有jsCAD</button>
+    <button mat-flat-button (click)="exportCads(false)">导出选中jsCAD</button>
     <button mat-flat-button [class.accent]="cadItemForm().noDefaultTexts" (click)="toggleShowCadItemFormTexts()">显示详细信息</button>
   }
   @for (btn of data.toolbarBtns; track $index) {
