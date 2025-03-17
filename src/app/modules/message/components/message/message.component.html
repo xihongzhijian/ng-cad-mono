@@ -52,6 +52,12 @@
         <div [innerHTML]="contentHTML()"></div>
       }
     }
+    @if (jsonDetails) {
+      <div class="toolbar">
+        <button mat-flat-button [class.accent]="showJsonDetails()" (click)="toggleJsonDetails()">显示详细数据</button>
+      </div>
+    }
+    <div #jsonDetailsContainer [class.hidden]="!showJsonDetails()"></div>
   </ng-scrollbar>
 </div>
 <div class="hidden-if-empty" cdkTrapFocus [cdkTrapFocusAutoCapture]="true" mat-dialog-actions style="justify-content: center">

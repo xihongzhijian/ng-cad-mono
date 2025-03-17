@@ -44,9 +44,9 @@ export class HttpService {
     }
   }
 
-  protected error(msg: string, silent: boolean, title = "网络请求错误") {
+  protected error(msg: string, silent: boolean, title = "网络请求错误", data?: any) {
     if (!silent) {
-      this.message.error({content: msg, title: `<span class="error">${title}</span>`});
+      this.message.error({content: msg, jsonDetails: data, title: `<span class="error">${title}</span>`});
     }
   }
 
@@ -207,16 +207,6 @@ export class HttpService {
             }
           }
           return response;
-        } else if (code === 2) {
-          if (typeof response.msg === "string" && response.msg) {
-            const data2 = response.data as any;
-            let msg = response.msg;
-            if (typeof data2?.name === "string") {
-              msg += "<br>" + data2.name;
-            }
-            this.alert(msg, silent);
-          }
-          return null;
         } else if (code === -2) {
           await this._waitForLogin((response.data as any)?.project);
           return this.request(url, method, rawData, options);
@@ -260,7 +250,7 @@ export class HttpService {
       if (errorData) {
         console.error(errorData);
       }
-      this.error(content, silent, response?.title);
+      this.error(content, silent, response?.title, response?.data);
       return response;
     } finally {
       if (loaderId) {

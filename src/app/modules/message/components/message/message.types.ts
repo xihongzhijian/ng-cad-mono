@@ -14,6 +14,7 @@ export interface BaseMessageData<R extends string = string> {
   titleClass?: string;
   beforeClose?: (event: MessageBeforeCloseEvent) => MaybePromise<boolean>;
   titleBtns?: MessageDataButton<R>[];
+  jsonDetails?: {data: any};
 }
 export interface MessageBeforeCloseEvent {
   type: "submit" | "cancel";

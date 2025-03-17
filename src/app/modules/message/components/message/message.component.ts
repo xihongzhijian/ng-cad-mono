@@ -29,7 +29,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {createJSONEditor, JSONContent, Mode} from "vanilla-jsoneditor";
+import {createJSONEditor, JSONContent, JSONEditorPropsOptional, Mode} from "vanilla-jsoneditor";
 import {
   ButtonMessageData,
   ButtonMessageDataButton,
@@ -114,11 +114,16 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     const {data} = this;
     const jsonEditorContainer = this.jsonEditorContainer();
     if (jsonEditorContainer && data.type === "json") {
-      this.jsonEditor = createJSONEditor({
-        target: jsonEditorContainer.nativeElement,
-        props: {mode: Mode.tree, ...data.options}
-      });
+      const props: Partial<JSONEditorPropsOptional> = {mode: Mode.tree, ...data.options};
+      this.jsonEditor = createJSONEditor({target: jsonEditorContainer.nativeElement, props});
       this.jsonEditor.set({json: data.json});
+    }
+    const jsonDetailsContainer = this.jsonDetailsContainer();
+    const {jsonDetails} = data;
+    if (jsonDetailsContainer && typeof jsonDetails === "object" && jsonDetails) {
+      const props: Partial<JSONEditorPropsOptional> = {mode: Mode.tree, readOnly: true};
+      this.jsonDetails = createJSONEditor({target: jsonDetailsContainer.nativeElement, props});
+      this.jsonDetails.set({json: data.jsonDetails});
     }
   }
   ngOnDestroy() {
@@ -138,6 +143,13 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   jsonEditor: ReturnType<typeof createJSONEditor> | null = null;
   jsonEditorContainer = viewChild<ElementRef<HTMLDivElement>>("jsonEditorContainer");
+
+  showJsonDetails = signal(false);
+  toggleJsonDetails() {
+    this.showJsonDetails.update((v) => !v);
+  }
+  jsonDetails: ReturnType<typeof createJSONEditor> | null = null;
+  jsonDetailsContainer = viewChild<ElementRef<HTMLDivElement>>("jsonDetailsContainer");
 
   editor = viewChild(QuillViewComponent);
   private _getEditorToolbarHeight() {
