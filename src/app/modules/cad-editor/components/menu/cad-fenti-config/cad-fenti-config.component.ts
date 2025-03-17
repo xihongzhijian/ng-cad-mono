@@ -138,7 +138,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
             v.dl = val;
             this.pairedLinesList.set([...list]);
           },
-          onClick: () => this.togglePairedLines(i)
+          onClick: () => this.selectPairedLines(i)
         },
         {
           type: "boolean",
@@ -150,7 +150,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
             v.isPinjie = val;
             this.pairedLinesList.set([...list]);
           },
-          onClick: () => this.togglePairedLines(i)
+          onClick: () => this.selectPairedLines(i)
         }
       ];
       return getInputInfoGroup(infos, {style: {width: "100%"}});
