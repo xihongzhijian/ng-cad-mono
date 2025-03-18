@@ -72,7 +72,7 @@
             <div class="menshan-option item" [class]="{active: activeMenshanKey() === item.key}" (click)="activeMenshanKey.set(item.key)">
               <div class="title small bold">{{ item.key }}</div>
               @if (item.info["选中布局数据"]; as data2) {
-                <div [class]="canOpenMsbj() ? 'link text' : ''" appClickStop (click)="openMsbj(data2.vid)">布局：{{ data2.name }}</div>
+                <div>布局：{{ data2.name }}</div>
               }
               <button mat-stroked-button (click)="copyMsbjInfo(item.info)">复制</button>
             </div>
@@ -317,7 +317,7 @@
 </ng-template>
 
 @if (openedMsbj(); as openedMsbj) {
-  <app-floating-dialog [maximized]="true" noTitle>
+  <app-floating-dialog [maximized]="true" noTitle coverMatDialog>
     <app-msbj #msbj [msbjInfo]="openedMsbj" closable (close)="closeMsbj($event)"></app-msbj>
   </app-floating-dialog>
 }

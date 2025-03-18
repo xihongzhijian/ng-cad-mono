@@ -3,6 +3,7 @@ import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {ZuoshujuTableData} from "@app/utils/table-data/zuoshuju-data";
 import {MsbjPeizhishuju, MsbjRectInfoRaw} from "@components/msbj-rects/msbj-rects.types";
 import {ObjectOf} from "@lucilor/utils";
+import {MsbjInfo} from "./msbj.utils";
 
 export interface MsbjFenlei extends TableDataBase {
   selected?: boolean;
@@ -25,6 +26,7 @@ export const node2rectDataMsdxKeys = ["锁扇正面总宽", "锁扇背面总宽"
 
 export interface MsbjCloseEvent {
   isSubmited: boolean;
+  msbjInfo: MsbjInfo | null;
 }
 
 declare global {

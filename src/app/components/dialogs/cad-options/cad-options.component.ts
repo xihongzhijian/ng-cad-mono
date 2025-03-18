@@ -60,9 +60,9 @@ export class CadOptionsComponent implements AfterViewInit {
   @HostBinding("class") class = ["ng-page"];
 
   pageData = signal<CadOptionsPageDataItem[]>([]);
-  length = signal(100);
+  length = signal(0);
   pageSizeOptions = signal([50, 100, 200, 500]);
-  pageSize = signal(50);
+  pageSize = signal(100);
   checkedIdsCurr = new Set<number>();
   checkedIdsOthers = new Set<number>();
   loaderIds = {optionsLoader: "cadOptions", submitLoaderId: "cadOptionsSubmit"};
@@ -133,7 +133,8 @@ export class CadOptionsComponent implements AfterViewInit {
 
   async submit() {
     const result: CadOptionsOutput = {
-      options: []
+      options: [],
+      newTabChanged: this.newTabChanged()
     };
     if (this.data.defaultValue) {
       const {value, required} = this.data.defaultValue;
@@ -348,6 +349,10 @@ export class CadOptionsComponent implements AfterViewInit {
       }
       return {...v, checked};
     });
+    pageData.sort((a, b) => {
+      const getOrder = (v: typeof a) => (v.checked ? 0 : 1);
+      return getOrder(a) - getOrder(b);
+    });
     this.pageData.set(pageData);
     this.noImage.set(this.data.noImage || pageData.every((v) => !v.img));
     return data;
@@ -402,6 +407,7 @@ export class CadOptionsComponent implements AfterViewInit {
     }
   }
 
+  newTabChanged = signal(false);
   async editInNewTab() {
     const {openInNewTab, name} = this.data;
     if (!openInNewTab) {
@@ -412,6 +418,7 @@ export class CadOptionsComponent implements AfterViewInit {
       window.open(url);
     }
     if (await this.message.newTabConfirm()) {
+      this.newTabChanged.set(true);
       this.search(true, true);
     }
   }

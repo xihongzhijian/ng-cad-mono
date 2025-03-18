@@ -40,10 +40,11 @@
           <app-image [src]="item.img" [prefix]="filePathUrl"></app-image>
         }
         <div class="option-name toolbar">
-          <div class="toolbar">
-            <mat-checkbox [checked]="item.checked" [disabled]="item.disabled && !item.checked"> </mat-checkbox>
-            <div class="flex-110">{{ item.label || item.name }}</div>
-          </div>
+          <mat-checkbox [checked]="item.checked" [disabled]="item.disabled && !item.checked"> </mat-checkbox>
+          <div class="flex-110">{{ item.label || item.name }}</div>
+          @for (btn of data.itemBtns; track $index) {
+            <button mat-button appClickStop [class.hidden]="btn.hidden" (click)="btn.onClick(item)">{{ btn.name }}</button>
+          }
         </div>
         @if (optionOptionsInputInfos()[i]; as info) {
           <app-input appClickStop [info]="info"></app-input>

@@ -11,6 +11,9 @@
     height: 100vh;
     background: rgba(0, 0, 0, 0.32);
   }
+  &.cover-mat-dialog {
+    --z-index-base-offset: -1;
+  }
   &.active {
     z-index: calc(var(--z-index-base) + 1);
   }

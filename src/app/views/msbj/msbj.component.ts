@@ -243,7 +243,7 @@ export class MsbjComponent {
     if (!this.closable()) {
       return;
     }
-    this.closeOut.emit({isSubmited: this.isSubmited()});
+    this.closeOut.emit({isSubmited: this.isSubmited(), msbjInfo: this.msbjInfo()});
   }
 
   mkdxpz = signal<MkdxpzEditorData>({});

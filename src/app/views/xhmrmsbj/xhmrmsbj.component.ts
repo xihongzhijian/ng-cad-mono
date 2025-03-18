@@ -62,7 +62,6 @@ import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
 import {VarNameItem, VarNameItemNameItem} from "@components/var-names/var-names.types";
 import {XhmrmsbjSbjbComponent} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.component";
 import {getElementVisiblePercentage, keysOf, ObjectOf, Point, queryString, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
-import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
@@ -135,7 +134,6 @@ const table = "p_xinghaomorenmenshanbuju";
   templateUrl: "./xhmrmsbj.component.html",
   styleUrls: ["./xhmrmsbj.component.scss"],
   imports: [
-    ClickStopPropagationDirective,
     FloatingDialogModule,
     FormsModule,
     FormulasComponent,
@@ -540,9 +538,27 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       checkedVids.push(选中布局数据.vid);
     }
     const result = await openCadOptionsDialog(this.dialog, {
-      data: {name: "p_menshanbuju", filter: {guanlianCN: {menshanweizhi}}, checkedVids, typeFiltering: {field: "fenlei", title: "分类"}}
+      data: {
+        name: "p_menshanbuju",
+        filter: {guanlianCN: {menshanweizhi}},
+        checkedVids,
+        typeFiltering: {field: "fenlei", title: "分类"},
+        openInNewTab: true,
+        itemBtns: [
+          {
+            name: "编辑",
+            hidden: !this.canOpenMsbj(),
+            onClick: (item) => {
+              this.openMsbj(item.vid);
+            }
+          }
+        ]
+      }
     });
     if (result && infos[menshanweizhi]) {
+      if (result.newTabChanged) {
+        await this.bjmkStatus.msbjsManager.fetch(true);
+      }
       const targetMsbj = result.options[0];
       const msbj = targetMsbj ? this.msbjs().find((v) => v.id === targetMsbj.vid) : null;
       if (msbj) {
@@ -1733,11 +1749,10 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
     }
   }
-  closeMsbj({isSubmited}: MsbjCloseEvent) {
-    const openedMsbj = this.openedMsbj();
+  closeMsbj({isSubmited, msbjInfo}: MsbjCloseEvent) {
     this.openedMsbj.set(null);
-    if (isSubmited && openedMsbj) {
-      this.bjmkStatus.msbjsManager.refresh({update: [openedMsbj]});
+    if (isSubmited && msbjInfo) {
+      this.bjmkStatus.msbjsManager.refresh({update: [msbjInfo]});
     }
   }
 

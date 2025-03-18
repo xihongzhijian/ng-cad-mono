@@ -22,10 +22,12 @@ export interface CadOptionsInput {
   info?: ObjectOf<any>;
   noImage?: boolean;
   typeFiltering?: {field: string; title: string};
+  itemBtns?: {name: string; onClick: (item: CadOptionsPageDataItem) => void; hidden?: boolean}[];
 }
 
 export interface CadOptionsOutput {
   options: TableDataBase[];
+  newTabChanged: boolean;
   defaultValue?: string;
   optionOptions?: ObjectOf<ObjectOf<string> | undefined>;
 }
