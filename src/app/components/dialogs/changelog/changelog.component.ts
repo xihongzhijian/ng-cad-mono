@@ -1,5 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {Component, HostBinding, Input, OnInit} from "@angular/core";
+import {Component, computed, HostBinding, Input, OnInit} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -102,10 +102,11 @@ export class ChangelogComponent implements OnInit {
     window.open(item.url, "_blank");
   }
 
+  testMode = computed(() => this.config.config().testMode);
   async toggleEnvBeta() {
     let msg: string;
     if (!environment.production) {
-      msg = `testMode: ${this.config.getConfig("testMode")}`;
+      msg = `testMode: ${this.testMode()}`;
     } else if (environment.beta) {
       msg = "是否切换到正式版？";
     } else {
@@ -115,6 +116,7 @@ export class ChangelogComponent implements OnInit {
       return;
     }
     this.config.setConfigWith("testMode", (v) => !v);
+    this.status.setTestModeWarningIgnore(1000 * 60 * 60 * 24);
     this.config.userConfigSaved$.pipe(take(1)).subscribe(() => {
       this.status.checkEnvBeta();
     });

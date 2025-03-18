@@ -48,7 +48,7 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {clamp, cloneDeep, differenceWith, isEmpty, isEqual} from "lodash";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject, Subject, take} from "rxjs";
 import {local, remoteHost, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
 import {AppUser, CadPoints, HoutaiInputOptions, OpenCadOptions} from "./app-status.types";
@@ -776,7 +776,32 @@ export class AppStatusService {
     return result;
   }
 
-  checkEnvBeta() {
+  private _testModeWarningTimeKey = "testModeWarningIgnoreTime";
+  setTestModeWarningIgnore(time: number) {
+    local.save(this._testModeWarningTimeKey, new Date().getTime() + time);
+  }
+
+  async toggleEnvBeta(noConfirm = false) {
+    if (!noConfirm) {
+      let msg: string;
+      if (!environment.production) {
+        msg = `testMode: ${this.config.getConfig("testMode")}`;
+      } else if (environment.beta) {
+        msg = "是否切换到正式版？";
+      } else {
+        msg = "是否切换到测试版（功能可能不稳定）？";
+      }
+      if (!(await this.message.confirm(msg))) {
+        return;
+      }
+    }
+    this.config.setConfigWith("testMode", (v) => !v);
+    this.setTestModeWarningIgnore(1000 * 60 * 60 * 24);
+    this.config.userConfigSaved$.pipe(take(1)).subscribe(() => {
+      this.checkEnvBeta();
+    });
+  }
+  async checkEnvBeta() {
     if (!environment.production) {
       return;
     }
@@ -788,8 +813,27 @@ export class AppStatusService {
     const url = location.href;
     if (masterReg.test(url) && testMode) {
       location.href = url.replace(masterReg, `/${nextPath}/`);
-    } else if (nextReg.test(url) && !testMode) {
-      location.href = url.replace(nextReg, `/${masterPath}/`);
+    } else if (nextReg.test(url)) {
+      if (testMode) {
+        const time = local.load(this._testModeWarningTimeKey) || 0;
+        if (time < new Date().getTime()) {
+          const button = await this.message.button({
+            content: "当前为测试版，仅供测试使用！",
+            disableCancel: true,
+            buttons: ["走错了", "确定", "确定，24小时内不再提示"]
+          });
+          switch (button) {
+            case "走错了":
+              this.toggleEnvBeta(true);
+              break;
+            case "确定，24小时内不再提示":
+              this.setTestModeWarningIgnore(1000 * 60 * 60 * 24);
+              break;
+          }
+        }
+      } else {
+        location.href = url.replace(nextReg, `/${masterPath}/`);
+      }
     }
   }
 

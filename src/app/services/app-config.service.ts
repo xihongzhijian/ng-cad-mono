@@ -1,4 +1,4 @@
-import {Injectable, signal, untracked, WritableSignal} from "@angular/core";
+import {computed, Injectable, signal, untracked, WritableSignal} from "@angular/core";
 import {local} from "@app/app.common";
 import {CadViewerConfig, getDefalutCadViewerConfig} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
@@ -32,6 +32,7 @@ export type AppConfigChangeOptions = Partial<Omit<AppConfigChange, "oldVal" | "n
 })
 export class AppConfigService {
   private _config: WritableSignal<AppConfig>;
+  config = computed(() => this._config());
   configChange$: BehaviorSubject<AppConfigChange>;
   userConfigSaved$: Subject<boolean>;
   private _userConfig: Partial<AppConfig> = {};
