@@ -89,10 +89,7 @@
                 @if (isString(error)) {
                   <li class="error" [innerHtml]="error"></li>
                 } @else {
-                  <li class="error">
-                    <span [innerHtml]="error.text"></span>
-                    <span class="super link" [matTooltip]="error.detail" (click)="alertError(error)">?</span>
-                  </li>
+                  <li class="error link text" [innerHtml]="error.text" [matTooltip]="error.detail" (click)="alertError(error)"></li>
                 }
               }
             </ul>

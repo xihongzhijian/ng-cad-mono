@@ -219,12 +219,6 @@ input[type="number"] {
   border-bottom: var(--border);
 }
 
-.super {
-  vertical-align: super !important;
-  font-size: 0.75em;
-  color: var(--mat-sys-tertiary);
-}
-
 :root {
   --title-padding: 0.5em;
   --border: 1px solid var(--mat-sys-on-surface);

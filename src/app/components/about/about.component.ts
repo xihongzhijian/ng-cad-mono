@@ -1,34 +1,33 @@
-import {Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, inject, signal} from "@angular/core";
+import {MatBadgeModule} from "@angular/material/badge";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {local} from "@app/app.common";
 import {openChangelogDialog} from "@components/dialogs/changelog/changelog.component";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {AppStatusService} from "@services/app-status.service";
 
 @Component({
   selector: "app-about",
-  imports: [MatButtonModule, SpinnerModule],
+  imports: [MatBadgeModule, MatButtonModule, SpinnerModule],
   templateUrl: "./about.component.html",
-  styleUrl: "./about.component.scss"
+  styleUrl: "./about.component.scss",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AboutComponent extends Subscribed() {
-  isNew = false;
+export class AboutComponent {
+  private status = inject(AppStatusService);
+  private dialog = inject(MatDialog);
 
-  constructor(
-    private status: AppStatusService,
-    private dialog: MatDialog
-  ) {
-    super();
-    this.subscribe(this.status.updateTimeStamp$, (changelogTimeStamp) => {
-      this.isNew = changelogTimeStamp > Number(local.load("changelogTimeStamp") || 0);
-    });
-  }
+  isNew = signal(false);
+  isNewEff = effect(() => {
+    const time1 = this.status.updateTimeStamp();
+    const time2 = Number(local.load("changelogTimeStamp") || 0);
+    this.isNew.set(time1 > time2);
+  });
 
   showChangelog() {
     openChangelogDialog(this.dialog, {hasBackdrop: true});
     local.save("changelogTimeStamp", new Date().getTime());
-    this.isNew = false;
+    this.isNew.set(false);
   }
 }

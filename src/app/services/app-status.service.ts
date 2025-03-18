@@ -96,7 +96,7 @@ export class AppStatusService {
   setProject$ = new Subject<void>();
   user$ = new BehaviorSubject<AppUser | null>(null);
   isAdmin$ = new BehaviorSubject<boolean>(false);
-  updateTimeStamp$ = new BehaviorSubject<number>(-1);
+  updateTimeStamp = signal<number>(-1);
   zhewanLengths = signal<[number, number]>([1, 3]);
   changeProject$ = new Subject<string>();
   private _isZhewanLengthsFetched = false;
@@ -144,7 +144,7 @@ export class AppStatusService {
     if (typeof n !== "number" || isNaN(n)) {
       n = 0;
     }
-    this.updateTimeStamp$.next(n);
+    this.updateTimeStamp.set(n);
     return n;
   }
   async setProject(queryParams: Params) {
@@ -174,7 +174,7 @@ export class AppStatusService {
         location.reload();
         return false;
       }
-      this.updateTimeStamp$.next(updateTimeStamp);
+      this.updateTimeStamp.set(updateTimeStamp);
       this.setProject$.next();
 
       {
