@@ -174,7 +174,7 @@ export class ImportComponent implements OnInit {
     return requireLineId !== null && pruneLines !== null;
   }
 
-  private _cadNameRegex = /^(?!\d)[\da-zA-Z#\u4e00-\u9fa5_]*$/u;
+  private _cadNameRegex = /^(?!\d)[\da-zA-Z#\u4e00-\u9fa5_-]*$/u;
   private _optionsCache: ObjectOf<string[]> = {};
   // private _peiheCadCache: ObjectOf<boolean> = {};
   private _sourceCadMap: SourceCadMap = {cads: {}, slgses: {}};
@@ -660,11 +660,8 @@ export class ImportComponent implements OnInit {
     }
     CadPortable.addLineId(data);
 
-    data.name = data.name.replaceAll("-", "_");
-    if (/^\d+/.test(data.name)) {
-      data.name = "_" + data.name;
-    } else if (!this._cadNameRegex.test(data.name) && !cad.skipErrorCheck.has("名字")) {
-      cad.errors.push("CAD名字只能是：中文、英文字母、数字、下划线");
+    if (!this._cadNameRegex.test(data.name) && !cad.skipErrorCheck.has("名字")) {
+      cad.errors.push("CAD名字只能是：中文、英文字母、数字、下划线；并且不能以数字开头");
     }
     if (/分体\d?$/.test(data.name) && data.type.includes("算料") && /包边|企料|锁料|铰料/.test(data.name)) {
       cad.errors.push("算料CAD名字不能包含【包边、企料、锁料、铰料】");
