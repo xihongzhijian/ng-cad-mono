@@ -60,7 +60,16 @@ export class MenfengPeizhiComponent {
     return true;
   }
 
-  tableInfo = computed(() => getMenfengPeizhiTableInfo(this.items()));
+  tableInfo = computed(() => {
+    const info = getMenfengPeizhiTableInfo(this.items());
+    info.toolbarButtons = {
+      extra: [
+        {event: "import", title: "导入", onClick: () => this.import()},
+        {event: "export", title: "导出", onClick: () => this.export()}
+      ]
+    };
+    return info;
+  });
   tableComponent = viewChild(TableComponent);
   dataChangeHistory = signal<{i: number; j: number}[]>([]);
   onCellChange(event: CellEvent<MenfengpeizhiItem>) {
@@ -83,5 +92,21 @@ export class MenfengPeizhiComponent {
       return false;
     }
     return true;
+  }
+
+  table = "p_menfengpeizhi";
+  async import() {
+    const result = await this.http.tableImport({table: this.table});
+    if (result) {
+      this.fetchData();
+    }
+  }
+  export() {
+    const table = this.tableComponent();
+    if (!table) {
+      return;
+    }
+    const vids = this.items().map((v) => v.vid);
+    this.http.tableExport({table: this.table, vids});
   }
 }
