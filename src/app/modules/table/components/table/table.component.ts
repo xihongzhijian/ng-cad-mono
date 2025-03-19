@@ -150,15 +150,25 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       if (column) {
         label += `：${column.name || String(column.field)}`;
       }
+      const options = new Set<string>();
+      for (const item of info.data) {
+        const value = getValueString(item[field]);
+        if (value) {
+          options.add(value);
+        }
+      }
+      const onChange = (val: string) => {
+        form.set(field, val);
+        this.filterTable();
+      };
       const info2: InputInfo = {
         type: "string",
         label,
         clearable: true,
         value: form.get(field) || "",
-        onInput: debounce((val) => {
-          form.set(field, val);
-          this.filterTable();
-        }, 100),
+        options: Array.from(options),
+        onInput: debounce(onChange, 100),
+        onChange,
         style: {width: "150px"}
       };
       return info2;
@@ -264,16 +274,22 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     }
   }
 
+  get filteredData() {
+    const {dataSource} = this;
+    if (dataSource instanceof MatTableDataSource) {
+      return dataSource.filteredData;
+    } else {
+      return dataSource.data;
+    }
+  }
   isAllSelected() {
-    const {_rowSelection: rowSelection} = this;
-    const numSelected = rowSelection.selected.length;
-    const numRows = this.dataSource.data.length;
+    const numSelected = this._rowSelection.selected.length;
+    const numRows = this.filteredData.length;
     return numSelected > 0 && numSelected >= numRows;
   }
   isPartiallySelected() {
-    const {_rowSelection: rowSelection} = this;
-    const numSelected = rowSelection.selected.length;
-    const numRows = this.dataSource.data.length;
+    const numSelected = this._rowSelection.selected.length;
+    const numRows = this.filteredData.length;
     return numSelected > 0 && numSelected < numRows;
   }
 
@@ -281,7 +297,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (this.isAllSelected()) {
       this.setSelectedItems([]);
     } else {
-      this.setSelectedItems(this.info.data);
+      this.setSelectedItems(this.filteredData);
     }
   }
   toggleRowSelection(item: T) {
@@ -305,6 +321,10 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
   deselectAllRows() {
     this.setSelectedItems([]);
+  }
+
+  refresh() {
+    this.updateCellInputInfos();
   }
 
   async addItem(rowIdx?: number) {
@@ -505,13 +525,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   cellInputs = viewChildren<InputComponent>("cellInput");
   cellInputInfos = signal<InputInfo[][]>([]);
   updateCellInputInfos() {
-    let data = this.info.data;
-    const dataSource = this.dataSource;
-    if (dataSource instanceof MatTableDataSource) {
-      data = dataSource.filteredData;
-    }
     const cellInputInfos: InputInfo[][] = [];
-    for (const [rowIdx, item] of data.entries()) {
+    for (const [rowIdx, item] of this.filteredData.entries()) {
       const group: InputInfo[] = [];
       for (const [colIdx, column] of this.info.columns.entries()) {
         group.push(this.getCellInputInfo({column, item, colIdx, rowIdx}));
@@ -841,13 +856,17 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         return true;
       }
       const form = this.filterForm;
+      let valid = true;
       for (const [k, v] of form) {
         const dataVal = getValueString(data[k]);
         if (!queryString(v.trim(), dataVal)) {
-          return false;
+          valid = false;
         }
       }
-      return true;
+      if (!valid) {
+        this._rowSelection.deselect(data);
+      }
+      return valid;
     };
     dataSource.filter = uniqueId("tableFilter");
     this.filterAfter.emit({dataSource});
