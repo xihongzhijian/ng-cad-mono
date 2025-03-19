@@ -259,7 +259,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (intersection<InfoKey>(changedKeys, ["class"]).length > 0) {
       this.class = this.info.class;
     }
-    if (intersection<InfoKey>(changedKeys, ["data", "columns"]).length > 0) {
+    if (intersection<InfoKey>(changedKeys, ["columns"]).length > 0) {
       this.updateCellInputInfos();
     }
   }
@@ -505,8 +505,13 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   cellInputs = viewChildren<InputComponent>("cellInput");
   cellInputInfos = signal<InputInfo[][]>([]);
   updateCellInputInfos() {
+    let data = this.info.data;
+    const dataSource = this.dataSource;
+    if (dataSource instanceof MatTableDataSource) {
+      data = dataSource.filteredData;
+    }
     const cellInputInfos: InputInfo[][] = [];
-    for (const [rowIdx, item] of this.info.data.entries()) {
+    for (const [rowIdx, item] of data.entries()) {
       const group: InputInfo[] = [];
       for (const [colIdx, column] of this.info.columns.entries()) {
         group.push(this.getCellInputInfo({column, item, colIdx, rowIdx}));
@@ -846,6 +851,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     };
     dataSource.filter = uniqueId("tableFilter");
     this.filterAfter.emit({dataSource});
+    this.updateCellInputInfos();
   }
 
   tableEl = viewChild("tableComponent", {read: ElementRef<HTMLElement>});
