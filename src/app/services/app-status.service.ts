@@ -85,9 +85,16 @@ export class AppStatusService {
     selectable: signal<boolean>(true)
   };
   openCadOptions = signal<OpenCadOptions>({});
-  cadData = computed(() => {
+  private _changeCadSignal = signal(0);
+  emitChangeCadSignal() {
+    this._changeCadSignal.set(this._changeCadSignal() + Math.random() < 0.5 ? 1 : -1);
+  }
+  cadData = signal(this.cad.data);
+  cadDataEff = effect(() => {
+    this._changeCadSignal();
     this.openCadOptions();
-    return this.cad.data;
+    this.cadData.set(new CadData());
+    this.cadData.set(this.cad.data);
   });
   saveCadStart$ = new Subject<void>();
   saveCadEnd$ = new Subject<{data: CadData}>();

@@ -466,7 +466,7 @@ export class CadConsoleComponent {
       const el = this.el;
       const activeEl = document.activeElement;
       if (
-        key.match(/[a-z]/) &&
+        key?.match(/[a-z]/) &&
         el &&
         el !== activeEl &&
         !(activeEl instanceof HTMLInputElement) &&

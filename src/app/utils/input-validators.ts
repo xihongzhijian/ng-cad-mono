@@ -31,4 +31,24 @@ export class CustomValidators {
       return null;
     };
   };
+  static lineGongshi: ValidatorFn = (control) => {
+    const value = control.value;
+    if (typeof value !== "string") {
+      return null;
+    }
+    if (value.includes("变化值")) {
+      return {公式不能包含变化值: true};
+    }
+    return null;
+  };
+  static lineGuanlianbianhuagongshi: ValidatorFn = (control) => {
+    const value = control.value;
+    if (typeof value !== "string") {
+      return null;
+    }
+    if (value && !value.includes("变化值")) {
+      return {关联变化公式必须包含变化值: true};
+    }
+    return null;
+  };
 }

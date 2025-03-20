@@ -155,6 +155,13 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (info.type === "number" && typeof value === "number" && typeof info.ndigits === "number") {
       value = Number(value.toFixed(info.ndigits));
     }
+    if (info.type === "boolean") {
+      if (info.allowEmpty) {
+        return value;
+      } else {
+        return !!value;
+      }
+    }
     return value;
   }
   set value(val) {
@@ -825,12 +832,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
   onFocus(event: FocusEvent) {
     this.focus.emit(event);
+    this.info.onFocus?.(this.info as any);
   }
   onBlur(event: FocusEvent) {
     if (!this._validateValueLock) {
       this.validateValue();
     }
     this.blur.emit(event);
+    this.info.onBlur?.(this.info as any);
   }
   async onClick(event: MouseEvent, params?: {key: string}) {
     const {type, suffixIcons} = this.info;

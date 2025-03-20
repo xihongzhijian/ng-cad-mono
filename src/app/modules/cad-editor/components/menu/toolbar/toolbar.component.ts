@@ -154,9 +154,7 @@ export class ToolbarComponent {
     const {canConfirm = false, confirmWithEnter = false} = this.status.lastCadStatus() || {};
     return canConfirm && confirmWithEnter;
   });
-  get data() {
-    return this.status.cad.data;
-  }
+  data = this.status.cadData;
   openCadOptions = this.status.openCadOptions;
   env = environment;
 
@@ -338,7 +336,7 @@ export class ToolbarComponent {
         return;
       }
     }
-    const data = this.status.cad.data;
+    const data = this.data();
     for (const component of data.components.data) {
       const rect = component.getBoundingRect();
       component.transform({scale: [factorNum, factorNum], origin: [rect.x, rect.y]}, true);
@@ -377,7 +375,7 @@ export class ToolbarComponent {
   }
 
   async editBbzhmkgz() {
-    const data = this.status.cad.data;
+    const data = this.data();
     const result = await openBbzhmkgzDialog(this.dialog, {
       width: "80%",
       height: "75%",
@@ -389,7 +387,7 @@ export class ToolbarComponent {
   }
 
   async resetIds() {
-    const data = this.status.cad.data;
+    const data = this.data();
     const yes = await this.message.confirm({
       title: "重设ID",
       content: `重新生成<span class="error">${data.name}</span>的所有实体ID，是否确定？`
@@ -416,7 +414,7 @@ export class ToolbarComponent {
   }
 
   async removeCad() {
-    const data = this.status.cad.data;
+    const data = this.data();
     if (await this.message.confirm(`确定要删除吗？`)) {
       const collection = this.status.collection$.getValue();
       const ids = [data.id];
@@ -451,11 +449,11 @@ export class ToolbarComponent {
     }
   }
 
-  get canOpenKailiaoConfig() {
-    return !isShiyitu(this.data);
-  }
+  canOpenKailiaoConfig = computed(() => {
+    return !isShiyitu(this.data());
+  });
   async openKailiaoConfig() {
-    const cad = this.data;
+    const cad = this.data();
     const lineGroups = sortLines(cad.entities);
     if (![1, 2].includes(lineGroups.length)) {
       this.message.error("CAD必须分成一段或两段");
@@ -469,13 +467,13 @@ export class ToolbarComponent {
 
   openImportPage() {
     const collection = this.status.collection$.value;
-    const cad = this.status.cad.data;
+    const cad = this.data();
     const yaoqiu = this.status.getCadYaoqiu(cad.type);
     openImportPage(this.status, {collection, yaoqiu});
   }
   openExportPage() {
     const collection = this.status.collection$.value;
-    const cad = this.status.cad.data;
+    const cad = this.data();
     const ids = [cad.id];
     openExportPage(this.status, {collection, ids, direct: true});
   }

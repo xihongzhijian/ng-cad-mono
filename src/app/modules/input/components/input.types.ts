@@ -36,6 +36,8 @@ export interface InputInfoBase<T = any> extends StyledItem {
   filterValuesGetter?: (option: InputInfoOption<T>) => string[];
   onChange?: (val: any, info: this) => void;
   onClick?: (info: this) => void;
+  onFocus?: (info: this) => void;
+  onBlur?: (info: this) => void;
   info?: ObjectOf<any>;
 }
 
@@ -98,6 +100,8 @@ export interface InputInfoArray<T = any> extends InputInfoBase<T> {
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
   type: "boolean";
+  value?: Value<boolean>;
+  allowEmpty?: boolean;
   appearance?: "select" | "radio" | "switch";
   onChange?: (val: boolean, info: this) => void;
 }
@@ -204,14 +208,17 @@ export type InputInfo<T = any> =
   | InputInfoButton<T>
   | InputInfoList<T>
   | InputInfoGroup<T>;
-export type InputInfoCommon<R extends InputInfo = InputInfo> = Omit<R, "type" | "onChange" | "onClick">;
+export type InputInfoCommon<R extends InputInfo = InputInfo> = Omit<R, "type" | "onChange" | "onClick" | "onFocus" | "onBlur">;
 export type InputInfoPart<R extends InputInfo = InputInfo> = Partial<InputInfoCommon<R>> & {
   onChange?: (val: any, info: R) => void;
+  onClick?: (info: R) => void;
+  onFocus?: (info: R) => void;
+  onBlur?: (info: R) => void;
 };
 
 export type InputInfoOption<T = string> = {value: T; label?: string; disabled?: boolean; img?: string; vid?: number};
 
-export type InputInfoOptions<T = string> = (InputInfoOption<T> | string)[];
+export type InputInfoOptions<T = string> = (InputInfoOption<T> | string)[] | readonly (InputInfoOption<T> | string)[];
 
 export interface OptionsDialog {
   optionKey?: string;

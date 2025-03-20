@@ -13,15 +13,15 @@ import {
 } from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
-import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
-import {MatSelectChange, MatSelectModule} from "@angular/material/select";
 import {autoFixLine, generateLineTexts2, getLineLengthTextSize, isLengthTextSizeSetKey, validColors} from "@app/cad/utils";
+import {CustomValidators} from "@app/utils/input-validators";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
 import {
   CadEntities,
@@ -35,13 +35,22 @@ import {
   PointsMap
 } from "@lucilor/cad-viewer";
 import {Point} from "@lucilor/utils";
+import {InputComponent} from "@modules/input/components/input.component";
+import {
+  InputInfo,
+  InputInfoBoolean,
+  InputInfoNumber,
+  InputInfoOptions,
+  InputInfoPart,
+  InputInfoSelectSingle,
+  InputInfoString
+} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
 import {CadStatus, CadStatusCutLine, CadStatusDrawLine, CadStatusIntersection, CadStatusMoveLines} from "@services/cad-status";
-import Color from "color";
-import {debounce, uniq} from "lodash";
-import {ColorEvent} from "ngx-color";
+import Color, {ColorInstance} from "color";
+import {debounce} from "lodash";
 import {ColorCircleModule} from "ngx-color/circle";
 import {convertToCadFentiLine, getCadFentiInfo} from "../cad-fenti-config/cad-fenti-config.utils";
 import {CadLayerInputComponent} from "../cad-layer-input/cad-layer-input.component";
@@ -54,14 +63,14 @@ import {CadLayerInputComponent} from "../cad-layer-input/cad-layer-input.compone
     CadLayerInputComponent,
     ColorCircleModule,
     FormsModule,
+    InputComponent,
     MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
     MatMenuModule,
-    MatOptionModule,
-    MatSelectModule
+    MatOptionModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -70,24 +79,16 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
-  focusedField = "";
-  editDiabled = signal(false);
   lineDrawing: {start?: Point; end?: Point; entity?: CadLine; oldEntity?: CadLine} | null = null;
   private _lineDrawingLock = false;
   linesMoving: {start?: Point} | null = null;
   linesCutting: {lines: CadLine[]; points: Point[]} | null = null;
-  inputErrors: {gongshi: string | false; guanlianbianhuagongshi: string | false} = {
-    gongshi: false,
-    guanlianbianhuagongshi: false
-  };
-  gongshiMatcher: ErrorStateMatcher = {
-    isErrorState: () => !!this.inputErrors.gongshi
-  };
-  guanlianbianhuagongshiMatcher: ErrorStateMatcher = {
-    isErrorState: () => !!this.inputErrors.guanlianbianhuagongshi
-  };
-  selected: CadLineLike[] = [];
-  zhewan = this.status.zhewanLengths;
+  selected = signal<CadLineLike[]>([]);
+  editDiabled = computed(() => this.selected().length < 1);
+  zhewanOptions = computed(() => {
+    const lengths = this.status.zhewanLengths();
+    return ["自动", "无", ...lengths.map((v) => `${v}mm`)];
+  });
   WHDashedLines: {line: CadLineLike; map: PointsMap} | null = null;
   cadLineOptions = cadLineOptions;
 
@@ -191,33 +192,9 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   );
 
-  get data() {
-    return this.status.cad.data;
-  }
+  data = this.status.cadData;
 
-  private _colorText = "";
-  colorValue = "";
-  colorBg = "";
-  get colorText() {
-    return this._colorText;
-  }
-  set colorText(value) {
-    this._colorText = value.toUpperCase();
-    try {
-      const c = new Color(value);
-      if (c.isLight()) {
-        this.colorBg = "black";
-      } else {
-        this.colorBg = "white";
-      }
-      this.colorValue = value;
-    } catch {
-      this.colorValue = "black";
-      this.colorBg = "white";
-    }
-  }
-
-  readonly selectableColors = validColors.slice();
+  readonly selectableColors = validColors.map((v) => new Color(v));
 
   ngOnInit() {
     const cad = this.status.cad;
@@ -328,14 +305,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         selected.push(e);
       }
     });
-    this.selected = selected;
-    selected.forEach((e) => {
-      if (e instanceof CadLine) {
-        ["gongshi", "guanlianbianhuagongshi"].forEach((v) => this.validateLineText(v, e[v as keyof CadLine] as string));
-      }
-    });
-    this.editDiabled.set(selected.length < 1);
-    this.colorText = this.getCssColor();
+    this.selected.set(selected);
   };
 
   cadPointsEff = effect(async () => {
@@ -392,8 +362,9 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         if (linesMoving.start) {
           this.moveLines();
           const translate = worldPoints[0].sub(linesMoving.start).toArray();
-          new CadEntities().fromArray(this.selected).transform({translate}, true);
-          await this.status.cad.render(this.selected);
+          const selected = new CadEntities().fromArray(this.selected());
+          selected.transform({translate}, true);
+          await this.status.cad.render(selected);
           await this.status.refreshCadFenti();
         } else {
           linesMoving.start = worldPoints[0];
@@ -418,7 +389,8 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   };
   private _updateCadPoints = () => {
-    const {lineDrawing, linesMoving, linesCutting, selected, WHDashedLines} = this;
+    const {lineDrawing, linesMoving, linesCutting, WHDashedLines} = this;
+    const selected = this.selected();
     const selected0 = selected[0];
     const cad = this.status.cad;
     if (lineDrawing) {
@@ -440,7 +412,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.moveLines();
           this.linesMoving = null;
         } else {
-          this.status.setCadPoints(new CadEntities().fromArray(this.selected));
+          this.status.setCadPoints(new CadEntities().fromArray(selected));
         }
       }
     } else if (linesCutting) {
@@ -490,20 +462,25 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  getLineLength() {
-    const lines = this.selected;
-    if (lines.length === 1) {
-      const line = lines[0];
-      return line.length.toFixed(2);
+  getLineLengthInfo() {
+    const lines = this.selected();
+    let value: number | undefined;
+    const length = lines.length;
+    const isZero = length === 0;
+    const isMultiple = length > 1;
+    if (isZero) {
+      value = undefined;
+    } else {
+      value = lines.reduce((acc, v) => acc + v.length, 0);
+      value = Number(value.toFixed(2));
     }
-    return "";
+    return {value, isZero, isMultiple};
   }
-
-  async setLineLength(event: Event) {
-    const {selected} = this;
+  async setLineLength(value: number) {
+    const selected = this.selected();
     const cad = this.status.cad;
     const lines = selected.filter((v) => v instanceof CadLine);
-    await this.status.setLinesLength(lines, Number((event.target as HTMLInputElement).value));
+    await this.status.setLinesLength(lines, value);
     this.status.validate();
     await cad.render();
     if (lines.some((v) => v.zhankaifangshi === "指定长度")) {
@@ -511,84 +488,72 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  getCssColor() {
-    const lines = this.selected;
+  lineColor = signal(new Color("black"));
+  lineColorBg = signal("white");
+  lineColorEff = effect(() => {
+    const color = this.lineColor();
+    if (color.isLight()) {
+      this.lineColorBg.set("black");
+    } else {
+      this.lineColorBg.set("white");
+    }
+  });
+  getLineColor() {
+    const lines = this.selected();
     if (lines.length === 1) {
-      return lines[0].getColor().hex();
+      return lines[0].getColor();
     }
     if (lines.length) {
       const strs = Array.from(new Set(lines.map((l) => l.getColor().hex())));
       if (strs.length === 1) {
-        return strs[0];
-      } else {
-        return "多个值";
+        return new Color(strs[0]);
       }
     }
-    return "";
+    return new Color("black");
+  }
+  setLineColor(color: ColorInstance) {
+    this.lineColor.set(color);
+    const selected = this.selected();
+    selected.forEach((e) => e.setColor(color.hex()));
+    this.status.cad.render(selected);
   }
 
-  setLineColor(event: ColorEvent) {
-    const value = event.color.hex;
-    this.colorText = value;
-    this.selected.forEach((e) => e.setColor(value));
-    this.status.cad.render();
-  }
-
-  getLineText(field: string, i?: number) {
-    const lines = this.selected;
-    let result = "";
+  getLineValue(field: string, isInfo?: boolean) {
+    const lines = this.selected();
+    const result: {value?: string | number | boolean; isZero?: boolean; isMultiple?: boolean} = {};
+    let getter: (e: CadLineLike) => any;
     if (field === "kegaimingzi") {
-      if (lines.length === 1) {
-        const line = lines[0];
-        const vars = line.root?.root?.info.vars;
+      getter = (e: CadLineLike) => {
+        const vars = e.root?.root?.info.vars;
         if (vars) {
           for (const key in vars) {
-            if (vars[key] === line.id) {
+            if (vars[key] === e.id) {
               return key;
             }
           }
         }
-      }
-      return "";
+        return "";
+      };
+    } else if (isInfo) {
+      getter = (e: any) => e.info[field] ?? "";
+    } else {
+      getter = (e: any) => e[field] ?? "";
     }
-    if (lines.length === 1) {
-      if (typeof i === "number") {
-        result = (lines as any)[0][field][i];
-      } else {
-        result = (lines as any)[0][field];
-      }
-    } else if (lines.length) {
-      let texts = lines.map((l: any) => {
-        if (typeof i === "number") {
-          return l[field][i] as string;
-        } else {
-          return l[field] as string;
-        }
-      });
-      texts = uniq(texts);
-      if (texts.length === 1) {
-        result = texts[0];
-      } else {
-        result = field === this.focusedField ? "" : "多个值";
-      }
-    }
-    if (result === undefined || result === null) {
-      result = "";
+    const vals = new Set<any>();
+    lines.forEach((l) => {
+      vals.add(getter(l));
+    });
+    const size = vals.size;
+    if (size === 0) {
+      result.isZero = true;
+    } else if (vals.size === 1) {
+      result.value = vals.values().next().value;
+    } else {
+      result.isMultiple = true;
     }
     return result;
   }
-  setLineText = debounce((event: InputEvent | MatSelectChange | Event, field: string, i?: number) => {
-    let value: number | string = "";
-    if (event instanceof MatSelectChange) {
-      value = event.value;
-    } else if (event instanceof InputEvent || event instanceof Event) {
-      const target = event.target as HTMLInputElement;
-      if (target.type === "number") {
-        value = Number(target.value);
-      } else {
-        value = target.value;
-      }
-    }
+  setLineValue(value: string | number | boolean, field: string, isInfo?: boolean) {
     const cad = this.status.cad;
     if (field === "kegaimingzi") {
       if (!cad.data.info) {
@@ -599,7 +564,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         info.vars = {};
       }
       const vars = info.vars;
-      const line = this.selected[0];
+      const line = this.selected()[0];
       const id = line.id;
       const toRender: CadLineLike[] = [line];
       Object.keys(vars).forEach((key) => {
@@ -607,26 +572,25 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
           delete vars[key];
         }
       });
-      if (value) {
-        if (vars[value]) {
-          const e = cad.data.getAllEntities().line.find((v) => v.id === vars[value]);
+      const value2 = String(value);
+      if (value2) {
+        if (vars[value2]) {
+          const e = cad.data.getAllEntities().line.find((v) => v.id === vars[value2]);
           if (e) {
             toRender.push(e);
           }
         }
-        vars[value] = id;
+        vars[value2] = id;
       }
       cad.render(toRender);
-      return;
-    }
-    if (field === "zhewanValue" && Number(value) < 0) {
-      this.message.alert("指定折弯标记位置不能小于0");
-      value = 0;
-    }
-    if (this.validateLineText(field, value)) {
-      this.selected.forEach((e) => {
-        if (typeof i === "number") {
-          (e as any)[field][i] = value;
+    } else {
+      if (field === "zhewanValue" && Number(value) < 0) {
+        this.message.alert("指定折弯标记位置不能小于0");
+        value = 0;
+      }
+      this.selected().forEach((e) => {
+        if (isInfo) {
+          e.info[field] = value;
         } else {
           (e as any)[field] = value;
         }
@@ -637,6 +601,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
           "guanlianbianhuagongshi",
           "lengthTextSize",
           "linewidth",
+          "hideLength",
           "显示线长",
           "圆弧显示",
           "开料不要",
@@ -654,83 +619,183 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       });
     }
-  }, 500);
-
-  getLineInfoText(field: string, i?: number) {
-    const infos = this.selected.map((v) => v.info);
-    let result = "";
-    if (infos.length === 1) {
-      if (typeof i === "number") {
-        result = infos[0][field][i];
-      } else {
-        result = infos[0][field];
-      }
-    } else if (infos.length) {
-      let texts = infos.map((l: any) => {
-        if (typeof i === "number") {
-          return l[field][i] as string;
-        } else {
-          return l[field] as string;
-        }
-      });
-      texts = uniq(texts);
-      if (texts.length === 1) {
-        result = texts[0];
-      } else {
-        result = field === this.focusedField ? "" : "多个值";
-      }
-    }
-    if (result === undefined || result === null) {
-      result = "";
-    }
-    return result;
+    this.status.emitChangeCadSignal();
   }
-  setLineInfoText = debounce((event: InputEvent | MatSelectChange | Event, field: string, i?: number) => {
-    let value: number | string = "";
-    if (event instanceof MatSelectChange) {
-      value = event.value;
-    } else if (event instanceof InputEvent || event instanceof Event) {
-      const target = event.target as HTMLInputElement;
-      if (target.type === "number") {
-        value = Number(target.value);
-      } else {
-        value = target.value;
-      }
-    }
-    if (this.validateLineText(field, value)) {
-      const infos = this.selected.map((v) => v.info);
-      infos.forEach((info) => {
-        if (typeof i === "number") {
-          info[field][i] = value;
-        } else {
-          info[field] = value;
-        }
-      });
-    }
-  }, 500);
 
-  validateLineText(field: string, value: string | number) {
-    value = value.toString();
-    if (field === "gongshi") {
-      if (value.includes("变化值")) {
-        this.inputErrors.gongshi = "公式不能包含变化值";
-        return false;
-      } else {
-        this.inputErrors.gongshi = false;
+  lineInputInfos1 = computed(() => {
+    const lengthInfo = this.getLineLengthInfo();
+    const infos: InputInfo[] = [
+      {
+        type: "number",
+        label: "长度",
+        value: lengthInfo.value,
+        readonly: lengthInfo.isMultiple,
+        hint: lengthInfo.isMultiple ? "多个值，不可改" : "",
+        onChange: (val) => {
+          this.setLineLength(val);
+        }
       }
-    } else if (field === "guanlianbianhuagongshi") {
-      if (value && !value.includes("变化值")) {
-        this.inputErrors.guanlianbianhuagongshi = "关联变化公式必须包含变化值";
-        return false;
+    ];
+    return infos;
+  });
+  lineInputInfos2 = computed(() => {
+    const getStringInfo = (field: string, label = field, others?: InputInfoPart<InputInfoString>, isInfo = false) => {
+      const {value, isMultiple} = this.getLineValue(field, isInfo);
+      const info: InputInfoString = {
+        type: "string",
+        label,
+        onInput: debounce((val: string) => this.setLineValue(val, field, isInfo), 500),
+        ...others
+      };
+      if (value !== undefined) {
+        info.value = String(value);
       } else {
-        this.inputErrors.guanlianbianhuagongshi = false;
+        info.value = undefined;
       }
-    }
-    return true;
-  }
+      if (isMultiple) {
+        info.hint = "多个值";
+      }
+      return info;
+    };
+    const getNumberInfo = (field: string, label = field, others?: InputInfoPart<InputInfoNumber>, isInfo = false) => {
+      const {value, isMultiple} = this.getLineValue(field, isInfo);
+      const info: InputInfoNumber = {
+        type: "number",
+        label,
+        onInput: debounce((val: number) => this.setLineValue(val, field, isInfo), 500),
+        ...others
+      };
+      const valueNum = Number(value);
+      if (!isNaN(valueNum)) {
+        info.value = valueNum;
+      } else {
+        info.value = undefined;
+      }
+      if (isMultiple) {
+        info.hint = "多个值";
+      }
+      return info;
+    };
+    const getBooleanInfo = (field: string, label = field, others?: InputInfoPart<InputInfoBoolean>, isInfo = false) => {
+      const {value, isZero, isMultiple} = this.getLineValue(field, isInfo);
+      const info: InputInfoBoolean = {
+        type: "boolean",
+        label,
+        allowEmpty: isZero || isMultiple,
+        onChange: (val) => this.setLineValue(val, field, isInfo),
+        ...others
+      };
+      if (typeof value === "boolean") {
+        info.value = value;
+      } else {
+        info.value = undefined;
+      }
+      if (isMultiple) {
+        info.hint = "多个值";
+      }
+      return info;
+    };
+    const getSelectSingleInfo = (
+      options: InputInfoOptions,
+      field: string,
+      label = field,
+      others?: InputInfoPart<InputInfoSelectSingle>,
+      isInfo = false
+    ) => {
+      const {value, isMultiple} = this.getLineValue(field, isInfo);
+      const info: InputInfoSelectSingle = {
+        type: "select",
+        label,
+        options,
+        onChange: (val) => this.setLineValue(val, field, isInfo),
+        ...others
+      };
+      if (value !== undefined) {
+        info.value = value;
+      } else {
+        info.value = undefined;
+      }
+      if (isMultiple) {
+        info.hint = "多个值";
+      }
+      return info;
+    };
+    const data = this.data();
+    const selected = this.selected();
+    const zhewanOptions = this.zhewanOptions();
+    const infos: InputInfo[] = [
+      getStringInfo("显示线长"),
+      getBooleanInfo("hideLength", "是否隐藏线长"),
+      getNumberInfo("lengthTextSize", "线长字体大小"),
+      {
+        type: "color",
+        label: "颜色",
+        options: this.selectableColors,
+        optionsOnly: true,
+        value: this.getLineColor(),
+        onChange: (val) => {
+          this.setLineColor(val);
+        }
+      },
+      getStringInfo("linewidth", "线宽"),
+      getStringInfo("mingzi", "名字"),
+      getStringInfo("mingzi2", "名字2"),
+      getBooleanInfo("刨坑起始线"),
+      getStringInfo("kegaimingzi", "可改名字", {hidden: data.type !== "包边正面", disabled: selected.length !== 1}),
+      getStringInfo("qujian", "区间", {validators: CustomValidators.numberRangeStr}),
+      getStringInfo("gongshi", "公式", {validators: CustomValidators.lineGongshi}),
+      getStringInfo("guanlianbianhuagongshi", "关联变化公式", {validators: CustomValidators.lineGuanlianbianhuagongshi}),
+      getStringInfo("分体线长公式"),
+      getStringInfo("kongwei", "孔位"),
+      getSelectSingleInfo(zhewanOptions, "nextZhewan", "下一个折弯标线"),
+      getSelectSingleInfo(zhewanOptions, "betweenZhewan", "两根线之间的折弯标记"),
+      getNumberInfo("zhewanOffset", "折弯标记偏移"),
+      getNumberInfo("zhewanValue", "指定折弯标记位置"),
+      getSelectSingleInfo(cadLineOptions.zhankaifangshi.values, "zhankaifangshi", "展开方式"),
+      getStringInfo("zidingzhankaichang", "指定展开长", {hidden: this.getLineValue("zhankaifangshi").value !== "指定长度"}),
+      {
+        type: "string",
+        label: "条件取值",
+        readonly: true,
+        value: (() => {
+          const es = selected.filter((v) => v instanceof CadLine);
+          if (es.length > 1) {
+            return "只能选一根线";
+          }
+          const e = es[0];
+          if (e) {
+            return `${e.tiaojianquzhi.length}条数据`;
+          }
+          return "";
+        })(),
+        suffixIcons: [
+          {
+            name: "edit",
+            isDefault: true,
+            onClick: () => {
+              this.editTiaojianquzhi();
+            }
+          }
+        ]
+      },
+      getSelectSingleInfo(cadLineOptions.zhankaixiaoshuchuli.values, "zhankaixiaoshuchuli", "展开小数处理"),
+      getSelectSingleInfo(cadLineOptions.suanliaosanxiaoshuchuli.values, "suanliaosanxiaoshuchuli", "算料单小数处理"),
+      getBooleanInfo("kailiaoshishanchu", "开料时删除"),
+      getBooleanInfo("门框分体模板跳过折弯线识别", undefined, undefined, true),
+      getSelectSingleInfo(cadLineOptions.变化方式.values, "变化方式"),
+      getBooleanInfo("可输入修改"),
+      getSelectSingleInfo(cadLineOptions.圆弧显示.values, "圆弧显示"),
+      getSelectSingleInfo(cadLineOptions.企料位置识别.values, "企料位置识别"),
+      getBooleanInfo("算料不要"),
+      getBooleanInfo("开料不要"),
+      getStringInfo("双向折弯附加值"),
+      getSelectSingleInfo(cadLineOptions.线功能.values, "线功能")
+    ];
+    return infos;
+  });
 
   getLinewidth() {
-    const lines = this.selected;
+    const lines = this.selected();
     if (lines.length === 1) {
       return linewidth2lineweight(lines[0].linewidth).toString();
     }
@@ -745,7 +810,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setLinewidth(event: Event) {
-    this.selected.forEach((entity) => {
+    this.selected().forEach((entity) => {
       const width = Number((event.target as HTMLInputElement).value);
       entity.linewidth = lineweight2linewidth(width);
     });
@@ -786,7 +851,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async autoFix() {
-    const {selected} = this;
+    const selected = this.selected();
     const cad = this.status.cad;
     selected.forEach((e) => {
       if (e instanceof CadLine) {
@@ -799,34 +864,25 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async editTiaojianquzhi() {
-    const lines = this.selected.filter((v) => v instanceof CadLine);
+    const lines = this.selected().filter((v) => v instanceof CadLine);
     if (lines.length < 1) {
       this.message.alert("请先选中一条直线");
     } else if (lines.length > 1) {
       this.message.alert("无法同时编辑多根线的条件取值");
     } else {
-      openCadLineTiaojianquzhiDialog(this.dialog, {data: lines[0]});
+      const result = await openCadLineTiaojianquzhiDialog(this.dialog, {data: lines[0]});
+      if (result) {
+        this.status.emitChangeCadSignal();
+      }
     }
-  }
-
-  getHideLengthChecked() {
-    return this.selected.length > 0 && this.selected.every((v) => v.hideLength);
-  }
-
-  getHideLengthIndeterminate() {
-    return !this.getHideLengthChecked() && this.selected.some((v) => v.hideLength);
-  }
-
-  setHideLength(event: MatCheckboxChange) {
-    this.selected.forEach((v) => (v.hideLength = event.checked));
-    this.status.cad.render(this.selected);
   }
 
   canAddWHDashedLines() {
-    if (this.selected.length !== 1) {
+    const selected = this.selected();
+    if (selected.length !== 1) {
       return false;
     }
-    const line = this.selected[0];
+    const line = selected[0];
     if (line instanceof CadLineLike) {
       const {deltaX, deltaY} = line;
       return deltaX !== 0 && deltaY !== 0;
@@ -839,7 +895,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   addWHDashedLinesStart() {
-    const line = this.selected[0];
+    const line = this.selected()[0];
     const data = this.data;
     if (!(line instanceof CadLineLike) || !data) {
       return;

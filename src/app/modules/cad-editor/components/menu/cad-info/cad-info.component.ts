@@ -204,9 +204,14 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.status,
       this.parseOptionString()
     );
-    const 名字 = infos.find((v) => v.label === "名字");
-    if (名字?.type === "string") {
-      名字.onChange = this.setCadName.bind(this);
+    for (const info of infos) {
+      info.onChange = (val: any) => {
+        if (info.label === "名字") {
+          this.setCadName(val);
+        } else {
+          this.status.emitChangeCadSignal();
+        }
+      };
     }
     return infos;
   });
@@ -240,9 +245,14 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.status,
       this.parseOptionString()
     );
-    const 板材厚度方向 = infos.find((v) => v.label === "板材厚度方向");
-    if (板材厚度方向?.type === "select") {
-      板材厚度方向.onChange = this.offset.bind(this);
+    for (const info of infos) {
+      info.onChange = (val: any) => {
+        if (info.label === "板材厚度方向") {
+          this.offset(val);
+        } else {
+          this.status.emitChangeCadSignal();
+        }
+      };
     }
     return infos;
   });
@@ -288,6 +298,11 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.status,
       this.parseOptionString()
     );
+    for (const info of infos) {
+      info.onChange = () => {
+        this.status.emitChangeCadSignal();
+      };
+    }
     return infos;
   });
 
@@ -504,6 +519,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     const data = this.data();
     const cad = this.status.cad;
     data.bancaihoudufangxiang = value;
+    this.status.emitChangeCadSignal();
     let direction = 0;
     if (value === "gt0") {
       direction = 1;
@@ -556,6 +572,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     if (zhankai) {
       zhankai.name = value;
     }
+    this.status.emitChangeCadSignal();
   }
 
   selectPoint(i: number, key: IntersectionKey) {

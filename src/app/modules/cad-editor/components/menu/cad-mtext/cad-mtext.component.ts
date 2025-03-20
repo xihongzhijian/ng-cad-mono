@@ -269,9 +269,9 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
       if (values.length === 1) {
         return !!values[0];
       }
-      return null;
+      return undefined;
     }
-    return null;
+    return undefined;
   }
 
   setIsVertical(key: "vertical" | "vertical2", value: boolean) {

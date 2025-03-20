@@ -1,4 +1,5 @@
 import {CadCollection} from "@app/cad/collections";
+import {CustomValidators} from "@app/utils/input-validators";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData, CadLine, CadLineLike, cadLineOptions, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
@@ -46,7 +47,6 @@ export const getCadLineInputs = (
       case "名字":
       case "名字2":
       case "显示线长":
-      case "关联变化公式":
       case "双向折弯附加值":
         info = getter.string(cadLineFields[key], {label: key});
         break;
@@ -54,7 +54,10 @@ export const getCadLineInputs = (
         info = getter.number(cadLineFields[key], {label: key});
         break;
       case "公式":
-        info = getter.string(cadLineFields[key], {label: key, options: gongshiOptions});
+        info = getter.string(cadLineFields[key], {label: key, options: gongshiOptions, validators: CustomValidators.lineGongshi});
+        break;
+      case "关联变化公式":
+        info = getter.string(cadLineFields[key], {label: key, validators: CustomValidators.lineGuanlianbianhuagongshi});
         break;
       case "线长":
         info = {type: "number", label: key, value: lineLength, readonly: !isLine};

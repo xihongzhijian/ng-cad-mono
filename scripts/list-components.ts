@@ -1,18 +1,23 @@
-import {createWriteStream} from "fs";
+import {createWriteStream, readFileSync} from "fs";
 import {globSync} from "glob";
 import minimist from "minimist";
 import {basename} from "path";
 
 const args = minimist(process.argv.slice(2));
-let prefix = "";
-if (typeof args.prefix === "string") {
-  prefix = args.prefix;
-} else if (typeof args.p === "string") {
-  prefix = args.p;
-}
+const prefix = args.prefix || args.p || "";
+const search = args.search || args.s || "";
 const stream = createWriteStream("../.tmp/components.txt", {flags: "w"});
 for (const file of globSync("../src/**/*.component.ts")) {
-  stream.write(`${prefix}${basename(file, ".component.ts")}\n`);
+  let prefixCurr = prefix;
+  if (search) {
+    const fileStr = readFileSync(file, "utf8");
+    if (fileStr.includes(search)) {
+      prefixCurr = "- [x] ";
+    } else {
+      prefixCurr = "- [ ] ";
+    }
+  }
+  stream.write(`${prefixCurr}${basename(file, ".component.ts")}\n`);
 }
 stream.end();
 stream.on("finish", () => {

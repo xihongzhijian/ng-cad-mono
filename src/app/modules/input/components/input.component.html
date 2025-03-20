@@ -333,7 +333,7 @@
             [errorStateMatcher]="getErrorStateMatcher()"
             [disabled]="info.disabled || false"
             [placeholder]="info.placeholder || ''"
-            [value]="value ? true : false"
+            [value]="value"
             (selectionChange)="onBooleanSelectChange($event)"
             (click)="onClick($event)"
           >
