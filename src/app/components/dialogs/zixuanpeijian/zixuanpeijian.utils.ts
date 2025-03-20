@@ -680,6 +680,12 @@ export const calcZxpj = async (
       }
       vars1.门扇布局 = v.item.info?.门扇布局?.name || "";
       const result1Msg = `${getCalcMokuaiTitle(v.item)}计算`;
+      if (isEmpty(mokuaiGongshis[门扇名字])) {
+        const title = getXhmrmsbjTitle(xhmrmsbj, {status});
+        const msg = `${title}【${门扇名字}】计算出错，没有匹配到模块公式`;
+        await message.error(msg);
+        return {fulfilled: false, error: {message: msg}};
+      }
       const result1 = await calc.calcFormulas(
         formulas1,
         vars1,
