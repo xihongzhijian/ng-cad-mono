@@ -6,10 +6,10 @@
     <app-input [info]="info"></app-input>
   }
   @if (!data.source) {
-    <button mat-flat-button [class.accent]="multiDeleting()" (click)="toggleMultiDeleting()">批量删除</button>
     <button mat-flat-button (click)="advancedSearch()">高级搜索</button>
     <button mat-flat-button (click)="search()">刷新</button>
     <button mat-flat-button (click)="addCad()">添加</button>
+    <button mat-flat-button (click)="deleteCads()">删除</button>
     @if (data.yaoqiu?.["有帮助文档"]) {
       <button mat-flat-button (click)="data.yaoqiu?.['打开帮助文档']()">帮助文档</button>
     }
@@ -28,7 +28,7 @@
   }
   <div class="placeholder"></div>
   <div class="spinner-container">
-    <button mat-flat-button (click)="submit()">确定</button>
+    <button mat-flat-button [disabled]="!canSubmit()" (click)="submit()">确定</button>
     <app-spinner [id]="loaderIdSubmit" [inline]="true"></app-spinner>
   </div>
   <button mat-flat-button (click)="close()">取消</button>
@@ -40,7 +40,9 @@
       <span>（其他页已选）</span>
     }
   </mat-slide-toggle>
-  @if (data.selectMode === "multiple" || multiDeleting()) {
+  @if (data.selectMode !== "multiple") {}
+  <mat-checkbox [checked]="multiSelecting()" (change)="toggleMultiSelecting()">开启多选</mat-checkbox>
+  @if (data.selectMode === "multiple" || multiSelecting()) {
     <mat-checkbox [checked]="allChecked()" [indeterminate]="partiallyChecked()" (change)="toggleSelectAll()">全选</mat-checkbox>
   }
   @for (info of searchForm2(); track $index) {
@@ -52,21 +54,23 @@
   <ng-scrollbar>
     <div class="cads items add-empty-msg">
       @for (item of pageData(); track i; let i = $index) {
-        <app-cad-item
-          #cadItem
-          [cad]="item.data"
-          [buttons]="cadItemButtons()"
-          [formTitleBtns]="data.cadItemFormTitleBtns"
-          [customInfo]="{index: i}"
-          [collection]="data.collection"
-          [yaoqiu]="data.yaoqiu"
-          [gongshis]="data.gongshis"
-          [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
-          [selectable]="getItemSelectable(item)"
-          [cadForm]="cadItemForm()"
-          (beforeEditCad)="beforeEditCad(item.data)"
-          (afterEditCad)="afterEditCad(item.data)"
-        ></app-cad-item>
+        @if (cadItemInfos().at(i); as info) {
+          <app-cad-item
+            #cadItem
+            [cad]="item.data"
+            [buttons]="cadItemButtons()"
+            [formTitleBtns]="data.cadItemFormTitleBtns"
+            [customInfo]="{index: i}"
+            [collection]="data.collection"
+            [yaoqiu]="data.yaoqiu"
+            [gongshis]="data.gongshis"
+            [isOnline]="{isFetched: item.isFetched, afterFetch: afterFetch.bind(this)}"
+            [selectable]="info.selectable"
+            [cadForm]="cadItemForm()"
+            (beforeEditCad)="beforeEditCad(item.data)"
+            (afterEditCad)="afterEditCad(item.data)"
+          ></app-cad-item>
+        }
       }
     </div>
   </ng-scrollbar>
