@@ -16,6 +16,11 @@
           <div class="title" [style]="info.titleStyle">{{ info.title }}</div>
         }
       }
+      @if (filterInputInfos(); as infos) {
+        @for (info of infos; track $index) {
+          <app-input [info]="info"></app-input>
+        }
+      }
       @if (toolbarButtons.add) {
         <button mat-stroked-button (click)="addItem()">添加</button>
       }
@@ -36,11 +41,6 @@
           <button mat-stroked-button [class]="button.class" [style]="button.style" (click)="onToolbarBtnClick(button)">
             {{ button.title || button.event }}
           </button>
-        }
-      }
-      @if (filterInputInfos(); as infos) {
-        @for (info of infos; track $index) {
-          <app-input [info]="info"></app-input>
         }
       }
     </div>

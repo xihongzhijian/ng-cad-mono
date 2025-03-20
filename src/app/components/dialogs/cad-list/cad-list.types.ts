@@ -43,7 +43,5 @@ export interface CadListItemInfo {
 
 export interface CadListPageItem {
   data: HoutaiCad;
-  checked: boolean;
   isFetched?: boolean;
-  toDelete?: boolean;
 }

@@ -122,12 +122,18 @@ export interface TableInsertParams<T extends TableDataBase = TableDataBase> {
   table: string;
   data: Omit<Partial<T>, "vid">;
 }
-
 export interface TableUpdateParams<T extends TableDataBase = TableDataBase> {
   table: string;
   data: {vid: number} & Omit<Partial<T>, "vid">;
 }
 export interface TableDeleteParams {
+  table: string;
+  vids: number[];
+}
+export interface TableImportParams {
+  table: string;
+}
+export interface TableExportParams {
   table: string;
   vids: number[];
 }

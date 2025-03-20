@@ -286,11 +286,33 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.xinghao.set(xinghao ? new MrbcjfzXinghaoInfo(table, xinghao) : null);
     }
     await timeout(0);
+    const data = this.data();
+    if (data) {
+      let isMsbjChanged = false;
+      const msbjs = this.msbjs();
+      for (const item of data.items) {
+        for (const key of this.menshanKeys) {
+          const info = item.门扇布局[key];
+          const {选中布局数据} = info || {};
+          if (!选中布局数据) {
+            continue;
+          }
+          const msbjInfo = msbjs.find((v) => v.id === 选中布局数据.vid);
+          if (msbjInfo && msbjInfo.name !== 选中布局数据.name) {
+            选中布局数据.name = msbjInfo.name;
+            isMsbjChanged = true;
+          }
+        }
+      }
+      if (isMsbjChanged) {
+        await this.message.alert("门扇布局已经修改，请保存更新");
+      }
+    }
     if (this.isFromOrder()) {
       this.wmm.postMessage("requestDataStart");
     } else {
       this.activeMenshanKey.set(this.menshanKeys[0]);
-      this.checkMissingMokuais();
+      await this.checkMissingMokuais();
     }
   }
 

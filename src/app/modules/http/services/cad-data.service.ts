@@ -5,7 +5,7 @@ import {CadCollection} from "@app/cad/collections";
 import {exportCadData} from "@app/cad/utils";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
-import {dataURLtoBlob, downloadByUrl, DownloadOptions, isTypeOf, ObjectOf} from "@lucilor/utils";
+import {dataURLtoBlob, downloadByUrl, DownloadOptions, isTypeOf, ObjectOf, selectFiles} from "@lucilor/utils";
 import {
   BancaiCad,
   BancaiList,
@@ -32,6 +32,8 @@ import {
   TableCopyParams,
   TableDeleteFile,
   TableDeleteParams,
+  TableExportParams,
+  TableImportParams,
   TableInsertParams,
   TableRenderData,
   TableUpdateParams,
@@ -353,12 +355,23 @@ export class CadDataService extends HttpService {
   async tableCopy(params: TableCopyParams, options?: HttpOptions) {
     return await this.getData<boolean>("jichu/jichu/table_copy", params, options);
   }
-
+  async tableImport(params: TableImportParams, options?: HttpOptions) {
+    const files = await selectFiles({accept: ".xlsx"});
+    const file0 = files?.[0];
+    if (!file0 || !(await this.message.confirm("导入后无法恢复，是否确定？"))) {
+      return false;
+    }
+    const res = await this.post("jichu/jichu/table_import", {file0, ...params}, options);
+    return this.isSuccessfulResponse(res);
+  }
+  async tableExport(params: TableExportParams, options?: HttpOptions) {
+    const res = await this.post("jichu/jichu/table_export", params, {responseType: "blob", ...options});
+    return this.isSuccessfulResponse(res);
+  }
   async tableUploadFile<T extends TableDataBase = TableDataBase>(params: TableUploadFile<T>, options?: HttpOptions) {
     const response = await this.post<void>("jichu/jichu/upload_file", params, options);
     return response?.code === 0;
   }
-
   async tableDeleteFile<T extends TableDataBase = TableDataBase>(params: TableDeleteFile<T>, options?: HttpOptions) {
     const response = await this.post<void>("jichu/jichu/delete_file", params, options);
     return response?.code === 0;

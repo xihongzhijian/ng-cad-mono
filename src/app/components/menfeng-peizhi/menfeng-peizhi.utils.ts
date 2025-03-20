@@ -6,6 +6,7 @@ export const getMenfengPeizhiTableInfo = (items: MenfengpeizhiItem[]) => {
   const info: TableRenderInfo<MenfengpeizhiItem> = {
     data: items,
     editMode: true,
+    rowSelection: {mode: "multiple"},
     filterable: {fields: ["menjiao", "suobian", "chanpinfenlei", "xinghaoyouxian"]},
     columns: [
       {type: "string", field: "menjiao", name: "门铰", width: "150px"},
@@ -39,6 +40,20 @@ export const getMenfengPeizhiTableInfo = (items: MenfengpeizhiItem[]) => {
           return n.toString();
         }
       }
+    ]
+  };
+  return info;
+};
+
+export const getMenfengPeizhiBatchReplaceTableInfo = (item: Partial<MenfengpeizhiItem>) => {
+  const info: TableRenderInfo<Partial<MenfengpeizhiItem>> = {
+    data: [item],
+    editMode: true,
+    columns: [
+      {type: "number", field: "suobianmenfeng", name: "锁边门缝", editable: true},
+      {type: "number", field: "jiaobianmenfeng", name: "铰边门缝", editable: true},
+      {type: "number", field: "dingbumenfeng", name: "顶部门缝", editable: true},
+      {type: "number", field: "dibumenfeng", name: "底部门缝", editable: true}
     ]
   };
   return info;

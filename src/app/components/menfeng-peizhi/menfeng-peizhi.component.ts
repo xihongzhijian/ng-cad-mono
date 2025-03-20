@@ -1,16 +1,18 @@
 import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, signal, viewChild} from "@angular/core";
+import {MatButtonModule} from "@angular/material/button";
 import {XhmrmsbjSbjbItem} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
+import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent} from "@modules/table/components/table/table.types";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
 import {MenfengpeizhiItem} from "./menfeng-peizhi.types";
-import {getMenfengPeizhiTableInfo} from "./menfeng-peizhi.utils";
+import {getMenfengPeizhiBatchReplaceTableInfo, getMenfengPeizhiTableInfo} from "./menfeng-peizhi.utils";
 
 @Component({
   selector: "app-menfeng-peizhi",
-  imports: [TableComponent],
+  imports: [FloatingDialogModule, MatButtonModule, TableComponent],
   templateUrl: "./menfeng-peizhi.component.html",
   styleUrl: "./menfeng-peizhi.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -60,16 +62,23 @@ export class MenfengPeizhiComponent {
     return true;
   }
 
-  tableInfo = computed(() => getMenfengPeizhiTableInfo(this.items()));
-  tableComponent = viewChild(TableComponent);
+  tableInfo = computed(() => {
+    const info = getMenfengPeizhiTableInfo(this.items());
+    info.toolbarButtons = {
+      extra: [{event: "batchReplace", title: "批量替换", onClick: () => this.batchReplace()}]
+    };
+    return info;
+  });
+  tableComponent = viewChild(TableComponent<MenfengpeizhiItem>);
   dataChangeHistory = signal<{i: number; j: number}[]>([]);
   onCellChange(event: CellEvent<MenfengpeizhiItem>) {
     const history = this.dataChangeHistory().slice();
-    const index = history.findIndex((v) => v.i === event.rowIdx && v.j === event.colIdx);
+    const rowIdx = this.items().findIndex((v) => v === event.item);
+    const index = history.findIndex((v) => v.i === rowIdx && v.j === event.colIdx);
     if (index >= 0) {
       history.splice(index, 1);
     }
-    history.push({i: event.rowIdx, j: event.colIdx});
+    history.push({i: rowIdx, j: event.colIdx});
     this.dataChangeHistory.set(history);
   }
 
@@ -83,5 +92,51 @@ export class MenfengPeizhiComponent {
       return false;
     }
     return true;
+  }
+
+  batchReplaceItem = signal<Partial<MenfengpeizhiItem> | null>(null);
+  batchReplaceTableInfo = computed(() => {
+    const item = this.batchReplaceItem();
+    if (item) {
+      const info = getMenfengPeizhiBatchReplaceTableInfo(item);
+      return info;
+    } else {
+      return null;
+    }
+  });
+  batchReplace() {
+    const table = this.tableComponent();
+    if (!table) {
+      return;
+    }
+    const items = table.getSelectedItems();
+    if (items.length < 1) {
+      this.message.alert("请先选择要批量替换的数据");
+      return;
+    }
+    this.batchReplaceItem.set({});
+  }
+  submitBatchReplace() {
+    const batchReplaceItem = this.batchReplaceItem();
+    const table = this.tableComponent();
+    if (table && batchReplaceItem) {
+      const items = table.getSelectedItems();
+      const fields = ["suobianmenfeng", "jiaobianmenfeng", "dingbumenfeng", "dibumenfeng"] as const;
+      for (const field of fields) {
+        const colIdx = this.tableInfo().columns.findIndex((v) => v.field === field);
+        const val = batchReplaceItem[field];
+        if (typeof val === "number") {
+          for (const [rowIdx, item] of items.entries()) {
+            item[field] = val;
+            this.onCellChange({column: this.tableInfo().columns[colIdx], item, colIdx, rowIdx});
+          }
+        }
+      }
+      table.refresh();
+    }
+    this.closeBatchReplace();
+  }
+  closeBatchReplace() {
+    this.batchReplaceItem.set(null);
   }
 }

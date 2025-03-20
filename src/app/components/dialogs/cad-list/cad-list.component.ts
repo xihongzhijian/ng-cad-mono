@@ -22,7 +22,7 @@ import {imgCadEmpty} from "@app/app.common";
 import {getCadQueryFields, setCadData, validateCad} from "@app/cad/cad-shujuyaoqiu";
 import {getDateTimeString} from "@app/utils/get-value";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
-import {CadItemButton, CadItemForm, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
+import {CadItemButton, CadItemForm, CadItemIsOnlineInfo, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {isBetween, isNumber, ObjectOf, queryStringList, timeout} from "@lucilor/utils";
 import {openCadForm} from "@modules/cad-editor/components/menu/cad-info/cad-info.utils";
@@ -36,7 +36,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {openExportPage} from "@views/export/export.utils";
 import {openImportPage} from "@views/import/import.utils";
-import {difference} from "lodash";
+import {difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
@@ -75,15 +75,12 @@ export class CadListComponent implements AfterViewInit {
   pageData = signal<CadListPageItem[]>([]);
   width = 300;
   height = 150;
-  checkedItems = signal<string[]>([]);
-  checkedInOtherPages = signal(false);
   showCheckedOnly = signal(false);
   loaderId = "cadList";
   loaderIdSubmit = "cadListSubmit";
   cadDataType!: CadData;
   imgCadEmpty = imgCadEmpty;
   downloadApi = this.http.getUrl("ngcad/downloadFile");
-  multiDeleting = signal(false);
 
   paginator = viewChild(MatPaginator);
   cadItems = viewChildren<CadItemComponent>("cadItem");
@@ -108,40 +105,43 @@ export class CadListComponent implements AfterViewInit {
 
   async ngAfterViewInit() {
     if (Array.isArray(this.data.checkedItems)) {
-      this.checkedItems.set(this.data.checkedItems.slice());
+      this.checkedIds.set(this.data.checkedItems.slice());
     }
     this.data.qiliao = this.data.qiliao === true;
     await timeout(0);
     await this.getData(1);
   }
 
-  changePage(event: PageEvent) {
-    this.syncCheckedItems();
-    this.getData(event.pageIndex + 1);
+  multiSelecting = signal(false);
+  toggleMultiSelecting() {
+    this.multiSelecting.update((v) => !v);
+    if (!this.multiSelecting()) {
+      switch (this.data.selectMode) {
+        case "multiple":
+          break;
+        case "single":
+          this.checkedIds.update((v) => v.slice(0, 1));
+          break;
+        default:
+          this.checkedIds.set([]);
+      }
+    }
   }
+  selectMode = computed<CadListInput["selectMode"]>(() => {
+    if (this.multiSelecting()) {
+      return "multiple";
+    }
+    return this.data.selectMode;
+  });
 
-  syncCheckedItems() {
-    const toRemove: string[] = [];
-    let checkedNum = 0;
-    const checkedItems = this.checkedItems().slice();
-    this.pageData.update((v) =>
-      v.map((v2) => {
-        const index = checkedItems.indexOf(v2.data._id);
-        if (v2.checked) {
-          if (index === -1) {
-            checkedItems.push(v2.data._id);
-          } else {
-            checkedItems[index] = v2.data._id;
-          }
-          checkedNum++;
-        } else if (index > -1) {
-          toRemove.push(v2.data._id);
-        }
-        return {...v2};
-      })
-    );
-    this.checkedItems.set(difference(checkedItems, toRemove, [""]));
-    this.checkedInOtherPages.set(checkedNum < this.checkedItems().length);
+  checkedIds = signal<string[]>([]);
+  checkedInOtherPages = computed(() => {
+    const ids = this.checkedIds();
+    return !ids.every((v) => this.pageData().find((v2) => v2.data._id === v));
+  });
+
+  changePage(event: PageEvent) {
+    this.getData(event.pageIndex + 1);
   }
 
   searchField = signal("名字");
@@ -238,7 +238,7 @@ export class CadListComponent implements AfterViewInit {
     params.search = await this.getDataSearch();
     params.fields = getCadQueryFields(this.data.yaoqiu);
     if (this.showCheckedOnly()) {
-      params.ids = this.checkedItems().slice();
+      params.ids = this.checkedIds().slice();
     }
     const searchOptions = this.searchOptions();
     const searchOptions2 = {...searchOptions};
@@ -280,11 +280,9 @@ export class CadListComponent implements AfterViewInit {
     }
     this.length.set(result.total);
     result.cads.forEach((d) => {
-      const checked = this.checkedItems().find((v) => v === d.id) ? true : false;
-      pageData.push({data: getHoutaiCad(d), checked});
+      pageData.push({data: getHoutaiCad(d)});
     });
     this.pageData.set(pageData);
-    this.syncCheckedItems();
     return result;
   }
 
@@ -310,41 +308,25 @@ export class CadListComponent implements AfterViewInit {
   }
 
   toggleSelectAll() {
+    const checkedIds = this.checkedIds();
+    const pageIds = this.pageData().map((v) => v.data._id);
     if (this.allChecked()) {
-      if (this.multiDeleting()) {
-        this.pageData.update((v) => v.map((v2) => ({...v2, toDelete: false})));
-      } else {
-        this.pageData.update((v) => v.map((v2) => ({...v2, checked: false})));
-        this.syncCheckedItems();
-      }
+      this.checkedIds.set(difference(checkedIds, pageIds));
     } else {
-      if (this.multiDeleting()) {
-        this.pageData.update((v) => v.map((v2) => ({...v2, toDelete: true})));
-      } else {
-        this.pageData.update((v) => v.map((v2) => ({...v2, checked: true})));
-        this.syncCheckedItems();
-      }
+      this.checkedIds.set(union(checkedIds, pageIds));
     }
   }
 
   allChecked = computed(() => {
-    if (this.multiDeleting()) {
-      return this.pageData().every((v) => v.toDelete);
-    } else {
-      return this.pageData().every((v) => v.checked);
-    }
+    const checkedIds = this.checkedIds();
+    return this.pageData().every((v) => checkedIds.includes(v.data._id));
   });
   partiallyChecked = computed(() => {
-    let ckeckedNum: number;
-    if (this.multiDeleting()) {
-      ckeckedNum = this.pageData().filter((v) => v.toDelete).length;
-    } else {
-      if (this.checkedInOtherPages()) {
-        return true;
-      }
-      ckeckedNum = this.pageData().filter((v) => v.checked).length;
+    if (this.checkedInOtherPages()) {
+      return true;
     }
-    return ckeckedNum > 0 && ckeckedNum < this.pageData.length;
+    const ckeckedNum = this.checkedIds().length;
+    return ckeckedNum > 0 && ckeckedNum < this.pageData().length;
   });
 
   checkLimit(count: number) {
@@ -386,9 +368,14 @@ export class CadListComponent implements AfterViewInit {
     return result;
   }
 
+  canSubmit = computed(() => {
+    if (this.multiSelecting() && this.data.selectMode !== "multiple") {
+      return this.checkedIds().length < 2;
+    }
+    return true;
+  });
   async submit() {
-    this.syncCheckedItems();
-    const ids = this.checkedItems();
+    const ids = this.checkedIds();
     const checkLimitResult = this.checkLimit(ids.length);
     if (!checkLimitResult.valid) {
       this.message.error(checkLimitResult.message);
@@ -459,30 +446,22 @@ export class CadListComponent implements AfterViewInit {
   }
 
   clickItem(i: number) {
-    const {selectMode} = this.data;
+    const selectMode = this.selectMode();
+    const checkedIds = this.checkedIds();
+    const id = this.pageData()[i].data._id;
     if (selectMode === "multiple") {
-      this.pageData.update((v) =>
-        v.map((v2, j) => {
-          if (i === j) {
-            return {...v2, checked: !v2.checked};
-          }
-          return v2;
-        })
-      );
+      if (checkedIds.includes(id)) {
+        this.checkedIds.set(difference(checkedIds, [id]));
+      } else {
+        this.checkedIds.set(union(checkedIds, [id]));
+      }
     } else if (selectMode === "single") {
-      this.checkedItems.set([]);
-      this.pageData.update((v) =>
-        v.map((v2, j) => {
-          if (i === j) {
-            return {...v2, checked: !v2.checked};
-          }
-          return {...v2, checked: false};
-        })
-      );
-    } else {
-      return;
+      if (checkedIds.includes(id)) {
+        this.checkedIds.set([]);
+      } else {
+        this.checkedIds.set([id]);
+      }
     }
-    this.syncCheckedItems();
   }
 
   returnZero() {
@@ -503,7 +482,7 @@ export class CadListComponent implements AfterViewInit {
     }
   }
   async openExportPage() {
-    const ids = this.checkedItems().slice();
+    const ids = this.checkedIds().slice();
     const {collection} = this.data;
     const search = await this.getDataSearch();
     openExportPage(this.status, {collection, ids, search, lurushuju: true});
@@ -536,7 +515,7 @@ export class CadListComponent implements AfterViewInit {
       }
       delete params.fields;
     } else {
-      const ids = this.checkedItems().slice();
+      const ids = this.checkedIds().slice();
       if (ids.length < 1) {
         await this.message.alert("请选择要导出的cad");
         return;
@@ -561,14 +540,24 @@ export class CadListComponent implements AfterViewInit {
   toggleShowCadItemFormTexts() {
     this.cadItemForm.update((v) => ({...v, noDefaultTexts: !v.noDefaultTexts}));
   }
-  getItemSelectable(item: CadListPageItem): CadItemSelectable<CadListItemInfo> | undefined {
-    if (this.multiDeleting()) {
-      return {selected: item.toDelete, onChange: this.onSelectChange.bind(this)};
-    } else if (this.data.selectMode !== "none") {
-      return {selected: item.checked, onChange: this.onSelectChange.bind(this)};
+  fetchedCadIds = signal<string[]>([]);
+  cadItemInfos = computed(() => {
+    const infos: {
+      isOnline: CadItemIsOnlineInfo<CadListItemInfo>;
+      selectable?: CadItemSelectable<CadListItemInfo>;
+    }[] = [];
+    for (const item of this.pageData()) {
+      const info: (typeof infos)[number] = {isOnline: {isFetched: false, afterFetch: this.afterFetch.bind(this)}};
+      infos.push(info);
+      if (this.selectMode() !== "none") {
+        info.selectable = {
+          selected: this.checkedIds().includes(item.data._id),
+          onChange: this.onSelectChange.bind(this)
+        };
+      }
     }
-    return undefined;
-  }
+    return infos;
+  });
   beforeEditCad(data: HoutaiCad) {
     this.data.beforeEditCad?.(data);
   }
@@ -576,57 +565,8 @@ export class CadListComponent implements AfterViewInit {
     this.data.afterEditCad?.(data);
   }
   onSelectChange(component: CadItemComponent<CadListItemInfo>) {
-    const {index: i} = component.customInfo();
-    const {selectMode} = this.data;
-    const multiDeleting = this.multiDeleting();
-    let needsSync = false;
-    if (multiDeleting) {
-      this.pageData.update((v) =>
-        v.map((v2, j) => {
-          if (i === j) {
-            return {...v2, toDelete: !v2.toDelete};
-          }
-          return v2;
-        })
-      );
-    } else if (selectMode === "multiple" || multiDeleting) {
-      this.pageData.update((v) =>
-        v.map((v2, j) => {
-          if (i === j) {
-            return {...v2, checked: !v2.checked};
-          }
-          return v2;
-        })
-      );
-      needsSync = true;
-    } else if (selectMode === "single") {
-      this.checkedItems.set([]);
-      this.pageData.update((v) =>
-        v.map((v2, j) => {
-          if (i === j) {
-            return {...v2, checked: !v2.checked};
-          }
-          return {...v2, checked: false};
-        })
-      );
-      needsSync = true;
-    }
-    if (needsSync) {
-      this.syncCheckedItems();
-    }
-  }
-  async toggleMultiDeleting() {
-    const data = this.pageData();
-    if (this.multiDeleting()) {
-      const ids = data.filter((v) => v.toDelete).map((v) => v.data._id);
-      if (ids.length > 0 && (await this.message.confirm(`是否删除${ids.length}个选中的cad？`))) {
-        if (await this.http.mongodbDelete(this.data.collection, {ids})) {
-          await this.search();
-        }
-      }
-    }
-    this.multiDeleting.update((v) => !v);
-    this.pageData.update((v) => v.map((v2) => ({...v2, toDelete: false})));
+    const {index} = component.customInfo();
+    this.clickItem(index);
   }
   afterFetch(component: CadItemComponent<CadListItemInfo>) {
     const {index: i} = component.customInfo();
@@ -675,7 +615,22 @@ export class CadListComponent implements AfterViewInit {
       return;
     }
     if (await this.http.mongodbDelete(this.data.collection, {id: item.data._id})) {
-      this.search();
+      this.checkedIds.update((v) => difference(v, [item.data._id]));
+      await this.search();
+    }
+  }
+  async deleteCads() {
+    const ids = this.checkedIds();
+    if (ids.length < 1) {
+      await this.message.alert("请选择要删除的cad");
+      return;
+    }
+    if (!(await this.message.confirm(`是否删除${ids.length}个选中的cad？`))) {
+      return;
+    }
+    if (await this.http.mongodbDelete(this.data.collection, {ids})) {
+      this.checkedIds.set([]);
+      await this.search();
     }
   }
 }

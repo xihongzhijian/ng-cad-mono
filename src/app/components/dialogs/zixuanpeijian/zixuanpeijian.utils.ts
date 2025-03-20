@@ -690,6 +690,12 @@ export const calcZxpj = async (
       }
       vars1.门扇布局 = v.item.info?.门扇布局?.name || "";
       const result1Msg = `${getCalcMokuaiTitle(v.item)}计算`;
+      if (isEmpty(mokuaiGongshis[门扇名字])) {
+        const title = getXhmrmsbjTitle(xhmrmsbj, {status});
+        const msg = `${title}计算出错，没有匹配到<span class="accent">【${门扇名字}】</span>【模块大小】公式`;
+        await message.error(msg);
+        return {fulfilled: false, error: {message: msg}};
+      }
       const result1 = await calc.calcFormulas(
         formulas1,
         vars1,
@@ -811,6 +817,7 @@ export const calcZxpj = async (
     const zhankais: [number, CadZhankai][] = [];
     const {门扇名字, 模块名字} = info;
     vars2 = {...vars2, ...getNodeVars(mokuaiVars[门扇名字 || ""], 模块名字 || "")};
+    const zhankaisRaw = cloneDeep(data.zhankai);
     for (const [i, zhankai] of data.zhankai.entries()) {
       let enabled = true;
       let title = `计算展开条件`;
@@ -922,7 +929,7 @@ export const calcZxpj = async (
       if (info.zhankai.length < 1) {
         info.zhankai.push(getDefaultZhankai());
       }
-      info.calcZhankai = info.zhankai.flatMap((v) => {
+      info.calcZhankai = info.zhankai.map((v, i) => {
         let cadZhankai: CadZhankai | undefined;
         if (v.cadZhankaiIndex && v.cadZhankaiIndex > 0) {
           cadZhankai = data.zhankai[v.cadZhankaiIndex];
@@ -960,8 +967,9 @@ export const calcZxpj = async (
             "总长+0+(总使用差值)"
           ])
         };
+        const zhankaiRaw = zhankaisRaw[i];
         ["门扇上切", "门扇下切", "门扇上面上切", "门扇下面下切"].forEach((qiekey) => {
-          if (cadZhankai.zhankaigao.includes(qiekey) && Number(materialResult[qiekey]) > 0) {
+          if (zhankaiRaw.zhankaigao.includes(qiekey) && Number(materialResult[qiekey]) > 0) {
             if (qiekey.includes("上切")) {
               calcObj["上切"] = materialResult[qiekey];
             } else {
@@ -973,12 +981,12 @@ export const calcZxpj = async (
           calcObj.num = 1;
           const calc2 = [];
           calc2.push(calcObj);
-          for (let i = 1; i < calcObj.num; i++) {
+          for (let j = 1; j < calcObj.num; j++) {
             const calc1 = JSON.parse(JSON.stringify(calcObj));
             if (!calc1.flip) {
               calc1.flip = [];
             }
-            calc1.name = `${cadZhankai.name}${i}`;
+            calc1.name = `${cadZhankai.name}${j}`;
             calc2.push(calc1);
           }
           return calc2;

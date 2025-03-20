@@ -1,3 +1,13 @@
 <div class="flex-column flex-110">
   <app-table class="flex-110" [info]="tableInfo()" (cellChange)="onCellChange($event)"></app-table>
 </div>
+
+@if (batchReplaceTableInfo(); as tableInfo) {
+  <app-floating-dialog width="50%" height="260px" left="25%" top="calc((100% - 260px) / 2)" noTitle>
+    <div class="toolbar">
+      <button mat-flat-button (click)="submitBatchReplace()">确定</button>
+      <button mat-flat-button (click)="closeBatchReplace()">取消</button>
+    </div>
+    <app-table class="flex-110" [info]="tableInfo"></app-table>
+  </app-floating-dialog>
+}
