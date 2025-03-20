@@ -73,11 +73,12 @@ export class MenfengPeizhiComponent {
   dataChangeHistory = signal<{i: number; j: number}[]>([]);
   onCellChange(event: CellEvent<MenfengpeizhiItem>) {
     const history = this.dataChangeHistory().slice();
-    const index = history.findIndex((v) => v.i === event.rowIdx && v.j === event.colIdx);
+    const rowIdx = this.items().findIndex((v) => v === event.item);
+    const index = history.findIndex((v) => v.i === rowIdx && v.j === event.colIdx);
     if (index >= 0) {
       history.splice(index, 1);
     }
-    history.push({i: event.rowIdx, j: event.colIdx});
+    history.push({i: rowIdx, j: event.colIdx});
     this.dataChangeHistory.set(history);
   }
 
@@ -122,10 +123,12 @@ export class MenfengPeizhiComponent {
       const items = table.getSelectedItems();
       const fields = ["suobianmenfeng", "jiaobianmenfeng", "dingbumenfeng", "dibumenfeng"] as const;
       for (const field of fields) {
+        const colIdx = this.tableInfo().columns.findIndex((v) => v.field === field);
         const val = batchReplaceItem[field];
         if (typeof val === "number") {
-          for (const item of items) {
+          for (const [rowIdx, item] of items.entries()) {
             item[field] = val;
+            this.onCellChange({column: this.tableInfo().columns[colIdx], item, colIdx, rowIdx});
           }
         }
       }

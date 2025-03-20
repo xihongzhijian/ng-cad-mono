@@ -682,7 +682,7 @@ export const calcZxpj = async (
       const result1Msg = `${getCalcMokuaiTitle(v.item)}计算`;
       if (isEmpty(mokuaiGongshis[门扇名字])) {
         const title = getXhmrmsbjTitle(xhmrmsbj, {status});
-        const msg = `${title}【${门扇名字}】计算出错，没有匹配到模块公式`;
+        const msg = `${title}计算出错，没有匹配到<span class="accent">【${门扇名字}】</span>【模块大小】公式`;
         await message.error(msg);
         return {fulfilled: false, error: {message: msg}};
       }
