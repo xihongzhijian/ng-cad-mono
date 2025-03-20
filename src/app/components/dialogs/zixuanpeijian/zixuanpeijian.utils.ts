@@ -680,7 +680,7 @@ export const calcZxpj = async (
       }
       vars1.门扇布局 = v.item.info?.门扇布局?.name || "";
       const result1Msg = `${getCalcMokuaiTitle(v.item)}计算`;
-      if (isEmpty(mokuaiGongshis[门扇名字])) {
+      if (isVersion2024 && isEmpty(mokuaiGongshis[门扇名字])) {
         const title = getXhmrmsbjTitle(xhmrmsbj, {status});
         const msg = `${title}计算出错，没有匹配到<span class="accent">【${门扇名字}】</span>【模块大小】公式`;
         await message.error(msg);
