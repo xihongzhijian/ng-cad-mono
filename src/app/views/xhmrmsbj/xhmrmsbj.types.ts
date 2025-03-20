@@ -69,6 +69,12 @@ export interface XhmrmsbjCloseEvent {
 }
 
 export type XhmrmsbjDataMsbjInfos = Partial<Record<MenshanKey, XhmrmsbjInfo>>;
+export interface XhmrmsbjDataMsbjInfosItem {
+  id: string;
+  名字: string;
+  选项?: ObjectOf<string>;
+  门扇布局: XhmrmsbjDataMsbjInfos;
+}
 
 export interface XhmrmsbjRequestData {
   型号选中门扇布局: XhmrmsbjDataMsbjInfos;
@@ -97,6 +103,7 @@ export interface XhmrmsbjErrorDetailText extends ErrorDetailText {
   jumpTo?: XhmrmsbjErrorJumpTo;
 }
 export interface XhmrmsbjErrorJumpTo {
+  infosItemIndex: number;
   门扇名字: MenshanKey;
   层名字?: string;
   mokuai?: string;

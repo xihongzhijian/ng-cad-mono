@@ -117,7 +117,14 @@ export interface ZixuanpeijianMokuaiItem extends ZixuanpeijianTypesInfoItem {
   自定义数据?: MokuaiItemCustomData;
   可替换模块?: ZixuanpeijianMokuaiItem[];
   vars?: Formulas;
-  info?: {门扇名字?: MenshanKey; 门扇布局?: XhmrmsbjInfo["选中布局数据"]; 模块名字?: string; 层id?: number; isDefault?: boolean};
+  info?: {
+    infosItemName?: string;
+    门扇名字?: MenshanKey;
+    门扇布局?: XhmrmsbjInfo["选中布局数据"];
+    模块名字?: string;
+    层id?: number;
+    isDefault?: boolean;
+  };
 }
 
 export interface CadItemInputInfo {

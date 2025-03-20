@@ -59,219 +59,249 @@
 @if (enableMfpz()) {
   <app-menfeng-peizhi [class.hidden]="activeTabName() !== '门缝配置'" [xinghao]="xinghao()" [sbjbItems]="sbjbItems()"></app-menfeng-peizhi>
 }
-<div class="flex-row flex-110 scrollbar-container" [class.hidden]="activeTabName() !== '门扇模块'">
-  @if (!isFloatingDialog()) {
-    <div class="flex-column">
-      @for (info of menshanFollowersInputInfo(); track $index) {
-        <app-input [info]="info"></app-input>
-      }
-      <mat-divider class="placeholder"></mat-divider>
-      <ng-scrollbar>
-        <div class="menshan-options flex-column">
-          @for (item of menshanbujuItems(); track $index) {
-            <div class="menshan-option item" [class]="{active: activeMenshanKey() === item.key}" (click)="activeMenshanKey.set(item.key)">
-              <div class="title small bold">{{ item.key }}</div>
-              @if (item.info["选中布局数据"]; as data2) {
-                <div>布局：{{ data2.name }}</div>
-              }
-              <button mat-stroked-button (click)="copyMsbjInfo(item.info)">复制</button>
-            </div>
-          }
+<div class="flex-column flex-110" [class.hidden]="activeTabName() !== '门扇模块'">
+  @if (data()?.items; as items) {
+    <div
+      class="msbj-items items"
+      cdkDropList
+      cdkDropListOrientation="mixed"
+      [cdkDropListData]="items"
+      (cdkDropListDropped)="dropMsbjItem($event)"
+    >
+      @for (item of items; track i; let i = $index) {
+        <div
+          class="item link border has-background"
+          [class.active]="i === activeMsbjItemIndex()"
+          cdkDrag
+          (click)="activeMsbjItemIndex.set(i)"
+        >
+          <div class="toolbar">
+            <div class="drag-placeholder" cdkDragHandle></div>
+            <div>{{ item["名字"] }}</div>
+          </div>
+          <div class="toolbar compact center" appClickStop>
+            <button mat-button (click)="addMsbjItem(i)">添加</button>
+            <button mat-button (click)="editMsbjItem(i)">编辑</button>
+            <button mat-button (click)="removeMsbjItem(i)">删除</button>
+          </div>
         </div>
-      </ng-scrollbar>
+      }
     </div>
-    <mat-divider vertical></mat-divider>
   }
-  <div class="flex-110 flex-row" style="position: relative">
-    <div class="msbj-rects-container flex-column" [class.as-hidden]="isFloatingDialog()">
-      <app-msbj-rects
-        [rectInfos]="rectInfos()"
-        [(activeRectInfo)]="activeRectInfo"
-        selectType="bujuOnly"
-        (generateRectsEnd)="generateRectsEnd()"
-      ></app-msbj-rects>
-    </div>
-    <div class="kexuanmokuais-container flex-column" style="width: 0">
-      @if (activeMokuaiNode()?.["层名字"]; as nodeName) {
-        <div class="toolbar">
-          @if (!isFloatingDialog()) {
-            <div class="title">{{ nodeName }}位置可选模块</div>
-          }
-          <app-input [info]="kexuanmokuaiSearchInputInfo()"></app-input>
-          @if (!isFromOrder()) {
-            <button mat-flat-button (click)="setKexuanmokuai()">编辑</button>
-          }
-        </div>
-      }
-      <ng-scrollbar #kexuanmokuaisScrollbar>
-        <div class="flex-row" style="flex-wrap: wrap">
-          @for (mokuai of kexuanmokuais(); track $index) {
-            <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai}"> </ng-template>
-          }
-        </div>
-      </ng-scrollbar>
-    </div>
+  <div class="flex-row flex-110 scrollbar-container">
     @if (!isFloatingDialog()) {
-      <mat-divider vertical></mat-divider>
-      <div class="scrollbar-container">
-        <ng-scrollbar class="enable-x">
-          @if (isFromOrder()) {
-            @if (!canEditMokuaidaxiao() && !isFloatingDialog()) {
-              <div class="mkdxpz-formulas flex-column">
-                <div class="title">模块大小</div>
-                <app-formulas [formulaInfos]="mkdxpzFormulaInfos()"></app-formulas>
-              </div>
-            }
-            @if (!disableXiaoguotu()) {
-              <div class="xiaoguotu flex-110" #xiaoguotuContainer></div>
-            }
-          }
-          <div class="mokuai-inputs flex-column" [class.small]="isFloatingDialog()">
-            @if (isFromOrder()) {
-              <div class="title">模块选项</div>
-              <div class="items items-per-row">
-                @for (info of mokuaiOptionInfos(); track $index) {
-                  <app-input class="item" [info]="info.inputInfo"></app-input>
+      <div class="flex-column">
+        @for (info of menshanFollowersInputInfo(); track $index) {
+          <app-input [info]="info"></app-input>
+        }
+        <mat-divider class="placeholder"></mat-divider>
+        <ng-scrollbar>
+          <div class="menshan-options flex-column">
+            @for (item of menshanbujuItems(); track $index) {
+              <div class="menshan-option item" [class]="{active: activeMenshanKey() === item.key}" (click)="activeMenshanKey.set(item.key)">
+                <div class="title small bold">{{ item.key }}</div>
+                @if (item.info["选中布局数据"]; as data2) {
+                  <div>布局：{{ data2.name }}</div>
                 }
-              </div>
-            } @else {
-              <div class="toolbar">
-                <div class="title">模块选项</div>
-                <div class="flex-110"></div>
-                <button mat-flat-button (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
-              </div>
-              <div class="items">
-                @for (info of mokuaiOptionInfos(); track i; let i = $index) {
-                  <div class="toolbar" style="width: 100%">
-                    <app-input class="flex-110" [info]="info.inputInfo"></app-input>
-                    @if (info.option["输出变量"]) {
-                      <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.option['名字'])">
-                        <mat-checkbox [checked]="info.disabled"></mat-checkbox>
-                        <div>关闭输出</div>
-                      </div>
-                    } @else {
-                      <div>不输出</div>
-                    }
-                  </div>
-                }
-              </div>
-            }
-            <div class="toolbar">
-              <div class="title">模块输入</div>
-              <div class="flex-110"></div>
-              @if (isFromOrder()) {
-                <button mat-flat-button (click)="resetMokuaiInputs()">恢复默认</button>
-              }
-            </div>
-            @if (!isFromOrder()) {
-              <div class="error">取值顺序：输入值 > 模块公式值 > 通用公式值</div>
-            }
-            <div class="items items-per-row">
-              @for (info of mokuaiInputInfosInput(); track $index) {
-                <app-input class="item" [info]="info"></app-input>
-              }
-            </div>
-            @if (!isFromOrder()) {
-              <div class="toolbar">
-                <div class="title">模块输出</div>
-                <div class="flex-110"></div>
-                <button mat-flat-button (click)="setAllMokuaiShuruDisabled(false)">全部关闭</button>
-              </div>
-              <div class="items">
-                @for (info of mokuaiInputInfosOutput(); track $index) {
-                  <div class="toolbar" style="width: 100%">
-                    <div>{{ info.key }}</div>
-                    @if (info.duplicate) {
-                      <div class="error">（重复）</div>
-                    }
-                    <div class="flex-110"></div>
-                    <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.key)">
-                      <mat-checkbox [checked]="info.disabled"></mat-checkbox>
-                      <div>关闭输出</div>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-            @if (mokuaiInputInfosFormulas().length > 0) {
-              <div class="title">下单显示</div>
-              <div class="items items-per-row">
-                @for (info of mokuaiInputInfosFormulas(); track $index) {
-                  <app-input class="item" [info]="info"></app-input>
-                }
+                <button mat-stroked-button (click)="copyMsbjInfo(item.info)">复制</button>
               </div>
             }
           </div>
         </ng-scrollbar>
       </div>
+      <mat-divider vertical></mat-divider>
     }
-  </div>
-  @if (!isFloatingDialog()) {
-    <mat-divider vertical></mat-divider>
-    <ng-scrollbar class="enable-x" style="flex: 0 0 auto">
-      @if (xinghao(); as xinghao) {
-        <div class="toolbar">
-          <div class="title">型号板材分组</div>
-          @if (!isFromOrder()) {
-            <button mat-flat-button (click)="openMrbcjfzDialog()">编辑</button>
-          }
-        </div>
-        <div class="xinghao-info flex-column">
-          @for (item of xinghao["默认板材"] | keyvalue: returnZero; track $index) {
-            @if (xinghao.getBancaiTitle(item.key)) {
-              <div>{{ item.value["板材分组别名"] || item.key }}: {{ xinghao.getBancaiTitle(item.key) }}</div>
+    <div class="flex-110 flex-row" style="position: relative">
+      <div class="msbj-rects-container flex-column" [class.as-hidden]="isFloatingDialog()">
+        <app-msbj-rects
+          [rectInfos]="rectInfos()"
+          [(activeRectInfo)]="activeRectInfo"
+          selectType="bujuOnly"
+          (generateRectsEnd)="generateRectsEnd()"
+        ></app-msbj-rects>
+      </div>
+      <div class="kexuanmokuais-container flex-column" style="width: 0">
+        @if (activeMokuaiNode()?.["层名字"]; as nodeName) {
+          <div class="toolbar">
+            @if (!isFloatingDialog()) {
+              <div class="title">{{ nodeName }}位置可选模块</div>
             }
-          }
-        </div>
-        <div class="xinghao-bancai flex-110 flex-column">
-          @if (activeMokuaiNode()?.["选中模块"]; as mokuai) {
-            <mat-divider></mat-divider>
-            <div class="toolbar">
-              <div class="title">选中模块板材分组</div>
+            <app-input [info]="kexuanmokuaiSearchInputInfo()"></app-input>
+            @if (!isFromOrder()) {
+              <button mat-flat-button (click)="setKexuanmokuai()">编辑</button>
+            }
+          </div>
+        }
+        <ng-scrollbar #kexuanmokuaisScrollbar>
+          <div class="flex-row" style="flex-wrap: wrap">
+            @for (mokuai of kexuanmokuais(); track $index) {
+              <ng-template *ngTemplateOutlet="mokuaiT; context: {$implicit: mokuai}"> </ng-template>
+            }
+          </div>
+        </ng-scrollbar>
+      </div>
+      @if (!isFloatingDialog()) {
+        <mat-divider vertical></mat-divider>
+        <div class="scrollbar-container">
+          <ng-scrollbar class="enable-x">
+            @if (isFromOrder()) {
+              @if (!canEditMokuaidaxiao() && !isFloatingDialog()) {
+                <div class="mkdxpz-formulas flex-column">
+                  <div class="title">模块大小</div>
+                  <app-formulas [formulaInfos]="mkdxpzFormulaInfos()"></app-formulas>
+                </div>
+              }
+              @if (!disableXiaoguotu()) {
+                <div class="xiaoguotu flex-110" #xiaoguotuContainer></div>
+              }
+            }
+            <div class="mokuai-inputs flex-column" [class.small]="isFloatingDialog()">
+              @if (isFromOrder()) {
+                <div class="title">模块选项</div>
+                <div class="items items-per-row">
+                  @for (info of mokuaiOptionInfos(); track $index) {
+                    <app-input class="item" [info]="info.inputInfo"></app-input>
+                  }
+                </div>
+              } @else {
+                <div class="toolbar">
+                  <div class="title">模块选项</div>
+                  <div class="flex-110"></div>
+                  <button mat-flat-button (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
+                </div>
+                <div class="items">
+                  @for (info of mokuaiOptionInfos(); track i; let i = $index) {
+                    <div class="toolbar" style="width: 100%">
+                      <app-input class="flex-110" [info]="info.inputInfo"></app-input>
+                      @if (info.option["输出变量"]) {
+                        <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.option['名字'])">
+                          <mat-checkbox [checked]="info.disabled"></mat-checkbox>
+                          <div>关闭输出</div>
+                        </div>
+                      } @else {
+                        <div>不输出</div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+              <div class="toolbar">
+                <div class="title">模块输入</div>
+                <div class="flex-110"></div>
+                @if (isFromOrder()) {
+                  <button mat-flat-button (click)="resetMokuaiInputs()">恢复默认</button>
+                }
+              </div>
+              @if (!isFromOrder()) {
+                <div class="error">取值顺序：输入值 > 模块公式值 > 通用公式值</div>
+              }
+              <div class="items items-per-row">
+                @for (info of mokuaiInputInfosInput(); track $index) {
+                  <app-input class="item" [info]="info"></app-input>
+                }
+              </div>
+              @if (!isFromOrder()) {
+                <div class="toolbar">
+                  <div class="title">模块输出</div>
+                  <div class="flex-110"></div>
+                  <button mat-flat-button (click)="setAllMokuaiShuruDisabled(false)">全部关闭</button>
+                </div>
+                <div class="items">
+                  @for (info of mokuaiInputInfosOutput(); track $index) {
+                    <div class="toolbar" style="width: 100%">
+                      <div>{{ info.key }}</div>
+                      @if (info.duplicate) {
+                        <div class="error">（重复）</div>
+                      }
+                      <div class="flex-110"></div>
+                      <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.key)">
+                        <mat-checkbox [checked]="info.disabled"></mat-checkbox>
+                        <div>关闭输出</div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+              @if (mokuaiInputInfosFormulas().length > 0) {
+                <div class="title">下单显示</div>
+                <div class="items items-per-row">
+                  @for (info of mokuaiInputInfosFormulas(); track $index) {
+                    <app-input class="item" [info]="info"></app-input>
+                  }
+                </div>
+              }
             </div>
-          }
-          <!-- 板材选择 -->
-          @for (info of bancaiInputInfos(); track $index) {
-            <app-input [info]="info"></app-input>
-          }
-          @if (xhmrbsbjInputInfos().length > 0) {
-            <mat-divider></mat-divider>
-            @for (info of xhmrbsbjInputInfos(); track $index) {
+          </ng-scrollbar>
+        </div>
+      }
+    </div>
+    @if (!isFloatingDialog()) {
+      <mat-divider vertical></mat-divider>
+      <ng-scrollbar class="enable-x" style="flex: 0 0 auto">
+        @if (xinghao(); as xinghao) {
+          <div class="toolbar">
+            <div class="title">型号板材分组</div>
+            @if (!isFromOrder()) {
+              <button mat-flat-button (click)="openMrbcjfzDialog()">编辑</button>
+            }
+          </div>
+          <div class="xinghao-info flex-column">
+            @for (item of xinghao["默认板材"] | keyvalue: returnZero; track $index) {
+              @if (xinghao.getBancaiTitle(item.key)) {
+                <div>{{ item.value["板材分组别名"] || item.key }}: {{ xinghao.getBancaiTitle(item.key) }}</div>
+              }
+            }
+          </div>
+          <div class="xinghao-bancai flex-110 flex-column">
+            @if (activeMokuaiNode()?.["选中模块"]; as mokuai) {
+              <mat-divider></mat-divider>
+              <div class="toolbar">
+                <div class="title">选中模块板材分组</div>
+              </div>
+            }
+            <!-- 板材选择 -->
+            @for (info of bancaiInputInfos(); track $index) {
               <app-input [info]="info"></app-input>
             }
-          }
-        </div>
-      }
-      @if (errors().length > 0) {
-        <mat-divider></mat-divider>
-        <div class="title error">错误</div>
-        <div class="errors items">
-          @for (error of errors(); track $index) {
-            <div class="error item">
-              <div class="text">{{ error.content }}</div>
-              <ol>
-                @for (detail of error.details; track $index) {
-                  <li class="text">
-                    @for (item of detail; track $index) {
-                      <span [class]="item.className">
-                        @if (item.br) {
-                          <br />
-                        } @else if (item.jumpTo) {
-                          <span class="link text" (click)="jumpToError(item.jumpTo)">{{ item.text }}</span>
-                        } @else {
-                          <span>{{ item.text }}</span>
-                        }
-                      </span>
-                    }
-                  </li>
-                }
-              </ol>
-            </div>
-          }
-        </div>
-      }
-    </ng-scrollbar>
-  }
+            @if (xhmrbsbjInputInfos().length > 0) {
+              <mat-divider></mat-divider>
+              @for (info of xhmrbsbjInputInfos(); track $index) {
+                <app-input [info]="info"></app-input>
+              }
+            }
+          </div>
+        }
+        @if (errors().length > 0) {
+          <mat-divider></mat-divider>
+          <div class="title error">错误</div>
+          <div class="errors items">
+            @for (error of errors(); track $index) {
+              <div class="error item">
+                <div class="text">{{ error.content }}</div>
+                <ol>
+                  @for (detail of error.details; track $index) {
+                    <li class="text">
+                      @for (item of detail; track $index) {
+                        <span [class]="item.className">
+                          @if (item.br) {
+                            <br />
+                          } @else if (item.jumpTo) {
+                            <span class="link text" (click)="jumpToError(item.jumpTo)">{{ item.text }}</span>
+                          } @else {
+                            <span>{{ item.text }}</span>
+                          }
+                        </span>
+                      }
+                    </li>
+                  }
+                </ol>
+              </div>
+            }
+          </div>
+        }
+      </ng-scrollbar>
+    }
+  </div>
 </div>
 
 <ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai>

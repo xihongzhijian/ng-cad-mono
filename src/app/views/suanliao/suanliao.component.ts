@@ -180,6 +180,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     }
     const msbjs = params.msbjs.map((v) => new MsbjInfo(v));
     const xhmrmsbj = new XhmrmsbjData(params.xhmrmsbj, bujuNames, step1Data?.typesInfo || {}, msbjs);
+    const msbjInfos = xhmrmsbj.items.at(0)?.门扇布局 || {};
     xhmrmsbj.name = String(materialResult.型号);
     const calcZxpjResult = await calcZxpj(this.dialog, this.message, this.calc, this.status, materialResult, mokuais, lingsans, {
       changeLinesLength: false,
@@ -241,7 +242,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
     }
     for (const mokuai of mokuais) {
-      for (const key of getMokuaiInfoScbl(xhmrmsbj.menshanbujuInfos, mokuai)) {
+      for (const key of getMokuaiInfoScbl(msbjInfos, mokuai)) {
         result.data.输出变量公式计算结果[key] = materialResult2[key];
       }
     }

@@ -34,11 +34,16 @@
     box-sizing: border-box;
     position: relative;
     --border: 1px solid var(--mat-sys-primary);
-    &:hover {
-      --border: 1px solid var(--mat-sys-tertiary);
-    }
+    &:hover,
     &.active {
       --border: 1px solid var(--mat-sys-tertiary);
+    }
+
+    &.has-background {
+      &:hover,
+      &.active {
+        background-color: var(--mat-sys-outline-variant);
+      }
     }
 
     app-image {

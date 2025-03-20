@@ -138,13 +138,15 @@ export const exportZixuanpeijian = (source: ZixuanpeijianData) => {
 };
 
 export interface GetMsbjInfoTitleOpts {
-  门扇名字?: string;
-  层名字?: string;
+  path?: MokuaiPath;
   xhmrmsbj?: XhmrmsbjData | null;
 }
 export const getMsbjInfoTitle = (opts: GetMsbjInfoTitleOpts) => {
   const arr: string[] = [];
-  const {门扇名字, 层名字} = opts;
+  const {infosItemName, 门扇名字, 层名字} = opts.path || {};
+  if (typeof infosItemName === "string" && infosItemName) {
+    arr.push(`【${infosItemName}】`);
+  }
   if (typeof 门扇名字 === "string" && 门扇名字) {
     arr.push(`【${门扇名字}】`);
   }
@@ -170,9 +172,13 @@ export const getXhmrmsbjTitle = (xhmrmsbj: XhmrmsbjData | null | undefined, opts
   return str;
 };
 
-export interface GetMokuaiTitleOptsBase {
+export interface MokuaiPath {
+  infosItemName?: string;
   门扇名字?: string;
   层名字?: string;
+}
+export interface GetMokuaiTitleOptsBase {
+  path?: MokuaiPath;
   mokuaiNameShort?: boolean;
   xhmrmsbj?: XhmrmsbjData | null;
 }
@@ -194,14 +200,17 @@ export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | null | undefined,
     return "";
   }
   const arr: string[] = [];
-  let {门扇名字, 层名字} = opts;
+  let {infosItemName, 门扇名字, 层名字} = opts.path || {};
+  if (!infosItemName) {
+    infosItemName = info?.infosItemName;
+  }
   if (!门扇名字) {
     门扇名字 = info?.门扇名字;
   }
   if (!层名字) {
     层名字 = info?.模块名字;
   }
-  const msbjInfoTitle = getMsbjInfoTitle({门扇名字, 层名字});
+  const msbjInfoTitle = getMsbjInfoTitle({path: {infosItemName, 门扇名字, 层名字}});
   if (msbjInfoTitle) {
     arr.push(msbjInfoTitle);
   }
@@ -454,18 +463,19 @@ export const calcZxpj = async (
   const getCalcMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null) =>
     getMokuaiTitle(item, {xhmrmsbj: options?.xhmrmsbj, status, isVersion2024});
   const xhmrmsbj = optionsAll.xhmrmsbj;
+  const msbjInfos = xhmrmsbj?.items.at(0)?.门扇布局 || {}; // fixme
   const getMokuaiInfoScbl2 = (item: ZixuanpeijianMokuaiItem) => {
-    return getMokuaiInfoScbl(xhmrmsbj?.menshanbujuInfos || {}, item);
+    return getMokuaiInfoScbl(msbjInfos, item);
   };
   const getMokuaiInfoSlgs2 = (item: ZixuanpeijianMokuaiItem) => {
     const vars = {...materialResult, ...shuchubianliang};
-    const result = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, vars);
+    const result = getMokuaiInfoSlgs(msbjInfos, item, vars);
     return result?.formulas || item.suanliaogongshi;
   };
 
   const duplicateMokuaiSlgsVars: {mokuai: ZixuanpeijianMokuaiItem; vars: string[]}[] = [];
   for (const [i, item1] of mokuais.entries()) {
-    const slgsResult = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item1, materialResult);
+    const slgsResult = getMokuaiInfoSlgs(msbjInfos, item1, materialResult);
     if (slgsResult && slgsResult.duplicateVars.length > 0) {
       duplicateMokuaiSlgsVars.push({mokuai: item1, vars: slgsResult.duplicateVars});
       continue;
