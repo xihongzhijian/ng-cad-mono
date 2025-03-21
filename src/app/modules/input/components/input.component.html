@@ -322,26 +322,38 @@
         @if (info.hint) {
           <mat-hint>{{ hint }}</mat-hint>
         }
-        @if (info.appearance === "radio") {
-          <input matInput hidden />
-          <mat-radio-group [(ngModel)]="value" (change)="onChange()" (click)="onClick($event)">
-            <mat-radio-button [value]="true" [disabled]="info.disabled || info.readonly">是</mat-radio-button>
-            <mat-radio-button [value]="false" [disabled]="info.disabled || info.readonly">否</mat-radio-button>
-          </mat-radio-group>
-        } @else {
-          <mat-select
-            [errorStateMatcher]="getErrorStateMatcher()"
-            [disabled]="info.disabled || false"
-            [placeholder]="info.placeholder || ''"
-            [value]="value"
-            (selectionChange)="onBooleanSelectChange($event)"
-            (click)="onClick($event)"
-          >
-            <ng-scrollbar matSelectViewport>
-              <mat-option [value]="true" [disabled]="info.readonly">是</mat-option>
-              <mat-option [value]="false" [disabled]="info.readonly">否</mat-option>
-            </ng-scrollbar>
-          </mat-select>
+        @switch (info.appearance) {
+          @case ("radio") {
+            <input matInput hidden />
+            <mat-radio-group [(ngModel)]="value">
+              <mat-radio-button [value]="true" [disabled]="info.disabled || info.readonly">是</mat-radio-button>
+              <mat-radio-button [value]="false" [disabled]="info.disabled || info.readonly">否</mat-radio-button>
+            </mat-radio-group>
+          }
+          @case ("checkbox") {
+            <input matInput hidden />
+            <mat-checkbox
+              [checked]="value"
+              [indeterminate]="info.indeterminate"
+              (change)="value = $event.checked; onChange()"
+              (click)="onClick($event)"
+            ></mat-checkbox>
+          }
+          @default {
+            <mat-select
+              [errorStateMatcher]="getErrorStateMatcher()"
+              [disabled]="info.disabled || false"
+              [placeholder]="info.placeholder || ''"
+              [value]="value"
+              (selectionChange)="onBooleanSelectChange($event)"
+              (click)="onClick($event)"
+            >
+              <ng-scrollbar matSelectViewport>
+                <mat-option [value]="true" [disabled]="info.readonly">是</mat-option>
+                <mat-option [value]="false" [disabled]="info.readonly">否</mat-option>
+              </ng-scrollbar>
+            </mat-select>
+          }
         }
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>

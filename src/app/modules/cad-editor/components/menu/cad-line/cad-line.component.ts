@@ -682,6 +682,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         type: "boolean",
         label,
         allowEmpty: isZero || isMultiple,
+        indeterminate: isMultiple,
         onChange: (val) => this.setLineValue(val, field, isInfo),
         ...others
       };
@@ -725,7 +726,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     const zhewanOptions = this.zhewanOptions();
     const infos: InputInfo[] = [
       getStringInfo("显示线长"),
-      getBooleanInfo("hideLength", "是否隐藏线长"),
+      getBooleanInfo("hideLength", "是否隐藏线长", {appearance: "checkbox"}),
       getNumberInfo("lengthTextSize", "线长字体大小"),
       {
         type: "color",

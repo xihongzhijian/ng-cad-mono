@@ -102,7 +102,8 @@ export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
   type: "boolean";
   value?: Value<boolean>;
   allowEmpty?: boolean;
-  appearance?: "select" | "radio" | "switch";
+  appearance?: "select" | "radio" | "checkbox" | "switch";
+  indeterminate?: boolean;
   onChange?: (val: boolean, info: this) => void;
 }
 
