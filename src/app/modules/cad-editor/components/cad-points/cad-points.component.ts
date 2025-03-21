@@ -15,7 +15,8 @@ export class CadPointsComponent {
   private status = inject(AppStatusService);
 
   pointInfos = computed(() => {
-    return this.status.cadPoints().map((point) => {
+    const points = this.status.cadPoints();
+    return points.map((point) => {
       const classList: string[] = [];
       if (point.active) {
         classList.push("active");

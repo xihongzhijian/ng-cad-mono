@@ -258,9 +258,11 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
 
   componentSelectedEff = effect(() => {
     this.status.components.selected();
-    if (this.pointsAssembling() > 0) {
-      this._setCadPoints();
-    }
+    untracked(() => {
+      if (this.pointsAssembling() > 0) {
+        this._setCadPoints();
+      }
+    });
   });
 
   private async _setCadPoints(include?: CadPoints) {
@@ -277,6 +279,7 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
     for (const cad of cads) {
       pointsMap.push(...generatePointsMap(cad.entities));
     }
+    this._cadPointsChangeLock = true;
     this.status.setCadPoints(pointsMap, {include});
   }
 
@@ -284,7 +287,12 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
     const points = this.status.cadPoints();
     untracked(() => this._onCadPointsChange(points));
   });
+  private _cadPointsChangeLock = false;
   private _onCadPointsChange = async (points: CadPoints) => {
+    if (this._cadPointsChangeLock) {
+      this._cadPointsChangeLock = false;
+      return;
+    }
     const active = points.filter((p) => p.active);
     const pointsAssembling = this.pointsAssembling();
     if (active.length === 0) {
@@ -382,6 +390,7 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
     if (this.pointsAssembling() > 0) {
       this._setCadPoints();
     } else {
+      this._cadPointsChangeLock = true;
       this.status.setCadPoints();
     }
   }

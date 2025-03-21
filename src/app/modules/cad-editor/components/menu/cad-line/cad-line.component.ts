@@ -467,12 +467,17 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     let value: number | undefined;
     const length = lines.length;
     const isZero = length === 0;
-    const isMultiple = length > 1;
+    let isMultiple = false;
     if (isZero) {
       value = undefined;
     } else {
-      value = lines.reduce((acc, v) => acc + v.length, 0);
-      value = Number(value.toFixed(2));
+      const values = new Set(lines.map((v) => Number(v.length.toFixed(2))));
+      if (values.size === 1) {
+        value = values.values().next().value;
+      } else {
+        isMultiple = true;
+        value = undefined;
+      }
     }
     return {value, isZero, isMultiple};
   }
@@ -486,6 +491,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     if (lines.some((v) => v.zhankaifangshi === "指定长度")) {
       this.message.snack("线的展开方式为指定长度");
     }
+    this.status.emitChangeCadSignal();
   }
 
   lineColor = signal(new Color("black"));
@@ -629,8 +635,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         type: "number",
         label: "长度",
         value: lengthInfo.value,
-        readonly: lengthInfo.isMultiple,
-        hint: lengthInfo.isMultiple ? "多个值，不可改" : "",
+        hint: lengthInfo.isMultiple ? "多个值" : "",
         onChange: (val) => {
           this.setLineLength(val);
         }
