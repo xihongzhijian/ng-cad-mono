@@ -29,7 +29,7 @@ export interface ConfirmBaseMessageData {
 }
 
 export interface FormBaseMessageData {
-  resetable?: boolean;
+  resettable?: boolean;
   btnTexts?: {submit?: string; cancel?: string; reset?: string; autoFill?: string};
 }
 

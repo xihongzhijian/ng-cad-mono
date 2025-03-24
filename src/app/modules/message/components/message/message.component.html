@@ -115,7 +115,7 @@
 
 <ng-template #formBtn>
   @if (data.type === "form") {
-    @if (data.resetable) {
+    @if (data.resettable) {
       <button mat-flat-button class="accent" (click)="reset()">
         {{ btnTextReset() }}
       </button>

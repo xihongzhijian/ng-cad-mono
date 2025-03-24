@@ -94,6 +94,7 @@ export class FormulasEditorComponent {
   formulaListInputInfos = computed(() => {
     const list = this.formulaList();
     const onChange = () => {
+      this.justifyFormulas(list);
       this.parseFormulaList(list);
     };
     return list.map<InputInfo[]>((arr) => [
@@ -136,6 +137,7 @@ export class FormulasEditorComponent {
         if (compact) {
           const result = this.parseFormulasText();
           if (result.data) {
+            this.justifyFormulas(result.data);
             this.parseFormulaList(result.data);
           }
           this.submitFormulas(this.formulaList(), true);
