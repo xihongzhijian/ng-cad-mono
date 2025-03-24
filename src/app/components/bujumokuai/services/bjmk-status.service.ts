@@ -5,6 +5,7 @@ import {getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {FetchManager} from "@app/utils/fetch-manager";
 import {getCopyName, getDateTimeString} from "@app/utils/get-value";
+import {CustomValidators} from "@app/utils/input-validators";
 import {ItemsManager} from "@app/utils/items-manager";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {VarNames} from "@components/var-names/var-names.types";
@@ -95,7 +96,7 @@ export class BjmkStatusService {
     const form: InputInfo[] = [
       getter.string("name", {
         label: "名字",
-        validators: [Validators.required, (control) => (allNames.has(control.value) ? {名字不能重复: true} : null)]
+        validators: [Validators.required, CustomValidators.duplicate(allNames)]
       }),
       getter.number("order", {label: "排序"}),
       getter.image("xiaoguotu", this.http, {label: "效果图", prefix: this.imgPrefix()})

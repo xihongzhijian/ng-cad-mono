@@ -517,6 +517,9 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       // }
     } else if (type === "object") {
       const {requiredKeys} = info;
+      if (!isTypeOf(this.value, "object")) {
+        this.value = {};
+      }
       const value = this.value;
       if (requiredKeys) {
         for (const key of requiredKeys) {
@@ -524,6 +527,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
             value[key] = "";
           }
         }
+      }
+    } else if (type === "array") {
+      if (!isTypeOf(this.value, "array")) {
+        this.value = [];
       }
     } else if (type === "formulas") {
       this.updateFormulasStr();
@@ -760,7 +767,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       if (requiredKeys) {
         for (const key of requiredKeys) {
           if (!value[key]) {
-            const key2 = `${key}不能为空`;
+            const key2 = "不能为空";
             const a = errorsValue[key];
             if (a) {
               a[key2] = true;

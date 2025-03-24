@@ -24,6 +24,7 @@ import {MatTree, MatTreeModule} from "@angular/material/tree";
 import {session} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
 import {getValueString} from "@app/utils/get-value";
+import {CustomValidators} from "@app/utils/input-validators";
 import {environment} from "@env";
 import {downloadByString, getElementVisiblePercentage, queryStringList, selectFiles, timeout, waitFor} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
@@ -380,16 +381,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     const form: InputInfo<DataListNavNode>[] = [
       getter.string("name", {
         label: "名字",
-        validators: [
-          Validators.required,
-          (control) => {
-            const val = control.value;
-            if (names.includes(val)) {
-              return {名字不能重复: true};
-            }
-            return null;
-          }
-        ]
+        validators: [Validators.required, CustomValidators.duplicate(names)]
       }),
       getter.number("order", {label: "排序"})
     ];

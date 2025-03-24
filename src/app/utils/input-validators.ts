@@ -51,4 +51,13 @@ export class CustomValidators {
     }
     return null;
   };
+  static duplicate = (names: string[] | Set<string>): ValidatorFn => {
+    return (control) => {
+      const value = control.value;
+      if ((Array.isArray(names) && names.includes(value)) || (names instanceof Set && names.has(value))) {
+        return {不能重复: true};
+      }
+      return null;
+    };
+  };
 }

@@ -21,6 +21,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
 import {alertError, checkDuplicateVars, ErrorDetail, ErrorItem, getNamesDetail} from "@app/utils/error-message";
 import {getCopyName} from "@app/utils/get-value";
+import {CustomValidators} from "@app/utils/input-validators";
 import {canItemMatchTogether} from "@app/utils/mongo";
 import {openBancaiFormDialog} from "@components/dialogs/bancai-form-dialog/bancai-form-dialog.component";
 import {getFromulasFromString} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
@@ -185,7 +186,7 @@ export class MokuaiItemComponent {
       label: "板材分组名字",
       model: {data: item, key: "key"},
       autoFocus: true,
-      validators: [Validators.required, (control) => (names.includes(control.value) ? {名字不能重复: true} : null)],
+      validators: [Validators.required, CustomValidators.duplicate(names)],
       style: {...extraInputInfos[0][0].style}
     });
     const bancaiList = this.bancaiListData()?.bancais || [];

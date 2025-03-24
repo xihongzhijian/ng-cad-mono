@@ -4,6 +4,7 @@ import {getArray} from "@app/app.common";
 import {CadEditType, Cad数据要求, setCadData} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {cadOptionOptions, cadOptions} from "@app/cad/options";
+import {CustomValidators} from "@app/utils/input-validators";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {openKlkwpzDialog} from "@components/dialogs/klkwpz-dialog/klkwpz-dialog.component";
 import {openSuanliaodanFlipDialog} from "@components/dialogs/suanliaodan-flip/suanliaodan-flip.component";
@@ -478,16 +479,7 @@ export const getCadInfoInputs2 = async (
         if (type === "set") {
           itemNames = itemNames.filter((v) => v !== cad.name);
         }
-        info.validators = [
-          Validators.required,
-          (control) => {
-            const val = control.value;
-            if (itemNames.includes(val)) {
-              return {名字不能重复: true};
-            }
-            return null;
-          }
-        ];
+        info.validators = [Validators.required, CustomValidators.duplicate(itemNames)];
       }
     }
     result.push(info);

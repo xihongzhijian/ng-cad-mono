@@ -184,13 +184,6 @@ export class CadZhankaiComponent extends Utils() {
         this.nameErrorMsg[i] = "名字不能为空";
       }
     });
-    // const map: ObjectOf<number[]> = {};
-    // names.forEach((v, i) => (map[v] ? map[v].push(i) : (map[v] = [i])));
-    // for (const v in map) {
-    //     if (map[v].length > 1) {
-    //         map[v].forEach((i) => (this.nameErrorMsg[i] = "名字不能重复"));
-    //     }
-    // }
   }
 }
 
