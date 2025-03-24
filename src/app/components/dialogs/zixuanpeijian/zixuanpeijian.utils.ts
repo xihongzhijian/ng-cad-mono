@@ -919,7 +919,7 @@ export const calcZxpj = async (
       if (info.zhankai.length < 1) {
         info.zhankai.push(getDefaultZhankai());
       }
-      info.calcZhankai = info.zhankai.map((v, i) => {
+      info.calcZhankai = info.zhankai.flatMap((v, i) => {
         let cadZhankai: CadZhankai | undefined;
         if (v.cadZhankaiIndex && v.cadZhankaiIndex > 0) {
           cadZhankai = data.zhankai[v.cadZhankaiIndex];
