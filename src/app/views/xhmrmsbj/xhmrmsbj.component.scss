@@ -50,12 +50,7 @@
 .mokuai {
   width: 100px;
   padding: 5px;
-  box-sizing: border-box;
-  cursor: pointer;
-  position: relative;
-  &.active {
-    background-color: var(--mat-sys-outline-variant);
-  }
+  margin: 2px;
 
   .mokuai-top {
     position: absolute;
@@ -76,7 +71,7 @@
   }
 
   .mokuai-xiaoguotu {
-    height: 150px;
+    flex: 1 1 150px;
   }
 }
 

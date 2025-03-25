@@ -10,7 +10,7 @@
   <div class="xinghaos items">
     @for (xinghao of xinghaos(); track i; let i = $index) {
       @if (!xinghao.hidden) {
-        <div class="item">
+        <div class="item" appClickedCls>
           @if (xinghao.tingyong) {
             <div class="img disabled"></div>
           }

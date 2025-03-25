@@ -275,7 +275,12 @@
 </div>
 
 <ng-template #mokuaiT [appTypedTemplate]="mokuaiTemplateType" let-mokuai>
-  <div class="flex-column mokuai" [class]="{active: activeMokuaiNode()?.['选中模块']?.id === mokuai.id}" [attr.data-id]="mokuai.weiyima">
+  <div
+    class="mokuai item colored-dim"
+    appClickedCls
+    [class.active]="activeMokuaiNode()?.['选中模块']?.id === mokuai.id"
+    [attr.data-id]="mokuai.weiyima"
+  >
     <div class="flex-column">
       <div class="toolbar mokuai-top">
         @if (!isFromOrder()) {

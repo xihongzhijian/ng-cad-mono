@@ -21,6 +21,9 @@
     .items-per-row {
       position: relative; // placeholder
     }
+    &.vertical {
+      flex-direction: column;
+    }
   }
 
   .item {
@@ -34,11 +37,27 @@
     box-sizing: border-box;
     position: relative;
     --border: 1px solid var(--mat-sys-primary);
-    &:hover {
-      --border: 1px solid var(--mat-sys-tertiary);
-    }
+    &:hover,
     &.active {
       --border: 1px solid var(--mat-sys-tertiary);
+    }
+    &.clicked {
+      border: 1px solid var(--mat-sys-tertiary);
+    }
+    &.colored-dim {
+      &:hover,
+      &.active {
+        background-color: var(--mat-sys-outline-variant);
+      }
+    }
+    &.colored {
+      background-color: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
+      &:hover,
+      &.active {
+        background-color: var(--mat-sys-tertiary-container);
+        color: var(--mat-sys-on-tertiary-container);
+      }
     }
 
     app-image {

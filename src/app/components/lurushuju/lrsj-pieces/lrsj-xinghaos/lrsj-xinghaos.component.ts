@@ -7,6 +7,7 @@ import {joinOptions, splitOptions} from "@app/app.common";
 import {getCopyName} from "@app/utils/get-value";
 import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {environment} from "@env";
+import {ClickedClsDirective} from "@modules/directives/clicked-cls.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -28,6 +29,7 @@ import {defaultFenleis, getOptions} from "../lrsj-pieces.utils";
 @Component({
   selector: "app-lrsj-xinghaos",
   imports: [
+    ClickedClsDirective,
     FloatingDialogModule,
     FormsModule,
     ImageComponent,

@@ -62,6 +62,7 @@ import {MsbjRectInfo} from "@components/msbj-rects/msbj-rects.types";
 import {VarNameItem, VarNameItemNameItem} from "@components/var-names/var-names.types";
 import {XhmrmsbjSbjbComponent} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.component";
 import {getElementVisiblePercentage, keysOf, ObjectOf, Point, queryString, Rectangle, timeout, WindowMessageManager} from "@lucilor/utils";
+import {ClickedClsDirective} from "@modules/directives/clicked-cls.directive";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiListData, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
@@ -134,6 +135,7 @@ const table = "p_xinghaomorenmenshanbuju";
   templateUrl: "./xhmrmsbj.component.html",
   styleUrls: ["./xhmrmsbj.component.scss"],
   imports: [
+    ClickedClsDirective,
     FloatingDialogModule,
     FormsModule,
     FormulasComponent,
