@@ -98,7 +98,6 @@ export class DingdanbiaoqianComponent implements OnInit {
           {key: "订单编号", label: "编号", class: "alt"}
         ]
       },
-      {cells: [{key: "发货方式", label: "发货方式"}]},
       {cells: [{key: "款式"}, {key: "开启锁向", label: "开式"}]},
       {cells: [{key: "拉手信息", label: "锁型", class: "text-left"}]},
       {cells: [{key: "底框"}, {key: "门铰信息", label: "铰型"}, {key: "商标"}]},
@@ -423,9 +422,12 @@ export class DingdanbiaoqianComponent implements OnInit {
     return result;
   }
   async splitOrders() {
+    const type = this.type();
+    if (type === "生产流程单") {
+      return;
+    }
     const orders = this.orders().slice();
     const orders2: typeof orders = [];
-    const type = this.type();
     const cadsToSet: Parameters<DingdanbiaoqianComponent["setCad"]>[] = [];
     const forms: Form[] = [];
     orders.forEach((order) => {
@@ -438,11 +440,8 @@ export class DingdanbiaoqianComponent implements OnInit {
       };
       switch (type) {
         case "标签贴纸":
-        case "配件模块":
-        case "生产流程单": {
-          if (type !== "生产流程单") {
-            order.info = null;
-          }
+        case "配件模块": {
+          order.info = null;
           delete order.开启锁向示意图;
           delete order.配合框;
           let orderCurr: Order | null = null;
