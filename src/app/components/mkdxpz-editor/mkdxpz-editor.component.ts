@@ -88,6 +88,16 @@ export class MkdxpzEditorComponent {
       });
     }
   });
+  onSlgsChange() {
+    const data = this.data();
+    const slgsInfo = this.slgsInfo();
+    if (data) {
+      if (!data.dxpz) {
+        data.dxpz = {输入显示: []};
+      }
+      data.dxpz.算料公式2 = slgsInfo.data.算料公式 || [];
+    }
+  }
 
   nodesTable = computed(() => {
     const nodes = this.data().nodes;
@@ -170,6 +180,7 @@ export class MkdxpzEditorComponent {
     if (submit && !(await this.submit()).fulfilled) {
       return;
     }
+    console.log(cloneDeep(this.data()));
     const data = submit ? this.data() : null;
     this.closeOut.emit({data});
   }

@@ -10,7 +10,7 @@
   <app-var-names [varNameItem]="varNameItem()"></app-var-names>
   <mat-divider vertical></mat-divider>
   <div class="slgs flex-column">
-    <app-suanliaogongshi class="flex-110" [info]="slgsInfo()"></app-suanliaogongshi>
+    <app-suanliaogongshi class="flex-110" [info]="slgsInfo()" (slgsChange)="onSlgsChange()"></app-suanliaogongshi>
     @if (data().rectInfos; as rectInfos) {
       <app-msbj-rects
         [rectInfos]="rectInfos"
