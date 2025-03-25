@@ -16,6 +16,7 @@ import {
   OnInit,
   output,
   OutputRefSubscription,
+  signal,
   untracked,
   viewChild,
   viewChildren
@@ -119,15 +120,14 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   cadContainer = viewChild<ElementRef<HTMLDivElement>>("cadContainer");
   mubanContainer = viewChild<ElementRef<HTMLDivElement>>("mubanContainer");
   inputComponents = viewChildren(forwardRef(() => InputComponent));
-  cadViewer?: CadViewer;
-  mubanViewer?: CadViewer;
-  showMubanViewer = false;
-  cadData?: CadData;
-  mubanData?: CadData;
-  mubanInputs: InputInfo[][] = [];
-  errorMsgs: ObjectOf<string> = {};
-  isOnlineFetched = false;
-  showCadViewer = false;
+  cadViewer = signal<CadViewer | null>(null);
+  mubanViewer = signal<CadViewer | null>(null);
+  showMubanViewer = signal(false);
+  cadData = signal<CadData | null>(null);
+  mubanData = signal<CadData | null>(null);
+  errorMsgs = signal<ObjectOf<string>>({});
+  isOnlineFetched = signal(false);
+  showCadViewer = signal(false);
 
   private _afterEditCadSubscription?: OutputRefSubscription;
   ngOnInit() {
@@ -141,13 +141,13 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this._afterEditCadSubscription?.unsubscribe();
-    this.cadViewer?.destroy();
-    this.mubanViewer?.destroy();
+    this.cadViewer()?.destroy();
+    this.mubanViewer()?.destroy();
   }
 
   cadEff = effect(() => {
     this.cad();
-    this.cadData = undefined;
+    this.cadData.set(null);
     untracked(() => this.update());
   });
 
@@ -204,13 +204,13 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   });
 
   centerCad() {
-    this.cadViewer?.center();
+    this.cadViewer()?.center();
   }
 
   async onlineFetch(compact = false) {
     const isOnline = this.isOnline();
-    if (!isOnline || isOnline.isFetched) {
-      return;
+    if (!isOnline || isOnline.isFetched || this.isOnlineFetched()) {
+      return false;
     }
     const yaoqiu = this.yaoqiu();
     this.beforeEditCad.emit();
@@ -234,8 +234,14 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
         Object.assign(cad, data);
       }
       this.afterEditCad.emit();
-      isOnline.afterFetch?.(this);
+      if (isOnline.afterFetch) {
+        isOnline.afterFetch(this);
+      } else {
+        this.isOnlineFetched.set(true);
+      }
+      return true;
     }
+    return false;
   }
 
   async editCad() {
@@ -331,7 +337,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   }
 
   centerMuban() {
-    this.mubanViewer?.center();
+    this.mubanViewer()?.center();
   }
 
   async uploadMuban() {
@@ -372,7 +378,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
       return;
     }
     this.setMubanId(cadData.id);
-    this.mubanData = result;
+    this.mubanData.set(result);
     await timeout(0);
     await this.initMubanViewer();
   }
@@ -380,15 +386,15 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   async getMubanData() {
     const mubanId = this.mubanId();
     if (!mubanId) {
-      this.mubanData = undefined;
-      return undefined;
+      this.mubanData.set(null);
+      return null;
     }
     const resultData = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId}, {silent: true});
-    const mubanData = resultData.cads[0] as CadData | undefined;
+    const mubanData = resultData.cads.at(0) || null;
     if (!mubanData) {
       this.message.error(`【${this.cadName()}】的模板不存在`);
     }
-    this.mubanData = mubanData;
+    this.mubanData.set(mubanData);
     if (mubanData) {
       generateLineTexts2(mubanData);
     } else {
@@ -398,7 +404,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   }
 
   async editMuban() {
-    let {mubanData} = this;
+    let mubanData = this.mubanData();
     if (!mubanData) {
       mubanData = await this.getMubanData();
     }
@@ -415,7 +421,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
         ...this.openCadOptions
       }
     });
-    this.mubanData = this.status.cad.data.clone();
+    this.mubanData.set(this.status.cad.data.clone());
     if (result?.savedData) {
       await this.initMubanViewer();
     }
@@ -434,8 +440,9 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
 
   async refreshMuban() {
     await this.getMubanData();
-    if (this.mubanData) {
-      this.status.addCadImgToUpdate(this.mubanData.id);
+    const mubanData = this.mubanData();
+    if (mubanData) {
+      this.status.addCadImgToUpdate(mubanData.id);
     }
     await this.initMubanViewer();
   }
@@ -450,14 +457,14 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     }
     if (await this.http.mongodbDelete("kailiaocadmuban", {id: mubanId})) {
       this.setMubanId("");
-      this.mubanData = undefined;
+      this.mubanData.set(null);
       await this.initMubanViewer();
     }
   }
 
   async update() {
-    delete this.mubanData;
-    this.showCadViewer = false;
+    this.mubanData.set(null);
+    // this.showCadViewer.set(false);
     await this.initCadViewer();
     await this.initMubanViewer();
   }
@@ -506,14 +513,16 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   }
 
   async initCadViewer() {
-    this.cadViewer?.destroy();
+    this.cadViewer()?.destroy();
     const cad = this.cad();
     if (!cad) {
       return;
     }
-    const showCadViewer = this.showCadViewer;
+    const showCadViewer = this.showCadViewer();
     if (showCadViewer) {
-      await this.onlineFetch();
+      if (await this.onlineFetch()) {
+        return;
+      }
     } else if (this.isOnline()) {
       if (cad instanceof CadData) {
         cad.info.incomplete = true;
@@ -522,62 +531,69 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
       }
     }
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);
-    this.cadData = data;
+    this.cadData.set(data);
     generateLineTexts2(data);
     const cadContainer = this.cadContainer()?.nativeElement;
     if (showCadViewer && cadContainer) {
       const collection = this.collection();
-      this.cadViewer = this.initCadViewer0(collection, data, cadContainer, async (data2) => {
-        this.beforeEditCad.emit();
-        if (!this.isOnline) {
-          data2.info.imgUpdate = true;
-        }
-        if (cad instanceof CadData) {
-          Object.assign(cad, data2);
-        } else {
-          const exportData = exportCadData(data2);
-          for (const key of ["entities", "info"] as const) {
-            cad.json[key] = exportData[key];
+      this.cadViewer.set(
+        this.initCadViewer0(collection, data, cadContainer, async (data2) => {
+          const isOnline = this.isOnline();
+          this.beforeEditCad.emit();
+          if (!isOnline) {
+            data2.info.imgUpdate = true;
           }
-        }
-        if (this.isOnline()) {
-          const url = await getCadPreview(collection, data2);
-          await this.http.setCad({collection, cadData: data2, force: true}, true);
-          await this.http.setCadImg(data2.id, url, {silent: true});
-        }
-        this.afterEditCad.emit();
-      });
+          if (cad instanceof CadData) {
+            Object.assign(cad, data2);
+          } else {
+            const exportData = exportCadData(data2);
+            for (const key of ["entities", "info"] as const) {
+              cad.json[key] = exportData[key];
+            }
+          }
+          if (isOnline) {
+            const url = await getCadPreview(collection, data2);
+            await this.http.setCad({collection, cadData: data2, force: true}, true);
+            await this.http.setCadImg(data2.id, url, {silent: true});
+          }
+          this.afterEditCad.emit();
+        })
+      );
     }
   }
 
   async initMubanViewer() {
-    this.mubanViewer?.destroy();
-    if (!this.showMuban) {
+    this.mubanViewer()?.destroy();
+    if (!this.showMuban()) {
       return;
     }
-    const {cad, showMubanViewer} = this;
+    const cad = this.cad();
+    const showMubanViewer = this.showMubanViewer();
     const mubanContainer = this.mubanContainer()?.nativeElement;
     if (!cad || !mubanContainer) {
       return;
     }
-    if (!this.mubanData) {
-      await this.getMubanData();
+    let mubanData = this.mubanData();
+    if (!mubanData) {
+      mubanData = await this.getMubanData();
     }
     if (showMubanViewer) {
-      const {mubanData} = this;
       if (mubanData) {
-        this.mubanViewer = this.initCadViewer0("kailiaocadmuban", mubanData, mubanContainer, () => {
-          this.http.setCad({collection: "kailiaocadmuban", cadData: mubanData, force: true}, true);
-        });
+        this.mubanViewer.set(
+          this.initCadViewer0("kailiaocadmuban", mubanData, mubanContainer, () => {
+            this.http.setCad({collection: "kailiaocadmuban", cadData: mubanData, force: true}, true);
+          })
+        );
       }
     }
     await this.updateMubanInputs();
   }
 
+  mubanInputs = signal<InputInfo[][]>([]);
   async updateMubanInputs() {
-    this.mubanInputs = [];
+    this.mubanInputs.set([]);
     const cad = this.cad();
-    const mubanData = this.mubanData;
+    const mubanData = this.mubanData();
     if (!cad || !mubanData) {
       return;
     }
@@ -613,7 +629,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
       mubanData.type = typeOptions[0];
       await updateMuban({spinner: false});
     }
-    this.mubanInputs = [
+    this.mubanInputs.set([
       [
         {
           type: "select",
@@ -641,7 +657,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
           }
         }
       ]
-    ];
+    ]);
   }
 
   returnZero() {
@@ -679,24 +695,26 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   validate() {
     const inputs = this.inputComponents();
     const errors: string[] = [];
-    this.errorMsgs = {};
+    const errorMsgs: ObjectOf<string> = {};
     const {cadName} = this;
     const name = `【${cadName}】`;
     if (inputs.some((v) => !isEmpty(v.validateValue()))) {
       errors.push(`${name}输入数据有误`);
     }
-    if (this.cadData) {
-      const zhankaiError = Object.keys(this.validateZhankai(this.cadData) || {}).join("，");
+    const cadData = this.cadData();
+    if (cadData) {
+      const zhankaiError = Object.keys(this.validateZhankai(cadData) || {}).join("，");
       if (zhankaiError) {
         errors.push(zhankaiError);
-        this.errorMsgs.展开信息 = zhankaiError;
+        errorMsgs.展开信息 = zhankaiError;
       }
-      const nameError = Object.keys(this.validateName(this.cadData) || {}).join("，");
+      const nameError = Object.keys(this.validateName(cadData) || {}).join("，");
       if (nameError) {
         errors.push(nameError);
-        this.errorMsgs.名字 = nameError;
+        errorMsgs.名字 = nameError;
       }
     }
+    this.errorMsgs.set(errorMsgs);
     return errors;
   }
 
@@ -733,7 +751,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     if (this.editDisabled()) {
       return;
     }
-    this.showCadViewer = true;
+    this.showCadViewer.set(true);
     await timeout(0);
     await this.initCadViewer();
   }
@@ -750,7 +768,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   }
 
   async onMubanImageClick() {
-    this.showMubanViewer = true;
+    this.showMubanViewer.set(true);
     await timeout(0);
     await this.initMubanViewer();
   }
@@ -783,7 +801,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
       }
       await this.http.setCadImg(id, await getCadPreview(collection, data), {silent: true});
       this.status.addCadImgToUpdate(id);
-      delete this.cadData;
+      this.cadData.set(null);
       await timeout(200);
       await this.initCadViewer();
     };

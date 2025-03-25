@@ -18,7 +18,7 @@
     ></mat-checkbox>
   }
   <div class="toolbar flex-110 center" (click)="selectable()?.onChange(this)">
-    <div class="name-text link" [class.error]="!!errorMsgs['名字']" (dblclick)="editCadForm()">
+    <div class="name-text link" [class.error]="!!errorMsgs()['名字']" (dblclick)="editCadForm()">
       {{ cadName() }}
     </div>
     <button class="name-btn" mat-icon-button appClickStop [onClickStopped]="onClickStopped" (click)="copyName()">
@@ -29,7 +29,7 @@
 <div class="cads">
   <div class="cad item">
     <div class="toolbar">
-      @if (showCadViewer) {
+      @if (showCadViewer()) {
         <div #cadContainer class="cad-container flex-row"></div>
       } @else {
         @if (isOnline()) {
@@ -37,7 +37,7 @@
             class="link"
             [collection]="collection()"
             [id]="cadId()"
-            [data]="cadData"
+            [data]="cadData()"
             [style.width.px]="cadWidth"
             (click)="selectable()?.onChange(this)"
             (dblclick)="onCadImageClick()"
@@ -48,8 +48,8 @@
             class="link"
             [id]="''"
             [collection]="collection()"
-            [data]="cadData"
-            [isLocal]="isLocal"
+            [data]="cadData()"
+            [isLocal]="isLocal()"
             [style.width.px]="cadWidth"
             (dblclick)="onCadImageClick()"
             (dataInfoChange)="onCadInfoChange($event)"
@@ -59,7 +59,7 @@
     </div>
     @if (!hideButtons()) {
       <div class="toolbar compact hidden-if-empty">
-        @if (cadViewer) {
+        @if (cadViewer()) {
           <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="centerCad()">居中</button>
         }
         @if (!editDisabled()) {
@@ -82,7 +82,7 @@
             @if (isCadInfoVisible(item)) {
               <div class="flex-row">
                 <div class="key">{{ item.key }}{{ item.key2 }}：</div>
-                <div class="value" [class.error]="errorMsgs[item.key]">{{ getCadInfoStr(item) }}</div>
+                <div class="value" [class.error]="errorMsgs()[item.key]">{{ getCadInfoStr(item) }}</div>
               </div>
             } @else {
               <div class="key disabled">{{ item.key }}（未实现）</div>
@@ -124,11 +124,11 @@
     </div>
     <div class="cad item">
       <div #mubanContainer class="cad-container flex-row">
-        @if (!showMubanViewer && mubanId() && mubanData) {
+        @if (!showMubanViewer() && mubanId() && mubanData()) {
           <app-cad-image
             class="link"
             [id]="mubanId()"
-            [data]="mubanData"
+            [data]="mubanData()"
             collection="kailiaocadmuban"
             [style.width.px]="cadWidth"
             (dblclick)="onMubanImageClick()"
@@ -137,7 +137,7 @@
       </div>
       @if (mubanId()) {
         <div class="toolbar compact">
-          @if (mubanViewer) {
+          @if (mubanViewer()) {
             <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="centerMuban()">居中</button>
           }
           <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="uploadMuban()">上传</button>
@@ -147,7 +147,7 @@
           <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="removeMuban()">删除</button>
         </div>
         <div class="inputs flex-column">
-          @for (group of mubanInputs; track $index) {
+          @for (group of mubanInputs(); track $index) {
             <div class="group toolbar">
               @for (info of group; track $index) {
                 <app-input [info]="info"></app-input>

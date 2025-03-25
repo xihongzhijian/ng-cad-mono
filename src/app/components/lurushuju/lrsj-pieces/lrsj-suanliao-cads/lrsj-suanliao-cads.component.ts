@@ -242,7 +242,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     if (!(await this.message.confirm(`确定复制【${cadName}】吗？`))) {
       return;
     }
-    const {mubanData} = component;
+    const mubanData = component.mubanData();
     const cadData2 = (cad instanceof CadData ? cad : new CadData(cad.json)).clone(true);
     delete cadData2.info.imgId;
     cadData2.name += "_复制";
@@ -254,7 +254,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
         return;
       }
       component.setMubanId(result.id);
-      component.mubanData = cadData;
+      component.mubanData.set(cadData);
     }
     data.算料CAD.splice(component.customInfo().index + 1, 0, cad2);
     this.updateSuanliaoData();
