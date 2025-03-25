@@ -2039,7 +2039,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             table,
             filter: {where: {vid: val.vid}}
           });
-          console.log(records);
           fromInput.options = getItemOptions(this.getXhmrmsbjData(records[0]));
         }
       }

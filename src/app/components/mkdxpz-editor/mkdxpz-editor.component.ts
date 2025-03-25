@@ -180,7 +180,6 @@ export class MkdxpzEditorComponent {
     if (submit && !(await this.submit()).fulfilled) {
       return;
     }
-    console.log(cloneDeep(this.data()));
     const data = submit ? this.data() : null;
     this.closeOut.emit({data});
   }
