@@ -156,15 +156,7 @@
           }
         </div>
       } @else {
-        <div
-          class="empty-cad item border link"
-          [style]="{width: cadWidth + 'px', height: cadHeight + 'px'}"
-          appClickStop
-          [onClickStopped]="onClickStopped"
-          (click)="uploadMuban()"
-        >
-          软件自动开料
-        </div>
+        <div class="empty-cad link" appClickStop [onClickStopped]="onClickStopped" (click)="uploadMuban()">软件自动开料</div>
         <div class="toolbar compact">
           <button mat-button appClickStop [onClickStopped]="onClickStopped" (click)="uploadMuban()">上传</button>
         </div>

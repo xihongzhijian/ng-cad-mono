@@ -828,9 +828,6 @@ export class XhmrmsbjSbjbComponent {
     const items0 = this.items();
     const items = items0.map((item) => ({...item, 锁边铰边数据: item.锁边铰边数据.map((v) => ({...v, CAD数据: undefined}))}));
     const qiliaosChanged = this.qiliaosChanged.map((v) => v.raw);
-    if (qiliaosChanged.length < 1) {
-      return true;
-    }
     const response = await this.http.post("shuju/api/saveSuobianjiaobianData", {xinghao: this.xinghaoName(), data: items, qiliaosChanged});
     if (response?.code === 0) {
       this.qiliaosChanged = [];

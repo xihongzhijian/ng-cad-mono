@@ -15,9 +15,9 @@
           [gongshis]="data.gongshis"
         ></app-cad-item>
       } @else {
-        <div class="empty-cad item link" (click)="selectFentiCad(item.key)">
+        <div class="item link" (click)="selectFentiCad(item.key)">
           <div class="name">{{ item.key }}</div>
-          <div class="box border"></div>
+          <div class="empty-cad"></div>
         </div>
       }
     }

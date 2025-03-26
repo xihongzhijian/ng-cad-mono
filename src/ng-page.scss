@@ -5,6 +5,7 @@
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
+  word-break: break-word;
   --toolbar-margin: 2.5px;
   &.mat-mdc-dialog-component-host {
     display: flex;
@@ -70,20 +71,18 @@
       flex: 0 0 auto;
     }
 
-    .name,
-    .text.long {
-      width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .name {
+      width: auto; // placeholder
     }
 
     .text {
       width: 100%;
-    }
-
-    .name {
-      text-align: center;
+      &.long {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
 
     .toolbar {
@@ -160,9 +159,6 @@
         width: 0;
         flex: 1 1 0;
       }
-      &.center {
-        text-align: center;
-      }
       &.short {
         width: auto;
         flex: 0 0 auto;
@@ -203,6 +199,13 @@
 
     .placeholder {
       flex: 0 1 var(--placeholder-size);
+    }
+  }
+
+  .text {
+    word-break: break-word;
+    &.center {
+      text-align: center;
     }
   }
 
@@ -247,16 +250,10 @@
 
 .empty-cad {
   display: flex;
-  flex-direction: column;
-  margin: var(--toolbar-margin);
-  font-size: 18px;
-  align-items: flex-start;
-
-  .box {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: var(--cad-image-width);
-    height: var(--cad-image-height);
-  }
+  justify-content: center;
+  align-items: center;
+  width: var(--cad-image-width);
+  height: var(--cad-image-height);
+  border: var(--border);
+  font: var(--mat-sys-title-large);
 }

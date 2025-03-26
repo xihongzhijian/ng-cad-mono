@@ -51,11 +51,9 @@
                     [isOnline]="{isFetched: false}"
                   ></app-cad-item>
                 } @else {
-                  <div class="empty-cad link" (click)="selectSbjbItemSbjbCad(info.originalIndex)">
+                  <div class="item link" (click)="selectSbjbItemSbjbCad(info.originalIndex)">
                     <div class="name">{{ info.title }}</div>
-                    <div class="box border">
-                      <span class="error">请选择</span>
-                    </div>
+                    <div class="empty-cad error">请选择</div>
                   </div>
                 }
                 @if (info.item2?.["使用正面分体"] || info.item2?.["使用背面分体"]) {
@@ -111,10 +109,8 @@
           [isOnline]="{isFetched: false}"
         ></app-cad-item>
       } @else {
-        <div class="empty-cad item link" (click)="chooseFentiCad({data, title})">
-          <div class="box border">
-            <div class="name">选择{{ title }}</div>
-          </div>
+        <div class="item link" (click)="chooseFentiCad({data, title})">
+          <div class="empty-cad error">请选择{{ title }}</div>
         </div>
       }
     }

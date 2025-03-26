@@ -61,8 +61,8 @@
                           <button mat-flat-button (click)="selectShiyituCad(key1)">选择</button>
                         </div>
                       } @else {
-                        <div class="empty-cad item link" (click)="selectShiyituCad(key1)">
-                          <div class="box border"></div>
+                        <div class="item link" (click)="selectShiyituCad(key1)">
+                          <div class="empty-cad"></div>
                         </div>
                       }
                     </div>
@@ -108,9 +108,9 @@
       (afterEditCad)="afterEditCad(key1)"
     ></app-cad-item>
   } @else {
-    <div class="empty-cad item link" (click)="selectCad0({key1, key2, key3})">
+    <div class="item link" (click)="selectCad0({key1, key2, key3})">
       <div class="name">{{ cadNameMap[key3] || key3 }}</div>
-      <div class="box border">
+      <div class="empty-cad">
         @if (key1Errors()[key1]?.missingCads?.includes(key3)) {
           <span class="error">请选择</span>
         }
