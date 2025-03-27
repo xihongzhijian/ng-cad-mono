@@ -1,11 +1,11 @@
-import {Directive, Input} from "@angular/core";
+import {Directive, input} from "@angular/core";
 
 @Directive({
   selector: "[appTypedTemplate]",
   standalone: true
 })
 export class TypedTemplateDirective<T> {
-  @Input({required: true}) appTypedTemplate!: T;
+  appTypedTemplate = input.required<T>();
 
   static ngTemplateContextGuard<T>(dir: TypedTemplateDirective<T>, ctx: any): ctx is T {
     return true;
