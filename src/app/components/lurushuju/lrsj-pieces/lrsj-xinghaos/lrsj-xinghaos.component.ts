@@ -12,7 +12,7 @@ import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.mod
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoGroup, InputInfoPart, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoGroup, InputInfoOption, InputInfoPart, InputInfoSelect} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -69,28 +69,33 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     };
     const zuoshujubanbenOptions = this.getOptions0(this.lrsjStatus.xinghaoOptionsManager.data(), "做数据版本");
     zuoshujubanbenOptions.unshift({label: "全部", value: ""});
+    const tingyongOptions: InputInfoOption<boolean | "">[] = [
+      {label: "全部", value: ""},
+      {label: "是", value: true},
+      {label: "否", value: false}
+    ];
+    const getter = new InputInfoWithDataGetter(data, {
+      clearable: true,
+      onChange: () => {
+        update();
+      }
+    });
     const form: InputInfo<typeof data>[] = [
-      {
-        type: "string",
+      getter.string("name", {
         label: "搜索型号",
-        clearable: true,
-        model: {data, key: "name"},
+        style: {width: "200px"},
         onInput: debounce(() => {
           update();
-        }, 500),
-        style: {width: "200px"}
-      },
-      {
-        type: "select",
+        }, 500)
+      }),
+      getter.selectSingle("zuoshujubanben", zuoshujubanbenOptions, {
         label: "做数据版本",
-        clearable: true,
-        model: {data, key: "zuoshujubanben"},
-        options: zuoshujubanbenOptions,
-        onChange: () => {
-          update();
-        },
         style: {width: "220px"}
-      }
+      }),
+      getter.selectSingle("tingyong", tingyongOptions, {
+        label: "停用",
+        style: {width: "100px"}
+      })
     ];
     return form;
   });
