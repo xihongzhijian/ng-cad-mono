@@ -61,24 +61,60 @@
 }
 <div class="flex-row flex-110 scrollbar-container" [class.hidden]="activeTabName() !== '门扇模块'">
   @if (!isFloatingDialog()) {
-    <div class="flex-column">
+    <div class="menshan-nav-container flex-column">
       @for (info of menshanFollowersInputInfo(); track $index) {
         <app-input [info]="info"></app-input>
       }
       <mat-divider class="placeholder"></mat-divider>
-      <ng-scrollbar>
-        <div class="menshan-options flex-column">
-          @for (item of menshanbujuItems(); track $index) {
-            <div class="menshan-option item" [class]="{active: activeMenshanKey() === item.key}" (click)="activeMenshanKey.set(item.key)">
-              <div class="title small bold">{{ item.key }}</div>
-              @if (item.info["选中布局数据"]; as data2) {
-                <div>布局：{{ data2.name }}</div>
-              }
-              <button mat-stroked-button (click)="copyMsbjInfo(item.info)">复制</button>
-            </div>
-          }
-        </div>
-      </ng-scrollbar>
+      <div class="flex-row scrollbar-container">
+        <ng-scrollbar>
+          <div class="menshan-nav-items items vertical">
+            @for (info of menshanKeyInfos(); track $index) {
+              <div
+                class="item border link colored"
+                [class]="{active: activeMenshanKey() === info.key}"
+                (click)="activeMenshanKey.set(info.key)"
+              >
+                <div class="name">
+                  <span>{{ info.key }}</span>
+                  <span>({{ info.itemsCount }})</span>
+                </div>
+              </div>
+            }
+          </div>
+        </ng-scrollbar>
+        <ng-scrollbar>
+          <div class="menshan-nav-items items vertical">
+            @for (item of activeMsbjInfoItemsSorted(); track i; let i = $index) {
+              <div
+                class="item border colored-dim"
+                [class]="{active: activeMsbjInfoSortedIndex() === i}"
+                (click)="activeMsbjInfoSortedIndex.set(i)"
+              >
+                <div class="name">
+                  <span>({{ item["排序"] || 0 }})</span>
+                  <span>{{ item["名字"] }}</span>
+                  @if (item.isEmpty) {
+                    <span class="error">（没有数据）</span>
+                  }
+                </div>
+                @if (!isFromOrder()) {
+                  <div class="toolbar compact center">
+                    <button mat-button (click)="editMsbjInfoItem(i)">编辑</button>
+                    <button mat-button (click)="copyMsbjInfoItem(i)">复制</button>
+                    <button mat-button (click)="deleteMsbjInfoItem(i)">删除</button>
+                  </div>
+                }
+              </div>
+            }
+            @if (!isFromOrder()) {
+              <div class="item border colored-dim link" (click)="addMsbjInfoItem()">
+                <button mat-icon-button><mat-icon>add_circle</mat-icon></button>
+              </div>
+            }
+          </div>
+        </ng-scrollbar>
+      </div>
     </div>
     <mat-divider vertical></mat-divider>
   }

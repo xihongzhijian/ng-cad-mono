@@ -42,6 +42,16 @@ export interface XhmrmsbjInfo {
   输出变量禁用?: ObjectOf<string[]>;
   模块选项?: ObjectOf<XhmrmsbjInfoMokuaiOption[]>;
 }
+export interface XhmrmsbjInfoItem {
+  名字: string;
+  布局模块: XhmrmsbjInfo;
+  选项?: ObjectOf<string>;
+  条件?: string;
+  默认?: boolean;
+  排序?: number;
+  停用?: boolean;
+}
+
 export type Shuruzhi = ObjectOf<string>;
 export interface XhmrmsbjInfoMokuaiOption {
   名字: string;
@@ -69,6 +79,7 @@ export interface XhmrmsbjCloseEvent {
 }
 
 export type XhmrmsbjDataMsbjInfos = Partial<Record<MenshanKey, XhmrmsbjInfo>>;
+export type XhmrmsbjDataMsbjInfos2 = Partial<Record<MenshanKey, XhmrmsbjInfoItem[]>>;
 
 export interface XhmrmsbjRequestData {
   型号选中门扇布局: XhmrmsbjDataMsbjInfos;
@@ -97,8 +108,9 @@ export interface XhmrmsbjErrorDetailText extends ErrorDetailText {
   jumpTo?: XhmrmsbjErrorJumpTo;
 }
 export interface XhmrmsbjErrorJumpTo {
-  门扇名字: MenshanKey;
-  层名字?: string;
+  menshanKey: MenshanKey;
+  itemIndex: number;
+  nodeName?: string;
   mokuai?: string;
   openMokuai?: boolean;
   mkdx?: boolean;
