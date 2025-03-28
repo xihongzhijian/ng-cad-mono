@@ -72,7 +72,10 @@
     }
 
     .name {
-      width: auto; // placeholder
+      width: auto;
+      &.fullwidth {
+        width: 100%;
+      }
     }
 
     .text {

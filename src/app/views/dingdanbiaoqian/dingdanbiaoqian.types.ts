@@ -13,6 +13,7 @@ export interface Order {
     houtaiId: string;
     data: CadData;
     isLarge: boolean;
+    forceBreak: boolean;
     img: string;
     imgLarge?: string;
     imgSize: [number, number];

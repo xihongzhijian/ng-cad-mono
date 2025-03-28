@@ -113,7 +113,7 @@
                           <button
                             class="no-print"
                             mat-flat-button
-                            [class.accent]="calcResults().at(order.mokuaiInfo.index)?.fulfilled ? 'primary' : 'accent'"
+                            [class.accent]="!calcResults().at(order.mokuaiInfo.index)?.fulfilled"
                             (click)="editMokuaiFormulas(order.mokuaiInfo.index)"
                           >
                             编辑
@@ -147,10 +147,7 @@
                 }
                 <div class="cad-image flex-110 flex-column" [style]="cad.imgStyle">
                   <div class="cad-image-inner">
-                    <app-image class="img" [src]="cad.img" [bigPicSrc]="cad.imgLarge" (click)="openCad(cad, order)"></app-image>
-                    @if (!config().showBarcode) {
-                      <div class="排版编号">{{ cad.data.info.groupId }}</div>
-                    }
+                    <app-image class="img" [src]="cad.img" [bigPicSrc]="cad.imgLarge"></app-image>
                   </div>
                 </div>
                 <div class="cad-info flex-column">

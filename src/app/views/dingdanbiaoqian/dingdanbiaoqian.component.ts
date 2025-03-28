@@ -221,6 +221,9 @@ export class DingdanbiaoqianComponent implements OnInit {
           const img = imgLoading;
           const imgLarge = imgLoading;
           const data = new CadData(cad);
+          data.entities.line.forEach((e) => {
+            e.显示线长格式 = "{0}";
+          });
 
           if (!data.type.includes("企料") && !shouldShowIntersection(data)) {
             const lines: CadLine[] = [];
@@ -237,6 +240,7 @@ export class DingdanbiaoqianComponent implements OnInit {
           }
 
           const isLarge = this.config().showBarcode || !!data.info.isLarge;
+          const forceBreak = !!data.info.forceBreak;
           return {
             houtaiId: cad.houtaiId,
             data,
@@ -244,7 +248,8 @@ export class DingdanbiaoqianComponent implements OnInit {
             imgLarge,
             imgSize: isLarge ? [218, 240] : [218, 96],
             isLarge,
-            zhankai: [{width: cad.calcW, height: cad.calcH}],
+            forceBreak,
+            zhankai: [{width: cad.calcW, height: cad.calcH, num: cad.num}],
             style: {},
             imgStyle: {}
           };
@@ -391,34 +396,44 @@ export class DingdanbiaoqianComponent implements OnInit {
     this.spinner.hide(this.spinner.defaultLoaderId);
     tmpCadViewer?.destroy();
   }
-  takeEmptyPosition(positions: Order["positions"], isLarge: boolean) {
+  takeEmptyPosition(positions: Order["positions"], isLarge: boolean, forceBreak: boolean) {
     const result = {position: null as number[] | null, isFull: false};
     let i = 0;
     let j = 0;
+    let pts: [number, number][] | null = null;
     for (; i < positions.length; i++) {
       j = 0;
       for (; j < positions[i].length; j++) {
+        pts = [[i, j]];
         if (isLarge) {
-          if (i % 2 !== 0) {
-            continue;
-          }
-          if (i + 1 >= positions.length || positions[i + 1][j]) {
-            continue;
-          }
+          pts.push([i + 1, j]);
         }
-        if (!positions[i][j]) {
-          result.position = [i, j];
-          if (isLarge) {
-            positions[i][j] = 2;
-            positions[i + 1][j] = 2;
-          } else {
-            positions[i][j] = 1;
-          }
-          return result;
+        if (!pts.every(([i2, j2]) => positions[i2]?.[j2] === 0)) {
+          pts = null;
+          continue;
         }
+        result.position = [i, j];
+        const count = pts.length;
+        for (const [i2, j2] of pts) {
+          positions[i2][j2] = count;
+        }
+        break;
+      }
+      if (pts) {
+        break;
       }
     }
     result.isFull = i === positions.length && j === positions[i - 1].length;
+    if (forceBreak && !result.isFull) {
+      result.isFull = true;
+      for (let i2 = 0; i2 < positions.length; i2++) {
+        for (let j2 = 0; j2 < positions[i2].length; j2++) {
+          if ((i2 > i || j2 > j) && positions[i2][j2] === 0) {
+            positions[i2][j2] = -1;
+          }
+        }
+      }
+    }
     return result;
   }
   async splitOrders() {
@@ -463,16 +478,23 @@ export class DingdanbiaoqianComponent implements OnInit {
             orderPrev = orderCurr;
             orderCurr = pushOrder();
             for (let j = 0; j < group.length; j++) {
-              let result = this.takeEmptyPosition(orderCurr.positions, group[j].isLarge);
+              const item = group[j];
+              const itemNext = group[j + 1];
+              const {isLarge} = item;
+              let forceBreak = false;
+              if (item.forceBreak && !itemNext.forceBreak) {
+                forceBreak = true;
+              }
+              let result = this.takeEmptyPosition(orderCurr.positions, isLarge, forceBreak);
               if (result.position) {
                 cadsToSet.push([group[j], result.position]);
                 orderCurr.cads.push(group[j]);
               } else {
                 if (orderPrev) {
-                  result = this.takeEmptyPosition(orderPrev.positions, group[j].isLarge);
+                  result = this.takeEmptyPosition(orderPrev.positions, isLarge, forceBreak);
                   if (result.position) {
-                    cadsToSet.push([group[j], result.position]);
-                    orderPrev.cads.push(group[j]);
+                    cadsToSet.push([item, result.position]);
+                    orderPrev.cads.push(item);
                   } else if (result.isFull) {
                     orderPrev = null;
                   }
@@ -585,6 +607,7 @@ export class DingdanbiaoqianComponent implements OnInit {
             img: "",
             imgSize: [0, 0],
             isLarge: false,
+            forceBreak: false,
             style: {},
             imgStyle: {},
             zhankai: v.info.zhankai
