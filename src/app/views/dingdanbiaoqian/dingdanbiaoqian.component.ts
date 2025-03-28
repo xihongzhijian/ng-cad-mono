@@ -566,7 +566,7 @@ export class DingdanbiaoqianComponent implements OnInit {
     const mokuais = this.mokuais();
     const calcResults: CalcZxpjResult[] = [];
     for (const mokuai of mokuais) {
-      const calcResult = await calcZxpj(this.dialog, this.message, this.calc, this.status, {}, [mokuai], [], {useCeshishuju: true});
+      const calcResult = await calcZxpj(this.dialog, this.message, this.calc, this.status, {}, [mokuai], [], {}, {useCeshishuju: true});
       calcResults.push(calcResult);
     }
     this.calcResults.set(calcResults);

@@ -18,32 +18,13 @@
   flex: 1 0 100px;
 }
 
-.menshan-options {
-  border: var(--border);
-  width: 160px;
+.menshan-nav-container {
+  flex: 0 0 240px;
+}
 
-  .menshan-option {
-    justify-content: center;
-    align-items: center;
-    min-height: 100px;
-    cursor: pointer;
-    padding: 2px;
-    &:not(:last-child) {
-      border-bottom: var(--border);
-    }
-    &:hover {
-      background-color: var(--mat-sys-outline-variant);
-    }
-    &.active {
-      background-color: var(--mat-sys-outline-variant);
-    }
-
-    .title {
-      padding: 0;
-    }
-    .text {
-      font: var(--mat-sys-body-medium);
-    }
+.menshan-nav-items {
+  > .item {
+    padding: 10px;
   }
 }
 
@@ -83,7 +64,7 @@
 .xinghao-info {
   font-size: var(--mat-select-trigger-text-size);
   > div {
-    padding: 5px 72px 5px 16px;
+    padding: 5px 60px 5px 16px;
   }
 }
 
