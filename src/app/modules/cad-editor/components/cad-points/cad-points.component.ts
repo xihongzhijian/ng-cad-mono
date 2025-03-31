@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
-import {AppConfigService} from "@services/app-config.service";
+import {AppConfigService, defaultConfig} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
 
@@ -16,12 +16,15 @@ export class CadPointsComponent {
 
   pointInfos = computed(() => {
     const points = this.status.cadPoints();
+    let size = this.config.getConfig("pointSize");
+    if (!(size > 0)) {
+      size = defaultConfig.pointSize;
+    }
     return points.map((point) => {
       const classList: string[] = [];
       if (point.active) {
         classList.push("active");
       }
-      const size = this.config.getConfig("pointSize");
       const style: Properties = {
         width: `${size}px`,
         height: `${size}px`,

@@ -324,17 +324,18 @@
         }
         @switch (info.appearance) {
           @case ("radio") {
-            <input matInput hidden />
+            <input matInput hidden [disabled]="info.disabled" />
             <mat-radio-group [(ngModel)]="value">
               <mat-radio-button [value]="true" [disabled]="info.disabled || info.readonly">是</mat-radio-button>
               <mat-radio-button [value]="false" [disabled]="info.disabled || info.readonly">否</mat-radio-button>
             </mat-radio-group>
           }
           @case ("checkbox") {
-            <input matInput hidden />
+            <input matInput hidden [disabled]="info.disabled" />
             <mat-checkbox
               [checked]="value"
               [indeterminate]="info.indeterminate"
+              [disabled]="info.disabled || info.readonly"
               (change)="value = $event.checked; onChange()"
               (click)="onClick($event)"
             ></mat-checkbox>
@@ -765,7 +766,7 @@
 
 <ng-template #suffixIconsTmp>
   @for (icon of info.suffixIcons; track $index) {
-    <button mat-icon-button [class]="icon.class" [style]="icon.style" (click)="icon.onClick?.()">
+    <button mat-icon-button [class]="icon.class" [style]="icon.style" (click)="icon.onClick?.()" [disabled]="info.disabled">
       <mat-icon>{{ icon.name }}</mat-icon>
     </button>
   }

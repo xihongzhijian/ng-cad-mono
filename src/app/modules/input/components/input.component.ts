@@ -18,6 +18,7 @@ import {
   SimpleChanges,
   viewChild,
   ViewChild,
+  viewChildren,
   ViewChildren
 } from "@angular/core";
 import {FormControl, FormsModule, ValidationErrors, ValidatorFn} from "@angular/forms";
@@ -116,7 +117,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   showListInput = true;
   objectString = "";
   fileName = "";
-  @ViewChildren(InputComponent) inputs?: QueryList<InputComponent>;
+  inputs = viewChildren(InputComponent);
 
   get el() {
     return this.elRef.nativeElement;
@@ -713,7 +714,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   validateValue(value = this.value) {
-    const {info, inputs} = this;
+    const info = this.info;
+    const inputs = this.inputs();
     const validators = info.validators;
     let errors: ValidationErrors | null = null;
     let errors2: ValidationErrors | null = null;
@@ -721,16 +723,14 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       const control = new FormControl(value, validators);
       errors = control.errors;
     }
-    if (inputs) {
-      for (const input of inputs.toArray()) {
-        input.validateValue();
-        if (input.errors && !input.info.hidden) {
-          if (!errors2) {
-            errors2 = {};
-          }
-          const errors3 = {...input.errors};
-          Object.assign(errors2, errors3);
+    for (const input of inputs) {
+      input.validateValue();
+      if (input.errors && !input.info.hidden) {
+        if (!errors2) {
+          errors2 = {};
         }
+        const errors3 = {...input.errors};
+        Object.assign(errors2, errors3);
       }
     }
     if (isEmpty(errors)) {

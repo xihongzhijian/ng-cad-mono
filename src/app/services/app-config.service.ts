@@ -40,27 +40,6 @@ export class AppConfigService {
   noUser = false;
 
   constructor(private http: CadDataService) {
-    const defaultCadViewerConfig = getDefalutCadViewerConfig();
-    const defaultConfig: AppConfig = {
-      ...defaultCadViewerConfig,
-      width: innerWidth,
-      height: innerHeight,
-      backgroundColor: "black",
-      entityDraggable: ["MTEXT", "DIMENSION"],
-      lineGongshi: 8,
-      minLinewidth: 2,
-      fontStyle: {family: "微软雅黑", weight: "normal"},
-      // 分界线
-      infoTabIndex: 0,
-      leftMenuWidth: 200,
-      rightMenuWidth: 300,
-      scroll: {},
-      subCadsMultiSelect: true,
-      pointSize: 20,
-      cadPointsAnywhere: false,
-      kailiaoAutoGuige: false,
-      testMode: false
-    };
     this._configKeys = keysOf(defaultConfig);
     const localUserConfig = this._purgeUserConfig(local.load<Partial<AppConfig>>("userConfig") || {});
     for (const key of this._configKeys) {
@@ -184,3 +163,24 @@ export class AppConfigService {
     return false;
   }
 }
+
+export const defaultConfig: AppConfig = {
+  ...getDefalutCadViewerConfig(),
+  width: innerWidth,
+  height: innerHeight,
+  backgroundColor: "black",
+  entityDraggable: ["MTEXT", "DIMENSION"],
+  lineGongshi: 8,
+  minLinewidth: 2,
+  fontStyle: {family: "微软雅黑", weight: "normal"},
+  // 分界线
+  infoTabIndex: 0,
+  leftMenuWidth: 200,
+  rightMenuWidth: 300,
+  scroll: {},
+  subCadsMultiSelect: true,
+  pointSize: 20,
+  cadPointsAnywhere: false,
+  kailiaoAutoGuige: false,
+  testMode: false
+};
