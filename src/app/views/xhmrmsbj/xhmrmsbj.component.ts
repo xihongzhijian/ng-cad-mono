@@ -1911,7 +1911,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const nodes = msbjInfo.模块节点 || [];
     justifyMkdxpz(dxpz, nodes.map((v) => v.层名字) || []);
     const rectInfos = this.rectInfos();
-    const data: MkdxpzEditorData = {dxpz, nodes, rectInfos};
+    const data: MkdxpzEditorData = {dxpz, nodes, rectInfos, msbj: this.activeMsbj()};
     const title = `【${activeKey}】模块大小配置`;
     this.openedMkdxpz.set({data, msbjInfo, varNameItem, title});
   }
