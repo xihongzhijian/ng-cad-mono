@@ -1,5 +1,5 @@
 import {MatDialog} from "@angular/material/dialog";
-import {getCadTotalLength, getShuangxiangLineRects, setShuangxiangLineRects, splitShuangxiangCad} from "@app/cad/utils";
+import {getCadTotalLength, setShuangxiangLineRects, splitShuangxiangCad} from "@app/cad/utils";
 import {Formulas, toFixed} from "@app/utils/calc";
 import {getNamesStr} from "@app/utils/error-message";
 import {getLinkStr} from "@app/utils/get-value";
@@ -871,7 +871,6 @@ export const calcZxpj = async (
       }
       calc.calc.mergeFormulas(varsGlobal, result2.succeedTrim);
       const shaungxiangCads = splitShuangxiangCad(data);
-      const shaungxiangRects = getShuangxiangLineRects(shaungxiangCads);
       for (const key in result2.succeedTrim) {
         const match = key.match(/线(\d+)公式/);
         const value = result2.succeedTrim[key];
@@ -894,7 +893,7 @@ export const calcZxpj = async (
           e.info.线长 = length;
         }
       }
-      setShuangxiangLineRects(shaungxiangCads, shaungxiangRects);
+      setShuangxiangLineRects(shaungxiangCads);
       const vars3 = {...vars2, ...getCadLengthVars(data)};
       const zhankais2: ZixuanpeijianInfo["zhankai"] = [];
       for (const [i, zhankai] of zhankais) {

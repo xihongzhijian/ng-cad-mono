@@ -391,28 +391,73 @@ export const splitShuangxiangCad = (data: CadData) => {
   return result as [CadData, CadData];
 };
 
-export const getShuangxiangLineRects = (data: ReturnType<typeof splitShuangxiangCad>) => {
-  if (!data) {
-    return null;
-  }
-  const [a, b] = data;
-  return [a.getBoundingRect(), b.getBoundingRect()];
-};
-
-export const setShuangxiangLineRects = (
-  data: ReturnType<typeof splitShuangxiangCad>,
-  rects: ReturnType<typeof getShuangxiangLineRects>
-) => {
-  if (!data || !rects) {
+export const setShuangxiangLineRects = (data: ReturnType<typeof splitShuangxiangCad>) => {
+  if (data?.length !== 2) {
     return;
   }
-  const rects2 = data.map((v) => v.getBoundingRect());
-  for (let i = 0; i < rects.length; i++) {
-    const rect1 = rects[i];
-    const rect2 = rects2[i];
-    const dx = rect1.x - rect2.x;
-    const dy = rect1.y - rect2.y;
-    data[i].transform({translate: [dx, dy]}, true);
+  const [hData, vData] = data;
+  const checkIntersections = () => {
+    let intersectionCount = 0;
+    hData.entities.forEach((e1) => {
+      if (!(e1 instanceof CadLine)) {
+        return;
+      }
+      vData.entities.forEach((e2) => {
+        if (!(e2 instanceof CadLine)) {
+          return;
+        }
+        const pts = e1.curve.intersects(e2.curve);
+        if (pts.length > 0) {
+          intersectionCount++;
+        }
+      });
+    });
+    return intersectionCount === 1;
+  };
+  const transforms = [
+    () => {
+      let hLine: CadLine | undefined;
+      let hLength = 0;
+      let vLine: CadLine | undefined;
+      let vLength = 0;
+      hData.entities.forEach((e) => {
+        if (!(e instanceof CadLine) || e.isVertical()) {
+          return;
+        }
+        const length = e.length;
+        if (length > hLength) {
+          hLength = length;
+          hLine = e;
+        }
+      });
+      vData.entities.forEach((e) => {
+        if (!(e instanceof CadLine) || e.isHorizontal()) {
+          return;
+        }
+        const length = e.length;
+        if (length > vLength) {
+          vLength = length;
+          vLine = e;
+        }
+      });
+      if (!hLine || !vLine) {
+        return;
+      }
+      const {x: x1, y: y1} = hLine.middle;
+      const {x: x2, y: y2} = vLine.middle;
+      vData.transform({translate: [x1 - x2, y1 - y2]}, true);
+    },
+    () => {
+      const {x: x1, y: y1} = hData.getBoundingRect();
+      const {x: x2, y: y2} = vData.getBoundingRect();
+      vData.transform({translate: [x1 - x2, y1 - y2]}, true);
+    }
+  ];
+  for (const transform of transforms) {
+    transform();
+    if (checkIntersections()) {
+      return;
+    }
   }
 };
 

@@ -10,6 +10,7 @@ export interface CadPreviewRawParams {
   config?: Partial<CadViewerConfig>;
   autoSize?: boolean;
   maxZoom?: number;
+  showFenti?: boolean;
 }
 export const getCadPreviewConfig = (collection: CadCollection, config?: Partial<CadViewerConfig>): Partial<CadViewerConfig> => ({
   width: 300,
@@ -30,7 +31,7 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
   cad.data = data.clone();
   const {rawEntities, fentiEntities} = getCadFentiInfo(cad.data);
   let fentiMtext: CadMtext | undefined;
-  if (fentiEntities.length > 0) {
+  if (fentiEntities.length > 0 && !params.showFenti) {
     cad.data.entities = rawEntities;
     fentiMtext = new CadMtext();
   }

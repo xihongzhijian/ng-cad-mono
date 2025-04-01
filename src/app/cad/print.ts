@@ -33,14 +33,7 @@ import {
   型材物料明细Item,
   型材物料明细List
 } from "./print.types";
-import {
-  getCadPaokengText,
-  getShuangxiangLineRects,
-  prepareCadViewer,
-  setShuangxiangLineRects,
-  showIntersections,
-  splitShuangxiangCad
-} from "./utils";
+import {getCadPaokengText, prepareCadViewer, setShuangxiangLineRects, showIntersections, splitShuangxiangCad} from "./utils";
 
 const findRectLines = (data: CadData, keyword: string, findLocator: boolean) => {
   const rectData = data.getBoundingRect();
@@ -469,7 +462,6 @@ export const configCadDataForPrint = async (
   if (isZxpj && data instanceof CadData) {
     const lineLengthMap: ObjectOf<{text: string; mtext: CadMtext; 显示线长?: string}> = {};
     const shaungxiangCads = splitShuangxiangCad(data);
-    const shaungxiangRects = getShuangxiangLineRects(shaungxiangCads);
     await cad.render(data.getAllEntities());
     let rect2 = data.entities.filter((e) => e instanceof CadLineLike).getBoundingRect(false);
     const 宽度标注文本 = Math.round(rect2.width).toFixed();
@@ -496,7 +488,7 @@ export const configCadDataForPrint = async (
     let rect = data.getBoundingRect();
     // data.transform({scale: data.suanliaodanZoom, origin: [rect.x, rect.y]}, true);
     await cad.render(data.getAllEntities());
-    setShuangxiangLineRects(shaungxiangCads, shaungxiangRects);
+    setShuangxiangLineRects(shaungxiangCads);
     await cad.render(data.getAllEntities());
     data.entities.toArray().forEach((e) => {
       if (e instanceof CadLineLike && e.id in lineLengthMap) {

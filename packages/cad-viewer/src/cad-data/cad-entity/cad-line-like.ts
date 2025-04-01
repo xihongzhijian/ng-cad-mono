@@ -80,6 +80,7 @@ export abstract class CadLineLike extends CadEntity {
   info: CadLineLikeInfo;
   圆弧显示: CadOptionValues<"圆弧显示">;
   显示线长?: string;
+  显示线长格式?: string;
   线id?: string;
   企料位置识别: string;
   算料不要: boolean;
@@ -126,6 +127,9 @@ export abstract class CadLineLike extends CadEntity {
     if (data.显示线长) {
       this.显示线长 = data.显示线长;
     }
+    if (data.显示线长格式) {
+      this.显示线长格式 = data.显示线长格式;
+    }
     if (data.线id) {
       this.线id = data.线id;
     }
@@ -169,6 +173,7 @@ export abstract class CadLineLike extends CadEntity {
         开料不要: this.开料不要,
         分体线长公式: this.分体线长公式,
         显示线长: this.显示线长 || undefined,
+        显示线长格式: this.显示线长格式 || undefined,
         线id: this.线id || undefined,
         刨坑起始线: this.刨坑起始线 || undefined,
         双向折弯附加值: this.双向折弯附加值 || undefined,

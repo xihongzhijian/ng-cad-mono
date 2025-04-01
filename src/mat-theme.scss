@@ -136,6 +136,11 @@
     display: flex;
   }
 
+  .mat-mdc-form-field-text-prefix,
+  .mat-mdc-form-field-text-suffix {
+    flex: 0 0 auto;
+  }
+
   .mdc-text-field,
   .mat-mdc-form-field-hint-wrapper,
   .mat-mdc-form-field-error-wrapper {

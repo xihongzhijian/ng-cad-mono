@@ -72,7 +72,10 @@
     }
 
     .name {
-      width: auto; // placeholder
+      width: auto;
+      &.fullwidth {
+        width: 100%;
+      }
     }
 
     .text {
@@ -206,6 +209,12 @@
     word-break: break-word;
     &.center {
       text-align: center;
+    }
+    &.pre {
+      white-space: pre;
+    }
+    &.pre-wrap {
+      white-space: pre-wrap;
     }
   }
 

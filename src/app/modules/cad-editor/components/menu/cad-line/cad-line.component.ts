@@ -631,12 +631,15 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   lineInputInfos1 = computed(() => {
     const lengthInfo = this.getLineLengthInfo();
+    const selected = this.selected();
+    const disabled = selected.length < 1;
     const infos: InputInfo[] = [
       {
         type: "number",
         label: "长度",
         value: lengthInfo.value,
         hint: lengthInfo.isMultiple ? "多个值" : "",
+        disabled,
         onChange: (val) => {
           this.setLineLength(val);
         }
@@ -645,11 +648,14 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     return infos;
   });
   lineInputInfos2 = computed(() => {
+    const selected = this.selected();
+    const disabled = selected.length < 1;
     const getStringInfo = (field: string, label = field, others?: InputInfoPart<InputInfoString>, isInfo = false) => {
       const {value, isMultiple} = this.getLineValue(field, isInfo);
       const info: InputInfoString = {
         type: "string",
         label,
+        disabled,
         onInput: debounce((val: string) => this.setLineValue(val, field, isInfo), 500),
         ...others
       };
@@ -668,6 +674,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       const info: InputInfoNumber = {
         type: "number",
         label,
+        disabled,
         onInput: debounce((val: number) => this.setLineValue(val, field, isInfo), 500),
         ...others
       };
@@ -689,6 +696,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         label,
         allowEmpty: isZero || isMultiple,
         indeterminate: isMultiple,
+        disabled,
         onChange: (val) => this.setLineValue(val, field, isInfo),
         ...others
       };
@@ -714,6 +722,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         type: "select",
         label,
         options,
+        disabled,
         onChange: (val) => this.setLineValue(val, field, isInfo),
         ...others
       };
@@ -728,7 +737,6 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       return info;
     };
     const data = this.data();
-    const selected = this.selected();
     const zhewanOptions = this.zhewanOptions();
     const infos: InputInfo[] = [
       getStringInfo("显示线长"),
@@ -739,6 +747,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         label: "颜色",
         options: this.selectableColors,
         optionsOnly: true,
+        disabled,
         value: this.getLineColor(),
         onChange: (val) => {
           this.setLineColor(val);
@@ -764,6 +773,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         type: "string",
         label: "条件取值",
         readonly: true,
+        disabled,
         value: (() => {
           const es = selected.filter((v) => v instanceof CadLine);
           if (es.length > 1) {
