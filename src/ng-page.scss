@@ -210,6 +210,12 @@
     &.center {
       text-align: center;
     }
+    &.pre {
+      white-space: pre;
+    }
+    &.pre-wrap {
+      white-space: pre-wrap;
+    }
   }
 
   .success {
