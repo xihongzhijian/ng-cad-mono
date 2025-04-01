@@ -70,7 +70,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
   }
 
   async suanliaoStart(params: SuanliaoInput): Promise<SuanliaoOutputData> {
-    const {materialResult, gongshi, tongyongGongshi, inputResult, 型号选中门扇布局, 配件模块CAD, 门扇布局CAD} = params;
+    const {materialResult, gongshi, tongyongGongshi, inputResult, 型号选中门扇布局: xhmrmsbjInfos, 配件模块CAD, 门扇布局CAD} = params;
     const {bujuNames, varNames, step1Data, silent} = params;
     let timerName: string | null = null;
     if (!silent) {
@@ -113,10 +113,10 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     const mokuaiVars: ObjectOf<Formulas> = {};
     const mokuaiGongshis: ObjectOf<Formulas> = {};
     for (const 门扇 of bujuNames) {
-      if (!型号选中门扇布局[门扇]) {
+      if (!xhmrmsbjInfos[门扇]) {
         continue;
       }
-      const msbjInfo = 型号选中门扇布局[门扇];
+      const msbjInfo = xhmrmsbjInfos[门扇];
       const {选中布局数据, 模块节点, 模块大小输出} = msbjInfo;
       const {模块大小配置} = 选中布局数据 || {};
       if (模块大小配置) {
@@ -164,7 +164,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
 
     const lingsans = [];
     for (const name of bujuNames) {
-      const 选中布局数据 = 型号选中门扇布局[name].选中布局数据;
+      const 选中布局数据 = xhmrmsbjInfos[name].选中布局数据;
       for (const data of 门扇布局CAD) {
         const {布局id: 布局id2} = data.info;
         const type2 = data.type2;
@@ -181,17 +181,27 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     const msbjs = params.msbjs.map((v) => new MsbjInfo(v));
     const xhmrmsbj = new XhmrmsbjData(params.xhmrmsbj, bujuNames, step1Data?.typesInfo || {}, msbjs);
     xhmrmsbj.name = String(materialResult.型号);
-    const calcZxpjResult = await calcZxpj(this.dialog, this.message, this.calc, this.status, materialResult, mokuais, lingsans, {
-      changeLinesLength: false,
-      calcVars,
-      gongshi,
-      tongyongGongshi,
-      inputResult,
-      mokuaiVars,
-      mokuaiGongshis,
-      isVersion2024,
-      xhmrmsbj
-    });
+    const calcZxpjResult = await calcZxpj(
+      this.dialog,
+      this.message,
+      this.calc,
+      this.status,
+      materialResult,
+      mokuais,
+      lingsans,
+      xhmrmsbjInfos,
+      {
+        changeLinesLength: false,
+        calcVars,
+        gongshi,
+        tongyongGongshi,
+        inputResult,
+        mokuaiVars,
+        mokuaiGongshis,
+        isVersion2024,
+        xhmrmsbj
+      }
+    );
     if (!calcZxpjResult.fulfilled) {
       result.data.error = calcZxpjResult.error;
       return finish();
@@ -215,7 +225,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
     for (const name of bujuNames) {
       开料使用变量[name] = {};
       const vars = {...materialResult2};
-      for (const node of 型号选中门扇布局[name].模块节点 || []) {
+      for (const node of xhmrmsbjInfos[name].模块节点 || []) {
         开料使用变量[name][node.层名字] = {};
         const vars2 = {...vars};
         for (const mokuai of mokuais) {
@@ -241,7 +251,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       }
     }
     for (const mokuai of mokuais) {
-      for (const key of getMokuaiInfoScbl(xhmrmsbj.menshanbujuInfos, mokuai)) {
+      for (const key of getMokuaiInfoScbl(xhmrmsbjInfos, mokuai)) {
         result.data.输出变量公式计算结果[key] = materialResult2[key];
       }
     }

@@ -20,7 +20,7 @@ import {CalcService} from "@services/calc.service";
 import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
 import {getNodeFormulasKey, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {matchConditions} from "@views/suanliao/suanliao.utils";
-import {XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
+import {MenshanKey, XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {getMokuaiFormulas, getMokuaiShuchuVars, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {cloneDeep, difference, intersection, isEmpty, isEqual, union} from "lodash";
 import md5 from "md5";
@@ -138,18 +138,20 @@ export const exportZixuanpeijian = (source: ZixuanpeijianData) => {
 };
 
 export interface GetMsbjInfoTitleOpts {
-  门扇名字?: string;
-  层名字?: string;
+  path?: {menshanKey?: string; itemName?: string; nodeName?: string};
   xhmrmsbj?: XhmrmsbjData | null;
 }
 export const getMsbjInfoTitle = (opts: GetMsbjInfoTitleOpts) => {
   const arr: string[] = [];
-  const {门扇名字, 层名字} = opts;
-  if (typeof 门扇名字 === "string" && 门扇名字) {
-    arr.push(`【${门扇名字}】`);
+  const {menshanKey, itemName, nodeName} = opts.path || {};
+  if (menshanKey) {
+    arr.push(`【${menshanKey}】`);
   }
-  if (typeof 层名字 === "string" && 层名字) {
-    arr.push(`${层名字}位置`);
+  if (itemName) {
+    arr.push(`【${itemName}】`);
+  }
+  if (nodeName) {
+    arr.push(`${nodeName}位置`);
   }
   return arr.join("");
 };
@@ -170,9 +172,10 @@ export const getXhmrmsbjTitle = (xhmrmsbj: XhmrmsbjData | null | undefined, opts
   return str;
 };
 
+export type MokuaiPath = {menshanKey?: string; itemName?: string; nodeName?: string};
+export type MokuaiPathRequired = Required<{menshanKey?: MenshanKey; itemName?: string; nodeName?: string}>;
 export interface GetMokuaiTitleOptsBase {
-  门扇名字?: string;
-  层名字?: string;
+  path?: MokuaiPath;
   mokuaiNameShort?: boolean;
   xhmrmsbj?: XhmrmsbjData | null;
 }
@@ -194,14 +197,14 @@ export const getMokuaiTitle = (item: ZixuanpeijianMokuaiItem | null | undefined,
     return "";
   }
   const arr: string[] = [];
-  let {门扇名字, 层名字} = opts;
-  if (!门扇名字) {
-    门扇名字 = info?.门扇名字;
+  const path = opts.path || {};
+  if (!path.menshanKey) {
+    path.menshanKey = info?.门扇名字;
   }
-  if (!层名字) {
-    层名字 = info?.模块名字;
+  if (!path.nodeName) {
+    path.nodeName = info?.模块名字;
   }
-  const msbjInfoTitle = getMsbjInfoTitle({门扇名字, 层名字});
+  const msbjInfoTitle = getMsbjInfoTitle({path});
   if (msbjInfoTitle) {
     arr.push(msbjInfoTitle);
   }
@@ -370,6 +373,7 @@ export const calcZxpj = async (
   materialResult: Formulas,
   mokuais: ZixuanpeijianMokuaiItem[],
   lingsans: ZixuanpeijianCadItem[],
+  xhmrmsbjInfos: XhmrmsbjDataMsbjInfos,
   options?: CalcZxpjOptions
 ): Promise<CalcZxpjResult> => {
   const optionsAll: Required<CalcZxpjOptions> = {
@@ -455,17 +459,17 @@ export const calcZxpj = async (
     getMokuaiTitle(item, {xhmrmsbj: options?.xhmrmsbj, status, isVersion2024});
   const xhmrmsbj = optionsAll.xhmrmsbj;
   const getMokuaiInfoScbl2 = (item: ZixuanpeijianMokuaiItem) => {
-    return getMokuaiInfoScbl(xhmrmsbj?.menshanbujuInfos || {}, item);
+    return getMokuaiInfoScbl(xhmrmsbjInfos, item);
   };
   const getMokuaiInfoSlgs2 = (item: ZixuanpeijianMokuaiItem) => {
     const vars = {...materialResult, ...shuchubianliang};
-    const result = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, vars);
+    const result = getMokuaiInfoSlgs(xhmrmsbjInfos, item, vars);
     return result?.formulas || item.suanliaogongshi;
   };
 
   const duplicateMokuaiSlgsVars: {mokuai: ZixuanpeijianMokuaiItem; vars: string[]}[] = [];
   for (const [i, item1] of mokuais.entries()) {
-    const slgsResult = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item1, materialResult);
+    const slgsResult = getMokuaiInfoSlgs(xhmrmsbjInfos, item1, materialResult);
     if (slgsResult && slgsResult.duplicateVars.length > 0) {
       duplicateMokuaiSlgsVars.push({mokuai: item1, vars: slgsResult.duplicateVars});
       continue;
