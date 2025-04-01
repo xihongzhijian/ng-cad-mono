@@ -14,14 +14,15 @@ import {
   output,
   signal
 } from "@angular/core";
-import {ValidationErrors} from "@angular/forms";
+import {FormControl, ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {replaceChars, setGlobal} from "@app/app.common";
-import {Calc, CalcResult, Formulas} from "@app/utils/calc";
+import {CalcResult, Formulas} from "@app/utils/calc";
 import {ResultWithErrors} from "@app/utils/error-message";
+import {CustomValidators} from "@app/utils/input-validators";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {FormulasComponent} from "@components/formulas/formulas.component";
 import {FormulaInfo} from "@components/formulas/formulas.types";
@@ -105,7 +106,7 @@ export class FormulasEditorComponent {
         textarea: {autosize: {minRows: 1, maxRows: 5}},
         model: {key: "1", data: arr},
         onChange,
-        validators: () => this.validateVarExp(arr[1])
+        validators: () => this.validateVarExpr(arr[1])
       }
     ]);
   });
@@ -182,7 +183,7 @@ export class FormulasEditorComponent {
     const result = new ResultWithErrors<string[][] | null>(null);
     const list2: typeof list = [];
     for (const arr of list) {
-      const errors2 = {...this.validateVarName(arr[0], list), ...this.validateVarExp(arr[1])};
+      const errors2 = {...this.validateVarName(arr[0], list), ...this.validateVarExpr(arr[1])};
       if (isEmpty(errors2)) {
         list2.push(arr);
       } else {
@@ -217,28 +218,14 @@ export class FormulasEditorComponent {
     this.submitFormulas();
   }
 
-  validateVarName(varName: string, formulaList: string[][]): ValidationErrors | null {
-    if (!varName) {
-      return {公式名不能为空: true};
-    }
-    if (!isNaN(Number(varName))) {
-      return {公式名不能是纯数字: true};
-    }
-    const varNames = formulaList.filter((v) => v[0] === varName);
-    if (varNames.length > 1) {
-      return {公式名重复: true};
-    }
-    if (/^[0-9]/.test(varName)) {
-      return {公式名不能以数字开头: true};
-    }
-    return null;
+  validateVarName(varName: string, formulaList: string[][]) {
+    const control = new FormControl(varName);
+    const varNames = new Set<string>(formulaList.map((v) => v[0]));
+    return CustomValidators.varName(varNames)(control);
   }
-  validateVarExp(varExp: string): ValidationErrors | null {
-    const {error} = Calc.validateExpression(varExp);
-    if (error) {
-      return {语法错误: true};
-    }
-    return null;
+  validateVarExpr(varExp: string): ValidationErrors | null {
+    const control = new FormControl(varExp);
+    return CustomValidators.varExpr()(control);
   }
   justifyFormulas(formulaList: string[][]) {
     for (const arr of formulaList) {
