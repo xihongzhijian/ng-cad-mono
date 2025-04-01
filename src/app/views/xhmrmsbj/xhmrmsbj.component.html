@@ -282,9 +282,9 @@
     [attr.data-id]="mokuai.weiyima"
   >
     <div class="flex-column">
-      <div class="toolbar mokuai-top">
+      <div class="toolbar comp">
         @if (!isFromOrder()) {
-          <div class="default-sign" [class]="{active: mokuai?.info?.isDefault}" (click)="setDefaultMokuai(mokuai)">默认</div>
+          <button mat-button [class.accent]="mokuai?.info?.isDefault" (click)="setDefaultMokuai(mokuai)">默认</button>
         }
         <div class="flex-110"></div>
         @if (!isFromOrder()) {
