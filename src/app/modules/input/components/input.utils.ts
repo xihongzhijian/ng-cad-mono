@@ -292,7 +292,7 @@ export const getInputValues = (inputs: InputComponent[], message: MessageService
       message.error(errorMsg);
       return null;
     }
-    const key = input.info.name || input.info.label;
+    const key = input.name();
     values[key] = input.value;
   }
   return values;

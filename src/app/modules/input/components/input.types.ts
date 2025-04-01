@@ -21,7 +21,7 @@ export interface InputInfoBase<T = any> extends StyledItem {
   disabled?: boolean;
   suffixIcons?: InputInfoButtonInfo[];
   suffixTexts?: InputInfoTextInfo[];
-  hint?: Value<string>;
+  hint?: string;
   autocomplete?: "on" | "off";
   showEmpty?: boolean;
   autoFocus?: boolean;
@@ -32,7 +32,6 @@ export interface InputInfoBase<T = any> extends StyledItem {
   name?: string;
   inputTextAlign?: Properties["textAlign"];
   hidden?: boolean;
-  displayValue?: Value<string>;
   filterValuesGetter?: (option: InputInfoOption<T>) => string[];
   onChange?: (val: any, info: this) => void;
   onClick?: (info: this) => void;

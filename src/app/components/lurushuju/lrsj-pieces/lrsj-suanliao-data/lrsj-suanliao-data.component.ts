@@ -761,7 +761,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           //   key1Errors[key1].msg = `【${input.info.label}】` + input.getErrorMsg();
           // }
           if (!errors.key1[key1]) {
-            errors.key1[key1] = `【${input.info.label}】` + input.getErrorMsg();
+            errors.key1[key1] = `【${input.info().label}】` + input.getErrorMsg();
           }
         }
       }

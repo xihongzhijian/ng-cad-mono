@@ -130,7 +130,7 @@ export class RefreshCadImgsComponent implements OnInit {
       input.validateValue();
       const errorMsg = input.getErrorMsg();
       if (errorMsg) {
-        errorMsgs.push(`【${input.info.label}】${errorMsg}`);
+        errorMsgs.push(`【${input.info().label}】${errorMsg}`);
       }
     }
     if (errorMsgs.length > 0) {

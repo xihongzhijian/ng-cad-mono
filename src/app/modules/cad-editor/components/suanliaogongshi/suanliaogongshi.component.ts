@@ -11,6 +11,7 @@ import {
   model,
   output,
   signal,
+  untracked,
   viewChildren
 } from "@angular/core";
 import {Validators} from "@angular/forms";
@@ -79,12 +80,16 @@ export class SuanliaogongshiComponent {
   gongshiInfo = signal<{formulas: Formulas; compact: FormulasCompactConfig; validator?: FormulasValidatorFn}[]>([]);
   gongshiInfoEff = effect(() => {
     const info = this.info();
+    const gongshiInfo = untracked(() => this.gongshiInfo());
     this.gongshiInfo.set(
-      (info.data.算料公式 || []).map((v) => ({
-        formulas: v.公式,
-        compact: {minRows: 5, editOn: true, noToolbar: true},
-        validator: info.slgs?.validator
-      }))
+      (info.data.算料公式 || []).map((v, i) => {
+        const item = gongshiInfo.at(i);
+        return {
+          formulas: v.公式,
+          compact: {...item?.compact, minRows: 5, editOn: true, noToolbar: true},
+          validator: info.slgs?.validator
+        };
+      })
     );
   });
 

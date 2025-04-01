@@ -50,7 +50,7 @@ export const validateForm = async (inputs: InputComponent[] | readonly InputComp
       }
       Object.assign(errors, errors2);
     }
-    const key = input.info.name || input.info.label;
+    const key = input.name();
     values[key] = input.value;
   }
   let errorMsg = "";

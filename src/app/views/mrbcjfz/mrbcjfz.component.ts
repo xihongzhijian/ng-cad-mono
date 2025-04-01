@@ -509,7 +509,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         v.validateValue();
         const errorMsg3 = v.getErrorMsg();
         if (errorMsg3) {
-          errorMsg2.add(v.info.label + errorMsg3);
+          errorMsg2.add(v.info().label + errorMsg3);
         }
       });
       if (errorMsg2.size > 0) {
