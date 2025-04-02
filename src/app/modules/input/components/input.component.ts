@@ -144,9 +144,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   name = computed(() => {
-    const {name, label} = this.info();
-    let key = this.model.key;
-    if (typeof key !== "string") {
+    const {name, label, model} = this.info();
+    let key = model?.key;
+    if (isTypeOf(key, ["undefined", "null"])) {
+      key = "";
+    } else {
       key = String(key);
     }
     return name || key || label;
@@ -566,9 +568,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     this.valueChange$.next(this.value);
     this._filterXuanxiangOptions();
-    if (this.info().label === "长度") {
-      console.log(changes);
-    }
   }
 
   clear() {
