@@ -1,16 +1,17 @@
-import {AfterViewInit, Component, forwardRef, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, forwardRef, HostBinding, inject, input, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadData, CadLine} from "@lucilor/cad-viewer";
-import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
+import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, uniq} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
+import {BehaviorSubject, filter, lastValueFrom} from "rxjs";
 import {InputComponent} from "../../modules/input/components/input.component";
 import {Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
 
@@ -18,50 +19,50 @@ import {Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
   selector: "app-klkwpz",
   templateUrl: "./klkwpz.component.html",
   styleUrls: ["./klkwpz.component.scss"],
-  imports: [NgScrollbar, MatCardModule, MatButtonModule, forwardRef(() => InputComponent)]
+  imports: [forwardRef(() => InputComponent), MatButtonModule, MatCardModule, NgScrollbar],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class KlkwpzComponent implements AfterViewInit {
+export class KlkwpzComponent {
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+
   @HostBinding("class") class = "ng-page";
 
-  private _data: KlkwpzSource = {};
-  @Input()
-  get data() {
-    return this._data;
-  }
-  set data(value) {
-    this._data = value;
-    this.klkwpz.init(value);
-    this.formData = this.klkwpz.data.map((item) => this._getItemData(item));
-  }
-  @Input() cadId?: string;
+  data = input.required<KlkwpzSource>({});
+  cadId = input<string>();
+
   klkwpz = new Klkwpz();
-  formData: KlkwpzFormItem[] = [];
+  formData = signal<KlkwpzFormItem[]>([]);
   cadData?: CadData;
   cadMubanData?: CadData;
 
-  constructor(
-    private message: MessageService,
-    private dialog: MatDialog,
-    private http: CadDataService
-  ) {}
-
-  async ngAfterViewInit() {
-    const id = this.cadId;
-    if (id) {
-      await timeout(0);
-      const result = await this.http.getCad({collection: "cad", id});
-      if (result.cads.length > 0) {
-        this.cadData = result.cads[0];
-        const mubanId = this.cadData.zhankai[0].kailiaomuban;
-        if (mubanId) {
-          const result2 = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId});
-          if (result2.cads.length > 0) {
-            this.cadMubanData = result2.cads[0];
-          }
+  dataEff = effect(() => {
+    const data = this.data();
+    this.klkwpz.init(data);
+    this.formData.set(this.klkwpz.data.map((item) => this._getItemData(item)));
+  });
+  private _cadIdEffPending$ = new BehaviorSubject(false);
+  cadIdEff = effect(async () => {
+    const id = this.cadId();
+    if (!id) {
+      return;
+    }
+    await lastValueFrom(this._cadIdEffPending$.pipe(filter((v) => v)));
+    this._cadIdEffPending$.next(true);
+    const result = await this.http.getCad({collection: "cad", id});
+    if (result.cads.length > 0) {
+      this.cadData = result.cads[0];
+      const mubanId = this.cadData.zhankai[0].kailiaomuban;
+      if (mubanId) {
+        const result2 = await this.http.getCad({collection: "kailiaocadmuban", id: mubanId});
+        if (result2.cads.length > 0) {
+          this.cadMubanData = result2.cads[0];
         }
       }
     }
-  }
+    this._cadIdEffPending$.next(false);
+  });
 
   private _createItem(name: string): KlkwpzItem {
     return this.klkwpz.getKlkwpzItem(name, {});
@@ -92,15 +93,13 @@ export class KlkwpzComponent implements AfterViewInit {
         return "打单个孔";
       })()
     };
+    const getter = new InputInfoWithDataGetter(item, {validators: Validators.required});
+    const getter2 = new InputInfoWithDataGetter(typesData, {validators: Validators.required});
     const result: KlkwpzFormItem = {
       item,
       inputs1: [
-        {
-          type: "string",
+        getter.string("name", {
           label: "孔名字",
-          validators: [Validators.required],
-          model: {data: item, key: "name"},
-          showEmpty: true,
           suffixIcons: [
             {
               name: "list",
@@ -112,22 +111,17 @@ export class KlkwpzComponent implements AfterViewInit {
               }
             }
           ]
-        },
-        {
-          type: "select",
+        }),
+        getter2.selectSingle("type3", ["打单个孔", "按展开高打阵列孔", "按展开高打阵列孔（缩短范围）", "按指定宽高打阵列孔"], {
           label: "打孔类型",
-          options: ["打单个孔", "按展开高打阵列孔", "按展开高打阵列孔（缩短范围）", "按指定宽高打阵列孔"],
-          model: {data: typesData, key: "type3"},
-          showEmpty: true,
           onChange: () => {
             this._updateItemInputs3(result, typesData);
           }
-        },
+        }),
         {
           type: "select",
           label: "允许孔超出零件边缘",
           options: ["不允许超出", "允许左右超出", "允许上下超出", "都允许超出"],
-          showEmpty: true,
           value: (() => {
             const {不删除超出板材的孔, 删除超出板材的孔X, 删除超出板材的孔Y} = item;
             let removeX = 删除超出板材的孔X === "是";
@@ -181,16 +175,14 @@ export class KlkwpzComponent implements AfterViewInit {
   private _updateItemInputs2(data: KlkwpzFormItem, typesData: {type2: string}) {
     const item = data.item;
     const arr: InputInfo[] = [];
-    const info0: InputInfo = {
-      type: "select",
+    const getter = new InputInfoWithDataGetter(item, {validators: Validators.required});
+    const getter2 = new InputInfoWithDataGetter(typesData, {validators: Validators.required});
+    const info0 = getter2.selectSingle("type2", ["取开料模板横线竖线交点", "在算料CAD的打孔面上"], {
       label: "打孔起始点",
-      options: ["取开料模板横线竖线交点", "在算料CAD的打孔面上"],
-      model: {data: typesData, key: "type2"},
-      showEmpty: true,
       onChange: () => {
         this._updateItemInputs2(data, typesData);
       }
-    };
+    });
     const type2 = typesData.type2;
     if (type2 === "取开料模板横线竖线交点") {
       delete item.face;
@@ -222,8 +214,8 @@ export class KlkwpzComponent implements AfterViewInit {
         type: "group",
         label: " ",
         infos: [
-          {type: "string", label: "竖线名字", model: {data: item, key: "baseX"}, showEmpty: true, options: lineNamesV},
-          {type: "string", label: "横线名字", model: {data: item, key: "baseY"}, showEmpty: true, options: lineNamesH}
+          getter.string("baseX", {label: "竖线名字", options: lineNamesV}),
+          getter.string("baseY", {label: "横线名字", options: lineNamesH})
         ]
       });
     } else if (type2 === "在算料CAD的打孔面上") {
@@ -245,31 +237,15 @@ export class KlkwpzComponent implements AfterViewInit {
         {
           type: "group",
           label: "",
-          infos: [info0, {type: "string", label: "打孔面名字", model: {data: item, key: "face"}, showEmpty: true, options: lineNames}]
+          infos: [info0, getter.string("face", {label: "打孔面名字", options: lineNames})]
         },
-        {
-          type: "coordinate",
-          label: "",
-          labelX: "打孔面起始点X",
-          labelY: "打孔面起始点Y",
-          model: {data: item, key: "anchor1"},
-          compact: true,
-          showEmpty: true
-        }
+        getter.coordinate("anchor1", {label: "", labelX: "打孔面起始点X", labelY: "打孔面起始点Y", compact: true})
       );
     }
     arr.push(
-      {
-        type: "coordinate",
-        label: "",
-        labelX: "孔cad定位点X",
-        labelY: "孔cad定位点Y",
-        model: {data: item, key: "anchor2"},
-        compact: true,
-        showEmpty: true
-      },
-      {type: "string", label: "第一个孔定位点到打孔起始点的x方向距离", model: {data: item, key: "x"}, showEmpty: true},
-      {type: "string", label: "第一个孔定位点到打孔起始点的y方向距离", model: {data: item, key: "y"}, showEmpty: true}
+      getter.coordinate("anchor2", {label: "", labelX: "孔cad定位点X", labelY: "孔cad定位点Y", compact: true}),
+      getter.string("x", {label: "第一个孔定位点到打孔起始点的x方向距离"}),
+      getter.string("y", {label: "第一个孔定位点到打孔起始点的y方向距离"})
     );
     data.inputs2 = arr;
   }
@@ -286,15 +262,11 @@ export class KlkwpzComponent implements AfterViewInit {
       if (!item.板材打孔范围缩减) {
         item.板材打孔范围缩减 = {上: "", 下: "", 左: "", 右: ""};
       }
+      const getter = new InputInfoWithDataGetter(item.板材打孔范围缩减, {validators: Validators.required});
       arr.push({
         type: "group",
         label: "阵列范围缩减",
-        infos: [
-          {type: "string", label: "上", model: {data: item.板材打孔范围缩减, key: "上"}, showEmpty: true},
-          {type: "string", label: "下", model: {data: item.板材打孔范围缩减, key: "下"}, showEmpty: true},
-          {type: "string", label: "左", model: {data: item.板材打孔范围缩减, key: "左"}, showEmpty: true},
-          {type: "string", label: "右", model: {data: item.板材打孔范围缩减, key: "右"}, showEmpty: true}
-        ]
+        infos: [getter.string("上"), getter.string("下"), getter.string("左"), getter.string("右")]
       });
       delete item.板材孔位阵列范围;
     } else if (type3 === "按指定宽高打阵列孔") {
@@ -302,13 +274,11 @@ export class KlkwpzComponent implements AfterViewInit {
       if (!item.板材孔位阵列范围) {
         item.板材孔位阵列范围 = {宽: "", 高: ""};
       }
+      const getter2 = new InputInfoWithDataGetter(item.板材孔位阵列范围, {validators: Validators.required});
       arr.push({
         type: "group",
         label: "板材孔位阵列范围",
-        infos: [
-          {type: "string", label: "宽", model: {data: item.板材孔位阵列范围, key: "宽"}, showEmpty: true},
-          {type: "string", label: "高", model: {data: item.板材孔位阵列范围, key: "高"}, showEmpty: true}
-        ]
+        infos: [getter2.string("宽"), getter2.string("高")]
       });
     } else {
       delete item.板材孔位阵列范围;
@@ -325,58 +295,22 @@ export class KlkwpzComponent implements AfterViewInit {
       }
       delete item.固定行列阵列;
       delete item.增加指定偏移;
-      arr = (
-        [
-          {
-            type: "group",
-            label: "",
-            infos: [
-              {
-                type: "select",
-                label: "自增方向",
-                options: ["上右", "下右", "上左", "下左"],
-                model: {data: item.自增等距阵列, key: "自增方向"},
-                showEmpty: true
-              },
-              {
-                type: "select",
-                label: "剪切相交XY线",
-                options: ["是", "否"],
-                model: {data: item.自增等距阵列, key: "孔依附板材边缘"},
-                showEmpty: true
-              }
-            ]
-          },
-          {
-            type: "group",
-            label: "",
-            infos: [
-              {type: "string", label: "行数", model: {data: item.自增等距阵列, key: "行数"}, showEmpty: true},
-              {type: "string", label: "列数", model: {data: item.自增等距阵列, key: "列数"}, showEmpty: true},
-              {type: "string", label: "行距", model: {data: item.自增等距阵列, key: "行距"}, showEmpty: true},
-              {type: "string", label: "列距", model: {data: item.自增等距阵列, key: "列距"}, showEmpty: true}
-            ]
-          }
-        ] as InputInfo[]
-      ).concat(arr);
+      const getter = new InputInfoWithDataGetter(item.自增等距阵列, {validators: Validators.required});
+      arr = [
+        getInputInfoGroup([
+          getter.selectSingle("自增方向", ["上右", "下右", "上左", "下左"]),
+          getter.selectBooleanStr("孔依附板材边缘", {label: "剪切相交XY线"})
+        ]),
+        getInputInfoGroup([getter.string("行数"), getter.string("列数"), getter.string("行距"), getter.string("列距")]),
+        ...arr
+      ];
     } else {
       delete item.类型;
       delete item.自增等距阵列;
       delete item.固定行列阵列;
       delete item.增加指定偏移;
-      if (!item.孔依附板材边缘) {
-        item.孔依附板材边缘 = "否";
-      }
-      arr = (
-        [
-          {
-            type: "select",
-            label: "剪切相交XY线",
-            options: ["是", "否"],
-            model: {data: item, key: "孔依附板材边缘"}
-          }
-        ] as InputInfo[]
-      ).concat(arr);
+      const getter = new InputInfoWithDataGetter(item, {validators: Validators.required});
+      arr = [getter.selectBooleanStr("孔依附板材边缘", {label: "剪切相交XY线"}), getter.selectBooleanStr("孔依附边缘延长线剪切"), ...arr];
     }
     data.inputs3 = arr;
   }
@@ -389,12 +323,18 @@ export class KlkwpzComponent implements AfterViewInit {
       item = this._createItem("");
     }
     this.klkwpz.data.splice(i + 1, 0, item);
-    this.formData.splice(i + 1, 0, this._getItemData(item));
+    this.formData.update((v) => {
+      v.splice(i + 1, 0, this._getItemData(item));
+      return [...v];
+    });
   }
 
   removeItem(i: number) {
     this.klkwpz.data.splice(i, 1);
-    this.formData.splice(i, 1);
+    this.formData.update((v) => {
+      v.splice(i, 1);
+      return [...v];
+    });
   }
 
   private _isInfoEmpty(info: InputInfo): boolean {
@@ -415,7 +355,7 @@ export class KlkwpzComponent implements AfterViewInit {
   }
 
   submit() {
-    for (const item of this.formData) {
+    for (const item of this.formData()) {
       const inputs = [...item.inputs1, ...item.inputs2, ...item.inputs3];
       for (const info of inputs) {
         if (this._isInfoEmpty(info)) {

@@ -1,4 +1,4 @@
-import {Component, Inject, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {KailiaocanshuData, KlcsComponent} from "@components/klcs/klcs.component";
@@ -8,10 +8,11 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-klcs-dialog",
   templateUrl: "./klcs-dialog.component.html",
   styleUrls: ["./klcs-dialog.component.scss"],
-  imports: [KlcsComponent, MatButtonModule]
+  imports: [KlcsComponent, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KlcsDialogComponent {
-  @ViewChild(KlcsComponent) klcsComponent?: KlcsComponent;
+  klcsComponent = viewChild(KlcsComponent);
 
   constructor(
     public dialogRef: MatDialogRef<KlcsDialogComponent, KlcsDialogOutput>,
@@ -19,11 +20,13 @@ export class KlcsDialogComponent {
   ) {}
 
   async submit() {
-    if (this.klcsComponent) {
-      const result = await this.klcsComponent.submit();
-      if (result) {
-        this.dialogRef.close(result);
-      }
+    const klcsComponent = this.klcsComponent();
+    if (!klcsComponent) {
+      return;
+    }
+    const result = await klcsComponent.submit();
+    if (result) {
+      this.dialogRef.close(result);
     }
   }
 

@@ -1,4 +1,4 @@
-import {Component, Inject, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {KlkwpzSource} from "@components/klkwpz/klkwpz";
@@ -9,10 +9,11 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-klkwpz-dialog",
   templateUrl: "./klkwpz-dialog.component.html",
   styleUrls: ["./klkwpz-dialog.component.scss"],
-  imports: [KlkwpzComponent, MatButtonModule]
+  imports: [KlkwpzComponent, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KlkwpzDialogComponent {
-  @ViewChild(KlkwpzComponent) klkwpzComponent?: KlkwpzComponent;
+  klkwpzComponent = viewChild(KlkwpzComponent);
 
   constructor(
     public dialogRef: MatDialogRef<KlkwpzDialogComponent, KlkwpzSource>,
@@ -24,9 +25,11 @@ export class KlkwpzDialogComponent {
   }
 
   submit() {
-    if (this.klkwpzComponent && this.klkwpzComponent.submit()) {
-      this.dialogRef.close(this.klkwpzComponent.klkwpz.export());
+    const klkwpzComponent = this.klkwpzComponent();
+    if (!klkwpzComponent || !klkwpzComponent.submit()) {
+      return;
     }
+    this.dialogRef.close(klkwpzComponent.klkwpz.export());
   }
 
   cancel() {

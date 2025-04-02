@@ -1038,13 +1038,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return "";
   }
 
-  isEmpty(value: any) {
-    if (!this.info().showEmpty) {
-      return false;
-    }
-    return [null, undefined, ""].includes(value);
-  }
-
   setColor(color: ColorInstance | string | undefined | null) {
     const value = typeof color === "string" ? color : color?.string();
     try {

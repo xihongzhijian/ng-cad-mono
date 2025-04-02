@@ -23,7 +23,6 @@ export interface InputInfoBase<T = any> extends StyledItem {
   suffixTexts?: InputInfoTextInfo[];
   hint?: string;
   autocomplete?: "on" | "off";
-  showEmpty?: boolean;
   autoFocus?: boolean;
   placeholder?: string;
   validators?: AbstractControlOptions["validators"];

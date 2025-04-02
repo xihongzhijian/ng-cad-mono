@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
@@ -10,17 +10,18 @@ import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner
   selector: "app-kailiaocanshu",
   templateUrl: "./kailiaocanshu.component.html",
   styleUrls: ["./kailiaocanshu.component.scss"],
-  imports: [MatButtonModule, SpinnerComponent, KlcsComponent]
+  imports: [MatButtonModule, SpinnerComponent, KlcsComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KailiaocanshuComponent implements OnInit {
-  loaderId = "kailiaocanshu";
-  data: KailiaocanshuData = {_id: "", 名字: "", 分类: "", 参数: []};
-  @ViewChild(KlcsComponent) klcsComponent?: KlcsComponent;
+  private route = inject(ActivatedRoute);
+  private http = inject(CadDataService);
 
-  constructor(
-    private route: ActivatedRoute,
-    private http: CadDataService
-  ) {}
+  @HostBinding("class") class = "ng-page";
+
+  loaderId = "kailiaocanshu";
+  data = signal({_id: "", 名字: "", 分类: "", 参数: []});
+  klcsComponent = viewChild(KlcsComponent);
 
   async ngOnInit() {
     const {id} = this.route.snapshot.queryParams;
@@ -29,17 +30,19 @@ export class KailiaocanshuComponent implements OnInit {
     }
     const data = await this.http.getData<KailiaocanshuData>("peijian/kailiaocanshu/get", {id}, {spinner: this.loaderId});
     if (data) {
-      this.data = data;
+      this.data.set(data);
     }
     setGlobal("kailiaocanshu", this);
   }
 
   async submit() {
-    if (this.klcsComponent) {
-      const data = await this.klcsComponent.submit();
-      if (data) {
-        await this.http.post<KailiaocanshuData>("peijian/kailiaocanshu/set", {data}, {spinner: this.loaderId});
-      }
+    const klcsComponent = this.klcsComponent();
+    if (!klcsComponent) {
+      return;
+    }
+    const data = await klcsComponent.submit();
+    if (data) {
+      await this.http.post<KailiaocanshuData>("peijian/kailiaocanshu/set", {data}, {spinner: this.loaderId});
     }
   }
 }

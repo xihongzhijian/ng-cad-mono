@@ -12,6 +12,7 @@ import {
   InputInfoArray,
   InputInfoBoolean,
   InputInfoCommon,
+  InputInfoCoordinate,
   InputInfoGroup,
   InputInfoImage,
   InputInfoNumber,
@@ -240,6 +241,14 @@ export class InputInfoWithDataGetter<T> {
     };
   }
 
+  selectBooleanStr(key: keyof T, others?: InputInfoWithDataPart<InputInfoSelectSingle<T, string>>) {
+    const data = getValue(this.data);
+    if (data[key] !== "是") {
+      data[key] = "否" as any;
+    }
+    return this.selectSingle(key, ["是", "否"], others);
+  }
+
   number(key: keyof T, others?: InputInfoWithDataPart<InputInfoNumber<T>>): InputInfoNumber<T> {
     return {type: "number", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
@@ -281,6 +290,10 @@ export class InputInfoWithDataGetter<T> {
       ...this.others,
       ...others
     };
+  }
+
+  coordinate(key: keyof T, others?: InputInfoWithDataPart<InputInfoCoordinate<T>>): InputInfoCoordinate<T> {
+    return {type: "coordinate", label: String(key), model: {data: this.data, key}, ...this.others, ...others};
   }
 }
 

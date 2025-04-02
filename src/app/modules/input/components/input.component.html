@@ -1,12 +1,12 @@
 @if (info(); as info) {
   @switch (info.type) {
     @case ("string") {
-      <mat-form-field [class]="{empty: isEmpty(value)}">
+      <mat-form-field>
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
-        @if (info.hint; as hint) {
-          <mat-hint>{{ hint }}</mat-hint>
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
         }
         @if (displayValue(); as displayValue) {
           <textarea
@@ -94,12 +94,12 @@
       </mat-form-field>
     }
     @case ("number") {
-      <mat-form-field [class]="{empty: isEmpty(value)}">
+      <mat-form-field>
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
-        @if (info.hint; as hint) {
-          <mat-hint>{{ hint }}</mat-hint>
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
         }
         <input
           matInput
@@ -155,7 +155,7 @@
         }
         @for (item of asObject(value) | keyvalue: returnZero; track i; let i = $index) {
           <div class="flex-row">
-            <mat-form-field style="width: 35%; flex: 0 0 auto" [class]="{empty: isEmpty(item.key)}">
+            <mat-form-field style="width: 35%; flex: 0 0 auto">
               @if (info.keyLabel) {
                 <mat-label>{{ info.keyLabel }}</mat-label>
               }
@@ -196,7 +196,7 @@
                 </button>
               }
             </mat-form-field>
-            <mat-form-field style="width: 0; flex: 1 1 0" [class]="{empty: isEmpty(item.value)}">
+            <mat-form-field style="width: 0; flex: 1 1 0">
               @if (info.valueLabel) {
                 <mat-label>{{ info.valueLabel }}</mat-label>
               }
@@ -262,7 +262,7 @@
           </div>
         }
         @for (c of value; track j; let j = $index) {
-          <mat-form-field [class]="{empty: isEmpty(c)}">
+          <mat-form-field>
             @if (info.valueLabel) {
               <mat-label>{{ info.valueLabel }}</mat-label>
             }
@@ -306,7 +306,7 @@
     }
     @case ("boolean") {
       @if (info.appearance === "switch") {
-        <div class="switch-container" [class]="{empty: isEmpty(value)}">
+        <div class="switch-container">
           <div>{{ info.label }}</div>
           <mat-slide-toggle
             [(ngModel)]="value"
@@ -316,12 +316,12 @@
           ></mat-slide-toggle>
         </div>
       } @else {
-        <mat-form-field [class]="{empty: isEmpty(value)}">
+        <mat-form-field>
           @if (info.label) {
             <mat-label>{{ info.label }}</mat-label>
           }
-          @if (info.hint; as hint) {
-            <mat-hint>{{ hint }}</mat-hint>
+          @if (info.hint) {
+            <mat-hint>{{ info.hint }}</mat-hint>
           }
           @switch (info.appearance) {
             @case ("radio") {
@@ -391,12 +391,12 @@
           </mat-selection-list>
         </div>
       } @else {
-        <mat-form-field [class]="{empty: isEmpty(value)}">
+        <mat-form-field>
           @if (info.label) {
             <mat-label>{{ info.label }}</mat-label>
           }
-          @if (info.hint; as hint) {
-            <mat-hint>{{ hint }}</mat-hint>
+          @if (info.hint) {
+            <mat-hint>{{ info.hint }}</mat-hint>
           }
           @if (optionsDialog()) {
             <input
@@ -493,12 +493,12 @@
         <div class="sub-form-field">
           <div class="label">
             <span>{{ info.label }}</span>
-            @if (info.hint; as hint) {
-              <span>({{ hint }})</span>
+            @if (info.hint) {
+              <span>({{ info.hint }})</span>
             }
           </div>
           <div>
-            <mat-form-field style="width: 50%" [class]="{empty: isEmpty(value[0])}">
+            <mat-form-field style="width: 50%">
               <mat-label>{{ info.labelX || "x" }}</mat-label>
               <mat-select [(ngModel)]="value[0]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
                 <ng-scrollbar matSelectViewport>
@@ -512,7 +512,7 @@
               </ng-template>
               <mat-error>{{ getErrorMsg() }}</mat-error>
             </mat-form-field>
-            <mat-form-field style="width: 50%" [class]="{empty: isEmpty(value[1])}">
+            <mat-form-field style="width: 50%">
               <mat-label>{{ info.labelY || "y" }}</mat-label>
               <mat-select [(ngModel)]="value[1]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
                 <ng-scrollbar matSelectViewport>
@@ -526,12 +526,12 @@
           </div>
         </div>
       } @else {
-        <mat-form-field [class]="{empty: isEmpty(value)}">
+        <mat-form-field>
           @if (info.label) {
             <mat-label>{{ info.label }}</mat-label>
           }
-          @if (info.hint; as hint) {
-            <mat-hint>{{ hint }}</mat-hint>
+          @if (info.hint) {
+            <mat-hint>{{ info.hint }}</mat-hint>
           }
           <input
             matInput
@@ -556,12 +556,12 @@
         </mat-form-field>
       }
       <ng-template #coordinate>
-        <mat-form-field [class]="{empty: isEmpty(value)}">
+        <mat-form-field>
           @if (info.label) {
             <mat-label>{{ info.label }}</mat-label>
           }
-          @if (info.hint; as hint) {
-            <mat-hint>{{ hint }}</mat-hint>
+          @if (info.hint) {
+            <mat-hint>{{ info.hint }}</mat-hint>
           }
           <input
             matInput
@@ -587,12 +587,12 @@
       </ng-template>
     }
     @case ("color") {
-      <mat-form-field [class]="{empty: isEmpty(value)}">
+      <mat-form-field>
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
-        @if (info.hint; as hint) {
-          <mat-hint>{{ hint }}</mat-hint>
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
         }
         <input
           matInput
@@ -632,12 +632,12 @@
       </mat-form-field>
     }
     @case ("file") {
-      <mat-form-field [class]="{empty: isEmpty(value)}">
+      <mat-form-field>
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
-        @if (info.hint; as hint) {
-          <mat-hint>{{ hint }}</mat-hint>
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
         }
         <input matInput readonly [value]="fileName" [errorStateMatcher]="getErrorStateMatcher()" (click)="selectFile()" />
         <ng-container matSuffix>
@@ -654,12 +654,12 @@
       </mat-form-field>
     }
     @case ("image") {
-      <mat-form-field [class]="{empty: isEmpty(value)}">
+      <mat-form-field>
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
-        @if (info.hint; as hint) {
-          <mat-hint>{{ hint }}</mat-hint>
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
         }
         <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
         <app-image [src]="value" [bigPicSrc]="info.bigPicSrc" [prefix]="info.prefix" (click)="selectFile()"></app-image>
@@ -670,12 +670,12 @@
       </mat-form-field>
     }
     @case ("formulas") {
-      <mat-form-field [class]="{empty: isEmpty(value)}">
+      <mat-form-field>
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
-        @if (info.hint; as hint) {
-          <mat-hint>{{ hint }}</mat-hint>
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
         }
         <input
           matInput
@@ -758,8 +758,8 @@
 
   <ng-template #footer>
     <div class="footer">
-      @if (info.hint; as hint) {
-        <span class="hint">{{ hint }}</span>
+      @if (info.hint) {
+        <span class="hint">{{ info.hint }}</span>
       }
       <span class="error">{{ getErrorMsg() }}</span>
     </div>

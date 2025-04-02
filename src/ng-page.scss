@@ -15,6 +15,7 @@
     display: flex;
     flex-wrap: wrap;
     --item-margin: 2px;
+    --item-padding: 0;
 
     &.items-per-row > .item {
       width: calc(100% / var(--items-per-row, 1) - var(--item-margin) * 2);
@@ -31,6 +32,7 @@
     width: var(--item-width, auto);
     height: var(--item-height, auto);
     margin: var(--item-margin);
+    padding: var(--item-padding);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -95,12 +97,6 @@
 
     & > :not(:last-child) {
       margin-bottom: 5px;
-    }
-
-    .float-top {
-      position: absolute;
-      top: 0;
-      left: 0;
     }
   }
 

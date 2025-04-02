@@ -31,6 +31,7 @@ export interface KlkwpzItem {
   自增等距阵列?: KlkwpzItemMatrix;
   固定行列阵列?: KlkwpzItemMatrix;
   孔依附板材边缘?: BooleanCN;
+  孔依附边缘延长线剪切?: BooleanCN;
 }
 
 export interface KlkwpzItemMatrix {
