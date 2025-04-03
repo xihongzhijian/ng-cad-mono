@@ -120,11 +120,15 @@ import {
   getMokuaiFormulasRaw,
   getMokuaiOptions,
   getMokuaiShuchuVars,
+  getMokuaiShuchuVarsRaw,
+  getMokuaiShurus,
+  getMokuaiShurusRaw,
   getMokuaiXxsjValues,
   getShuruzhi,
   purgeMsbjInfo,
   setMokuaiOptions,
   setMokuaiShuchuVars,
+  setMokuaiShurus,
   setShuruzhi,
   XhmrmsbjData
 } from "./xhmrmsbj.utils";
@@ -724,8 +728,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         });
       }
     }
-    const showHint = !this.isFromOrder();
-    const arr = mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
+    const isFromOrder = this.isFromOrder();
+    const showHint = !isFromOrder;
+    const arr = getMokuaiShurus(msbjInfo, node, mokuai, isFromOrder);
     const getValidators = (key: string, slgs: Formulas, shuruzhi: Shuruzhi): InputInfo["validators"] => {
       return () => {
         if (!isVersion2024) {
@@ -755,7 +760,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       const data = this.data();
       const activeMenshanKey = this.activeMenshanKey();
       const varNames = getMokuaiShuchuVars(msbjInfo, node, mokuai);
-      if (this.isFromOrder()) {
+      if (isFromOrder) {
         varNames.push(...(await this.getVarNames()));
       }
       const isShuchubianliang = varNames.includes(v[0]);
@@ -797,7 +802,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     for (const v of arr) {
       let xxgsList = mokuai.xuanxianggongshi.filter((v2) => v[0] in v2.公式);
       if (xxgsList.length > 0) {
-        if (this.isFromOrder()) {
+        if (isFromOrder) {
           const xxsjValues = getMokuaiXxsjValues(msbjInfo, node, mokuai);
           xxgsList = matchMongoData(xxgsList, {...this.materialResult(), ...xxsjValues});
         }
@@ -805,7 +810,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           const shuruzhi = getShuruzhi(msbjInfo, node, mokuai, item._id);
           const valueInfo = this.getValueInfo(v[0], item.公式, shuruzhi);
           let label = v[0];
-          if (!this.isFromOrder()) {
+          if (!isFromOrder) {
             label += `【${item.名字}】`;
           }
           infos.push({
@@ -835,23 +840,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           }
         });
       }
-    }
-    return infos;
-  });
-  mokuaiInputInfosOutput = computed(() => {
-    const data = this.data();
-    const msbjInfo = this.activeMsbjInfo();
-    const node = this.activeMokuaiNode();
-    const mokuai = node?.选中模块;
-    const infos: {key: string; disabled: boolean; duplicate: boolean}[] = [];
-    if (!mokuai || !msbjInfo || !data) {
-      return infos;
-    }
-    const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
-    for (const key of mokuai.shuchubianliang) {
-      const disabled = !varsEnabled.includes(key);
-      const duplicate = this.isVarNameDuplicate(key);
-      infos.push({key, disabled, duplicate});
     }
     return infos;
   });
@@ -984,7 +972,75 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     // return infos;
   });
 
+  mokuaiInput = computed(() => {
+    const data = this.data();
+    const msbjInfo = this.activeMsbjInfo();
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
+    const infos: {key: string; disabled: boolean}[] = [];
+    if (!mokuai || !msbjInfo || !data) {
+      return infos;
+    }
+    const varsEnabled = getMokuaiShurus(msbjInfo, node, mokuai, true).map((v) => v[0]);
+    const varsAll = getMokuaiShurusRaw(msbjInfo, node, mokuai).map((v) => v[0]);
+    for (const key of varsAll) {
+      const disabled = !varsEnabled.includes(key);
+      infos.push({key, disabled});
+    }
+    return infos;
+  });
   toggleMokuaiShuruDisabled(name: string) {
+    const msbjInfo = this.activeMsbjInfo();
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
+    if (!mokuai || !node || !msbjInfo) {
+      return;
+    }
+    const varsEnabled = getMokuaiShurus(msbjInfo, node, mokuai, true).map((v) => v[0]);
+    const varsEnabled2 = varsEnabled.filter((v) => v !== name);
+    if (varsEnabled.length === varsEnabled2.length) {
+      setMokuaiShurus(msbjInfo, node, mokuai, [...varsEnabled, name]);
+    } else {
+      setMokuaiShurus(msbjInfo, node, mokuai, varsEnabled2);
+    }
+    this.refreshData();
+  }
+  setAllMokuaiShuruDisabled() {
+    const msbjInfo = this.activeMsbjInfo();
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
+    if (!mokuai || !node || !msbjInfo) {
+      return;
+    }
+    const varsEnabled = getMokuaiShurus(msbjInfo, node, mokuai, true).map((v) => v[0]);
+    const varsAll = getMokuaiShurusRaw(msbjInfo, node, mokuai).map((v) => v[0]);
+    if (varsEnabled.length === varsAll.length) {
+      setMokuaiShurus(msbjInfo, node, mokuai, []);
+    } else {
+      setMokuaiShurus(msbjInfo, node, mokuai, varsAll);
+    }
+    this.refreshData();
+  }
+
+  mokuaiOutput = computed(() => {
+    const data = this.data();
+    const msbjInfo = this.activeMsbjInfo();
+    const node = this.activeMokuaiNode();
+    const mokuai = node?.选中模块;
+    const infos: {key: string; disabled: boolean; duplicate: boolean}[] = [];
+    if (!mokuai || !msbjInfo || !data) {
+      return infos;
+    }
+    const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
+    const varsAll = getMokuaiShuchuVarsRaw(msbjInfo, node, mokuai);
+    for (const key of varsAll) {
+      const disabled = !varsEnabled.includes(key);
+      const duplicate = this.isVarNameDuplicate(key);
+      infos.push({key, disabled, duplicate});
+    }
+    return infos;
+  });
+  toggleMokuaiShuchuDisabled(name: string) {
     const msbjInfo = this.activeMsbjInfo();
     const node = this.activeMokuaiNode();
     const mokuai = node?.选中模块;
@@ -1000,7 +1056,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     this.refreshData();
   }
-  setAllMokuaiShuruDisabled(isXuanxiang: boolean) {
+  setAllMokuaiShuchuDisabled(isXuanxiang: boolean) {
     const msbjInfo = this.activeMsbjInfo();
     const node = this.activeMokuaiNode();
     const mokuai = node?.选中模块;
