@@ -495,7 +495,7 @@ export const purgeShuruDisabled = (infos: XhmrmsbjDataMsbjInfos) => {
     const map = new Map<string, MapItem>();
     for (const node of info.模块节点 || []) {
       for (const mokuai of node.可选模块) {
-        const item: MapItem = getMokuaiShuchuVarsRaw(info, node, mokuai);
+        const item: MapItem = getMokuaiShurusRaw(info, node, mokuai).map((v) => v[0]);
         map.set(getMokuaiObjectKey(node, mokuai), item);
       }
     }

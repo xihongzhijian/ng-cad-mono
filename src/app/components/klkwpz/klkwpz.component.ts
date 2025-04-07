@@ -310,7 +310,7 @@ export class KlkwpzComponent {
       delete item.固定行列阵列;
       delete item.增加指定偏移;
       const getter = new InputInfoWithDataGetter(item, {validators: Validators.required});
-      arr = [getter.selectBooleanStr("孔依附板材边缘", {label: "剪切相交XY线"}), getter.selectBooleanStr("孔依附边缘延长线剪切"), ...arr];
+      arr = [getter.selectBooleanStr("孔依附板材边缘", {label: "剪切相交XY线"}), ...arr];
     }
     data.inputs3 = arr;
   }
