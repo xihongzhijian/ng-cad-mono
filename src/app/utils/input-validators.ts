@@ -89,14 +89,4 @@ export class CustomValidators {
       return null;
     };
   };
-
-  private static _checkDuplicate = (names: string[] | Set<string>, name: string) => {
-    if (Array.isArray(names)) {
-      return names.includes(name);
-    }
-    if (names instanceof Set) {
-      return names.has(name);
-    }
-    return false;
-  };
 }

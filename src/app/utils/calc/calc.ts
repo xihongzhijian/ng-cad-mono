@@ -115,6 +115,9 @@ export class Calc {
       result.valid = !isNaN(expression);
       return result;
     }
+    if (/#.*?#/.test(expression)) {
+      return result;
+    }
     const vars = this.getVars(expression);
     const pairs: ObjectOf<number> = {};
     for (const v of vars) {
