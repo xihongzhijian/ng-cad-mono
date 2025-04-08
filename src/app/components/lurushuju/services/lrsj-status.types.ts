@@ -19,6 +19,7 @@ export interface XinghaoData extends TableDataBase2, ZuoshujuTableData {
   menchuang: string;
   gongyi: string;
   dingdanliucheng?: string;
+  menleixing?: string;
   算料单模板?: string;
   是否需要激光开料?: boolean;
   下单显示没有配件的板材分组?: boolean;
