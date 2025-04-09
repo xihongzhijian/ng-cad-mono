@@ -1,4 +1,5 @@
-import {Component, QueryList, ViewChildren} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked, viewChildren} from "@angular/core";
+import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -10,7 +11,6 @@ import {getFilepathUrl, replaceRemoteHost, session, setGlobal} from "@app/app.co
 import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong-summary.component";
 import {openSelectBancaiCadsDialog, SelectBancaiCadsInput} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
 import {downloadByString, downloadByUrl, getPinyinCompact, ObjectOf, timeout} from "@lucilor/utils";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiCad, BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -47,15 +47,40 @@ import {
     MatSlideToggleModule,
     NgScrollbar,
     SpinnerComponent
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SelectBancaiComponent extends Subscribed() {
-  autoGuige = this.config.getConfig("kailiaoAutoGuige");
-  orderBancaiInfos: OrderBancaiInfo[] = [];
-  bancaiList: ObjectOf<BancaiList> = {};
-  codes: string[] = [];
+export class SelectBancaiComponent {
+  private config = inject(AppConfigService);
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private status = inject(AppStatusService);
+
+  constructor() {
+    setGlobal("selectBancai", this);
+  }
+
+  routerEvent = toSignal(this.router.events);
+  routerEventEff = effect(() => {
+    const event = this.routerEvent();
+    if (event instanceof NavigationEnd) {
+      untracked(() => this.refresh());
+    }
+  });
+
+  loaderId = "selectBancai";
+  submitLoaderId = "selectBancaiSubmit";
+
+  codes = signal<string[]>([]);
+  codesStr = computed(() => this.codes().join(","));
   table = "";
-  type = "";
+  type = signal("");
+  isShowXikong = signal(false);
+  showGas = signal(false);
+  downloadName = "";
   gasOptions = [
     {value: "Air", label: "空气"},
     {value: "O2", label: "氧气"},
@@ -64,54 +89,28 @@ export class SelectBancaiComponent extends Subscribed() {
     {value: "H-O2", label: "高压氧气"},
     {value: "H-N2", label: "高压氮气"}
   ] as const;
-  loaderId = "selectBancai";
-  submitLoaderId = "selectBancaiSubmit";
-  downloadHistory: SelectBancaiDlHistory[] = [];
-  downloadName = "";
-  showGas = false;
-  isShowXikong = false;
-  xikongStrings: [string, string][][][] = [];
-  xikongOptions: XikongOptions = session.load("xikongOptions") || {};
-  xikongData: XikongData | null = null;
-
-  @ViewChildren("bancaiInfoInput") bancaiInfoInputs?: QueryList<InputComponent>;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private http: CadDataService,
-    private message: MessageService,
-    private dialog: MatDialog,
-    private status: AppStatusService,
-    private config: AppConfigService
-  ) {
-    super();
-    setGlobal("selectBancai", this);
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.refresh();
-      }
-    });
-  }
+  bancaiList: ObjectOf<BancaiList> = {};
+  xikongStrings = signal<[string, string][][][]>([]);
+  xikongData = signal<XikongData | null>(null);
 
   async refresh() {
     const {codes, table, type} = this.route.snapshot.queryParams;
     if (codes && table && type) {
-      this.codes = codes.split(",");
+      this.codes.set(codes.split(","));
       this.table = table;
       document.title = type;
-      this.type = type;
+      this.type.set(type);
       if (type === "铝型材铣孔工单") {
-        this.isShowXikong = true;
+        this.isShowXikong.set(true);
         await this.getXikongData(false, true);
       } else {
-        this.isShowXikong = false;
+        this.isShowXikong.set(false);
         await this.refreshDownloadHistory();
-        const result = await this.http.getData<BancaisInfo>("order/order/getBancais", {table, codes: this.codes});
+        const result = await this.http.getData<BancaisInfo>("order/order/getBancais", {table, codes: this.codes()});
         if (result) {
           const bancaiZidingyi = result.bancaiList.find((v) => v.mingzi === "自定义");
           const errMsgs: string[] = [];
-          this.orderBancaiInfos = [];
+          const orderBancaiInfos: ReturnType<typeof this.orderBancaiInfos> = [];
           for (const orderBancai of result.orderBancais) {
             const {code, bancaiCads, 上下走线, 开料孔位配置, 开料参数} = orderBancai;
             for (const cad of bancaiCads) {
@@ -148,18 +147,20 @@ export class SelectBancaiComponent extends Subscribed() {
               sortedCads: [],
               bancaiInfos: []
             };
-            this.orderBancaiInfos.push(orderBancaiInfo);
+            orderBancaiInfos.push(orderBancaiInfo);
             this.updateSortedCads(orderBancaiInfo, bancaiCads);
             for (const error of orderBancai.errors) {
               errMsgs.push(`订单编号:${error.code}<br>${error.msg}`);
             }
           }
+          this.orderBancaiInfos.set(orderBancaiInfos);
           this.updateOrderBancaiInfos();
           this.downloadName = result.downloadName;
-          this.showGas = type === "激光喷码开料排版";
+          let showGas = type === "激光喷码开料排版";
           if (this.status.projectConfig.getIsEqual("激光开料展开信息", "大族激光")) {
-            this.showGas = true;
+            showGas = true;
           }
+          this.showGas.set(showGas);
           if (errMsgs.length > 0) {
             this.message.alert({title: "开料报错", content: errMsgs.join("<br><br>")});
           }
@@ -170,13 +171,16 @@ export class SelectBancaiComponent extends Subscribed() {
     }
   }
 
+  downloadHistory = signal<SelectBancaiDlHistory[]>([]);
   async refreshDownloadHistory() {
-    const dlHistory = await this.http.getData<ObjectOf<any>[]>("order/order/getKailiaoDlHistory", {codes: this.codes});
+    const dlHistory = await this.http.getData<ObjectOf<any>[]>("order/order/getKailiaoDlHistory", {codes: this.codes()});
     if (dlHistory) {
-      this.downloadHistory = dlHistory.map<SelectBancaiDlHistory>((v) => ({
-        name: v.name,
-        date: DateTime.fromMillis(Number(v.创建时间)).toFormat("yyyy-MM-dd HH:mm:ss")
-      }));
+      this.downloadHistory.set(
+        dlHistory.map<SelectBancaiDlHistory>((v) => ({
+          name: v.name,
+          date: DateTime.fromMillis(Number(v.创建时间)).toFormat("yyyy-MM-dd HH:mm:ss")
+        }))
+      );
     }
   }
 
@@ -238,15 +242,17 @@ export class SelectBancaiComponent extends Subscribed() {
       if (duplicateIdx >= 0) {
         sortedCads[duplicateIdx] = sortedCads[duplicateIdx].concat(group);
         sortedCads.splice(i, 1);
-        this.orderBancaiInfos.splice(i, 1);
+        this.orderBancaiInfos().splice(i, 1);
         this.message.snack("板材信息相同, 已合并");
         this.updateOrderBancaiInfos();
       }
     }
   }
 
+  orderBancaiInfos = signal<OrderBancaiInfo[]>([]);
   updateOrderBancaiInfos() {
-    for (const info of this.orderBancaiInfos) {
+    const orderBancaiInfos = this.orderBancaiInfos();
+    for (const info of orderBancaiInfos) {
       info.bancaiInfos = [];
       for (const [i, group] of info.sortedCads.entries()) {
         const bancai = cloneDeep(group[0].bancai);
@@ -322,7 +328,7 @@ export class SelectBancaiComponent extends Subscribed() {
             }
           ]
         };
-        if (this.showGas) {
+        if (this.showGas()) {
           bancaiInfo.inputInfos.push({
             label: "切割保护气体",
             type: "select",
@@ -336,10 +342,12 @@ export class SelectBancaiComponent extends Subscribed() {
         info.bancaiInfos.push(bancaiInfo);
       }
     }
+    this.orderBancaiInfos.set([...orderBancaiInfos]);
   }
 
   async openCadsDialog(i: number, j: number) {
-    const info = this.orderBancaiInfos[i];
+    const orderBancaiInfos = this.orderBancaiInfos();
+    const info = orderBancaiInfos[i];
     const cads = [info.sortedCads[j]];
     const data: SelectBancaiCadsInput = {
       orders: [{code: info.code, cads}],
@@ -372,20 +380,19 @@ export class SelectBancaiComponent extends Subscribed() {
     this.updateOrderBancaiInfos();
   }
 
+  bancaiInfoInputs = viewChildren<InputComponent>("bancaiInfoInputs");
   async submit(selectCad?: boolean, noPaiban?: boolean) {
     await timeout(0);
-    if (this.bancaiInfoInputs) {
-      for (const bancaiInfoInput of this.bancaiInfoInputs) {
-        if (!bancaiInfoInput.isValid()) {
-          this.message.error("输入有误，请检查");
-          return;
-        }
+    for (const bancaiInfoInput of this.bancaiInfoInputs()) {
+      if (!bancaiInfoInput.isValid()) {
+        this.message.error("输入有误，请检查");
+        return;
       }
     }
     const getCadOptions: ObjectOf<any>[] = [];
     const bancaiCadsArr: BancaiCad[][] = [];
     const codes: string[] = [];
-    for (const info of this.orderBancaiInfos) {
+    for (const info of this.orderBancaiInfos()) {
       const arr1: BancaiCad[] = [];
       const namesInclude: string[] = [];
       const namesExclude: string[] = [];
@@ -414,19 +421,30 @@ export class SelectBancaiComponent extends Subscribed() {
       bancaiCadsArr.push(arr1);
     }
     const api = "order/order/selectBancai";
-    const {table, autoGuige, type} = this;
+    const {table} = this;
+    const type = this.type();
+    const autoGuige = this.autoGuige();
     const projectConfigOverride: ObjectOf<string> = {};
     if (noPaiban) {
       projectConfigOverride.激光开料结果不用排版 = "是";
     }
     let url: string | string[] | null = null;
-    const data: ObjectOf<any> = {codes, bancaiCadsArr, table, autoGuige, type, getCadOptions, projectConfigOverride};
+    const data: ObjectOf<any> = {
+      codes,
+      bancaiCadsArr,
+      table,
+      autoGuige,
+      type,
+      getCadOptions,
+      projectConfigOverride,
+      verbose: this.verbose()
+    };
     try {
       url = await this.http.getData<string | string[]>(api, data);
       await this.refreshDownloadHistory();
     } catch {}
     if (url) {
-      this.xikongData = null;
+      this.xikongData.set(null);
       if (Array.isArray(url)) {
         this.message.alert(url.map((v) => `<div>${v}</div>`).join(""));
       } else {
@@ -436,15 +454,15 @@ export class SelectBancaiComponent extends Subscribed() {
   }
 
   async selectCadsToSubmit() {
-    const data: SelectBancaiCadsInput = {orders: [], submitBtnText: this.type, submitLimit: {min: 1}, noPaiban: true};
-    for (const order of this.orderBancaiInfos) {
+    const data: SelectBancaiCadsInput = {orders: [], submitBtnText: this.type(), submitLimit: {min: 1}, noPaiban: true};
+    for (const order of this.orderBancaiInfos()) {
       data.orders.push({code: order.code, cads: order.sortedCads});
     }
     const result = await openSelectBancaiCadsDialog(this.dialog, {data});
     if (result) {
       await this.submit(true, result.noPaiban);
     }
-    for (const order of this.orderBancaiInfos) {
+    for (const order of this.orderBancaiInfos()) {
       for (const group of order.sortedCads) {
         for (const cad of group) {
           cad.checked = false;
@@ -458,7 +476,7 @@ export class SelectBancaiComponent extends Subscribed() {
   }
 
   downloadDxf(url: string, isName = false) {
-    const downloadName = this.downloadName || this.codes.join(",");
+    const downloadName = this.downloadName || this.codesStr();
     if (isName) {
       url = getFilepathUrl(`tmp/${url}.dxf`);
     }
@@ -487,17 +505,26 @@ export class SelectBancaiComponent extends Subscribed() {
     this.open(url.href);
   }
 
+  autoGuige = signal(this.config.getConfig("kailiaoAutoGuige"));
   onAutoGuigeChange() {
-    this.config.setConfig("kailiaoAutoGuige", this.autoGuige);
+    this.config.setConfig("kailiaoAutoGuige", this.autoGuige());
+  }
+  verbose = signal(this.config.getConfig("kailiaoVerbose"));
+  toggleVerbose() {
+    this.verbose.update((v) => !v);
+    this.config.setConfig("kailiaoVerbose", this.verbose());
   }
 
+  xikongOptions = signal(session.load<XikongOptions>("xikongOptions") || {});
   onXikongOptionsChange() {
-    session.save("xikongOptions", this.xikongOptions);
+    const xikongOptions = this.xikongOptions();
+    this.xikongOptions.set({...xikongOptions});
+    session.save("xikongOptions", xikongOptions);
     this.getXikongData(false, true);
   }
 
   async getDakongSummary() {
-    const {codes} = this;
+    const codes = this.codes();
     const data = await this.http.getData<DakongSummary>("order/order/getDakongSummary", {codes});
     if (!data) {
       return;
@@ -520,11 +547,13 @@ export class SelectBancaiComponent extends Subscribed() {
   }
 
   async getXikongData(download: boolean, useCache = false, checkOnly = false) {
-    if (!this.xikongData || !useCache) {
-      const {codes} = this;
-      this.xikongData = await this.http.getData<XikongData>("order/order/getXikongData", {codes});
+    let xikongData = this.xikongData();
+    if (!xikongData || !useCache) {
+      const codes = this.codes();
+      xikongData = await this.http.getData<XikongData>("order/order/getXikongData", {codes});
+      this.xikongData.set(xikongData);
     }
-    const data = {...this.xikongData};
+    const data = {...xikongData};
     const toDelete: string[] = [];
     const result = {toDelete};
     if (!data) {
@@ -537,7 +566,7 @@ export class SelectBancaiComponent extends Subscribed() {
     }
     if (toDelete.length > 0) {
       const toDeleteStr = toDelete.join("、");
-      if (this.isShowXikong) {
+      if (this.isShowXikong()) {
         const yes = await this.message.confirm(`以下订单没有铣孔数据，请先开一次料<br>${toDeleteStr}<br>是否前往激光开料`);
         if (yes) {
           this.setType("激光开料排版");
@@ -553,8 +582,8 @@ export class SelectBancaiComponent extends Subscribed() {
     if (checkOnly) {
       return result;
     }
-    this.xikongStrings = [];
-    const {showCN} = this.xikongOptions;
+    const xikongStrings: ReturnType<typeof this.xikongStrings> = [];
+    const {showCN} = this.xikongOptions();
     for (const code in data) {
       const groupDisplay: [string, string][][] = [];
       const groupDownload: string[] = [];
@@ -584,11 +613,12 @@ export class SelectBancaiComponent extends Subscribed() {
           groupDownload.push(rowDownload);
         }
       }
-      this.xikongStrings.push(groupDisplay);
+      xikongStrings.push(groupDisplay);
       if (download) {
         downloadByString(groupDownload.join("\n"), {filename: code + ".txt"});
       }
     }
+    this.xikongStrings.set(xikongStrings);
     return result;
   }
 
