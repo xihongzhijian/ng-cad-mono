@@ -28,7 +28,7 @@ import {remoteFilePath, session, setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
 import {alertError, checkDuplicateVars, ErrorItem, getNamesDetail} from "@app/utils/error-message";
 import {FetchManager} from "@app/utils/fetch-manager";
-import {getValueString} from "@app/utils/get-value";
+import {getCopyName, getValueString} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {canItemMatchTogether, matchMongoData} from "@app/utils/mongo";
 import {getSortedItems} from "@app/utils/sort-items";
@@ -460,7 +460,17 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   });
   activeMsbjInfoItemsSorted = computed(() => {
     this.data();
-    const items = (this.activeMsbjInfoItems() || []).map((v) => ({...v, isEmpty: isMsbjInfoEmpty(v.布局模块)}));
+    const items = (this.activeMsbjInfoItems() || []).map((v) => {
+      const texts: {key: string; value: string}[] = [];
+      const item = {...v, isEmpty: isMsbjInfoEmpty(v.布局模块), texts};
+      if (item.条件) {
+        texts.push({key: "条件", value: item.条件});
+      }
+      if (item.选项) {
+        texts.push({key: "选项", value: getValueString(item.选项, {separator: "\n", separatorKv: "："})});
+      }
+      return item;
+    });
     return getSortedItems(items, (v) => v.排序 || 0);
   });
   activeMsbjInfoItem = computed(() => {
@@ -2116,6 +2126,116 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     });
     return items;
   }
+  async copyMsbjInfoItems(key0: MenshanKey) {
+    const getOptions = (msbjData: XhmrmsbjData | null, key: MenshanKey | null) => {
+      const keyOptions: InputInfoOption<MenshanKey>[] = [];
+      const itemOptions: InputInfoOption<XhmrmsbjInfoItem>[] = [];
+      const result = {keyOptions, itemOptions};
+      if (!msbjData) {
+        return result;
+      }
+      msbjData.forEachMsbjInfo(
+        ({key: key2, item: item2, info}) => {
+          if (!key || key2 !== key) {
+            return;
+          }
+          let label = item2.名字;
+          const isEmpty = isMsbjInfoEmpty(info);
+          if (isEmpty) {
+            label += "（没有数据）";
+          }
+          itemOptions.push({label, value: item2});
+        },
+        ({key: key2, items: items2}) => {
+          if (key2 === key0) {
+            return;
+          }
+          const count = items2.length;
+          const label = `${key2}(${count})`;
+          keyOptions.push({label, value: key2, disabled: count < 1});
+        }
+      );
+      itemOptions.sort((a, b) => (a.value.排序 || 0) - (b.value.排序 || 0));
+      return result;
+    };
+    const copyTypes = ["添加", "替换"] as const;
+    const data: {
+      xinghao: TableDataBase | null;
+      msbjData: XhmrmsbjData | null;
+      fromKey: MenshanKey | null;
+      fromItems: XhmrmsbjInfoItem[];
+      copyType: (typeof copyTypes)[number];
+    } = {
+      xinghao: null,
+      msbjData: null,
+      fromKey: null,
+      fromItems: [],
+      copyType: "添加"
+    };
+    data.msbjData = this.data();
+    if (data.msbjData) {
+      data.xinghao = {vid: data.msbjData.id, mingzi: this.xinghao()?.name || ""};
+    }
+    const getter = new InputInfoWithDataGetter(data);
+    const fromKeyInput = getter.selectSingle("fromKey", [], {
+      label: "从哪里复制",
+      validators: Validators.required,
+      onChange: () => {
+        updateFromInputs();
+      }
+    });
+    const fromItemInput = getter.selectMultiple("fromItems", [], {
+      label: "从哪里复制",
+      validators: Validators.required,
+      appearance: "list"
+    });
+    const updateFromInputs = () => {
+      const {keyOptions, itemOptions} = getOptions(data.msbjData, data.fromKey);
+      fromKeyInput.options = keyOptions;
+      fromItemInput.options = itemOptions;
+    };
+    updateFromInputs();
+    const xinghaoInput = getter.selectSingle("xinghao", [], {
+      label: "型号",
+      optionsDialog: {optionKey: "型号默认门扇布局", nameField: "xinghao", optionsUseObj: true},
+      onChange: async (val: TableDataBase) => {
+        if (val.vid === this.xinghao()?.id) {
+          data.msbjData = this.data();
+          updateFromInputs();
+        } else {
+          const records = await this.http.queryMySql<XhmrmsbjTableData>({
+            table,
+            filter: {where: {vid: val.vid}}
+          });
+          data.msbjData = this.getXhmrmsbjData(records[0]);
+          updateFromInputs();
+        }
+      }
+    });
+    const form: InputInfo<typeof data>[] = [
+      getter.selectSingle<(typeof copyTypes)[number]>("copyType", copyTypes, {label: "复制方式", appearance: "list", clearable: true}),
+      xinghaoInput,
+      fromKeyInput,
+      fromItemInput
+    ];
+    const result = await this.message.form(form);
+    const {fromItems, copyType} = data;
+    const items = this.data()?.findMsbjInfoItems(key0);
+    if (!result || !items || fromItems.length < 1) {
+      return;
+    }
+    if (copyType === "替换") {
+      items.length = 0;
+      items.push(...cloneDeep(fromItems));
+    } else {
+      const names = items.map((v) => v.名字);
+      for (const item of cloneDeep(fromItems)) {
+        item.名字 = getCopyName(names, item.名字);
+        items.push(item);
+      }
+    }
+    this.refreshData();
+  }
 
   async getMsbjInfoItem(item?: XhmrmsbjInfoItem) {
     let data: XhmrmsbjInfoItem;
@@ -2135,7 +2255,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const getter = new InputInfoWithDataGetter(data, {clearable: true});
     const form: InputInfo[] = [
       getter.string("名字", {validators: [Validators.required, CustomValidators.duplicate(names)]}),
-      getter.object("选项", {optionsDialog: {}, optionType: "模块选项"}),
+      getter.object("选项", {optionMultiple: true, optionsDialog: {}, optionType: "模块选项"}),
       getter.string("条件"),
       getter.number("排序"),
       getter.boolean("停用")
@@ -2188,7 +2308,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.refreshData();
   }
   async copyMsbjInfoItem(i: number) {
-    const items = this.activeMsbjInfoItems();
     const activeMenshanKey = this.activeMenshanKey();
     i = this.findMsbjInfoItemOriginal(i).index;
     const getOptions = (msbjData: XhmrmsbjData | null, key: MenshanKey | null) => {
@@ -2200,7 +2319,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
       msbjData.forEachMsbjInfo(
         ({key: key2, item: item2, info, index: j}) => {
-          if (!key || key !== key2) {
+          if (!key || key2 !== key) {
             return;
           }
           if (key2 === activeMenshanKey && j === i) {
@@ -2275,6 +2394,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!result || !fromItem) {
       return;
     }
+    const items = this.activeMsbjInfoItems();
     items[i].布局模块 = cloneDeep(fromItem.布局模块);
     this.refreshData();
   }

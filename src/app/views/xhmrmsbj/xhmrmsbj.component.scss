@@ -19,13 +19,15 @@
 }
 
 .menshan-nav-container {
-  flex: 0 0 240px;
+  flex: 0 0 300px;
 }
-
 .menshan-nav-items {
   > .item {
     padding: 10px;
   }
+}
+.menshan-keys-container {
+  flex: 0 0 115px;
 }
 
 .mokuai {

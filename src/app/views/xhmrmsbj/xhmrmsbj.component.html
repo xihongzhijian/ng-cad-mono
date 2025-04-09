@@ -67,7 +67,7 @@
       }
       <mat-divider class="placeholder"></mat-divider>
       <div class="flex-row scrollbar-container">
-        <ng-scrollbar>
+        <ng-scrollbar class="menshan-keys-container">
           <div class="menshan-nav-items items vertical">
             @for (info of menshanKeyInfos(); track $index) {
               <div
@@ -79,11 +79,16 @@
                   <span>{{ info.key }}</span>
                   <span>({{ info.itemsCount }})</span>
                 </div>
+                @if (!isFromOrder()) {
+                  <div class="toolbar compact center">
+                    <button mat-button (click)="copyMsbjInfoItems(info.key)">复制</button>
+                  </div>
+                }
               </div>
             }
           </div>
         </ng-scrollbar>
-        <ng-scrollbar>
+        <ng-scrollbar class="menshan-info-items-container">
           <div class="menshan-nav-items items vertical">
             @for (item of activeMsbjInfoItemsSorted(); track i; let i = $index) {
               <div
@@ -91,13 +96,19 @@
                 [class]="{active: activeMsbjInfoSortedIndex() === i}"
                 (click)="activeMsbjInfoSortedIndex.set(i)"
               >
-                <div class="name">
+                <div class="text">
                   <span>({{ item["排序"] || 0 }})</span>
                   <span>{{ item["名字"] }}</span>
-                  @if (item.isEmpty) {
-                    <span class="error">（没有数据）</span>
-                  }
                 </div>
+                @if (item.isEmpty) {
+                  <div class="text error">（没有数据）</div>
+                }
+                @for (text of item.texts; track $index) {
+                  <div class="text pre-wrap flex-row">
+                    <div class="flex-00a">{{ text.key }}：</div>
+                    <div>{{ text.value }}</div>
+                  </div>
+                }
                 @if (!isFromOrder()) {
                   <div class="toolbar compact center">
                     <button mat-button (click)="editMsbjInfoItem(i)">编辑</button>
