@@ -149,7 +149,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
     }
   }
 
-  bancaiListManager = new FetchManager(null, () => this.http.getBancaiList(9, {spinner: this.loaderId}));
+  bancaiListManager = new FetchManager(null, () => this.http.getBancaiList({fubanNumber: 9, withImg: true}, {spinner: this.loaderId}));
   async refresh() {
     if (this._refreshLock$.value) {
       await lastValueFrom(this._refreshLock$.pipe(first((v) => !v)));
@@ -260,7 +260,7 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
         resData ||
         (await this.http.getData<MrbcjfzResponseData>(
           "peijian/xinghao/bancaifenzuIndex",
-          {table, id, collection},
+          {table, id, collection, bancaiImg: true},
           {spinner: this.loaderId}
         ));
       if (data) {
@@ -366,7 +366,11 @@ export class MrbcjfzComponent implements OnInit, OnChanges {
           houduList: info.可选厚度
         },
         bancaiList: this.bancaiList,
-        bancaiListRefrersh: async () => (await this.bancaiListManager.fetch(true))?.bancais || [],
+        bancaiListRefrersh: async () => {
+          const bancaiList = (await this.bancaiListManager.fetch(true))?.bancais || [];
+          this.bancaiList = bancaiList;
+          return bancaiList;
+        },
         key,
         extraInputInfos: [[this.xinghao.get板材分组别名InputInfo(key, true)]]
       }

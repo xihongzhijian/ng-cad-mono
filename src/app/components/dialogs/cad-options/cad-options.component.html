@@ -1,5 +1,5 @@
 <div class="toolbar">
-  <app-input class="flex-110" [info]="searchInputInfo()"></app-input>
+  <app-input [info]="searchInputInfo()"></app-input>
   @if (data.multi) {
     <button mat-flat-button (click)="selectAll()">全选当前数据</button>
   }
@@ -16,7 +16,7 @@
 @if (data.typeFiltering) {
   <div class="toolbar">
     <button mat-flat-button [class.accent]="activeOptionTypes().length < 1" (click)="toggleActiveOptionType(null)">全部</button>
-    @for (type of optionTypesManager.data(); track $index) {
+    @for (type of optionTypesManager.data().types; track $index) {
       <button mat-flat-button [class.accent]="activeOptionTypes().includes(type)" (click)="toggleActiveOptionType(type)">
         {{ type }}
       </button>

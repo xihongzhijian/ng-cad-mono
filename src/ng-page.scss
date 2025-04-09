@@ -65,8 +65,8 @@
 
     app-image {
       width: 100%;
-      height: var(--item-image-height, 0);
-      flex: 1 1 0;
+      height: 0;
+      flex: 1 1 var(--item-image-height, 0);
     }
     app-cad-image app-image {
       height: auto;

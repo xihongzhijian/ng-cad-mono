@@ -18,6 +18,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {filePathUrl} from "@app/app.common";
 import {FetchManager} from "@app/utils/fetch-manager";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {isTypeOf, ObjectOf, queryString, timeout} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -206,23 +207,39 @@ export class CadOptionsComponent implements AfterViewInit {
     this.getData(event.pageIndex + 1);
   }
 
-  optionTypesManager = new FetchManager([], async () => {
-    const {typeFiltering, name} = this.data;
-    if (!typeFiltering) {
-      return [];
-    }
-    const records = await this.http.queryMySql({table: name, fields: [typeFiltering.field]});
+  emptyTypeName = "未分组";
+  optionTypesManager = new FetchManager({types: [], map: new Map()}, async () => {
+    const {typeFiltering, name, options} = this.data;
     const types: string[] = [];
+    const map = new Map<number, string[]>();
+    if (!typeFiltering) {
+      return {types, map};
+    }
+    let records: TableDataBase[] | GetOptionsResultItem[] | undefined = options;
+    if (!Array.isArray(records)) {
+      records = await this.http.queryMySql({table: name, fields: [typeFiltering.field], withGuanlian: true});
+    }
+    let hasEmptyType = false;
     for (const record of records) {
-      const type = (record as any)[typeFiltering.field];
-      if (type && !types.includes(type)) {
-        types.push(type);
+      let types2: string | string[] = (record as any)[typeFiltering.field];
+      if (!Array.isArray(types2)) {
+        types2 = [types2];
       }
+      types2 = types2.filter((v) => v && typeof v === "string");
+      if (types2.length < 1) {
+        hasEmptyType = true;
+      }
+      for (const type of types2) {
+        if (!types.includes(type)) {
+          types.push(type);
+        }
+      }
+      map.set(record.vid, types2);
     }
-    if (types.length > 1) {
-      return types;
+    if (hasEmptyType) {
+      types.unshift(this.emptyTypeName);
     }
-    return [];
+    return {types, map};
   });
   activeOptionTypes = signal<string[]>([]);
   optionTypesInputInfo = computed(() => {
@@ -235,7 +252,7 @@ export class CadOptionsComponent implements AfterViewInit {
       label: "类型",
       appearance: "list",
       multiple: true,
-      options: this.optionTypesManager.data()
+      options: this.optionTypesManager.data().types
     };
     return info;
   });
@@ -269,17 +286,27 @@ export class CadOptionsComponent implements AfterViewInit {
       autoFocus: true,
       value: this.searchValue(),
       onInput: debounce(onChange, 500),
-      onChange
+      onChange,
+      clearable: true,
+      style: {flex: "0 1 300px"}
     };
     return info;
   });
   async getOptions(params: GetOptionsParamsSingle, loader: Parameters<typeof this.spinner.show>, refreshLocalOptions: boolean) {
     let data: DataAndCount<GetOptionsResultItem[]> | null = null;
     const {options} = this.data;
+    const activeOptionTypes = this.activeOptionTypes();
+    const typesMap = this.optionTypesManager.data().map;
     if (Array.isArray(options)) {
       if (refreshLocalOptions) {
+        const {refreshOptions} = this.data;
         this.spinner.show(...loader);
-        data = await this.http.getOptionsAndCount({...params, page: 1, limit: Infinity});
+        if (typeof refreshOptions === "function") {
+          const data2 = await refreshOptions();
+          data = {data: data2, count: data2.length};
+        } else {
+          data = await this.http.getOptionsAndCount({...params, page: 1, limit: Infinity});
+        }
         if (data) {
           options.length = 0;
           options.push(...(data.data || []));
@@ -290,6 +317,18 @@ export class CadOptionsComponent implements AfterViewInit {
       const options2 = options.filter((v) => {
         if (params.values && !params.values.includes(v[field])) {
           return false;
+        }
+        if (activeOptionTypes.length > 0) {
+          const types = typesMap.get(v.vid) || [];
+          if (types.length < 1) {
+            if (!activeOptionTypes.includes(this.emptyTypeName)) {
+              return false;
+            }
+          } else {
+            if (!activeOptionTypes.some((type) => types.includes(type))) {
+              return false;
+            }
+          }
         }
         return queryString(this.searchValue(), v.name);
       });

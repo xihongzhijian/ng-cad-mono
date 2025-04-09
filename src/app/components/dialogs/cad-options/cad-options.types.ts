@@ -15,6 +15,7 @@ export interface CadOptionsInput {
   fields?: string[];
   nameField?: string;
   options?: GetOptionsResultItem[];
+  refreshOptions?: () => Promise<GetOptionsResultItem[]>;
   defaultValue?: {value?: string; required?: boolean};
   optionOptions?: {value?: ObjectOf<ObjectOf<string> | undefined>; info?: InputInfoPart<InputInfoObject<string, string, string>>};
   openInNewTab?: boolean;
