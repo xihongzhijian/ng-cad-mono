@@ -30,26 +30,8 @@
 
 .mokuai {
   width: 100px;
-  padding: 5px;
+  padding: 2px;
   margin: 2px;
-
-  .mokuai-top {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-  }
-
-  .active-sign {
-    color: var(--mat-sys-tertiary);
-  }
-
-  .default-sign {
-    color: var(--mat-sys-on-surface);
-    &.active {
-      color: var(--mat-sys-tertiary);
-    }
-  }
 
   .mokuai-xiaoguotu {
     flex: 1 1 150px;

@@ -18,10 +18,16 @@
             <div class="img done"></div>
           }
           <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="gotoZuofas(xinghao)"></app-image>
-          <div class="name" [matTooltip]="xinghao.mingzi">
+          <div class="name">
             <mat-checkbox [checked]="xinghaoSelectedIndexs().includes(i)" (change)="toggleXinghaoSelected(i)"></mat-checkbox>
             <span (click)="toggleXinghaoSelected(i)">{{ xinghao.mingzi }}</span>
           </div>
+          @if (showMenleixing() && xinghao.menleixing) {
+            <div class="name menleixing">
+              <mat-checkbox disabled></mat-checkbox>
+              <span>{{ xinghao.menleixing }}</span>
+            </div>
+          }
           @if (editMode()) {
             <div class="toolbar center">
               <button mat-button (click)="editXinghao(xinghao)">编辑</button>

@@ -2,7 +2,6 @@ import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, injec
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
-import {MatTooltipModule} from "@angular/material/tooltip";
 import {joinOptions, splitOptions} from "@app/app.common";
 import {getCopyName} from "@app/utils/get-value";
 import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
@@ -36,7 +35,6 @@ import {defaultFenleis, getOptions} from "../lrsj-pieces.utils";
     InputComponent,
     MatButtonModule,
     MatCheckboxModule,
-    MatTooltipModule,
     NgScrollbarModule,
     XhmrmsbjComponent
   ],
@@ -98,6 +96,10 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       })
     ];
     return form;
+  });
+
+  showMenleixing = computed(() => {
+    return this.status.projectConfig.getBoolean("产品数据型号要显示门类型");
   });
 
   xinghaos = computed(() => {

@@ -636,7 +636,7 @@ export class LrsjStatusService implements OnDestroy {
     if (!force && this._isBancaiListFetched()) {
       return;
     }
-    const bancaiList = await this.http.getBancaiList(6);
+    const bancaiList = await this.http.getBancaiList({fubanNumber: 6});
     this.bancaiList.set(bancaiList);
     this._isBancaiListFetched.set(true);
   }

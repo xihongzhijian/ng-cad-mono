@@ -55,13 +55,13 @@ export class CustomValidators {
   static duplicate = (names: string[] | Set<string>): ValidatorFn => {
     return (control) => {
       const value = control.value;
-      if (this._checkDuplicate(names, value)) {
+      if ((Array.isArray(names) && names.includes(value)) || (names instanceof Set && names.has(value))) {
         return {不能重复: true};
       }
       return null;
     };
   };
-  static varName = (varNames: string[] | Set<string>): ValidatorFn => {
+  static varName = (varNames: string[]): ValidatorFn => {
     return (control) => {
       const value = control.value;
       if (!value) {
@@ -70,7 +70,7 @@ export class CustomValidators {
       if (!isNaN(Number(value))) {
         return {不能是纯数字: true};
       }
-      if (this._checkDuplicate(varNames, value)) {
+      if (varNames.filter((v) => v === value).length > 1) {
         return {不能重复: true};
       }
       if (/^[0-9]/.test(value)) {
@@ -88,15 +88,5 @@ export class CustomValidators {
       }
       return null;
     };
-  };
-
-  private static _checkDuplicate = (names: string[] | Set<string>, name: string) => {
-    if (Array.isArray(names)) {
-      return names.includes(name);
-    }
-    if (names instanceof Set) {
-      return names.has(name);
-    }
-    return false;
   };
 }

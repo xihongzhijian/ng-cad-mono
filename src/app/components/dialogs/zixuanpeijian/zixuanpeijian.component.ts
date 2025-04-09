@@ -16,6 +16,7 @@ import {CadCollection} from "@app/cad/collections";
 import {setDimensionText, uploadAndReplaceCad} from "@app/cad/utils";
 import {toFixed} from "@app/utils/func";
 import {getNameWithSuffix} from "@app/utils/get-value";
+import {openBancaiListDialog} from "@components/bancai-form/bancai-form.component";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
@@ -44,7 +45,6 @@ import {TypedTemplateDirective} from "../../../modules/directives/typed-template
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
 import {InputComponent} from "../../../modules/input/components/input.component";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
-import {openBancaiListDialog} from "../bancai-list/bancai-list.component";
 import {openCadEditorDialog} from "../cad-editor-dialog/cad-editor-dialog.component";
 import {getOpenDialogFunc} from "../dialog.common";
 import {openKlcsDialog} from "../klcs-dialog/klcs-dialog.component";
@@ -1330,6 +1330,7 @@ export class ZixuanpeijianComponent implements OnInit {
     const zxpjCads = await getZixuanpeijianCads(this.http, {spinner: this.spinnerId}, typesInfo, this.materialResult);
     if (zxpjCads) {
       this.bancaiList = zxpjCads.bancais;
+      return zxpjCads.bancais;
     }
     return [];
   }

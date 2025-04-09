@@ -220,7 +220,7 @@ export class FormulasEditorComponent {
 
   validateVarName(varName: string, formulaList: string[][]) {
     const control = new FormControl(varName);
-    const varNames = new Set<string>(formulaList.map((v) => v[0]));
+    const varNames = formulaList.map((v) => v[0]);
     return CustomValidators.varName(varNames)(control);
   }
   validateVarExpr(varExp: string): ValidationErrors | null {

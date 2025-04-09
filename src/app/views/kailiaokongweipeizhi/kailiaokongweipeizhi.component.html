@@ -1,7 +1,7 @@
 <div class="toolbar" style="padding-left: 20px">
   <div class="spinner-container">
-    <button mat-flat-button [disabled]="!id" (click)="submit()">提交</button>
+    <button mat-flat-button [disabled]="!id()" (click)="submit()">提交</button>
     <app-spinner [id]="loaderId" [inline]="true"></app-spinner>
   </div>
 </div>
-<app-klkwpz class="flex-110" [data]="data"></app-klkwpz>
+<app-klkwpz [data]="data()"></app-klkwpz>

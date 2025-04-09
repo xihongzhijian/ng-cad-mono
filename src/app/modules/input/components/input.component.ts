@@ -3,23 +3,23 @@ import {TextFieldModule} from "@angular/cdk/text-field";
 import {AsyncPipe, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   DoCheck,
   ElementRef,
   HostBinding,
-  Input,
+  inject,
+  input,
   KeyValueDiffer,
   KeyValueDiffers,
   OnChanges,
-  OnDestroy,
   output,
-  QueryList,
+  signal,
   SimpleChanges,
   viewChild,
-  ViewChild,
-  viewChildren,
-  ViewChildren
+  viewChildren
 } from "@angular/core";
 import {FormControl, FormsModule, ValidationErrors, ValidatorFn} from "@angular/forms";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
@@ -44,7 +44,6 @@ import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types";
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
-import {CadViewer} from "@lucilor/cad-viewer";
 import {getTypeOf, isTypeOf, ObjectOf, queryString, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -98,11 +97,20 @@ import {parseObjectString} from "./input.utils";
     NgScrollbarModule,
     NgTemplateOutlet,
     TextFieldModule
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InputComponent extends Utils() implements AfterViewInit, OnChanges, DoCheck, OnDestroy {
+export class InputComponent extends Utils() implements AfterViewInit, OnChanges, DoCheck {
+  private cd = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
+  private differs = inject(KeyValueDiffers);
+  private elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
   suffixIconsType!: SuffixIconsType;
-  @Input() info: InputInfo = {type: "string", label: ""};
+  info = input<InputInfo>({type: "string", label: ""});
   change = output<{value: any}>();
   input = output<Event>();
   focus = output<FocusEvent>();
@@ -117,7 +125,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   showListInput = true;
   objectString = "";
   fileName = "";
-  inputs = viewChildren(InputComponent);
+  inputComponents = viewChildren(InputComponent);
 
   get el() {
     return this.elRef.nativeElement;
@@ -125,7 +133,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   private _model: NonNullable<Required<InputInfo["model"]>> = {data: {key: ""}, key: "key"};
   get model() {
-    let model = {...this.info.model};
+    let model = {...this.info().model};
     if (!model || !("data" in model) || !("key" in model)) {
       model = this._model;
     }
@@ -135,18 +143,20 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return model;
   }
 
-  get name() {
-    const {name, label} = this.info;
-    let key = this.model.key;
-    if (typeof key !== "string") {
+  name = computed(() => {
+    const {name, label, model} = this.info();
+    let key = model?.key;
+    if (isTypeOf(key, ["undefined", "null"])) {
+      key = "";
+    } else {
       key = String(key);
     }
     return name || key || label;
-  }
+  });
 
   get value() {
     const {data, key} = this.model;
-    const info = this.info;
+    const info = this.info();
     let value: any;
     if (data && typeof data === "object" && key !== undefined) {
       value = data[key];
@@ -170,7 +180,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (data && typeof data === "object" && key !== undefined && key !== null) {
       data[key] = val;
     }
-    const type = this.info.type;
+    const type = this.info().type;
     if (type === "color") {
       this.setColor(val);
     } else if (type === "formulas") {
@@ -179,33 +189,26 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     this.updateDisplayValue();
   }
 
-  get editable() {
-    return !this.info.readonly && !this.info.disabled;
-  }
+  readonly = computed(() => !!this.info().readonly);
+  disabled = computed(() => !!this.info().disabled);
+  editable = computed(() => !this.readonly() && !this.disabled());
 
-  get optionsDialog() {
-    switch (this.info.type) {
+  optionsDialog = computed(() => {
+    const info = this.info();
+    switch (info.type) {
       case "string":
       case "select":
       case "object":
-        return this.info.optionsDialog;
+        return info.optionsDialog;
       default:
         return undefined;
     }
-  }
-
-  get hint() {
-    const hint = this.info.hint;
-    if (typeof hint === "function") {
-      return hint();
-    }
-    return hint || "";
-  }
+  });
 
   options: {value: any; label: string; disabled?: boolean; img?: string; vid?: number}[] = [];
 
-  get optionText() {
-    const info = this.info;
+  getOptionText() {
+    const info = this.info();
     if (info.type === "select") {
       if (typeof info.optionText === "function") {
         return info.optionText(this.value);
@@ -253,7 +256,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return "";
   }
   get colorOptions() {
-    const {info} = this;
+    const info = this.info();
     if (info.type !== "color" || !info.options) {
       return [];
     }
@@ -261,7 +264,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   get fileAccept() {
-    const {info} = this;
+    const info = this.info();
     if (info.type === "file") {
       return info.accept;
     } else if (info.type === "image") {
@@ -272,7 +275,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   xuanxiangOptions: typeof this.options = [];
   async fetchXuanxiangOptions() {
-    const info = this.info;
+    const info = this.info();
     this.xuanxiangOptions = [];
     if (info.type !== "object" || !info.optionType) {
       return;
@@ -282,15 +285,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     this.xuanxiangOptions = options.map((v) => ({value: v, label: v}));
   }
 
-  displayValue: string | null = null;
   formulasStr = "";
 
   @HostBinding("class") class: string[] = [];
   @HostBinding("style") style: Properties = {};
 
-  @ViewChild("colorChrome") colorChrome?: ChromeComponent;
-  @ViewChildren("cadContainer") cadContainers?: QueryList<ElementRef<HTMLElement>>;
-  cadViewers: CadViewer[] = [];
+  colorChrome = viewChild<ChromeComponent>("colorChrome");
 
   errors: ValidationErrors | null = null;
   errors2: ValidationErrors | null = null;
@@ -304,38 +304,32 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   private _validateValueLock = false;
 
-  constructor(
-    private cd: ChangeDetectorRef,
-    private message: MessageService,
-    private dialog: MatDialog,
-    private differs: KeyValueDiffers,
-    private elRef: ElementRef<HTMLElement>,
-    private http: CadDataService,
-    private status: AppStatusService
-  ) {
+  constructor() {
     super();
     this.valueChange$.subscribe((val) => {
-      if (this.optionsDialog) {
+      if (this.optionsDialog()) {
         this.filteredOptions$.next([]);
       } else {
         this.filteredOptions$.next(this._filterOptions(val, this.options));
       }
     });
-    this.infoDiffer = differs.find(this.info).create();
-    this.modelDataDiffer = differs.find(this.model.data).create();
+    const info = this.info();
+    this.infoDiffer = this.differs.find(info).create();
+    this.modelDataDiffer = this.differs.find(this.model.data).create();
   }
 
   async ngAfterViewInit() {
-    if (this.info.autoFocus) {
+    if (this.info().autoFocus) {
       await timeout(100);
       const el = this.elRef.nativeElement.querySelector("input, textarea, mat-select");
       if (el instanceof HTMLElement) {
         el.focus();
       }
     }
-    if (this.colorChrome) {
+    const colorChrome = this.colorChrome();
+    if (colorChrome) {
       await timeout(0);
-      const {r, g, b, a} = this.colorChrome.rgb;
+      const {r, g, b, a} = colorChrome.rgb;
       this.setColor(new Color([r, g, b, a]));
     }
     this.infoDiffer = this.differs.find(this.info).create();
@@ -343,13 +337,13 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.info) {
-      this.infoDiffer = this.differs.find(this.info).create();
+      this.infoDiffer = this.differs.find(this.info()).create();
       this.modelDataDiffer = this.differs.find(this.model.data).create();
     }
   }
 
   ngDoCheck() {
-    const infoChanges = this.infoDiffer.diff(this.info);
+    const infoChanges = this.infoDiffer.diff(this.info());
     if (infoChanges) {
       this._onInfoChange(infoChanges);
     }
@@ -359,14 +353,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
-  ngOnDestroy() {
-    for (const cadViewer of this.cadViewers) {
-      cadViewer.destroy();
-    }
-  }
-
   private _filterOptions(value: string, options: typeof this.options): typeof this.options {
-    const info = this.info;
+    const info = this.info();
     const {filterValuesGetter} = info;
     let sortOptions: boolean;
     const getFilterValues = (option: (typeof this.options)[number]) => {
@@ -418,7 +406,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return result;
   }
   private async _filterXuanxiangOptions(i?: number, keyVal?: string) {
-    const info = this.info;
+    const info = this.info();
     const value = this.value;
     if (info.type !== "object" || !info.optionType || !isTypeOf(value, "object")) {
       return;
@@ -462,7 +450,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   getErrorMsgKey(key: string) {
-    if (this.info.type === "object") {
+    if (this.info().type === "object") {
       return this._getErrorMsg(this.errorsKey[key]);
     } else {
       return "";
@@ -470,7 +458,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   getErrorMsgValue(key: string) {
-    if (this.info.type === "object" || this.info.type === "array") {
+    const type = this.info().type;
+    if (type === "object" || type === "array") {
       return this._getErrorMsg(this.errorsValue[key]);
     } else {
       return "";
@@ -490,7 +479,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   private async _onInfoChange(changes: NonNullable<ReturnType<typeof this.infoDiffer.diff>>) {
-    const {info} = this;
+    const info = this.info();
     if (!info.autocomplete) {
       info.autocomplete = "on";
     }
@@ -582,7 +571,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   clear() {
-    const {info} = this;
+    const info = this.info();
     if (info.type === "file" || info.type === "image") {
       this.onChange(null);
       return;
@@ -623,10 +612,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   copy() {
+    const info = this.info();
     const copy = (str: string) => {
-      this.message.copyText(str, {successText: `${this.info.label}已复制`});
+      this.message.copyText(str, {successText: `${info.label}已复制`});
     };
-    const {info} = this;
     if (info.type === "formulas") {
       copy(this.formulasStr);
     } else {
@@ -645,7 +634,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   async onChange(value = this.value, isAutocomplete = false) {
-    const info = this.info;
+    const info = this.info();
     this._validateValueLock = true;
     setTimeout(() => {
       this._validateValueLock = false;
@@ -714,8 +703,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   validateValue(value = this.value) {
-    const info = this.info;
-    const inputs = this.inputs();
+    const info = this.info();
+    const inputComponents = this.inputComponents();
     const validators = info.validators;
     let errors: ValidationErrors | null = null;
     let errors2: ValidationErrors | null = null;
@@ -723,13 +712,13 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       const control = new FormControl(value, validators);
       errors = control.errors;
     }
-    for (const input of inputs) {
-      input.validateValue();
-      if (input.errors && !input.info.hidden) {
+    for (const inputComponent of inputComponents) {
+      inputComponent.validateValue();
+      if (inputComponent.errors && !inputComponent.info().hidden) {
         if (!errors2) {
           errors2 = {};
         }
-        const errors3 = {...input.errors};
+        const errors3 = {...inputComponent.errors};
         Object.assign(errors2, errors3);
       }
     }
@@ -821,7 +810,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   onInput(event: Event | null, value = this.value) {
-    const {info} = this;
+    const info = this.info();
     switch (info.type) {
       case "string":
         info.onInput?.(value, info);
@@ -839,17 +828,18 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
   onFocus(event: FocusEvent) {
     this.focus.emit(event);
-    this.info.onFocus?.(this.info as any);
+    this.info().onFocus?.(this.info as any);
   }
   onBlur(event: FocusEvent) {
     if (!this._validateValueLock) {
       this.validateValue();
     }
     this.blur.emit(event);
-    this.info.onBlur?.(this.info as any);
+    this.info().onBlur?.(this.info as any);
   }
   async onClick(event: MouseEvent, params?: {key: string}) {
-    const {type, suffixIcons} = this.info;
+    const info = this.info();
+    const {type, suffixIcons} = info;
     const defaultSuffixIcon = suffixIcons?.find((v) => v.isDefault);
     if (defaultSuffixIcon) {
       let result = defaultSuffixIcon.onClick?.();
@@ -864,22 +854,22 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     } else if (type === "object" && params?.key) {
       this.selectOptions(this.model.key, params.key);
     } else if (type === "string") {
-      const {optionsDialog, selectOnly} = this.info;
+      const {optionsDialog, selectOnly} = info;
       if (optionsDialog && selectOnly) {
         this.selectOptions(this.model.key);
       }
     }
-    this.info.onClick?.(this as any);
+    info.onClick?.(this as any);
     this.cd.markForCheck();
     this.click.emit(event);
   }
 
   async selectOptions(key?: keyof any, optionKey?: string) {
-    const {info} = this;
+    const info = this.info();
     if (info.readonly || info.disabled) {
       return;
     }
-    const optionsDialog = this.optionsDialog;
+    const optionsDialog = this.optionsDialog();
     if (!optionsDialog) {
       return;
     }
@@ -1048,13 +1038,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return "";
   }
 
-  isEmpty(value: any) {
-    if (!this.info.showEmpty) {
-      return false;
-    }
-    return [null, undefined, ""].includes(value);
-  }
-
   setColor(color: ColorInstance | string | undefined | null) {
     const value = typeof color === "string" ? color : color?.string();
     try {
@@ -1078,7 +1061,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (!files || !files.length) {
       return;
     }
-    const {info} = this;
+    const info = this.info();
     if (info.type === "file") {
       info.onChange?.(files, info);
       this.fileName = Array.from(files)
@@ -1114,7 +1097,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   updateFormulasStr() {
-    const {info} = this;
+    const info = this.info();
     if (info.type !== "formulas") {
       return;
     }
@@ -1128,9 +1111,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
 
   async editFormulas() {
-    const {info} = this;
-    const {readonly, disabled} = info;
-    if (info.type !== "formulas" || readonly || disabled) {
+    const info = this.info();
+    if (info.type !== "formulas" || !this.editable()) {
       return;
     }
     let {value} = this;
@@ -1145,19 +1127,17 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
   }
 
+  displayValue = signal("");
   updateDisplayValue() {
-    const {info} = this;
-    const displayValue = getValue(info.displayValue, this.message) || null;
-    this.displayValue = null;
-    if (displayValue) {
-      this.displayValue = displayValue;
-    } else if (this.optionsDialog) {
+    const info = this.info();
+    let displayValue = "";
+    if (this.optionsDialog()) {
       const {value} = this;
       let optionSeparator: InputInfoString["optionSeparator"];
       if (info.type === "string" || info.type === "object") {
         optionSeparator = info.optionSeparator;
       }
-      const {optionsUseId, optionsUseObj} = this.optionsDialog;
+      const {optionsUseId, optionsUseObj} = this.optionsDialog() || {};
       if (optionsUseId) {
         const getOptionName = (vid: string) => {
           if (!isTypeOf(vid, "string")) {
@@ -1167,12 +1147,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
           return option ? option.label : "";
         };
         if (Array.isArray(value)) {
-          this.displayValue = joinOptions(
+          displayValue = joinOptions(
             value.map((v) => getOptionName(v)),
             optionSeparator
           );
         } else {
-          this.displayValue = getOptionName(value);
+          displayValue = getOptionName(value);
         }
       } else if (optionsUseObj) {
         const getOptionName = (option: TableDataBase) => {
@@ -1182,25 +1162,26 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
           return option.mingzi;
         };
         if (Array.isArray(value)) {
-          this.displayValue = joinOptions(
+          displayValue = joinOptions(
             value.map((v) => getOptionName(v)),
             optionSeparator
           );
         } else {
-          this.displayValue = getOptionName(value);
+          displayValue = getOptionName(value);
         }
       } else {
         if (Array.isArray(value)) {
-          this.displayValue = joinOptions(value, optionSeparator);
+          displayValue = joinOptions(value, optionSeparator);
         } else if (typeof value === "string") {
-          this.displayValue = value;
+          displayValue = value;
         }
       }
     }
+    this.displayValue.set(displayValue);
   }
 
   async openInNewTab() {
-    const {info} = this;
+    const info = this.info();
     if (info.type !== "select") {
       return;
     }
@@ -1225,12 +1206,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
   }
 
-  async moveArrayItem(previousIndex: number, input: HTMLInputElement) {
+  async moveArrayItem(previousIndex: number, inputEl: HTMLInputElement) {
     const {value} = this;
     if (!Array.isArray(value)) {
       return;
     }
-    let currentIndex = Number(input.value);
+    let currentIndex = Number(inputEl.value);
     if (isNaN(currentIndex) || currentIndex < 0) {
       currentIndex = 0;
     } else if (currentIndex >= value.length) {
@@ -1256,7 +1237,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   selectionList = viewChild<MatSelectionList>("selectionList");
   onListSelectionChange(event: MatSelectionListChange) {
     const values = event.source.selectedOptions.selected.map((v) => v.value);
-    const info = this.info;
+    const info = this.info();
     if (info.type === "select") {
       const value = info.multiple ? values : values[0];
       this.value = value;
@@ -1265,7 +1246,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   }
   getListOptionsSelected() {
     const value = this.value;
-    const info = this.info;
+    const info = this.info();
     if (!Array.isArray(value) || info.type !== "select" || !info.multiple) {
       return [];
     }

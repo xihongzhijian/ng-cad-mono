@@ -1,25 +1,24 @@
 <div>
-  @for (info of inputInfos; track $index) {
+  @for (info of inputInfos(); track $index) {
     <app-input [info]="info"></app-input>
   }
 </div>
-
-@if (useJsonEditor) {
-  @for (group of inputInfos2; track i; let i = $index) {
-    <div class="qiezhongkong-item">
-      @for (info of group; track $index) {
-        <app-input [info]="info" [class]="info.label"></app-input>
-      }
-    </div>
-  }
-} @else {
-  <ng-scrollbar>
-    <div class="qiezhongkong">
-      @if (inputInfos2.length < 1) {
+<ng-scrollbar>
+  @if (useJsonEditor()) {
+    @for (group of inputInfos2(); track i; let i = $index) {
+      <mat-card class="item">
+        @for (info of group; track $index) {
+          <app-input [info]="info" [class]="info.label"></app-input>
+        }
+      </mat-card>
+    }
+  } @else {
+    <div class="items items-per-row">
+      @if (inputInfos2().length < 1) {
         <button mat-flat-button (click)="addQiezhongkongItem(0)">新增</button>
       }
-      @for (group of inputInfos2; track i; let i = $index) {
-        <div class="qiezhongkong-item">
+      @for (group of inputInfos2(); track i; let i = $index) {
+        <mat-card class="item">
           <div class="toolbar">
             <button mat-flat-button (click)="addQiezhongkongItem(i)">新增</button>
             <button mat-flat-button (click)="copyQiezhongkongItem(i)">复制</button>
@@ -28,18 +27,18 @@
           @for (info of group; track $index) {
             <app-input [info]="info" [class]="info.label"></app-input>
           }
-        </div>
+        </mat-card>
       }
     </div>
-  </ng-scrollbar>
-}
+  }
+</ng-scrollbar>
 <ng-template #qiezhongkong>
   <ng-scrollbar>
     <div class="qiezhongkong">
       @if (inputInfos2.length < 1) {
         <button mat-flat-button (click)="addQiezhongkongItem(0)">新增</button>
       }
-      @for (group of inputInfos2; track i; let i = $index) {
+      @for (group of inputInfos2(); track i; let i = $index) {
         <div class="qiezhongkong-item">
           <div class="toolbar">
             <button mat-flat-button (click)="addQiezhongkongItem(i)">新增</button>

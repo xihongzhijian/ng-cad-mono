@@ -66,12 +66,14 @@ export interface GetOptionsResultItem {
 }
 
 export interface BancaiList {
+  vid: number;
   mingzi: string;
   cailiaoList: string[];
   houduList: string[];
   guigeList: number[][];
   zidingyi?: string;
   bancaileixing?: string;
+  img?: string;
 }
 export interface BancaiCad {
   id: string;
@@ -101,6 +103,7 @@ export interface QueryMysqlParams {
   page?: number;
   limit?: number;
   token?: string;
+  withGuanlian?: boolean;
 }
 
 export interface UpdateMongodbParams<T extends MongodbDataBase> {

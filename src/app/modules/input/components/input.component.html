@@ -1,484 +1,629 @@
-@switch (info.type) {
-  @case ("string") {
-    <mat-form-field [class]="{empty: isEmpty(value)}">
-      @if (info.label) {
-        <mat-label>{{ info.label }}</mat-label>
-      }
-      @if (info.hint) {
-        <mat-hint>{{ hint }}</mat-hint>
-      }
-      @if (displayValue !== null) {
-        <textarea
-          matInput
-          readonly
-          [value]="displayValue"
-          cdkTextareaAutosize
-          [cdkAutosizeMinRows]="1"
-          (focus)="onFocus($event)"
-          (blur)="onBlur($event)"
-          (click)="onClick($event)"
-        ></textarea>
-      } @else {
-        @if (info.textarea) {
+@if (info(); as info) {
+  @switch (info.type) {
+    @case ("string") {
+      <mat-form-field>
+        @if (info.label) {
+          <mat-label>{{ info.label }}</mat-label>
+        }
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
+        }
+        @if (displayValue(); as displayValue) {
           <textarea
             matInput
-            [errorStateMatcher]="getErrorStateMatcher()"
-            [cdkTextareaAutosize]="!!info.textarea.autosize"
-            [cdkAutosizeMinRows]="info.textarea.autosize?.minRows"
-            [cdkAutosizeMaxRows]="info.textarea.autosize?.maxRows"
-            [readonly]="info.readonly"
-            [disabled]="info.disabled || false"
-            [autocomplete]="info.autocomplete || ''"
-            [(ngModel)]="value"
-            [name]="name"
-            type="text"
-            (change)="onChange()"
-            (input)="onInput($event)"
+            readonly
+            [value]="displayValue"
+            cdkTextareaAutosize
+            [cdkAutosizeMinRows]="1"
             (focus)="onFocus($event)"
             (blur)="onBlur($event)"
             (click)="onClick($event)"
-            [placeholder]="info.placeholder || ''"
           ></textarea>
         } @else {
-          <input
-            matInput
-            [errorStateMatcher]="getErrorStateMatcher()"
-            [readonly]="info.readonly || info.selectOnly"
-            [disabled]="info.disabled || false"
-            [autocomplete]="info.autocomplete || ''"
-            [(ngModel)]="value"
-            [name]="name"
-            type="text"
-            (change)="onChange()"
-            (input)="onInput($event)"
-            (focus)="onFocus($event)"
-            (blur)="onBlur($event)"
-            (click)="onClick($event)"
-            [placeholder]="info.placeholder || ''"
-            [matAutocomplete]="auto"
-            [matAutocompleteDisabled]="options.length < 1"
-          />
-        }
-      }
-      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAutocompleteChange($event)">
-        @for (option of filteredOptions$ | async; track $index) {
-          <mat-option
-            [value]="option.value"
-            [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
-            [matTooltipPosition]="'right'"
-            [disabled]="info.readonly || option.disabled"
-          >
-            {{ option.label }}
-          </mat-option>
-        }
-      </mat-autocomplete>
-      @if (info.optionsDialog && !info.readonly && !info.disabled) {
-        <button matSuffix mat-icon-button (click)="selectOptions(model.key)">
-          <mat-icon>list</mat-icon>
-        </button>
-      }
-      @if (info.copyable) {
-        <button matSuffix mat-icon-button (click)="copy()">
-          <mat-icon>content_copy</mat-icon>
-        </button>
-      }
-      <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
-      <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
-      @if (info.clearable) {
-        <button matSuffix mat-icon-button (click)="clear()">
-          <mat-icon>close</mat-icon>
-        </button>
-      }
-      <mat-error>{{ getErrorMsg() }}</mat-error>
-    </mat-form-field>
-  }
-  @case ("number") {
-    <mat-form-field [class]="{empty: isEmpty(value)}">
-      @if (info.label) {
-        <mat-label>{{ info.label }}</mat-label>
-      }
-      @if (info.hint) {
-        <mat-hint>{{ hint }}</mat-hint>
-      }
-      <input
-        matInput
-        [errorStateMatcher]="getErrorStateMatcher()"
-        [readonly]="info.readonly"
-        [disabled]="info.disabled || false"
-        [autocomplete]="info.autocomplete || ''"
-        [(ngModel)]="value"
-        [name]="name"
-        type="number"
-        [step]="info.step"
-        [min]="info.min ?? null"
-        [max]="info.max ?? null"
-        (change)="onChange()"
-        (input)="onInput($event)"
-        (focus)="onFocus($event)"
-        (blur)="onBlur($event)"
-        (click)="onClick($event)"
-        (wheel)="$event.preventDefault()"
-        [placeholder]="info.placeholder || ''"
-      />
-      @if (info.copyable) {
-        <button matSuffix mat-icon-button (click)="copy()">
-          <mat-icon>content_copy</mat-icon>
-        </button>
-      }
-      <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
-      <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
-      <mat-error>{{ getErrorMsg() }}</mat-error>
-    </mat-form-field>
-  }
-  @case ("object") {
-    <div class="sub-form-field">
-      <div class="label">
-        <span>{{ info.label }}</span>
-        @if (info.clearable) {
-          <button mat-button (click)="clear()">清空</button>
-        }
-      </div>
-      @if (info.parseString) {
-        <mat-form-field>
-          <textarea matInput rows="1" class="flex-110" [(ngModel)]="objectString"></textarea>
-          <button mat-button matSuffix (click)="parseObjectString('replace')">全部替换</button>
-          <button mat-button matSuffix (click)="parseObjectString('append')">没有的插入</button>
-        </mat-form-field>
-      }
-      @if (!info.keysReadonly && keysOf(value)["length"] === 0) {
-        <div>
-          <button mat-icon-button (click)="objectAdd2(value, '')">
-            <mat-icon>add_circle</mat-icon>
-          </button>
-        </div>
-      }
-      @for (item of asObject(value) | keyvalue: returnZero; track i; let i = $index) {
-        <div class="flex-row">
-          <mat-form-field style="width: 35%; flex: 0 0 auto" [class]="{empty: isEmpty(item.key)}">
-            @if (info.keyLabel) {
-              <mat-label>{{ info.keyLabel }}</mat-label>
-            }
-            <input
-              type="text"
+          @if (info.textarea) {
+            <textarea
               matInput
-              [errorStateMatcher]="getErrorStateMatcherKey(item.key)"
+              [errorStateMatcher]="getErrorStateMatcher()"
+              [cdkTextareaAutosize]="!!info.textarea.autosize"
+              [cdkAutosizeMinRows]="info.textarea.autosize?.minRows"
+              [cdkAutosizeMaxRows]="info.textarea.autosize?.maxRows"
               [readonly]="info.readonly"
-              [disabled]="info.disabled || false"
+              [disabled]="disabled()"
               [autocomplete]="info.autocomplete || ''"
-              [value]="item.key"
-              [name]="name + '-key'"
-              (change)="changeObjectKey2(value, item.key, $event)"
-              (input)="onObjectKeyInput($event, i)"
+              [(ngModel)]="value"
+              [name]="name()"
+              type="text"
+              (change)="onChange()"
               (input)="onInput($event)"
               (focus)="onFocus($event)"
               (blur)="onBlur($event)"
               (click)="onClick($event)"
+              [placeholder]="info.placeholder || ''"
+            ></textarea>
+          } @else {
+            <input
+              matInput
+              [errorStateMatcher]="getErrorStateMatcher()"
+              [readonly]="readonly() || info.selectOnly"
+              [disabled]="disabled()"
+              [autocomplete]="info.autocomplete || ''"
+              [(ngModel)]="value"
+              [name]="name()"
+              type="text"
+              (change)="onChange()"
+              (input)="onInput($event)"
+              (focus)="onFocus($event)"
+              (blur)="onBlur($event)"
+              (click)="onClick($event)"
+              [placeholder]="info.placeholder || ''"
               [matAutocomplete]="auto"
-              [matAutocompleteDisabled]="xuanxiangOptions.length < 1"
+              [matAutocompleteDisabled]="options.length < 1"
             />
-            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="changeObjectKey2(value, item.key, $event.option.value)">
-              @for (option of (filteredXuanxiangOptions$ | async)?.[i]; track $index) {
-                <mat-option
-                  [value]="option.value"
-                  [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
-                  [matTooltipPosition]="'right'"
-                  [disabled]="info.readonly || option.disabled"
-                >
-                  {{ option.label }}
-                </mat-option>
-              }
-            </mat-autocomplete>
-            <mat-error>{{ getErrorMsgKey(item.key) }}</mat-error>
-            @if (info.clearable) {
-              <button mat-icon-button matSuffix (click)="changeObjectKey2(value, item.key, '')">
-                <mat-icon>close</mat-icon>
-              </button>
-            }
+          }
+        }
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAutocompleteChange($event)">
+          @for (option of filteredOptions$ | async; track $index) {
+            <mat-option
+              [value]="option.value"
+              [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
+              [matTooltipPosition]="'right'"
+              [disabled]="!editable()"
+            >
+              {{ option.label }}
+            </mat-option>
+          }
+        </mat-autocomplete>
+        @if (optionsDialog() && editable()) {
+          <button matSuffix mat-icon-button (click)="selectOptions(model.key)">
+            <mat-icon>list</mat-icon>
+          </button>
+        }
+        @if (info.copyable) {
+          <button matSuffix mat-icon-button (click)="copy()">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        }
+        <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+        <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
+        @if (info.clearable) {
+          <button matSuffix mat-icon-button (click)="clear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+        <mat-error>{{ getErrorMsg() }}</mat-error>
+      </mat-form-field>
+    }
+    @case ("number") {
+      <mat-form-field>
+        @if (info.label) {
+          <mat-label>{{ info.label }}</mat-label>
+        }
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
+        }
+        <input
+          matInput
+          [errorStateMatcher]="getErrorStateMatcher()"
+          [readonly]="info.readonly"
+          [disabled]="disabled()"
+          [autocomplete]="info.autocomplete || ''"
+          [(ngModel)]="value"
+          [name]="name()"
+          type="number"
+          [step]="info.step"
+          [min]="info.min ?? null"
+          [max]="info.max ?? null"
+          (change)="onChange()"
+          (input)="onInput($event)"
+          (focus)="onFocus($event)"
+          (blur)="onBlur($event)"
+          (click)="onClick($event)"
+          (wheel)="$event.preventDefault()"
+          [placeholder]="info.placeholder || ''"
+        />
+        @if (info.copyable) {
+          <button matSuffix mat-icon-button (click)="copy()">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        }
+        <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+        <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
+        <mat-error>{{ getErrorMsg() }}</mat-error>
+      </mat-form-field>
+    }
+    @case ("object") {
+      <div class="sub-form-field">
+        <div class="label">
+          <span>{{ info.label }}</span>
+          @if (info.clearable) {
+            <button mat-button (click)="clear()">清空</button>
+          }
+        </div>
+        @if (info.parseString) {
+          <mat-form-field>
+            <textarea matInput rows="1" class="flex-110" [(ngModel)]="objectString"></textarea>
+            <button mat-button matSuffix (click)="parseObjectString('replace')">全部替换</button>
+            <button mat-button matSuffix (click)="parseObjectString('append')">没有的插入</button>
           </mat-form-field>
-          <mat-form-field style="width: 0; flex: 1 1 0" [class]="{empty: isEmpty(item.value)}">
+        }
+        @if (!info.keysReadonly && keysOf(value)["length"] === 0) {
+          <div>
+            <button mat-icon-button (click)="objectAdd2(value, '')">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        }
+        @for (item of asObject(value) | keyvalue: returnZero; track i; let i = $index) {
+          <div class="flex-row">
+            <mat-form-field style="width: 35%; flex: 0 0 auto">
+              @if (info.keyLabel) {
+                <mat-label>{{ info.keyLabel }}</mat-label>
+              }
+              <input
+                type="text"
+                matInput
+                [errorStateMatcher]="getErrorStateMatcherKey(item.key)"
+                [readonly]="info.readonly"
+                [disabled]="disabled()"
+                [autocomplete]="info.autocomplete || ''"
+                [value]="item.key"
+                [name]="name + '-key'"
+                (change)="changeObjectKey2(value, item.key, $event)"
+                (input)="onObjectKeyInput($event, i)"
+                (input)="onInput($event)"
+                (focus)="onFocus($event)"
+                (blur)="onBlur($event)"
+                (click)="onClick($event)"
+                [matAutocomplete]="auto"
+                [matAutocompleteDisabled]="xuanxiangOptions.length < 1"
+              />
+              <mat-autocomplete #auto="matAutocomplete" (optionSelected)="changeObjectKey2(value, item.key, $event.option.value)">
+                @for (option of (filteredXuanxiangOptions$ | async)?.[i]; track $index) {
+                  <mat-option
+                    [value]="option.value"
+                    [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
+                    [matTooltipPosition]="'right'"
+                    [disabled]="!editable()"
+                  >
+                    {{ option.label }}
+                  </mat-option>
+                }
+              </mat-autocomplete>
+              <mat-error>{{ getErrorMsgKey(item.key) }}</mat-error>
+              @if (info.clearable) {
+                <button mat-icon-button matSuffix (click)="changeObjectKey2(value, item.key, '')">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
+            </mat-form-field>
+            <mat-form-field style="width: 0; flex: 1 1 0">
+              @if (info.valueLabel) {
+                <mat-label>{{ info.valueLabel }}</mat-label>
+              }
+              <input
+                type="text"
+                matInput
+                [errorStateMatcher]="getErrorStateMatcherValue(item.key)"
+                [readonly]="info.readonly"
+                [disabled]="disabled()"
+                [autocomplete]="info.autocomplete"
+                [(ngModel)]="item.value"
+                [name]="name + '-value'"
+                (change)="changeObjectValue2(value, item.key, item.value)"
+                (input)="onInput($event)"
+                (focus)="onFocus($event)"
+                (blur)="onBlur($event)"
+                (click)="onClick($event, {key: item.key})"
+              />
+              <ng-container matSuffix>
+                @if (optionsDialog() && editable()) {
+                  <button mat-icon-button (click)="selectOptions(model.key, item.key)">
+                    <mat-icon>list</mat-icon>
+                  </button>
+                }
+                @if (!info.keysReadonly) {
+                  <button mat-icon-button (click)="objectAdd2(value, '', '')">
+                    <mat-icon>add_circle</mat-icon>
+                  </button>
+                  @if (!info.requiredKeys?.includes(item.key)) {
+                    <button mat-icon-button (click)="objectRemove2(value, item.key)">
+                      <mat-icon>remove_circle</mat-icon>
+                    </button>
+                  }
+                }
+                <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+                <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
+                @if (info.clearable) {
+                  <button mat-icon-button (click)="changeObjectValue2(value, item.key, '')">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                }
+              </ng-container>
+              <mat-error>{{ getErrorMsgValue(item.key) }}</mat-error>
+            </mat-form-field>
+          </div>
+        }
+        <ng-template [ngTemplateOutlet]="footer"></ng-template>
+      </div>
+    }
+    @case ("array") {
+      <div class="sub-form-field">
+        <div class="label">
+          <span>{{ info.label }}</span>
+          @if (info.clearable) {
+            <button mat-button (click)="clear()">清空</button>
+          }
+        </div>
+        @if (value.length === 0 && !info.readonly) {
+          <div>
+            <button mat-icon-button (click)="arrayAdd(value, '')">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        }
+        @for (c of value; track j; let j = $index) {
+          <mat-form-field>
             @if (info.valueLabel) {
               <mat-label>{{ info.valueLabel }}</mat-label>
             }
             <input
-              type="text"
               matInput
-              [errorStateMatcher]="getErrorStateMatcherValue(item.key)"
+              type="text"
+              [errorStateMatcher]="getErrorStateMatcherValue(j.toString())"
               [readonly]="info.readonly"
-              [disabled]="info.disabled || false"
+              [disabled]="disabled()"
               [autocomplete]="info.autocomplete"
-              [(ngModel)]="item.value"
+              [(ngModel)]="value[j]"
               [name]="name + '-value'"
-              (change)="changeObjectValue2(value, item.key, item.value)"
+              [ngModelOptions]="{standalone: true}"
               (input)="onInput($event)"
               (focus)="onFocus($event)"
               (blur)="onBlur($event)"
-              (click)="onClick($event, {key: item.key})"
+              (click)="onClick($event)"
             />
             <ng-container matSuffix>
-              @if (optionsDialog) {
-                <button mat-icon-button (click)="selectOptions(model.key, item.key)">
-                  <mat-icon>list</mat-icon>
-                </button>
-              }
-              @if (!info.keysReadonly) {
-                <button mat-icon-button (click)="objectAdd2(value, '', '')">
+              @if (!info.readonly) {
+                <button mat-icon-button (click)="arrayAdd(value, '', j + 1)">
                   <mat-icon>add_circle</mat-icon>
                 </button>
-                @if (!info.requiredKeys?.includes(item.key)) {
-                  <button mat-icon-button (click)="objectRemove2(value, item.key)">
-                    <mat-icon>remove_circle</mat-icon>
-                  </button>
-                }
+                <button mat-icon-button (click)="arrayRemove(value, j)">
+                  <mat-icon>remove_circle</mat-icon>
+                </button>
               }
               <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
               <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
               @if (info.clearable) {
-                <button mat-icon-button (click)="changeObjectValue2(value, item.key, '')">
+                <button mat-icon-button (click)="value[j] = ''">
                   <mat-icon>close</mat-icon>
                 </button>
               }
             </ng-container>
-            <mat-error>{{ getErrorMsgValue(item.key) }}</mat-error>
+            <mat-error>{{ getErrorMsgValue(j.toString()) }}</mat-error>
           </mat-form-field>
-        </div>
-      }
-      <ng-template [ngTemplateOutlet]="footer"></ng-template>
-    </div>
-  }
-  @case ("array") {
-    <div class="sub-form-field">
-      <div class="label">
-        <span>{{ info.label }}</span>
-        @if (info.clearable) {
-          <button mat-button (click)="clear()">清空</button>
         }
+        <ng-template [ngTemplateOutlet]="footer"></ng-template>
       </div>
-      @if (value.length === 0 && !info.readonly) {
-        <div>
-          <button mat-icon-button (click)="arrayAdd(value, '')">
-            <mat-icon>add_circle</mat-icon>
-          </button>
-        </div>
-      }
-      @for (c of value; track j; let j = $index) {
-        <mat-form-field [class]="{empty: isEmpty(c)}">
-          @if (info.valueLabel) {
-            <mat-label>{{ info.valueLabel }}</mat-label>
-          }
-          <input
-            matInput
-            type="text"
-            [errorStateMatcher]="getErrorStateMatcherValue(j.toString())"
-            [readonly]="info.readonly"
-            [disabled]="info.disabled || false"
-            [autocomplete]="info.autocomplete"
-            [(ngModel)]="value[j]"
-            [name]="name + '-value'"
-            [ngModelOptions]="{standalone: true}"
-            (input)="onInput($event)"
-            (focus)="onFocus($event)"
-            (blur)="onBlur($event)"
+    }
+    @case ("boolean") {
+      @if (info.appearance === "switch") {
+        <div class="switch-container">
+          <div>{{ info.label }}</div>
+          <mat-slide-toggle
+            [(ngModel)]="value"
+            [disabled]="!!(info.disabled || info.readonly)"
+            (change)="onChange()"
             (click)="onClick($event)"
-          />
+          ></mat-slide-toggle>
+        </div>
+      } @else {
+        <mat-form-field>
+          @if (info.label) {
+            <mat-label>{{ info.label }}</mat-label>
+          }
+          @if (info.hint) {
+            <mat-hint>{{ info.hint }}</mat-hint>
+          }
+          @switch (info.appearance) {
+            @case ("radio") {
+              <input matInput hidden [disabled]="info.disabled" />
+              <mat-radio-group [(ngModel)]="value">
+                <mat-radio-button [value]="true" [disabled]="info.disabled || info.readonly">是</mat-radio-button>
+                <mat-radio-button [value]="false" [disabled]="info.disabled || info.readonly">否</mat-radio-button>
+              </mat-radio-group>
+            }
+            @case ("checkbox") {
+              <input matInput hidden [disabled]="info.disabled" />
+              <mat-checkbox
+                [checked]="value"
+                [indeterminate]="info.indeterminate"
+                [disabled]="info.disabled || info.readonly"
+                (change)="value = $event.checked; onChange()"
+                (click)="onClick($event)"
+              ></mat-checkbox>
+            }
+            @default {
+              <mat-select
+                [errorStateMatcher]="getErrorStateMatcher()"
+                [disabled]="disabled()"
+                [placeholder]="info.placeholder || ''"
+                [value]="value"
+                (selectionChange)="onBooleanSelectChange($event)"
+                (click)="onClick($event)"
+              >
+                <ng-scrollbar matSelectViewport>
+                  <mat-option [value]="true" [disabled]="info.readonly">是</mat-option>
+                  <mat-option [value]="false" [disabled]="info.readonly">否</mat-option>
+                </ng-scrollbar>
+              </mat-select>
+            }
+          }
+          <mat-error>{{ getErrorMsg() }}</mat-error>
+        </mat-form-field>
+      }
+    }
+    @case ("select") {
+      @if (info.appearance === "list") {
+        @if (info.label) {
+          <div class="label">{{ info.label }}:</div>
+        }
+        <div class="select-list flex-column">
+          @if (info.multiple) {
+            <mat-checkbox
+              [checked]="isListOptionsSelectedAll()"
+              [indeterminate]="isListOptionsSelectedPartial()"
+              (change)="toggleListOptionsSelectAll()"
+              (click)="onClick($event)"
+              >全选</mat-checkbox
+            >
+          }
+          <mat-selection-list
+            #selectionList
+            [disabled]="info.disabled"
+            [multiple]="info.multiple"
+            (selectionChange)="onListSelectionChange($event)"
+            (click)="onClick($event)"
+          >
+            @for (option of options; track $index) {
+              <mat-list-option [value]="option.value" [disabled]="!editable()">
+                {{ option.label || option.value }}
+              </mat-list-option>
+            }
+          </mat-selection-list>
+        </div>
+      } @else {
+        <mat-form-field>
+          @if (info.label) {
+            <mat-label>{{ info.label }}</mat-label>
+          }
+          @if (info.hint) {
+            <mat-hint>{{ info.hint }}</mat-hint>
+          }
+          @if (optionsDialog()) {
+            <input
+              matInput
+              [errorStateMatcher]="getErrorStateMatcher()"
+              readonly
+              [disabled]="!!info.disabled"
+              [(ngModel)]="displayValue"
+              [name]="name()"
+              type="text"
+              (change)="onChange()"
+              (input)="onInput($event)"
+              (focus)="onFocus($event)"
+              (blur)="onBlur($event)"
+              (click)="onClick($event)"
+              [placeholder]="info.placeholder || ''"
+            />
+          } @else {
+            @if (info.multiple) {
+              <mat-select
+                [disabled]="disabled()"
+                [errorStateMatcher]="getErrorStateMatcher()"
+                [(ngModel)]="value"
+                multiple
+                (selectionChange)="onChange()"
+                (click)="onClick($event)"
+              >
+                @if (getOptionText(); as text) {
+                  <mat-select-trigger [innerHtml]="text"></mat-select-trigger>
+                }
+                <ng-scrollbar matSelectViewport>
+                  @for (option of options; track $index) {
+                    <mat-option [value]="option.value" [disabled]="!editable()">
+                      {{ option.label || option.value }}
+                    </mat-option>
+                  }
+                </ng-scrollbar>
+              </mat-select>
+            } @else {
+              <mat-select
+                [disabled]="disabled()"
+                [errorStateMatcher]="getErrorStateMatcher()"
+                [(ngModel)]="value"
+                (selectionChange)="onChange()"
+                (click)="onClick($event)"
+              >
+                @if (getOptionText(); as text) {
+                  <mat-select-trigger [innerHtml]="text"></mat-select-trigger>
+                }
+                <ng-scrollbar matSelectViewport>
+                  @for (option of options; track $index) {
+                    <mat-option [value]="option.value" [disabled]="!editable()">
+                      {{ option.label || option.value }}
+                    </mat-option>
+                  }
+                </ng-scrollbar>
+              </mat-select>
+            }
+          }
           <ng-container matSuffix>
-            @if (!info.readonly) {
-              <button mat-icon-button (click)="arrayAdd(value, '', j + 1)">
-                <mat-icon>add_circle</mat-icon>
+            @if (info.openInNewTab) {
+              <button mat-icon-button appClickStop (click)="openInNewTab()">
+                <mat-icon>open_in_new</mat-icon>
               </button>
-              <button mat-icon-button (click)="arrayRemove(value, j)">
-                <mat-icon>remove_circle</mat-icon>
+            }
+            @if (optionsDialog() && editable()) {
+              <button mat-icon-button (click)="selectOptions(model.key)">
+                <mat-icon>list</mat-icon>
+              </button>
+              @if (info.copyable !== false) {
+                <button mat-icon-button (click)="copy()">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              }
+            } @else if (info.copyable) {
+              <button mat-icon-button (click)="copy()">
+                <mat-icon>content_copy</mat-icon>
               </button>
             }
             <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
             <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
             @if (info.clearable) {
-              <button mat-icon-button (click)="value[j] = ''">
+              <button appClickStop mat-icon-button (click)="clear()">
                 <mat-icon>close</mat-icon>
               </button>
             }
           </ng-container>
-          <mat-error>{{ getErrorMsgValue(j.toString()) }}</mat-error>
+          <mat-error>{{ getErrorMsg() }}</mat-error>
         </mat-form-field>
       }
-      <ng-template [ngTemplateOutlet]="footer"></ng-template>
-    </div>
-  }
-  @case ("boolean") {
-    @if (info.appearance === "switch") {
-      <div class="switch-container" [class]="{empty: isEmpty(value)}">
-        <div>{{ info.label }}</div>
-        <mat-slide-toggle
-          [(ngModel)]="value"
-          [disabled]="!!(info.disabled || info.readonly)"
-          (change)="onChange()"
-          (click)="onClick($event)"
-        ></mat-slide-toggle>
-      </div>
-    } @else {
-      <mat-form-field [class]="{empty: isEmpty(value)}">
-        @if (info.label) {
-          <mat-label>{{ info.label }}</mat-label>
-        }
-        @if (info.hint) {
-          <mat-hint>{{ hint }}</mat-hint>
-        }
-        @switch (info.appearance) {
-          @case ("radio") {
-            <input matInput hidden [disabled]="info.disabled" />
-            <mat-radio-group [(ngModel)]="value">
-              <mat-radio-button [value]="true" [disabled]="info.disabled || info.readonly">是</mat-radio-button>
-              <mat-radio-button [value]="false" [disabled]="info.disabled || info.readonly">否</mat-radio-button>
-            </mat-radio-group>
-          }
-          @case ("checkbox") {
-            <input matInput hidden [disabled]="info.disabled" />
-            <mat-checkbox
-              [checked]="value"
-              [indeterminate]="info.indeterminate"
-              [disabled]="info.disabled || info.readonly"
-              (change)="value = $event.checked; onChange()"
-              (click)="onClick($event)"
-            ></mat-checkbox>
-          }
-          @default {
-            <mat-select
-              [errorStateMatcher]="getErrorStateMatcher()"
-              [disabled]="info.disabled || false"
-              [placeholder]="info.placeholder || ''"
-              [value]="value"
-              (selectionChange)="onBooleanSelectChange($event)"
-              (click)="onClick($event)"
-            >
-              <ng-scrollbar matSelectViewport>
-                <mat-option [value]="true" [disabled]="info.readonly">是</mat-option>
-                <mat-option [value]="false" [disabled]="info.readonly">否</mat-option>
-              </ng-scrollbar>
-            </mat-select>
-          }
-        }
-        <mat-error>{{ getErrorMsg() }}</mat-error>
-      </mat-form-field>
     }
-  }
-  @case ("select") {
-    @if (info.appearance === "list") {
-      @if (info.label) {
-        <div class="label">{{ info.label }}:</div>
-      }
-      <div class="select-list flex-column">
-        @if (info.multiple) {
-          <mat-checkbox
-            [checked]="isListOptionsSelectedAll()"
-            [indeterminate]="isListOptionsSelectedPartial()"
-            (change)="toggleListOptionsSelectAll()"
-            (click)="onClick($event)"
-            >全选</mat-checkbox
-          >
-        }
-        <mat-selection-list
-          #selectionList
-          [disabled]="info.disabled"
-          [multiple]="info.multiple"
-          (selectionChange)="onListSelectionChange($event)"
-          (click)="onClick($event)"
-        >
-          @for (option of options; track $index) {
-            <mat-list-option [value]="option.value" [disabled]="info.readonly || option.disabled">
-              {{ option.label || option.value }}
-            </mat-list-option>
+    @case ("coordinate") {
+      @if (info.compact) {
+        <div class="sub-form-field">
+          <div class="label">
+            <span>{{ info.label }}</span>
+            @if (info.hint) {
+              <span>({{ info.hint }})</span>
+            }
+          </div>
+          <div>
+            <mat-form-field style="width: 50%">
+              <mat-label>{{ info.labelX || "x" }}</mat-label>
+              <mat-select [(ngModel)]="value[0]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
+                <ng-scrollbar matSelectViewport>
+                  <mat-option [value]="0">左</mat-option>
+                  <mat-option [value]="0.5">中</mat-option>
+                  <mat-option [value]="1">右</mat-option>
+                </ng-scrollbar>
+              </mat-select>
+              <ng-template #anchorX>
+                <input matInput type="number" [(ngModel)]="value[0]" (change)="onChange()" />
+              </ng-template>
+              <mat-error>{{ getErrorMsg() }}</mat-error>
+            </mat-form-field>
+            <mat-form-field style="width: 50%">
+              <mat-label>{{ info.labelY || "y" }}</mat-label>
+              <mat-select [(ngModel)]="value[1]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
+                <ng-scrollbar matSelectViewport>
+                  <mat-option [value]="1">上</mat-option>
+                  <mat-option [value]="0.5">中</mat-option>
+                  <mat-option [value]="0">下</mat-option>
+                </ng-scrollbar>
+              </mat-select>
+              <mat-error>{{ getErrorMsg() }}</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+      } @else {
+        <mat-form-field>
+          @if (info.label) {
+            <mat-label>{{ info.label }}</mat-label>
           }
-        </mat-selection-list>
-      </div>
-    } @else {
-      <mat-form-field [class]="{empty: isEmpty(value)}">
-        @if (info.label) {
-          <mat-label>{{ info.label }}</mat-label>
-        }
-        @if (info.hint) {
-          <mat-hint>{{ hint }}</mat-hint>
-        }
-        @if (info.optionsDialog) {
+          @if (info.hint) {
+            <mat-hint>{{ info.hint }}</mat-hint>
+          }
           <input
             matInput
-            [errorStateMatcher]="getErrorStateMatcher()"
-            readonly
-            [disabled]="!!info.disabled"
-            [(ngModel)]="displayValue"
-            [name]="name"
             type="text"
-            (change)="onChange()"
-            (input)="onInput($event)"
-            (focus)="onFocus($event)"
-            (blur)="onBlur($event)"
-            (click)="onClick($event)"
-            [placeholder]="info.placeholder || ''"
+            placeholder="请选择锚点"
+            [errorStateMatcher]="getErrorStateMatcher()"
+            [value]="anchorStr"
+            readonly
+            [disabled]="disabled()"
           />
-        } @else {
-          @if (info.multiple) {
-            <mat-select
-              [disabled]="info.disabled || false"
-              [errorStateMatcher]="getErrorStateMatcher()"
-              [(ngModel)]="value"
-              multiple
-              (selectionChange)="onChange()"
-              (click)="onClick($event)"
-            >
-              <ng-scrollbar matSelectViewport>
-                @if (optionText) {
-                  <mat-select-trigger [innerHtml]="optionText"></mat-select-trigger>
-                }
-                @for (option of options; track $index) {
-                  <mat-option [value]="option.value" [disabled]="info.readonly || option.disabled">
-                    {{ option.label || option.value }}
-                  </mat-option>
-                }
-              </ng-scrollbar>
-            </mat-select>
-          } @else {
-            <mat-select
-              [disabled]="info.disabled || false"
-              [errorStateMatcher]="getErrorStateMatcher()"
-              [(ngModel)]="value"
-              (selectionChange)="onChange()"
-              (click)="onClick($event)"
-            >
-              <ng-scrollbar matSelectViewport>
-                @if (optionText) {
-                  <mat-select-trigger [innerHtml]="optionText"></mat-select-trigger>
-                }
-                @for (option of options; track $index) {
-                  <mat-option [value]="option.value" [disabled]="info.readonly || option.disabled">
-                    {{ option.label || option.value }}
-                  </mat-option>
-                }
-              </ng-scrollbar>
-            </mat-select>
-          }
-        }
-        <ng-container matSuffix>
-          @if (info.openInNewTab) {
-            <button mat-icon-button appClickStop (click)="openInNewTab()">
-              <mat-icon>open_in_new</mat-icon>
-            </button>
-          }
-          @if (info.optionsDialog && !info.readonly && !info.disabled) {
-            <button mat-icon-button (click)="selectOptions(model.key)">
+          <ng-container matSuffix>
+            <button mat-icon-button [matMenuTriggerFor]="editable() ? anchor : null">
               <mat-icon>list</mat-icon>
             </button>
-            @if (info.copyable !== false) {
-              <button mat-icon-button (click)="copy()">
-                <mat-icon>content_copy</mat-icon>
-              </button>
-            }
-          } @else if (info.copyable) {
-            <button mat-icon-button (click)="copy()">
-              <mat-icon>content_copy</mat-icon>
-            </button>
+            <mat-menu #anchor="matMenu">
+              <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
+            </mat-menu>
+            <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+            <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
+          </ng-container>
+          <mat-error>{{ getErrorMsg() }}</mat-error>
+        </mat-form-field>
+      }
+      <ng-template #coordinate>
+        <mat-form-field>
+          @if (info.label) {
+            <mat-label>{{ info.label }}</mat-label>
           }
+          @if (info.hint) {
+            <mat-hint>{{ info.hint }}</mat-hint>
+          }
+          <input
+            matInput
+            type="text"
+            placeholder="请选择锚点"
+            [errorStateMatcher]="getErrorStateMatcher()"
+            [value]="anchorStr"
+            readonly
+            [disabled]="disabled()"
+          />
+          <ng-container matSuffix>
+            <button mat-icon-button [matMenuTriggerFor]="editable() ? anchor : null">
+              <mat-icon>list</mat-icon>
+            </button>
+            <mat-menu #anchor="matMenu">
+              <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
+            </mat-menu>
+            <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
+            <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
+          </ng-container>
+          <mat-error>{{ getErrorMsg() }}</mat-error>
+        </mat-form-field>
+      </ng-template>
+    }
+    @case ("color") {
+      <mat-form-field>
+        @if (info.label) {
+          <mat-label>{{ info.label }}</mat-label>
+        }
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
+        }
+        <input
+          matInput
+          [value]="colorStr2"
+          [style]="{color: colorStr3, backgroundColor: colorBg}"
+          [matMenuTriggerFor]="editable() ? colorPicker : null"
+          [errorStateMatcher]="getErrorStateMatcher()"
+          readonly
+          [disabled]="disabled()"
+        />
+        <mat-menu #colorPicker="matMenu">
+          @if (info.options) {
+            <color-circle
+              [width]="202"
+              [circleSpacing]="10"
+              [class.accent]="colorStr"
+              [colors]="colorOptions"
+              (onChangeComplete)="onColorChange($event.color)"
+              appClickStop
+            ></color-circle>
+          }
+          @if (!info.optionsOnly) {
+            <color-chrome #colorChrome [class.accent]="colorStr" (onChangeComplete)="onColorChange($event.color)" appClickStop>
+            </color-chrome>
+          }
+        </mat-menu>
+        <ng-container matSuffix>
           <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
           <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
           @if (info.clearable) {
-            <button appClickStop mat-icon-button (click)="clear()">
+            <button mat-icon-button (click)="clear()">
               <mat-icon>close</mat-icon>
             </button>
           }
@@ -486,295 +631,152 @@
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
     }
-  }
-  @case ("coordinate") {
-    @if (info.compact) {
-      <div class="sub-form-field">
-        <div class="label">
-          <span>{{ info.label }}</span>
-          @if (info.hint) {
-            <span>({{ hint }})</span>
-          }
-        </div>
-        <div>
-          <mat-form-field style="width: 50%" [class]="{empty: isEmpty(value[0])}">
-            <mat-label>{{ info.labelX || "x" }}</mat-label>
-            <mat-select [(ngModel)]="value[0]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
-              <ng-scrollbar matSelectViewport>
-                <mat-option [value]="0">左</mat-option>
-                <mat-option [value]="0.5">中</mat-option>
-                <mat-option [value]="1">右</mat-option>
-              </ng-scrollbar>
-            </mat-select>
-            <ng-template #anchorX>
-              <input matInput type="number" [(ngModel)]="value[0]" (change)="onChange()" />
-            </ng-template>
-            <mat-error>{{ getErrorMsg() }}</mat-error>
-          </mat-form-field>
-          <mat-form-field style="width: 50%" [class]="{empty: isEmpty(value[1])}">
-            <mat-label>{{ info.labelY || "y" }}</mat-label>
-            <mat-select [(ngModel)]="value[1]" [errorStateMatcher]="getErrorStateMatcher()" (change)="onChange()">
-              <ng-scrollbar matSelectViewport>
-                <mat-option [value]="1">上</mat-option>
-                <mat-option [value]="0.5">中</mat-option>
-                <mat-option [value]="0">下</mat-option>
-              </ng-scrollbar>
-            </mat-select>
-            <mat-error>{{ getErrorMsg() }}</mat-error>
-          </mat-form-field>
-        </div>
-      </div>
-    } @else {
-      <mat-form-field [class]="{empty: isEmpty(value)}">
+    @case ("file") {
+      <mat-form-field>
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
         @if (info.hint) {
-          <mat-hint>{{ hint }}</mat-hint>
+          <mat-hint>{{ info.hint }}</mat-hint>
         }
-        <input
-          matInput
-          type="text"
-          placeholder="请选择锚点"
-          [errorStateMatcher]="getErrorStateMatcher()"
-          [value]="anchorStr"
-          readonly
-          [disabled]="info.disabled || false"
-        />
+        <input matInput readonly [value]="fileName" [errorStateMatcher]="getErrorStateMatcher()" (click)="selectFile()" />
         <ng-container matSuffix>
-          <button mat-icon-button [matMenuTriggerFor]="editable ? anchor : null">
-            <mat-icon>list</mat-icon>
+          <button mat-icon-button (click)="selectFile()">
+            <mat-icon>file_open</mat-icon>
           </button>
-          <mat-menu #anchor="matMenu">
-            <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
-          </mat-menu>
-          <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
-          <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
+          @if (info.clearable) {
+            <button mat-icon-button (click)="clear()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
         </ng-container>
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
     }
-    <ng-template #coordinate>
-      <mat-form-field [class]="{empty: isEmpty(value)}">
+    @case ("image") {
+      <mat-form-field>
         @if (info.label) {
           <mat-label>{{ info.label }}</mat-label>
         }
         @if (info.hint) {
-          <mat-hint>{{ hint }}</mat-hint>
+          <mat-hint>{{ info.hint }}</mat-hint>
+        }
+        <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
+        <app-image [src]="value" [bigPicSrc]="info.bigPicSrc" [prefix]="info.prefix" (click)="selectFile()"></app-image>
+        @if (info.clearable) {
+          <button mat-button (click)="clear()">删除图片</button>
+        }
+        <mat-error>{{ getErrorMsg() }}</mat-error>
+      </mat-form-field>
+    }
+    @case ("formulas") {
+      <mat-form-field>
+        @if (info.label) {
+          <mat-label>{{ info.label }}</mat-label>
+        }
+        @if (info.hint) {
+          <mat-hint>{{ info.hint }}</mat-hint>
         }
         <input
           matInput
-          type="text"
-          placeholder="请选择锚点"
           [errorStateMatcher]="getErrorStateMatcher()"
-          [value]="anchorStr"
           readonly
-          [disabled]="info.disabled || false"
+          [disabled]="disabled()"
+          [autocomplete]="info.autocomplete || ''"
+          [(ngModel)]="formulasStr"
+          type="text"
+          [placeholder]="info.placeholder || ''"
+          (click)="editFormulas()"
         />
         <ng-container matSuffix>
-          <button mat-icon-button [matMenuTriggerFor]="editable ? anchor : null">
-            <mat-icon>list</mat-icon>
+          @if (!info.readonly && !info.disabled) {
+            <button mat-icon-button (click)="editFormulas()">
+              <mat-icon>edit</mat-icon>
+            </button>
+          }
+          <button mat-icon-button (click)="copy()">
+            <mat-icon>content_copy</mat-icon>
           </button>
-          <mat-menu #anchor="matMenu">
-            <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
-          </mat-menu>
-          <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
-          <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
         </ng-container>
         <mat-error>{{ getErrorMsg() }}</mat-error>
       </mat-form-field>
-    </ng-template>
-  }
-  @case ("color") {
-    <mat-form-field [class]="{empty: isEmpty(value)}">
-      @if (info.label) {
-        <mat-label>{{ info.label }}</mat-label>
-      }
-      @if (info.hint) {
-        <mat-hint>{{ hint }}</mat-hint>
-      }
-      <input
-        matInput
-        [value]="colorStr2"
-        [style]="{color: colorStr3, backgroundColor: colorBg}"
-        [matMenuTriggerFor]="editable ? colorPicker : null"
-        [errorStateMatcher]="getErrorStateMatcher()"
-        readonly
-        [disabled]="info.disabled || false"
-      />
-      <mat-menu #colorPicker="matMenu">
-        @if (info.options) {
-          <color-circle
-            [width]="202"
-            [circleSpacing]="10"
-            [class.accent]="colorStr"
-            [colors]="colorOptions"
-            (onChangeComplete)="onColorChange($event.color)"
-            appClickStop
-          ></color-circle>
-        }
-        @if (!info.optionsOnly) {
-          <color-chrome #colorChrome [class.accent]="colorStr" (onChangeComplete)="onColorChange($event.color)" appClickStop>
-          </color-chrome>
-        }
-      </mat-menu>
-      <ng-container matSuffix>
-        <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
-        <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
-        @if (info.clearable) {
-          <button mat-icon-button (click)="clear()">
-            <mat-icon>close</mat-icon>
-          </button>
-        }
-      </ng-container>
-      <mat-error>{{ getErrorMsg() }}</mat-error>
-    </mat-form-field>
-  }
-  @case ("file") {
-    <mat-form-field [class]="{empty: isEmpty(value)}">
-      @if (info.label) {
-        <mat-label>{{ info.label }}</mat-label>
-      }
-      @if (info.hint) {
-        <mat-hint>{{ hint }}</mat-hint>
-      }
-      <input matInput readonly [value]="fileName" [errorStateMatcher]="getErrorStateMatcher()" (click)="selectFile()" />
-      <ng-container matSuffix>
-        <button mat-icon-button (click)="selectFile()">
-          <mat-icon>file_open</mat-icon>
-        </button>
-        @if (info.clearable) {
-          <button mat-icon-button (click)="clear()">
-            <mat-icon>close</mat-icon>
-          </button>
-        }
-      </ng-container>
-      <mat-error>{{ getErrorMsg() }}</mat-error>
-    </mat-form-field>
-  }
-  @case ("image") {
-    <mat-form-field [class]="{empty: isEmpty(value)}">
-      @if (info.label) {
-        <mat-label>{{ info.label }}</mat-label>
-      }
-      @if (info.hint) {
-        <mat-hint>{{ hint }}</mat-hint>
-      }
-      <input matInput readonly hidden [errorStateMatcher]="getErrorStateMatcher()" />
-      <app-image [src]="value" [bigPicSrc]="info.bigPicSrc" [prefix]="info.prefix" (click)="selectFile()"></app-image>
-      @if (info.clearable) {
-        <button mat-button (click)="clear()">删除图片</button>
-      }
-      <mat-error>{{ getErrorMsg() }}</mat-error>
-    </mat-form-field>
-  }
-  @case ("formulas") {
-    <mat-form-field [class]="{empty: isEmpty(value)}">
-      @if (info.label) {
-        <mat-label>{{ info.label }}</mat-label>
-      }
-      @if (info.hint) {
-        <mat-hint>{{ hint }}</mat-hint>
-      }
-      <input
-        matInput
-        [errorStateMatcher]="getErrorStateMatcher()"
-        readonly
-        [disabled]="info.disabled || false"
-        [autocomplete]="info.autocomplete || ''"
-        [(ngModel)]="formulasStr"
-        type="text"
-        [placeholder]="info.placeholder || ''"
-        (click)="editFormulas()"
-      />
-      <ng-container matSuffix>
-        @if (!info.readonly && !info.disabled) {
-          <button mat-icon-button (click)="editFormulas()">
-            <mat-icon>edit</mat-icon>
-          </button>
-        }
-        <button mat-icon-button (click)="copy()">
-          <mat-icon>content_copy</mat-icon>
-        </button>
-      </ng-container>
-      <mat-error>{{ getErrorMsg() }}</mat-error>
-    </mat-form-field>
-  }
-  @case ("button") {
-    <div class="buttons">
-      @for (button of info.buttons; track $index) {
-        <button mat-flat-button [class]="button.class" [style]="button.style" (click)="button.onClick?.()">{{ button.name }}</button>
-      }
-    </div>
-    <ng-template [ngTemplateOutlet]="footer"></ng-template>
-  }
-  @case ("list") {
-    <div class="sub-form-field">
-      <div class="label">{{ info.label }}</div>
-      <div class="list" cdkDropList [cdkDropListData]="value" (cdkDropListDropped)="dropArrayItem($event)">
-        @for (item of value; track i; let i = $index) {
-          <mat-divider></mat-divider>
-          <div cdkDrag class="drag-list-item">
-            <div cdkDragHandle class="name">{{ item }}</div>
-            @if (showListInput) {
-              <input
-                matInput
-                #listInput
-                type="number"
-                [value]="i"
-                (change)="moveArrayItem(i, listInput)"
-                (keypress)="onListInputKeyPress($event)"
-              />
-            }
-          </div>
+    }
+    @case ("button") {
+      <div class="buttons">
+        @for (button of info.buttons; track $index) {
+          <button mat-flat-button [class]="button.class" [style]="button.style" (click)="button.onClick?.()">{{ button.name }}</button>
         }
       </div>
-    </div>
-  }
-  @case ("group") {
-    @if (info.label) {
+      <ng-template [ngTemplateOutlet]="footer"></ng-template>
+    }
+    @case ("list") {
       <div class="sub-form-field">
-        <div class="label">
-          <span>{{ info.label }}</span>
+        <div class="label">{{ info.label }}</div>
+        <div class="list" cdkDropList [cdkDropListData]="value" (cdkDropListDropped)="dropArrayItem($event)">
+          @for (item of value; track i; let i = $index) {
+            <mat-divider></mat-divider>
+            <div cdkDrag class="drag-list-item">
+              <div cdkDragHandle class="name">{{ item }}</div>
+              @if (showListInput) {
+                <input
+                  matInput
+                  #listInput
+                  type="number"
+                  [value]="i"
+                  (change)="moveArrayItem(i, listInput)"
+                  (keypress)="onListInputKeyPress($event)"
+                />
+              }
+            </div>
+          }
         </div>
+      </div>
+    }
+    @case ("group") {
+      @if (info.label) {
+        <div class="sub-form-field">
+          <div class="label">
+            <span>{{ info.label }}</span>
+          </div>
+          <div class="group" [style]="info.groupStyle">
+            @for (info2 of info.infos; track $index) {
+              <app-input [info]="info2"></app-input>
+            }
+          </div>
+          <ng-template [ngTemplateOutlet]="footer"></ng-template>
+        </div>
+      } @else {
         <div class="group" [style]="info.groupStyle">
           @for (info2 of info.infos; track $index) {
             <app-input [info]="info2"></app-input>
           }
         </div>
         <ng-template [ngTemplateOutlet]="footer"></ng-template>
-      </div>
-    } @else {
-      <div class="group" [style]="info.groupStyle">
-        @for (info2 of info.infos; track $index) {
-          <app-input [info]="info2"></app-input>
-        }
-      </div>
-      <ng-template [ngTemplateOutlet]="footer"></ng-template>
+      }
     }
   }
+
+  <ng-template #footer>
+    <div class="footer">
+      @if (info.hint) {
+        <span class="hint">{{ info.hint }}</span>
+      }
+      <span class="error">{{ getErrorMsg() }}</span>
+    </div>
+  </ng-template>
+
+  <ng-template #suffixIconsTmp>
+    @for (icon of info.suffixIcons; track $index) {
+      <button mat-icon-button [class]="icon.class" [style]="icon.style" (click)="icon.onClick?.()" [disabled]="info.disabled">
+        <mat-icon>{{ icon.name }}</mat-icon>
+      </button>
+    }
+  </ng-template>
+  <ng-template #suffixTextsTmp>
+    @for (text of info.suffixTexts; track $index) {
+      <span [class]="text.class" [style]="text.style">
+        {{ text.name }}
+      </span>
+    }
+  </ng-template>
 }
-
-<ng-template #footer>
-  <div class="footer">
-    @if (info.hint) {
-      <span class="hint">{{ hint }}</span>
-    }
-    <span class="error">{{ getErrorMsg() }}</span>
-  </div>
-</ng-template>
-
-<ng-template #suffixIconsTmp>
-  @for (icon of info.suffixIcons; track $index) {
-    <button mat-icon-button [class]="icon.class" [style]="icon.style" (click)="icon.onClick?.()" [disabled]="info.disabled">
-      <mat-icon>{{ icon.name }}</mat-icon>
-    </button>
-  }
-</ng-template>
-<ng-template #suffixTextsTmp>
-  @for (text of info.suffixTexts; track $index) {
-    <span [class]="text.class" [style]="text.style">
-      {{ text.name }}
-    </span>
-  }
-</ng-template>

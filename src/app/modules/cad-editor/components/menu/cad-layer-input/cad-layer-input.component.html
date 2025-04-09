@@ -1,12 +1,1 @@
-<!-- <mat-form-field>
-  <mat-label>图层</mat-label>
-  <input matInput type="text" [matAutocomplete]="layerOptionsAuto" name="layer" [value]="layerText" (change)="onLayerTextChange($event)" />
-  <mat-autocomplete #layerOptionsAuto="matAutocomplete" (optionSelected)="onLayerTextChange($event)">
-    @for (option of layerOptions(); track $index) {
-      <mat-option [value]="option">
-        {{ option }}
-      </mat-option>
-    }
-  </mat-autocomplete>
-</mat-form-field> -->
 <app-input [info]="layerNameInputInfo()"></app-input>
