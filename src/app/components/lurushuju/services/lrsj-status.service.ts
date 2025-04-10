@@ -63,7 +63,9 @@ export class LrsjStatusService implements OnDestroy {
   suanliaoCadsValidateEnd$ = new Subject<string[]>();
 
   private _xinghaoFilterKey = "lurushujuXinghaoFilter";
-  xinghaoFilter = signal<{name?: string; zuoshujubanben?: string; tingyong?: boolean}>(session.load(this._xinghaoFilterKey) || {});
+  xinghaoFilter = signal<{name?: string; menleixing?: string; zuoshujubanben?: string; tingyong?: boolean}>(
+    session.load(this._xinghaoFilterKey) || {}
+  );
   xinghaoFilterEff = effect(() => {
     const filter = this.xinghaoFilter();
     session.save(this._xinghaoFilterKey, filter);
@@ -73,7 +75,7 @@ export class LrsjStatusService implements OnDestroy {
   });
   isXinghaoFilterEmpty = computed(() => {
     const filter = this.xinghaoFilter();
-    return !filter.name && !filter.zuoshujubanben && typeof filter.tingyong !== "boolean";
+    return !filter.name && !filter.menleixing && !filter.zuoshujubanben && typeof filter.tingyong !== "boolean";
   });
   focusFenleiZuofa = signal<{i: number; j?: number} | null>(null);
 
@@ -564,6 +566,9 @@ export class LrsjStatusService implements OnDestroy {
           xinghao.hidden = false;
           if (filter.name && !xinghao.hidden) {
             xinghao.hidden = !queryString(filter.name, xinghao.mingzi);
+          }
+          if (filter.menleixing && !xinghao.hidden) {
+            xinghao.hidden = xinghao.menleixing !== filter.menleixing;
           }
           if (filter.zuoshujubanben && !xinghao.hidden) {
             const isVersion2024 = getIsVersion2024(xinghao.zuoshujubanben);

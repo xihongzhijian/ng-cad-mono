@@ -65,27 +65,37 @@ export class LrsjXinghaosComponent extends LrsjPiece {
     const update = () => {
       this.lrsjStatus.xinghaoFilter.set(data);
     };
-    const zuoshujubanbenOptions = this.getOptions0(this.lrsjStatus.xinghaoOptionsManager.data(), "做数据版本");
-    zuoshujubanbenOptions.unshift({label: "全部", value: ""});
-    const tingyongOptions: InputInfoOption<boolean | "">[] = [
-      {label: "全部", value: ""},
+    const list = this.lrsjStatus.xinghaoMenchuangs();
+    const menleixings = new Set<string>();
+    for (const menchuang of list.items) {
+      for (const gongyi of menchuang.gongyis?.items || []) {
+        for (const xinghao of gongyi.xinghaos?.items || []) {
+          if (xinghao.menleixing) {
+            menleixings.add(xinghao.menleixing);
+          }
+        }
+      }
+    }
+    const getOptions0 = <T>(options: InputInfoOption<T>[]): InputInfoOption<T | "">[] => {
+      return [{label: "全部", value: ""}, ...options];
+    };
+    const zuoshujubanbenOptions = getOptions0(this.getOptions0(this.lrsjStatus.xinghaoOptionsManager.data(), "做数据版本"));
+    const tingyongOptions = getOptions0([
       {label: "是", value: true},
       {label: "否", value: false}
-    ];
+    ]);
+    const menleixingOptions = getOptions0(Array.from(menleixings).map((v) => ({value: v})));
     const getter = new InputInfoWithDataGetter(data, {
       clearable: true,
-      onChange: () => {
-        update();
-      }
+      onChange: () => update()
     });
     const form: InputInfo<typeof data>[] = [
       getter.string("name", {
         label: "搜索型号",
         style: {width: "200px"},
-        onInput: debounce(() => {
-          update();
-        }, 500)
+        onInput: debounce(() => update(), 500)
       }),
+      getter.selectSingle("menleixing", menleixingOptions, {label: "门类型", style: {width: "150px"}}),
       getter.selectSingle("zuoshujubanben", zuoshujubanbenOptions, {
         label: "做数据版本",
         style: {width: "220px"}
@@ -181,9 +191,10 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       }
       return info;
     };
-    const inputInfoGetter = new InputInfoWithDataGetter(data, {clearable: true});
+    const showMenleixing = this.showMenleixing() && "menleixing" in data;
+    const getter = new InputInfoWithDataGetter(data, {clearable: true});
     const form: InputInfo[] = [
-      inputInfoGetter.string("mingzi", {
+      getter.string("mingzi", {
         label: "名字",
         validators: (control) => {
           const value = control.value;
@@ -196,17 +207,18 @@ export class LrsjXinghaosComponent extends LrsjPiece {
           return null;
         }
       }),
-      inputInfoGetter.image("tupian", this.http, {label: "图片"}),
+      getter.image("tupian", this.http, {label: "图片"}),
       await getOptionInput("menchuang", "门窗", true, true),
       await getOptionInput("gongyi", "工艺", true, true),
+      getter.string("menleixing", {label: "门类型", hidden: !showMenleixing}),
       await getOptionInput("dingdanliucheng", "订单流程"),
       await getOptionInput("zuoshujubanben", "做数据版本"),
-      inputInfoGetter.selectSingle("算料单模板", 算料单模板Options.slice(), {validators: Validators.required}),
-      inputInfoGetter.boolean("下单显示没有配件的板材分组"),
-      inputInfoGetter.boolean("是否需要激光开料", {validators: Validators.required}),
-      inputInfoGetter.number("paixu", {label: "排序"}),
-      inputInfoGetter.boolean("tingyong", {label: "停用"}),
-      inputInfoGetter.boolean("数据已录入完成")
+      getter.selectSingle("算料单模板", 算料单模板Options.slice(), {validators: Validators.required}),
+      getter.boolean("下单显示没有配件的板材分组"),
+      getter.boolean("是否需要激光开料", {validators: Validators.required}),
+      getter.number("paixu", {label: "排序"}),
+      getter.boolean("tingyong", {label: "停用"}),
+      getter.boolean("数据已录入完成")
     ];
     const result = await this.message.form(form);
     if (result) {
