@@ -138,7 +138,8 @@ import {
   XhmrmsbjData
 } from "./xhmrmsbj.utils";
 
-const table = "p_xinghaomorenmenshanbuju";
+const table1 = "p_xinghaomorenmenshanbuju";
+const table2 = "p_luomatouluomazhuku";
 @Component({
   selector: "app-xhmrmsbj",
   templateUrl: "./xhmrmsbj.component.html",
@@ -196,6 +197,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   table = signal("");
   id = signal(-1);
   isFromOrder = signal(false);
+  type = signal("");
   tableData = signal<XhmrmsbjTableData | null>(null);
   data = signal<XhmrmsbjData | null>(null);
   step1Data: Step1Data = {options: {}, typesInfo: {}};
@@ -236,9 +238,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return raw ? new XhmrmsbjData(raw, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null;
   }
 
+  isLuomatouluomazhuku = computed(() => this.type() === "luomatouluomazhuku");
   async refresh() {
     const params = this.route.snapshot.queryParams;
-    const {token} = params;
+    const {token, type} = params;
+    this.type.set(type);
     const id = Number(params.id);
     const xinghaoId = this.xinghaoId();
     const getXinghao = async (vid: string) => {
@@ -252,6 +256,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return xinghaos.at(0) || null;
     };
     let xinghao: MrbcjfzXinghao | null = null;
+    let table = table1;
+    if (this.isLuomatouluomazhuku()) {
+      table = table2;
+      this.menshanKeys = ["正面"];
+    }
     if (table && (id > 0 || xinghaoId > 0)) {
       this.table.set(table);
       this.id.set(id);
@@ -542,6 +551,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   menshanFollowersInputInfo = computed(() => {
     const data = this.data();
     if (!data) {
+      return [];
+    }
+    const hasSuo = this.menshanKeys.some((v) => v.includes("锁扇"));
+    const hasJiao = this.menshanKeys.some((v) => v.includes("铰扇"));
+    if (!hasSuo || !hasJiao) {
       return [];
     }
     const isFromOrder = this.isFromOrder();
@@ -1403,7 +1417,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const data: TableUpdateParams<MsbjData>["data"] = dataInfo.export();
     this.refreshData();
     // delete data.mingzi;
-    await this.http.tableUpdate({table, data});
+    await this.http.tableUpdate({table: this.table(), data});
     this.isSubmited.set(true);
   }
   cancel() {
@@ -1439,12 +1453,17 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!this.enableXinghaoConfig()) {
       names = names.filter((v) => !isXhmrmsbjXinghaoConfigComponentType(v));
     }
+    const toDiff: XhmrmsbjTabName[] = ["可选锁边铰边", "门缝配置"];
+    if (this.isLuomatouluomazhuku()) {
+      toDiff.push("算料单配置", "企料结构配置");
+    }
     if (!this.enableSbjb()) {
-      names = names.filter((v) => v !== "可选锁边铰边");
+      toDiff.push("可选锁边铰边");
     }
     if (!this.enableMfpz()) {
-      names = names.filter((v) => v !== "门缝配置");
+      toDiff.push("门缝配置");
     }
+    names = difference(names, toDiff);
     return names;
   });
   private _activeTabNameKey = "xhmrmsbjActiveTabName";
@@ -1620,7 +1639,10 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     this.spinner.show(this.spinner.defaultLoaderId, {text: "获取模块大小配置"});
-    const records = await this.http.queryMySql<XhmrmsbjTableData>({table, filter: {where: {vid: this.id()}}}, {spinner: false});
+    const records = await this.http.queryMySql<XhmrmsbjTableData>(
+      {table: this.table(), filter: {where: {vid: this.id()}}},
+      {spinner: false}
+    );
     if (records[0]) {
       const data2 = this.getXhmrmsbjData(records[0]);
       for (const key of this.menshanKeys) {
@@ -2103,7 +2125,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!data) {
       return infos;
     }
-    for (const key of menshanKeys) {
+    for (const key of this.menshanKeys) {
       if (data.isMenshanFollower(key)) {
         continue;
       }
@@ -2204,7 +2226,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           updateFromInputs();
         } else {
           const records = await this.http.queryMySql<XhmrmsbjTableData>({
-            table,
+            table: this.table(),
             filter: {where: {vid: val.vid}}
           });
           data.msbjData = this.getXhmrmsbjData(records[0]);
@@ -2380,7 +2402,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
           updateFromInputs();
         } else {
           const records = await this.http.queryMySql<XhmrmsbjTableData>({
-            table,
+            table: this.table(),
             filter: {where: {vid: val.vid}}
           });
           data.msbjData = this.getXhmrmsbjData(records[0]);

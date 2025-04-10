@@ -3,7 +3,11 @@
     @if (tabNames().length > 1) {
       @for (name of tabNames(); track $index) {
         <button mat-flat-button [class.accent]="name === activeTabName()" (click)="setActiveTabName(name)">
-          {{ name }}
+          @if (name === "门扇模块" && isLuomatouluomazhuku()) {
+            布局模块
+          } @else {
+            {{ name }}
+          }
         </button>
       }
       <div class="placeholder"></div>
