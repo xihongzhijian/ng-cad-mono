@@ -104,6 +104,7 @@ export interface QueryMysqlParams {
   limit?: number;
   token?: string;
   withGuanlian?: boolean;
+  checkAccess?: boolean;
 }
 
 export interface UpdateMongodbParams<T extends MongodbDataBase> {
