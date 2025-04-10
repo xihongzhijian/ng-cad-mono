@@ -2,24 +2,24 @@ import {SelectionModel} from "@angular/cdk/collections";
 import {FlatTreeControl} from "@angular/cdk/tree";
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   computed,
   DoCheck,
   ElementRef,
-  EventEmitter,
   forwardRef,
   HostBinding,
-  Input,
+  inject,
+  input,
   KeyValueChanges,
   KeyValueDiffer,
   KeyValueDiffers,
   OnChanges,
-  Output,
+  output,
   signal,
   SimpleChanges,
   viewChild,
-  ViewChild,
   viewChildren
 } from "@angular/core";
 import {FormControl, ValidationErrors} from "@angular/forms";
@@ -48,7 +48,6 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
 import {Properties} from "csstype";
 import {cloneDeep, debounce, intersection, isEmpty, isEqual, uniqueId} from "lodash";
@@ -88,25 +87,32 @@ import {getInputInfosFromTableColumns} from "./table.utils";
     MatSlideToggleModule,
     MatSortModule,
     MatTableModule
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
+  private cd = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
+  private differs = inject(KeyValueDiffers);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+
   @HostBinding("class") class: string | string[] | undefined;
 
-  @Input() info: TableRenderInfo<T> = {data: [], columns: []};
-  @Output() rowButtonClick = new EventEmitter<RowButtonEvent<T>>();
-  @Output() rowSelectionChange = new EventEmitter<RowSelectionChange<T>>();
-  @Output() cellFocus = new EventEmitter<CellEvent<T>>();
-  @Output() cellBlur = new EventEmitter<CellEvent<T>>();
-  @Output() cellChange = new EventEmitter<CellChangeEvent<T>>();
-  @Output() cellClick = new EventEmitter<CellEvent<T>>();
-  @Output() toolbarButtonClick = new EventEmitter<ToolbarButtonEvent>();
-  @Output() filterAfter = new EventEmitter<FilterAfterEvent<T>>();
+  info = input<TableRenderInfo<T>>({data: [], columns: []});
+  rowButtonClick = output<RowButtonEvent<T>>();
+  rowSelectionChange = output<RowSelectionChange<T>>();
+  cellFocus = output<CellEvent<T>>();
+  cellBlur = output<CellEvent<T>>();
+  cellChange = output<CellChangeEvent<T>>();
+  cellClick = output<CellEvent<T>>();
+  toolbarButtonClick = output<ToolbarButtonEvent>();
+  filterAfter = output<FilterAfterEvent<T>>();
 
   protected _rowSelection: SelectionModel<T>;
   columnFields: (keyof T | "select")[] = [];
-  @ViewChild(MatTable) table?: MatTable<T>;
-  @ViewChild(MatSort) sort?: MatSort;
+  table = viewChild<MatTable<T>>(MatTable);
+  sort = viewChild(MatSort);
   private infoDiffer: KeyValueDiffer<string, any>;
   treeControl = new FlatTreeControl<any>(
     (node) => node.level,
@@ -125,12 +131,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   dataSource: MatTreeFlatDataSource<any, any> | MatTableDataSource<T> = new MatTableDataSource();
 
-  editing: {colIdx: number; rowIdx: number; value: string};
+  editing = signal({colIdx: -1, rowIdx: -1, value: ""});
   filterForm = new Map<keyof T, string>();
   filterInputInfosFlag = signal(0);
   filterInputInfos = computed(() => {
     this.filterInputInfosFlag();
-    const info = this.info;
+    const info = this.info();
     const filterable = info.filterable;
     if (!filterable) {
       return null;
@@ -139,7 +145,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (typeof filterable === "object") {
       fields = filterable.fields;
     }
-    const columns = this.info.columns;
+    const columns = info.columns;
     if (!fields) {
       fields = columns.map((v) => v.field);
     }
@@ -175,32 +181,25 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     });
   });
 
-  get toolbarButtons() {
-    return this.info.toolbarButtons || {};
-  }
-  get haveToolbarButtons() {
-    return Object.keys(this.toolbarButtons).length > 0 || this.info.filterable;
-  }
-  get haveData() {
-    return this.info.data.length > 0;
-  }
+  toolbarButtons = computed(() => {
+    const btns = this.info().toolbarButtons || {};
+    if (isEmpty(btns) && !this.info().filterable) {
+      return null;
+    }
+    return btns;
+  });
+  haveData = computed(() => {
+    return this.info().data.length > 0;
+  });
 
-  constructor(
-    private message: MessageService,
-    private differs: KeyValueDiffers,
-    private dialog: MatDialog,
-    private http: CadDataService,
-    private status: AppStatusService,
-    private cd: ChangeDetectorRef
-  ) {
-    this.editing = {colIdx: -1, rowIdx: -1, value: ""};
-    this.infoDiffer = this.differs.find(this.info).create();
+  constructor() {
+    this.infoDiffer = this.differs.find(this.info()).create();
     this._rowSelection = this._initRowSelection();
   }
   private _rowSelectionSubscription?: Subscription;
   private _initRowSelection() {
     this._rowSelectionSubscription?.unsubscribe();
-    const rowSelection = this.info.rowSelection;
+    const rowSelection = this.info().rowSelection;
     const model = new SelectionModel<T>(rowSelection?.mode === "multiple", []);
     this._rowSelectionSubscription = model.changed.subscribe(() => {
       this.rowSelectionChange.emit({items: model.selected});
@@ -214,18 +213,18 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   ngAfterViewInit() {
     if (this.dataSource instanceof MatTableDataSource) {
-      this.dataSource.sort = this.sort || null;
+      this.dataSource.sort = this.sort() || null;
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.info) {
-      this.infoDiffer = this.differs.find(this.info).create();
+      this.infoDiffer = this.differs.find(this.info()).create();
     }
   }
 
   ngDoCheck() {
-    const changes = this.infoDiffer.diff(this.info) as KeyValueChanges<InfoKey, any>;
+    const changes = this.infoDiffer.diff(this.info()) as KeyValueChanges<InfoKey, any>;
     if (changes) {
       this.infoChanged(changes);
     }
@@ -245,9 +244,10 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
     this.filterInputInfosFlag.update((v) => v + 1);
 
+    const info = this.info();
     if (intersection<InfoKey>(changedKeys, ["columns", "rowSelection"]).length > 0) {
-      this.columnFields = [...this.info.columns.filter((v) => !v.hidden).map((v) => v.field)];
-      const rowSelection = this.info.rowSelection;
+      this.columnFields = [...info.columns.filter((v) => !v.hidden).map((v) => v.field)];
+      const rowSelection = info.rowSelection;
       if (rowSelection) {
         if (changedKeys.includes("rowSelection")) {
           this._initRowSelection();
@@ -258,8 +258,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       }
     }
     if (intersection<InfoKey>(changedKeys, ["data", "isTree"]).length > 0) {
-      const data = this.info.data;
-      if (this.info.isTree) {
+      const data = info.data;
+      if (info.isTree) {
         this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener, data);
       } else {
         this.dataSource = new MatTableDataSource(data);
@@ -267,7 +267,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       this.filterTable();
     }
     if (intersection<InfoKey>(changedKeys, ["class"]).length > 0) {
-      this.class = this.info.class;
+      this.class = info.class;
     }
     if (intersection<InfoKey>(changedKeys, ["columns"]).length > 0) {
       this.updateCellInputInfos();
@@ -317,7 +317,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     this.rowSelectionChange.emit({items: this._rowSelection.selected});
   }
   selectAllRows() {
-    this.setSelectedItems(this.info.data);
+    this.setSelectedItems(this.info().data);
   }
   deselectAllRows() {
     this.setSelectedItems([]);
@@ -328,9 +328,11 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   async addItem(rowIdx?: number) {
-    const {onlineMode, isTree, newItem, data} = this.info;
+    const info = this.info();
+    const {onlineMode, isTree, newItem, data} = this.info();
     if (onlineMode) {
-      const infos = getInputInfosFromTableColumns(this.info.columns.filter((v) => v.required));
+      const {columns} = info;
+      const infos = getInputInfosFromTableColumns(columns.filter((v) => v.required));
       const values = await this.message.form(infos);
       if (values) {
         const {tableName, refresh} = onlineMode;
@@ -367,8 +369,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   async removeItem(index?: number) {
-    const {info, _rowSelection: rowSelection} = this;
-    const {onlineMode, isTree, data} = info;
+    const {_rowSelection: rowSelection} = this;
+    const {onlineMode, isTree, data} = this.info();
     if (onlineMode) {
       const vids = rowSelection.selected.map((v) => Number((v as any).vid));
       if (vids.length < 1) {
@@ -403,9 +405,10 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   setCellValue(event: any, colIdx: number, rowIdx: number, item: T) {
-    const column = this.info.columns[colIdx];
+    const info = this.info();
+    const column = info.columns[colIdx];
     const {field, type} = column;
-    const {onlineMode} = this.info;
+    const {onlineMode} = info;
     const valueBefore = item[field];
     if (event instanceof MatSelectChange) {
       item[field] = event.value;
@@ -443,12 +446,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   onCellFocus(_event: FocusEvent, colIdx: number, rowIdx: number, item: T) {
-    const column = this.info.columns[colIdx];
+    const column = this.info().columns[colIdx];
     this.cellFocus.emit({column, item, colIdx, rowIdx});
   }
 
   onCellBlur(_event: FocusEvent, colIdx: number, rowIdx: number, item: T) {
-    const column = this.info.columns[colIdx];
+    const column = this.info().columns[colIdx];
     this.cellBlur.emit({column, item, colIdx, rowIdx});
   }
 
@@ -463,13 +466,14 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   export() {
     let selectedItems = this._rowSelection.selected;
+    const info = this.info();
     if (selectedItems.length < 1) {
-      selectedItems = this.info.data;
+      selectedItems = info.data;
     }
-    if (typeof this.info.dataTransformer === "function") {
-      selectedItems = this.info.dataTransformer("export", selectedItems);
+    if (typeof info.dataTransformer === "function") {
+      selectedItems = info.dataTransformer("export", selectedItems);
     }
-    downloadByString(JSON.stringify(selectedItems), {filename: (this.info.title ?? "table") + ".json"});
+    downloadByString(JSON.stringify(selectedItems), {filename: (info.title ?? "table") + ".json"});
   }
 
   async import() {
@@ -487,11 +491,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
       this.message.alert("读取文件失败");
     }
     if (Array.isArray(data)) {
-      if (typeof this.info.dataTransformer === "function") {
-        data = this.info.dataTransformer("import", data);
+      const info = this.info();
+      if (typeof info.dataTransformer === "function") {
+        data = info.dataTransformer("import", data);
       }
       if (Array.isArray(data)) {
-        data.forEach((v) => this.info.data.push(v));
+        data.forEach((v) => info.data.push(v));
       } else {
         this.message.alert("数据格式错误");
       }
@@ -505,7 +510,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (type === "cad" && !this.getIsTypeCadEnabled(event)) {
       return false;
     }
-    return !!((forgetEditMode || this.info.editMode) && editable);
+    return !!((forgetEditMode || this.info().editMode) && editable);
   }
 
   getColumnOptions(column: ColumnInfo<T>) {
@@ -528,7 +533,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     const cellInputInfos: InputInfo[][] = [];
     for (const [rowIdx, item] of this.filteredData.entries()) {
       const group: InputInfo[] = [];
-      for (const [colIdx, column] of this.info.columns.entries()) {
+      for (const [colIdx, column] of this.info().columns.entries()) {
         group.push(this.getCellInputInfo({column, item, colIdx, rowIdx}));
       }
       cellInputInfos.push(group);
@@ -536,8 +541,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     this.cellInputInfos.set(cellInputInfos);
   }
   isVaild() {
-    for (const input of this.cellInputs()) {
-      const errors = input.validateValue();
+    for (const inputComponent of this.cellInputs()) {
+      const errors = inputComponent.validateValue();
       if (!isEmpty(errors)) {
         return false;
       }
@@ -558,7 +563,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   getCellClass(column: ColumnInfo<T>, item: T | null, rowIdx: number, colIdx: number) {
     const classes = new Set(["column-type-" + column.type]);
-    const {activeRows, rowSelection, getCellClass} = this.info;
+    const {activeRows, rowSelection, getCellClass} = this.info();
     let active = activeRows?.includes(rowIdx);
     if (!active && rowSelection && !rowSelection.noActive && item && this._rowSelection.isSelected(item)) {
       active = true;
@@ -582,7 +587,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   getCellStyle(column: ColumnInfo<T>, item: T | null, rowIdx: number, colIdx: number) {
-    const {getCellStyle} = this.info;
+    const {getCellStyle} = this.info();
     const style = {...column.style};
     if (item && getCellStyle) {
       Object.assign(style, getCellStyle({column, item, rowIdx, colIdx}));
@@ -639,11 +644,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   async uploadFile(colIdx: number, rowIdx: number, item: T) {
-    const {onlineMode} = this.info;
+    const info = this.info();
+    const {onlineMode} = info;
     if (!onlineMode) {
       return;
     }
-    const column = this.info.columns[colIdx];
+    const column = info.columns[colIdx];
     const vid = Number((item as any).vid);
     const field = column.field as any;
     let accept: string | undefined;
@@ -665,11 +671,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   async deleteFile(colIdx: number, rowIdx: number, item: T) {
-    const {onlineMode} = this.info;
+    const info = this.info();
+    const {onlineMode} = info;
     if (!onlineMode) {
       return;
     }
-    const column = this.info.columns[colIdx];
+    const column = info.columns[colIdx];
     const vid = Number((item as any).vid);
     const field = column.field as any;
     await this.http.tableDeleteFile({table: onlineMode.tableName, vid, field});
@@ -681,11 +688,12 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   toggleEditMode() {
-    this.info.editMode = !this.info.editMode;
+    const info = this.info();
+    info.editMode = !info.editMode;
   }
 
   async selectOptions(colIdx: number, rowIdx: number, item: T) {
-    const column = this.info.columns[colIdx];
+    const column = this.info().columns[colIdx];
     const {type, field} = column;
     if (type !== "link") {
       return;
@@ -701,7 +709,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   async openCad(colIdx: number, rowIdx: number, item: T) {
-    const column = this.info.columns[colIdx];
+    const column = this.info().columns[colIdx];
     if (column.type === "cad" && this.isColumnEditable({column, item, colIdx, rowIdx}, true)) {
       let cadData: CadData | undefined;
       try {
@@ -747,10 +755,11 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   exportExcel(opts?: {filename?: string}) {
     const data: string[][] = [];
-    if (this.info.title) {
-      data.push([this.info.title]);
+    const info = this.info();
+    if (info.title) {
+      data.push([info.title]);
     }
-    const columns = this.info.columns.filter((v) => !v.hidden);
+    const columns = info.columns.filter((v) => !v.hidden);
     data.push(columns.map((v) => v.name || (v.field as string)));
     const addRows = (source: any[]) => {
       for (const [i, item] of source.entries()) {
@@ -778,8 +787,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
         }
       }
     };
-    addRows(this.info.data);
-    this.http.downloadExcel(data, this.info.title, opts?.filename);
+    addRows(info.data);
+    this.http.downloadExcel(data, info.title, opts?.filename);
   }
 
   getCellInputInfo(event: CellEvent<T>): InputInfo<T> {
@@ -846,7 +855,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   }
 
   filterTable() {
-    const {filterable} = this.info;
+    const {filterable} = this.info();
     const dataSource = this.dataSource;
     if (!filterable || !(dataSource instanceof MatTableDataSource)) {
       return;
