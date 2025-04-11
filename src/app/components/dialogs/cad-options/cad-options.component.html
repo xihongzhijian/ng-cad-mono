@@ -28,7 +28,7 @@
   <app-spinner [id]="loaderIds.optionsLoader"></app-spinner>
   <div class="options items add-empty-msg">
     @for (item of pageData(); track i; let i = $index) {
-      <div class="option border item" [class.checked]="item.checked" (click)="onCheckboxChange(i)">
+      <div class="option border item" [class.checked]="checkedItems().includes(item)" (click)="onCheckboxChange(i)">
         <div class="toolbar compact hidden-if-empty" appClickStop>
           @if (data.defaultValue; as val) {
             <button mat-button [class.accent]="val.value === item.name" (click)="setDefaultValue(i)">默认值</button>
@@ -50,7 +50,7 @@
           bigPicClickShowDisabled
         ></app-image>
         <div class="option-name toolbar">
-          <mat-checkbox [checked]="item.checked" [disabled]="item.disabled && !item.checked"> </mat-checkbox>
+          <mat-checkbox [checked]="checkedItems().includes(item)" [disabled]="item.disabled"> </mat-checkbox>
           <div class="flex-110">{{ item.label || item.name }}</div>
           @for (btn of data.itemBtns; track $index) {
             <button mat-button appClickStop [class.hidden]="btn.hidden" (click)="btn.onClick(item)">{{ btn.name }}</button>
