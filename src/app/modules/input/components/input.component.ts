@@ -1182,7 +1182,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   async openInNewTab() {
     const info = this.info();
-    if (info.type !== "select") {
+    if (info.type !== "select" && info.type !== "string") {
       return;
     }
     const openInNewTab = info.openInNewTab;

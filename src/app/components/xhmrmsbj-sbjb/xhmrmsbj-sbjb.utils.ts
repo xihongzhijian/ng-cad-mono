@@ -10,7 +10,7 @@ import {
 } from "@components/lurushuju/services/lrsj-status.utils";
 import {environment} from "@env";
 import {keysOf} from "@lucilor/utils";
-import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOption, InputInfoSelect, InputInfoString} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
@@ -219,7 +219,7 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
   item?: XhmrmsbjSbjbItemSbjb
 ) => {
   const data = getXhmrmsbjSbjbItemSbjb(cloneDeep(item));
-  const getSelectInputInfo = (key: keyof XhmrmsbjSbjbItemSbjb, setter?: (info: InputInfoSelect) => void) => {
+  const getSelectInputInfo = (key: keyof XhmrmsbjSbjbItemSbjb, setter?: (info: InputInfoSelect | InputInfoString) => void) => {
     const info = getOptionsAll2InputInfo(options, key, setter);
     info.model = {data, key};
     return info;

@@ -73,16 +73,23 @@
             </mat-option>
           }
         </mat-autocomplete>
-        @if (optionsDialog() && editable()) {
-          <button matSuffix mat-icon-button (click)="selectOptions(model.key)">
-            <mat-icon>list</mat-icon>
-          </button>
-        }
-        @if (info.copyable) {
-          <button matSuffix mat-icon-button (click)="copy()">
-            <mat-icon>content_copy</mat-icon>
-          </button>
-        }
+        <ng-container matSuffix>
+          @if (info.openInNewTab) {
+            <button mat-icon-button appClickStop (click)="openInNewTab()">
+              <mat-icon>open_in_new</mat-icon>
+            </button>
+          }
+          @if (optionsDialog() && editable()) {
+            <button mat-icon-button (click)="selectOptions(model.key)">
+              <mat-icon>list</mat-icon>
+            </button>
+          }
+          @if (info.copyable) {
+            <button mat-icon-button (click)="copy()">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          }
+        </ng-container>
         <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
         <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
         @if (info.clearable) {
