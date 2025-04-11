@@ -883,7 +883,7 @@ export class AppStatusService {
   }
 
   private _highlightDimensionsMap = new Map<string, CadEntity[]>();
-  highlightDimensions(dimensions?: CadDimension[]) {
+  highlightDimensions(dimensions?: CadDimension[], highlightedPrev?: CadEntities) {
     const points: Point[] = [];
     const cad = this.cad;
     const dimensionsAll = cad.data.getAllEntities().dimension;
@@ -911,14 +911,16 @@ export class AppStatusService {
         }
         if (esPrev) {
           for (const e of esPrev) {
-            if (!esCurr.includes(e)) {
+            if (!esCurr.includes(e) && !highlightedPrev?.find(e.id)) {
               e.highlighted = false;
             }
           }
         }
       } else if (esPrev) {
         for (const e of esPrev) {
-          e.highlighted = false;
+          if (!highlightedPrev?.find(e.id)) {
+            e.highlighted = false;
+          }
         }
       }
       if (esCurr.length > 0) {
@@ -931,7 +933,9 @@ export class AppStatusService {
     for (const [id, es] of map) {
       if (!dimensionIdsAll.includes(id)) {
         for (const e of es) {
-          e.highlighted = false;
+          if (!highlightedPrev?.find(e.id)) {
+            e.highlighted = false;
+          }
         }
         map.delete(id);
       }
@@ -940,7 +944,7 @@ export class AppStatusService {
     return highlightedEntities;
   }
 
-  highlightLineTexts(entities?: CadEntities) {
+  highlightLineTexts(entities?: CadEntities, highlightedPrev?: CadEntities) {
     const cad = this.cad;
     if (!entities) {
       entities = cad.data.getAllEntities();
@@ -960,7 +964,7 @@ export class AppStatusService {
       if (selectedMtexts.length > 0) {
         e.highlighted = true;
         highlightedEntities.add(e);
-      } else {
+      } else if (!highlightedPrev?.find(e.id)) {
         e.highlighted = false;
       }
     });
