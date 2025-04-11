@@ -20,6 +20,7 @@ import {
   validateLines
 } from "@app/cad/utils";
 import {FetchManager} from "@app/utils/fetch-manager";
+import {getInsertName} from "@app/utils/get-value";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {getSbjbCadName, isSbjbItemOptionalKeys3} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.utils";
@@ -439,6 +440,14 @@ export class AppStatusService {
     }
     data2.getAllEntities().forEach((e) => (e.visible = true));
     suanliaodanZoomOut(data2);
+
+    const dimNames = data2.entities.dimension.filter((e) => e.mingzi).map((e) => e.mingzi);
+    for (const e of data2.entities.dimension) {
+      if (!e.mingzi) {
+        e.mingzi = getInsertName(dimNames, "活动标注");
+      }
+    }
+
     return data2;
   }
 

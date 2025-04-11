@@ -20,6 +20,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
+import {CadStatusNormal} from "@services/cad-status";
 import {difference, isEqual} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 
@@ -208,6 +209,9 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
   }
 
   selectedComponentsEff = effect(() => {
+    if (this.status.hasOtherCadStatus((v) => v instanceof CadStatusNormal)) {
+      return;
+    }
     const selectedComponents = this.status.components.selected();
     for (const node of this.components) {
       node.checked = selectedComponents.some((v) => v.id === node.data.id);
