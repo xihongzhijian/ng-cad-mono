@@ -890,6 +890,7 @@ export const calcZxpj = async (
       setShuangxiangLineRects(shaungxiangCads);
       const vars3 = {...vars2, ...getCadLengthVars(data)};
       const zhankais2: ZixuanpeijianInfo["zhankai"] = [];
+      const 栋数 = Number(materialResult.栋数);
       for (const [i, zhankai] of zhankais) {
         const formulas3: Formulas = {};
         formulas3.展开宽 = zhankai.zhankaikuan;
@@ -909,7 +910,7 @@ export const calcZxpj = async (
         const width = toFixed(result3.succeedTrim.展开宽, fractionDigits);
         const height = toFixed(result3.succeedTrim.展开高, fractionDigits);
         let num = Number(result3.succeedTrim.数量);
-        num *= Number(materialResult.栋数);
+        num *= 栋数;
         zhankais2.push({width, height, num: String(num), originalWidth: zhankai.zhankaikuan, cadZhankaiIndex: i});
       }
       info.zhankai = [...zhankais2, ...info.zhankai.filter((v) => !("cadZhankaiIndex" in v))];
@@ -965,11 +966,12 @@ export const calcZxpj = async (
           }
         });
         if (cadZhankai.chai) {
-          calcObj.num = 1;
+          const num = calcObj.num / 栋数;
+          calcObj.num = 栋数;
           const calc2 = [];
           calc2.push(calcObj);
-          for (let j = 1; j < calcObj.num; j++) {
-            const calc1 = JSON.parse(JSON.stringify(calcObj));
+          for (let j = 1; j < num; j++) {
+            const calc1 = cloneDeep(calcObj);
             if (!calc1.flip) {
               calc1.flip = [];
             }
