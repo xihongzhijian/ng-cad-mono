@@ -203,7 +203,7 @@ export const openBancaiListDialog = async (
     }
   });
   if (!result || !list) {
-    return [];
+    return null;
   }
   return list.filter((v) => result.options.some((v2) => v2.mingzi === v.mingzi));
 };

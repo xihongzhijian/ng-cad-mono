@@ -66,11 +66,6 @@ export class CadOptionsComponent implements AfterViewInit {
   pageSize = signal(100);
   loaderIds = {optionsLoader: "cadOptions", submitLoaderId: "cadOptionsSubmit"};
 
-  filePathUrl = filePathUrl;
-  paginator = viewChild(MatPaginator);
-  showPaginator = signal(true);
-  noImage = signal(false);
-
   constructor(
     public dialogRef: MatDialogRef<CadOptionsComponent, CadOptionsOutput>,
     @Inject(MAT_DIALOG_DATA) public data: CadOptionsInput
@@ -80,6 +75,29 @@ export class CadOptionsComponent implements AfterViewInit {
     await timeout(0);
     await this.getData(1);
   }
+
+  filePathUrl = filePathUrl;
+  paginator = viewChild(MatPaginator);
+  showPaginator = signal(true);
+
+  noImage1 = computed(() => {
+    if (this.data.noImage) {
+      return true;
+    }
+    const items = this.pageData();
+    return items.every((v) => !v.img);
+  });
+  noImage2 = signal(true);
+  toggleNoImage2() {
+    this.noImage2.update((v) => !v);
+  }
+  noImage2Count = signal(0);
+  noImage2CountEff = effect(() => {
+    if (!this.noImage2()) {
+      this.noImage2Count.update((v) => v + 1);
+    }
+  });
+  noImage = computed(() => this.noImage1() || this.noImage2());
 
   checkedItems = signal<GetOptionsResultItem[]>([]);
 
@@ -185,13 +203,20 @@ export class CadOptionsComponent implements AfterViewInit {
       );
       return res?.data || [];
     };
-    const checkedNames3 = difference(checkedNames, checkedNames2);
-    const checkedVids3 = difference(checkedVids, checkedVids2);
-    if (checkedNames3.length > 0) {
-      checkedItems.push(...(await getOptions("mingzi", checkedNames3)));
+    const checkedItemsInited = this._checkedItemsInited.values();
+    const checkedNames3: typeof checkedNames = [];
+    const checkedVids3: typeof checkedVids = [];
+    for (const item of checkedItemsInited) {
+      checkedNames3.push(item.name);
+      checkedVids3.push(item.vid);
     }
-    if (checkedVids3.length > 0) {
-      checkedItems.push(...(await getOptions("vid", checkedVids3)));
+    const checkedNames4 = difference(checkedNames, checkedNames2, checkedNames3);
+    const checkedVids4 = difference(checkedVids, checkedVids2, checkedVids3);
+    if (checkedNames4.length > 0) {
+      checkedItems.push(...(await getOptions("mingzi", checkedNames4)));
+    }
+    if (checkedVids4.length > 0) {
+      checkedItems.push(...(await getOptions("vid", checkedVids4)));
     }
 
     for (const item of checkedItems) {
@@ -368,7 +393,7 @@ export class CadOptionsComponent implements AfterViewInit {
     return data;
   }
 
-  private _checkedItemsInited = new Map<number, true>();
+  private _checkedItemsInited = new Map<number, GetOptionsResultItem>();
   async getData(page?: number, refreshLocalOptions = false) {
     const filter = cloneDeep(this.data.filter || {});
     const {typeFiltering} = this.data;
@@ -408,11 +433,11 @@ export class CadOptionsComponent implements AfterViewInit {
       }
       if (checkedNames && checkedNames.includes(item.name)) {
         checkedItems.push(item);
-        this._checkedItemsInited.set(item.vid, true);
+        this._checkedItemsInited.set(item.vid, item);
       }
       if (checkedVids && checkedVids.includes(item.vid)) {
         checkedItems.push(item);
-        this._checkedItemsInited.set(item.vid, true);
+        this._checkedItemsInited.set(item.vid, item);
       }
     }
     this.checkedItems.set([...checkedItems]);
@@ -421,7 +446,6 @@ export class CadOptionsComponent implements AfterViewInit {
       return getOrder(a) - getOrder(b);
     });
     this.pageData.set(pageData);
-    this.noImage.set(this.data.noImage || pageData.every((v) => !v.img));
     return data;
   }
 

@@ -6,6 +6,9 @@
   @if (data.name && !data.useLocalOptions) {
     <button mat-flat-button (click)="search(true, true)">刷新</button>
   }
+  @if (!noImage1()) {
+    <button mat-flat-button [class.accent]="!noImage2()" (click)="toggleNoImage2()">显示图片</button>
+  }
   @if (data.openInNewTab) {
     <button mat-flat-button (click)="editInNewTab()">
       <mat-icon>open_in_new</mat-icon>
@@ -34,7 +37,7 @@
             <button mat-button [class.accent]="val.value === item.name" (click)="setDefaultValue(i)">默认值</button>
             <div class="flex-110"></div>
           }
-          @if (!noImage()) {
+          @if (!noImage() && !noImage2()) {
             <div class="flex-110"></div>
             <button mat-icon-button [class.hidden]="noImage()" (click)="optionImg.showBigPic()">
               <mat-icon>zoom_in</mat-icon>
@@ -44,7 +47,7 @@
         <app-image
           #optionImg
           [class.hidden]="noImage()"
-          [src]="item.img"
+          [src]="noImage() && noImage2Count() < 1 ? '' : item.img"
           [bigPicSrc]="item.img"
           [prefix]="filePathUrl"
           bigPicClickShowDisabled
