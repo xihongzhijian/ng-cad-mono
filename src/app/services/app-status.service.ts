@@ -19,6 +19,7 @@ import {
   validateCad,
   validateLines
 } from "@app/cad/utils";
+import {ResultWithErrors} from "@app/utils/error-message";
 import {FetchManager} from "@app/utils/fetch-manager";
 import {getInsertName} from "@app/utils/get-value";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
@@ -473,21 +474,35 @@ export class AppStatusService {
     }
 
     let resData: CadData | null = null;
-    let errMsg = this.validate(true)?.errors || [];
+    const result = this.validate(true);
     const blockError = "不能包含块";
-    if (errMsg.includes(blockError)) {
+    if (result.errors.some((v) => v.content === blockError)) {
       const button = await message.button({content: blockError, buttons: ["删除块实体"]});
       if (button !== "删除块实体") {
         return null;
       }
       data.blocks = {};
       data.entities.insert = [];
-      errMsg = errMsg.filter((v) => v !== blockError);
+      result.errors = result.errors.filter((v) => v.content !== blockError);
     }
-    if (errMsg.length > 0) {
-      const yes = await message.confirm("当前打开的CAD存在错误，是否继续保存？<br>" + errMsg.join("<br>"));
-      if (!yes) {
+    if (result.hasError()) {
+      const errMsgs: string[] = ["CAD存在错误，"];
+      const hasFatalError = result.hasFatalError();
+      if (hasFatalError) {
+        errMsgs[0] += "请检查。";
+      } else {
+        errMsgs[0] += "是否继续保存？";
+      }
+      errMsgs.push(...result.errors.map((v, i) => `${i + 1}.${v.content}`));
+      const errMsg = errMsgs.join("<br>");
+      if (hasFatalError) {
+        await message.alert(errMsg);
         return null;
+      } else {
+        const yes = await message.confirm(errMsg);
+        if (!yes) {
+          return null;
+        }
       }
     }
 
@@ -599,13 +614,14 @@ export class AppStatusService {
   validate(force?: boolean) {
     const noInfo = !this.config.getConfig("validateLines");
     const collection = this.collection$.value;
+    const result = new ResultWithErrors(null);
     if (!isCadCollectionOfCad(collection)) {
-      return null;
+      return result;
     }
     if (!force && noInfo) {
-      return null;
+      return result;
     }
-    const result = validateCad(collection, this.cad.data, noInfo);
+    result.learnFrom(validateCad(collection, this.cad.data, noInfo));
     this.cad.render();
     return result;
   }

@@ -1,17 +1,17 @@
 import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, WritableSignal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
-import {MatTooltipModule} from "@angular/material/tooltip";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
-import {CadInfo, CadInfoError, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
+import {CadInfo, CadPortable, PeiheInfo, Slgs, SlgsInfo, SourceCadMap, XinghaoInfo} from "@app/cad/portable";
 import {filterCadEntitiesToSave, isShiyitu, reservedDimNames, validateLines} from "@app/cad/utils";
+import {alertError, ErrorItem, ResultWithErrors} from "@app/utils/error-message";
 import {ProgressBar, ProgressBarStatus} from "@components/progress-bar/progress-bar.utils";
 import {isSbjbCad, isSbjbCollection, isSbjbType, sbjbItemOptionalKeys4} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {environment} from "@env";
 import {CadData, CadDimensionLinear, CadLayer, CadLeader, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
-import {downloadByString, keysOf, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
+import {downloadByString, isTypeOf, keysOf, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {HttpOptions} from "@modules/http/services/http.service.types";
@@ -33,7 +33,7 @@ import {BatchUploadChecker} from "./import.utils";
   selector: "app-import",
   templateUrl: "./import.component.html",
   styleUrls: ["./import.component.scss"],
-  imports: [InputComponent, MatButtonModule, MatDividerModule, MatTooltipModule, NgScrollbar, ProgressBarComponent, SpinnerComponent],
+  imports: [InputComponent, MatButtonModule, MatDividerModule, NgScrollbar, ProgressBarComponent, SpinnerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ImportComponent implements OnInit {
@@ -186,7 +186,7 @@ export class ImportComponent implements OnInit {
   cads = signal<CadInfo[]>([]);
   slgses = signal<SlgsInfo[]>([]);
   xinghaoInfo = signal<XinghaoInfo | null>(null);
-  xinghaoInfoErrors = computed(() => this.xinghaoInfo()?.errors || null);
+  xinghaoInfoErrors = computed(() => this.xinghaoInfo()?.result.errors);
   cadsParsed = signal(false);
   hasError = signal(false);
   isImporting = signal(false);
@@ -333,7 +333,7 @@ export class ImportComponent implements OnInit {
     }
     this.progressBar.start(totalCad);
     for (let i = 0; i < totalCad; i++) {
-      if (cads[i].errors.length > 0) {
+      if (cads[i].result.hasError()) {
         skipped++;
         continue;
       }
@@ -351,7 +351,7 @@ export class ImportComponent implements OnInit {
       this.progressBar.msg.set(`正在导入dxf数据(${i + 1}/${totalCad})`);
       if (!result) {
         skipped++;
-        cads[i].errors.push(this.http.lastResponse?.msg || "保存失败");
+        cads[i].result.addErrorStr(this.http.lastResponse?.msg || "保存失败");
       }
       this.progressBar.forward();
     }
@@ -361,7 +361,7 @@ export class ImportComponent implements OnInit {
       this.progressBar.msg.set(`正在导入算料公式(${i + 1}/${totalSlgs})`);
       if (!responseData) {
         skipped++;
-        slgses[i].errors.push(this.http.lastResponse?.msg || "保存失败");
+        slgses[i].result.addErrorStr(this.http.lastResponse?.msg || "保存失败");
       }
       this.progressBar.forward();
     }
@@ -470,13 +470,13 @@ export class ImportComponent implements OnInit {
               }
             } else {
               const str = sbjbItemOptionalKeys4.join("，");
-              v.errors.push(`分类只能是【${str}】`);
+              v.result.addErrorStr(`分类只能是【${str}】`);
               skipYaoqiu = true;
             }
           } else {
             if (isSbjbCad(collection, data)) {
               const str = sbjbItemOptionalKeys4.join("，");
-              v.errors.push(`分类不能是【${str}】`);
+              v.result.addErrorStr(`分类不能是【${str}】`);
               skipYaoqiu = true;
             }
           }
@@ -491,9 +491,9 @@ export class ImportComponent implements OnInit {
           const dataAny = data as any;
           if (cadKey && required) {
             if (key2 && !dataAny[cadKey][key2]) {
-              v.errors.push(`【${key}${key2}】不能为空`);
+              v.result.addErrorStr(`【${key}${key2}】不能为空`);
             } else if (!dataAny[cadKey]) {
-              v.errors.push(`【${key}】不能为空`);
+              v.result.addErrorStr(`【${key}】不能为空`);
             }
           }
         }
@@ -503,7 +503,7 @@ export class ImportComponent implements OnInit {
       }
       const ellipses = data.entities.filter((e) => e.info.isEllipse);
       if (ellipses.length > 0) {
-        v.errors.push("不能在CAD里画椭圆，不支持椭圆");
+        v.result.addErrorStr("不能在CAD里画椭圆，不支持椭圆");
         ellipses.forEach((e) => {
           const e2 = this.sourceCad()?.entities.find(e.id);
           if (e2) {
@@ -527,7 +527,7 @@ export class ImportComponent implements OnInit {
       if (slgsMd5Map[md5Str].length > 1) {
         this.hasError.set(true);
         slgsMd5Map[md5Str].forEach((slgs) => {
-          slgs.errors.push("算料公式重复");
+          slgs.result.addErrorStr("算料公式重复");
         });
       }
     }
@@ -556,7 +556,7 @@ export class ImportComponent implements OnInit {
     if (xinghaoInfo) {
       this.progressBar.msg.set(`正在检查型号配置`);
       this.progressBar.forward();
-      if (xinghaoInfo.errors.length > 0) {
+      if (xinghaoInfo.result.hasError()) {
         this.hasError.set(true);
       }
     }
@@ -569,11 +569,11 @@ export class ImportComponent implements OnInit {
         }
       }
       for (const cad of cads) {
-        if (cad.errors.length > 0) {
+        if (cad.result.hasError()) {
           this.hasError.set(true);
           const sourceCadInfo = this._sourceCadMap.cads[cad.data.id];
           const mtext = new CadMtext();
-          mtext.text = cad.errors.map((v) => (typeof v === "string" ? v : v.text)).join("\n");
+          mtext.text = cad.result.errors.map((v) => v.content).join("\n");
           mtext.setColor("red");
           mtext.layer = this._errorMsgLayer;
           mtext.insert.set(sourceCadInfo.rect.left, sourceCadInfo.rect.bottom - 10);
@@ -606,7 +606,7 @@ export class ImportComponent implements OnInit {
   }
 
   private async _validateOptions(options: ObjectOf<string>, httpOptions: HttpOptions) {
-    const errors: string[] = [];
+    const result = new ResultWithErrors(null);
     for (const optionKey in options) {
       const optionValues = CadPortable.splitOptionValue(options[optionKey]);
       const tmpVals: string[] = [];
@@ -619,7 +619,7 @@ export class ImportComponent implements OnInit {
         }
       });
       if (duplicateValues.length > 0) {
-        errors.push(`选项【${optionKey}】重复: ${duplicateValues.join(", ")}`);
+        result.addErrorStr(`选项【${optionKey}】重复: ${duplicateValues.join(", ")}`);
       }
       if (this._optionsCache[optionKey] === undefined) {
         const options2 = await this.http.getOptions({name: optionKey}, httpOptions);
@@ -627,71 +627,79 @@ export class ImportComponent implements OnInit {
       }
       const optionsNotExist = difference(optionValues, this._optionsCache[optionKey], ["所有", "不选", "不选无"]);
       if (optionsNotExist.length > 0) {
-        errors.push(`选项【${optionKey}】不存在或已停用: ${optionsNotExist.join(", ")}`);
+        result.addErrorStr(`选项【${optionKey}】不存在或已停用: ${optionsNotExist.join(", ")}`);
       }
     }
-    return errors;
+    return result;
   }
 
   private async _validateCad(cad: CadInfo, uniqCodesCount: ObjectOf<number>, requireLineId: boolean, httpOptions: HttpOptions) {
-    if (cad.data.info.isEmpty) {
-      cad.errors = cad.data.info.errors;
-      return;
-    }
     const data = cad.data;
-
+    const dataErrors = new ResultWithErrors(null);
     if (Array.isArray(data.info.errors)) {
-      cad.errors = cad.errors.concat(data.info.errors);
+      for (const error of data.info.errors) {
+        if (isTypeOf(error, "string")) {
+          dataErrors.addErrorStr(error);
+        } else if (isTypeOf(error, "object")) {
+          dataErrors.addError(error);
+        }
+      }
       delete data.info.errors;
+    }
+    cad.result.learnFrom(dataErrors);
+    if (data.info.isEmpty) {
+      return;
     }
 
     if (!isEmpty(data.blocks)) {
-      cad.errors.push("不能包含块实体");
+      cad.result.addErrorStr("不能包含块实体");
     }
 
     const uniqCode = data.info.唯一码;
     if (!uniqCode) {
-      cad.errors.push("没有唯一码");
+      cad.result.addErrorStr("没有唯一码");
     } else if (uniqCodesCount[uniqCode] > 1) {
-      cad.errors.push("唯一码重复: " + uniqCode);
+      cad.result.addErrorStr("唯一码重复: " + uniqCode);
     }
     if (!data.type && !cad.skipErrorCheck.has("分类")) {
-      cad.errors.push("没有分类");
+      cad.result.addErrorStr("没有分类");
     }
     CadPortable.addLineId(data);
 
     if (!this._cadNameRegex.test(data.name) && !cad.skipErrorCheck.has("名字")) {
-      cad.errors.push("CAD名字只能是：中文、英文字母、数字、下划线；并且不能以数字开头");
+      cad.result.addErrorStr("CAD名字只能是：中文、英文字母、数字、下划线；并且不能以数字开头");
     }
     if (/分体\d?$/.test(data.name) && data.type.includes("算料") && /包边|企料|锁料|铰料/.test(data.name)) {
-      cad.errors.push("算料CAD名字不能包含【包边、企料、锁料、铰料】");
+      cad.result.addErrorStr("算料CAD名字不能包含【包边、企料、锁料、铰料】");
     }
     let 修改包边正面宽规则 = data.info.修改包边正面宽规则;
     if (data.type === "包边正面") {
       if (修改包边正面宽规则) {
         修改包边正面宽规则 = "修改包边正面宽规则:\n" + 修改包边正面宽规则;
         const result = this.batchUploadChecker.parseBaobianzhengmianRules(修改包边正面宽规则, data.info.vars);
-        cad.errors.push(...result.errors);
+        for (const v of result.errors) {
+          cad.result.addError(v);
+        }
       }
     } else if (修改包边正面宽规则) {
-      cad.errors.push("分类不为【包边正面】不能写【修改包边正面宽规则】");
+      cad.result.addErrorStr("分类不为【包边正面】不能写【修改包边正面宽规则】");
     }
     if (data.info.锁边自动绑定可搭配铰边 && !/锁企料|扇锁企料/.test(data.type)) {
-      cad.errors.push("分类不为【锁企料】或【扇锁企料】不能有【锁边自动绑定可搭配铰边】");
+      cad.result.addErrorStr("分类不为【锁企料】或【扇锁企料】不能有【锁边自动绑定可搭配铰边】");
     }
     if (data.kailiaoshibaokeng && data.zhidingweizhipaokeng.length > 0) {
-      cad.errors.push("不能同时设置【全部刨坑】和【指定位置刨坑】");
+      cad.result.addErrorStr("不能同时设置【全部刨坑】和【指定位置刨坑】");
     }
     const entities = data.getAllEntities();
     if (requireLineId) {
       const lines = entities.filter((v) => v instanceof CadLineLike).toArray() as CadLineLike[];
       if (lines.some((v) => !v.线id)) {
-        cad.errors.push("存在没有id的线");
+        cad.result.addErrorStr("存在没有id的线");
       }
     }
-    cad.errors = cad.errors.concat(validateLines(this.collection(), data).errors);
-    cad.errors = cad.errors.concat(await this._validateOptions(data.options, httpOptions));
-    cad.errors = cad.errors.concat(await this._validateOptions(data.对应计算条数的配件, httpOptions));
+    cad.result.learnFrom(validateLines(this.collection(), data));
+    cad.result.learnFrom(await this._validateOptions(data.options, httpOptions));
+    cad.result.learnFrom(await this._validateOptions(data.对应计算条数的配件, httpOptions));
 
     const infoObj: ObjectOf<PeiheInfo[]> = {
       锁企料: [
@@ -727,13 +735,13 @@ export class ImportComponent implements OnInit {
         const info = infoArray2[i];
         if (!matched) {
           if (typeof info === "string") {
-            cad.errors.push(`缺少对应${info}`);
+            cad.result.addErrorStr(`缺少对应${info}`);
           } else {
             let error = `缺少对应${info.type}`;
             if (info.hint) {
               error += `: ${info.hint}`;
             }
-            cad.errors.push(error);
+            cad.result.addErrorStr(error);
           }
         }
       });
@@ -743,7 +751,7 @@ export class ImportComponent implements OnInit {
       const optionKeys = ["型号", "产品分类"];
       optionKeys.forEach((key) => {
         if (!data.options[key]) {
-          cad.errors.push(`缺少选项: 【${key}】`);
+          cad.result.addErrorStr(`缺少选项: 【${key}】`);
         }
       });
     }
@@ -751,14 +759,14 @@ export class ImportComponent implements OnInit {
     data.entities.dimension.forEach((e) => {
       if (e instanceof CadDimensionLinear) {
         if (reservedDimNames.includes(e.mingzi)) {
-          cad.errors.push(`标注名字不能是【${e.mingzi}】`);
+          cad.result.addErrorStr(`标注名字不能是【${e.mingzi}】`);
         }
         if (e.defPoints) {
-          cad.errors.push(`标注【${e.mingzi}】没有标到直线端点`);
+          cad.result.addErrorStr(`标注【${e.mingzi}】没有标到直线端点`);
         }
         if (isShiyitu(data)) {
           if (e.mingzi.includes("=")) {
-            cad.errors.push("示意图标注不能有=号");
+            cad.result.addErrorStr("示意图标注不能有=号");
           } else if (!e.mingzi.includes("显示公式")) {
             e.mingzi = "显示公式: " + e.mingzi;
           }
@@ -770,7 +778,7 @@ export class ImportComponent implements OnInit {
             const id1 = e.entity1.id;
             const id2 = e.entity2.id;
             if (!(id1 && id2)) {
-              cad.errors.push(`公式标注【=${e.mingzi}】识别错误, 必须标到两个端点`);
+              cad.result.addErrorStr(`公式标注【=${e.mingzi}】识别错误, 必须标到两个端点`);
             }
           }
         }
@@ -778,7 +786,7 @@ export class ImportComponent implements OnInit {
     });
     for (const e of data.entities.line) {
       if (e.gongshi.match(/[,.;，。；]/)) {
-        cad.errors.push(`线公式不能包含逗号、句号或分号`);
+        cad.result.addErrorStr(`线公式不能包含逗号、句号或分号`);
         break;
       }
     }
@@ -786,7 +794,7 @@ export class ImportComponent implements OnInit {
 
   private async _validateSlgs(slgs: SlgsInfo, httpOptions: HttpOptions) {
     const data = slgs.data;
-    slgs.errors = slgs.errors.concat(await this._validateOptions(data.选项, httpOptions));
+    slgs.result.learnFrom(await this._validateOptions(data.选项, httpOptions));
     if (Object.keys(data.公式).length > 0) {
       const strict = this.http.strict;
       this.http.strict = false;
@@ -794,18 +802,18 @@ export class ImportComponent implements OnInit {
       this.http.strict = strict;
       if (response?.code !== 0) {
         const msg = response?.msg || "验证算料公式时出错";
-        slgs.errors.push(msg);
+        slgs.result.addErrorStr(msg);
       }
       for (const key in data.公式) {
         if (key.includes("-")) {
-          slgs.errors.push(`算料公式名字不能包含-号: ${key}`);
+          slgs.result.addErrorStr(`算料公式名字不能包含-号: ${key}`);
         }
       }
     } else {
-      slgs.errors.push("公式内容为空");
+      slgs.result.addErrorStr("公式内容为空");
     }
 
-    if (slgs.errors.length > 0) {
+    if (slgs.result.hasError()) {
       this.hasError.set(true);
     }
   }
@@ -863,11 +871,7 @@ export class ImportComponent implements OnInit {
     downloadByString(JSON.stringify(this.batchCheckData), {filename});
   }
 
-  isString(v: any): v is string {
-    return typeof v === "string";
-  }
-
-  alertError(error: CadInfoError) {
-    this.message.alert(error.detail);
+  alertError(error: ErrorItem) {
+    alertError(this.message, error);
   }
 }

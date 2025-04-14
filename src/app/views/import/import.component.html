@@ -80,16 +80,16 @@
     </div>
     <div class="cads">
       @for (cad of cads(); track $index) {
-        @if (cad.errors.length > 0) {
+        @if (cad.result.hasError()) {
           <div class="cad">
             <div>名字: {{ cad.data.name }}</div>
             <div>分类: {{ cad.data.type }}</div>
             <ul>
-              @for (error of cad.errors; track $index) {
-                @if (isString(error)) {
-                  <li class="error" [innerHtml]="error"></li>
+              @for (error of cad.result.errors; track $index) {
+                @if (error.details.length < 1) {
+                  <li class="error" [innerHtml]="error.content"></li>
                 } @else {
-                  <li class="error link text" [innerHtml]="error.text" [matTooltip]="error.detail" (click)="alertError(error)"></li>
+                  <li class="error link text" [innerHtml]="error.content" (click)="alertError(error)"></li>
                 }
               }
             </ul>
@@ -97,12 +97,12 @@
         }
       }
       @for (slgs of slgses(); track $index) {
-        @if (slgs.errors.length > 0) {
+        @if (slgs.result.hasError()) {
           <div class="cad">
             <div>名字: {{ slgs.data["名字"] }}</div>
             <ul>
-              @for (error of slgs.errors; track $index) {
-                <li class="error" [innerHtml]="error"></li>
+              @for (error of slgs.result.errors; track $index) {
+                <li class="error" [innerHtml]="error.content"></li>
               }
             </ul>
           </div>

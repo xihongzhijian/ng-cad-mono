@@ -1,5 +1,5 @@
 import {replaceChars} from "@app/app.common";
-import {getNamesStr} from "@app/utils/error-message";
+import {ErrorItem, getNamesStr, ResultWithErrors} from "@app/utils/error-message";
 import {getValueString} from "@app/utils/get-value";
 import {ProjectConfig} from "@app/utils/project-config";
 import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
@@ -36,27 +36,18 @@ export interface Slgs extends MongodbDataBase2 {
 
 export interface CadInfo {
   data: CadData;
-  errors: (CadInfoError | string)[];
+  result: ResultWithErrors<null>;
   skipErrorCheck: Set<string>;
 }
-export interface CadInfoError {
-  text: string;
-  detail: string;
-}
-export const addCadInfoError = (cad: CadInfo, error: CadInfoError | string) => {
-  const errorText = typeof error === "string" ? error : error.text;
-  const found = cad.errors.find((v) => {
-    if (typeof v === "string") {
-      return v === errorText;
-    }
-    return v.text === errorText;
-  });
+export const addCadInfoError = (cad: CadInfo, error: ErrorItem) => {
+  const errorText = typeof error === "string" ? error : error.content;
+  const found = cad.result.errors.find((v) => v.content === errorText);
   if (found) {
     return;
   }
-  cad.errors.push(error);
+  cad.result.addError(error);
 };
-export const addCadInfoErrors = (cad: CadInfo, errors: (CadInfoError | string)[]) => {
+export const addCadInfoErrors = (cad: CadInfo, errors: ErrorItem[]) => {
   errors.forEach((v) => {
     addCadInfoError(cad, v);
   });
@@ -67,7 +58,7 @@ export const addCadInfoErrors = (cad: CadInfo, errors: (CadInfoError | string)[]
  */
 export interface SlgsInfo {
   data: Slgs;
-  errors: string[];
+  result: ResultWithErrors<null>;
 }
 
 /**
@@ -75,7 +66,7 @@ export interface SlgsInfo {
  */
 export interface XinghaoInfo {
   data: ObjectOf<string>;
-  errors: string[];
+  result: ResultWithErrors<null>;
 }
 
 export type SourceCadMap = {
@@ -269,7 +260,7 @@ export class CadPortable {
     const cads: CadInfo[] = rects.map((rect, i) => {
       const data = new CadData({layers});
       sourceCadMap.cads[data.id] = {rect, rectLines: sorted[i], entities: new CadEntities(), text: new CadMtext()};
-      return {data, errors: [], skipErrorCheck: new Set()};
+      return {data, result: new ResultWithErrors(null), skipErrorCheck: new Set()};
     });
     const slgses: SlgsInfo[] = [];
     const {skipFields, cadIncludeFields} = this;
@@ -292,7 +283,6 @@ export class CadPortable {
             }
           }
           const slgsData: Slgs = {_id: uniqueId(), 名字: "", 分类: "", 条件: [], 选项: {}, 公式: getObject(suanliaoMatch[1], "=")};
-          const errors: string[] = [];
           sourceCadMap.slgses[obj.名字] = {text: e};
           for (const key in obj) {
             const value = obj[key];
@@ -313,7 +303,7 @@ export class CadPortable {
               slgsData.选项[key] = value;
             }
           }
-          slgses.push({data: slgsData, errors});
+          slgses.push({data: slgsData, result: new ResultWithErrors(null)});
           continue;
         }
         const xinghaoMatch = text.match(/^型号:([\w\W]*)/);
@@ -325,14 +315,14 @@ export class CadPortable {
         const xinghaoInfoMatch = text.match(xinghaoInfoReg);
         if (xinghaoInfoMatch) {
           sourceCadMap.xinghaoInfo = {text: e};
-          xinghaoInfo = {data: {}, errors: []};
+          xinghaoInfo = {data: {}, result: new ResultWithErrors(null)};
           const obj = getObject(xinghaoInfoMatch[1], ":");
           for (const field of this.xinghaoFields) {
             xinghaoInfo.data[field] = obj[field] || "";
           }
           const missingXinghaoFields = this.xinghaoFieldsRequired.filter((v) => !xinghaoInfo?.data[v]);
           if (missingXinghaoFields.length > 0) {
-            xinghaoInfo.errors.push(`型号配置缺少以下字段:\n${missingXinghaoFields.join(", ")}`);
+            xinghaoInfo.result.addErrorStr(`型号配置缺少以下字段:\n${missingXinghaoFields.join(", ")}`);
           }
           continue;
         }
@@ -401,7 +391,7 @@ export class CadPortable {
               if (obj.分类 === "包边正面") {
                 if (!arr[1].includes(";")) {
                   if (arr.length < 3) {
-                    cad.errors.push("包边正面展开必须至少有3项, 有两个展开高");
+                    cad.result.addErrorStr("包边正面展开必须至少有3项, 有两个展开高");
                   }
                   arr[1] = arr[1] + "," + arr[2];
                   arr.splice(2, 1);
@@ -413,7 +403,7 @@ export class CadPortable {
               const conditions = arr.slice(3);
               for (const vvv of [zhankaikuan, zhankaigao, shuliang]) {
                 if (vvv && vvv.match(/['"]/)) {
-                  cad.errors.push("展开宽, 展开高和数量不能有引号");
+                  cad.result.addErrorStr("展开宽, 展开高和数量不能有引号");
                   break;
                 }
               }
@@ -440,7 +430,7 @@ export class CadPortable {
             data.info[key] = value;
           } else {
             if (globalOptions[key]) {
-              cad.errors.push(`多余的选项【${key}】`);
+              cad.result.addErrorStr(`多余的选项【${key}】`);
             } else {
               const optionValues = this.splitOptionValue(value);
               data.options[key] = this.joinOptionValue(optionValues);
