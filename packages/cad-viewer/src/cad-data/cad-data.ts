@@ -83,7 +83,8 @@ const propertyKeys: (keyof CadData)[] = [
   "默认开料板材厚度",
   "自动生成双折宽双折高公式",
   "装配示意图自动拼接锁边铰边",
-  "分体对应线"
+  "分体对应线",
+  "门缝"
 ];
 
 export class CadData {
@@ -167,6 +168,7 @@ export class CadData {
   自动生成双折宽双折高公式 = true;
   装配示意图自动拼接锁边铰边 = "";
   分体对应线: FentiDuiyingxianItem[] = [];
+  门缝: number | null = null;
 
   constructor(data?: ObjectOf<any>, resetIds = false) {
     this._entities = new CadEntities();
