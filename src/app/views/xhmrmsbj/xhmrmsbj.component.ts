@@ -33,6 +33,7 @@ import {CustomValidators} from "@app/utils/input-validators";
 import {canItemMatchTogether, matchMongoData} from "@app/utils/mongo";
 import {getSortedItems} from "@app/utils/sort-items";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
+import {version2024} from "@app/utils/table-data/zuoshuju-data";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
 import {MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
@@ -235,6 +236,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   getXhmrmsbjData(raw: XhmrmsbjTableData | null | undefined) {
+    if (raw && this.isLuomatouluomazhuku()) {
+      raw.zuoshujubanben = version2024;
+    }
     return raw ? new XhmrmsbjData(raw, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null;
   }
 
