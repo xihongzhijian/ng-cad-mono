@@ -1,14 +1,21 @@
-import {AfterViewInit, Component, ElementRef, HostListener, OnDestroy, ViewChild} from "@angular/core";
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  ElementRef,
+  HostListener,
+  inject,
+  OnDestroy,
+  signal,
+  viewChild
+} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
-import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {MatButtonModule} from "@angular/material/button";
-import {MatOptionModule} from "@angular/material/core";
 import {MatDialog} from "@angular/material/dialog";
-import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
-import {MatInputModule} from "@angular/material/input";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
+import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
 import {configCadDataForPrint, printCads} from "@app/cad/print";
@@ -21,8 +28,9 @@ import {exportZixuanpeijian, importZixuanpeijian} from "@components/dialogs/zixu
 import {Debounce} from "@decorators/debounce";
 import {environment} from "@env";
 import {CadData, CadLine, CadMtext, CadViewer} from "@lucilor/cad-viewer";
-import {downloadByBlob, downloadByUrl, DownloadOptions, loadImage, ObjectOf, timeout} from "@lucilor/utils";
+import {downloadByBlob, downloadByUrl, DownloadOptions, loadImage, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
@@ -51,34 +59,31 @@ const duration = 400;
     slideInRightOnEnterAnimation({anchor: "toolbarToggleEnter", duration}),
     slideOutRightOnLeaveAnimation({anchor: "toolbarToggleLeave", duration})
   ],
-  imports: [
-    FormsModule,
-    ImageComponent,
-    MatAutocompleteModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatOptionModule,
-    MatSlideToggleModule,
-    SpinnerComponent
-  ]
+  imports: [FormsModule, ImageComponent, InputComponent, MatButtonModule, MatIconModule, MatSlideToggleModule, SpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PrintCadComponent implements AfterViewInit, OnDestroy {
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private sanitizer = inject(DomSanitizer);
+  private spinner = inject(SpinnerService);
+  private status = inject(AppStatusService);
+
   loaderId = "printLoader";
-  pdfUrlRaw?: string;
-  pdfUrl?: SafeUrl;
+  pdfUrlRaw = signal("");
+  pdfUrl = computed(() => this.sanitizer.bypassSecurityTrustResourceUrl(this.pdfUrlRaw()));
   imageContents: ContentImage[] = [];
   pdfFile: File | null = null;
-  showDxfInput = false;
+  showDxfInput = signal(false);
   private _paramKey = "printCad-paramCache";
   private _httpCacheKey = "printCad-httpCache";
   fonts = ["微软雅黑", "宋体", "锐字工房云字库魏体GBK", "等距更纱黑体 SC"];
-  toolbarVisible = true;
-  downloadUrl: string | null = null;
-  mode: "edit" | "print" = "print";
-  showSavePdf = false;
-  printParams: Required<PrintCadsParams> = {
+  downloadUrl = signal<string | null>(null);
+  mode = signal<"edit" | "print">("print");
+  showSavePdf = computed(() => this.status.projectConfig.getBoolean("算料单有保存PDF文件功能"));
+  printParams = signal<Required<PrintCadsParams>>({
     cads: [],
     projectConfig: this.status.projectConfig,
     codes: [],
@@ -119,46 +124,39 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     dropDownKeys: [],
     projectName: this.status.project,
     errors: []
-  };
+  });
   cad: CadViewer | null = null;
   zixuanpeijian: Pick<Required<ZixuanpeijianOutput>, "模块" | "零散"> = {模块: [], 零散: []};
   comments: CadMtext[] = [];
-  enableZixuanpeijian = false;
+  enableZixuanpeijian = signal(false);
   production = environment.production;
-  checkEmpty = this.production ? true : false;
-  get fontFamily() {
-    return this.printParams.config.fontStyle?.family || "";
-  }
-  set fontFamily(value) {
-    if (!this.printParams.config.fontStyle) {
-      this.printParams.config.fontStyle = {};
-    }
-    this.printParams.config.fontStyle.family = value;
-  }
-  orderImageUrl = "";
-  shuchubianliangKeys: string[] = [];
-  @ViewChild("cadContainer", {read: ElementRef}) cadContainer?: ElementRef<HTMLDivElement>;
+  checkEmpty = signal(this.production ? true : false);
+  orderImageUrl = signal("");
+  shuchubianliangKeys = signal<string[]>([]);
 
-  get materialResult() {
-    return this.printParams.orders[0]?.materialResult || {};
-    // const materialResult = {...this.printParams.orders[0]?.materialResult};
-    // // if (!environment.production) {
-    // //     Object.assign(materialResult, materialResultTest);
-    // // }
-    // return materialResult;
-  }
+  materialResult = computed(() => {
+    return this.printParams().orders[0]?.materialResult || {};
+  });
 
-  constructor(
-    private route: ActivatedRoute,
-    private http: CadDataService,
-    private sanitizer: DomSanitizer,
-    private message: MessageService,
-    private spinner: SpinnerService,
-    private dialog: MatDialog,
-    private status: AppStatusService
-  ) {
-    this.showSavePdf = this.status.projectConfig.getBoolean("算料单有保存PDF文件功能");
-  }
+  fontFamilyInputInfo = computed(() => {
+    const printParams = this.printParams();
+    const config = printParams.config;
+    const info: InputInfo = {
+      type: "string",
+      label: "字体",
+      options: this.fonts,
+      value: config.fontStyle?.family,
+      onChange: (val) => {
+        if (!config.fontStyle) {
+          config.fontStyle = {};
+        }
+        config.fontStyle.family = val;
+        this.printParams.set({...printParams});
+      },
+      style: {flex: "0 0 250px"}
+    };
+    return info;
+  });
 
   async ngAfterViewInit() {
     await timeout(0);
@@ -167,9 +165,9 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     const action = queryParams.action as string;
     delete queryParams.action;
     if (!action) {
-      this.showDxfInput = true;
+      this.showDxfInput.set(true);
       this._loadPrintParams();
-      if (this.printParams.cads.length > 0) {
+      if (this.printParams().cads.length > 0) {
         await this.generateSuanliaodan();
       }
       return;
@@ -200,12 +198,12 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
             }
           }
         }
-        this.downloadUrl = responseData.url || null;
-        this.printParams = {...this.printParams, ...responseData};
+        this.downloadUrl.set(responseData.url || null);
+        const printParams = {...this.printParams(), ...responseData};
         const 指定分类 = queryParams.指定分类 || "算料单";
-        this.printParams.info.title = `${this.printParams.codes.join("、")} ${指定分类}`;
-        document.title = this.printParams.info.title;
-        const {codes, type} = this.printParams;
+        printParams.info.title = `${printParams.codes.join("、")} ${指定分类}`;
+        document.title = printParams.info.title;
+        const {codes, type} = printParams;
         if (codes.length === 1) {
           const response2 = await this.http.post<ZixuanpeijianOutput>(
             "ngcad/getOrderZixuanpeijian",
@@ -219,11 +217,12 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
             const {模块, 零散, 备注, 文本映射} = importZixuanpeijian(response2.data);
             this.zixuanpeijian = {模块, 零散};
             this.comments = 备注;
-            this.printParams.textMap = Array.isArray(文本映射) ? {} : 文本映射;
+            printParams.textMap = Array.isArray(文本映射) ? {} : 文本映射;
           } else {
             this.zixuanpeijian = {模块: [], 零散: []};
           }
         }
+        this.printParams.set(printParams);
         await this.setZixuanpeijian();
         await this.generateSuanliaodan();
       }
@@ -243,12 +242,13 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   private _loadPrintParams() {
     const params = session.load<Required<PrintCadsParams>>(this._paramKey);
     if (params) {
-      this.printParams.cads = params.cads.map((v) => new CadData(v));
+      const cads = params.cads.map((v) => new CadData(v));
+      this.printParams.update((v) => ({...v, cads}));
     }
   }
 
   private _savePrintParams() {
-    const cads = this.printParams.cads.map((v) => v.export());
+    const cads = this.printParams().cads.map((v) => v.export());
     session.save(this._paramKey, {...this.printParams, cads});
   }
 
@@ -277,24 +277,24 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   }
 
   async generateSuanliaodan() {
-    const params = this.printParams;
+    const params = this.printParams();
     timer.start(this.loaderId);
     this.spinner.show(this.loaderId, {text: "正在生成算料单..."});
     const cads = params.cads.map((v) => this.splitCads(v)).flat();
     // cads.forEach((v) => {
     //     v.entities.forEach((e) => (e.selectable = false));
     // });
-    this.enableZixuanpeijian = cads.length === 1;
-    if (this.enableZixuanpeijian) {
+    this.enableZixuanpeijian.set(cads.length === 1);
+    if (this.enableZixuanpeijian()) {
       params.keepCad = true;
     } else {
       params.keepCad = false;
     }
     const {url, errors, cad, pdfFile, imageContents} = await printCads({...params, cads});
     this.imageContents = imageContents;
-    if (this.enableZixuanpeijian) {
+    if (this.enableZixuanpeijian()) {
       this.cad = cad;
-      if (this.mode === "edit") {
+      if (this.mode() === "edit") {
         this.initCad();
       } else {
         this.uninitCad();
@@ -304,16 +304,14 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     if (errors.length > 0) {
       console.warn(errors);
     }
-    this.pdfUrlRaw = url;
-    this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.pdfUrlRaw.set(url);
     this.pdfFile = pdfFile;
     timer.end(this.loaderId, "生成算料单");
   }
 
-  async uploadDxf(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.item(0);
-    input.value = "";
+  async uploadDxf(type: "dxf" | "json") {
+    const files = await selectFiles({accept: `.${type}`});
+    const file = files?.[0];
     if (!file) {
       return;
     }
@@ -333,26 +331,28 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     if (!data) {
       return;
     }
-    this.printParams.cads = [data];
+    this.printParams.update((v) => ({...v, cads: [data]}));
     await this.generateSuanliaodan();
     this.spinner.hide(this.loaderId);
     this._savePrintParams();
   }
 
+  toolbarVisible = signal(true);
   toggleToolbarVisible() {
-    this.toolbarVisible = !this.toolbarVisible;
+    this.toolbarVisible.update((v) => !v);
   }
 
   downloadDxf(original: boolean) {
     const options: DownloadOptions = {filename: document.title + ".dxf"};
     if (original) {
-      if (this.downloadUrl !== null) {
-        downloadByUrl(this.downloadUrl, options);
+      const url = this.downloadUrl();
+      if (url !== null) {
+        downloadByUrl(url, options);
       } else {
         this.message.alert("没有提供下载地址");
       }
     } else {
-      if (this.cad && this.enableZixuanpeijian) {
+      if (this.cad && this.enableZixuanpeijian()) {
         this.http.downloadDxf(this.cad.data, options);
       } else {
         this.message.alert("没有提供下载数据");
@@ -404,14 +404,16 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     // } else {
     //     this.mode = "edit";
     // }
-    this.mode = this.mode === "edit" ? "print" : "edit";
+    this.mode.update((v) => (v === "edit" ? "print" : "edit"));
     await timeout(0);
-    if (this.mode === "edit") {
+    if (this.mode() === "edit") {
       await this.initCad();
     } else {
       this.uninitCad();
       if (this.cad) {
-        this.printParams.cads[0] = this.cad.data;
+        const cads = this.printParams().cads.slice();
+        cads[0] = this.cad.data;
+        this.printParams.update((v) => ({...v, cads}));
       }
       await this.generateSuanliaodan();
     }
@@ -421,9 +423,10 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     return {value, validators: Validators.required, type: "string", label: "备注", textarea: {autosize: {minRows: 2, maxRows: 5}}};
   }
 
+  cadContainer = viewChild<ElementRef<HTMLDivElement>>("cadContainer");
   async initCad() {
     const cad = this.cad;
-    const container = this.cadContainer?.nativeElement;
+    const container = this.cadContainer()?.nativeElement;
     if (!cad || !container) {
       return;
     }
@@ -482,7 +485,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
           const text = await this.message.prompt(this._getCommentInputInfo(entity.text));
           if (text) {
             if (!text) {
-              this.printParams.textMap[entity.text] = text;
+              this.printParams.update((v) => ({...v, textMap: {...v.textMap, [entity.text]: text}}));
             }
             entity.text = text;
             this.cad?.render(entity);
@@ -496,7 +499,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
         if (e.info.isComment) {
           comments.push(e);
         } else {
-          this.printParams.textMap[e.text] = "";
+          this.printParams.update((v) => ({...v, textMap: {...v.textMap, [e.text]: ""}}));
         }
       }
       this.comments = this.comments.filter((e) => !comments.find((ee) => ee.id === e.id));
@@ -512,7 +515,8 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   }
 
   async openZixuanpeijianDialog() {
-    const code = this.printParams.codes[0];
+    const printParams = this.printParams();
+    const code = printParams.codes[0];
     if (!code) {
       this.message.alert("订单没保存，无法操作");
       return;
@@ -521,10 +525,10 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       data: {
         step: 2,
         data: this.zixuanpeijian,
-        checkEmpty: this.checkEmpty,
-        cadConfig: {fontStyle: {family: this.printParams.config.fontStyle?.family}},
-        order: {code, type: this.printParams.type, materialResult: this.materialResult},
-        dropDownKeys: this.printParams.dropDownKeys
+        checkEmpty: this.checkEmpty(),
+        cadConfig: {fontStyle: {family: printParams.config.fontStyle?.family}},
+        order: {code, type: printParams.type, materialResult: this.materialResult()},
+        dropDownKeys: printParams.dropDownKeys
       }
     });
     if (data) {
@@ -575,7 +579,8 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     };
 
     const shuchubianliangKeys = new Set<string>();
-    for (const key of this.printParams.dropDownKeys) {
+    const printParams = this.printParams();
+    for (const key of printParams.dropDownKeys) {
       shuchubianliangKeys.add(key);
     }
     for (const item of this.zixuanpeijian.模块) {
@@ -589,17 +594,19 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     for (const item of this.zixuanpeijian.零散) {
       setCadItem(item);
     }
-    this.shuchubianliangKeys = Array.from(shuchubianliangKeys);
+    this.shuchubianliangKeys.set(Array.from(shuchubianliangKeys));
     if (cad) {
       cad.data.entities.mtext = cad.data.entities.mtext.filter((e) => !e.info.isComment);
       for (const e of this.comments) {
         this.addCommentText(e);
       }
     } else {
-      this.printParams.cads[0].entities.mtext = this.printParams.cads[0].entities.mtext.filter((e) => !e.info.isComment);
+      const cads3 = printParams.cads.slice();
+      cads3[0].entities.mtext = cads3[0].entities.mtext.filter((e) => !e.info.isComment);
       for (const e of this.comments) {
-        this.printParams.cads[0].entities.add(e);
+        cads3[0].entities.add(e);
       }
+      this.printParams.update((v) => ({...v, cads: cads3}));
     }
     if (cad) {
       const tol = 2;
@@ -611,7 +618,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
         if (!info.translate) {
           toArrange.push([i, v]);
         }
-        await configCadDataForPrint(cad, v, this.printParams, {isZxpj: true, lineLengthFontStyle: {size: 40}});
+        await configCadDataForPrint(cad, v, printParams, {isZxpj: true, lineLengthFontStyle: {size: 40}});
         await cad.render(v.entities);
         const rect = v.getBoundingRect();
         let zhankaiText = v.entities.mtext.find((e) => e.info.isZhankaiText);
@@ -703,22 +710,25 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
         }
       }
     } else {
-      this.printParams.cads[0].components.data = cads;
+      const cads3 = printParams.cads.slice();
+      cads3[0].components.data = cads;
+      this.printParams.update((v) => ({...v, cads: cads3}));
     }
   }
 
   async setOrderZixuanpeijian() {
-    const {codes, type} = this.printParams;
+    const printParams = this.printParams();
+    const {codes, type} = printParams;
     const cad = this.cad;
     if (!cad) {
       return;
     }
     const {模块, 零散} = this.zixuanpeijian;
     const 备注 = this.comments;
-    const 文本映射 = this.printParams.textMap;
+    const 文本映射 = printParams.textMap;
     const 输出变量: ObjectOf<string> = {};
-    const materialResult = this.materialResult;
-    for (const key of this.shuchubianliangKeys) {
+    const materialResult = this.materialResult();
+    for (const key of this.shuchubianliangKeys()) {
       输出变量[key] = key in materialResult ? String(materialResult[key]) : "";
     }
     await this.http.post<void>("ngcad/setOrderZixuanpeijian", {
@@ -729,17 +739,18 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   }
 
   async getOrderImage() {
+    const printParams = this.printParams();
     const responseData = await this.http.getData<{prefix: string; data: {zhengmiantu: string}[]}>(
       "order/api/getImage",
       {
-        code: this.printParams.codes[0],
-        type: this.printParams.type
+        code: printParams.codes[0],
+        type: printParams.type
       },
       {spinner: false}
     );
     if (responseData && responseData.data.length > 0) {
       const {prefix, data} = responseData;
-      this.orderImageUrl = data[0].zhengmiantu ? prefix + data[0].zhengmiantu : "";
+      this.orderImageUrl.set(data[0].zhengmiantu ? prefix + data[0].zhengmiantu : "");
     }
   }
 
@@ -753,11 +764,12 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     const blob = await imageCompression(file, {maxSizeMB: 1, useWebWorker: true});
     file = new File([blob], file.name, {type: file.type});
     target.value = "";
+    const printParams = this.printParams();
     const data = await this.http.getData<{prefix: string; save_path: string}>(
       "order/api/uploadImage",
       {
-        code: this.printParams.codes[0],
-        type: this.printParams.type,
+        code: printParams.codes[0],
+        type: printParams.type,
         field: "zhengmiantu",
         file
       },
@@ -765,19 +777,19 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     );
     if (data) {
       const {prefix, save_path} = data;
-      this.orderImageUrl = prefix + save_path;
+      this.orderImageUrl.set(prefix + save_path);
       const cad = this.cad;
       if (cad) {
         cad.data.entities.image
           .filter((e) => e.info.designPicKey === "设计图")
           .forEach((e) => {
-            e.url = this.orderImageUrl;
+            e.url = this.orderImageUrl();
             cad.render(e);
           });
       }
-      const 设计图 = this.printParams.designPics.设计图;
+      const 设计图 = this.printParams().designPics.设计图;
       if (设计图) {
-        设计图.urls = 设计图.urls.map((v) => v.map(() => this.orderImageUrl));
+        设计图.urls = 设计图.urls.map((v) => v.map(() => this.orderImageUrl()));
       }
     }
   }
@@ -808,7 +820,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   }
 
   async resetTextMap() {
-    this.printParams.textMap = {};
+    this.printParams.update((v) => ({...v, textMap: {}}));
     this.spinner.show(this.loaderId, {text: "正在保存自选配件"});
     await this.setZixuanpeijian();
     await this.setOrderZixuanpeijian();
@@ -830,7 +842,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   }
 
   openCadMuban() {
-    const id = this.printParams.cads[0]?.id;
+    const id = this.printParams().cads[0]?.id;
     if (!id) {
       this.message.alert("没有cad模板");
       return;
@@ -844,7 +856,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       await this.message.alert("没有pdf文件");
       return;
     }
-    const {codes} = this.printParams;
+    const {codes} = this.printParams();
     if (codes.length < 1) {
       await this.message.alert("没有订单号");
       return;
@@ -905,7 +917,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     }
     canvas.toBlob((blob) => {
       if (blob) {
-        const title = this.printParams.info.title;
+        const title = this.printParams().info.title;
         downloadByBlob(blob, {filename: `${title}.png`});
       } else {
         this.message.alert("生成图片失败");
