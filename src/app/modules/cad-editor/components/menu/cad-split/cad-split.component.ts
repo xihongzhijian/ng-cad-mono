@@ -9,7 +9,6 @@ import {CadStatusSplit} from "@services/cad-status";
   selector: "app-cad-split",
   templateUrl: "./cad-split.component.html",
   styleUrls: ["./cad-split.component.scss"],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadSplitComponent {

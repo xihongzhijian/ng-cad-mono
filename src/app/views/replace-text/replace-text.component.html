@@ -1,82 +1,47 @@
-<div class="form flex-row" [formGroup]="form">
-  <div class="flex-110">
-    <mat-form-field>
-      <mat-label>替换类型</mat-label>
-      <mat-select formControlName="replacer">
-        @for (r of replacers; track $index) {
-          <mat-option [value]="r">
-            {{ r.type }}
-          </mat-option>
-        }
-      </mat-select>
-      <mat-hint>{{ replacerDesc }}</mat-hint>
-    </mat-form-field>
-  </div>
-  <div class="flex-110">
-    <mat-form-field>
-      <mat-label>被替换的字符串</mat-label>
-      <textarea
-        matInput
-        cdkTextareaAutosize
-        [cdkAutosizeMinRows]="1"
-        formControlName="replaceFrom"
-        [errorStateMatcher]="replaceStrErrorMatcher()"
-      ></textarea>
-      <mat-error>{{ getReplaceStrError(form.controls.replaceFrom) }}</mat-error>
-    </mat-form-field>
-  </div>
-  <div class="flex-110">
-    <mat-form-field>
-      <mat-label>用来替换的字符串</mat-label>
-      <textarea
-        matInput
-        cdkTextareaAutosize
-        [cdkAutosizeMinRows]="1"
-        formControlName="replaceTo"
-        [errorStateMatcher]="replaceStrErrorMatcher()"
-      ></textarea>
-      <mat-error>{{ getReplaceStrError(form.controls.replaceTo) }}</mat-error>
-    </mat-form-field>
-  </div>
+<div class="toolbar">
+  @for (info of inputInfos(); track $index) {
+    <app-input class="flex-110" [info]="info"></app-input>
+  }
 </div>
-@if (step.value === 1) {
-  <div class="toolbar">
-    <button mat-flat-button (click)="ready()" [disabled]="form.invalid">提交</button>
-  </div>
-}
-
-@if (step.value === 2) {
-  <div class="toolbar">
-    <button mat-flat-button (click)="step.next(1)">取消</button>
-    <button mat-flat-button (click)="submit()">确认替换</button>
-  </div>
-  <div>{{ replacerDesc }}</div>
-  <div>匹配到的模板：</div>
-  <div class="toolbar">
-    <button mat-flat-button (click)="selectAll()">全选</button>
-    <button mat-flat-button (click)="selectNone()">全不选</button>
-  </div>
-  <ng-scrollbar>
-    <div class="to-be-replaced-list">
-      @for (item of toBeReplacedList; track $index) {
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>
-              <mat-checkbox [checked]="item.checked" (change)="item.checked = $event.checked"></mat-checkbox>
-              <span>{{ item.name }}</span>
-            </mat-card-title>
-            <mat-card-subtitle>
-              <button mat-icon-button (click)="openCad(item.id)"><mat-icon>open_in_new</mat-icon></button>
-            </mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <span class="matched-text">匹配到的文本（{{ item.matchedTexts.length }}个）：</span>
-            @for (text of item.matchedTexts; track $index) {
-              <span class="matched-text">{{ text }}</span>
-            }
-          </mat-card-content>
-        </mat-card>
-      }
+@switch (step()) {
+  @case (1) {
+    <div class="toolbar">
+      <button mat-flat-button (click)="ready()" [disabled]="!isInputsValid()">提交</button>
     </div>
-  </ng-scrollbar>
+  }
+  @case (2) {
+    <div class="toolbar">
+      <button mat-flat-button (click)="step.set(1)">取消</button>
+      <button mat-flat-button (click)="submit()">确认替换</button>
+    </div>
+    <div>{{ replacerDesc() }}</div>
+    <div>匹配到的模板：</div>
+    <div class="toolbar">
+      <button mat-flat-button (click)="selectAll()">全选</button>
+      <button mat-flat-button (click)="selectNone()">全不选</button>
+    </div>
+    <ng-scrollbar>
+      <div class="to-be-replaced-list items items-per-row">
+        @for (item of toBeReplacedList(); track $index) {
+          <mat-card class="item">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-checkbox [checked]="toBeReplacedListSelected().includes(item)" (change)="toggleToBeReplacedItem(item)"></mat-checkbox>
+                <span>{{ item.name }}</span>
+              </mat-card-title>
+              <mat-card-subtitle>
+                <button mat-icon-button (click)="openCad(item.id)"><mat-icon>open_in_new</mat-icon></button>
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <span class="matched-text">匹配到的文本（{{ item.matchedTexts.length }}个）：</span>
+              @for (text of item.matchedTexts; track $index) {
+                <span class="matched-text">{{ text }}</span>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </ng-scrollbar>
+  }
 }

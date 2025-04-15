@@ -10,7 +10,6 @@ import {environment} from "src/environments/environment";
   selector: "app-select-cads",
   templateUrl: "./select-cads.component.html",
   styleUrls: ["./select-cads.component.scss"],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SelectCadsComponent implements OnInit {
