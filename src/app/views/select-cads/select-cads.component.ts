@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, OnInit} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {session} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -10,15 +10,14 @@ import {environment} from "src/environments/environment";
   selector: "app-select-cads",
   templateUrl: "./select-cads.component.html",
   styleUrls: ["./select-cads.component.scss"],
-  standalone: true
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SelectCadsComponent implements OnInit {
-  private _paramsKey = "selectCadParams";
+  private dialog = inject(MatDialog);
+  private message = inject(MessageService);
 
-  constructor(
-    private dialog: MatDialog,
-    private message: MessageService
-  ) {}
+  private _paramsKey = "selectCadParams";
 
   async ngOnInit() {
     let data = session.load<CadListInput & {fnName?: string}>(this._paramsKey);
