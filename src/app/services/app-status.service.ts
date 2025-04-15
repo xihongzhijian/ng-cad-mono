@@ -103,8 +103,8 @@ export class AppStatusService {
   saveCadLocked$ = new BehaviorSubject<boolean>(false);
   cadPoints = signal<CadPoints>([]);
   setProject$ = new Subject<void>();
-  user$ = new BehaviorSubject<AppUser | null>(null);
-  isAdmin$ = new BehaviorSubject<boolean>(false);
+  user = signal<AppUser | null>(null);
+  isAdmin = signal<boolean>(false);
   updateTimeStamp = signal<number>(-1);
   zhewanLengths = signal<[number, number]>([1, 3]);
   changeProject$ = new Subject<string>();
@@ -170,8 +170,8 @@ export class AppStatusService {
           this.http.offlineMode = true;
         }
         if (response?.data) {
-          this.user$.next(response.data);
-          this.isAdmin$.next(response.data.isAdmin);
+          this.user.set(response.data);
+          this.isAdmin.set(response.data.isAdmin);
         }
         await this.config.getUserConfig();
       }

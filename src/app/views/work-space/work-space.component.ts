@@ -1,12 +1,13 @@
-import {Component, HostBinding, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, OnInit, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
+import {ItemsManager} from "@app/utils/items-manager";
 import {environment} from "@env";
 import {downloadByString, selectFiles} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
-import {convertOptions} from "@modules/input/components/input.utils";
+import {convertOptions, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
@@ -18,27 +19,17 @@ import {WorkSpaceManager} from "./work-space.utils";
   selector: "app-work-space",
   imports: [MatButtonModule, NgScrollbarModule],
   templateUrl: "./work-space.component.html",
-  styleUrl: "./work-space.component.scss"
+  styleUrl: "./work-space.component.scss",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkSpaceComponent implements OnInit {
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
   @HostBinding("class") class = "ng-page";
 
-  manager = new WorkSpaceManager();
-  defaultWorkDataFormInfo: DefaultWorkDataFormInfo | null = null;
-  defaultWorkDataList: DefaultWorkDataListItem[] | null = null;
-
-  project = this.status.project;
-  isAdmin$ = this.status.isAdmin$;
-  showMoreButtons = !environment.production;
-  production = environment.production;
-  showDefaultWorkDataList = false;
-  editXiaodaohangsDocs = false;
-
-  constructor(
-    private http: CadDataService,
-    private message: MessageService,
-    private status: AppStatusService
-  ) {
+  constructor() {
     setGlobal("workSpace", this);
   }
 
@@ -46,23 +37,33 @@ export class WorkSpaceComponent implements OnInit {
     this.refresh();
   }
 
+  manager = new WorkSpaceManager();
+  defaultWorkDataFormInfo = signal<DefaultWorkDataFormInfo | null>(null);
+
+  production = environment.production;
+  editXiaodaohangsDocs = computed(() => this.defaultWorkDataFormInfo()?.xiaodaohangsDocs);
+
+  showMoreButtons = signal(!this.production);
+  toggleShowMoreButtons() {
+    this.showMoreButtons.update((v) => !v);
+  }
+
   async refresh() {
     const data = await this.http.getData<WorkSpaceData>("jichu/work/getWorkData");
     this.manager.import(data);
-    this.defaultWorkDataFormInfo = await this.http.getData<DefaultWorkDataFormInfo | null>("jichu/work/getDefaultWorkDataFormInfo");
-    this.editXiaodaohangsDocs = !!this.defaultWorkDataFormInfo?.xiaodaohangsDocs;
+    this.defaultWorkDataFormInfo.set(await this.http.getData<DefaultWorkDataFormInfo | null>("jichu/work/getDefaultWorkDataFormInfo"));
   }
 
   async editType(i: number) {
-    const typePrev = this.manager.types[i];
+    const types = this.manager.types();
+    const typePrev = types[i];
     const type = cloneDeep(typePrev);
-    const form: InputInfo<typeof type>[] = [
-      {type: "string", label: "名字", model: {data: type, key: "name"}},
-      {type: "number", label: "排序", model: {data: type, key: "order"}}
-    ];
+    const getter = new InputInfoWithDataGetter(type);
+    const form = [getter.string("name", {label: "名字"}), getter.number("order", {label: "排序"})];
     const result = await this.message.form(form);
     if (result) {
-      const typeExisted = this.manager.types.find((v, j) => v.name === type.name && i !== j);
+      const typeExisted = types.find((v, j) => v.name === type.name && i !== j);
+      const favorites = this.manager.favorites();
       if (typeExisted) {
         if (!(await this.message.confirm("该分类已存在，是否合并？"))) {
           return;
@@ -70,17 +71,17 @@ export class WorkSpaceComponent implements OnInit {
         if (typeof typeExisted.order !== "number") {
           typeExisted.order = type.order;
         }
-        for (const item of this.manager.favorites) {
+        for (const item of favorites) {
           if (item.type === type.name) {
             item.type = typeExisted.name;
           }
         }
-        this.manager.types.splice(i, 1);
+        types.splice(i, 1);
       } else {
-        this.manager.types[i] = type;
+        types[i] = type;
       }
       if (typePrev.name !== type.name) {
-        for (const item of this.manager.favorites) {
+        for (const item of favorites) {
           if (item.type === typePrev.name) {
             item.type = type.name;
           }
@@ -90,44 +91,45 @@ export class WorkSpaceComponent implements OnInit {
         if (typeof type.order !== "number") {
           delete type.order;
         }
-        this.manager.sortTypes();
       }
+      this.manager.favorites.update((v) => [...v]);
       await this.submit();
     }
   }
 
   async editFavorite(i: number) {
-    const favoritePrev = this.manager.favorites[i];
+    const types = this.manager.types();
+    const favorites = this.manager.favorites();
+    const favoritePrev = favorites[i];
     const favorite = cloneDeep(favoritePrev);
-    const typeNames = this.manager.types.map((v) => v.name);
-    const form: InputInfo<typeof favorite>[] = [
-      {type: "string", label: "分类", options: typeNames, fixedOptions: typeNames, model: {data: favorite, key: "type"}},
-      {type: "number", label: "排序", model: {data: favorite, key: "order"}, autoFocus: true}
+    const typeNames = types.map((v) => v.name);
+    const getter = new InputInfoWithDataGetter(favorite);
+    const form = [
+      getter.string("type", {label: "分类", options: typeNames, fixedOptions: typeNames}),
+      getter.number("order", {label: "排序", autoFocus: true})
     ];
     const result = await this.message.form(form);
     if (result) {
-      this.manager.favorites[i] = favorite;
-      if (favoritePrev.type !== favorite.type) {
-        this.manager.update();
-      } else if (favoritePrev.order !== favorite.order) {
-        this.manager.sortFavorites();
-      }
+      favorites[i] = favorite;
+      this.manager.favorites.update((v) => [...v]);
       await this.submit();
     }
   }
 
   async removeFavorite(i: number) {
-    const favorite = this.manager.favorites[i];
+    const favorites = this.manager.favorites();
+    const favorite = favorites[i];
     if (!(await this.message.confirm(`确定删除【${favorite.xiao}】？`))) {
       return;
     }
-    this.manager.favorites.splice(i, 1);
-    this.manager.update();
+    favorites.splice(i, 1);
+    this.manager.favorites.update((v) => [...v]);
     await this.submit();
   }
 
   async openFavorite(i: number) {
-    const favorite = this.manager.favorites[i];
+    const favorites = this.manager.favorites();
+    const favorite = favorites[i];
     const parent = window.parent as any;
     if (parent.app) {
       await parent.app.openTab(favorite.id, 1);
@@ -166,7 +168,7 @@ export class WorkSpaceComponent implements OnInit {
     if (!data) {
       return;
     }
-    data.user = this.manager.user;
+    data.user = this.manager.user();
     this.manager.import(data);
     await this.submit();
   }
@@ -192,13 +194,13 @@ export class WorkSpaceComponent implements OnInit {
       juese = arr[1];
     }
     await this.http.getData("jichu/work/unsetDefaultWorkData", {key, juese});
-    await this.getDefaultWorkDataList();
+    await this.defaultWorkDataListManager.fetch(true);
   }
 
   getDefaultWorkDataForm(type: "set" | "unset") {
     const values = {key: "", juese: ""};
     const form: InputInfo<typeof values>[] = [];
-    const {defaultWorkDataPathKeys, jueses} = this.defaultWorkDataFormInfo || {};
+    const {defaultWorkDataPathKeys, jueses} = this.defaultWorkDataFormInfo() || {};
     const labelKey = type === "set" ? "labelSet" : "labelUnset";
     if (defaultWorkDataPathKeys) {
       form.push({
@@ -233,7 +235,7 @@ export class WorkSpaceComponent implements OnInit {
     if (result) {
       const data = this.manager.export();
       await this.http.getData("jichu/work/setDefaultWorkData", {...values, data});
-      await this.getDefaultWorkDataList();
+      await this.defaultWorkDataListManager.fetch(true);
     }
   }
 
@@ -255,17 +257,17 @@ export class WorkSpaceComponent implements OnInit {
     }
   }
 
-  async getDefaultWorkDataList(force = false) {
-    if (!force && !this.defaultWorkDataList) {
-      return;
-    }
-    this.defaultWorkDataList = await this.http.getData<DefaultWorkDataListItem[]>("jichu/work/getDefaultWorkDataList");
-  }
+  defaultWorkDataListManager = new ItemsManager(
+    async () => {
+      const items = await this.http.getData<DefaultWorkDataListItem[]>("jichu/work/getDefaultWorkDataList");
+      return items || [];
+    },
+    (a, b) => a.key === b.key
+  );
+  defaultWorkDataList = this.defaultWorkDataListManager.items;
 
-  async toggleDefaultWorkDataList() {
-    this.showDefaultWorkDataList = !this.showDefaultWorkDataList;
-    if (this.showDefaultWorkDataList && !this.defaultWorkDataList) {
-      await this.getDefaultWorkDataList(true);
-    }
+  showDefaultWorkDataList = signal(false);
+  async toggleShowDefaultWorkDataList() {
+    this.showDefaultWorkDataList.update((v) => !v);
   }
 }
