@@ -1,5 +1,5 @@
 <ng-scrollbar>
-  @for (page of data; track i; let i = $index) {
+  @for (page of data(); track i; let i = $index) {
     <div class="page">
       @for (card of page; track j; let j = $index) {
         <div class="card" [style.margin-top]="getTop(j)" [style.margin-left]="getLeft(j)">
