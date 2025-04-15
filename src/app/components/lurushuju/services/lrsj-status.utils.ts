@@ -1,5 +1,5 @@
 import {Validators} from "@angular/forms";
-import {InputInfoNumber, InputInfoSelect, InputInfoSelectSingle} from "@modules/input/components/input.types";
+import {InputInfoNumber, InputInfoSelect, InputInfoSelectSingle, InputInfoString} from "@modules/input/components/input.types";
 import {convertOptions} from "@modules/input/components/input.utils";
 import {OptionsAll2, XinghaoData, XinghaoGongyi, XinghaoMenchuang} from "./lrsj-status.types";
 
@@ -38,19 +38,39 @@ export const getXinghaoData = (raw?: Partial<XinghaoData>): XinghaoData => {
 export const getOptionsAll2InputInfo = (
   optionsAll: OptionsAll2 | undefined | null,
   key: string,
-  setter?: (info: InputInfoSelect) => void
-): InputInfoSelect => {
+  setter?: (info: InputInfoSelect | InputInfoString) => void,
+  canSearch?: boolean
+): InputInfoSelect | InputInfoString => {
   const optionsInfo = optionsAll?.[key];
   if (!optionsInfo) {
     return {type: "select", label: key, options: []};
   }
-  const info: InputInfoSelect = {
+  let info: InputInfoSelect | InputInfoString = {
     type: "select",
     label: key,
     options: convertOptions(optionsInfo.options),
     disabled: optionsInfo.disabled,
     multiple: optionsInfo.multiple
   };
+  if (canSearch) {
+    info = {
+      type: "string",
+      label: key,
+      options: convertOptions(optionsInfo.options),
+      disabled: optionsInfo.disabled
+    };
+    if (optionsInfo.multiple) {
+      console.warn("multiple select with search is not supported", optionsInfo);
+    }
+  } else {
+    info = {
+      type: "select",
+      label: key,
+      options: convertOptions(optionsInfo.options),
+      disabled: optionsInfo.disabled,
+      multiple: optionsInfo.multiple
+    };
+  }
   if (optionsInfo.required) {
     info.validators = [Validators.required];
   } else {

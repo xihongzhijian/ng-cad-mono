@@ -6,6 +6,7 @@ export interface ErrorItem<T extends ErrorDetailText = ErrorDetailText> {
   content: string;
   details: ErrorDetail<T>[];
   duplicateVars?: Set<string>;
+  fatal?: boolean;
 }
 
 export type ErrorDetail<T extends ErrorDetailText = ErrorDetailText> = T[];
@@ -87,6 +88,12 @@ export class ResultWithErrors<T, K extends ErrorDetailText = ErrorDetailText> {
   hasError() {
     return this.errors.length > 0;
   }
+  hasFatalError() {
+    return this.errors.some((v) => v.fatal);
+  }
+  hasAllFatalError() {
+    return this.errors.every((v) => v.fatal);
+  }
   hasWarning() {
     return this.warnings.length > 0;
   }
@@ -100,6 +107,10 @@ export class ResultWithErrors<T, K extends ErrorDetailText = ErrorDetailText> {
   }
   addErrorStr(content: string, details: ErrorDetail<K>[] = []) {
     this.errors.push({content, details});
+    return this;
+  }
+  addFatalErrorStr(content: string, details: ErrorDetail<K>[] = []) {
+    this.errors.push({content, details, fatal: true});
     return this;
   }
 

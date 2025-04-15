@@ -440,6 +440,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       if (msg === "required") {
         return "不能为空";
       }
+      if (key === "min" && isTypeOf(value, "object")) {
+        return `不能小于${value.min}`;
+      }
+      if (key === "max" && isTypeOf(value, "object")) {
+        return `不能大于${value.max}`;
+      }
       return msg;
     }
     return "";
@@ -1182,7 +1188,7 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
 
   async openInNewTab() {
     const info = this.info();
-    if (info.type !== "select") {
+    if (info.type !== "select" && info.type !== "string") {
       return;
     }
     const openInNewTab = info.openInNewTab;

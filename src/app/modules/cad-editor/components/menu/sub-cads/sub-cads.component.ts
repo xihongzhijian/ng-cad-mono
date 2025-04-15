@@ -17,9 +17,12 @@ import {downloadByString, Matrix, ObjectOf, Point} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
+import {CadStatusNormal} from "@services/cad-status";
 import {difference, isEqual} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 
@@ -208,6 +211,9 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
   }
 
   selectedComponentsEff = effect(() => {
+    if (this.status.hasOtherCadStatus((v) => v instanceof CadStatusNormal)) {
+      return;
+    }
     const selectedComponents = this.status.components.selected();
     for (const node of this.components) {
       node.checked = selectedComponents.some((v) => v.id === node.data.id);
@@ -247,7 +253,84 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     this.contextMenuCad = {field, data};
   }
 
-  async editComponents() {
+  async fetchComponentCads(data: CadData, custom?: boolean) {
+    let sourceData: CadData[] | undefined;
+    if (custom) {
+      const query = {id: "", 名字: ""};
+      const form: InputInfo[] = [];
+      const getter = new InputInfoWithDataGetter(query, {
+        onChange: (_, info) => {
+          for (const info2 of form) {
+            if (info2.label !== info.label) {
+              info2.forceValidateNum = (info2.forceValidateNum || 0) + 1;
+            }
+          }
+        },
+        validators: () => {
+          const values = Object.values(query);
+          if (values.every((v) => !v)) {
+            return {查询不能为空: true};
+          }
+          return null;
+        }
+      });
+      form.push(getter.string("id"), getter.string("名字"));
+      const result = await this.message.form(form);
+      if (!result) {
+        return sourceData;
+      }
+      let search: ObjectOf<any>;
+      if (query.id) {
+        search = {_id: query.id};
+      } else {
+        search = {...query};
+        delete search.id;
+      }
+      sourceData = (await this.http.getCad({collection: "cad", search}, {silent: true})).cads;
+      return sourceData;
+    }
+    const specials: {type: string; options: string[]}[] = [
+      {type: "罗马头模板", options: ["罗马头", "罗马柱"]},
+      {type: "套门模板", options: ["套门"]}
+    ];
+    for (const {type, options} of specials) {
+      if (data.type !== type) {
+        continue;
+      }
+      const optionValues: ObjectOf<string> = {};
+      for (const option of options) {
+        const value = data.options[option];
+        if (value) {
+          optionValues[option] = value;
+        }
+      }
+      const optionsDiff = difference(options, Object.keys(data.options));
+      if (optionsDiff.length > 0) {
+        this.message.error(`${type}缺少选项：${optionsDiff.join("，")}`);
+        return;
+      }
+      const result = await this.http.getCad({collection: "cad", options: optionValues, optionsMatchType: "or"}, {silent: true});
+      sourceData = result.cads;
+      break;
+    }
+    if (!sourceData) {
+      const result = await this.http.getData<any[]>(
+        "ngcad/getMenshanbujuCads",
+        {
+          xinghao: data.options.型号,
+          flat: true,
+          isMuban: true
+        },
+        {silent: true}
+      );
+      if (result) {
+        sourceData = result.map((v) => new CadData(v));
+      }
+    }
+    return sourceData;
+  }
+
+  async editComponents(custom?: boolean) {
     if (!this.contextMenuCad) {
       return;
     }
@@ -271,44 +354,10 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
       "包边正面"
     ];
     let cads: Awaited<ReturnType<typeof openCadListDialog>>;
-    let sourceData: CadData[] | undefined;
-    const specials: {type: string; options: string[]}[] = [
-      {type: "罗马头模板", options: ["罗马头", "罗马柱"]},
-      {type: "套门模板", options: ["套门"]}
-    ];
-    for (const {type, options} of specials) {
-      if (data.type !== type) {
-        continue;
-      }
-      const optionValues: ObjectOf<string> = {};
-      for (const option of options) {
-        const value = data.options[option];
-        if (value) {
-          optionValues[option] = value;
-        }
-      }
-      const optionsDiff = difference(options, Object.keys(data.options));
-      if (optionsDiff.length > 0) {
-        this.message.error(`${type}缺少选项：${optionsDiff.join("，")}`);
-        return;
-      }
-      const result = await this.http.getCad({collection: "cad", options: optionValues, optionsMatchType: "or"});
-      sourceData = result.cads;
-      break;
-    }
-    if (!sourceData) {
-      const result = await this.http.getData<any[]>("ngcad/getMenshanbujuCads", {
-        xinghao: data.options.型号,
-        flat: true,
-        isMuban: true
-      });
-      if (result) {
-        sourceData = result.map((v) => new CadData(v));
-      }
-    }
+    const sourceData = await this.fetchComponentCads(data, custom);
     if (Array.isArray(sourceData)) {
       let source: CadData[] | undefined;
-      if (sourceData.length > 0) {
+      if (sourceData.length > 0 || custom) {
         source = sourceData.map((v) => new CadData(v));
       }
       const where = `

@@ -19,7 +19,9 @@ import {
   validateCad,
   validateLines
 } from "@app/cad/utils";
+import {ResultWithErrors} from "@app/utils/error-message";
 import {FetchManager} from "@app/utils/fetch-manager";
+import {getInsertName} from "@app/utils/get-value";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {getSbjbCadName, isSbjbItemOptionalKeys3} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.utils";
@@ -439,6 +441,14 @@ export class AppStatusService {
     }
     data2.getAllEntities().forEach((e) => (e.visible = true));
     suanliaodanZoomOut(data2);
+
+    const dimNames = data2.entities.dimension.filter((e) => e.mingzi).map((e) => e.mingzi);
+    for (const e of data2.entities.dimension) {
+      if (!e.mingzi) {
+        e.mingzi = getInsertName(dimNames, "活动标注");
+      }
+    }
+
     return data2;
   }
 
@@ -464,21 +474,35 @@ export class AppStatusService {
     }
 
     let resData: CadData | null = null;
-    let errMsg = this.validate(true)?.errors || [];
+    const result = this.validate(true);
     const blockError = "不能包含块";
-    if (errMsg.includes(blockError)) {
+    if (result.errors.some((v) => v.content === blockError)) {
       const button = await message.button({content: blockError, buttons: ["删除块实体"]});
       if (button !== "删除块实体") {
         return null;
       }
       data.blocks = {};
       data.entities.insert = [];
-      errMsg = errMsg.filter((v) => v !== blockError);
+      result.errors = result.errors.filter((v) => v.content !== blockError);
     }
-    if (errMsg.length > 0) {
-      const yes = await message.confirm("当前打开的CAD存在错误，是否继续保存？<br>" + errMsg.join("<br>"));
-      if (!yes) {
+    if (result.hasError()) {
+      const errMsgs: string[] = ["CAD存在错误，"];
+      const hasFatalError = result.hasFatalError();
+      if (hasFatalError) {
+        errMsgs[0] += "请检查。";
+      } else {
+        errMsgs[0] += "是否继续保存？";
+      }
+      errMsgs.push(...result.errors.map((v, i) => `${i + 1}.${v.content}`));
+      const errMsg = errMsgs.join("<br>");
+      if (hasFatalError) {
+        await message.alert(errMsg);
         return null;
+      } else {
+        const yes = await message.confirm(errMsg);
+        if (!yes) {
+          return null;
+        }
       }
     }
 
@@ -590,13 +614,14 @@ export class AppStatusService {
   validate(force?: boolean) {
     const noInfo = !this.config.getConfig("validateLines");
     const collection = this.collection$.value;
+    const result = new ResultWithErrors(null);
     if (!isCadCollectionOfCad(collection)) {
-      return null;
+      return result;
     }
     if (!force && noInfo) {
-      return null;
+      return result;
     }
-    const result = validateCad(collection, this.cad.data, noInfo);
+    result.learnFrom(validateCad(collection, this.cad.data, noInfo));
     this.cad.render();
     return result;
   }
@@ -883,7 +908,7 @@ export class AppStatusService {
   }
 
   private _highlightDimensionsMap = new Map<string, CadEntity[]>();
-  highlightDimensions(dimensions?: CadDimension[]) {
+  highlightDimensions(dimensions?: CadDimension[], highlightedPrev?: CadEntities) {
     const points: Point[] = [];
     const cad = this.cad;
     const dimensionsAll = cad.data.getAllEntities().dimension;
@@ -911,14 +936,16 @@ export class AppStatusService {
         }
         if (esPrev) {
           for (const e of esPrev) {
-            if (!esCurr.includes(e)) {
+            if (!esCurr.includes(e) && !highlightedPrev?.find(e.id)) {
               e.highlighted = false;
             }
           }
         }
       } else if (esPrev) {
         for (const e of esPrev) {
-          e.highlighted = false;
+          if (!highlightedPrev?.find(e.id)) {
+            e.highlighted = false;
+          }
         }
       }
       if (esCurr.length > 0) {
@@ -931,7 +958,9 @@ export class AppStatusService {
     for (const [id, es] of map) {
       if (!dimensionIdsAll.includes(id)) {
         for (const e of es) {
-          e.highlighted = false;
+          if (!highlightedPrev?.find(e.id)) {
+            e.highlighted = false;
+          }
         }
         map.delete(id);
       }
@@ -940,7 +969,7 @@ export class AppStatusService {
     return highlightedEntities;
   }
 
-  highlightLineTexts(entities?: CadEntities) {
+  highlightLineTexts(entities?: CadEntities, highlightedPrev?: CadEntities) {
     const cad = this.cad;
     if (!entities) {
       entities = cad.data.getAllEntities();
@@ -960,7 +989,7 @@ export class AppStatusService {
       if (selectedMtexts.length > 0) {
         e.highlighted = true;
         highlightedEntities.add(e);
-      } else {
+      } else if (!highlightedPrev?.find(e.id)) {
         e.highlighted = false;
       }
     });

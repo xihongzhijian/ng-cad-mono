@@ -63,6 +63,12 @@
     )
   );
 
+  @include mat.checkbox-overrides(
+    (
+      label-text-size: var(--mat-sys-body-large-size)
+    )
+  );
+
   & {
     font: var(--mat-sys-body-large);
     font-size: 15px;

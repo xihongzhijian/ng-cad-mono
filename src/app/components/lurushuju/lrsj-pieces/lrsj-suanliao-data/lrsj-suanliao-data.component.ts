@@ -33,7 +33,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo} from "@modules/input/components/input.types";
 import {convertOptions, getInputInfoGroup} from "@modules/input/components/input.utils";
 import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
@@ -136,8 +136,14 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     }
   });
 
-  getOptionInputInfo2(data: any, key: string, style?: Properties): InputInfoSelect {
-    const info = getMenjiaoOptionInputInfo(data, key, this.menjiaoOptions(), () => this.lrsjStatus.menjiaoOptionsManager.fetch(true));
+  getOptionInputInfo2(data: any, key: string, style?: Properties, canSearch?: boolean) {
+    const info = getMenjiaoOptionInputInfo(
+      data,
+      key,
+      this.menjiaoOptions(),
+      () => this.lrsjStatus.menjiaoOptionsManager.fetch(true),
+      canSearch
+    );
     info.style = style;
     const onChange = info.onChange;
     info.onChange = (val: any, info2: any) => {
@@ -171,7 +177,9 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     const form1Group: InputInfo[] = [
       getInputInfoGroup(
         optionKeys.map((v) => {
-          const info = this.getOptionInputInfo2(data, v);
+          const canSearchKeys: (keyof 算料数据)[] = ["锁边", "铰边"];
+          const canSearch = canSearchKeys.includes(v);
+          const info = this.getOptionInputInfo2(data, v, {}, canSearch);
           let w: number;
           switch (v) {
             case "门铰":

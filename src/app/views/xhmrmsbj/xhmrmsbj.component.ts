@@ -266,8 +266,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.id.set(id);
       this.isFromOrder.set(false);
       const where = xinghaoId > 0 ? {xinghao: xinghaoId} : {vid: id};
-      const records = await this.http.queryMySql<XhmrmsbjTableData>({table, filter: {where}});
+      const records = await this.http.queryMySql<XhmrmsbjTableData>({table, filter: {where}, checkAccess: true});
+      const msg = this.http.lastResponse?.msg;
       let record = records.at(0) || null;
+      if (!record && msg) {
+        document.body.innerHTML = msg;
+        return;
+      }
       if (!record && xinghaoId > 0) {
         xinghao = await getXinghao(String(xinghaoId));
         if (xinghao) {

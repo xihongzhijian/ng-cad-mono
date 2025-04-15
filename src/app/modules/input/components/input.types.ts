@@ -54,6 +54,7 @@ export interface InputInfoString<T = any> extends InputInfoBase<T> {
   optionMultiple?: boolean;
   optionSeparator?: OptionSeparator;
   optionsDialog?: OptionsDialog;
+  openInNewTab?: InputInfoOpenInNewTab;
 }
 
 export interface InputInfoNumber<T = any> extends InputInfoBase<T> {
@@ -110,7 +111,7 @@ export interface InputInfoSelectBase<T = any, K = any> extends InputInfoBase<T> 
   appearance?: "select" | "list";
   options: Value<InputInfoOptions<K>>;
   optionsDialog?: OptionsDialog;
-  openInNewTab?: {optionKey: string; onOptionsChange: (options: GetOptionsResultItem[]) => void};
+  openInNewTab?: InputInfoOpenInNewTab;
 }
 export interface InputInfoSelectSingle<T = any, K = any> extends InputInfoSelectBase<T, K> {
   value?: Value<K>;
@@ -232,4 +233,9 @@ export interface OptionsDialog {
   info?: CadOptionsInput["info"];
   noImage?: CadOptionsInput["noImage"];
   onChange?: (val: CadOptionsOutput) => void;
+}
+
+export interface InputInfoOpenInNewTab {
+  optionKey: string;
+  onOptionsChange: (options: GetOptionsResultItem[]) => void;
 }

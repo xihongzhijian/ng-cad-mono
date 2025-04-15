@@ -6,6 +6,9 @@
   @if (data.name && !data.useLocalOptions) {
     <button mat-flat-button (click)="search(true, true)">刷新</button>
   }
+  @if (!noImage1()) {
+    <button mat-flat-button [class.accent]="!noImage2()" (click)="toggleNoImage2()">显示图片</button>
+  }
   @if (data.openInNewTab) {
     <button mat-flat-button (click)="editInNewTab()">
       <mat-icon>open_in_new</mat-icon>
@@ -28,13 +31,13 @@
   <app-spinner [id]="loaderIds.optionsLoader"></app-spinner>
   <div class="options items add-empty-msg">
     @for (item of pageData(); track i; let i = $index) {
-      <div class="option border item" [class.checked]="item.checked" (click)="onCheckboxChange(i)">
+      <div class="option border item" [class.checked]="checkedItems().includes(item)" (click)="onCheckboxChange(i)">
         <div class="toolbar compact hidden-if-empty" appClickStop>
           @if (data.defaultValue; as val) {
             <button mat-button [class.accent]="val.value === item.name" (click)="setDefaultValue(i)">默认值</button>
             <div class="flex-110"></div>
           }
-          @if (!noImage()) {
+          @if (!noImage() && !noImage2()) {
             <div class="flex-110"></div>
             <button mat-icon-button [class.hidden]="noImage()" (click)="optionImg.showBigPic()">
               <mat-icon>zoom_in</mat-icon>
@@ -44,13 +47,13 @@
         <app-image
           #optionImg
           [class.hidden]="noImage()"
-          [src]="item.img"
+          [src]="noImage() && noImage2Count() < 1 ? '' : item.img"
           [bigPicSrc]="item.img"
           [prefix]="filePathUrl"
           bigPicClickShowDisabled
         ></app-image>
         <div class="option-name toolbar">
-          <mat-checkbox [checked]="item.checked" [disabled]="item.disabled && !item.checked"> </mat-checkbox>
+          <mat-checkbox [checked]="checkedItems().includes(item)" [disabled]="item.disabled"> </mat-checkbox>
           <div class="flex-110">{{ item.label || item.name }}</div>
           @for (btn of data.itemBtns; track $index) {
             <button mat-button appClickStop [class.hidden]="btn.hidden" (click)="btn.onClick(item)">{{ btn.name }}</button>

@@ -291,7 +291,8 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
         "激光开料排版后只保留孔",
         "激光开料折弯标记长直线",
         "激光开料折弯标记短直线",
-        "门缝配置"
+        "门缝配置",
+        "门缝"
       ],
       this.data(),
       this.dialog,
