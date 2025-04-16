@@ -22,8 +22,8 @@ import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
-import {CadStatusNormal} from "@services/cad-status";
-import {difference, isEqual} from "lodash";
+import {CadStatusAssemble, CadStatusNormal} from "@services/cad-status";
+import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 
 interface CadNode {
@@ -179,20 +179,6 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     }
   }
 
-  isAllComponentsSelected() {
-    const ids1 = this.status.components.selected().map((v) => v.id);
-    const ids2 = this.status.cad.data.components.data.map((v) => v.id);
-    return isEqual(ids1, ids2);
-  }
-
-  selectAllComponents() {
-    this.status.components.selected.set(this.status.cad.data.components.data);
-  }
-
-  unselectAllComponents() {
-    this.status.components.selected.set([]);
-  }
-
   selectComponent(index: number) {
     if (!this.componentsSelectable) {
       return;
@@ -209,14 +195,22 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
       }
     }
   }
-
-  selectedComponentsEff = effect(() => {
-    if (this.status.hasOtherCadStatus((v) => v instanceof CadStatusNormal)) {
-      return;
+  selectAllComponents() {
+    const ids1 = this.status.components.selected().map((v) => v.id);
+    const ids2 = this.status.cad.data.components.data.map((v) => v.id);
+    if (ids1.length === ids2.length) {
+      this.status.components.selected.set([]);
+    } else {
+      this.status.components.selected.set(this.status.cad.data.components.data);
     }
+  }
+  selectedComponentsEff = effect(() => {
     const selectedComponents = this.status.components.selected();
     for (const node of this.components) {
       node.checked = selectedComponents.some((v) => v.id === node.data.id);
+    }
+    if (this.status.hasOtherCadStatus((v) => v instanceof CadStatusNormal || v instanceof CadStatusAssemble)) {
+      return;
     }
     const cad = this.status.cad;
     if (selectedComponents.length < 1) {
