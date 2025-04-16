@@ -22,8 +22,8 @@ import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
-import {CadStatusNormal} from "@services/cad-status";
-import {difference, isEqual} from "lodash";
+import {CadStatusAssemble, CadStatusNormal} from "@services/cad-status";
+import {difference} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 
 interface CadNode {
@@ -58,14 +58,10 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
   @ViewChild(MatMenuTrigger) contextMenu!: MatMenuTrigger;
   @ViewChild("dxfInut", {read: ElementRef}) dxfInut!: ElementRef<HTMLElement>;
   contextMenuCad?: {field: ContextMenuCadField; data: CadData};
-  multiSelect = false;
   private lastPointer: Point | null = null;
   private entitiesToMove?: CadEntities;
   private entitiesNotToMove?: CadEntities;
   private entitiesNeedRender = false;
-
-  componentsSelectable = this.status.components.selectable;
-  componentsMode = this.status.components.mode;
 
   get collection() {
     return this.status.collection$.value;
@@ -83,18 +79,6 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
 
   ngOnInit() {
     this.updateData();
-
-    const setConfig = () => {
-      const {subCadsMultiSelect} = this.config.getConfig();
-      this.multiSelect = subCadsMultiSelect;
-    };
-    setConfig();
-    const sub = this.config.configChange$.subscribe(({isUserConfig}) => {
-      if (isUserConfig) {
-        setConfig();
-        sub.unsubscribe();
-      }
-    });
 
     const cad = this.status.cad;
     cad.on("pointerdown", this._onPointerDown);
@@ -169,9 +153,11 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     return node;
   }
 
-  toggleMultiSelect() {
-    this.componentsSelectable.update((v) => !v);
-    if (!this.componentsSelectable()) {
+  componentsSelectable = this.status.components.selectable;
+  componentsMultiSelect = this.status.components.multiSelect;
+  toggleComponentsMultiSelect() {
+    this.componentsMultiSelect.update((v) => !v);
+    if (!this.componentsMultiSelect()) {
       const selectedComponents = this.status.components.selected();
       if (selectedComponents.length > 1) {
         this.status.components.selected.set([selectedComponents[0]]);
@@ -179,22 +165,8 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     }
   }
 
-  isAllComponentsSelected() {
-    const ids1 = this.status.components.selected().map((v) => v.id);
-    const ids2 = this.status.cad.data.components.data.map((v) => v.id);
-    return isEqual(ids1, ids2);
-  }
-
-  selectAllComponents() {
-    this.status.components.selected.set(this.status.cad.data.components.data);
-  }
-
-  unselectAllComponents() {
-    this.status.components.selected.set([]);
-  }
-
   selectComponent(index: number) {
-    if (!this.componentsSelectable) {
+    if (!this.componentsSelectable()) {
       return;
     }
     const node = this.components[index];
@@ -202,21 +174,29 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     if (node.checked) {
       this.status.components.selected.set(selectedComponents.filter((v) => v.id !== node.data.id));
     } else {
-      if (this.multiSelect) {
+      if (this.componentsMultiSelect()) {
         this.status.components.selected.set([...selectedComponents, node.data]);
       } else {
         this.status.components.selected.set([node.data]);
       }
     }
   }
-
-  selectedComponentsEff = effect(() => {
-    if (this.status.hasOtherCadStatus((v) => v instanceof CadStatusNormal)) {
-      return;
+  selectAllComponents() {
+    const ids1 = this.status.components.selected().map((v) => v.id);
+    const ids2 = this.status.cad.data.components.data.map((v) => v.id);
+    if (ids1.length === ids2.length) {
+      this.status.components.selected.set([]);
+    } else {
+      this.status.components.selected.set(this.status.cad.data.components.data);
     }
+  }
+  selectedComponentsEff = effect(() => {
     const selectedComponents = this.status.components.selected();
     for (const node of this.components) {
       node.checked = selectedComponents.some((v) => v.id === node.data.id);
+    }
+    if (this.status.hasOtherCadStatus((v) => v instanceof CadStatusNormal || v instanceof CadStatusAssemble)) {
+      return;
     }
     const cad = this.status.cad;
     if (selectedComponents.length < 1) {

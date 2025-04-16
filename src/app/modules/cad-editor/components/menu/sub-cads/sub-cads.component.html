@@ -1,5 +1,7 @@
-<div style="margin: 10px">
-  <mat-slide-toggle [checked]="componentsMode" (change)="toggleMultiSelect()">{{ componentsMode() ? "多选" : "单选" }}</mat-slide-toggle>
+<div class="toolbar">
+  <mat-slide-toggle [checked]="componentsMultiSelect()" (change)="toggleComponentsMultiSelect()">
+    {{ componentsMultiSelect() ? "多选" : "单选" }}
+  </mat-slide-toggle>
 </div>
 <ng-scrollbar>
   <div class="section">
@@ -37,17 +39,18 @@
       <mat-divider></mat-divider>
       <span class="section-title">装配CAD</span>
       <div class="toolbar">
-        @if (isAllComponentsSelected()) {
-          <button mat-flat-button [disabled]="!componentsSelectable" (click)="selectAllComponents()">全选</button>
-        } @else {
-          <button mat-flat-button [disabled]="!componentsSelectable" (click)="unselectAllComponents()">全不选</button>
-        }
+        <button mat-flat-button [disabled]="!componentsSelectable()" (click)="selectAllComponents()">全选</button>
         <button mat-flat-button (click)="deleteSelectedComponents()">删除已选</button>
       </div>
       <div class="checkbox-group add-empty-msg">
         @for (item of components; track i; let i = $index) {
           <div class="cad-image">
-            <mat-checkbox class="example-margin" [checked]="item.checked" (change)="selectComponent(i)" [disabled]="!componentsSelectable">
+            <mat-checkbox
+              class="example-margin"
+              [checked]="item.checked"
+              (change)="selectComponent(i)"
+              [disabled]="!componentsSelectable()"
+            >
               {{ item.data.name }}
             </mat-checkbox>
             <div class="content">

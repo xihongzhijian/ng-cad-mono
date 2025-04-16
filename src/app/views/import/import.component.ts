@@ -422,7 +422,7 @@ export class ImportComponent implements OnInit {
       let uniqCode = data.info.唯一码;
       if (!uniqCode) {
         if (addUniqCode) {
-          const user = this.status.user$.value;
+          const user = this.status.user();
           if (isXinghao) {
             v.data.info.唯一码 = CadPortable.getUniqCode(v.data, importCache, user);
           } else {

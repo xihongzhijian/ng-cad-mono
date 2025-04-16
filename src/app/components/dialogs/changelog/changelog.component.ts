@@ -13,7 +13,6 @@ import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {uniqueId} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {take} from "rxjs";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
@@ -104,22 +103,8 @@ export class ChangelogComponent implements OnInit {
 
   testMode = computed(() => this.config.config().testMode);
   async toggleEnvBeta() {
-    let msg: string;
-    if (!environment.production) {
-      msg = `testMode: ${this.testMode()}`;
-    } else if (environment.beta) {
-      msg = "是否切换到正式版？";
-    } else {
-      msg = "是否切换到测试版（功能可能不稳定）？";
-    }
-    if (!(await this.message.confirm(msg))) {
-      return;
-    }
-    this.config.setConfigWith("testMode", (v) => !v);
     this.status.setTestModeWarningIgnore(1000 * 60 * 60 * 24);
-    this.config.userConfigSaved$.pipe(take(1)).subscribe(() => {
-      this.status.checkEnvBeta();
-    });
+    this.status.toggleEnvBeta();
   }
 }
 

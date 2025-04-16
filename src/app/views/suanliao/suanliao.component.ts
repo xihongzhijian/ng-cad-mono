@@ -45,7 +45,6 @@ import {resetInputs} from "./suanliao.utils";
   selector: "app-suanliao",
   templateUrl: "./suanliao.component.html",
   styleUrls: ["./suanliao.component.scss"],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SuanliaoComponent implements OnInit, OnDestroy {

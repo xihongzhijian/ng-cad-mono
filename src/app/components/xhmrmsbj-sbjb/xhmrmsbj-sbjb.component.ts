@@ -219,7 +219,7 @@ export class XhmrmsbjSbjbComponent {
     const cadName = item2?.名字 || "";
     const title = `${name}：${cadName}`;
     const {form: inputInfos, data: item2New} = await getXhmrmsbjSbjbItemSbjbItemForm(item2);
-    const qiliaoPrev = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
+    const qiliaoPrev = await this.findQiliao(cadName);
     const qiliaoCurr = cloneDeep(qiliaoPrev);
     const form: SbjbItemSbjbItemForm = {title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr, cadName};
     if (qiliaoCurr) {
@@ -314,7 +314,7 @@ export class XhmrmsbjSbjbComponent {
       item.CAD数据[index].cadId = cad2.id;
       this.cadMap.set(cad2.id, cad2);
       this.purgeCadMap();
-      await this.addQiliao(cad2.name);
+      await this.findQiliao(cad2.name);
       needsRefresh = true;
     }
     if (needsRefresh) {
@@ -429,16 +429,35 @@ export class XhmrmsbjSbjbComponent {
       this.qiliaosChanged.push(qiliao);
     }
   }
-  async addQiliao(name: string) {
+  qiliaoTable = "p_qiliao";
+  async findQiliao(name: string) {
+    if (!name) {
+      return null;
+    }
     const qiliao = this.qiliaosManager.items().find((v) => v.name === name);
     if (qiliao) {
-      return;
+      return qiliao;
     }
-    const qiliaos = await this.http.queryMySql<QiliaoTableData>({table: "p_qiliao", filter: {where: {mingzi: name}}});
+    const qiliaos = await this.http.queryMySql<QiliaoTableData>(
+      {table: this.qiliaoTable, filter: {where: {mingzi: name}}},
+      {spinner: false}
+    );
     if (qiliaos[0]) {
       const qiliao2 = new Qiliao(qiliaos[0]);
       this.qiliaosManager.refresh({add: [qiliao2]});
+      return qiliao2;
+    } else {
+      return await this.addQiliaoTableItem(name);
     }
+  }
+  async addQiliaoTableItem(name: string) {
+    const result = await this.http.tableInsert<QiliaoTableData>({table: this.qiliaoTable, data: {mingzi: name}}, {spinner: false});
+    if (result) {
+      const qiliao = new Qiliao(result);
+      this.qiliaosManager.refresh({add: [qiliao]});
+      return qiliao;
+    }
+    return null;
   }
 
   fentiCadTemplateData!: {$implicit: FentiCadTemplateData};
@@ -473,7 +492,7 @@ export class XhmrmsbjSbjbComponent {
     if (form) {
       qiliao = form?.qiliaoCurr;
     } else {
-      qiliao = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
+      qiliao = await this.findQiliao(item2?.名字 || "");
     }
     const checkedItems: string[] = [];
     if (qiliao?.[key]?.id) {
