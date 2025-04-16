@@ -40,8 +40,7 @@
   @if (mode() === "edit") {
     <div class="效果图">
       <div class="text title">效果图</div>
-      <input type="file" #orderImageInput hidden accept="image/*" (change)="uploadOrderImage($event)" />
-      <app-image [src]="orderImageUrl()" (click)="orderImageInput.click()"></app-image>
+      <app-image [src]="orderImageUrl()" (click)="uploadOrderImage()"></app-image>
       <div class="text">点击图片选择</div>
     </div>
   }

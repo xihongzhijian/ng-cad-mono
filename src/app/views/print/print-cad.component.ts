@@ -273,7 +273,7 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
   }
 
   async print() {
-    printJS({printable: this.pdfUrlRaw, type: "pdf"});
+    printJS({printable: this.pdfUrlRaw(), type: "pdf"});
   }
 
   async generateSuanliaodan() {
@@ -754,16 +754,14 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  async uploadOrderImage(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const files = target.files;
-    if (!files || files.length < 1) {
+  async uploadOrderImage() {
+    const files = await selectFiles({accept: "imagee/*"});
+    let file = files?.[0];
+    if (!file) {
       return;
     }
-    let file = files[0];
     const blob = await imageCompression(file, {maxSizeMB: 1, useWebWorker: true});
     file = new File([blob], file.name, {type: file.type});
-    target.value = "";
     const printParams = this.printParams();
     const data = await this.http.getData<{prefix: string; save_path: string}>(
       "order/api/uploadImage",
