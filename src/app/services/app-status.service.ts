@@ -83,8 +83,8 @@ export class AppStatusService {
   cad = new CadViewer(setCadData(new CadData({name: "新建CAD", info: {isLocal: true}}), this.project, "cad", this.config.getConfig()));
   components = {
     selected: signal<CadData[]>([]),
-    mode: signal<"single" | "multiple">("single"),
-    selectable: signal<boolean>(true)
+    selectable: signal(true),
+    multiSelect: signal(false)
   };
   openCadOptions = signal<OpenCadOptions>({});
   private _changeCadSignal = signal(0);
@@ -110,11 +110,6 @@ export class AppStatusService {
   changeProject$ = new Subject<string>();
   private _isZhewanLengthsFetched = false;
   projectConfig = new ProjectConfig();
-
-  componentsModeEff = effect(() => {
-    const mode = this.components.mode();
-    this.config.setConfig("subCadsMultiSelect", mode === "multiple");
-  });
 
   constructor() {
     this.cad.setConfig(this.config.getConfig());
@@ -157,10 +152,10 @@ export class AppStatusService {
     return n;
   }
   async setProject(queryParams: Params) {
-    this.checkEnvBeta();
     const {project, action} = queryParams;
     if (project && project !== this.project) {
       this.project = project;
+      this.config.project = project;
       this.http.baseURL = `${origin}/n/${project}/index/`;
       if (action) {
         this.config.noUser = true;
@@ -173,8 +168,9 @@ export class AppStatusService {
           this.user.set(response.data);
           this.isAdmin.set(response.data.isAdmin);
         }
-        await this.config.getUserConfig();
       }
+      await this.config.getUserConfig();
+      this.checkEnvBeta();
       const updateTimeStamp = await this.getUpdateTimeStamp();
       if (environment.production && updateTimeStamp > this.refreshTimeStamp) {
         this.message.snack("版本更新，自动刷新页面");
@@ -407,7 +403,7 @@ export class AppStatusService {
     if (center) {
       cad.center();
     }
-    this.config.setConfig(prevConfig);
+    this.config.setConfig(prevConfig, {sync: false});
     await this.updateCadTotalLength();
     if (!isDialog) {
       this.updateTitle();
@@ -828,7 +824,6 @@ export class AppStatusService {
       }
     }
     this.config.setConfigWith("testMode", (v) => !v);
-    this.setTestModeWarningIgnore(1000 * 60 * 60 * 24);
     this.config.userConfigSaved$.pipe(take(1)).subscribe(() => {
       this.checkEnvBeta();
     });

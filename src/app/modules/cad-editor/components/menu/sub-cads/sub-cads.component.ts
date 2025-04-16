@@ -58,14 +58,10 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
   @ViewChild(MatMenuTrigger) contextMenu!: MatMenuTrigger;
   @ViewChild("dxfInut", {read: ElementRef}) dxfInut!: ElementRef<HTMLElement>;
   contextMenuCad?: {field: ContextMenuCadField; data: CadData};
-  multiSelect = false;
   private lastPointer: Point | null = null;
   private entitiesToMove?: CadEntities;
   private entitiesNotToMove?: CadEntities;
   private entitiesNeedRender = false;
-
-  componentsSelectable = this.status.components.selectable;
-  componentsMode = this.status.components.mode;
 
   get collection() {
     return this.status.collection$.value;
@@ -83,18 +79,6 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
 
   ngOnInit() {
     this.updateData();
-
-    const setConfig = () => {
-      const {subCadsMultiSelect} = this.config.getConfig();
-      this.multiSelect = subCadsMultiSelect;
-    };
-    setConfig();
-    const sub = this.config.configChange$.subscribe(({isUserConfig}) => {
-      if (isUserConfig) {
-        setConfig();
-        sub.unsubscribe();
-      }
-    });
 
     const cad = this.status.cad;
     cad.on("pointerdown", this._onPointerDown);
@@ -169,9 +153,11 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     return node;
   }
 
-  toggleMultiSelect() {
-    this.componentsSelectable.update((v) => !v);
-    if (!this.componentsSelectable()) {
+  componentsSelectable = this.status.components.selectable;
+  componentsMultiSelect = this.status.components.multiSelect;
+  toggleComponentsMultiSelect() {
+    this.componentsMultiSelect.update((v) => !v);
+    if (!this.componentsMultiSelect()) {
       const selectedComponents = this.status.components.selected();
       if (selectedComponents.length > 1) {
         this.status.components.selected.set([selectedComponents[0]]);
@@ -180,7 +166,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
   }
 
   selectComponent(index: number) {
-    if (!this.componentsSelectable) {
+    if (!this.componentsSelectable()) {
       return;
     }
     const node = this.components[index];
@@ -188,7 +174,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     if (node.checked) {
       this.status.components.selected.set(selectedComponents.filter((v) => v.id !== node.data.id));
     } else {
-      if (this.multiSelect) {
+      if (this.componentsMultiSelect()) {
         this.status.components.selected.set([...selectedComponents, node.data]);
       } else {
         this.status.components.selected.set([node.data]);
