@@ -92,8 +92,8 @@ export interface SbjbItemSbjbItemForm {
   name: SbjbItemOptionalKey2;
   item2?: XhmrmsbjSbjbItemSbjbItem;
   item2New: XhmrmsbjSbjbItemSbjbItem;
-  qiliaoPrev?: Qiliao;
-  qiliaoCurr?: Qiliao;
+  qiliaoPrev?: Qiliao | null;
+  qiliaoCurr?: Qiliao | null;
   fentiCad1?: CadData;
   fentiCad2?: CadData;
   cadName: string;
