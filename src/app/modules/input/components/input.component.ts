@@ -341,7 +341,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     if (changes.infoIn) {
       this.infoDiffer = this.differs.find(this.infoIn()).create();
       this.modelDataDiffer = this.differs.find(this.model.data).create();
-      console.log(1);
     }
   }
 
@@ -577,7 +576,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     }
     this.valueChange$.next(this.value);
     this._filterXuanxiangOptions();
-    console.log(info);
     this.info.set({...info});
   }
 
