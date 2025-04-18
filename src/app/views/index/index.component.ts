@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {CadData} from "@lucilor/cad-viewer";
 import {log} from "@lucilor/utils";
@@ -14,18 +14,17 @@ import {CadEditorComponent} from "../../modules/cad-editor/components/cad-editor
   selector: "app-index",
   templateUrl: "./index.component.html",
   styleUrls: ["./index.component.scss"],
-  imports: [CadEditorComponent]
+  imports: [CadEditorComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IndexComponent implements OnInit {
-  params?: OpenCadOptions;
+  private config = inject(AppConfigService);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private status = inject(AppStatusService);
 
-  constructor(
-    private config: AppConfigService,
-    private status: AppStatusService,
-    private http: CadDataService,
-    private route: ActivatedRoute,
-    private message: MessageService
-  ) {}
+  params = signal<OpenCadOptions | undefined>(undefined);
 
   async ngOnInit() {
     let cachedData: any = null;
@@ -40,11 +39,11 @@ export class IndexComponent implements OnInit {
       if (Array.isArray(cachedData)) {
         cachedData = cachedData[0];
       }
-      this.params = {
+      this.params.set({
         data: new CadData(cachedData),
         collection: params.collection || "cad",
         center: true
-      };
+      });
     } else {
       const {id, ids, collection, errorMessage} = this.route.snapshot.queryParams;
       if (errorMessage) {
@@ -54,7 +53,7 @@ export class IndexComponent implements OnInit {
       if (cadQuery) {
         const data = await this.http.getData<HoutaiCad>("shuju/api/getOrSetCad", {...cadQuery, id});
         if (data) {
-          this.params = {data: new CadData(data.json), collection, center: true};
+          this.params.set({data: new CadData(data.json), collection, center: true});
         }
       } else {
         if ((id || ids) && collection) {
@@ -68,7 +67,7 @@ export class IndexComponent implements OnInit {
           getParams.collection = collection;
           const result = await this.http.getCad(getParams);
           if (result.cads.length > 0) {
-            this.params = {data: result.cads[0], collection, center: true};
+            this.params.set({data: result.cads[0], collection, center: true});
           }
         }
       }
