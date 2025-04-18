@@ -136,14 +136,8 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     }
   });
 
-  getOptionInputInfo2(data: any, key: string, style?: Properties, canSearch?: boolean) {
-    const info = getMenjiaoOptionInputInfo(
-      data,
-      key,
-      this.menjiaoOptions(),
-      () => this.lrsjStatus.menjiaoOptionsManager.fetch(true),
-      canSearch
-    );
+  getOptionInputInfo2(data: any, key: string, style?: Properties) {
+    const info = getMenjiaoOptionInputInfo(data, key, this.menjiaoOptions(), () => this.lrsjStatus.menjiaoOptionsManager.fetch(true));
     info.style = style;
     const onChange = info.onChange;
     info.onChange = (val: any, info2: any) => {
@@ -177,9 +171,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     const form1Group: InputInfo[] = [
       getInputInfoGroup(
         optionKeys.map((v) => {
-          const canSearchKeys: (keyof 算料数据)[] = ["锁边", "铰边"];
-          const canSearch = canSearchKeys.includes(v);
-          const info = this.getOptionInputInfo2(data, v, {}, canSearch);
+          const info = this.getOptionInputInfo2(data, v, {});
           let w: number;
           switch (v) {
             case "门铰":

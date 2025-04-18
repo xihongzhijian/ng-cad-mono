@@ -516,10 +516,10 @@ export class MrbcjfzComponent {
     const inputData = this.inputData();
     const isFromOrder = this.isFromOrder();
     if (inputData || !isFromOrder) {
-      if (Object.values(this.cads).some((v) => !v.selected)) {
+      if (Object.values(this.cads()).some((v) => !v.selected)) {
         errorMsg.push("有CAD未选择");
       }
-      if (Object.values(this.huajians).some((v) => !v.selected)) {
+      if (Object.values(this.huajians()).some((v) => !v.selected)) {
         errorMsg.push("有花件未选择");
       }
     }
