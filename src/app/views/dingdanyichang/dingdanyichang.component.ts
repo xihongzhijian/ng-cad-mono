@@ -1,13 +1,15 @@
-import {Component, HostBinding, QueryList, ViewChildren} from "@angular/core";
+import {AsyncPipe} from "@angular/common";
+import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, signal, viewChildren} from "@angular/core";
+import {toSignal} from "@angular/core/rxjs-interop";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {ActivatedRoute, Params} from "@angular/router";
-import {filePathUrl} from "@app/app.common";
+import {ActivatedRoute} from "@angular/router";
 import {WindowMessageManager} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {isEmpty} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -15,146 +17,83 @@ import {DingdanyichangData} from "./dingdanyichang.types";
 
 @Component({
   selector: "app-dingdanyichang",
-  imports: [InputComponent, MatButtonModule, NgScrollbarModule],
+  imports: [AsyncPipe, InputComponent, MatButtonModule, NgScrollbarModule],
   templateUrl: "./dingdanyichang.component.html",
-  styleUrl: "./dingdanyichang.component.scss"
+  styleUrl: "./dingdanyichang.component.scss",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DingdanyichangComponent extends Subscribed() {
+  private route = inject(ActivatedRoute);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+
   @HostBinding("class") class = "ng-page";
-  type = "";
-  inputInfos: InputInfo[] = [];
+
+  type = signal("");
+
+  queryParams = toSignal(this.route.queryParams);
+  queryParamsEff = effect(() => {
+    const params = this.queryParams() || {};
+    this.type.set(params.type || "");
+  });
+
   wmm = new WindowMessageManager("订单异常", this, window.parent);
-  formData: DingdanyichangData | null = null;
 
-  @ViewChildren(InputComponent) inputComponents?: QueryList<InputComponent>;
-
-  constructor(
-    route: ActivatedRoute,
-    private http: CadDataService,
-    private message: MessageService
-  ) {
-    super();
-    this.subscribe(route.queryParams, this.onQueryParamsChange.bind(this));
-  }
-
-  onQueryParamsChange(params: Params) {
-    this.type = params.type || "";
-    this.updateInputInfos();
-  }
-
-  async updateInputInfos() {
-    const {type} = this;
+  formData = computed(async () => {
     this.wmm.postMessage("getItemStart");
     const item = await this.wmm.waitForMessage<DingdanyichangData | undefined>("getItemEnd");
+    const data: DingdanyichangData = {dingdanbianhao: "", yichangxinxi: "", yichangtupian: "", yichangchuliren: "", ...item};
+    return data;
+  });
+
+  inputInfos = computed(async () => {
+    const type = this.type();
+    const data = await this.formData();
+    const getter = new InputInfoWithDataGetter(data);
+    let infos: InputInfo[];
     if (type === "报告异常") {
-      const data: DingdanyichangData = {dingdanbianhao: "", yichangxinxi: "", yichangtupian: "", yichangchuliren: "", ...item};
-      const infos: InputInfo<DingdanyichangData>[] = [
-        {
-          type: "string",
-          label: "订单编号",
-          model: {data, key: "dingdanbianhao"},
-          readonly: !!data.dingdanbianhao,
-          validators: Validators.required
-        },
-        {
-          type: "select",
+      infos = [
+        getter.string("dingdanbianhao", {label: "订单编号", readonly: !!data.dingdanbianhao, validators: Validators.required}),
+        getter.selectSingle("dingdanzhuangtai", [], {
           label: "订单状态",
-          model: {data, key: "dingdanzhuangtai"},
-          options: [],
           optionsDialog: {optionKey: "订单状态", info: {订单异常报告: true}},
           validators: Validators.required
-        },
-        {type: "string", label: "异常信息", model: {data, key: "yichangxinxi"}, textarea: {autosize: {minRows: 3, maxRows: 6}}},
-        {
-          type: "image",
-          label: "异常图片",
-          prefix: filePathUrl,
-          value: data.yichangtupian,
-          onChange: async (val, info) => {
-            if (val) {
-              const result = await this.http.uploadImage(val);
-              if (result) {
-                data.yichangtupian = result.url;
-                info.value = result.url;
-              }
-            } else {
-              data.yichangtupian = "";
-              info.value = "";
-            }
-          }
-        },
-        {
-          type: "select",
+        }),
+        getter.string("yichangxinxi", {label: "异常信息", textarea: {autosize: {minRows: 3, maxRows: 6}}}),
+        getter.image("yichangtupian", this.http, {label: "异常图片"}),
+        getter.selectSingle("yichangchuliren", [], {
           label: "异常处理人",
-          model: {data, key: "yichangchuliren"},
-          options: [],
           optionsDialog: {
             optionKey: "所有用户",
             nameField: "xingming"
           }
-        }
+        })
       ];
-      this.inputInfos = infos;
-      this.formData = data;
     } else if (type === "异常处理") {
-      const data: DingdanyichangData = {chulijieguo: "", chulishuoming: "", chulitupian: "", keyishendan: "", ...item};
-      const infos: InputInfo<DingdanyichangData>[] = [
-        {
-          type: "select",
-          label: "处理结果",
-          model: {data, key: "chulijieguo"},
-          options: ["已解决", "无法解决", "解决中"],
-          validators: Validators.required
-        },
-        {
-          type: "select",
-          label: "可以审单",
-          model: {data, key: "keyishendan"},
-          options: ["可以", "不可以"],
-          validators: Validators.required
-        },
-        {type: "string", label: "处理说明", model: {data, key: "chulishuoming"}, textarea: {autosize: {minRows: 3, maxRows: 6}}},
-        {
-          type: "image",
-          label: "处理图片",
-          prefix: filePathUrl,
-          value: data.chulitupian,
-          onChange: async (val, info) => {
-            if (val) {
-              const result = await this.http.uploadImage(val);
-              if (result) {
-                data.chulitupian = result.url;
-                info.value = result.url;
-              }
-            } else {
-              data.chulitupian = "";
-              info.value = "";
-            }
-          }
-        },
-        {
-          type: "select",
+      infos = [
+        getter.selectSingle("chulijieguo", ["已解决", "无法解决", "解决中"], {label: "处理结果", validators: Validators.required}),
+        getter.selectSingle("keyishendan", ["可以", "不可以"], {label: "可以审单", validators: Validators.required}),
+        getter.string("chulishuoming", {label: "处理说明", textarea: {autosize: {minRows: 3, maxRows: 6}}}),
+        getter.image("chulitupian", this.http, {label: "处理图片"}),
+        getter.selectSingle("yichangchuliren", [], {
           label: "异常处理人",
-          model: {data, key: "yichangchuliren"},
-          options: [],
           optionsDialog: {
             optionKey: "所有用户",
             nameField: "xingming"
           }
-        }
+        })
       ];
-      this.inputInfos = infos;
-      this.formData = data;
     } else {
-      this.inputInfos = [];
+      infos = [];
     }
-  }
+    return infos;
+  });
 
+  inputComponents = viewChildren(InputComponent);
   close(submit: boolean) {
-    const {inputComponents} = this;
-    if (submit && inputComponents) {
+    if (submit) {
       let hasError = false;
-      for (const input of inputComponents) {
+      for (const input of this.inputComponents()) {
         const errors = input.validateValue();
         if (!isEmpty(errors)) {
           hasError = true;

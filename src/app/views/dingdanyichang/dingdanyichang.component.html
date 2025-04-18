@@ -3,7 +3,7 @@
   <button mat-flat-button (click)="close(false)">取消</button>
 </div>
 <ng-scrollbar>
-  @for (info of inputInfos; track $index) {
+  @for (info of inputInfos() | async; track $index) {
     <app-input [info]="info"></app-input>
   }
 </ng-scrollbar>
