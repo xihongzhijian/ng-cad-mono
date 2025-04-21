@@ -457,10 +457,11 @@ export class CadOptionsComponent implements AfterViewInit {
     if (checkedItems.some((v) => v.vid === item.vid)) {
       checkedItems = differenceWith(checkedItems, [item], (a, b) => a.vid === b.vid);
     } else {
-      if (!multi) {
-        checkedItems = differenceWith(checkedItems, items, (a, b) => a.vid === b.vid);
+      if (multi) {
+        checkedItems = unionWith(checkedItems, [item], (a, b) => a.vid === b.vid);
+      } else {
+        checkedItems = [item];
       }
-      checkedItems = unionWith(checkedItems, [item], (a, b) => a.vid === b.vid);
     }
     this.checkedItems.set(checkedItems);
   }

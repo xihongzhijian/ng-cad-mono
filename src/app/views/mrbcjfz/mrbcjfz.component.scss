@@ -1,6 +1,6 @@
 :host {
   padding: 20px;
-  --active-color: lightgray;
+  --active-color: var(--mat-sys-outline-variant);
   --cad-image-width: 200px;
   --cad-image-height: 100px;
   --item-image-height: 100px;
