@@ -1,4 +1,5 @@
-import {AfterViewInit, Component, ViewChild} from "@angular/core";
+import {AfterViewInit, ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, signal, viewChild} from "@angular/core";
+import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -8,13 +9,12 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Params} from "@angular/router";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadData} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
-import {AppStatusService} from "@services/app-status.service";
 import {NgScrollbar} from "ngx-scrollbar";
 import {lastValueFrom} from "rxjs";
 import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner.component";
@@ -51,45 +51,43 @@ export interface BackupCadsData {
     MatPaginatorModule,
     NgScrollbar,
     SpinnerComponent
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BackupComponent implements AfterViewInit {
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private spinner = inject(SpinnerService);
+
+  @HostBinding("class") class = "ng-page";
+
   data: BackupCadsData[] = [];
   loaderId = "backupLoader";
-  searchParams: BackupCadsSearchParams = {name: "", time: -1, limit: 20, offset: 0};
   searchTime = new Date();
   cadsCount = 100;
   pageSizeOptions = [20, 50, 100, 200, 500];
-  cads: CadData[] = [];
-  @ViewChild("paginator", {read: MatPaginator}) paginator!: MatPaginator;
   minTime = new Date();
   maxTime = new Date();
 
-  constructor(
-    private message: MessageService,
-    private http: CadDataService,
-    private route: ActivatedRoute,
-    private spinner: SpinnerService,
-    private status: AppStatusService
-  ) {
-    (async () => {
-      const {id, collection} = this.route.snapshot.queryParams;
-      if (id && collection) {
-        this.spinner.show(this.loaderId, {text: "正在获取数据"});
-        const cads = (await this.http.getCad({id, collection})).cads;
-        this.spinner.hide(this.loaderId);
-        if (cads.length > 0) {
-          const cad = cads[0];
-          this.searchParams.name = cad.name;
-          this.search();
-        }
+  queryParams = toSignal(this.route.queryParams, {initialValue: {} as Params});
+  queryParamsEff = effect(async () => {
+    const {id, collection} = this.queryParams();
+    if (id && collection) {
+      const cads = (await this.http.getCad({id, collection}, {spinner: {id: this.loaderId, config: {text: "正在获取数据"}}})).cads;
+      if (cads.length > 0) {
+        const cad = cads[0];
+        this.searchParams.update((v) => ({...v, name: cad.name}));
+        this.search();
       }
-    })();
-  }
+    }
+  });
 
+  paginator = viewChild.required(MatPaginator);
   async ngAfterViewInit() {
-    await lastValueFrom(this.paginator.initialized);
-    this.paginator.nextPage();
+    const paginator = this.paginator();
+    await lastValueFrom(paginator.initialized);
+    paginator.nextPage();
   }
 
   async getBackupCads(search: BackupCadsSearchParams) {
@@ -106,18 +104,21 @@ export class BackupComponent implements AfterViewInit {
 
   changePage(event: PageEvent) {
     const {pageIndex, pageSize} = event;
-    this.searchParams.offset = pageIndex * pageSize;
+    this.searchParams.update((v) => ({...v, offset: pageIndex * pageSize}));
     this.getData();
   }
 
+  searchInputInfos = computed(() => {});
+
+  searchParams = signal<BackupCadsSearchParams>({name: "", time: -1, limit: 20, offset: 0});
+  cads = signal<CadData[]>([]);
   search() {
-    this.searchParams.offset = 0;
-    this.paginator.pageIndex = 0;
+    this.searchParams.update((v) => ({...v, offset: 0}));
+    this.paginator().pageIndex = 0;
     this.getData();
   }
-
   async getData() {
-    this.searchParams.time = this.searchTime.getTime();
+    this.searchParams.update((v) => ({...v, time: this.searchTime.getTime()}));
     const result = await this.http.getDataAndCount<BackupCadsResult>("peijian/cad/getBackupCads", this.searchParams, {
       spinner: {id: this.loaderId, config: {text: "正在获取数据"}}
     });
