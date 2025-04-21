@@ -103,7 +103,7 @@
     "axios": "^1.8.4",
     "compressing": "^1.10.1",
     "cypress": "^14.3.1",
-    "eslint": "^9.24.0",
+    "eslint": "^9.25.1",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-jsdoc": "50.6.9",
     "eslint-plugin-prettier": "^5.2.6",
