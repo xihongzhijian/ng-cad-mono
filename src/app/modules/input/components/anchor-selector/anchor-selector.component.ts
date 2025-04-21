@@ -1,9 +1,21 @@
-import {AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  HostListener,
+  input,
+  output,
+  signal,
+  viewChild
+} from "@angular/core";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {MatOptionModule} from "@angular/material/core";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {Point} from "@lucilor/utils";
+import {Properties} from "csstype";
 import {clamp} from "lodash";
 
 export interface AnchorEvent {
@@ -14,51 +26,61 @@ export interface AnchorEvent {
   selector: "app-anchor-selector",
   templateUrl: "./anchor-selector.component.html",
   styleUrls: ["./anchor-selector.component.scss"],
-  imports: [MatFormFieldModule, MatInputModule, MatAutocompleteModule, MatOptionModule]
+  imports: [MatAutocompleteModule, MatFormFieldModule, MatInputModule, MatOptionModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnchorSelectorComponent implements AfterViewInit {
-  @Input() x = 0;
-  @Input() y = 0;
-  @Input() pointerSize = 10;
-  @Input() backgroundSize = 100;
-  @Output() anchorChange = new EventEmitter<AnchorEvent>();
-  @Output() anchorChangeEnd = new EventEmitter<AnchorEvent>();
-  @ViewChild("pointer", {read: ElementRef}) pointer?: ElementRef<HTMLDivElement>;
-  @ViewChild("background", {read: ElementRef}) background?: ElementRef<HTMLDivElement>;
+export class AnchorSelectorComponent {
+  xIn = input(0, {alias: "x"});
+  yIn = input(0, {alias: "y"});
+  pointerSize = input(10);
+  backgroundSize = input(100);
+  anchorChange = output<AnchorEvent>();
+  anchorChangeEnd = output<AnchorEvent>();
+
+  x = signal(0);
+  xEff = effect(() => this.x.set(clamp(this.xIn(), 0, 1)));
+  y = signal(0);
+  yEff = effect(() => this.y.set(clamp(this.yIn(), 0, 1)));
+
+  backgroundStyle = computed<Properties>(() => {
+    const size = this.backgroundSize();
+    return {width: size + "px", height: size + "px"};
+  });
+  pointerStyle = computed<Properties>(() => {
+    const size = this.pointerSize();
+    const sizeBg = this.backgroundSize();
+    const left = this.x() * sizeBg;
+    const top = this.y() * sizeBg;
+    return {width: size + "px", height: size + "px", left: left + "px", top: top + "px"};
+  });
+
+  pointer = viewChild<ElementRef<HTMLElement>>("pointer");
+  background = viewChild<ElementRef<HTMLElement>>("background");
 
   dragging = false;
   pointerPosition: Point | null = null;
 
-  get left() {
-    return this.x * this.backgroundSize + "px";
-  }
-  get top() {
-    return this.y * this.backgroundSize + "px";
-  }
-
-  ngAfterViewInit() {
-    this.x = clamp(this.x, 0, 1);
-    this.y = clamp(this.y, 0, 1);
-  }
-
   @HostListener("window:pointerdown", ["$event"])
   onDragStarted(event: PointerEvent) {
-    if (event.target === this.pointer?.nativeElement) {
+    if (event.target === this.pointer()?.nativeElement) {
       this.dragging = true;
     }
   }
 
   @HostListener("window:pointermove", ["$event"])
   onDragMoved(event: PointerEvent) {
-    if (this.dragging && this.background) {
+    const background = this.background()?.nativeElement;
+    if (this.dragging && background) {
       const {clientX, clientY} = event;
-      const rect = this.background.nativeElement.getBoundingClientRect();
-      const backgroundSize = this.backgroundSize;
-      const x = clamp(clientX - rect.x, 0, backgroundSize);
-      const y = clamp(clientY - rect.y, 0, backgroundSize);
-      this.x = Number((x / backgroundSize).toFixed(2));
-      this.y = Number((y / backgroundSize).toFixed(2));
-      this.anchorChange.emit({anchor: [this.x, this.y]});
+      const rect = background.getBoundingClientRect();
+      const backgroundSize = this.backgroundSize();
+      let x = clamp(clientX - rect.x, 0, backgroundSize);
+      let y = clamp(clientY - rect.y, 0, backgroundSize);
+      x = Number((x / backgroundSize).toFixed(2));
+      y = Number((y / backgroundSize).toFixed(2));
+      this.x.set(x);
+      this.y.set(y);
+      this.anchorChange.emit({anchor: [x, y]});
     }
   }
 
@@ -66,7 +88,7 @@ export class AnchorSelectorComponent implements AfterViewInit {
   @HostListener("window:pointerleave")
   onDragEnded() {
     if (this.dragging) {
-      this.anchorChangeEnd.emit({anchor: [this.x, this.y]});
+      this.anchorChangeEnd.emit({anchor: [this.x(), this.y()]});
       this.dragging = false;
     }
   }
@@ -79,11 +101,13 @@ export class AnchorSelectorComponent implements AfterViewInit {
       value = Number((event.target as HTMLInputElement).value);
     }
     if (axis === "x") {
-      this.x = value;
+      this.x.set(value);
     } else if (axis === "y") {
-      this.y = value;
+      this.y.set(value);
     }
-    this.anchorChange.emit({anchor: [this.x, this.y]});
-    this.anchorChangeEnd.emit({anchor: [this.x, this.y]});
+    const x = this.x();
+    const y = this.y();
+    this.anchorChange.emit({anchor: [x, y]});
+    this.anchorChangeEnd.emit({anchor: [x, y]});
   }
 }
