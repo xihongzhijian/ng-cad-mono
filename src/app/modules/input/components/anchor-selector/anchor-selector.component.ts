@@ -4,6 +4,7 @@ import {
   computed,
   effect,
   ElementRef,
+  HostBinding,
   HostListener,
   input,
   output,
@@ -36,6 +37,8 @@ export class AnchorSelectorComponent {
   backgroundSize = input(100);
   anchorChange = output<AnchorEvent>();
   anchorChangeEnd = output<AnchorEvent>();
+
+  @HostBinding("class") class = "item";
 
   x = signal(0);
   xEff = effect(() => this.x.set(clamp(this.xIn(), 0, 1)));
