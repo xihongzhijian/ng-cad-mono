@@ -320,7 +320,7 @@ export class CadDimensionComponent implements OnInit, OnDestroy {
   async editAllDimensions() {
     const dimension0 = new CadDimensionLinear();
     const keys: OpenCadDimensionFormKey[] = ["字体大小"];
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     const cad = this.status.cad;
     const result = await openCadDimensionForm(collection, this.message, cad, dimension0, keys);
     if (result) {

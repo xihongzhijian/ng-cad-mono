@@ -393,7 +393,7 @@ export class CadConsoleComponent {
       }
       const cad = this.status.cad;
       let checkedItems: string[];
-      if (collection === this.status.collection$.value) {
+      if (collection === this.status.collection()) {
         checkedItems = [cad.data.id];
       } else {
         checkedItems = [];

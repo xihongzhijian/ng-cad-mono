@@ -128,7 +128,7 @@ export class PiliangjianbanComponent implements OnInit {
         backgroundColor: "white",
         fontStyle: {family: "宋体"}
       };
-      const collection = this.status.collection$.value;
+      const collection = this.status.collection();
       const getImg = async (data: CadData) => await getCadPreview(collection, data, {fixedLengthTextSize, config});
       await Promise.all(dataAll.map(async (v) => (v.img = await getImg(v.cad))));
       this.spinner.hide(this.spinner.defaultLoaderId);

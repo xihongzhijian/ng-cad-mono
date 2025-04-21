@@ -295,7 +295,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         text: {size: 36}
       }
     };
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     let tmpCadViewer: CadViewer | undefined;
     const getImg = async (data: CadData, previewParams: Partial<CadPreviewParams>) => {
       const previewParams2: CadPreviewParams = {

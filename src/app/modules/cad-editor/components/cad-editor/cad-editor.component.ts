@@ -423,7 +423,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     await this.status.updateCadTotalLength();
   };
   private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (_, entity) => {
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     const cad = this.status.cad;
     const gongshis = this.status.openCadOptions().gongshis;
     if (entity instanceof CadMtext && entity.parent instanceof CadLineLike) {
