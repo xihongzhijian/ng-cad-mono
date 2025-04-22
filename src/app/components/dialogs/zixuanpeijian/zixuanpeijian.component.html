@@ -1,14 +1,14 @@
 <div class="toolbar right">
-  <button mat-flat-button (click)="submit()">{{ summitBtnText }}</button>
+  <button mat-flat-button (click)="submit()">{{ summitBtnText() }}</button>
   <button mat-flat-button (click)="cancel()">取消</button>
 </div>
 
 <div class="flex-row flex-110 scrollbar-container">
-  @switch (step$.value.value) {
+  @switch (step().value) {
     @case (1) {
       <div class="step-1 flex-row flex-110">
         <div class="types-buttons">
-          @for (item of typesInfo | keyvalue: returnZero; track $index) {
+          @for (item of typesInfo() | keyvalue: returnZero; track $index) {
             @if (typesInfoType1[item.key] && !typesInfoType1[item.key].hidden) {
               <div>
                 <button #typesButton mat-flat-button [class.accent]="type1 === item.key" (click)="setTypesInfo1(item.key)">
@@ -21,9 +21,9 @@
         <div class="flex-column flex-110">
           <app-input [info]="searchMokuaiInputInfo"></app-input>
           <ng-scrollbar>
-            @if (typesInfo[type1]) {
+            @if (typesInfo()[type1]; as info) {
               <div class="types-info-items flex-row flex-110">
-                @for (item of typesInfo[type1] | keyvalue: returnZero; track $index) {
+                @for (item of info | keyvalue: returnZero; track $index) {
                   @if (!item.value.hidden) {
                     <div class="types-info-item">
                       <div class="images flex-row flex-110">
