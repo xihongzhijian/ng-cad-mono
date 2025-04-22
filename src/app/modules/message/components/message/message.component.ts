@@ -218,7 +218,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (data.type !== "form") {
       return;
     }
-    console.log(data);
     this.form.set(data.form);
   });
   refreshForm() {
