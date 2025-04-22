@@ -233,6 +233,7 @@ export class CadDimensionComponent implements OnInit, OnDestroy {
       if (dimension2) {
         await this.status.cad.render(dimension2);
         this.status.highlightDimensions([dimension2]);
+        this.dimensions.update((v) => [...v]);
       }
     }
   }

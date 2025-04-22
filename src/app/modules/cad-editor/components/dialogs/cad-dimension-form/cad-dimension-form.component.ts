@@ -1,162 +1,117 @@
-import {Component, HostBinding, Inject} from "@angular/core";
-import {AbstractControl, FormsModule, ReactiveFormsModule, ValidatorFn} from "@angular/forms";
+import {ChangeDetectionStrategy, Component, computed, HostBinding, Inject, viewChildren} from "@angular/core";
+import {AbstractControl, ValidatorFn} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MatOptionModule} from "@angular/material/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatInputModule} from "@angular/material/input";
-import {MatSelectModule} from "@angular/material/select";
-import {MatSlideToggleChange, MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {getFormControl, getFormGroup, TypedFormGroup} from "@app/app.common";
-import {cadDimensionOptions} from "@app/cad/options";
+import {cadDimensionOptions, cadOptions} from "@app/cad/options";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
-import {CadDimensionLinear, FontStyle} from "@lucilor/cad-viewer";
+import {CadDimensionLinear} from "@lucilor/cad-viewer";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
+import {validateForm} from "@modules/message/components/message/message.utils";
+import {isEmpty} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 
 export interface CadDimensionData {
   data: CadDimensionLinear;
 }
 
-export interface CadDimensionForm {
-  mingzi: CadDimensionLinear["mingzi"];
-  xianshigongshiwenben: CadDimensionLinear["xianshigongshiwenben"];
-  qujian: CadDimensionLinear["qujian"];
-  e1Location: CadDimensionLinear["entity1"]["location"];
-  e2Location: CadDimensionLinear["entity2"]["location"];
-  axis: CadDimensionLinear["axis"];
-  ref: CadDimensionLinear["ref"];
-  distance: CadDimensionLinear["distance"];
-  fontSize: Required<FontStyle>["size"];
-  cad1: CadDimensionLinear["cad1"];
-  cad2: CadDimensionLinear["cad2"];
-  quzhifanwei: CadDimensionLinear["quzhifanwei"];
-  hideDimLines: CadDimensionLinear["hideDimLines"];
-  xiaoshuchuli: CadDimensionLinear["xiaoshuchuli"];
-  算料单缩放标注文字: CadDimensionLinear["算料单缩放标注文字"];
-  活动标注显示扣数: CadDimensionLinear["活动标注显示扣数"];
-}
-
 @Component({
   selector: "app-cad-dimension-form",
   templateUrl: "./cad-dimension-form.component.html",
   styleUrls: ["./cad-dimension-form.component.scss"],
-  imports: [
-    FormsModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatOptionModule,
-    MatSelectModule,
-    MatSlideToggleModule,
-    NgScrollbar,
-    ReactiveFormsModule
-  ]
+  imports: [InputComponent, MatButtonModule, NgScrollbar],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadDimensionFormComponent {
   @HostBinding("class") class = "ng-page";
 
-  form: TypedFormGroup<CadDimensionForm>;
-  dimension: CadDimensionLinear;
-  cadDimensionOptions = cadDimensionOptions;
+  dimensionPrev: CadDimensionLinear;
+  dimensionCurr: CadDimensionLinear;
 
   constructor(
     public dialogRef: MatDialogRef<CadDimensionFormComponent, CadDimensionLinear>,
     @Inject(MAT_DIALOG_DATA) public data: CadDimensionData
   ) {
     const dimension = this.data.data || new CadDimensionLinear();
-    this.dimension = dimension;
-    this.form = getFormGroup<CadDimensionForm>({
-      mingzi: getFormControl(dimension.mingzi),
-      xianshigongshiwenben: getFormControl(dimension.xianshigongshiwenben),
-      qujian: getFormControl(dimension.qujian, {validators: this.qujianValidator()}),
-      e1Location: getFormControl(dimension.entity1.location),
-      e2Location: getFormControl(dimension.entity2.location),
-      axis: getFormControl(dimension.axis),
-      ref: getFormControl<CadDimensionLinear["ref"]>(dimension.ref),
-      distance: getFormControl(dimension.distance),
-      fontSize: getFormControl(dimension.style.text?.size || 0),
-      cad1: getFormControl({value: dimension.cad1, disabled: true}),
-      cad2: getFormControl({value: dimension.cad2, disabled: true}),
-      quzhifanwei: getFormControl(dimension.quzhifanwei),
-      hideDimLines: getFormControl(dimension.hideDimLines),
-      xiaoshuchuli: getFormControl(dimension.xiaoshuchuli),
-      算料单缩放标注文字: getFormControl(dimension.算料单缩放标注文字),
-      活动标注显示扣数: getFormControl(dimension.活动标注显示扣数)
-    });
+    this.dimensionPrev = dimension;
+    this.dimensionCurr = dimension.clone();
   }
 
-  submit() {
-    if (this.form.untouched) {
-      this.form.markAllAsTouched();
-    }
-    if (this.form.valid) {
-      const value = this.form.value as Required<CadDimensionFormComponent["form"]["value"]>;
-      const dimension = this.dimension;
-      dimension.mingzi = value.mingzi;
-      dimension.xianshigongshiwenben = value.xianshigongshiwenben;
-      dimension.qujian = value.qujian;
-      dimension.entity1.location = value.e1Location;
-      dimension.entity2.location = value.e2Location;
-      dimension.axis = value.axis;
-      dimension.distance = value.distance;
-      dimension.setStyle({text: {size: value.fontSize}});
-      dimension.ref = value.ref;
-      dimension.quzhifanwei = value.quzhifanwei;
-      dimension.hideDimLines = value.hideDimLines;
-      dimension.xiaoshuchuli = value.xiaoshuchuli;
-      dimension.算料单缩放标注文字 = value.算料单缩放标注文字;
-      dimension.活动标注显示扣数 = value.活动标注显示扣数;
-      this.dialogRef.close(dimension);
-    } else {
-      this.form.controls.qujian.updateValueAndValidity();
-    }
-  }
-
-  cancel() {
-    this.dialogRef.close();
-  }
-
+  cadDimensionOptions = cadDimensionOptions;
   mqValidator(): ValidatorFn {
     return () => {
-      if (!this.form) {
-        return null;
-      }
-      const controls = this.form.controls;
-      if (controls.qujian.value || controls.mingzi.value) {
+      const dimension = this.dimensionCurr;
+      if (dimension.qujian || dimension.mingzi) {
         return null;
       }
       return {mqNull: "区间和名字不能同时为空"};
     };
   }
-
   qujianValidator(): ValidatorFn {
     return (control: AbstractControl) => {
       const err = {qujian: "区间应有且仅有一个~或-，且该符号不位于开头或结尾。"};
       return !control.value || control.value.match(/^[^-~]+(-|~)[^-~]+$/) ? null : err;
     };
   }
+  inputInfos = computed(() => {
+    const dimension = this.dimensionCurr;
+    const getter = new InputInfoWithDataGetter(dimension, {clearable: true});
+    const getter2 = new InputInfoWithDataGetter(dimension.entity1, {clearable: true});
+    const getter3 = new InputInfoWithDataGetter(dimension.entity2, {clearable: true});
+    const nameInput = getter.string("mingzi", {
+      label: "名字",
+      validators: this.mqValidator(),
+      onChange: () => {
+        qujianInput.forceValidateNum = (qujianInput.forceValidateNum || 0) + 1;
+      }
+    });
+    const qujianInput = getter.string("qujian", {
+      label: "区间",
+      validators: [this.mqValidator(), this.qujianValidator()],
+      onChange: () => {
+        nameInput.forceValidateNum = (nameInput.forceValidateNum || 0) + 1;
+      }
+    });
+    const infos: InputInfo[] = [
+      nameInput,
+      getter.string("活动标注显示扣数"),
+      getter.string("xianshigongshiwenben", {label: "显示公式文本"}),
+      qujianInput,
+      getter.string("cad1", {label: "CAD1", readonly: true}),
+      getter.string("cad2", {label: "CAD2", readonly: true}),
+      getter2.selectSingle("location", cadDimensionOptions.location.values, {label: "线1位置"}),
+      getter3.selectSingle("location", cadDimensionOptions.location.values, {label: "线2位置"}),
+      getter.selectSingle("axis", cadOptions.axis.values, {label: "方向"}),
+      getter.selectSingle("ref", cadDimensionOptions.ref.values),
+      getter.number("distance", {label: "距离"}),
+      {
+        type: "number",
+        label: "字体大小",
+        value: dimension.style.text?.size,
+        onChange: (val) => {
+          dimension.setStyle({text: {size: val}});
+        }
+      },
+      getter.string("quzhifanwei", {label: "取值范围"}),
+      getter.boolean("hideDimLines", {label: "隐藏尺寸线", appearance: "checkbox"}),
+      getter.selectSingle("xiaoshuchuli", cadDimensionOptions.xiaoshuchuli.values, {label: "小数处理"}),
+      getter.boolean("算料单缩放标注文字")
+    ];
+    return infos;
+  });
 
-  checkMqNull() {
-    const controls = this.form.controls;
-    if (controls.mingzi.hasError("mqNull")) {
-      return controls.mingzi.errors?.mqNull;
+  inputComponents = viewChildren(InputComponent);
+  async submit() {
+    const result = validateForm(this.inputComponents());
+    if (isEmpty((await result).errors)) {
+      Object.assign(this.dimensionPrev, this.dimensionCurr);
+      this.dialogRef.close(this.dimensionPrev);
     }
-    if (controls.qujian.hasError("mqNull")) {
-      return controls.qujian.errors?.mqNull;
-    }
-    return "";
   }
 
-  checkQujian() {
-    return this.form.controls.qujian.errors?.qujian;
-  }
-
-  getHideDimLines() {
-    return this.form.controls.hideDimLines.value;
-  }
-
-  setHideDimLines(event: MatSlideToggleChange) {
-    this.form.controls.hideDimLines.setValue(event.checked);
+  cancel() {
+    this.dialogRef.close();
   }
 }
 
