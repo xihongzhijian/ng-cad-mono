@@ -12,12 +12,9 @@ import {
   HostBinding,
   inject,
   input,
-  KeyValueDiffer,
   KeyValueDiffers,
-  OnChanges,
   output,
   signal,
-  SimpleChanges,
   viewChild,
   viewChildren
 } from "@angular/core";
@@ -100,7 +97,7 @@ import {parseObjectString} from "./input.utils";
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InputComponent extends Utils() implements AfterViewInit, OnChanges, DoCheck {
+export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
   private dialog = inject(MatDialog);
   private differs = inject(KeyValueDiffers);
   private elRef = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -116,8 +113,8 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   blur = output<FocusEvent>();
   click = output<MouseEvent>();
 
-  infoDiffer: KeyValueDiffer<keyof InputInfo, ValueOf<InputInfo>>;
-  modelDataDiffer: KeyValueDiffer<keyof InputInfo["model"], ValueOf<InputInfo["model"]>>;
+  infoDiffer = this.differs.find({}).create<keyof InputInfo, ValueOf<InputInfo>>();
+  modelDataDiffer = this.differs.find({}).create<keyof InputInfo["model"], ValueOf<InputInfo["model"]>>();
   onChangeDelayTime = 200;
   onChangeDelay: {timeoutId: number} | null = null;
   cadInfos: {id: string; name: string; val: any}[] = [];
@@ -127,7 +124,12 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
   inputComponents = viewChildren(InputComponent);
 
   info = signal<InputInfo>({type: "string", label: ""});
-  infoEff = effect(() => this.info.set({...this.infoIn()}));
+  infoInEff = effect(() => {
+    this.infoDiffer = this.differs.find(this.infoIn()).create();
+  });
+  infoEff = effect(() => {
+    this.modelDataDiffer = this.differs.find(this.model.data).create();
+  });
 
   get el() {
     return this.elRef.nativeElement;
@@ -315,8 +317,6 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
         this.filteredOptions$.next(this._filterOptions(val, this.options));
       }
     });
-    this.infoDiffer = this.differs.find({}).create();
-    this.modelDataDiffer = this.differs.find({}).create();
   }
 
   async ngAfterViewInit() {
@@ -333,22 +333,11 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
       const {r, g, b, a} = colorChrome.rgb;
       this.setColor(new Color([r, g, b, a]));
     }
-    this.infoDiffer = this.differs.find(this.infoIn()).create();
-    this.modelDataDiffer = this.differs.find(this.model.data).create();
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.infoIn) {
-      this.infoDiffer = this.differs.find(this.infoIn()).create();
-      this.modelDataDiffer = this.differs.find(this.model.data).create();
-    }
   }
 
   ngDoCheck() {
     const infoChanges = this.infoDiffer.diff(this.infoIn());
-    if (infoChanges) {
-      this._onInfoChange(infoChanges);
-    }
+    this._onInfoChange(infoChanges);
     const modelDataChanges = this.modelDataDiffer.diff(this.model.data);
     if (modelDataChanges) {
       this.updateDisplayValue();
@@ -486,7 +475,10 @@ export class InputComponent extends Utils() implements AfterViewInit, OnChanges,
     return {isErrorState: () => !this.isValidValue(key)};
   }
 
-  private async _onInfoChange(changes: NonNullable<ReturnType<typeof this.infoDiffer.diff>>) {
+  private async _onInfoChange(changes: ReturnType<typeof this.infoDiffer.diff>) {
+    if (!changes) {
+      return;
+    }
     const info = this.infoIn();
     if (!info.autocomplete) {
       info.autocomplete = "on";

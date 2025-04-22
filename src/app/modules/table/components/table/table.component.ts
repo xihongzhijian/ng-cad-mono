@@ -7,18 +7,16 @@ import {
   Component,
   computed,
   DoCheck,
+  effect,
   ElementRef,
   forwardRef,
   HostBinding,
   inject,
   input,
   KeyValueChanges,
-  KeyValueDiffer,
   KeyValueDiffers,
-  OnChanges,
   output,
   signal,
-  SimpleChanges,
   viewChild,
   viewChildren
 } from "@angular/core";
@@ -90,7 +88,7 @@ import {getInputInfosFromTableColumns} from "./table.utils";
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
+export class TableComponent<T> implements AfterViewInit, DoCheck {
   private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
   private differs = inject(KeyValueDiffers);
@@ -99,7 +97,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
   @HostBinding("class") class: string | string[] | undefined;
 
-  info = input<TableRenderInfo<T>>({data: [], columns: []});
+  infoIn = input.required<TableRenderInfo<T>>({alias: "info"});
   rowButtonClick = output<RowButtonEvent<T>>();
   rowSelectionChange = output<RowSelectionChange<T>>();
   cellFocus = output<CellEvent<T>>();
@@ -109,11 +107,16 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
   toolbarButtonClick = output<ToolbarButtonEvent>();
   filterAfter = output<FilterAfterEvent<T>>();
 
-  protected _rowSelection: SelectionModel<T>;
+  info = signal<TableRenderInfo<T>>({data: [], columns: []});
+  infoInEff = effect(() => {
+    this.infoDiffer = this.differs.find(this.infoIn()).create();
+  });
+
+  protected _rowSelection = new SelectionModel<T>(false, []);
   columnFields: (keyof T | "select")[] = [];
   table = viewChild<MatTable<T>>(MatTable);
   sort = viewChild(MatSort);
-  private infoDiffer: KeyValueDiffer<string, any>;
+  private infoDiffer = this.differs.find({}).create<InfoKey, any>();
   treeControl = new FlatTreeControl<any>(
     (node) => node.level,
     (node) => node.expandable
@@ -192,10 +195,6 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     return this.info().data.length > 0;
   });
 
-  constructor() {
-    this.infoDiffer = this.differs.find(this.info()).create();
-    this._rowSelection = this._initRowSelection();
-  }
   private _rowSelectionSubscription?: Subscription;
   private _initRowSelection() {
     this._rowSelectionSubscription?.unsubscribe();
@@ -217,14 +216,8 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     }
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.info) {
-      this.infoDiffer = this.differs.find(this.info()).create();
-    }
-  }
-
   ngDoCheck() {
-    const changes = this.infoDiffer.diff(this.info()) as KeyValueChanges<InfoKey, any>;
+    const changes = this.infoDiffer.diff(this.infoIn()) as KeyValueChanges<InfoKey, any> | null;
     if (changes) {
       this.infoChanged(changes);
     }
@@ -244,7 +237,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
 
     this.filterInputInfosFlag.update((v) => v + 1);
 
-    const info = this.info();
+    const info = this.infoIn();
     if (intersection<InfoKey>(changedKeys, ["columns", "rowSelection"]).length > 0) {
       this.columnFields = [...info.columns.filter((v) => !v.hidden).map((v) => v.field)];
       const rowSelection = info.rowSelection;
@@ -272,6 +265,7 @@ export class TableComponent<T> implements AfterViewInit, OnChanges, DoCheck {
     if (intersection<InfoKey>(changedKeys, ["columns"]).length > 0) {
       this.updateCellInputInfos();
     }
+    this.info.set({...info});
   }
 
   get filteredData() {

@@ -428,7 +428,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
 
   getSuanliaoTables(key1: MenjiaoCadType) {
     return this.suanliaoTablesList().find((v) => {
-      const {包边方向, 开启} = v.suanliaoDataParams.选项;
+      const {包边方向, 开启} = v.suanliaoDataParams().选项;
       return key1 === `${包边方向}+${开启}`;
     });
   }
