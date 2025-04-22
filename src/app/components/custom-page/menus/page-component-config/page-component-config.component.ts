@@ -1,6 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, transferArrayItem} from "@angular/cdk/drag-drop";
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, inject, signal} from "@angular/core";
+import {Component, computed, inject, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
@@ -34,8 +34,7 @@ import {PageStatusService} from "../../services/page-status.service";
     TypedTemplateDirective
   ],
   templateUrl: "./page-component-config.component.html",
-  styleUrl: "./page-component-config.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./page-component-config.component.scss"
 })
 export class PageComponentConfigComponent {
   private pageStatus = inject(PageStatusService);

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, input, signal, viewChild} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, input, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {XhmrmsbjSbjbItem} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -14,8 +14,7 @@ import {getMenfengPeizhiBatchReplaceTableInfo, getMenfengPeizhiTableInfo} from "
   selector: "app-menfeng-peizhi",
   imports: [FloatingDialogModule, MatButtonModule, TableComponent],
   templateUrl: "./menfeng-peizhi.component.html",
-  styleUrl: "./menfeng-peizhi.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./menfeng-peizhi.component.scss"
 })
 export class MenfengPeizhiComponent {
   private http = inject(CadDataService);

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from "@angular/core";
+import {Component, inject, OnInit, signal} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {CadData} from "@lucilor/cad-viewer";
 import {log} from "@lucilor/utils";
@@ -14,8 +14,7 @@ import {CadEditorComponent} from "../../modules/cad-editor/components/cad-editor
   selector: "app-index",
   templateUrl: "./index.component.html",
   styleUrls: ["./index.component.scss"],
-  imports: [CadEditorComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [CadEditorComponent]
 })
 export class IndexComponent implements OnInit {
   private config = inject(AppConfigService);

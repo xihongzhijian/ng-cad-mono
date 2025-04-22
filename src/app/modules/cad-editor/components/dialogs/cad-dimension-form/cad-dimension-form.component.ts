@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, Inject, viewChildren} from "@angular/core";
+import {Component, computed, HostBinding, Inject, viewChildren} from "@angular/core";
 import {AbstractControl, ValidatorFn} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -20,8 +20,7 @@ export interface CadDimensionData {
   selector: "app-cad-dimension-form",
   templateUrl: "./cad-dimension-form.component.html",
   styleUrls: ["./cad-dimension-form.component.scss"],
-  imports: [InputComponent, MatButtonModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent, MatButtonModule, NgScrollbar]
 })
 export class CadDimensionFormComponent {
   @HostBinding("class") class = "ng-page";

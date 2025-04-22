@@ -1,12 +1,11 @@
-import {ChangeDetectionStrategy, Component, HostBinding, input} from "@angular/core";
+import {Component, HostBinding, input} from "@angular/core";
 import {TextInfo} from "./text-info.types";
 
 @Component({
   selector: "app-text-info",
   imports: [],
   templateUrl: "./text-info.component.html",
-  styleUrl: "./text-info.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./text-info.component.scss"
 })
 export class TextInfoComponent {
   @HostBinding("class") class = "ng-page";

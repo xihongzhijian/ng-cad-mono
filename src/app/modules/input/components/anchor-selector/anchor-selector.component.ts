@@ -1,16 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  HostBinding,
-  HostListener,
-  input,
-  output,
-  signal,
-  viewChild
-} from "@angular/core";
+import {Component, computed, effect, ElementRef, HostBinding, HostListener, input, output, signal, viewChild} from "@angular/core";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {MatOptionModule} from "@angular/material/core";
 import {MatFormFieldModule} from "@angular/material/form-field";
@@ -27,8 +15,7 @@ export interface AnchorEvent {
   selector: "app-anchor-selector",
   templateUrl: "./anchor-selector.component.html",
   styleUrls: ["./anchor-selector.component.scss"],
-  imports: [MatAutocompleteModule, MatFormFieldModule, MatInputModule, MatOptionModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatAutocompleteModule, MatFormFieldModule, MatInputModule, MatOptionModule]
 })
 export class AnchorSelectorComponent {
   xIn = input(0, {alias: "x"});

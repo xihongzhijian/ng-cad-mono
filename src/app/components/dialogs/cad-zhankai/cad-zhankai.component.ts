@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, Inject, signal} from "@angular/core";
+import {ChangeDetectorRef, Component, inject, Inject, signal} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -41,8 +41,7 @@ import {getOpenDialogFunc} from "../dialog.common";
     MatSlideToggleModule,
     NgScrollbar,
     ReplaceFullCharsDirective
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class CadZhankaiComponent extends Utils() {
   private cd = inject(ChangeDetectorRef);

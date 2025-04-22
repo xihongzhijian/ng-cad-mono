@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, OnDestroy, viewChild} from "@angular/core";
+import {Component, computed, effect, ElementRef, inject, input, OnDestroy, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatMenuModule} from "@angular/material/menu";
 import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
@@ -10,8 +10,7 @@ import {FloatingDialogComponent} from "../floating-dialog/floating-dialog.compon
   selector: "app-floating-dialog-trays",
   imports: [ContextMenuModule, MatButtonModule, MatMenuModule],
   templateUrl: "./floating-dialog-trays.component.html",
-  styleUrl: "./floating-dialog-trays.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./floating-dialog-trays.component.scss"
 })
 export class FloatingDialogTraysComponent implements OnDestroy {
   private manager = inject(FloatingDialogsManagerService);

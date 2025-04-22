@@ -1,7 +1,6 @@
 import {CdkDrag, CdkDragEnd, CdkDragHandle, CdkDragMove, Point} from "@angular/cdk/drag-drop";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -32,8 +31,7 @@ import {ResizeHandle} from "./floating-dialog.types";
   selector: "app-floating-dialog",
   imports: [CdkDrag, CdkDragHandle, ContextMenuModule, MatButtonModule, MatIconModule, MatMenuModule],
   templateUrl: "./floating-dialog.component.html",
-  styleUrl: "./floating-dialog.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./floating-dialog.component.scss"
 })
 export class FloatingDialogComponent implements OnInit, OnDestroy {
   private el = inject<ElementRef<HTMLElement>>(ElementRef);

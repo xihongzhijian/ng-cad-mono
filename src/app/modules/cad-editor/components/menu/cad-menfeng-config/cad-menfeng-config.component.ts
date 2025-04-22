@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, forwardRef, HostBinding, inject, Inject, signal} from "@angular/core";
+import {Component, computed, forwardRef, HostBinding, inject, Inject, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -17,8 +17,7 @@ import {CadMenfengConfigInput, CadMenfengConfigItem, CadMenfengConfigOutput} fro
   selector: "app-cad-menfeng-config",
   imports: [MatButtonModule, forwardRef(() => TableComponent)],
   templateUrl: "./cad-menfeng-config.component.html",
-  styleUrl: "./cad-menfeng-config.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./cad-menfeng-config.component.scss"
 })
 export class CadMenfengConfigComponent {
   private http = inject(CadDataService);

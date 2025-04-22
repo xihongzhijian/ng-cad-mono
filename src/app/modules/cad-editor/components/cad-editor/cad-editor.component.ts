@@ -2,7 +2,6 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
 import {CdkDrag, CdkDragEnd, CdkDragMove, CdkDragStart} from "@angular/cdk/drag-drop";
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -112,8 +111,7 @@ import {CadEditorMenuName} from "./cad-editor.utils";
     SuanliaoTablesComponent,
     SubCadsComponent,
     ToolbarComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class CadEditorComponent extends Subscribed() implements AfterViewInit, OnDestroy {
   private config = inject(AppConfigService);

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, inject, Inject, signal} from "@angular/core";
+import {ChangeDetectorRef, Component, computed, inject, Inject, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -14,8 +14,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-select-bancai-cads",
   templateUrl: "./select-bancai-cads.component.html",
   styleUrls: ["./select-bancai-cads.component.scss"],
-  imports: [FormsModule, MatButtonModule, MatCheckboxModule, MatDialogActions, MatDividerModule, MatSlideToggleModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [FormsModule, MatButtonModule, MatCheckboxModule, MatDialogActions, MatDividerModule, MatSlideToggleModule, NgScrollbar]
 })
 export class SelectBancaiCadsComponent {
   private cd = inject(ChangeDetectorRef);

@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, signal, viewChild} from "@angular/core";
+import {AfterViewInit, Component, computed, effect, HostBinding, inject, signal, viewChild} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -51,8 +51,7 @@ export interface BackupCadsData {
     MatPaginatorModule,
     NgScrollbar,
     SpinnerComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class BackupComponent implements AfterViewInit {
   private http = inject(CadDataService);

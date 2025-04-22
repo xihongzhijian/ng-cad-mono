@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, forwardRef, inject, Inject, signal, viewChildren} from "@angular/core";
+import {Component, computed, forwardRef, inject, Inject, signal, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -18,8 +18,7 @@ import {NgScrollbar} from "ngx-scrollbar";
   selector: "app-cad-layer",
   templateUrl: "./cad-layer.component.html",
   styleUrls: ["./cad-layer.component.scss"],
-  imports: [forwardRef(() => InputComponent), NgScrollbar, MatButtonModule, MatIconModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [forwardRef(() => InputComponent), NgScrollbar, MatButtonModule, MatIconModule]
 })
 export class CadLayerComponent {
   private message = inject(MessageService);

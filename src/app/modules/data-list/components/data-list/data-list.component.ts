@@ -1,6 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -79,8 +78,7 @@ import {
     TypedTemplateDirective
   ],
   templateUrl: "./data-list.component.html",
-  styleUrl: "./data-list.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./data-list.component.scss"
 })
 export class DataListComponent<T extends DataListItem = DataListItem> implements OnInit {
   private http = inject(CadDataService);

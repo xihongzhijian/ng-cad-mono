@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, WritableSignal} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, OnInit, signal, WritableSignal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
@@ -33,8 +33,7 @@ import {BatchUploadChecker} from "./import.utils";
   selector: "app-import",
   templateUrl: "./import.component.html",
   styleUrls: ["./import.component.scss"],
-  imports: [InputComponent, MatButtonModule, MatDividerModule, NgScrollbar, ProgressBarComponent, SpinnerComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent, MatButtonModule, MatDividerModule, NgScrollbar, ProgressBarComponent, SpinnerComponent]
 })
 export class ImportComponent implements OnInit {
   private http = inject(CadDataService);

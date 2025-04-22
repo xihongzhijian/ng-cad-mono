@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, computed, HostBinding, inject, signal, viewChildren} from "@angular/core";
+import {AfterViewInit, Component, computed, HostBinding, inject, signal, viewChildren} from "@angular/core";
 import {ValidatorFn, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -33,8 +33,7 @@ interface ToBeReplaced {
   selector: "app-replace-text",
   templateUrl: "./replace-text.component.html",
   styleUrls: ["./replace-text.component.scss"],
-  imports: [InputComponent, MatButtonModule, MatCardModule, MatCheckboxModule, MatIconModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent, MatButtonModule, MatCardModule, MatCheckboxModule, MatIconModule, NgScrollbar]
 })
 export class ReplaceTextComponent implements AfterViewInit {
   private http = inject(CadDataService);

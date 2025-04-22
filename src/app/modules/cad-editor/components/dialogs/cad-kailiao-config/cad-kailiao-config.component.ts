@@ -1,15 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  forwardRef,
-  HostBinding,
-  inject,
-  Inject,
-  signal,
-  viewChildren
-} from "@angular/core";
+import {Component, computed, effect, forwardRef, HostBinding, inject, Inject, signal, viewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -26,8 +15,7 @@ import {getLineTable, getMultiSetData, getMultiSetInputInfos, MultiSetData} from
   selector: "app-cad-kailiao-config",
   imports: [forwardRef(() => InputComponent), MatButtonModule, NgScrollbarModule, TableComponent],
   templateUrl: "./cad-kailiao-config.component.html",
-  styleUrl: "./cad-kailiao-config.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./cad-kailiao-config.component.scss"
 })
 export class CadKailiaoConfigComponent {
   message = inject(MessageService);

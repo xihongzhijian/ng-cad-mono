@@ -2,7 +2,6 @@ import {SelectionModel} from "@angular/cdk/collections";
 import {FlatTreeControl} from "@angular/cdk/tree";
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   computed,
@@ -85,8 +84,7 @@ import {getInputInfosFromTableColumns} from "./table.utils";
     MatSlideToggleModule,
     MatSortModule,
     MatTableModule
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class TableComponent<T> implements AfterViewInit, DoCheck {
   private cd = inject(ChangeDetectorRef);

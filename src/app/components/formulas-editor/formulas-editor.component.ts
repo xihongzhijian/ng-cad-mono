@@ -1,19 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  forwardRef,
-  HostBinding,
-  inject,
-  input,
-  model,
-  output,
-  signal
-} from "@angular/core";
+import {booleanAttribute, Component, computed, effect, forwardRef, HostBinding, inject, input, model, output, signal} from "@angular/core";
 import {FormControl, ValidationErrors} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -55,8 +42,7 @@ import {FormulasCompactConfig, FormulasValidatorFn} from "./formulas-editor.type
     NgScrollbar,
     NgTemplateOutlet,
     VarNamesComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class FormulasEditorComponent {
   private calc = inject(CalcService);

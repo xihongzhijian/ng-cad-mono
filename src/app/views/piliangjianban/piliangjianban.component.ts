@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostListener, inject, OnInit, signal} from "@angular/core";
+import {Component, HostListener, inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
 import {MatExpansionModule} from "@angular/material/expansion";
@@ -40,8 +40,7 @@ export interface Bancai {
   selector: "app-piliangjianban",
   templateUrl: "./piliangjianban.component.html",
   styleUrls: ["./piliangjianban.component.scss"],
-  imports: [ImageComponent, MatButtonModule, MatCardModule, MatExpansionModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [ImageComponent, MatButtonModule, MatCardModule, MatExpansionModule]
 })
 export class PiliangjianbanComponent implements OnInit {
   private http = inject(CadDataService);

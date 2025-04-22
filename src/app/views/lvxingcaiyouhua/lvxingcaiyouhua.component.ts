@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
@@ -20,8 +20,7 @@ import {calc, getInputDataBoms, getNum} from "./lvxingcaiyouhua.utils";
   selector: "app-lvxingcaiyouhua",
   imports: [InputComponent, MatButtonModule, MatIconModule, NgScrollbarModule, PrintTableComponent],
   templateUrl: "./lvxingcaiyouhua.component.html",
-  styleUrl: "./lvxingcaiyouhua.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./lvxingcaiyouhua.component.scss"
 })
 export class LvxingcaiyouhuaComponent implements OnInit {
   private http = inject(CadDataService);

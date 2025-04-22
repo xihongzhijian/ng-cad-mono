@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, Inject, OnInit, signal} from "@angular/core";
+import {Component, inject, Inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadCollection} from "@app/cad/collections";
@@ -12,8 +12,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-draw-cad",
   templateUrl: "./draw-cad.component.html",
   styleUrls: ["./draw-cad.component.scss"],
-  imports: [CadImageComponent, MatButtonModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [CadImageComponent, MatButtonModule, NgScrollbar]
 })
 export class DrawCadComponent implements OnInit {
   private status = inject(AppStatusService);

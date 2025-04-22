@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, forwardRef, HostBinding, Inject, signal} from "@angular/core";
+import {Component, computed, forwardRef, HostBinding, Inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
@@ -15,8 +15,7 @@ import {SuanliaodanFlipInput, SuanliaodanFlipItem, SuanliaodanFlipOutput} from "
   selector: "app-suanliaodan-flip",
   imports: [forwardRef(() => InputComponent), MatButtonModule, MatIconModule, NgScrollbarModule],
   templateUrl: "./suanliaodan-flip.component.html",
-  styleUrl: "./suanliaodan-flip.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./suanliaodan-flip.component.scss"
 })
 export class SuanliaodanFlipComponent extends Utils() {
   @HostBinding("class") class = "ng-page";

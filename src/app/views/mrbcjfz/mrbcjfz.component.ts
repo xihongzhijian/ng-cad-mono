@@ -2,7 +2,6 @@ import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/d
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -82,8 +81,7 @@ import {
     NgScrollbar,
     NgTemplateOutlet,
     SpinnerComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class MrbcjfzComponent {
   private dialog = inject(MatDialog);

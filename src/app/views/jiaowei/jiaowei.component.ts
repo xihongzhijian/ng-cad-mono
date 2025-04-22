@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, signal} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, signal} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -19,8 +19,7 @@ const table = "p_menjiao";
   selector: "app-jiaowei",
   templateUrl: "./jiaowei.component.html",
   styleUrls: ["./jiaowei.component.scss"],
-  imports: [InputComponent, MatButtonModule, MatCheckboxModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent, MatButtonModule, MatCheckboxModule, NgScrollbar]
 })
 export class JiaoweiComponent {
   private http = inject(CadDataService);

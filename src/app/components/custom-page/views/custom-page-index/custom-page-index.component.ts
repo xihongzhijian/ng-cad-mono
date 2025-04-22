@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -61,8 +60,7 @@ import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-co
     PageConfigComponent
   ],
   templateUrl: "./custom-page-index.component.html",
-  styleUrl: "./custom-page-index.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./custom-page-index.component.scss"
 })
 export class CustomPageIndexComponent extends Subscribed() implements OnInit, OnDestroy {
   private http = inject(CadDataService);

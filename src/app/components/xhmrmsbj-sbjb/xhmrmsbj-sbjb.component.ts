@@ -1,16 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostBinding,
-  inject,
-  input,
-  signal,
-  viewChild,
-  viewChildren
-} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, input, signal, viewChild, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -89,8 +78,7 @@ import {
     TypedTemplateDirective
   ],
   templateUrl: "./xhmrmsbj-sbjb.component.html",
-  styleUrl: "./xhmrmsbj-sbjb.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./xhmrmsbj-sbjb.component.scss"
 })
 export class XhmrmsbjSbjbComponent {
   private dialog = inject(MatDialog);

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
+import {Component, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
@@ -10,8 +10,7 @@ import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner
   selector: "app-kailiaocanshu",
   templateUrl: "./kailiaocanshu.component.html",
   styleUrls: ["./kailiaocanshu.component.scss"],
-  imports: [MatButtonModule, SpinnerComponent, KlcsComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule, SpinnerComponent, KlcsComponent]
 })
 export class KailiaocanshuComponent implements OnInit {
   private route = inject(ActivatedRoute);

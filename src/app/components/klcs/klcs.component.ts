@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   effect,
   ElementRef,
@@ -32,8 +31,7 @@ import {InputComponent} from "../../modules/input/components/input.component";
   selector: "app-klcs",
   templateUrl: "./klcs.component.html",
   styleUrls: ["./klcs.component.scss"],
-  imports: [InputComponent, MatButtonModule, MatCardModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent, MatButtonModule, MatCardModule, NgScrollbar]
 })
 export class KlcsComponent implements OnInit, AfterViewInit {
   private http = inject(CadDataService);

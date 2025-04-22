@@ -1,5 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnInit, signal, viewChildren} from "@angular/core";
+import {Component, computed, effect, ElementRef, inject, OnInit, signal, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -46,8 +46,7 @@ import {DdbqConfig, DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig}
     MatDividerModule,
     NgTemplateOutlet,
     TypedTemplateDirective
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class DingdanbiaoqianComponent implements OnInit {
   private calc = inject(CalcService);

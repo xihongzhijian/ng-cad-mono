@@ -1,17 +1,6 @@
 import {CdkDrag, CdkDragEnd, CdkDragHandle} from "@angular/cdk/drag-drop";
 import {NgTemplateOutlet} from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  HostBinding,
-  inject,
-  input,
-  signal,
-  viewChild
-} from "@angular/core";
+import {Component, computed, effect, ElementRef, HostBinding, inject, input, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatIconModule} from "@angular/material/icon";
@@ -44,8 +33,7 @@ pageComponentInfos; // ? 虽然没用，但删除了会报错
     NgTemplateOutlet
   ],
   templateUrl: "./page-component-config2.component.html",
-  styleUrl: "./page-component-config2.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./page-component-config2.component.scss"
 })
 export class PageComponentConfig2Component {
   private http = inject(CadDataService);

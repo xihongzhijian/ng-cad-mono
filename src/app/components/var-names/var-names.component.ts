@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, inject, input, signal, viewChild} from "@angular/core";
+import {Component, ElementRef, HostBinding, inject, input, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
@@ -10,8 +10,7 @@ import {VarNameItem} from "./var-names.types";
   selector: "app-var-names",
   imports: [MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule],
   templateUrl: "./var-names.component.html",
-  styleUrl: "./var-names.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./var-names.component.scss"
 })
 export class VarNamesComponent {
   private message = inject(MessageService);

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {validColors} from "@app/cad/utils";
 import {environment} from "@env";
@@ -14,8 +14,7 @@ import {InputComponent} from "../../../../input/components/input.component";
   selector: "app-cad-mtext",
   templateUrl: "./cad-mtext.component.html",
   styleUrls: ["./cad-mtext.component.scss"],
-  imports: [InputComponent, MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent, MatButtonModule]
 })
 export class CadMtextComponent implements OnInit, OnDestroy {
   private status = inject(AppStatusService);

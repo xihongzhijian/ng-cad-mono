@@ -1,7 +1,6 @@
 import {KeyValuePipe} from "@angular/common";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -67,8 +66,7 @@ import {CadItemButton, CadItemForm, CadItemIsOnlineInfo, CadItemSelectable, CadI
     MatIconModule
   ],
   templateUrl: "./cad-item.component.html",
-  styleUrl: "./cad-item.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./cad-item.component.scss"
 })
 export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
