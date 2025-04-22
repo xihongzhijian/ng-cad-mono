@@ -171,9 +171,11 @@ export const getCadInfoInputs = (
       case "算料单展开显示位置":
       case "属于门框门扇":
       case "企料包边类型":
-      case "指定板材分组":
       case "装配示意图自动拼接锁边铰边":
-        info = getter.selectSingle(cadFields[key], cadOptions[cadFields[key]].values.slice());
+        info = getter.selectSingle(cadFields[key], cadOptions[cadFields[key]].values);
+        break;
+      case "指定板材分组":
+        info = getter.string(cadFields[key], {options: cadOptions[cadFields[key]].values});
         break;
       case "选项":
       case "型号花件":
