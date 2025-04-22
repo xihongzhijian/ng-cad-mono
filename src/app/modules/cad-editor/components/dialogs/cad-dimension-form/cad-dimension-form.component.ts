@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, computed, HostBinding, Inject, viewC
 import {AbstractControl, ValidatorFn} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {cadDimensionOptions, cadOptions} from "@app/cad/options";
+import {cadDimensionOptions} from "@app/cad/options";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadDimensionLinear} from "@lucilor/cad-viewer";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -82,7 +82,7 @@ export class CadDimensionFormComponent {
       getter.string("cad2", {label: "CAD2", readonly: true}),
       getter2.selectSingle("location", cadDimensionOptions.location.values, {label: "线1位置"}),
       getter3.selectSingle("location", cadDimensionOptions.location.values, {label: "线2位置"}),
-      getter.selectSingle("axis", cadOptions.axis.values, {label: "方向"}),
+      getter.selectSingle("axis", cadDimensionOptions.axis.values, {label: "方向"}),
       getter.selectSingle("ref", cadDimensionOptions.ref.values),
       getter.number("distance", {label: "距离"}),
       {

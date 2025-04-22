@@ -3,7 +3,6 @@ import {ObjectOf} from "@lucilor/utils";
 import {InputInfoOptions} from "@modules/input/components/input.types";
 
 export const cadOptions = {
-  axis: {values: ["x", "y"] satisfies InputInfoOptions<CadAxis>, defaultValue: "x"},
   bancaihoudufangxiang: {
     values: [
       {value: "gt0", label: "方向1"},
@@ -93,7 +92,8 @@ export const cadDimensionOptions = {
       {value: "minLength"},
       {value: "maxLength"}
     ] satisfies InputInfoOptions<CadDimension["ref"]>
-  }
+  },
+  axis: {values: ["x", "y"] satisfies InputInfoOptions<CadAxis>, defaultValue: "x"}
 } as const;
 
 export const cadOptionOptions: ObjectOf<{values: string[]; defaultValue: string}> = {

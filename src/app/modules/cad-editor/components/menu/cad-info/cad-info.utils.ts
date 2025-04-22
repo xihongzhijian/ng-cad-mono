@@ -17,7 +17,6 @@ import {InputInfo, InputInfoPart} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {openCadDataAttrsDialog} from "../../dialogs/cad-data-attrs/cad-data-attrs.component";
 import {openCadMenfengConfigDialog} from "../cad-menfeng-config/cad-menfeng-config.component";
 
 export const cadFields = {
@@ -218,13 +217,7 @@ export const getCadInfoInputs = (
         info = getter2.numberWithUnit(key, "mm");
         break;
       case "自定义属性":
-        info = getDialogInput(key, async () => {
-          const data2 = getData(data);
-          const result2 = await openCadDataAttrsDialog(dialog, {data: data2.attributes});
-          if (result2) {
-            data2.attributes = result2;
-          }
-        });
+        info = getter.object("attributes", {label: "自定义属性"});
         break;
       case "正面线到见光线展开模板":
         info = getter2.string(key, {
