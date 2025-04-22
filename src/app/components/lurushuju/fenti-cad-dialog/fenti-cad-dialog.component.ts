@@ -1,5 +1,5 @@
 import {KeyValuePipe} from "@angular/common";
-import {Component, forwardRef, HostBinding, Inject} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, HostBinding, inject, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -12,17 +12,20 @@ import {FentiCadDialogInput, FentiCadDialogOutput, FentiCadItemInfo} from "./fen
 
 @Component({
   selector: "app-fenti-cad-dialog",
-  imports: [forwardRef(() => CadItemComponent), KeyValuePipe, MatButtonModule, NgScrollbarModule],
   templateUrl: "./fenti-cad-dialog.component.html",
-  styleUrl: "./fenti-cad-dialog.component.scss"
+  styleUrl: "./fenti-cad-dialog.component.scss",
+  imports: [forwardRef(() => CadItemComponent), KeyValuePipe, MatButtonModule, NgScrollbarModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FentiCadDialogComponent {
+  private cd = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
+
   @HostBinding("class") class = "ng-page";
 
   cadButtons: CadItemButton<FentiCadItemInfo>[] = [{name: "删除", onClick: this.removeCad.bind(this)}];
 
   constructor(
-    private dialog: MatDialog,
     public dialogRef: MatDialogRef<FentiCadDialogComponent, FentiCadDialogOutput>,
     @Inject(MAT_DIALOG_DATA) public data: FentiCadDialogInput
   ) {}
@@ -63,6 +66,7 @@ export class FentiCadDialogComponent {
     const houtaiId = data.id;
     data.resetIds();
     fentiCads[key] = getHoutaiCad(data, {houtaiId: houtaiId});
+    this.cd.markForCheck();
   }
 
   removeCad(component: CadItemComponent<FentiCadItemInfo>) {
@@ -71,6 +75,7 @@ export class FentiCadDialogComponent {
       return;
     }
     this.data.data[key] = null;
+    this.cd.markForCheck();
   }
 }
 
