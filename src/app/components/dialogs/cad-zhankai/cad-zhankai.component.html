@@ -10,7 +10,7 @@
           <div class="fullwidth" style="display: flex; align-items: center">
             <mat-checkbox
               (click)="onCheckboxChanglick($event)"
-              [checked]="checkedIndices.has(i)"
+              [checked]="checkedIndices().includes(i)"
               (change)="onCheckboxChange($event, i)"
             ></mat-checkbox>
             <mat-form-field style="font-weight: bold">
