@@ -1,15 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  forwardRef,
-  HostBinding,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal
-} from "@angular/core";
+import {Component, computed, effect, forwardRef, HostBinding, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatOptionModule} from "@angular/material/core";
@@ -56,8 +45,7 @@ import {getCadInfoInputs} from "./cad-info.utils";
     MatInputModule,
     MatOptionModule,
     MatSelectModule
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);

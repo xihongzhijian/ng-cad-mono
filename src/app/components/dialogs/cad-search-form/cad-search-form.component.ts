@@ -1,5 +1,5 @@
 import {AsyncPipe} from "@angular/common";
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, OnInit} from "@angular/core";
+import {ChangeDetectorRef, Component, EventEmitter, inject, OnInit} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {MatButtonModule} from "@angular/material/button";
@@ -35,8 +35,7 @@ import {getOpenDialogFunc} from "../dialog.common";
     MatInputModule,
     MatOptionModule,
     NgScrollbar
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class CadSearchFormComponent implements OnInit {
   private cd = inject(ChangeDetectorRef);

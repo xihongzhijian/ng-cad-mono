@@ -1,7 +1,7 @@
 import {CdkDrag, CdkDragEnd, CdkDragMove, DragRef} from "@angular/cdk/drag-drop";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, signal, untracked, viewChildren} from "@angular/core";
+import {Component, effect, ElementRef, inject, signal, untracked, viewChildren} from "@angular/core";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
 import {getFilepathUrl, setGlobal} from "@app/app.common";
@@ -25,8 +25,7 @@ import {ControlPoint, Helpers} from "./page-components-diaplay.types";
   selector: "app-page-components-diaplay",
   imports: [CdkDrag, CdkTextareaAutosize, ImageComponent, MatIconModule, MatInputModule, NgTemplateOutlet, TypedTemplateDirective],
   templateUrl: "./page-components-diaplay.component.html",
-  styleUrl: "./page-components-diaplay.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./page-components-diaplay.component.scss"
 })
 export class PageComponentsDiaplayComponent {
   private elRef: ElementRef<HTMLElement> = inject(ElementRef);

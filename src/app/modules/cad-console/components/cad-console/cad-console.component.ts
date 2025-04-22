@@ -1,5 +1,5 @@
 import {animate, style, transition, trigger} from "@angular/animations";
-import {ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, signal, viewChild} from "@angular/core";
+import {Component, ElementRef, HostListener, inject, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {DomSanitizer} from "@angular/platform-browser";
@@ -119,8 +119,7 @@ export const cmdNames = commands.map((v) => v.name);
       transition(":leave", [style({filter: "blur(0)"}), animate("0.3s", style({filter: "blur(20px)"}))])
     ])
   ],
-  imports: [],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: []
 })
 export class CadConsoleComponent {
   private config = inject(AppConfigService);

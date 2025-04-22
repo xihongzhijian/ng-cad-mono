@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
+import {Component, computed, inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MessageService} from "@modules/message/services/message.service";
 import {messageDataKeys, MessageDataMap} from "../message/message.types";
@@ -7,8 +7,7 @@ import {messageDataKeys, MessageDataMap} from "../message/message.types";
   selector: "app-message-test",
   templateUrl: "./message-test.component.html",
   styleUrls: ["./message-test.component.scss"],
-  imports: [MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule]
 })
 export class MessageTestComponent {
   private message = inject(MessageService);

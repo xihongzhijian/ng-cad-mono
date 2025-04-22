@@ -1,7 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -115,8 +114,7 @@ import {
     NgTemplateOutlet,
     SpinnerComponent,
     TypedTemplateDirective
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class ZixuanpeijianComponent implements OnInit {
   private http = inject(CadDataService);

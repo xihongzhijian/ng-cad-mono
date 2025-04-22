@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, OnInit, signal} from "@angular/core";
+import {Component, computed, HostBinding, inject, OnInit, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
@@ -19,8 +19,7 @@ import {WorkSpaceManager} from "./work-space.utils";
   selector: "app-work-space",
   imports: [MatButtonModule, NgScrollbarModule],
   templateUrl: "./work-space.component.html",
-  styleUrl: "./work-space.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./work-space.component.scss"
 })
 export class WorkSpaceComponent implements OnInit {
   private http = inject(CadDataService);

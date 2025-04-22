@@ -1,5 +1,5 @@
 import {AsyncPipe} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, signal, viewChildren} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, signal, viewChildren} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -19,8 +19,7 @@ import {DingdanyichangData} from "./dingdanyichang.types";
   selector: "app-dingdanyichang",
   imports: [AsyncPipe, InputComponent, MatButtonModule, NgScrollbarModule],
   templateUrl: "./dingdanyichang.component.html",
-  styleUrl: "./dingdanyichang.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./dingdanyichang.component.scss"
 })
 export class DingdanyichangComponent extends Subscribed() {
   private route = inject(ActivatedRoute);

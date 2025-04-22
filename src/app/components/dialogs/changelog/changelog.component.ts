@@ -1,5 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, input, OnInit, signal} from "@angular/core";
+import {Component, computed, HostBinding, inject, input, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -18,8 +18,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-changelog",
   templateUrl: "./changelog.component.html",
   styleUrls: ["./changelog.component.scss"],
-  imports: [ImageComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbar, NgTemplateOutlet, SpinnerModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [ImageComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbar, NgTemplateOutlet, SpinnerModule]
 })
 export class ChangelogComponent implements OnInit {
   private http = inject(CadDataService);

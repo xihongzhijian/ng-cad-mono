@@ -1,16 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  ElementRef,
-  HostBinding,
-  inject,
-  input,
-  OnInit,
-  signal,
-  untracked,
-  viewChildren
-} from "@angular/core";
+import {Component, effect, ElementRef, HostBinding, inject, input, OnInit, signal, untracked, viewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
@@ -31,8 +19,7 @@ import {LvxingcaiyouhuaInfo, TableData, TableInfoData, TableInfoDataTable, Xikon
   selector: "app-print-table",
   imports: [ImageComponent, MatButtonModule, MatDividerModule, TableComponent],
   templateUrl: "./print-table.component.html",
-  styleUrl: "./print-table.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./print-table.component.scss"
 })
 export class PrintTableComponent<T = any> implements OnInit {
   private elRef = inject(ElementRef<HTMLElement>);

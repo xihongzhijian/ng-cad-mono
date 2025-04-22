@@ -1,15 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  ElementRef,
-  HostListener,
-  inject,
-  OnDestroy,
-  signal,
-  viewChild
-} from "@angular/core";
+import {AfterViewInit, Component, computed, ElementRef, HostListener, inject, OnDestroy, signal, viewChild} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -59,8 +48,7 @@ const duration = 400;
     slideInRightOnEnterAnimation({anchor: "toolbarToggleEnter", duration}),
     slideOutRightOnLeaveAnimation({anchor: "toolbarToggleLeave", duration})
   ],
-  imports: [FormsModule, ImageComponent, InputComponent, MatButtonModule, MatIconModule, MatSlideToggleModule, SpinnerComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [FormsModule, ImageComponent, InputComponent, MatButtonModule, MatIconModule, MatSlideToggleModule, SpinnerComponent]
 })
 export class PrintCadComponent implements AfterViewInit, OnDestroy {
   private dialog = inject(MatDialog);

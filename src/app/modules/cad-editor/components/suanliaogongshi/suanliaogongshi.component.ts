@@ -1,7 +1,6 @@
 import {KeyValue, NgTemplateOutlet} from "@angular/common";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -60,8 +59,7 @@ import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.
     TextInfoComponent
   ],
   templateUrl: "./suanliaogongshi.component.html",
-  styleUrl: "./suanliaogongshi.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./suanliaogongshi.component.scss"
 })
 export class SuanliaogongshiComponent {
   private dialog = inject(MatDialog);

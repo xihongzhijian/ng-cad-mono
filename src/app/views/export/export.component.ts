@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal, untracked} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, OnInit, signal, untracked} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -23,8 +23,7 @@ import {ExportCache} from "./export.types";
   selector: "app-export",
   templateUrl: "./export.component.html",
   styleUrls: ["./export.component.scss"],
-  imports: [InputComponent, MatButtonModule, ProgressBarComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent, MatButtonModule, ProgressBarComponent]
 })
 export class ExportComponent implements OnInit {
   private dialog = inject(MatDialog);

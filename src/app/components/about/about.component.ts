@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, effect, inject, signal} from "@angular/core";
+import {Component, effect, inject, signal} from "@angular/core";
 import {MatBadgeModule} from "@angular/material/badge";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -11,8 +11,7 @@ import {AppStatusService} from "@services/app-status.service";
   selector: "app-about",
   imports: [MatBadgeModule, MatButtonModule, SpinnerModule],
   templateUrl: "./about.component.html",
-  styleUrl: "./about.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./about.component.scss"
 })
 export class AboutComponent {
   private status = inject(AppStatusService);

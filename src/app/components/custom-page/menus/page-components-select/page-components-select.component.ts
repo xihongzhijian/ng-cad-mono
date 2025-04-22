@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject} from "@angular/core";
+import {Component, inject} from "@angular/core";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {getInsertName} from "@app/utils/get-value";
 import {keysOf} from "@lucilor/utils";
@@ -14,10 +14,9 @@ import {PageStatusService} from "../../services/page-status.service";
   selector: "app-page-components-select",
   imports: [ImageComponent, MatTooltipModule],
   templateUrl: "./page-components-select.component.html",
-  styleUrl: "./page-components-select.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./page-components-select.component.scss"
 })
-export class PageComponentsSeletComponent {
+export class PageComponentsSelectComponent {
   private pageStatus = inject(PageStatusService);
 
   get components() {

@@ -1,5 +1,5 @@
 import {KeyValuePipe} from "@angular/common";
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, HostBinding, inject, Inject} from "@angular/core";
+import {ChangeDetectorRef, Component, forwardRef, HostBinding, inject, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -14,8 +14,7 @@ import {FentiCadDialogInput, FentiCadDialogOutput, FentiCadItemInfo} from "./fen
   selector: "app-fenti-cad-dialog",
   templateUrl: "./fenti-cad-dialog.component.html",
   styleUrl: "./fenti-cad-dialog.component.scss",
-  imports: [forwardRef(() => CadItemComponent), KeyValuePipe, MatButtonModule, NgScrollbarModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [forwardRef(() => CadItemComponent), KeyValuePipe, MatButtonModule, NgScrollbarModule]
 })
 export class FentiCadDialogComponent {
   private cd = inject(ChangeDetectorRef);

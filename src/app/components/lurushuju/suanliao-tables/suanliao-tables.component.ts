@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from "@angular/core";
+import {Component, effect, inject, input, signal, untracked} from "@angular/core";
 import {CadCollection} from "@app/cad/collections";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
@@ -13,8 +13,7 @@ import {getSuanliaoDataSearch} from "./suanliao-tables.utils";
   selector: "app-suanliao-tables",
   templateUrl: "./suanliao-tables.component.html",
   styleUrl: "./suanliao-tables.component.scss",
-  imports: [TableComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [TableComponent]
 })
 export class SuanliaoTablesComponent {
   private http = inject(CadDataService);

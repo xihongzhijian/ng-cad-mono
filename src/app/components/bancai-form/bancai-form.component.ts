@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, input, model, untracked, viewChildren} from "@angular/core";
+import {Component, computed, effect, inject, input, model, untracked, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatDialog, MatDialogConfig} from "@angular/material/dialog";
 import {joinOptions} from "@app/app.common";
@@ -13,8 +13,7 @@ import {InputComponent} from "../../modules/input/components/input.component";
   selector: "app-bancai-form",
   templateUrl: "./bancai-form.component.html",
   styleUrls: ["./bancai-form.component.scss"],
-  imports: [InputComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent]
 })
 export class BancaiFormComponent {
   private dialog = inject(MatDialog);

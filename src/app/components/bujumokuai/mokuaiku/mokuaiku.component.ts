@@ -1,17 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostBinding,
-  inject,
-  input,
-  OnInit,
-  output,
-  signal,
-  viewChild
-} from "@angular/core";
+import {booleanAttribute, Component, computed, effect, HostBinding, inject, input, OnInit, output, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDividerModule} from "@angular/material/divider";
@@ -51,8 +38,7 @@ import {MokuaikuCloseEvent} from "./mokuaiku.types";
     NgScrollbarModule
   ],
   templateUrl: "./mokuaiku.component.html",
-  styleUrl: "./mokuaiku.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./mokuaiku.component.scss"
 })
 export class MokuaikuComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);

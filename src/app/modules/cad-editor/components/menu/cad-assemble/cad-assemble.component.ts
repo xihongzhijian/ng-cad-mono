@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal, untracked} from "@angular/core";
+import {Component, computed, effect, inject, OnDestroy, OnInit, signal, untracked} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
 import {CadConnection, CadData, CadEntity, CadEventCallBack, CadImage, CadLine, generatePointsMap, PointsMap} from "@lucilor/cad-viewer";
@@ -15,8 +15,7 @@ import {NgScrollbar} from "ngx-scrollbar";
   selector: "app-cad-assemble",
   templateUrl: "./cad-assemble.component.html",
   styleUrls: ["./cad-assemble.component.scss"],
-  imports: [MatButtonModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule, NgScrollbar]
 })
 export class CadAssembleComponent implements OnInit, OnDestroy {
   private config = inject(AppConfigService);

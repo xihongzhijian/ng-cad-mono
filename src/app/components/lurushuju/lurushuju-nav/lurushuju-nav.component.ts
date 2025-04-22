@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, inject} from "@angular/core";
+import {Component, computed, HostBinding, inject} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {timeout} from "@lucilor/utils";
@@ -17,8 +17,7 @@ import {getXinghaoGongyi, getXinghaoMenchuang} from "../services/lrsj-status.uti
   selector: "app-lurushuju-nav",
   imports: [MatButtonModule, NgScrollbarModule],
   templateUrl: "./lurushuju-nav.component.html",
-  styleUrl: "./lurushuju-nav.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./lurushuju-nav.component.scss"
 })
 export class LurushujuNavComponent {
   private http = inject(CadDataService);

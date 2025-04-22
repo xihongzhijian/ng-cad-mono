@@ -1,14 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  effect,
-  ElementRef,
-  forwardRef,
-  input,
-  output,
-  untracked,
-  viewChildren
-} from "@angular/core";
+import {AfterViewInit, effect, ElementRef, forwardRef, input, output, untracked, viewChildren} from "@angular/core";
 import {Component} from "@angular/core";
 import {timeout} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -20,8 +10,7 @@ import {FormulaInfo} from "./formulas.types";
   selector: "app-formulas",
   templateUrl: "./formulas.component.html",
   styleUrls: ["./formulas.component.scss"],
-  imports: [forwardRef(() => InputComponent)],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [forwardRef(() => InputComponent)]
 })
 export class FormulasComponent implements AfterViewInit {
   formulaInfos = input.required<FormulaInfo[]>();

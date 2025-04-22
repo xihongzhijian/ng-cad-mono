@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, effect, forwardRef, inject, OnDestroy, OnInit, signal, viewChild} from "@angular/core";
+import {Component, effect, forwardRef, inject, OnDestroy, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
@@ -46,8 +46,7 @@ type ContextMenuCadField = "main" | "component";
     MatSlideToggleModule,
     MatTooltipModule,
     NgScrollbar
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class SubCadsComponent implements OnInit, OnDestroy {
   private config = inject(AppConfigService);

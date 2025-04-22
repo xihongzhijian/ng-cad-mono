@@ -1,12 +1,11 @@
-import {ChangeDetectionStrategy, Component, signal, viewChild} from "@angular/core";
+import {Component, signal, viewChild} from "@angular/core";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 
 @Component({
   selector: "app-context-menu",
   imports: [MatMenuModule],
   templateUrl: "./context-menu.component.html",
-  styleUrl: "./context-menu.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./context-menu.component.scss"
 })
 export class ContextMenuComponent {
   contextMenuPosition = signal({x: "0px", y: "0px"});

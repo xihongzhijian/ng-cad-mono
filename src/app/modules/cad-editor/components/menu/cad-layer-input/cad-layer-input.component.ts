@@ -1,4 +1,4 @@
-import {booleanAttribute, ChangeDetectionStrategy, Component, computed, inject, input} from "@angular/core";
+import {booleanAttribute, Component, computed, inject, input} from "@angular/core";
 import {CadEntity} from "@lucilor/cad-viewer";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -9,8 +9,7 @@ import {AppStatusService} from "@services/app-status.service";
   selector: "app-cad-layer-input[entities]",
   templateUrl: "./cad-layer-input.component.html",
   styleUrls: ["./cad-layer-input.component.scss"],
-  imports: [InputComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent]
 })
 export class CadLayerInputComponent extends Subscribed() {
   status = inject(AppStatusService);

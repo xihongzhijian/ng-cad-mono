@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
+import {Component, computed, inject} from "@angular/core";
 import {AppConfigService, defaultConfig} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
@@ -7,8 +7,7 @@ import {Properties} from "csstype";
   selector: "app-cad-points",
   templateUrl: "./cad-points.component.html",
   styleUrls: ["./cad-points.component.scss"],
-  imports: [],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: []
 })
 export class CadPointsComponent {
   private config = inject(AppConfigService);

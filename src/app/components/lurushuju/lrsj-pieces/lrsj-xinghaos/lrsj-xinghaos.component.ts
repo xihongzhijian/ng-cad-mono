@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, signal} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, signal} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -39,8 +39,7 @@ import {defaultFenleis, getOptions} from "../lrsj-pieces.utils";
     XhmrmsbjComponent
   ],
   templateUrl: "./lrsj-xinghaos.component.html",
-  styleUrl: "./lrsj-xinghaos.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./lrsj-xinghaos.component.scss"
 })
 export class LrsjXinghaosComponent extends LrsjPiece {
   private http = inject(CadDataService);

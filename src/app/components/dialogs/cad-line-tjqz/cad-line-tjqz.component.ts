@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, forwardRef, inject, Inject, signal, viewChild} from "@angular/core";
+import {Component, computed, forwardRef, inject, Inject, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadLine} from "@lucilor/cad-viewer";
@@ -19,8 +19,7 @@ type RawDataRight = RawDataLeft["data"][0];
   selector: "app-cad-line-tjqz",
   templateUrl: "./cad-line-tjqz.component.html",
   styleUrls: ["./cad-line-tjqz.component.scss"],
-  imports: [MatButtonModule, SpinnerComponent, forwardRef(() => TableComponent)],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule, SpinnerComponent, forwardRef(() => TableComponent)]
 })
 export class CadLineTjqzComponent {
   private console = inject(CadConsoleService);

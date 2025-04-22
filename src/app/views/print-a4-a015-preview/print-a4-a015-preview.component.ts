@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, inject, OnDestroy, signal} from "@angular/core";
+import {AfterViewInit, Component, inject, OnDestroy, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {CadPreviewParams} from "@app/cad/cad-preview";
@@ -24,8 +24,7 @@ export type PreviewData = {
   selector: "app-print-a4-a015-preview",
   templateUrl: "./print-a4-a015-preview.component.html",
   styleUrls: ["./print-a4-a015-preview.component.scss"],
-  imports: [CadImageComponent, ImageComponent, MatButtonModule, NgScrollbar, SpinnerComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [CadImageComponent, ImageComponent, MatButtonModule, NgScrollbar, SpinnerComponent]
 })
 export class PrintA4A015PreviewComponent implements AfterViewInit, OnDestroy {
   private http = inject(CadDataService);

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked, viewChildren} from "@angular/core";
+import {Component, computed, effect, inject, signal, untracked, viewChildren} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -47,8 +47,7 @@ import {
     MatSlideToggleModule,
     NgScrollbar,
     SpinnerComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class SelectBancaiComponent {
   private config = inject(AppConfigService);

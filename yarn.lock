@@ -12600,7 +12600,6 @@ __metadata:
     typescript: "npm:~5.8.3"
     uuid: "npm:^11.1.0"
     vanilla-jsoneditor: "npm:^3.3.1"
-    zone.js: "npm:~0.15.0"
   languageName: unknown
   linkType: soft
 
@@ -17052,12 +17051,5 @@ __metadata:
   version: 1.1.2
   resolution: "zimmerframe@npm:1.1.2"
   checksum: 10c0/8f693609c31cbb4449db223acd61661bc93b73e615f9db6fb8c86d4ceea84ca54cbbeebcf53cf74c22a1f923b92abd18e97988a5e175c76b6ab17238e5593a9d
-  languageName: node
-  linkType: hard
-
-"zone.js@npm:~0.15.0":
-  version: 0.15.0
-  resolution: "zone.js@npm:0.15.0"
-  checksum: 10c0/981b664c1978759a2854f6e6692d245d1d6334c6b20b7e2e5fa9b60eed74743b29c6a71f7472dc6d2790ab53d67e30475bcd92b9f7664e50aef8bbcd40379552
   languageName: node
   linkType: hard

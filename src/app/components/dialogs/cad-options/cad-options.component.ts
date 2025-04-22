@@ -1,16 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  forwardRef,
-  HostBinding,
-  inject,
-  Inject,
-  signal,
-  viewChild
-} from "@angular/core";
+import {AfterViewInit, Component, computed, effect, forwardRef, HostBinding, inject, Inject, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
@@ -50,8 +38,7 @@ import {CadOptionsInput, CadOptionsOutput} from "./cad-options.types";
     MatPaginatorModule,
     NgScrollbar,
     SpinnerComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class CadOptionsComponent implements AfterViewInit {
   private http = inject(CadDataService);

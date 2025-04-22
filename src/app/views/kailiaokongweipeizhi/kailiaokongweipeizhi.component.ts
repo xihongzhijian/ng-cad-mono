@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
+import {Component, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {KlkwpzItem, KlkwpzSource} from "@components/klkwpz/klkwpz";
@@ -13,8 +13,7 @@ import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner
   selector: "app-kailiaokongweipeizhi",
   templateUrl: "./kailiaokongweipeizhi.component.html",
   styleUrls: ["./kailiaokongweipeizhi.component.scss"],
-  imports: [MatButtonModule, KlkwpzComponent, SpinnerComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule, KlkwpzComponent, SpinnerComponent]
 })
 export class KailiaokongweipeizhiComponent implements OnInit {
   private http = inject(CadDataService);

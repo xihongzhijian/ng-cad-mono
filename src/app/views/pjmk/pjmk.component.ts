@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from "@angular/core";
+import {Component, inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
@@ -14,8 +14,7 @@ import {MessageService} from "@modules/message/services/message.service";
   selector: "app-pjmk",
   templateUrl: "./pjmk.component.html",
   styleUrls: ["./pjmk.component.scss"],
-  imports: [MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule]
 })
 export class PjmkComponent implements OnInit {
   private dialog = inject(MatDialog);

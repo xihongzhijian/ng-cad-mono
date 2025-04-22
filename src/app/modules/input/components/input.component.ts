@@ -3,7 +3,6 @@ import {TextFieldModule} from "@angular/cdk/text-field";
 import {AsyncPipe, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   computed,
   DoCheck,
@@ -94,8 +93,7 @@ import {parseObjectString} from "./input.utils";
     NgScrollbarModule,
     NgTemplateOutlet,
     TextFieldModule
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
   private dialog = inject(MatDialog);

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -30,8 +30,7 @@ import {openCadDimensionFormDialog} from "../../dialogs/cad-dimension-form/cad-d
   selector: "app-cad-dimension",
   templateUrl: "./cad-dimension.component.html",
   styleUrls: ["./cad-dimension.component.scss"],
-  imports: [FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatSlideToggleModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatSlideToggleModule]
 })
 export class CadDimensionComponent implements OnInit, OnDestroy {
   private config = inject(AppConfigService);

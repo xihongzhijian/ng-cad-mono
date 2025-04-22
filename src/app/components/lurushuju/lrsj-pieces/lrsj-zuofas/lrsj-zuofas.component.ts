@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, effect, HostBinding, inject, signal, untracked, viewChild} from "@angular/core";
+import {Component, effect, HostBinding, inject, signal, untracked, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -26,8 +26,7 @@ import {ZuofaInfo} from "./lrsj-zuofas.types";
   selector: "app-lrsj-zuofas",
   imports: [FloatingDialogModule, ImageComponent, LrsjZuofaComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbarModule],
   templateUrl: "./lrsj-zuofas.component.html",
-  styleUrl: "./lrsj-zuofas.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./lrsj-zuofas.component.scss"
 })
 export class LrsjZuofasComponent extends LrsjPiece {
   private dialog = inject(MatDialog);

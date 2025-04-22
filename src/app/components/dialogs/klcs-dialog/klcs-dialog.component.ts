@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Inject, viewChild} from "@angular/core";
+import {Component, Inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {KailiaocanshuData, KlcsComponent} from "@components/klcs/klcs.component";
@@ -8,8 +8,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-klcs-dialog",
   templateUrl: "./klcs-dialog.component.html",
   styleUrls: ["./klcs-dialog.component.scss"],
-  imports: [KlcsComponent, MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [KlcsComponent, MatButtonModule]
 })
 export class KlcsDialogComponent {
   klcsComponent = viewChild(KlcsComponent);

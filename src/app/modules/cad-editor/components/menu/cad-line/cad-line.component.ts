@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -72,8 +71,7 @@ import {CadLayerInputComponent} from "../cad-layer-input/cad-layer-input.compone
     MatInputModule,
     MatMenuModule,
     MatOptionModule
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
   private dialog = inject(MatDialog);

@@ -1,6 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -91,8 +90,7 @@ import {
     TypedTemplateDirective
   ],
   templateUrl: "./lrsj-suanliao-data.component.html",
-  styleUrl: "./lrsj-suanliao-data.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./lrsj-suanliao-data.component.scss"
 })
 export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   private dialog = inject(MatDialog);

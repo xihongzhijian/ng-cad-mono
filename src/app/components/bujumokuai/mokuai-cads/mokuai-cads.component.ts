@@ -1,6 +1,5 @@
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   computed,
@@ -56,8 +55,7 @@ import {MokuaiCadItemInfo} from "./mokuai-cads.types";
     NgScrollbarModule
   ],
   templateUrl: "./mokuai-cads.component.html",
-  styleUrl: "./mokuai-cads.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./mokuai-cads.component.scss"
 })
 export class MokuaiCadsComponent {
   private bjmkStatus = inject(BjmkStatusService);

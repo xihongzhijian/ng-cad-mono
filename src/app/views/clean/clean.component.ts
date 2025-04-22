@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild} from "@angular/core";
+import {Component, computed, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
 import {ObjectOf, Timer} from "@lucilor/utils";
@@ -12,8 +12,7 @@ import {InputComponent} from "../../modules/input/components/input.component";
   selector: "app-clean",
   templateUrl: "./clean.component.html",
   styleUrls: ["./clean.component.scss"],
-  imports: [InputComponent, MatButtonModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [InputComponent, MatButtonModule, NgScrollbar]
 })
 export class CleanComponent implements OnInit {
   private http = inject(CadDataService);

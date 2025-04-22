@@ -1,5 +1,5 @@
 import {animate, state, style, transition, trigger} from "@angular/animations";
-import {ChangeDetectionStrategy, Component, effect, inject, signal, untracked, viewChild} from "@angular/core";
+import {Component, effect, inject, signal, untracked, viewChild} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -28,8 +28,7 @@ import {DingdanBomCacheData, DingdanBomData, DingdanBomDataResponseData} from ".
       transition("expanded <=> collapsed", animate("225ms cubic-bezier(0.4, 0.0, 0.2, 1)"))
     ])
   ],
-  imports: [FormsModule, MatButtonModule, MatSlideToggleModule, TableComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [FormsModule, MatButtonModule, MatSlideToggleModule, TableComponent]
 })
 export class BomGongyiluxianComponent {
   private http = inject(CadDataService);

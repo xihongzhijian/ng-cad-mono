@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, HostListener, inject, signal} from "@angular/core";
+import {Component, computed, HostBinding, HostListener, inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -34,8 +34,7 @@ import {openCadLineForm} from "../cad-line/cad-line.utils";
   selector: "app-toolbar",
   templateUrl: "./toolbar.component.html",
   styleUrls: ["./toolbar.component.scss"],
-  imports: [AboutComponent, MatButtonModule, MatDividerModule, MatMenuModule, RouterModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [AboutComponent, MatButtonModule, MatDividerModule, MatMenuModule, RouterModule]
 })
 export class ToolbarComponent {
   private config = inject(AppConfigService);

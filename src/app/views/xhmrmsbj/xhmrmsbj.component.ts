@@ -1,7 +1,6 @@
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -161,8 +160,7 @@ const table = "p_xinghaomorenmenshanbuju";
     TypedTemplateDirective,
     XhmrmsbjSbjbComponent,
     XhmrmsbjXinghaoConfigComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class XhmrmsbjComponent implements OnInit, OnDestroy {
   private bjmkStatus = inject(BjmkStatusService);

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, Inject, signal, untracked} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, Inject, signal, untracked} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -27,8 +27,7 @@ import {
   selector: "app-dakong-summary",
   templateUrl: "./dakong-summary.component.html",
   styleUrls: ["./dakong-summary.component.scss"],
-  imports: [CadImageComponent, FormulasComponent, FormsModule, InputComponent, MatButtonModule, MatSlideToggleModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [CadImageComponent, FormulasComponent, FormsModule, InputComponent, MatButtonModule, MatSlideToggleModule, NgScrollbar]
 })
 export class DakongSummaryComponent {
   private http = inject(CadDataService);

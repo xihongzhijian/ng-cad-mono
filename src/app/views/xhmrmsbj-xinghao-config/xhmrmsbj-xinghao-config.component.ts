@@ -1,17 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostBinding,
-  inject,
-  input,
-  model,
-  signal,
-  untracked,
-  viewChildren
-} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, input, model, signal, untracked, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -73,8 +61,7 @@ import {getSuanliaoConfigData, getSuanliaoConfigItemCadSearch} from "./xhmrmsbj-
     TypedTemplateDirective
   ],
   templateUrl: "./xhmrmsbj-xinghao-config.component.html",
-  styleUrl: "./xhmrmsbj-xinghao-config.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./xhmrmsbj-xinghao-config.component.scss"
 })
 export class XhmrmsbjXinghaoConfigComponent {
   private bjmk = inject(BjmkStatusService);

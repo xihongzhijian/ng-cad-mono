@@ -1,7 +1,6 @@
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   computed,
@@ -78,8 +77,7 @@ import {getEmptyMokuaiItem, getMokuaiCustomData, mokuaiSubmitAfter, updateMokuai
     TableComponent
   ],
   templateUrl: "./mokuai-item.component.html",
-  styleUrl: "./mokuai-item.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./mokuai-item.component.scss"
 })
 export class MokuaiItemComponent {
   private bjmkStatus = inject(BjmkStatusService);

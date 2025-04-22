@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, inject, Inject, OnInit, signal} from "@angular/core";
+import {Component, HostBinding, inject, Inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -29,8 +29,7 @@ import {
   selector: "app-tongyongshuju-dialog",
   templateUrl: "./tongyongshuju-dialog.component.html",
   styleUrl: "./tongyongshuju-dialog.component.scss",
-  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, SpinnerModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, SpinnerModule]
 })
 export class TongyongshujuDialogComponent implements OnInit {
   private dialog = inject(MatDialog);

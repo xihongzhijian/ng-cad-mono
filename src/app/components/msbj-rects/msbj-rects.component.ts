@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -29,8 +28,7 @@ import {MsbjRectInfo, MsbjRectInfoRaw, MsbjRectSelectType} from "./msbj-rects.ty
   selector: "app-msbj-rects",
   templateUrl: "./msbj-rects.component.html",
   styleUrls: ["./msbj-rects.component.scss"],
-  imports: [ClickStopPropagationDirective, MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [ClickStopPropagationDirective, MatButtonModule]
 })
 export class MsbjRectsComponent {
   private status = inject(AppStatusService);

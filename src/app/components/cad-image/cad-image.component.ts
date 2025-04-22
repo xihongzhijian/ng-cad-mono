@@ -1,15 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostBinding,
-  inject,
-  input,
-  output,
-  signal
-} from "@angular/core";
+import {booleanAttribute, Component, computed, effect, HostBinding, inject, input, output, signal} from "@angular/core";
 import {imgCadEmpty} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
@@ -26,8 +15,7 @@ import {DataInfoChnageEvent} from "./cad-image.types";
   selector: "app-cad-image",
   imports: [ImageComponent],
   templateUrl: "./cad-image.component.html",
-  styleUrl: "./cad-image.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./cad-image.component.scss"
 })
 export class CadImageComponent {
   private http = inject(CadDataService);
