@@ -4,7 +4,7 @@
   </div>
   <mat-form-field style="width: 100%">
     <mat-label>按名字搜索</mat-label>
-    <input type="text" matInput name="searchName" [(ngModel)]="searchParams.name" />
+    <input type="text" matInput name="searchName" [(ngModel)]="searchParams().name" />
   </mat-form-field>
   <mat-form-field>
     <mat-label>按日期搜索</mat-label>
@@ -19,7 +19,7 @@
       readonly
       (click)="picker.open()"
     />
-    @if (searchParams.time) {
+    @if (searchParams().time) {
       <button matSuffix mat-icon-button (click)="resetSearchTime()">
         <mat-icon>close</mat-icon>
       </button>
@@ -54,7 +54,7 @@
   <mat-paginator
     #paginator
     [length]="cadsCount"
-    [pageSize]="searchParams.limit"
+    [pageSize]="searchParams().limit"
     [pageSizeOptions]="pageSizeOptions"
     showFirstLastButtons
     (page)="changePage($event)"

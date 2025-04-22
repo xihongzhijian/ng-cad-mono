@@ -3,11 +3,11 @@
   <button mat-flat-button (click)="start()" [disabled]="taskStartTime !== null">执行</button>
   <button mat-flat-button (click)="resetClean()">重置</button>
   <button mat-flat-button (click)="clearMsgs()">清空信息</button>
-  <app-input [info]="deleteLimitInfo"></app-input>
+  <app-input [info]="deleteLimitInfo()"></app-input>
 </div>
 <ng-scrollbar>
   <div class="msgs">
-    @for (msg of msgs; track $index) {
+    @for (msg of msgs(); track $index) {
       <div class="msg" [class]="msg.type">{{ msg.content }}</div>
     }
   </div>

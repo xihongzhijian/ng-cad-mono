@@ -1,5 +1,6 @@
 import {remoteHost} from "@app/app.common";
 import {Formulas, toFixed} from "@app/utils/calc";
+import {ResultWithErrors} from "@app/utils/error-message";
 import {ProjectConfig} from "@app/utils/project-config";
 import {getCalcZhankaiText} from "@app/utils/zhankai";
 import {isSbjbCad} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
@@ -69,7 +70,6 @@ export const prepareCadViewer = async (cad: CadViewer) => {
 };
 
 export interface ValidateResult {
-  errors: string[];
   errorLines: CadLineLike[][];
 }
 
@@ -138,7 +138,7 @@ export const validateLines = (
   noInfo?: boolean,
   tol = DEFAULT_TOLERANCE
 ) => {
-  const result: ValidateResult = {errors: [], errorLines: []};
+  const result = new ResultWithErrors<ValidateResult>({errorLines: []});
   data.entities.forEach((e) => {
     if (e instanceof CadLineLike) {
       delete e.info.errors;
@@ -164,7 +164,7 @@ export const validateLines = (
     fentiInfo = getCadFentiInfo(data);
   }
   const lines = sortLines(fentiInfo.rawEntities, tol);
-  result.errorLines = lines;
+  result.data.errorLines = lines;
   const [min, max] = LINE_LIMIT;
   let groupMaxLength = shuangxiangzhewan ? 2 : 1;
   if (cadTypes3.includes(data.type)) {
@@ -201,24 +201,24 @@ export const validateLines = (
         addInfoError(e, "斜率不符合要求");
         slopeErrCount++;
         if (slopeErrCount <= slopeErrMax) {
-          result.errors.push(`线段斜率不符合要求(线长: ${e.length.toFixed(2)})`);
+          result.addErrorStr(`线段斜率不符合要求(线长: ${e.length.toFixed(2)})`);
         }
       }
     }
     if (刨坑起始线数量 > 1) {
-      result.errors.push("不能有多根刨坑起始线");
+      result.addErrorStr("不能有多根刨坑起始线");
     }
     if (刨坑起始线位置错误) {
-      result.errors.push("刨坑起始线必须是第一根或最后一根");
+      result.addErrorStr("刨坑起始线必须是第一根或最后一根");
     }
   }
   if (lines.length < 1) {
-    result.errors.push("没有线");
+    result.addErrorStr("没有线");
   } else if (typeCheck && lines.length > groupMaxLength && !has自动识别上下折) {
     if (shuangxiangzhewan) {
-      result.errors.push("CAD是双向折弯，分成了3段以上或线重叠");
+      result.addErrorStr("CAD是双向折弯，分成了3段以上或线重叠");
     } else {
-      result.errors.push("CAD不是双向折弯，分成了多段或线重叠");
+      result.addErrorStr("CAD不是双向折弯，分成了多段或线重叠");
     }
     for (let i = 0; i < lines.length - 1; i++) {
       const currGroup = lines[i];
@@ -255,25 +255,19 @@ export const isCadCollectionOfCad = (collection: CadCollection) => {
 };
 
 export const validateCad = (collection: CadCollection, data: CadData, noInfo?: boolean, tol = DEFAULT_TOLERANCE) => {
-  const result: ValidateResult = {errors: [], errorLines: []};
+  const result = new ResultWithErrors<ValidateResult>({errorLines: []});
   const entities = data.getAllEntities();
   const idsAll = entities.toArray().map((e) => e.id);
   for (const key of intersectionKeys) {
     const idsToFind: string[] = data[key].flat();
     if (difference(idsToFind, idsAll).length > 0) {
-      result.errors.push(`${intersectionKeysTranslate[key]}存在无效数据`);
+      result.addErrorStr(`${intersectionKeysTranslate[key]}存在无效数据`);
     }
   }
   const fentiInfo = getCadFentiInfo(data);
   if (data.分体对应线.length > 0) {
-    let isIncomplete = false;
-    for (const item of data.分体对应线) {
-      if (item.ids.length === 1) {
-        isIncomplete = true;
-      }
-    }
-    if (isIncomplete) {
-      result.errors.push("分体对应线没有设置完");
+    if (data.分体对应线.some((v) => v.ids.length < 2)) {
+      result.addFatalErrorStr("分体对应线必须同时指定两个位置");
     }
     const cemianTypes = ["锁边侧面", "铰边侧面", "插销边侧面", "中锁边侧面", "中铰边侧面"];
     if (cemianTypes.includes(data.type)) {
@@ -284,21 +278,15 @@ export const validateCad = (collection: CadCollection, data: CadData, noInfo?: b
           ids.push(lines[lines.length - 1].id);
         }
         if (intersection(data.分体对应线.map((v) => v.ids).flat(), ids).length !== ids.length) {
-          result.errors.push("分体对应线必须包含【第一根线】和【最后一根线】，请检查");
+          result.addFatalErrorStr("分体对应线必须包含【第一根线】和【最后一根线】");
         }
       }
     }
-    if (data.分体对应线.some((v) => v.isPinjie && v.ids.length < 2)) {
-      result.errors.push("分体对应线是拼接线，必须同时指定两个位置");
-    }
   }
   if (!isEmpty(data.blocks) || data.entities.insert.length > 0) {
-    result.errors.push("不能包含块");
+    result.addErrorStr("不能包含块");
   }
-  const linesResult = validateLines(collection, data, fentiInfo, noInfo, tol);
-  for (const key in result) {
-    (result as any)[key].push(...(linesResult as any)[key]);
-  }
+  result.learnFrom(validateLines(collection, data, fentiInfo, noInfo, tol));
   return result;
 };
 
@@ -391,28 +379,73 @@ export const splitShuangxiangCad = (data: CadData) => {
   return result as [CadData, CadData];
 };
 
-export const getShuangxiangLineRects = (data: ReturnType<typeof splitShuangxiangCad>) => {
-  if (!data) {
-    return null;
-  }
-  const [a, b] = data;
-  return [a.getBoundingRect(), b.getBoundingRect()];
-};
-
-export const setShuangxiangLineRects = (
-  data: ReturnType<typeof splitShuangxiangCad>,
-  rects: ReturnType<typeof getShuangxiangLineRects>
-) => {
-  if (!data || !rects) {
+export const setShuangxiangLineRects = (data: ReturnType<typeof splitShuangxiangCad>) => {
+  if (data?.length !== 2) {
     return;
   }
-  const rects2 = data.map((v) => v.getBoundingRect());
-  for (let i = 0; i < rects.length; i++) {
-    const rect1 = rects[i];
-    const rect2 = rects2[i];
-    const dx = rect1.x - rect2.x;
-    const dy = rect1.y - rect2.y;
-    data[i].transform({translate: [dx, dy]}, true);
+  const [hData, vData] = data;
+  const checkIntersections = () => {
+    let intersectionCount = 0;
+    hData.entities.forEach((e1) => {
+      if (!(e1 instanceof CadLine)) {
+        return;
+      }
+      vData.entities.forEach((e2) => {
+        if (!(e2 instanceof CadLine)) {
+          return;
+        }
+        const pts = e1.curve.intersects(e2.curve);
+        if (pts.length > 0) {
+          intersectionCount++;
+        }
+      });
+    });
+    return intersectionCount === 1;
+  };
+  const transforms = [
+    () => {
+      let hLine: CadLine | undefined;
+      let hLength = 0;
+      let vLine: CadLine | undefined;
+      let vLength = 0;
+      hData.entities.forEach((e) => {
+        if (!(e instanceof CadLine) || e.isVertical()) {
+          return;
+        }
+        const length = e.length;
+        if (length > hLength) {
+          hLength = length;
+          hLine = e;
+        }
+      });
+      vData.entities.forEach((e) => {
+        if (!(e instanceof CadLine) || e.isHorizontal()) {
+          return;
+        }
+        const length = e.length;
+        if (length > vLength) {
+          vLength = length;
+          vLine = e;
+        }
+      });
+      if (!hLine || !vLine) {
+        return;
+      }
+      const {x: x1, y: y1} = hLine.middle;
+      const {x: x2, y: y2} = vLine.middle;
+      vData.transform({translate: [x1 - x2, y1 - y2]}, true);
+    },
+    () => {
+      const {x: x1, y: y1} = hData.getBoundingRect();
+      const {x: x2, y: y2} = vData.getBoundingRect();
+      vData.transform({translate: [x1 - x2, y1 - y2]}, true);
+    }
+  ];
+  for (const transform of transforms) {
+    transform();
+    if (checkIntersections()) {
+      return;
+    }
   }
 };
 

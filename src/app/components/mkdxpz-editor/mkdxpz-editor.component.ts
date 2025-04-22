@@ -14,6 +14,7 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
+import {remoteFilePath} from "@app/app.common";
 import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.types";
 import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.types";
 import {getShuruItem, getShuruTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
@@ -24,6 +25,7 @@ import {VarNamesComponent} from "@components/var-names/var-names.component";
 import {VarNameItem} from "@components/var-names/var-names.types";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
 import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.types";
+import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
@@ -34,7 +36,15 @@ import {getNodesTable, getVarNameGroupName} from "./mkdxpz-editor.utils";
 
 @Component({
   selector: "app-mkdxpz-editor",
-  imports: [MatButtonModule, MatDividerModule, MsbjRectsComponent, SuanliaogongshiComponent, TableComponent, VarNamesComponent],
+  imports: [
+    ImageComponent,
+    MatButtonModule,
+    MatDividerModule,
+    MsbjRectsComponent,
+    SuanliaogongshiComponent,
+    TableComponent,
+    VarNamesComponent
+  ],
   templateUrl: "./mkdxpz-editor.component.html",
   styleUrl: "./mkdxpz-editor.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -56,6 +66,7 @@ export class MkdxpzEditorComponent {
     this.data.set(cloneDeep(this.dataIn()));
   });
   nodeNames = computed(() => this.data().nodes?.map((v) => v.层名字) || []);
+  imgPrefix = remoteFilePath;
 
   slgsInfo = signal<SuanliaogongshiInfo>({
     data: {},

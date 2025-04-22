@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {ActivatedRoute} from "@angular/router";
@@ -14,21 +14,20 @@ import {MessageService} from "@modules/message/services/message.service";
   selector: "app-pjmk",
   templateUrl: "./pjmk.component.html",
   styleUrls: ["./pjmk.component.scss"],
-  imports: [MatButtonModule]
+  imports: [MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PjmkComponent implements OnInit {
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+
   table = "";
   tableName = "";
   id = "";
-  name = "";
+  name = signal("");
   data: ZixuanpeijianOutput = importZixuanpeijian();
-
-  constructor(
-    private dialog: MatDialog,
-    private http: CadDataService,
-    private route: ActivatedRoute,
-    private message: MessageService
-  ) {}
 
   async ngOnInit() {
     setGlobal("pjmk", this);
@@ -56,7 +55,7 @@ export class PjmkComponent implements OnInit {
       fields: ["mingzi", "peijianmokuai"]
     });
     if (records.length > 0) {
-      this.name = records[0].mingzi || "";
+      this.name.set(records[0].mingzi || "");
       try {
         this.data = importZixuanpeijian(JSON.parse(records[0].peijianmokuai));
       } catch {}

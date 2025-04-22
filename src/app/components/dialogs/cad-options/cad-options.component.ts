@@ -18,6 +18,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatPaginator, MatPaginatorModule, PageEvent} from "@angular/material/paginator";
 import {filePathUrl} from "@app/app.common";
 import {FetchManager} from "@app/utils/fetch-manager";
+import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {isTypeOf, ObjectOf, queryString, timeout} from "@lucilor/utils";
 import {ClickStopPropagationDirective} from "@modules/directives/click-stop-propagation.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -26,13 +27,13 @@ import {DataAndCount} from "@modules/http/services/http.service.types";
 import {InputInfo, InputInfoObject} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
-import {cloneDeep, debounce, isEmpty} from "lodash";
+import {cloneDeep, debounce, difference, differenceWith, isEmpty, unionWith} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
 import {InputComponent} from "../../../modules/input/components/input.component";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {getOpenDialogFunc} from "../dialog.common";
-import {CadOptionsInput, CadOptionsOutput, CadOptionsPageDataItem} from "./cad-options.types";
+import {CadOptionsInput, CadOptionsOutput} from "./cad-options.types";
 
 @Component({
   selector: "app-cad-options",
@@ -59,18 +60,11 @@ export class CadOptionsComponent implements AfterViewInit {
 
   @HostBinding("class") class = ["ng-page"];
 
-  pageData = signal<CadOptionsPageDataItem[]>([]);
+  pageData = signal<GetOptionsResultItem[]>([]);
   length = signal(0);
   pageSizeOptions = signal([50, 100, 200, 500]);
   pageSize = signal(100);
-  checkedIdsCurr = new Set<number>();
-  checkedIdsOthers = new Set<number>();
   loaderIds = {optionsLoader: "cadOptions", submitLoaderId: "cadOptionsSubmit"};
-
-  filePathUrl = filePathUrl;
-  paginator = viewChild(MatPaginator);
-  showPaginator = signal(true);
-  noImage = signal(false);
 
   constructor(
     public dialogRef: MatDialogRef<CadOptionsComponent, CadOptionsOutput>,
@@ -81,6 +75,31 @@ export class CadOptionsComponent implements AfterViewInit {
     await timeout(0);
     await this.getData(1);
   }
+
+  filePathUrl = filePathUrl;
+  paginator = viewChild(MatPaginator);
+  showPaginator = signal(true);
+
+  noImage1 = computed(() => {
+    if (this.data.noImage) {
+      return true;
+    }
+    const items = this.pageData();
+    return items.every((v) => !v.img);
+  });
+  noImage2 = signal(true);
+  toggleNoImage2() {
+    this.noImage2.update((v) => !v);
+  }
+  noImage2Count = signal(0);
+  noImage2CountEff = effect(() => {
+    if (!this.noImage2()) {
+      this.noImage2Count.update((v) => v + 1);
+    }
+  });
+  noImage = computed(() => this.noImage1() || this.noImage2());
+
+  checkedItems = signal<GetOptionsResultItem[]>([]);
 
   optionOptionsCache = new Map<string, ObjectOf<string>>();
   optionOptions = signal<ObjectOf<string>[]>([]);
@@ -136,25 +155,29 @@ export class CadOptionsComponent implements AfterViewInit {
       options: [],
       newTabChanged: this.newTabChanged()
     };
+    const checkedItems = this.checkedItems().slice();
     if (this.data.defaultValue) {
       const {value, required} = this.data.defaultValue;
-      if (required && !value && this.checkedIdsCurr.size > 1) {
+      if (required && !value && checkedItems.length > 1) {
         this.message.error("请选择默认值");
         return;
       }
       result.defaultValue = value;
     }
     result.options = [];
-    for (const [i, item] of this.pageData().entries()) {
-      if (item.checked) {
-        result.options.push({vid: item.vid, mingzi: item.name});
-      }
+    const {checkedItems: checkedNames = [], checkedVids = []} = this.data;
+    const checkedNames2: typeof checkedNames = [];
+    const checkedVids2: typeof checkedVids = [];
+    for (const item of checkedItems) {
+      checkedNames2.push(item.name);
+      checkedVids2.push(item.vid);
+      result.options.push({vid: item.vid, mingzi: item.name});
       if (this.data.optionOptions) {
         if (!result.optionOptions) {
           result.optionOptions = {};
         }
-        const optionOption = this.optionOptions()[i];
-        if (isTypeOf(optionOption, "object")) {
+        const optionOption = this.optionOptionsCache.get(String(item.vid));
+        if (optionOption && isTypeOf(optionOption, "object")) {
           delete optionOption[""];
         }
         if (!isEmpty(optionOption)) {
@@ -162,24 +185,52 @@ export class CadOptionsComponent implements AfterViewInit {
         }
       }
     }
-    if (this.checkedIdsOthers.size > 0) {
-      const dataInOthers = await this.getOptions(
+
+    const getOptions = async (field: string, values: any[]) => {
+      const res = await this.getOptions(
         {
           name: this.data.name,
           data: this.data.data,
           xinghao: this.data.xinghao,
           includeTingyong: true,
-          values: Array.from(this.checkedIdsOthers),
-          fields: ["vid"],
+          values,
+          fields: [field],
           nameField: this.data.nameField,
           info: this.data.info
         },
         [this.loaderIds.submitLoaderId],
         false
       );
-      if (dataInOthers) {
-        for (const item of dataInOthers.data || []) {
-          result.options.push({vid: item.vid, mingzi: item.name});
+      return res?.data || [];
+    };
+    const checkedItemsInited = this._checkedItemsInited.values();
+    const checkedNames3: typeof checkedNames = [];
+    const checkedVids3: typeof checkedVids = [];
+    for (const item of checkedItemsInited) {
+      checkedNames3.push(item.name);
+      checkedVids3.push(item.vid);
+    }
+    const checkedNames4 = difference(checkedNames, checkedNames2, checkedNames3);
+    const checkedVids4 = difference(checkedVids, checkedVids2, checkedVids3);
+    if (checkedNames4.length > 0) {
+      checkedItems.push(...(await getOptions("mingzi", checkedNames4)));
+    }
+    if (checkedVids4.length > 0) {
+      checkedItems.push(...(await getOptions("vid", checkedVids4)));
+    }
+
+    for (const item of checkedItems) {
+      result.options.push({vid: item.vid, mingzi: item.name});
+      if (this.data.optionOptions) {
+        if (!result.optionOptions) {
+          result.optionOptions = {};
+        }
+        const optionOption = this.optionOptionsCache.get(String(item.vid));
+        if (optionOption && isTypeOf(optionOption, "object")) {
+          delete optionOption[""];
+        }
+        if (!isEmpty(optionOption)) {
+          result.optionOptions[item.vid] = optionOption;
         }
       }
     }
@@ -206,23 +257,39 @@ export class CadOptionsComponent implements AfterViewInit {
     this.getData(event.pageIndex + 1);
   }
 
-  optionTypesManager = new FetchManager([], async () => {
-    const {typeFiltering, name} = this.data;
-    if (!typeFiltering) {
-      return [];
-    }
-    const records = await this.http.queryMySql({table: name, fields: [typeFiltering.field]});
+  emptyTypeName = "未分组";
+  optionTypesManager = new FetchManager({types: [], map: new Map()}, async () => {
+    const {typeFiltering, name, options} = this.data;
     const types: string[] = [];
+    const map = new Map<number, string[]>();
+    if (!typeFiltering) {
+      return {types, map};
+    }
+    let records: TableDataBase[] | GetOptionsResultItem[] | undefined = options;
+    if (!Array.isArray(records)) {
+      records = await this.http.queryMySql({table: name, fields: [typeFiltering.field], withGuanlian: true});
+    }
+    let hasEmptyType = false;
     for (const record of records) {
-      const type = (record as any)[typeFiltering.field];
-      if (type && !types.includes(type)) {
-        types.push(type);
+      let types2: string | string[] = (record as any)[typeFiltering.field];
+      if (!Array.isArray(types2)) {
+        types2 = [types2];
       }
+      types2 = types2.filter((v) => v && typeof v === "string");
+      if (types2.length < 1) {
+        hasEmptyType = true;
+      }
+      for (const type of types2) {
+        if (!types.includes(type)) {
+          types.push(type);
+        }
+      }
+      map.set(record.vid, types2);
     }
-    if (types.length > 1) {
-      return types;
+    if (hasEmptyType) {
+      types.unshift(this.emptyTypeName);
     }
-    return [];
+    return {types, map};
   });
   activeOptionTypes = signal<string[]>([]);
   optionTypesInputInfo = computed(() => {
@@ -235,7 +302,7 @@ export class CadOptionsComponent implements AfterViewInit {
       label: "类型",
       appearance: "list",
       multiple: true,
-      options: this.optionTypesManager.data()
+      options: this.optionTypesManager.data().types
     };
     return info;
   });
@@ -269,17 +336,27 @@ export class CadOptionsComponent implements AfterViewInit {
       autoFocus: true,
       value: this.searchValue(),
       onInput: debounce(onChange, 500),
-      onChange
+      onChange,
+      clearable: true,
+      style: {flex: "0 1 300px"}
     };
     return info;
   });
   async getOptions(params: GetOptionsParamsSingle, loader: Parameters<typeof this.spinner.show>, refreshLocalOptions: boolean) {
     let data: DataAndCount<GetOptionsResultItem[]> | null = null;
     const {options} = this.data;
+    const activeOptionTypes = this.activeOptionTypes();
+    const typesMap = this.optionTypesManager.data().map;
     if (Array.isArray(options)) {
       if (refreshLocalOptions) {
+        const {refreshOptions} = this.data;
         this.spinner.show(...loader);
-        data = await this.http.getOptionsAndCount({...params, page: 1, limit: Infinity});
+        if (typeof refreshOptions === "function") {
+          const data2 = await refreshOptions();
+          data = {data: data2, count: data2.length};
+        } else {
+          data = await this.http.getOptionsAndCount({...params, page: 1, limit: Infinity});
+        }
         if (data) {
           options.length = 0;
           options.push(...(data.data || []));
@@ -290,6 +367,18 @@ export class CadOptionsComponent implements AfterViewInit {
       const options2 = options.filter((v) => {
         if (params.values && !params.values.includes(v[field])) {
           return false;
+        }
+        if (activeOptionTypes.length > 0) {
+          const types = typesMap.get(v.vid) || [];
+          if (types.length < 1) {
+            if (!activeOptionTypes.includes(this.emptyTypeName)) {
+              return false;
+            }
+          } else {
+            if (!activeOptionTypes.some((type) => types.includes(type))) {
+              return false;
+            }
+          }
         }
         return queryString(this.searchValue(), v.name);
       });
@@ -304,15 +393,8 @@ export class CadOptionsComponent implements AfterViewInit {
     return data;
   }
 
+  private _checkedItemsInited = new Map<number, GetOptionsResultItem>();
   async getData(page?: number, refreshLocalOptions = false) {
-    const {checkedIdsCurr, checkedIdsOthers} = this;
-    checkedIdsCurr.clear();
-    let pageData = this.pageData();
-    for (const {vid, checked} of pageData) {
-      if (checked) {
-        checkedIdsOthers.add(vid);
-      }
-    }
     const filter = cloneDeep(this.data.filter || {});
     const {typeFiltering} = this.data;
     const types = this.activeOptionTypes();
@@ -336,25 +418,34 @@ export class CadOptionsComponent implements AfterViewInit {
       refreshLocalOptions
     );
     this.length.set(data?.count || 0);
-    pageData = (data?.data || []).map((v) => {
-      let checked = false;
-      if (this.data.checkedItems?.includes(v.name)) {
-        checked = true;
-      } else if (this.data.checkedVids?.includes(v.vid)) {
-        checked = true;
+    const pageData = data?.data || [];
+    const checkedItems = this.checkedItems();
+    for (const item of pageData) {
+      const i = checkedItems.findIndex((v) => v.vid === item.vid);
+      if (i >= 0) {
+        checkedItems[i] = item;
       }
-      if (checked) {
-        checkedIdsCurr.add(v.vid);
-        checkedIdsOthers.delete(v.vid);
+    }
+    const {checkedItems: checkedNames, checkedVids} = this.data;
+    for (const item of pageData) {
+      if (checkedItems.some((v) => v.vid === item.vid) || this._checkedItemsInited.has(item.vid)) {
+        continue;
       }
-      return {...v, checked};
-    });
+      if (checkedNames && checkedNames.includes(item.name)) {
+        checkedItems.push(item);
+        this._checkedItemsInited.set(item.vid, item);
+      }
+      if (checkedVids && checkedVids.includes(item.vid)) {
+        checkedItems.push(item);
+        this._checkedItemsInited.set(item.vid, item);
+      }
+    }
+    this.checkedItems.set([...checkedItems]);
     pageData.sort((a, b) => {
-      const getOrder = (v: typeof a) => (v.checked ? 0 : 1);
+      const getOrder = (v: typeof a) => (checkedItems.some((v2) => v2.vid === v.vid) ? 0 : 1);
       return getOrder(a) - getOrder(b);
     });
     this.pageData.set(pageData);
-    this.noImage.set(this.data.noImage || pageData.every((v) => !v.img));
     return data;
   }
 
@@ -362,38 +453,34 @@ export class CadOptionsComponent implements AfterViewInit {
     const {multi} = this.data;
     const items = this.pageData();
     const item = items[i];
-    item.checked = !item.checked;
-    const {checkedIdsCurr} = this;
-    if (!multi && item.checked) {
-      for (const item2 of items) {
-        if (item !== item2) {
-          item2.checked = false;
-        }
-      }
-      checkedIdsCurr.clear();
-    }
-    this.pageData.set(items.map((v) => ({...v})));
-    if (item.checked) {
-      checkedIdsCurr.add(item.vid);
+    let checkedItems = this.checkedItems();
+    if (checkedItems.some((v) => v.vid === item.vid)) {
+      checkedItems = differenceWith(checkedItems, [item], (a, b) => a.vid === b.vid);
     } else {
-      checkedIdsCurr.delete(item.vid);
+      if (multi) {
+        checkedItems = unionWith(checkedItems, [item], (a, b) => a.vid === b.vid);
+      } else {
+        checkedItems = [item];
+      }
     }
+    this.checkedItems.set(checkedItems);
   }
 
   selectAll() {
-    const pageData = this.pageData();
-    const isAllSelected = pageData.every((v) => v.checked);
-    for (const [i, item] of pageData.entries()) {
-      const shouldChange = isAllSelected ? item.checked : !item.checked;
-      if (shouldChange) {
-        this.onCheckboxChange(i);
-      }
+    const items = this.pageData();
+    const checkedItems = this.checkedItems();
+    const isAllSelected = items.every((v) => checkedItems.some((v2) => v2.vid === v.vid));
+    if (isAllSelected) {
+      this.checkedItems.set(differenceWith(checkedItems, items, (a, b) => a.vid === b.vid));
+    } else {
+      this.checkedItems.set(unionWith(checkedItems, items, (a, b) => a.vid === b.vid));
     }
   }
 
   setDefaultValue(i: number) {
     const item = this.pageData()[i];
-    if (!item.checked) {
+    const checkedItems = this.checkedItems();
+    if (!checkedItems.some((v) => v.vid === item.vid)) {
       this.onCheckboxChange(i);
     }
     const {defaultValue} = this.data;

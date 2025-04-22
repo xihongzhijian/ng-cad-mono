@@ -12,7 +12,7 @@
     height: 100%;
     padding: 5px;
     box-sizing: border-box;
-    background: lightgray;
+    background: var(--mat-sys-outline-variant);
   }
 
   .item > app-input {

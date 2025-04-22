@@ -7,7 +7,7 @@ import {getOptionsAll2InputInfo} from "@components/lurushuju/services/lrsj-statu
 import {isTypeOf, ObjectOf} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsResultItem, HoutaiCad} from "@modules/http/services/cad-data.service.types";
-import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo} from "@modules/input/components/input.types";
 import {getInputInfoGroup} from "@modules/input/components/input.utils";
 import {difference} from "lodash";
 import {OptionsAll2} from "../../services/lrsj-status.types";
@@ -283,60 +283,66 @@ export const getMenjiaoOptionInputInfo = (
   key: string,
   options: OptionsAll2,
   onOptionsChange: (options: GetOptionsResultItem[]) => void
-): InputInfoSelect => {
-  return getOptionsAll2InputInfo(options, key, (info) => {
-    info.model = {data, key};
-    if (!info.readonly && !info.disabled) {
-      info.validators = Validators.required;
-    }
-    info.onChange = () => {
-      updateMenjiaoData(data);
-    };
-    const dialogKeys = ["门铰"];
-    const openInNewTabKeys = ["门扇厚度", "锁边", "铰边"];
-    if (dialogKeys.includes(key)) {
-      info.optionsDialog = {
-        defaultValue: {value: data.选项默认值[key] || "", required: true},
-        optionKey: key,
-        useLocalOptions: true,
-        openInNewTab: true,
-        onChange(val) {
-          if (val.defaultValue) {
-            data.选项默认值[key] = val.defaultValue;
-          }
-        }
-      };
-    } else if (openInNewTabKeys.includes(key)) {
-      info.openInNewTab = {
-        optionKey: key,
-        onOptionsChange: (opts) => {
-          onOptionsChange(opts);
-        }
-      };
-    }
-    if (key === "锁边") {
-      info.hint = "请使用和实际对应的名字";
-    } else if (key === "门扇厚度") {
-      let valueBefore = data.门扇厚度;
-      if (!Array.isArray(valueBefore)) {
-        data.门扇厚度 = [];
-        if (isTypeOf(valueBefore, ["string", "number"])) {
-          data.门扇厚度.push(valueBefore);
-        }
+) => {
+  const canSearch = ["锁边", "铰边"].includes(key);
+  return getOptionsAll2InputInfo(
+    options,
+    key,
+    (info) => {
+      info.model = {data, key};
+      if (!info.readonly && !info.disabled) {
+        info.validators = Validators.required;
       }
-      if (valueBefore.length > 1) {
-        valueBefore = [valueBefore[0]];
-      }
-      info.onChange = (val: any) => {
-        const diff = difference(val, valueBefore);
-        if (diff.length > 0) {
-          data.门扇厚度 = [diff[0]];
-          valueBefore = diff;
-        }
+      info.onChange = () => {
         updateMenjiaoData(data);
       };
-    }
-  });
+      const dialogKeys = ["门铰"];
+      const openInNewTabKeys = ["门扇厚度", "锁边", "铰边"];
+      if (dialogKeys.includes(key)) {
+        info.optionsDialog = {
+          defaultValue: {value: data.选项默认值[key] || "", required: true},
+          optionKey: key,
+          useLocalOptions: true,
+          openInNewTab: true,
+          onChange(val) {
+            if (val.defaultValue) {
+              data.选项默认值[key] = val.defaultValue;
+            }
+          }
+        };
+      } else if (openInNewTabKeys.includes(key)) {
+        info.openInNewTab = {
+          optionKey: key,
+          onOptionsChange: (opts) => {
+            onOptionsChange(opts);
+          }
+        };
+      }
+      if (key === "锁边") {
+        info.hint = "请使用和实际对应的名字";
+      } else if (key === "门扇厚度") {
+        let valueBefore = data.门扇厚度;
+        if (!Array.isArray(valueBefore)) {
+          data.门扇厚度 = [];
+          if (isTypeOf(valueBefore, ["string", "number"])) {
+            data.门扇厚度.push(valueBefore);
+          }
+        }
+        if (valueBefore.length > 1) {
+          valueBefore = [valueBefore[0]];
+        }
+        info.onChange = (val: any) => {
+          const diff = difference(val, valueBefore);
+          if (diff.length > 0) {
+            data.门扇厚度 = [diff[0]];
+            valueBefore = diff;
+          }
+          updateMenjiaoData(data);
+        };
+      }
+    },
+    canSearch
+  );
 };
 export const getMenfengInputs = (data: 算料数据): InputInfo<门缝配置> => {
   const getMenfengInputInfo = (value: (typeof 门缝配置输入)[number]): InputInfo => {

@@ -282,6 +282,7 @@ export class MokuaiCadsComponent {
   }
   refreshCads() {
     this.bjmkStatus.cadsManager.fetch(true);
+    this.cadsIsOnline = {};
   }
   async afterEditCad(id: string) {
     const dataList = this.dataList();

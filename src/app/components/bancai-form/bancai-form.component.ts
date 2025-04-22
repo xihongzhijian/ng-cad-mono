@@ -1,8 +1,8 @@
 import {ChangeDetectionStrategy, Component, computed, effect, inject, input, model, untracked, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
-import {MatDialog} from "@angular/material/dialog";
+import {MatDialog, MatDialogConfig} from "@angular/material/dialog";
 import {joinOptions} from "@app/app.common";
-import {openBancaiListDialog} from "@components/dialogs/bancai-list/bancai-list.component";
+import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {MaybePromise} from "@lucilor/utils";
 import {BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -121,7 +121,7 @@ export class BancaiFormComponent {
                 const bancaiListNames = data.bancaiList || [];
                 const checkedItems = bancaiList.filter((v) => bancaiListNames.includes(v.mingzi));
                 if (bancaiListNames.includes("全部")) {
-                  checkedItems.push({mingzi: "全部", cailiaoList: [], guigeList: [], houduList: []});
+                  checkedItems.push({vid: 0, mingzi: "全部", cailiaoList: [], guigeList: [], houduList: []});
                 }
                 const result = await openBancaiListDialog(this.dialog, {
                   data: {list: bancaiList, listRefresh: bancaiListRefresh, checkedItems, multi: true}
@@ -169,3 +169,41 @@ export interface BancaiFormData {
   cailiaoList?: string[];
   houduList?: string[];
 }
+
+export const openBancaiListDialog = async (
+  dialog: MatDialog,
+  config: MatDialogConfig<{
+    list: BancaiList[];
+    listRefresh: () => MaybePromise<BancaiList[]>;
+    checkedItems?: BancaiList[];
+    multi?: boolean;
+  }> = {}
+) => {
+  const getOptions = (list: BancaiList[] = []) =>
+    list.map((v) => ({
+      vid: v.vid,
+      name: v.mingzi,
+      img: v.img || "",
+      disabled: false,
+      bancaileixing: v.bancaileixing
+    }));
+  const {list, listRefresh, checkedItems, multi} = config.data || {};
+  const result = await openCadOptionsDialog(dialog, {
+    ...config,
+    data: {
+      name: "板材",
+      multi,
+      checkedItems: checkedItems?.map((v) => v.mingzi) || [],
+      options: getOptions(list),
+      refreshOptions: async () => {
+        const list2 = await listRefresh?.();
+        return getOptions(list2);
+      },
+      typeFiltering: {field: "bancaileixing", title: "板材类型"}
+    }
+  });
+  if (!result || !list) {
+    return null;
+  }
+  return list.filter((v) => result.options.some((v2) => v2.mingzi === v.mingzi));
+};

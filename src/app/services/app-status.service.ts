@@ -19,7 +19,9 @@ import {
   validateCad,
   validateLines
 } from "@app/cad/utils";
+import {ResultWithErrors} from "@app/utils/error-message";
 import {FetchManager} from "@app/utils/fetch-manager";
+import {getInsertName} from "@app/utils/get-value";
 import {ProjectConfig, ProjectConfigRaw} from "@app/utils/project-config";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {getSbjbCadName, isSbjbItemOptionalKeys3} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.utils";
@@ -76,13 +78,13 @@ export class AppStatusService {
   private spinner = inject(SpinnerService);
 
   project = "";
-  collection$ = new BehaviorSubject<CadCollection>("cad");
+  collection = signal<CadCollection>("cad");
   cadTotalLength = signal(0);
   cad = new CadViewer(setCadData(new CadData({name: "新建CAD", info: {isLocal: true}}), this.project, "cad", this.config.getConfig()));
   components = {
     selected: signal<CadData[]>([]),
-    mode: signal<"single" | "multiple">("single"),
-    selectable: signal<boolean>(true)
+    selectable: signal(true),
+    multiSelect: signal(false)
   };
   openCadOptions = signal<OpenCadOptions>({});
   private _changeCadSignal = signal(0);
@@ -101,18 +103,13 @@ export class AppStatusService {
   saveCadLocked$ = new BehaviorSubject<boolean>(false);
   cadPoints = signal<CadPoints>([]);
   setProject$ = new Subject<void>();
-  user$ = new BehaviorSubject<AppUser | null>(null);
-  isAdmin$ = new BehaviorSubject<boolean>(false);
+  user = signal<AppUser | null>(null);
+  isAdmin = signal<boolean>(false);
   updateTimeStamp = signal<number>(-1);
   zhewanLengths = signal<[number, number]>([1, 3]);
   changeProject$ = new Subject<string>();
   private _isZhewanLengthsFetched = false;
   projectConfig = new ProjectConfig();
-
-  componentsModeEff = effect(() => {
-    const mode = this.components.mode();
-    this.config.setConfig("subCadsMultiSelect", mode === "multiple");
-  });
 
   constructor() {
     this.cad.setConfig(this.config.getConfig());
@@ -155,10 +152,10 @@ export class AppStatusService {
     return n;
   }
   async setProject(queryParams: Params) {
-    this.checkEnvBeta();
     const {project, action} = queryParams;
     if (project && project !== this.project) {
       this.project = project;
+      this.config.project = project;
       this.http.baseURL = `${origin}/n/${project}/index/`;
       if (action) {
         this.config.noUser = true;
@@ -168,11 +165,12 @@ export class AppStatusService {
           this.http.offlineMode = true;
         }
         if (response?.data) {
-          this.user$.next(response.data);
-          this.isAdmin$.next(response.data.isAdmin);
+          this.user.set(response.data);
+          this.isAdmin.set(response.data.isAdmin);
         }
-        await this.config.getUserConfig();
       }
+      await this.config.getUserConfig();
+      this.checkEnvBeta();
       const updateTimeStamp = await this.getUpdateTimeStamp();
       if (environment.production && updateTimeStamp > this.refreshTimeStamp) {
         this.message.snack("版本更新，自动刷新页面");
@@ -352,10 +350,10 @@ export class AppStatusService {
     this.tryMoveCad();
     const isLocal = opts.isLocal || cad.data.info.isLocal || false;
     const newConfig: Partial<AppConfig> = {};
-    if (collection && this.collection$.value !== collection) {
-      this.collection$.next(collection);
+    if (collection && this.collection() !== collection) {
+      this.collection.set(collection);
     } else {
-      collection = this.collection$.value;
+      collection = this.collection();
     }
     if (collection === "CADmuban") {
       this.config.setConfig({hideLineLength: true, hideLineGongshi: true}, {sync: false});
@@ -405,7 +403,7 @@ export class AppStatusService {
     if (center) {
       cad.center();
     }
-    this.config.setConfig(prevConfig);
+    this.config.setConfig(prevConfig, {sync: false});
     await this.updateCadTotalLength();
     if (!isDialog) {
       this.updateTitle();
@@ -439,13 +437,21 @@ export class AppStatusService {
     }
     data2.getAllEntities().forEach((e) => (e.visible = true));
     suanliaodanZoomOut(data2);
+
+    const dimNames = data2.entities.dimension.filter((e) => e.mingzi).map((e) => e.mingzi);
+    for (const e of data2.entities.dimension) {
+      if (!e.mingzi) {
+        e.mingzi = getInsertName(dimNames, "活动标注");
+      }
+    }
+
     return data2;
   }
 
   async saveCad(loaderId?: string, query?: OpenCadOptions["query"]): Promise<CadData | null> {
     await timeout(100); // 等待input事件触发
     const {http, message, spinner} = this;
-    const collection = this.collection$.value;
+    const collection = this.collection();
 
     let data = this.cad.data;
     const {entities, minLineLength} = filterCadEntitiesToSave(data);
@@ -464,21 +470,35 @@ export class AppStatusService {
     }
 
     let resData: CadData | null = null;
-    let errMsg = this.validate(true)?.errors || [];
+    const result = this.validate(true);
     const blockError = "不能包含块";
-    if (errMsg.includes(blockError)) {
+    if (result.errors.some((v) => v.content === blockError)) {
       const button = await message.button({content: blockError, buttons: ["删除块实体"]});
       if (button !== "删除块实体") {
         return null;
       }
       data.blocks = {};
       data.entities.insert = [];
-      errMsg = errMsg.filter((v) => v !== blockError);
+      result.errors = result.errors.filter((v) => v.content !== blockError);
     }
-    if (errMsg.length > 0) {
-      const yes = await message.confirm("当前打开的CAD存在错误，是否继续保存？<br>" + errMsg.join("<br>"));
-      if (!yes) {
+    if (result.hasError()) {
+      const errMsgs: string[] = ["CAD存在错误，"];
+      const hasFatalError = result.hasFatalError();
+      if (hasFatalError) {
+        errMsgs[0] += "请检查。";
+      } else {
+        errMsgs[0] += "是否继续保存？";
+      }
+      errMsgs.push(...result.errors.map((v, i) => `${i + 1}.${v.content}`));
+      const errMsg = errMsgs.join("<br>");
+      if (hasFatalError) {
+        await message.alert(errMsg);
         return null;
+      } else {
+        const yes = await message.confirm(errMsg);
+        if (!yes) {
+          return null;
+        }
       }
     }
 
@@ -525,7 +545,7 @@ export class AppStatusService {
 
   generateLineTexts() {
     const data = this.cad.data;
-    if (this.collection$.value === "CADmuban") {
+    if (this.collection() === "CADmuban") {
       data.entities.line.forEach((e) => {
         e.children.mtext = e.children.mtext.filter((mt) => !mt.info.isLengthText && !mt.info.isGongshiText);
       });
@@ -589,14 +609,15 @@ export class AppStatusService {
 
   validate(force?: boolean) {
     const noInfo = !this.config.getConfig("validateLines");
-    const collection = this.collection$.value;
+    const collection = this.collection();
+    const result = new ResultWithErrors(null);
     if (!isCadCollectionOfCad(collection)) {
-      return null;
+      return result;
     }
     if (!force && noInfo) {
-      return null;
+      return result;
     }
-    const result = validateCad(collection, this.cad.data, noInfo);
+    result.learnFrom(validateCad(collection, this.cad.data, noInfo));
     this.cad.render();
     return result;
   }
@@ -616,7 +637,7 @@ export class AppStatusService {
 
   async refreshCadFenti() {
     const skipCollections: CadCollection[] = ["CADmuban", "kailiaocadmuban"];
-    if (skipCollections.includes(this.collection$.value)) {
+    if (skipCollections.includes(this.collection())) {
       return;
     }
     return await refreshCadFenti(this.cad);
@@ -803,7 +824,6 @@ export class AppStatusService {
       }
     }
     this.config.setConfigWith("testMode", (v) => !v);
-    this.setTestModeWarningIgnore(1000 * 60 * 60 * 24);
     this.config.userConfigSaved$.pipe(take(1)).subscribe(() => {
       this.checkEnvBeta();
     });
@@ -883,7 +903,7 @@ export class AppStatusService {
   }
 
   private _highlightDimensionsMap = new Map<string, CadEntity[]>();
-  highlightDimensions(dimensions?: CadDimension[]) {
+  highlightDimensions(dimensions?: CadDimension[], highlightedPrev?: CadEntities) {
     const points: Point[] = [];
     const cad = this.cad;
     const dimensionsAll = cad.data.getAllEntities().dimension;
@@ -911,14 +931,16 @@ export class AppStatusService {
         }
         if (esPrev) {
           for (const e of esPrev) {
-            if (!esCurr.includes(e)) {
+            if (!esCurr.includes(e) && !highlightedPrev?.find(e.id)) {
               e.highlighted = false;
             }
           }
         }
       } else if (esPrev) {
         for (const e of esPrev) {
-          e.highlighted = false;
+          if (!highlightedPrev?.find(e.id)) {
+            e.highlighted = false;
+          }
         }
       }
       if (esCurr.length > 0) {
@@ -931,7 +953,9 @@ export class AppStatusService {
     for (const [id, es] of map) {
       if (!dimensionIdsAll.includes(id)) {
         for (const e of es) {
-          e.highlighted = false;
+          if (!highlightedPrev?.find(e.id)) {
+            e.highlighted = false;
+          }
         }
         map.delete(id);
       }
@@ -940,7 +964,7 @@ export class AppStatusService {
     return highlightedEntities;
   }
 
-  highlightLineTexts(entities?: CadEntities) {
+  highlightLineTexts(entities?: CadEntities, highlightedPrev?: CadEntities) {
     const cad = this.cad;
     if (!entities) {
       entities = cad.data.getAllEntities();
@@ -960,7 +984,7 @@ export class AppStatusService {
       if (selectedMtexts.length > 0) {
         e.highlighted = true;
         highlightedEntities.add(e);
-      } else {
+      } else if (!highlightedPrev?.find(e.id)) {
         e.highlighted = false;
       }
     });

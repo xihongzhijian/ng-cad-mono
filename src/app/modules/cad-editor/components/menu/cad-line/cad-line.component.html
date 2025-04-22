@@ -22,7 +22,7 @@
 @for (info of lineInputInfos1(); track $index) {
   <app-input [info]="info"></app-input>
 }
-<app-cad-layer-input [entities]="selected()"></app-cad-layer-input>
+<app-cad-layer-input [entities]="selected()" [disabled]="selected().length < 1"></app-cad-layer-input>
 @for (info of lineInputInfos2(); track $index) {
   <app-input [info]="info"></app-input>
 }

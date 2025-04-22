@@ -457,6 +457,61 @@ export const getMokuaiObjectKey = (node: XhmrmsbjInfoMokuaiNode, mokuai: Zixuanp
   return arr.join("-");
 };
 
+export const getMokuaiShurusRaw = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
+  return mokuai.gongshishuru.concat(mokuai.xuanxiangshuru);
+};
+export const getMokuaiShurus = (
+  info: XhmrmsbjInfo,
+  node: XhmrmsbjInfoMokuaiNode,
+  mokuai: ZixuanpeijianMokuaiItem,
+  isFromOrder: boolean
+) => {
+  const shurus = getMokuaiShurusRaw(info, node, mokuai);
+  if (isFromOrder) {
+    const key = getMokuaiObjectKey(node, mokuai);
+    const {输入变量下单隐藏} = info;
+    const excludeNames = 输入变量下单隐藏?.[key] || [];
+    if (excludeNames.length > 0) {
+      return shurus.filter((v) => !excludeNames.includes(v[0]));
+    }
+  }
+  return shurus;
+};
+export const setMokuaiShurus = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, vars: string[]) => {
+  if (!info.输入变量下单隐藏) {
+    info.输入变量下单隐藏 = {};
+  }
+  const key = getMokuaiObjectKey(node, mokuai);
+  const varsRaw = getMokuaiShurusRaw(info, node, mokuai).map((v) => v[0]);
+  info.输入变量下单隐藏[key] = difference(varsRaw, vars);
+};
+export const purgeShuruDisabled = (infos: XhmrmsbjDataMsbjInfos) => {
+  for (const key of keysOf(infos)) {
+    const info = infos[key];
+    if (!info?.输入变量下单隐藏) {
+      continue;
+    }
+    type MapItem = (typeof info.输入变量下单隐藏)[string];
+    const map = new Map<string, MapItem>();
+    for (const node of info.模块节点 || []) {
+      for (const mokuai of node.可选模块) {
+        const item: MapItem = getMokuaiShurusRaw(info, node, mokuai).map((v) => v[0]);
+        map.set(getMokuaiObjectKey(node, mokuai), item);
+      }
+    }
+    for (const disabledVarKey of Object.keys(info.输入变量下单隐藏)) {
+      const item = map.get(disabledVarKey);
+      info.输入变量下单隐藏[disabledVarKey] = intersection(info.输入变量下单隐藏[disabledVarKey], item);
+      if (info.输入变量下单隐藏[disabledVarKey].length < 1) {
+        delete info.输入变量下单隐藏[disabledVarKey];
+      }
+    }
+    if (isEmpty(info.输入变量下单隐藏)) {
+      delete info.输入变量下单隐藏;
+    }
+  }
+};
+
 export const getMokuaiShuchuVarsRaw = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
   const vars = [...mokuai.shuchubianliang];
   for (const option of mokuai.自定义数据?.选项数据 || []) {
@@ -563,4 +618,5 @@ export const purgeMsbjInfo = (infos: XhmrmsbjDataMsbjInfos) => {
   purgeShuruzhi(infos);
   purgeMokuaiOptions(infos);
   purgeShuchuDisabled(infos);
+  purgeShuruDisabled(infos);
 };

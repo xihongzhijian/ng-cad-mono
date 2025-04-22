@@ -1,4 +1,4 @@
-import {Component, effect, ElementRef, forwardRef, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, forwardRef, inject, OnDestroy, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
@@ -13,14 +13,16 @@ import {matchOptionsFn} from "@app/utils/mongo";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
-import {downloadByString, Matrix, ObjectOf, Point} from "@lucilor/utils";
-import {Subscribed} from "@mixins/subscribed.mixin";
+import {downloadByString, Matrix, ObjectOf, Point, selectFiles} from "@lucilor/utils";
 import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
-import {difference, isEqual} from "lodash";
+import {CadStatusAssemble, CadStatusNormal} from "@services/cad-status";
+import {difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 
 interface CadNode {
@@ -44,54 +46,30 @@ type ContextMenuCadField = "main" | "component";
     MatSlideToggleModule,
     MatTooltipModule,
     NgScrollbar
-  ]
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy {
-  main: CadNode | null = null;
-  components: CadNode[] = [];
+export class SubCadsComponent implements OnInit, OnDestroy {
+  private config = inject(AppConfigService);
+  private dialog = inject(MatDialog);
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
+  main = signal<CadNode | null>(null);
   checkedIndex = -1;
   needsReload: string | null = null;
-  componentsExpanded = true;
-  @ViewChild(MatMenuTrigger) contextMenu!: MatMenuTrigger;
-  @ViewChild("dxfInut", {read: ElementRef}) dxfInut!: ElementRef<HTMLElement>;
+  contextMenu = viewChild.required(MatMenuTrigger);
   contextMenuCad?: {field: ContextMenuCadField; data: CadData};
-  multiSelect = false;
   private lastPointer: Point | null = null;
   private entitiesToMove?: CadEntities;
   private entitiesNotToMove?: CadEntities;
   private entitiesNeedRender = false;
 
-  componentsSelectable = this.status.components.selectable;
-  componentsMode = this.status.components.mode;
-
-  get collection() {
-    return this.status.collection$.value;
-  }
-
-  constructor(
-    private config: AppConfigService,
-    private status: AppStatusService,
-    private dialog: MatDialog,
-    private message: MessageService,
-    private http: CadDataService
-  ) {
-    super();
-  }
+  collection = this.status.collection;
 
   ngOnInit() {
     this.updateData();
-
-    const setConfig = () => {
-      const {subCadsMultiSelect} = this.config.getConfig();
-      this.multiSelect = subCadsMultiSelect;
-    };
-    setConfig();
-    const sub = this.config.configChange$.subscribe(({isUserConfig}) => {
-      if (isUserConfig) {
-        setConfig();
-        sub.unsubscribe();
-      }
-    });
 
     const cad = this.status.cad;
     cad.on("pointerdown", this._onPointerDown);
@@ -99,7 +77,6 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     cad.on("pointerup", this.onPointerUp);
   }
   ngOnDestroy() {
-    super.ngOnDestroy();
     const cad = this.status.cad;
     cad.off("pointerdown", this._onPointerDown);
     cad.off("pointermove", this._onPointerMove);
@@ -166,9 +143,11 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     return node;
   }
 
-  toggleMultiSelect() {
-    this.componentsSelectable.update((v) => !v);
-    if (!this.componentsSelectable()) {
+  componentsSelectable = this.status.components.selectable;
+  componentsMultiSelect = this.status.components.multiSelect;
+  toggleComponentsMultiSelect() {
+    this.componentsMultiSelect.update((v) => !v);
+    if (!this.componentsMultiSelect()) {
       const selectedComponents = this.status.components.selected();
       if (selectedComponents.length > 1) {
         this.status.components.selected.set([selectedComponents[0]]);
@@ -176,52 +155,49 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     }
   }
 
-  isAllComponentsSelected() {
-    const ids1 = this.status.components.selected().map((v) => v.id);
-    const ids2 = this.status.cad.data.components.data.map((v) => v.id);
-    return isEqual(ids1, ids2);
-  }
-
-  selectAllComponents() {
-    this.status.components.selected.set(this.status.cad.data.components.data);
-  }
-
-  unselectAllComponents() {
-    this.status.components.selected.set([]);
-  }
-
+  components = signal<CadData[]>([]);
+  componentsSelected = this.status.components.selected;
+  componentsExpanded = signal(true);
   selectComponent(index: number) {
-    if (!this.componentsSelectable) {
+    if (!this.componentsSelectable()) {
       return;
     }
-    const node = this.components[index];
-    const selectedComponents: CadData[] = this.status.components.selected();
-    if (node.checked) {
-      this.status.components.selected.set(selectedComponents.filter((v) => v.id !== node.data.id));
+    const data = this.components()[index];
+    const componentsSelected = this.componentsSelected();
+    if (componentsSelected.includes(data)) {
+      this.componentsSelected.set(difference(componentsSelected, [data]));
     } else {
-      if (this.multiSelect) {
-        this.status.components.selected.set([...selectedComponents, node.data]);
+      if (this.componentsMultiSelect()) {
+        this.componentsSelected.set(union(componentsSelected, [data]));
       } else {
-        this.status.components.selected.set([node.data]);
+        this.componentsSelected.set([data]);
       }
     }
   }
-
-  selectedComponentsEff = effect(() => {
-    const selectedComponents = this.status.components.selected();
-    for (const node of this.components) {
-      node.checked = selectedComponents.some((v) => v.id === node.data.id);
+  selectAllComponents() {
+    const list1 = this.componentsSelected();
+    const list2 = this.status.cad.data.components.data;
+    if (list1.length === list2.length) {
+      this.status.components.selected.set([]);
+    } else {
+      this.status.components.selected.set(list2);
     }
+  }
+  selectedComponentsEff = effect(() => {
+    if (this.status.hasOtherCadStatus((v) => v instanceof CadStatusNormal || v instanceof CadStatusAssemble)) {
+      return;
+    }
+    const componentsSelected = this.componentsSelected();
     const cad = this.status.cad;
-    if (selectedComponents.length < 1) {
+    if (componentsSelected.length < 1) {
       this.status.focus();
       this.config.setConfig("dragAxis", "xy");
     } else {
       this.status.blur();
       this.config.setConfig("dragAxis", "");
-      this.components.forEach((v) => {
-        if (selectedComponents.some((vv) => vv.id === v.data.id)) {
-          this.status.focus(v.data.getAllEntities());
+      this.components().forEach((v) => {
+        if (componentsSelected.some((vv) => vv.id === v.id)) {
+          this.status.focus(v.getAllEntities());
         }
       });
     }
@@ -230,13 +206,9 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
 
   updateData() {
     const cad = this.status.cad;
-    const components = cad.data.components.data;
-    this.main = this._getCadNode(cad.data);
-    this.components = [];
-    for (const v of components) {
-      this.components.push(this._getCadNode(v));
-    }
-    this.componentsExpanded = this.components.length > 0;
+    this.main.set(this._getCadNode(cad.data));
+    this.components.set(cad.data.components.data.slice());
+    this.componentsExpanded.set(this.components().length > 0);
     this.status.components.selected.set([]);
   }
 
@@ -247,31 +219,42 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     this.contextMenuCad = {field, data};
   }
 
-  async editComponents() {
-    if (!this.contextMenuCad) {
-      return;
-    }
-    const data = this.contextMenuCad.data;
-    const checkedItems = data.components.data.map((v) => v.id);
-    const qiliao = this.status.collection$.value === "qiliaozuhe";
-    const feilei = [
-      "铰框",
-      "锁框",
-      "顶框",
-      "边铰料",
-      "边锁料",
-      "中铰料",
-      "中锁料",
-      "小铰料",
-      "小锁料",
-      "锁企料",
-      "扇锁企料",
-      "示意图",
-      "装配示意图",
-      "包边正面"
-    ];
-    let cads: Awaited<ReturnType<typeof openCadListDialog>>;
+  async fetchComponentCads(data: CadData, custom?: boolean) {
     let sourceData: CadData[] | undefined;
+    if (custom) {
+      const query = {id: "", 名字: ""};
+      const form: InputInfo[] = [];
+      const getter = new InputInfoWithDataGetter(query, {
+        onChange: (_, info) => {
+          for (const info2 of form) {
+            if (info2.label !== info.label) {
+              info2.forceValidateNum = (info2.forceValidateNum || 0) + 1;
+            }
+          }
+        },
+        validators: () => {
+          const values = Object.values(query);
+          if (values.every((v) => !v)) {
+            return {查询不能为空: true};
+          }
+          return null;
+        }
+      });
+      form.push(getter.string("id"), getter.string("名字"));
+      const result = await this.message.form(form);
+      if (!result) {
+        return sourceData;
+      }
+      let search: ObjectOf<any>;
+      if (query.id) {
+        search = {_id: query.id};
+      } else {
+        search = {...query};
+        delete search.id;
+      }
+      sourceData = (await this.http.getCad({collection: "cad", search}, {silent: true})).cads;
+      return sourceData;
+    }
     const specials: {type: string; options: string[]}[] = [
       {type: "罗马头模板", options: ["罗马头", "罗马柱"]},
       {type: "套门模板", options: ["套门"]}
@@ -292,23 +275,55 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
         this.message.error(`${type}缺少选项：${optionsDiff.join("，")}`);
         return;
       }
-      const result = await this.http.getCad({collection: "cad", options: optionValues, optionsMatchType: "or"});
+      const result = await this.http.getCad({collection: "cad", options: optionValues, optionsMatchType: "or"}, {silent: true});
       sourceData = result.cads;
       break;
     }
     if (!sourceData) {
-      const result = await this.http.getData<any[]>("ngcad/getMenshanbujuCads", {
-        xinghao: data.options.型号,
-        flat: true,
-        isMuban: true
-      });
+      const result = await this.http.getData<any[]>(
+        "ngcad/getMenshanbujuCads",
+        {
+          xinghao: data.options.型号,
+          flat: true,
+          isMuban: true
+        },
+        {silent: true}
+      );
       if (result) {
         sourceData = result.map((v) => new CadData(v));
       }
     }
+    return sourceData;
+  }
+
+  async editComponents(custom?: boolean) {
+    if (!this.contextMenuCad) {
+      return;
+    }
+    const data = this.contextMenuCad.data;
+    const checkedItems = data.components.data.map((v) => v.id);
+    const qiliao = this.status.collection() === "qiliaozuhe";
+    const feilei = [
+      "铰框",
+      "锁框",
+      "顶框",
+      "边铰料",
+      "边锁料",
+      "中铰料",
+      "中锁料",
+      "小铰料",
+      "小锁料",
+      "锁企料",
+      "扇锁企料",
+      "示意图",
+      "装配示意图",
+      "包边正面"
+    ];
+    let cads: Awaited<ReturnType<typeof openCadListDialog>>;
+    const sourceData = await this.fetchComponentCads(data, custom);
     if (Array.isArray(sourceData)) {
       let source: CadData[] | undefined;
-      if (sourceData.length > 0) {
+      if (sourceData.length > 0 || custom) {
         source = sourceData.map((v) => new CadData(v));
       }
       const where = `
@@ -352,7 +367,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
           }
         }
         if (shouldPush) {
-          setCadData(cad, this.status.project, this.status.collection$.value, this.config.getConfig());
+          setCadData(cad, this.status.project, this.status.collection(), this.config.getConfig());
           const rect2 = cad.getBoundingRect();
           const translate = new Point(rect1.x - rect2.x, rect1.y - rect2.y);
           const matrix = new Matrix();
@@ -381,29 +396,12 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     this.http.downloadDxf(data);
   }
 
-  uploadDxf(append: boolean, mainCad: boolean) {
-    const el = this.dxfInut.nativeElement;
-    el.click();
-    if (mainCad) {
-      el.setAttribute("main-cad", "");
-    } else {
-      el.removeAttribute("main-cad");
-    }
-    if (append) {
-      el.setAttribute("append", "");
-    } else {
-      el.removeAttribute("append");
-    }
-  }
-
-  async onDxfInutChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+  async uploadDxf(append: boolean, mainCad: boolean) {
+    const files = await selectFiles({accept: ".dxf"});
+    const file = files?.[0];
     if (!this.contextMenuCad || !file) {
       return;
     }
-    const append = input.hasAttribute("append");
-    const mainCad = input.hasAttribute("main-cad");
     const data = this.contextMenuCad.data;
     if (append) {
       const resData = await this.http.uploadDxf(file);
@@ -425,7 +423,6 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
         await this.status.openCad();
       }
     }
-    input.value = "";
   }
 
   getJson() {
@@ -492,7 +489,7 @@ export class SubCadsComponent extends Subscribed() implements OnInit, OnDestroy 
     const data = this.contextMenuCad.data;
     const cads = await openCadListDialog(this.dialog, {data: {selectMode: "single", options: data.options, collection: "cad"}});
     if (cads && cads[0]) {
-      this.http.replaceData(data, cads[0].id, this.status.collection$.value);
+      this.http.replaceData(data, cads[0].id, this.status.collection());
     }
   }
 }

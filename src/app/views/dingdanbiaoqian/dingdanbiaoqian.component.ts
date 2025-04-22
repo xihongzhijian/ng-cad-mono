@@ -1,16 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  inject,
-  OnInit,
-  signal,
-  viewChild,
-  viewChildren
-} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnInit, signal, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -19,14 +8,7 @@ import {ActivatedRoute} from "@angular/router";
 import {getOrderBarcode, imgCadEmpty, imgEmpty, imgLoading, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {configCadDataForPrint} from "@app/cad/print";
-import {
-  generateLineTexts2,
-  getShuangxiangLineRects,
-  setDimensionText,
-  setShuangxiangLineRects,
-  shouldShowIntersection,
-  splitShuangxiangCad
-} from "@app/cad/utils";
+import {generateLineTexts2, setDimensionText, setShuangxiangLineRects, shouldShowIntersection, splitShuangxiangCad} from "@app/cad/utils";
 import {Formulas} from "@app/utils/calc";
 import {getDateTimeString} from "@app/utils/get-value";
 import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
@@ -79,15 +61,9 @@ export class DingdanbiaoqianComponent implements OnInit {
   type = signal<DdbqType | null>(null);
   cadsRowNum = computed(() => (this.type() === "配件模块" ? 3 : 4));
   cadsColNum = computed(() => (this.type() === "配件模块" ? 4 : 5));
-  cadsSize = signal<[number, number]>([0, 0]);
   pageSize = [1122, 792] as const;
   pagePadding = [17, 17, 5, 17] as const;
-  cadSize = computed(() => {
-    const size = this.cadsSize();
-    const w = Math.floor(size[0] / this.cadsColNum());
-    const h = Math.floor(size[1] / this.cadsRowNum());
-    return [w, h] as const;
-  });
+  cadsSizes = signal<{container: [number, number]; cads: {container: [number, number]; img: [number, number]}[]}[]>([]);
   开启锁向示意图Size = [207, 280] as const;
   配合框Size = [150, 90] as const;
   sectionConfig = signal<SectionConfig>({
@@ -122,7 +98,7 @@ export class DingdanbiaoqianComponent implements OnInit {
   fractionDigits = 1;
 
   barcodeEls = viewChildren<ElementRef<HTMLDivElement>>("barcode");
-  cadsEl = viewChild<ElementRef<HTMLDivElement>>("cadsEl");
+  cadsEls = viewChildren<ElementRef<HTMLDivElement>>("cadsEls");
 
   constructor() {
     setGlobal("ddbq", this);
@@ -221,6 +197,18 @@ export class DingdanbiaoqianComponent implements OnInit {
           const img = imgLoading;
           const imgLarge = imgLoading;
           const data = new CadData(cad);
+          data.entities.line.forEach((e) => {
+            e.显示线长格式 = "{0}";
+            if (e.gongshi) {
+              const vars = {...order.materialResult};
+              vars.总宽 = cad.calcW;
+              vars.总高 = cad.calcH;
+              const res = this.calc.calc.calcExpress(e.gongshi, vars);
+              if (!res.error) {
+                e.显示线长 = String(res.value);
+              }
+            }
+          });
 
           if (!data.type.includes("企料") && !shouldShowIntersection(data)) {
             const lines: CadLine[] = [];
@@ -231,12 +219,12 @@ export class DingdanbiaoqianComponent implements OnInit {
               }
             });
             const shuangxiangCads = splitShuangxiangCad(data);
-            const shuangxiangRects = getShuangxiangLineRects(shuangxiangCads);
             setLinesLength(data, lines, maxLength);
-            setShuangxiangLineRects(shuangxiangCads, shuangxiangRects);
+            setShuangxiangLineRects(shuangxiangCads);
           }
 
           const isLarge = this.config().showBarcode || !!data.info.isLarge;
+          const forceBreak = !!data.info.forceBreak;
           return {
             houtaiId: cad.houtaiId,
             data,
@@ -244,7 +232,8 @@ export class DingdanbiaoqianComponent implements OnInit {
             imgLarge,
             imgSize: isLarge ? [218, 240] : [218, 96],
             isLarge,
-            zhankai: [{width: cad.calcW, height: cad.calcH}],
+            forceBreak,
+            zhankai: [{width: cad.calcW, height: cad.calcH, num: cad.num}],
             style: {},
             imgStyle: {}
           };
@@ -306,10 +295,15 @@ export class DingdanbiaoqianComponent implements OnInit {
         text: {size: 36}
       }
     };
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     let tmpCadViewer: CadViewer | undefined;
     const getImg = async (data: CadData, previewParams: Partial<CadPreviewParams>) => {
-      const previewParams2: CadPreviewParams = {maxZoom: 1.3, ...previewParams, config: {...configBase, ...previewParams.config}};
+      const previewParams2: CadPreviewParams = {
+        maxZoom: 1.3,
+        showFenti: true,
+        ...previewParams,
+        config: {...configBase, ...previewParams.config}
+      };
       if (configForPrint) {
         if (!tmpCadViewer) {
           tmpCadViewer = new CadViewer().appendTo(document.body);
@@ -335,7 +329,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         }
       }
     };
-    for (const {cads, 开启锁向示意图, 配合框, materialResult} of this.orders()) {
+    for (const [i, {cads, 开启锁向示意图, 配合框, materialResult}] of this.orders().entries()) {
       if (开启锁向示意图) {
         开启锁向示意图.data.type = "";
         开启锁向示意图.data.type2 = "";
@@ -368,10 +362,9 @@ export class DingdanbiaoqianComponent implements OnInit {
           });
         }
       }
-      for (const cad of cads) {
-        const imgWidth = this.cadSize()[0] - 16;
-        const imgHeight = this.cadSize()[1] - 16 - (cad.zhankai?.length || 0) * 38;
-        cad.imgSize = [imgWidth, imgHeight];
+      const cadsSizes = this.cadsSizes();
+      for (const [j, cad] of cads.entries()) {
+        cad.imgSize = cadsSizes.at(i)?.cads.at(j)?.container || [0, 0];
         setData(cad.data, materialResult);
       }
       if (showCadSmallImg) {
@@ -391,34 +384,44 @@ export class DingdanbiaoqianComponent implements OnInit {
     this.spinner.hide(this.spinner.defaultLoaderId);
     tmpCadViewer?.destroy();
   }
-  takeEmptyPosition(positions: Order["positions"], isLarge: boolean) {
+  takeEmptyPosition(positions: Order["positions"], isLarge: boolean, forceBreak: boolean) {
     const result = {position: null as number[] | null, isFull: false};
     let i = 0;
     let j = 0;
+    let pts: [number, number][] | null = null;
     for (; i < positions.length; i++) {
       j = 0;
       for (; j < positions[i].length; j++) {
+        pts = [[i, j]];
         if (isLarge) {
-          if (i % 2 !== 0) {
-            continue;
-          }
-          if (i + 1 >= positions.length || positions[i + 1][j]) {
-            continue;
-          }
+          pts.push([i + 1, j]);
         }
-        if (!positions[i][j]) {
-          result.position = [i, j];
-          if (isLarge) {
-            positions[i][j] = 2;
-            positions[i + 1][j] = 2;
-          } else {
-            positions[i][j] = 1;
-          }
-          return result;
+        if (!pts.every(([i2, j2]) => positions[i2]?.[j2] === 0)) {
+          pts = null;
+          continue;
         }
+        result.position = [i, j];
+        const count = pts.length;
+        for (const [i2, j2] of pts) {
+          positions[i2][j2] = count;
+        }
+        break;
+      }
+      if (pts) {
+        break;
       }
     }
     result.isFull = i === positions.length && j === positions[i - 1].length;
+    if (forceBreak && !result.isFull) {
+      result.isFull = true;
+      for (let i2 = 0; i2 < positions.length; i2++) {
+        for (let j2 = 0; j2 < positions[i2].length; j2++) {
+          if ((i2 > i || j2 > j) && positions[i2][j2] === 0) {
+            positions[i2][j2] = -1;
+          }
+        }
+      }
+    }
     return result;
   }
   async splitOrders() {
@@ -430,6 +433,8 @@ export class DingdanbiaoqianComponent implements OnInit {
     const orders2: typeof orders = [];
     const cadsToSet: Parameters<DingdanbiaoqianComponent["setCad"]>[] = [];
     const forms: Form[] = [];
+    let i = 0;
+    let j = 0;
     orders.forEach((order) => {
       const cads = order.cads;
       order.cads = [];
@@ -462,24 +467,35 @@ export class DingdanbiaoqianComponent implements OnInit {
             }
             orderPrev = orderCurr;
             orderCurr = pushOrder();
-            for (let j = 0; j < group.length; j++) {
-              let result = this.takeEmptyPosition(orderCurr.positions, group[j].isLarge);
+            for (let k = 0; k < group.length; k++) {
+              const item = group[k];
+              const itemNext = group[k + 1];
+              const {isLarge} = item;
+              let forceBreak = false;
+              if (item.forceBreak && !itemNext.forceBreak) {
+                forceBreak = true;
+              }
+              let result = this.takeEmptyPosition(orderCurr.positions, isLarge, forceBreak);
               if (result.position) {
-                cadsToSet.push([group[j], result.position]);
-                orderCurr.cads.push(group[j]);
+                cadsToSet.push([group[k], i, j, result.position]);
+                orderCurr.cads.push(group[k]);
+                j++;
               } else {
                 if (orderPrev) {
-                  result = this.takeEmptyPosition(orderPrev.positions, group[j].isLarge);
+                  result = this.takeEmptyPosition(orderPrev.positions, isLarge, forceBreak);
                   if (result.position) {
-                    cadsToSet.push([group[j], result.position]);
-                    orderPrev.cads.push(group[j]);
+                    cadsToSet.push([item, i, j, result.position]);
+                    orderPrev.cads.push(item);
                   } else if (result.isFull) {
                     orderPrev = null;
                   }
+                  j++;
                 } else {
                   orderPrev = orderCurr;
                   orderCurr = pushOrder();
-                  j--;
+                  i++;
+                  j = 0;
+                  k--;
                 }
               }
             }
@@ -502,13 +518,31 @@ export class DingdanbiaoqianComponent implements OnInit {
     this.orders.set(orders2);
     this.forms.set(forms);
     await timeout(0);
-    const cadsElRect = this.cadsEl()?.nativeElement.getBoundingClientRect();
-    if (cadsElRect) {
-      this.cadsSize.set([cadsElRect.width, cadsElRect.height]);
-    }
+    this.updateCadsSizes();
     cadsToSet.forEach((v) => {
       this.setCad(...v);
     });
+    await timeout(0);
+    this.updateCadsSizes();
+    cadsToSet.forEach((v) => {
+      this.setCad(...v);
+    });
+  }
+  updateCadsSizes() {
+    const cadsEls = this.cadsEls();
+    const cadsSizes: ReturnType<typeof this.cadsSizes> = [];
+    for (const {nativeElement: cadsEl} of cadsEls) {
+      const cadsElRect = cadsEl.getBoundingClientRect();
+      const cadsSize: (typeof cadsSizes)[number] = {container: [cadsElRect.width, cadsElRect.height], cads: []};
+      const cadWidth = cadsElRect.width / this.cadsColNum();
+      const cadHeight = cadsElRect.height / this.cadsRowNum();
+      cadsSizes.push(cadsSize);
+      cadsEl.querySelectorAll(".cad").forEach((cadEl) => {
+        const {width: imgW = 0, height: imgH = 0} = cadEl.querySelector(".cad-image")?.getBoundingClientRect() || {};
+        cadsSize.cads.push({container: [cadWidth, cadHeight], img: [imgW, imgH]});
+      });
+    }
+    this.cadsSizes.set(cadsSizes);
   }
 
   mokuais = signal<ZixuanpeijianMokuaiItem[]>([]);
@@ -585,6 +619,7 @@ export class DingdanbiaoqianComponent implements OnInit {
             img: "",
             imgSize: [0, 0],
             isLarge: false,
+            forceBreak: false,
             style: {},
             imgStyle: {},
             zhankai: v.info.zhankai
@@ -614,19 +649,21 @@ export class DingdanbiaoqianComponent implements OnInit {
     window.print();
   }
 
-  setCad(cad: Order["cads"][0], position: number[]) {
-    const cadSize = this.cadSize();
+  setCad(cad: Order["cads"][0], i: number, j: number, position: number[]) {
+    const cadsSizes = this.cadsSizes();
+    const size = cadsSizes.at(i)?.cads.at(j);
+    const [w, h] = size?.container || [0, 0];
     const {isLarge} = cad;
-    const top = position[0] * cadSize[1] + position[0] * -1;
-    const left = position[1] * cadSize[0] + position[1] * -1;
+    const top = position[0] * (h - 1);
+    const left = position[1] * (w - 1);
     cad.style = {
-      width: `${cadSize[0]}px`,
-      height: `${isLarge ? cadSize[1] * 2 - 1 : cadSize[1]}px`,
+      width: `${w}px`,
+      height: `${isLarge ? h * 2 - 1 : h}px`,
       top: `${top}px`,
       left: `${left}px`
     };
     cad.imgStyle = {
-      height: `${isLarge ? 240 : 96}px`
+      height: `${size?.img[1] || 0}px`
     };
   }
 

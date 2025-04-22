@@ -17,7 +17,6 @@ import {InputInfo, InputInfoPart} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {openCadDataAttrsDialog} from "../../dialogs/cad-data-attrs/cad-data-attrs.component";
 import {openCadMenfengConfigDialog} from "../cad-menfeng-config/cad-menfeng-config.component";
 
 export const cadFields = {
@@ -74,7 +73,8 @@ export const cadFields = {
   指定封口厚度: "指定封口厚度",
   拼接料拼接时垂直翻转: "拼接料拼接时垂直翻转",
   拉码碰撞判断: "拉码碰撞判断",
-  装配示意图自动拼接锁边铰边: "装配示意图自动拼接锁边铰边"
+  装配示意图自动拼接锁边铰边: "装配示意图自动拼接锁边铰边",
+  门缝: "门缝"
 } as const;
 
 export const getData = (data: CadData | (() => CadData)) => (typeof data === "function" ? data() : data);
@@ -100,8 +100,6 @@ export const getCadInfoInputs = (
     return zhankai;
   };
   const gongshiOptions = status.getGongshiOptions(gongshis);
-  const getter = new InputInfoWithDataGetter(data, {clearable: true});
-  const getter2 = new InputInfoWithDataGetter(() => getData(data).info, {clearable: true});
   const getDialogInput = (label: string, onClick: () => void, others?: InputInfoPart): InputInfo => {
     return {
       type: "string",
@@ -112,13 +110,15 @@ export const getCadInfoInputs = (
     };
   };
   for (const key of keys) {
+    const getter = new InputInfoWithDataGetter(data, {label: key, clearable: true});
+    const getter2 = new InputInfoWithDataGetter(() => getData(data).info, {clearable: true});
     if (result.some((v) => v.label === key)) {
       continue;
     }
     let info: InputInfo;
     switch (key) {
       case "id":
-        info = getter.string(cadFields[key], {label: key, readonly: true, copyable: true});
+        info = getter.string(cadFields[key], {readonly: true, copyable: true});
         break;
       case "名字":
       case "分类":
@@ -130,20 +130,21 @@ export const getCadInfoInputs = (
       case "显示厚度":
       case "跟随CAD开料板材":
       case "指定封口厚度":
-        info = getter.string(cadFields[key], {label: key});
+        info = getter.string(cadFields[key]);
         break;
       case "算料特殊要求":
-        info = getter.string(cadFields[key], {label: key, textarea: {autosize: {maxRows: 5}}});
+        info = getter.string(cadFields[key], {textarea: {autosize: {maxRows: 5}}});
         break;
       case "算料单显示放大倍数":
       case "算料单线长显示的最小长度":
-        info = getter.number(cadFields[key], {label: key, min: 0});
+      case "门缝":
+        info = getter.number(cadFields[key], {validators: Validators.min(0)});
         break;
       case "正面宽差值":
       case "墙厚差值":
       case "企料门框配合位增加值":
       case "对应门扇厚度":
-        info = getter.number(cadFields[key], {label: key});
+        info = getter.number(cadFields[key]);
         break;
       case "开料时刨坑":
       case "显示宽度标注":
@@ -159,7 +160,7 @@ export const getCadInfoInputs = (
       case "企料翻转":
       case "拼接料拼接时垂直翻转":
       case "拉码碰撞判断":
-        info = getter.boolean(cadFields[key], {label: key});
+        info = getter.boolean(cadFields[key]);
         break;
       case "变形方式":
       case "板材纹理方向":
@@ -170,26 +171,28 @@ export const getCadInfoInputs = (
       case "算料单展开显示位置":
       case "属于门框门扇":
       case "企料包边类型":
-      case "指定板材分组":
       case "装配示意图自动拼接锁边铰边":
-        info = getter.selectSingle(cadFields[key], cadOptions[cadFields[key]].values.slice(), {label: key});
+        info = getter.selectSingle(cadFields[key], cadOptions[cadFields[key]].values);
+        break;
+      case "指定板材分组":
+        info = getter.string(cadFields[key], {options: cadOptions[cadFields[key]].values});
         break;
       case "选项":
       case "型号花件":
-        info = getter.object(cadFields[key], {label: key, optionsDialog: {}, optionMultiple: true, parseString: parseOptionString});
+        info = getter.object(cadFields[key], {optionsDialog: {}, optionMultiple: true, parseString: parseOptionString});
         if (key === "选项") {
           info.optionType = "选项";
         }
         break;
       case "条件":
-        info = getter.array(cadFields[key], {label: key});
+        info = getter.array(cadFields[key]);
         break;
       case "默认开料板材":
       case "固定开料板材":
-        info = getter.string(cadFields[key], {label: key, optionMultiple: true, optionsDialog: {optionKey: "板材"}});
+        info = getter.string(cadFields[key], {optionMultiple: true, optionsDialog: {optionKey: "板材"}});
         break;
       case "默认开料材料":
-        info = getter.string(cadFields[key], {label: key, optionMultiple: true, optionsDialog: {optionKey: "材料"}});
+        info = getter.string(cadFields[key], {optionMultiple: true, optionsDialog: {optionKey: "材料"}});
         break;
       case "默认开料板材厚度":
         info = getter.string(cadFields[key], {
@@ -216,13 +219,7 @@ export const getCadInfoInputs = (
         info = getter2.numberWithUnit(key, "mm");
         break;
       case "自定义属性":
-        info = getDialogInput(key, async () => {
-          const data2 = getData(data);
-          const result2 = await openCadDataAttrsDialog(dialog, {data: data2.attributes});
-          if (result2) {
-            data2.attributes = result2;
-          }
-        });
+        info = getter.object("attributes", {label: "自定义属性"});
         break;
       case "正面线到见光线展开模板":
         info = getter2.string(key, {

@@ -138,14 +138,14 @@
               <div class="toolbar">
                 <div class="title">模块选项</div>
                 <div class="flex-110"></div>
-                <button mat-flat-button (click)="setAllMokuaiShuruDisabled(true)">全部关闭</button>
+                <button mat-flat-button (click)="setAllMokuaiShuchuDisabled(true)">全部关闭</button>
               </div>
               <div class="items">
                 @for (info of mokuaiOptionInfos(); track i; let i = $index) {
                   <div class="toolbar" style="width: 100%">
                     <app-input class="flex-110" [info]="info.inputInfo"></app-input>
                     @if (info.option["输出变量"]) {
-                      <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.option['名字'])">
+                      <div class="toolbar" (click)="toggleMokuaiShuchuDisabled(info.option['名字'])">
                         <mat-checkbox [checked]="info.disabled"></mat-checkbox>
                         <div>关闭输出</div>
                       </div>
@@ -164,7 +164,7 @@
               }
             </div>
             @if (!isFromOrder()) {
-              <div class="error">取值顺序：输入值 > 模块公式值 > 通用公式值</div>
+              <div class="error">取值顺序：输入值 > 模块公式 > 通用公式</div>
             }
             <div class="items items-per-row">
               @for (info of mokuaiInputInfosInput(); track $index) {
@@ -175,19 +175,34 @@
               <div class="toolbar">
                 <div class="title">模块输出</div>
                 <div class="flex-110"></div>
-                <button mat-flat-button (click)="setAllMokuaiShuruDisabled(false)">全部关闭</button>
+                <button mat-flat-button (click)="setAllMokuaiShuchuDisabled(false)">全部关闭</button>
               </div>
               <div class="items">
-                @for (info of mokuaiInputInfosOutput(); track $index) {
+                @for (info of mokuaiOutput(); track $index) {
                   <div class="toolbar" style="width: 100%">
-                    <div>{{ info.key }}</div>
+                    <div class="text wrap">{{ info.key }}</div>
                     @if (info.duplicate) {
                       <div class="error">（重复）</div>
                     }
-                    <div class="flex-110"></div>
-                    <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.key)">
+                    <div class="toolbar" (click)="toggleMokuaiShuchuDisabled(info.key)">
                       <mat-checkbox [checked]="info.disabled"></mat-checkbox>
                       <div>关闭输出</div>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="toolbar">
+                <div class="title">模块输入</div>
+                <div class="flex-110"></div>
+                <button mat-flat-button (click)="setAllMokuaiShuruDisabled()">全部关闭</button>
+              </div>
+              <div class="items">
+                @for (info of mokuaiInput(); track $index) {
+                  <div class="toolbar" style="width: 100%">
+                    <div class="text wrap">{{ info.key }}</div>
+                    <div class="toolbar" (click)="toggleMokuaiShuruDisabled(info.key)">
+                      <mat-checkbox [checked]="info.disabled"></mat-checkbox>
+                      <div>关闭下单输入</div>
                     </div>
                   </div>
                 }
@@ -282,9 +297,9 @@
     [attr.data-id]="mokuai.weiyima"
   >
     <div class="flex-column">
-      <div class="toolbar mokuai-top">
+      <div class="toolbar compact">
         @if (!isFromOrder()) {
-          <div class="default-sign" [class]="{active: mokuai?.info?.isDefault}" (click)="setDefaultMokuai(mokuai)">默认</div>
+          <button mat-button [class.accent]="mokuai?.info?.isDefault" (click)="setDefaultMokuai(mokuai)">默认</button>
         }
         <div class="flex-110"></div>
         @if (!isFromOrder()) {

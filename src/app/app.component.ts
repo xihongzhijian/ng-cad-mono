@@ -6,6 +6,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule} from "@angular/material/menu";
 import {ActivatedRoute, ResolveFn, Router, RouterOutlet} from "@angular/router";
 import {environment} from "@env";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {emulateTab} from "emulate-tab";
@@ -60,11 +61,10 @@ export class AppComponent {
   async changeProject() {
     const project = this.status.project;
     const data = {project: "", clear: false};
+    const getter = new InputInfoWithDataGetter(data);
     const form = await this.message.form<typeof data>([
-      {
-        type: "string",
+      getter.string("project", {
         label: "项目缩写",
-        model: {data, key: "project"},
         validators: (control) => {
           const value = control.value;
           if (!data.clear) {
@@ -77,11 +77,11 @@ export class AppComponent {
           }
           return null;
         }
-      },
-      {type: "boolean", label: "清除参数", appearance: "switch", model: {data, key: "clear"}}
+      }),
+      getter.boolean("clear", {label: "清除参数", appearance: "switch"})
     ]);
     if (form) {
-      this.status.changeProject(form.项目缩写, form.清除参数);
+      this.status.changeProject(data.project, data.clear);
     }
   }
 

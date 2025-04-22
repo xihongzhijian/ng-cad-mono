@@ -11,13 +11,18 @@
   <mat-divider vertical></mat-divider>
   <div class="slgs flex-column">
     <app-suanliaogongshi class="flex-110" [info]="slgsInfo()" (slgsChange)="onSlgsChange()"></app-suanliaogongshi>
-    @if (data().rectInfos; as rectInfos) {
-      <app-msbj-rects
-        [rectInfos]="rectInfos"
-        (activeRectInfoChange)="onActiveRectInfoChange($event)"
-        selectType="bujuOnly"
-      ></app-msbj-rects>
-    }
+    <div class="toolbar center flex-110" style="height: 0">
+      @if (data().rectInfos; as rectInfos) {
+        <app-msbj-rects
+          [rectInfos]="rectInfos"
+          (activeRectInfoChange)="onActiveRectInfoChange($event)"
+          selectType="bujuOnly"
+        ></app-msbj-rects>
+      }
+      @if (data().msbj?.raw?.xiaoguotu; as xiaoguotu) {
+        <app-image class="flex-110" [src]="xiaoguotu" [bigPicSrc]="xiaoguotu" [prefix]="imgPrefix"></app-image>
+      }
+    </div>
   </div>
   @if (nodesTable(); as info) {
     <mat-divider vertical></mat-divider>

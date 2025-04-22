@@ -1,10 +1,26 @@
-import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from "@angular/core";
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  HostBinding,
+  inject,
+  input,
+  OnInit,
+  signal,
+  untracked,
+  viewChild
+} from "@angular/core";
+import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
+import {MatCardModule} from "@angular/material/card";
 import {setGlobal} from "@app/app.common";
 import {CadData, CadLine} from "@lucilor/cad-viewer";
 import {exportObject, importObject, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
+import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageData} from "@modules/message/components/message/message.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, isObject, uniq} from "lodash";
@@ -16,39 +32,24 @@ import {InputComponent} from "../../modules/input/components/input.component";
   selector: "app-klcs",
   templateUrl: "./klcs.component.html",
   styleUrls: ["./klcs.component.scss"],
-  imports: [InputComponent, MatButtonModule, NgScrollbar]
+  imports: [InputComponent, MatButtonModule, MatCardModule, NgScrollbar],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KlcsComponent implements OnInit, AfterViewInit {
-  private _data: KailiaocanshuData = {_id: "", 名字: "", 分类: "", 参数: []};
-  @Input()
-  get data() {
-    return this._data;
-  }
-  set data(value) {
-    this._data = value;
-    this.updateData();
-  }
-  @Input() cadId?: string;
-  inputInfos: InputInfo[] = [];
-  inputInfos2: InputInfo[][] = [];
-  jsonEditor: ReturnType<typeof createJSONEditor> | null = null;
-  @ViewChild("jsonEditorContainer") jsonEditorContainer?: ElementRef<HTMLDivElement>;
-  useJsonEditor = false;
-  cadData?: CadData;
-  cadMubanData?: CadData;
-  messageData: MessageData = {type: "json", json: null};
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
 
-  constructor(
-    private http: CadDataService,
-    private message: MessageService
-  ) {}
+  @HostBinding("class") class = "ng-page";
+
+  data = input.required<KailiaocanshuData>();
+  cadId = input<string>();
 
   async ngOnInit() {
     setGlobal("kailiaocanshu", this);
   }
 
   async ngAfterViewInit() {
-    const id = this.cadId;
+    const id = this.cadId();
     if (id) {
       await timeout(0);
       const result = await this.http.getCad({collection: "cad", id});
@@ -65,15 +66,28 @@ export class KlcsComponent implements OnInit, AfterViewInit {
     }
   }
 
+  inputInfos = signal<InputInfo[]>([]);
+  inputInfos2 = signal<InputInfo[][]>([]);
+  useJsonEditor = signal(false);
+  jsonEditor: ReturnType<typeof createJSONEditor> | null = null;
+  jsonEditorContainer = viewChild<ElementRef<HTMLDivElement>>("jsonEditorContainer");
+  cadData?: CadData;
+  cadMubanData?: CadData;
+  messageData: MessageData = {type: "json", json: null};
+  dataEff = effect(() => {
+    this.data();
+    untracked(() => this.updateData());
+  });
   updateData() {
-    const data = this.data;
-    this.inputInfos = [{type: "string", label: "名字", model: {key: "名字", data}, showEmpty: true}];
-    if (this.data.分类 === "切中空") {
-      this.useJsonEditor = false;
+    const data = this.data();
+    const getter = new InputInfoWithDataGetter(data, {validators: Validators.required});
+    this.inputInfos.set([getter.string("名字")]);
+    if (data.分类 === "切中空") {
+      this.useJsonEditor.set(false);
       if (!Array.isArray(data.参数)) {
         data.参数 = [];
       }
-      this.data.参数 = data.参数.map((v: Partial<QiezhongkongItem>) => {
+      data.参数 = data.参数.map((v: Partial<QiezhongkongItem>) => {
         if (!isObject(v)) {
           v = {};
         }
@@ -104,119 +118,108 @@ export class KlcsComponent implements OnInit, AfterViewInit {
         lineNamesH = [];
         lineNamesV = [];
       }
-      this.inputInfos2 = 参数.map((v: QiezhongkongItem) => {
-        importObject(v, defaultQiezhongkongItem);
-        const 双线框 = v.type.includes("双线框");
-        const infos: InputInfo[] = [
-          {
-            type: "select",
-            label: "切内空类型",
-            options: qiezhongkongTypes.map((vv) => {
-              if (vv === "双线框") {
-                return {value: vv, label: "45度双线框"};
-              } else if (vv === "90度拼接双线框") {
-                return {value: vv, label: "90度双线框"};
-              } else {
-                return vv;
-              }
-            }),
-            model: {key: "type", data: v},
-            onChange: () => {
-              this.updateData();
-            },
-            showEmpty: true
-          },
-          {
-            type: "group",
-            label: "外框基准线",
-            infos: [
-              {type: "string", label: "上", model: {key: "topY", data: v}, showEmpty: true, options: lineNamesH},
-              {type: "string", label: "下", model: {key: "bottomY", data: v}, showEmpty: true, options: lineNamesH},
-              {type: "string", label: "左", model: {key: "leftX", data: v}, showEmpty: true, options: lineNamesV},
-              {type: "string", label: "右", model: {key: "rightX", data: v}, showEmpty: true, options: lineNamesV}
-            ]
-          },
-          {
-            type: "group",
-            label: "外框从基准线缩小值",
-            infos: v.offset.map<InputInfo>((_, i) => ({
-              type: "string",
-              label: allDirections[i],
-              model: {key: String(i), data: v.offset},
-              showEmpty: true
-            })),
-            showEmpty: true
-          },
-          {
-            type: "group",
-            label: "外框",
-            infos: [
-              {
-                type: "select",
-                label: "框线",
-                options: 双线框 ? ["虚线"] : ["实线", "虚线"],
-                model: {key: "框线", data: v.外框},
-                showEmpty: true
-              },
-              {
-                type: "select",
-                label: "切哪里",
-                options: allDirections.slice(),
-                multiple: true,
-                optionText: (val) => val.join(""),
-                value: allDirections.filter((vv) => v.外框?.显示.includes(vv)),
-                onChange: (value: string[]) => {
-                  if (!v.外框) {
-                    v.外框 = cloneDeep(defaultQiezhongkongItem.外框);
-                  }
-                  v.外框.显示 = value.join("");
-                },
-                showEmpty: true
-              }
-            ]
+      this.inputInfos2.set(
+        参数.map((v: QiezhongkongItem) => {
+          importObject(v, defaultQiezhongkongItem);
+          const 双线框 = v.type.includes("双线框");
+          if (!v.外框) {
+            v.外框 = cloneDeep(defaultQiezhongkongItem.外框);
           }
-        ];
-        if (双线框) {
-          infos.splice(1, 0, {
-            type: "string",
-            label: "双线框厚度",
-            model: {key: "双线框厚度", data: v},
-            placeholder: "留空时默认取门扇厚度"
-          });
-          infos.push({
-            type: "group",
-            label: "内框",
-            infos: [
+          const getter2 = new InputInfoWithDataGetter(v, {validators: Validators.required});
+          const getter3 = new InputInfoWithDataGetter(v.外框, {validators: Validators.required});
+          const infos: InputInfo[] = [
+            getter2.selectSingle(
+              "type",
+              qiezhongkongTypes.map((vv) => {
+                if (vv === "双线框") {
+                  return {value: vv, label: "45度双线框"};
+                } else if (vv === "90度拼接双线框") {
+                  return {value: vv, label: "90度双线框"};
+                } else {
+                  return vv;
+                }
+              }),
               {
-                type: "select",
-                label: "框线",
-                options: ["实线"],
-                model: {key: "框线", data: v.内框},
-                showEmpty: true
-              },
-              {
-                type: "select",
-                label: "切哪里",
-                options: allDirections.slice(),
-                multiple: true,
-                optionText: (val) => val.join(""),
-                value: allDirections.filter((vv) => v.内框?.显示.includes(vv)),
-                onChange: (val: string[]) => {
-                  if (!v.内框) {
-                    v.内框 = cloneDeep(defaultQiezhongkongItem.内框);
-                  }
-                  v.内框.显示 = val.join("");
-                },
-                showEmpty: true
+                label: "切内空类型",
+                onChange: () => {
+                  this.updateData();
+                }
               }
-            ]
-          });
-        }
-        return infos;
-      });
+            ),
+            getInputInfoGroup(
+              [
+                getter2.string("topY", {label: "上", options: lineNamesH}),
+                getter2.string("bottomY", {label: "下", options: lineNamesH}),
+                getter2.string("leftX", {label: "左", options: lineNamesV}),
+                getter2.string("rightX", {label: "右", options: lineNamesV})
+              ],
+              {label: "外框基准线"}
+            ),
+            getInputInfoGroup(
+              v.offset.map<InputInfo>((_, i) => ({
+                type: "string",
+                label: allDirections[i],
+                model: {key: String(i), data: v.offset},
+                validators: Validators.required
+              })),
+              {label: "外框从基准线缩小值", inputStyle: {flex: "0 0 50%"}}
+            ),
+            getInputInfoGroup(
+              [
+                getter3.selectSingle("框线", 双线框 ? ["虚线"] : ["实线", "虚线"], {label: "外框"}),
+                {
+                  type: "select",
+                  label: "切哪里",
+                  options: allDirections.slice(),
+                  multiple: true,
+                  optionText: (val) => val.join(""),
+                  value: allDirections.filter((vv) => v.外框?.显示.includes(vv)),
+                  onChange: (value: string[]) => {
+                    if (!v.外框) {
+                      v.外框 = cloneDeep(defaultQiezhongkongItem.外框);
+                    }
+                    v.外框.显示 = value.join("");
+                  }
+                }
+              ],
+              {label: "外框"}
+            )
+          ];
+          if (双线框) {
+            infos.splice(1, 0, getter2.string("双线框厚度", {placeholder: "留空时默认取门扇厚度", validators: []}));
+            if (!v.内框) {
+              v.内框 = cloneDeep(defaultQiezhongkongItem.内框);
+            }
+            const getter4 = new InputInfoWithDataGetter(v.内框, {validators: Validators.required});
+            infos.push(
+              getInputInfoGroup(
+                [
+                  getter4.selectSingle("框线", ["实线"]),
+                  {
+                    type: "select",
+                    label: "切哪里",
+                    options: allDirections.slice(),
+                    multiple: true,
+                    optionText: (val) => val.join(""),
+                    value: allDirections.filter((vv) => v.内框?.显示.includes(vv)),
+                    onChange: (val: string[]) => {
+                      if (!v.内框) {
+                        v.内框 = cloneDeep(defaultQiezhongkongItem.内框);
+                      }
+                      v.内框.显示 = val.join("");
+                    }
+                  }
+                ],
+                {label: "内框"}
+              )
+            );
+          }
+          return infos;
+        })
+      );
     } else {
-      this.useJsonEditor = true;
-      this.inputInfos2 = [
+      this.useJsonEditor.set(true);
+      this.inputInfos2.set([
         [
           {
             type: "string",
@@ -237,12 +240,13 @@ export class KlcsComponent implements OnInit, AfterViewInit {
             ]
           }
         ]
-      ];
+      ]);
     }
-    if (this.useJsonEditor) {
+    if (this.useJsonEditor()) {
       if (!this.jsonEditor) {
-        if (this.jsonEditorContainer) {
-          this.jsonEditor = createJSONEditor({target: this.jsonEditorContainer.nativeElement, props: {}});
+        const target = this.jsonEditorContainer()?.nativeElement;
+        if (target) {
+          this.jsonEditor = createJSONEditor({target, props: {}});
         }
       }
       if (this.jsonEditor) {
@@ -255,26 +259,26 @@ export class KlcsComponent implements OnInit, AfterViewInit {
   }
 
   addQiezhongkongItem(i: number) {
-    const 参数: QiezhongkongItem[] = this.data.参数;
+    const 参数: QiezhongkongItem[] = this.data().参数;
     参数.splice(i + 1, 0, importObject({}, defaultQiezhongkongItem));
     this.updateData();
   }
 
   removeQiezhongkongItem(i: number) {
-    const 参数: QiezhongkongItem[] = this.data.参数;
+    const 参数: QiezhongkongItem[] = this.data().参数;
     参数.splice(i, 1);
     this.updateData();
   }
 
   copyQiezhongkongItem(i: number) {
-    const 参数: QiezhongkongItem[] = this.data.参数;
+    const 参数: QiezhongkongItem[] = this.data().参数;
     参数.splice(i + 1, 0, cloneDeep(参数[i]));
     this.updateData();
   }
 
   async submit(): Promise<KailiaocanshuData | null> {
     const {jsonEditor} = this;
-    let data = this.data;
+    let data = this.data();
     if (jsonEditor) {
       const errors = jsonEditor.validate();
       if (errors) {

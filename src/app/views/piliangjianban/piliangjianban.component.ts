@@ -1,4 +1,4 @@
-import {Component, HostListener, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostListener, inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
 import {MatExpansionModule} from "@angular/material/expansion";
@@ -11,7 +11,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {Properties} from "csstype";
-import {cloneDeep} from "lodash";
+import {cloneDeep, difference, union} from "lodash";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
 
 export interface Bancai {
@@ -31,7 +31,6 @@ export interface Bancai {
   板材: string;
   气体: string;
   规格: number[];
-  expanded: boolean;
   pageNum: number;
   pageBreakAfter: Properties["pageBreakAfter"];
   printPageIndex: number;
@@ -41,10 +40,24 @@ export interface Bancai {
   selector: "app-piliangjianban",
   templateUrl: "./piliangjianban.component.html",
   styleUrls: ["./piliangjianban.component.scss"],
-  imports: [ImageComponent, MatButtonModule, MatCardModule, MatExpansionModule]
+  imports: [ImageComponent, MatButtonModule, MatCardModule, MatExpansionModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PiliangjianbanComponent implements OnInit {
-  bancais: Bancai[] = [];
+  private http = inject(CadDataService);
+  private route = inject(ActivatedRoute);
+  private spinner = inject(SpinnerService);
+  private status = inject(AppStatusService);
+
+  bancais = signal<Bancai[]>([]);
+  bancaisExpanded = signal<Bancai[]>([]);
+  expandBancai(bancai: Bancai) {
+    this.bancaisExpanded.update((v) => union(v, [bancai]));
+  }
+  collapseBancai(bancai: Bancai) {
+    this.bancaisExpanded.update((v) => difference(v, [bancai]));
+  }
+
   cadsRowNum = 4;
   cadsColNum = 3;
   get cadElWidth() {
@@ -52,14 +65,7 @@ export class PiliangjianbanComponent implements OnInit {
   }
   imgSize = [300, 250];
   fixedLengthTextSize = 20;
-  printPageTotal = 0;
-
-  constructor(
-    private route: ActivatedRoute,
-    private http: CadDataService,
-    private status: AppStatusService,
-    private spinner: SpinnerService
-  ) {}
+  printPageTotal = signal(0);
 
   ngOnInit() {
     setTimeout(() => this.getBancais(), 0);
@@ -67,12 +73,12 @@ export class PiliangjianbanComponent implements OnInit {
 
   @HostListener("window:beforeprint")
   beforePrint() {
-    this.bancais.forEach((bancai) => (bancai.expanded = true));
+    this.bancaisExpanded.set(this.bancais().slice());
   }
 
   async getBancais(bancais?: Bancai[]) {
     if (bancais) {
-      this.bancais = bancais;
+      this.bancais.set(bancais);
       return;
     }
     const url = "order/order/piliangjianban";
@@ -82,7 +88,7 @@ export class PiliangjianbanComponent implements OnInit {
     });
     if (responseData) {
       this.spinner.show(this.spinner.defaultLoaderId, {text: "生成预览图..."});
-      this.bancais.length = 0;
+      let bancais2: Bancai[] = [];
       responseData.forEach((bancai) => {
         const data: Bancai["data"] = [];
         bancai.data.forEach((v) => {
@@ -103,15 +109,16 @@ export class PiliangjianbanComponent implements OnInit {
         });
         if (data.length) {
           bancai.data = data;
-          bancai.expanded = true;
           bancai.pageBreakAfter = "always";
           bancai.printPageIndex = -1;
-          this.bancais.push(bancai);
+          bancais2.push(bancai);
         }
       });
-      this.splitBancais();
+      bancais2 = this.splitBancais(bancais2);
+      this.bancais.set(bancais2);
+      this.bancaisExpanded.set(bancais2.slice());
       await timeout(0);
-      const dataAll = this.bancais.map((v) => v.data).flat();
+      const dataAll = bancais2.map((v) => v.data).flat();
       const {fixedLengthTextSize, imgSize} = this;
       const config: Partial<CadViewerConfig> = {
         hideLineLength: false,
@@ -121,40 +128,40 @@ export class PiliangjianbanComponent implements OnInit {
         backgroundColor: "white",
         fontStyle: {family: "宋体"}
       };
-      const collection = this.status.collection$.value;
+      const collection = this.status.collection();
       const getImg = async (data: CadData) => await getCadPreview(collection, data, {fixedLengthTextSize, config});
       await Promise.all(dataAll.map(async (v) => (v.img = await getImg(v.cad))));
       this.spinner.hide(this.spinner.defaultLoaderId);
+      this.bancais.update((v) => [...v]);
       await timeout(0);
       config.width = innerWidth * 0.85;
       config.height = innerHeight * 0.85;
       await Promise.all(dataAll.map(async (v) => (v.imgLarge = await getImg(v.cad))));
+      this.bancais.update((v) => [...v]);
     }
   }
 
-  splitBancais() {
-    const bancais = this.bancais.slice();
+  splitBancais(bancais: Bancai[]) {
     bancais.sort((a, b) => b.data.length - a.data.length);
-    this.bancais = [];
+    const bancais2: Bancai[] = [];
     const {cadsColNum, cadsRowNum} = this;
     const cadsPerPage = cadsColNum * cadsRowNum;
     bancais.forEach((bancai) => {
       const data = bancai.data;
-      bancai.data = [];
       let j = 0;
       for (let i = 0; i < data.length; i += cadsPerPage) {
         const bancaiCopy = cloneDeep(bancai);
         bancaiCopy.data = data.slice(i, i + cadsPerPage);
         bancaiCopy.pageNum = ++j;
-        this.bancais.push(bancaiCopy);
+        bancais2.push(bancaiCopy);
       }
     });
     let printPageIndex = 1;
-    for (let i = 0; i < this.bancais.length; i++) {
-      const curr = this.bancais[i];
+    for (let i = 0; i < bancais2.length; i++) {
+      const curr = bancais2[i];
       curr.printPageIndex = printPageIndex;
-      if (i < bancais.length - 1) {
-        const next = this.bancais[i + 1];
+      if (i < bancais2.length - 1) {
+        const next = bancais2[i + 1];
         const currRows = Math.ceil(curr.data.length / cadsColNum);
         const nextRows = Math.ceil(next.data.length / cadsColNum);
         if (currRows + nextRows + 1 <= cadsRowNum) {
@@ -165,7 +172,8 @@ export class PiliangjianbanComponent implements OnInit {
       }
       printPageIndex++;
     }
-    this.printPageTotal = printPageIndex - 1;
+    this.printPageTotal.set(printPageIndex - 1);
+    return bancais2;
   }
 
   print() {

@@ -1,30 +1,28 @@
 <div>
-  <app-input [info]="layerFilterInputInfo"></app-input>
+  <app-input [info]="layerFilterInputInfo()"></app-input>
 </div>
 
 <ng-scrollbar>
   <div class="forms">
-    @for (form of forms; track i; let i = $index) {
-      @if (!form.hidden) {
-        <div class="form sub-form-field">
-          @for (row of form.infos; track $index) {
-            <div class="row">
-              @for (info of row; track $index) {
-                <app-input [info]="info"></app-input>
-              }
-            </div>
-          }
-          <div class="toolbar">
-            <button mat-icon-button (click)="addLayer(i)"><mat-icon>add_circle</mat-icon></button>
-            <button mat-icon-button (click)="removeLayer(i)"><mat-icon>remove_circle</mat-icon></button>
+    @for (form of forms(); track i; let i = $index) {
+      <div class="form sub-form-field">
+        @for (row of form.infos; track $index) {
+          <div class="row">
+            @for (info of row; track $index) {
+              <app-input [info]="info"></app-input>
+            }
           </div>
+        }
+        <div class="toolbar">
+          <button mat-icon-button (click)="addLayer(i)"><mat-icon>add_circle</mat-icon></button>
+          <button mat-icon-button (click)="removeLayer(i)"><mat-icon>remove_circle</mat-icon></button>
         </div>
-      }
+      </div>
     }
   </div>
 </ng-scrollbar>
 
-@if (forms.length < 1) {
+@if (forms().length < 1) {
   <div class="toolbar">
     <button mat-flat-button (click)="addLayer()">新建图层</button>
   </div>

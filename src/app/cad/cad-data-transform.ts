@@ -1,6 +1,7 @@
 import {CadBaseLine, CadData, CadDimension, CadJointPoint} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {AppConfig} from "@services/app-config.service";
+import {intersection} from "lodash";
 import {CadCollection} from "./collections";
 import {cadOptions} from "./options";
 import {isShiyitu} from "./utils";
@@ -50,12 +51,20 @@ export const setCadData = (data: CadData, project: string, collection: CadCollec
     data.info._layerInfos = layerInfos;
   }
 
+  const ids: string[] = [];
   data.getAllEntities().forEach((e) => {
+    ids.push(e.id);
     if (e.layer === "分页线" || e instanceof CadDimension) {
       e.calcBoundingRect = false;
     }
     e.visible = true;
   });
+
+  if (data.分体对应线) {
+    for (const item of data.分体对应线) {
+      item.ids = intersection(item.ids, ids);
+    }
+  }
   return data;
 };
 

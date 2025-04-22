@@ -400,25 +400,31 @@ export class CadViewer extends EventEmitter {
         const {lineGongshi} = config;
         let foundOffset: Point | undefined;
         if (isLengthText) {
-          let valid = true;
-          let error = null as any;
           let length = parent.length;
+          let lengthStr = "";
           let prefix = "";
+          let formatter: string | undefined;
           let ndigits = 2;
           if (parent.显示线长) {
+            let error = "";
             const calcReuslt = calculate(parent.显示线长, {线长: length});
             if (calcReuslt.error === null) {
               if (isNaN(calcReuslt.value)) {
                 error = "NaN";
-                valid = false;
               } else {
                 length = calcReuslt.value;
               }
             } else {
-              error = calcReuslt.error;
-              valid = false;
+              error = String(calcReuslt.error);
             }
-            prefix = "显示";
+            if (error) {
+              lengthStr = parent.显示线长.replaceAll("线长", length.toString());
+            }
+            if (parent.显示线长格式) {
+              formatter = parent.显示线长格式;
+            } else {
+              prefix = "显示";
+            }
           } else if (parent instanceof CadArc) {
             ndigits = 0;
             switch (parent.圆弧显示) {
@@ -441,10 +447,13 @@ export class CadViewer extends EventEmitter {
               default:
             }
           }
-          if (valid) {
-            entity.text = prefix + toFixedTrim(length, ndigits);
+          if (!lengthStr) {
+            lengthStr = toFixedTrim(length, ndigits);
+          }
+          if (formatter) {
+            entity.text = formatter.replace("{0}", lengthStr);
           } else {
-            entity.text = String(error);
+            entity.text = prefix + lengthStr;
           }
           entity.fontStyle.size = parent.lengthTextSize;
           fontStyle.size = entity.fontStyle.size;

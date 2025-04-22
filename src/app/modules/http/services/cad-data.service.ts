@@ -386,8 +386,8 @@ export class CadDataService extends HttpService {
     await this.post<{key: string; expireTime: number}>("ngcad/setRedisData", {key, value, expireTime}, options);
   }
 
-  async getBancaiList(fubanNumber?: number, options?: HttpOptions) {
-    return await this.getData<BancaiListData>("ngcad/getBancaiList", {fubanNumber}, options);
+  async getBancaiList(params?: {fubanNumber?: number; ignoreTingyong?: boolean; withImg?: boolean}, options?: HttpOptions) {
+    return await this.getData<BancaiListData>("ngcad/getBancaiList", params, options);
   }
 
   async getTableRenderData(table: string) {

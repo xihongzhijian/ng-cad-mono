@@ -1,4 +1,4 @@
-import {Component, effect, inject, input, signal, untracked, viewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked, viewChild} from "@angular/core";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {isEqual} from "lodash";
 import {NgxUiLoaderComponent, NgxUiLoaderConfig, NgxUiLoaderModule} from "ngx-ui-loader";
@@ -7,7 +7,8 @@ import {NgxUiLoaderComponent, NgxUiLoaderConfig, NgxUiLoaderModule} from "ngx-ui
   selector: "app-spinner",
   templateUrl: "./spinner.component.html",
   styleUrls: ["./spinner.component.scss"],
-  imports: [NgxUiLoaderModule]
+  imports: [NgxUiLoaderModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SpinnerComponent {
   private spinner = inject(SpinnerService);

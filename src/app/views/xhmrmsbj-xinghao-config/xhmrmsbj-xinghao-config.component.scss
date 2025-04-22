@@ -1,11 +1,6 @@
 .content {
   height: 100%;
 
-  > * {
-    padding: 5px;
-    box-sizing: border-box;
-  }
-
   .shuru-table {
     width: 500px;
   }
@@ -19,7 +14,8 @@
   }
 
   .suanliao-config {
-    width: 400px;
+    width: 420px;
+    padding: 10px;
 
     .suanliao-config-item {
       width: 100%;

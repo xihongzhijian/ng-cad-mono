@@ -1,5 +1,6 @@
-import {FlipType} from "@lucilor/cad-viewer";
+import {CadAxis, CadDimension, CadDimensionEntity, FlipType} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
+import {InputInfoOptions} from "@modules/input/components/input.types";
 
 export const cadOptions = {
   bancaihoudufangxiang: {
@@ -66,7 +67,33 @@ export const cadOptions = {
 } as const;
 
 export const cadDimensionOptions = {
-  xiaoshuchuli: {values: ["四舍五入", "舍去小数", "小数进一", "保留一位", "保留两位"], defaultValue: "四舍五入"}
+  xiaoshuchuli: {values: ["四舍五入", "舍去小数", "小数进一", "保留一位", "保留两位"] satisfies InputInfoOptions, defaultValue: "四舍五入"},
+  location: {
+    values: [
+      {value: "start", label: "起点"},
+      {value: "center", label: "中点"},
+      {value: "end", label: "终点"},
+      {value: "min", label: "最小值"},
+      {value: "max", label: "最大值"},
+      {value: "minX"},
+      {value: "maxX"},
+      {value: "minY"},
+      {value: "maxY"}
+    ] satisfies InputInfoOptions<CadDimensionEntity["location"]>
+  },
+  ref: {
+    values: [
+      {value: "entity1"},
+      {value: "entity2"},
+      {value: "maxX"},
+      {value: "maxY"},
+      {value: "minX"},
+      {value: "minY"},
+      {value: "minLength"},
+      {value: "maxLength"}
+    ] satisfies InputInfoOptions<CadDimension["ref"]>
+  },
+  axis: {values: ["x", "y"] satisfies InputInfoOptions<CadAxis>, defaultValue: "x"}
 } as const;
 
 export const cadOptionOptions: ObjectOf<{values: string[]; defaultValue: string}> = {

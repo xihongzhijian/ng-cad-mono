@@ -3,8 +3,8 @@
 }
 
 .trays {
-  background-color: lightgray;
+  background-color: var(--mat-sys-outline-variant);
 }
 .tray {
-  background-color: white;
+  background-color: var(--mat-sys-surface);
 }

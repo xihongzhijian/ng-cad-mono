@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import {inject, Injectable} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarConfig} from "@angular/material/snack-bar";
@@ -39,14 +39,13 @@ export const getMessageImportModeOptions = () => messageImportMode.map((v, i) =>
   providedIn: "root"
 })
 export class MessageService {
+  private dialog = inject(MatDialog);
+  private domSanitizer = inject(DomSanitizer);
+  private snackBar = inject(MatSnackBar);
+
   openedDialogs: MatDialogRef<MessageComponent, MessageOutput>[] = [];
   open$ = new BehaviorSubject<MatDialogConfig<MessageData>>({});
   close$ = new BehaviorSubject<MessageOutput>(null);
-  constructor(
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private domSanitizer: DomSanitizer
-  ) {}
 
   async open(config: MatDialogConfig<MessageData>) {
     config = {width: "50%", ...config};

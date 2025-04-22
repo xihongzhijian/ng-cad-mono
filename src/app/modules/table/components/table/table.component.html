@@ -1,212 +1,218 @@
-<div class="table-container" [class]="{'no-scroll': info.noScroll, 'no-data': !haveData}">
-  @if (!info.inlineTitle) {
-    <div class="flex-column">
-      @if (info.title) {
-        <div class="title" [style]="info.titleStyle">{{ info.title }}</div>
-      }
-      @if (info.subTitle) {
-        <div [style]="info.subTitleStyle">{{ info.subTitle }}</div>
-      }
-    </div>
-  }
-  @if (haveToolbarButtons) {
-    <div class="toolbar table-toolbar">
-      @if (info.title && info.inlineTitle) {
+@if (info(); as info) {
+  <div class="table-container" [class]="{'no-scroll': info.noScroll, 'no-data': !haveData}">
+    @if (!info.inlineTitle) {
+      <div class="flex-column">
         @if (info.title) {
           <div class="title" [style]="info.titleStyle">{{ info.title }}</div>
         }
-      }
-      @if (filterInputInfos(); as infos) {
-        @for (info of infos; track $index) {
-          <app-input [info]="info"></app-input>
+        @if (info.subTitle) {
+          <div [style]="info.subTitleStyle">{{ info.subTitle }}</div>
         }
-      }
-      @if (toolbarButtons.add) {
-        <button mat-stroked-button (click)="addItem()">添加</button>
-      }
-      @if (toolbarButtons.remove) {
-        <button mat-stroked-button (click)="removeItem()" [disabled]="_rowSelection.selected.length < 1">删除</button>
-      }
-      @if (toolbarButtons.export) {
-        <button mat-stroked-button (click)="export()">导出</button>
-      }
-      @if (toolbarButtons.import) {
-        <button mat-stroked-button (click)="import()">导入</button>
-      }
-      @if (toolbarButtons.editModeToggle) {
-        <button mat-stroked-button [class.accent]="info.editMode" (click)="toggleEditMode()">编辑</button>
-      }
-      @for (button of toolbarButtons.extra; track $index) {
-        @if (!button.hidden) {
-          <button mat-stroked-button [class]="button.class" [style]="button.style" (click)="onToolbarBtnClick(button)">
-            {{ button.title || button.event }}
-          </button>
-        }
-      }
-    </div>
-    @if (info.subTitleStyle && info.inlineTitle) {
-      <div [style]="info.subTitleStyle">{{ info.subTitle }}</div>
+      </div>
     }
-  }
-  <div class="table-body">
-    <mat-table #tableComponent [dataSource]="dataSource" matSort>
-      <div>
-        <ng-container matColumnDef="select" sticky>
-          <mat-header-cell *matHeaderCellDef [style]="getCheckBoxStyle()">
-            @if (_rowSelection.isMultipleSelection()) {
-              <mat-checkbox (change)="masterToggle()" [checked]="isAllSelected()" [indeterminate]="isPartiallySelected()"></mat-checkbox>
-            }
-          </mat-header-cell>
-          <mat-cell *matCellDef="let item; let rowIdx = index" [style]="getCheckBoxStyle()">
-            <mat-checkbox appClickStop (change)="toggleRowSelection(item)" [checked]="_rowSelection.isSelected(item)"> </mat-checkbox>
-          </mat-cell>
-        </ng-container>
-
-        @for (column of info.columns; track colIdx; let colIdx = $index) {
-          <ng-container [matColumnDef]="toTypeString(column.field)" [sticky]="column.sticky" [stickyEnd]="column.stickyEnd">
-            @if (info.sortable) {
-              <mat-header-cell
-                *matHeaderCellDef
-                mat-sort-header
-                [class]="getCellClass(column, null, -1, -1)"
-                [style]="getCellStyle(column, null, -1, -1)"
-              >
-                {{ column.name || column.field }}
-              </mat-header-cell>
-            } @else {
-              <mat-header-cell *matHeaderCellDef [class]="getCellClass(column, null, -1, -1)" [style]="getCellStyle(column, null, -1, -1)">
-                {{ column.name || column.field }}
-              </mat-header-cell>
-            }
-            <mat-cell
-              *matCellDef="let item; let rowIdx = index"
-              [class]="getCellClass(column, item, rowIdx, colIdx)"
-              [style]="getCellStyle(column, item, rowIdx, colIdx)"
-              (click)="onCellClick({column, item, colIdx, rowIdx})"
-            >
-              @if (info.isTree && colIdx === 0) {
-                <button
-                  mat-icon-button
-                  [style.opacity]="item.children?.length > 0 ? '1' : '0'"
-                  [style.marginLeft.px]="item.level * 10"
-                  (click)="treeControl.toggle(item)"
-                >
-                  <mat-icon class="mat-icon-rtl-mirror">
-                    {{ treeControl.isExpanded(item) ? "expand_more" : "chevron_right" }}
-                  </mat-icon>
-                </button>
+    @if (toolbarButtons(); as toolbarButtons) {
+      <div class="toolbar table-toolbar">
+        @if (info.title && info.inlineTitle) {
+          @if (info.title) {
+            <div class="title" [style]="info.titleStyle">{{ info.title }}</div>
+          }
+        }
+        @if (filterInputInfos(); as infos) {
+          @for (info of infos; track $index) {
+            <app-input [info]="info"></app-input>
+          }
+        }
+        @if (toolbarButtons.add) {
+          <button mat-stroked-button (click)="addItem()">添加</button>
+        }
+        @if (toolbarButtons.remove) {
+          <button mat-stroked-button (click)="removeItem()" [disabled]="_rowSelection.selected.length < 1">删除</button>
+        }
+        @if (toolbarButtons.export) {
+          <button mat-stroked-button (click)="export()">导出</button>
+        }
+        @if (toolbarButtons.import) {
+          <button mat-stroked-button (click)="import()">导入</button>
+        }
+        @if (toolbarButtons.editModeToggle) {
+          <button mat-stroked-button [class.accent]="info.editMode" (click)="toggleEditMode()">编辑</button>
+        }
+        @for (button of toolbarButtons.extra; track $index) {
+          @if (!button.hidden) {
+            <button mat-stroked-button [class]="button.class" [style]="button.style" (click)="onToolbarBtnClick(button)">
+              {{ button.title || button.event }}
+            </button>
+          }
+        }
+      </div>
+      @if (info.subTitleStyle && info.inlineTitle) {
+        <div [style]="info.subTitleStyle">{{ info.subTitle }}</div>
+      }
+    }
+    <div class="table-body">
+      <mat-table #tableComponent [dataSource]="dataSource" matSort>
+        <div>
+          <ng-container matColumnDef="select" sticky>
+            <mat-header-cell *matHeaderCellDef [style]="getCheckBoxStyle()">
+              @if (_rowSelection.isMultipleSelection()) {
+                <mat-checkbox (change)="masterToggle()" [checked]="isAllSelected()" [indeterminate]="isPartiallySelected()"></mat-checkbox>
               }
-              @switch (column.type) {
-                @case ("time") {
-                  @if (isColumnEditable({column, item, colIdx, rowIdx})) {
-                    <mat-form-field>
-                      <!-- todo: datetime picker -->
-                      <input
-                        type="text"
-                        matInput
-                        [value]="item[column['field']]"
-                        (change)="setCellValue($event, colIdx, rowIdx, item)"
-                        (focus)="onCellFocus($event, colIdx, rowIdx, item)"
-                        (blur)="onCellBlur($event, colIdx, rowIdx, item)"
-                      />
-                    </mat-form-field>
-                  } @else {
-                    <span [innerHTML]="getValueString(item, column, rowIdx)"></span>
-                  }
-                }
-                @case ("button") {
-                  @if (column.showValue) {
-                    <div><span [innerHTML]="getValueString(item, column, rowIdx)"></span></div>
-                  }
-                  <div class="toolbar">
-                    @for (button of getColumnButtons(column); track $index) {
-                      @if (!button.hidden) {
-                        <button
-                          mat-stroked-button
-                          [class]="button.class"
-                          [style]="button.style"
-                          (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"
-                        >
-                          {{ button.title || button.event }}
-                        </button>
-                      }
-                    }
-                  </div>
-                }
-                @case ("link") {
-                  @if (isColumnEditable({column, item, colIdx, rowIdx})) {
-                    <mat-form-field>
-                      <input
-                        type="text"
-                        matInput
-                        readonly
-                        [value]="getValueString(item, column, rowIdx)"
-                        (focus)="onCellFocus($event, colIdx, rowIdx, item)"
-                        (blur)="onCellBlur($event, colIdx, rowIdx, item)"
-                      />
-                      <button mat-icon-button matSuffix (click)="selectOptions(colIdx, rowIdx, item)">
-                        <mat-icon>list</mat-icon>
-                      </button>
-                    </mat-form-field>
-                  } @else {
-                    <span [innerHTML]="getValueString(item, column, rowIdx)"></span>
-                  }
-                }
-                @case ("image") {
-                  <div class="flex-column flex-110">
-                    @if (getItemImgSmall(item, column)) {
-                      <app-image [src]="getItemImgSmall(item, column)" [bigPicSrc]="getItemImgLarge(item, column)"></app-image>
-                    }
-                    @if (isColumnEditable({column, item, colIdx, rowIdx})) {
-                      <div class="toolbar">
-                        <button mat-stroked-button (click)="uploadFile(colIdx, rowIdx, item)">上传</button>
-                        @if (getItemImgSmall(item, column)) {
-                          <button mat-stroked-button class="accent" (click)="deleteFile(colIdx, rowIdx, item)">删除</button>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-                @case ("cad") {
-                  <div class="flex-column">
-                    @if (getItemCadImgId(item, column)) {
-                      <app-cad-image [id]="getItemCadImgId(item, column)"></app-cad-image>
-                    }
-                    @if (isColumnEditable({column, item, colIdx, rowIdx}, true)) {
-                      <div class="toolbar">
-                        <button mat-stroked-button (click)="uploadCad(colIdx, rowIdx, item)">上传</button>
-                        @if (getItemCadImgId(item, column)) {
-                          <button mat-stroked-button (click)="openCad(colIdx, rowIdx, item)">编辑</button>
-                          <button mat-stroked-button class="accent" (click)="deleteCad(colIdx, rowIdx, item)">删除</button>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-                @default {
-                  @if (isColumnEditable({column, item, colIdx, rowIdx})) {
-                    @if (cellInputInfos().at(rowIdx)?.at(colIdx); as info) {
-                      <app-input
-                        #cellInput
-                        [info]="info"
-                        (focus)="onCellFocus($event, colIdx, rowIdx, item)"
-                        (blur)="onCellBlur($event, colIdx, rowIdx, item)"
-                      ></app-input>
-                    }
-                  } @else {
-                    <span [innerHTML]="getValueString(item, column, rowIdx)"></span>
-                  }
-                }
-              }
+            </mat-header-cell>
+            <mat-cell *matCellDef="let item; let rowIdx = index" [style]="getCheckBoxStyle()">
+              <mat-checkbox appClickStop (change)="toggleRowSelection(item)" [checked]="_rowSelection.isSelected(item)"> </mat-checkbox>
             </mat-cell>
           </ng-container>
-        }
 
-        @if (!info.hideHeader) {
-          <mat-header-row *matHeaderRowDef="columnFields; sticky: true"></mat-header-row>
-        }
-        <mat-row *matRowDef="let row; columns: columnFields; let i = index"></mat-row>
-      </div>
-    </mat-table>
+          @for (column of info.columns; track colIdx; let colIdx = $index) {
+            <ng-container [matColumnDef]="toTypeString(column.field)" [sticky]="column.sticky" [stickyEnd]="column.stickyEnd">
+              @if (info.sortable) {
+                <mat-header-cell
+                  *matHeaderCellDef
+                  mat-sort-header
+                  [class]="getCellClass(column, null, -1, -1)"
+                  [style]="getCellStyle(column, null, -1, -1)"
+                >
+                  {{ column.name || column.field }}
+                </mat-header-cell>
+              } @else {
+                <mat-header-cell
+                  *matHeaderCellDef
+                  [class]="getCellClass(column, null, -1, -1)"
+                  [style]="getCellStyle(column, null, -1, -1)"
+                >
+                  {{ column.name || column.field }}
+                </mat-header-cell>
+              }
+              <mat-cell
+                *matCellDef="let item; let rowIdx = index"
+                [class]="getCellClass(column, item, rowIdx, colIdx)"
+                [style]="getCellStyle(column, item, rowIdx, colIdx)"
+                (click)="onCellClick({column, item, colIdx, rowIdx})"
+              >
+                @if (info.isTree && colIdx === 0) {
+                  <button
+                    mat-icon-button
+                    [style.opacity]="item.children?.length > 0 ? '1' : '0'"
+                    [style.marginLeft.px]="item.level * 10"
+                    (click)="treeControl.toggle(item)"
+                  >
+                    <mat-icon class="mat-icon-rtl-mirror">
+                      {{ treeControl.isExpanded(item) ? "expand_more" : "chevron_right" }}
+                    </mat-icon>
+                  </button>
+                }
+                @switch (column.type) {
+                  @case ("time") {
+                    @if (isColumnEditable({column, item, colIdx, rowIdx})) {
+                      <mat-form-field>
+                        <!-- todo: datetime picker -->
+                        <input
+                          type="text"
+                          matInput
+                          [value]="item[column['field']]"
+                          (change)="setCellValue($event, colIdx, rowIdx, item)"
+                          (focus)="onCellFocus($event, colIdx, rowIdx, item)"
+                          (blur)="onCellBlur($event, colIdx, rowIdx, item)"
+                        />
+                      </mat-form-field>
+                    } @else {
+                      <span [innerHTML]="getValueString(item, column, rowIdx)"></span>
+                    }
+                  }
+                  @case ("button") {
+                    @if (column.showValue) {
+                      <div><span [innerHTML]="getValueString(item, column, rowIdx)"></span></div>
+                    }
+                    <div class="toolbar">
+                      @for (button of getColumnButtons(column); track $index) {
+                        @if (!button.hidden) {
+                          <button
+                            mat-stroked-button
+                            [class]="button.class"
+                            [style]="button.style"
+                            (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"
+                          >
+                            {{ button.title || button.event }}
+                          </button>
+                        }
+                      }
+                    </div>
+                  }
+                  @case ("link") {
+                    @if (isColumnEditable({column, item, colIdx, rowIdx})) {
+                      <mat-form-field>
+                        <input
+                          type="text"
+                          matInput
+                          readonly
+                          [value]="getValueString(item, column, rowIdx)"
+                          (focus)="onCellFocus($event, colIdx, rowIdx, item)"
+                          (blur)="onCellBlur($event, colIdx, rowIdx, item)"
+                        />
+                        <button mat-icon-button matSuffix (click)="selectOptions(colIdx, rowIdx, item)">
+                          <mat-icon>list</mat-icon>
+                        </button>
+                      </mat-form-field>
+                    } @else {
+                      <span [innerHTML]="getValueString(item, column, rowIdx)"></span>
+                    }
+                  }
+                  @case ("image") {
+                    <div class="flex-column flex-110">
+                      @if (getItemImgSmall(item, column)) {
+                        <app-image [src]="getItemImgSmall(item, column)" [bigPicSrc]="getItemImgLarge(item, column)"></app-image>
+                      }
+                      @if (isColumnEditable({column, item, colIdx, rowIdx})) {
+                        <div class="toolbar">
+                          <button mat-stroked-button (click)="uploadFile(colIdx, rowIdx, item)">上传</button>
+                          @if (getItemImgSmall(item, column)) {
+                            <button mat-stroked-button class="accent" (click)="deleteFile(colIdx, rowIdx, item)">删除</button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                  @case ("cad") {
+                    <div class="flex-column">
+                      @if (getItemCadImgId(item, column)) {
+                        <app-cad-image [id]="getItemCadImgId(item, column)"></app-cad-image>
+                      }
+                      @if (isColumnEditable({column, item, colIdx, rowIdx}, true)) {
+                        <div class="toolbar">
+                          <button mat-stroked-button (click)="uploadCad(colIdx, rowIdx, item)">上传</button>
+                          @if (getItemCadImgId(item, column)) {
+                            <button mat-stroked-button (click)="openCad(colIdx, rowIdx, item)">编辑</button>
+                            <button mat-stroked-button class="accent" (click)="deleteCad(colIdx, rowIdx, item)">删除</button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                  @default {
+                    @if (isColumnEditable({column, item, colIdx, rowIdx})) {
+                      @if (cellInputInfos().at(rowIdx)?.at(colIdx); as info) {
+                        <app-input
+                          #cellInput
+                          [info]="info"
+                          (focus)="onCellFocus($event, colIdx, rowIdx, item)"
+                          (blur)="onCellBlur($event, colIdx, rowIdx, item)"
+                        ></app-input>
+                      }
+                    } @else {
+                      <span [innerHTML]="getValueString(item, column, rowIdx)"></span>
+                    }
+                  }
+                }
+              </mat-cell>
+            </ng-container>
+          }
+
+          @if (!info.hideHeader) {
+            <mat-header-row *matHeaderRowDef="columnFields; sticky: true"></mat-header-row>
+          }
+          <mat-row *matRowDef="let row; columns: columnFields; let i = index"></mat-row>
+        </div>
+      </mat-table>
+    </div>
   </div>
-</div>
+}

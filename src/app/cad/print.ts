@@ -33,14 +33,7 @@ import {
   型材物料明细Item,
   型材物料明细List
 } from "./print.types";
-import {
-  getCadPaokengText,
-  getShuangxiangLineRects,
-  prepareCadViewer,
-  setShuangxiangLineRects,
-  showIntersections,
-  splitShuangxiangCad
-} from "./utils";
+import {getCadPaokengText, prepareCadViewer, setShuangxiangLineRects, showIntersections, splitShuangxiangCad} from "./utils";
 
 const findRectLines = (data: CadData, keyword: string, findLocator: boolean) => {
   const rectData = data.getBoundingRect();
@@ -92,10 +85,10 @@ const findRectLines = (data: CadData, keyword: string, findLocator: boolean) => 
       height: locatorHeight
     } = locator.boundingRect;
     result.locator = locator;
-    const leftLines: CadLine[] = [];
-    const rightLines: CadLine[] = [];
-    const topLines: CadLine[] = [];
-    const bottomLines: CadLine[] = [];
+    let maxLeft = -Infinity;
+    let minRight = Infinity;
+    let minTop = Infinity;
+    let maxBottom = -Infinity;
     vLines.forEach((e) => {
       if (e.length < locatorHeight) {
         return;
@@ -103,11 +96,14 @@ const findRectLines = (data: CadData, keyword: string, findLocator: boolean) => 
       if (e.maxY < locatorBottom || e.minY > locatorTop) {
         return;
       }
-      if (e.minX < locatorLeft) {
-        leftLines.push(e);
+      const {minX, maxX} = e;
+      if (minX < locatorLeft && minX > maxLeft) {
+        maxLeft = minX;
+        result.lines.left = e;
       }
-      if (e.maxX > locatorRight) {
-        rightLines.push(e);
+      if (maxX > locatorRight && maxX < minRight) {
+        minRight = maxX;
+        result.lines.right = e;
       }
     });
     hLines.forEach((e) => {
@@ -117,22 +113,16 @@ const findRectLines = (data: CadData, keyword: string, findLocator: boolean) => 
       if (e.maxX < locatorLeft || e.minX > locatorRight) {
         return;
       }
-      if (e.minY < locatorTop) {
-        bottomLines.push(e);
+      const {minY, maxY} = e;
+      if (minY > locatorTop && minY < minTop) {
+        minTop = minY;
+        result.lines.top = e;
       }
-      if (e.maxY > locatorBottom) {
-        topLines.push(e);
+      if (maxY < locatorBottom && maxY > maxBottom) {
+        maxBottom = maxY;
+        result.lines.bottom = e;
       }
     });
-    const instersects = (e: CadLine, es: CadLine[]) => es.some((e2) => e.curve.intersects(e2.curve).length > 0);
-    const leftLines2 = leftLines.filter((e) => instersects(e, topLines) || instersects(e, bottomLines));
-    const rightLines2 = rightLines.filter((e) => instersects(e, topLines) || instersects(e, bottomLines));
-    const topLines2 = topLines.filter((e) => instersects(e, leftLines) || instersects(e, rightLines));
-    const bottomLines2 = bottomLines.filter((e) => instersects(e, leftLines) || instersects(e, rightLines));
-    result.lines.top = topLines2.at(0) || null;
-    result.lines.right = rightLines2.at(0) || null;
-    result.lines.bottom = bottomLines2.at(-1) || null;
-    result.lines.left = leftLines2.at(-1) || null;
     if (!result.lines.top || !result.lines.right || !result.lines.bottom || !result.lines.left) {
       result.errors.push("没有足够的线");
       return result;
@@ -469,7 +459,6 @@ export const configCadDataForPrint = async (
   if (isZxpj && data instanceof CadData) {
     const lineLengthMap: ObjectOf<{text: string; mtext: CadMtext; 显示线长?: string}> = {};
     const shaungxiangCads = splitShuangxiangCad(data);
-    const shaungxiangRects = getShuangxiangLineRects(shaungxiangCads);
     await cad.render(data.getAllEntities());
     let rect2 = data.entities.filter((e) => e instanceof CadLineLike).getBoundingRect(false);
     const 宽度标注文本 = Math.round(rect2.width).toFixed();
@@ -496,7 +485,7 @@ export const configCadDataForPrint = async (
     let rect = data.getBoundingRect();
     // data.transform({scale: data.suanliaodanZoom, origin: [rect.x, rect.y]}, true);
     await cad.render(data.getAllEntities());
-    setShuangxiangLineRects(shaungxiangCads, shaungxiangRects);
+    setShuangxiangLineRects(shaungxiangCads);
     await cad.render(data.getAllEntities());
     data.entities.toArray().forEach((e) => {
       if (e instanceof CadLineLike && e.id in lineLengthMap) {

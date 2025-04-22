@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnDestroy} from "@angular/core";
+import {AfterViewInit, ChangeDetectionStrategy, Component, inject, OnDestroy, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {CadPreviewParams} from "@app/cad/cad-preview";
@@ -24,27 +24,26 @@ export type PreviewData = {
   selector: "app-print-a4-a015-preview",
   templateUrl: "./print-a4-a015-preview.component.html",
   styleUrls: ["./print-a4-a015-preview.component.scss"],
-  imports: [CadImageComponent, ImageComponent, MatButtonModule, NgScrollbar, SpinnerComponent]
+  imports: [CadImageComponent, ImageComponent, MatButtonModule, NgScrollbar, SpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PrintA4A015PreviewComponent implements AfterViewInit, OnDestroy {
-  data: PreviewData = [];
+  private http = inject(CadDataService);
+  private route = inject(ActivatedRoute);
+
+  data = signal<PreviewData>([]);
   loaderId = "printPreview";
   cadWidth = 92;
   cadHeight = 92;
   cadBackgroundColor = "white";
-
-  constructor(
-    private http: CadDataService,
-    private route: ActivatedRoute
-  ) {}
 
   async ngAfterViewInit() {
     const data = await this.http.getData<PreviewData>("order/printCode/printA4A015Preview", this.route.snapshot.queryParams);
     if (!data) {
       return;
     }
-    this.data = data;
-    for (const page of this.data) {
+    this.data.set(data);
+    for (const page of data) {
       for (const card of page) {
         if (card.type === "CAD") {
           card.id = card.CAD?.id || "";

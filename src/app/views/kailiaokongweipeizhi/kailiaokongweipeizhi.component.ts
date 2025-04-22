@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
 import {KlkwpzItem, KlkwpzSource} from "@components/klkwpz/klkwpz";
@@ -13,19 +13,20 @@ import {SpinnerComponent} from "../../modules/spinner/components/spinner/spinner
   selector: "app-kailiaokongweipeizhi",
   templateUrl: "./kailiaokongweipeizhi.component.html",
   styleUrls: ["./kailiaokongweipeizhi.component.scss"],
-  imports: [MatButtonModule, SpinnerComponent, KlkwpzComponent]
+  imports: [MatButtonModule, KlkwpzComponent, SpinnerComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class KailiaokongweipeizhiComponent implements OnInit {
-  id = "";
-  loaderId = "kailiaokongweipeizhi";
-  data: KlkwpzSource = {};
-  @ViewChild(KlkwpzComponent) klkwpzComponent?: KlkwpzComponent;
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
 
-  constructor(
-    private route: ActivatedRoute,
-    private http: CadDataService,
-    private message: MessageService
-  ) {}
+  @HostBinding("class") class = "ng-page";
+
+  loaderId = "kailiaokongweipeizhi";
+  id = signal("");
+  data = signal<KlkwpzSource>({});
+  klkwpzComponent = viewChild(KlkwpzComponent);
 
   ngOnInit() {
     this._fetch();
@@ -34,10 +35,10 @@ export class KailiaokongweipeizhiComponent implements OnInit {
   private async _fetch() {
     const id = this.route.snapshot.queryParams.id;
     if (id) {
-      this.id = id;
+      this.id.set(id);
       const data = await this.http.getData<ObjectOf<KlkwpzItem[]>>("peijian/kailiaokongweipeizhi/get", {id});
       if (data && typeof data === "object" && !Array.isArray(data)) {
-        this.data = data;
+        this.data.set(data);
       }
     } else {
       if (environment.production) {
@@ -48,15 +49,17 @@ export class KailiaokongweipeizhiComponent implements OnInit {
   }
 
   async submit() {
-    if (this.klkwpzComponent && this.klkwpzComponent.submit()) {
-      const response = await this.http.post(
-        "peijian/kailiaokongweipeizhi/set",
-        {id: this.id, data: this.klkwpzComponent.klkwpz.export()},
-        {spinner: this.loaderId}
-      );
-      if (response?.code === 0) {
-        this._fetch();
-      }
+    const klkwpzComponent = this.klkwpzComponent();
+    if (!klkwpzComponent || !klkwpzComponent.submit()) {
+      return;
+    }
+    const response = await this.http.post(
+      "peijian/kailiaokongweipeizhi/set",
+      {id: this.id(), data: klkwpzComponent.klkwpz.export()},
+      {spinner: this.loaderId}
+    );
+    if (response?.code === 0) {
+      this._fetch();
     }
   }
 }

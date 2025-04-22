@@ -1,5 +1,5 @@
 import {MatDialog} from "@angular/material/dialog";
-import {getCadTotalLength, getShuangxiangLineRects, setShuangxiangLineRects, splitShuangxiangCad} from "@app/cad/utils";
+import {getCadTotalLength, setShuangxiangLineRects, splitShuangxiangCad} from "@app/cad/utils";
 import {Formulas, toFixed} from "@app/utils/calc";
 import {getNamesStr} from "@app/utils/error-message";
 import {getLinkStr} from "@app/utils/get-value";
@@ -408,11 +408,9 @@ export const calcZxpj = async (
   const dimensionNamesMap: ObjectOf<{item: ZixuanpeijianCadItem}[]> = {};
   const varsGlobal: Formulas = {};
   const tongyongGongshiCalcResult = await calc.calcFormulas(tongyongGongshi, materialResult);
+  calc.calc.mergeFormulas(materialResult, tongyongGongshiCalcResult?.succeedTrim);
   const gongshiCalcResult = await calc.calcFormulas(gongshi, materialResult);
-  const gongshiSucceed = gongshiCalcResult?.succeedTrim || {};
-  const gongshiError = gongshiCalcResult?.error || {};
-  calc.calc.mergeFormulas(materialResult, tongyongGongshiCalcResult?.succeedTrim || {});
-  calc.calc.mergeFormulas(materialResult, gongshiSucceed);
+  calc.calc.mergeFormulas(materialResult, gongshiCalcResult?.succeedTrim);
   calc.calc.mergeFormulas(materialResult, inputResult);
 
   const gongshiKeys = Object.keys(gongshi);
@@ -671,7 +669,7 @@ export const calcZxpj = async (
       const 门扇名字 = info.门扇名字 || "";
       const 模块名字 = info.模块名字 || "";
       const mokuaiGongshisCurr = getNodeVars(mokuaiGongshis[门扇名字], 模块名字, true);
-      const formulas1 = {...gongshiError, ...v.formulas, ...v.dimensionVars, ...mokuaiGongshisCurr};
+      const formulas1 = {...gongshi, ...v.formulas, ...v.dimensionVars, ...mokuaiGongshisCurr};
       replaceMenshanName(门扇名字, formulas1);
       const mokuaiVarsCurr = getNodeVars(mokuaiVars[门扇名字], 模块名字);
       const vars1 = {...materialResult, ...shuchubianliang, ...lingsanVars, ...mokuaiVarsCurr};
@@ -867,7 +865,6 @@ export const calcZxpj = async (
       }
       calc.calc.mergeFormulas(varsGlobal, result2.succeedTrim);
       const shaungxiangCads = splitShuangxiangCad(data);
-      const shaungxiangRects = getShuangxiangLineRects(shaungxiangCads);
       for (const key in result2.succeedTrim) {
         const match = key.match(/线(\d+)公式/);
         const value = result2.succeedTrim[key];
@@ -890,9 +887,10 @@ export const calcZxpj = async (
           e.info.线长 = length;
         }
       }
-      setShuangxiangLineRects(shaungxiangCads, shaungxiangRects);
+      setShuangxiangLineRects(shaungxiangCads);
       const vars3 = {...vars2, ...getCadLengthVars(data)};
       const zhankais2: ZixuanpeijianInfo["zhankai"] = [];
+      const 栋数 = Number(materialResult.栋数);
       for (const [i, zhankai] of zhankais) {
         const formulas3: Formulas = {};
         formulas3.展开宽 = zhankai.zhankaikuan;
@@ -912,7 +910,7 @@ export const calcZxpj = async (
         const width = toFixed(result3.succeedTrim.展开宽, fractionDigits);
         const height = toFixed(result3.succeedTrim.展开高, fractionDigits);
         let num = Number(result3.succeedTrim.数量);
-        num *= Number(materialResult.栋数);
+        num *= 栋数;
         zhankais2.push({width, height, num: String(num), originalWidth: zhankai.zhankaikuan, cadZhankaiIndex: i});
       }
       info.zhankai = [...zhankais2, ...info.zhankai.filter((v) => !("cadZhankaiIndex" in v))];
@@ -968,11 +966,12 @@ export const calcZxpj = async (
           }
         });
         if (cadZhankai.chai) {
-          calcObj.num = 1;
+          const num = calcObj.num / 栋数;
+          calcObj.num = 栋数;
           const calc2 = [];
           calc2.push(calcObj);
-          for (let j = 1; j < calcObj.num; j++) {
-            const calc1 = JSON.parse(JSON.stringify(calcObj));
+          for (let j = 1; j < num; j++) {
+            const calc1 = cloneDeep(calcObj);
             if (!calc1.flip) {
               calc1.flip = [];
             }
@@ -1023,7 +1022,7 @@ export const calcZxpj = async (
   if (!gongshiCalcResult2?.fulfilled) {
     return {
       fulfilled: false,
-      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult2}}
+      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult}}
     };
   }
   calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);

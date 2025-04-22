@@ -423,7 +423,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     await this.status.updateCadTotalLength();
   };
   private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (_, entity) => {
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     const cad = this.status.cad;
     const gongshis = this.status.openCadOptions().gongshis;
     if (entity instanceof CadMtext && entity.parent instanceof CadLineLike) {
@@ -456,8 +456,10 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     const highlightedEntities = new CadEntities();
     if (!this.status.hasOtherCadStatus((v) => v instanceof CadStatusNormal || v instanceof CadStatusFentiConfig)) {
       await timeout(0);
-      highlightedEntities.merge(this.status.highlightDimensions());
-      highlightedEntities.merge(this.status.highlightLineTexts());
+      const highlightedEntities1 = this.status.highlightDimensions();
+      const highlightedEntities2 = this.status.highlightLineTexts(undefined, highlightedEntities1);
+      highlightedEntities.merge(highlightedEntities1);
+      highlightedEntities.merge(highlightedEntities2);
     }
     return highlightedEntities;
   }

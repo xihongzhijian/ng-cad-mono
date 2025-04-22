@@ -3,21 +3,21 @@
   <button mat-flat-button (click)="clear()">清空</button>
   <button mat-flat-button (click)="import()">导入</button>
   <button mat-flat-button (click)="export()">导出</button>
-  <button mat-flat-button [class.accent]="showMoreButtons" (click)="showMoreButtons = !showMoreButtons">编辑</button>
+  <button mat-flat-button [class.accent]="showMoreButtons()" (click)="toggleShowMoreButtons()">编辑</button>
   <button mat-flat-button (click)="importDefaultWorkData()">加载默认配置</button>
-  @if (defaultWorkDataFormInfo) {
+  @if (defaultWorkDataFormInfo()) {
     <button mat-flat-button (click)="setDefaultWorkData()">保存默认配置</button>
     <button mat-flat-button (click)="unsetDefaultWorkData()">删除默认配置</button>
   }
   @if (!production) {
-    <button mat-flat-button (click)="toggleDefaultWorkDataList()">list</button>
+    <button mat-flat-button [class.accent]="showDefaultWorkDataList()" (click)="toggleShowDefaultWorkDataList()">list</button>
   }
 </div>
 
 <ng-scrollbar>
-  @if (showDefaultWorkDataList && defaultWorkDataList) {
+  @if (showDefaultWorkDataList()) {
     <div class="items">
-      @for (item of defaultWorkDataList; track $index) {
+      @for (item of defaultWorkDataList(); track $index) {
         <div class="favorite-item item border">
           <div class="toolbar header">
             <div class="title">{{ item.key }}</div>
@@ -33,28 +33,28 @@
   }
 
   <div class="favorites-groups flex-column">
-    @for (i of manager.typesSortedIndexs; track $index) {
+    @for (type of manager.typesSorted(); track $index) {
       <div class="favorites-group item">
         <div class="toolbar">
-          <div class="title">{{ manager.types[i].name }}</div>
-          @if (showMoreButtons) {
-            <div class="text short">排序：{{ manager.types[i].order || 0 }}</div>
-            <button mat-button (click)="editType(i)">编辑</button>
+          <div class="title">{{ type.name }}</div>
+          @if (showMoreButtons()) {
+            <div class="text short">排序：{{ type.order || 0 }}</div>
+            <button mat-button (click)="editType(type.originalIndex)">编辑</button>
           }
         </div>
         <div class="items">
-          @for (j of manager.favoritesSortedIndexs; track $index) {
-            @if (manager.favorites[j].type === manager.types[i].name) {
+          @for (favorite of manager.favoritesSorted(); track $index) {
+            @if (favorite.type === type.name) {
               <div class="favorite-item item border">
                 <div class="toolbar header">
-                  <div class="title link" (click)="openFavorite(j)">{{ manager.favorites[j].xiao }}</div>
+                  <div class="title link" (click)="openFavorite(favorite.originalIndex)">{{ favorite.xiao }}</div>
                 </div>
-                @if (showMoreButtons) {
-                  <div class="desc text link" (click)="openFavorite(j)">{{ manager.favorites[j].tou }}/{{ manager.favorites[j].da }}</div>
+                @if (showMoreButtons()) {
+                  <div class="desc text link" (click)="openFavorite(favorite.originalIndex)">{{ favorite.tou }}/{{ favorite.da }}</div>
                   <div class="toolbar">
-                    <button mat-button (click)="editFavorite(j)">编辑</button>
-                    <button mat-button (click)="removeFavorite(j)">删除</button>
-                    <div class="text short">排序：{{ manager.favorites[j].order || 0 }}</div>
+                    <button mat-button (click)="editFavorite(favorite.originalIndex)">编辑</button>
+                    <button mat-button (click)="removeFavorite(favorite.originalIndex)">删除</button>
+                    <div class="text short">排序：{{ favorite.order || 0 }}</div>
                   </div>
                 }
               </div>

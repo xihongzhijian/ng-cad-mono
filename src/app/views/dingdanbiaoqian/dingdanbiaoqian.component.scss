@@ -3,7 +3,7 @@
   flex-direction: column;
   overflow: auto;
   height: 100%;
-  background-color: #dddddd;
+  background-color: var(--mat-sys-outline-variant);
 }
 @media print {
   :host {
@@ -44,12 +44,12 @@
   }
 }
 
-$cads-border: solid 1px grey;
 .cads {
   display: flex;
   flex-wrap: wrap;
   flex: 1 1 0;
   position: relative;
+  --border: solid 1px var(--mat-sys-outline);
 
   .menu {
     align-items: flex-start;
@@ -67,7 +67,6 @@ $cads-border: solid 1px grey;
     padding: 8px;
     box-sizing: border-box;
     box-shadow: none;
-    // border: $cads-border;
     position: absolute;
 
     .menu {
@@ -79,19 +78,18 @@ $cads-border: solid 1px grey;
     }
 
     .img {
-      cursor: pointer;
       width: 100%;
       height: 100%;
     }
 
     .cad-size {
-      height: 25px;
-      line-height: 25px;
+      font: var(--mat-sys-title-large);
+      font-size: 22px;
 
       > .highlight {
-        border: $cads-border;
+        border: var(--border);
         padding: 0 10px;
-        background-color: #e5e5e5;
+        background-color: var(--mat-sys-outline-variant);
       }
 
       .sign {
@@ -131,16 +129,16 @@ $cads-border: solid 1px grey;
   }
 }
 
-$info-border: solid 1px var(--mat-sys-on-surface);
 .info {
   display: flex;
   flex-wrap: wrap;
   height: 100%;
+  --border: solid 1px var(--mat-sys-on-surface);
 
   .section {
     display: flex;
     flex-direction: column;
-    border: $info-border;
+    border: var(--border);
     flex: 1 1 0;
     height: 100%;
     &:not(:last-child) {
@@ -151,7 +149,7 @@ $info-border: solid 1px var(--mat-sys-on-surface);
       display: flex;
       align-items: center;
       &:not(:last-child) {
-        border-bottom: $info-border;
+        border-bottom: var(--border);
       }
 
       .cell {
@@ -160,10 +158,10 @@ $info-border: solid 1px var(--mat-sys-on-surface);
         height: 100%;
         &.border {
           &:not(:last-child) {
-            border-right: $info-border;
+            border-right: var(--border);
           }
           .label {
-            border-right: $info-border;
+            border-right: var(--border);
           }
         }
 
@@ -228,17 +226,17 @@ $info-border: solid 1px var(--mat-sys-on-surface);
   }
 }
 .info-border-left {
-  border-left: $info-border;
+  border-left: var(--border);
 }
 .info-border-right {
-  border-right: $info-border;
+  border-right: var(--border);
   flex: 0 0 200px;
 }
 .info-border-top {
-  border-top: $info-border;
+  border-top: var(--border);
 }
 .info-border-bottom {
-  border-bottom: $info-border;
+  border-bottom: var(--border);
 }
 
 .配件模块 {

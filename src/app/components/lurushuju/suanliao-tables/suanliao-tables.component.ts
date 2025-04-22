@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
+import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from "@angular/core";
 import {CadCollection} from "@app/cad/collections";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
@@ -11,15 +11,27 @@ import {getSuanliaoDataSearch} from "./suanliao-tables.utils";
 
 @Component({
   selector: "app-suanliao-tables",
-  imports: [TableComponent],
   templateUrl: "./suanliao-tables.component.html",
-  styleUrl: "./suanliao-tables.component.scss"
+  styleUrl: "./suanliao-tables.component.scss",
+  imports: [TableComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SuanliaoTablesComponent implements OnInit, OnChanges {
-  @Input({required: true}) suanliaoDataParams!: SuanliaoDataParams;
+export class SuanliaoTablesComponent {
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
+  suanliaoDataParams = input.required<SuanliaoDataParams>();
+
+  suanliaoDataParamsEff = effect(() => {
+    this.suanliaoDataParams();
+    untracked(() => {
+      this.update();
+    });
+  });
+
   klkwpzCollection: CadCollection = "kailiaokongweipeizhi";
-  klcsCollection: CadCollection = "kailiaocanshu";
-  klkwpzTable: TableRenderInfo<KlkwpzData> = {
+  klkwpzTable = signal<TableRenderInfo<KlkwpzData>>({
     title: "开料孔位配置",
     inlineTitle: true,
     data: [],
@@ -35,8 +47,25 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
     toolbarButtons: {
       extra: [{event: "编辑"}, {event: "刷新"}]
     }
-  };
-  klcsTable: TableRenderInfo<KlcsData> = {
+  });
+  async getKlkwpzData(params: SuanliaoDataParams) {
+    const info = this.klkwpzTable();
+    return await this.http.queryMongodb<KlkwpzData>(
+      {
+        collection: this.klkwpzCollection,
+        where: getSuanliaoDataSearch(params),
+        fields: info.columns.map((v) => v.field)
+      },
+      {spinner: false}
+    );
+  }
+  async updateKlkwpzTable() {
+    const data = await this.getKlkwpzData(this.suanliaoDataParams());
+    this.klkwpzTable.update((v) => ({...v, data}));
+  }
+
+  klcsCollection: CadCollection = "kailiaocanshu";
+  klcsTable = signal<TableRenderInfo<KlcsData>>({
     title: "开料参数",
     inlineTitle: true,
     data: [],
@@ -52,71 +81,34 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
     toolbarButtons: {
       extra: [{event: "编辑"}, {event: "刷新"}]
     }
-  };
-
-  private _isInited = false;
-
-  constructor(
-    private http: CadDataService,
-    private message: MessageService,
-    private status: AppStatusService
-  ) {}
-
-  ngOnInit() {
-    if (!this._isInited) {
-      this._isInited = true;
-      this.update();
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes.suanliaoDataParams) {
-      this._isInited = true;
-      this.update();
-    }
-  }
-
-  async update() {
-    await Promise.all([this.updateKlkwpzTable(), this.updateKlcsTable()]);
-  }
-
-  async getKlkwpzData(suanliaoDataParams: SuanliaoDataParams) {
-    return await this.http.queryMongodb<KlkwpzData>(
-      {
-        collection: this.klkwpzCollection,
-        where: getSuanliaoDataSearch(suanliaoDataParams),
-        fields: this.klkwpzTable.columns.map((v) => v.field)
-      },
-      {spinner: false}
-    );
-  }
-
-  async updateKlkwpzTable() {
-    this.klkwpzTable.data = await this.getKlkwpzData(this.suanliaoDataParams);
-  }
-
-  async getKlcsTableData(suanliaoDataParams: SuanliaoDataParams) {
+  });
+  async getKlcsData(params: SuanliaoDataParams) {
+    const info = this.klcsTable();
     return await this.http.queryMongodb<KlcsData>(
       {
         collection: this.klcsCollection,
-        where: getSuanliaoDataSearch(suanliaoDataParams),
-        fields: this.klcsTable.columns.map((v) => v.field)
+        where: getSuanliaoDataSearch(params),
+        fields: info.columns.map((v) => v.field)
       },
       {spinner: false}
     );
   }
-
   async updateKlcsTable() {
-    this.klcsTable.data = await this.getKlcsTableData(this.suanliaoDataParams);
+    const data = await this.getKlcsData(this.suanliaoDataParams());
+    this.klcsTable.update((v) => ({...v, data}));
+  }
+
+  update() {
+    return Promise.all([this.updateKlkwpzTable(), this.updateKlcsTable()]);
   }
 
   async onKlkwpzToolbar(event: ToolbarButtonEvent) {
     switch (event.button.event) {
       case "编辑":
         {
-          const {suanliaoDataParams} = this;
-          const search2 = getSuanliaoDataSearch(suanliaoDataParams);
-          const url = await this.http.getShortUrl("开料孔位配置", {search2, extraData: suanliaoDataParams});
+          const params = this.suanliaoDataParams();
+          const search2 = getSuanliaoDataSearch(params);
+          const url = await this.http.getShortUrl("开料孔位配置", {search2, extraData: params});
           if (url) {
             window.open(url);
             if (await this.message.newTabConfirm()) {
@@ -135,9 +127,9 @@ export class SuanliaoTablesComponent implements OnInit, OnChanges {
     switch (event.button.event) {
       case "编辑":
         {
-          const {suanliaoDataParams} = this;
-          const search2 = getSuanliaoDataSearch(suanliaoDataParams);
-          const url = await this.http.getShortUrl("开料参数", {search2, extraData: suanliaoDataParams});
+          const params = this.suanliaoDataParams();
+          const search2 = getSuanliaoDataSearch(params);
+          const url = await this.http.getShortUrl("开料参数", {search2, extraData: params});
           if (url) {
             window.open(url);
             if (await this.message.newTabConfirm()) {

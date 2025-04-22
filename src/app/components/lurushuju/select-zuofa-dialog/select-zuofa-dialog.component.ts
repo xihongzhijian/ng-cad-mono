@@ -93,8 +93,10 @@ export class SelectZuofaDialogComponent {
           this.searchFormMenjiao.update((v) => ({...v, [key]: val}));
         };
         info.disabled = false;
-        info.multiple = false;
         info.clearable = true;
+        if (info.type === "select") {
+          info.multiple = false;
+        }
       });
     };
     return [

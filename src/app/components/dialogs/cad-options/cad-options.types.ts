@@ -15,6 +15,7 @@ export interface CadOptionsInput {
   fields?: string[];
   nameField?: string;
   options?: GetOptionsResultItem[];
+  refreshOptions?: () => Promise<GetOptionsResultItem[]>;
   defaultValue?: {value?: string; required?: boolean};
   optionOptions?: {value?: ObjectOf<ObjectOf<string> | undefined>; info?: InputInfoPart<InputInfoObject<string, string, string>>};
   openInNewTab?: boolean;
@@ -22,7 +23,7 @@ export interface CadOptionsInput {
   info?: ObjectOf<any>;
   noImage?: boolean;
   typeFiltering?: {field: string; title: string};
-  itemBtns?: {name: string; onClick: (item: CadOptionsPageDataItem) => void; hidden?: boolean}[];
+  itemBtns?: {name: string; onClick: (item: GetOptionsResultItem) => void; hidden?: boolean}[];
 }
 
 export interface CadOptionsOutput {
@@ -30,8 +31,4 @@ export interface CadOptionsOutput {
   newTabChanged: boolean;
   defaultValue?: string;
   optionOptions?: ObjectOf<ObjectOf<string> | undefined>;
-}
-
-export interface CadOptionsPageDataItem extends GetOptionsResultItem {
-  checked: boolean;
 }

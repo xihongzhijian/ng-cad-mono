@@ -1,10 +1,9 @@
-import {Component, effect, forwardRef, OnDestroy, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {validColors} from "@app/cad/utils";
 import {environment} from "@env";
 import {CadMtext, CadStylizer} from "@lucilor/cad-viewer";
 import {Point} from "@lucilor/utils";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
 import Color from "color";
@@ -15,37 +14,14 @@ import {InputComponent} from "../../../../input/components/input.component";
   selector: "app-cad-mtext",
   templateUrl: "./cad-mtext.component.html",
   styleUrls: ["./cad-mtext.component.scss"],
-  imports: [MatButtonModule, forwardRef(() => InputComponent)]
+  imports: [InputComponent, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy {
-  selected: CadMtext[] = [];
-  currAnchor = new Point();
-  private _colorText = "";
-  colorValue = "";
-  colorBg = "";
-  inputInfos: InputInfo[] = [];
-  get colorText() {
-    return this._colorText;
-  }
-  set colorText(value) {
-    this._colorText = value.toUpperCase();
-    try {
-      const c = new Color(value);
-      if (c.isLight()) {
-        this.colorBg = "black";
-      } else {
-        this.colorBg = "white";
-      }
-      this.colorValue = value;
-    } catch {
-      this.colorValue = "black";
-      this.colorBg = "white";
-    }
-  }
+export class CadMtextComponent implements OnInit, OnDestroy {
+  private status = inject(AppStatusService);
 
-  constructor(private status: AppStatusService) {
-    super();
-  }
+  selected = signal<CadMtext[]>([]);
+  currAnchor = new Point();
 
   ngOnInit() {
     this._updateSelected();
@@ -56,7 +32,6 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     cad.on("entitiesremove", this._updateSelected);
   }
   ngOnDestroy() {
-    super.ngOnDestroy();
     const cad = this.status.cad;
     cad.off("entitiesselect", this._updateSelected);
     cad.off("entitiesunselect", this._updateSelected);
@@ -68,9 +43,9 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     this._updateSelected();
   });
 
-  private _updateInputInfos() {
-    const disabled = this.selected.length < 1;
-    this.inputInfos = [
+  inputInfos = computed(() => {
+    const disabled = this.selected().length < 1;
+    const inputInfos: InputInfo[] = [
       {
         type: "string",
         label: "内容",
@@ -112,10 +87,8 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
         onChange: (val) => {
           this.setAnchor(val.anchor);
         }
-      }
-    ];
-    if (environment.production) {
-      this.inputInfos.push({
+      },
+      {
         type: "boolean",
         label: "竖排",
         disabled,
@@ -123,39 +96,28 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
         onChange: (val) => {
           this.setIsVertical("vertical", val);
         }
-      });
-    } else {
-      this.inputInfos.push(
-        {
-          type: "boolean",
-          label: "竖排",
-          disabled,
-          value: this.getIsVertical("vertical"),
-          onChange: (val) => {
-            this.setIsVertical("vertical", val);
-          }
-        },
-        {
-          type: "boolean",
-          label: "竖排",
-          disabled,
-          value: this.getIsVertical("vertical2"),
-          onChange: (val) => {
-            this.setIsVertical("vertical2", val);
-          }
+      }
+    ];
+    if (!environment.production) {
+      inputInfos.push({
+        type: "boolean",
+        label: "竖排2",
+        disabled,
+        value: this.getIsVertical("vertical2"),
+        onChange: (val) => {
+          this.setIsVertical("vertical2", val);
         }
-      );
+      });
     }
-  }
+    return inputInfos;
+  });
 
   private _updateSelected = () => {
-    this.selected = this.status.cad.selected().mtext;
-    this.colorText = this.getColor();
-    this._updateInputInfos();
+    this.selected.set(this.status.cad.selected().mtext);
   };
 
   getInfo(field: string) {
-    const selected = this.selected;
+    const selected = this.selected();
     if (selected.length === 1) {
       return (selected[0] as any)[field];
     }
@@ -168,16 +130,18 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     }
     return "";
   }
-
   setInfo(field: string, value: string) {
-    this.selected.forEach((e: any) => {
-      e[field] = value;
-    });
-    this.status.cad.render(this.selected);
+    const selected = this.selected();
+    for (const e of selected) {
+      if ((e as any)[field] === value) {
+        return;
+      }
+    }
+    this.status.cad.render(selected);
   }
 
   getColor() {
-    const selected = this.selected;
+    const selected = this.selected();
     let color = "";
     if (selected.length === 1) {
       color = selected[0].getColor().hex();
@@ -191,15 +155,14 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     }
     return color;
   }
-
   setColor(value: string) {
-    this.selected.forEach((e) => e.setColor(value));
-    this.status.cad.render(this.selected);
-    this.colorText = value;
+    const selected = this.selected();
+    selected.forEach((e) => e.setColor(value));
+    this.status.cad.render(selected);
   }
 
   getFontSize() {
-    const selected = this.selected;
+    const selected = this.selected();
     let size: number | undefined;
     const config = this.status.cad.getConfig();
     if (selected.length === 1) {
@@ -217,14 +180,14 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     }
     return size.toString();
   }
-
   setFontSize(value: string) {
     let valueNum = Number(value);
     if (isNaN(valueNum) || valueNum < 0) {
       valueNum = 0;
     }
-    this.selected.forEach((e) => (e.fontStyle.size = valueNum));
-    this.status.cad.render(this.selected);
+    const selected = this.selected();
+    selected.forEach((e) => (e.fontStyle.size = valueNum));
+    this.status.cad.render(selected);
   }
 
   addMtext() {
@@ -239,14 +202,14 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
   }
 
   async cloneMtexts() {
-    this.selected.forEach((mtext) => {
+    this.selected().forEach((mtext) => {
       const newText = mtext.clone(true);
       this.status.cad.add(newText);
     });
   }
 
   getAnchor() {
-    const selected = this.selected;
+    const selected = this.selected();
     const anchor = new Point();
     if (selected.length === 1) {
       anchor.copy(selected[0].anchor);
@@ -254,14 +217,14 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     this.currAnchor.copy(anchor);
     return anchor.toArray();
   }
-
   setAnchor([x, y]: [number, number]) {
-    this.selected.forEach((e) => e.anchor.set(x, y));
-    this.status.cad.render(this.selected);
+    const selected = this.selected();
+    selected.forEach((e) => e.anchor.set(x, y));
+    this.status.cad.render(selected);
   }
 
   getIsVertical(key: "vertical" | "vertical2") {
-    const selected = this.selected;
+    const selected = this.selected();
     if (selected.length === 1) {
       return !!selected[0].fontStyle[key];
     } else if (selected.length > 1) {
@@ -273,15 +236,15 @@ export class CadMtextComponent extends Subscribed() implements OnInit, OnDestroy
     }
     return undefined;
   }
-
   setIsVertical(key: "vertical" | "vertical2", value: boolean) {
-    this.selected.forEach((e) => {
+    const selected = this.selected();
+    this.selected().forEach((e) => {
       if (value) {
         e.fontStyle[key] = true;
       } else {
         delete e.fontStyle[key];
       }
     });
-    this.status.cad.render(this.selected);
+    this.status.cad.render(selected);
   }
 }

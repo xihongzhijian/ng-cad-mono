@@ -33,7 +33,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo} from "@modules/input/components/input.types";
 import {convertOptions, getInputInfoGroup} from "@modules/input/components/input.utils";
 import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
@@ -136,7 +136,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     }
   });
 
-  getOptionInputInfo2(data: any, key: string, style?: Properties): InputInfoSelect {
+  getOptionInputInfo2(data: any, key: string, style?: Properties) {
     const info = getMenjiaoOptionInputInfo(data, key, this.menjiaoOptions(), () => this.lrsjStatus.menjiaoOptionsManager.fetch(true));
     info.style = style;
     const onChange = info.onChange;
@@ -171,7 +171,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     const form1Group: InputInfo[] = [
       getInputInfoGroup(
         optionKeys.map((v) => {
-          const info = this.getOptionInputInfo2(data, v);
+          const info = this.getOptionInputInfo2(data, v, {});
           let w: number;
           switch (v) {
             case "门铰":
@@ -428,7 +428,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
 
   getSuanliaoTables(key1: MenjiaoCadType) {
     return this.suanliaoTablesList().find((v) => {
-      const {包边方向, 开启} = v.suanliaoDataParams.选项;
+      const {包边方向, 开启} = v.suanliaoDataParams().选项;
       return key1 === `${包边方向}+${开启}`;
     });
   }
@@ -722,7 +722,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         let mrbcjfzErrors: string[] | undefined;
         if (mrbcjfz) {
           mrbcjfzErrors = mrbcjfz.checkSubmit();
-          data[key1].板材分组 = mrbcjfz.xinghao.默认板材;
+          data[key1].板材分组 = mrbcjfz.xinghao().默认板材;
         } else {
           const mrbcjfzResult = await openMrbcjfzDialog(this.dialog, {
             width: "0",
@@ -761,7 +761,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
           //   key1Errors[key1].msg = `【${input.info.label}】` + input.getErrorMsg();
           // }
           if (!errors.key1[key1]) {
-            errors.key1[key1] = `【${input.info.label}】` + input.getErrorMsg();
+            errors.key1[key1] = `【${input.info().label}】` + input.getErrorMsg();
           }
         }
       }

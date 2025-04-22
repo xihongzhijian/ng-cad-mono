@@ -116,6 +116,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   mokuaiName = input<string>();
   beforeEditCad = output();
   afterEditCad = output();
+  afterFetchCad = output();
 
   cadContainer = viewChild<ElementRef<HTMLDivElement>>("cadContainer");
   mubanContainer = viewChild<ElementRef<HTMLDivElement>>("mubanContainer");
@@ -148,6 +149,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   cadEff = effect(() => {
     this.cad();
     this.cadData.set(null);
+    this.isOnlineFetched.set(false);
     untracked(() => this.update());
   });
 
@@ -234,6 +236,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
         Object.assign(cad, data);
       }
       this.afterEditCad.emit();
+      this.afterFetchCad.emit();
       if (isOnline.afterFetch) {
         isOnline.afterFetch(this);
       } else {

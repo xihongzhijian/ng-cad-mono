@@ -1,6 +1,12 @@
 <mat-accordion multi>
-  @for (bancai of bancais; track $index) {
-    <mat-expansion-panel [(expanded)]="bancai.expanded" [style]="{'page-break-after': bancai.pageBreakAfter}" class="page">
+  @for (bancai of bancais(); track $index) {
+    <mat-expansion-panel
+      class="page"
+      [expanded]="bancaisExpanded().includes(bancai)"
+      (afterExpand)="expandBancai(bancai)"
+      (afterCollapse)="collapseBancai(bancai)"
+      [style]="{'page-break-after': bancai.pageBreakAfter}"
+    >
       <mat-expansion-panel-header>
         <mat-panel-title>{{ bancai["厚度"] }}, {{ bancai["材料"] }}, {{ bancai["板材"] }}</mat-panel-title>
         <mat-panel-description> {{ bancai["规格"][0] }}×{{ bancai["规格"][1] }}={{ bancai["数量"] }} </mat-panel-description>
@@ -24,7 +30,7 @@
         }
       </div>
       <div class="footer" [class]="{'no-print': bancai.pageBreakAfter === undefined}">
-        第{{ bancai.printPageIndex }}页，共{{ printPageTotal }}页
+        第{{ bancai.printPageIndex }}页，共{{ printPageTotal() }}页
       </div>
     </mat-expansion-panel>
   }

@@ -63,6 +63,12 @@
     )
   );
 
+  @include mat.checkbox-overrides(
+    (
+      label-text-size: var(--mat-sys-body-large-size)
+    )
+  );
+
   & {
     font: var(--mat-sys-body-large);
     font-size: 15px;
@@ -134,6 +140,11 @@
   .mat-mdc-form-field-icon-prefix,
   .mat-mdc-form-field-icon-suffix {
     display: flex;
+  }
+
+  .mat-mdc-form-field-text-prefix,
+  .mat-mdc-form-field-text-suffix {
+    flex: 0 0 auto;
   }
 
   .mdc-text-field,

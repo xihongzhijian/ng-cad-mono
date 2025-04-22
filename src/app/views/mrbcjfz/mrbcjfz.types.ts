@@ -51,6 +51,7 @@ export interface MrbcjfzInfo {
   不显示?: boolean;
   不显示内容?: MrbcjfzInfoShowItem[];
   门扇使用限制?: MrbcjfzMsxzItem;
+  算料单分组标题附加信息?: string;
 }
 
 export const mrbcjfzInfoShowItems = ["颜色", "材料", "厚度", "结果"] as const;

@@ -4,8 +4,12 @@ app-var-names {
 
 .slgs {
   flex: 0 1 660px;
+
+  app-image {
+    height: 100%;
+  }
 }
 
 .nodes-table {
-  flex: 0 1 360px;
+  flex: 0 1 400px;
 }

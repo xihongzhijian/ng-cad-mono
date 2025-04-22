@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, forwardRef, inject, input} from "@angular/core";
+import {booleanAttribute, ChangeDetectionStrategy, Component, computed, inject, input} from "@angular/core";
 import {CadEntity} from "@lucilor/cad-viewer";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -9,13 +9,14 @@ import {AppStatusService} from "@services/app-status.service";
   selector: "app-cad-layer-input[entities]",
   templateUrl: "./cad-layer-input.component.html",
   styleUrls: ["./cad-layer-input.component.scss"],
-  imports: [forwardRef(() => InputComponent)],
+  imports: [InputComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadLayerInputComponent extends Subscribed() {
   status = inject(AppStatusService);
 
   entities = input<CadEntity[]>([]);
+  disabled = input(false, {transform: booleanAttribute});
 
   layerText = computed(() => {
     const names = new Set(this.entities().map((e) => e.layer));
@@ -44,12 +45,14 @@ export class CadLayerInputComponent extends Subscribed() {
   layerNameInputInfo = computed<InputInfo>(() => {
     const value = this.layerText();
     const options = this.layerOptions();
+    const disabled = this.disabled();
     return {
       type: "string",
       label: "图层",
       value,
       options,
       fixedOptions: options,
+      disabled,
       onChange: (val) => {
         this.entities().forEach((e) => (e.layer = val));
       }

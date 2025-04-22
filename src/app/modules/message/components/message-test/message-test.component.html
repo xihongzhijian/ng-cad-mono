@@ -1,5 +1,5 @@
-@for (btn of btns | keyvalue: returnZero; track $index) {
-  <button mat-flat-button (click)="openMessage(btn.key, btn.value)">
-    {{ btn.key }}
+@for (btn of btns(); track $index) {
+  <button mat-flat-button (click)="openMessage(btn)">
+    {{ btn }}
   </button>
 }

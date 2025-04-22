@@ -7,7 +7,7 @@
     <app-spinner [id]="tabelListLoader"></app-spinner>
     <ng-scrollbar>
       <div class="flex-column">
-        @for (item of tableData; track i; let i = $index) {
+        @for (item of tableData(); track i; let i = $index) {
           @if (i > 0) {
             <mat-divider></mat-divider>
           }
@@ -28,12 +28,12 @@
   <div class="active-item">
     <div class="title center">下单选项</div>
     <app-spinner [id]="activeItemLoader"></app-spinner>
-    @if (activeItem) {
+    @if (activeItem(); as activeItem) {
       <div class="toolbar right">
-        @if (tableData[activeItem.index].xiaodaohang) {
+        @if (tableData()[activeItem.index].xiaodaohang) {
           <button mat-button (click)="editTableListItem(activeItem.index)">编辑</button>
         }
-        @if (tableData[activeItem.index].bangzhuwendang) {
+        @if (tableData()[activeItem.index].bangzhuwendang) {
           <button mat-button (click)="helpTableListItem(activeItem.index)">帮助</button>
         }
       </div>
@@ -55,32 +55,36 @@
   <div class="cad-list">
     <div class="title center">CAD数据</div>
     <app-spinner [id]="cadListLoader"></app-spinner>
-    @if (activeCadList && activeItem && isDataHaveCad(tableData[activeItem.index])) {
-      <div class="toolbar">
-        <button mat-flat-button (click)="addCadFromList()">从配件库选择</button>
-      </div>
-      <ng-scrollbar>
-        <div class="items">
-          @if (activeCadList.data.length < 1) {
-            <div class="item">
-              <div class="title error">请选择CAD</div>
+    @if (tableData()[activeItem()?.index ?? -1]; as data) {
+      @if (isDataHaveCad(data)) {
+        @if (activeCadList(); as activeCadList) {
+          <div class="toolbar">
+            <button mat-flat-button (click)="addCadFromList()">从配件库选择</button>
+          </div>
+          <ng-scrollbar>
+            <div class="items">
+              @if (activeCadList.data.length < 1) {
+                <div class="item">
+                  <div class="title error">请选择CAD</div>
+                </div>
+              } @else {
+                @for (item of activeCadList.data; track i; let i = $index) {
+                  <app-cad-item
+                    [id]="item._id"
+                    [cad]="item"
+                    [buttons]="cadItemButtons"
+                    [customInfo]="{index: i}"
+                    [yaoqiu]="getShujuyaoqiu(data)"
+                    [gongshis]="[]"
+                    [isOnline]="{isFetched: true}"
+                    (afterEditCad)="editCad(item)"
+                  ></app-cad-item>
+                }
+              }
             </div>
-          } @else {
-            @for (item of activeCadList.data; track i; let i = $index) {
-              <app-cad-item
-                [id]="item._id"
-                [cad]="item"
-                [buttons]="cadItemButtons"
-                [customInfo]="{index: i}"
-                [yaoqiu]="getShujuyaoqiu(tableData[activeItem.index])"
-                [gongshis]="[]"
-                [isOnline]="{isFetched: true}"
-                (afterEditCad)="editCad(item)"
-              ></app-cad-item>
-            }
-          }
-        </div>
-      </ng-scrollbar>
+          </ng-scrollbar>
+        }
+      }
     }
   </div>
 </div>

@@ -41,7 +41,7 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
-import {cloneDeep, difference, isEqual} from "lodash";
+import {clone, cloneDeep, difference, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   FentiCadTemplateData,
@@ -122,6 +122,7 @@ export class XhmrmsbjSbjbComponent {
     return yaoqius;
   });
   cadMap = new Map<string, CadData>();
+  cadsFetched = signal(new Set<string>());
   showCadFormDefaultTexts = signal(false);
   toggleShowCadFormDefaultTexts() {
     this.showCadFormDefaultTexts.update((v) => !v);
@@ -129,11 +130,13 @@ export class XhmrmsbjSbjbComponent {
   cadInfos = computed(() => {
     const infos: XhmrmsbjSbjbCadInfo[] = [];
     const item = this.activeSbjbItem();
+    const cadsFetched = this.cadsFetched();
     if (item) {
       const qiliaos = this.qiliaosManager.items();
       for (const cadItem of item.CAD数据 || []) {
         const info: XhmrmsbjSbjbCadInfo = {...cadItem, cadForm: {noDefaultTexts: !this.showCadFormDefaultTexts()}};
         if (cadItem.cadId) {
+          info.isFetched = cadsFetched.has(cadItem.cadId);
           const cad = this.cadMap.get(cadItem.cadId);
           if (cad) {
             info.cad = cad;
@@ -197,6 +200,10 @@ export class XhmrmsbjSbjbComponent {
       }
     }
   ]);
+  afterFetchCad(cad: CadData) {
+    this.cadMap.set(cad.id, cad);
+    this.cadsFetched.update((v) => clone(v.add(cad.id)));
+  }
   showXinghaosUsingSbjbCadBtnName = "哪些型号在用";
   async showXinghaosUsingSbjbCad(cadName: string) {
     const data = await this.http.getData<{url: string}>("shuju/api/showXinghaosUsingSbjbCad", {cadName});
@@ -219,7 +226,7 @@ export class XhmrmsbjSbjbComponent {
     const cadName = item2?.名字 || "";
     const title = `${name}：${cadName}`;
     const {form: inputInfos, data: item2New} = await getXhmrmsbjSbjbItemSbjbItemForm(item2);
-    const qiliaoPrev = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
+    const qiliaoPrev = await this.findQiliao(cadName);
     const qiliaoCurr = cloneDeep(qiliaoPrev);
     const form: SbjbItemSbjbItemForm = {title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr, cadName};
     if (qiliaoCurr) {
@@ -314,7 +321,7 @@ export class XhmrmsbjSbjbComponent {
       item.CAD数据[index].cadId = cad2.id;
       this.cadMap.set(cad2.id, cad2);
       this.purgeCadMap();
-      await this.addQiliao(cad2.name);
+      await this.findQiliao(cad2.name);
       needsRefresh = true;
     }
     if (needsRefresh) {
@@ -429,32 +436,55 @@ export class XhmrmsbjSbjbComponent {
       this.qiliaosChanged.push(qiliao);
     }
   }
-  async addQiliao(name: string) {
+  qiliaoTable = "p_qiliao";
+  async findQiliao(name: string) {
+    if (!name) {
+      return null;
+    }
     const qiliao = this.qiliaosManager.items().find((v) => v.name === name);
     if (qiliao) {
-      return;
+      return qiliao;
     }
-    const qiliaos = await this.http.queryMySql<QiliaoTableData>({table: "p_qiliao", filter: {where: {mingzi: name}}});
+    const qiliaos = await this.http.queryMySql<QiliaoTableData>(
+      {table: this.qiliaoTable, filter: {where: {mingzi: name}}},
+      {spinner: false}
+    );
     if (qiliaos[0]) {
       const qiliao2 = new Qiliao(qiliaos[0]);
       this.qiliaosManager.refresh({add: [qiliao2]});
+      return qiliao2;
+    } else {
+      return await this.addQiliaoTableItem(name);
     }
+  }
+  async addQiliaoTableItem(name: string) {
+    const result = await this.http.tableInsert<QiliaoTableData>({table: this.qiliaoTable, data: {mingzi: name}}, {spinner: false});
+    if (result) {
+      const qiliao = new Qiliao(result);
+      this.qiliaosManager.refresh({add: [qiliao]});
+      return qiliao;
+    }
+    return null;
   }
 
   fentiCadTemplateData!: {$implicit: FentiCadTemplateData};
   fentiCadTemplateTitles = fentiCadTemplateTitles;
-  getFentiCadTemplateCad({data, title}: XhmrmsbjSbjbItemSbjbFentiCadInfo) {
+  getFentiCadTemplateInfo({data, title}: XhmrmsbjSbjbItemSbjbFentiCadInfo) {
     const {qiliao, form} = data;
+    let cad: CadData | undefined;
     if (form) {
-      return form[title === "分体1" ? "fentiCad1" : "fentiCad2"];
+      cad = form[title === "分体1" ? "fentiCad1" : "fentiCad2"];
     } else {
       const id = qiliao?.[title === "分体1" ? "fenti1" : "fenti2"]?.id;
       if (id) {
-        return this.qiliaoCadMap.get(id);
-      } else {
-        return null;
+        cad = this.qiliaoCadMap.get(id);
       }
     }
+    if (!cad) {
+      return null;
+    }
+    const isFetched = this.cadsFetched().has(cad.id);
+    return {cad, isFetched};
   }
   fentiCadButtons2 = computed(() => {
     const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbFentiCadInfo>[] = [
@@ -473,7 +503,7 @@ export class XhmrmsbjSbjbComponent {
     if (form) {
       qiliao = form?.qiliaoCurr;
     } else {
-      qiliao = this.qiliaosManager.items().find((v) => v.name === item2?.名字);
+      qiliao = await this.findQiliao(item2?.名字 || "");
     }
     const checkedItems: string[] = [];
     if (qiliao?.[key]?.id) {

@@ -11,11 +11,16 @@ export interface AppConfig extends CadViewerConfig {
   leftMenuWidth: number;
   rightMenuWidth: number;
   scroll: ObjectOf<number>;
-  subCadsMultiSelect: boolean;
   pointSize: number;
   cadPointsAnywhere: boolean;
   kailiaoAutoGuige: boolean;
+  kailiaoVerbose: boolean;
   testMode: boolean;
+}
+
+export interface LocalConfigInfo {
+  project: string;
+  config: Partial<AppConfig>;
 }
 
 export interface AppConfigChange {
@@ -38,36 +43,10 @@ export class AppConfigService {
   private _userConfig: Partial<AppConfig> = {};
   private _configKeys: (keyof AppConfig)[];
   noUser = false;
+  project = "";
 
   constructor(private http: CadDataService) {
-    const defaultCadViewerConfig = getDefalutCadViewerConfig();
-    const defaultConfig: AppConfig = {
-      ...defaultCadViewerConfig,
-      width: innerWidth,
-      height: innerHeight,
-      backgroundColor: "black",
-      entityDraggable: ["MTEXT", "DIMENSION"],
-      lineGongshi: 8,
-      minLinewidth: 2,
-      fontStyle: {family: "微软雅黑", weight: "normal"},
-      // 分界线
-      infoTabIndex: 0,
-      leftMenuWidth: 200,
-      rightMenuWidth: 300,
-      scroll: {},
-      subCadsMultiSelect: true,
-      pointSize: 20,
-      cadPointsAnywhere: false,
-      kailiaoAutoGuige: false,
-      testMode: false
-    };
     this._configKeys = keysOf(defaultConfig);
-    const localUserConfig = this._purgeUserConfig(local.load<Partial<AppConfig>>("userConfig") || {});
-    for (const key of this._configKeys) {
-      if (localUserConfig[key] !== undefined) {
-        (defaultConfig[key] as any) = localUserConfig[key];
-      }
-    }
     this._config = signal(defaultConfig);
     this.configChange$ = new BehaviorSubject<AppConfigChange>({
       oldVal: {},
@@ -156,6 +135,31 @@ export class AppConfigService {
     return this.setConfig(key, newVal, options);
   }
 
+  private _localConfigInfosKey = "localConfigInfos";
+  getLocalConfig() {
+    const {project, _localConfigInfosKey} = this;
+    if (!project) {
+      return {};
+    }
+    const infos = local.load<LocalConfigInfo[]>(_localConfigInfosKey) || [];
+    const info = infos.find((v) => v.project === project);
+    return info?.config || {};
+  }
+  setLocalConfig(config: Partial<AppConfig>) {
+    const {project, _localConfigInfosKey} = this;
+    if (!project) {
+      return;
+    }
+    const infos = local.load<LocalConfigInfo[]>(_localConfigInfosKey) || [];
+    const info = infos.find((v) => v.project === project);
+    if (info) {
+      info.config = config;
+    } else {
+      infos.push({project, config});
+    }
+    local.save(this._localConfigInfosKey, infos);
+  }
+
   async getUserConfig(key?: string) {
     if (this.noUser) {
       return {};
@@ -165,8 +169,10 @@ export class AppConfigService {
       this._userConfig = this._purgeUserConfig(config);
       if (Object.keys(this._userConfig).length) {
         this.setConfig(this._userConfig, {sync: false, isUserConfig: true});
-        local.save("userConfig", {...(local.load<Partial<AppConfig>>("userConfig") || {}), ...this._userConfig});
+        this.setLocalConfig(this._userConfig);
       }
+    } else {
+      this._userConfig = this.getLocalConfig();
     }
     return this._userConfig;
   }
@@ -184,3 +190,24 @@ export class AppConfigService {
     return false;
   }
 }
+
+export const defaultConfig: AppConfig = {
+  ...getDefalutCadViewerConfig(),
+  width: innerWidth,
+  height: innerHeight,
+  backgroundColor: "black",
+  entityDraggable: ["MTEXT", "DIMENSION"],
+  lineGongshi: 8,
+  minLinewidth: 2,
+  fontStyle: {family: "微软雅黑", weight: "normal"},
+  // 分界线
+  infoTabIndex: 0,
+  leftMenuWidth: 200,
+  rightMenuWidth: 300,
+  scroll: {},
+  pointSize: 20,
+  cadPointsAnywhere: false,
+  kailiaoAutoGuige: false,
+  kailiaoVerbose: false,
+  testMode: false
+};

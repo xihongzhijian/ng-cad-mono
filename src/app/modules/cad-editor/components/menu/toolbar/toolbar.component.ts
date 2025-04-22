@@ -371,7 +371,7 @@ export class ToolbarComponent {
     if (!line) {
       return;
     }
-    await openCadLineForm(this.status.collection$.value, this.status, this.message, this.status.cad, line, null);
+    await openCadLineForm(this.status.collection(), this.status, this.message, this.status.cad, line, null);
   }
 
   async editBbzhmkgz() {
@@ -401,7 +401,7 @@ export class ToolbarComponent {
   }
 
   async copyCad() {
-    const collection = this.status.collection$.getValue();
+    const collection = this.status.collection();
     const loaderId = this.spinner.defaultLoaderId;
     const items = await this.http.mongodbCopy<HoutaiCad>(collection, [this.status.cad.data.id], {}, {spinner: loaderId});
     if (items?.[0]) {
@@ -416,7 +416,7 @@ export class ToolbarComponent {
   async removeCad() {
     const data = this.data();
     if (await this.message.confirm(`确定要删除吗？`)) {
-      const collection = this.status.collection$.getValue();
+      const collection = this.status.collection();
       const ids = [data.id];
       const deletedIds = await this.http.removeCads(collection, ids);
       if (deletedIds) {
@@ -466,13 +466,13 @@ export class ToolbarComponent {
   }
 
   openImportPage() {
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     const cad = this.data();
     const yaoqiu = this.status.getCadYaoqiu(cad.type);
     openImportPage(this.status, {collection, yaoqiu});
   }
   openExportPage() {
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     const cad = this.data();
     const ids = [cad.id];
     openExportPage(this.status, {collection, ids, direct: true});

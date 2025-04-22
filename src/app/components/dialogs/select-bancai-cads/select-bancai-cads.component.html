@@ -18,7 +18,7 @@
           <div class="cad-group">
             @for (cad of group; track $index) {
               <div class="cad">
-                <mat-checkbox [(ngModel)]="cad.checked" [disabled]="!data.editDisabled && cad.disabled">
+                <mat-checkbox [(ngModel)]="cad.checked" [disabled]="!data.editDisabled && cad.disabled" (change)="onCheckedCadsChange()">
                   <span [class.disabled]="cad.disabled">{{ cad.name }}</span>
                   @if (cad.oversized) {
                     <span class="error">(尺寸超出规格：{{ cad.width }} × {{ cad.height }})</span>
@@ -44,7 +44,7 @@
     <button mat-flat-button (click)="selectReverse()">反选</button>
   }
   @if (data.submitBtnText) {
-    <button mat-flat-button (click)="submit()" [disabled]="isSubmitDisabled">
+    <button mat-flat-button (click)="submit()" [disabled]="isSubmitDisabled()">
       {{ data.submitBtnText }}
     </button>
   }

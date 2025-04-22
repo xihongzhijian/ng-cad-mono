@@ -1,23 +1,21 @@
-import {TextFieldModule} from "@angular/cdk/text-field";
-import {AfterViewInit, Component, OnInit} from "@angular/core";
-import {FormControl, FormGroupDirective, FormsModule, NgForm, ReactiveFormsModule, ValidatorFn, Validators} from "@angular/forms";
+import {AfterViewInit, ChangeDetectionStrategy, Component, computed, HostBinding, inject, signal, viewChildren} from "@angular/core";
+import {ValidatorFn, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
 import {MatCheckboxModule} from "@angular/material/checkbox";
-import {ErrorStateMatcher, MatOptionModule} from "@angular/material/core";
-import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
-import {MatInputModule} from "@angular/material/input";
-import {MatSelectModule} from "@angular/material/select";
 import {ActivatedRoute, Router} from "@angular/router";
-import {getFormControl, getFormGroup, setGlobal} from "@app/app.common";
+import {setGlobal} from "@app/app.common";
 import {cadCollections} from "@app/cad/collections";
-import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadDataService} from "@modules/http/services/cad-data.service";
+import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
+import {validateForm} from "@modules/message/components/message/message.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
+import {difference, isEmpty, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {BehaviorSubject} from "rxjs";
 
 interface Replacer {
   type: "全等于" | "在开头" | "在结尾" | "在中间";
@@ -29,29 +27,47 @@ interface ToBeReplaced {
   id: string;
   name: string;
   matchedTexts: string[];
-  checked: boolean;
 }
 
 @Component({
   selector: "app-replace-text",
   templateUrl: "./replace-text.component.html",
   styleUrls: ["./replace-text.component.scss"],
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatInputModule,
-    TextFieldModule,
-    MatButtonModule,
-    NgScrollbar,
-    MatCardModule,
-    MatCheckboxModule,
-    MatIconModule
-  ]
+  imports: [InputComponent, MatButtonModule, MatCardModule, MatCheckboxModule, MatIconModule, NgScrollbar],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterViewInit {
+export class ReplaceTextComponent implements AfterViewInit {
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private status = inject(AppStatusService);
+
+  @HostBinding("class") class = "ng-page";
+
+  constructor() {
+    setGlobal("replaceText", this);
+  }
+
+  collection = signal<string>("");
+  async ngAfterViewInit() {
+    const {collection} = this.route.snapshot.queryParams;
+    console.log("collection", collection);
+    if (collection) {
+      this.collection.set(collection);
+    } else {
+      const collection2 =
+        (await this.message.prompt({
+          type: "select",
+          options: cadCollections,
+          label: "collection",
+          validators: Validators.required
+        })) || "";
+      this.collection.set(collection2);
+      this.router.navigate([], {queryParams: {collection}, queryParamsHandling: "merge"});
+    }
+  }
+
   replacers: Replacer[] = [
     {type: "全等于", description: ["全等于%s", "%s"], regex: (s) => new RegExp(`^${s}$`)},
     {type: "在开头", description: ["以%s开头", "%s"], regex: (s) => new RegExp(`^${s}`)},
@@ -62,110 +78,64 @@ export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterV
       regex: (f) => new RegExp(`^(?!${f}).*${f}.*(?<!${f})$`)
     }
   ];
-  form = getFormGroup(
-    {
-      replacer: getFormControl(this.replacers[0]),
-      replaceFrom: getFormControl("", {validators: Validators.required}),
-      replaceTo: getFormControl("", {validators: Validators.required})
-    },
-    {validators: this.replaceStrValidator()}
-  );
-  get replacerDesc() {
-    const {replacer, replaceFrom, replaceTo} = this.form.value;
+
+  step = signal(1);
+
+  replaceInfo = signal({replacer: this.replacers[0], replaceFrom: "", replaceTo: ""});
+  inputComponents = viewChildren(InputComponent);
+  isInputsValid = signal(false);
+  inputInfos = computed(() => {
+    const data = this.replaceInfo();
+    const infos: InputInfo[] = [];
+    const disabled = this.step() > 1;
+    const hint = this.replacerDesc();
+    const replaceStrValidator: ValidatorFn = () => {
+      return () => {
+        const {replaceFrom, replaceTo} = data;
+        if (replaceFrom && replaceTo && replaceFrom === replaceTo) {
+          return {equal: "两个字符串不能相等"};
+        }
+        return null;
+      };
+    };
+    const getter = new InputInfoWithDataGetter(data, {
+      disabled,
+      onChange: async () => {
+        const {errors} = await validateForm(this.inputComponents());
+        this.isInputsValid.set(isEmpty(errors));
+        this.replaceInfo.update((v) => ({...v}));
+      }
+    });
+    infos.push(
+      getter.selectSingle(
+        "replacer",
+        this.replacers.map<InputInfoOption<Replacer>>((v) => ({label: v.type, value: v})),
+        {label: "替换类型", hint}
+      ),
+      getter.string("replaceFrom", {label: "被替换的字符串", validators: [Validators.required, replaceStrValidator]}),
+      getter.string("replaceTo", {label: "用来替换的字符串", validators: [Validators.required, replaceStrValidator]})
+    );
+    return infos;
+  });
+
+  replacerDesc = computed(() => {
+    const {replacer, replaceFrom, replaceTo} = this.replaceInfo();
     if (!replacer || !replaceFrom || !replaceTo || replaceFrom === replaceTo) {
       return "";
     }
     const replaceFrom2 = replacer.description[0].replace("%s", JSON.stringify(replaceFrom));
     const replaceTo2 = replacer.description[1].replace("%s", JSON.stringify(replaceTo));
     return `将替换所有${replaceFrom2}的文本为${replaceTo2}`;
-  }
-  toBeReplacedList: ToBeReplaced[] = [];
-  step = new BehaviorSubject<number>(1);
-  collection = "";
+  });
 
-  constructor(
-    private message: MessageService,
-    private http: CadDataService,
-    private route: ActivatedRoute,
-    private status: AppStatusService,
-    private router: Router
-  ) {
-    super();
-    setGlobal("replaceText", this);
-  }
-
-  ngOnInit() {
-    this.subscribe(this.step, (step) => {
-      if (step === 1) {
-        this.form.enable();
-      } else if (step === 2) {
-        this.form.disable();
-      } else {
-        throw new Error("invalid step: " + step);
-      }
-    });
-  }
-
-  async ngAfterViewInit() {
-    const {collection} = this.route.snapshot.queryParams;
-    if (collection) {
-      this.collection = collection;
-    } else {
-      this.collection =
-        (await this.message.prompt({
-          type: "select",
-          options: cadCollections.slice(),
-          label: "collection",
-          validators: Validators.required
-        })) || "";
-      this.router.navigate([], {queryParams: {collection: this.collection}, queryParamsHandling: "merge"});
-    }
-  }
-
-  replaceStrValidator(): ValidatorFn {
-    return () => {
-      if (!this.form) {
-        return null;
-      }
-      const {replaceFrom, replaceTo} = this.form.value;
-      if (replaceFrom && replaceTo && replaceFrom === replaceTo) {
-        return {equal: "两个字符串不能相等"};
-      }
-      return null;
-    };
-  }
-
-  replaceStrErrorMatcher(): ErrorStateMatcher {
-    return {
-      isErrorState: (control: FormControl | null, form: FormGroupDirective | NgForm | null) =>
-        !!((control && control.touched && control.invalid) || form?.hasError("equal"))
-    };
-  }
-
-  getReplaceStrError(control: FormControl<string>) {
-    const errors = {...control.errors, ...this.form.errors};
-    if (errors.equal) {
-      return errors.equal;
-    }
-    if (errors.required) {
-      return "字符串不能为空";
-    }
-  }
-
+  toBeReplacedList = signal<ToBeReplaced[]>([]);
   async ready() {
-    const form = this.form;
-    if (form.untouched) {
-      form.markAllAsTouched();
-    }
-    if (form.invalid) {
+    if (!this.isInputsValid()) {
       return;
     }
-    const {replaceFrom, replaceTo, replacer} = form.value;
-    if (!replacer) {
-      throw new Error("no replacer");
-    }
+    const {replaceFrom, replaceTo, replacer} = this.replaceInfo();
     const postData = {
-      collection: this.collection,
+      collection: this.collection(),
       replaceFrom,
       replaceTo,
       regex: replacer.regex(replaceFrom || "").toString()
@@ -174,42 +144,34 @@ export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterV
     if (data) {
       if (data.length < 1) {
         this.message.alert("没有可替换的文本");
-        return;
+      } else {
+        this.step.set(2);
+        this.toBeReplacedList.set(data);
+        this.selectAll();
       }
-      this.toBeReplacedList = data.map((v) => {
-        v.checked = true;
-        return v;
-      });
-      this.step.next(2);
     }
   }
 
   async submit() {
-    const form = this.form;
-    if (form.untouched) {
-      form.markAllAsTouched();
-    }
-    if (form.invalid) {
+    if (!this.isInputsValid()) {
       return;
     }
     const yes = await this.message.confirm("替换后无法恢复，是否确定替换？");
     if (!yes) {
       return;
     }
-    const {replaceFrom, replaceTo, replacer} = form.value;
-    if (!replacer) {
-      throw new Error("no replacer");
-    }
+    const {replaceFrom, replaceTo, replacer} = this.replaceInfo();
+    const list = this.toBeReplacedListSelected();
     const postData = {
-      collection: this.collection,
+      collection: this.collection(),
       replaceTo,
       regex: replacer.regex(replaceFrom || "").toString(),
-      ids: this.toBeReplacedList.filter((v) => v.checked).map((v) => v.id)
+      ids: list.map((v) => v.id)
     };
     const response = await this.http.post<ToBeReplaced[]>("peijian/cad/replaceText", postData);
     if (response?.code === 0) {
-      this.toBeReplacedList.length = 0;
-      this.step.next(1);
+      this.toBeReplacedList.set([]);
+      this.step.set(1);
     }
   }
 
@@ -217,11 +179,19 @@ export class ReplaceTextComponent extends Subscribed() implements OnInit, AfterV
     this.status.openCadInNewTab(id, "CADmuban");
   }
 
-  selectAll() {
-    this.toBeReplacedList.forEach((v) => (v.checked = true));
+  toBeReplacedListSelected = signal<ToBeReplaced[]>([]);
+  toggleToBeReplacedItem(item: ToBeReplaced) {
+    const list = this.toBeReplacedListSelected();
+    if (list.includes(item)) {
+      this.toBeReplacedListSelected.set(difference(list, [item]));
+    } else {
+      this.toBeReplacedListSelected.set(union(list, [item]));
+    }
   }
-
+  selectAll() {
+    this.toBeReplacedListSelected.set(this.toBeReplacedList().slice());
+  }
   selectNone() {
-    this.toBeReplacedList.forEach((v) => (v.checked = false));
+    this.toBeReplacedListSelected.set([]);
   }
 }

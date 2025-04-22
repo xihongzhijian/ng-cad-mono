@@ -1,5 +1,5 @@
 import {animate, style, transition, trigger} from "@angular/animations";
-import {Component, ElementRef, HostListener, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, signal, viewChild} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {DomSanitizer} from "@angular/platform-browser";
@@ -7,7 +7,7 @@ import {CadCollection} from "@app/cad/collections";
 import {printCads} from "@app/cad/print";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadArc, CadData, CadDimensionLinear} from "@lucilor/cad-viewer";
-import {Angle, Line, Matrix, MatrixLike, ObjectOf, Point, timeout} from "@lucilor/utils";
+import {Angle, keysOf, Line, Matrix, MatrixLike, ObjectOf, Point, timeout} from "@lucilor/utils";
 import {Arg, Command, ValuedCommand} from "@modules/cad-console/cad-command-types";
 import {getBashStyle, getContent, getEmphasized, spaceReplacer} from "@modules/cad-console/cad-console.utils";
 import {BookData} from "@modules/message/components/message/message.types";
@@ -119,10 +119,18 @@ export const cmdNames = commands.map((v) => v.name);
       transition(":leave", [style({filter: "blur(0)"}), animate("0.3s", style({filter: "blur(20px)"}))])
     ])
   ],
-  imports: []
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CadConsoleComponent {
-  content = {correct: "", wrong: "", hint: "", args: ""};
+  private config = inject(AppConfigService);
+  private dialog = inject(MatDialog);
+  private domSanitizer = inject(DomSanitizer);
+  private message = inject(MessageService);
+  private spinner = inject(SpinnerService);
+  private status = inject(AppStatusService);
+
+  content = signal({correct: "", wrong: "", hint: "", args: ""});
   currCmd: ValuedCommand = {name: "", args: []};
   history: string[] = [];
   historyOffset = -1;
@@ -130,10 +138,10 @@ export class CadConsoleComponent {
   ids: string[] = [];
   openLock = false;
   lastUrl = "";
-  visible = false;
-  @ViewChild("consoleOuter", {read: ElementRef}) consoleOuter?: ElementRef<HTMLDivElement>;
-  @ViewChild("consoleInner", {read: ElementRef}) consoleInner?: ElementRef<HTMLDivElement>;
-  @ViewChild("contentEl", {read: ElementRef}) contentEl?: ElementRef<HTMLDivElement>;
+  visible = signal(false);
+  consoleOuter = viewChild<ElementRef<HTMLDivElement>>("consoleOuter");
+  consoleInner = viewChild<ElementRef<HTMLDivElement>>("consoleInner");
+  contentEl = viewChild<ElementRef<HTMLDivElement>>("contentEl");
 
   private executor: ObjectOf<(this: CadConsoleComponent, ...args: string[]) => any> = {
     async assemble() {
@@ -393,7 +401,7 @@ export class CadConsoleComponent {
       }
       const cad = this.status.cad;
       let checkedItems: string[];
-      if (collection === this.status.collection$.value) {
+      if (collection === this.status.collection()) {
         checkedItems = [cad.data.id];
       } else {
         checkedItems = [];
@@ -435,17 +443,8 @@ export class CadConsoleComponent {
   };
 
   get el() {
-    return this.contentEl?.nativeElement;
+    return this.contentEl()?.nativeElement;
   }
-
-  constructor(
-    private status: AppStatusService,
-    private config: AppConfigService,
-    private message: MessageService,
-    private dialog: MatDialog,
-    private spinner: SpinnerService,
-    private domSanitizer: DomSanitizer
-  ) {}
 
   setSelection() {
     const selection = getSelection();
@@ -460,7 +459,7 @@ export class CadConsoleComponent {
   onKeyDownWin({ctrlKey, key}: KeyboardEvent) {
     if (ctrlKey) {
       if (key === "`") {
-        this.visible = !this.visible;
+        this.visible.update((v) => !v);
       }
     } else {
       const el = this.el;
@@ -478,11 +477,11 @@ export class CadConsoleComponent {
   }
 
   onKeyDown(event: KeyboardEvent) {
-    if (!this.contentEl) {
+    const el = this.el;
+    if (!el) {
       return;
     }
-    const currCmdName = this.content;
-    const el = this.contentEl.nativeElement;
+    const currCmdName = this.content();
     const key = event.key;
     if (key === "Enter") {
       event.preventDefault();
@@ -502,7 +501,7 @@ export class CadConsoleComponent {
   }
 
   update() {
-    const {content, currCmd, el} = this;
+    const {currCmd, el} = this;
     if (!el) {
       return;
     }
@@ -520,10 +519,10 @@ export class CadConsoleComponent {
       .filter((v) => v !== " ")
       .map((v) => v.replace(new RegExp(spaceReplacer, "g"), " "));
 
-    for (const key in content) {
-      (content as any)[key] = "";
+    const content = this.content();
+    for (const key of keysOf(content)) {
+      content[key] = "";
     }
-    content.correct = content.wrong = content.hint = "";
     currCmd.name = "";
     currCmd.args.length = 0;
     for (const name of cmdNames) {
@@ -541,6 +540,7 @@ export class CadConsoleComponent {
     } else {
       content.wrong = elCmd;
     }
+    this.content.set({...content});
 
     const cmd = commands.find((v) => v.name === elCmdTrimed);
     if (cmd) {
