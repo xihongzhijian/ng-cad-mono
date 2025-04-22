@@ -16,7 +16,7 @@ import {PageStatusService} from "../../services/page-status.service";
   templateUrl: "./page-components-select.component.html",
   styleUrl: "./page-components-select.component.scss"
 })
-export class PageComponentsSeletComponent {
+export class PageComponentsSelectComponent {
   private pageStatus = inject(PageStatusService);
 
   get components() {
