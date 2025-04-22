@@ -6,8 +6,8 @@
 
 <ng-scrollbar>
   <div class="flex-column">
-    @for (item of changelog; track i; let i = $index) {
-      @if (updateDivideIndex === i) {
+    @for (item of changelog(); track i; let i = $index) {
+      @if (updateDivideIndex() === i) {
         <ng-template [ngTemplateOutlet]="updateTimeTemp"></ng-template>
       }
       <div class="changelog flex-row">
@@ -31,7 +31,7 @@
         </div>
       </div>
     }
-    @if (updateDivideIndex < 0) {
+    @if (updateDivideIndex() < 0) {
       <ng-template [ngTemplateOutlet]="updateTimeTemp"></ng-template>
     }
   </div>
@@ -39,8 +39,8 @@
 
 <ng-template #updateTimeTemp>
   <mat-divider></mat-divider>
-  <div class="time">更新时间：{{ getTitle(updateTime, true) }}</div>
-  <div class="time">当前分支：{{ branch }}</div>
+  <div class="time">更新时间：{{ updateTimeTitle() }}</div>
+  <div class="time">当前分支：{{ branch() }}</div>
   <mat-divider></mat-divider>
 </ng-template>
 
