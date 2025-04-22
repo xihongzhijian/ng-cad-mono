@@ -1,4 +1,4 @@
-import {Component, forwardRef, HostBinding, Inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -7,9 +7,10 @@ import {SuanliaogongshiDialogInput, SuanliaogongshiDialogOutput} from "./suanlia
 
 @Component({
   selector: "app-suanliaogongshi-dialog",
-  imports: [forwardRef(() => SuanliaogongshiComponent), MatButtonModule],
+  imports: [MatButtonModule, SuanliaogongshiComponent],
   templateUrl: "./suanliaogongshi-dialog.component.html",
-  styleUrl: "./suanliaogongshi-dialog.component.scss"
+  styleUrl: "./suanliaogongshi-dialog.component.scss",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SuanliaogongshiDialogComponent {
   @HostBinding("class") class = "ng-page";
