@@ -1,4 +1,4 @@
-import {Component, Inject, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, Component, Inject, ViewChild} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
@@ -11,7 +11,8 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-mrbcjfz-dialog",
   templateUrl: "./mrbcjfz-dialog.component.html",
   styleUrls: ["./mrbcjfz-dialog.component.scss"],
-  imports: [MrbcjfzComponent]
+  imports: [MrbcjfzComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MrbcjfzDialogComponent {
   @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;

@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, inject, Inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadCollection} from "@app/cad/collections";
@@ -12,23 +12,26 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-draw-cad",
   templateUrl: "./draw-cad.component.html",
   styleUrls: ["./draw-cad.component.scss"],
-  imports: [CadImageComponent, MatButtonModule, NgScrollbar]
+  imports: [CadImageComponent, MatButtonModule, NgScrollbar],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DrawCadComponent implements OnInit {
-  items: {data: CadData}[] = [];
+  private status = inject(AppStatusService);
+
+  items = signal<{data: CadData}[]>([]);
 
   constructor(
     public dialogRef: MatDialogRef<DrawCadComponent, DrawCadOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: DrawCadInput,
-    private status: AppStatusService
+    @Inject(MAT_DIALOG_DATA) public data: DrawCadInput
   ) {}
 
   async ngOnInit() {
     const cads = this.data.cads || [];
-    this.items = [];
+    const items: ReturnType<typeof this.items> = [];
     for (const cad of cads) {
-      this.items.push({data: cad});
+      items.push({data: cad});
     }
+    this.items.set(items);
   }
 
   logCad(data: CadData) {
