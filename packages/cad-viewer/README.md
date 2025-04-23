@@ -1,26 +1,14 @@
 <a id="readme-top"></a>
 
+- [cad-viewer](#cad-viewer)
+  - [About The Project](#about-the-project)
+  - [Features](#features)
+  - [Documentations](#documentations)
 
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-    <li><a href="#features">Features</a></li>
-    <li>
-      <a href="#documentations">Documentations</a>
-      <ul>
-        <li><a href="#usage">Usage</a></li>
-        <li><a href="#config">Config</a></li>
-      </ul>
-    </li>
-  </ol>
-</details>
+# cad-viewer
 
 
 
-<!-- ABOUT THE PROJECT -->
 ## About The Project
 
 This project is made mainly for my personal use, but I would be glad if it helps you too!

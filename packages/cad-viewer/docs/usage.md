@@ -1,6 +1,11 @@
+<a id="readme-top"></a>
+
+- [Usage](#usage)
+
+
 # Usage
 
-<p align="right">(<a href="/README.md">back to home</a>)</p>
+<p align="right">(<a href="../README.md">back to home</a>)</p>
 
 
 
@@ -26,4 +31,4 @@ const json = new CadData().export();
 const data = new CadData(json);
 ```
 
-<p align="right">(<a href="/README.md">back to home</a>)</p>
+<p align="right">(<a href="../README.md">back to home</a>)</p>

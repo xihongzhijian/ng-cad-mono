@@ -1,6 +1,14 @@
+<a id="readme-top"></a>
+
+- [Config](#config)
+  - [`CadViewerConfig`](#cadviewerconfig)
+  - [`CadViewerHotKey`](#cadviewerhotkey)
+  - [Default hotkeys](#default-hotkeys)
+
+
 # Config
 
-<p align="right">(<a href="/README.md">back to home</a>)</p>
+<p align="right">(<a href="../README.md">back to home</a>)</p>
 
 
 
@@ -14,6 +22,9 @@ const viewer = new CadViewer({}, {width: innerWidth, height: innerHeight});
 viewer.setConfig("backgroundColor", "red");
 viewer.setConfig({width: innerWidth, height: innerHeight});
 ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## `CadViewerConfig`
 
 | Name                    | Default value | Description                                                                                           |
@@ -38,6 +49,8 @@ viewer.setConfig({width: innerWidth, height: innerHeight});
 | **hideLineLength**      | `false`       | `@ignore`                                                                                             |
 | **hideLineGongshi**     | `false`       | `@ignore`                                                                                             |
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## `CadViewerHotKey`
 
 | Name      | Required | Description            |
@@ -46,6 +59,8 @@ viewer.setConfig({width: innerWidth, height: innerHeight});
 | **ctrl**  | No       | Ctrl combination.      |
 | **alt**   | No       | Alt combination.       |
 | **shift** | No       | Shift combination.     |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Default hotkeys
 | Name           | Hotkey                  | Action                    |
@@ -56,4 +71,5 @@ viewer.setConfig({width: innerWidth, height: innerHeight});
 | pasteEntities  | `Ctrl + V` or `Enter`   | Paste copied entities.    |
 | deleteEntities | `Delete` or `Backspace` | Delete selected entities. |
 
-<p align="right">(<a href="/README.md">back to home</a>)</p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="../README.md">back to home</a>)</p>
