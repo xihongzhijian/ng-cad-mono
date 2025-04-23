@@ -607,7 +607,7 @@ export class AppStatusService {
     this.cadPoints.set([...points]);
   }
 
-  validate(force?: boolean) {
+  validate(force?: boolean, force2?: boolean) {
     const noInfo = !this.config.getConfig("validateLines");
     const collection = this.collection();
     const result = new ResultWithErrors(null);
@@ -617,7 +617,7 @@ export class AppStatusService {
     if (!force && noInfo) {
       return result;
     }
-    result.learnFrom(validateCad(collection, this.cad.data, noInfo));
+    result.learnFrom(validateCad(collection, this.cad.data, {noInfo, force: force2}));
     this.cad.render();
     return result;
   }

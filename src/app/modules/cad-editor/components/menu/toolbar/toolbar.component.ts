@@ -220,10 +220,8 @@ export class ToolbarComponent {
     const value = !this.config.getConfig("validateLines");
     this.config.setConfig("validateLines", value);
     if (value) {
-      const errMsg = this.status.validate()?.errors || [];
-      if (errMsg.length > 0) {
-        this.message.alert(errMsg.join("<br />"));
-      }
+      const result = this.status.validate(false, true);
+      result.alertError(this.message);
     }
   }
 

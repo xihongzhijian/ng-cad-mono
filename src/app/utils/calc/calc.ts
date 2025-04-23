@@ -115,7 +115,8 @@ export class Calc {
       result.valid = !isNaN(expression);
       return result;
     }
-    if (/#.*?#/.test(expression)) {
+    const regs = [/#.*?#/, /'.*?'/, /".*?"/];
+    if (regs.some((reg) => reg.test(expression))) {
       return result;
     }
     const vars = this.getVars(expression);

@@ -135,7 +135,7 @@ export const validateLines = (
   collection: CadCollection,
   data: CadData,
   fentiInfo?: CadFentiInfo,
-  noInfo?: boolean,
+  opts?: {noInfo?: boolean; force?: boolean},
   tol = DEFAULT_TOLERANCE
 ) => {
   const result = new ResultWithErrors<ValidateResult>({errorLines: []});
@@ -144,8 +144,11 @@ export const validateLines = (
       delete e.info.errors;
     }
   });
-  if (isShiyitu(data) || ["企料算料", "孔"].includes(data.type)) {
-    return result;
+  const {noInfo, force} = opts || {};
+  if (!force) {
+    if (isShiyitu(data) || ["企料算料", "孔"].includes(data.type)) {
+      return result;
+    }
   }
   const typeCheck = cadTypes1.includes(data.type) || collection === "peijianCad";
   let has自动识别上下折 = false;
@@ -254,7 +257,12 @@ export const isCadCollectionOfCad = (collection: CadCollection) => {
   return collections.includes(collection);
 };
 
-export const validateCad = (collection: CadCollection, data: CadData, noInfo?: boolean, tol = DEFAULT_TOLERANCE) => {
+export const validateCad = (
+  collection: CadCollection,
+  data: CadData,
+  opts?: {noInfo?: boolean; force?: boolean},
+  tol = DEFAULT_TOLERANCE
+) => {
   const result = new ResultWithErrors<ValidateResult>({errorLines: []});
   const entities = data.getAllEntities();
   const idsAll = entities.toArray().map((e) => e.id);
@@ -286,7 +294,7 @@ export const validateCad = (collection: CadCollection, data: CadData, noInfo?: b
   if (!isEmpty(data.blocks) || data.entities.insert.length > 0) {
     result.addErrorStr("不能包含块");
   }
-  result.learnFrom(validateLines(collection, data, fentiInfo, noInfo, tol));
+  result.learnFrom(validateLines(collection, data, fentiInfo, opts, tol));
   return result;
 };
 
@@ -692,8 +700,7 @@ export const getCadCalcZhankaiText = (
 export const getCadPaokengText = (
   cad: CadData,
   calcZhankai: any[],
-  bancai: {mingzi?: string; cailiao?: string; houdu?: string; zidingyi?: string},
-  projectConfig: ProjectConfig
+  bancai: {mingzi?: string; cailiao?: string; houdu?: string; zidingyi?: string}
 ) => {
   const arr: string[] = [];
   for (const zhankai of calcZhankai) {
@@ -702,12 +709,6 @@ export const getCadPaokengText = (
     arr.push(`${calcW}×${calcH}=${zhankai.num}`);
   }
   const arr2 = [];
-  const 指定位置刨坑表示方法 = projectConfig.get("指定位置刨坑表示方法", "箭头") === "箭头" ? "刨坑(箭头)" : "刨坑";
-  if (cad.zhidingweizhipaokeng.length > 0) {
-    arr2.push(指定位置刨坑表示方法);
-  } else if (cad.kailiaoshibaokeng) {
-    arr2.push("刨坑");
-  }
   if (cad.算料特殊要求) {
     arr2.push(cad.算料特殊要求);
   }
