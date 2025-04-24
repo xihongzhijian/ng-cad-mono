@@ -6,7 +6,7 @@ import {CadMtext, CadStylizer} from "@lucilor/cad-viewer";
 import {Point} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
 import {AppStatusService} from "@services/app-status.service";
-import Color from "color";
+import Color, {ColorInstance} from "color";
 import {debounce} from "lodash";
 import {InputComponent} from "../../../../input/components/input.component";
 
@@ -71,11 +71,11 @@ export class CadMtextComponent implements OnInit, OnDestroy {
         type: "color",
         label: "颜色",
         disabled,
-        value: new Color(this.getColor() || "white"),
+        value: this.getColor(),
         options: validColors.map((v) => new Color(v)),
         optionsOnly: true,
         onChange: (val) => {
-          this.setColor(val.hex());
+          this.setColor(val);
         }
       },
       {
@@ -132,31 +132,26 @@ export class CadMtextComponent implements OnInit, OnDestroy {
   setInfo(field: string, value: string) {
     const selected = this.selected();
     for (const e of selected) {
-      if ((e as any)[field] === value) {
-        return;
-      }
+      (e as any)[field] = value;
     }
     this.status.cad.render(selected);
   }
 
   getColor() {
     const selected = this.selected();
-    let color = "";
     if (selected.length === 1) {
-      color = selected[0].getColor().hex();
+      return selected[0].getColor();
     } else if (selected.length) {
       const texts = Array.from(new Set(selected.map((v) => v.getColor().hex())));
       if (texts.length === 1) {
-        color = texts[0];
-      } else {
-        return "多个值";
+        return new Color(texts[0]);
       }
     }
-    return color;
+    return new Color("black");
   }
-  setColor(value: string) {
+  setColor(color: ColorInstance) {
     const selected = this.selected();
-    selected.forEach((e) => e.setColor(value));
+    selected.forEach((e) => e.setColor(color));
     this.status.cad.render(selected);
   }
 
