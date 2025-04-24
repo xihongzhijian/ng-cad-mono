@@ -439,13 +439,6 @@ export class Calc {
       }
     }
 
-    // 算不下去了，提示算不出来的公式
-    for (const name in formulas) {
-      if (ok[name] === undefined) {
-        error[name] = formulas[name].toString();
-      }
-    }
-
     // 处理需要替换的字符串，含##的表达式
     if (!isEmpty(replace)) {
       while (true) {
@@ -494,6 +487,12 @@ export class Calc {
           replace[key] = replaceValue;
           ok2[key] = replaceValue;
           vars[key] = replaceValue;
+          for (const k in formulasRaw) {
+            if (formulasRaw[k] === key) {
+              vars[k] = replaceValue;
+              ok[k] = replaceValue;
+            }
+          }
         }
 
         // 有替换掉的
@@ -515,6 +514,13 @@ export class Calc {
           }
           break;
         }
+      }
+    }
+
+    // 算不下去了，提示算不出来的公式
+    for (const name in formulas) {
+      if (ok[name] === undefined) {
+        error[name] = formulas[name].toString();
       }
     }
 
