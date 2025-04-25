@@ -207,7 +207,9 @@ export class CadOptionsComponent implements AfterViewInit {
     }
 
     for (const item of checkedItems) {
-      result.options.push({vid: item.vid, mingzi: item.name});
+      if (!result.options.some((v) => v.vid === item.vid)) {
+        result.options.push({vid: item.vid, mingzi: item.name});
+      }
       if (this.data.optionOptions) {
         if (!result.optionOptions) {
           result.optionOptions = {};

@@ -32,7 +32,7 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {menshanKeys} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
-import {clone, cloneDeep, isEqual} from "lodash";
+import {clone, cloneDeep, isEqual, uniqWith} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   qiliaoFtwzxsNames,
@@ -90,6 +90,9 @@ export class XhmrmsbjXinghaoConfigComponent {
       } else {
         config.选项.push({名字: name, 可选项: []});
       }
+    }
+    for (const item of config.选项) {
+      item.可选项 = uniqWith(item.可选项, (a, b) => a.vid === b.vid);
     }
     if (!isEqual(config.选项, options2)) {
       this.refreshData();

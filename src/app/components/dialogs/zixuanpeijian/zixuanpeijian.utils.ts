@@ -175,6 +175,7 @@ export interface GetMokuaiTitleOptsBase {
   层名字?: string;
   mokuaiNameShort?: boolean;
   xhmrmsbj?: XhmrmsbjData | null;
+  cadId?: string;
 }
 export interface GetMokuaiTitleOptsNormal extends GetMokuaiTitleOptsBase {
   status?: undefined;
@@ -808,7 +809,9 @@ export const calcZxpj = async (
     const zhankaisRaw = cloneDeep(data.zhankai);
     for (const [i, zhankai] of data.zhankai.entries()) {
       let enabled = true;
-      let title = `计算展开条件`;
+      const cadUrl = status.getUrl(["/index"], {queryParams: {collection: "peijianCad", id: data.id, 模块: mokuai?.type2}});
+      const conditionsStr = `<span class="accent">${zhankai.conditions.join(", ")}</span>`;
+      let title = `计算CAD【${getLinkStr(cadUrl, data.name)}】展开的条件【${conditionsStr}】出错，请打开CAD的展开修改<br><br>`;
       if (mokuai) {
         title += `（${getCalcMokuaiTitle(mokuai)}）`;
       }
