@@ -27,7 +27,7 @@ export class CadLayerInputComponent extends Subscribed() {
   });
   layerOptions = computed<string[]>(() => {
     const data = this.status.cadData();
-    const layerNames = new Set(["不显示", "跳过判断封闭图形", "微连"]);
+    const layerNames = new Set(["不显示", "跳过判断封闭图形", "微连", "分页线"]);
     const layerNamesExclude = new Set(["Defpoints", "走线", "开料额外信息", "打孔", "展开长标注", "line-info", "导入错误信息"]);
     data.layers.forEach((layer) => {
       const name = layer.name;
