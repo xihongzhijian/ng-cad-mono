@@ -136,6 +136,8 @@ export class DakongSummaryComponent {
           const detail2: DakongSummaryTableData = {
             cadId: item.cadId,
             cadName: item.cadName,
+            cadImgId: item.cadImgId,
+            cadQuery: item.cadQuery,
             muban: item.muban,
             peizhiName: item.peizhiName,
             hidden: false,
@@ -170,7 +172,8 @@ export class DakongSummaryComponent {
   }
 
   openCad(item: DakongSummaryTableData) {
-    this.status.openCadInNewTab(item.cadId, "cad");
+    const url = this.status.getUrl(["/index"], {queryParams: item.cadQuery});
+    open(url, "_blank");
   }
 
   openKongCad(item: DakongSummaryTableData) {

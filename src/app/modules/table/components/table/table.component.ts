@@ -217,11 +217,11 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
   ngDoCheck() {
     const changes = this.infoDiffer.diff(this.infoIn()) as KeyValueChanges<InfoKey, any> | null;
     if (changes) {
-      this.infoChanged(changes);
+      this._onInfoChange(changes);
     }
   }
 
-  infoChanged(changes: KeyValueChanges<InfoKey, any>) {
+  private _onInfoChange(changes: KeyValueChanges<InfoKey, any>) {
     const changedKeys: InfoKey[] = [];
     changes.forEachChangedItem((v) => {
       changedKeys.push(v.key);
@@ -236,6 +236,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     this.filterInputInfosFlag.update((v) => v + 1);
 
     const info = this.infoIn();
+    this.info.set({...info});
     if (intersection<InfoKey>(changedKeys, ["columns", "rowSelection"]).length > 0) {
       this.columnFields = [...info.columns.filter((v) => !v.hidden).map((v) => v.field)];
       const rowSelection = info.rowSelection;
@@ -260,10 +261,9 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     if (intersection<InfoKey>(changedKeys, ["class"]).length > 0) {
       this.class = info.class;
     }
-    if (intersection<InfoKey>(changedKeys, ["columns"]).length > 0) {
+    if (intersection<InfoKey>(changedKeys, ["data", "columns"]).length > 0) {
       this.updateCellInputInfos();
     }
-    this.info.set({...info});
   }
 
   get filteredData() {
