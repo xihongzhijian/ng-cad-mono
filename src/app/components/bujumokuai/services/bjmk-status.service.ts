@@ -4,7 +4,7 @@ import {filePathUrl} from "@app/app.common";
 import {getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
 import {FetchManager} from "@app/utils/fetch-manager";
-import {getCopyName, getDateTimeString} from "@app/utils/get-value";
+import {getCopyName} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {ItemsManager} from "@app/utils/items-manager";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
@@ -238,27 +238,5 @@ export class BjmkStatusService {
     if (url) {
       open(url);
     }
-  }
-
-  async exportMokuais(ids: number[]) {
-    const itmes = await this.http.getData<MokuaiItem[]>("ngcad/exportPeijianmokuais", {ids});
-    if (!itmes) {
-      return;
-    }
-    await this.message.exportData(itmes, `配件模块_${getDateTimeString()}`);
-  }
-  async importMokuais() {
-    this.message.importData<MokuaiItem[]>(true, async (items) => {
-      const names = this.mokuaisManager.items().map((v) => v.name);
-      for (const item of items) {
-        this._copyMokuaiBefore(item);
-        item.name = getCopyName(names, item.name);
-        names.push(item.name);
-      }
-      const items2 = await this.http.getData<MokuaiItem[]>("ngcad/importPeijianmokuais", {items});
-      if (items2) {
-        this.mokuaisManager.refresh({add: items2});
-      }
-    });
   }
 }

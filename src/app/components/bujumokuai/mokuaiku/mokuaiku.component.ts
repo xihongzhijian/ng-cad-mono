@@ -210,36 +210,6 @@ export class MokuaikuComponent implements OnInit {
     }
   }
 
-  exportMokuais() {
-    const mokuais = this.mokuais();
-    let ids = this.mokuaisSelectedIndexs().map((i) => mokuais[i].id);
-    if (ids.length < 1) {
-      const mode = this.navNodeSelectMode();
-      if (mode === "none") {
-        this.navNodeSelectMode.set("multiple");
-        this.navNodesSelected.set([]);
-        return;
-      } else {
-        const nodeNames = this.navNodesSelected().map((v) => v.name);
-        ids = [];
-        for (const mokuai of this.mokuaisAll()) {
-          if (nodeNames.includes(mokuai.type)) {
-            ids.push(mokuai.id);
-          }
-        }
-        this.navNodeSelectMode.set("none");
-        this.navNodesSelected.set([]);
-        if (ids.length < 1) {
-          return;
-        }
-      }
-    }
-    this.bjmkStatus.exportMokuais(ids);
-  }
-  importMokuais() {
-    this.bjmkStatus.importMokuais();
-  }
-
   bancaiListData = signal<BancaiListData | null>(null);
   bancaiListDataRefresh = signal(() => this.http.getBancaiList());
   async getBancaiListData() {
