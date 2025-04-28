@@ -3,7 +3,11 @@ app-var-names {
 }
 
 .slgs {
-  flex: 0 1 660px;
+  flex: 0 1 730px;
+
+  .imgs {
+    height: 300px;
+  }
 
   app-image {
     height: 100%;

@@ -18,6 +18,7 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {justifyMkdxpzSlgs} from "@views/msbj/msbj.utils";
 import {cloneDeep} from "lodash";
+import {NgScrollbarModule} from "ngx-scrollbar";
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "./mkdxpz-editor.types";
 import {getNodesTable, getVarNameGroupName} from "./mkdxpz-editor.utils";
 
@@ -28,6 +29,7 @@ import {getNodesTable, getVarNameGroupName} from "./mkdxpz-editor.utils";
     MatButtonModule,
     MatDividerModule,
     MsbjRectsComponent,
+    NgScrollbarModule,
     SuanliaogongshiComponent,
     TableComponent,
     VarNamesComponent

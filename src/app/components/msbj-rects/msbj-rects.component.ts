@@ -209,7 +209,7 @@ export class MsbjRectsComponent {
     const el = this.rectOuter()?.nativeElement;
     if (el) {
       this.rectOuterStyle.update((v) => ({...v, padding: "0", opacity: "0"}));
-      await timeout(0);
+      await timeout(100);
       const padding = getTrbl(this.padding());
       const elRect = el.getBoundingClientRect();
       const ratio1 = (elRect.width - padding[1] - padding[3]) / (elRect.height - padding[0] - padding[2]);
@@ -227,9 +227,11 @@ export class MsbjRectsComponent {
         padding[j] = Math.max(0, padding[j]);
       }
       this.rectOuterPadding.set(padding);
-      this.rectOuterStyle.update((v) => ({...v, padding: `${padding[0]}px ${padding[1]}px ${padding[2]}px ${padding[3]}px`}));
-      await timeout(0);
-      this.rectOuterStyle.update((v) => ({...v, opacity: "1"}));
+      this.rectOuterStyle.update((v) => ({
+        ...v,
+        padding: `${padding[0]}px ${padding[1]}px ${padding[2]}px ${padding[3]}px`,
+        opacity: "1"
+      }));
     }
     this.generateRectsEnd.emit({isWindowResize});
   }
