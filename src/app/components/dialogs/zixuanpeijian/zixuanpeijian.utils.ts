@@ -695,6 +695,7 @@ export const calcZxpj = async (
         if (alertError) {
           return {fulfilled: false, error: {message: result1Msg + "出错", calc: {formulas: formulas1, vars: vars1, result: result1}}};
         } else if (!result1) {
+          calc1Finished = false;
           continue;
         }
       }
