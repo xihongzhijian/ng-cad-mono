@@ -5,6 +5,7 @@ import {NgxUiLoaderService} from "ngx-ui-loader";
 export interface SpinnerConfig {
   text?: string;
   background?: boolean;
+  taskId?: string;
 }
 
 @Injectable({
@@ -24,10 +25,11 @@ export class SpinnerService {
     } else {
       this.shownSpinners[id] = [{config}];
     }
-    if (config?.background) {
-      this.loader.startBackgroundLoader(id);
+    const {background, taskId} = config || {};
+    if (background) {
+      this.loader.startBackgroundLoader(id, taskId);
     } else {
-      this.loader.startLoader(id);
+      this.loader.startLoader(id, taskId);
     }
     this.spinnerShow.set({id, config});
   }
@@ -38,10 +40,11 @@ export class SpinnerService {
       return;
     }
     const {config} = showSpinner.shift() || {};
-    if (config?.background) {
-      this.loader.stopBackgroundLoader(id);
+    const {background, taskId} = config || {};
+    if (background) {
+      this.loader.stopBackgroundLoader(id, taskId);
     } else {
-      this.loader.stopLoader(id);
+      this.loader.stopLoader(id, taskId);
     }
     this.spinnerHide.set({id});
   }

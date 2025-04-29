@@ -526,7 +526,6 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
         style: {width: "160px"}
       }
     ];
-    console.log(1);
     return infos;
   });
 
