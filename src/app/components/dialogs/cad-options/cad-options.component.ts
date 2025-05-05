@@ -325,7 +325,6 @@ export class CadOptionsComponent implements AfterViewInit {
       autoFocus: true,
       value: this.searchValue(),
       onInput: debounce(onChange, 500),
-      onChange,
       clearable: true,
       style: {flex: "0 1 300px"}
     };

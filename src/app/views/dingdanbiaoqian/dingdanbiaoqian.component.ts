@@ -214,7 +214,9 @@ export class DingdanbiaoqianComponent implements OnInit {
             data.entities.line.forEach((e) => {
               if (e.length > maxLength) {
                 lines.push(e);
-                e.显示线长 = e.length.toString();
+                if (!e.显示线长) {
+                  e.显示线长 = e.length.toString();
+                }
               }
             });
             const shuangxiangCads = splitShuangxiangCad(data);
