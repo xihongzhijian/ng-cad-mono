@@ -95,7 +95,7 @@
     "@types/qrcode": "^1.5.5",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
-    "@typescript-eslint/parser": "^8.31.1",
+    "@typescript-eslint/parser": "^8.32.0",
     "@typescript-eslint/types": "^8.31.1",
     "@typescript-eslint/utils": "^8.31.1",
     "angular-animations": "^0.11.0",
