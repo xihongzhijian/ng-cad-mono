@@ -111,14 +111,13 @@ export class FormulasEditorComponent {
   }
   formulasInputInfo = computed(() => {
     const compact = this.compact();
-    const errors = this.submitResult().getValidationErrors();
     const info: InputInfo = {
       type: "string",
       label: "",
       textarea: {autosize: {minRows: compact?.minRows, maxRows: compact?.maxRows}},
       value: this.formulasText(),
       // autoFocus: !!compact,
-      validators: () => errors,
+      validators: () => this.submitResult().getValidationErrors(),
       onChange: (val) => {
         this.formulasText.set(val);
         if (compact) {
@@ -161,7 +160,7 @@ export class FormulasEditorComponent {
         if (index > -1) {
           return [v.slice(0, index).replace(/ /g, ""), v.slice(index + 1).replace(/ /g, "")];
         }
-        return ["", ""];
+        return [v, ""];
       })
       .filter((v) => v);
     this.justifyFormulas(list);
