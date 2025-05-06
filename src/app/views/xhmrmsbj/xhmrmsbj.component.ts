@@ -1460,7 +1460,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     if (!this.enableXinghaoConfig()) {
       names = names.filter((v) => !isXhmrmsbjXinghaoConfigComponentType(v));
     }
-    const toDiff: XhmrmsbjTabName[] = ["可选锁边铰边", "门缝配置"];
+    const toDiff: XhmrmsbjTabName[] = [];
     if (this.isLuomatouluomazhuku()) {
       toDiff.push("算料单配置", "企料结构配置");
     }
