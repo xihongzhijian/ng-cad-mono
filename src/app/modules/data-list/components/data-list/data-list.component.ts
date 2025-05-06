@@ -417,12 +417,12 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
   async moveNavNode(node: DataListNavNode) {
-    const path = getDataListNavNodePath(this.navNodes(), node);
+    const nodes = this.navNodes();
+    const path = getDataListNavNodePath(nodes, node);
     const parentNode = path.at(-2) || null;
     const {node: parentNode2, submit} = await this.selectNode("parent", `分类：${node.name}`, parentNode, [node.id]);
     if (submit) {
-      const nodes = this.navNodes();
-      const to = findDataListNavNode(nodes, (v) => v.id === parentNode2?.id) || null;
+      const to = findDataListNavNode(nodes, (v) => v.id === parentNode2?.id) || "root";
       moveDataListNavNode(nodes, node, to);
       await this.setNavNodes();
       this.filterNavNodes();
