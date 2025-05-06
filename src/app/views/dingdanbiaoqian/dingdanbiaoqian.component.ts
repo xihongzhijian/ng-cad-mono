@@ -17,7 +17,7 @@ import {CalcZxpjResult, ZixuanpeijianCadItem, ZixuanpeijianMokuaiItem} from "@co
 import {calcZxpj, getMokuaiTitle, getStep1Data, getZixuanpeijianCads} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {environment} from "@env";
 import {CadData, CadLine, CadViewer, CadViewerConfig, Defaults, setLinesLength} from "@lucilor/cad-viewer";
-import {ObjectOf, timeout} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HttpOptions} from "@modules/http/services/http.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -753,7 +753,7 @@ export class DingdanbiaoqianComponent implements OnInit {
   }
 
   hasZhankaiNum(zhankai: NonNullable<Order["cads"][0]["zhankai"]>[0]) {
-    return typeof zhankai.num === "number";
+    return isTypeOf(zhankai.num, ["number", "string"]);
   }
 
   returnZero() {

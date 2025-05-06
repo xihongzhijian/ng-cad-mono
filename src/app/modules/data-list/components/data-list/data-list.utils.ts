@@ -189,7 +189,7 @@ export const getDataListNavNodesFlat = function* (nodes: DataListNavNode[]): Gen
   }
 };
 
-export const moveDataListNavNode = (nodes: DataListNavNode[], node: DataListNavNode, to: DataListNavNode | null) => {
+export const moveDataListNavNode = (nodes: DataListNavNode[], node: DataListNavNode, to: DataListNavNode | "root" | null) => {
   const removeNode = (parent: DataListNavNode[] | DataListNavNode, ...children: DataListNavNode[]) => {
     if (parent instanceof DataListNavNode) {
       if (!parent.children) {
@@ -223,17 +223,19 @@ export const moveDataListNavNode = (nodes: DataListNavNode[], node: DataListNavN
   const path = getDataListNavNodePath(nodes, node);
   const from = path.at(-2) || null;
 
-  if (from !== to) {
-    if (from) {
-      removeNode(from, node);
-    } else {
-      removeNode(nodes, node);
-    }
-  }
   if (to) {
-    addNode(to, node);
-  } else {
-    addNode(nodes, node);
+    if (from !== to) {
+      if (from) {
+        removeNode(from, node);
+      } else {
+        removeNode(nodes, node);
+      }
+    }
+    if (to === "root") {
+      addNode(nodes, node);
+    } else {
+      addNode(to, node);
+    }
   }
 };
 
