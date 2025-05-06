@@ -612,7 +612,17 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const infos = this.data()?.menshanbujuInfos;
     const msbjInfo = this.activeMsbjInfo();
     const menshanKey = this.activeMenshanKey();
-    if (!infos || !msbjInfo || !menshanKey) {
+    if (!infos || !menshanKey) {
+      return;
+    }
+    if (!msbjInfo) {
+      let action = "";
+      if (this.activeMsbjInfoItems().length > 0) {
+        action = "选择";
+      } else {
+        action = "添加";
+      }
+      await this.message.alert(`${menshanKey}布局为空，请先${action}${menshanKey}布局`);
       return;
     }
     const {选中布局数据} = msbjInfo;
