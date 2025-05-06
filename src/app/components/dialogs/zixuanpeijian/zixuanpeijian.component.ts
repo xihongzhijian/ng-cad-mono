@@ -1,6 +1,19 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
-import {Component, ElementRef, HostBinding, HostListener, Inject, OnInit, ViewChild} from "@angular/core";
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  HostBinding,
+  HostListener,
+  inject,
+  Inject,
+  OnInit,
+  signal,
+  untracked,
+  viewChild
+} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
@@ -39,7 +52,6 @@ import {ImportCache} from "@views/import/import.types";
 import {openImportPage} from "@views/import/import.utils";
 import {cloneDeep, debounce, uniq, uniqueId} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../../modules/directives/click-stop-propagation.directive";
 import {TypedTemplateDirective} from "../../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../../modules/image/components/image/image.component";
@@ -105,25 +117,32 @@ import {
   ]
 })
 export class ZixuanpeijianComponent implements OnInit {
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private dialog = inject(MatDialog);
+  private elRef = inject(ElementRef<HTMLElement>);
+  private calc = inject(CalcService);
+  private status = inject(AppStatusService);
+
   @HostBinding("class") class = "ng-page";
 
   spinnerId = "zixuanpeijian-" + uniqueId();
-  step$ = new BehaviorSubject<{value: number; refresh: boolean; noCache?: boolean; preserveImgs?: boolean}>({value: 0, refresh: false});
+  step = signal<{value: number; refresh: boolean; noCache?: boolean; preserveImgs?: boolean}>({value: 0, refresh: false});
   type1 = "";
   type2 = "";
   urlPrefix = remoteFilePath;
-  typesInfo: ZixuanpeijianTypesInfo2 = {};
+  typesInfo = signal<ZixuanpeijianTypesInfo2>({});
   typesInfoType1: ObjectOf<{hidden: boolean}> = {};
   options: ObjectOf<string[]> = {};
   bancaiList: BancaiList[] = [];
   result: ZixuanpeijianOutput = importZixuanpeijian();
   cadViewers: {模块: ObjectOf<ObjectOf<CadViewer[]>>; 零散: CadViewer[]} = {模块: {}, 零散: []};
   getMokuaiTitle = getMokuaiTitle;
-  @ViewChild("lingsanTypesScrollbar") lingsanTypesScrollbar?: NgScrollbar;
-  @ViewChild("lingsanTypesTree") lingsanTypesTree?: MatTree<TypesMapNode, TypesMapNode>;
-  @ViewChild("lingsanTypesTree", {read: ElementRef}) lingsanTypesTreeEl?: ElementRef<HTMLElement>;
-  @ViewChild("lingsanLeftScrollbar") lingsanLeftScrollbar?: NgScrollbar;
-  @ViewChild("lingsanRightScrollbar") lingsanRightScrollbar?: NgScrollbar;
+  lingsanTypesScrollbar = viewChild<NgScrollbar>("lingsanTypesScrollbar");
+  lingsanTypesTree = viewChild<MatTree<TypesMapNode, TypesMapNode>>("lingsanTypesTree");
+  lingsanTypesTreeEl = viewChild<ElementRef<HTMLElement>, ElementRef<HTMLElement>>("lingsanTypesTree", {read: ElementRef});
+  lingsanLeftScrollbar = viewChild<NgScrollbar>("lingsanLeftScrollbar");
+  lingsanRightScrollbar = viewChild<NgScrollbar>("lingsanRightScrollbar");
   contextMenuData = {i: -1, j: -1};
   fractionDigits = 1;
   _step1Fetched = false;
@@ -178,11 +197,11 @@ export class ZixuanpeijianComponent implements OnInit {
   lingsanCadItemButtons: CadItemButton<LingsanCadItemInfo>[];
   multiDeleting = false;
 
-  get summitBtnText() {
+  summitBtnText = computed(() => {
     if (this.data?.stepFixed) {
       return "提交";
     }
-    switch (this.step$.value.value) {
+    switch (this.step().value) {
       case 1:
         return "打开算料CAD";
       case 2:
@@ -190,7 +209,7 @@ export class ZixuanpeijianComponent implements OnInit {
       default:
         return "提交";
     }
-  }
+  });
 
   get materialResult() {
     return this.data?.order?.materialResult;
@@ -198,13 +217,7 @@ export class ZixuanpeijianComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<ZixuanpeijianComponent, ZixuanpeijianOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: ZixuanpeijianInput | null,
-    private http: CadDataService,
-    private message: MessageService,
-    private dialog: MatDialog,
-    private elRef: ElementRef<HTMLElement>,
-    private calc: CalcService,
-    private status: AppStatusService
+    @Inject(MAT_DIALOG_DATA) public data: ZixuanpeijianInput | null
   ) {
     this.lingsanCadItemButtons = [
       {name: "复制", onClick: this.copyLingsanCad.bind(this)},
@@ -215,7 +228,6 @@ export class ZixuanpeijianComponent implements OnInit {
   async ngOnInit() {
     setGlobal("zxpj", this);
     await timeout(0);
-    this.step$.subscribe(this._onStep.bind(this));
     let stepValue = 1;
     if (this.data) {
       const {step, data} = this.data;
@@ -230,6 +242,11 @@ export class ZixuanpeijianComponent implements OnInit {
     this.setStep(stepValue, true);
   }
 
+  stepEff = effect(() => {
+    const step = this.step();
+    untracked(() => this._onStep(step));
+  });
+
   async step1Fetch(updateInputInfos = true) {
     let step1Data: Step1Data | undefined | null;
     if (this.data?.step1Data) {
@@ -241,11 +258,11 @@ export class ZixuanpeijianComponent implements OnInit {
       }
     }
     if (step1Data) {
-      this.typesInfo = step1Data.typesInfo;
+      this.typesInfo.set(step1Data.typesInfo);
       this.options = step1Data.options;
       updateMokuaiItems(this.result.模块, step1Data.typesInfo);
     } else {
-      this.typesInfo = {};
+      this.typesInfo.set({});
       this.options = {};
     }
     if (updateInputInfos) {
@@ -474,7 +491,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   step3Refresh(preserveImgs = false, noCache = true) {
-    this.step$.next({value: 3, refresh: true, noCache, preserveImgs});
+    this.step.set({value: 3, refresh: true, noCache, preserveImgs});
   }
 
   getLingsanYaoqiu() {
@@ -594,7 +611,7 @@ export class ZixuanpeijianComponent implements OnInit {
     }
   }
 
-  private async _onStep({value, refresh, noCache, preserveImgs}: ZixuanpeijianComponent["step$"]["value"]) {
+  private async _onStep({value, refresh, noCache, preserveImgs}: ReturnType<ZixuanpeijianComponent["step"]>) {
     let isRefreshed = false;
     if (value === 1) {
       if (refresh || !this._step1Fetched) {
@@ -611,7 +628,7 @@ export class ZixuanpeijianComponent implements OnInit {
         isRefreshed = true;
       }
     } else if (value === 3) {
-      const scrollTop = this.lingsanLeftScrollbar?.nativeElement.scrollTop;
+      const scrollTop = this.lingsanLeftScrollbar()?.nativeElement.scrollTop;
       const lingsanCadTypePrev = this.lingsanCadType;
       if (refresh || !this._step3Fetched) {
         await this.step3Fetch(false, noCache, preserveImgs);
@@ -619,13 +636,13 @@ export class ZixuanpeijianComponent implements OnInit {
       }
       await timeout(500);
       if (lingsanCadTypePrev === this.lingsanCadType) {
-        this.lingsanLeftScrollbar?.scrollTo({top: scrollTop});
+        this.lingsanLeftScrollbar()?.scrollTo({top: scrollTop});
       }
     }
   }
 
   async submit() {
-    const {value} = this.step$.value;
+    const {value} = this.step();
     const stepFixed = this.data?.stepFixed;
     if (value === 1) {
       const errors = new Set<string>();
@@ -700,7 +717,7 @@ export class ZixuanpeijianComponent implements OnInit {
 
   cancel() {
     const stepFixed = this.data?.stepFixed;
-    if (this.step$.value.value === 2 || stepFixed) {
+    if (this.step().value === 2 || stepFixed) {
       this.dialogRef.close();
     } else {
       this.setStep(2, true);
@@ -708,7 +725,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   setStep(value: number, refresh = false, preserveImgs = false) {
-    this.step$.next({value, refresh, preserveImgs});
+    this.step.set({value, refresh, preserveImgs});
   }
 
   setTypesInfo1(type1: string) {
@@ -723,9 +740,10 @@ export class ZixuanpeijianComponent implements OnInit {
     const shuchubianliangKeys = new Set<string>();
     const fixedBancaiOptions: string[] = [];
     const bancaiMap: ObjectOf<{cailiao: string[]; houdu: string[]}> = {};
-    for (const type1 in this.typesInfo) {
-      for (const type2 in this.typesInfo[type1]) {
-        const item = this.typesInfo[type1][type2];
+    const typesInfo = this.typesInfo();
+    for (const type1 in typesInfo) {
+      for (const type2 in typesInfo[type1]) {
+        const item = typesInfo[type1][type2];
         if (item.unique) {
           const item2 = this.result.模块.find((v) => v.type1 === type1 && v.type2 === type2);
           item.disableAdd = !!item2;
@@ -896,7 +914,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   async addMokuaiItem(type1: string, type2: string) {
-    const typesItem = cloneDeep(this.typesInfo[type1][type2]);
+    const typesItem = cloneDeep(this.typesInfo()[type1][type2]);
     const item: ZixuanpeijianMokuaiItem = {type1, type2, totalWidth: "", totalHeight: "", ...typesItem, cads: []};
     const gongshishuru: ObjectOf<string> = {};
     const xuanxiangshuru: ObjectOf<string> = {};
@@ -982,7 +1000,7 @@ export class ZixuanpeijianComponent implements OnInit {
     this.result.零散.push({data, info: {houtaiId: item.data.id, zhankai: [], calcZhankai: []}});
     this._updateInputInfos();
     await timeout(0);
-    this.lingsanRightScrollbar?.scrollTo({bottom: 0});
+    this.lingsanRightScrollbar()?.scrollTo({bottom: 0});
   }
 
   removeLingsanItem(i: number) {
@@ -1070,10 +1088,11 @@ export class ZixuanpeijianComponent implements OnInit {
 
   filterMokuaiItems() {
     const needle = this.searchMokuaiValue;
+    const typesInfo = this.typesInfo();
     for (const type1 in this.typesInfo) {
       let count = 0;
-      for (const type2 in this.typesInfo[type1]) {
-        const item = this.typesInfo[type1][type2];
+      for (const type2 in typesInfo[type1]) {
+        const item = typesInfo[type1][type2];
         item.hidden = !queryStringList(needle, [type1, type2]);
         if (!item.hidden) {
           count++;
@@ -1161,7 +1180,7 @@ export class ZixuanpeijianComponent implements OnInit {
   async setLingsanCadType(type: string) {
     this.lingsanCadType = type;
     await timeout(0);
-    const treeEl = this.lingsanTypesTreeEl?.nativeElement;
+    const treeEl = this.lingsanTypesTreeEl()?.nativeElement;
     const getPath = (nodes: TypesMapNode[], path: TypesMapNode[] = []): TypesMapNode[] => {
       for (const node of nodes) {
         if (node.name === type) {
@@ -1178,11 +1197,11 @@ export class ZixuanpeijianComponent implements OnInit {
     };
     const path = getPath(this.lingsanTypesDataSource.data);
     for (const [i, node] of path.entries()) {
-      this.lingsanTypesTree?.expand(node);
+      this.lingsanTypesTree()?.expand(node);
       if (i === path.length - 1) {
         const nodeEl = treeEl?.querySelector(`[data-id="${node.id}"]`);
         if (nodeEl instanceof HTMLElement && getElementVisiblePercentage(nodeEl) < 1) {
-          this.lingsanTypesScrollbar?.scrollToElement(nodeEl);
+          this.lingsanTypesScrollbar()?.scrollToElement(nodeEl);
         }
       }
     }
@@ -1447,7 +1466,7 @@ export class ZixuanpeijianComponent implements OnInit {
   }
 
   async setReplaceableMokuais(item: ZixuanpeijianMokuaiItem) {
-    const typesInfo = cloneDeep(this.typesInfo);
+    const typesInfo = cloneDeep(this.typesInfo());
     delete typesInfo[item.type1][item.type2];
     const result = await openZixuanpeijianDialog(this.dialog, {
       data: {

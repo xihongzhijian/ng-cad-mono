@@ -1,15 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  HostBinding,
-  inject,
-  signal,
-  viewChild,
-  viewChildren
-} from "@angular/core";
+import {Component, computed, effect, ElementRef, HostBinding, inject, signal, viewChild, viewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -55,8 +44,7 @@ import {SuanliaoCadItemInfo} from "./lrsj-suanliao-cads.types";
     SuanliaoTablesComponent
   ],
   templateUrl: "./lrsj-suanliao-cads.component.html",
-  styleUrl: "./lrsj-suanliao-cads.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./lrsj-suanliao-cads.component.scss"
 })
 export class LrsjSuanliaoCadsComponent extends LrsjPiece {
   private dialog = inject(MatDialog);
@@ -406,7 +394,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     if (suanliaoTables) {
       this.spinner.show(this.spinner.defaultLoaderId);
       const klkwpzData = await suanliaoTables.getKlkwpzData(suanliaoDataParams);
-      const klcsData = await suanliaoTables.getKlcsTableData(suanliaoDataParams);
+      const klcsData = await suanliaoTables.getKlcsData(suanliaoDataParams);
       await this.http.mongodbInsertMulti(
         suanliaoTables.klkwpzCollection,
         klkwpzData.map((v) => ({名字: v.名字, 孔位配置: v.孔位配置})),

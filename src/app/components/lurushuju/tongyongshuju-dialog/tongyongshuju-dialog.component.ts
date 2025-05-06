@@ -1,4 +1,4 @@
-import {Component, HostBinding, Inject, OnInit} from "@angular/core";
+import {Component, HostBinding, inject, Inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -27,18 +27,23 @@ import {
 
 @Component({
   selector: "app-tongyongshuju-dialog",
-  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, SpinnerModule],
   templateUrl: "./tongyongshuju-dialog.component.html",
-  styleUrl: "./tongyongshuju-dialog.component.scss"
+  styleUrl: "./tongyongshuju-dialog.component.scss",
+  imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, SpinnerModule]
 })
 export class TongyongshujuDialogComponent implements OnInit {
+  private dialog = inject(MatDialog);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+  private http = inject(CadDataService);
+
   @HostBinding("class") class = "ng-page";
 
   collection: CadCollection = "cad";
-  tableData: TongyongshujuData[] = [];
-  activeItem: TongyongshujuActiveItem | null = null;
-  activeItemPrev: TongyongshujuActiveItem | null = null;
-  activeCadList: TongyongshujuActiveCadList | null = null;
+  tableData = signal<TongyongshujuData[]>([]);
+  activeItem = signal<TongyongshujuActiveItem | null>(null);
+  activeItemPrev = signal<TongyongshujuActiveItem | null>(null);
+  activeCadList = signal<TongyongshujuActiveCadList | null>(null);
   cadItemButtons: CadItemButton<TongyongshujuCadItemInfo>[];
 
   tabelListLoader = uniqueId("tabelListLoader");
@@ -46,10 +51,6 @@ export class TongyongshujuDialogComponent implements OnInit {
   cadListLoader = uniqueId("cadListLoader");
 
   constructor(
-    private http: CadDataService,
-    private status: AppStatusService,
-    private message: MessageService,
-    private dialog: MatDialog,
     public dialogRef: MatDialogRef<TongyongshujuDialogComponent, TongyongshujuOutput>,
     @Inject(MAT_DIALOG_DATA) public data: TongyongshujuInput
   ) {
@@ -68,11 +69,13 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async refresh(i?: number, j?: number) {
-    this.tableData = await this.http.queryMySql<TongyongshujuData>({table: "p_tongyongshujuluru"}, {spinner: this.tabelListLoader});
-    if (typeof i === "number" && this.tableData.length > i) {
+    const data = await this.http.queryMySql<TongyongshujuData>({table: "p_tongyongshujuluru"}, {spinner: this.tabelListLoader});
+    this.tableData.set(data);
+    if (typeof i === "number" && data.length > i) {
       await this.clickTableListItem(i);
     }
-    const {activeItem, activeItemPrev} = this;
+    const activeItem = this.activeItem();
+    const activeItemPrev = this.activeItemPrev();
     if (activeItem) {
       if (activeItemPrev && activeItemPrev.index === activeItem.index) {
         let maxVid1 = -1;
@@ -104,7 +107,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   replaceCadStr(str: string, index?: number) {
-    const {activeItem} = this;
+    const activeItem = this.activeItem();
     const replaceFrom = "当前选项";
     const shouldReplace = str.includes(replaceFrom);
     if (!shouldReplace) {
@@ -126,41 +129,42 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async setActiveItem(index: number) {
-    const item = this.tableData[index];
-    this.activeItemPrev = this.activeItem;
-    this.activeItem = null;
+    const item = this.tableData()[index];
+    this.activeItemPrev.set(this.activeItem());
+    this.activeItem.set(null);
     if (item.active && item.xiaodaohang) {
       const struct = await this.http.getXiaodaohangStructure(item.xiaodaohang, {spinner: this.activeItemLoader});
       if (struct?.table) {
         const data = await this.http.queryMySql({table: struct.table, fields: ["mingzi"]}, {spinner: this.activeItemLoader});
-        this.activeItem = {
+        this.activeItem.set({
           data: data.map<TongyongshujuActiveItem["data"][number]>((v) => {
             return {...v, active: false};
           }),
           index
-        };
-        this.activeCadList = null;
+        });
+        this.activeCadList.set(null);
       } else {
-        this.activeItem = {data: [], index};
+        this.activeItem.set({data: [], index});
         await this.setActiveCadList(item);
       }
     }
   }
 
   refreshActiveCadList() {
-    const {activeItem, activeCadList} = this;
+    const activeItem = this.activeItem();
+    const activeCadList = this.activeCadList();
     if (!activeItem || !activeCadList) {
       return;
     }
-    return this.setActiveCadList(this.tableData[activeItem.index], activeCadList.index);
+    return this.setActiveCadList(this.tableData()[activeItem.index], activeCadList.index);
   }
 
   async setActiveCadList(item: TongyongshujuData, index?: number) {
-    const {activeItem} = this;
+    const activeItem = this.activeItem();
     if (!activeItem) {
       return;
     }
-    this.activeCadList = null;
+    this.activeCadList.set(null);
     if (item.active && this.isDataHaveCad(item)) {
       let $where: string | null = item.cadshaixuanyaoqiu;
       $where = this.replaceCadStr($where, index);
@@ -168,15 +172,15 @@ export class TongyongshujuDialogComponent implements OnInit {
         return;
       }
       const cads = await this.http.queryMongodb<HoutaiCad>({collection: this.collection, where: {$where}}, {spinner: this.cadListLoader});
-      this.activeCadList = {
+      this.activeCadList.set({
         index,
         data: cads
-      };
+      });
     }
   }
 
   async clickTableListItem(i: number) {
-    for (const [j, item] of this.tableData.entries()) {
+    for (const [j, item] of this.tableData().entries()) {
       if (i === j) {
         item.active = true;
         await this.setActiveItem(i);
@@ -187,7 +191,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async editTableListItem(i: number) {
-    const item = this.tableData[i];
+    const item = this.tableData()[i];
     if (!item.xiaodaohang) {
       return;
     }
@@ -201,7 +205,7 @@ export class TongyongshujuDialogComponent implements OnInit {
     if (url) {
       window.open(url, "_blank");
       if (await this.message.newTabConfirm()) {
-        this.refresh(this.activeItem?.index, this.activeCadList?.index);
+        this.refresh(this.activeItem()?.index, this.activeCadList()?.index);
       }
     } else {
       this.message.error("没有对应的表");
@@ -209,7 +213,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   helpTableListItem(i: number) {
-    const item = this.tableData[i];
+    const item = this.tableData()[i];
     if (!item.bangzhuwendang) {
       return;
     }
@@ -217,10 +221,10 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async clickActiveItem(i: number, j: number) {
-    for (const [k, item] of (this.activeItem?.data || []).entries()) {
+    for (const [k, item] of (this.activeItem()?.data || []).entries()) {
       if (j === k) {
         item.active = true;
-        await this.setActiveCadList(this.tableData[i], j);
+        await this.setActiveCadList(this.tableData()[i], j);
       } else {
         item.active = false;
       }
@@ -232,8 +236,8 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async addCadFromList() {
-    const item = this.tableData[this.activeItem?.index ?? -1];
-    const item2 = this.activeItem?.data[this.activeCadList?.index ?? -1];
+    const item = this.tableData()[this.activeItem()?.index ?? -1];
+    const item2 = this.activeItem()?.data[this.activeCadList()?.index ?? -1];
     if (!item || !item2) {
       return;
     }
@@ -253,7 +257,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async copyCad(component: CadItemComponent<TongyongshujuCadItemInfo>) {
-    const item = this.activeCadList?.data[component.customInfo().index];
+    const item = this.activeCadList()?.data[component.customInfo().index];
     if (!item || !(await this.message.confirm("确定复制该CAD吗？"))) {
       return;
     }
@@ -264,7 +268,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   }
 
   async deleteCad(component: CadItemComponent<TongyongshujuCadItemInfo>) {
-    const item = this.activeCadList?.data[component.customInfo().index];
+    const item = this.activeCadList()?.data[component.customInfo().index];
     if (!item || !(await this.message.confirm("确定删除该CAD吗？"))) {
       return;
     }
@@ -276,10 +280,6 @@ export class TongyongshujuDialogComponent implements OnInit {
 
   editCad(item: HoutaiCad) {
     this.http.mongodbUpdate(this.collection, item, {}, {spinner: this.cadListLoader});
-  }
-
-  returnZero() {
-    return 0;
   }
 }
 

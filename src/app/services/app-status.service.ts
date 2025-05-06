@@ -78,7 +78,7 @@ export class AppStatusService {
   private spinner = inject(SpinnerService);
 
   project = "";
-  collection$ = new BehaviorSubject<CadCollection>("cad");
+  collection = signal<CadCollection>("cad");
   cadTotalLength = signal(0);
   cad = new CadViewer(setCadData(new CadData({name: "新建CAD", info: {isLocal: true}}), this.project, "cad", this.config.getConfig()));
   components = {
@@ -350,10 +350,10 @@ export class AppStatusService {
     this.tryMoveCad();
     const isLocal = opts.isLocal || cad.data.info.isLocal || false;
     const newConfig: Partial<AppConfig> = {};
-    if (collection && this.collection$.value !== collection) {
-      this.collection$.next(collection);
+    if (collection && this.collection() !== collection) {
+      this.collection.set(collection);
     } else {
-      collection = this.collection$.value;
+      collection = this.collection();
     }
     if (collection === "CADmuban") {
       this.config.setConfig({hideLineLength: true, hideLineGongshi: true}, {sync: false});
@@ -451,7 +451,7 @@ export class AppStatusService {
   async saveCad(loaderId?: string, query?: OpenCadOptions["query"]): Promise<CadData | null> {
     await timeout(100); // 等待input事件触发
     const {http, message, spinner} = this;
-    const collection = this.collection$.value;
+    const collection = this.collection();
 
     let data = this.cad.data;
     const {entities, minLineLength} = filterCadEntitiesToSave(data);
@@ -545,7 +545,7 @@ export class AppStatusService {
 
   generateLineTexts() {
     const data = this.cad.data;
-    if (this.collection$.value === "CADmuban") {
+    if (this.collection() === "CADmuban") {
       data.entities.line.forEach((e) => {
         e.children.mtext = e.children.mtext.filter((mt) => !mt.info.isLengthText && !mt.info.isGongshiText);
       });
@@ -607,9 +607,9 @@ export class AppStatusService {
     this.cadPoints.set([...points]);
   }
 
-  validate(force?: boolean) {
+  validate(force?: boolean, force2?: boolean) {
     const noInfo = !this.config.getConfig("validateLines");
-    const collection = this.collection$.value;
+    const collection = this.collection();
     const result = new ResultWithErrors(null);
     if (!isCadCollectionOfCad(collection)) {
       return result;
@@ -617,7 +617,7 @@ export class AppStatusService {
     if (!force && noInfo) {
       return result;
     }
-    result.learnFrom(validateCad(collection, this.cad.data, noInfo));
+    result.learnFrom(validateCad(collection, this.cad.data, {noInfo, force: force2}));
     this.cad.render();
     return result;
   }
@@ -637,7 +637,7 @@ export class AppStatusService {
 
   async refreshCadFenti() {
     const skipCollections: CadCollection[] = ["CADmuban", "kailiaocadmuban"];
-    if (skipCollections.includes(this.collection$.value)) {
+    if (skipCollections.includes(this.collection())) {
       return;
     }
     return await refreshCadFenti(this.cad);

@@ -19,7 +19,7 @@ export interface HttpOptions extends AxiosRequestConfig {
   silent?: boolean;
   encrypt?: DataEncrpty;
   offlineMode?: boolean;
-  spinner?: string | boolean | {id?: string; config: SpinnerConfig};
+  spinner?: string | boolean | {id?: string; config?: SpinnerConfig};
 }
 
 export class HttpServiceResponseError extends Error {

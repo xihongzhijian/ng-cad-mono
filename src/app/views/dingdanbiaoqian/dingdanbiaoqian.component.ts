@@ -1,5 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnInit, signal, viewChildren} from "@angular/core";
+import {Component, computed, effect, ElementRef, inject, OnInit, signal, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -46,8 +46,7 @@ import {DdbqConfig, DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig}
     MatDividerModule,
     NgTemplateOutlet,
     TypedTemplateDirective
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class DingdanbiaoqianComponent implements OnInit {
   private calc = inject(CalcService);
@@ -215,7 +214,9 @@ export class DingdanbiaoqianComponent implements OnInit {
             data.entities.line.forEach((e) => {
               if (e.length > maxLength) {
                 lines.push(e);
-                e.显示线长 = e.length.toString();
+                if (!e.显示线长) {
+                  e.显示线长 = e.length.toString();
+                }
               }
             });
             const shuangxiangCads = splitShuangxiangCad(data);
@@ -295,7 +296,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         text: {size: 36}
       }
     };
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     let tmpCadViewer: CadViewer | undefined;
     const getImg = async (data: CadData, previewParams: Partial<CadPreviewParams>) => {
       const previewParams2: CadPreviewParams = {

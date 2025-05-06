@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, inject, Inject, OnInit, signal, viewChild} from "@angular/core";
+import {Component, forwardRef, HostBinding, inject, Inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
@@ -13,8 +13,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-cad-editor-dialog",
   templateUrl: "./cad-editor-dialog.component.html",
   styleUrls: ["./cad-editor-dialog.component.scss"],
-  imports: [MatButtonModule, forwardRef(() => CadEditorComponent)],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule, forwardRef(() => CadEditorComponent)]
 })
 export class CadEditorDialogComponent extends Subscribed() implements OnInit {
   private message = inject(MessageService);

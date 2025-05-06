@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostListener, inject} from "@angular/core";
+import {Component, HostListener, inject} from "@angular/core";
 import {CadData} from "@lucilor/cad-viewer";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
@@ -8,8 +8,7 @@ import {CadStatusSplit} from "@services/cad-status";
 @Component({
   selector: "app-cad-split",
   templateUrl: "./cad-split.component.html",
-  styleUrls: ["./cad-split.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ["./cad-split.component.scss"]
 })
 export class CadSplitComponent {
   private config = inject(AppConfigService);

@@ -17,7 +17,6 @@ import {InputInfo, InputInfoPart} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {openCadDataAttrsDialog} from "../../dialogs/cad-data-attrs/cad-data-attrs.component";
 import {openCadMenfengConfigDialog} from "../cad-menfeng-config/cad-menfeng-config.component";
 
 export const cadFields = {
@@ -172,9 +171,11 @@ export const getCadInfoInputs = (
       case "算料单展开显示位置":
       case "属于门框门扇":
       case "企料包边类型":
-      case "指定板材分组":
       case "装配示意图自动拼接锁边铰边":
-        info = getter.selectSingle(cadFields[key], cadOptions[cadFields[key]].values.slice());
+        info = getter.selectSingle(cadFields[key], cadOptions[cadFields[key]].values);
+        break;
+      case "指定板材分组":
+        info = getter.string(cadFields[key], {options: cadOptions[cadFields[key]].values});
         break;
       case "选项":
       case "型号花件":
@@ -218,13 +219,7 @@ export const getCadInfoInputs = (
         info = getter2.numberWithUnit(key, "mm");
         break;
       case "自定义属性":
-        info = getDialogInput(key, async () => {
-          const data2 = getData(data);
-          const result2 = await openCadDataAttrsDialog(dialog, {data: data2.attributes});
-          if (result2) {
-            data2.attributes = result2;
-          }
-        });
+        info = getter.object("attributes", {label: "自定义属性"});
         break;
       case "正面线到见光线展开模板":
         info = getter2.string(key, {

@@ -6,4 +6,4 @@
     <mat-slide-toggle [(ngModel)]="noCad">no cad</mat-slide-toggle>
   }
 </div>
-<app-table #table class="flex-110" [info]="info" (rowButtonClick)="onRowButtonClick($event)"></app-table>
+<app-table #table class="flex-110" [info]="info()" (rowButtonClick)="onRowButtonClick($event)"></app-table>

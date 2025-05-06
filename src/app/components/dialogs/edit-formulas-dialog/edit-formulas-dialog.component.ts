@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Inject, viewChild} from "@angular/core";
+import {Component, HostBinding, Inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Formulas} from "@app/utils/calc";
@@ -9,8 +9,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-edit-formulas-dialog",
   templateUrl: "./edit-formulas-dialog.component.html",
   styleUrls: ["./edit-formulas-dialog.component.scss"],
-  imports: [FormulasEditorComponent, MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [FormulasEditorComponent, MatButtonModule]
 })
 export class EditFormulasDialogComponent {
   @HostBinding("class") class = "ng-page";

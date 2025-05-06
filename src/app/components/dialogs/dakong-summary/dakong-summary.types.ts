@@ -15,6 +15,8 @@ export interface DakongSummaryTableInfo {
 export interface DakongSummaryTableData extends DakongSummaryItemDetail {
   cadId: DakongSummaryItem["cadId"];
   cadName: DakongSummaryItem["cadName"];
+  cadImgId: DakongSummaryItem["cadImgId"];
+  cadQuery: DakongSummaryItem["cadQuery"];
   muban: DakongSummaryItem["muban"];
   peizhiName: DakongSummaryItem["peizhiName"];
   hidden: boolean;

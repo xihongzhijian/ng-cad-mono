@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, HostListener, inject, signal} from "@angular/core";
+import {Component, computed, HostBinding, HostListener, inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -34,8 +34,7 @@ import {openCadLineForm} from "../cad-line/cad-line.utils";
   selector: "app-toolbar",
   templateUrl: "./toolbar.component.html",
   styleUrls: ["./toolbar.component.scss"],
-  imports: [AboutComponent, MatButtonModule, MatDividerModule, MatMenuModule, RouterModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [AboutComponent, MatButtonModule, MatDividerModule, MatMenuModule, RouterModule]
 })
 export class ToolbarComponent {
   private config = inject(AppConfigService);
@@ -221,10 +220,8 @@ export class ToolbarComponent {
     const value = !this.config.getConfig("validateLines");
     this.config.setConfig("validateLines", value);
     if (value) {
-      const errMsg = this.status.validate()?.errors || [];
-      if (errMsg.length > 0) {
-        this.message.alert(errMsg.join("<br />"));
-      }
+      const result = this.status.validate(false, true);
+      result.alertError(this.message);
     }
   }
 
@@ -371,7 +368,7 @@ export class ToolbarComponent {
     if (!line) {
       return;
     }
-    await openCadLineForm(this.status.collection$.value, this.status, this.message, this.status.cad, line, null);
+    await openCadLineForm(this.status.collection(), this.status, this.message, this.status.cad, line, null);
   }
 
   async editBbzhmkgz() {
@@ -401,7 +398,7 @@ export class ToolbarComponent {
   }
 
   async copyCad() {
-    const collection = this.status.collection$.getValue();
+    const collection = this.status.collection();
     const loaderId = this.spinner.defaultLoaderId;
     const items = await this.http.mongodbCopy<HoutaiCad>(collection, [this.status.cad.data.id], {}, {spinner: loaderId});
     if (items?.[0]) {
@@ -416,7 +413,7 @@ export class ToolbarComponent {
   async removeCad() {
     const data = this.data();
     if (await this.message.confirm(`确定要删除吗？`)) {
-      const collection = this.status.collection$.getValue();
+      const collection = this.status.collection();
       const ids = [data.id];
       const deletedIds = await this.http.removeCads(collection, ids);
       if (deletedIds) {
@@ -466,13 +463,13 @@ export class ToolbarComponent {
   }
 
   openImportPage() {
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     const cad = this.data();
     const yaoqiu = this.status.getCadYaoqiu(cad.type);
     openImportPage(this.status, {collection, yaoqiu});
   }
   openExportPage() {
-    const collection = this.status.collection$.value;
+    const collection = this.status.collection();
     const cad = this.data();
     const ids = [cad.id];
     openExportPage(this.status, {collection, ids, direct: true});

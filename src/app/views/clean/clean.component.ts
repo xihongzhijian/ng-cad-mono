@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from "@angular/core";
+import {Component, computed, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
 import {ObjectOf, Timer} from "@lucilor/utils";
@@ -15,36 +15,47 @@ import {InputComponent} from "../../modules/input/components/input.component";
   imports: [InputComponent, MatButtonModule, NgScrollbar]
 })
 export class CleanComponent implements OnInit {
-  msgs: Msg[] = [];
-  maxMsgNum = 100;
-  deleteLimit = 50;
-  deleteLimitInfo: InputInfo = {type: "number", label: "每次删除数量", model: {key: "deleteLimit", data: this}};
+  private http = inject(CadDataService);
+
   taskStartTime: number | null = null;
-  @ViewChild(NgScrollbar) scrollbar?: NgScrollbar;
+  scrollbar = viewChild(NgScrollbar);
 
   private _scrollToBottomTimer = -1;
-
-  constructor(private http: CadDataService) {}
 
   ngOnInit() {
     setGlobal("clean", this);
   }
 
+  deleteLimit = signal(50);
+  deleteLimitInfo = computed(() => {
+    const info: InputInfo = {
+      type: "number",
+      label: "每次删除数量",
+      value: this.deleteLimit(),
+      onChange: (val) => this.deleteLimit.set(val)
+    };
+    return info;
+  });
+
+  msgs = signal<Msg[]>([]);
+  maxMsgNum = 100;
   pushMsg(type: MsgType, content: string, duration?: number, scrollToBottom = true) {
     if (duration) {
       content = content + ` (${Timer.getDurationString(duration, 2)})`;
     }
-    const length = this.msgs.push({type, content});
-    while (this.msgs.length > this.maxMsgNum) {
-      this.msgs.shift();
+    let msgs = this.msgs().slice();
+    const length = msgs.push({type, content});
+    while (length > this.maxMsgNum) {
+      msgs = msgs.slice(length - this.maxMsgNum);
     }
+    this.msgs.set(msgs);
     if (scrollToBottom) {
       window.clearTimeout(this._scrollToBottomTimer);
       this._scrollToBottomTimer = window.setTimeout(() => {
-        this.scrollbar?.scrollTo({bottom: 0});
+        this.scrollbar()?.scrollTo({bottom: 0});
       }, 500);
     }
-    return length - 1;
+    return msgs.length - 1;
   }
 
   pushResponseMsg<T>(response: CustomResponse<T> | null, defaultSuccess: string, defaultError: string) {
@@ -64,9 +75,9 @@ export class CleanComponent implements OnInit {
   }
 
   pushMsgDivider() {
-    const lastMsg = this.msgs.at(-1);
+    const lastMsg = this.msgs().at(-1);
     if (lastMsg && lastMsg.type !== "divider") {
-      return this.msgs.push({type: "divider", content: ""});
+      return this.msgs.update((v) => [...v, {type: "divider", content: ""}]);
     }
     return null;
   }
@@ -121,7 +132,7 @@ export class CleanComponent implements OnInit {
       let progressIndex = -1;
       for (const [i, project] of projects.entries()) {
         if (progressIndex >= 0) {
-          this.msgs.splice(progressIndex, 1);
+          this.msgs.update((v) => v.filter((_, j) => j !== progressIndex));
         }
         progressIndex = this.pushMsgProgress(`项目${project}获取资源文件`, i + 1, total);
         const response2 = await this.http.post<string[]>("clean/clean/runCleanStep2", {project}, {silent: true});
@@ -154,7 +165,7 @@ export class CleanComponent implements OnInit {
     this.pushMsg("info", "获取要删除的文件");
     let count = 0;
     let initial = true;
-    if (this.deleteLimit <= 0) {
+    if (this.deleteLimit() <= 0) {
       this.end();
       return;
     }
@@ -209,7 +220,7 @@ export class CleanComponent implements OnInit {
   }
 
   clearMsgs() {
-    this.msgs.length = 0;
+    this.msgs.set([]);
   }
 }
 

@@ -8,12 +8,7 @@ export class CalcSelfReferenceError extends Error {
 }
 
 export class CalcCircularReferenceError extends Error {
-  constructor(
-    public varName1: string,
-    public varValue1: string,
-    public varName2: string,
-    public varValue2: string
-  ) {
+  constructor(public path: {key: string; value: string}[]) {
     super("算料公式，互相引用死循环");
   }
 }

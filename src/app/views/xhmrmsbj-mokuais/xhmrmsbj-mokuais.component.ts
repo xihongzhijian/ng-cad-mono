@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, computed, ElementRef, HostBinding, inject, viewChild} from "@angular/core";
+import {computed, ElementRef, HostBinding, inject, viewChild} from "@angular/core";
 import {Component, Inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
@@ -26,8 +26,7 @@ import {FormulasComponent} from "../../components/formulas/formulas.component";
   selector: "app-xhmrmsbj-mokuais",
   templateUrl: "./xhmrmsbj-mokuais.component.html",
   styleUrls: ["./xhmrmsbj-mokuais.component.scss"],
-  imports: [NgScrollbar, FormulasComponent, MatDividerModule, MatDialogActions, MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [NgScrollbar, FormulasComponent, MatDividerModule, MatDialogActions, MatButtonModule]
 })
 export class XhmrmsbjMokuaisComponent {
   private calc = inject(CalcService);

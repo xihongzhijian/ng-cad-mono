@@ -6,7 +6,7 @@
 <ng-scrollbar>
   <div class="section">
     <span class="section-title">主CAD</span>
-    @if (main) {
+    @if (main(); as main) {
       <div
         class="cad-image"
         [appContextMenuTrigger]="contextMenu"
@@ -18,7 +18,7 @@
           {{ main.data.name }}
         </span>
         <div class="content">
-          <app-cad-image [id]="main.data.id" [collection]="collection" [data]="main.data"></app-cad-image>
+          <app-cad-image [id]="main.data.id" [collection]="collection()" [data]="main.data"></app-cad-image>
         </div>
       </div>
       @if (main.data.info.fromCad) {
@@ -34,7 +34,7 @@
     }
   </div>
 
-  @if (components.length > 0) {
+  @if (components().length > 0) {
     <div class="section">
       <mat-divider></mat-divider>
       <span class="section-title">装配CAD</span>
@@ -43,18 +43,18 @@
         <button mat-flat-button (click)="deleteSelectedComponents()">删除已选</button>
       </div>
       <div class="checkbox-group add-empty-msg">
-        @for (item of components; track i; let i = $index) {
+        @for (data of components(); track i; let i = $index) {
           <div class="cad-image">
             <mat-checkbox
               class="example-margin"
-              [checked]="item.checked"
+              [checked]="componentsSelected().includes(data)"
               (change)="selectComponent(i)"
               [disabled]="!componentsSelectable()"
             >
-              {{ item.data.name }}
+              {{ data.name }}
             </mat-checkbox>
             <div class="content">
-              <app-cad-image [id]="item.data.id" [data]="item.data" (click)="selectComponent(i)"></app-cad-image>
+              <app-cad-image [id]="data.id" [data]="data" (click)="selectComponent(i)"></app-cad-image>
             </div>
           </div>
         }
@@ -84,4 +84,3 @@
   <mat-divider></mat-divider>
   <button mat-menu-item (click)="replaceData()">替换数据</button>
 </app-context-menu>
-<input #dxfInut type="file" accept=".dxf" hidden (change)="onDxfInutChange($event)" />

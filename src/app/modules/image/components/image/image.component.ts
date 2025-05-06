@@ -1,7 +1,6 @@
 import {animate, style, transition, trigger} from "@angular/animations";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   computed,
@@ -33,8 +32,7 @@ const imgLoading = "assets/images/loading.gif";
       transition(":leave", [style({transform: "scale(1)", opacity: 1}), animate("0.3s", style({transform: "scale(0)", opacity: 0}))])
     ])
   ],
-  imports: [MatButtonModule, MatIconModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule, MatIconModule]
 })
 export class ImageComponent {
   private cd = inject(ChangeDetectorRef);

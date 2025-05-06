@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit} from "@angular/core";
+import {Component, inject, OnDestroy, OnInit} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {setGlobal, timer} from "@app/app.common";
 import {Formulas} from "@app/utils/calc";
@@ -44,8 +44,7 @@ import {resetInputs} from "./suanliao.utils";
 @Component({
   selector: "app-suanliao",
   templateUrl: "./suanliao.component.html",
-  styleUrls: ["./suanliao.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ["./suanliao.component.scss"]
 })
 export class SuanliaoComponent implements OnInit, OnDestroy {
   private calc = inject(CalcService);

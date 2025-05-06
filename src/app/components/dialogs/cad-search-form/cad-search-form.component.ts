@@ -1,5 +1,5 @@
 import {AsyncPipe} from "@angular/common";
-import {Component, EventEmitter, OnInit} from "@angular/core";
+import {ChangeDetectorRef, Component, EventEmitter, inject, OnInit} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {MatButtonModule} from "@angular/material/button";
@@ -24,30 +24,30 @@ import {getOpenDialogFunc} from "../dialog.common";
   templateUrl: "./cad-search-form.component.html",
   styleUrls: ["./cad-search-form.component.scss"],
   imports: [
-    NgScrollbar,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatAutocompleteModule,
+    AsyncPipe,
     FormsModule,
-    MatOptionModule,
-    MatIconModule,
-    MatDialogActions,
+    MatAutocompleteModule,
     MatButtonModule,
-    AsyncPipe
+    MatCardModule,
+    MatDialogActions,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatOptionModule,
+    NgScrollbar
   ]
 })
 export class CadSearchFormComponent implements OnInit {
+  private cd = inject(ChangeDetectorRef);
+  private message = inject(MessageService);
+  private http = inject(CadDataService);
+
   data: CadSearchData = [];
   form: ObjectOf<string> = {};
   additional: CadSearchData[0] = {title: "自由选择", items: []};
   options$: ObjectOf<{change$: EventEmitter<string>; options$: Observable<string[]>}> = {};
 
-  constructor(
-    public dialogRef: MatDialogRef<CadSearchFormComponent, CadData["options"]>,
-    private http: CadDataService,
-    private message: MessageService
-  ) {}
+  constructor(public dialogRef: MatDialogRef<CadSearchFormComponent, CadData["options"]>) {}
 
   async ngOnInit() {
     await timeout(0);
@@ -86,8 +86,16 @@ export class CadSearchFormComponent implements OnInit {
       if (item) {
         this.additional.items.push(item);
         this.form[item.label] = "";
+        this.options$[item.label] = {
+          change$: new EventEmitter<string>(),
+          options$: new Observable((observer) => {
+            observer.next(item.options.map((v) => v.label));
+            observer.complete();
+          })
+        };
       }
     }
+    this.cd.markForCheck();
   }
 
   submit() {
@@ -112,6 +120,7 @@ export class CadSearchFormComponent implements OnInit {
         this.options$[label].change$.emit("");
       });
     });
+    this.cd.markForCheck();
   }
 }
 

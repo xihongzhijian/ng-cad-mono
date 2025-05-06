@@ -79,6 +79,7 @@ export interface XhmrmsbjSbjbCadInfo extends Omit<XhmrmsbjSbjbItemSbjbCad, "cad"
   cadForm: CadItemForm<XhmrmsbjSbjbItemSbjbCadInfo>;
   item2?: XhmrmsbjSbjbItemSbjbItem;
   qiliao?: Qiliao | null;
+  isFetched?: boolean;
 }
 
 export interface XhmrmsbjSbjbCadInfoGrouped extends XhmrmsbjSbjbCadInfo {

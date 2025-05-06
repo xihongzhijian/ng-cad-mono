@@ -1,16 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  forwardRef,
-  HostBinding,
-  inject,
-  Inject,
-  signal,
-  viewChild
-} from "@angular/core";
+import {AfterViewInit, Component, computed, effect, forwardRef, HostBinding, inject, Inject, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
@@ -50,8 +38,7 @@ import {CadOptionsInput, CadOptionsOutput} from "./cad-options.types";
     MatPaginatorModule,
     NgScrollbar,
     SpinnerComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class CadOptionsComponent implements AfterViewInit {
   private http = inject(CadDataService);
@@ -220,7 +207,9 @@ export class CadOptionsComponent implements AfterViewInit {
     }
 
     for (const item of checkedItems) {
-      result.options.push({vid: item.vid, mingzi: item.name});
+      if (!result.options.some((v) => v.vid === item.vid)) {
+        result.options.push({vid: item.vid, mingzi: item.name});
+      }
       if (this.data.optionOptions) {
         if (!result.optionOptions) {
           result.optionOptions = {};
@@ -336,7 +325,6 @@ export class CadOptionsComponent implements AfterViewInit {
       autoFocus: true,
       value: this.searchValue(),
       onInput: debounce(onChange, 500),
-      onChange,
       clearable: true,
       style: {flex: "0 1 300px"}
     };
@@ -457,10 +445,11 @@ export class CadOptionsComponent implements AfterViewInit {
     if (checkedItems.some((v) => v.vid === item.vid)) {
       checkedItems = differenceWith(checkedItems, [item], (a, b) => a.vid === b.vid);
     } else {
-      if (!multi) {
-        checkedItems = differenceWith(checkedItems, items, (a, b) => a.vid === b.vid);
+      if (multi) {
+        checkedItems = unionWith(checkedItems, [item], (a, b) => a.vid === b.vid);
+      } else {
+        checkedItems = [item];
       }
-      checkedItems = unionWith(checkedItems, [item], (a, b) => a.vid === b.vid);
     }
     this.checkedItems.set(checkedItems);
   }

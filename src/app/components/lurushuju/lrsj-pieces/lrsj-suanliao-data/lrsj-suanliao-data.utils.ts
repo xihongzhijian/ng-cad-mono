@@ -282,9 +282,9 @@ export const getMenjiaoOptionInputInfo = (
   data: any,
   key: string,
   options: OptionsAll2,
-  onOptionsChange: (options: GetOptionsResultItem[]) => void,
-  canSearch?: boolean
+  onOptionsChange: (options: GetOptionsResultItem[]) => void
 ) => {
+  const canSearch = ["锁边", "铰边"].includes(key);
   return getOptionsAll2InputInfo(
     options,
     key,

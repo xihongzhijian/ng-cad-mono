@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, input, model, output, signal} from "@angular/core";
+import {Component, computed, HostBinding, inject, input, model, output, signal} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatTabsModule} from "@angular/material/tabs";
 import {getCopyName} from "@app/utils/get-value";
@@ -25,8 +25,7 @@ import {emptyXuanxiangItem, getMenjiaoTable, getShuruItem, getShuruTable, getXua
   selector: "app-lrsj-zuofa",
   imports: [MatTabsModule, TableComponent],
   templateUrl: "./lrsj-zuofa.component.html",
-  styleUrl: "./lrsj-zuofa.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./lrsj-zuofa.component.scss"
 })
 export class LrsjZuofaComponent {
   private dialog = inject(MatDialog);

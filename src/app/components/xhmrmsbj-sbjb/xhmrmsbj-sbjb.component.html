@@ -48,7 +48,8 @@
                     [yaoqiu]="cadYaoqius()[cad.type]"
                     [titlePrefix]="info.title + '：'"
                     [cadForm]="info.cadForm"
-                    [isOnline]="{isFetched: false}"
+                    [isOnline]="{isFetched: info.isFetched}"
+                    (afterFetchCad)="afterFetchCad(cad)"
                   ></app-cad-item>
                 } @else {
                   <div class="item link" (click)="selectSbjbItemSbjbCad(info.originalIndex)">
@@ -96,17 +97,18 @@
 <ng-template #fentiCads [appTypedTemplate]="fentiCadTemplateData" let-data>
   <div class="toolbar" [class.vertical]="data.vertical" style="width: 100%">
     @for (title of fentiCadTemplateTitles; track $index) {
-      @if (getFentiCadTemplateCad({data, title}); as cad) {
+      @if (getFentiCadTemplateInfo({data, title}); as info) {
         <app-cad-item
           [collection]="cadCollection"
-          [cad]="cad"
+          [cad]="info.cad"
           [buttons]="[]"
           [buttons2]="fentiCadButtons2()"
           [customInfo]="{data, title}"
           [yaoqiu]="fentiCadYaoqiu()"
           [titlePrefix]="title + '：'"
           [cadForm]="{noDefaultTexts: !showCadFormDefaultTexts()}"
-          [isOnline]="{isFetched: false}"
+          [isOnline]="{isFetched: info.isFetched}"
+          (afterFetchCad)="afterFetchCad(info.cad)"
         ></app-cad-item>
       } @else {
         <div class="item link" (click)="chooseFentiCad({data, title})">

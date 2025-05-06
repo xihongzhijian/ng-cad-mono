@@ -1,5 +1,6 @@
 import {animate, state, style, transition, trigger} from "@angular/animations";
-import {Component, OnInit, ViewChild} from "@angular/core";
+import {Component, effect, inject, signal, untracked, viewChild} from "@angular/core";
+import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
@@ -10,7 +11,6 @@ import {timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {TableInsertParams} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
-import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {convertTableRenderData, getInputInfosFromTableColumns} from "@modules/table/components/table/table.utils";
@@ -28,46 +28,37 @@ import {DingdanBomCacheData, DingdanBomData, DingdanBomDataResponseData} from ".
       transition("expanded <=> collapsed", animate("225ms cubic-bezier(0.4, 0.0, 0.2, 1)"))
     ])
   ],
-  imports: [MatButtonModule, MatSlideToggleModule, FormsModule, TableComponent]
+  imports: [FormsModule, MatButtonModule, MatSlideToggleModule, TableComponent]
 })
-export class BomGongyiluxianComponent implements OnInit {
+export class BomGongyiluxianComponent {
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   table = "b_dingdanbom";
   dataRaw: DingdanBomDataResponseData | null = null;
-  info: TableRenderInfo<DingdanBomData> = {
-    data: [],
-    columns: [{type: "string", field: "mingzi", name: "名称"}],
-    toolbarButtons: {editModeToggle: true},
-    isTree: true,
-    onlineMode: {tableName: this.table, refresh: () => this.refresh(true)}
-  };
+  info = signal<TableRenderInfo<DingdanBomData>>({data: [], columns: []});
   private _cacheKey = "bomGongyiluxianCache";
   environment = environment;
-  private _noCad = session.load("bomGongyiluxianNoCad") ?? false;
-  get noCad() {
-    return this._noCad;
-  }
-  set noCad(value) {
-    this._noCad = value;
-    session.save("bomGongyiluxianNoCad", value);
-  }
 
-  @ViewChild("table") tableComponent?: TableComponent<DingdanBomData>;
+  private _noCadKey = "bomGongyiluxianNoCad";
+  noCad = signal(session.load(this._noCadKey) ?? false);
+  noCadEff = effect(() => {
+    session.save(this._noCadKey, this.noCad());
+  });
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private message: MessageService,
-    private http: CadDataService,
-    private spinner: SpinnerService
-  ) {
+  tableComponent = viewChild(TableComponent<DingdanBomData>);
+
+  constructor() {
     setGlobal("bomGongyiluxian", this);
   }
 
-  ngOnInit() {
-    this.route.queryParams.subscribe(() => {
-      this.refresh();
-    });
-  }
+  queryParams = toSignal(this.route.queryParams);
+  queryParamsEff = effect(() => {
+    this.queryParams();
+    untracked(() => this.refresh());
+  });
 
   async refresh(clearCache = false) {
     let {code} = this.route.snapshot.queryParams;
@@ -95,21 +86,28 @@ export class BomGongyiluxianComponent implements OnInit {
     if (!dataRaw) {
       return;
     }
-    this.info.data = dataRaw.data;
-    this.info.title = dataRaw.title;
+    const info: TableRenderInfo<DingdanBomData> = {
+      data: [],
+      columns: [{type: "string", field: "mingzi", name: "名称"}],
+      toolbarButtons: {editModeToggle: true},
+      isTree: true,
+      onlineMode: {tableName: this.table, refresh: () => this.refresh(true)}
+    };
+    info.data = dataRaw.data;
+    info.title = dataRaw.title;
     if (dataRaw.tableData) {
-      convertTableRenderData(dataRaw.tableData, this.info);
-      for (const column of this.info.columns) {
+      convertTableRenderData(dataRaw.tableData, info);
+      for (const column of info.columns) {
         if (["suanliaocad"].includes(column.field)) {
           column.type = "cad";
-          column.hidden = this.noCad;
+          column.hidden = this.noCad();
           if (column.type === "cad") {
             column.filterFn = (event) => !!event.item.shicadjiegouliao;
           }
         }
       }
       // this.info.columns[0].sticky = true;
-      this.info.columns.splice(1, 0, {
+      info.columns.splice(1, 0, {
         type: "button",
         field: "children",
         name: "操作",
@@ -117,8 +115,9 @@ export class BomGongyiluxianComponent implements OnInit {
         width: "80px"
       });
     }
+    this.info.set(info);
     await timeout(0);
-    const treeControl = this.tableComponent?.treeControl;
+    const treeControl = this.tableComponent()?.treeControl;
     if (treeControl) {
       treeControl.expand(treeControl.dataNodes[0]);
     }
@@ -149,7 +148,8 @@ export class BomGongyiluxianComponent implements OnInit {
 
   async addItem(fromItem: DingdanBomData) {
     const keys: (keyof DingdanBomData)[] = ["dingdanbianhao", "fuji", "xinghaobianma"];
-    const columns = this.info.columns.filter((v) => v.required && !keys.includes(v.field));
+    const info = this.info();
+    const columns = info.columns.filter((v) => v.required && !keys.includes(v.field));
     const values = await this.message.form(getInputInfosFromTableColumns(columns));
     const item = this.dataRaw?.data[0];
     if (values) {
@@ -179,22 +179,26 @@ export class BomGongyiluxianComponent implements OnInit {
       return [];
     }
     const columnNames = this.dataRaw.printColumns;
-    const columnsBefore = cloneDeep(this.info.columns);
-    this.info.columns = this.info.columns.map((col) => {
-      col.hidden = !columnNames.includes(col.name || col.field);
-      return col;
-    });
+    const info = this.info();
+    const columnsBefore = cloneDeep(info.columns);
+    this.info.update((v) => ({
+      ...v,
+      columns: info.columns.map((col) => {
+        col.hidden = !columnNames.includes(col.name || col.field);
+        return col;
+      })
+    }));
     return columnsBefore;
   }
 
   private _restoreColumns(columnsBefore: ReturnType<BomGongyiluxianComponent["_setColumns"]>) {
-    this.info.columns = columnsBefore;
+    this.info.update((v) => ({...v, columns: columnsBefore}));
   }
 
   async print() {
     const columnsBefore = this._setColumns();
     await timeout(0);
-    this.tableComponent?.treeControl.expandAll();
+    this.tableComponent()?.treeControl.expandAll();
     await timeout(0);
     window.print();
     this._restoreColumns(columnsBefore);
@@ -202,7 +206,7 @@ export class BomGongyiluxianComponent implements OnInit {
 
   async exportExcel() {
     const columnsBefore = this._setColumns();
-    this.tableComponent?.exportExcel();
+    this.tableComponent()?.exportExcel();
     this._restoreColumns(columnsBefore);
   }
 }

@@ -1,17 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostBinding,
-  inject,
-  input,
-  model,
-  output,
-  signal,
-  viewChild
-} from "@angular/core";
+import {booleanAttribute, Component, computed, effect, HostBinding, inject, input, model, output, signal, viewChild} from "@angular/core";
 import {ValidatorFn, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute} from "@angular/router";
@@ -38,8 +25,7 @@ import {getEmpty模块大小配置, MsbjInfo} from "./msbj.utils";
   selector: "app-msbj",
   templateUrl: "./msbj.component.html",
   styleUrls: ["./msbj.component.scss"],
-  imports: [ImageComponent, InputComponent, MatButtonModule, MsbjRectsComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [ImageComponent, InputComponent, MatButtonModule, MsbjRectsComponent]
 })
 export class MsbjComponent {
   private bjmkStatus = inject(BjmkStatusService);

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Inject, viewChild} from "@angular/core";
+import {Component, Inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {KlkwpzSource} from "@components/klkwpz/klkwpz";
@@ -9,8 +9,7 @@ import {getOpenDialogFunc} from "../dialog.common";
   selector: "app-klkwpz-dialog",
   templateUrl: "./klkwpz-dialog.component.html",
   styleUrls: ["./klkwpz-dialog.component.scss"],
-  imports: [KlkwpzComponent, MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [KlkwpzComponent, MatButtonModule]
 })
 export class KlkwpzDialogComponent {
   klkwpzComponent = viewChild(KlkwpzComponent);

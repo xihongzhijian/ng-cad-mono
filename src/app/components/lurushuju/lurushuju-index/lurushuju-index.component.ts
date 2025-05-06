@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, viewChild} from "@angular/core";
+import {Component, computed, HostBinding, inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
@@ -44,8 +44,7 @@ import {ToolbarBtn} from "./lurushuju-index.types";
     NgScrollbarModule
   ],
   templateUrl: "./lurushuju-index.component.html",
-  styleUrl: "./lurushuju-index.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./lurushuju-index.component.scss"
 })
 export class LurushujuIndexComponent {
   private dialog = inject(MatDialog);

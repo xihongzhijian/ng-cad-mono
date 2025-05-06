@@ -1,5 +1,5 @@
 import {KeyValuePipe} from "@angular/common";
-import {ChangeDetectionStrategy, Component, computed, forwardRef, HostBinding, inject, Inject} from "@angular/core";
+import {Component, computed, forwardRef, HostBinding, inject, Inject} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -19,8 +19,7 @@ export interface BbzhmkgzComponentData {
   selector: "app-bbzhmkgz",
   templateUrl: "./bbzhmkgz.component.html",
   styleUrls: ["./bbzhmkgz.component.scss"],
-  imports: [FormsModule, forwardRef(() => InputComponent), KeyValuePipe, MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [FormsModule, forwardRef(() => InputComponent), KeyValuePipe, MatButtonModule]
 })
 export class BbzhmkgzComponent {
   private message = inject(MessageService);

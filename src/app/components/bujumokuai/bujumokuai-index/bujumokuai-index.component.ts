@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, HostBinding, inject, OnInit, signal} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatTabsModule} from "@angular/material/tabs";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -11,8 +11,7 @@ import {bjmkPageNames, BjmkPages} from "./bujumokuai-index.types";
   selector: "app-bujumokuai-index",
   imports: [BujuComponent, MatButtonModule, MatTabsModule, MokuaiCadsComponent, MokuaikuComponent],
   templateUrl: "./bujumokuai-index.component.html",
-  styleUrl: "./bujumokuai-index.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./bujumokuai-index.component.scss"
 })
 export class BujumokuaiIndexComponent implements OnInit {
   private route = inject(ActivatedRoute);

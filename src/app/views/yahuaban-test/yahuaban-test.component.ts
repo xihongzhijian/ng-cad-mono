@@ -1,16 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  HostBinding,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal,
-  viewChild
-} from "@angular/core";
+import {Component, computed, effect, ElementRef, HostBinding, inject, OnDestroy, OnInit, signal, viewChild} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -41,8 +29,7 @@ import {calcYahuaban, CalcYahuabanConfig, CalcYahuabanResult, YahuabanItem} from
   selector: "app-yahuaban-test",
   imports: [FormsModule, FormulasEditorComponent, InputComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, TableComponent],
   templateUrl: "./yahuaban-test.component.html",
-  styleUrl: "./yahuaban-test.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./yahuaban-test.component.scss"
 })
 export class YahuabanTestComponent implements OnInit, OnDestroy {
   calc = inject(CalcService);

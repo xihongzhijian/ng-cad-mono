@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject} from "@angular/core";
+import {Component, computed, inject} from "@angular/core";
 import {trblItems} from "@app/utils/trbl";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoColor, InputInfoNumber, InputInfoSelect} from "@modules/input/components/input.types";
@@ -13,8 +13,7 @@ import {PageStatusService} from "../../services/page-status.service";
   selector: "app-page-config",
   imports: [InputComponent, NgScrollbarModule],
   templateUrl: "./page-config.component.html",
-  styleUrl: "./page-config.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./page-config.component.scss"
 })
 export class PageConfigComponent {
   private pageStatus = inject(PageStatusService);

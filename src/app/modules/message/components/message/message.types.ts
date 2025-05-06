@@ -95,7 +95,9 @@ export type MessageData =
   | IFrameMessageData
   | JsonMessageData;
 
-export interface MessageDataMap {
+export const messageDataKeys = ["alert", "confirm", "form", "book", "editor", "button", "iframe", "json"] as const;
+export type MessageDataKeys = (typeof messageDataKeys)[number];
+export interface MessageDataMap extends Record<MessageDataKeys, MessageData> {
   alert: AlertMessageData;
   confirm: ConfirmMessageData;
   form: FormMessageData;

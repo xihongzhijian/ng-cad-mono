@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, Inject, inject, signal} from "@angular/core";
+import {Component, computed, HostBinding, Inject, inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -22,8 +22,7 @@ import {SelectZuofaInput, SelectZuofaItem, SelectZuofaItemData, SelectZuofaOutpu
   selector: "app-select-zuofa-dialog",
   imports: [ImageComponent, InputComponent, MatButtonModule, MatCheckboxModule, MatTooltipModule, NgScrollbarModule],
   templateUrl: "./select-zuofa-dialog.component.html",
-  styleUrl: "./select-zuofa-dialog.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./select-zuofa-dialog.component.scss"
 })
 export class SelectZuofaDialogComponent {
   private http = inject(CadDataService);

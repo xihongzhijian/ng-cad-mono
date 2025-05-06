@@ -40,18 +40,24 @@ export class CalcService {
 
   private async _alert(error: any, errorMsg?: CalcCustomErrorMsg) {
     let err: string = "";
-    if (error instanceof CalcSelfReferenceError) {
-      err = error.message + "<br><br>";
-      err += `${error.varName}<span class="error"> => </span>${error.varValue}`;
-    } else if (error instanceof CalcCircularReferenceError) {
-      err = error.message + "<br><br>";
-      err += `${error.varName1}<span class="error"> => </span>${error.varValue1}<br>`;
-      err += `${error.varName2}<span class="error"> => </span>${error.varValue2}`;
+    if (error instanceof Error) {
+      err = `<span class="title small bold">${error.message}</span><br><br>`;
+      if (error instanceof CalcSelfReferenceError) {
+        err += `${error.varName}<span class="accent"> = </span>${error.varValue}`;
+      } else if (error instanceof CalcCircularReferenceError) {
+        for (const item of error.path) {
+          err += `${item.key}<span class="accent"> = </span>${item.value}<br>`;
+        }
+      }
     } else {
       console.error(error);
     }
     if (errorMsg) {
-      await this.message.error(err);
+      const {code = "", title = "", prefix = "", suffix = "", title2 = "错误！请检查："} = errorMsg;
+      let err2 = `${prefix}<div class="title small bold">${title}${title2}${code}</div><br>`;
+      err2 += err;
+      err2 += suffix;
+      await this.message.error(err2);
     }
     return err;
   }

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, HostBinding, inject, OnInit, signal, viewChildren} from "@angular/core";
+import {Component, computed, HostBinding, inject, OnInit, signal, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
@@ -22,8 +22,7 @@ import {CollecionQuery, LrsjQuery, RefreshCadImgsQueryConfig, RefreshCadImgsRefr
   selector: "app-refresh-cad-imgs",
   imports: [FormsModule, InputComponent, MatButtonModule, MatDividerModule, ProgressBarComponent],
   templateUrl: "./refresh-cad-imgs.component.html",
-  styleUrl: "./refresh-cad-imgs.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./refresh-cad-imgs.component.scss"
 })
 export class RefreshCadImgsComponent implements OnInit {
   http = inject(CadDataService);

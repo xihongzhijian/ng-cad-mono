@@ -2,7 +2,6 @@ import {A11yModule} from "@angular/cdk/a11y";
 import {NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -57,8 +56,7 @@ import {validateForm} from "./message.utils";
     NgScrollbarModule,
     NgTemplateOutlet,
     QuillEditorComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   private elRef = inject(ElementRef<HTMLElement>);

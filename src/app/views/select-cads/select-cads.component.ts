@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, OnInit} from "@angular/core";
+import {Component, inject, OnInit} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {session} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -9,8 +9,7 @@ import {environment} from "src/environments/environment";
 @Component({
   selector: "app-select-cads",
   templateUrl: "./select-cads.component.html",
-  styleUrls: ["./select-cads.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ["./select-cads.component.scss"]
 })
 export class SelectCadsComponent implements OnInit {
   private dialog = inject(MatDialog);

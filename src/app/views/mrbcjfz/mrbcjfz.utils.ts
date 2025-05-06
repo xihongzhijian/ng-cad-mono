@@ -2,8 +2,17 @@ import {TableDataWrapper} from "@app/utils/table-data/table-data-base";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoSelect, InputInfoString} from "@modules/input/components/input.types";
+import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {difference, isEqual} from "lodash";
-import {MrbcjfzHuajian, MrbcjfzInfo, MrbcjfzInfoShowItem, mrbcjfzInfoShowItems, mrbcjfzMsxzItems, MrbcjfzXinghao} from "./mrbcjfz.types";
+import {
+  MrbcjfzHuajian,
+  MrbcjfzInfo,
+  MrbcjfzInfoShowItem,
+  mrbcjfzInfoShowItems,
+  MrbcjfzMsxzItem,
+  mrbcjfzMsxzItems,
+  MrbcjfzXinghao
+} from "./mrbcjfz.types";
 
 export class MrbcjfzXinghaoInfo extends TableDataWrapper<MrbcjfzXinghao> {
   默认板材: ObjectOf<MrbcjfzInfo>;
@@ -130,25 +139,15 @@ export class MrbcjfzXinghaoInfo extends TableDataWrapper<MrbcjfzXinghao> {
           }
         }
       };
+      const getter = new InputInfoWithDataGetter(value, {style: {flex: "1 1 0"}});
       this.inputInfos[key] = [
         [this.get板材分组别名InputInfo(key)],
+        [getter.string("算料单分组标题附加信息")],
         [
-          {type: "boolean", label: "允许修改", model: {data: value, key: "允许修改"}, style: {flex: "8 8 0"}},
-          {
-            type: "boolean",
-            label: "独立变化",
-            model: {data: value, key: "独立变化"},
-            style: {flex: "8 8 0"},
-            readonly: key === "底框板材"
-          },
+          getter.boolean("允许修改", {style: {flex: "8 8 0"}}),
+          getter.boolean("独立变化", {style: {flex: "8 8 0"}, readonly: key === "底框板材"}),
           显示内容InputInfo,
-          {
-            type: "select",
-            label: "门扇使用限制",
-            options: mrbcjfzMsxzItems.slice(),
-            model: {data: value, key: "门扇使用限制"},
-            style: {flex: "12 12 0"}
-          }
+          getter.selectSingle<MrbcjfzMsxzItem>("门扇使用限制", mrbcjfzMsxzItems, {style: {flex: "12 12 0"}})
         ]
       ];
       if (this.raw.编辑默认对应板材分组) {

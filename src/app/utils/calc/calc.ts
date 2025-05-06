@@ -115,7 +115,8 @@ export class Calc {
       result.valid = !isNaN(expression);
       return result;
     }
-    if (/#.*?#/.test(expression)) {
+    const regs = [/#.*?#/, /'.*?'/, /".*?"/];
+    if (regs.some((reg) => reg.test(expression))) {
       return result;
     }
     const vars = this.getVars(expression);
@@ -256,24 +257,16 @@ export class Calc {
 
   /**
    * 获取表达式中变量的依赖关系
-   *
-   * @param map
-   * @param info
-   * @param originVar
-   * @returns
    */
-  private static getExpressionDeps(
-    map: ObjectOf<ExpressionInfo>,
-    info: ExpressionInfo,
-    originVar: string | null = null,
-    depth = 0
-  ): ExpressionDeps {
+  private static getExpressionDeps(map: ObjectOf<ExpressionInfo>, key: string, path: {key: string; value: string}[] = []): ExpressionDeps {
     const deps: ExpressionDeps = {};
+    const info = map[key];
     const exp = info.exp;
     const vars = info.vars;
     if (exp.includes("\n")) {
       return deps;
     }
+    path.push({key, value: exp});
     vars.forEach((v) => {
       const nextInfo = map[v];
       if (nextInfo) {
@@ -281,16 +274,11 @@ export class Calc {
         if (nextVars.includes(v)) {
           throw new CalcSelfReferenceError(v, map[v].exp);
         }
-        if (originVar) {
-          if (nextVars.includes(originVar)) {
-            throw new CalcCircularReferenceError(v, map[v].exp, originVar, map[originVar].exp);
-          }
-
-          if (depth >= 30) {
-            throw new CalcCircularReferenceError(v, map[v].exp, originVar, map[originVar].exp);
-          }
+        const prevItem = path.find((item) => item.key === v);
+        if (prevItem) {
+          throw new CalcCircularReferenceError(path);
         }
-        deps[v] = this.getExpressionDeps(map, map[v], v, depth + 1);
+        deps[v] = this.getExpressionDeps(map, v, [...path]);
       } else {
         deps[v] = this.getVars(exp);
       }
@@ -310,7 +298,7 @@ export class Calc {
     const formulasGroup: ObjectOf<ObjectOf<FormulaInfo>> = {};
     for (const key in map) {
       const value = map[key];
-      const deps = this.getExpressionDeps(map, value, key);
+      const deps = this.getExpressionDeps(map, key);
       const depth = this.getDepth(deps);
       if (formulasGroup[depth] === undefined) {
         formulasGroup[depth] = {};
@@ -438,13 +426,6 @@ export class Calc {
       }
     }
 
-    // 算不下去了，提示算不出来的公式
-    for (const name in formulas) {
-      if (ok[name] === undefined) {
-        error[name] = formulas[name].toString();
-      }
-    }
-
     // 处理需要替换的字符串，含##的表达式
     if (!isEmpty(replace)) {
       while (true) {
@@ -493,6 +474,12 @@ export class Calc {
           replace[key] = replaceValue;
           ok2[key] = replaceValue;
           vars[key] = replaceValue;
+          for (const k in formulasRaw) {
+            if (formulasRaw[k] === key) {
+              vars[k] = replaceValue;
+              ok[k] = replaceValue;
+            }
+          }
         }
 
         // 有替换掉的
@@ -514,6 +501,13 @@ export class Calc {
           }
           break;
         }
+      }
+    }
+
+    // 算不下去了，提示算不出来的公式
+    for (const name in formulas) {
+      if (ok[name] === undefined) {
+        error[name] = formulas[name].toString();
       }
     }
 

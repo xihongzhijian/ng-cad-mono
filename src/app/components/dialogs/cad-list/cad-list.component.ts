@@ -1,16 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  forwardRef,
-  HostBinding,
-  inject,
-  Inject,
-  signal,
-  viewChild,
-  viewChildren
-} from "@angular/core";
+import {AfterViewInit, Component, computed, forwardRef, HostBinding, inject, Inject, signal, viewChild, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -59,8 +47,7 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
     MatSlideToggleModule,
     NgScrollbar,
     SpinnerComponent
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  ]
 })
 export class CadListComponent implements AfterViewInit {
   private http = inject(CadDataService);

@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -36,7 +35,7 @@ import {TDocumentDefinitions} from "pdfmake/interfaces";
 import printJS from "print-js";
 import {PageComponentConfig2Component} from "../../menus/page-component-config2/page-component-config2.component";
 import {PageComponentConfigComponent} from "../../menus/page-component-config/page-component-config.component";
-import {PageComponentsSeletComponent} from "../../menus/page-components-select/page-components-select.component";
+import {PageComponentsSelectComponent} from "../../menus/page-components-select/page-components-select.component";
 import {PageConfigComponent} from "../../menus/page-config/page-config.component";
 import {PageComponentTypeAny} from "../../models/page-component-infos";
 import {flatPageComponents} from "../../models/page-component-utils";
@@ -57,12 +56,11 @@ import {PageComponentsDiaplayComponent} from "../page-components-diaplay/page-co
     PageComponentConfigComponent,
     PageComponentConfig2Component,
     PageComponentsDiaplayComponent,
-    PageComponentsSeletComponent,
+    PageComponentsSelectComponent,
     PageConfigComponent
   ],
   templateUrl: "./custom-page-index.component.html",
-  styleUrl: "./custom-page-index.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./custom-page-index.component.scss"
 })
 export class CustomPageIndexComponent extends Subscribed() implements OnInit, OnDestroy {
   private http = inject(CadDataService);

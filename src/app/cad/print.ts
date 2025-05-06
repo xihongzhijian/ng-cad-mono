@@ -600,7 +600,7 @@ const getUnfoldCadViewers = async (
   }
 
   const titleFontStyle: FontStyle = {size: 16} as const;
-  const infoTextFontStyle: FontStyle = {size: 12} as const;
+  const infoTextFontStyle: FontStyle = {size: 11} as const;
   const boxPadding = [5, 5, 5, 5] as const;
   const imgPadding = [5, 5, 5, 5] as const;
   const textMargin = 5;
@@ -653,7 +653,7 @@ const getUnfoldCadViewers = async (
     const boxRect = new Rectangle();
     boxRect.min.set(colIndex * boxWidth + boxPadding[3], (rowIndex - 1) * boxHeight + boxPadding[2]);
     boxRect.max.set((colIndex + 1) * boxWidth - boxPadding[1], rowIndex * boxHeight - boxPadding[0]);
-    await configCadDataForPrint(unfoldCadViewer, cad, params, {isZxpj: true, lineLengthFontStyle: {size: 5}, 使用显示线长: true});
+    await configCadDataForPrint(unfoldCadViewer, cad, params, {isZxpj: true, lineLengthFontStyle: {size: 3}, 使用显示线长: true});
     const calcZhankai = cad.info.calcZhankai || [];
     const bancai = cad.info.bancai || {};
 
@@ -713,7 +713,7 @@ const getUnfoldCadViewers = async (
       }
     }
 
-    const zhankaiText = getCadPaokengText(cad, calcZhankai, bancai, params.projectConfig);
+    const zhankaiText = getCadPaokengText(cad, calcZhankai, bancai);
     const texts0 = zhankaiText.concat(offsetStrs);
     const texts: string[] = [];
     for (const text of texts0) {

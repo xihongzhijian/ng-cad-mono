@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, effect, forwardRef, HostBinding, inject, input, signal} from "@angular/core";
+import {Component, effect, forwardRef, HostBinding, inject, input, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -19,8 +19,7 @@ import {Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
   selector: "app-klkwpz",
   templateUrl: "./klkwpz.component.html",
   styleUrls: ["./klkwpz.component.scss"],
-  imports: [forwardRef(() => InputComponent), MatButtonModule, MatCardModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [forwardRef(() => InputComponent), MatButtonModule, MatCardModule, NgScrollbar]
 })
 export class KlkwpzComponent {
   private dialog = inject(MatDialog);

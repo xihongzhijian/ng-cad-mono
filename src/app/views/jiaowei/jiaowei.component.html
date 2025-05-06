@@ -1,32 +1,18 @@
-<div class="toolbar toolbar">
-  <div class="title">门扇铰位配置：{{ name }}</div>
+<div class="toolbar">
+  <div class="title">门扇铰位配置：{{ name() }}</div>
   <button mat-flat-button (click)="submit()">提交</button>
 </div>
 <ng-scrollbar>
-  <div class="forms">
-    @for (item of jiaowei.data | keyvalue; track $index) {
-      <div class="form">
-        <div class="title">做{{ item.key }}个铰时</div>
-        <mat-checkbox [(ngModel)]="item.value.disabled">不做{{ item.key }}个铰</mat-checkbox>
-        @for (itemItem of item.value.items; track i; let i = $index) {
-          <div class="items">
-            <div>铰位{{ i + 1 }}中⼼Y距离</div>
-            <mat-form-field style="width: 150px">
-              <mat-select [(ngModel)]="itemItem.anchor" [disabled]="item.value.disabled">
-                @for (option of getJiaoweiAnchorOptions(item.value, i); track $index) {
-                  <mat-option [value]="option">{{ option }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field style="width: 150px">
-              <input
-                matInput
-                type="number"
-                [(ngModel)]="itemItem.distance"
-                [disabled]="item.value.disabled || itemItem.anchor === '剩余平分'"
-              />
-              <span matSuffix>mm</span>
-            </mat-form-field>
+  <div class="menjiaos items items-per-row">
+    @for (item of items(); track $index) {
+      <div class="item border">
+        <div class="name fullwidth title">做{{ item.key }}个铰时</div>
+        @for (group of item.inputInfoGroups; track $index) {
+          <div class="toolbar">
+            <div class="name">{{ group.name }}</div>
+            @for (info of group.infos; track $index) {
+              <app-input [info]="info"></app-input>
+            }
           </div>
         }
       </div>

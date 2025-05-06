@@ -1,3 +1,4 @@
+import {Params} from "@angular/router";
 import {ObjectOf} from "@lucilor/utils";
 import {BancaiCad, BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -49,6 +50,8 @@ export type DakongSummary = ObjectOf<DakongSummaryItem[] | null>;
 export interface DakongSummaryItem {
   cadId: string;
   cadName: string;
+  cadImgId: string | null;
+  cadQuery: Params;
   muban?: {
     id: string;
     name: string;

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, input, signal} from "@angular/core";
+import {Component, computed, input, signal} from "@angular/core";
 import {ListRandom} from "@lucilor/utils";
 import {ProgressBar} from "./progress-bar.utils";
 
@@ -6,8 +6,7 @@ import {ProgressBar} from "./progress-bar.utils";
   selector: "app-progress-bar",
   templateUrl: "./progress-bar.component.html",
   styleUrls: ["./progress-bar.component.scss"],
-  imports: [],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: []
 })
 export class ProgressBarComponent {
   progressBar = input.required<ProgressBar>();

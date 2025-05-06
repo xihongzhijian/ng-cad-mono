@@ -39,7 +39,7 @@
           [hideButtons]="!cadsEditMode()"
           [customInfo]="{index: i}"
           [collection]="collection"
-          [isOnline]="cadsIsOnline[cad.id]"
+          [isOnline]="cadsIsOnline[cad.id] || {isFetched: true}"
           [editDisabled]="!cadItemEditable()"
           noFixedType
           (afterEditCad)="afterEditCad(cad.id)"

@@ -1,17 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostBinding,
-  inject,
-  input,
-  model,
-  output,
-  signal,
-  viewChild
-} from "@angular/core";
+import {booleanAttribute, Component, computed, effect, HostBinding, inject, input, model, output, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {remoteFilePath} from "@app/app.common";
@@ -31,6 +18,7 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {justifyMkdxpzSlgs} from "@views/msbj/msbj.utils";
 import {cloneDeep} from "lodash";
+import {NgScrollbarModule} from "ngx-scrollbar";
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "./mkdxpz-editor.types";
 import {getNodesTable, getVarNameGroupName} from "./mkdxpz-editor.utils";
 
@@ -41,13 +29,13 @@ import {getNodesTable, getVarNameGroupName} from "./mkdxpz-editor.utils";
     MatButtonModule,
     MatDividerModule,
     MsbjRectsComponent,
+    NgScrollbarModule,
     SuanliaogongshiComponent,
     TableComponent,
     VarNamesComponent
   ],
   templateUrl: "./mkdxpz-editor.component.html",
-  styleUrl: "./mkdxpz-editor.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./mkdxpz-editor.component.scss"
 })
 export class MkdxpzEditorComponent {
   private message = inject(MessageService);

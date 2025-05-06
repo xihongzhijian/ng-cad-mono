@@ -1,6 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -91,8 +90,7 @@ import {
     TypedTemplateDirective
   ],
   templateUrl: "./lrsj-suanliao-data.component.html",
-  styleUrl: "./lrsj-suanliao-data.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./lrsj-suanliao-data.component.scss"
 })
 export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
   private dialog = inject(MatDialog);
@@ -136,14 +134,8 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     }
   });
 
-  getOptionInputInfo2(data: any, key: string, style?: Properties, canSearch?: boolean) {
-    const info = getMenjiaoOptionInputInfo(
-      data,
-      key,
-      this.menjiaoOptions(),
-      () => this.lrsjStatus.menjiaoOptionsManager.fetch(true),
-      canSearch
-    );
+  getOptionInputInfo2(data: any, key: string, style?: Properties) {
+    const info = getMenjiaoOptionInputInfo(data, key, this.menjiaoOptions(), () => this.lrsjStatus.menjiaoOptionsManager.fetch(true));
     info.style = style;
     const onChange = info.onChange;
     info.onChange = (val: any, info2: any) => {
@@ -177,9 +169,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
     const form1Group: InputInfo[] = [
       getInputInfoGroup(
         optionKeys.map((v) => {
-          const canSearchKeys: (keyof 算料数据)[] = ["锁边", "铰边"];
-          const canSearch = canSearchKeys.includes(v);
-          const info = this.getOptionInputInfo2(data, v, {}, canSearch);
+          const info = this.getOptionInputInfo2(data, v, {});
           let w: number;
           switch (v) {
             case "门铰":
@@ -436,7 +426,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
 
   getSuanliaoTables(key1: MenjiaoCadType) {
     return this.suanliaoTablesList().find((v) => {
-      const {包边方向, 开启} = v.suanliaoDataParams.选项;
+      const {包边方向, 开启} = v.suanliaoDataParams().选项;
       return key1 === `${包边方向}+${开启}`;
     });
   }
@@ -730,7 +720,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         let mrbcjfzErrors: string[] | undefined;
         if (mrbcjfz) {
           mrbcjfzErrors = mrbcjfz.checkSubmit();
-          data[key1].板材分组 = mrbcjfz.xinghao.默认板材;
+          data[key1].板材分组 = mrbcjfz.xinghao().默认板材;
         } else {
           const mrbcjfzResult = await openMrbcjfzDialog(this.dialog, {
             width: "0",

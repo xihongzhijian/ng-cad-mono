@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, inject, OnInit, signal} from "@angular/core";
+import {Component, HostBinding, inject, OnInit, signal} from "@angular/core";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {filePathUrl, setGlobal} from "@app/app.common";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -14,8 +14,7 @@ import {BjmkStatusService} from "../services/bjmk-status.service";
   selector: "app-buju",
   imports: [FloatingDialogModule, ImageComponent, MatTooltipModule, MsbjComponent, NgScrollbarModule],
   templateUrl: "./buju.component.html",
-  styleUrl: "./buju.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./buju.component.scss"
 })
 export class BujuComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);

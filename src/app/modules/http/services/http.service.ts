@@ -101,23 +101,27 @@ export class HttpService {
     url = this.getUrl(url);
     let axiosResponse: AxiosResponse<CustomResponse<T>> | null = null;
     let response: CustomResponse<T> | null = null;
-    let loaderId = options?.spinner;
+    let spinner = options?.spinner;
     if (silent) {
-      loaderId = false;
+      spinner = false;
     } else {
-      if (loaderId === true || loaderId === undefined) {
-        loaderId = this.spinner.defaultLoaderId;
+      if (spinner === true || spinner === undefined) {
+        spinner = this.spinner.defaultLoaderId;
       }
     }
-    if (loaderId) {
-      if (typeof loaderId === "object") {
-        this.spinner.show(loaderId.id || this.spinner.defaultLoaderId, loaderId.config);
-      } else {
-        this.spinner.show(loaderId);
+    if (spinner) {
+      if (typeof spinner === "string") {
+        spinner = {id: spinner};
+      } else if (typeof spinner === "boolean") {
+        spinner = {id: this.spinner.defaultLoaderId};
       }
     } else {
-      this.spinner.show(this.spinner.defaultLoaderId, {background: true});
+      spinner = {config: {background: true}};
     }
+    if (!spinner.config?.taskId) {
+      spinner.config = {...spinner.config, taskId: timerName};
+    }
+    this.spinner.show(spinner.id || this.spinner.defaultLoaderId, spinner.config);
     try {
       if (method === "GET") {
         if (data) {
@@ -253,11 +257,11 @@ export class HttpService {
       this.error(content, silent, response?.title, response?.data);
       return response;
     } finally {
-      if (loaderId) {
-        if (typeof loaderId === "object") {
-          this.spinner.hide(loaderId.id || this.spinner.defaultLoaderId);
+      if (spinner) {
+        if (typeof spinner === "object") {
+          this.spinner.hide(spinner.id || this.spinner.defaultLoaderId);
         } else {
-          this.spinner.hide(loaderId);
+          this.spinner.hide(spinner);
         }
       } else {
         this.spinner.hide(this.spinner.defaultLoaderId);

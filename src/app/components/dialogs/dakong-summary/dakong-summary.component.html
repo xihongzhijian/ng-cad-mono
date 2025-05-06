@@ -45,7 +45,11 @@
                       <span>
                         <span>{{ item.cadName }}</span>
                         <br />
-                        <app-cad-image [id]="item.cadId" />
+                        @if (item.cadImgId; as imgId) {
+                          <app-cad-image [id]="item.cadImgId" isImgId />
+                        } @else {
+                          <app-cad-image [id]="item.cadId" />
+                        }
                         <span class="link text" (click)="openCad(item)">查看</span>
                       </span>
                     }

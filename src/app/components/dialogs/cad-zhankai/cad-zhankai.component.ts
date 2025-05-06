@@ -1,4 +1,4 @@
-import {Component, Inject} from "@angular/core";
+import {ChangeDetectorRef, Component, inject, Inject, signal} from "@angular/core";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -16,7 +16,7 @@ import {CadData, CadZhankai} from "@lucilor/cad-viewer";
 import {Utils} from "@mixins/utils.mixin";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
-import {cloneDeep} from "lodash";
+import {cloneDeep, difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {ReplaceFullCharsDirective} from "../../../modules/directives/replace-full-chars.directive";
 import {openCadListDialog} from "../cad-list/cad-list.component";
@@ -44,7 +44,11 @@ import {getOpenDialogFunc} from "../dialog.common";
   ]
 })
 export class CadZhankaiComponent extends Utils() {
-  checkedIndices = new Set<number>();
+  private cd = inject(ChangeDetectorRef);
+  private message = inject(MessageService);
+  private status = inject(AppStatusService);
+
+  checkedIndices = signal<number[]>([]);
   keysMap = {
     kaiqi: "开启",
     chanpinfenlei: "产品分类",
@@ -72,9 +76,7 @@ export class CadZhankaiComponent extends Utils() {
   constructor(
     public dialogRef: MatDialogRef<CadZhankaiComponent, CadZhankai[]>,
     @Inject(MAT_DIALOG_DATA) public data: CadData["zhankai"],
-    private dialog: MatDialog,
-    private message: MessageService,
-    private status: AppStatusService
+    private dialog: MatDialog
   ) {
     super();
     this.data = cloneDeep(this.data);
@@ -104,9 +106,9 @@ export class CadZhankaiComponent extends Utils() {
 
   onCheckboxChange(event: MatCheckboxChange, i: number) {
     if (event.checked) {
-      this.checkedIndices.add(i);
+      this.checkedIndices.update((v) => difference(v, [i]));
     } else {
-      this.checkedIndices.delete(i);
+      this.checkedIndices.update((v) => union(v, [i]));
     }
   }
 
@@ -120,12 +122,12 @@ export class CadZhankaiComponent extends Utils() {
   }
 
   selectAll() {
-    this.data.forEach((_v, i) => this.checkedIndices.add(i));
-    this.checkedIndices.delete(0);
+    const indices = this.data.map((_v, i) => i);
+    this.checkedIndices.set(indices.slice(1));
   }
 
   unselectAll() {
-    this.checkedIndices.clear();
+    this.checkedIndices.set([]);
   }
 
   copyItem(i: number) {
@@ -184,6 +186,7 @@ export class CadZhankaiComponent extends Utils() {
         this.nameErrorMsg[i] = "名字不能为空";
       }
     });
+    this.cd.markForCheck();
   }
 }
 

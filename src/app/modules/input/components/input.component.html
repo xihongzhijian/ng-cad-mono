@@ -313,7 +313,7 @@
     }
     @case ("boolean") {
       @if (info.appearance === "switch") {
-        <div class="switch-container">
+        <div class="toolbar">
           <div>{{ info.label }}</div>
           <mat-slide-toggle
             [(ngModel)]="value"
@@ -548,6 +548,7 @@
             [value]="anchorStr"
             readonly
             [disabled]="disabled()"
+            [matMenuTriggerFor]="editable() ? anchor : null"
           />
           <ng-container matSuffix>
             <button mat-icon-button [matMenuTriggerFor]="editable() ? anchor : null">
@@ -562,36 +563,6 @@
           <mat-error>{{ getErrorMsg() }}</mat-error>
         </mat-form-field>
       }
-      <ng-template #coordinate>
-        <mat-form-field>
-          @if (info.label) {
-            <mat-label>{{ info.label }}</mat-label>
-          }
-          @if (info.hint) {
-            <mat-hint>{{ info.hint }}</mat-hint>
-          }
-          <input
-            matInput
-            type="text"
-            placeholder="请选择锚点"
-            [errorStateMatcher]="getErrorStateMatcher()"
-            [value]="anchorStr"
-            readonly
-            [disabled]="disabled()"
-          />
-          <ng-container matSuffix>
-            <button mat-icon-button [matMenuTriggerFor]="editable() ? anchor : null">
-              <mat-icon>list</mat-icon>
-            </button>
-            <mat-menu #anchor="matMenu">
-              <app-anchor-selector [x]="value[0]" [y]="value[1]" (anchorChangeEnd)="onChange($event)" appClickStop></app-anchor-selector>
-            </mat-menu>
-            <ng-container matSuffix [ngTemplateOutlet]="suffixIconsTmp"></ng-container>
-            <ng-container matTextSuffix [ngTemplateOutlet]="suffixTextsTmp"></ng-container>
-          </ng-container>
-          <mat-error>{{ getErrorMsg() }}</mat-error>
-        </mat-form-field>
-      </ng-template>
     }
     @case ("color") {
       <mat-form-field>

@@ -1,17 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostBinding,
-  inject,
-  input,
-  OnInit,
-  output,
-  signal,
-  viewChild
-} from "@angular/core";
+import {booleanAttribute, Component, computed, effect, HostBinding, inject, input, OnInit, output, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDividerModule} from "@angular/material/divider";
@@ -51,8 +38,7 @@ import {MokuaikuCloseEvent} from "./mokuaiku.types";
     NgScrollbarModule
   ],
   templateUrl: "./mokuaiku.component.html",
-  styleUrl: "./mokuaiku.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./mokuaiku.component.scss"
 })
 export class MokuaikuComponent implements OnInit {
   private bjmkStatus = inject(BjmkStatusService);
@@ -222,36 +208,6 @@ export class MokuaikuComponent implements OnInit {
     } else {
       this.mokuaisSelectedIndexs.set(mokuais.map((_, i) => i));
     }
-  }
-
-  exportMokuais() {
-    const mokuais = this.mokuais();
-    let ids = this.mokuaisSelectedIndexs().map((i) => mokuais[i].id);
-    if (ids.length < 1) {
-      const mode = this.navNodeSelectMode();
-      if (mode === "none") {
-        this.navNodeSelectMode.set("multiple");
-        this.navNodesSelected.set([]);
-        return;
-      } else {
-        const nodeNames = this.navNodesSelected().map((v) => v.name);
-        ids = [];
-        for (const mokuai of this.mokuaisAll()) {
-          if (nodeNames.includes(mokuai.type)) {
-            ids.push(mokuai.id);
-          }
-        }
-        this.navNodeSelectMode.set("none");
-        this.navNodesSelected.set([]);
-        if (ids.length < 1) {
-          return;
-        }
-      }
-    }
-    this.bjmkStatus.exportMokuais(ids);
-  }
-  importMokuais() {
-    this.bjmkStatus.importMokuais();
   }
 
   bancaiListData = signal<BancaiListData | null>(null);

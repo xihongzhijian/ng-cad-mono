@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from "@angular/core";
+import {Component, inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {ActivatedRoute, Router} from "@angular/router";
 import {PathResolveData} from "@app/routing/path-resolver";
@@ -8,8 +8,7 @@ import {AppStatusService} from "@services/app-status.service";
   selector: "app-page-not-found",
   templateUrl: "./page-not-found.component.html",
   styleUrls: ["./page-not-found.component.scss"],
-  imports: [MatButtonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule]
 })
 export class PageNotFoundComponent implements OnInit {
   private route = inject(ActivatedRoute);

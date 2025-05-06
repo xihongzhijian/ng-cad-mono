@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   &.active {
-    background-color: lightgray;
+    background-color: var(--mat-sys-outline-variant);
   }
 
   .name {

@@ -1,16 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  HostBinding,
-  inject,
-  input,
-  signal,
-  viewChild,
-  viewChildren
-} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, input, signal, viewChild, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -41,7 +30,7 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzXinghaoInfo} from "@views/mrbcjfz/mrbcjfz.utils";
-import {cloneDeep, difference, isEqual} from "lodash";
+import {clone, cloneDeep, difference, isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   FentiCadTemplateData,
@@ -89,8 +78,7 @@ import {
     TypedTemplateDirective
   ],
   templateUrl: "./xhmrmsbj-sbjb.component.html",
-  styleUrl: "./xhmrmsbj-sbjb.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./xhmrmsbj-sbjb.component.scss"
 })
 export class XhmrmsbjSbjbComponent {
   private dialog = inject(MatDialog);
@@ -122,6 +110,7 @@ export class XhmrmsbjSbjbComponent {
     return yaoqius;
   });
   cadMap = new Map<string, CadData>();
+  cadsFetched = signal(new Set<string>());
   showCadFormDefaultTexts = signal(false);
   toggleShowCadFormDefaultTexts() {
     this.showCadFormDefaultTexts.update((v) => !v);
@@ -129,11 +118,13 @@ export class XhmrmsbjSbjbComponent {
   cadInfos = computed(() => {
     const infos: XhmrmsbjSbjbCadInfo[] = [];
     const item = this.activeSbjbItem();
+    const cadsFetched = this.cadsFetched();
     if (item) {
       const qiliaos = this.qiliaosManager.items();
       for (const cadItem of item.CAD数据 || []) {
         const info: XhmrmsbjSbjbCadInfo = {...cadItem, cadForm: {noDefaultTexts: !this.showCadFormDefaultTexts()}};
         if (cadItem.cadId) {
+          info.isFetched = cadsFetched.has(cadItem.cadId);
           const cad = this.cadMap.get(cadItem.cadId);
           if (cad) {
             info.cad = cad;
@@ -197,6 +188,10 @@ export class XhmrmsbjSbjbComponent {
       }
     }
   ]);
+  afterFetchCad(cad: CadData) {
+    this.cadMap.set(cad.id, cad);
+    this.cadsFetched.update((v) => clone(v.add(cad.id)));
+  }
   showXinghaosUsingSbjbCadBtnName = "哪些型号在用";
   async showXinghaosUsingSbjbCad(cadName: string) {
     const data = await this.http.getData<{url: string}>("shuju/api/showXinghaosUsingSbjbCad", {cadName});
@@ -462,18 +457,22 @@ export class XhmrmsbjSbjbComponent {
 
   fentiCadTemplateData!: {$implicit: FentiCadTemplateData};
   fentiCadTemplateTitles = fentiCadTemplateTitles;
-  getFentiCadTemplateCad({data, title}: XhmrmsbjSbjbItemSbjbFentiCadInfo) {
+  getFentiCadTemplateInfo({data, title}: XhmrmsbjSbjbItemSbjbFentiCadInfo) {
     const {qiliao, form} = data;
+    let cad: CadData | undefined;
     if (form) {
-      return form[title === "分体1" ? "fentiCad1" : "fentiCad2"];
+      cad = form[title === "分体1" ? "fentiCad1" : "fentiCad2"];
     } else {
       const id = qiliao?.[title === "分体1" ? "fenti1" : "fenti2"]?.id;
       if (id) {
-        return this.qiliaoCadMap.get(id);
-      } else {
-        return null;
+        cad = this.qiliaoCadMap.get(id);
       }
     }
+    if (!cad) {
+      return null;
+    }
+    const isFetched = this.cadsFetched().has(cad.id);
+    return {cad, isFetched};
   }
   fentiCadButtons2 = computed(() => {
     const buttons: CadItemButton<XhmrmsbjSbjbItemSbjbFentiCadInfo>[] = [

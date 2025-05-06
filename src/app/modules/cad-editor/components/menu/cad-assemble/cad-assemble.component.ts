@@ -1,5 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, OnInit, signal, untracked} from "@angular/core";
-import {toSignal} from "@angular/core/rxjs-interop";
+import {Component, computed, effect, inject, OnDestroy, OnInit, signal, untracked} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {setGlobal} from "@app/app.common";
 import {CadConnection, CadData, CadEntity, CadEventCallBack, CadImage, CadLine, generatePointsMap, PointsMap} from "@lucilor/cad-viewer";
@@ -11,14 +10,12 @@ import {CadPoints} from "@services/app-status.types";
 import {CadStatusAssemble} from "@services/cad-status";
 import {debounce, difference, differenceBy} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
-import {map} from "rxjs";
 
 @Component({
   selector: "app-cad-assemble",
   templateUrl: "./cad-assemble.component.html",
   styleUrls: ["./cad-assemble.component.scss"],
-  imports: [MatButtonModule, NgScrollbar],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  imports: [MatButtonModule, NgScrollbar]
 })
 export class CadAssembleComponent implements OnInit, OnDestroy {
   private config = inject(AppConfigService);
@@ -49,7 +46,7 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
   ids = signal<string[]>([]);
   names = signal<string[]>([]);
   lines = signal<string[]>([]);
-  showPointsAssemble = toSignal(this.status.collection$.pipe(map((collection) => collection === "luomatoucad")), {initialValue: false});
+  showPointsAssemble = computed(() => this.status.collection() === "luomatoucad");
   pointsAssembling = signal(0);
 
   private _prevConfig: Partial<AppConfig> = {};
@@ -198,7 +195,7 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
       this.status.components.selected.set([]);
       this._prevComponentsSelectable = this.status.components.selectable();
       this.status.components.selectable.set(true);
-      if (this.status.collection$.value === "CADmuban") {
+      if (this.status.collection() === "CADmuban") {
         const data = cad.data;
         const {top, bottom, left, right} = data.entities.getBoundingRect();
         const y = top - (top - bottom) / 4;

@@ -1,7 +1,6 @@
 import {KeyValuePipe} from "@angular/common";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -67,8 +66,7 @@ import {CadItemButton, CadItemForm, CadItemIsOnlineInfo, CadItemSelectable, CadI
     MatIconModule
   ],
   templateUrl: "./cad-item.component.html",
-  styleUrl: "./cad-item.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: "./cad-item.component.scss"
 })
 export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
@@ -116,6 +114,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   mokuaiName = input<string>();
   beforeEditCad = output();
   afterEditCad = output();
+  afterFetchCad = output();
 
   cadContainer = viewChild<ElementRef<HTMLDivElement>>("cadContainer");
   mubanContainer = viewChild<ElementRef<HTMLDivElement>>("mubanContainer");
@@ -148,6 +147,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   cadEff = effect(() => {
     this.cad();
     this.cadData.set(null);
+    this.isOnlineFetched.set(false);
     untracked(() => this.update());
   });
 
@@ -234,6 +234,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
         Object.assign(cad, data);
       }
       this.afterEditCad.emit();
+      this.afterFetchCad.emit();
       if (isOnline.afterFetch) {
         isOnline.afterFetch(this);
       } else {
