@@ -55,6 +55,9 @@ export class ImageComponent implements AfterViewInit {
   error = signal(false);
 
   intersectionObserver = new IntersectionObserver((entries) => {
+    if (entries.length < 1) {
+      return;
+    }
     const ratio = entries[0].intersectionRatio;
     if (ratio > 0 && this.updateCurrSrcPending) {
       this.updateCurrSrc(ratio);

@@ -63,6 +63,9 @@ export class CadImageComponent implements AfterViewInit {
   });
   isLocal = computed(() => !!this.data()?.info.isLocal || this.isLocalIn());
   intersectionObserver = new IntersectionObserver((entries) => {
+    if (entries.length < 1) {
+      return;
+    }
     const ratio = entries[0].intersectionRatio;
     if (ratio > 0 && this.updateUrlPending) {
       this.updateUrl(ratio);
