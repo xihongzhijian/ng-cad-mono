@@ -1,7 +1,7 @@
 import {animate, style, transition, trigger} from "@angular/animations";
 import {
+  AfterViewInit,
   booleanAttribute,
-  ChangeDetectorRef,
   Component,
   computed,
   effect,
@@ -15,7 +15,7 @@ import {
 } from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatIconModule} from "@angular/material/icon";
-import {timeout} from "@lucilor/utils";
+import {getElementVisiblePercentage, timeout} from "@lucilor/utils";
 import {Property} from "csstype";
 import {ImageEvent} from "./image.component.types";
 
@@ -34,9 +34,8 @@ const imgLoading = "assets/images/loading.gif";
   ],
   imports: [MatButtonModule, MatIconModule]
 })
-export class ImageComponent {
-  private cd = inject(ChangeDetectorRef);
-  private elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+export class ImageComponent implements AfterViewInit {
+  private el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   @HostBinding("class") class: string[] = [];
 
@@ -55,46 +54,43 @@ export class ImageComponent {
   loading = signal(false);
   error = signal(false);
 
-  constructor() {
-    effect(() => {
-      if (this.loading()) {
-        if (!this.class.includes("loading")) {
-          this.class = [...this.class, "loading"];
-        }
-      } else {
-        if (this.class.includes("loading")) {
-          this.class = this.class.filter((c) => c !== "loading");
-        }
-      }
-    });
-    effect(() => {
-      if (this.error()) {
-        if (!this.class.includes("error")) {
-          this.class = [...this.class, "error"];
-        }
-      } else {
-        if (this.class.includes("error")) {
-          this.class = this.class.filter((c) => c !== "error");
-        }
-      }
-    });
-    effect(() => {
-      if (this.currSrc()) {
-        this.loading.set(true);
-        this.error.set(false);
-      } else {
-        this.loading.set(false);
-        this.error.set(false);
-      }
-      this.cd.markForCheck();
-    });
+  intersectionObserver = new IntersectionObserver((entries) => {
+    const ratio = entries[0].intersectionRatio;
+    if (ratio > 0 && this.updateCurrSrcPending) {
+      this.updateCurrSrc(ratio);
+    }
+  });
+
+  ngAfterViewInit() {
+    const el = this.el.nativeElement;
+    this.intersectionObserver.observe(el);
   }
 
-  currSrc = computed(() => {
+  currSrc = signal("");
+  updateCurrSrcPending = false;
+  async updateCurrSrc(ratio?: number) {
     const src = this.src();
     const prefix = this.prefix();
-    return this.getUrl(src, prefix);
-  });
+    const el = this.el.nativeElement;
+    if (typeof ratio !== "number") {
+      ratio = getElementVisiblePercentage(el);
+    }
+    if (ratio <= 0) {
+      this.updateCurrSrcPending = true;
+      return;
+    }
+    this.updateCurrSrcPending = false;
+    const currSrc = this.getUrl(src, prefix);
+    this.currSrc.set(currSrc);
+    if (currSrc) {
+      this.loading.set(true);
+      this.error.set(false);
+    } else {
+      this.loading.set(false);
+      this.error.set(false);
+    }
+  }
+  updateCurrSrcEff = effect(() => this.updateCurrSrc());
   getUrl(url: string | undefined, prefix: string | undefined) {
     if (!url) {
       return "";
@@ -107,6 +103,19 @@ export class ImageComponent {
     }
     return url;
   }
+
+  classEff = effect(() => {
+    setTimeout(() => {
+      const cls = [];
+      if (this.loading()) {
+        cls.push("loading");
+      }
+      if (this.error()) {
+        cls.push("error");
+      }
+      this.class = cls;
+    }, 0);
+  });
 
   onLoad(event: Event) {
     this.loading.set(false);
@@ -145,7 +154,7 @@ export class ImageComponent {
       this.bigPicVisible.set(false);
       await timeout(300);
       const el = bigPicDiv.nativeElement;
-      this.elRef.nativeElement.append(el);
+      this.el.nativeElement.append(el);
       bigPicDiv.nativeElement.style.display = "none";
     }
   }
