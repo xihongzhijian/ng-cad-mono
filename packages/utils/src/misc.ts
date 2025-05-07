@@ -63,9 +63,13 @@ export const getElementVisiblePercentage = (el: HTMLElement, parentEl = document
   const rect0 = el.getBoundingClientRect();
   const parentRect0 = parentEl.getBoundingClientRect();
   const rect = new Rectangle([rect0.left, rect0.top], [rect0.right, rect0.bottom]);
+  const elArea = rect.area;
+  if (elArea <= 0) {
+    return 0;
+  }
   const parentRect = new Rectangle([parentRect0.left, parentRect0.top], [parentRect0.right, parentRect0.bottom]);
   const visibleArea = rect.intersects(parentRect)?.area || 0;
-  const visiblePercentage = (visibleArea / rect.area) * 100;
+  const visiblePercentage = (visibleArea / elArea) * 100;
   return visiblePercentage;
 };
 
