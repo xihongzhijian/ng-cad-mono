@@ -1,10 +1,22 @@
-import {booleanAttribute, Component, computed, effect, HostBinding, inject, input, output, signal} from "@angular/core";
+import {
+  AfterViewInit,
+  booleanAttribute,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  HostBinding,
+  inject,
+  input,
+  output,
+  signal
+} from "@angular/core";
 import {imgCadEmpty} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {CadCollection} from "@app/cad/collections";
 import {generateLineTexts2} from "@app/cad/utils";
 import {CadData} from "@lucilor/cad-viewer";
-import {getTypeOf, ObjectOf, timeout} from "@lucilor/utils";
+import {getElementVisiblePercentage, getTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {AppStatusService} from "@services/app-status.service";
@@ -17,7 +29,8 @@ import {DataInfoChnageEvent} from "./cad-image.types";
   templateUrl: "./cad-image.component.html",
   styleUrl: "./cad-image.component.scss"
 })
-export class CadImageComponent {
+export class CadImageComponent implements AfterViewInit {
+  private el = inject<ElementRef<HTMLElement>>(ElementRef);
   private http = inject(CadDataService);
   private status = inject(AppStatusService);
 
@@ -49,6 +62,17 @@ export class CadImageComponent {
     }
   });
   isLocal = computed(() => !!this.data()?.info.isLocal || this.isLocalIn());
+  intersectionObserver = new IntersectionObserver((entries) => {
+    const ratio = entries[0].intersectionRatio;
+    if (ratio > 0 && this.updateUrlPending) {
+      this.updateUrl(ratio);
+    }
+  });
+
+  ngAfterViewInit() {
+    const el = this.el.nativeElement;
+    this.intersectionObserver.observe(el);
+  }
 
   getImgUrl(id: string, force: boolean | number) {
     const params: ObjectOf<any> = {id};
@@ -68,11 +92,21 @@ export class CadImageComponent {
     return await getCadPreview(collection, data, params);
   }
 
-  async updateUrl() {
-    let url = "";
+  updateUrlPending = false;
+  async updateUrl(ratio?: number) {
     const id = this.id();
     const data = this.data();
     const isImgId = this.isImgId();
+    const el = this.el.nativeElement;
+    if (typeof ratio !== "number") {
+      ratio = getElementVisiblePercentage(el);
+    }
+    if (ratio <= 0) {
+      this.updateUrlPending = true;
+      return;
+    }
+    this.updateUrlPending = false;
+    let url = "";
     let force: boolean | number = this.status.forceUpdateCadImg;
     const force2 = this.status.forceUpdateCadImg;
     const toUpdate = this.status.getCadImgToUpdate(id);
