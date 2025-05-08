@@ -11,7 +11,7 @@ This project is made mainly for my personal use, but I would be glad if it helps
 ## Features
 
 - display cad entities in **2D**
-- support simple conctrols, e.g. pan, zoom, copy, paste, ...
+- support simple controls, e.g. pan, zoom, copy, paste, ...
 - data export and import **(as json)**
 - and so on
 
