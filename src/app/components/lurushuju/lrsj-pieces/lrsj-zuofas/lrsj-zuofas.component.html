@@ -14,13 +14,13 @@
               @for (zuofa of xinghao["产品分类"][fenlei]; track j; let j = $index) {
                 <div class="item link" [attr.data-ij]="i + ',' + j">
                   @if (zuofa["录入完成"]) {
-                    <div class="img done"></div>
+                    <div class="img-mark done"></div>
                   }
                   @if (zuofa["停用"]) {
-                    <div class="img disabled"></div>
+                    <div class="img-mark disabled"></div>
                   }
                   @if (zuofa["默认值"]) {
-                    <div class="img is-default"></div>
+                    <div class="img-mark is-default"></div>
                   }
                   <app-image [src]="getFilepathUrl(zuofa['图片'])" (click)="openZuofa(fenlei, zuofa)"> </app-image>
                   <div class="name" (click)="openZuofa(fenlei, zuofa)">{{ zuofa["名字"] }}</div>
