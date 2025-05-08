@@ -23,8 +23,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ExcelSheet, HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
-import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
-import {validateForm} from "@modules/message/components/message/message.utils";
+import {getErrorMsgs, InputInfoWithDataGetter, validateForm, validateValue} from "@modules/input/components/input.utils";
 import {getMessageImportModeOptions, MessageImportMode, MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
@@ -56,6 +55,7 @@ import {
   getXhmrmsbjSbjbItemOptions,
   getXhmrmsbjSbjbItemSbjbCad,
   getXhmrmsbjSbjbItemSbjbForm,
+  getXhmrmsbjSbjbItemSbjbFormResult,
   getXhmrmsbjSbjbItemSbjbItemForm,
   getXhmrmsbjSbjbItemTableInfo,
   importXhmrmsbjSbjbItemSbjbs,
@@ -202,6 +202,7 @@ export class XhmrmsbjSbjbComponent {
   }
   async editSbjbItemSbjbItem(index: number) {
     const item = this.activeSbjbItem();
+    console.log(item);
     if (!item) {
       return;
     }
@@ -213,7 +214,7 @@ export class XhmrmsbjSbjbComponent {
     const item2 = item[name];
     const cadName = item2?.名字 || "";
     const title = `${name}：${cadName}`;
-    const {form: inputInfos, data: item2New} = await getXhmrmsbjSbjbItemSbjbItemForm(item2);
+    const {form: inputInfos, data: item2New} = getXhmrmsbjSbjbItemSbjbItemForm(item2);
     const qiliaoPrev = await this.findQiliao(cadName);
     const qiliaoCurr = cloneDeep(qiliaoPrev);
     const form: SbjbItemSbjbItemForm = {title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr, cadName};
@@ -607,22 +608,7 @@ export class XhmrmsbjSbjbComponent {
     const rowIdx = item.originalIndex;
     switch (button.event) {
       case "edit":
-        {
-          const options = this.options();
-          const item3 = await getXhmrmsbjSbjbItemSbjbForm(this.message, options, item2.产品分类, item);
-          if (item3) {
-            item2.锁边铰边数据[rowIdx] = item3;
-            if (item3.默认值) {
-              for (const [i, item4] of item2.锁边铰边数据.entries()) {
-                if (i === rowIdx) {
-                  continue;
-                }
-                delete item4.默认值;
-              }
-            }
-            this.refreshItems();
-          }
-        }
+        await this.editSbjbItemSbjb(rowIdx);
         break;
       case "delete":
         if (await this.message.confirm("确定删除吗？")) {
@@ -662,7 +648,7 @@ export class XhmrmsbjSbjbComponent {
     if (!item2) {
       return;
     }
-    const item = await getXhmrmsbjSbjbItemSbjbForm(this.message, options, item2.产品分类);
+    const item = await getXhmrmsbjSbjbItemSbjbFormResult(this.message, options, item2.产品分类);
     if (item) {
       if (item.默认值) {
         for (const item3 of item2.锁边铰边数据) {
@@ -690,6 +676,26 @@ export class XhmrmsbjSbjbComponent {
     }
     item2.锁边铰边数据 = item2.锁边铰边数据.filter((_, i) => !selected.includes(i));
     this.refreshItems();
+  }
+  async editSbjbItemSbjb(index: number) {
+    const item2 = this.activeItem();
+    if (!item2) {
+      return;
+    }
+    const options = this.options();
+    const item3 = await getXhmrmsbjSbjbItemSbjbFormResult(this.message, options, item2.产品分类, item2.锁边铰边数据[index]);
+    if (item3) {
+      item2.锁边铰边数据[index] = item3;
+      if (item3.默认值) {
+        for (const [i, item4] of item2.锁边铰边数据.entries()) {
+          if (i === index) {
+            continue;
+          }
+          delete item4.默认值;
+        }
+      }
+      this.refreshItems();
+    }
   }
 
   async copySbjbItems(to: XhmrmsbjSbjbItem) {
@@ -795,12 +801,30 @@ export class XhmrmsbjSbjbComponent {
 
   async validate() {
     const items = this.items();
-    const errItems: {i: number; j: number; errKeys: string[]; errMsgs: string[]}[] = [];
+    const result = new ResultWithErrors(null);
+    const options = this.options();
+    let sbjbItemSbjbItemToEdit: {i: number; j: number} | undefined;
     for (const [i, item] of items.entries()) {
       const items2 = getSortedItems(item.锁边铰边数据, (v) => v.排序 ?? 0);
       for (const [j, item2] of items2.entries()) {
+        const {form} = getXhmrmsbjSbjbItemSbjbForm(options, item.产品分类, item2);
+        for (const info of form) {
+          const key = info.model?.key;
+          if (typeof key === "string") {
+            const errors = validateValue(info, (item2 as any)[key]);
+            const errorMsgs = getErrorMsgs(errors);
+            if (errorMsgs.length > 0) {
+              if (!sbjbItemSbjbItemToEdit) {
+                sbjbItemSbjbItemToEdit = {i, j};
+              }
+              for (const msg of getErrorMsgs(errors)) {
+                const names = [`${item.产品分类}第${j + 1}条`, info.label || ""];
+                result.addErrorStr(`${getNamesStr(names)}:${msg}`);
+              }
+            }
+          }
+        }
         const errKeys: string[] = [];
-        const errMsgs: string[] = [];
         for (const key of getSbjbItemCadKeys(item.产品分类)) {
           if (isSbjbItemOptionalKeys2(key)) {
             if (!item2[key]?.名字) {
@@ -810,33 +834,19 @@ export class XhmrmsbjSbjbComponent {
             errKeys.push(key);
           }
         }
-        if (errKeys.length > 0 || errMsgs.length > 0) {
-          errItems.push({i, j, errKeys, errMsgs});
+        if (errKeys.length > 0) {
+          result.addErrorStr(`缺少选项${getNamesStr(errKeys)}`);
         }
       }
     }
-    if (errItems.length > 0) {
-      await this.message.error({
-        content: "锁边铰边数据有误",
-        details: errItems.map(({i, errKeys, errMsgs}) => {
-          const item = items[i];
-          const strs: string[] = [];
-          if (errKeys.length > 0) {
-            strs.push(`缺少选项${getNamesStr(errKeys)}`);
-          }
-          strs.push(...errMsgs);
-          return `${item.产品分类}: ${strs.join("；")}`;
-        })
-      });
-      const errItem = errItems[0];
-      this.activeItemIndex.set(errItem.i);
-      setTimeout(() => {
-        this.activeSbjbItemIndex.set(errItem.j);
-        this.sbjbItemTable()?.scrollToRow(errItem.j);
-      }, 0);
-      return false;
+    await result.alertError(this.message);
+    if (sbjbItemSbjbItemToEdit) {
+      const {i, j} = sbjbItemSbjbItemToEdit;
+      this.activeItemIndex.set(i);
+      this.activeSbjbItemIndex.set(j);
+      this.editSbjbItemSbjb(j);
     }
-    return true;
+    return !result.hasError();
   }
   async save() {
     const isValid = await this.validate();

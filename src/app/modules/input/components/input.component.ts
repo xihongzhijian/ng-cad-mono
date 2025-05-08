@@ -17,7 +17,7 @@ import {
   viewChild,
   viewChildren
 } from "@angular/core";
-import {FormControl, FormsModule, ValidationErrors, ValidatorFn} from "@angular/forms";
+import {FormsModule, ValidationErrors} from "@angular/forms";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -33,7 +33,7 @@ import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectChange, MatSelectModule} from "@angular/material/select";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {getArray, imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
+import {imgCadEmpty, joinOptions, splitOptions} from "@app/app.common";
 import {toFixed} from "@app/utils/func";
 import {getValue} from "@app/utils/get-value";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
@@ -58,7 +58,7 @@ import {BehaviorSubject} from "rxjs";
 import {ClickStopPropagationDirective} from "../../directives/click-stop-propagation.directive";
 import {AnchorSelectorComponent} from "./anchor-selector/anchor-selector.component";
 import {InputInfo, InputInfoBase, InputInfoOptions, InputInfoString} from "./input.types";
-import {parseObjectString} from "./input.utils";
+import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
 
 @Component({
   selector: "app-input",
@@ -414,30 +414,8 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     }
   }
 
-  private _getErrorMsg(errors: ValidationErrors | null): string {
-    if (!errors) {
-      return "";
-    }
-    for (const key in errors) {
-      const value = errors[key];
-      let msg = "";
-      if (typeof value === "string") {
-        msg = value;
-      } else {
-        msg = key;
-      }
-      if (msg === "required") {
-        return "不能为空";
-      }
-      if (key === "min" && isTypeOf(value, "object")) {
-        return `不能小于${value.min}`;
-      }
-      if (key === "max" && isTypeOf(value, "object")) {
-        return `不能大于${value.max}`;
-      }
-      return msg;
-    }
-    return "";
+  private _getErrorMsg(errors: ValidationErrors | null) {
+    return getErrorMsgs(errors)[0] ?? "";
   }
 
   getErrorMsg() {
@@ -553,15 +531,15 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const dataset = this.elRef.nativeElement.dataset;
     dataset.type = type;
     dataset.label = info.label;
-    let validateValue = !info.noInitialValidate;
+    let shouldValidate = !info.noInitialValidate;
     changes.forEachItem((item) => {
       if (item.key === "forceValidateNum") {
         if (item.currentValue !== item.previousValue) {
-          validateValue = true;
+          shouldValidate = true;
         }
       }
     });
-    if (validateValue) {
+    if (shouldValidate) {
       this.validateValue();
     }
     this.valueChange$.next(this.value);
@@ -703,84 +681,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
 
   validateValue(value = this.value) {
     const info = this.info();
-    const inputComponents = this.inputComponents();
-    const validators = info.validators;
-    let errors: ValidationErrors | null = null;
-    let errors2: ValidationErrors | null = null;
-    if (validators && !info.hidden) {
-      const control = new FormControl(value, validators);
-      errors = control.errors;
-    }
-    for (const inputComponent of inputComponents) {
-      inputComponent.validateValue();
-      if (inputComponent.errors && !inputComponent.info().hidden) {
-        if (!errors2) {
-          errors2 = {};
-        }
-        const errors3 = {...inputComponent.errors};
-        Object.assign(errors2, errors3);
-      }
-    }
-    if (isEmpty(errors)) {
-      errors = null;
-    }
-    if (isEmpty(errors2)) {
-      errors2 = null;
-    }
-    this.errors = errors;
-    this.errors2 = errors2;
-    if (info.type === "object" && isTypeOf(value, "object")) {
-      const errorsKey: ObjectOf<ValidationErrors | null> = {};
-      const errorsValue: ObjectOf<ValidationErrors | null> = {};
-      const keyValidators = getArray(info.keyValidators);
-      const valueValidators = getArray(info.valueValidators);
-      for (const key in value) {
-        const val = value[key];
-        if (keyValidators.length > 0) {
-          const keyValidators2 = keyValidators.map<ValidatorFn>((v) => (control) => v(control, val));
-          const control = new FormControl(key, keyValidators2);
-          if (!isEmpty(control.errors)) {
-            errorsKey[key] = control.errors;
-          }
-        }
-        if (valueValidators.length > 0) {
-          const valueValidators2 = valueValidators.map<ValidatorFn>((v) => (control) => v(control, key));
-          const control = new FormControl(val, valueValidators2);
-          if (!isEmpty(control.errors)) {
-            errorsValue[key] = control.errors;
-          }
-        }
-      }
-      const {requiredKeys} = info;
-      if (requiredKeys) {
-        for (const key of requiredKeys) {
-          if (!value[key]) {
-            const key2 = "不能为空";
-            const a = errorsValue[key];
-            if (a) {
-              a[key2] = true;
-            } else {
-              errorsValue[key] = {[key2]: true};
-            }
-          }
-        }
-      }
-      this.errorsKey = errorsKey;
-      this.errorsValue = errorsValue;
-    } else if (info.type === "array" && Array.isArray(value)) {
-      const {valueValidators} = info;
-      const errorsValue: ObjectOf<ValidationErrors | null> = {};
-      for (const [i, val] of value.entries()) {
-        if (valueValidators) {
-          const control = new FormControl(val, valueValidators);
-          if (!isEmpty(control.errors)) {
-            errorsValue[String(i)] = control.errors;
-          }
-        }
-      }
-      this.errorsValue = errorsValue;
-    }
-    return {...this.errors, ...this.errors2, ...this.errorsKey, ...this.errorsValue};
+    return validateValue(info, value, this);
   }
 
   isValid() {

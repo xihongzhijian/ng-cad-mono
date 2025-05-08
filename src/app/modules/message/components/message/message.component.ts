@@ -24,6 +24,7 @@ import {DomSanitizer, SafeHtml, SafeResourceUrl} from "@angular/platform-browser
 import {Debounce} from "@decorators/debounce";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
+import {validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {clamp, cloneDeep, isEmpty} from "lodash";
 import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
@@ -38,7 +39,6 @@ import {
   MessageDataButton,
   MessageOutput
 } from "./message.types";
-import {validateForm} from "./message.utils";
 
 @Component({
   selector: "app-message",

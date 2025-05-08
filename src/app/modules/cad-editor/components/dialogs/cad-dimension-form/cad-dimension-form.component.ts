@@ -7,8 +7,7 @@ import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
 import {CadDimensionLinear} from "@lucilor/cad-viewer";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
-import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
-import {validateForm} from "@modules/message/components/message/message.utils";
+import {InputInfoWithDataGetter, validateForm} from "@modules/input/components/input.utils";
 import {isEmpty} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 
