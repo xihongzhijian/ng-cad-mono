@@ -46,3 +46,20 @@
     }
   }
 }
+
+.items {
+  --items-per-row: 3;
+  --item-margin: 10px;
+  --item-padding: 10px;
+  background-color: var(--mat-sys-outline);
+
+  .item {
+    background-color: var(--mat-sys-surface);
+    box-shadow: var(--mat-sys-level2);
+    border-radius: 20px;
+
+    > app-input {
+      width: 100%;
+    }
+  }
+}

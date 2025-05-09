@@ -1,5 +1,5 @@
 import {FormControl, ValidationErrors, ValidatorFn} from "@angular/forms";
-import {filePathUrl, getArray, session} from "@app/app.common";
+import {filePathUrl, getArray, joinOptions, session, splitOptions} from "@app/app.common";
 import {getValue, Value} from "@app/utils/get-value";
 import {isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -239,6 +239,32 @@ export class InputInfoWithDataGetter<T> {
       model: {data: this.data, key},
       ...this.others,
       ...others
+    };
+  }
+
+  selectMultipleAsStr(
+    key: keyof T,
+    options: Value<InputInfoOptions<string>>,
+    others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, string>>
+  ): InputInfoSelectMultiple<T, string> {
+    const data = getValue(this.data);
+    const valueRaw = data[key];
+    let value: string[] = [];
+    if (typeof valueRaw === "string") {
+      value = splitOptions(valueRaw);
+    }
+    return {
+      type: "select",
+      label: String(key),
+      options: options,
+      multiple: true,
+      value,
+      ...this.others,
+      ...others,
+      onChange: (val, info) => {
+        data[key] = joinOptions(val) as any;
+        this.others?.onChange?.(val, info);
+      }
     };
   }
 
