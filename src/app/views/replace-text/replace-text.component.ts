@@ -51,7 +51,6 @@ export class ReplaceTextComponent implements AfterViewInit {
   collection = signal<string>("");
   async ngAfterViewInit() {
     const {collection} = this.route.snapshot.queryParams;
-    console.log("collection", collection);
     if (collection) {
       this.collection.set(collection);
     } else {

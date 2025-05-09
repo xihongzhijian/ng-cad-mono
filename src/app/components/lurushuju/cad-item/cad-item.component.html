@@ -38,7 +38,7 @@
             [collection]="collection()"
             [id]="cadId()"
             [data]="cadData()"
-            [style.width.px]="cadWidth"
+            [style.width]="cadWidth()"
             (click)="selectable()?.onChange(this)"
             (dblclick)="onCadImageClick()"
             (dataInfoChange)="onCadInfoChange($event)"
@@ -50,7 +50,7 @@
             [collection]="collection()"
             [data]="cadData()"
             [isLocal]="isLocal()"
-            [style.width.px]="cadWidth"
+            [style.width]="cadWidth()"
             (dblclick)="onCadImageClick()"
             (dataInfoChange)="onCadInfoChange($event)"
           ></app-cad-image>
@@ -130,7 +130,7 @@
             [id]="mubanId()"
             [data]="mubanData()"
             collection="kailiaocadmuban"
-            [style.width.px]="cadWidth"
+            [style.width]="cadWidth()"
             (dblclick)="onMubanImageClick()"
           ></app-cad-image>
         }

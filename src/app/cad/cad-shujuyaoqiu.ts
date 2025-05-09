@@ -8,14 +8,14 @@ import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
 import {importComponentConfigNames} from "@views/import/import.types";
 
 export interface Cad数据要求Raw extends TableDataBase {
-  cadtanchuangxiugaishuxing: string;
-  xianduantanchuangxiugaishuxing: string;
-  tianjiahuodaorucadyaoqiu: string;
-  xuanzhongcadyuchuli: string;
-  daorucadpeizhi: string;
-  xuanzecadtanchuangshaixuanshujuyaoqiu: string;
-  bangzhuwendang: string;
-  cankaodxfmuban: string;
+  cadtanchuangxiugaishuxing?: string;
+  xianduantanchuangxiugaishuxing?: string;
+  tianjiahuodaorucadyaoqiu?: string;
+  xuanzhongcadyuchuli?: string;
+  daorucadpeizhi?: string;
+  xuanzecadtanchuangshaixuanshujuyaoqiu?: string;
+  bangzhuwendang?: string;
+  cankaodxfmuban?: string;
 }
 
 export type CadEditType = "add" | "set";
@@ -33,7 +33,7 @@ export class Cad数据要求 {
   导入参考dxf模板: string;
 
   constructor(raw: Cad数据要求Raw) {
-    const split = (str: string) => {
+    const split = (str = "") => {
       if (typeof str === "string") {
         return str
           .split("+")
@@ -46,7 +46,7 @@ export class Cad数据要求 {
     const emptyCad = new CadData();
     const emptyHoutaiCad = getHoutaiCad(emptyCad);
     const search: Cad数据要求["search"] = {};
-    const getItems = (source: string) => {
+    const getItems = (source = "") => {
       const items: Cad数据要求Item[] = [];
       for (const str of split(source)) {
         const arr = str.split("=");
@@ -102,12 +102,12 @@ export class Cad数据要求 {
     this.选中CAD要求 = getItems(raw.xuanzhongcadyuchuli || "删除展开信息");
     this.search = search;
     this.导入配置 = {};
-    this.选择CAD弹窗筛选数据要求 = raw.xuanzecadtanchuangshaixuanshujuyaoqiu;
-    this.帮助文档 = raw.bangzhuwendang;
-    this.导入参考dxf模板 = raw.cankaodxfmuban;
+    this.选择CAD弹窗筛选数据要求 = raw.xuanzecadtanchuangshaixuanshujuyaoqiu ?? "";
+    this.帮助文档 = raw.bangzhuwendang ?? "";
+    this.导入参考dxf模板 = raw.cankaodxfmuban ?? "";
     let 导入配置Raw: ObjectOf<any> | undefined;
     try {
-      导入配置Raw = JSON.parse(raw.daorucadpeizhi);
+      导入配置Raw = JSON.parse(raw.daorucadpeizhi ?? "");
     } catch {}
     if (isTypeOf(导入配置Raw, "object")) {
       for (const key in 导入配置Raw) {
@@ -141,7 +141,7 @@ export interface Cad数据要求Item {
   key2?: string;
   cadKey?: keyof CadData;
   isHoutaiCadKey?: boolean;
-  value: string;
+  value?: string;
   readonly?: boolean;
   required?: boolean;
   override?: boolean;

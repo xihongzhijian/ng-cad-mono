@@ -202,7 +202,6 @@ export class XhmrmsbjSbjbComponent {
   }
   async editSbjbItemSbjbItem(index: number) {
     const item = this.activeSbjbItem();
-    console.log(item);
     if (!item) {
       return;
     }

@@ -1,17 +1,23 @@
-import {Component, effect, forwardRef, inject, OnDestroy, OnInit, signal, viewChild} from "@angular/core";
+import {Component, computed, effect, forwardRef, inject, OnDestroy, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
+import {MatIconModule} from "@angular/material/icon";
 import {MatMenuModule, MatMenuTrigger} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {timer} from "@app/app.common";
+import {imgCadEmpty, timer} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-data-transform";
+import {Cad数据要求, getCadQueryFields} from "@app/cad/cad-shujuyaoqiu";
+import {CadCollection} from "@app/cad/collections";
 import {uploadAndReplaceCad} from "@app/cad/utils";
+import {getNamesStr} from "@app/utils/error-message";
 import {matchOptionsFn} from "@app/utils/mongo";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
+import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
+import {CadItemButton, CadItemForm} from "@components/lurushuju/cad-item/cad-item.types";
 import {CadData, CadEntities, CadEventCallBack} from "@lucilor/cad-viewer";
 import {downloadByString, Matrix, ObjectOf, Point, selectFiles} from "@lucilor/utils";
 import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
@@ -22,8 +28,11 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadStatusAssemble, CadStatusNormal} from "@services/cad-status";
-import {difference, union} from "lodash";
+import {cloneDeep, difference, union} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
+import {BehaviorSubject, filter, lastValueFrom} from "rxjs";
+import {getCadInfoInputs2} from "../cad-info/cad-info.utils";
+import {MubanCadItemInfo} from "./sub-cads.types";
 
 interface CadNode {
   data: CadData;
@@ -37,11 +46,13 @@ type ContextMenuCadField = "main" | "component";
   templateUrl: "./sub-cads.component.html",
   styleUrls: ["./sub-cads.component.scss"],
   imports: [
+    CadItemComponent,
     ContextMenuModule,
     forwardRef(() => CadImageComponent),
     MatButtonModule,
     MatCheckboxModule,
     MatDividerModule,
+    MatIconModule,
     MatMenuModule,
     MatSlideToggleModule,
     MatTooltipModule,
@@ -209,6 +220,7 @@ export class SubCadsComponent implements OnInit, OnDestroy {
     this.components.set(cad.data.components.data.slice());
     this.componentsExpanded.set(this.components().length > 0);
     this.status.components.selected.set([]);
+    this.updateKailiaoInfo();
   }
 
   onContextMenu(data: CadData, field: ContextMenuCadField) {
@@ -489,6 +501,150 @@ export class SubCadsComponent implements OnInit, OnDestroy {
     const cads = await openCadListDialog(this.dialog, {data: {selectMode: "single", options: data.options, collection: "cad"}});
     if (cads && cads[0]) {
       this.http.replaceData(data, cads[0].id, this.status.collection());
+    }
+  }
+
+  imgCadEmpty = imgCadEmpty;
+  mubanYaoqiu = computed(() => {
+    const yaoqiu = new Cad数据要求({vid: 1, mingzi: "激光开料模板"});
+    yaoqiu.CAD弹窗修改属性.push({key: "选项", cadKey: "options"});
+    yaoqiu.选中CAD要求.push({key: "选项", remove: true});
+    return yaoqiu;
+  });
+  mubansMap = new Map<string, CadData>();
+  async fetchMubans(ids: string[], force?: boolean) {
+    if (!force) {
+      ids = ids.filter((v) => !this.mubansMap.has(v));
+    }
+    if (ids.length < 1) {
+      return;
+    }
+    const result = await this.http.getCad({collection: "kailiaocadmuban", ids, fields: getCadQueryFields(this.mubanYaoqiu())});
+    const kailiaoInfo = this.kailiaoInfo();
+    for (const muban of result.cads) {
+      const mubanInfo = kailiaoInfo.mubans.find((v) => v.id === muban.id);
+      if (mubanInfo) {
+        muban.options = {...mubanInfo.options};
+      }
+      this.mubansMap.set(muban.id, muban);
+    }
+  }
+
+  kailiaoInfo = signal<{mubans: {id: string; weiyima?: string; options: CadData["options"]}[]}>({mubans: []});
+  private _updateKailiaoInfoLock$ = new BehaviorSubject(false);
+  async updateKailiaoInfo() {
+    if (this._updateKailiaoInfoLock$.value) {
+      await lastValueFrom(this._updateKailiaoInfoLock$.pipe(filter((v) => !v)));
+    }
+    this._updateKailiaoInfoLock$.next(true);
+    const data = this.status.cad.data;
+    let kailiaoInfo: ReturnType<typeof this.kailiaoInfo> = {mubans: []};
+    if (data.info.kailiaoInfo) {
+      kailiaoInfo = cloneDeep(data.info.kailiaoInfo);
+    }
+    this.kailiaoInfo.set(kailiaoInfo);
+
+    const kailiaoMubanInfos: ReturnType<typeof this.kailiaoMubanInfos> = [];
+    const ids: string[] = [];
+    for (const muban of kailiaoInfo.mubans) {
+      if (muban.id) {
+        ids.push(muban.id);
+      }
+    }
+    await this.fetchMubans(ids);
+    for (const muban of kailiaoInfo.mubans) {
+      const mubanData = this.mubansMap.get(muban.id) || new CadData();
+      kailiaoMubanInfos.push({
+        data: mubanData,
+        cadForm: {
+          onEdit: (component) => {
+            const {index} = component.customInfo();
+            this.editKailiaoMubanInfo(index);
+          }
+        }
+      });
+    }
+    this.kailiaoMubanInfos.set(kailiaoMubanInfos);
+    this._updateKailiaoInfoLock$.next(false);
+  }
+  setKailiaoInfo(info: ReturnType<typeof this.kailiaoInfo>) {
+    const data = this.status.cad.data;
+    data.info.kailiaoInfo = info;
+    this.updateKailiaoInfo();
+  }
+
+  showKailiaoMubanInfos = computed(() => {
+    const collection = this.status.collection();
+    const skipCollections: CadCollection[] = ["CADmuban", "kailiaocadmuban"];
+    return !skipCollections.includes(collection);
+  });
+  kailiaoMubanInfos = signal<{data: CadData; cadForm: CadItemForm<MubanCadItemInfo>}[]>([]);
+  mubanCadButtons = computed(() => {
+    const buttons: CadItemButton<MubanCadItemInfo>[] = [];
+    buttons.push(
+      {
+        name: "打开",
+        onClick: (component) => {
+          const {index} = component.customInfo();
+          const info = this.kailiaoInfo();
+          const id = info.mubans[index].id;
+          this.status.openCadInNewTab(id, "kailiaocadmuban");
+        }
+      },
+      {
+        name: "删除",
+        onClick: (component) => {
+          const {index} = component.customInfo();
+          this.removeKailiaoMubanInfo(index);
+        }
+      }
+    );
+    return buttons;
+  });
+  async addKailiaoMubanInfo() {
+    const kailiaoInfo = this.kailiaoInfo();
+    const checkedItems = kailiaoInfo.mubans.map((v) => v.id);
+    const result = await openCadListDialog(this.dialog, {data: {selectMode: "multiple", collection: "kailiaocadmuban", checkedItems}});
+    if (result) {
+      kailiaoInfo.mubans = [];
+      for (const data of result) {
+        data.options = {};
+        this.mubansMap.set(data.id, data);
+        kailiaoInfo.mubans.push({id: data.id, weiyima: data.info.唯一码, options: {}});
+      }
+      this.setKailiaoInfo(kailiaoInfo);
+    }
+  }
+  async removeKailiaoMubanInfo(index: number) {
+    const kailiaoInfo = this.kailiaoInfo();
+    const id = kailiaoInfo.mubans[index].id;
+    const data = this.mubansMap.get(id);
+    if (!(await this.message.confirm(`是否确定删除${getNamesStr([data?.name || ""])}？`))) {
+      return;
+    }
+    if (data) {
+      this.mubansMap.delete(id);
+    }
+    kailiaoInfo.mubans = kailiaoInfo.mubans.filter((_, i) => i !== index);
+    this.setKailiaoInfo(kailiaoInfo);
+  }
+  async editKailiaoMubanInfo(index: number) {
+    const kailiaoInfo = this.kailiaoInfo();
+    const id = kailiaoInfo.mubans[index].id;
+    const dataRaw = this.mubansMap.get(id);
+    if (!dataRaw) {
+      return;
+    }
+    const data = dataRaw.clone();
+    const mubanInfo = kailiaoInfo.mubans[index];
+    data.options = mubanInfo.options;
+    const yaoqiu = this.mubanYaoqiu();
+    const form = await getCadInfoInputs2(yaoqiu, "set", "kailiaocadmuban", data, this.http, this.dialog, this.status, false);
+    const result = await this.message.form(form);
+    if (result) {
+      dataRaw.options = data.options;
+      mubanInfo.options = {...data.options};
+      this.setKailiaoInfo(kailiaoInfo);
     }
   }
 }

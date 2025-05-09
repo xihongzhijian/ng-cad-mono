@@ -173,7 +173,7 @@ export class CadImageComponent implements AfterViewInit {
     try {
       const id = this.id();
       const collection = this.collection();
-      if ((!data || data.info.incomplete) && id) {
+      if (!data && id) {
         const cadsResult = await this.http.getCad({collection, id}, {silent: true});
         if (cadsResult.cads[0]) {
           data = cadsResult.cads[0];

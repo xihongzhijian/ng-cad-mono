@@ -74,15 +74,8 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
-  cadWidth = 300;
-  cadHeight = 150;
-
-  @HostBinding("style.--cad-image-width") get widthStyle() {
-    return `${this.cadWidth}px`;
-  }
-  @HostBinding("style.--cad-image-height") get heightStyle() {
-    return `${this.cadHeight}px`;
-  }
+  @HostBinding("style.--cad-image-width") widthStyle = "";
+  @HostBinding("style.--cad-image-height") heightStyle = "";
   @HostBinding("style") style: csstype.Properties = {};
   @HostBinding("class") class: string[] = [];
 
@@ -112,6 +105,8 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   validators = input<CadItemValidators>();
   cadForm = input<CadItemForm<T>>();
   mokuaiName = input<string>();
+  cadWidth = input("300px");
+  cadHeight = input("150px");
   beforeEditCad = output();
   afterEditCad = output();
   afterFetchCad = output();
@@ -143,6 +138,9 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     this.cadViewer()?.destroy();
     this.mubanViewer()?.destroy();
   }
+
+  widthEff = effect(() => (this.widthStyle = this.cadWidth()));
+  heightEff = effect(() => (this.heightStyle = this.cadHeight()));
 
   cadEff = effect(() => {
     this.cad();
@@ -523,12 +521,6 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     if (showCadViewer) {
       if (await this.onlineFetch()) {
         return;
-      }
-    } else if (this.isOnline()) {
-      if (cad instanceof CadData) {
-        cad.info.incomplete = true;
-      } else {
-        cad.json.info = {...cad.json.info, incomplete: true};
       }
     }
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);

@@ -752,9 +752,13 @@
   </ng-template>
   <ng-template #suffixTextsTmp>
     @for (text of info.suffixTexts; track $index) {
-      <span [class]="text.class" [style]="text.style">
-        {{ text.name }}
-      </span>
+      @if (text.onClick) {
+        <button mat-button [style]="text.style" (click)="text.onClick()">{{ text.name }}</button>
+      } @else {
+        <span [class]="text.class" [style]="text.style">
+          {{ text.name }}
+        </span>
+      }
     }
   </ng-template>
 }
