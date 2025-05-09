@@ -201,7 +201,6 @@ export const setCadData = (data: CadData, yaoqiu: Cad数据要求 | null | undef
   if (!yaoqiu) {
     return;
   }
-  data.type = yaoqiu.CAD分类;
   const dataAny = data as any;
   const toRemoveMap: ObjectOf<{keys2: string[]}> = {};
   const toReserveMap: typeof toRemoveMap = {};

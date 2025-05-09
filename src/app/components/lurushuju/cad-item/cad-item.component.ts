@@ -97,7 +97,6 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   isLocal = input(false, {transform: booleanAttribute});
   selectable = input<CadItemSelectable<T>>();
   editDisabled = input(false, {transform: booleanAttribute});
-  noFixedType = input(false, {transform: booleanAttribute});
   events = input<{
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
@@ -307,11 +306,9 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     const {http, dialog, status, message} = this;
     const yaoqiu = this.yaoqiu();
     const validators = this.validators();
-    const noFixedType = this.noFixedType();
     const formTitleBtns = this.formTitleBtns() || [];
     const data2 = await openCadForm(yaoqiu, collection, data, http, dialog, status, message, true, {
       validators,
-      noFixedType,
       formMessageData: {
         titleBtns: formTitleBtns.map((v) => ({label: v.name, onClick: () => v.onClick(this)}))
       }
