@@ -357,7 +357,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
 
-  async getNavNodeItem(node?: DataListNavNode, to: DataListNavNode | null = null) {
+  async getNavNodeItem(node?: DataListNavNode, to: DataListNavNode | "root" | null = null) {
     const id = node ? node.id : null;
     if (node) {
       node = cloneDeep(node);
@@ -391,9 +391,10 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
     return null;
   }
-  async addNavNode(nodeParent?: DataListNavNode | null, fromNodeSelector = false) {
-    if (nodeParent && fromNodeSelector) {
-      nodeParent = findDataListNavNode(this.navNodes(), (v) => v.id === nodeParent?.id);
+  async addNavNode(nodeParent: DataListNavNode | "root" | null, fromNodeSelector = false) {
+    if (nodeParent instanceof DataListNavNode && fromNodeSelector) {
+      const id = nodeParent.id;
+      nodeParent = findDataListNavNode(this.navNodes(), (v) => v.id === id);
     }
     const node = await this.getNavNodeItem(undefined, nodeParent);
     if (!node) {

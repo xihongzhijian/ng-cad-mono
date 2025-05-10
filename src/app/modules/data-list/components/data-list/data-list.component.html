@@ -4,7 +4,7 @@
       <app-input [info]="navQueryInputInfo()"></app-input>
       <button mat-stroked-button [class.accent]="navEditMode()" (click)="toggleNavEditMode()">编辑分类</button>
       @if (navEditMode()) {
-        <button mat-stroked-button (click)="addNavNode()">添加1级</button>
+        <button mat-stroked-button (click)="addNavNode('root')">添加1级</button>
       }
     </div>
     <div class="toolbar">
