@@ -1,6 +1,7 @@
 import {TableDataBase, TableDataWrapper} from "./table-data-base";
 
-export const getIsVersion2024 = (version: any) => version === "模块版本2024";
+export const version2024 = "模块版本2024";
+export const getIsVersion2024 = (version: any) => version === version2024;
 
 export interface ZuoshujuTableData extends TableDataBase {
   zuoshujubanben?: string;
