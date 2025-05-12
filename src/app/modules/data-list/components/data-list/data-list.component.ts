@@ -22,6 +22,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTree, MatTreeModule} from "@angular/material/tree";
 import {session} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
+import {getNamesStr} from "@app/utils/error-message";
 import {getValueString} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {environment} from "@env";
@@ -34,7 +35,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
-import {cloneDeep, debounce} from "lodash";
+import {cloneDeep, debounce, difference, union} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, lastValueFrom, Subject, take} from "rxjs";
 import {v4} from "uuid";
@@ -43,9 +44,8 @@ import {
   DataListNavData,
   DataListNavNameChangeEvent,
   DataListNavNodeRaw,
-  DataListQueryItemField as DataListqueryItemFieldInfo,
-  dataListQueryItemFieldsDefault as dataListqueryItemFieldInfosDefault,
-  DataListSelectMode,
+  DataListQueryItemField,
+  dataListQueryItemFieldsDefault,
   NodeSelectorMode
 } from "./data-list.types";
 import {
@@ -89,8 +89,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   navDataName = input.required<string>();
   navDataTitle = input.required<string>();
   itemsAllIn = input<T[]>([], {alias: "itemsAll"});
-  queryItemFieldInfos = input<DataListqueryItemFieldInfo<T>[]>(dataListqueryItemFieldInfosDefault);
-  selectMode = input<DataListSelectMode>("none");
+  queryItemFieldInfos = input<DataListQueryItemField<T>[]>(dataListQueryItemFieldsDefault);
   selectedNavNodes = model<DataListNavNode[]>([]);
   items = model<T[]>([]);
   activeNavNode = model<DataListNavNode | null>(null);
@@ -144,41 +143,35 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     this.navEditMode.update((v) => !v);
   }
 
-  canSelectNavNode = computed(() => this.selectMode() !== "none");
   selectNavNode(node: DataListNavNode) {
     const nodes = this.selectedNavNodes();
-    switch (this.selectMode()) {
-      case "none":
-        break;
-      case "single":
-        if (nodes.includes(node)) {
-          this.selectedNavNodes.set([]);
-        } else {
-          this.selectedNavNodes.set([node]);
-        }
-        break;
-      case "multiple":
-        if (nodes.includes(node)) {
-          this.selectedNavNodes.set(nodes.filter((v) => v !== node));
-        } else {
-          this.selectedNavNodes.set([...nodes, node]);
-        }
-        break;
+    if (nodes.includes(node)) {
+      this.selectedNavNodes.set(nodes.filter((v) => v !== node));
+    } else {
+      this.selectedNavNodes.set([...nodes, node]);
     }
   }
   selectNavNodeChildren(node: DataListNavNode) {
     const nodes = this.selectedNavNodes();
     const children = getDataListNavNodesFlat(node.children || []).toArray();
-    switch (this.selectMode()) {
-      case "none":
-      case "single":
-        break;
-      case "multiple":
-        if (children.every((v) => nodes.includes(v))) {
-          this.selectedNavNodes.set(nodes.filter((v) => !children.includes(v)));
-        } else {
-          this.selectedNavNodes.set([...nodes, ...children]);
-        }
+    if (children.every((v) => nodes.includes(v))) {
+      this.selectedNavNodes.set(nodes.filter((v) => !children.includes(v)));
+    } else {
+      this.selectedNavNodes.set([...nodes, ...children]);
+    }
+  }
+  selectNavNodes(nodes: DataListNavNode[], recursive?: boolean) {
+    const selectedNavNodes = this.selectedNavNodes();
+    let allNodes: DataListNavNode[];
+    if (recursive) {
+      allNodes = getDataListNavNodesFlat(nodes).toArray();
+    } else {
+      allNodes = nodes;
+    }
+    if (allNodes.every((v) => selectedNavNodes.includes(v))) {
+      this.selectedNavNodes.set(difference(selectedNavNodes, allNodes));
+    } else {
+      this.selectedNavNodes.set(union(selectedNavNodes, allNodes));
     }
   }
 
@@ -418,13 +411,29 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
   async moveNavNode(node: DataListNavNode) {
+    return await this.moveNavNodes([node]);
+  }
+  async moveNavNodes(nodesToMove: DataListNavNode[]) {
     const nodes = this.navNodes();
-    const path = getDataListNavNodePath(nodes, node);
-    const parentNode = path.at(-2) || null;
-    const {node: parentNode2, submit} = await this.selectNode("parent", `分类：${node.name}`, parentNode, [node.id]);
+    const names: string[] = [];
+    const ids: string[] = [];
+    const parentNodes: DataListNavNode[] = [];
+    for (const node of nodesToMove) {
+      names.push(node.name);
+      ids.push(node.id);
+      const path = getDataListNavNodePath(nodes, node);
+      const parentNode = path.at(-2) || null;
+      if (parentNode && !parentNodes.includes(parentNode)) {
+        parentNodes.push(parentNode);
+      }
+    }
+    const parentNode = parentNodes.length === 1 ? parentNodes[0] : null;
+    const {node: parentNode2, submit} = await this.selectNode("parent", `分类：${getNamesStr(names)}`, parentNode, ids);
     if (submit) {
       const to = findDataListNavNode(nodes, (v) => v.id === parentNode2?.id) || "root";
-      moveDataListNavNode(nodes, node, to);
+      for (const node of nodesToMove) {
+        moveDataListNavNode(nodes, node, to);
+      }
       await this.setNavNodes();
       this.filterNavNodes();
     }
