@@ -975,12 +975,6 @@ export const printCads = async (params: PrintCadsParams) => {
           cad.render(result.locator);
         }
         if (Array.isArray(currUrls) && currUrls.length > 0) {
-          for (const e of Object.values(result.lines)) {
-            if (e) {
-              e.visible = true;
-              cad.render(e);
-            }
-          }
           if (result.errors.length < 1 && showSmall) {
             const cadImages = await drawDesignPics(data, keyword, currUrls.length, true, result.rect, styles);
             if (cadImages) {
