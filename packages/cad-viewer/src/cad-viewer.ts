@@ -162,7 +162,7 @@ export class CadViewer extends EventEmitter {
       }
     }
     if (needsResize) {
-      this.resize();
+      this.resize(this._config.width, this._config.height);
     }
     if (needsSetBg) {
       this.setBackgroundColor();
@@ -214,12 +214,11 @@ export class CadViewer extends EventEmitter {
     return this;
   }
 
-  move(dx: number, dy: number, entities?: CadEntities) {
+  move(dx: number, dy: number) {
     const box = this.draw.viewbox();
     box.x -= dx;
     box.y -= dy;
     this.draw.viewbox(box);
-    this.emit("moveentities", entities ?? this.data.entities, [dx, dy]);
     return this;
   }
 
@@ -239,14 +238,14 @@ export class CadViewer extends EventEmitter {
     }
   }
 
-  resize(width?: number, height?: number) {
+  resize(width: number, height: number) {
     const {draw, _config} = this;
-    if (width && width > 0) {
+    if (width > 0) {
       _config.width = width;
     } else {
       width = _config.width;
     }
-    if (height && height > 0) {
+    if (height > 0) {
       _config.height = height;
     } else {
       height = _config.height;
@@ -848,11 +847,11 @@ export class CadViewer extends EventEmitter {
     let entities: CadEntities;
     if (toMove.length <= notToMove.length) {
       entities = toMove.transform({translate: [x, y]}, false);
-      this.emit("moveentities", toMove, [x, y]);
     } else {
-      this.move(x, y, toMove);
+      this.move(x, y);
       entities = notToMove.transform({translate: [-x, -y]}, false);
     }
+    this.emit("moveentities", toMove, [x, y]);
     return entities;
   }
 
