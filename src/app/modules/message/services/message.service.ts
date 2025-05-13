@@ -3,7 +3,7 @@ import {Validators} from "@angular/forms";
 import {MatDialog, MatDialogConfig, MatDialogRef} from "@angular/material/dialog";
 import {MatSnackBar, MatSnackBarConfig} from "@angular/material/snack-bar";
 import {DomSanitizer} from "@angular/platform-browser";
-import {ErrorDetailText, ResultWithErrors} from "@app/utils/error-message";
+import {ResultWithErrors} from "@app/utils/error-message";
 import {downloadByString, MaybePromise, ObjectOf, selectFiles, timeout} from "@lucilor/utils";
 import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -176,7 +176,7 @@ export class MessageService {
     }
   }
 
-  async importData<T = any, R = any, S extends ErrorDetailText = ErrorDetailText>(
+  async importData<T = any, R = any, S = undefined>(
     confirm: boolean | null,
     action: (data: T) => MaybePromise<void | ResultWithErrors<R, S> | boolean>,
     title = "数据",

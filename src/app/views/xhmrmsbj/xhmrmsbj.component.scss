@@ -104,12 +104,11 @@
   padding: 3px;
 }
 
-.errors {
+.error-items {
   max-width: 310px;
 
-  .error {
+  .error-item {
     width: 100%;
-    color: var(--mat-sys-on-surface);
 
     ol {
       width: 100%;

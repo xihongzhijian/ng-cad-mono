@@ -2,39 +2,45 @@ import {ValidationErrors} from "@angular/forms";
 import {MessageService} from "@modules/message/services/message.service";
 import {intersection} from "lodash";
 
-export interface ErrorItem<T extends ErrorDetailText = ErrorDetailText> {
+export interface ErrorItem<T = undefined> {
   content: string;
   details: ErrorDetail<T>[];
   duplicateVars?: Set<string>;
   fatal?: boolean;
 }
 
-export type ErrorDetail<T extends ErrorDetailText = ErrorDetailText> = T[];
+export type ErrorDetail<T = undefined> = ErrorDetailText<T>[];
 
-export interface ErrorDetailText {
+export interface ErrorDetailTextBase {
   text?: string;
   br?: boolean;
   className?: string;
   hiddenWhenAlert?: boolean;
 }
+export type ErrorDetailText<T = undefined> = (ErrorDetailTextBase & {info?: undefined}) | (ErrorDetailTextBase & {info: T});
 
-export const getNameDetail = (name: string, className?: string): ErrorDetail => [{text: "【"}, {text: name, className}, {text: "】"}];
+export const getNameDetail = <T = undefined>(name: string | ErrorDetailText<T>): ErrorDetail<T> => [
+  {text: "【"},
+  typeof name === "string" ? {text: name} : name,
+  {text: "】"}
+];
 
-export const getNamesDetail = (names: string[], color?: string): ErrorDetail => names.map((v) => getNameDetail(v, color)).flat();
+export const getNamesDetail = <T = undefined>(names: (string | ErrorDetailText<T>)[]): ErrorDetail<T> =>
+  names.map((v) => getNameDetail(v)).flat();
 
-export const checkDuplicateVars = (
+export const checkDuplicateVars = <T = undefined>(
   vars1: string[],
   vars2: string[],
-  name1: string,
-  name2: string,
-  details?: ErrorDetail[]
-): ErrorDetail | null => {
+  name1: string | ErrorDetailText<T>,
+  name2: string | ErrorDetailText<T>,
+  details?: ErrorDetail<T>[]
+) => {
   const duplicateVars = intersection(vars1, vars2);
   if (duplicateVars.length > 0) {
-    const detail: ErrorDetail = [
-      ...getNameDetail(name1, "error"),
+    const detail: ErrorDetail<T> = [
+      ...getNameDetail(name1),
       {text: "与"},
-      ...getNameDetail(name2, "error"),
+      ...getNameDetail(name2),
       {
         text: `重复：${duplicateVars.join("，")}`
       }
@@ -45,7 +51,7 @@ export const checkDuplicateVars = (
   return null;
 };
 
-export const getErrorDetailStr = (detail: ErrorDetail) => {
+export const getErrorDetailStr = <T>(detail: ErrorDetail<T>) => {
   let str = "";
   for (const {text, br, className, hiddenWhenAlert} of detail) {
     if (br) {
@@ -63,7 +69,7 @@ export const getErrorDetailStr = (detail: ErrorDetail) => {
   }
   return str;
 };
-export const alertError = async (message: MessageService, error: ErrorItem) => {
+export const alertError = async <T = undefined>(message: MessageService, error: ErrorItem<T>) => {
   const {content, details} = error;
   const details2: string[] = [];
   for (const detail of details) {
@@ -78,7 +84,7 @@ export const alertError = async (message: MessageService, error: ErrorItem) => {
 
 export const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");
 
-export class ResultWithErrors<T, K extends ErrorDetailText = ErrorDetailText> {
+export class ResultWithErrors<T, K = undefined> {
   errors: ErrorItem<K>[] = [];
   warnings: ErrorItem<K>[] = [];
 
