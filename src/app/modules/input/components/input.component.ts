@@ -516,6 +516,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         info.clearable = false;
       }
     }
+
     if (info.class) {
       if (Array.isArray(info.class)) {
         this.class.push(...info.class);
@@ -528,6 +529,20 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
       this.style.display = "none";
     }
     this.style["--input-text-align"] = info.inputTextAlign || "left";
+    if (info.type === "select" && info.autoWidth) {
+      const getLength = (v: string) => {
+        let len = v.length;
+        for (const char of v) {
+          if (/[\u4e00-\u9fa5]/.test(char)) {
+            len += 1;
+          }
+        }
+        return len;
+      };
+      const maxLength = Math.max(getLength(info.label), ...this.options.map((v) => getLength(v.label)));
+      this.style.width = `calc(${maxLength}ch + 64px)`;
+    }
+
     const dataset = this.elRef.nativeElement.dataset;
     dataset.type = type;
     dataset.label = info.label;

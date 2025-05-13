@@ -195,7 +195,7 @@ export class InputInfoWithDataGetter<T> {
     options: Value<string[]>,
     others?: InputInfoWithDataPart<InputInfoSelectSingle<T, any>>
   ): InputInfoSelectSingle<T, any>;
-  selectSingle<R>(
+  selectSingle<R = any>(
     key: keyof T,
     options: Value<InputInfoOptions<R>>,
     others?: InputInfoWithDataPart<InputInfoSelectSingle<T, R>>
@@ -221,12 +221,12 @@ export class InputInfoWithDataGetter<T> {
     options: Value<string[]>,
     others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, any>>
   ): InputInfoSelectMultiple<T, any>;
-  selectMultiple<R>(
+  selectMultiple<R = any>(
     key: keyof T,
     options: Value<InputInfoOptions<R>>,
     others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, R>>
   ): InputInfoSelectMultiple<T, R>;
-  selectMultiple<R>(
+  selectMultiple<R = any>(
     key: keyof T,
     options: Value<InputInfoOptions<R>>,
     others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, R>>
