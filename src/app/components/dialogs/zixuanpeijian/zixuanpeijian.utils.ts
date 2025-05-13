@@ -483,8 +483,9 @@ export const calcZxpj = async (
         const title = getCalcMokuaiTitle(item1);
         const namesStr = getNamesStr(missingShuruVars);
         const msg = `${title}的输入${namesStr}关闭了输入，并且没有获取到外部输入，无法计算，请处理`;
-        await message.error(msg);
-        return {fulfilled: false, error: {message: msg}};
+        console.warn(msg);
+        // await message.error(msg);
+        // return {fulfilled: false, error: {message: msg}};
       }
     }
     for (const [j, item2] of mokuais.entries()) {
