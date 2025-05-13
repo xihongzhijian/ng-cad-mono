@@ -224,7 +224,7 @@ export class MokuaikuComponent implements OnInit {
       navEditMode: dataList?.navEditMode() || false,
       mokuaiActiveItemType: this.mokuaiActiveNavNode(),
       mokuaiEditMode: this.mokuaiEditMode(),
-      mokuaiItemQuery: dataList?.itemQuery() || "",
+      mokuaiItemQuery: dataList?.itemQuery(),
       currMokuaiItem: this.openedMokuai()?.id
     };
   }
@@ -236,7 +236,9 @@ export class MokuaikuComponent implements OnInit {
       if (info.mokuaiActiveItemType && this.mokuaiActiveNavNode() !== info.mokuaiActiveItemType) {
         this.mokuaiActiveNavNode.set(info.mokuaiActiveItemType);
       }
-      dataList.itemQuery.set(info.mokuaiItemQuery);
+      if (info.mokuaiItemQuery) {
+        dataList.itemQuery.set(info.mokuaiItemQuery);
+      }
     }
     this.mokuaiEditMode.set(info.mokuaiEditMode);
     const item = this.mokuaisAll().find((v) => v.id === info.currMokuaiItem);

@@ -32,7 +32,7 @@ import {TypedTemplateDirective} from "@modules/directives/typed-template.directi
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, debounce, difference, union} from "lodash";
@@ -41,6 +41,7 @@ import {BehaviorSubject, filter, firstValueFrom, lastValueFrom, Subject, take} f
 import {v4} from "uuid";
 import {
   DataListItem,
+  DataListItemQuery,
   DataListNavData,
   DataListNavNameChangeEvent,
   DataListNavNodeRaw,
@@ -486,55 +487,40 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
 
-  itemQuery = signal("");
+  itemQuery = signal<DataListItemQuery<T>>({value: "", type: "搜索所有分类", field: "name", exact: false});
   itemQueryTypes = ["搜索所有分类", "搜索选中分类"] as const;
-  itemQueryType = signal<(typeof this.itemQueryTypes)[number]>("搜索所有分类");
-  itemQueryTypeField = signal<keyof T>("name");
-  itemQueryTypeFieldEff = effect(() => {
+  itemQueryEff = effect(() => {
     const fields = this.queryItemFieldInfos().map((v) => v.field);
-    if (!fields.includes(this.itemQueryTypeField())) {
-      this.itemQueryTypeField.set(fields.at(0) || "name");
+    const query = this.itemQuery();
+    if (!fields.includes(query.field)) {
+      query.field = fields.at(0) || "name";
     }
   });
+  itemQueryEff2 = effect(() => {
+    this.itemQuery();
+    untracked(() => this.filterNavNodes());
+  });
   itemQueryInputInfos = computed(() => {
+    const query = {...this.itemQuery()};
+    const onChange = () => this.itemQuery.set(query);
+    const getter = new InputInfoWithDataGetter(query, {onChange});
     const infos: InputInfo[] = [
-      {
-        type: "select",
-        label: "搜索类型",
-        options: this.itemQueryTypes.slice(),
-        multiple: false,
-        value: this.itemQueryType(),
-        onChange: (val) => {
-          this.itemQueryType.set(val);
-          this.filterNavNodes();
-        },
-        style: {width: "170px"}
-      },
-      {
-        type: "select",
-        label: "搜索字段",
-        options: this.queryItemFieldInfos().map<InputInfoOption<keyof T>>((v) => {
+      getter.selectSingle<(typeof this.itemQueryTypes)[number]>("type", this.itemQueryTypes, {label: "搜索类型", autoWidth: true}),
+      getter.selectSingle(
+        "field",
+        this.queryItemFieldInfos().map<InputInfoOption<keyof T>>((v) => {
           return {value: v.field, label: v.title || String(v.field)};
         }),
-        multiple: false,
-        value: this.itemQueryTypeField(),
-        onChange: (val) => {
-          this.itemQueryTypeField.set(val);
-          this.filterNavNodes();
-        },
-        style: {width: "200px"}
-      } satisfies InputInfoSelect<keyof T, keyof T>,
-      {
-        type: "string",
+        {label: "搜索字段", autoWidth: true}
+      ),
+      getter.boolean("exact", {label: "精确搜索", appearance: "checkbox", style: {width: "60px"}}),
+      getter.string("value", {
         label: "搜索",
         clearable: true,
-        value: this.itemQuery(),
-        onInput: debounce((val) => {
-          this.itemQuery.set(val);
-          this.filterNavNodes();
-        }, 200),
+        onInput: debounce(onChange, 200),
+        onChange: undefined,
         style: {width: "160px"}
-      }
+      })
     ];
     return infos;
   });
@@ -636,20 +622,24 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     let itemsQueried = false;
     if (withItems) {
       const itemQuery = this.itemQuery();
-      const itemQueryType = this.itemQueryType();
-      const itemQueryField = this.itemQueryTypeField();
-      navNodesHideEmpty = !!itemQuery;
-      itemsQueried = !!itemQuery;
+      navNodesHideEmpty = !!itemQuery.value;
+      itemsQueried = !!itemQuery.value;
       const items: T[] = [];
       for (const item of itemsAll) {
         addCount(counts, item.type);
         let isMatched = true;
-        if (itemQueryType === "搜索选中分类" && activeNode && !activeNode.hidden && navNodesHideEmpty) {
+        if (itemQuery.type === "搜索选中分类" && activeNode && !activeNode.hidden && navNodesHideEmpty) {
           isMatched = item.type === type;
         }
-        if (itemQueryField && itemQueryField in item) {
-          const val = getValueString(item[itemQueryField]);
-          isMatched = isMatched && val.includes(itemQuery);
+        if (itemQuery.field && itemQuery.field in item) {
+          const val = getValueString(item[itemQuery.field]);
+          if (isMatched) {
+            if (itemQuery.exact) {
+              isMatched = val === itemQuery.value;
+            } else {
+              isMatched = val.includes(itemQuery.value);
+            }
+          }
         } else {
           isMatched = false;
         }

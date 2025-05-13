@@ -42,4 +42,10 @@ export const dataListQueryItemFieldsDefault: DataListQueryItemField[] = [
 ];
 
 export type NodeSelectorMode = "parent" | "leaf";
-export type DataListSelectMode = "none" | "single" | "multiple";
+
+export interface DataListItemQuery<T> {
+  value: string;
+  type: "搜索所有分类" | "搜索选中分类";
+  field: keyof T;
+  exact: boolean;
+}

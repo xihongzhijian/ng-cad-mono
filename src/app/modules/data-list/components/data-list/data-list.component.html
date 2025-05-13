@@ -61,7 +61,7 @@
             }
             <span>{{ node.name }}</span>
             @if (node.itemCounts.self > 0) {
-              @if (itemQuery()) {
+              @if (itemQuery().value) {
                 <span class="accent">(搜到{{ node.itemCounts.selfQuery }}个)</span>
               } @else {
                 <span>({{ node.itemCounts.self }}个)</span>
