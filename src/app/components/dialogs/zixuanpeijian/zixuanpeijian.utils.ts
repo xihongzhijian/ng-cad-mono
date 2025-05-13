@@ -461,31 +461,17 @@ export const calcZxpj = async (
   };
   const getMokuaiInfoSlgs2 = (item: ZixuanpeijianMokuaiItem) => {
     const vars = {...materialResult, ...shuchubianliang};
-    const result = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, vars);
+    const result = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item, inputResult, vars);
     return result?.formulas || item.suanliaogongshi;
   };
 
   const duplicateMokuaiSlgsVars: {mokuai: ZixuanpeijianMokuaiItem; vars: string[]}[] = [];
   for (const [i, item1] of mokuais.entries()) {
-    const slgsResult = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item1, materialResult);
+    const slgsResult = getMokuaiInfoSlgs(xhmrmsbj?.menshanbujuInfos || {}, item1, inputResult, materialResult);
     if (slgsResult) {
       if (slgsResult.duplicateVars.length > 0) {
         duplicateMokuaiSlgsVars.push({mokuai: item1, vars: slgsResult.duplicateVars});
         continue;
-      }
-      const missingShuruVars: string[] = [];
-      for (const shuru of slgsResult.shurusDisabled) {
-        if (!(shuru in materialResult)) {
-          missingShuruVars.push(shuru);
-        }
-      }
-      if (missingShuruVars.length > 0) {
-        const title = getCalcMokuaiTitle(item1);
-        const namesStr = getNamesStr(missingShuruVars);
-        const msg = `${title}的输入${namesStr}关闭了输入，并且没有获取到外部输入，无法计算，请处理`;
-        console.warn(msg);
-        // await message.error(msg);
-        // return {fulfilled: false, error: {message: msg}};
       }
     }
     for (const [j, item2] of mokuais.entries()) {
@@ -1148,10 +1134,15 @@ export const getMokuaiInfoScbl = (infos: XhmrmsbjDataMsbjInfos, item: Zixuanpeij
   }
   return getMokuaiShuchuVars(msbjInfo, node, item);
 };
-export const getMokuaiInfoSlgs = (infos: XhmrmsbjDataMsbjInfos, item: ZixuanpeijianMokuaiItem, materialResult?: Formulas) => {
+export const getMokuaiInfoSlgs = (
+  infos: XhmrmsbjDataMsbjInfos,
+  item: ZixuanpeijianMokuaiItem,
+  inputResult: Formulas,
+  materialResult: Formulas
+) => {
   const {msbjInfo, node} = getMokuaiInfo(infos, item);
   if (!msbjInfo || !node) {
     return null;
   }
-  return getMokuaiFormulas(msbjInfo, node, item, materialResult);
+  return getMokuaiFormulas(msbjInfo, node, item, inputResult, materialResult);
 };

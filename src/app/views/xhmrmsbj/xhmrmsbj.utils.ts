@@ -409,6 +409,7 @@ export const getMokuaiFormulas = (
   info: XhmrmsbjInfo,
   node: XhmrmsbjInfoMokuaiNode,
   mokuai: ZixuanpeijianMokuaiItem,
+  inputResult: Formulas | null | undefined,
   materialResult: Formulas | null | undefined
 ) => {
   const formulas: Formulas = {};
@@ -416,27 +417,19 @@ export const getMokuaiFormulas = (
   let shurusDisabled = info.输入变量下单隐藏?.[objKey] || [];
   const shurusRaw = getMokuaiShurusRaw(info, node, mokuai).map((v) => v[0]);
   shurusDisabled = intersection(shurusDisabled, shurusRaw);
-  const shurus = difference(shurusRaw, shurusDisabled);
   const setFormulas = (formulas2: Formulas) => {
     for (const [key, value] of Object.entries(formulas2)) {
-      if (!shurusDisabled?.includes(key)) {
-        formulas[key] = value;
+      if (shurusDisabled?.includes(key) && key in (inputResult || {})) {
+        continue;
       }
-    }
-  };
-  const setFormulasShuru = (shuruzhi: Shuruzhi) => {
-    for (const k of shurus) {
-      const v = shuruzhi[k];
-      if (v) {
-        formulas[k] = v;
-      }
+      formulas[key] = value;
     }
   };
   const optionValues = getMokuaiXxsjValues(info, node, mokuai);
   const optionFormulas = mapValues(optionValues, (v) => `"${v}"`);
   const duplicateVars = new Set<string>();
   setFormulas(mokuai.suanliaogongshi);
-  setFormulasShuru(getShuruzhi(info, node, mokuai));
+  setFormulas(getShuruzhi(info, node, mokuai));
   const xxgsFormulas: Formulas = {};
   let xxgsList = mokuai.xuanxianggongshi;
   if (xxgsList.length > 0 && materialResult) {
@@ -452,7 +445,7 @@ export const getMokuaiFormulas = (
         }
       }
       setFormulas(xxgs.公式);
-      setFormulasShuru(getShuruzhi(info, node, mokuai, xxgs._id));
+      setFormulas(getShuruzhi(info, node, mokuai, xxgs._id));
     }
   }
   Object.assign(formulas, optionFormulas);
