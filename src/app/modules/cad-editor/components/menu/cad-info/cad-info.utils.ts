@@ -522,7 +522,8 @@ export const openCadForm = async (
   const {formMessageData, formMessageOthers} = opts || {};
   const result = await message.form(form, {title, ...formMessageData}, formMessageOthers);
   if (result) {
-    if (type === "add") {
+    if (type === "add" && yaoqiu) {
+      data2.type = yaoqiu.CAD分类;
       setCadData(data2, yaoqiu, type);
     }
     return data2;
