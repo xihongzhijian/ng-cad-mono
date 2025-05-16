@@ -166,20 +166,18 @@ export class CadZhankaiComponent extends Utils() {
         getInputInfoGroup([
           getter.string("kailiaomuban", {
             label: "开料CAD模板",
-            selectOnly: true,
             clearable: true,
             suffixIcons: [
               {name: "open_in_new", onClick: () => this.openCadmuban(zhankai, "kailiaomuban")},
-              {name: "list", onClick: () => this.selectCadmuban(zhankai, "kailiaomuban"), isDefault: true}
+              {name: "list", onClick: () => this.selectCadmuban(zhankai, "kailiaomuban")}
             ]
           }),
           getter.string("neikaimuban", {
             label: "内开模板",
-            selectOnly: true,
             clearable: true,
             suffixIcons: [
               {name: "open_in_new", onClick: () => this.openCadmuban(zhankai, "neikaimuban")},
-              {name: "list", onClick: () => this.selectCadmuban(zhankai, "neikaimuban"), isDefault: true}
+              {name: "list", onClick: () => this.selectCadmuban(zhankai, "neikaimuban")}
             ]
           })
         ]),
