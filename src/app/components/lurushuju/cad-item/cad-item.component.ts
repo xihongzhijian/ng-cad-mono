@@ -373,7 +373,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     if (!result) {
       return;
     }
-    this.setMubanId(cadData.id);
+    this.setMubanId(result.id);
     this.mubanData.set(result);
     await timeout(0);
     await this.initMubanViewer();
