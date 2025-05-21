@@ -247,6 +247,10 @@
 
   .text.accent,
   span.accent {
+    color: var(--mat-sys-primary);
+  }
+  .text.accent,
+  span.accent {
     color: var(--mat-sys-tertiary);
   }
 }
@@ -264,4 +268,5 @@
   height: var(--cad-image-height);
   border: var(--border);
   font: var(--mat-sys-title-large);
+  --mat-icon-size: 30px;
 }

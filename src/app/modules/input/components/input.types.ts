@@ -109,6 +109,7 @@ export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
 export interface InputInfoSelectBase<T = any, K = any> extends InputInfoBase<T> {
   type: "select";
   appearance?: "select" | "list";
+  autoWidth?: boolean;
   options: Value<InputInfoOptions<K>>;
   optionsDialog?: OptionsDialog;
   openInNewTab?: InputInfoOpenInNewTab;
@@ -176,6 +177,7 @@ export interface InputInfoButtonInfo extends StyledItem {
 }
 export interface InputInfoTextInfo extends StyledItem {
   name: string;
+  onClick?: () => MaybePromise<{isValueChanged?: boolean} | void | null>;
 }
 export interface InputInfoButton<T = any> extends InputInfoBase<T> {
   type: "button";

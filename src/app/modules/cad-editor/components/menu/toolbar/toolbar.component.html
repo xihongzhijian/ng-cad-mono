@@ -66,6 +66,9 @@
     <button mat-button class="plain" (click)="resetLineLength()" [disabled]="!isStatusNormal">重置线长</button>
     <button mat-button class="plain" (click)="setKailiaofangshi()" [disabled]="!isStatusNormal">首尾开料使用线长</button>
     <button mat-button class="plain" (click)="highlightTjqz()">高亮条件取值的线</button>
+    @if (collection() === "kailiaocadmuban") {
+      <button mat-button class="plain" (click)="searchCadsUsingMuban()">使用模板的CAD</button>
+    }
 
     @if (canLeave()) {
       <button mat-flat-button class="accent" (click)="leaveCadStatus()">

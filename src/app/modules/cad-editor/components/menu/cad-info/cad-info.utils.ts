@@ -499,12 +499,11 @@ export const openCadForm = async (
   opts?: {
     gongshis?: 算料公式[] | null;
     validators?: CadFormValidators;
-    noFixedType?: boolean;
     formMessageData?: Parameters<typeof message.form>[1];
     formMessageOthers?: Parameters<typeof message.form>[2];
   }
 ) => {
-  const {gongshis, validators, noFixedType} = opts || {};
+  const {gongshis, validators} = opts || {};
   const data2 = data?.clone() || new CadData();
   const type: CadEditType = data ? "set" : "add";
   const form = await getCadInfoInputs2(yaoqiu, type, collection, data2, http, dialog, status, parseOptionString, gongshis);
@@ -523,10 +522,8 @@ export const openCadForm = async (
   const {formMessageData, formMessageOthers} = opts || {};
   const result = await message.form(form, {title, ...formMessageData}, formMessageOthers);
   if (result) {
-    if (yaoqiu && !noFixedType) {
+    if (type === "add" && yaoqiu) {
       data2.type = yaoqiu.CAD分类;
-    }
-    if (type === "add") {
       setCadData(data2, yaoqiu, type);
     }
     return data2;

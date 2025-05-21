@@ -43,6 +43,7 @@ export interface SuanliaoOutput extends CalcZxpjResult {
 export interface 根据输入值计算选中配件模块无依赖的公式结果输入 {
   vars: Formulas;
   型号选中门扇布局: ObjectOf<XhmrmsbjInfo>;
+  inputResult: Formulas;
   materialResult: Formulas;
 }
 

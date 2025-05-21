@@ -301,7 +301,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
   }
 
   async 根据输入值计算选中配件模块无依赖的公式结果开始(data: 根据输入值计算选中配件模块无依赖的公式结果输入) {
-    const {vars, 型号选中门扇布局, materialResult} = data;
+    const {vars, 型号选中门扇布局, inputResult, materialResult} = data;
     const result: 根据输入值计算选中配件模块无依赖的公式结果输出 = {成功: {}, 失败: {}};
     for (const menshanKey in 型号选中门扇布局) {
       const msbjInfo = 型号选中门扇布局[menshanKey];
@@ -311,7 +311,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
           continue;
         }
         const {type2} = mokuai;
-        const {formulas} = getMokuaiFormulas(msbjInfo, node, mokuai, materialResult);
+        const {formulas} = getMokuaiFormulas(msbjInfo, node, mokuai, inputResult, materialResult);
         if (getIsVersion2024(mokuai.zuoshujubanben)) {
           const shuchuVars = getMokuaiShuchuVars(msbjInfo, node, mokuai);
           for (const key of Object.keys(formulas)) {

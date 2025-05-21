@@ -221,6 +221,12 @@ mat-divider {
     height: var(--mdc-icon-button-state-layer-size) !important;
   }
 }
+mat-icon {
+  width: var(--mat-icon-size) !important;
+  height: var(--mat-icon-size) !important;
+  font-size: var(--mat-icon-size) !important;
+  line-height: var(--mat-icon-size) !important;
+}
 
 .cdk-overlay-container {
   z-index: calc(var(--top-z-index) + var(--floating-dialog-offset-z-index, 0));

@@ -126,18 +126,11 @@ export class LurushujuIndexComponent {
         if (pieceInfos.suanliaoCads.show) {
           this.lrsjSuanliaoCads()?.selectSuanliaoCads();
         } else {
-          this.openZxpj(false);
+          this.openBjmk("配件库");
         }
         return;
       case "模块库":
-        {
-          const app = (window.top as any)?.app;
-          if (app) {
-            app.openTabToNext("模块库");
-          } else {
-            this.status.openInNewTab(["/布局模块"], {queryParams: {page: "模块库"}});
-          }
-        }
+        this.openBjmk("模块库");
         return;
       case "从其他做法复制":
         await this.lrsjSuanliaoCads()?.copyCadsFromOthers();
@@ -163,6 +156,14 @@ export class LurushujuIndexComponent {
       lingsanOptions: isXinghao && xinghao ? {getAll: true, useTypePrefix: true, xinghao} : {getAll: true}
     };
     await openZixuanpeijianDialog(this.dialog, {data});
+  }
+  openBjmk(name: string) {
+    const app = (window.top as any)?.app;
+    if (app) {
+      app.openTabToNext(name);
+    } else {
+      this.status.openInNewTab(["/布局模块"], {queryParams: {page: name}});
+    }
   }
   async xinghaoZhuanyongGongshi() {
     const xinghaoName = this.lrsjStatus.xinghao()?.名字;

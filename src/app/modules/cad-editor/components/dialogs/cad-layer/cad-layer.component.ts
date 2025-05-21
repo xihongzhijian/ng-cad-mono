@@ -74,7 +74,6 @@ export class CadLayerComponent {
       ];
       forms.push({infos});
     }
-    console.log(forms);
     return forms;
   });
 

@@ -53,8 +53,12 @@
           bigPicClickShowDisabled
         ></app-image>
         <div class="option-name toolbar">
-          <mat-checkbox [checked]="checkedItems().includes(item)" [disabled]="item.disabled"> </mat-checkbox>
-          <div class="flex-110">{{ item.label || item.name }}</div>
+          <mat-checkbox [checked]="checkedItems().includes(item)">
+            <span>{{ item.label || item.name }}</span>
+            @if (item.disabled) {
+              <span class="error">(已停用)</span>
+            }
+          </mat-checkbox>
           @for (btn of data.itemBtns; track $index) {
             <button mat-button appClickStop [class.hidden]="btn.hidden" (click)="btn.onClick(item)">{{ btn.name }}</button>
           }

@@ -315,7 +315,6 @@ export class MokuaiCadsComponent {
     const cad = cad0.clone(true);
     cad.info.isLocal = true;
     delete cad.info.imgId;
-    delete cad.info.incomplete;
     delete cad.info.isOnline;
     const yaoqiu = this.cadYaoqiu();
     setCadData(cad, yaoqiu, "set");

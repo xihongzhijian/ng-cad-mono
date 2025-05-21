@@ -74,15 +74,8 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
-  cadWidth = 300;
-  cadHeight = 150;
-
-  @HostBinding("style.--cad-image-width") get widthStyle() {
-    return `${this.cadWidth}px`;
-  }
-  @HostBinding("style.--cad-image-height") get heightStyle() {
-    return `${this.cadHeight}px`;
-  }
+  @HostBinding("style.--cad-image-width") widthStyle = "";
+  @HostBinding("style.--cad-image-height") heightStyle = "";
   @HostBinding("style") style: csstype.Properties = {};
   @HostBinding("class") class: string[] = [];
 
@@ -104,7 +97,6 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   isLocal = input(false, {transform: booleanAttribute});
   selectable = input<CadItemSelectable<T>>();
   editDisabled = input(false, {transform: booleanAttribute});
-  noFixedType = input(false, {transform: booleanAttribute});
   events = input<{
     clickAll?: (component: CadItemComponent<T>, event: MouseEvent) => void;
     clickBlank?: (component: CadItemComponent<T>, event: MouseEvent) => void;
@@ -112,6 +104,8 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
   validators = input<CadItemValidators>();
   cadForm = input<CadItemForm<T>>();
   mokuaiName = input<string>();
+  cadWidth = input("300px");
+  cadHeight = input("150px");
   beforeEditCad = output();
   afterEditCad = output();
   afterFetchCad = output();
@@ -143,6 +137,9 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     this.cadViewer()?.destroy();
     this.mubanViewer()?.destroy();
   }
+
+  widthEff = effect(() => (this.widthStyle = this.cadWidth()));
+  heightEff = effect(() => (this.heightStyle = this.cadHeight()));
 
   cadEff = effect(() => {
     this.cad();
@@ -309,11 +306,9 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     const {http, dialog, status, message} = this;
     const yaoqiu = this.yaoqiu();
     const validators = this.validators();
-    const noFixedType = this.noFixedType();
     const formTitleBtns = this.formTitleBtns() || [];
     const data2 = await openCadForm(yaoqiu, collection, data, http, dialog, status, message, true, {
       validators,
-      noFixedType,
       formMessageData: {
         titleBtns: formTitleBtns.map((v) => ({label: v.name, onClick: () => v.onClick(this)}))
       }
@@ -378,7 +373,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     if (!result) {
       return;
     }
-    this.setMubanId(cadData.id);
+    this.setMubanId(result.id);
     this.mubanData.set(result);
     await timeout(0);
     await this.initMubanViewer();
@@ -523,12 +518,6 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
     if (showCadViewer) {
       if (await this.onlineFetch()) {
         return;
-      }
-    } else if (this.isOnline()) {
-      if (cad instanceof CadData) {
-        cad.info.incomplete = true;
-      } else {
-        cad.json.info = {...cad.json.info, incomplete: true};
       }
     }
     const data = cad instanceof CadData ? cad.clone() : new CadData(cad.json);

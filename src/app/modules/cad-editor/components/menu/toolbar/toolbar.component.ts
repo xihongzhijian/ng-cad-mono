@@ -9,6 +9,7 @@ import {isLengthTextSizeSetKey, isShiyitu} from "@app/cad/utils";
 import {AboutComponent} from "@components/about/about.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
 import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/cad-line-tjqz.component";
+import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
 import {environment} from "@env";
 import {CadData, CadLine, CadMtext, sortLines} from "@lucilor/cad-viewer";
@@ -156,6 +157,7 @@ export class ToolbarComponent {
   data = this.status.cadData;
   openCadOptions = this.status.openCadOptions;
   env = environment;
+  collection = this.status.collection;
 
   @HostListener("window:keydown", ["$event"])
   onKeyDown(event: KeyboardEvent) {
@@ -484,5 +486,9 @@ export class ToolbarComponent {
   cadFentiOn = computed(() => this.status.hasCadStatus((v) => v instanceof CadStatusFentiConfig));
   toggleCadFentiOn() {
     this.status.toggleCadStatus(new CadStatusFentiConfig());
+  }
+
+  async searchCadsUsingMuban() {
+    return await openCadListDialog(this.dialog, {data: {collection: "cad", selectMode: "none", search: {模板: this.status.cad.data.id}}});
   }
 }

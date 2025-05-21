@@ -311,21 +311,21 @@
       @if (errors().length > 0) {
         <mat-divider></mat-divider>
         <div class="title error">错误</div>
-        <div class="errors items">
+        <div class="error-items items">
           @for (error of errors(); track $index) {
-            <div class="error item">
+            <div class="error-item item">
               <div class="text">{{ error.content }}</div>
               <ol>
                 @for (detail of error.details; track $index) {
                   <li class="text">
                     @for (item of detail; track $index) {
                       <span [class]="item.className">
-                        @if (item.br) {
+                        @if (item.info?.jumpTo; as jumpTo) {
+                          <span class="link text" (click)="jumpToError(jumpTo)">{{ item.text }}</span>
+                        } @else if (item.br) {
                           <br />
-                        } @else if (item.jumpTo) {
-                          <span class="link text" (click)="jumpToError(item.jumpTo)">{{ item.text }}</span>
                         } @else {
-                          <span>{{ item.text }}</span>
+                          <span class="text">{{ item.text }}</span>
                         }
                       </span>
                     }

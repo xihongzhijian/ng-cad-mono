@@ -12,10 +12,10 @@
       @if (!xinghao.hidden) {
         <div class="item" appClickedCls>
           @if (xinghao.tingyong) {
-            <div class="img disabled"></div>
+            <div class="imimg-markg disabled"></div>
           }
           @if (xinghao["数据已录入完成"]) {
-            <div class="img done"></div>
+            <div class="img-mark done"></div>
           }
           <app-image class="link" [src]="xinghao.tupian" fit="contain" (click)="gotoZuofas(xinghao)"></app-image>
           <div class="name">

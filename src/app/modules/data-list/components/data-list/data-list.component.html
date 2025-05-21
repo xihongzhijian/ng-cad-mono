@@ -4,7 +4,8 @@
       <app-input [info]="navQueryInputInfo()"></app-input>
       <button mat-stroked-button [class.accent]="navEditMode()" (click)="toggleNavEditMode()">编辑分类</button>
       @if (navEditMode()) {
-        <button mat-stroked-button (click)="addNavNode()">添加1级</button>
+        <button mat-stroked-button (click)="addNavNode('root')">添加1级</button>
+        <button mat-stroked-button (click)="moveNavNodes(selectedNavNodes())">移动选中</button>
       }
     </div>
     <div class="toolbar">
@@ -12,6 +13,8 @@
       <button mat-stroked-button (click)="exportNavNodes()">导出</button>
       <button mat-stroked-button (click)="navNodesTree.expandAll()">展开</button>
       <button mat-stroked-button (click)="navNodesTree.collapseAll()">收起</button>
+      <button mat-stroked-button (click)="selectNavNodes(navNodes(), true)">全选</button>
+      <button mat-stroked-button (click)="selectNavNodes(navNodes(), false)">全选1级</button>
     </div>
     <ng-scrollbar #navNodesScrollbar>
       <mat-tree #navNodesTree [dataSource]="navNodes()" [childrenAccessor]="childrenAccessor" [trackBy]="navNodeTrackBy">
@@ -43,6 +46,9 @@
           </div>
         </mat-nested-tree-node>
         <ng-template #nodeTitle [appTypedTemplate]="{$implicit: navNodes()[0]}" let-node>
+          @if (navEditMode()) {
+            <mat-checkbox [checked]="selectedNavNodes().includes(node)" (change)="selectNavNode(node)" appClickStop></mat-checkbox>
+          }
           <button
             mat-button
             class="nav-title plain"
@@ -55,23 +61,18 @@
             }
             <span>{{ node.name }}</span>
             @if (node.itemCounts.self > 0) {
-              @if (itemQuery()) {
+              @if (itemQuery().value) {
                 <span class="accent">(搜到{{ node.itemCounts.selfQuery }}个)</span>
               } @else {
                 <span>({{ node.itemCounts.self }}个)</span>
               }
             }
           </button>
-          @if (canSelectNavNode()) {
-            <div class="toolbar" appClickStop>
-              <mat-checkbox [checked]="selectedNavNodes().includes(node)" (change)="selectNavNode(node)"></mat-checkbox>
-              <button mat-button (click)="selectNavNodeChildren(node)">全选下级</button>
-            </div>
-          }
         </ng-template>
         <ng-template #nodeEdit [appTypedTemplate]="{$implicit: navNodes()[0]}" let-node>
           @if (navEditMode()) {
             <div class="nav-edit toolbar compact">
+              <button mat-button (click)="selectNavNodeChildren(node)">全选下级</button>
               @if (node.isVirtual) {
                 @if (!node.hasChild()) {
                   <button mat-button (click)="editNavNode(node)">编辑</button>

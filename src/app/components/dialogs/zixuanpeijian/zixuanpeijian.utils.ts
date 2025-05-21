@@ -21,7 +21,7 @@ import {isMrbcjfzInfoEmpty1} from "@views/mrbcjfz/mrbcjfz.utils";
 import {getNodeFormulasKey, nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
 import {matchConditions} from "@views/suanliao/suanliao.utils";
 import {MenshanKey, XhmrmsbjDataMsbjInfos} from "@views/xhmrmsbj/xhmrmsbj.types";
-import {getMokuaiFormulas, getMokuaiShuchuVars, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
+import {getMokuaiFormulas, getMokuaiShuchuVars, getMokuaiShurus, XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {cloneDeep, difference, intersection, isEmpty, isEqual, union} from "lodash";
 import md5 from "md5";
 import {openDrawCadDialog} from "../draw-cad/draw-cad.component";
@@ -457,21 +457,26 @@ export const calcZxpj = async (
   const getCalcMokuaiTitle = (item: ZixuanpeijianMokuaiItem | undefined | null) =>
     getMokuaiTitle(item, {xhmrmsbj: options?.xhmrmsbj, status, isVersion2024});
   const xhmrmsbj = optionsAll.xhmrmsbj;
+  const getMokuaiInfoSrbl2 = (item: ZixuanpeijianMokuaiItem) => {
+    return getMokuaiInfoSrbl(xhmrmsbjInfos, item);
+  };
   const getMokuaiInfoScbl2 = (item: ZixuanpeijianMokuaiItem) => {
     return getMokuaiInfoScbl(xhmrmsbjInfos, item);
   };
   const getMokuaiInfoSlgs2 = (item: ZixuanpeijianMokuaiItem) => {
     const vars = {...materialResult, ...shuchubianliang};
-    const result = getMokuaiInfoSlgs(xhmrmsbjInfos, item, vars);
+    const result = getMokuaiInfoSlgs(xhmrmsbjInfos, item, inputResult, vars);
     return result?.formulas || item.suanliaogongshi;
   };
 
   const duplicateMokuaiSlgsVars: {mokuai: ZixuanpeijianMokuaiItem; vars: string[]}[] = [];
   for (const [i, item1] of mokuais.entries()) {
-    const slgsResult = getMokuaiInfoSlgs(xhmrmsbjInfos, item1, materialResult);
-    if (slgsResult && slgsResult.duplicateVars.length > 0) {
-      duplicateMokuaiSlgsVars.push({mokuai: item1, vars: slgsResult.duplicateVars});
-      continue;
+    const slgsResult = getMokuaiInfoSlgs(xhmrmsbjInfos, item1, inputResult, materialResult);
+    if (slgsResult) {
+      if (slgsResult.duplicateVars.length > 0) {
+        duplicateMokuaiSlgsVars.push({mokuai: item1, vars: slgsResult.duplicateVars});
+        continue;
+      }
     }
     for (const [j, item2] of mokuais.entries()) {
       if (i === j) {
@@ -586,15 +591,14 @@ export const calcZxpj = async (
     if (item.shuruzonggao) {
       formulas.总高 = item.totalHeight;
     }
-    const gongshishuruKeys = item.gongshishuru.map((v) => v[0]);
     const formulasKeys = Object.keys(slgs);
     for (const key of formulasKeys) {
       if (!mokuaiGongshiKeys.includes(key)) {
         mokuaiGongshiKeys.push(key);
       }
     }
-    checkDuplicate("模块公式输入", ["公式", "公式输入"], item, gongshishuruKeys);
-    checkDuplicate("模块算料公式", ["公式", "公式输入"], item, formulasKeys);
+    // checkDuplicate("模块公式输入", ["公式", "公式输入"], item, gongshishuruKeys);
+    // checkDuplicate("模块算料公式", ["公式", "公式输入"], item, formulasKeys);
     checkDuplicate("模块输出变量", ["公式", "公式输入"], item, getMokuaiInfoScbl2(item));
     if (useCeshishuju && item.ceshishuju) {
       calc.calc.mergeFormulas(formulas, item.ceshishuju);
@@ -1036,7 +1040,7 @@ export const calcZxpj = async (
   calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);
   const 模块公式输入: Formulas = {};
   for (const mokuai of mokuais) {
-    for (const [k] of mokuai.gongshishuru) {
+    for (const [k] of getMokuaiInfoSrbl2(mokuai)) {
       模块公式输入[k] = varsGlobal[k];
     }
   }
@@ -1120,6 +1124,13 @@ export const getMokuaiInfo = (infos: XhmrmsbjDataMsbjInfos, item: ZixuanpeijianM
   const node = msbjInfo?.模块节点?.find((v) => v.层id === 层id);
   return {msbjInfo, node};
 };
+export const getMokuaiInfoSrbl = (infos: XhmrmsbjDataMsbjInfos, item: ZixuanpeijianMokuaiItem) => {
+  const {msbjInfo, node} = getMokuaiInfo(infos, item);
+  if (!msbjInfo || !node) {
+    return item.shuchubianliang;
+  }
+  return getMokuaiShurus(msbjInfo, node, item, true);
+};
 export const getMokuaiInfoScbl = (infos: XhmrmsbjDataMsbjInfos, item: ZixuanpeijianMokuaiItem) => {
   const {msbjInfo, node} = getMokuaiInfo(infos, item);
   if (!msbjInfo || !node) {
@@ -1127,10 +1138,15 @@ export const getMokuaiInfoScbl = (infos: XhmrmsbjDataMsbjInfos, item: Zixuanpeij
   }
   return getMokuaiShuchuVars(msbjInfo, node, item);
 };
-export const getMokuaiInfoSlgs = (infos: XhmrmsbjDataMsbjInfos, item: ZixuanpeijianMokuaiItem, materialResult?: Formulas) => {
+export const getMokuaiInfoSlgs = (
+  infos: XhmrmsbjDataMsbjInfos,
+  item: ZixuanpeijianMokuaiItem,
+  inputResult: Formulas,
+  materialResult: Formulas
+) => {
   const {msbjInfo, node} = getMokuaiInfo(infos, item);
   if (!msbjInfo || !node) {
     return null;
   }
-  return getMokuaiFormulas(msbjInfo, node, item, materialResult);
+  return getMokuaiFormulas(msbjInfo, node, item, inputResult, materialResult);
 };

@@ -11,7 +11,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
-import {validateForm} from "@modules/message/components/message/message.utils";
+import {validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {difference, isEmpty, union} from "lodash";
@@ -51,7 +51,6 @@ export class ReplaceTextComponent implements AfterViewInit {
   collection = signal<string>("");
   async ngAfterViewInit() {
     const {collection} = this.route.snapshot.queryParams;
-    console.log("collection", collection);
     if (collection) {
       this.collection.set(collection);
     } else {

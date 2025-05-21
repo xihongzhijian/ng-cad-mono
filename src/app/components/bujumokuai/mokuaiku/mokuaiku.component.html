@@ -9,8 +9,6 @@
     [navDataName]="navDataName"
     navDataTitle="模块库分类"
     [itemsAll]="mokuaisAll()"
-    [selectMode]="navNodeSelectMode()"
-    [(selectedNavNodes)]="navNodesSelected"
     [(items)]="mokuais"
     [(activeNavNode)]="mokuaiActiveNavNode"
     (navNameChange)="onNavNameChange($event)"
@@ -41,7 +39,7 @@
               <mat-icon>zoom_in</mat-icon>
             </button>
             @if (selectedMokuaiIds().includes(mokuai.id)) {
-              <div class="img selected" style="position: relative"></div>
+              <div class="img-mark selected" style="position: relative"></div>
             }
           </div>
           <app-image

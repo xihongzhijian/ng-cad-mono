@@ -1,5 +1,5 @@
 import {Formulas} from "@app/utils/calc";
-import {ErrorDetail, ErrorDetailText, ErrorItem} from "@app/utils/error-message";
+import {ErrorDetail, ErrorItem} from "@app/utils/error-message";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {Step1Data, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {MsbjPeizhishuju} from "@components/msbj-rects/msbj-rects.types";
@@ -104,16 +104,20 @@ export interface XhmrmsbjRequestDataOpts {
   浮动弹窗?: {门扇名字: MenshanKey; 节点名字: string};
 }
 
-export type XhmrmsbjError = ErrorItem<XhmrmsbjErrorDetailText>;
-export type XhmrmsbjErrorDetail = ErrorDetail<XhmrmsbjErrorDetailText>;
-export interface XhmrmsbjErrorDetailText extends ErrorDetailText {
+export type XhmrmsbjError = ErrorItem<XhmrmsbjErrorDetailTextInfo>;
+export type XhmrmsbjErrorDetail = ErrorDetail<XhmrmsbjErrorDetailTextInfo>;
+export interface XhmrmsbjErrorDetailTextInfo {
   jumpTo?: XhmrmsbjErrorJumpTo;
 }
 export interface XhmrmsbjErrorJumpTo {
-  menshanKey: MenshanKey;
-  itemIndex: number;
-  nodeName?: string;
-  mokuai?: string;
-  openMokuai?: boolean;
-  mkdx?: boolean;
+  门扇模块?: {
+    menshanKey?: MenshanKey;
+    itemIndex?: number;
+    nodeName?: string;
+    mokuai?: string;
+    openMokuai?: boolean;
+    mkdx?: boolean;
+    xinghaoConfig?: boolean;
+  };
+  型号配置?: boolean;
 }

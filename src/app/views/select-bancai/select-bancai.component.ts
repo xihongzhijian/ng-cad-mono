@@ -479,7 +479,11 @@ export class SelectBancaiComponent {
     if (isName) {
       url = getFilepathUrl(`tmp/${url}.dxf`);
     }
-    downloadByUrl(url, {filename: downloadName + ".dxf"});
+    if (url.endsWith(".zip")) {
+      downloadByUrl(url, {filename: downloadName + ".zip"});
+    } else {
+      downloadByUrl(url, {filename: downloadName + ".dxf"});
+    }
   }
 
   returnZero() {

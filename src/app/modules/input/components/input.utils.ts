@@ -1,11 +1,12 @@
-import {filePathUrl, session} from "@app/app.common";
+import {FormControl, ValidationErrors, ValidatorFn} from "@angular/forms";
+import {filePathUrl, getArray, joinOptions, session, splitOptions} from "@app/app.common";
 import {getValue, Value} from "@app/utils/get-value";
-import {ObjectOf} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsResultItem, TableRenderDataColumn} from "@modules/http/services/cad-data.service.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {Properties} from "csstype";
-import {uniq} from "lodash";
+import {isEmpty, uniq} from "lodash";
 import {InputComponent} from "./input.component";
 import {
   InputInfo,
@@ -194,7 +195,7 @@ export class InputInfoWithDataGetter<T> {
     options: Value<string[]>,
     others?: InputInfoWithDataPart<InputInfoSelectSingle<T, any>>
   ): InputInfoSelectSingle<T, any>;
-  selectSingle<R>(
+  selectSingle<R = any>(
     key: keyof T,
     options: Value<InputInfoOptions<R>>,
     others?: InputInfoWithDataPart<InputInfoSelectSingle<T, R>>
@@ -220,12 +221,12 @@ export class InputInfoWithDataGetter<T> {
     options: Value<string[]>,
     others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, any>>
   ): InputInfoSelectMultiple<T, any>;
-  selectMultiple<R>(
+  selectMultiple<R = any>(
     key: keyof T,
     options: Value<InputInfoOptions<R>>,
     others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, R>>
   ): InputInfoSelectMultiple<T, R>;
-  selectMultiple<R>(
+  selectMultiple<R = any>(
     key: keyof T,
     options: Value<InputInfoOptions<R>>,
     others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, R>>
@@ -238,6 +239,32 @@ export class InputInfoWithDataGetter<T> {
       model: {data: this.data, key},
       ...this.others,
       ...others
+    };
+  }
+
+  selectMultipleAsStr(
+    key: keyof T,
+    options: Value<InputInfoOptions<string>>,
+    others?: InputInfoWithDataPart<InputInfoSelectMultiple<T, string>>
+  ): InputInfoSelectMultiple<T, string> {
+    const data = getValue(this.data);
+    const valueRaw = data[key];
+    let value: string[] = [];
+    if (typeof valueRaw === "string") {
+      value = splitOptions(valueRaw);
+    }
+    return {
+      type: "select",
+      label: String(key),
+      options: options,
+      multiple: true,
+      value,
+      ...this.others,
+      ...others,
+      onChange: (val, info) => {
+        data[key] = joinOptions(val) as any;
+        this.others?.onChange?.(val, info);
+      }
     };
   }
 
@@ -355,4 +382,154 @@ export const getInputInfosFromTableRenderCols = <T>(
     }
   }
   return result;
+};
+
+export const getErrorMsgs = (errors: ValidationErrors | null) => {
+  const msgs: string[] = [];
+  for (const key in errors) {
+    const value = errors[key];
+    let msg = "";
+    if (typeof value === "string") {
+      msg = value;
+    } else {
+      msg = key;
+    }
+    if (msg === "required") {
+      msg = "不能为空";
+    }
+    if (key === "min" && isTypeOf(value, "object")) {
+      msg = `不能小于${value.min}`;
+    }
+    if (key === "max" && isTypeOf(value, "object")) {
+      msg = `不能大于${value.max}`;
+    }
+    msgs.push(msg);
+  }
+  return msgs;
+};
+
+export const validateValue = (info: InputInfo, value: any, component?: InputComponent) => {
+  const validators = info.validators;
+  let errors: ValidationErrors | null = null;
+  let errors2: ValidationErrors | null = null;
+  let errorsKey: ObjectOf<ValidationErrors | null> = {};
+  let errorsValue: ObjectOf<ValidationErrors | null> = {};
+  if (validators && !info.hidden) {
+    const control = new FormControl(value, validators);
+    errors = control.errors;
+  }
+  const inputComponents = component?.inputComponents() || [];
+  for (const inputComponent of inputComponents) {
+    inputComponent.validateValue();
+    if (inputComponent.errors && !inputComponent.info().hidden) {
+      if (!errors2) {
+        errors2 = {};
+      }
+      const errors3 = {...inputComponent.errors};
+      Object.assign(errors2, errors3);
+    }
+  }
+  if (isEmpty(errors)) {
+    errors = null;
+  }
+  if (isEmpty(errors2)) {
+    errors2 = null;
+  }
+  if (component) {
+    component.errors = errors;
+    component.errors2 = errors2;
+  }
+  if (info.type === "object" && isTypeOf(value, "object")) {
+    errorsKey = {};
+    errorsValue = {};
+    const keyValidators = getArray(info.keyValidators);
+    const valueValidators = getArray(info.valueValidators);
+    for (const key in value) {
+      const val = value[key];
+      if (keyValidators.length > 0) {
+        const keyValidators2 = keyValidators.map<ValidatorFn>((v) => (control) => v(control, val));
+        const control = new FormControl(key, keyValidators2);
+        if (!isEmpty(control.errors)) {
+          errorsKey[key] = control.errors;
+        }
+      }
+      if (valueValidators.length > 0) {
+        const valueValidators2 = valueValidators.map<ValidatorFn>((v) => (control) => v(control, key));
+        const control = new FormControl(val, valueValidators2);
+        if (!isEmpty(control.errors)) {
+          errorsValue[key] = control.errors;
+        }
+      }
+    }
+    const {requiredKeys} = info;
+    if (requiredKeys) {
+      for (const key of requiredKeys) {
+        if (!value[key]) {
+          const key2 = "不能为空";
+          const a = errorsValue[key];
+          if (a) {
+            a[key2] = true;
+          } else {
+            errorsValue[key] = {[key2]: true};
+          }
+        }
+      }
+    }
+    if (component) {
+      component.errorsKey = errorsKey;
+      component.errorsValue = errorsValue;
+    }
+  } else if (info.type === "array" && Array.isArray(value)) {
+    errorsValue = {};
+    const {valueValidators} = info;
+    for (const [i, val] of value.entries()) {
+      if (valueValidators) {
+        const control = new FormControl(val, valueValidators);
+        if (!isEmpty(control.errors)) {
+          errorsValue[String(i)] = control.errors;
+        }
+      }
+    }
+    if (component) {
+      component.errorsValue = errorsValue;
+    }
+  }
+  return {...errors, ...errors2, ...errorsKey, ...errorsValue};
+};
+
+export const validateForm = async (inputs: InputComponent[] | readonly InputComponent[]) => {
+  let errors: ValidationErrors | null = null;
+  let hasValidatorRequired = false;
+  let hasValidatorOther = false;
+  const values: ObjectOf<string> = {};
+  for (const input of inputs) {
+    if (input.onChangeDelay) {
+      await timeout(input.onChangeDelayTime);
+    }
+    const errors2 = input.validateValue();
+    for (const key in errors2) {
+      if (errors2[key]) {
+        if (key === "required") {
+          hasValidatorRequired = true;
+        } else {
+          hasValidatorOther = true;
+        }
+      }
+    }
+    if (errors2) {
+      if (!errors) {
+        errors = {};
+      }
+      Object.assign(errors, errors2);
+    }
+    const key = input.name();
+    values[key] = input.value;
+  }
+  let errorMsg = "";
+  if (hasValidatorRequired && !hasValidatorOther) {
+    errorMsg = "输入不完整，请补充";
+  } else if (hasValidatorOther) {
+    errorMsg = "数据有误，请检查";
+  }
+  return {errors, values, errorMsg};
 };

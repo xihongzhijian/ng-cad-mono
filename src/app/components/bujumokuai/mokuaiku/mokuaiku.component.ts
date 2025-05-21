@@ -9,7 +9,7 @@ import {session, setGlobal} from "@app/app.common";
 import {environment} from "@env";
 import {timeout} from "@lucilor/utils";
 import {DataListComponent} from "@modules/data-list/components/data-list/data-list.component";
-import {DataListNavNameChangeEvent, DataListSelectMode} from "@modules/data-list/components/data-list/data-list.types";
+import {DataListNavNameChangeEvent} from "@modules/data-list/components/data-list/data-list.types";
 import {DataListNavNode, findDataListNavNode} from "@modules/data-list/components/data-list/data-list.utils";
 import {DataListModule} from "@modules/data-list/data-list.module";
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
@@ -79,8 +79,6 @@ export class MokuaikuComponent implements OnInit {
   mokuaiActiveNavNode = signal<DataListNavNode | null>(null);
   mokuaiActiveItem = signal<MokuaiItem | null>(null);
   mokuaisAll = this.bjmkStatus.mokuaisManager.items;
-  navNodeSelectMode = signal<DataListSelectMode>("none");
-  navNodesSelected = signal<DataListNavNode[]>([]);
   mokuais = signal<MokuaiItem[]>([]);
   imgPrefix = this.bjmkStatus.imgPrefix;
   dataList = viewChild(DataListComponent);
@@ -226,7 +224,7 @@ export class MokuaikuComponent implements OnInit {
       navEditMode: dataList?.navEditMode() || false,
       mokuaiActiveItemType: this.mokuaiActiveNavNode(),
       mokuaiEditMode: this.mokuaiEditMode(),
-      mokuaiItemQuery: dataList?.itemQuery() || "",
+      mokuaiItemQuery: dataList?.itemQuery(),
       currMokuaiItem: this.openedMokuai()?.id
     };
   }
@@ -238,7 +236,9 @@ export class MokuaikuComponent implements OnInit {
       if (info.mokuaiActiveItemType && this.mokuaiActiveNavNode() !== info.mokuaiActiveItemType) {
         this.mokuaiActiveNavNode.set(info.mokuaiActiveItemType);
       }
-      dataList.itemQuery.set(info.mokuaiItemQuery);
+      if (info.mokuaiItemQuery) {
+        dataList.itemQuery.set(info.mokuaiItemQuery);
+      }
     }
     this.mokuaiEditMode.set(info.mokuaiEditMode);
     const item = this.mokuaisAll().find((v) => v.id === info.currMokuaiItem);

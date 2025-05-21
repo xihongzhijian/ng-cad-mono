@@ -212,12 +212,7 @@ export const getSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbItem>): X
   ...item
 });
 
-export const getXhmrmsbjSbjbItemSbjbForm = async (
-  message: MessageService,
-  options: OptionsAll2,
-  fenlei: string,
-  item?: XhmrmsbjSbjbItemSbjb
-) => {
+export const getXhmrmsbjSbjbItemSbjbForm = (options: OptionsAll2, fenlei: string, item?: XhmrmsbjSbjbItemSbjb) => {
   const data = getXhmrmsbjSbjbItemSbjb(cloneDeep(item));
   const getSelectInputInfo = (key: keyof XhmrmsbjSbjbItemSbjb, setter?: (info: InputInfoSelect | InputInfoString) => void) => {
     const info = getOptionsAll2InputInfo(options, key, setter);
@@ -235,6 +230,15 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
     {type: "number", label: "排序", model: {data, key: "排序"}},
     {type: "boolean", label: "默认值", model: {data, key: "默认值"}}
   ];
+  return {form, data};
+};
+export const getXhmrmsbjSbjbItemSbjbFormResult = async (
+  message: MessageService,
+  options: OptionsAll2,
+  fenlei: string,
+  item?: XhmrmsbjSbjbItemSbjb
+) => {
+  const {form, data} = getXhmrmsbjSbjbItemSbjbForm(options, fenlei, item);
   const result = await message.form(form, {
     autoFill: environment.production
       ? undefined
@@ -248,7 +252,7 @@ export const getXhmrmsbjSbjbItemSbjbForm = async (
   });
   return result ? data : null;
 };
-export const getXhmrmsbjSbjbItemSbjbItemForm = async (item?: XhmrmsbjSbjbItemSbjbItem) => {
+export const getXhmrmsbjSbjbItemSbjbItemForm = (item?: XhmrmsbjSbjbItemSbjbItem) => {
   const data = getSbjbItemSbjbItem(cloneDeep(item));
   if (typeof data.正面宽可改 !== "boolean") {
     data.正面宽可改 = true;

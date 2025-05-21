@@ -22,6 +22,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTree, MatTreeModule} from "@angular/material/tree";
 import {session} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
+import {getNamesStr} from "@app/utils/error-message";
 import {getValueString} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {environment} from "@env";
@@ -31,21 +32,21 @@ import {TypedTemplateDirective} from "@modules/directives/typed-template.directi
 import {FloatingDialogModule} from "@modules/floating-dialog/floating-dialog.module";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
-import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoOption} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
-import {cloneDeep, debounce} from "lodash";
+import {cloneDeep, debounce, difference, union} from "lodash";
 import {NgScrollbar, NgScrollbarModule} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, lastValueFrom, Subject, take} from "rxjs";
 import {v4} from "uuid";
 import {
   DataListItem,
+  DataListItemQuery,
   DataListNavData,
   DataListNavNameChangeEvent,
   DataListNavNodeRaw,
-  DataListQueryItemField as DataListqueryItemFieldInfo,
-  dataListQueryItemFieldsDefault as dataListqueryItemFieldInfosDefault,
-  DataListSelectMode,
+  DataListQueryItemField,
+  dataListQueryItemFieldsDefault,
   NodeSelectorMode
 } from "./data-list.types";
 import {
@@ -89,8 +90,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
   navDataName = input.required<string>();
   navDataTitle = input.required<string>();
   itemsAllIn = input<T[]>([], {alias: "itemsAll"});
-  queryItemFieldInfos = input<DataListqueryItemFieldInfo<T>[]>(dataListqueryItemFieldInfosDefault);
-  selectMode = input<DataListSelectMode>("none");
+  queryItemFieldInfos = input<DataListQueryItemField<T>[]>(dataListQueryItemFieldsDefault);
   selectedNavNodes = model<DataListNavNode[]>([]);
   items = model<T[]>([]);
   activeNavNode = model<DataListNavNode | null>(null);
@@ -144,41 +144,35 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     this.navEditMode.update((v) => !v);
   }
 
-  canSelectNavNode = computed(() => this.selectMode() !== "none");
   selectNavNode(node: DataListNavNode) {
     const nodes = this.selectedNavNodes();
-    switch (this.selectMode()) {
-      case "none":
-        break;
-      case "single":
-        if (nodes.includes(node)) {
-          this.selectedNavNodes.set([]);
-        } else {
-          this.selectedNavNodes.set([node]);
-        }
-        break;
-      case "multiple":
-        if (nodes.includes(node)) {
-          this.selectedNavNodes.set(nodes.filter((v) => v !== node));
-        } else {
-          this.selectedNavNodes.set([...nodes, node]);
-        }
-        break;
+    if (nodes.includes(node)) {
+      this.selectedNavNodes.set(nodes.filter((v) => v !== node));
+    } else {
+      this.selectedNavNodes.set([...nodes, node]);
     }
   }
   selectNavNodeChildren(node: DataListNavNode) {
     const nodes = this.selectedNavNodes();
     const children = getDataListNavNodesFlat(node.children || []).toArray();
-    switch (this.selectMode()) {
-      case "none":
-      case "single":
-        break;
-      case "multiple":
-        if (children.every((v) => nodes.includes(v))) {
-          this.selectedNavNodes.set(nodes.filter((v) => !children.includes(v)));
-        } else {
-          this.selectedNavNodes.set([...nodes, ...children]);
-        }
+    if (children.every((v) => nodes.includes(v))) {
+      this.selectedNavNodes.set(nodes.filter((v) => !children.includes(v)));
+    } else {
+      this.selectedNavNodes.set([...nodes, ...children]);
+    }
+  }
+  selectNavNodes(nodes: DataListNavNode[], recursive?: boolean) {
+    const selectedNavNodes = this.selectedNavNodes();
+    let allNodes: DataListNavNode[];
+    if (recursive) {
+      allNodes = getDataListNavNodesFlat(nodes).toArray();
+    } else {
+      allNodes = nodes;
+    }
+    if (allNodes.every((v) => selectedNavNodes.includes(v))) {
+      this.selectedNavNodes.set(difference(selectedNavNodes, allNodes));
+    } else {
+      this.selectedNavNodes.set(union(selectedNavNodes, allNodes));
     }
   }
 
@@ -357,7 +351,7 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
 
-  async getNavNodeItem(node?: DataListNavNode, to: DataListNavNode | null = null) {
+  async getNavNodeItem(node?: DataListNavNode, to: DataListNavNode | "root" | null = null) {
     const id = node ? node.id : null;
     if (node) {
       node = cloneDeep(node);
@@ -391,9 +385,10 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
     return null;
   }
-  async addNavNode(nodeParent?: DataListNavNode | null, fromNodeSelector = false) {
-    if (nodeParent && fromNodeSelector) {
-      nodeParent = findDataListNavNode(this.navNodes(), (v) => v.id === nodeParent?.id);
+  async addNavNode(nodeParent: DataListNavNode | "root" | null, fromNodeSelector = false) {
+    if (nodeParent instanceof DataListNavNode && fromNodeSelector) {
+      const id = nodeParent.id;
+      nodeParent = findDataListNavNode(this.navNodes(), (v) => v.id === id);
     }
     const node = await this.getNavNodeItem(undefined, nodeParent);
     if (!node) {
@@ -417,13 +412,29 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
   async moveNavNode(node: DataListNavNode) {
+    return await this.moveNavNodes([node]);
+  }
+  async moveNavNodes(nodesToMove: DataListNavNode[]) {
     const nodes = this.navNodes();
-    const path = getDataListNavNodePath(nodes, node);
-    const parentNode = path.at(-2) || null;
-    const {node: parentNode2, submit} = await this.selectNode("parent", `分类：${node.name}`, parentNode, [node.id]);
+    const names: string[] = [];
+    const ids: string[] = [];
+    const parentNodes: DataListNavNode[] = [];
+    for (const node of nodesToMove) {
+      names.push(node.name);
+      ids.push(node.id);
+      const path = getDataListNavNodePath(nodes, node);
+      const parentNode = path.at(-2) || null;
+      if (parentNode && !parentNodes.includes(parentNode)) {
+        parentNodes.push(parentNode);
+      }
+    }
+    const parentNode = parentNodes.length === 1 ? parentNodes[0] : null;
+    const {node: parentNode2, submit} = await this.selectNode("parent", `分类：${getNamesStr(names)}`, parentNode, ids);
     if (submit) {
       const to = findDataListNavNode(nodes, (v) => v.id === parentNode2?.id) || "root";
-      moveDataListNavNode(nodes, node, to);
+      for (const node of nodesToMove) {
+        moveDataListNavNode(nodes, node, to);
+      }
       await this.setNavNodes();
       this.filterNavNodes();
     }
@@ -476,55 +487,40 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
 
-  itemQuery = signal("");
+  itemQuery = signal<DataListItemQuery<T>>({value: "", type: "搜索所有分类", field: "name", exact: false});
   itemQueryTypes = ["搜索所有分类", "搜索选中分类"] as const;
-  itemQueryType = signal<(typeof this.itemQueryTypes)[number]>("搜索所有分类");
-  itemQueryTypeField = signal<keyof T>("name");
-  itemQueryTypeFieldEff = effect(() => {
+  itemQueryEff = effect(() => {
     const fields = this.queryItemFieldInfos().map((v) => v.field);
-    if (!fields.includes(this.itemQueryTypeField())) {
-      this.itemQueryTypeField.set(fields.at(0) || "name");
+    const query = this.itemQuery();
+    if (!fields.includes(query.field)) {
+      query.field = fields.at(0) || "name";
     }
   });
+  itemQueryEff2 = effect(() => {
+    this.itemQuery();
+    untracked(() => this.filterNavNodes());
+  });
   itemQueryInputInfos = computed(() => {
+    const query = {...this.itemQuery()};
+    const onChange = () => this.itemQuery.set(query);
+    const getter = new InputInfoWithDataGetter(query, {onChange});
     const infos: InputInfo[] = [
-      {
-        type: "select",
-        label: "搜索类型",
-        options: this.itemQueryTypes.slice(),
-        multiple: false,
-        value: this.itemQueryType(),
-        onChange: (val) => {
-          this.itemQueryType.set(val);
-          this.filterNavNodes();
-        },
-        style: {width: "170px"}
-      },
-      {
-        type: "select",
-        label: "搜索字段",
-        options: this.queryItemFieldInfos().map<InputInfoOption<keyof T>>((v) => {
+      getter.selectSingle<(typeof this.itemQueryTypes)[number]>("type", this.itemQueryTypes, {label: "搜索类型", autoWidth: true}),
+      getter.selectSingle(
+        "field",
+        this.queryItemFieldInfos().map<InputInfoOption<keyof T>>((v) => {
           return {value: v.field, label: v.title || String(v.field)};
         }),
-        multiple: false,
-        value: this.itemQueryTypeField(),
-        onChange: (val) => {
-          this.itemQueryTypeField.set(val);
-          this.filterNavNodes();
-        },
-        style: {width: "200px"}
-      } satisfies InputInfoSelect<keyof T, keyof T>,
-      {
-        type: "string",
+        {label: "搜索字段", autoWidth: true}
+      ),
+      getter.boolean("exact", {label: "精确搜索", appearance: "checkbox", style: {width: "60px"}}),
+      getter.string("value", {
         label: "搜索",
         clearable: true,
-        value: this.itemQuery(),
-        onInput: debounce((val) => {
-          this.itemQuery.set(val);
-          this.filterNavNodes();
-        }, 200),
+        onInput: debounce(onChange, 200),
+        onChange: undefined,
         style: {width: "160px"}
-      }
+      })
     ];
     return infos;
   });
@@ -626,20 +622,24 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     let itemsQueried = false;
     if (withItems) {
       const itemQuery = this.itemQuery();
-      const itemQueryType = this.itemQueryType();
-      const itemQueryField = this.itemQueryTypeField();
-      navNodesHideEmpty = !!itemQuery;
-      itemsQueried = !!itemQuery;
+      navNodesHideEmpty = !!itemQuery.value;
+      itemsQueried = !!itemQuery.value;
       const items: T[] = [];
       for (const item of itemsAll) {
         addCount(counts, item.type);
         let isMatched = true;
-        if (itemQueryType === "搜索选中分类" && activeNode && !activeNode.hidden && navNodesHideEmpty) {
+        if (itemQuery.type === "搜索选中分类" && activeNode && !activeNode.hidden && navNodesHideEmpty) {
           isMatched = item.type === type;
         }
-        if (itemQueryField && itemQueryField in item) {
-          const val = getValueString(item[itemQueryField]);
-          isMatched = isMatched && val.includes(itemQuery);
+        if (itemQuery.field && itemQuery.field in item) {
+          const val = getValueString(item[itemQuery.field]);
+          if (isMatched) {
+            if (itemQuery.exact) {
+              isMatched = val === itemQuery.value;
+            } else {
+              isMatched = val.includes(itemQuery.value);
+            }
+          }
         } else {
           isMatched = false;
         }

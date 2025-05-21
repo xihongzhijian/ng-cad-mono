@@ -5,7 +5,7 @@
 </div>
 <ng-scrollbar>
   <div class="section">
-    <span class="section-title">主CAD</span>
+    <span class="title">主CAD</span>
     @if (main(); as main) {
       <div
         class="cad-image"
@@ -34,10 +34,40 @@
     }
   </div>
 
+  @if (showKailiaoMubanInfos()) {
+    <mat-divider></mat-divider>
+    <div class="section">
+      <div class="title">激光开料模板</div>
+      <div class="items">
+        @for (info of kailiaoMubanInfos(); track $index) {
+          <div class="item">
+            <app-cad-item
+              [cad]="info.data"
+              [cadForm]="info.cadForm"
+              [buttons]="mubanCadButtons()"
+              [customInfo]="{index: $index}"
+              [yaoqiu]="mubanYaoqiu()"
+              [isOnline]="{isFetched: false}"
+              cadWidth="auto"
+              cadHeight="auto"
+              editDisabled
+            ></app-cad-item>
+          </div>
+        }
+        <div class="empty-cad-content" (click)="addKailiaoMubanInfo()">
+          <app-cad-image id="" style="opacity: 0"></app-cad-image>
+          <div class="item empty-cad link">
+            <button mat-icon-button><mat-icon>add_circle</mat-icon></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
   @if (components().length > 0) {
     <div class="section">
       <mat-divider></mat-divider>
-      <span class="section-title">装配CAD</span>
+      <span class="title">装配CAD</span>
       <div class="toolbar">
         <button mat-flat-button [disabled]="!componentsSelectable()" (click)="selectAllComponents()">全选</button>
         <button mat-flat-button (click)="deleteSelectedComponents()">删除已选</button>
