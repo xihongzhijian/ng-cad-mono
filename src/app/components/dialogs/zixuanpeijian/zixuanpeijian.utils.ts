@@ -576,6 +576,8 @@ export const calcZxpj = async (
     succeedTrim: Formulas;
     error: Formulas;
     item: ZixuanpeijianMokuaiItem;
+    formulas1?: Formulas;
+    vars1?: Formulas;
   }
   const updateToCalc1Item = (toCalc1Item: ToCalc1Item) => {
     const item = toCalc1Item.item;
@@ -689,6 +691,8 @@ export const calcZxpj = async (
         await message.error(msg);
         return {fulfilled: false, error: {message: msg}};
       }
+      v.formulas1 = formulas1;
+      v.vars1 = vars1;
       const result1 = await calc.calcFormulas(
         formulas1,
         vars1,
@@ -764,7 +768,11 @@ export const calcZxpj = async (
         if (name2 === name) {
           const n = Number(value);
           if (!(n > 0)) {
-            varsArr.push(`${name} = ${n}`);
+            const formulas = v.formulas1 || {};
+            const vars = {...formulas, ...v.vars1};
+            const str1 = String(formulas[key] ?? "");
+            const str2 = calc.calc.replaceVars(str1, vars);
+            varsArr.push(`${name} = ${str1} = ${str2} = ${n}`);
             varsArr.push(`${name}1 = ${n}?`);
           }
           break;
