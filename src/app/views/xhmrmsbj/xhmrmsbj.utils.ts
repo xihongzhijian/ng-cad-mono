@@ -43,7 +43,10 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
       ...xinghaoConfig
     };
     for (const key of menshanKeys) {
-      const item = info[key] || {};
+      let item = info[key] ?? {};
+      if (!isTypeOf(item, ["object"])) {
+        item = {};
+      }
       this.menshanbujuInfos[key] = item;
       if (!item.选中布局数据) {
         const msbj = msbjs.find((v) => v.id === item.选中布局);
@@ -516,13 +519,13 @@ export const purgeShuruDisabled = (infos: XhmrmsbjDataMsbjInfos) => {
 };
 
 export const getMokuaiShuchuVarsRaw = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
-  const vars = [...mokuai.shuchubianliang];
+  const vars = new Set(mokuai.shuchubianliang);
   for (const option of mokuai.自定义数据?.选项数据 || []) {
     if (option.可选项.length > 0 && option.输出变量) {
-      vars.push(option.名字);
+      vars.add(option.名字);
     }
   }
-  return vars;
+  return Array.from(vars);
 };
 export const getMokuaiShuchuVars = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
   const {输出变量禁用} = info;

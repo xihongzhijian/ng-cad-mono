@@ -144,7 +144,11 @@ export class XhmrmsbjSbjbComponent {
           ];
           const item2 = item[title];
           for (const key of keys) {
-            extraTexts.push({key, value: getValueString(item2?.[key])});
+            let key2 = key;
+            if (key === "正面宽" || key === "背面宽") {
+              key2 = (info.cad?.type || "") + key2;
+            }
+            extraTexts.push({key: key2, value: getValueString(item2?.[key])});
           }
           info.cadForm.extraTexts = extraTexts;
           info.cadForm.onEdit = (c) => this.editSbjbItemSbjbItem(c.customInfo().index);
@@ -213,7 +217,7 @@ export class XhmrmsbjSbjbComponent {
     const item2 = item[name];
     const cadName = item2?.名字 || "";
     const title = `${name}：${cadName}`;
-    const {form: inputInfos, data: item2New} = getXhmrmsbjSbjbItemSbjbItemForm(item2);
+    const {form: inputInfos, data: item2New} = getXhmrmsbjSbjbItemSbjbItemForm(info.cad, item2);
     const qiliaoPrev = await this.findQiliao(cadName);
     const qiliaoCurr = cloneDeep(qiliaoPrev);
     const form: SbjbItemSbjbItemForm = {title, inputInfos, item, name, item2, item2New, qiliaoPrev, qiliaoCurr, cadName};

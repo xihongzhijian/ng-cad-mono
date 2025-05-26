@@ -9,6 +9,7 @@ import {
   show锁扇铰扇蓝线宽固定差值
 } from "@components/lurushuju/services/lrsj-status.utils";
 import {environment} from "@env";
+import {CadData} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect, InputInfoString} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -252,7 +253,7 @@ export const getXhmrmsbjSbjbItemSbjbFormResult = async (
   });
   return result ? data : null;
 };
-export const getXhmrmsbjSbjbItemSbjbItemForm = (item?: XhmrmsbjSbjbItemSbjbItem) => {
+export const getXhmrmsbjSbjbItemSbjbItemForm = (cadData: CadData | null | undefined, item?: XhmrmsbjSbjbItemSbjbItem) => {
   const data = getSbjbItemSbjbItem(cloneDeep(item));
   if (typeof data.正面宽可改 !== "boolean") {
     data.正面宽可改 = true;
@@ -264,9 +265,10 @@ export const getXhmrmsbjSbjbItemSbjbItemForm = (item?: XhmrmsbjSbjbItemSbjbItem)
     data.正背面同时改变 = true;
   }
   const getter = new InputInfoWithDataGetter(data, {clearable: true});
+  const type = cadData?.type || "";
   const form: InputInfo<XhmrmsbjSbjbItemSbjbItem>[] = [
-    getInputInfoGroup([getter.string("正面宽"), getter.boolean("正面宽可改")]),
-    getInputInfoGroup([getter.string("背面宽"), getter.boolean("背面宽可改")]),
+    getInputInfoGroup([getter.string("正面宽", {label: type + "正面宽"}), getter.boolean("正面宽可改")]),
+    getInputInfoGroup([getter.string("背面宽", {label: type + "背面宽"}), getter.boolean("背面宽可改")]),
     getter.boolean("正背面同时改变"),
     getter.boolean("使用正面分体"),
     getter.boolean("使用背面分体")

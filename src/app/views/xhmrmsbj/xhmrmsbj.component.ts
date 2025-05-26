@@ -89,7 +89,7 @@ import {resetInputs} from "@views/suanliao/suanliao.utils";
 import {openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {XhmrmsbjXinghaoConfigComponent} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.component";
 import {isXhmrmsbjXinghaoConfigComponentType} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
-import {clone, cloneDeep, debounce, difference, intersection} from "lodash";
+import {clone, cloneDeep, debounce, difference, intersection, uniq} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, Subject} from "rxjs";
@@ -1075,8 +1075,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
-    const varsAll1 = mokuai.shuchubianliang;
-    const varsAll2 = mokuai.自定义数据?.选项数据.filter((v) => v.可选项.length > 0).map((v) => v.名字) || [];
+    const varsAll1 = uniq(mokuai.shuchubianliang);
+    const varsAll2 = uniq(mokuai.自定义数据?.选项数据.filter((v) => v.可选项.length > 0).map((v) => v.名字) || []);
     const varsEnabled1 = intersection(varsEnabled, varsAll1);
     const varsEnabled2 = intersection(varsEnabled, varsAll2);
     if (isXuanxiang) {
