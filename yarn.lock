@@ -7499,9 +7499,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"compressing@npm:^1.10.1":
-  version: 1.10.1
-  resolution: "compressing@npm:1.10.1"
+"compressing@npm:^1.10.3":
+  version: 1.10.3
+  resolution: "compressing@npm:1.10.3"
   dependencies:
     "@eggjs/yauzl": "npm:^2.11.0"
     flushwritable: "npm:^1.0.0"
@@ -7512,7 +7512,7 @@ __metadata:
     streamifier: "npm:^0.1.1"
     tar-stream: "npm:^1.5.2"
     yazl: "npm:^2.4.2"
-  checksum: 10c0/4443728ce3e21d50f93b9370953b4d5b290a0d234a33dfe2241b473d1cb5c42a9aa6c004b7bed18d315fd7b0edb6dc9f8e16aa1c9ad94897ec1fe5e00177bbdb
+  checksum: 10c0/90c92f6808046b07700fb0c85a313b8b6af2fe69306de242f05b1a0508ac1d9d42bdbd55fe807d75c350701da2e0f3a637898cf22792ff1bb9ea77419059e205
   languageName: node
   linkType: hard
 
@@ -12547,7 +12547,7 @@ __metadata:
     axios: "npm:^1.9.0"
     browser-image-compression: "npm:^2.0.2"
     color: "npm:^5.0.0"
-    compressing: "npm:^1.10.1"
+    compressing: "npm:^1.10.3"
     csstype: "npm:^3.1.3"
     cypress: "npm:^14.4.0"
     emulate-tab: "npm:^1.2.1"
