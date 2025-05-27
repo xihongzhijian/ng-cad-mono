@@ -17,12 +17,20 @@
     (
       filled-container-shape: var(--mat-sys-corner-medium),
       filled-horizontal-padding: 8px,
+      filled-icon-spacing: 4px,
+      filled-icon-offset: -4px,
       outlined-container-shape: var(--mat-sys-corner-medium),
       outlined-horizontal-padding: 8px,
+      outlined-icon-spacing: 4px,
+      outlined-icon-offset: -4px,
       protected-container-shape: var(--mat-sys-corner-medium),
       protected-horizontal-padding: 8px,
+      protected-icon-spacing: 4px,
+      protected-icon-offset: -4px,
       text-container-shape: var(--mat-sys-corner-medium),
-      text-horizontal-padding: 8px
+      text-horizontal-padding: 8px,
+      text-icon-spacing: 4px,
+      text-icon-offset: -4px
     )
   );
 

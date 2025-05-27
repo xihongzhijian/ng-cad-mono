@@ -1,6 +1,13 @@
 .content {
   height: 100%;
 
+  > * {
+    padding: 0;
+    &:not(:last-child) {
+      margin-right: 10px;
+    }
+  }
+
   .shuru-table {
     width: 500px;
   }

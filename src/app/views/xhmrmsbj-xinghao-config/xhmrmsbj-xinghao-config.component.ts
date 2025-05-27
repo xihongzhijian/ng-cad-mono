@@ -183,7 +183,13 @@ export class XhmrmsbjXinghaoConfigComponent {
   }
 
   gongshis = computed(() => this.data()?.xinghaoConfig.公式 || []);
-  slgsInfo = computed<SuanliaogongshiInfo>(() => ({data: {算料公式: this.gongshis()}, slgs: {title: "型号公式"}}));
+  slgsInfo = computed<SuanliaogongshiInfo>(() => ({
+    data: {算料公式: this.gongshis()},
+    slgs: {
+      title: "型号公式",
+      docUrl: "https://kdocs.cn/l/cuAhAZuvkrpo"
+    }
+  }));
   onSlgsChange() {
     this.refreshData();
   }

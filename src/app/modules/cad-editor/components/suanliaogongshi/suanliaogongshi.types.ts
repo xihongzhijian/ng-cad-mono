@@ -12,6 +12,7 @@ export interface SuanliaogongshiInfo {
     titleStyle?: Properties;
     justify?: (item: 算料公式) => void;
     validator?: FormulasValidatorFn;
+    docUrl?: string;
   };
 }
 

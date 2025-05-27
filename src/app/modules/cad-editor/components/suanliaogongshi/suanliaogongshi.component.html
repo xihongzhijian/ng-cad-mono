@@ -7,6 +7,12 @@
       <button mat-stroked-button (click)="importGonshis()">导入</button>
       <button mat-stroked-button (click)="exportGongshis()">导出</button>
       <button mat-stroked-button (click)="clearGongshis()">清空</button>
+      @if (docUrl()) {
+        <button mat-stroked-button (click)="openDoc()">
+          <mat-icon>open_in_new</mat-icon>
+          帮助文档
+        </button>
+      }
     </div>
     @if (noScroll()) {
       <ng-container *ngTemplateOutlet="content"></ng-container>
