@@ -82,7 +82,7 @@ export const alertError = async <T = undefined>(message: MessageService, error: 
   return false;
 };
 
-export const getNamesStr = (names: string[]) => names.map((v) => `【${v}】`).join("");
+export const getNamesStr = (names: string[], separator = "") => names.map((v) => `【${v}】`).join(separator);
 
 export class ResultWithErrors<T, K = undefined> {
   errors: ErrorItem<K>[] = [];

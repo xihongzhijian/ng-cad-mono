@@ -4,7 +4,7 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {ResultWithErrors} from "@app/utils/error-message";
+import {getNamesStr, ResultWithErrors} from "@app/utils/error-message";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
@@ -32,7 +32,7 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {menshanKeys} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
-import {clone, cloneDeep, isEqual, uniqWith} from "lodash";
+import {clone, cloneDeep, difference, isEqual, uniqWith} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   qiliaoFtwzxsNames,
@@ -352,9 +352,18 @@ export class XhmrmsbjXinghaoConfigComponent {
         }
       }
       if (ids.size > 0) {
-        const cads = await this.http.getCad({collection: this.suanliaoConfigCadCollection, ids: Array.from(ids), fields: ["_id", "名字"]});
+        const cads = await this.http.getCad(
+          {collection: this.suanliaoConfigCadCollection, ids: Array.from(ids), fields: ["_id", "名字"]},
+          {silent: true}
+        );
+        const ids2 = cads.cads.map((v) => v.id);
         for (const cad of cads.cads) {
           map.set(cad.id, cad);
+        }
+        const missingIds = difference(Array.from(ids), ids2);
+        if (missingIds.length > 0) {
+          const msg = "配件库，以下企料封口CAD找不到，请检查封口CAD是否导入或者已经删除，请检查数据：";
+          this.message.error(`${msg}<br>${getNamesStr(missingIds, "<br>")}`);
         }
       }
     }
