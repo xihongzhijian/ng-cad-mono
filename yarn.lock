@@ -343,15 +343,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/animations@npm:^19.2.11":
-  version: 19.2.11
-  resolution: "@angular/animations@npm:19.2.11"
+"@angular/animations@npm:^20.0.0":
+  version: 20.0.0
+  resolution: "@angular/animations@npm:20.0.0"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": 19.2.11
-    "@angular/core": 19.2.11
-  checksum: 10c0/d177c1ef4f23245f2ca7a3d1fdaeb4d02d1aed26186adcb2c8511da50f404b16ce1ef30ea3d9cd28b0799140fd80c9c0df09c6996c03060214f03c2cabeb3c83
+    "@angular/common": 20.0.0
+    "@angular/core": 20.0.0
+  checksum: 10c0/5a9fff41bec253377f8818a257263d31ac308c179203364a82692de4d3ef345a3719e75e25aced693ae94a9e2cb9d11b40ef34d84d7ddab3e141648e57a1b7b0
   languageName: node
   linkType: hard
 
@@ -12510,7 +12510,7 @@ __metadata:
     "@angular-eslint/eslint-plugin-template": "npm:^19.4.0"
     "@angular-eslint/schematics": "npm:^19.4.0"
     "@angular-eslint/template-parser": "npm:^19.4.0"
-    "@angular/animations": "npm:^19.2.11"
+    "@angular/animations": "npm:^20.0.0"
     "@angular/cdk": "npm:^19.2.16"
     "@angular/cli": "npm:^19.2.12"
     "@angular/common": "npm:^19.2.11"
