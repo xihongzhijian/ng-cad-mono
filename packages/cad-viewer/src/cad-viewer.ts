@@ -458,7 +458,7 @@ export class CadViewer extends EventEmitter {
           fontStyle.size = entity.fontStyle.size;
           foundOffset = getVectorFromArray(entity.info.offset);
         } else if (isGongshiText) {
-          const {mingzi, mingzi2, gongshi, 刨坑起始线, 双向折弯附加值} = parent;
+          const {mingzi, mingzi2, gongshi, 刨坑起始线, 双向折弯附加值, 企料位置识别} = parent;
           const mingzi3 = mingzi || mingzi2;
           const arr: string[] = [];
           if (gongshi) {
@@ -474,6 +474,9 @@ export class CadViewer extends EventEmitter {
           }
           if (双向折弯附加值) {
             arr.push(双向折弯附加值);
+          }
+          if (企料位置识别 && 企料位置识别 !== "无") {
+            arr.push(企料位置识别);
           }
           entity.text = arr.join("\n");
           let varName = "";

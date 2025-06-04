@@ -610,7 +610,8 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
           "显示线长",
           "圆弧显示",
           "开料不要",
-          "刨坑起始线"
+          "刨坑起始线",
+          "企料位置识别"
         ];
         if (keys.includes(field as keyof CadLineLike)) {
           cad.render(e);
