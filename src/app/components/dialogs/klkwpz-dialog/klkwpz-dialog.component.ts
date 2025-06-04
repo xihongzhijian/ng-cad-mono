@@ -23,9 +23,9 @@ export class KlkwpzDialogComponent {
     }
   }
 
-  submit() {
+  async submit() {
     const klkwpzComponent = this.klkwpzComponent();
-    if (!klkwpzComponent || !klkwpzComponent.submit()) {
+    if (!klkwpzComponent || !(await klkwpzComponent.submit())) {
       return;
     }
     this.dialogRef.close(klkwpzComponent.klkwpz.export());
