@@ -17,24 +17,98 @@ export type CadViewerSelectMode = "none" | "single" | "multiple";
 export type CadViewerDragAxis = "" | "x" | "y" | "xy";
 
 export interface CadViewerConfig {
-  width: number; // 宽
-  height: number; // 高
-  backgroundColor: string; // 背景颜色, 写法与css相同
-  padding: number[]; // 内容居中时的内边距, 写法与css相同
-  reverseSimilarColor: boolean; // 实体颜色与背景颜色相近时是否反相
-  validateLines: boolean; // 是否验证线段
-  selectMode: CadViewerSelectMode; // 实体选取模式
-  dragAxis: CadViewerDragAxis; // 限制整体内容可向x或y方向拖动
-  entityDraggable: boolean | EntityType[]; // 实体是否可拖动
-  hideDimensions: boolean; // 是否隐藏标注
-  lineGongshi: number; // 显示线公式的字体大小, ≤0时不显示
-  hideLineLength: boolean; // 是否隐藏线长度(即使lineLength>0)
-  hideLineGongshi: boolean; // 是否隐藏线公式(即使lineGongshi>0)
-  minLinewidth: number; // 所有线的最小宽度(调大以便选中)
-  fontStyle: FontStyle; // 全局字体样式
-  dimStyle: CadDimensionStyle; // 全局标注样式
-  enableZoom: boolean; // 是否启用缩放
-  dashedLinePadding: number | number[]; // 虚线前后留白
+  /**
+   * Width of container.
+   * @default 300
+   */
+  width: number;
+  /**
+   * Height of container.
+   * @default 150
+   */
+  height: number;
+  /**
+   * Background color of container.
+   * @default "black"
+   * @example "white", "#fff", "rgba(255, 255, 255, 0.5)"
+   */
+  backgroundColor: string;
+  /**
+   * Padding of container when content is centered.
+   * @default [0]
+   * @example [0, 0, 0, 0] or [0, 0]
+   */
+  padding: number[];
+  /**
+   * Auto change entity color when it's color is similar to background color.
+   * @default true
+   */
+  reverseSimilarColor: boolean;
+  /**
+   * Entity select mode.
+   * @default "multiple"
+   * @example "none", "single", "multiple"
+   */
+  selectMode: CadViewerSelectMode;
+  /**
+   * Specify the drag axis of the content.
+   * @default "xy"
+   * @example "", "x", "y", "xy"
+   */
+  dragAxis: CadViewerDragAxis;
+  /**
+   * Whether the entities is draggable.
+   * @default true
+   * @example true, false, ["LINE", "ARC"]
+   * @description
+   * - true: all entities are draggable
+   * - false: all entities are not draggable
+   * - ["LINE", "ARC"]: only LINE and ARC entities are draggable
+   */
+  entityDraggable: boolean | EntityType[];
+  /**
+   * Whether to hide dimensions.
+   * @default false
+   */
+  hideDimensions: boolean;
+  /**
+   * All lines' min width, increase it to make it easier to select.
+   * @default 1
+   */
+  minLinewidth: number;
+  /**
+   * Global font style.
+   * @default {}
+   */
+  fontStyle: FontStyle;
+  /**
+   * Global dimension style.
+   * @default {}
+   */
+  dimStyle: CadDimensionStyle;
+  /**
+   * Whether to enable zoom.
+   * @default true
+   */
+  enableZoom: boolean;
+  /**
+   * Padding of dashed line.
+   * @default 2
+   * @example 2, [2, 4]
+   * @description
+   * - 2: 2px padding at start and end
+   * - [2, 4]: 2px padding at start and 4px padding at end
+   */
+  dashedLinePadding: number | number[];
+  /**
+   * Customize hotkeys.
+   * @description List of default hotkeys:
+   * - selectAll: Ctrl + A
+   * - unSelectAll: Esc
+   * - copyEntities: Ctrl + C
+   * - pasteEntities: Ctrl + V or Enter
+   * - deleteEntities: Delete or Backspace
+   */
   hotKeys: {
     selectAll: CadViewerHotKey[];
     unSelectAll: CadViewerHotKey[];
@@ -42,6 +116,30 @@ export interface CadViewerConfig {
     pasteEntities: CadViewerHotKey[];
     deleteEntities: CadViewerHotKey[];
   };
+  /**
+   * Whether to validate lines.
+   * @default false
+   * @ignore
+   */
+  validateLines: boolean;
+  /**
+   * Line gongshi font size, hidden if ≤0.
+   * @default 0
+   * @ignore
+   */
+  lineGongshi: number;
+  /**
+   * Whether to hide line length.
+   * @default false
+   * @ignore
+   */
+  hideLineLength: boolean;
+  /**
+   * Whether to hide line gongshi.
+   * @default false
+   * @ignore
+   */
+  hideLineGongshi: boolean;
 }
 export const getDefalutCadViewerConfig = (): CadViewerConfig => ({
   width: 300,
@@ -49,14 +147,10 @@ export const getDefalutCadViewerConfig = (): CadViewerConfig => ({
   backgroundColor: "white",
   padding: [0],
   reverseSimilarColor: true,
-  validateLines: false,
   selectMode: "multiple",
   dragAxis: "xy",
   entityDraggable: true,
   hideDimensions: false,
-  lineGongshi: 0,
-  hideLineLength: false,
-  hideLineGongshi: false,
   minLinewidth: 1,
   fontStyle: {},
   dimStyle: {},
@@ -68,5 +162,9 @@ export const getDefalutCadViewerConfig = (): CadViewerConfig => ({
     copyEntities: [{key: "c", ctrl: true}],
     pasteEntities: [{key: "v", ctrl: true}, {key: "Enter"}],
     deleteEntities: [{key: "Delete"}, {key: "Backspace"}]
-  }
+  },
+  validateLines: false,
+  lineGongshi: 0,
+  hideLineLength: false,
+  hideLineGongshi: false
 });
