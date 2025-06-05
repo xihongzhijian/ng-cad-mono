@@ -125,6 +125,7 @@ export interface DeleteMongodbParams {
 export interface TableInsertParams<T extends TableDataBase = TableDataBase> {
   table: string;
   data: Omit<Partial<T>, "vid">;
+  autoRename?: boolean;
 }
 export interface TableUpdateParams<T extends TableDataBase = TableDataBase> {
   table: string;

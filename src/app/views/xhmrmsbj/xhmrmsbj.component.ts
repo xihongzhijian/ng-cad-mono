@@ -268,7 +268,11 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       if (!record && xinghaoId > 0) {
         xinghao = await getXinghao(String(xinghaoId));
         if (xinghao) {
-          record = await this.http.tableInsert<XhmrmsbjTableData>({table, data: {mingzi: xinghao.mingzi, xinghao: String(xinghaoId)}});
+          record = await this.http.tableInsert<XhmrmsbjTableData>({
+            table,
+            data: {mingzi: xinghao.mingzi, xinghao: String(xinghaoId)},
+            autoRename: true
+          });
         }
       }
       this.tableData.set(record);
