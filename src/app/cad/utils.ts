@@ -450,10 +450,10 @@ export const setShuangxiangLineRects = (data: ReturnType<typeof splitShuangxiang
     }
   ];
   for (const transform of transforms) {
-    transform();
     if (checkIntersections()) {
       return;
     }
+    transform();
   }
 };
 
