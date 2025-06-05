@@ -2,11 +2,13 @@ import {Component, forwardRef, HostBinding, inject, Inject, OnInit, signal, view
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
+import {timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadEditorComponent} from "@modules/cad-editor/components/cad-editor/cad-editor.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
+import {CadStatusNormal} from "@services/cad-status";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
@@ -59,6 +61,8 @@ export class CadEditorDialogComponent extends Subscribed() implements OnInit {
       }
     }
     if (this.cadEditor()) {
+      this.status.setCadStatuses([new CadStatusNormal()]);
+      await timeout(0);
       this.dialogRef.close({savedData: this.savedData()});
     } else {
       this.dialogRef.close();
