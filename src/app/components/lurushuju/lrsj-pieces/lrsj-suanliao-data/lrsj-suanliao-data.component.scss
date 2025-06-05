@@ -6,7 +6,7 @@ mat-tab-group {
   width: 100%;
   ::ng-deep {
     .mdc-tab--active {
-      --mat-tab-header-label-text-size: 24px;
+      --mat-tab-label-text-size: 24px;
     }
   }
 }

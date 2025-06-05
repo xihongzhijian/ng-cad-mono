@@ -222,11 +222,11 @@ mat-divider {
 }
 
 .mat-mdc-icon-button {
-  --mdc-icon-button-state-layer-size: var(--mat-icon-size);
-  --mdc-icon-button-icon-size: var(--mat-icon-size);
+  --mat-icon-button-state-layer-size: var(--mat-icon-size);
+  --mat-icon-button-icon-size: var(--mat-icon-size);
   .mat-mdc-button-touch-target {
-    width: var(--mdc-icon-button-state-layer-size) !important;
-    height: var(--mdc-icon-button-state-layer-size) !important;
+    width: var(--mat-icon-button-state-layer-size) !important;
+    height: var(--mat-icon-button-state-layer-size) !important;
   }
 }
 mat-icon {

@@ -179,7 +179,7 @@
     }
 
     & {
-      --mdc-checkbox-state-layer-size: 30px;
+      --mat-checkbox-state-layer-size: 30px;
       .mat-mdc-checkbox-touch-target {
         width: 36px;
         height: 36px;
@@ -192,7 +192,7 @@
     &.compact {
       .mdc-button {
         padding: 0;
-        --mdc-text-button-container-height: auto;
+        --mat-button-text-container-height: auto;
         .mat-mdc-button-touch-target {
           height: auto;
         }

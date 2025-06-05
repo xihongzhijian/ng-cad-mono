@@ -25,7 +25,7 @@
 }
 
 .rect-buju {
-  --mdc-text-button-label-text-size: var(--mat-sys-title-large-size);
+  --mat-button-text-label-text-size: var(--mat-sys-title-large-size);
   button {
     min-width: 40px;
   }

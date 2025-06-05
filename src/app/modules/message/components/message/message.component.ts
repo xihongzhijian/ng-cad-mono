@@ -151,7 +151,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
 
   editor = viewChild(QuillViewComponent);
   private _getEditorToolbarHeight() {
-    const el = this.editor()?.elementRef.nativeElement;
+    const el = this.editor()?.editorElem;
     if (el instanceof HTMLElement) {
       const toolbar = el.querySelector(".ql-toolbar");
       if (toolbar) {

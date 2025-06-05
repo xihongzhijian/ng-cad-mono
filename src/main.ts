@@ -1,4 +1,10 @@
-import {enableProdMode, importProvidersFrom, Injectable, provideExperimentalZonelessChangeDetection} from "@angular/core";
+import {
+  enableProdMode,
+  importProvidersFrom,
+  Injectable,
+  provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection
+} from "@angular/core";
 import {MAT_DATE_LOCALE} from "@angular/material/core";
 import {MAT_DIALOG_DEFAULT_OPTIONS, MatDialogConfig} from "@angular/material/dialog";
 import {MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldDefaultOptions} from "@angular/material/form-field";
@@ -86,8 +92,9 @@ bootstrapApplication(AppComponent, {
     {provide: MAT_ICON_DEFAULT_OPTIONS, useValue: matIconDefaultOptions},
     {provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipOptions},
     provideAnimations(),
+    provideBrowserGlobalErrorListeners(),
     provideScrollbarPolyfill("assets/scroll-timeline-polyfill.js"),
-    provideExperimentalZonelessChangeDetection()
+    provideZonelessChangeDetection()
   ]
 }).catch((err) => {
   console.error(err);
