@@ -333,7 +333,7 @@
           @switch (info.appearance) {
             @case ("radio") {
               <input matInput hidden [disabled]="info.disabled" />
-              <mat-radio-group [(ngModel)]="value">
+              <mat-radio-group [(ngModel)]="value" (ngModelChange)="onChange()">
                 <mat-radio-button [value]="true" [disabled]="info.disabled || info.readonly">是</mat-radio-button>
                 <mat-radio-button [value]="false" [disabled]="info.disabled || info.readonly">否</mat-radio-button>
               </mat-radio-group>

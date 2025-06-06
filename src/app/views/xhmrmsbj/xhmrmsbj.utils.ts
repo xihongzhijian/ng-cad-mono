@@ -42,6 +42,12 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
       企料结构配置: {},
       ...xinghaoConfig
     };
+    if (!isTypeOf(this.xinghaoConfig.算料单配置, "object")) {
+      this.xinghaoConfig.算料单配置 = {};
+    }
+    if (!isTypeOf(this.xinghaoConfig.企料结构配置, "object")) {
+      this.xinghaoConfig.企料结构配置 = {};
+    }
     for (const key of menshanKeys) {
       let item = info[key] ?? {};
       if (!isTypeOf(item, ["object"])) {

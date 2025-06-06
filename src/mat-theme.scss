@@ -105,7 +105,19 @@
     )
   );
 }
+.primary {
+  @include mat.icon-overrides(
+    (
+      color: var(--mat-sys-primary)
+    )
+  );
+}
 .accent {
+  @include mat.icon-overrides(
+    (
+      color: var(--mat-sys-tertiary)
+    )
+  );
   @include mat.button-overrides(
     (
       text-label-text-color: var(--mat-sys-tertiary),

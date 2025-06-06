@@ -291,7 +291,7 @@ export class LrsjSuanliaoCadsComponent extends LrsjPiece {
     }
     const response = await this.http.mongodbInsert<HoutaiData>(suanliaoTables.klcsCollection, {
       ...this.suanliaoDataParams(),
-      名字: component.cadName + "中空参数",
+      名字: component.cadName() + "中空参数",
       分类: "切中空"
     });
     if (response) {
