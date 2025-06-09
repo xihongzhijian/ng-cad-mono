@@ -19,7 +19,7 @@ import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.comp
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {DdbqType} from "@views/dingdanbiaoqian/dingdanbiaoqian.types";
-import {cloneDeep} from "lodash";
+import {cloneDeep, intersection} from "lodash";
 import {DateTime} from "luxon";
 import {NgScrollbar} from "ngx-scrollbar";
 import {
@@ -91,6 +91,7 @@ export class SelectBancaiComponent {
   bancaiList: ObjectOf<BancaiList> = {};
   xikongStrings = signal<[string, string][][][]>([]);
   xikongData = signal<XikongData | null>(null);
+  hiddenCadNames = ["左包边", "右包边", "顶包边", "锁框", "铰框", "顶框"];
 
   async refresh() {
     const {codes, table, type} = this.route.snapshot.queryParams;
@@ -112,7 +113,17 @@ export class SelectBancaiComponent {
           const orderBancaiInfos: ReturnType<typeof this.orderBancaiInfos> = [];
           for (const orderBancai of result.orderBancais) {
             const {code, bancaiCads, 上下走线, 开料孔位配置, 开料参数} = orderBancai;
+            let hiddenCadNames = this.hiddenCadNames;
+            const cadNames = bancaiCads.map((v) => v.name);
+            if (intersection(cadNames, hiddenCadNames).length < hiddenCadNames.length) {
+              hiddenCadNames = [];
+            }
+            const hiddenCadNames2 = new Set();
             for (const cad of bancaiCads) {
+              if (hiddenCadNames.includes(cad.name) && !hiddenCadNames2.has(cad.name)) {
+                hiddenCadNames2.add(cad.name);
+                cad.hidden = true;
+              }
               let list = result.bancaiList.find((v) => v.mingzi === cad.bancai.mingzi);
               if (!list && bancaiZidingyi) {
                 list = cloneDeep(bancaiZidingyi);
@@ -388,12 +399,11 @@ export class SelectBancaiComponent {
         return;
       }
     }
-    const getCadOptions: ObjectOf<any>[] = [];
+    const getCadOptions: {namesExclude?: string[]}[] = [];
     const bancaiCadsArr: BancaiCad[][] = [];
     const codes: string[] = [];
     for (const info of this.orderBancaiInfos()) {
       const arr1: BancaiCad[] = [];
-      const namesInclude: string[] = [];
       const namesExclude: string[] = [];
       for (const group of info.sortedCads) {
         for (const cad of group) {
@@ -405,17 +415,14 @@ export class SelectBancaiComponent {
             delete clone.oversized;
             delete clone.disabled;
             arr1.push(clone as BancaiCad);
-            namesInclude.push(cad.name);
           }
         }
       }
-      if (namesInclude.length > 0) {
-        codes.push(info.code);
-        if (namesInclude.length <= namesExclude.length) {
-          getCadOptions.push({namesInclude});
-        } else {
-          getCadOptions.push({namesExclude});
-        }
+      codes.push(info.code);
+      const getCadOptionsItem: (typeof getCadOptions)[number] = {};
+      getCadOptions.push(getCadOptionsItem);
+      if (namesExclude.length > 0) {
+        getCadOptionsItem.namesExclude = namesExclude;
       }
       bancaiCadsArr.push(arr1);
     }

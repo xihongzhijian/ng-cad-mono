@@ -121,6 +121,9 @@ export class SelectBancaiCadsComponent {
 
   disable() {
     for (const cad of this.getAllCads()) {
+      if (cad.hidden) {
+        continue;
+      }
       cad.disabled = cad.checked;
     }
     this.cd.markForCheck();
@@ -128,6 +131,9 @@ export class SelectBancaiCadsComponent {
 
   enable() {
     for (const cad of this.getAllCads()) {
+      if (cad.hidden) {
+        continue;
+      }
       cad.disabled = !cad.checked;
     }
     this.cd.markForCheck();

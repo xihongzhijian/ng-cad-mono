@@ -83,6 +83,7 @@ export interface BancaiCad {
   height: number;
   num: number;
   bancai: {mingzi: string; cailiao: string | null; houdu: string | null; guige: number[] | null; gas?: string};
+  hidden?: boolean;
 }
 
 export type Changelog = ObjectOf<any>[];
