@@ -6,6 +6,7 @@
       @if (navEditMode()) {
         <button mat-stroked-button (click)="addNavNode('root')">添加1级</button>
         <button mat-stroked-button (click)="moveNavNodes(selectedNavNodes())">移动选中</button>
+        <button mat-stroked-button (click)="removeNavNodes(selectedNavNodes())">删除选中</button>
       }
     </div>
     <div class="toolbar">

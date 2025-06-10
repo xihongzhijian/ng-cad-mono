@@ -923,7 +923,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const mokuai2 = lastSuanliao?.output.配件模块CAD.find((v) => isMokuaiItemEqual(v, mokuai));
     Object.assign(vars, mokuai2?.suanliaogongshi);
     const inputs = this.mokuaiInputInfosInput();
-    const names = (mokuai.自定义数据?.下单显示.split("+") || []).filter((v) => !inputs.some((v2) => v2.label === v));
+    const names = (mokuai.自定义数据?.下单显示.split("+") || []).map((v) => v.trim()).filter((v) => !inputs.some((v2) => v2.label === v));
     for (const name of names) {
       if (!name) {
         continue;
