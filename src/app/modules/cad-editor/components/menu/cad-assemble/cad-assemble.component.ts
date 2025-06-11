@@ -35,6 +35,7 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
     const cad = this.status.cad;
     cad.off("entitiesselect", this._onEntitiesSelect);
     cad.off("entitiesunselect", this._onEntitiesUnselect);
+    this.onAssembleStartEnd();
   }
 
   data = this.status.cadData;
@@ -49,7 +50,7 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
   showPointsAssemble = computed(() => this.status.collection() === "luomatoucad");
   pointsAssembling = signal(0);
 
-  private _prevConfig: Partial<AppConfig> = {};
+  private _prevConfig: Partial<AppConfig> | null = null;
   private _prevSelectedComponents: CadData[] | null = null;
   private _prevComponentsSelectable: boolean | null = null;
 
@@ -185,73 +186,77 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
 
   assembleEff = this.status.getCadStatusEffect(
     (v) => v instanceof CadStatusAssemble,
-    () => {
-      const cad = this.status.cad;
-      this._prevConfig = this.config.setConfig(
-        {selectMode: "multiple", entityDraggable: [], hideLineLength: true, hideLineGongshi: true},
-        {sync: false}
-      );
-      this._prevSelectedComponents = this.status.components.selected();
-      this.status.components.selected.set([]);
-      this._prevComponentsSelectable = this.status.components.selectable();
-      this.status.components.selectable.set(true);
-      if (this.status.collection() === "CADmuban") {
-        const data = cad.data;
-        const {top, bottom, left, right} = data.entities.getBoundingRect();
-        const y = top - (top - bottom) / 4;
-        let hasTop = false;
-        let hasBottom = false;
-        let hasLeft = false;
-        let hasRight = false;
-        data.entities.forEach((e) => {
-          if (!(e instanceof CadLine) || e.length < 1000) {
-            if (e instanceof CadLine && e.minY <= y) {
-              return;
-            }
-            const {top: top2, bottom: bottom2, left: left2, right: right2} = e.boundingRect;
-            if (top2 >= top && !hasTop) {
-              hasTop = true;
-              return;
-            }
-            if (bottom2 <= bottom && !hasBottom) {
-              hasBottom = true;
-              return;
-            }
-            if (left2 <= left && !hasLeft) {
-              hasLeft = true;
-              return;
-            }
-            if (right2 >= right && !hasRight) {
-              hasRight = true;
-              return;
-            }
-            e.info.prevVisible = e.visible;
-            e.visible = false;
-            cad.render(e);
-          }
-        });
-      }
-    },
-    () => {
-      const cad = this.status.cad;
-      this.config.setConfig(this._prevConfig, {sync: false});
-      if (this._prevSelectedComponents !== null) {
-        this.status.components.selected.set(this._prevSelectedComponents);
-        this._prevSelectedComponents = null;
-      }
-      if (this._prevComponentsSelectable !== null) {
-        this.status.components.selectable.set(this._prevComponentsSelectable);
-        this._prevComponentsSelectable = null;
-      }
-      cad.data.entities.forEach((e) => {
+    () => this.onAssembleStart(),
+    () => this.onAssembleStartEnd()
+  );
+  onAssembleStart() {
+    const cad = this.status.cad;
+    this._prevConfig = this.config.setConfig(
+      {selectMode: "multiple", entityDraggable: [], hideLineLength: true, hideLineGongshi: true},
+      {sync: false}
+    );
+    this._prevSelectedComponents = this.status.components.selected();
+    this.status.components.selected.set([]);
+    this._prevComponentsSelectable = this.status.components.selectable();
+    this.status.components.selectable.set(true);
+    if (this.status.collection() === "CADmuban") {
+      const data = cad.data;
+      const {top, bottom, left, right} = data.entities.getBoundingRect();
+      const y = top - (top - bottom) / 4;
+      let hasTop = false;
+      let hasBottom = false;
+      let hasLeft = false;
+      let hasRight = false;
+      data.entities.forEach((e) => {
         if (!(e instanceof CadLine) || e.length < 1000) {
-          e.visible = e.info.prevVisible ?? true;
-          delete e.info.prevVisible;
+          if (e instanceof CadLine && e.minY <= y) {
+            return;
+          }
+          const {top: top2, bottom: bottom2, left: left2, right: right2} = e.boundingRect;
+          if (top2 >= top && !hasTop) {
+            hasTop = true;
+            return;
+          }
+          if (bottom2 <= bottom && !hasBottom) {
+            hasBottom = true;
+            return;
+          }
+          if (left2 <= left && !hasLeft) {
+            hasLeft = true;
+            return;
+          }
+          if (right2 >= right && !hasRight) {
+            hasRight = true;
+            return;
+          }
+          e.info.prevVisible = e.visible;
+          e.visible = false;
           cad.render(e);
         }
       });
     }
-  );
+  }
+  onAssembleStartEnd() {
+    const cad = this.status.cad;
+    if (this._prevConfig !== null) {
+      this.config.setConfig(this._prevConfig, {sync: false});
+    }
+    if (this._prevSelectedComponents !== null) {
+      this.status.components.selected.set(this._prevSelectedComponents);
+      this._prevSelectedComponents = null;
+    }
+    if (this._prevComponentsSelectable !== null) {
+      this.status.components.selectable.set(this._prevComponentsSelectable);
+      this._prevComponentsSelectable = null;
+    }
+    cad.data.entities.forEach((e) => {
+      if (!(e instanceof CadLine) || e.length < 1000) {
+        e.visible = e.info.prevVisible ?? true;
+        delete e.info.prevVisible;
+        cad.render(e);
+      }
+    });
+  }
 
   componentSelectedEff = effect(() => {
     this.status.components.selected();

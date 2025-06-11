@@ -146,7 +146,7 @@ export const validateLines = (
   });
   const {noInfo, force} = opts || {};
   if (!force) {
-    if (isShiyitu(data) || (["企料算料", "孔"].includes(data.type) && collection !== "kailiaocadmuban")) {
+    if (isShiyitu(data) || ["企料算料", "孔"].includes(data.type)) {
       return result;
     }
   }
