@@ -750,7 +750,6 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         sortable: true,
         value: names,
         onChange: (val) => {
-          console.log(val);
           const {mingzi, mingzi2} = stringifyLineNames(val);
           this.setLineValue(mingzi, "mingzi");
           this.setLineValue(mingzi2, "mingzi2");
