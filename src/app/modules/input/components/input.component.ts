@@ -1008,6 +1008,60 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const value = target.value;
     this._filterXuanxiangOptions(i, value);
   }
+  getObjectKeyLabel(key: string, label: any) {
+    const info = this.info();
+    if (info.type === "object" && info.keyLabel) {
+      if (typeof info.keyLabel === "function") {
+        return info.keyLabel(key, label, info);
+      } else if (typeof info.keyLabel === "string") {
+        return info.keyLabel;
+      }
+    }
+    return key;
+  }
+  getObjectValueLabel(key: string, value: any) {
+    const info = this.info();
+    if (info.type === "object" && info.valueLabel) {
+      if (typeof info.valueLabel === "function") {
+        return info.valueLabel(key, value, info);
+      } else if (typeof info.valueLabel === "string") {
+        return info.valueLabel;
+      }
+    }
+    return "";
+  }
+
+  changeArrayValue2(...args: Parameters<InputComponent["changeArrayValue"]>) {
+    this.changeArrayValue(...args);
+    this.onChange();
+  }
+  arrayAdd2(...args: Parameters<InputComponent["arrayAdd"]>) {
+    this.arrayAdd(...args);
+    this.onChange();
+  }
+  arrayRemove2(...args: Parameters<InputComponent["arrayRemove"]>) {
+    this.arrayRemove(...args);
+    this.onChange();
+  }
+  arrayMoveUp(arr: any[], i: number) {
+    moveItemInArray(arr, i, i - 1);
+    this.onChange();
+  }
+  arrayMoveDown(arr: any[], i: number) {
+    moveItemInArray(arr, i, i + 1);
+    this.onChange();
+  }
+  getArrayValueLabel(i: number, value: any) {
+    const info = this.info();
+    if (info.type === "array" && info.valueLabel) {
+      if (typeof info.valueLabel === "function") {
+        return info.valueLabel(i, value, info);
+      } else if (typeof info.valueLabel === "string") {
+        return info.valueLabel;
+      }
+    }
+    return "";
+  }
 
   updateFormulasStr() {
     const info = this.info();

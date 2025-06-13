@@ -78,8 +78,8 @@ export interface InputInfoObject<T = any, K = string, R = any> extends InputInfo
   optionsDialog?: OptionsDialog;
   optionMultiple?: boolean;
   optionSeparator?: OptionSeparator;
-  keyLabel?: string;
-  valueLabel?: string;
+  keyLabel?: string | ((key: K, value: R, info: this) => string);
+  valueLabel?: string | ((key: K, value: R, info: this) => string);
   keyValidators?: KeyValidatorFn | KeyValidatorFn[] | null;
   valueValidators?: ValueValidatorFn | ValueValidatorFn[] | null;
   keysReadonly?: boolean;
@@ -89,12 +89,13 @@ export interface InputInfoObject<T = any, K = string, R = any> extends InputInfo
   onChange?: (val: ObjectOf<R>, info: this) => void;
 }
 
-export interface InputInfoArray<T = any> extends InputInfoBase<T> {
+export interface InputInfoArray<T = any, R = any> extends InputInfoBase<T> {
   type: "array";
-  value?: Value<any[]>;
-  valueLabel?: string;
+  value?: Value<R[]>;
+  valueLabel?: string | ((i: number, value: R, info: this) => string);
   valueValidators?: AbstractControlOptions["validators"];
-  onChange?: <R>(val: R[], info: this) => void;
+  sortable?: boolean;
+  onChange?: (val: R[], info: this) => void;
 }
 
 export interface InputInfoBoolean<T = any> extends InputInfoBase<T> {
