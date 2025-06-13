@@ -745,7 +745,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         type: "array",
         label: "",
         valueLabel: (i) => (i === 0 ? "名字" : "名字2"),
-        readonly: isMultiple || isZero,
+        disabled: isMultiple || isZero,
         hint: isMultiple ? "选中多根线时无法编辑" : "",
         sortable: true,
         value: names,
