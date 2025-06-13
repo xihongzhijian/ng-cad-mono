@@ -65,7 +65,7 @@
     <div class="label">激光开料标记线</div>
     @if (data().info["激光开料标记线"]?.length === 0) {
       <div>
-        <button mat-icon-button (click)="arrayAdd2(data().info, '激光开料标记线', emptyBjxItem)">
+        <button mat-icon-button (click)="arrayAddEnsure(data().info, '激光开料标记线', emptyBjxItem)">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
@@ -84,11 +84,11 @@
           <button
             mat-icon-button
             matSuffix
-            (click)="$event.stopPropagation(); arrayAdd2(data().info, '激光开料标记线', emptyBjxItem, j + 1)"
+            (click)="$event.stopPropagation(); arrayAddEnsure(data().info, '激光开料标记线', emptyBjxItem, j + 1)"
           >
             <mat-icon>add_circle</mat-icon>
           </button>
-          <button mat-icon-button matSuffix (click)="$event.stopPropagation(); arrayRemove2(data().info, '激光开料标记线', j)">
+          <button mat-icon-button matSuffix (click)="$event.stopPropagation(); arrayRemoveEnsure(data().info, '激光开料标记线', j)">
             <mat-icon>remove_circle</mat-icon>
           </button>
         </mat-form-field>
