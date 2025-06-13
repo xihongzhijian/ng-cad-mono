@@ -438,7 +438,8 @@
                 (selectionChange)="onChange()"
                 (click)="onClick($event)"
               >
-                @if (getOptionText(); as text) {
+                @let text = getOptionText();
+                @if (text) {
                   <mat-select-trigger [innerHtml]="text"></mat-select-trigger>
                 }
                 <ng-scrollbar matSelectViewport>
@@ -457,7 +458,8 @@
                 (selectionChange)="onChange()"
                 (click)="onClick($event)"
               >
-                @if (getOptionText(); as text) {
+                @let text = getOptionText();
+                @if (text) {
                   <mat-select-trigger [innerHtml]="text"></mat-select-trigger>
                 }
                 <ng-scrollbar matSelectViewport>
