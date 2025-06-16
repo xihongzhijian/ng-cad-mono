@@ -1,0 +1,19 @@
+:host {
+  padding: 5px;
+}
+
+mat-tab-group {
+  height: 0;
+  flex: 1 1 0;
+
+  ::ng-deep {
+    .mat-mdc-tab-body-wrapper {
+      flex: 1 1 0;
+    }
+  }
+}
+
+.json-editor-container,
+app-table {
+  height: 100%;
+}

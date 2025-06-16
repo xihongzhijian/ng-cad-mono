@@ -19,7 +19,7 @@ import {InputInfo, InputInfoBoolean} from "@modules/input/components/input.types
 import {getInputInfoGroup, getUnifiedInputs, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {RowButtonEventBase} from "@modules/table/components/table/table.types";
 import {CalcService} from "@services/calc.service";
 import {Properties} from "csstype";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -148,9 +148,13 @@ export class YahuabanTestComponent implements OnInit, OnDestroy {
   }
   gssrTableInfo = computed(() => {
     const item = this.item();
-    return getShuruTable(item?.gongshishuru || [], {title: "", noScroll: true});
+    return getShuruTable(
+      item?.gongshishuru || [],
+      {add: this.addGssr.bind(this), edit: this.editGssr.bind(this), delete: this.deleteGssr.bind(this)},
+      {title: "", noScroll: true}
+    );
   });
-  async onGssrTableToolbar(event: ToolbarButtonEvent) {
+  async addGssr() {
     const item = this.item();
     if (!item) {
       return;
@@ -158,19 +162,13 @@ export class YahuabanTestComponent implements OnInit, OnDestroy {
     if (!item.gongshishuru || !isTypeOf(item.gongshishuru, "array")) {
       item.gongshishuru = [];
     }
-    switch (event.button.event) {
-      case "添加":
-        {
-          const shuruItem = await getShuruItem(this.message, item.gongshishuru);
-          if (shuruItem) {
-            item.gongshishuru = [...item.gongshishuru, shuruItem];
-            this.item.set({...item});
-          }
-        }
-        break;
+    const shuruItem = await getShuruItem(this.message, item.gongshishuru);
+    if (shuruItem) {
+      item.gongshishuru = [...item.gongshishuru, shuruItem];
+      this.item.set({...item});
     }
   }
-  async onGssrRow(event: RowButtonEvent<ShuruTableDataSorted>) {
+  async editGssr(params: RowButtonEventBase<ShuruTableDataSorted>) {
     const item = this.item();
     if (!item) {
       return;
@@ -178,23 +176,25 @@ export class YahuabanTestComponent implements OnInit, OnDestroy {
     if (!item.gongshishuru || !isTypeOf(item.gongshishuru, "array")) {
       item.gongshishuru = [];
     }
-    const {rowIdx, item: shuruItem} = event;
-    switch (event.button.event) {
-      case "编辑":
-        {
-          const shuruItem2 = await getShuruItem(this.message, item.gongshishuru, shuruItem);
-          if (shuruItem2) {
-            item.gongshishuru[rowIdx] = shuruItem2;
-            item.gongshishuru = [...item.gongshishuru];
-            this.item.set({...item});
-          }
-        }
-        break;
-      case "删除": {
-        item.gongshishuru = item.gongshishuru.filter((_, i) => i !== rowIdx);
-        this.item.set({...item});
-      }
+    const {rowIdx, item: shuruItem} = params;
+    const shuruItem2 = await getShuruItem(this.message, item.gongshishuru, shuruItem);
+    if (shuruItem2) {
+      item.gongshishuru[rowIdx] = shuruItem2;
+      item.gongshishuru = [...item.gongshishuru];
+      this.item.set({...item});
     }
+  }
+  async deleteGssr(params: RowButtonEventBase<ShuruTableDataSorted>) {
+    const item = this.item();
+    if (!item) {
+      return;
+    }
+    if (!item.gongshishuru || !isTypeOf(item.gongshishuru, "array")) {
+      item.gongshishuru = [];
+    }
+    const {rowIdx} = params;
+    item.gongshishuru = item.gongshishuru.filter((_, i) => i !== rowIdx);
+    this.item.set({...item});
   }
 
   setItemQiegegongshi(formulas: Formulas | null | undefined) {

@@ -25,11 +25,7 @@
               }
             </div>
             @if (showGssrTable()) {
-              <app-table
-                [info]="gssrTableInfo()"
-                (toolbarButtonClick)="onGssrTableToolbar($event)"
-                (rowButtonClick)="onGssrRow($event)"
-              ></app-table>
+              <app-table [info]="gssrTableInfo()"></app-table>
             }
           </div>
           <app-formulas-editor
