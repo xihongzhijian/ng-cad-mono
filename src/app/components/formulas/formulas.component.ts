@@ -1,5 +1,4 @@
-import {AfterViewInit, effect, ElementRef, forwardRef, input, output, untracked, viewChildren} from "@angular/core";
-import {Component} from "@angular/core";
+import {AfterViewInit, Component, effect, ElementRef, forwardRef, input, output, untracked, viewChildren} from "@angular/core";
 import {timeout} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {Properties} from "csstype";

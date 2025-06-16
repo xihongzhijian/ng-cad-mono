@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, computed, inject, Inject, signal} from "@angular/core";
+import {ChangeDetectorRef, Component, computed, inject, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -17,17 +17,14 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [FormsModule, MatButtonModule, MatCheckboxModule, MatDialogActions, MatDividerModule, MatSlideToggleModule, NgScrollbar]
 })
 export class SelectBancaiCadsComponent {
+  dialogRef = inject<MatDialogRef<SelectBancaiCadsComponent, SelectBancaiCadsOutput>>(MatDialogRef);
+  data: SelectBancaiCadsInput = inject<SelectBancaiCadsInput>(MAT_DIALOG_DATA, {optional: true}) ?? {orders: [], noPaiban: false};
+
   private cd = inject(ChangeDetectorRef);
 
   noPaiban = false;
 
-  constructor(
-    public dialogRef: MatDialogRef<SelectBancaiCadsComponent, SelectBancaiCadsOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: SelectBancaiCadsInput
-  ) {
-    if (!Array.isArray(this.data.orders)) {
-      this.data.orders = [];
-    }
+  constructor() {
     this.noPaiban = !!this.data.noPaiban;
   }
 

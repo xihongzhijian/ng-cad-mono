@@ -1,4 +1,4 @@
-import {Component, computed, forwardRef, HostBinding, inject, Inject, signal} from "@angular/core";
+import {Component, computed, forwardRef, HostBinding, inject, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -20,15 +20,13 @@ import {CadMenfengConfigInput, CadMenfengConfigItem, CadMenfengConfigOutput} fro
   styleUrl: "./cad-menfeng-config.component.scss"
 })
 export class CadMenfengConfigComponent {
+  dialogRef = inject<MatDialogRef<CadMenfengConfigComponent, CadMenfengConfigOutput>>(MatDialogRef);
+  data: CadMenfengConfigInput = inject<CadMenfengConfigInput>(MAT_DIALOG_DATA, {optional: true}) ?? {items: [], type: ""};
+
   private http = inject(CadDataService);
   private message = inject(MessageService);
 
   @HostBinding("class") class = "ng-page";
-
-  constructor(
-    public dialogRef: MatDialogRef<CadMenfengConfigComponent, CadMenfengConfigOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadMenfengConfigInput
-  ) {}
 
   items = signal<CadMenfengConfigItem[]>(cloneDeep(this.data.items || []));
   menfengName = computed(() => this.data.type + "门缝");

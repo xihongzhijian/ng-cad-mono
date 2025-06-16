@@ -1,4 +1,4 @@
-import {Component, forwardRef, HostBinding, inject, Inject, OnInit, signal, viewChild} from "@angular/core";
+import {Component, forwardRef, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
@@ -18,15 +18,15 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [MatButtonModule, forwardRef(() => CadEditorComponent)]
 })
 export class CadEditorDialogComponent extends Subscribed() implements OnInit {
+  dialogRef = inject<MatDialogRef<CadEditorDialogComponent, CadEditorOutput>>(MatDialogRef);
+  data: CadEditorInput = inject<CadEditorInput>(MAT_DIALOG_DATA, {optional: true}) ?? {};
+
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = "ng-page";
 
-  constructor(
-    public dialogRef: MatDialogRef<CadEditorDialogComponent, CadEditorOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadEditorInput
-  ) {
+  constructor() {
     super();
     if (!this.data) {
       this.data = {};

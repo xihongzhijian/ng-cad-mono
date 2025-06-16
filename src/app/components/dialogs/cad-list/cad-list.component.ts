@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, computed, forwardRef, HostBinding, inject, Inject, signal, viewChild, viewChildren} from "@angular/core";
+import {AfterViewInit, Component, computed, forwardRef, HostBinding, inject, signal, viewChild, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -50,6 +50,9 @@ import {CadListInput, CadListItemInfo, CadListOutput, CadListPageItem, selectMod
   ]
 })
 export class CadListComponent implements AfterViewInit {
+  dialogRef = inject<MatDialogRef<CadListComponent, CadListOutput>>(MatDialogRef);
+  data: CadListInput = inject<CadListInput>(MAT_DIALOG_DATA, {optional: true}) ?? {selectMode: "none", collection: "cad"};
+
   private http = inject(CadDataService);
   private dialog = inject(MatDialog);
   private message = inject(MessageService);
@@ -72,10 +75,9 @@ export class CadListComponent implements AfterViewInit {
   paginator = viewChild(MatPaginator);
   cadItems = viewChildren<CadItemComponent>("cadItem");
 
-  constructor(
-    public dialogRef: MatDialogRef<CadListComponent, CadListOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadListInput
-  ) {
+  constructor() {
+    const data = this.data;
+
     if (!data) {
       this.data = {selectMode: "single", collection: "cad"};
     }

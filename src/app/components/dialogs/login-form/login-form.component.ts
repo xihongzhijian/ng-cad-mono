@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, HostBinding, inject, Inject, signal} from "@angular/core";
+import {AfterViewInit, Component, HostBinding, inject, signal} from "@angular/core";
 import {FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -31,6 +31,9 @@ export interface LoginResponse {
   imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatIconModule, MatInputModule, MatButtonModule]
 })
 export class LoginFormComponent implements AfterViewInit {
+  dialogRef = inject<MatDialogRef<LoginFormComponent, boolean>>(MatDialogRef);
+  data: LoginFormData = inject<LoginFormData>(MAT_DIALOG_DATA, {optional: true}) ?? {project: {id: "?", name: "???"}, baseUrl: ""};
+
   private message = inject(MessageService);
   private spinner = inject(SpinnerService);
 
@@ -42,15 +45,6 @@ export class LoginFormComponent implements AfterViewInit {
   });
   passwordVisible = signal(false);
   shownSpinners: SpinnerService["shownSpinners"] = {};
-
-  constructor(
-    public dialogRef: MatDialogRef<LoginFormComponent, boolean>,
-    @Inject(MAT_DIALOG_DATA) public data: LoginFormData
-  ) {
-    if (!this.data) {
-      this.data = {project: {id: "?", name: "???"}, baseUrl: ""};
-    }
-  }
 
   async ngAfterViewInit() {
     await timeout();

@@ -1,4 +1,4 @@
-import {Component, computed, forwardRef, HostBinding, Inject, signal} from "@angular/core";
+import {Component, computed, forwardRef, HostBinding, inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
@@ -18,13 +18,15 @@ import {SuanliaodanFlipInput, SuanliaodanFlipItem, SuanliaodanFlipOutput} from "
   styleUrl: "./suanliaodan-flip.component.scss"
 })
 export class SuanliaodanFlipComponent extends Utils() {
+  dialogRef = inject<MatDialogRef<SuanliaodanFlipComponent, SuanliaodanFlipOutput>>(MatDialogRef);
+  data: SuanliaodanFlipInput = inject<SuanliaodanFlipInput>(MAT_DIALOG_DATA, {optional: true}) ?? {items: []};
+
   @HostBinding("class") class = "ng-page";
 
-  constructor(
-    public dialogRef: MatDialogRef<SuanliaodanFlipComponent, SuanliaodanFlipOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: SuanliaodanFlipInput
-  ) {
+  constructor() {
     super();
+    const data = this.data;
+
     let items = data.items;
     if (!items) {
       items = [];

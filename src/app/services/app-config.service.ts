@@ -1,4 +1,4 @@
-import {computed, Injectable, signal, untracked, WritableSignal} from "@angular/core";
+import {computed, inject, Injectable, signal, untracked, WritableSignal} from "@angular/core";
 import {local} from "@app/app.common";
 import {CadViewerConfig, getDefalutCadViewerConfig} from "@lucilor/cad-viewer";
 import {keysOf, ObjectOf} from "@lucilor/utils";
@@ -36,6 +36,8 @@ export type AppConfigChangeOptions = Partial<Omit<AppConfigChange, "oldVal" | "n
   providedIn: "root"
 })
 export class AppConfigService {
+  private http = inject(CadDataService);
+
   private _config: WritableSignal<AppConfig>;
   config = computed(() => this._config());
   configChange$: BehaviorSubject<AppConfigChange>;
@@ -45,7 +47,7 @@ export class AppConfigService {
   noUser = false;
   project = "";
 
-  constructor(private http: CadDataService) {
+  constructor() {
     this._configKeys = keysOf(defaultConfig);
     this._config = signal(defaultConfig);
     this.configChange$ = new BehaviorSubject<AppConfigChange>({

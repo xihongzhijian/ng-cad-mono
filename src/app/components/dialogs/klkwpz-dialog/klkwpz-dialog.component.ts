@@ -1,4 +1,4 @@
-import {Component, Inject, viewChild} from "@angular/core";
+import {Component, inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {KlkwpzSource} from "@components/klkwpz/klkwpz";
@@ -12,12 +12,17 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [KlkwpzComponent, MatButtonModule]
 })
 export class KlkwpzDialogComponent {
+  dialogRef = inject<MatDialogRef<KlkwpzDialogComponent, KlkwpzSource>>(MatDialogRef);
+  data: KlkwpzDialogData = inject<KlkwpzDialogData>(MAT_DIALOG_DATA, {optional: true}) ?? {
+    source: {},
+    cadId: ""
+  };
+
   klkwpzComponent = viewChild(KlkwpzComponent);
 
-  constructor(
-    public dialogRef: MatDialogRef<KlkwpzDialogComponent, KlkwpzSource>,
-    @Inject(MAT_DIALOG_DATA) public data: KlkwpzDialogData
-  ) {
+  constructor() {
+    const data = this.data;
+
     if (!data.source || typeof data.source !== "object" || Array.isArray(data.source)) {
       data.source = {};
     }

@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, computed, effect, forwardRef, HostBinding, inject, Inject, signal, viewChild} from "@angular/core";
+import {AfterViewInit, Component, computed, effect, forwardRef, HostBinding, inject, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
@@ -41,6 +41,11 @@ import {CadOptionsInput, CadOptionsOutput} from "./cad-options.types";
   ]
 })
 export class CadOptionsComponent implements AfterViewInit {
+  dialogRef = inject<MatDialogRef<CadOptionsComponent, CadOptionsOutput>>(MatDialogRef);
+  data: CadOptionsInput = inject<CadOptionsInput>(MAT_DIALOG_DATA, {optional: true}) ?? {
+    name: ""
+  };
+
   private http = inject(CadDataService);
   private spinner = inject(SpinnerService);
   private message = inject(MessageService);
@@ -52,11 +57,6 @@ export class CadOptionsComponent implements AfterViewInit {
   pageSizeOptions = signal([50, 100, 200, 500]);
   pageSize = signal(100);
   loaderIds = {optionsLoader: "cadOptions", submitLoaderId: "cadOptionsSubmit"};
-
-  constructor(
-    public dialogRef: MatDialogRef<CadOptionsComponent, CadOptionsOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadOptionsInput
-  ) {}
 
   async ngAfterViewInit() {
     await timeout(0);

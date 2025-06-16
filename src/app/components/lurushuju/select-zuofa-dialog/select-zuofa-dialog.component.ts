@@ -1,4 +1,4 @@
-import {Component, computed, HostBinding, Inject, inject, signal} from "@angular/core";
+import {Component, computed, HostBinding, inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -25,6 +25,9 @@ import {SelectZuofaInput, SelectZuofaItem, SelectZuofaItemData, SelectZuofaOutpu
   styleUrl: "./select-zuofa-dialog.component.scss"
 })
 export class SelectZuofaDialogComponent {
+  dialogRef = inject<MatDialogRef<SelectZuofaDialogComponent, SelectZuofaOutput>>(MatDialogRef);
+  data = inject<SelectZuofaInput>(MAT_DIALOG_DATA, {optional: true});
+
   private http = inject(CadDataService);
   private lrsjStatus = inject(LrsjStatusService);
   private message = inject(MessageService);
@@ -32,11 +35,6 @@ export class SelectZuofaDialogComponent {
   @HostBinding("class") class = "ng-page";
 
   menjiaoOptions = this.lrsjStatus.menjiaoOptionsManager.data;
-
-  constructor(
-    public dialogRef: MatDialogRef<SelectZuofaDialogComponent, SelectZuofaOutput>,
-    @Inject(MAT_DIALOG_DATA) public data?: SelectZuofaInput
-  ) {}
 
   searchForm = signal({型号: "", 工艺: "", 产品分类: ""});
   searchFormMenjiao = signal({名字: "", 开启: "", 门铰: "", 门扇厚度: ""});

@@ -1,4 +1,4 @@
-import {Injectable, Injector} from "@angular/core";
+import {inject, Injectable, Injector} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {publicKey, timer} from "@app/app.common";
@@ -25,7 +25,8 @@ export class HttpService {
   offlineMode = false;
   token = "";
 
-  constructor(injector: Injector) {
+  constructor() {
+    const injector = inject(Injector);
     this.dialog = injector.get(MatDialog);
     this.message = injector.get(MessageService);
     this.snackBar = injector.get(MatSnackBar);

@@ -1,4 +1,4 @@
-import {Component, computed, forwardRef, inject, Inject, signal, viewChild} from "@angular/core";
+import {Component, computed, forwardRef, inject, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadLine} from "@lucilor/cad-viewer";
@@ -22,6 +22,9 @@ type RawDataRight = RawDataLeft["data"][0];
   imports: [MatButtonModule, SpinnerComponent, forwardRef(() => TableComponent)]
 })
 export class CadLineTjqzComponent {
+  dialogRef = inject<MatDialogRef<CadLineTjqzComponent, RawData>>(MatDialogRef);
+  data: RawData = inject<RawData>(MAT_DIALOG_DATA, {optional: true}) ?? new CadLine();
+
   private console = inject(CadConsoleService);
   private message = inject(MessageService);
 
@@ -29,11 +32,6 @@ export class CadLineTjqzComponent {
   openSelection = {type: "", index: -1};
 
   newItemLeft: ItemGetter<RawDataLeft> = (rowIdx: number) => ({key: "", level: rowIdx + 1, type: "数值", data: []});
-
-  constructor(
-    public dialogRef: MatDialogRef<CadLineTjqzComponent, RawData>,
-    @Inject(MAT_DIALOG_DATA) public data: RawData
-  ) {}
 
   submit() {
     if (!this.tableLeft()?.isVaild()) {

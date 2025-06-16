@@ -1,5 +1,5 @@
 import {KeyValuePipe} from "@angular/common";
-import {ChangeDetectorRef, Component, forwardRef, HostBinding, inject, Inject} from "@angular/core";
+import {ChangeDetectorRef, Component, forwardRef, HostBinding, inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
@@ -17,17 +17,15 @@ import {FentiCadDialogInput, FentiCadDialogOutput, FentiCadItemInfo} from "./fen
   imports: [forwardRef(() => CadItemComponent), KeyValuePipe, MatButtonModule, NgScrollbarModule]
 })
 export class FentiCadDialogComponent {
+  dialogRef = inject<MatDialogRef<FentiCadDialogComponent, FentiCadDialogOutput>>(MatDialogRef);
+  data: FentiCadDialogInput = inject<FentiCadDialogInput>(MAT_DIALOG_DATA, {optional: true}) ?? {data: {}};
+
   private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
 
   @HostBinding("class") class = "ng-page";
 
   cadButtons: CadItemButton<FentiCadItemInfo>[] = [{name: "删除", onClick: this.removeCad.bind(this)}];
-
-  constructor(
-    public dialogRef: MatDialogRef<FentiCadDialogComponent, FentiCadDialogOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: FentiCadDialogInput
-  ) {}
 
   submit() {
     this.dialogRef.close({});

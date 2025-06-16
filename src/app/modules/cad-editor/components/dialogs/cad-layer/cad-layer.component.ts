@@ -1,4 +1,4 @@
-import {Component, computed, forwardRef, inject, Inject, signal, viewChildren} from "@angular/core";
+import {Component, computed, forwardRef, inject, signal, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -21,12 +21,14 @@ import {NgScrollbar} from "ngx-scrollbar";
   imports: [forwardRef(() => InputComponent), NgScrollbar, MatButtonModule, MatIconModule]
 })
 export class CadLayerComponent {
+  dialogRef = inject<MatDialogRef<CadLayerComponent, CadLayerOutput>>(MatDialogRef);
+  data: CadLayerInput = inject<CadLayerInput>(MAT_DIALOG_DATA, {optional: true}) ?? {layers: []};
+
   private message = inject(MessageService);
 
-  constructor(
-    public dialogRef: MatDialogRef<CadLayerComponent, CadLayerOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadLayerInput
-  ) {
+  constructor() {
+    const data = this.data;
+
     const layers = data.layers || [];
     this.layersAll.set(layers.map((v) => v.clone()));
   }

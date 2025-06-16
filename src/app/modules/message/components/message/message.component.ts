@@ -9,7 +9,6 @@ import {
   forwardRef,
   HostListener,
   inject,
-  Inject,
   OnDestroy,
   OnInit,
   signal,
@@ -59,14 +58,12 @@ import {
   ]
 })
 export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
+  dialogRef = inject<MatDialogRef<MessageComponent, MessageOutput>>(MatDialogRef);
+  data: MessageData = inject<MessageData>(MAT_DIALOG_DATA, {optional: true}) ?? {type: "alert"};
+
   private elRef = inject(ElementRef<HTMLElement>);
   private message = inject(MessageService);
   private sanitizer = inject(DomSanitizer);
-
-  constructor(
-    public dialogRef: MatDialogRef<MessageComponent, MessageOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: MessageData
-  ) {}
 
   ngOnInit() {
     const data = this.data;

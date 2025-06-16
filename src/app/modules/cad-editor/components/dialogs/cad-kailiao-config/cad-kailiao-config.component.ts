@@ -1,4 +1,4 @@
-import {Component, computed, effect, forwardRef, HostBinding, inject, Inject, signal, viewChildren} from "@angular/core";
+import {Component, computed, effect, forwardRef, HostBinding, inject, signal, viewChildren} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -18,14 +18,12 @@ import {getLineTable, getMultiSetData, getMultiSetInputInfos, MultiSetData} from
   styleUrl: "./cad-kailiao-config.component.scss"
 })
 export class CadKailiaoConfigComponent {
+  dialogRef = inject<MatDialogRef<CadKailiaoConfigComponent, CadKailiaoConfigOutput>>(MatDialogRef);
+  data: CadKailiaoConfigInput = inject<CadKailiaoConfigInput>(MAT_DIALOG_DATA, {optional: true}) ?? {cad: new CadData()};
+
   message = inject(MessageService);
 
   @HostBinding("class") class = "ng-page";
-
-  constructor(
-    public dialogRef: MatDialogRef<CadKailiaoConfigComponent, CadKailiaoConfigOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadKailiaoConfigInput
-  ) {}
 
   cad = signal<CadData>(new CadData());
   cadEff = effect(() => {

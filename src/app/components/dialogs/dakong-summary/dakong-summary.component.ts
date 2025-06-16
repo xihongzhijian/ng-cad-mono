@@ -1,4 +1,4 @@
-import {Component, computed, effect, HostBinding, inject, Inject, signal, untracked} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, signal, untracked} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -30,15 +30,15 @@ import {
   imports: [CadImageComponent, FormulasComponent, FormsModule, InputComponent, MatButtonModule, MatSlideToggleModule, NgScrollbar]
 })
 export class DakongSummaryComponent {
+  dialogRef = inject<MatDialogRef<DakongSummaryComponent, DakongSummaryOutput>>(MatDialogRef);
+  data: DakongSummaryInput = inject<DakongSummaryInput>(MAT_DIALOG_DATA, {optional: true}) ?? {data: {}};
+
   private http = inject(CadDataService);
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = ["ng-page"];
 
-  constructor(
-    public dialogRef: MatDialogRef<DakongSummaryComponent, DakongSummaryOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: DakongSummaryInput
-  ) {
+  constructor() {
     setGlobal("dakongSummary", this);
     this.updateTableInfo();
   }
