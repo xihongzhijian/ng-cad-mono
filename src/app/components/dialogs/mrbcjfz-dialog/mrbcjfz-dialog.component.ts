@@ -33,7 +33,7 @@ export class MrbcjfzDialogComponent {
     if (!mrbcjfz || !this.data.dryRun) {
       return;
     }
-    this.dialogRef.close({data: mrbcjfz.xinghao(), errors: mrbcjfz.checkSubmit()});
+    this.dialogRef.close({data: mrbcjfz.xinghao(), errors: await mrbcjfz.checkSubmit()});
   }
 
   onCadChange(data: CadData) {

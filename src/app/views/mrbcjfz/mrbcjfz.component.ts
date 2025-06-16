@@ -31,6 +31,7 @@ import {ObjectOf, timeout, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiList, BancaiListData, TableUpdateParams} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
+import {validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppStatusService} from "@services/app-status.service";
@@ -494,7 +495,7 @@ export class MrbcjfzComponent {
   }
 
   bancaiInputComponents = viewChildren(InputComponent);
-  checkSubmit() {
+  async checkSubmit() {
     const xinghao = this.xinghao();
     if (!xinghao) {
       return [];
@@ -521,16 +522,9 @@ export class MrbcjfzComponent {
         errorMsg.push("有花件未选择");
       }
     }
-    const errorMsg2 = new Set<string>();
-    this.bancaiInputComponents().forEach((v) => {
-      v.validateValue();
-      const errorMsg3 = v.getErrorMsg();
-      if (errorMsg3) {
-        errorMsg2.add(v.info().label + errorMsg3);
-      }
-    });
-    if (errorMsg2.size > 0) {
-      errorMsg.push(`板材输入有误：${Array.from(errorMsg2).join("，")}`);
+    const result = await validateForm(this.bancaiInputComponents());
+    if (result.errorMsgDetails.length > 0) {
+      errorMsg.push(`板材输入有误：${result.errorMsgDetails.join("，")}`);
     }
     return errorMsg;
   }
@@ -541,8 +535,8 @@ export class MrbcjfzComponent {
     if (!xinghao) {
       return result;
     }
-    const errors = this.checkSubmit();
-    if (errors.length && !this.forceSubmit) {
+    const errors = await this.checkSubmit();
+    if (errors.length && !this.forceSubmit()) {
       await this.message.error(errors.join("<br>"));
       return result;
     }

@@ -589,7 +589,7 @@ export class MokuaiItemComponent {
 
     await this._fetchMrbcjfzResponseData();
     await timeout(0);
-    const mrbcjfzErrors = this.mrbcjfzComponent()?.checkSubmit();
+    const mrbcjfzErrors = await this.mrbcjfzComponent()?.checkSubmit();
     if (mrbcjfzErrors) {
       if (mrbcjfzErrors.length > 0) {
         error.details.push(...mrbcjfzErrors.map<ErrorDetail>((v) => [{text: `板材分组：${v}`}]));

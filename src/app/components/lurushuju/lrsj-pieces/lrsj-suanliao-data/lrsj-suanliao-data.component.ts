@@ -718,7 +718,7 @@ export class LrsjSuanliaoDataComponent extends LrsjPiece implements OnInit {
         const mrbcjfz = mrbcjfzs[i];
         let mrbcjfzErrors: string[] | undefined;
         if (mrbcjfz) {
-          mrbcjfzErrors = mrbcjfz.checkSubmit();
+          mrbcjfzErrors = await mrbcjfz.checkSubmit();
           data[key1].板材分组 = mrbcjfz.xinghao().默认板材;
         } else {
           const mrbcjfzResult = await openMrbcjfzDialog(this.dialog, {
