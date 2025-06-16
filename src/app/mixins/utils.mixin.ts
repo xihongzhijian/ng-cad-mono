@@ -20,7 +20,7 @@ export const Utils = <T extends Constructor>(base = class {} as T) =>
         arr.push(value);
       }
     }
-    arrayAdd2<K>(source: ObjectOf<any>, key: string, value: K, index?: number) {
+    arrayAddEnsure<K>(source: ObjectOf<any>, key: string, value: K, index?: number) {
       if (!this._ensureArray(source, key)) {
         return;
       }
@@ -29,7 +29,7 @@ export const Utils = <T extends Constructor>(base = class {} as T) =>
     arrayRemove<K>(arr: K[], index: number) {
       arr.splice(index, 1);
     }
-    arrayRemove2<K>(source: ObjectOf<any>, key: string, index: number) {
+    arrayRemoveEnsure<K>(source: ObjectOf<any>, key: string, index: number) {
       if (!this._ensureArray(source, key)) {
         return;
       }
@@ -87,6 +87,9 @@ export const Utils = <T extends Constructor>(base = class {} as T) =>
 
     changeObjectValue<K>(obj: ObjectOf<K>, key: string, value: K) {
       obj[key] = value;
+    }
+    changeArrayValue<K>(arr: K[], index: number, value: K) {
+      arr[index] = value;
     }
 
     setNumberValue<K extends ObjectOf<any>>(obj: K, key: keyof K, event: Event) {

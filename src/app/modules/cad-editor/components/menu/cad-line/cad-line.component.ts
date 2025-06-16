@@ -38,6 +38,7 @@ import {Point} from "@lucilor/utils";
 import {InputComponent} from "@modules/input/components/input.component";
 import {
   InputInfo,
+  InputInfoArray,
   InputInfoBoolean,
   InputInfoNumber,
   InputInfoOptions,
@@ -54,6 +55,7 @@ import {debounce} from "lodash";
 import {ColorCircleModule} from "ngx-color/circle";
 import {convertToCadFentiLine, getCadFentiInfo} from "../cad-fenti-config/cad-fenti-config.utils";
 import {CadLayerInputComponent} from "../cad-layer-input/cad-layer-input.component";
+import {parseLineNames, stringifyLineNames} from "./cad-line.utils";
 
 @Component({
   selector: "app-cad-line",
@@ -735,6 +737,26 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       return info;
     };
+    const getNameInputInfo = () => {
+      const {value: mingziRaw, isMultiple, isZero} = this.getLineValue("mingzi");
+      const {value: mingzi2Raw} = this.getLineValue("mingzi2");
+      const names: string[] = parseLineNames(String(mingziRaw ?? ""), String(mingzi2Raw ?? ""));
+      const info: InputInfoArray<unknown, string> = {
+        type: "array",
+        label: "",
+        valueLabel: (i) => (i === 0 ? "名字" : "名字2"),
+        disabled: isMultiple || isZero,
+        hint: isMultiple ? "选中多根线时无法编辑" : "",
+        sortable: true,
+        value: names,
+        onChange: (val) => {
+          const {mingzi, mingzi2} = stringifyLineNames(val);
+          this.setLineValue(mingzi, "mingzi");
+          this.setLineValue(mingzi2, "mingzi2");
+        }
+      };
+      return [info];
+    };
     const data = this.data();
     const zhewanOptions = this.zhewanOptions();
     const infos: InputInfo[] = [
@@ -753,8 +775,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       },
       getStringInfo("linewidth", "线宽"),
-      getStringInfo("mingzi", "名字"),
-      getStringInfo("mingzi2", "名字2"),
+      ...getNameInputInfo(),
       getBooleanInfo("刨坑起始线"),
       getStringInfo("kegaimingzi", "可改名字", {hidden: data.type !== "包边正面", disabled: selected.length !== 1}),
       getStringInfo("qujian", "区间", {validators: CustomValidators.numberRangeStr}),
