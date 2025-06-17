@@ -3,6 +3,7 @@ import {BujumokuaiIndexComponent} from "@components/bujumokuai/bujumokuai-index/
 import {CustomPageIndexComponent} from "@components/custom-page/views/custom-page-index/custom-page-index.component";
 import {LurushujuIndexComponent} from "@components/lurushuju/lurushuju-index/lurushuju-index.component";
 import {PrintTableComponent} from "@components/print-table/print-table.component";
+import {XinghaoGongshishuruComponent} from "@components/xinghao-gongshishuru/xinghao-gongshishuru.component";
 import {BackupComponent} from "@views/backup/backup.component";
 import {BomGongyiluxianComponent} from "@views/bom-gongyiluxian/bom-gongyiluxian.component";
 import {CleanComponent} from "@views/clean/clean.component";
@@ -67,5 +68,6 @@ export const routesInfo: (Route & {path: string})[] = [
   {path: "订单异常", component: DingdanyichangComponent, title: "订单异常"},
   {path: "refresh-cad-imgs", component: RefreshCadImgsComponent, title: "刷新cad图片"},
   {path: "铝型材优化", component: LvxingcaiyouhuaComponent, title: "多订单型材优化排产"},
-  {path: "压花板测试", component: YahuabanTestComponent, title: "压花板测试"}
+  {path: "压花板测试", component: YahuabanTestComponent, title: "压花板测试"},
+  {path: "型号公式输入", component: XinghaoGongshishuruComponent, title: "型号公式输入"}
 ];

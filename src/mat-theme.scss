@@ -123,7 +123,9 @@
       text-label-text-color: var(--mat-sys-tertiary),
       outlined-label-text-color: var(--mat-sys-tertiary),
       filled-label-text-color: var(--mat-sys-on-tertiary),
-      filled-container-color: var(--mat-sys-tertiary)
+      filled-container-color: var(--mat-sys-tertiary),
+      protected-label-text-color: var(--mat-sys-on-tertiary),
+      protected-container-color: var(--mat-sys-tertiary)
     )
   );
 

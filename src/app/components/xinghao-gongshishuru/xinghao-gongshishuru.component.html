@@ -1,0 +1,16 @@
+@if (xinghao(); as xinghao) {
+  <div class="title">型号：{{ xinghao.mingzi }}</div>
+  <div class="toolbar">
+    <button mat-stroked-button (click)="editType.set('json')" [class.accent]="editType() === 'json'">json编辑</button>
+    <button mat-stroked-button (click)="editType.set('table')" [class.accent]="editType() === 'table'">界面编辑</button>
+    <div class="placeholder"></div>
+    <button mat-stroked-button (click)="submit()">保存</button>
+    @if (isFromIFrame()) {
+      <button mat-stroked-button (click)="submit(true)">保存并关闭</button>
+    }
+  </div>
+  <div class="flex-110" style="height: 0">
+    <div #jsonEditorContainer class="json-editor-container" [class.hidden]="editType() !== 'json'"></div>
+    <app-table [info]="shuruTable()" [class.hidden]="editType() !== 'table'"></app-table>
+  </div>
+}

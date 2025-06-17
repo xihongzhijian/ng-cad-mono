@@ -29,7 +29,7 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {RowButtonEvent, RowButtonEventBase, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {menshanKeys} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
 import {clone, cloneDeep, difference, isEqual, uniqWith} from "lodash";
@@ -103,41 +103,38 @@ export class XhmrmsbjXinghaoConfigComponent {
   }
 
   shurus = computed(() => this.data()?.xinghaoConfig.输入 || []);
-  shuruTable = computed(() => getShuruTable(this.shurus(), {title: "型号输入"}));
-  async onShuruToolbar(event: ToolbarButtonEvent) {
-    switch (event.button.event) {
-      case "添加": {
-        const item = await getShuruItem(this.message, this.shurus());
-        const data = this.data();
-        if (item && data) {
-          const config = data.xinghaoConfig;
-          config.输入 = [...(config.输入 || []), item];
-          this.refreshData();
-        }
-      }
+  shuruTable = computed(() =>
+    getShuruTable(
+      this.shurus(),
+      {add: this.addShuru.bind(this), edit: this.editShuru.bind(this), delete: this.deleteShuru.bind(this)},
+      {title: "型号输入"}
+    )
+  );
+  async addShuru() {
+    const item = await getShuruItem(this.message, this.shurus());
+    const data = this.data();
+    if (item && data) {
+      const config = data.xinghaoConfig;
+      config.输入 = [...(config.输入 || []), item];
+      this.refreshData();
     }
   }
-  async onShuruRow(event: RowButtonEvent<ShuruTableDataSorted>) {
+  async editShuru(params: RowButtonEventBase<ShuruTableDataSorted>) {
     const data = this.data();
-    switch (event.button.event) {
-      case "编辑":
-        {
-          const item = await getShuruItem(this.message, this.shurus(), event.item);
-          if (item && data) {
-            const config = data.xinghaoConfig;
-            config.输入 = (config.输入 || []).map((v, i) => (i === event.rowIdx ? item : v));
-            this.refreshData();
-          }
-        }
-        break;
-      case "删除":
-        if (await this.message.confirm(`确定删除【${event.item.名字}】吗？`)) {
-          const config = data?.xinghaoConfig;
-          if (config) {
-            config.输入 = config.输入.filter((_, i) => i !== event.rowIdx);
-            this.refreshData();
-          }
-        }
+    const item = await getShuruItem(this.message, this.shurus(), params.item);
+    if (item && data) {
+      const config = data.xinghaoConfig;
+      config.输入 = (config.输入 || []).map((v, i) => (i === params.item.originalIndex ? item : v));
+      this.refreshData();
+    }
+  }
+  async deleteShuru(params: RowButtonEventBase<ShuruTableDataSorted>) {
+    if (await this.message.confirm(`确定删除【${params.item.名字}】吗？`)) {
+      const config = this.data()?.xinghaoConfig;
+      if (config) {
+        config.输入 = config.输入.filter((_, i) => i !== params.item.originalIndex);
+        this.refreshData();
+      }
     }
   }
 

@@ -2,12 +2,7 @@
   <div class="content flex-row">
     @switch (type()) {
       @case ("型号配置") {
-        <app-table
-          class="shuru-table"
-          [info]="shuruTable()"
-          (toolbarButtonClick)="onShuruToolbar($event)"
-          (rowButtonClick)="onShuruRow($event)"
-        ></app-table>
+        <app-table class="shuru-table" [info]="shuruTable()"></app-table>
         <app-table
           class="xuanxiang-table"
           [info]="xuanxiangTable()"
