@@ -10,13 +10,13 @@ import {ShuruTableDataSorted} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa
 import {getShuruItem, getShuruTable} from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {XinghaoData} from "@components/lurushuju/services/lrsj-status.types";
 import {输入} from "@components/lurushuju/xinghao-data";
+import {WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {RowButtonEventBase} from "@modules/table/components/table/table.types";
 import {isEmpty} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {WindowMessageManager} from "packages/utils/lib";
 import {createJSONEditor, JsonEditor, JSONEditorPropsOptional, Mode, OnChangeStatus} from "vanilla-jsoneditor";
 
 @Component({
@@ -41,8 +41,9 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
     if (isFromIFrame) {
       this.wmm = new WindowMessageManager("型号公式输入", this, window.parent);
       this.wmm.postMessage("getItemStart");
-      const xinghao = await this.wmm.waitForMessage<XinghaoData>("getItemEnd");
+      const {xinghao, field} = await this.wmm.waitForMessage("getItemEnd");
       this.xinghao.set(xinghao);
+      this.field.set(field);
     }
   }
   ngOnDestroy() {
@@ -54,6 +55,7 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
   wmm: WindowMessageManager | null = null;
 
   table = "p_xinghao";
+  field = signal<"gongshishuru">("gongshishuru");
   xinghao = signal<XinghaoData | null>(null);
   xinghaoEff = effect(() => {
     this.initJsonEditor();
@@ -70,7 +72,7 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
     };
   }
   shurus = computed(() => {
-    const text = this.xinghao()?.gongshishuru ?? "";
+    const text = this.xinghao()?.[this.field()] ?? "";
     const json = tryParseJson<输入[]>(text, [this.getDefaultShuru()]);
     return json;
   });
@@ -79,7 +81,7 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
     if (!xinghao) {
       return;
     }
-    this.xinghao.set({...xinghao, gongshishuru: JSON.stringify(shurus)});
+    this.xinghao.set({...xinghao, [this.field()]: JSON.stringify(shurus)});
   }
 
   queryParams = toSignal(this.route.queryParams, {initialValue: {} as Params});
@@ -87,7 +89,11 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
     if (this.isFromIFrame()) {
       return;
     }
-    let id: string | undefined = this.queryParams().id;
+    const params = this.queryParams();
+    if (params.field) {
+      this.field.set(params.field);
+    }
+    let id: string | undefined = params.id;
     if (!id) {
       const result = await openCadOptionsDialog(this.dialog, {data: {name: "型号"}});
       const option = result?.options?.[0];
@@ -187,15 +193,19 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
     }
   }
 
-  async submit(close = false) {
+  async submit(close?: boolean, isCancel?: boolean) {
     const xinghao = this.xinghao();
     if (!xinghao) {
       return;
     }
     if (this.wmm) {
-      this.wmm.postMessage("submitStart", {field: "gongshishuru", value: xinghao.gongshishuru, close});
+      this.wmm.postMessage("submitStart", {value: xinghao[this.field()], close, isCancel});
     } else {
-      await this.http.tableUpdate<XinghaoData>({table: this.table, data: {vid: xinghao.vid, gongshishuru: xinghao.gongshishuru}});
+      await this.http.tableUpdate<XinghaoData>({table: this.table, data: {vid: xinghao.vid, [this.field()]: xinghao[this.field()]}});
     }
+  }
+  submitFromParentStart(data?: {close?: boolean; isCancel?: boolean}) {
+    this.submit(data?.close, data?.isCancel);
+    return {action: "submitFromParentEnd"};
   }
 }
