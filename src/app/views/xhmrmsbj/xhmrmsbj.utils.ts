@@ -246,11 +246,19 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
 
 export const getShuruzhi = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, xxgsId?: string) => {
   const key = getMokuaiObjectKey(node, mokuai, xxgsId);
+  const shuruKeys = getMokuaiShurusRaw(info, node, mokuai).map((v) => v[0]);
+  let result: Shuruzhi;
   if (xxgsId) {
-    return {...info.选项公式输入值?.[key]};
+    result = {...info.选项公式输入值?.[key]};
   } else {
-    return {...info.模块输入值?.[key]};
+    result = {...info.模块输入值?.[key]};
   }
+  for (const shuruKey of Object.keys(result)) {
+    if (!shuruKeys.includes(shuruKey)) {
+      delete result[shuruKey];
+    }
+  }
+  return result;
 };
 export const setShuruzhi = (
   info: XhmrmsbjInfo,
