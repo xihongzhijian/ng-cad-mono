@@ -1,5 +1,5 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {TextFieldModule} from "@angular/cdk/text-field";
+import {CdkTextareaAutosize, TextFieldModule} from "@angular/cdk/text-field";
 import {AsyncPipe, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
@@ -724,6 +724,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     this.onChange();
   }
 
+  autoSizes = viewChildren<CdkTextareaAutosize>(CdkTextareaAutosize);
   onInput(event: Event | null, value = this.value) {
     const info = this.info();
     switch (info.type) {
@@ -739,6 +740,18 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     this.valueChange$.next(value);
     if (event) {
       this.input.emit(event);
+    }
+    const el = event?.target;
+    if (el instanceof HTMLTextAreaElement && info.type === "string" && info.textarea?.autosize) {
+      // TODO: remove this crap after cdkTextareaAutosize no longer messes with scrollbar!
+      if (!el.dataset.minHeight) {
+        el.dataset.minHeight = el.style.minHeight;
+      }
+      const minHeight = el.dataset.minHeight;
+      el.style.minHeight = `${el.clientHeight}px`;
+      setTimeout(() => {
+        el.style.minHeight = minHeight;
+      }, 0);
     }
   }
   onFocus(event: FocusEvent) {
