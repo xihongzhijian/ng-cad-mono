@@ -1,6 +1,5 @@
 import {SpinnerConfig} from "@modules/spinner/services/spinner.service";
 import {AxiosRequestConfig} from "axios";
-import hljs from "highlight.js";
 
 export interface CustomResponse<T> {
   code: number;
@@ -23,24 +22,15 @@ export interface HttpOptions extends AxiosRequestConfig {
 }
 
 export class HttpServiceResponseError extends Error {
-  details: string;
-
   constructor(public response: CustomResponse<any>) {
-    const {msg, data: responseData} = response;
+    const {msg} = response;
     let message = "";
-    let details = "";
     if (msg) {
       message = msg;
-    } else if (responseData !== null && responseData !== undefined) {
-      const dataJson = JSON.stringify(responseData, null, 2);
-      message = dataJson;
-      details = hljs.highlight(dataJson, {language: "json"}).value.replace(/\n/g, "<br>");
-      details = `<pre class="hljs">${details}</pre>`;
     } else {
       message = "未知错误";
     }
     super(message);
-    this.details = details;
   }
 }
 

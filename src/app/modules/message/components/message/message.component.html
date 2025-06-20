@@ -30,9 +30,6 @@
 <div mat-dialog-content [class]="data.type">
   <ng-scrollbar>
     @switch (data.type) {
-      @case ("editor") {
-        <quill-editor [(ngModel)]="data.content"></quill-editor>
-      }
       @case ("iframe") {
         <iframe #iframe [src]="iframeSrc()" frameborder="0"></iframe>
       }
@@ -81,9 +78,6 @@
       <button mat-flat-button (click)="cancel()">
         {{ data.btnTexts?.exit || "退出" }}
       </button>
-    }
-    @case ("editor") {
-      <ng-container *ngTemplateOutlet="confirmBtns"></ng-container>
     }
     @case ("json") {
       <ng-container *ngTemplateOutlet="formBtns"></ng-container>

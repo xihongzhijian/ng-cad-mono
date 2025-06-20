@@ -2,11 +2,6 @@
 @use "ng-page.scss";
 @use "sass:color";
 
-.hljs,
-pre {
-  font-family: "Fira Code Retina", monospace;
-}
-
 body.ng-page {
   width: 100vw;
   height: 100vh;

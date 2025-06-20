@@ -2,11 +2,11 @@ import {Component, computed, forwardRef, inject, signal, viewChild} from "@angul
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadLine} from "@lucilor/cad-viewer";
-import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, ItemGetter, TableRenderInfo} from "@modules/table/components/table/table.types";
+import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -25,8 +25,8 @@ export class CadLineTjqzComponent {
   dialogRef = inject<MatDialogRef<CadLineTjqzComponent, RawData>>(MatDialogRef);
   data: RawData = inject<RawData>(MAT_DIALOG_DATA, {optional: true}) ?? new CadLine();
 
-  private console = inject(CadConsoleService);
   private message = inject(MessageService);
+  private status = inject(AppStatusService);
 
   loaderId = "cadLineTiaojianquzhiSavingCad";
   openSelection = {type: "", index: -1};
@@ -38,7 +38,7 @@ export class CadLineTjqzComponent {
       this.message.alert("当前数据存在错误");
     } else {
       this.data.tiaojianquzhi = this.infoLeft().data;
-      this.console.execute("save", {loaderId: this.loaderId});
+      this.status.saveCad(this.loaderId);
     }
   }
 

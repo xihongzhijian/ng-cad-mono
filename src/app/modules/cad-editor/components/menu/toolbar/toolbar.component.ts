@@ -1,10 +1,13 @@
-import {Component, computed, HostBinding, HostListener, inject, signal} from "@angular/core";
+import {Component, computed, HostBinding, HostListener, inject} from "@angular/core";
+import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatMenuModule} from "@angular/material/menu";
 import {RouterModule} from "@angular/router";
 import {KeyEventItem, onKeyEvent} from "@app/app.common";
+import {CadCollection} from "@app/cad/collections";
+import {printCads} from "@app/cad/print";
 import {isLengthTextSizeSetKey, isShiyitu} from "@app/cad/utils";
 import {AboutComponent} from "@components/about/about.component";
 import {openBbzhmkgzDialog} from "@components/dialogs/bbzhmkgz/bbzhmkgz.component";
@@ -12,9 +15,8 @@ import {openCadLineTiaojianquzhiDialog} from "@components/dialogs/cad-line-tjqz/
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {editCadZhankai} from "@components/dialogs/cad-zhankai/cad-zhankai.component";
 import {environment} from "@env";
-import {CadData, CadLine, CadMtext, sortLines} from "@lucilor/cad-viewer";
-import {downloadByString, timeout} from "@lucilor/utils";
-import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
+import {CadArc, CadData, CadDimensionLinear, CadLine, CadMtext, sortLines} from "@lucilor/cad-viewer";
+import {Angle, downloadByString, Line, Matrix, MatrixLike, Point, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {getHoutaiCad} from "@modules/http/services/cad-data.service.utils";
@@ -22,10 +24,11 @@ import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
-import {CadStatusNormal} from "@services/cad-status";
+import {CadStatusAssemble, CadStatusNormal, CadStatusSplit} from "@services/cad-status";
 import {openExportPage} from "@views/export/export.utils";
 import {openImportPage} from "@views/import/import.utils";
 import {isEqual} from "lodash";
+import printJS from "print-js";
 import {openCadKailiaoConfigDialog} from "../../dialogs/cad-kailiao-config/cad-kailiao-config.component";
 import {CadLayerInput, openCadLayerDialog} from "../../dialogs/cad-layer/cad-layer.component";
 import {CadStatusFentiConfig} from "../cad-fenti-config/cad-fenti-config.utils";
@@ -39,7 +42,6 @@ import {openCadLineForm} from "../cad-line/cad-line.utils";
 })
 export class ToolbarComponent {
   private config = inject(AppConfigService);
-  private console = inject(CadConsoleService);
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
@@ -48,7 +50,6 @@ export class ToolbarComponent {
 
   @HostBinding("class") class = "ng-page";
 
-  openLock = signal(false);
   keyEventItems: KeyEventItem[] = [
     {
       key: "s",
@@ -61,35 +62,28 @@ export class ToolbarComponent {
       key: "1",
       ctrl: true,
       action: () => {
-        this.open("1");
+        this.open("cad");
       }
     },
     {
       key: "2",
       ctrl: true,
       action: () => {
-        this.open("2");
+        this.open("CADmuban");
       }
     },
     {
       key: "3",
       ctrl: true,
       action: () => {
-        this.open("3");
+        this.open("kailiaocadmuban");
       }
     },
     {
       key: "4",
       ctrl: true,
       action: () => {
-        this.open("4");
-      }
-    },
-    {
-      key: "5",
-      ctrl: true,
-      action: () => {
-        this.open("5");
+        this.open("peijianCad");
       }
     },
     {
@@ -174,15 +168,79 @@ export class ToolbarComponent {
   }
 
   save() {
-    this.console.execute("save");
+    this.status.saveCad("save");
   }
 
-  open(collection: string) {
-    this.console.execute("open", {collection});
+  private _openLock = false;
+  async open(collection: CadCollection) {
+    if (this._openLock) {
+      return;
+    }
+    const cad = this.status.cad;
+    let checkedItems: string[];
+    if (collection === this.status.collection()) {
+      checkedItems = [cad.data.id];
+    } else {
+      checkedItems = [];
+    }
+    this._openLock = true;
+    const result = await openCadListDialog(this.dialog, {
+      data: {collection, selectMode: "single", checkedItems, checkedItemsLimit: 1}
+    });
+    if (result && result.length > 0) {
+      this.status.openCad({data: result[0], collection, center: true});
+    }
+    this._openLock = false;
+  }
+
+  private async transform(matrix: MatrixLike, rotateDimension = false) {
+    const cad = this.status.cad;
+    const seleted = cad.selected();
+    const m = new Matrix(matrix);
+    const scale = m.scale();
+    if (seleted.length) {
+      const {x, y} = seleted.getBoundingRect();
+      seleted.transform({...matrix, origin: [x, y]}, true);
+    } else {
+      const t = (data: CadData) => {
+        const {x, y} = data.getBoundingRect();
+        data.transform({...matrix, origin: [x, y]}, true);
+        if (scale[0] * scale[1] < 0) {
+          if (data.bancaihoudufangxiang === "gt0") {
+            data.bancaihoudufangxiang = "lt0";
+          } else if (data.bancaihoudufangxiang === "lt0") {
+            data.bancaihoudufangxiang = "gt0";
+          }
+        }
+        if (rotateDimension) {
+          data.getAllEntities().dimension.forEach((d) => {
+            if (d instanceof CadDimensionLinear) {
+              if (d.axis === "x") {
+                d.axis = "y";
+              } else {
+                d.axis = "x";
+              }
+            }
+          });
+        }
+      };
+      const selectedComponents = this.status.components.selected();
+      if (selectedComponents.length) {
+        selectedComponents.forEach((data) => {
+          t(data);
+        });
+      } else {
+        t(cad.data);
+      }
+    }
+    cad.data.updatePartners().updateComponents();
+    cad.render();
   }
 
   flip(vertical: boolean, horizontal: boolean) {
-    this.console.execute("flip", {vertical: vertical ? "true" : "false", horizontal: horizontal ? "true" : "false"});
+    const scaleX = horizontal ? -1 : 1;
+    const scaleY = vertical ? -1 : 1;
+    this.transform({scale: [scaleX, scaleY]});
   }
 
   async rotate(clockwise?: boolean) {
@@ -199,19 +257,16 @@ export class ToolbarComponent {
         angle = -90;
       }
     }
-    this.console.execute("rotate", {degrees: angle.toString()});
-  }
-
-  showManual() {
-    this.console.execute("man");
+    const rotateDimension = Math.round(angle / 90) % 2 !== 0;
+    this.transform({rotate: new Angle(angle, "deg").rad}, rotateDimension);
   }
 
   assembleCads() {
-    this.console.execute("assemble");
+    this.status.toggleCadStatus(new CadStatusAssemble());
   }
 
   splitCad() {
-    this.console.execute("split");
+    this.status.toggleCadStatus(new CadStatusSplit());
   }
 
   toggleShowDimensions() {
@@ -274,12 +329,147 @@ export class ToolbarComponent {
     await cad.render();
   }
 
-  printCad() {
-    this.console.execute("print");
+  async printCad() {
+    this.spinner.show(this.spinner.defaultLoaderId, {text: "正在打印..."});
+    const cad = this.status.cad;
+    const data = this.status.closeCad();
+    const {url, errors} = await printCads({cads: [data], projectConfig: this.status.projectConfig, config: cad.getConfig()});
+    this.spinner.hide(this.spinner.defaultLoaderId);
+    if (errors.length > 0) {
+      console.warn(errors.join("\n"));
+    }
+    printJS({printable: url, type: "pdf"});
   }
 
-  fillet(radius?: number) {
-    this.console.execute("fillet", {radius: radius ? radius.toString() : "0"});
+  async fillet(radius?: number) {
+    const cad = this.status.cad;
+    const lines = cad.selected().line;
+    if (lines.length !== 2) {
+      this.message.alert("请先选择且只选择两条线段");
+      return;
+    }
+    const {start: start1, end: end1} = lines[0];
+    const {start: start2, end: end2} = lines[1];
+    const p1 = new Point(start1.x, start1.y);
+    const p2 = new Point(end1.x, end1.y);
+    const p3 = new Point(start2.x, start2.y);
+    const p4 = new Point(end2.x, end2.y);
+    const l1 = new Line(p1.clone(), p2.clone());
+    const l2 = new Line(p3.clone(), p4.clone());
+    let point = l1.intersects(l2, true).at(0);
+    let center: Point;
+    let startAngle: number;
+    let endAngle: number;
+    let clockwise: boolean;
+    if (!point) {
+      radius = l1.distanceTo(l2) / 2;
+      if (radius <= 0) {
+        this.message.alert("两直线平行且距离为0");
+        return;
+      }
+      let l3: Line;
+      let l4: Line;
+      let reverse: number;
+      if (l1.theta.equals(l2.theta)) {
+        l3 = l1.clone().transform({rotate: Math.PI / 2, origin: l1.start});
+        l4 = l1.clone().transform({rotate: Math.PI / 2, origin: l1.end});
+        const p5 = l3.intersects(l2, true).at(0);
+        if (p5) {
+          l3.end.copy(p5);
+        }
+        l4.reverse();
+        const p6 = l4.intersects(l2, true).at(0);
+        if (p6) {
+          l4.end.copy(p6);
+        }
+        reverse = 1;
+      } else {
+        l3 = l1.clone().transform({rotate: Math.PI / 2, origin: l1.end});
+        l4 = l1.clone().transform({rotate: Math.PI / 2, origin: l1.start});
+        l3.reverse();
+        const p5 = l3.intersects(l2, true).at(0);
+        if (p5) {
+          l3.end.copy(p5);
+        }
+        const p6 = l4.intersects(l2, true).at(0);
+        if (p6) {
+          l4.end.copy(p6);
+        }
+        reverse = -1;
+      }
+      const d1 = l3.end.distanceTo(l2.start);
+      const d2 = l4.end.distanceTo(l2.end);
+      if (d1 < d2) {
+        center = l3.middle;
+        point = l3.end;
+        lines[1].start.set(point.x, point.y);
+        clockwise = l1.crossProduct(l3) * reverse > 0;
+      } else {
+        center = l4.middle;
+        point = l4.end;
+        lines[1].end.set(point.x, point.y);
+        clockwise = l1.crossProduct(l4) * reverse < 0;
+      }
+      endAngle = new Line(center, point).theta.deg;
+      startAngle = endAngle - 180;
+    } else {
+      if (radius === undefined) {
+        radius = await this.message.prompt<number>({
+          type: "number",
+          label: "圆角半径",
+          validators: [Validators.required, Validators.min(0)]
+        });
+        if (typeof radius !== "number") {
+          return;
+        }
+      }
+      l1.start.copy(point);
+      l2.start.copy(point);
+      if (p1.distanceTo(point) > p2.distanceTo(point)) {
+        l1.end.copy(p1);
+      }
+      if (p3.distanceTo(point) > p4.distanceTo(point)) {
+        l2.end.copy(p3);
+      }
+      const theta1 = l1.theta.rad;
+      const theta2 = l2.theta.rad;
+      const theta3 = Math.abs(theta2 - theta1) / 2;
+      let theta4 = (theta1 + theta2) / 2;
+      if (theta3 > Math.PI / 2) {
+        theta4 -= Math.PI;
+      }
+      clockwise = l1.crossProduct(l2) > 0;
+      const d1 = Math.abs(radius / Math.tan(theta3));
+      const d2 = Math.abs(radius / Math.sin(theta4));
+      const startPoint = new Point(Math.cos(theta1), Math.sin(theta1)).multiply(d1).add(point);
+      const endPoint = new Point(Math.cos(theta2), Math.sin(theta2)).multiply(d1).add(point);
+      if (!l1.contains(startPoint) || !l2.contains(endPoint)) {
+        this.message.alert("半径过大");
+        return;
+      }
+      center = new Point(Math.cos(theta4), Math.sin(theta4)).multiply(d2).add(point);
+      if (p1.distanceTo(point) < p2.distanceTo(point)) {
+        lines[0].start.set(startPoint.x, startPoint.y);
+      } else {
+        lines[0].end.set(startPoint.x, startPoint.y);
+      }
+      if (p3.distanceTo(point) < p4.distanceTo(point)) {
+        lines[1].start.set(endPoint.x, endPoint.y);
+      } else {
+        lines[1].end.set(endPoint.x, endPoint.y);
+      }
+      startAngle = new Line(center, startPoint).theta.deg;
+      endAngle = new Line(center, endPoint).theta.deg;
+    }
+    if (radius > 0) {
+      const cadArc = new CadArc({center: center.toArray(), radius, color: lines[0].getColor()});
+      cadArc.start_angle = startAngle;
+      cadArc.end_angle = endAngle;
+      cadArc.clockwise = clockwise;
+      this.status.cad.data.entities.add(cadArc);
+    }
+    this.status.validate();
+    await cad.unselectAll().render();
   }
 
   leaveCadStatus(confirmed?: boolean) {
@@ -297,7 +487,7 @@ export class ToolbarComponent {
   }
 
   newCad() {
-    this.console.execute("new-cad");
+    this.status.openCad({data: new CadData({name: "新建CAD"}), center: true});
   }
 
   setKailiaofangshi() {

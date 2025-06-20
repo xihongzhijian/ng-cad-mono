@@ -42,7 +42,8 @@
             "scripts": [],
             "extractLicenses": false,
             "sourceMap": true,
-            "optimization": false
+            "optimization": false,
+            "allowedCommonJsDependencies": ["*"]
           },
           "configurations": {
             "production": {

@@ -247,7 +247,7 @@ export class HttpService {
         content = `<span>${status} (${statusText})</span><br>${content}`;
       } else if (error instanceof HttpServiceResponseError) {
         errorData = error.response.data;
-        content = error.details || error.message;
+        content = error.message;
       } else if (error instanceof Error) {
         content = error.message;
       }
