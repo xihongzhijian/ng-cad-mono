@@ -1,8 +1,9 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {CdkTextareaAutosize, TextFieldModule} from "@angular/cdk/text-field";
-import {AsyncPipe, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
+import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   computed,
   DoCheck,
@@ -66,7 +67,6 @@ import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
   styleUrls: ["./input.component.scss"],
   imports: [
     AnchorSelectorComponent,
-    AsyncPipe,
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
@@ -96,6 +96,7 @@ import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
   ]
 })
 export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
+  private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
   private differs = inject(KeyValueDiffers);
   private elRef = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -301,8 +302,8 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
   imgCadEmpty = imgCadEmpty;
 
   valueChange$ = new BehaviorSubject<any>(null);
-  filteredOptions$ = new BehaviorSubject<InputComponent["options"]>([]);
-  filteredXuanxiangOptions$ = new BehaviorSubject<InputComponent["options"][]>([]);
+  filteredOptions = signal<InputComponent["options"]>([]);
+  filteredXuanxiangOptions = signal<InputComponent["options"][]>([]);
 
   private _validateValueLock = false;
 
@@ -310,9 +311,9 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     super();
     this.valueChange$.subscribe((val) => {
       if (this.optionsDialog()) {
-        this.filteredOptions$.next([]);
+        this.filteredOptions.set([]);
       } else {
-        this.filteredOptions$.next(this._filterOptions(val, this.options));
+        this.filteredOptions.set(this._filterOptions(val, this.options));
       }
     });
   }
@@ -402,15 +403,15 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     }
     await this.fetchXuanxiangOptions();
     if (typeof i === "number") {
-      const options = this.filteredXuanxiangOptions$.value;
+      const options = this.filteredXuanxiangOptions();
       options[i] = this._filterOptions(keyVal || "", this.xuanxiangOptions);
-      this.filteredXuanxiangOptions$.next(options);
+      this.filteredXuanxiangOptions.set(options);
     } else {
       const options: (typeof this.options)[] = [];
       for (const key in value) {
         options.push(this._filterOptions(key, this.xuanxiangOptions));
       }
-      this.filteredXuanxiangOptions$.next(options);
+      this.filteredXuanxiangOptions.set(options);
     }
   }
 
@@ -911,6 +912,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         } else {
           data[key] = resultValue;
         }
+        this.cd.markForCheck();
       }
       if (typeof onChange === "function") {
         onChange(result);
@@ -1030,7 +1032,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         return info.keyLabel;
       }
     }
-    return key;
+    return "";
   }
   getObjectValueLabel(key: string, value: any) {
     const info = this.info();

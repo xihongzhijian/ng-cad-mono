@@ -62,7 +62,7 @@
           }
         }
         <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAutocompleteChange($event)">
-          @for (option of filteredOptions$ | async; track $index) {
+          @for (option of filteredOptions(); track $index) {
             <mat-option
               [value]="option.value"
               [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
@@ -186,7 +186,7 @@
                 [matAutocompleteDisabled]="xuanxiangOptions.length < 1"
               />
               <mat-autocomplete #auto="matAutocomplete" (optionSelected)="changeObjectKey2(value, item.key, $event.option.value)">
-                @for (option of (filteredXuanxiangOptions$ | async)?.[i]; track $index) {
+                @for (option of filteredXuanxiangOptions()[i]; track $index) {
                   <mat-option
                     [value]="option.value"
                     [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
