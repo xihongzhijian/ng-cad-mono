@@ -4126,6 +4126,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@typescript-eslint/types@npm:^8.35.0":
+  version: 8.35.0
+  resolution: "@typescript-eslint/types@npm:8.35.0"
+  checksum: 10c0/a2711a932680805e83252b5d7c55ac30437bdc4d40c444606cf6ccb6ba23a682da015ec03c64635e77bf733f84d9bb76810bf4f7177fd3a660db8a2c8a05e845
+  languageName: node
+  linkType: hard
+
 "@typescript-eslint/typescript-estree@npm:8.34.1":
   version: 8.34.1
   resolution: "@typescript-eslint/typescript-estree@npm:8.34.1"
@@ -9704,7 +9711,7 @@ __metadata:
     "@types/uuid": "npm:^10.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.34.1"
     "@typescript-eslint/parser": "npm:^8.34.1"
-    "@typescript-eslint/types": "npm:^8.34.1"
+    "@typescript-eslint/types": "npm:^8.35.0"
     "@typescript-eslint/utils": "npm:^8.34.1"
     angular-animations: "npm:^0.11.0"
     axios: "npm:^1.10.0"
