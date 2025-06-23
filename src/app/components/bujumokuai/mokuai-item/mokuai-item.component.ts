@@ -304,14 +304,31 @@ export class MokuaiItemComponent {
 
   private _textInputInfoUpdateDisabled = false;
   private _getTextInputInfo1(key: keyof MokuaiItem, label: string = key) {
+    const mokuai = this.mokuai();
+    const update = () => {
+      this.mokuai.update((v) => ({...v}));
+    };
     const info: InputInfo<MokuaiItem> = {
       type: "string",
       textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
-      model: {data: this.mokuai(), key},
+      model: {data: mokuai, key},
+      suffixIcons: [
+        {
+          name: "edit",
+          onClick: async () => {
+            const arr = (mokuai[key] as string).split("+");
+            const result = await this.message.prompt({type: "array", label, value: arr});
+            if (Array.isArray(result)) {
+              (mokuai as any)[key] = result.filter((v) => v).join("+");
+              update();
+            }
+          }
+        }
+      ],
       onChange: () => {
         if (!this._textInputInfoUpdateDisabled) {
-          this.mokuai.update((v) => ({...v}));
+          update();
         }
       }
     };
@@ -322,14 +339,30 @@ export class MokuaiItemComponent {
     if (!mokuai.自定义数据) {
       mokuai.自定义数据 = getMokuaiCustomData(null, this.bjmkStatus.mokuaiOptionsManager.data());
     }
+    const update = () => {
+      this.mokuai.update((v) => ({...v, 自定义数据: clone(v.自定义数据)}));
+    };
     const info: InputInfo<MokuaiItemCustomData> = {
       type: "string",
       textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
       model: {data: mokuai.自定义数据, key},
+      suffixIcons: [
+        {
+          name: "edit",
+          onClick: async () => {
+            const arr = (mokuai.自定义数据![key] as string).split("+");
+            const result = await this.message.prompt({type: "array", label, value: arr});
+            if (Array.isArray(result)) {
+              (mokuai.自定义数据 as any)[key] = result.filter((v) => v).join("+");
+              update();
+            }
+          }
+        }
+      ],
       onChange: () => {
         if (!this._textInputInfoUpdateDisabled) {
-          this.mokuai.update((v) => ({...v, 自定义数据: clone(v.自定义数据)}));
+          update();
         }
       }
     };
