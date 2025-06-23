@@ -42,6 +42,7 @@ import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellChangeEvent, RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
@@ -85,6 +86,7 @@ export class MokuaiItemComponent {
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
+  private spinner = inject(SpinnerService);
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = ["ng-page"];
@@ -575,9 +577,9 @@ export class MokuaiItemComponent {
     this.mokuai.set({...mokuai});
   }
 
-  isSaved = signal(false);
+  saveRes = signal<MokuaiItemCloseEvent["saveRes"]>(null);
   close() {
-    this.closeOut.emit({isSaved: this.isSaved()});
+    this.closeOut.emit({saveRes: this.saveRes()});
   }
   slgsComponent = viewChild<FormulasEditorComponent>("slgs");
   forceUpdateKeys = new Set<keyof MokuaiItem>();
@@ -641,6 +643,7 @@ export class MokuaiItemComponent {
     return mokuai;
   }
   async save() {
+    this.spinner.show(this.spinner.defaultLoaderId);
     const mokuai = await this.updateMokaui();
     if (!mokuai) {
       return;
@@ -652,12 +655,13 @@ export class MokuaiItemComponent {
       const val = mokuai[key];
       const valOld = mokuaiOld[key];
       if (forceUpdateKeys.has(key) || !isEqual(val, valOld)) {
-        mokuaiNew[key] = val as any;
+        mokuaiNew[key] = cloneDeep(val as any);
       }
     }
     forceUpdateKeys.clear();
-    await this.bjmkStatus.editMokuai(mokuaiNew, {noForm: true});
-    this.isSaved.set(true);
+    const res = await this.bjmkStatus.editMokuai(mokuaiNew, {noForm: true});
+    this.saveRes.set(res);
+    this.spinner.hide(this.spinner.defaultLoaderId);
   }
   async saveAs() {
     const mokuai = await this.updateMokaui();

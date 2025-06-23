@@ -1871,7 +1871,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.openedMokuai.set({mokuai, bancaiListData});
     }
   }
-  async closeMokuai({isSaved}: MokuaiItemCloseEvent) {
+  async closeMokuai({saveRes}: MokuaiItemCloseEvent) {
     const openedMokuai = this.openedMokuai();
     if (!openedMokuai) {
       return;
@@ -1879,27 +1879,24 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.openedMokuai.set(null);
     const activeMsbjInfo = this.activeMsbjInfo();
     const activeNode = this.activeMokuaiNode();
-    if (isSaved && activeMsbjInfo && activeNode) {
-      const mokuai = (await this.fetchMokuais([openedMokuai.mokuai.id]))[0];
-      if (mokuai) {
-        const menshanbujuInfos = this.data()?.menshanbujuInfos || {};
-        const menshanbujuKeys = keysOf(menshanbujuInfos);
-        for (const key of menshanbujuKeys) {
-          const msbjInfo = menshanbujuInfos[key];
-          if (msbjInfo) {
-            for (const node of msbjInfo.模块节点 || []) {
-              const mokuais = [...node.可选模块];
-              if (node.选中模块) {
-                mokuais.push(node.选中模块);
-              }
-              for (const mokuai2 of mokuais) {
-                updateMokuaiItem(mokuai2, mokuai);
-              }
+    if (saveRes?.item2 && activeMsbjInfo && activeNode) {
+      const menshanbujuInfos = this.data()?.menshanbujuInfos || {};
+      const menshanbujuKeys = keysOf(menshanbujuInfos);
+      for (const key of menshanbujuKeys) {
+        const msbjInfo = menshanbujuInfos[key];
+        if (msbjInfo) {
+          for (const node of msbjInfo.模块节点 || []) {
+            const mokuais = [...node.可选模块];
+            if (node.选中模块) {
+              mokuais.push(node.选中模块);
+            }
+            for (const mokuai2 of mokuais) {
+              updateMokuaiItem(mokuai2, saveRes.item2);
             }
           }
         }
-        this.refreshData();
       }
+      this.refreshData();
     }
   }
 

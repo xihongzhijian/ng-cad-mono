@@ -3,6 +3,7 @@ import {选项} from "@components/lurushuju/xinghao-data";
 import {ObjectOf} from "@lucilor/utils";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
+import {BjmkStatusService} from "../services/bjmk-status.service";
 
 export interface MokuaiItem extends ZixuanpeijianTypesInfoItemBase {
   name: string;
@@ -27,7 +28,7 @@ export interface MokuaiItemCustomData {
 }
 
 export interface MokuaiItemCloseEvent {
-  isSaved: boolean;
+  saveRes: Awaited<ReturnType<BjmkStatusService["editMokuai"]>>;
 }
 
 export interface MokuaiItemCadInfo {

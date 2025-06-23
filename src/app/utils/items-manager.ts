@@ -16,6 +16,9 @@ export class ItemsManager<T> {
   }
 
   refresh(params: ItemsManagerRefreshParams<T> = {}) {
+    if (!this.fetchManager.isDataFetched) {
+      return;
+    }
     const {update, add, remove} = params;
     const items: T[] = [];
     if (add) {
