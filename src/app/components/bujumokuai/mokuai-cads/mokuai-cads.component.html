@@ -53,11 +53,11 @@
 @if (selectable()) {
   <mat-divider vertical></mat-divider>
   <div class="selected-cads item">
-    <div class="title">已选配件</div>
+    <div class="text title">已选配件</div>
     @if (cadsEditMode()) {
       <div class="error">现在是编辑状态，不可以选择配件</div>
     }
-    <ng-scrollbar #selectedCadsScrollbar class="selected-cads">
+    <ng-scrollbar #selectedCadsScrollbar class="1 1 0">
       <div class="data-items items">
         @for (cad of selectedCads(); track i; let i = $index) {
           <div class="data-item item link">

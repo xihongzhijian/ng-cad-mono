@@ -583,7 +583,7 @@ export class MokuaiItemComponent {
   }
   slgsComponent = viewChild<FormulasEditorComponent>("slgs");
   forceUpdateKeys = new Set<keyof MokuaiItem>();
-  async updateMokaui() {
+  async updateMokaui(loaderId: string) {
     const mokuai = this.mokuai();
     const error: ErrorItem = {content: "", details: []};
 
@@ -637,14 +637,16 @@ export class MokuaiItemComponent {
     }
 
     if (error.details.length > 0) {
+      this.spinner.hide(loaderId);
       await alertError(this.message, error);
       return null;
     }
     return mokuai;
   }
   async save() {
-    this.spinner.show(this.spinner.defaultLoaderId);
-    const mokuai = await this.updateMokaui();
+    const loaderId = this.spinner.defaultLoaderId;
+    this.spinner.show(loaderId);
+    const mokuai = await this.updateMokaui(loaderId);
     if (!mokuai) {
       return;
     }
@@ -664,11 +666,14 @@ export class MokuaiItemComponent {
     this.spinner.hide(this.spinner.defaultLoaderId);
   }
   async saveAs() {
-    const mokuai = await this.updateMokaui();
+    const loaderId = this.spinner.defaultLoaderId;
+    this.spinner.show(loaderId);
+    const mokuai = await this.updateMokaui(loaderId);
     if (!mokuai) {
       return;
     }
     await this.bjmkStatus.copyMokuai(mokuai);
+    this.spinner.hide(loaderId);
   }
   openDdbq() {
     const mokuai = this.mokuai();

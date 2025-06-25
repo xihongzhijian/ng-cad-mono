@@ -267,6 +267,9 @@ export const getZixuanpeijianCads = async (
 
 export const justifyMokuaiItem = (item: ZixuanpeijianMokuaiItem | MokuaiItem) => {
   item.自定义数据 = getMokuaiCustomData(item.自定义数据, null);
+  if (!Array.isArray(item.xuanxianggongshi)) {
+    item.xuanxianggongshi = [];
+  }
 };
 export const updateMokuaiItem = (
   item: ZixuanpeijianMokuaiItem,

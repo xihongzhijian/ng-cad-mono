@@ -81,6 +81,7 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
             delete node.选中模块;
           }
         }
+        updateMokuaiItems(mokauis, typesInfo);
         for (const mokuai of mokauis) {
           const nodeShuruzhi = node.输入值;
           delete node.输入值;
@@ -103,7 +104,6 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
             }
           }
         }
-        updateMokuaiItems(mokauis, typesInfo);
         if (选中模块) {
           this.setSelectedMokuai(node, 选中模块, true);
         }
