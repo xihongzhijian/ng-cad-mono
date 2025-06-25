@@ -136,8 +136,10 @@ export class XhmrmsbjSbjbComponent {
           const keys: (keyof XhmrmsbjSbjbItemSbjbItem)[] = [
             "正面宽",
             "正面宽可改",
+            "正面宽显示",
             "背面宽",
             "背面宽可改",
+            "背面宽显示",
             "正背面同时改变",
             "使用正面分体",
             "使用背面分体"
