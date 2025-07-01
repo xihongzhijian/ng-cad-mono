@@ -22,7 +22,7 @@ import {LvxingcaiyouhuaInfo, TableData, TableInfoData, TableInfoDataTable, Xikon
   styleUrl: "./print-table.component.scss"
 })
 export class PrintTableComponent<T = any> implements OnInit {
-  private elRef = inject(ElementRef<HTMLElement>);
+  private elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private http = inject(CadDataService);
   private message = inject(MessageService);
   private route = inject(ActivatedRoute);
@@ -47,27 +47,17 @@ export class PrintTableComponent<T = any> implements OnInit {
   async print() {
     const tableInfos = this.tableInfos();
     const {表换行索引 = {}} = this.data() || {};
-    const columnsAll: ColumnInfo<TableData>[][] = [];
-    for (const info of this.tableInfos()) {
-      columnsAll.push(info.columns);
-      info.columns = info.columns.map((col) => {
-        if (col.type === "button") {
-          return {...col, hidden: true};
-        } else {
-          return {...col};
-        }
-      });
-    }
-    this.tableInfos.set([...tableInfos]);
-    await timeout(1000);
     const toRemove: HTMLElement[] = [];
+    const toResetDisplay: HTMLElement[] = [];
+    const toResetBorderRight: HTMLElement[] = [];
     const toRemovePageBreak: HTMLElement[] = [];
-    for (const info of tableInfos) {
+    const tableEls = this.elRef.nativeElement.querySelectorAll(".table-container app-table");
+    for (const [i, info] of tableInfos.entries()) {
       const title = info.title;
       if (!title) {
         continue;
       }
-      const tableEl = this.elRef.nativeElement.querySelector(`app-table.${title}`);
+      const tableEl = tableEls[i];
       if (!(tableEl instanceof HTMLElement)) {
         continue;
       }
@@ -75,14 +65,43 @@ export class PrintTableComponent<T = any> implements OnInit {
       if (!indexs && info.换行索引) {
         indexs = 表换行索引[info.换行索引];
       }
-      const rowEls = tableEl.querySelectorAll(`app-table.${title} mat-row`);
+      const buttonColIndexs = new Set<number>();
+      for (const [j, col] of info.columns.entries()) {
+        if (col.type === "button") {
+          buttonColIndexs.add(j);
+        }
+      }
+      const headerRowEls = tableEl.querySelectorAll("mat-header-row");
+      const rowEls = tableEl.querySelectorAll("mat-row");
+      const updateCells = (rowElList: NodeListOf<Element>, selector: string) => {
+        rowElList.forEach((rowEl) => {
+          const cells = rowEl.querySelectorAll(selector);
+          cells.forEach((cell, k) => {
+            if (cell instanceof HTMLElement) {
+              if (buttonColIndexs.has(k)) {
+                toResetDisplay.push(cell);
+                cell.style.display = "none";
+              }
+              if (k === info.columns.length - 1 && k > 0) {
+                const prevCell = cells.item(k - 1);
+                if (prevCell instanceof HTMLElement) {
+                  toResetBorderRight.push(prevCell);
+                  prevCell.style.borderRight = "var(--border)";
+                }
+              }
+            }
+          });
+        });
+      };
+      updateCells(headerRowEls, "mat-header-cell");
+      updateCells(rowEls, "mat-cell");
       const rowCount = rowEls.length;
       if (Array.isArray(indexs) && indexs.length > 0) {
-        for (const i of indexs) {
-          if (i > rowCount) {
+        for (const j of indexs) {
+          if (j > rowCount) {
             break;
           }
-          const rowEl = rowEls.item(i - 1);
+          const rowEl = rowEls.item(j - 1);
           if (rowEl instanceof HTMLElement) {
             const dummyRowEl = document.createElement("div");
             rowEl.after(dummyRowEl);
@@ -94,13 +113,16 @@ export class PrintTableComponent<T = any> implements OnInit {
         }
       }
     }
+    await timeout(0);
     window.print();
-    for (let i = 0; i < tableInfos.length; i++) {
-      tableInfos[i].columns = columnsAll[i];
-    }
-    this.tableInfos.set([...tableInfos]);
     for (const el of toRemove) {
       el.remove();
+    }
+    for (const el of toResetDisplay) {
+      el.style.display = "";
+    }
+    for (const el of toResetBorderRight) {
+      el.style.borderRight = "";
     }
     for (const el of toRemovePageBreak) {
       el.classList.remove("page-break");
@@ -172,9 +194,15 @@ export class PrintTableComponent<T = any> implements OnInit {
     }
     for (const info of data.表数据) {
       info.class = info.title;
+      info.compactColumnButton = true;
       if (!environment.production) {
         for (const [i, item] of info.data.entries()) {
           item.序号 = i + 1;
+        }
+      }
+      for (const col of info.columns) {
+        if (col.type === "image") {
+          col.noLazy = true;
         }
       }
       tableInfos.push({noScroll: true, ...info, titleStyle: {display: "none"}});

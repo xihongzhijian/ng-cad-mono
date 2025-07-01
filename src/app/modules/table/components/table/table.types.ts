@@ -35,6 +35,7 @@ export interface TableRenderInfo<T> {
   getCellClass?: (event: CellEvent<T>) => string | string[];
   getCellStyle?: (event: CellEvent<T>) => Properties;
   hideHeader?: boolean;
+  compactColumnButton?: boolean;
 }
 export interface TableRenderInfoFilterable<T> {
   fields?: (keyof T)[];
@@ -107,6 +108,7 @@ export interface ColumnInfoLink<T> extends ColumnInfoBase<T> {
 export interface ColumnInfoImage<T> extends ColumnInfoBase<T> {
   type: "image";
   hasSmallImage?: boolean;
+  noLazy?: boolean;
 }
 
 export interface ColumnInfoFile<T> extends ColumnInfoBase<T> {

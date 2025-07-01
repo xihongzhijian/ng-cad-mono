@@ -84,6 +84,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       {label: "否", value: false}
     ]);
     const menleixingOptions = getOptions0(Array.from(menleixings).map((v) => ({value: v})));
+    const showMenleixing = this.showMenleixing() && menleixingOptions.length > 1;
     const getter = new InputInfoWithDataGetter(data, {
       clearable: true,
       onChange: () => update()
@@ -94,7 +95,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         style: {width: "200px"},
         onInput: debounce(() => update(), 500)
       }),
-      getter.selectSingle("menleixing", menleixingOptions, {label: "门类型", style: {width: "150px"}}),
+      getter.selectSingle("menleixing", menleixingOptions, {label: "门类型", style: {width: "150px"}, hidden: !showMenleixing}),
       getter.selectSingle("zuoshujubanben", zuoshujubanbenOptions, {
         label: "做数据版本",
         style: {width: "220px"}
