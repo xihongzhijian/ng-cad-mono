@@ -16,6 +16,7 @@ import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/compone
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {XhmrmsbjComponent} from "@views/xhmrmsbj/xhmrmsbj.component";
+import {menshanKeys} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {cloneDeep, debounce} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
@@ -89,6 +90,13 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       clearable: true,
       onChange: () => update()
     });
+    if (!data.buju) {
+      data.buju = {keys: [], name: ""};
+    }
+    const getter2 = new InputInfoWithDataGetter(data.buju, {
+      clearable: true,
+      onChange: () => update()
+    });
     const form: InputInfo<typeof data>[] = [
       getter.string("name", {
         label: "搜索型号",
@@ -103,7 +111,14 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       getter.selectSingle("tingyong", tingyongOptions, {
         label: "停用",
         style: {width: "100px"}
-      })
+      }),
+      getInputInfoGroup(
+        [
+          getter2.selectMultiple("keys", menshanKeys.slice(), {label: "位置", style: {width: "140px"}}),
+          getter2.string("name", {label: "布局名字", style: {width: "150px"}})
+        ],
+        {label: "根据布局搜索"}
+      )
     ];
     return form;
   });
