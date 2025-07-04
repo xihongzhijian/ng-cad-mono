@@ -25,6 +25,7 @@ export interface MokuaiItemCustomData {
   选项数据: 选项[];
   下单显示: string;
   下单时需要满足选项: ObjectOf<string>;
+  输入变量默认下单隐藏?: string;
 }
 
 export interface MokuaiItemCloseEvent {

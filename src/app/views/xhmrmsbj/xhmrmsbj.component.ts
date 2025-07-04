@@ -467,6 +467,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const activeRectInfo = this.activeRectInfo();
     return this.activeMsbjInfo()?.模块节点?.find((v) => v.层id === activeRectInfo?.raw.vid);
   });
+  activeMokuaiId = signal<number | null>(null);
   activeMorenbancai = computed(() => {
     this.data();
     return this.activeMokuaiNode()?.选中模块?.morenbancai || {};
@@ -1014,9 +1015,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const varsEnabled = getMokuaiShurus(msbjInfo, node, mokuai, true).map((v) => v[0]);
     const varsEnabled2 = varsEnabled.filter((v) => v !== name);
     if (varsEnabled.length === varsEnabled2.length) {
-      setMokuaiShurus(msbjInfo, node, mokuai, [...varsEnabled, name]);
+      setMokuaiShurus(msbjInfo, node, mokuai, [...varsEnabled, name], [name]);
     } else {
-      setMokuaiShurus(msbjInfo, node, mokuai, varsEnabled2);
+      setMokuaiShurus(msbjInfo, node, mokuai, varsEnabled2, [name]);
     }
     this.refreshData();
   }
@@ -1030,9 +1031,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const varsEnabled = getMokuaiShurus(msbjInfo, node, mokuai, true).map((v) => v[0]);
     const varsAll = getMokuaiShurusRaw(msbjInfo, node, mokuai).map((v) => v[0]);
     if (varsEnabled.length === varsAll.length) {
-      setMokuaiShurus(msbjInfo, node, mokuai, []);
+      setMokuaiShurus(msbjInfo, node, mokuai, [], varsAll);
     } else {
-      setMokuaiShurus(msbjInfo, node, mokuai, varsAll);
+      setMokuaiShurus(msbjInfo, node, mokuai, varsAll, varsAll);
     }
     this.refreshData();
   }

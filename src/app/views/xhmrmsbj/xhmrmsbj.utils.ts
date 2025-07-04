@@ -6,7 +6,7 @@ import {getNodeVars, isMokuaiItemEqual, updateMokuaiItems} from "@components/dia
 import {isTypeOf, keysOf} from "@lucilor/utils";
 import {getMkdxpzSlgsFormulas, MsbjInfo} from "@views/msbj/msbj.utils";
 import {XhmrmsbjXinghaoConfig} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
-import {difference, intersection, isEmpty, mapValues} from "lodash";
+import {cloneDeep, difference, intersection, isEmpty, mapValues, union} from "lodash";
 import {
   MenshanFollowerKey,
   MenshanKey,
@@ -150,7 +150,8 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
   }
 
   export() {
-    for (const info of Object.values(this.menshanbujuInfos)) {
+    const infos = cloneDeep(this.menshanbujuInfos);
+    for (const info of Object.values(infos)) {
       for (const node of info.模块节点 || []) {
         for (const mokuai of node.可选模块) {
           if (mokuai.info?.isDefault) {
@@ -164,7 +165,7 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
       vid: this.id,
       mingzi: this.name,
       suanliaodanmuban: this.算料单模板,
-      peizhishuju: this.stringifyField("menshanbujuInfos"),
+      peizhishuju: JSON.stringify(infos),
       xinghaopeizhi: this.stringifyField("xinghaoConfig")
     };
     const {raw} = this;
@@ -489,21 +490,35 @@ export const getMokuaiShurus = (
   const shurus = getMokuaiShurusRaw(info, node, mokuai);
   if (isFromOrder) {
     const key = getMokuaiObjectKey(node, mokuai);
-    const {输入变量下单隐藏} = info;
-    const excludeNames = 输入变量下单隐藏?.[key] || [];
+    const {输入变量默认下单隐藏} = mokuai.自定义数据 || {};
+    let excludeNames = info.输入变量下单隐藏?.[key] || [];
+    const excludeNamesOverwrite = info.输入变量下单隐藏覆盖默认?.[key] || [];
+    let excludeNamesDefault = 输入变量默认下单隐藏?.split("+") || [];
+    excludeNamesDefault = difference(excludeNamesDefault, excludeNamesOverwrite);
+    excludeNames = union(excludeNames, excludeNamesDefault);
     if (excludeNames.length > 0) {
       return shurus.filter((v) => !excludeNames.includes(v[0]));
     }
   }
   return shurus;
 };
-export const setMokuaiShurus = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, vars: string[]) => {
+export const setMokuaiShurus = (
+  info: XhmrmsbjInfo,
+  node: XhmrmsbjInfoMokuaiNode,
+  mokuai: ZixuanpeijianMokuaiItem,
+  vars: string[],
+  changedVars: string[]
+) => {
   if (!info.输入变量下单隐藏) {
     info.输入变量下单隐藏 = {};
+  }
+  if (!info.输入变量下单隐藏覆盖默认) {
+    info.输入变量下单隐藏覆盖默认 = {};
   }
   const key = getMokuaiObjectKey(node, mokuai);
   const varsRaw = getMokuaiShurusRaw(info, node, mokuai).map((v) => v[0]);
   info.输入变量下单隐藏[key] = difference(varsRaw, vars);
+  info.输入变量下单隐藏覆盖默认[key] = union(info.输入变量下单隐藏覆盖默认[key] ?? [], changedVars);
 };
 export const purgeShuruDisabled = (infos: XhmrmsbjDataMsbjInfos) => {
   for (const key of keysOf(infos)) {
@@ -528,6 +543,19 @@ export const purgeShuruDisabled = (infos: XhmrmsbjDataMsbjInfos) => {
     }
     if (isEmpty(info.输入变量下单隐藏)) {
       delete info.输入变量下单隐藏;
+    }
+    if (info.输入变量下单隐藏覆盖默认) {
+      if (info.输入变量下单隐藏) {
+        const obj = info.输入变量下单隐藏覆盖默认;
+        for (const [key2, value2] of Object.entries(obj)) {
+          obj[key2] = intersection(value2, map.get(key2) || []);
+          if (obj[key2].length < 1) {
+            delete obj[key2];
+          }
+        }
+      } else {
+        delete info.输入变量下单隐藏覆盖默认;
+      }
     }
   }
 };

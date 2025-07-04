@@ -372,6 +372,7 @@ export class MokuaiItemComponent {
   }
   mokuaiInputInfos = computed(() => [
     this._getTextInputInfo1("gongshishuru", "公式输入"),
+    this._getTextInputInfo2("输入变量默认下单隐藏", "公式输入默认下单隐藏"),
     this._getTextInputInfo1("shuchubianliang", "输出变量"),
     this._getTextInputInfo1("kailiaoshiyongbianliang", "开料使用变量"),
     this._getTextInputInfo2("下单显示")
