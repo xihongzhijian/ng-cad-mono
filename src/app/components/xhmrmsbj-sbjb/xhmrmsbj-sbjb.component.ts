@@ -15,6 +15,7 @@ import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton, CadItemFormExtraText} from "@components/lurushuju/cad-item/cad-item.types";
 import {OptionsAll2} from "@components/lurushuju/services/lrsj-status.types";
+import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
 import {ObjectOf, selectFiles} from "@lucilor/utils";
 import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
@@ -402,13 +403,17 @@ export class XhmrmsbjSbjbComponent {
   qiliaoCadMapEff = effect(async () => {
     const qiliaos = this.qiliaosManager.items();
     const cadIdsNew: string[] = [];
+    const cadIdsNewMap = new Map<string, number>();
     for (const qiliao of qiliaos) {
       const ids = [qiliao.fenti1?.id, qiliao.fenti2?.id];
       for (const id of ids) {
-        if (!id || cadIdsNew.includes(id)) {
+        if (!id) {
           continue;
         }
-        cadIdsNew.push(id);
+        cadIdsNewMap.set(id, qiliao.id);
+        if (!cadIdsNew.includes(id)) {
+          cadIdsNew.push(id);
+        }
       }
     }
     const cadIdsOld = Array.from(this.qiliaoCadMap.keys());
@@ -417,9 +422,35 @@ export class XhmrmsbjSbjbComponent {
     }
     const cadIdsToFetch = difference(cadIdsNew, cadIdsOld);
     if (cadIdsToFetch.length > 0) {
-      const cadsNew = await this.http.getCad({collection: this.cadCollection, ids: cadIdsToFetch});
+      const cadsNew = await this.http.getCad({collection: this.cadCollection, ids: cadIdsToFetch}, {silent: true});
+      const cadIdsFetched: string[] = [];
       for (const cad of cadsNew.cads) {
         this.qiliaoCadMap.set(cad.id, cad);
+        cadIdsFetched.push(cad.id);
+      }
+      const cadIdsMissing = difference(cadIdsToFetch, cadIdsFetched);
+      const msgs: string[] = [];
+      const qiliaosToUpdate: Qiliao[] = [];
+      for (const id of cadIdsMissing) {
+        const qiliao = qiliaos.find((v) => v.id === cadIdsNewMap.get(id));
+        if (qiliao) {
+          msgs.push(`企料【${qiliao.name}】的分体CAD【${id}】不存在`);
+          if (qiliao.fenti1?.id === id) {
+            qiliao.fenti1 = null;
+          }
+          if (qiliao.fenti2?.id === id) {
+            qiliao.fenti2 = null;
+          }
+          if (!qiliaosToUpdate.some((v) => v.id === qiliao.id)) {
+            qiliaosToUpdate.push(qiliao);
+          }
+        }
+      }
+      if (!environment.production && msgs.length > 0) {
+        this.message.error(msgs.join("<br>"));
+      }
+      if (qiliaosToUpdate.length > 0) {
+        this.qiliaosManager.refresh({update: qiliaosToUpdate});
       }
     }
   });
