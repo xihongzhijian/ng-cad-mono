@@ -176,6 +176,13 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
   const data: 输入 = {名字: "", 默认值: "", 取值范围: "", 可以修改: true, ...data0};
   const getter = new InputInfoWithDataGetter(data, {clearable: true});
   const 下单显示请输入 = getter.boolean("下单显示请输入");
+  const updateKeyixiugai = (val: boolean) => {
+    下单显示请输入.hidden = !val;
+    if (!val) {
+      delete data.下单显示请输入;
+    }
+  };
+  updateKeyixiugai(data.可以修改);
   const form: InputInfo[] = [
     getter.string("名字", {
       validators: [
@@ -192,12 +199,7 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
     getInputInfoGroup([
       getter.boolean("可以修改", {
         label: "可以输入",
-        onChange: (val) => {
-          下单显示请输入.hidden = !val;
-          if (!val) {
-            delete data.下单显示请输入;
-          }
-        }
+        onChange: (val) => updateKeyixiugai(val)
       }),
       下单显示请输入
     ]),
