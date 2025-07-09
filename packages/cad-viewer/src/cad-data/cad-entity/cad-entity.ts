@@ -11,7 +11,7 @@ import {EntityType} from "../cad-types";
 export abstract class CadEntity extends ColoredObject {
   id: string;
   houtaiId?: string;
-  abstract type: EntityType;
+  abstract readonly type: EntityType;
   layer: string;
   info: ObjectOf<any>;
   parent: CadEntity | null = null;

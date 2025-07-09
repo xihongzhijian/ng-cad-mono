@@ -352,7 +352,7 @@ export class CadItemComponent<T = undefined> implements OnInit, OnDestroy {
       cadData.id = mubanId;
     }
     cadData.type = typeOptions[0];
-    const mubanExtraData = this.mubanExtraData;
+    const mubanExtraData = this.mubanExtraData();
     if (mubanExtraData) {
       Object.assign(cadData, mubanExtraData);
     }
