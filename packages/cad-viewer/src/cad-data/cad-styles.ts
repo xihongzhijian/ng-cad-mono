@@ -25,10 +25,10 @@ export interface LineStyle {
 
 export interface CadDimensionStyle {
   color?: csstype.Properties["color"];
-  dimensionLine?: {hidden?: boolean} & LineStyle;
-  extensionLines?: {hidden?: boolean; length?: number} & LineStyle;
+  dimensionLine?: LineStyle & {hidden?: boolean};
+  extensionLines?: LineStyle & {hidden?: boolean; length?: number};
   arrows?: {hidden?: boolean; color?: csstype.Properties["color"]; size?: number};
-  text?: {hidden?: boolean} & Partial<FontStyle>;
+  text?: FontStyle & {hidden?: boolean};
 }
 
 export const cadDimensionTypes = ["linear", "angular", "radius"] as const;
