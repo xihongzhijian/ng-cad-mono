@@ -80,11 +80,18 @@
     </div>
     <div class="cads">
       @for (cad of cads(); track $index) {
-        @if (cad.result.hasError()) {
+        @if (cad.result.hasError() || cad.result.hasWarning()) {
           <div class="cad">
             <div>名字: {{ cad.data.name }}</div>
             <div>分类: {{ cad.data.type }}</div>
             <ul>
+              @for (warning of cad.result.warnings; track $index) {
+                @if (warning.details.length < 1) {
+                  <li class="warning" [innerHtml]="warning.content"></li>
+                } @else {
+                  <li class="warning link text" [innerHtml]="warning.content" (click)="alertError(warning)"></li>
+                }
+              }
               @for (error of cad.result.errors; track $index) {
                 @if (error.details.length < 1) {
                   <li class="error" [innerHtml]="error.content"></li>

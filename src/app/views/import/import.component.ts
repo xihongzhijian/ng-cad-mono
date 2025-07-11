@@ -502,14 +502,8 @@ export class ImportComponent implements OnInit {
       }
       const ellipses = data.entities.filter((e) => e.info.isEllipse);
       if (ellipses.length > 0) {
-        v.result.addErrorStr("不能在CAD里画椭圆，不支持椭圆");
-        ellipses.forEach((e) => {
-          const e2 = this.sourceCad()?.entities.find(e.id);
-          if (e2) {
-            e2.setColor("red");
-            e2.layer = this._errorMsgLayer;
-          }
-        });
+        v.result.addWarningStr(`不支持椭圆，已忽略${ellipses.length}个椭圆`);
+        data.entities.separate(ellipses);
       }
     }
 
@@ -607,6 +601,9 @@ export class ImportComponent implements OnInit {
   private async _validateOptions(options: ObjectOf<string>, httpOptions: HttpOptions) {
     const result = new ResultWithErrors(null);
     for (const optionKey in options) {
+      if (CadPortable.cadOptionNameWhiteList.includes(optionKey)) {
+        continue;
+      }
       const optionValues = CadPortable.splitOptionValue(options[optionKey]);
       const tmpVals: string[] = [];
       const duplicateValues: string[] = [];

@@ -189,6 +189,7 @@ export class CadPortable {
     指定位置刨坑: "zhidingweizhipaokeng",
     分体: "指定分体位置"
   };
+  static cadOptionNameWhiteList: string[] = ["门铰数量"];
 
   static import(params: CadImportParams): CadImportResult {
     const {sourceCad, maxLineLength} = params;
