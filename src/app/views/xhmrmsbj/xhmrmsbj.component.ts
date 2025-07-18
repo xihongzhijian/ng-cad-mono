@@ -1151,7 +1151,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       if (msbjInfo.选中布局数据) {
         const formulasList = getMkdxpzSlgsFormulasList(msbjInfo.选中布局数据.模块大小配置);
         const formulasKeys = getNodeFormulasKeys(msbjInfo.模块节点?.map((v) => v.层名字) || []);
-        if (!formulasKeys.every((key) => formulasList.every((v) => !!v[key]))) {
+        if (formulasKeys.some((key) => formulasList.length < 1 || formulasList.some((v) => !v[key]))) {
           errorMkdxpz.details.push([{text: menshanKey, info: {jumpTo: {门扇模块: {门扇名字: menshanKey, mkdx: true}}}}]);
         }
       }

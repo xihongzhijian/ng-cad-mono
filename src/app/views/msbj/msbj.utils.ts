@@ -94,13 +94,12 @@ export const justifyMkdxpzSlgs = (slgs: 算料公式, nodeNames: string[]) => {
 export const justifyMkdxpz = (dxpz: 模块大小配置, nodeNames: string[]) => {
   const getSlgs = (公式: Formulas) => ({_id: v4(), 名字: "默认公式", 条件: [], 选项: {}, 公式});
   if (!Array.isArray(dxpz.算料公式2)) {
-    if (dxpz.算料公式 && isTypeOf(dxpz.算料公式, "object")) {
-      dxpz.算料公式2 = [getSlgs(dxpz.算料公式)];
-    } else {
-      dxpz.算料公式2 = [];
-    }
-  } else if (dxpz.算料公式 && isTypeOf(dxpz.算料公式, "object")) {
+    dxpz.算料公式2 = [];
+  }
+  if (dxpz.算料公式 && isTypeOf(dxpz.算料公式, "object")) {
     dxpz.算料公式2.push(getSlgs(dxpz.算料公式));
+  } else if (dxpz.算料公式2.length < 1) {
+    dxpz.算料公式2.push(getSlgs({}));
   }
   delete dxpz.算料公式;
   for (const slgs of dxpz.算料公式2) {
