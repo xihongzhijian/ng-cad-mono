@@ -180,8 +180,12 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
 
   getCommonFormulas(materialResult: Formulas) {
     const formulas: Formulas = {};
-    for (const info of Object.values(this.menshanbujuInfos)) {
-      const slgs = {...getMkdxpzSlgsFormulas(info.选中布局数据?.模块大小配置, materialResult).data};
+    for (const key of keysOf(this.menshanbujuInfos)) {
+      const info = this.menshanbujuInfos[key];
+      if (!info) {
+        continue;
+      }
+      const slgs = {...getMkdxpzSlgsFormulas(info.选中布局数据?.模块大小配置, materialResult, key).data};
       for (const node of info.模块节点 || []) {
         const vars = getNodeVars(slgs, node.层名字);
         for (const mokuai of node.可选模块) {

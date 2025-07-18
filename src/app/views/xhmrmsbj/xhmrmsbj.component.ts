@@ -2025,7 +2025,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const {materialResult = {}, 门扇布局大小, 配件模块CAD} = this.lastSuanliaoManager.data()?.output || {};
     const infos: FormulaInfo[] = [];
-    const formulasResult = getMkdxpzSlgsFormulas(mkdxpz, materialResult);
+    const formulasResult = getMkdxpzSlgsFormulas(mkdxpz, materialResult, key);
     if (!formulasResult.fulfilled) {
       formulasResult.alertError(this.message);
       return [];
@@ -2041,12 +2041,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return infos;
   });
   async setMkdxpz(formulas: Formulas) {
+    const key = this.activeMenshanKey();
     const mkdxpz = this.activeMsbjInfo()?.选中布局数据?.模块大小配置;
-    if (!mkdxpz) {
+    if (!key || !mkdxpz) {
       return;
     }
     const materialResult = this.materialResult();
-    const mkdxpzSlgsResult = getMkdxpzSlgs(mkdxpz, materialResult);
+    const mkdxpzSlgsResult = getMkdxpzSlgs(mkdxpz, materialResult, key);
     if (!(await mkdxpzSlgsResult.check(this.message)) || !mkdxpzSlgsResult.data) {
       return;
     }

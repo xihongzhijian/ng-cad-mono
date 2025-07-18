@@ -118,7 +118,7 @@ export class SuanliaoComponent implements OnInit, OnDestroy {
       const {选中布局数据, 模块节点, 模块大小输出} = msbjInfo;
       const {模块大小配置} = 选中布局数据 || {};
       if (模块大小配置) {
-        mokuaiGongshis[门扇] = {...getMkdxpzSlgsFormulas(模块大小配置, materialResult).data};
+        mokuaiGongshis[门扇] = {...getMkdxpzSlgsFormulas(模块大小配置, materialResult, 门扇).data};
       } else {
         mokuaiGongshis[门扇] = {};
       }
