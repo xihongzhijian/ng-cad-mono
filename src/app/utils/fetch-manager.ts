@@ -42,5 +42,6 @@ export class FetchManager<T> {
 
   setData(data: T) {
     this._data.set(data);
+    this.isDataFetched = true;
   }
 }

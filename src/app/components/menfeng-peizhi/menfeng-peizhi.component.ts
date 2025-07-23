@@ -28,16 +28,16 @@ export class MenfengPeizhiComponent {
   xinghaoName = computed(() => this.xinghao()?.raw.mingzi);
 
   items = signal<MenfengpeizhiItem[]>([]);
-  async fetchData() {
+  async fetchData(silent = false) {
     const xinghao = this.xinghaoName();
     const suobianjiaobian = this.sbjbItems();
     if (!xinghao || suobianjiaobian.length < 1) {
       return;
     }
-    const data = await this.http.getData<MenfengpeizhiItem[]>("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian});
+    const data = await this.http.getData<MenfengpeizhiItem[]>("shuju/api/getMenfengConfig", {xinghao, suobianjiaobian}, {silent});
     this.items.set(data || []);
   }
-  fetchDataEff = effect(() => this.fetchData());
+  fetchDataEff = effect(() => this.fetchData(true));
 
   async submit() {
     if (!(await this.validate())) {

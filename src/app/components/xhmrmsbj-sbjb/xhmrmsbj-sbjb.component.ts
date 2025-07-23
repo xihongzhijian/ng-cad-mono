@@ -26,6 +26,7 @@ import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {getErrorMsgs, InputInfoWithDataGetter, validateForm, validateValue} from "@modules/input/components/input.utils";
 import {getMessageImportModeOptions, MessageImportMode, MessageService} from "@modules/message/services/message.service";
+import {SpinnerModule} from "@modules/spinner/spinner.module";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, FilterAfterEvent, RowButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
@@ -75,6 +76,7 @@ import {
     MatDividerModule,
     NgScrollbarModule,
     NgTemplateOutlet,
+    SpinnerModule,
     TableComponent,
     TypedTemplateDirective
   ],
@@ -91,6 +93,7 @@ export class XhmrmsbjSbjbComponent {
 
   xinghao = input.required<MrbcjfzXinghaoInfo | null>();
 
+  spinnerId = "xhmrmsbj-sbjb-spinner";
   xinghaoName = computed(() => this.xinghao()?.name);
   items = signal<XhmrmsbjSbjbItem[]>([]);
   refreshItems() {
@@ -583,8 +586,8 @@ export class XhmrmsbjSbjbComponent {
 
   options = signal<OptionsAll2>({});
 
-  fetchDataEff = effect(() => this.fetchData());
-  async fetchData(peizhi?: XhmrmsbjSbjbResponseData) {
+  fetchDataEff = effect(() => this.fetchData(true));
+  async fetchData(silent = false, peizhi?: XhmrmsbjSbjbResponseData) {
     const xinghao = this.xinghaoName();
     if (!xinghao) {
       return;
@@ -594,7 +597,7 @@ export class XhmrmsbjSbjbComponent {
       CAD数据map: ObjectOf<HoutaiCad>;
       选项: OptionsAll2;
       qiliaos: QiliaoTableData[];
-    }>("shuju/api/getsuobianjiaobianData", {xinghao, peizhi});
+    }>("shuju/api/getsuobianjiaobianData", {xinghao, peizhi}, {silent});
     if (data) {
       for (const item of data.锁边铰边) {
         for (const item2 of item.锁边铰边数据) {
@@ -832,7 +835,7 @@ export class XhmrmsbjSbjbComponent {
         }
       }
     }
-    this.fetchData(itemsCurr);
+    this.fetchData(false, itemsCurr);
   }
 
   async validate() {

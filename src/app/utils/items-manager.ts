@@ -33,6 +33,10 @@ export class ItemsManager<T> {
     }
     this.fetchManager.setData(items);
   }
+
+  setItems(items: T[]) {
+    this.fetchManager.setData(items);
+  }
 }
 
 export interface ItemsManagerRefreshParams<T> {
