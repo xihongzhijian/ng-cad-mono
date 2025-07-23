@@ -1,4 +1,4 @@
-import {Component, inject, Inject, viewChild} from "@angular/core";
+import {Component, inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
 import {BancaiFormData} from "@components/bancai-form/bancai-form.component";
@@ -18,16 +18,25 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [BancaiFormComponent, MatButtonModule, MatDialogActions, MatDialogTitle]
 })
 export class BancaiFormDialogComponent {
+  dialogRef = inject<MatDialogRef<BancaiFormDialogComponent, BancaiFormOutput>>(MatDialogRef);
+  data: BancaiFormInput = inject<BancaiFormInput>(MAT_DIALOG_DATA, {optional: true}) ?? {
+    data: {
+      bancai: "",
+      cailiao: "",
+      houdu: ""
+    },
+    bancaiList: [],
+    bancaiListRefrersh: () => [],
+    key: "",
+    extraInputInfos: [],
+    noTitle: false
+  };
+
   private message = inject(MessageService);
 
   prod = environment.production;
 
   bancaiForm = viewChild(BancaiFormComponent);
-
-  constructor(
-    public dialogRef: MatDialogRef<BancaiFormDialogComponent, BancaiFormOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: BancaiFormInput
-  ) {}
 
   async submit() {
     const data = {...this.data.data};

@@ -28,8 +28,6 @@ import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEntities, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
 import {queryString, timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
-import {CadConsoleComponent} from "@modules/cad-console/components/cad-console/cad-console.component";
-import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
 import {ContextMenuModule} from "@modules/context-menu/context-menu.module";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -89,7 +87,6 @@ import {CadEditorMenuName} from "./cad-editor.utils";
   ],
   imports: [
     CadAssembleComponent,
-    CadConsoleComponent,
     CadDimensionComponent,
     CadFentiConfigComponent,
     CadInfoComponent,
@@ -116,7 +113,6 @@ import {CadEditorMenuName} from "./cad-editor.utils";
 export class CadEditorComponent extends Subscribed() implements AfterViewInit, OnDestroy {
   private config = inject(AppConfigService);
   private status = inject(AppStatusService);
-  private cadConsole = inject(CadConsoleService);
   private message = inject(MessageService);
   private el = inject(ElementRef<HTMLElement>);
 
@@ -138,10 +134,6 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     cad.on("moveentities", this._onMoveEntities);
     cad.on("moveentitiesend", this._onMoveEntitiesEnd);
     cad.on("entitiesadd", this._onEntitiesAdd);
-
-    this.subscribe(this.cadConsole.command$, (command) => {
-      this.cadConsoleComponent().execute(command);
-    });
   }
   ngOnDestroy() {
     super.ngOnDestroy();
@@ -376,7 +368,6 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   });
 
   cadContainer = viewChild.required<ElementRef<HTMLElement>>("cadContainer");
-  cadConsoleComponent = viewChild.required(CadConsoleComponent);
   suanliaogongshi = viewChild<ElementRef<HTMLElement>>("suanliaogongshi");
   suanliaoTables = viewChild<ElementRef<HTMLElement>>("suanliaoTables");
 

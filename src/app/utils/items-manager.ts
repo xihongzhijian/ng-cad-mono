@@ -16,6 +16,9 @@ export class ItemsManager<T> {
   }
 
   refresh(params: ItemsManagerRefreshParams<T> = {}) {
+    if (!this.fetchManager.isDataFetched) {
+      return;
+    }
     const {update, add, remove} = params;
     const items: T[] = [];
     if (add) {
@@ -28,6 +31,10 @@ export class ItemsManager<T> {
       const item2 = update?.find((v) => this.compareFn(item, v));
       items.push(item2 || item);
     }
+    this.fetchManager.setData(items);
+  }
+
+  setItems(items: T[]) {
     this.fetchManager.setData(items);
   }
 }

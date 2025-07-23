@@ -20,10 +20,12 @@ export interface XinghaoData extends TableDataBase2, ZuoshujuTableData {
   gongyi: string;
   dingdanliucheng?: string;
   menleixing?: string;
+  gongshishuru?: string;
   算料单模板?: string;
   是否需要激光开料?: boolean;
   下单显示没有配件的板材分组?: boolean;
   数据已录入完成?: boolean;
+  info?: ObjectOf<{buju?: string} | undefined>;
 }
 
 export interface XinghaoMenchuang extends TableDataBase2 {

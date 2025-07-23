@@ -40,6 +40,7 @@ export interface XhmrmsbjInfo {
   模块输入值?: ObjectOf<Shuruzhi>;
   选项公式输入值?: ObjectOf<Shuruzhi>;
   输入变量下单隐藏?: ObjectOf<string[]>;
+  输入变量下单隐藏覆盖默认?: ObjectOf<string[]>;
   输出变量禁用?: ObjectOf<string[]>;
   模块选项?: ObjectOf<XhmrmsbjInfoMokuaiOption[]>;
 }

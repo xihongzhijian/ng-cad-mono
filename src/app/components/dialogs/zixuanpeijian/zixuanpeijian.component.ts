@@ -8,7 +8,6 @@ import {
   HostBinding,
   HostListener,
   inject,
-  Inject,
   OnInit,
   signal,
   untracked,
@@ -117,6 +116,9 @@ import {
   ]
 })
 export class ZixuanpeijianComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ZixuanpeijianComponent, ZixuanpeijianOutput>>(MatDialogRef);
+  data = inject<ZixuanpeijianInput>(MAT_DIALOG_DATA, {optional: true});
+
   private http = inject(CadDataService);
   private message = inject(MessageService);
   private dialog = inject(MatDialog);
@@ -215,10 +217,7 @@ export class ZixuanpeijianComponent implements OnInit {
     return this.data?.order?.materialResult;
   }
 
-  constructor(
-    public dialogRef: MatDialogRef<ZixuanpeijianComponent, ZixuanpeijianOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: ZixuanpeijianInput | null
-  ) {
+  constructor() {
     this.lingsanCadItemButtons = [
       {name: "复制", onClick: this.copyLingsanCad.bind(this)},
       {name: "删除", onClick: this.deleteLingsanCad.bind(this)}

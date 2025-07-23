@@ -12,6 +12,7 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {MrbcjfzHuajian} from "@views/mrbcjfz/mrbcjfz.types";
 import {filterHuajian} from "@views/mrbcjfz/mrbcjfz.utils";
+import {MenshanKey} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {cloneDeep, isEqual} from "lodash";
 import {lastValueFrom, Subject, take, takeUntil} from "rxjs";
 import {LrsjPieceInfos} from "../lrsj-pieces/lrsj-pieces.types";
@@ -63,9 +64,13 @@ export class LrsjStatusService implements OnDestroy {
   suanliaoCadsValidateEnd$ = new Subject<string[]>();
 
   private _xinghaoFilterKey = "lurushujuXinghaoFilter";
-  xinghaoFilter = signal<{name?: string; menleixing?: string; zuoshujubanben?: string; tingyong?: boolean}>(
-    session.load(this._xinghaoFilterKey) || {}
-  );
+  xinghaoFilter = signal<{
+    name?: string;
+    menleixing?: string;
+    zuoshujubanben?: string;
+    tingyong?: boolean;
+    buju?: {keys: MenshanKey[]; name: string};
+  }>(session.load(this._xinghaoFilterKey) || {});
   xinghaoFilterEff = effect(() => {
     const filter = this.xinghaoFilter();
     session.save(this._xinghaoFilterKey, filter);
@@ -75,6 +80,9 @@ export class LrsjStatusService implements OnDestroy {
   });
   isXinghaoFilterEmpty = computed(() => {
     const filter = this.xinghaoFilter();
+    if (filter.buju && filter.buju.keys.length > 0 && filter.buju.name) {
+      return false;
+    }
     return !filter.name && !filter.menleixing && !filter.zuoshujubanben && typeof filter.tingyong !== "boolean";
   });
   focusFenleiZuofa = signal<{i: number; j?: number} | null>(null);
@@ -580,6 +588,12 @@ export class LrsjStatusService implements OnDestroy {
           }
           if (typeof filter.tingyong === "boolean" && !xinghao.hidden) {
             xinghao.hidden = filter.tingyong !== !!xinghao.tingyong;
+          }
+          if (filter.buju && !xinghao.hidden) {
+            const {keys, name} = filter.buju;
+            if (keys.length > 0 && name) {
+              xinghao.hidden = keys.some((key) => name !== xinghao.info?.[key]?.buju);
+            }
           }
           if (!xinghao.hidden) {
             xinghaoCount++;

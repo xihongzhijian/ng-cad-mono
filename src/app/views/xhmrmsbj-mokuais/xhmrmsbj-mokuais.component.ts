@@ -1,5 +1,4 @@
-import {computed, ElementRef, HostBinding, inject, viewChild} from "@angular/core";
-import {Component, Inject} from "@angular/core";
+import {Component, computed, ElementRef, HostBinding, inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -29,6 +28,9 @@ import {FormulasComponent} from "../../components/formulas/formulas.component";
   imports: [NgScrollbar, FormulasComponent, MatDividerModule, MatDialogActions, MatButtonModule]
 })
 export class XhmrmsbjMokuaisComponent {
+  dialogRef = inject<MatDialogRef<XhmrmsbjMokuaisComponent, XhmrmsbjMokuaisOutput>>(MatDialogRef);
+  data = inject<XhmrmsbjMokuaisInput>(MAT_DIALOG_DATA);
+
   private calc = inject(CalcService);
   private domSanitizer = inject(DomSanitizer);
   private status = inject(AppStatusService);
@@ -37,11 +39,6 @@ export class XhmrmsbjMokuaisComponent {
 
   formulaStyles: Properties = {fontSize: "18px"};
   section1 = viewChild<ElementRef<HTMLDivElement>>("section1");
-
-  constructor(
-    public dialogRef: MatDialogRef<XhmrmsbjMokuaisComponent, XhmrmsbjMokuaisOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: XhmrmsbjMokuaisInput
-  ) {}
 
   getMokuaiTitle(mokuai: ZixuanpeijianMokuaiItem) {
     const url = getMokuaiTitle(mokuai, {status: this.status, isVersion2024: this.data.isVersion2024});
@@ -82,7 +79,7 @@ export class XhmrmsbjMokuaisComponent {
             }
             formulas2.门扇布局 = mokuai2.info?.门扇布局?.name || "";
           }
-          const formulasResult = getMkdxpzSlgsFormulas(value.选中布局数据?.模块大小配置, materialResult);
+          const formulasResult = getMkdxpzSlgsFormulas(value.选中布局数据?.模块大小配置, materialResult, key);
           const gongshi = {...formulasResult.data};
           const nodeNameKeys = getNodeFormulasKeys([node.层名字]);
           for (const key2 of Object.keys(gongshi)) {

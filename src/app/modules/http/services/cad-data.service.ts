@@ -1,4 +1,4 @@
-import {Injectable, Injector} from "@angular/core";
+import {inject, Injectable, Injector} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {imgCadEmpty, XiaodaohangStructure} from "@app/app.common";
 import {CadCollection} from "@app/cad/collections";
@@ -51,8 +51,9 @@ export class CadDataService extends HttpService {
   public cadImgCache = new CadImgCache();
   private route: ActivatedRoute;
 
-  constructor(injector: Injector) {
-    super(injector);
+  constructor() {
+    super();
+    const injector = inject(Injector);
     this.route = injector.get(ActivatedRoute);
     this.route.queryParams.subscribe((params) => {
       const {token} = params;

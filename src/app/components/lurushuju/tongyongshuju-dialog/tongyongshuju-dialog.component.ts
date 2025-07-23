@@ -1,4 +1,4 @@
-import {Component, HostBinding, inject, Inject, OnInit, signal} from "@angular/core";
+import {Component, HostBinding, inject, OnInit, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
@@ -32,6 +32,9 @@ import {
   imports: [CadItemComponent, MatButtonModule, MatDividerModule, NgScrollbarModule, SpinnerModule]
 })
 export class TongyongshujuDialogComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<TongyongshujuDialogComponent, TongyongshujuOutput>>(MatDialogRef);
+  data = inject<TongyongshujuInput>(MAT_DIALOG_DATA, {optional: true});
+
   private dialog = inject(MatDialog);
   private message = inject(MessageService);
   private status = inject(AppStatusService);
@@ -50,10 +53,7 @@ export class TongyongshujuDialogComponent implements OnInit {
   activeItemLoader = uniqueId("activeItemLoader");
   cadListLoader = uniqueId("cadListLoader");
 
-  constructor(
-    public dialogRef: MatDialogRef<TongyongshujuDialogComponent, TongyongshujuOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: TongyongshujuInput
-  ) {
+  constructor() {
     setGlobal("tongyongshujuDialog", this);
     this.cadItemButtons = [
       {name: "复制", onClick: this.copyCad.bind(this)},

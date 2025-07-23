@@ -123,17 +123,28 @@
                     @if (column.showValue) {
                       <div><span [innerHTML]="getValueString(item, column, rowIdx)"></span></div>
                     }
-                    <div class="toolbar">
+                    <div class="toolbar" [class.compact]="info.compactColumnButton">
                       @for (button of getColumnButtons(column); track $index) {
                         @if (!button.hidden) {
-                          <button
-                            mat-stroked-button
-                            [class]="button.class"
-                            [style]="button.style"
-                            (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"
-                          >
-                            {{ button.title || button.event }}
-                          </button>
+                          @if (info.compactColumnButton) {
+                            <button
+                              mat-button
+                              [class]="button.class"
+                              [style]="button.style"
+                              (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"
+                            >
+                              {{ button.title || button.event }}
+                            </button>
+                          } @else {
+                            <button
+                              mat-stroked-button
+                              [class]="button.class"
+                              [style]="button.style"
+                              (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"
+                            >
+                              {{ button.title || button.event }}
+                            </button>
+                          }
                         }
                       }
                     </div>
@@ -158,15 +169,26 @@
                     }
                   }
                   @case ("image") {
-                    <div class="flex-column flex-110">
+                    <div class="image-container flex-column">
                       @if (getItemImgSmall(item, column)) {
-                        <app-image [src]="getItemImgSmall(item, column)" [bigPicSrc]="getItemImgLarge(item, column)"></app-image>
+                        <app-image
+                          [src]="getItemImgSmall(item, column)"
+                          [bigPicSrc]="getItemImgLarge(item, column)"
+                          [noLazy]="column.noLazy"
+                        ></app-image>
                       }
                       @if (isColumnEditable({column, item, colIdx, rowIdx})) {
-                        <div class="toolbar">
-                          <button mat-stroked-button (click)="uploadFile(colIdx, rowIdx, item)">上传</button>
-                          @if (getItemImgSmall(item, column)) {
-                            <button mat-stroked-button class="accent" (click)="deleteFile(colIdx, rowIdx, item)">删除</button>
+                        <div class="toolbar" [class.compact]="info.compactColumnButton">
+                          @if (info.compactColumnButton) {
+                            <button mat-button (click)="uploadFile(colIdx, rowIdx, item)">上传</button>
+                            @if (getItemImgSmall(item, column)) {
+                              <button mat-button class="accent" (click)="deleteFile(colIdx, rowIdx, item)">删除</button>
+                            }
+                          } @else {
+                            <button mat-stroked-button (click)="uploadFile(colIdx, rowIdx, item)">上传</button>
+                            @if (getItemImgSmall(item, column)) {
+                              <button mat-stroked-button class="accent" (click)="deleteFile(colIdx, rowIdx, item)">删除</button>
+                            }
                           }
                         </div>
                       }
@@ -178,11 +200,19 @@
                         <app-cad-image [id]="getItemCadImgId(item, column)"></app-cad-image>
                       }
                       @if (isColumnEditable({column, item, colIdx, rowIdx}, true)) {
-                        <div class="toolbar">
-                          <button mat-stroked-button (click)="uploadCad(colIdx, rowIdx, item)">上传</button>
-                          @if (getItemCadImgId(item, column)) {
-                            <button mat-stroked-button (click)="openCad(colIdx, rowIdx, item)">编辑</button>
-                            <button mat-stroked-button class="accent" (click)="deleteCad(colIdx, rowIdx, item)">删除</button>
+                        <div class="toolbar" [class.compact]="info.compactColumnButton">
+                          @if (info.compactColumnButton) {
+                            <button mat-button (click)="uploadCad(colIdx, rowIdx, item)">上传</button>
+                            @if (getItemCadImgId(item, column)) {
+                              <button mat-button (click)="openCad(colIdx, rowIdx, item)">编辑</button>
+                              <button mat-button class="accent" (click)="deleteCad(colIdx, rowIdx, item)">删除</button>
+                            }
+                          } @else {
+                            <button mat-stroked-button (click)="uploadCad(colIdx, rowIdx, item)">上传</button>
+                            @if (getItemCadImgId(item, column)) {
+                              <button mat-stroked-button (click)="openCad(colIdx, rowIdx, item)">编辑</button>
+                              <button mat-stroked-button class="accent" (click)="deleteCad(colIdx, rowIdx, item)">删除</button>
+                            }
                           }
                         </div>
                       }

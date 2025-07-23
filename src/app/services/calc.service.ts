@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import {inject, Injectable} from "@angular/core";
 import {MessageService} from "@modules/message/services/message.service";
 import {isEmpty} from "lodash";
 import {setGlobal} from "../app.common";
@@ -8,9 +8,11 @@ import {Calc, CalcCircularReferenceError, CalcResult, CalcSelfReferenceError, Fo
   providedIn: "root"
 })
 export class CalcService {
+  private message = inject(MessageService);
+
   calc = Calc;
 
-  constructor(private message: MessageService) {
+  constructor() {
     setGlobal("calc", this, true);
   }
 

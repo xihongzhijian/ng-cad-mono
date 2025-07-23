@@ -1,6 +1,6 @@
 <div #rectOuter class="rect-outer flex-110 flex-column" [style]="rectOuterStyle()">
   <div class="rects">
-    @for (info of rectInfosRelativeWithStyle(); track $index) {
+    @for (info of rectInfosRelative(); track $index) {
       <div
         [id]="info.raw.vid"
         class="rect flex-column"

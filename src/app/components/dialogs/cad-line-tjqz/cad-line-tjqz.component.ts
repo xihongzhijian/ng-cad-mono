@@ -1,12 +1,12 @@
-import {Component, computed, forwardRef, inject, Inject, signal, viewChild} from "@angular/core";
+import {Component, computed, forwardRef, inject, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadLine} from "@lucilor/cad-viewer";
-import {CadConsoleService} from "@modules/cad-console/services/cad-console.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellEvent, ItemGetter, TableRenderInfo} from "@modules/table/components/table/table.types";
+import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep} from "lodash";
 import {SpinnerComponent} from "../../../modules/spinner/components/spinner/spinner.component";
 import {getOpenDialogFunc} from "../dialog.common";
@@ -22,25 +22,23 @@ type RawDataRight = RawDataLeft["data"][0];
   imports: [MatButtonModule, SpinnerComponent, forwardRef(() => TableComponent)]
 })
 export class CadLineTjqzComponent {
-  private console = inject(CadConsoleService);
+  dialogRef = inject<MatDialogRef<CadLineTjqzComponent, RawData>>(MatDialogRef);
+  data: RawData = inject<RawData>(MAT_DIALOG_DATA, {optional: true}) ?? new CadLine();
+
   private message = inject(MessageService);
+  private status = inject(AppStatusService);
 
   loaderId = "cadLineTiaojianquzhiSavingCad";
   openSelection = {type: "", index: -1};
 
   newItemLeft: ItemGetter<RawDataLeft> = (rowIdx: number) => ({key: "", level: rowIdx + 1, type: "数值", data: []});
 
-  constructor(
-    public dialogRef: MatDialogRef<CadLineTjqzComponent, RawData>,
-    @Inject(MAT_DIALOG_DATA) public data: RawData
-  ) {}
-
   submit() {
     if (!this.tableLeft()?.isVaild()) {
       this.message.alert("当前数据存在错误");
     } else {
       this.data.tiaojianquzhi = this.infoLeft().data;
-      this.console.execute("save", {loaderId: this.loaderId});
+      this.status.saveCad(this.loaderId);
     }
   }
 

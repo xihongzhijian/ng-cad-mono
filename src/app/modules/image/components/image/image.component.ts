@@ -47,6 +47,7 @@ export class ImageComponent implements AfterViewInit {
   loadingSrc = input<string>(imgLoading);
   emptySrc = input<string>(imgEmpty);
   objectFit = input<Property.ObjectFit>("contain");
+  noLazy = input(false, {transform: booleanAttribute});
   imgLoad = output<ImageEvent>();
   imgError = output<ImageEvent>();
   imgEnd = output<ImageEvent>();
@@ -75,12 +76,14 @@ export class ImageComponent implements AfterViewInit {
     const src = this.src();
     const prefix = this.prefix();
     const el = this.el.nativeElement;
-    if (typeof ratio !== "number") {
-      ratio = getElementVisiblePercentage(el);
-    }
-    if (ratio <= 0) {
-      this.updateCurrSrcPending = true;
-      return;
+    if (!this.noLazy()) {
+      if (typeof ratio !== "number") {
+        ratio = getElementVisiblePercentage(el);
+      }
+      if (ratio <= 0) {
+        this.updateCurrSrcPending = true;
+        return;
+      }
     }
     this.updateCurrSrcPending = false;
     const currSrc = this.getUrl(src, prefix);

@@ -151,14 +151,7 @@ export class MrbcjfzXinghaoInfo extends TableDataWrapper<MrbcjfzXinghao> {
         ]
       ];
       if (this.raw.编辑默认对应板材分组) {
-        this.inputInfos[key][1].push({
-          type: "select",
-          label: "默认对应板材分组",
-          model: {data: value, key: "默认对应板材分组"},
-          style: {flex: "40 40 0"},
-          options: ["门框板材", "门扇板材"],
-          clearable: true
-        });
+        this.inputInfos[key][1].push(getter.selectSingle("默认对应板材分组", ["门框板材", "门扇板材"], {clearable: true}));
       }
     }
   }

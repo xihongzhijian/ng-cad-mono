@@ -30,18 +30,24 @@ export const getFormulaInfos = (
     const keys: FormulaInfo["keys"] = [{eq: true, name: key}];
     const values: FormulaInfo["values"] = getValues(value);
     if (vars && key in vars) {
-      const valuePrev = values.at(-1)?.name;
-      const value2 = getValues(vars[key]).filter((v) => v.name !== valuePrev);
+      const valuePrevRaw = values.at(-1)?.name;
+      const value2 = getValues(vars[key]).filter((v) => v.name !== valuePrevRaw);
       if (value2.length > 0) {
-        const valueNext = value2[0].name;
-        let calcResult = calc.calc.calcExpress(`(${valuePrev}) === (${valueNext})`, vars);
-        if (calcResult.value !== true) {
-          calcResult = calc.calc.calcExpress(`(\`${valuePrev}\`) === (\`${valueNext}\`)`, vars);
+        const valuePrevRes = calc.calc.calcFormulas({val: valuePrevRaw || ""}, vars);
+        if (valuePrevRes?.fulfilled) {
+          const valuePrev = valuePrevRes.succeedTrim.val;
+          const valueNext = value2[0].name;
+          let calcResult = calc.calc.calcExpress(`(${valuePrev}) === (${valueNext})`, vars);
+          if (calcResult.value !== true) {
+            calcResult = calc.calc.calcExpress(`(\`${valuePrev}\`) === (\`${valueNext}\`)`, vars);
+          }
+          if (calcResult.value !== true) {
+            calcResult = calc.calc.calcExpress(`(eval(\`${valuePrev}\`)) === (\`${valueNext}\`)`, vars);
+          }
+          value2[0].eq = calcResult.value === true;
+        } else {
+          value2[0].eq = false;
         }
-        if (calcResult.value !== true) {
-          calcResult = calc.calc.calcExpress(`(eval(\`${valuePrev}\`)) === (\`${valueNext}\`)`, vars);
-        }
-        value2[0].eq = calcResult.value === true;
         values.push(...value2);
       }
     }

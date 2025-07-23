@@ -1,6 +1,7 @@
 import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   booleanAttribute,
+  ChangeDetectorRef,
   Component,
   computed,
   effect,
@@ -49,7 +50,6 @@ import {
   getStep1Data,
   isMokuaiItemEqual,
   justifyMokuaiItem,
-  MokuaiPathRequired,
   replaceMenshanName,
   updateMokuaiItem
 } from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
@@ -57,7 +57,9 @@ import {FormulasValidatorFn} from "@components/formulas-editor/formulas-editor.t
 import {FormulasComponent} from "@components/formulas/formulas.component";
 import {FormulaInfo} from "@components/formulas/formulas.types";
 import {getFormulaInfos} from "@components/formulas/formulas.utils";
+import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {选项} from "@components/lurushuju/xinghao-data";
+import {MenfengpeizhiItem} from "@components/menfeng-peizhi/menfeng-peizhi.types";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
 import {MsbjRectsComponent} from "@components/msbj-rects/msbj-rects.component";
@@ -93,7 +95,7 @@ import {resetInputs} from "@views/suanliao/suanliao.utils";
 import {openXhmrmsbjMokuaisDialog} from "@views/xhmrmsbj-mokuais/xhmrmsbj-mokuais.component";
 import {XhmrmsbjXinghaoConfigComponent} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.component";
 import {isXhmrmsbjXinghaoConfigComponentType} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
-import {clone, cloneDeep, debounce, difference, intersection} from "lodash";
+import {clone, cloneDeep, debounce, difference, intersection, uniq} from "lodash";
 import md5 from "md5";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, firstValueFrom, Subject} from "rxjs";
@@ -172,6 +174,7 @@ const table2 = "p_luomatouluomazhuku";
 export class XhmrmsbjComponent implements OnInit, OnDestroy {
   private bjmkStatus = inject(BjmkStatusService);
   private calc = inject(CalcService);
+  private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
   private domSanitizer = inject(DomSanitizer);
   private http = inject(CadDataService);
@@ -186,13 +189,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   cancelable = input(false, {transform: booleanAttribute});
   close = output<XhmrmsbjCloseEvent>();
 
-  msbjsCache = signal<MsbjInfo[]>([]);
-  msbjs = computed(() => {
-    if (this.isFromOrder()) {
-      return this.msbjsCache();
-    }
-    return this.bjmkStatus.msbjsManager.items();
-  });
+  msbjs = signal<MsbjInfo[]>([]);
   table = signal("");
   id = signal(-1);
   isFromOrder = signal(false);
@@ -200,7 +197,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   tableData = signal<XhmrmsbjTableData | null>(null);
   data = signal<XhmrmsbjData | null>(null);
   step1Data: Step1Data = {options: {}, typesInfo: {}};
-  mokuais: ZixuanpeijianMokuaiItem[] = [];
+  // mokuais: ZixuanpeijianMokuaiItem[] = [];
   xinghao = signal<MrbcjfzXinghaoInfo | null>(null);
   xinghaoFormulas = computed(() => {
     const formulas = getFromulasFromString(this.xinghao()?.raw.gongshishuru);
@@ -248,6 +245,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return raw ? new XhmrmsbjData(raw, this.menshanKeys, this.step1Data.typesInfo, this.msbjs()) : null;
   }
 
+  xinghaoOptions = signal<OptionsAll>({});
+  menfengConfig = signal<MenfengpeizhiItem[]>([]);
   isLuomatouluomazhuku = computed(() => this.type() === "luomatouluomazhuku");
   async refresh() {
     const params = this.route.snapshot.queryParams;
@@ -255,17 +254,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.type.set(type);
     const id = Number(params.id);
     const xinghaoId = this.xinghaoId();
-    const getXinghao = async (vid: string) => {
-      if (!vid) {
-        return null;
-      }
-      const xinghaos = await this.http.queryMySql<MrbcjfzXinghao>({
-        table: "p_xinghao",
-        filter: {where: {vid}}
-      });
-      return xinghaos.at(0) || null;
-    };
-    let xinghao: MrbcjfzXinghao | null = null;
     let table = table1;
     if (this.isLuomatouluomazhuku()) {
       table = table2;
@@ -275,33 +263,31 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.table.set(table);
       this.id.set(id);
       this.isFromOrder.set(false);
-      const where = xinghaoId > 0 ? {xinghao: xinghaoId} : {vid: id};
-      const records = await this.http.queryMySql<XhmrmsbjTableData>({table, filter: {where}, checkAccess: true});
-      const msg = this.http.lastResponse?.msg;
-      let record = records.at(0) || null;
-      if (!record && msg) {
-        document.body.innerHTML = msg;
+      const result = await this.http.getData<{
+        xinghao: MrbcjfzXinghao;
+        xhmrmsbj: XhmrmsbjTableData;
+        模块通用配置: Formulas;
+        xinghaoOptions: OptionsAll;
+        msbjs: MsbjData[];
+      }>("shuju/api/getXhmrmsbjData", {id, xinghaoId});
+      if (!result) {
+        document.body.innerHTML = this.http.lastResponse?.msg || "获取数据失败";
         return;
       }
-      if (!record && xinghaoId > 0) {
-        xinghao = await getXinghao(String(xinghaoId));
-        if (xinghao) {
-          record = await this.http.tableInsert<XhmrmsbjTableData>({table, data: {mingzi: xinghao.mingzi, xinghao: String(xinghaoId)}});
-        }
-      }
-      this.tableData.set(record);
+      this.xinghao.set(new MrbcjfzXinghaoInfo(table, result.xinghao));
+      this.tableData.set(result.xhmrmsbj);
+      this.tongyongFormulas.set(result.模块通用配置);
+      this.xinghaoOptions.set(result.xinghaoOptions);
+      this.msbjs.set(result.msbjs.map((v) => new MsbjInfo(v, this.getNode2rectData())));
+      this.bjmkStatus.msbjsManager.setItems(this.msbjs());
     } else if (token) {
       this.isFromOrder.set(true);
     }
     if (!this.isFromOrder()) {
-      const step1Data = await getStep1Data(this.http);
-      this.setStep1Data(step1Data);
       await this.bjmkStatus.msbjsManager.fetch();
       const tableData = this.tableData();
       const data = this.getXhmrmsbjData(tableData);
       this.data.set(data);
-      xinghao = await getXinghao(tableData?.xinghao || "");
-      this.xinghao.set(xinghao ? new MrbcjfzXinghaoInfo(table, xinghao) : null);
     }
     await timeout(0);
     const data = this.data();
@@ -330,22 +316,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.wmm.postMessage("requestDataStart");
     } else {
       this.activeMenshanKey.set(this.menshanKeys[0]);
-      await this.checkMissingMokuais();
     }
-  }
-
-  setStep1Data(step1Data: Step1Data | null) {
-    this.mokuais = [];
-    if (!step1Data) {
-      return;
-    }
-    this.step1Data = step1Data;
-    for (const type1 in step1Data.typesInfo) {
-      for (const type2 in step1Data.typesInfo[type1]) {
-        const info = step1Data.typesInfo[type1][type2];
-        this.mokuais.push({...info, type1, type2, totalWidth: "", totalHeight: "", cads: []});
-      }
-    }
+    this.cd.markForCheck();
   }
 
   refreshData() {
@@ -361,19 +333,18 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   isFloatingDialog = computed(() => !!this.opts()?.浮动弹窗);
   async requestDataEnd(data: XhmrmsbjRequestData) {
     const {型号选中门扇布局, 型号选中板材, materialResult, menshanKeys: menshanKeysFromData} = data;
-    const {id, user, localServerUrl, menshanbujus, step1Data, 模块通用配置} = data;
+    const {id, user, localServerUrl, menshanbujus, 模块通用配置} = data;
     const {铰扇跟随锁扇, 铰扇正面跟随锁扇正面, 铰扇背面跟随锁扇背面} = data;
     if (typeof localServerUrl === "string") {
       this.urlPrefix = localServerUrl;
     }
-    this.msbjsCache.set(
+    this.msbjs.set(
       menshanbujus.map((v) => {
         const result = new MsbjInfo(v, this.getNode2rectData());
         result.peizhishuju = v.peizhishuju as any;
         return result;
       })
     );
-    this.setStep1Data(step1Data);
     const data2 = new XhmrmsbjData(
       {
         vid: id,
@@ -393,7 +364,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.user.set(user);
     this.opts.set(data.opts);
     this.menshanKeys = menshanKeysFromData;
-    this.tongyongFormulasCache = 模块通用配置 || null;
+    this.tongyongFormulas.set(模块通用配置 || {});
     const xinghao = new MrbcjfzXinghaoInfo(this.table(), {vid: 1, mingzi: String(materialResult.型号)});
     xinghao.默认板材 = 型号选中板材;
     this.xinghao.set(xinghao);
@@ -511,6 +482,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const activeRectInfo = this.activeRectInfo();
     return this.activeMsbjInfo()?.模块节点?.find((v) => v.层id === activeRectInfo?.raw.vid);
   });
+  activeMokuaiId = signal<number | null>(null);
   activeMorenbancai = computed(() => {
     this.data();
     return this.activeMokuaiNode()?.选中模块?.morenbancai || {};
@@ -739,20 +711,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     this.refreshData();
   }
 
-  tongyongFormulasCache: Formulas | null = null;
-  tongyongFormulasManager = new FetchManager({}, async () => {
-    if (this.tongyongFormulasCache) {
-      return this.tongyongFormulasCache;
-    }
-    const data = await this.http.getData<Formulas>("ngcad/getMokuaiTongyongPeizhi");
-    return data || {};
-  });
+  tongyongFormulas = signal<Formulas>({});
   getValueInfo(key: string, slgs: Formulas, shuruzhi: Shuruzhi) {
     if (key in shuruzhi) {
       return {value: shuruzhi[key], type: "输入值"};
     }
     const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
-    const tongyongFormulas = this.tongyongFormulasManager.data();
+    const tongyongFormulas = this.tongyongFormulas();
     const list: [string, Formulas][] = [
       ["模块大小关系值", mokuaidaxiaoResult],
       ["型号输入值", this.xinghaoFormulas()],
@@ -767,10 +732,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return {value, type};
     }
     return {value: "", type: "空值"};
-  }
-  async getValueInfo2(key: string, slgs: Formulas, shuruzhi: Shuruzhi = {}) {
-    await this.tongyongFormulasManager.fetch();
-    return this.getValueInfo(key, slgs, shuruzhi);
   }
   nodeVarsError = computed(() => this.errors().find((v) => v.content.startsWith("以下变量重名")));
   isVarNameDuplicate(name: string) {
@@ -981,7 +942,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const mokuai2 = lastSuanliao?.output.配件模块CAD.find((v) => isMokuaiItemEqual(v, mokuai));
     Object.assign(vars, mokuai2?.suanliaogongshi);
     const inputs = this.mokuaiInputInfosInput();
-    const names = (mokuai.自定义数据?.下单显示.split("+") || []).filter((v) => !inputs.some((v2) => v2.label === v));
+    const names = (mokuai.自定义数据?.下单显示.split("+") || []).map((v) => v.trim()).filter((v) => !inputs.some((v2) => v2.label === v));
     for (const name of names) {
       if (!name) {
         continue;
@@ -1072,9 +1033,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const varsEnabled = getMokuaiShurus(msbjInfo, node, mokuai, true).map((v) => v[0]);
     const varsEnabled2 = varsEnabled.filter((v) => v !== name);
     if (varsEnabled.length === varsEnabled2.length) {
-      setMokuaiShurus(msbjInfo, node, mokuai, [...varsEnabled, name]);
+      setMokuaiShurus(msbjInfo, node, mokuai, [...varsEnabled, name], [name]);
     } else {
-      setMokuaiShurus(msbjInfo, node, mokuai, varsEnabled2);
+      setMokuaiShurus(msbjInfo, node, mokuai, varsEnabled2, [name]);
     }
     this.refreshData();
   }
@@ -1088,9 +1049,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const varsEnabled = getMokuaiShurus(msbjInfo, node, mokuai, true).map((v) => v[0]);
     const varsAll = getMokuaiShurusRaw(msbjInfo, node, mokuai).map((v) => v[0]);
     if (varsEnabled.length === varsAll.length) {
-      setMokuaiShurus(msbjInfo, node, mokuai, []);
+      setMokuaiShurus(msbjInfo, node, mokuai, [], varsAll);
     } else {
-      setMokuaiShurus(msbjInfo, node, mokuai, varsAll);
+      setMokuaiShurus(msbjInfo, node, mokuai, varsAll, varsAll);
     }
     this.refreshData();
   }
@@ -1137,8 +1098,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       return;
     }
     const varsEnabled = getMokuaiShuchuVars(msbjInfo, node, mokuai);
-    const varsAll1 = mokuai.shuchubianliang;
-    const varsAll2 = mokuai.自定义数据?.选项数据.filter((v) => v.可选项.length > 0).map((v) => v.名字) || [];
+    const varsAll1 = uniq(mokuai.shuchubianliang);
+    const varsAll2 = uniq(mokuai.自定义数据?.选项数据.filter((v) => v.可选项.length > 0).map((v) => v.名字) || []);
     const varsEnabled1 = intersection(varsEnabled, varsAll1);
     const varsEnabled2 = intersection(varsEnabled, varsAll2);
     if (isXuanxiang) {
@@ -1208,7 +1169,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       if (msbjInfo.选中布局数据) {
         const formulasList = getMkdxpzSlgsFormulasList(msbjInfo.选中布局数据.模块大小配置);
         const formulasKeys = getNodeFormulasKeys(msbjInfo.模块节点?.map((v) => v.层名字) || []);
-        if (!formulasKeys.every((key) => formulasList.every((v) => !!v[key]))) {
+        if (formulasKeys.some((key) => formulasList.length < 1 || formulasList.some((v) => !v[key]))) {
           errorMkdxpz.details.push([{text: menshanKey, info: {jumpTo: {门扇模块: {menshanKey, itemIndex, mkdx: true}}}}]);
         }
       }
@@ -1248,14 +1209,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             let value = "";
             if (mokuai.xuanxianggongshi.length > 0) {
               for (const xxgs of mokuai.xuanxianggongshi) {
-                const valueInfo = await this.getValueInfo2(key, formulas, getShuruzhi(msbjInfo, node, mokuai, xxgs._id));
+                const valueInfo = this.getValueInfo(key, formulas, getShuruzhi(msbjInfo, node, mokuai, xxgs._id));
                 if (valueInfo.value) {
                   value = valueInfo.value;
                   break;
                 }
               }
             } else {
-              const valueInfo = await this.getValueInfo2(key, formulas, getShuruzhi(msbjInfo, node, mokuai));
+              const valueInfo = this.getValueInfo(key, formulas, getShuruzhi(msbjInfo, node, mokuai));
               value = valueInfo.value;
             }
             if (!value) {
@@ -1957,29 +1918,29 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.openedMokuai.set({mokuai, bancaiListData});
     }
   }
-  async closeMokuai({isSaved}: MokuaiItemCloseEvent) {
+  async closeMokuai({saveRes}: MokuaiItemCloseEvent) {
     const data = this.data();
     const openedMokuai = this.openedMokuai();
     if (!openedMokuai || !data) {
       return;
     }
     this.openedMokuai.set(null);
-    if (isSaved) {
-      const mokuai = (await this.fetchMokuais([openedMokuai.mokuai.id]))[0];
-      if (mokuai) {
-        data.forEachMsbjInfo(({info}) => {
-          for (const node of info.模块节点 || []) {
-            const mokuais = [...node.可选模块];
-            if (node.选中模块) {
-              mokuais.push(node.选中模块);
-            }
-            for (const mokuai2 of mokuais) {
-              updateMokuaiItem(mokuai2, mokuai);
-            }
+    const activeMsbjInfo = this.activeMsbjInfo();
+    const activeNode = this.activeMokuaiNode();
+    const mokuai = saveRes?.item2;
+    if (mokuai && activeMsbjInfo && activeNode) {
+      data.forEachMsbjInfo(({info}) => {
+        for (const node of info.模块节点 || []) {
+          const mokuais = [...node.可选模块];
+          if (node.选中模块) {
+            mokuais.push(node.选中模块);
           }
-        });
-        this.refreshData();
-      }
+          for (const mokuai2 of mokuais) {
+            updateMokuaiItem(mokuai2, mokuai);
+          }
+        }
+      });
+      this.refreshData();
     }
   }
 
@@ -2107,7 +2068,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const {materialResult = {}, 门扇布局大小, 配件模块CAD} = this.lastSuanliaoManager.data()?.output || {};
     const infos: FormulaInfo[] = [];
-    const formulasResult = getMkdxpzSlgsFormulas(mkdxpz, materialResult);
+    const formulasResult = getMkdxpzSlgsFormulas(mkdxpz, materialResult, key);
     if (!formulasResult.fulfilled) {
       formulasResult.alertError(this.message);
       return [];
@@ -2123,12 +2084,13 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return infos;
   });
   async setMkdxpz(formulas: Formulas) {
+    const key = this.activeMenshanKey();
     const mkdxpz = this.activeMsbjInfo()?.选中布局数据?.模块大小配置;
-    if (!mkdxpz) {
+    if (!key || !mkdxpz) {
       return;
     }
     const materialResult = this.materialResult();
-    const mkdxpzSlgsResult = getMkdxpzSlgs(mkdxpz, materialResult);
+    const mkdxpzSlgsResult = getMkdxpzSlgs(mkdxpz, materialResult, key);
     if (!(await mkdxpzSlgsResult.check(this.message)) || !mkdxpzSlgsResult.data) {
       return;
     }
@@ -2451,51 +2413,6 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   showXhmrmsbjsUsingMokuai(mokuai: ZixuanpeijianMokuaiItem) {
     this.bjmkStatus.showXhmrmsbjsUsingMokuai(mokuai.id);
-  }
-
-  async checkMissingMokuais() {
-    const data = this.data();
-    if (!data) {
-      return;
-    }
-    const mokuaiInfos: {item: ZixuanpeijianMokuaiItem; paths: MokuaiPathRequired[]}[] = [];
-    data.forEachMsbjInfo(({key, item, info}) => {
-      for (const node of info.模块节点 || []) {
-        for (const mokuai of node.可选模块) {
-          const mokuaiInfo = mokuaiInfos.find((v) => isMokuaiItemEqual(v.item, mokuai));
-          const path: MokuaiPathRequired = {menshanKey: key, itemName: item.名字, nodeName: node.层名字};
-          if (mokuaiInfo) {
-            mokuaiInfo.paths.push(path);
-          } else {
-            mokuaiInfos.push({item: mokuai, paths: [path]});
-          }
-        }
-      }
-    });
-    const ids = mokuaiInfos.map((v) => v.item.id);
-    const mokuais2 = await this.bjmkStatus.fetchMokuais(ids);
-    const ids2 = mokuais2.map((v) => v.id);
-    const errMsgs: string[] = [];
-    const mokuaiInfos2 = mokuaiInfos.filter((v) => !ids2.includes(v.item.id));
-
-    for (const mokuaiInfo of mokuaiInfos2) {
-      for (const path of mokuaiInfo.paths) {
-        errMsgs.push(getMokuaiTitle(mokuaiInfo.item, {path}));
-      }
-    }
-    if (errMsgs.length > 0) {
-      await this.message.alert({content: "以下模块已被删除或停用", details: errMsgs.join("\n")});
-      for (const mokuaiInfo of mokuaiInfos2) {
-        for (const {menshanKey, itemName, nodeName} of mokuaiInfo.paths) {
-          const node = data.findMokuaiNode(menshanKey, itemName, nodeName);
-          if (!node) {
-            continue;
-          }
-          node.可选模块 = node.可选模块.filter((v) => v.id !== mokuaiInfo.item.id);
-        }
-      }
-      this.refreshData();
-    }
   }
 
   getFloatingDialogInputs() {

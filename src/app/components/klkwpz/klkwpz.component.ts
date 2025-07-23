@@ -1,4 +1,4 @@
-import {Component, effect, forwardRef, HostBinding, inject, input, signal} from "@angular/core";
+import {Component, effect, forwardRef, HostBinding, inject, input, signal, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
@@ -7,7 +7,7 @@ import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component
 import {CadData, CadLine} from "@lucilor/cad-viewer";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
-import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
+import {getInputInfoGroup, InputInfoWithDataGetter, validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {cloneDeep, uniq} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
@@ -81,6 +81,9 @@ export class KlkwpzComponent {
         return "在算料CAD的打孔面上";
       })(),
       type3: (() => {
+        if (item.订单号打标) {
+          return "订单号打标";
+        }
         if (item.自增等距阵列 || item.固定行列阵列) {
           if (item.板材孔位阵列范围) {
             return "按指定宽高打阵列孔";
@@ -111,12 +114,16 @@ export class KlkwpzComponent {
             }
           ]
         }),
-        getter2.selectSingle("type3", ["打单个孔", "按展开高打阵列孔", "按展开高打阵列孔（缩短范围）", "按指定宽高打阵列孔"], {
-          label: "打孔类型",
-          onChange: () => {
-            this._updateItemInputs3(result, typesData);
+        getter2.selectSingle(
+          "type3",
+          ["打单个孔", "按展开高打阵列孔", "按展开高打阵列孔（缩短范围）", "按指定宽高打阵列孔", "订单号打标"],
+          {
+            label: "打孔类型",
+            onChange: () => {
+              this._updateItemInputs3(result, typesData);
+            }
           }
-        }),
+        ),
         {
           type: "select",
           label: "允许孔超出零件边缘",
@@ -253,6 +260,7 @@ export class KlkwpzComponent {
     const item = data.item;
     let arr: InputInfo[] = [];
     let hasMatrix = true;
+    let isDabiao = false;
     const type3 = typesData.type3;
     if (type3 === "按展开高打阵列孔") {
       delete item.板材孔位阵列范围;
@@ -283,6 +291,9 @@ export class KlkwpzComponent {
       delete item.板材孔位阵列范围;
       delete item.板材打孔范围缩减;
       hasMatrix = false;
+      if (type3 === "订单号打标") {
+        isDabiao = true;
+      }
     }
     if (hasMatrix) {
       item.类型 = "自增等距阵列";
@@ -294,6 +305,7 @@ export class KlkwpzComponent {
       }
       delete item.固定行列阵列;
       delete item.增加指定偏移;
+      delete item.订单号打标;
       const getter = new InputInfoWithDataGetter(item.自增等距阵列, {validators: Validators.required});
       arr = [
         getInputInfoGroup([
@@ -308,8 +320,26 @@ export class KlkwpzComponent {
       delete item.自增等距阵列;
       delete item.固定行列阵列;
       delete item.增加指定偏移;
-      const getter = new InputInfoWithDataGetter(item, {validators: Validators.required});
-      arr = [getter.selectBooleanStr("孔依附板材边缘", {label: "剪切相交XY线"}), ...arr];
+      if (isDabiao) {
+        if (!item.订单号打标) {
+          item.订单号打标 = {};
+        }
+        if (!item.订单号打标.font) {
+          item.订单号打标.font = {};
+        }
+        if (item.订单号打标.font.family === undefined) {
+          item.订单号打标.font.family = "宋体";
+        }
+        if (item.订单号打标.font.size === undefined) {
+          item.订单号打标.font.size = 10;
+        }
+        const getter = new InputInfoWithDataGetter(item.订单号打标.font, {clearable: true});
+        arr = [getInputInfoGroup([getter.string("family", {label: "字体名字"}), getter.number("size", {label: "字体大小"})]), ...arr];
+      } else {
+        delete item.订单号打标;
+        const getter = new InputInfoWithDataGetter(item, {validators: Validators.required});
+        arr = [getter.selectBooleanStr("孔依附板材边缘", {label: "剪切相交XY线"}), ...arr];
+      }
     }
     data.inputs3 = arr;
   }
@@ -336,34 +366,15 @@ export class KlkwpzComponent {
     });
   }
 
-  private _isInfoEmpty(info: InputInfo): boolean {
-    if (info.type === "group") {
-      if (info.infos) {
-        return info.infos.some((v) => this._isInfoEmpty(v));
-      } else {
-        return false;
-      }
+  inputComponents = viewChildren(InputComponent);
+  async submit() {
+    const result = await validateForm(this.inputComponents());
+    if (result.errorMsg) {
+      await this.message.error(result.errorMsg);
+      return false;
+    } else {
+      return true;
     }
-    if (info.model) {
-      const {data, key} = info.model;
-      if (data && key) {
-        return [undefined, null, ""].includes(data[key]);
-      }
-    }
-    return false;
-  }
-
-  submit() {
-    for (const item of this.formData()) {
-      const inputs = [...item.inputs1, ...item.inputs2, ...item.inputs3];
-      for (const info of inputs) {
-        if (this._isInfoEmpty(info)) {
-          this.message.alert("请填写完整信息");
-          return false;
-        }
-      }
-    }
-    return true;
   }
 
   printItem(item: KlkwpzItem) {
@@ -372,9 +383,6 @@ export class KlkwpzComponent {
 
   getInfoClass(info: InputInfo) {
     const result: string[] = [info.label];
-    if (this._isInfoEmpty(info)) {
-      result.push("empty");
-    }
     return result.join(" ");
   }
 

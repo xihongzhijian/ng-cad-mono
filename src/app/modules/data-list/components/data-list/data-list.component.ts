@@ -415,6 +415,10 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     return await this.moveNavNodes([node]);
   }
   async moveNavNodes(nodesToMove: DataListNavNode[]) {
+    if (nodesToMove.length < 1) {
+      await this.message.error("没有选中");
+      return;
+    }
     const nodes = this.navNodes();
     const names: string[] = [];
     const ids: string[] = [];
@@ -440,36 +444,71 @@ export class DataListComponent<T extends DataListItem = DataListItem> implements
     }
   }
   async removeNavNode(node: DataListNavNode) {
-    const nodes = findDataListNavNodes(this.navNodes(), (v) => v.name === node.name);
-    if (nodes.length < 2) {
+    return await this.removeNavNodes([node]);
+  }
+  async removeNavNodes(nodes: DataListNavNode[]) {
+    const nodesWithChildren: DataListNavNode[] = [];
+    const nodesWithData: DataListNavNode[] = [];
+    for (const node of nodes) {
       if (node.children && node.children.length > 0) {
-        await this.message.error(`【${node.name}】下面有子节点，不能删除`);
-        return;
+        nodesWithChildren.push(node);
       }
       const counts = node.itemCounts;
       if (counts.self > 0 || counts.children > 0) {
-        await this.message.error(`【${node.name}】下面有数据，不能删除`);
-        return;
+        nodesWithData.push(node);
       }
     }
-    if (!(await this.message.confirm(`是否确定删除【${node.name}】?`))) {
+    const errMsgs: string[] = [];
+    if (nodesWithChildren.length > 0) {
+      errMsgs.push(`${getNamesStr(nodesWithChildren.map((v) => v.name))}下面有子节点，不能删除。`);
+      nodes = difference(nodes, nodesWithChildren);
+    }
+    if (nodesWithData.length > 0) {
+      errMsgs.push(`${getNamesStr(nodesWithData.map((v) => v.name))}下面有数据，不能删除。`);
+      nodes = difference(nodes, nodesWithData);
+    }
+    const nodeNamesStr = getNamesStr(nodes.map((v) => v.name));
+    if (errMsgs.length > 0) {
+      if (nodes.length > 0) {
+        const yes = await this.message.confirm([...errMsgs, `<br>是否确定删除${nodeNamesStr}？`].join("<br>"));
+        if (!yes) {
+          return;
+        }
+      } else {
+        await this.message.error(errMsgs.join("<br>"));
+        return;
+      }
+    } else if (!(await this.message.confirm(`是否确定删除${nodeNamesStr}？`))) {
       return;
     }
+    const removedIds = new Set<string>();
     const remove = (list: DataListNavNode[]) => {
-      const i = list.indexOf(node);
-      if (i >= 0) {
-        list.splice(i, 1);
-        return true;
-      } else {
-        for (const item of list) {
-          if (item.children && remove(item.children)) {
-            return true;
+      for (const node of nodes) {
+        if (removedIds.has(node.id)) {
+          continue;
+        }
+        const idxs: number[] = [];
+        for (const [i, node2] of list.entries()) {
+          if (node2.id === node.id) {
+            idxs.push(i);
+          }
+        }
+        if (idxs.length > 0) {
+          for (const i of idxs.reverse()) {
+            list.splice(i, 1);
+            removedIds.add(node.id);
+          }
+        } else {
+          for (const node2 of list) {
+            if (node2.children) {
+              remove(node2.children);
+            }
           }
         }
       }
-      return false;
     };
     remove(this.navNodes());
+    this.selectedNavNodes.set(difference(this.selectedNavNodes(), nodes));
     await this.setNavNodes();
   }
   clickNavNode(node: DataListNavNode) {

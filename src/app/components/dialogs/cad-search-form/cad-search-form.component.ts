@@ -38,6 +38,8 @@ import {getOpenDialogFunc} from "../dialog.common";
   ]
 })
 export class CadSearchFormComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<CadSearchFormComponent, CadData["options"]>>(MatDialogRef);
+
   private cd = inject(ChangeDetectorRef);
   private message = inject(MessageService);
   private http = inject(CadDataService);
@@ -46,8 +48,6 @@ export class CadSearchFormComponent implements OnInit {
   form: ObjectOf<string> = {};
   additional: CadSearchData[0] = {title: "自由选择", items: []};
   options$: ObjectOf<{change$: EventEmitter<string>; options$: Observable<string[]>}> = {};
-
-  constructor(public dialogRef: MatDialogRef<CadSearchFormComponent, CadData["options"]>) {}
 
   async ngOnInit() {
     await timeout(0);

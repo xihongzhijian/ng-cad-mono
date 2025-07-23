@@ -1,4 +1,4 @@
-import {Component, HostBinding, Inject} from "@angular/core";
+import {Component, HostBinding, inject} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {getOpenDialogFunc} from "@components/dialogs/dialog.common";
@@ -12,12 +12,10 @@ import {SuanliaogongshiDialogInput, SuanliaogongshiDialogOutput} from "./suanlia
   styleUrl: "./suanliaogongshi-dialog.component.scss"
 })
 export class SuanliaogongshiDialogComponent {
-  @HostBinding("class") class = "ng-page";
+  dialogRef = inject<MatDialogRef<SuanliaogongshiDialogComponent, SuanliaogongshiDialogOutput>>(MatDialogRef);
+  data: SuanliaogongshiDialogInput = inject<SuanliaogongshiDialogInput>(MAT_DIALOG_DATA, {optional: true}) ?? {info: {data: {}}};
 
-  constructor(
-    public dialogRef: MatDialogRef<SuanliaogongshiDialogComponent, SuanliaogongshiDialogOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: SuanliaogongshiDialogInput
-  ) {}
+  @HostBinding("class") class = "ng-page";
 
   submit() {
     this.dialogRef.close();

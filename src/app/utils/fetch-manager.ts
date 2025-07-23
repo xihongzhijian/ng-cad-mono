@@ -10,10 +10,10 @@ export class FetchManager<T> {
   }
 
   private _data: WritableSignal<T>;
-  private _isDataFetched = false;
+  isDataFetched = false;
   noFetch = false;
   data = computed(() => {
-    if (!this._isDataFetched && !this.noFetch) {
+    if (!this.isDataFetched && !this.noFetch) {
       untracked(() => this.fetch());
     }
     return this._data();
@@ -21,7 +21,7 @@ export class FetchManager<T> {
 
   fetchPromise: Promise<T> | null = null;
   async fetch(force?: boolean) {
-    if (!force && this._isDataFetched) {
+    if (!force && this.isDataFetched) {
       return this._data();
     }
     let data: T;
@@ -34,7 +34,7 @@ export class FetchManager<T> {
       }
       data = await fetchResult;
     }
-    this._isDataFetched = true;
+    this.isDataFetched = true;
     this.fetchPromise = null;
     this._data.set(data);
     return this._data();
@@ -42,5 +42,6 @@ export class FetchManager<T> {
 
   setData(data: T) {
     this._data.set(data);
+    this.isDataFetched = true;
   }
 }

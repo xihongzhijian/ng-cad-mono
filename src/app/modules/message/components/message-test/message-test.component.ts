@@ -29,9 +29,6 @@ export class MessageTestComponent {
       case "book":
         result = await this.message.book({bookData: [{content: "content", title: "title2"}], title: "title1"});
         break;
-      case "editor":
-        result = await this.message.editor({content: "editor", title: "title"});
-        break;
       case "button":
         result = await this.message.button({buttons: ["button1", "button2"], title: "title"});
         break;

@@ -6,7 +6,7 @@ import {getNodeVars, isMokuaiItemEqual, updateMokuaiItems} from "@components/dia
 import {isTypeOf, keysOf} from "@lucilor/utils";
 import {getMkdxpzSlgsFormulas, MsbjInfo} from "@views/msbj/msbj.utils";
 import {XhmrmsbjXinghaoConfig} from "@views/xhmrmsbj-xinghao-config/xhmrmsbj-xinghao-config.types";
-import {difference, intersection, isEmpty, mapValues} from "lodash";
+import {cloneDeep, difference, intersection, isEmpty, mapValues, union} from "lodash";
 import {
   MenshanFollowerKey,
   MenshanKey,
@@ -43,11 +43,21 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
       企料结构配置: {},
       ...xinghaoConfig
     };
+    if (!isTypeOf(this.xinghaoConfig.算料单配置, "object")) {
+      this.xinghaoConfig.算料单配置 = {};
+    }
+    if (!isTypeOf(this.xinghaoConfig.企料结构配置, "object")) {
+      this.xinghaoConfig.企料结构配置 = {};
+    }
     for (const key of menshanKeys) {
-      const infos = infos2[key] || [];
+      const infos = infos2[key] ?? [];
       this.menshanbujuInfos[key] = infos;
       for (const info of infos) {
-        const item = info.布局模块;
+        let item = info.布局模块;
+        if (!isTypeOf(item, ["object"])) {
+          item = {};
+          info.布局模块 = item;
+        }
         if (!item.选中布局数据) {
           const msbj = msbjs.find((v) => v.id === item.选中布局);
           if (msbj) {
@@ -75,6 +85,7 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
               delete node.选中模块;
             }
           }
+          updateMokuaiItems(mokauis, typesInfo);
           for (const mokuai of mokauis) {
             const nodeShuruzhi = node.输入值;
             delete node.输入值;
@@ -97,7 +108,6 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
               }
             }
           }
-          updateMokuaiItems(mokauis, typesInfo);
           if (选中模块) {
             this.setSelectedMokuai(node, 选中模块, true);
           }
@@ -174,7 +184,8 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
   }
 
   export() {
-    for (const infos of Object.values(this.menshanbujuInfos)) {
+    const infoGroups = cloneDeep(this.menshanbujuInfos);
+    for (const infos of Object.values(infoGroups)) {
       for (const info of infos) {
         for (const node of info.布局模块.模块节点 || []) {
           for (const mokuai of node.可选模块) {
@@ -190,7 +201,7 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
       vid: this.id,
       mingzi: this.name,
       suanliaodanmuban: this.算料单模板,
-      peizhishuju: this.stringifyField("menshanbujuInfos"),
+      peizhishuju: JSON.stringify(infoGroups),
       xinghaopeizhi: this.stringifyField("xinghaoConfig")
     };
     const {raw} = this;
@@ -205,9 +216,10 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
 
   getCommonFormulas(materialResult: Formulas) {
     const formulas: Formulas = {};
-    for (const infos of Object.values(this.menshanbujuInfos)) {
+    for (const key of keysOf(this.menshanbujuInfos)) {
+      const infos = this.menshanbujuInfos[key] ?? [];
       for (const info of infos) {
-        const slgs = {...getMkdxpzSlgsFormulas(info.布局模块.选中布局数据?.模块大小配置, materialResult).data};
+        const slgs = {...getMkdxpzSlgsFormulas(info.布局模块.选中布局数据?.模块大小配置, materialResult, key).data};
         for (const node of info.布局模块.模块节点 || []) {
           const vars = getNodeVars(slgs, node.层名字);
           for (const mokuai of node.可选模块) {
@@ -274,11 +286,19 @@ export class XhmrmsbjData extends ZuoshujuData<XhmrmsbjTableData> {
 
 export const getShuruzhi = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, xxgsId?: string) => {
   const key = getMokuaiObjectKey(node, mokuai, xxgsId);
+  const shuruKeys = getMokuaiShurusRaw(info, node, mokuai).map((v) => v[0]);
+  let result: Shuruzhi;
   if (xxgsId) {
-    return {...info.选项公式输入值?.[key]};
+    result = {...info.选项公式输入值?.[key]};
   } else {
-    return {...info.模块输入值?.[key]};
+    result = {...info.模块输入值?.[key]};
   }
+  for (const shuruKey of Object.keys(result)) {
+    if (!shuruKeys.includes(shuruKey)) {
+      delete result[shuruKey];
+    }
+  }
+  return result;
 };
 export const setShuruzhi = (
   info: XhmrmsbjInfo,
@@ -503,21 +523,35 @@ export const getMokuaiShurus = (
   const shurus = getMokuaiShurusRaw(info, node, mokuai);
   if (isFromOrder) {
     const key = getMokuaiObjectKey(node, mokuai);
-    const {输入变量下单隐藏} = info;
-    const excludeNames = 输入变量下单隐藏?.[key] || [];
+    const {输入变量默认下单隐藏} = mokuai.自定义数据 || {};
+    let excludeNames = info.输入变量下单隐藏?.[key] || [];
+    const excludeNamesOverwrite = info.输入变量下单隐藏覆盖默认?.[key] || [];
+    let excludeNamesDefault = 输入变量默认下单隐藏?.split("+") || [];
+    excludeNamesDefault = difference(excludeNamesDefault, excludeNamesOverwrite);
+    excludeNames = union(excludeNames, excludeNamesDefault);
     if (excludeNames.length > 0) {
       return shurus.filter((v) => !excludeNames.includes(v[0]));
     }
   }
   return shurus;
 };
-export const setMokuaiShurus = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem, vars: string[]) => {
+export const setMokuaiShurus = (
+  info: XhmrmsbjInfo,
+  node: XhmrmsbjInfoMokuaiNode,
+  mokuai: ZixuanpeijianMokuaiItem,
+  vars: string[],
+  changedVars: string[]
+) => {
   if (!info.输入变量下单隐藏) {
     info.输入变量下单隐藏 = {};
+  }
+  if (!info.输入变量下单隐藏覆盖默认) {
+    info.输入变量下单隐藏覆盖默认 = {};
   }
   const key = getMokuaiObjectKey(node, mokuai);
   const varsRaw = getMokuaiShurusRaw(info, node, mokuai).map((v) => v[0]);
   info.输入变量下单隐藏[key] = difference(varsRaw, vars);
+  info.输入变量下单隐藏覆盖默认[key] = union(info.输入变量下单隐藏覆盖默认[key] ?? [], changedVars);
 };
 export const purgeShuruDisabled = (info: XhmrmsbjInfo) => {
   if (!info?.输入变量下单隐藏) {
@@ -540,17 +574,30 @@ export const purgeShuruDisabled = (info: XhmrmsbjInfo) => {
   }
   if (isEmpty(info.输入变量下单隐藏)) {
     delete info.输入变量下单隐藏;
+    if (info.输入变量下单隐藏覆盖默认) {
+      if (info.输入变量下单隐藏) {
+        const obj = info.输入变量下单隐藏覆盖默认;
+        for (const [key2, value2] of Object.entries(obj)) {
+          obj[key2] = intersection(value2, map.get(key2) || []);
+          if (obj[key2].length < 1) {
+            delete obj[key2];
+          }
+        }
+      } else {
+        delete info.输入变量下单隐藏覆盖默认;
+      }
+    }
   }
 };
 
 export const getMokuaiShuchuVarsRaw = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
-  const vars = [...mokuai.shuchubianliang];
+  const vars = new Set(mokuai.shuchubianliang);
   for (const option of mokuai.自定义数据?.选项数据 || []) {
     if (option.可选项.length > 0 && option.输出变量) {
-      vars.push(option.名字);
+      vars.add(option.名字);
     }
   }
-  return vars;
+  return Array.from(vars);
 };
 export const getMokuaiShuchuVars = (info: XhmrmsbjInfo, node: XhmrmsbjInfoMokuaiNode, mokuai: ZixuanpeijianMokuaiItem) => {
   const {输出变量禁用} = info;

@@ -9,7 +9,7 @@ import {ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect} from "@modules/input/components/input.types";
 import {convertOptions, getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
-import {TableRenderInfo} from "@modules/table/components/table/table.types";
+import {RowButtonEventBase, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {keyBy, mapValues} from "lodash";
 import {MenjiaoData, ShuruTableData, ShuruTableDataSorted, XuanxiangTableData} from "./lrsj-zuofa.types";
 
@@ -121,6 +121,11 @@ export const emptyXuanxiangItem = async (message: MessageService, item: 选项) 
 
 export const getShuruTable = (
   data: ShuruTableData[],
+  functions: {
+    add: () => void;
+    edit: (params: RowButtonEventBase<ShuruTableDataSorted>) => void;
+    delete: (params: RowButtonEventBase<ShuruTableDataSorted>) => void;
+  },
   others?: Partial<TableRenderInfo<ShuruTableDataSorted>>
 ): TableRenderInfo<ShuruTableDataSorted> => {
   return {
@@ -152,18 +157,32 @@ export const getShuruTable = (
       {
         type: "button",
         field: "操作",
-        buttons: [{event: "编辑"}, {event: "删除"}]
+        buttons: [
+          {event: "编辑", onClick: functions.edit},
+          {event: "删除", onClick: functions.delete}
+        ]
       }
     ],
     data: getSortedItems(data, (v) => v.排序 ?? 0),
-    toolbarButtons: {extra: [{event: "添加"}]},
+    toolbarButtons: {extra: [{event: "添加", onClick: functions.add}]},
     ...others
   };
 };
-export const getShuruItem = async (message: MessageService, list: 输入[], data0?: 输入) => {
+export const getShuruItem = async (message: MessageService, list: 输入[], data0?: 输入 | ShuruTableDataSorted) => {
+  if (data0 && (data0 as ShuruTableDataSorted).originalIndex !== undefined) {
+    data0 = {...data0};
+    delete (data0 as any).originalIndex;
+  }
   const data: 输入 = {名字: "", 默认值: "", 取值范围: "", 可以修改: true, ...data0};
   const getter = new InputInfoWithDataGetter(data, {clearable: true});
   const 下单显示请输入 = getter.boolean("下单显示请输入");
+  const updateKeyixiugai = (val: boolean) => {
+    下单显示请输入.hidden = !val;
+    if (!val) {
+      delete data.下单显示请输入;
+    }
+  };
+  updateKeyixiugai(data.可以修改);
   const form: InputInfo[] = [
     getter.string("名字", {
       validators: [
@@ -180,12 +199,7 @@ export const getShuruItem = async (message: MessageService, list: 输入[], data
     getInputInfoGroup([
       getter.boolean("可以修改", {
         label: "可以输入",
-        onChange: (val) => {
-          下单显示请输入.hidden = !val;
-          if (!val) {
-            delete data.下单显示请输入;
-          }
-        }
+        onChange: (val) => updateKeyixiugai(val)
       }),
       下单显示请输入
     ]),

@@ -39,6 +39,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
     await result.check(this.message);
   }
   async ngOnDestroy() {
+    this.onExitCadStatusFentiPairedLines();
     const result = await removeCadFentiSeparator(this.status.cad);
     await result.check(this.message);
   }
@@ -193,12 +194,15 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
       const info = getCadFentiInfo(viewer.data);
       const {rawEntities, fentiEntities} = info;
       let pairedLinesList = this.pairedLinesList().slice();
-      let pairedLineIdsPrev = pairedLinesList[cadStatus.index].ids;
+      let pairedLineIdsPrev = pairedLinesList.at(cadStatus.index)?.ids;
       const rawIds: string[] = [];
       const fentiIds: string[] = [];
       viewer.unselectAll();
 
       const setLines = (lines: typeof pairedLineIdsPrev) => {
+        if (!lines) {
+          return;
+        }
         const toFocus = new CadEntities();
         const toBlur = new CadEntities();
         toFocus.merge(rawEntities).merge(fentiEntities);
@@ -215,6 +219,9 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
       setLines(pairedLineIdsPrev);
 
       const updateLines = (lines: typeof pairedLineIdsPrev) => {
+        if (!lines) {
+          return;
+        }
         pairedLinesList[cadStatus.index].ids = lines;
         pairedLinesList = [...pairedLinesList];
         this.status.cad.data.分体对应线 = pairedLinesList;
@@ -232,13 +239,13 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
           const fentiSelectedPrev: string[] = [];
           rawEntities.forEach((e) => {
             rawIds.push(e.id);
-            if (pairedLineIdsPrev.includes(e.id)) {
+            if (pairedLineIdsPrev?.includes(e.id)) {
               rawSelectedPrev.push(e.id);
             }
           }, true);
           fentiEntities.forEach((e) => {
             fentiIds.push(e.id);
-            if (pairedLineIdsPrev.includes(e.id)) {
+            if (pairedLineIdsPrev?.includes(e.id)) {
               fentiSelectedPrev.push(e.id);
             }
           }, true);
@@ -263,7 +270,7 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
           updateLines(pairedLines);
         },
         onCadEntitiesUnselect: (entities) => {
-          const pairedLines = pairedLineIdsPrev.filter((v) => !entities.find((e) => e.id === v));
+          const pairedLines = pairedLineIdsPrev?.filter((v) => !entities.find((e) => e.id === v));
           updateLines(pairedLines);
         },
         hotKeys
@@ -273,16 +280,19 @@ export class CadFentiConfigComponent implements OnInit, OnDestroy {
       viewer.setConfig("hotKeys", {...hotKeys, unSelectAll: []});
     },
     () => {
-      if (this._pairedLinesInfo) {
-        const viewer = this.status.cad;
-        viewer.off("entitiesselect", this._pairedLinesInfo.onCadEntitiesSelect);
-        viewer.off("entitiesunselect", this._pairedLinesInfo.onCadEntitiesUnselect);
-        viewer.setConfig("hotKeys", this._pairedLinesInfo.hotKeys);
-        this._pairedLinesInfo = null;
-        this.status.focus();
-      }
+      this.onExitCadStatusFentiPairedLines();
     }
   );
+  onExitCadStatusFentiPairedLines() {
+    if (this._pairedLinesInfo) {
+      const viewer = this.status.cad;
+      viewer.off("entitiesselect", this._pairedLinesInfo.onCadEntitiesSelect);
+      viewer.off("entitiesunselect", this._pairedLinesInfo.onCadEntitiesUnselect);
+      viewer.setConfig("hotKeys", this._pairedLinesInfo.hotKeys);
+      this._pairedLinesInfo = null;
+      this.status.focus();
+    }
+  }
 
   drawFentiLines() {
     this.status.toggleCadStatus(new CadStatusDrawLine(true));

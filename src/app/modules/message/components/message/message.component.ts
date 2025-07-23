@@ -9,7 +9,6 @@ import {
   forwardRef,
   HostListener,
   inject,
-  Inject,
   OnDestroy,
   OnInit,
   signal,
@@ -21,13 +20,11 @@ import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {DomSanitizer, SafeHtml, SafeResourceUrl} from "@angular/platform-browser";
-import {Debounce} from "@decorators/debounce";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {clamp, cloneDeep, isEmpty} from "lodash";
-import {QuillEditorComponent, QuillViewComponent} from "ngx-quill";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {createJSONEditor, JSONContent, JSONEditorPropsOptional, Mode} from "vanilla-jsoneditor";
 import {
@@ -54,19 +51,16 @@ import {
     MatDialogTitle,
     MatIconModule,
     NgScrollbarModule,
-    NgTemplateOutlet,
-    QuillEditorComponent
+    NgTemplateOutlet
   ]
 })
 export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
+  dialogRef = inject<MatDialogRef<MessageComponent, MessageOutput>>(MatDialogRef);
+  data: MessageData = inject<MessageData>(MAT_DIALOG_DATA, {optional: true}) ?? {type: "alert"};
+
   private elRef = inject(ElementRef<HTMLElement>);
   private message = inject(MessageService);
   private sanitizer = inject(DomSanitizer);
-
-  constructor(
-    public dialogRef: MatDialogRef<MessageComponent, MessageOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: MessageData
-  ) {}
 
   ngOnInit() {
     const data = this.data;
@@ -97,12 +91,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     } else if (data.type === "iframe") {
       this.iframeSrc.set(this.sanitizer.bypassSecurityTrustResourceUrl(data.content));
     }
-
-    const id = window.setInterval(() => {
-      if (this.resizeEditor()) {
-        window.clearInterval(id);
-      }
-    }, 600);
 
     if (data.type === "form") {
       this.inputsBackup = cloneDeep(data.form);
@@ -148,31 +136,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   jsonDetails: ReturnType<typeof createJSONEditor> | null = null;
   jsonDetailsContainer = viewChild<ElementRef<HTMLDivElement>>("jsonDetailsContainer");
-
-  editor = viewChild(QuillViewComponent);
-  private _getEditorToolbarHeight() {
-    const el = this.editor()?.elementRef.nativeElement;
-    if (el instanceof HTMLElement) {
-      const toolbar = el.querySelector(".ql-toolbar");
-      if (toolbar) {
-        return toolbar.getBoundingClientRect().height;
-      }
-    }
-    return 0;
-  }
-  @HostListener("window:resize")
-  @Debounce(500)
-  resizeEditor() {
-    const el = this.editor()?.editorElem;
-    if (el) {
-      const height = this._getEditorToolbarHeight();
-      if (height) {
-        el.style.height = `calc(100% - ${height}px)`;
-        return true;
-      }
-    }
-    return false;
-  }
 
   buttons = computed(() => {
     if (this.data.type === "button") {
@@ -275,8 +238,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       } else {
         this.message.error(errorMsg);
       }
-    } else if (type === "editor") {
-      await this.close(closeType, this.data.content);
     } else if (type === "button" && button) {
       if (typeof button === "object") {
         this.clickButton(button);

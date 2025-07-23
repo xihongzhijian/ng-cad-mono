@@ -83,6 +83,7 @@ export interface BancaiCad {
   height: number;
   num: number;
   bancai: {mingzi: string; cailiao: string | null; houdu: string | null; guige: number[] | null; gas?: string};
+  hidden?: boolean;
 }
 
 export type Changelog = ObjectOf<any>[];
@@ -125,6 +126,7 @@ export interface DeleteMongodbParams {
 export interface TableInsertParams<T extends TableDataBase = TableDataBase> {
   table: string;
   data: Omit<Partial<T>, "vid">;
+  autoRename?: boolean;
 }
 export interface TableUpdateParams<T extends TableDataBase = TableDataBase> {
   table: string;

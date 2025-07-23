@@ -1,4 +1,4 @@
-import {Component, computed, inject, Inject, signal} from "@angular/core";
+import {Component, computed, inject, signal} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
@@ -27,6 +27,10 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [InputComponent, MatButtonModule, MatCheckboxModule, MatIconModule, NgScrollbar]
 })
 export class CadZhankaiComponent extends Utils() {
+  dialogRef = inject<MatDialogRef<CadZhankaiComponent, CadZhankai[]>>(MatDialogRef);
+  data = inject<CadData["zhankai"]>(MAT_DIALOG_DATA, {optional: true}) ?? [];
+  private dialog = inject(MatDialog);
+
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
@@ -54,11 +58,7 @@ export class CadZhankaiComponent extends Utils() {
 
   zhankais = signal<CadData["zhankai"]>([]);
 
-  constructor(
-    public dialogRef: MatDialogRef<CadZhankaiComponent, CadZhankai[]>,
-    @Inject(MAT_DIALOG_DATA) public data: CadData["zhankai"],
-    private dialog: MatDialog
-  ) {
+  constructor() {
     super();
     this.zhankais.set(cloneDeep(this.data));
   }

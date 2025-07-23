@@ -6,6 +6,7 @@ import mokuaidaixiaoData from "@assets/json/mokuaidaxiao.json";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {MsbjPeizhishuju, MsbjRectInfoRaw, 模块大小配置} from "@components/msbj-rects/msbj-rects.types";
 import {isTypeOf} from "@lucilor/utils";
+import {MenshanKey} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {v4} from "uuid";
 import {MsbjData, Node2rectData} from "./msbj.types";
 
@@ -94,26 +95,26 @@ export const justifyMkdxpzSlgs = (slgs: 算料公式, nodeNames: string[]) => {
 export const justifyMkdxpz = (dxpz: 模块大小配置, nodeNames: string[]) => {
   const getSlgs = (公式: Formulas) => ({_id: v4(), 名字: "默认公式", 条件: [], 选项: {}, 公式});
   if (!Array.isArray(dxpz.算料公式2)) {
-    if (dxpz.算料公式 && isTypeOf(dxpz.算料公式, "object")) {
-      dxpz.算料公式2 = [getSlgs(dxpz.算料公式)];
-    } else {
-      dxpz.算料公式2 = [];
-    }
-  } else if (dxpz.算料公式 && isTypeOf(dxpz.算料公式, "object")) {
+    dxpz.算料公式2 = [];
+  }
+  if (dxpz.算料公式 && isTypeOf(dxpz.算料公式, "object")) {
     dxpz.算料公式2.push(getSlgs(dxpz.算料公式));
+  } else if (dxpz.算料公式2.length < 1) {
+    dxpz.算料公式2.push(getSlgs({}));
   }
   delete dxpz.算料公式;
   for (const slgs of dxpz.算料公式2) {
     justifyMkdxpzSlgs(slgs, nodeNames);
   }
 };
-export const getMkdxpzSlgs = (mkdxpz: 模块大小配置 | null | undefined, materialResult: Formulas) => {
+export const getMkdxpzSlgs = (mkdxpz: 模块大小配置 | null | undefined, vars: Formulas, menshanKey: MenshanKey) => {
   const result = new ResultWithErrors<算料公式 | null>(null);
   if (!mkdxpz) {
     return result;
   }
+  vars = {...vars, 当前扇: menshanKey};
   if (Array.isArray(mkdxpz.算料公式2)) {
-    const slgsList = matchMongoData(mkdxpz.算料公式2, materialResult);
+    const slgsList = matchMongoData(mkdxpz.算料公式2, vars);
     if (slgsList.length > 1) {
       result.addErrorStr("匹配到多个算料公式");
     } else if (slgsList.length > 0) {
@@ -122,9 +123,9 @@ export const getMkdxpzSlgs = (mkdxpz: 模块大小配置 | null | undefined, mat
   }
   return result;
 };
-export const getMkdxpzSlgsFormulas = (mkdxpz: 模块大小配置 | null | undefined, materialResult: Formulas) => {
+export const getMkdxpzSlgsFormulas = (mkdxpz: 模块大小配置 | null | undefined, vars: Formulas, menshanKey: MenshanKey) => {
   const result = new ResultWithErrors<Formulas>(mkdxpz?.算料公式 ?? {});
-  const result2 = getMkdxpzSlgs(mkdxpz, materialResult);
+  const result2 = getMkdxpzSlgs(mkdxpz, vars, menshanKey);
   if (!result2.fulfilled) {
     return result.learnFrom(result2);
   }

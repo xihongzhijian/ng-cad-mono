@@ -232,9 +232,13 @@ export class AppStatusService {
     if (statusesCurr.length < 1) {
       statusesCurr = [...statusesPrev2, status];
     } else if (statusesCurr.length === statusesPrev.length) {
-      statusesCurr = [new CadStatusNormal()];
+      statusesCurr = [];
     } else {
-      statusesCurr = statusesPrev2;
+      const statusesPrev2Index = statusesPrev.findIndex((v) => v.name !== status.name);
+      statusesCurr = statusesPrev.slice(statusesPrev2Index + 1);
+    }
+    if (statusesCurr.length < 1) {
+      statusesCurr.push(new CadStatusNormal());
     }
     this.setCadStatuses(statusesCurr);
   }
@@ -252,7 +256,20 @@ export class AppStatusService {
     }
   }
   leaveCadStatus(status: CadStatus) {
-    this.setCadStatuses(this.cadStatuses().filter((v) => !v.isEquals(status)));
+    let statuses = this.cadStatuses();
+    const index = statuses.findIndex((v) => v.isEquals(status));
+    if (index >= 0) {
+      statuses = statuses.slice(index + 1);
+    } else {
+      const index2 = statuses.findIndex((v) => v.name === status.name);
+      if (index2 >= 0) {
+        statuses = statuses.slice(index2 + 1);
+      }
+    }
+    if (statuses.length < 1) {
+      statuses.push(new CadStatusNormal());
+    }
+    this.setCadStatuses(statuses);
   }
   getCadStatusEffect<T extends CadStatus>(
     predicate: (v: CadStatus) => v is T,

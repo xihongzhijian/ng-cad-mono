@@ -1,12 +1,12 @@
 :host {
-  --mdc-checkbox-state-layer-size: 24px;
+  --mat-checkbox-state-layer-size: 24px;
   &.select {
     display: flex;
 
     .label {
       flex: 0 0 auto;
       margin-right: 5px;
-      font-size: var(--mdc-list-list-item-label-text-size);
+      font-size: var(--mat-list-list-item-label-text-size);
     }
 
     .select-list {
@@ -33,7 +33,7 @@
         .mdc-list-item--with-trailing-radio .mdc-list-item__end {
           margin-left: 0;
           margin-right: 3px;
-          --mdc-radio-state-layer-size: 20px;
+          --mat-radio-state-layer-size: 20px;
         }
       }
     }
@@ -73,7 +73,7 @@
     flex-direction: column;
   }
   &.readonly {
-    --mdc-filled-text-field-container-color: var(--mat-sys-outline-variant);
+    --mat-form-field-filled-container-color: var(--mat-sys-outline-variant);
   }
 }
 
@@ -122,7 +122,7 @@
   font-size: var(--mat-form-field-subscript-text-size);
 
   .hint {
-    color: var(--mdc-dialog-supporting-text-color);
+    color: var(--mat-dialog-supporting-text-color);
   }
   .error {
     color: var(--mat-form-field-error-text-color);

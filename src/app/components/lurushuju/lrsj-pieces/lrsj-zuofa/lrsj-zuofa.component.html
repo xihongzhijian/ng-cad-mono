@@ -10,11 +10,7 @@
                 (toolbarButtonClick)="onXuanxiangToolbar($event)"
                 (rowButtonClick)="onXuanxiangRow($event)"
               ></app-table>
-              <app-table
-                [info]="shuruTable()"
-                (toolbarButtonClick)="onShuruToolbar($event)"
-                (rowButtonClick)="onShuruRow($event)"
-              ></app-table>
+              <app-table [info]="shuruTable()"></app-table>
             </div>
           }
           @case ("算料数据") {

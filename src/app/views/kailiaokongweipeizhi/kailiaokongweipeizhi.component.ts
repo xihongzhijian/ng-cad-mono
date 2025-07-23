@@ -49,7 +49,7 @@ export class KailiaokongweipeizhiComponent implements OnInit {
 
   async submit() {
     const klkwpzComponent = this.klkwpzComponent();
-    if (!klkwpzComponent || !klkwpzComponent.submit()) {
+    if (!klkwpzComponent || !(await klkwpzComponent.submit())) {
       return;
     }
     const response = await this.http.post(

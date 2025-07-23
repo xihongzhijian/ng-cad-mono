@@ -14,7 +14,6 @@ import {
   BookMessageData,
   ButtonMessageData,
   ConfirmMessageData,
-  EditorMessageData,
   FormMessageData,
   IFrameMessageData,
   JsonMessageData,
@@ -133,10 +132,6 @@ export class MessageService {
 
   async book(data: string | MessageDataParams<BookMessageData>, others: MessageDataParams2<BookMessageData> = {}) {
     await this.open({data: this._getData(data, "book"), width: "80vw", ...others});
-  }
-
-  async editor(data: string | MessageDataParams<EditorMessageData>, others: MessageDataParams2<EditorMessageData> = {}) {
-    return String(await this.open({data: this._getData(data, "editor"), width: "80vw", ...others}));
   }
 
   async button<R extends string = string, S extends string = "取消">(

@@ -3,7 +3,7 @@ import {CustomValidators} from "@app/utils/input-validators";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData, CadLine, CadLineLike, cadLineOptions, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
-import {InputInfo} from "@modules/input/components/input.types";
+import {InputInfo, InputInfoArray} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
@@ -24,6 +24,21 @@ export const cadLineFields = {
 
 export const getLine = (data: CadLineLike | (() => CadLineLike)) => (typeof data === "function" ? data() : data);
 
+export const stringifyLineNames = (list: string[]) => {
+  const mingzi = list[0]?.trim() ?? "";
+  const mingzi2 = list.slice(1).join("*");
+  return {mingzi, mingzi2};
+};
+export const parseLineNames = (mingzi: string, mingzi2: string) => {
+  const names = [mingzi];
+  if (mingzi2) {
+    names.push(...mingzi2.split("*"));
+  } else if (mingzi) {
+    names.push("");
+  }
+  return names;
+};
+
 export const getCadLineInputs = (
   keys: string[],
   data: CadData | (() => CadData),
@@ -36,16 +51,35 @@ export const getCadLineInputs = (
   const isLine = line instanceof CadLine;
   const lineLength = Number(line.length.toFixed(2));
   const gongshiOptions = status.getGongshiOptions(gongshis);
+  let hasMingzi = false;
   for (const key of keys) {
     if (result.some((v) => v.label === key)) {
       continue;
     }
-    let info: InputInfo;
+    let info: InputInfo | undefined;
     const getter = new InputInfoWithDataGetter(line, {clearable: true});
     const getter2 = new InputInfoWithDataGetter(line.info, {clearable: true});
     switch (key) {
       case "名字":
       case "名字2":
+        if (hasMingzi) {
+          continue;
+        } else {
+          hasMingzi = true;
+          info = {
+            type: "array",
+            label: "",
+            valueLabel: (i) => (i === 0 ? "名字" : "名字2"),
+            sortable: true,
+            value: parseLineNames(line.mingzi, line.mingzi2),
+            onChange: (val) => {
+              const {mingzi, mingzi2} = stringifyLineNames(val);
+              line.mingzi = mingzi;
+              line.mingzi2 = mingzi2;
+            }
+          } satisfies InputInfoArray<unknown, string>;
+        }
+        break;
       case "显示线长":
       case "双向折弯附加值":
         info = getter.string(cadLineFields[key], {label: key});
@@ -115,7 +149,9 @@ export const getCadLineInputs = (
       default:
         info = {type: "string", label: key + "（未实现）", disabled: true};
     }
-    result.push(info);
+    if (info) {
+      result.push(info);
+    }
   }
   return result;
 };

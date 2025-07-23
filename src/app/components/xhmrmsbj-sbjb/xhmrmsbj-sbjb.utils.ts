@@ -9,6 +9,7 @@ import {
   show锁扇铰扇蓝线宽固定差值
 } from "@components/lurushuju/services/lrsj-status.utils";
 import {environment} from "@env";
+import {CadData} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect, InputInfoString} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
@@ -205,7 +206,9 @@ export const isXhmrmsbjSbjbItemSbjbHasSuokuang = (fenlei: string) => ["单门", 
 export const getSbjbItemSbjbItem = (item?: Partial<XhmrmsbjSbjbItemSbjbItem>): XhmrmsbjSbjbItemSbjbItem => ({
   名字: "",
   正面宽可改: true,
+  正面宽显示: true,
   背面宽可改: true,
+  背面宽显示: true,
   正背面同时改变: true,
   使用正面分体: false,
   使用背面分体: false,
@@ -252,21 +255,28 @@ export const getXhmrmsbjSbjbItemSbjbFormResult = async (
   });
   return result ? data : null;
 };
-export const getXhmrmsbjSbjbItemSbjbItemForm = (item?: XhmrmsbjSbjbItemSbjbItem) => {
+export const getXhmrmsbjSbjbItemSbjbItemForm = (cadData: CadData | null | undefined, item?: XhmrmsbjSbjbItemSbjbItem) => {
   const data = getSbjbItemSbjbItem(cloneDeep(item));
   if (typeof data.正面宽可改 !== "boolean") {
     data.正面宽可改 = true;
   }
+  if (typeof data.正面宽显示 !== "boolean") {
+    data.正面宽显示 = true;
+  }
   if (typeof data.背面宽可改 !== "boolean") {
     data.背面宽可改 = true;
+  }
+  if (typeof data.背面宽显示 !== "boolean") {
+    data.背面宽显示 = true;
   }
   if (typeof data.正背面同时改变 !== "boolean") {
     data.正背面同时改变 = true;
   }
   const getter = new InputInfoWithDataGetter(data, {clearable: true});
+  const type = cadData?.type || "";
   const form: InputInfo<XhmrmsbjSbjbItemSbjbItem>[] = [
-    getInputInfoGroup([getter.string("正面宽"), getter.boolean("正面宽可改")]),
-    getInputInfoGroup([getter.string("背面宽"), getter.boolean("背面宽可改")]),
+    getInputInfoGroup([getter.string("正面宽", {label: type + "正面宽"}), getter.boolean("正面宽可改"), getter.boolean("正面宽显示")]),
+    getInputInfoGroup([getter.string("背面宽", {label: type + "背面宽"}), getter.boolean("背面宽可改"), getter.boolean("背面宽显示")]),
     getter.boolean("正背面同时改变"),
     getter.boolean("使用正面分体"),
     getter.boolean("使用背面分体")
@@ -291,8 +301,10 @@ export const exportXhmrmsbjSbjbItemSbjbs = (fenlei: string, items: XhmrmsbjSbjbI
     名字: "",
     正面宽: "",
     正面宽可改: false,
+    正面宽显示: true,
     背面宽: "",
     背面宽可改: false,
+    背面宽显示: true,
     正背面同时改变: false,
     使用正面分体: false,
     使用背面分体: false
@@ -369,7 +381,9 @@ export const importXhmrmsbjSbjbItemSbjbs = (fenlei: string, dataArray: string[][
             item2[key2] = value;
             break;
           case "正面宽可改":
+          case "正面宽显示":
           case "背面宽可改":
+          case "背面宽显示":
           case "正背面同时改变":
           case "使用正面分体":
           case "使用背面分体":

@@ -68,11 +68,6 @@ export interface BookMessageData extends BaseMessageData {
   btnTexts?: {prev?: string; next?: string; exit?: string};
 }
 
-export interface EditorMessageData extends BaseMessageData, ConfirmBaseMessageData {
-  type: "editor";
-  editable?: boolean;
-}
-
 export interface IFrameMessageData extends BaseMessageData {
   type: "iframe";
   content: string;
@@ -90,7 +85,6 @@ export type MessageData =
   | ConfirmMessageData
   | FormMessageData
   | BookMessageData
-  | EditorMessageData
   | ButtonMessageData
   | IFrameMessageData
   | JsonMessageData;
@@ -102,7 +96,6 @@ export interface MessageDataMap extends Record<MessageDataKeys, MessageData> {
   confirm: ConfirmMessageData;
   form: FormMessageData;
   book: BookMessageData;
-  editor: EditorMessageData;
   button: ButtonMessageData;
   iframe: IFrameMessageData;
   json: JsonMessageData;

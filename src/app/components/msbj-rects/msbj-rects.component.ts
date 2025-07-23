@@ -79,57 +79,45 @@ export class MsbjRectsComponent {
     }
   }
   getRectStyle(info: MsbjRectInfo) {
-    const {rect, bgColor, raw} = info;
-    let order = 0;
-    if (raw.isBuju) {
-      order++;
-    }
-    if (typeof raw.排序 === "number") {
-      order += raw.排序;
-    }
+    const {rect, bgColor} = info;
     const style: Properties = {
       left: `${rect.min.x * 100}%`,
       top: `${rect.min.y * 100}%`,
       width: `${Math.max(0, rect.width) * 100}%`,
       height: `${Math.max(0, rect.height) * 100}%`,
-      backgroundColor: bgColor,
-      zIndex: order
+      backgroundColor: bgColor
     };
     if (this.getRectSelectable(info)) {
       style.cursor = "pointer";
     }
     return style;
   }
+  sortRectInfos(infos: MsbjRectInfo[]) {
+    for (let i = 0; i < infos.length; i++) {
+      const info = infos[i];
+      if (typeof info.raw.排序 !== "number") {
+        continue;
+      }
+      let minOrder = info.raw.排序;
+      let minOrderIndex = -1;
+      for (let j = i + 1; j < infos.length; j++) {
+        const info2 = infos[j];
+        if (typeof info2.raw.排序 !== "number") {
+          continue;
+        }
+        if (info2.raw.排序 < minOrder) {
+          minOrder = info2.raw.排序;
+          minOrderIndex = j;
+        }
+      }
+      if (minOrderIndex >= 0) {
+        [infos[i], infos[minOrderIndex]] = [infos[minOrderIndex], infos[i]];
+      }
+    }
+  }
 
   rectInfosAbsolute = signal<MsbjRectInfo[]>([]);
   rectInfosRelative = signal<MsbjRectInfo[]>([]);
-  rectInfosRelativeWithStyle = computed(() => {
-    const rectInfos = this.rectInfosRelative();
-    return rectInfos.map((info) => {
-      const {rect, bgColor, raw} = info;
-      let order = 0;
-      if (raw.isBuju) {
-        order++;
-      }
-      if (typeof raw.排序 === "number") {
-        order += raw.排序;
-      }
-      const style: Properties = {
-        left: `${rect.min.x * 100}%`,
-        top: `${rect.min.y * 100}%`,
-        width: `${Math.max(0, rect.width) * 100}%`,
-        height: `${Math.max(0, rect.height) * 100}%`,
-        backgroundColor: bgColor,
-        zIndex: order
-      };
-      if (this.getRectSelectable(info)) {
-        style.cursor = "pointer";
-      }
-      const info2 = new MsbjRectInfo(info.raw);
-      info2.style = style;
-      return info2;
-    });
-  });
   rectOuter = viewChild<ElementRef<HTMLDivElement>>("rectOuter");
   rectOuterPadding = signal(getTrbl(0));
   rectOuterStyle = signal<Properties>({});
@@ -147,6 +135,7 @@ export class MsbjRectsComponent {
         names.add(infoAbsolute.name);
       }
     }
+    this.sortRectInfos(rectInfosAbsolute);
     const {resetColors, isWindowResize} = opts || {};
     const {width, height, left, bottom} = totalRect;
     if (resetColors) {

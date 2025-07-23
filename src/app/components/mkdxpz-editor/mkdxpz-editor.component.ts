@@ -15,7 +15,7 @@ import {SuanliaogongshiInfo} from "@modules/cad-editor/components/suanliaogongsh
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {RowButtonEventBase} from "@modules/table/components/table/table.types";
 import {justifyMkdxpzSlgs} from "@views/msbj/msbj.utils";
 import {cloneDeep} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
@@ -107,7 +107,13 @@ export class MkdxpzEditorComponent {
     }
   });
 
-  shuruTable = computed(() => getShuruTable(this.data().dxpz?.输入显示 || []));
+  shuruTable = computed(() =>
+    getShuruTable(this.data().dxpz?.输入显示 || [], {
+      add: this.addShuru.bind(this),
+      edit: this.editShuru.bind(this),
+      delete: this.deleteShuru.bind(this)
+    })
+  );
   async getShuruItem(data0?: 输入) {
     const data = this.data();
     return await getShuruItem(this.message, data.dxpz?.输入显示 || [], data0);
@@ -116,48 +122,42 @@ export class MkdxpzEditorComponent {
     const data = this.data();
     this.data.set({...data});
   }
-  async onShuruToolbar(event: ToolbarButtonEvent) {
+  async addShuru() {
     const data = this.data();
     const arr = data.dxpz?.输入显示;
     if (!arr) {
       return;
     }
-    switch (event.button.event) {
-      case "添加":
-        {
-          const item = await this.getShuruItem();
-          if (item) {
-            arr.push(item);
-            await this.updateShuru();
-          }
-        }
-        break;
+    const item = await this.getShuruItem();
+    if (item) {
+      arr.push(item);
+      await this.updateShuru();
     }
   }
-  async onShuruRow(event: RowButtonEvent<ShuruTableDataSorted>) {
+  async editShuru(params: RowButtonEventBase<ShuruTableDataSorted>) {
     const data = this.data();
-    const {button, item} = event;
     const arr = data.dxpz?.输入显示;
     if (!arr) {
       return;
     }
-    switch (button.event) {
-      case "编辑":
-        {
-          const item2 = arr[item.originalIndex];
-          const item3 = await this.getShuruItem(item2);
-          if (item3) {
-            arr[item.originalIndex] = item3;
-            await this.updateShuru();
-          }
-        }
-        break;
-      case "删除":
-        if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          arr.splice(item.originalIndex, 1);
-          await this.updateShuru();
-        }
-        break;
+    const {item} = params;
+    const item2 = arr[item.originalIndex];
+    const item3 = await this.getShuruItem(item2);
+    if (item3) {
+      arr[item.originalIndex] = item3;
+      await this.updateShuru();
+    }
+  }
+  async deleteShuru(params: RowButtonEventBase<ShuruTableDataSorted>) {
+    const data = this.data();
+    const arr = data.dxpz?.输入显示;
+    if (!arr) {
+      return;
+    }
+    const {item} = params;
+    if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
+      arr.splice(item.originalIndex, 1);
+      await this.updateShuru();
     }
   }
 

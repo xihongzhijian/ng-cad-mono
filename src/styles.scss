@@ -2,11 +2,6 @@
 @use "ng-page.scss";
 @use "sass:color";
 
-.hljs,
-pre {
-  font-family: "Fira Code Retina", monospace;
-}
-
 body.ng-page {
   width: 100vw;
   height: 100vh;
@@ -100,6 +95,7 @@ ng-scrollbar.ng-scrollbar {
     color: var(--mat-sys-on-surface);
     display: flex;
     align-items: center;
+    min-height: 5px;
   }
 }
 

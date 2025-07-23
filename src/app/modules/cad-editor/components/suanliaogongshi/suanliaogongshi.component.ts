@@ -18,6 +18,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
+import {MatIconModule} from "@angular/material/icon";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {Formulas} from "@app/utils/calc";
 import {ResultWithErrors} from "@app/utils/error-message";
@@ -52,6 +53,7 @@ import {SuanliaogongshiCloseEvent, SuanliaogongshiInfo} from "./suanliaogongshi.
     MatButtonModule,
     MatCardModule,
     MatDividerModule,
+    MatIconModule,
     MatTooltipModule,
     NgScrollbarModule,
     NgTemplateOutlet,
@@ -451,5 +453,13 @@ export class SuanliaogongshiComponent {
       return;
     }
     this.closeOut.emit({submit});
+  }
+
+  docUrl = computed(() => this.info().slgs?.docUrl);
+  openDoc() {
+    const url = this.docUrl();
+    if (url) {
+      window.open(url, "_blank");
+    }
   }
 }

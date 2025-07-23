@@ -3,6 +3,7 @@ import {选项} from "@components/lurushuju/xinghao-data";
 import {ObjectOf} from "@lucilor/utils";
 import {HoutaiCad} from "@modules/http/services/cad-data.service.types";
 import {TableRenderInfo} from "@modules/table/components/table/table.types";
+import {BjmkStatusService} from "../services/bjmk-status.service";
 
 export interface MokuaiItem extends ZixuanpeijianTypesInfoItemBase {
   name: string;
@@ -24,10 +25,11 @@ export interface MokuaiItemCustomData {
   选项数据: 选项[];
   下单显示: string;
   下单时需要满足选项: ObjectOf<string>;
+  输入变量默认下单隐藏?: string;
 }
 
 export interface MokuaiItemCloseEvent {
-  isSaved: boolean;
+  saveRes: Awaited<ReturnType<BjmkStatusService["editMokuai"]>>;
 }
 
 export interface MokuaiItemCadInfo {

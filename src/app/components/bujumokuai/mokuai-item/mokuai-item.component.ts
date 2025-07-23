@@ -42,6 +42,7 @@ import {ImageComponent} from "@modules/image/components/image/image.component";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {CellChangeEvent, RowButtonEvent, TableRenderInfo, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {AppStatusService} from "@services/app-status.service";
@@ -85,6 +86,7 @@ export class MokuaiItemComponent {
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
+  private spinner = inject(SpinnerService);
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = ["ng-page"];
@@ -304,14 +306,31 @@ export class MokuaiItemComponent {
 
   private _textInputInfoUpdateDisabled = false;
   private _getTextInputInfo1(key: keyof MokuaiItem, label: string = key) {
+    const mokuai = this.mokuai();
+    const update = () => {
+      this.mokuai.update((v) => ({...v}));
+    };
     const info: InputInfo<MokuaiItem> = {
       type: "string",
       textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
-      model: {data: this.mokuai(), key},
+      model: {data: mokuai, key},
+      suffixIcons: [
+        {
+          name: "edit",
+          onClick: async () => {
+            const arr = (mokuai[key] as string).split("+");
+            const result = await this.message.prompt({type: "array", label, value: arr});
+            if (Array.isArray(result)) {
+              (mokuai as any)[key] = result.filter((v) => v).join("+");
+              update();
+            }
+          }
+        }
+      ],
       onChange: () => {
         if (!this._textInputInfoUpdateDisabled) {
-          this.mokuai.update((v) => ({...v}));
+          update();
         }
       }
     };
@@ -322,14 +341,30 @@ export class MokuaiItemComponent {
     if (!mokuai.自定义数据) {
       mokuai.自定义数据 = getMokuaiCustomData(null, this.bjmkStatus.mokuaiOptionsManager.data());
     }
+    const update = () => {
+      this.mokuai.update((v) => ({...v, 自定义数据: clone(v.自定义数据)}));
+    };
     const info: InputInfo<MokuaiItemCustomData> = {
       type: "string",
       textarea: {autosize: {minRows: 1, maxRows: 3}},
       label,
       model: {data: mokuai.自定义数据, key},
+      suffixIcons: [
+        {
+          name: "edit",
+          onClick: async () => {
+            const arr = (mokuai.自定义数据![key] as string).split("+");
+            const result = await this.message.prompt({type: "array", label, value: arr});
+            if (Array.isArray(result)) {
+              (mokuai.自定义数据 as any)[key] = result.filter((v) => v).join("+");
+              update();
+            }
+          }
+        }
+      ],
       onChange: () => {
         if (!this._textInputInfoUpdateDisabled) {
-          this.mokuai.update((v) => ({...v, 自定义数据: clone(v.自定义数据)}));
+          update();
         }
       }
     };
@@ -337,6 +372,7 @@ export class MokuaiItemComponent {
   }
   mokuaiInputInfos = computed(() => [
     this._getTextInputInfo1("gongshishuru", "公式输入"),
+    this._getTextInputInfo2("输入变量默认下单隐藏", "公式输入默认下单隐藏"),
     this._getTextInputInfo1("shuchubianliang", "输出变量"),
     this._getTextInputInfo1("kailiaoshiyongbianliang", "开料使用变量"),
     this._getTextInputInfo2("下单显示")
@@ -542,13 +578,13 @@ export class MokuaiItemComponent {
     this.mokuai.set({...mokuai});
   }
 
-  isSaved = signal(false);
+  saveRes = signal<MokuaiItemCloseEvent["saveRes"]>(null);
   close() {
-    this.closeOut.emit({isSaved: this.isSaved()});
+    this.closeOut.emit({saveRes: this.saveRes()});
   }
   slgsComponent = viewChild<FormulasEditorComponent>("slgs");
   forceUpdateKeys = new Set<keyof MokuaiItem>();
-  async updateMokaui() {
+  async updateMokaui(loaderId: string) {
     const mokuai = this.mokuai();
     const error: ErrorItem = {content: "", details: []};
 
@@ -589,7 +625,7 @@ export class MokuaiItemComponent {
 
     await this._fetchMrbcjfzResponseData();
     await timeout(0);
-    const mrbcjfzErrors = this.mrbcjfzComponent()?.checkSubmit();
+    const mrbcjfzErrors = await this.mrbcjfzComponent()?.checkSubmit();
     if (mrbcjfzErrors) {
       if (mrbcjfzErrors.length > 0) {
         error.details.push(...mrbcjfzErrors.map<ErrorDetail>((v) => [{text: `板材分组：${v}`}]));
@@ -602,13 +638,16 @@ export class MokuaiItemComponent {
     }
 
     if (error.details.length > 0) {
+      this.spinner.hide(loaderId);
       await alertError(this.message, error);
       return null;
     }
     return mokuai;
   }
   async save() {
-    const mokuai = await this.updateMokaui();
+    const loaderId = this.spinner.defaultLoaderId;
+    this.spinner.show(loaderId);
+    const mokuai = await this.updateMokaui(loaderId);
     if (!mokuai) {
       return;
     }
@@ -619,19 +658,23 @@ export class MokuaiItemComponent {
       const val = mokuai[key];
       const valOld = mokuaiOld[key];
       if (forceUpdateKeys.has(key) || !isEqual(val, valOld)) {
-        mokuaiNew[key] = val as any;
+        mokuaiNew[key] = cloneDeep(val as any);
       }
     }
     forceUpdateKeys.clear();
-    await this.bjmkStatus.editMokuai(mokuaiNew, {noForm: true});
-    this.isSaved.set(true);
+    const res = await this.bjmkStatus.editMokuai(mokuaiNew, {noForm: true});
+    this.saveRes.set(res);
+    this.spinner.hide(this.spinner.defaultLoaderId);
   }
   async saveAs() {
-    const mokuai = await this.updateMokaui();
+    const loaderId = this.spinner.defaultLoaderId;
+    this.spinner.show(loaderId);
+    const mokuai = await this.updateMokaui(loaderId);
     if (!mokuai) {
       return;
     }
     await this.bjmkStatus.copyMokuai(mokuai);
+    this.spinner.hide(loaderId);
   }
   openDdbq() {
     const mokuai = this.mokuai();

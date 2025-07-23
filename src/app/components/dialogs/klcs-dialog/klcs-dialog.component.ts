@@ -1,4 +1,4 @@
-import {Component, Inject, viewChild} from "@angular/core";
+import {Component, inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {KailiaocanshuData, KlcsComponent} from "@components/klcs/klcs.component";
@@ -11,12 +11,13 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [KlcsComponent, MatButtonModule]
 })
 export class KlcsDialogComponent {
-  klcsComponent = viewChild(KlcsComponent);
+  dialogRef = inject<MatDialogRef<KlcsDialogComponent, KlcsDialogOutput>>(MatDialogRef);
+  data: KlcsDialogInput = inject<KlcsDialogInput>(MAT_DIALOG_DATA, {optional: true}) ?? {
+    source: {_id: "", 名字: "", 分类: "", 参数: ""},
+    cadId: ""
+  };
 
-  constructor(
-    public dialogRef: MatDialogRef<KlcsDialogComponent, KlcsDialogOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: KlcsDialogInput
-  ) {}
+  klcsComponent = viewChild(KlcsComponent);
 
   async submit() {
     const klcsComponent = this.klcsComponent();

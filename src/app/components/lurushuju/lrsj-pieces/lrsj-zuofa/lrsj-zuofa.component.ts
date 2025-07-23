@@ -7,7 +7,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {RowButtonEvent, RowButtonEventBase, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {cloneDeep} from "lodash";
 import {openSelectZuofaDialog} from "../../select-zuofa-dialog/select-zuofa-dialog.component";
 import {LrsjStatusService} from "../../services/lrsj-status.service";
@@ -94,7 +94,11 @@ export class LrsjZuofaComponent {
   }
 
   shuruTable = computed(() => {
-    return getShuruTable(this.zuofa().输入数据);
+    return getShuruTable(this.zuofa().输入数据, {
+      add: this.addShuru.bind(this),
+      edit: this.editShuru.bind(this),
+      delete: this.deleteShuru.bind(this)
+    });
   });
   async getShuruItem(data0?: 输入) {
     const zuofa = this.zuofa();
@@ -105,40 +109,30 @@ export class LrsjZuofaComponent {
     this.zuofa.set({...zuofa});
     await this.submitZuofa(["输入数据"]);
   }
-  async onShuruToolbar(event: ToolbarButtonEvent) {
+  async addShuru() {
     const zuofa = this.zuofa();
-    switch (event.button.event) {
-      case "添加":
-        {
-          const item = await this.getShuruItem();
-          if (item) {
-            zuofa.输入数据.push(item);
-            await this.updateShuru();
-          }
-        }
-        break;
+    const item = await this.getShuruItem();
+    if (item) {
+      zuofa.输入数据.push(item);
+      await this.updateShuru();
     }
   }
-  async onShuruRow(event: RowButtonEvent<ShuruTableDataSorted>) {
+  async editShuru(params: RowButtonEventBase<ShuruTableDataSorted>) {
     const zuofa = this.zuofa();
-    const {button, item} = event;
-    switch (button.event) {
-      case "编辑":
-        {
-          const item2 = zuofa.输入数据[item.originalIndex];
-          const item3 = await this.getShuruItem(item2);
-          if (item3) {
-            zuofa.输入数据[item.originalIndex] = item3;
-            await this.updateShuru();
-          }
-        }
-        break;
-      case "删除":
-        if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
-          zuofa.输入数据.splice(item.originalIndex, 1);
-          await this.updateShuru();
-        }
-        break;
+    const {item} = params;
+    const item2 = zuofa.输入数据[item.originalIndex];
+    const item3 = await this.getShuruItem(item2);
+    if (item3) {
+      zuofa.输入数据[item.originalIndex] = item3;
+      await this.updateShuru();
+    }
+  }
+  async deleteShuru(params: RowButtonEventBase<ShuruTableDataSorted>) {
+    const zuofa = this.zuofa();
+    const {item} = params;
+    if (await this.message.confirm(`确定删除【${item.名字}】吗？`)) {
+      zuofa.输入数据.splice(item.originalIndex, 1);
+      await this.updateShuru();
     }
   }
 

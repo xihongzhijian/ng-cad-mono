@@ -1,4 +1,4 @@
-import {Component, Inject, ViewChild} from "@angular/core";
+import {Component, inject, viewChild} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadCollection} from "@app/cad/collections";
 import {CadData} from "@lucilor/cad-viewer";
@@ -14,16 +14,10 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [MrbcjfzComponent]
 })
 export class MrbcjfzDialogComponent {
-  @ViewChild(MrbcjfzComponent) mrbcjfz?: MrbcjfzComponent;
+  dialogRef = inject<MatDialogRef<MrbcjfzDialogComponent, MrbcjfzDialogOutput>>(MatDialogRef);
+  data: MrbcjfzDialogInput = inject<MrbcjfzDialogInput>(MAT_DIALOG_DATA, {optional: true}) ?? {id: 0, table: ""};
 
-  constructor(
-    public dialogRef: MatDialogRef<MrbcjfzDialogComponent, MrbcjfzDialogOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: MrbcjfzDialogInput
-  ) {
-    if (!data) {
-      data = {id: 0, table: ""};
-    }
-  }
+  mrbcjfz = viewChild(MrbcjfzComponent);
 
   submit(event: MrbcjfzDataSubmitEvent) {
     this.dialogRef.close(event);
@@ -35,10 +29,11 @@ export class MrbcjfzDialogComponent {
 
   async refreshAfter() {
     await timeout(0);
-    if (!this.mrbcjfz || !this.data.dryRun) {
+    const mrbcjfz = this.mrbcjfz();
+    if (!mrbcjfz || !this.data.dryRun) {
       return;
     }
-    this.dialogRef.close({data: this.mrbcjfz.xinghao(), errors: this.mrbcjfz.checkSubmit()});
+    this.dialogRef.close({data: mrbcjfz.xinghao(), errors: await mrbcjfz.checkSubmit()});
   }
 
   onCadChange(data: CadData) {

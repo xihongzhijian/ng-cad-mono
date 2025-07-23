@@ -119,11 +119,11 @@
     }
   </div>
   @if (showMuban()) {
-    <div class="divider" [style]="{height: cadHeight + 'px'}">
-      <mat-icon>link</mat-icon>
+    <div class="divider" [style]="{height: cadHeight()}">
+      <mat-icon class="primary">link</mat-icon>
     </div>
     <div class="cad item">
-      <div #mubanContainer class="cad-container flex-row">
+      <div #mubanContainer class="cad-container flex-row hidden-if-empty">
         @if (!showMubanViewer() && mubanId() && mubanData()) {
           <app-cad-image
             class="link"

@@ -7,6 +7,7 @@ import {FetchManager} from "@app/utils/fetch-manager";
 import {getCopyName} from "@app/utils/get-value";
 import {CustomValidators} from "@app/utils/input-validators";
 import {ItemsManager} from "@app/utils/items-manager";
+import {ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {VarNames} from "@components/var-names/var-names.types";
 import {getVarNames} from "@components/var-names/var-names.utils";
@@ -140,26 +141,27 @@ export class BjmkStatusService {
       }
     }
     mokuaiSubmitBefore(mokuai);
-    let mokuai2 = await this.http.getData<MokuaiItem>("ngcad/editPeijianmokuai", {item: mokuai});
-    if (mokuai2) {
-      mokuaiSubmitAfter(mokuai2);
-      this.mokuaisManager.refresh({update: [mokuai2]});
+    type Res = {item1: MokuaiItem | null; item2: ZixuanpeijianMokuaiItem | null};
+    const res = await this.http.getData<Res>("ngcad/editPeijianmokuai", {item: mokuai});
+    if (res?.item1) {
+      mokuaiSubmitAfter(res.item1);
+      this.mokuaisManager.refresh({update: [res.item1]});
     }
-    mokuai2 = this.mokuaisManager.items().find((v) => v.id === mokuai2?.id) || null;
-    return mokuai2;
+    return res;
   }
   async editMokuais(mokuais: Partial<MokuaiItem>[]) {
     for (const mokuai of mokuais) {
       mokuaiSubmitBefore(mokuai);
     }
-    const mokuais2 = await this.http.getData<MokuaiItem[]>("ngcad/editPeijianmokuais", {items: mokuais});
-    if (mokuais2) {
-      for (const mokuai of mokuais2) {
+    type Res = {items1: MokuaiItem[]; items2: ZixuanpeijianTypesInfo};
+    const res = await this.http.getData<Res>("ngcad/editPeijianmokuais", {items: mokuais});
+    if (res) {
+      for (const mokuai of res.items1) {
         mokuaiSubmitAfter(mokuai);
       }
-      this.mokuaisManager.refresh({update: mokuais2});
+      this.mokuaisManager.refresh({update: res.items1});
     }
-    return mokuais2;
+    return res;
   }
   private _copyMokuaiBefore(mokuai: Partial<MokuaiItem>) {
     if (mokuai.cads) {

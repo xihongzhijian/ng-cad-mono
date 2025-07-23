@@ -501,6 +501,7 @@ export const validateForm = async (inputs: InputComponent[] | readonly InputComp
   let errors: ValidationErrors | null = null;
   let hasValidatorRequired = false;
   let hasValidatorOther = false;
+  const errorMsgDetails = new Set<string>();
   const values: ObjectOf<string> = {};
   for (const input of inputs) {
     if (input.onChangeDelay) {
@@ -509,6 +510,7 @@ export const validateForm = async (inputs: InputComponent[] | readonly InputComp
     const errors2 = input.validateValue();
     for (const key in errors2) {
       if (errors2[key]) {
+        errorMsgDetails.add(input.info().label + errors2[key]);
         if (key === "required") {
           hasValidatorRequired = true;
         } else {
@@ -531,5 +533,5 @@ export const validateForm = async (inputs: InputComponent[] | readonly InputComp
   } else if (hasValidatorOther) {
     errorMsg = "数据有误，请检查";
   }
-  return {errors, values, errorMsg};
+  return {errors, values, errorMsg, errorMsgDetails: Array.from(errorMsgDetails)};
 };

@@ -1,12 +1,14 @@
-import {Component, forwardRef, HostBinding, inject, Inject, OnInit, signal, viewChild} from "@angular/core";
+import {Component, forwardRef, HostBinding, inject, OnInit, signal, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {CadData} from "@lucilor/cad-viewer";
+import {timeout} from "@lucilor/utils";
 import {Subscribed} from "@mixins/subscribed.mixin";
 import {CadEditorComponent} from "@modules/cad-editor/components/cad-editor/cad-editor.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {OpenCadOptions} from "@services/app-status.types";
+import {CadStatusNormal} from "@services/cad-status";
 import {getOpenDialogFunc} from "../dialog.common";
 
 @Component({
@@ -16,15 +18,15 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [MatButtonModule, forwardRef(() => CadEditorComponent)]
 })
 export class CadEditorDialogComponent extends Subscribed() implements OnInit {
+  dialogRef = inject<MatDialogRef<CadEditorDialogComponent, CadEditorOutput>>(MatDialogRef);
+  data: CadEditorInput = inject<CadEditorInput>(MAT_DIALOG_DATA, {optional: true}) ?? {};
+
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = "ng-page";
 
-  constructor(
-    public dialogRef: MatDialogRef<CadEditorDialogComponent, CadEditorOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: CadEditorInput
-  ) {
+  constructor() {
     super();
     if (!this.data) {
       this.data = {};
@@ -59,6 +61,8 @@ export class CadEditorDialogComponent extends Subscribed() implements OnInit {
       }
     }
     if (this.cadEditor()) {
+      this.status.setCadStatuses([new CadStatusNormal()]);
+      await timeout(0);
       this.dialogRef.close({savedData: this.savedData()});
     } else {
       this.dialogRef.close();

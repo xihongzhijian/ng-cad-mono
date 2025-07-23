@@ -1,8 +1,9 @@
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {TextFieldModule} from "@angular/cdk/text-field";
-import {AsyncPipe, KeyValuePipe, NgTemplateOutlet} from "@angular/common";
+import {CdkTextareaAutosize, TextFieldModule} from "@angular/cdk/text-field";
+import {KeyValuePipe, NgTemplateOutlet} from "@angular/common";
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   computed,
   DoCheck,
@@ -66,7 +67,6 @@ import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
   styleUrls: ["./input.component.scss"],
   imports: [
     AnchorSelectorComponent,
-    AsyncPipe,
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
@@ -96,6 +96,7 @@ import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
   ]
 })
 export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
+  private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
   private differs = inject(KeyValueDiffers);
   private elRef = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -301,8 +302,8 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
   imgCadEmpty = imgCadEmpty;
 
   valueChange$ = new BehaviorSubject<any>(null);
-  filteredOptions$ = new BehaviorSubject<InputComponent["options"]>([]);
-  filteredXuanxiangOptions$ = new BehaviorSubject<InputComponent["options"][]>([]);
+  filteredOptions = signal<InputComponent["options"]>([]);
+  filteredXuanxiangOptions = signal<InputComponent["options"][]>([]);
 
   private _validateValueLock = false;
 
@@ -310,9 +311,9 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     super();
     this.valueChange$.subscribe((val) => {
       if (this.optionsDialog()) {
-        this.filteredOptions$.next([]);
+        this.filteredOptions.set([]);
       } else {
-        this.filteredOptions$.next(this._filterOptions(val, this.options));
+        this.filteredOptions.set(this._filterOptions(val, this.options));
       }
     });
   }
@@ -402,15 +403,15 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     }
     await this.fetchXuanxiangOptions();
     if (typeof i === "number") {
-      const options = this.filteredXuanxiangOptions$.value;
+      const options = this.filteredXuanxiangOptions();
       options[i] = this._filterOptions(keyVal || "", this.xuanxiangOptions);
-      this.filteredXuanxiangOptions$.next(options);
+      this.filteredXuanxiangOptions.set(options);
     } else {
       const options: (typeof this.options)[] = [];
       for (const key in value) {
         options.push(this._filterOptions(key, this.xuanxiangOptions));
       }
-      this.filteredXuanxiangOptions$.next(options);
+      this.filteredXuanxiangOptions.set(options);
     }
   }
 
@@ -724,6 +725,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     this.onChange();
   }
 
+  autoSizes = viewChildren<CdkTextareaAutosize>(CdkTextareaAutosize);
   onInput(event: Event | null, value = this.value) {
     const info = this.info();
     switch (info.type) {
@@ -739,6 +741,18 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     this.valueChange$.next(value);
     if (event) {
       this.input.emit(event);
+    }
+    const el = event?.target;
+    if (el instanceof HTMLTextAreaElement && info.type === "string" && info.textarea?.autosize) {
+      // TODO: remove this crap after cdkTextareaAutosize no longer messes with scrollbar!
+      if (!el.dataset.minHeight) {
+        el.dataset.minHeight = el.style.minHeight;
+      }
+      const minHeight = el.dataset.minHeight;
+      el.style.minHeight = `${el.clientHeight}px`;
+      setTimeout(() => {
+        el.style.minHeight = minHeight;
+      }, 0);
     }
   }
   onFocus(event: FocusEvent) {
@@ -898,6 +912,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
         } else {
           data[key] = resultValue;
         }
+        this.cd.markForCheck();
       }
       if (typeof onChange === "function") {
         onChange(result);
@@ -1007,6 +1022,60 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     const target = event.target as HTMLInputElement;
     const value = target.value;
     this._filterXuanxiangOptions(i, value);
+  }
+  getObjectKeyLabel(key: string, label: any) {
+    const info = this.info();
+    if (info.type === "object" && info.keyLabel) {
+      if (typeof info.keyLabel === "function") {
+        return info.keyLabel(key, label, info);
+      } else if (typeof info.keyLabel === "string") {
+        return info.keyLabel;
+      }
+    }
+    return "";
+  }
+  getObjectValueLabel(key: string, value: any) {
+    const info = this.info();
+    if (info.type === "object" && info.valueLabel) {
+      if (typeof info.valueLabel === "function") {
+        return info.valueLabel(key, value, info);
+      } else if (typeof info.valueLabel === "string") {
+        return info.valueLabel;
+      }
+    }
+    return "";
+  }
+
+  changeArrayValue2(...args: Parameters<InputComponent["changeArrayValue"]>) {
+    this.changeArrayValue(...args);
+    this.onChange();
+  }
+  arrayAdd2(...args: Parameters<InputComponent["arrayAdd"]>) {
+    this.arrayAdd(...args);
+    this.onChange();
+  }
+  arrayRemove2(...args: Parameters<InputComponent["arrayRemove"]>) {
+    this.arrayRemove(...args);
+    this.onChange();
+  }
+  arrayMoveUp(arr: any[], i: number) {
+    moveItemInArray(arr, i, i - 1);
+    this.onChange();
+  }
+  arrayMoveDown(arr: any[], i: number) {
+    moveItemInArray(arr, i, i + 1);
+    this.onChange();
+  }
+  getArrayValueLabel(i: number, value: any) {
+    const info = this.info();
+    if (info.type === "array" && info.valueLabel) {
+      if (typeof info.valueLabel === "function") {
+        return info.valueLabel(i, value, info);
+      } else if (typeof info.valueLabel === "string") {
+        return info.valueLabel;
+      }
+    }
+    return "";
   }
 
   updateFormulasStr() {

@@ -1,4 +1,4 @@
-import {Component, computed, HostBinding, Inject, viewChildren} from "@angular/core";
+import {Component, computed, HostBinding, inject, viewChildren} from "@angular/core";
 import {AbstractControl, ValidatorFn} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
@@ -22,15 +22,15 @@ export interface CadDimensionData {
   imports: [InputComponent, MatButtonModule, NgScrollbar]
 })
 export class CadDimensionFormComponent {
+  dialogRef = inject<MatDialogRef<CadDimensionFormComponent, CadDimensionLinear>>(MatDialogRef);
+  data: CadDimensionData = inject<CadDimensionData>(MAT_DIALOG_DATA, {optional: true}) ?? {data: new CadDimensionLinear()};
+
   @HostBinding("class") class = "ng-page";
 
   dimensionPrev: CadDimensionLinear;
   dimensionCurr: CadDimensionLinear;
 
-  constructor(
-    public dialogRef: MatDialogRef<CadDimensionFormComponent, CadDimensionLinear>,
-    @Inject(MAT_DIALOG_DATA) public data: CadDimensionData
-  ) {
+  constructor() {
     const dimension = this.data.data || new CadDimensionLinear();
     this.dimensionPrev = dimension;
     this.dimensionCurr = dimension.clone();

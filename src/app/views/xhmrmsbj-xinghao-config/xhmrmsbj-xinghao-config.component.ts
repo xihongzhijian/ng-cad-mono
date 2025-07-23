@@ -4,7 +4,7 @@ import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
-import {ResultWithErrors} from "@app/utils/error-message";
+import {getNamesStr, ResultWithErrors} from "@app/utils/error-message";
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {openCadEditorDialog} from "@components/dialogs/cad-editor-dialog/cad-editor-dialog.component";
@@ -17,6 +17,7 @@ import {
   getXuanxiangItem,
   getXuanxiangTable
 } from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
+import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
 import {sbjbItemOptionalKeys2} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
@@ -29,10 +30,10 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
-import {RowButtonEvent, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
+import {RowButtonEvent, RowButtonEventBase, ToolbarButtonEvent} from "@modules/table/components/table/table.types";
 import {menshanKeys} from "@views/xhmrmsbj/xhmrmsbj.types";
 import {XhmrmsbjData} from "@views/xhmrmsbj/xhmrmsbj.utils";
-import {clone, cloneDeep, isEqual, uniqWith} from "lodash";
+import {clone, cloneDeep, difference, isEqual, uniqWith} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   qiliaoFtwzxsNames,
@@ -73,13 +74,14 @@ export class XhmrmsbjXinghaoConfigComponent {
 
   data = model.required<XhmrmsbjData | null>({alias: "data"});
   type = input.required<XhmrmsbjXinghaoConfigComponentType | null>();
+  xinghaoOptions = input.required<OptionsAll>();
 
-  dataEff = effect(async () => {
+  dataEff = effect(() => {
     const data = this.data();
+    const options = this.xinghaoOptions();
     if (!data) {
       return;
     }
-    const options = await this.bjmk.xinghaoOptionsManager.fetch();
     const config = data.xinghaoConfig;
     const options2 = config.选项;
     config.选项 = [];
@@ -103,41 +105,38 @@ export class XhmrmsbjXinghaoConfigComponent {
   }
 
   shurus = computed(() => this.data()?.xinghaoConfig.输入 || []);
-  shuruTable = computed(() => getShuruTable(this.shurus(), {title: "型号输入"}));
-  async onShuruToolbar(event: ToolbarButtonEvent) {
-    switch (event.button.event) {
-      case "添加": {
-        const item = await getShuruItem(this.message, this.shurus());
-        const data = this.data();
-        if (item && data) {
-          const config = data.xinghaoConfig;
-          config.输入 = [...(config.输入 || []), item];
-          this.refreshData();
-        }
-      }
+  shuruTable = computed(() =>
+    getShuruTable(
+      this.shurus(),
+      {add: this.addShuru.bind(this), edit: this.editShuru.bind(this), delete: this.deleteShuru.bind(this)},
+      {title: "型号输入"}
+    )
+  );
+  async addShuru() {
+    const item = await getShuruItem(this.message, this.shurus());
+    const data = this.data();
+    if (item && data) {
+      const config = data.xinghaoConfig;
+      config.输入 = [...(config.输入 || []), item];
+      this.refreshData();
     }
   }
-  async onShuruRow(event: RowButtonEvent<ShuruTableDataSorted>) {
+  async editShuru(params: RowButtonEventBase<ShuruTableDataSorted>) {
     const data = this.data();
-    switch (event.button.event) {
-      case "编辑":
-        {
-          const item = await getShuruItem(this.message, this.shurus(), event.item);
-          if (item && data) {
-            const config = data.xinghaoConfig;
-            config.输入 = (config.输入 || []).map((v, i) => (i === event.rowIdx ? item : v));
-            this.refreshData();
-          }
-        }
-        break;
-      case "删除":
-        if (await this.message.confirm(`确定删除【${event.item.名字}】吗？`)) {
-          const config = data?.xinghaoConfig;
-          if (config) {
-            config.输入 = config.输入.filter((_, i) => i !== event.rowIdx);
-            this.refreshData();
-          }
-        }
+    const item = await getShuruItem(this.message, this.shurus(), params.item);
+    if (item && data) {
+      const config = data.xinghaoConfig;
+      config.输入 = (config.输入 || []).map((v, i) => (i === params.item.originalIndex ? item : v));
+      this.refreshData();
+    }
+  }
+  async deleteShuru(params: RowButtonEventBase<ShuruTableDataSorted>) {
+    if (await this.message.confirm(`确定删除【${params.item.名字}】吗？`)) {
+      const config = this.data()?.xinghaoConfig;
+      if (config) {
+        config.输入 = config.输入.filter((_, i) => i !== params.item.originalIndex);
+        this.refreshData();
+      }
     }
   }
 
@@ -147,7 +146,7 @@ export class XhmrmsbjXinghaoConfigComponent {
     const data = this.data();
     switch (event.button.event) {
       case "添加": {
-        const options = await this.bjmk.xinghaoOptionsManager.fetch();
+        const options = this.xinghaoOptions();
         const item = await getXuanxiangItem(this.message, options, this.xuanxiangs(), undefined, {useOptionOptions: true});
         if (item && data) {
           const config = data.xinghaoConfig;
@@ -162,7 +161,7 @@ export class XhmrmsbjXinghaoConfigComponent {
     switch (event.button.event) {
       case "编辑":
         {
-          const options = await this.bjmk.xinghaoOptionsManager.fetch();
+          const options = this.xinghaoOptions();
           const item = await getXuanxiangItem(this.message, options, this.xuanxiangs(), event.item, {useOptionOptions: true});
           if (item && data) {
             const config = data.xinghaoConfig;
@@ -183,7 +182,13 @@ export class XhmrmsbjXinghaoConfigComponent {
   }
 
   gongshis = computed(() => this.data()?.xinghaoConfig.公式 || []);
-  slgsInfo = computed<SuanliaogongshiInfo>(() => ({data: {算料公式: this.gongshis()}, slgs: {title: "型号公式"}}));
+  slgsInfo = computed<SuanliaogongshiInfo>(() => ({
+    data: {算料公式: this.gongshis()},
+    slgs: {
+      title: "型号公式",
+      docUrl: "https://kdocs.cn/l/cuAhAZuvkrpo"
+    }
+  }));
   onSlgsChange() {
     this.refreshData();
   }
@@ -346,9 +351,18 @@ export class XhmrmsbjXinghaoConfigComponent {
         }
       }
       if (ids.size > 0) {
-        const cads = await this.http.getCad({collection: this.suanliaoConfigCadCollection, ids: Array.from(ids), fields: ["_id", "名字"]});
+        const cads = await this.http.getCad(
+          {collection: this.suanliaoConfigCadCollection, ids: Array.from(ids), fields: ["_id", "名字"]},
+          {silent: true}
+        );
+        const ids2 = cads.cads.map((v) => v.id);
         for (const cad of cads.cads) {
           map.set(cad.id, cad);
+        }
+        const missingIds = difference(Array.from(ids), ids2);
+        if (missingIds.length > 0) {
+          const msg = "配件库，以下企料封口CAD找不到，请检查封口CAD是否导入或者已经删除，请检查数据：";
+          this.message.error(`${msg}<br>${getNamesStr(missingIds, "<br>")}`);
         }
       }
     }

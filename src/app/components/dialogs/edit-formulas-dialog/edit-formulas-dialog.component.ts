@@ -1,4 +1,4 @@
-import {Component, HostBinding, Inject, viewChild} from "@angular/core";
+import {Component, HostBinding, inject, viewChild} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Formulas} from "@app/utils/calc";
@@ -12,14 +12,12 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [FormulasEditorComponent, MatButtonModule]
 })
 export class EditFormulasDialogComponent {
+  dialogRef = inject<MatDialogRef<EditFormulasDialogComponent, EditFormulasOutput>>(MatDialogRef);
+  data = inject<EditFormulasInput>(MAT_DIALOG_DATA, {optional: true});
+
   @HostBinding("class") class = "ng-page";
 
   formulasEditor = viewChild<FormulasEditorComponent>("formulasEditor");
-
-  constructor(
-    public dialogRef: MatDialogRef<EditFormulasDialogComponent, EditFormulasOutput>,
-    @Inject(MAT_DIALOG_DATA) public data?: EditFormulasInput
-  ) {}
 
   async submit() {
     const formulasEditor = this.formulasEditor();

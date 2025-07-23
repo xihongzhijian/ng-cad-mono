@@ -27,7 +27,7 @@
               [cdkTextareaAutosize]="!!info.textarea.autosize"
               [cdkAutosizeMinRows]="info.textarea.autosize?.minRows"
               [cdkAutosizeMaxRows]="info.textarea.autosize?.maxRows"
-              [readonly]="info.readonly"
+              [readonly]="readonly()"
               [disabled]="disabled()"
               [autocomplete]="info.autocomplete || ''"
               [(ngModel)]="value"
@@ -62,7 +62,7 @@
           }
         }
         <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAutocompleteChange($event)">
-          @for (option of filteredOptions$ | async; track $index) {
+          @for (option of filteredOptions(); track $index) {
             <mat-option
               [value]="option.value"
               [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
@@ -111,7 +111,7 @@
         <input
           matInput
           [errorStateMatcher]="getErrorStateMatcher()"
-          [readonly]="info.readonly"
+          [readonly]="readonly()"
           [disabled]="disabled()"
           [autocomplete]="info.autocomplete || ''"
           [(ngModel)]="value"
@@ -163,18 +163,19 @@
         @for (item of asObject(value) | keyvalue: returnZero; track i; let i = $index) {
           <div class="flex-row">
             <mat-form-field style="width: 35%; flex: 0 0 auto">
-              @if (info.keyLabel) {
-                <mat-label>{{ info.keyLabel }}</mat-label>
+              @let keyLabel = getObjectKeyLabel(item.key, item.value);
+              @if (keyLabel) {
+                <mat-label>{{ keyLabel }}</mat-label>
               }
               <input
                 type="text"
                 matInput
                 [errorStateMatcher]="getErrorStateMatcherKey(item.key)"
-                [readonly]="info.readonly"
+                [readonly]="readonly()"
                 [disabled]="disabled()"
                 [autocomplete]="info.autocomplete || ''"
                 [value]="item.key"
-                [name]="name + '-key'"
+                [name]="name() + '-key'"
                 (change)="changeObjectKey2(value, item.key, $event)"
                 (input)="onObjectKeyInput($event, i)"
                 (input)="onInput($event)"
@@ -185,7 +186,7 @@
                 [matAutocompleteDisabled]="xuanxiangOptions.length < 1"
               />
               <mat-autocomplete #auto="matAutocomplete" (optionSelected)="changeObjectKey2(value, item.key, $event.option.value)">
-                @for (option of (filteredXuanxiangOptions$ | async)?.[i]; track $index) {
+                @for (option of filteredXuanxiangOptions()[i]; track $index) {
                   <mat-option
                     [value]="option.value"
                     [matTooltip]="option.label === option.value ? option.label : option.label + '=' + option.value"
@@ -204,18 +205,19 @@
               }
             </mat-form-field>
             <mat-form-field style="width: 0; flex: 1 1 0">
-              @if (info.valueLabel) {
-                <mat-label>{{ info.valueLabel }}</mat-label>
+              @let valueLabel = getObjectValueLabel(item.key, item.value);
+              @if (valueLabel) {
+                <mat-label>{{ valueLabel }}</mat-label>
               }
               <input
                 type="text"
                 matInput
                 [errorStateMatcher]="getErrorStateMatcherValue(item.key)"
-                [readonly]="info.readonly"
+                [readonly]="readonly()"
                 [disabled]="disabled()"
                 [autocomplete]="info.autocomplete"
                 [(ngModel)]="item.value"
-                [name]="name + '-value'"
+                [name]="name() + '-value'"
                 (change)="changeObjectValue2(value, item.key, item.value)"
                 (input)="onInput($event)"
                 (focus)="onFocus($event)"
@@ -261,7 +263,7 @@
             <button mat-button (click)="clear()">清空</button>
           }
         </div>
-        @if (value.length === 0 && !info.readonly) {
+        @if (value.length === 0 && editable()) {
           <div>
             <button mat-icon-button (click)="arrayAdd(value, '')">
               <mat-icon>add_circle</mat-icon>
@@ -270,30 +272,40 @@
         }
         @for (c of value; track j; let j = $index) {
           <mat-form-field>
-            @if (info.valueLabel) {
-              <mat-label>{{ info.valueLabel }}</mat-label>
+            @let valueLabel = getArrayValueLabel(j, c);
+            @if (valueLabel) {
+              <mat-label>{{ valueLabel }}</mat-label>
             }
             <input
               matInput
               type="text"
               [errorStateMatcher]="getErrorStateMatcherValue(j.toString())"
-              [readonly]="info.readonly"
+              [readonly]="readonly()"
               [disabled]="disabled()"
               [autocomplete]="info.autocomplete"
               [(ngModel)]="value[j]"
-              [name]="name + '-value'"
+              [name]="name() + '-value'"
               [ngModelOptions]="{standalone: true}"
+              (change)="changeArrayValue2(value, j, value[j])"
               (input)="onInput($event)"
               (focus)="onFocus($event)"
               (blur)="onBlur($event)"
               (click)="onClick($event)"
             />
             <ng-container matSuffix>
-              @if (!info.readonly) {
-                <button mat-icon-button (click)="arrayAdd(value, '', j + 1)">
+              @if (info.sortable) {
+                <button mat-icon-button (click)="arrayMoveUp(value, j)" [disabled]="j === 0">
+                  <mat-icon>arrow_upward</mat-icon>
+                </button>
+                <button mat-icon-button (click)="arrayMoveDown(value, j)" [disabled]="j === value.length - 1">
+                  <mat-icon>arrow_downward</mat-icon>
+                </button>
+              }
+              @if (editable()) {
+                <button mat-icon-button (click)="arrayAdd2(value, '', j + 1)">
                   <mat-icon>add_circle</mat-icon>
                 </button>
-                <button mat-icon-button (click)="arrayRemove(value, j)">
+                <button mat-icon-button (click)="arrayRemove2(value, j)">
                   <mat-icon>remove_circle</mat-icon>
                 </button>
               }
@@ -315,12 +327,7 @@
       @if (info.appearance === "switch") {
         <div class="toolbar">
           <div>{{ info.label }}</div>
-          <mat-slide-toggle
-            [(ngModel)]="value"
-            [disabled]="!!(info.disabled || info.readonly)"
-            (change)="onChange()"
-            (click)="onClick($event)"
-          ></mat-slide-toggle>
+          <mat-slide-toggle [(ngModel)]="value" [disabled]="!editable()" (change)="onChange()" (click)="onClick($event)"></mat-slide-toggle>
         </div>
       } @else {
         <mat-form-field>
@@ -333,9 +340,9 @@
           @switch (info.appearance) {
             @case ("radio") {
               <input matInput hidden [disabled]="info.disabled" />
-              <mat-radio-group [(ngModel)]="value">
-                <mat-radio-button [value]="true" [disabled]="info.disabled || info.readonly">是</mat-radio-button>
-                <mat-radio-button [value]="false" [disabled]="info.disabled || info.readonly">否</mat-radio-button>
+              <mat-radio-group [(ngModel)]="value" (ngModelChange)="onChange()">
+                <mat-radio-button [value]="true" [disabled]="!editable()">是</mat-radio-button>
+                <mat-radio-button [value]="false" [disabled]="!editable()">否</mat-radio-button>
               </mat-radio-group>
             }
             @case ("checkbox") {
@@ -343,7 +350,7 @@
               <mat-checkbox
                 [checked]="value"
                 [indeterminate]="info.indeterminate"
-                [disabled]="info.disabled || info.readonly"
+                [disabled]="!editable()"
                 (change)="value = $event.checked; onChange()"
                 (click)="onClick($event)"
               ></mat-checkbox>
@@ -358,8 +365,8 @@
                 (click)="onClick($event)"
               >
                 <ng-scrollbar matSelectViewport>
-                  <mat-option [value]="true" [disabled]="info.readonly">是</mat-option>
-                  <mat-option [value]="false" [disabled]="info.readonly">否</mat-option>
+                  <mat-option [value]="true" [disabled]="readonly()">是</mat-option>
+                  <mat-option [value]="false" [disabled]="readonly()">否</mat-option>
                 </ng-scrollbar>
               </mat-select>
             }
@@ -431,7 +438,8 @@
                 (selectionChange)="onChange()"
                 (click)="onClick($event)"
               >
-                @if (getOptionText(); as text) {
+                @let text = getOptionText();
+                @if (text) {
                   <mat-select-trigger [innerHtml]="text"></mat-select-trigger>
                 }
                 <ng-scrollbar matSelectViewport>
@@ -450,7 +458,8 @@
                 (selectionChange)="onChange()"
                 (click)="onClick($event)"
               >
-                @if (getOptionText(); as text) {
+                @let text = getOptionText();
+                @if (text) {
                   <mat-select-trigger [innerHtml]="text"></mat-select-trigger>
                 }
                 <ng-scrollbar matSelectViewport>
@@ -667,7 +676,7 @@
           (click)="editFormulas()"
         />
         <ng-container matSuffix>
-          @if (!info.readonly && !info.disabled) {
+          @if (editable()) {
             <button mat-icon-button (click)="editFormulas()">
               <mat-icon>edit</mat-icon>
             </button>

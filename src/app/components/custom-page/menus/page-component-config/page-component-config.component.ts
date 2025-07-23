@@ -1,4 +1,4 @@
-import {CdkDrag, CdkDragDrop, CdkDropList, transferArrayItem} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragDrop, CdkDragPlaceholder, CdkDropList, transferArrayItem} from "@angular/cdk/drag-drop";
 import {NgTemplateOutlet} from "@angular/common";
 import {Component, computed, inject, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
@@ -24,6 +24,7 @@ import {PageStatusService} from "../../services/page-status.service";
   selector: "app-page-component-config",
   imports: [
     CdkDrag,
+    CdkDragPlaceholder,
     CdkDropList,
     ClickStopPropagationDirective,
     FormsModule,

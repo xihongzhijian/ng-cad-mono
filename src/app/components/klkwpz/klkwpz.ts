@@ -31,6 +31,7 @@ export interface KlkwpzItem {
   自增等距阵列?: KlkwpzItemMatrix;
   固定行列阵列?: KlkwpzItemMatrix;
   孔依附板材边缘?: BooleanCN;
+  订单号打标?: {font?: {family?: string; size?: number}};
 }
 
 export interface KlkwpzItemMatrix {
@@ -95,7 +96,8 @@ export class Klkwpz {
       类型: source.类型,
       增加指定偏移: source.增加指定偏移,
       自增等距阵列: source.自增等距阵列,
-      固定行列阵列: source.固定行列阵列
+      固定行列阵列: source.固定行列阵列,
+      订单号打标: source.订单号打标
     };
     return result;
   }
@@ -181,7 +183,8 @@ export class Klkwpz {
       "增加指定偏移",
       "固定行列阵列",
       "自增等距阵列",
-      "孔依附板材边缘"
+      "孔依附板材边缘",
+      "订单号打标"
     ]);
     delete (result as any).name;
     return result;

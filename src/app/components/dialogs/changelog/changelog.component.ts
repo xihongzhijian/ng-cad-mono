@@ -21,6 +21,8 @@ import {getOpenDialogFunc} from "../dialog.common";
   imports: [ImageComponent, MatButtonModule, MatDividerModule, MatIconModule, NgScrollbar, NgTemplateOutlet, SpinnerModule]
 })
 export class ChangelogComponent implements OnInit {
+  dialogRef = inject<MatDialogRef<ChangelogComponent, void>>(MatDialogRef);
+
   private http = inject(CadDataService);
   private status = inject(AppStatusService);
   private config = inject(AppConfigService);
@@ -48,8 +50,6 @@ export class ChangelogComponent implements OnInit {
   branch = computed(() => {
     return environment.beta ? "next" : "master";
   });
-
-  constructor(public dialogRef: MatDialogRef<ChangelogComponent, void>) {}
 
   ngOnInit() {
     this.getData();
