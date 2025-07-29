@@ -1,8 +1,7 @@
-import {Component, computed, inject, signal} from "@angular/core";
+import {Component, computed, inject, signal, viewChildren} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
-import {ErrorStateMatcher} from "@angular/material/core";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatIconModule} from "@angular/material/icon";
 import {joinOptions, splitOptions} from "@app/app.common";
@@ -11,7 +10,7 @@ import {CadData, CadZhankai, FlipType} from "@lucilor/cad-viewer";
 import {Utils} from "@mixins/utils.mixin";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
-import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
+import {getInputInfoGroup, InputInfoWithDataGetter, validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import {cloneDeep, difference, union} from "lodash";
@@ -44,17 +43,6 @@ export class CadZhankaiComponent extends Utils() {
   get emptyFlipItem(): CadZhankai["flip"][0] {
     return {kaiqi: "", chanpinfenlei: "", fanzhuanfangshi: ""};
   }
-  nameErrorMsgs = signal<string[]>([]);
-  nameMatcher: ErrorStateMatcher = {
-    isErrorState: (control) => {
-      const value = control?.value;
-      if (!value) {
-        return true;
-      }
-      return false;
-      // return this.data.filter((v) => v.name === value).length > 1;
-    }
-  };
 
   zhankais = signal<CadData["zhankai"]>([]);
 
@@ -63,8 +51,8 @@ export class CadZhankaiComponent extends Utils() {
     this.zhankais.set(cloneDeep(this.data));
   }
 
-  submit() {
-    if (this.valid()) {
+  async submit() {
+    if (await this.validate()) {
       this.dialogRef.close(this.zhankais());
     }
   }
@@ -77,13 +65,13 @@ export class CadZhankaiComponent extends Utils() {
     this.status.openCadInNewTab(item[key], "kailiaocadmuban");
   }
 
-  async selectCadmuban(item: CadZhankai, key: "kailiaomuban" | "neikaimuban") {
+  async selectCadmuban(item: CadZhankai, key: "kailiaomuban" | "neikaimuban", i: number) {
     const checkedItems = [item[key]];
     const result = await openCadListDialog(this.dialog, {data: {selectMode: "single", collection: "kailiaocadmuban", checkedItems}});
     if (result) {
       item[key] = result[0]?.id || "";
       this.zhankais.update((v) => {
-        v[0][key] = item[key];
+        v[i][key] = item[key];
         return [...v];
       });
     }
@@ -169,7 +157,7 @@ export class CadZhankaiComponent extends Utils() {
             clearable: true,
             suffixIcons: [
               {name: "open_in_new", onClick: () => this.openCadmuban(zhankai, "kailiaomuban")},
-              {name: "list", onClick: () => this.selectCadmuban(zhankai, "kailiaomuban")}
+              {name: "list", onClick: () => this.selectCadmuban(zhankai, "kailiaomuban", i)}
             ]
           }),
           getter.string("neikaimuban", {
@@ -177,7 +165,7 @@ export class CadZhankaiComponent extends Utils() {
             clearable: true,
             suffixIcons: [
               {name: "open_in_new", onClick: () => this.openCadmuban(zhankai, "neikaimuban")},
-              {name: "list", onClick: () => this.selectCadmuban(zhankai, "neikaimuban")}
+              {name: "list", onClick: () => this.selectCadmuban(zhankai, "neikaimuban", i)}
             ]
           })
         ]),
@@ -278,16 +266,14 @@ export class CadZhankaiComponent extends Utils() {
     });
   }
 
-  valid = computed(() => {
-    return this.nameErrorMsgs().every((v) => !v);
-  });
-  validate() {
-    const zhankais = this.zhankais();
-    this.nameErrorMsgs.set(
-      zhankais.map((zhankai) => {
-        return zhankai.name ? "" : "名字不能为空";
-      })
-    );
+  inputComponents = viewChildren(InputComponent);
+  async validate() {
+    const {errorMsg} = await validateForm(this.inputComponents());
+    if (errorMsg) {
+      this.message.error(errorMsg);
+      return false;
+    }
+    return true;
   }
 }
 
