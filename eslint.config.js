@@ -1,3 +1,4 @@
+import {includeIgnoreFile} from "@eslint/compat";
 import {FlatCompat} from "@eslint/eslintrc";
 import js from "@eslint/js";
 import prettier from "eslint-plugin-prettier";
@@ -11,52 +12,10 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
   allConfig: js.configs.all
 });
+const gitignorePath = fileURLToPath(new URL(".gitignore", import.meta.url));
 
 export default [
-  {
-    ignores: [
-      "dist",
-      "tmp",
-      ".tmp",
-      "out-tsc",
-      "bazel-out",
-      "**/node_modules",
-      "**/chrome-profiler-events*.json",
-      "**/speed-measure-plugin*.json",
-      ".idea",
-      "**/.project",
-      "**/.classpath",
-      "**/.c9/",
-      "**/*.launch",
-      "**/.settings/",
-      "**/*.sublime-workspace",
-      ".vscode/*",
-      "!.vscode/settings.json",
-      "!.vscode/tasks.json",
-      "!.vscode/launch.json",
-      "!.vscode/extensions.json",
-      ".history/*",
-      ".angular/cache",
-      ".sass-cache",
-      "connect.lock",
-      "coverage",
-      "libpeerconnection.log",
-      "**/npm-debug.log",
-      "**/yarn-error.log",
-      "**/testem.log",
-      "typings",
-      "**/.DS_Store",
-      "**/Thumbs.db",
-      "**/.yarn",
-      "/lib",
-      "/dist",
-      "/test",
-      "src/assets/json",
-      "packages/*/dist",
-      "packages/*/lib",
-      "**/vite.config.ts"
-    ]
-  },
+  includeIgnoreFile(gitignorePath, "Imported .gitignore patterns"),
   {
     languageOptions: {
       globals: {}
@@ -126,7 +85,7 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-deprecated": "warn",
       "no-shadow": "off",
-      "@typescript-eslint/no-shadow": ["error",{ignoreTypeValueShadow: true}],
+      "@typescript-eslint/no-shadow": ["error", {ignoreTypeValueShadow: true}],
       "no-empty": [
         "error",
         {
