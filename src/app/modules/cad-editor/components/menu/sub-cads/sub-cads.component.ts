@@ -426,12 +426,12 @@ export class SubCadsComponent implements OnInit, OnDestroy {
         }
         data.entities.merge(resData.entities);
         data.blocks = resData.blocks;
-        await this.status.openCad();
+        await this.status.openCad({data});
       }
     } else {
       const success = await uploadAndReplaceCad(file, data, !!mainCad, this.message, this.http);
       if (success) {
-        await this.status.openCad();
+        await this.status.openCad({data});
       }
     }
   }
