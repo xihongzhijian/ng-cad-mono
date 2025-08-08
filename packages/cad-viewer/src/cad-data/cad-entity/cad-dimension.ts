@@ -71,6 +71,7 @@ export abstract class CadDimension extends CadEntity {
   constructor(data: any = {}, resetId = false) {
     super(data, resetId);
     this.dimstyle = data.dimstyle || "";
+    this.hideDimLines = !!data.hideDimLines;
     this.setStyle(data.style || {});
     if (data.font_size) {
       this.setStyle({text: {size: data.font_size}});
@@ -79,7 +80,6 @@ export abstract class CadDimension extends CadEntity {
     this.qujian = data.qujian ?? "";
     this.ref = data.ref ?? "entity1";
     this.quzhifanwei = data.quzhifanwei ?? "";
-    this.hideDimLines = !!data.hideDimLines;
     this.xianshigongshiwenben = data.xianshigongshiwenben ?? "";
     this.xiaoshuchuli = data.xiaoshuchuli ?? "四舍五入";
     this.算料单缩放标注文字 = !!data.算料单缩放标注文字;

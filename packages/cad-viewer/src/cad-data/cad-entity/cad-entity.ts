@@ -176,8 +176,8 @@ export abstract class CadEntity extends ColoredObject {
     }
     this.children = new CadEntities(data.children, resetId);
     this.children.forEach((c) => (c.parent = this));
-    this.selectable = data.selectable ?? true;
-    this.selected = data.selected ?? false;
+    this.selectable = data.selectable ?? cadEntityDefaultValues.selectable;
+    this.selected = data.selected ?? cadEntityDefaultValues.selected;
     if (data.parent instanceof CadEntity) {
       this.parent = data.parent;
     }
@@ -279,6 +279,8 @@ export abstract class CadEntity extends ColoredObject {
         dashArray: this.dashArray,
         visible: this.visible,
         opacity: this.opacity,
+        selectable: this.selectable,
+        selected: this.selected,
         calcBoundingRect: this.calcBoundingRect,
         calcBoundingRectForce: this.calcBoundingRectForce
       },
@@ -348,6 +350,8 @@ export abstract class CadEntity extends ColoredObject {
 export const cadEntityDefaultValues: Partial<CadEntity> = {
   visible: true,
   opacity: 1,
+  selectable: true,
+  selected: false,
   calcBoundingRect: true,
   calcBoundingRectForce: false
 };

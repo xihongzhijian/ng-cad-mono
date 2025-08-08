@@ -18,8 +18,10 @@ export interface CadStyle {
 
 export interface LineStyle {
   color?: csstype.Properties["color"];
+  fillColor?: csstype.Properties["color"];
   dashArray?: number[];
   padding?: number | number[];
+  forcePadding?: boolean;
   width?: number;
 }
 
@@ -27,7 +29,7 @@ export interface CadDimensionStyle {
   color?: csstype.Properties["color"];
   dimensionLine?: {hidden?: boolean} & LineStyle;
   extensionLines?: {hidden?: boolean; length?: number} & LineStyle;
-  arrows?: {hidden?: boolean; color?: csstype.Properties["color"]; size?: number};
+  arrows?: {hidden?: boolean; color?: csstype.Properties["color"]; size?: number; block?: string | string[]};
   text?: {hidden?: boolean} & Partial<FontStyle>;
 }
 

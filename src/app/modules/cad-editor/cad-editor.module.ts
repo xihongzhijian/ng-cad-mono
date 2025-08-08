@@ -21,7 +21,6 @@ import {ColorCircleModule} from "ngx-color/circle";
 import {NgScrollbarModule} from "ngx-scrollbar";
 import {CadEditorComponent} from "./components/cad-editor/cad-editor.component";
 import {CadPointsComponent} from "./components/cad-points/cad-points.component";
-import {CadDimensionFormComponent} from "./components/dialogs/cad-dimension-form/cad-dimension-form.component";
 import {CadLayerComponent} from "./components/dialogs/cad-layer/cad-layer.component";
 import {CadAssembleComponent} from "./components/menu/cad-assemble/cad-assemble.component";
 import {CadDimensionComponent} from "./components/menu/cad-dimension/cad-dimension.component";
@@ -37,7 +36,6 @@ import {ToolbarComponent} from "./components/menu/toolbar/toolbar.component";
   imports: [
     CadAssembleComponent,
     CadDimensionComponent,
-    CadDimensionFormComponent,
     CadEditorComponent,
     CadInfoComponent,
     CadLayerComponent,

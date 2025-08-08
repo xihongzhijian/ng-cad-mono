@@ -1,7 +1,6 @@
-import {Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
+import {ChangeDetectorRef, Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
-import {MatDialog} from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from "@angular/material/input";
@@ -24,7 +23,6 @@ import {MessageService} from "@modules/message/services/message.service";
 import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadStatusEditDimension} from "@services/cad-status";
-import {openCadDimensionFormDialog} from "../../dialogs/cad-dimension-form/cad-dimension-form.component";
 
 @Component({
   selector: "app-cad-dimension",
@@ -33,8 +31,8 @@ import {openCadDimensionFormDialog} from "../../dialogs/cad-dimension-form/cad-d
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatSlideToggleModule]
 })
 export class CadDimensionComponent implements OnInit, OnDestroy {
+  private cd = inject(ChangeDetectorRef);
   private config = inject(AppConfigService);
-  private dialog = inject(MatDialog);
   private message = inject(MessageService);
   private status = inject(AppStatusService);
 
@@ -228,10 +226,11 @@ export class CadDimensionComponent implements OnInit, OnDestroy {
     const dimensions = this.dimensions();
     const dimension = dimensions[i];
     if (dimension instanceof CadDimensionLinear) {
-      const dimension2 = await openCadDimensionFormDialog(this.dialog, {data: {data: dimension}, disableClose: true});
-      if (dimension2) {
-        await this.status.cad.render(dimension2);
-        this.status.highlightDimensions([dimension2]);
+      const collection = this.status.collection();
+      const result = await openCadDimensionForm(collection, this.message, this.status.cad, dimension);
+      if (result) {
+        await this.status.cad.render(dimension);
+        this.status.highlightDimensions([dimension]);
         this.dimensions.update((v) => [...v]);
       }
     }
@@ -319,23 +318,19 @@ export class CadDimensionComponent implements OnInit, OnDestroy {
 
   async editAllDimensions() {
     const dimension0 = new CadDimensionLinear();
-    const keys: OpenCadDimensionFormKey[] = ["字体大小"];
+    const keys: OpenCadDimensionFormKey[] = ["字体大小", "箭头"];
     const collection = this.status.collection();
     const cad = this.status.cad;
     const result = await openCadDimensionForm(collection, this.message, cad, dimension0, keys);
     if (result) {
-      for (const dimension of cad.data.entities.dimension) {
+      const dimensions = cad.data.entities.dimension;
+      for (const dimension of dimensions) {
         if (!(dimension instanceof CadDimensionLinear)) {
           continue;
         }
-        for (const key of keys) {
-          switch (key) {
-            case "字体大小":
-              dimension.setStyle({text: {size: dimension0.style?.text?.size}});
-          }
-        }
+        dimension.setStyle(dimension.style);
       }
-      cad.render();
+      await cad.render(dimensions);
     }
   }
 }

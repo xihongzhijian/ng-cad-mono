@@ -43,6 +43,7 @@ import {CadOptionsInput} from "@components/dialogs/cad-options/cad-options.types
 import {openEditFormulasDialog} from "@components/dialogs/edit-formulas-dialog/edit-formulas-dialog.component";
 import {getTypeOf, isTypeOf, ObjectOf, queryString, selectFiles, sortArrayByLevenshtein, timeout, ValueOf} from "@lucilor/utils";
 import {Utils} from "@mixins/utils.mixin";
+import {TypedTemplateDirective} from "@modules/directives/typed-template.directive";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {GetOptionsResultItem} from "@modules/http/services/cad-data.service.types";
 import {ImageComponent} from "@modules/image/components/image/image.component";
@@ -92,7 +93,8 @@ import {getErrorMsgs, parseObjectString, validateValue} from "./input.utils";
     MatTooltipModule,
     NgScrollbarModule,
     NgTemplateOutlet,
-    TextFieldModule
+    TextFieldModule,
+    TypedTemplateDirective
   ]
 })
 export class InputComponent extends Utils() implements AfterViewInit, DoCheck {

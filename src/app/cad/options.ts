@@ -1,6 +1,7 @@
-import {CadAxis, CadDimension, CadDimensionEntity, FlipType} from "@lucilor/cad-viewer";
+import {imgEmpty} from "@app/app.common";
+import {CadAxis, CadDimension, CadDimensionBlock, cadDimensionBlocks, CadDimensionEntity, FlipType} from "@lucilor/cad-viewer";
 import {ObjectOf} from "@lucilor/utils";
-import {InputInfoOptions} from "@modules/input/components/input.types";
+import {InputInfoOption, InputInfoOptions} from "@modules/input/components/input.types";
 
 export const cadOptions = {
   bancaihoudufangxiang: {
@@ -93,7 +94,35 @@ export const cadDimensionOptions = {
       {value: "maxLength"}
     ] satisfies InputInfoOptions<CadDimension["ref"]>
   },
-  axis: {values: ["x", "y"] satisfies InputInfoOptions<CadAxis>, defaultValue: "x"}
+  axis: {values: ["x", "y"] satisfies InputInfoOptions<CadAxis>, defaultValue: "x"},
+  block: {
+    values: cadDimensionBlocks.map((block) => {
+      const map: Record<CadDimensionBlock, string> = {
+        "": "实心闭合",
+        CLOSEDBLANK: "空心闭合",
+        Closed: "闭合",
+        Dot: "点",
+        ARCHTICK: "建筑标记",
+        Oblique: "倾斜",
+        Open: "打开",
+        Origin: "指示原点",
+        Origin2: "指示原点2",
+        Open90: "直角",
+        Open30: "30度角",
+        DotSmall: "小点",
+        DotBlank: "空心点",
+        Small: "空心小点",
+        BoxFilled: "方框",
+        BoxBlank: "实心方框",
+        DatumBlank: "基准三角形",
+        DatumFilled: "实心基准三角形",
+        Integral: "积分"
+      } as const;
+      const result: InputInfoOption<CadDimensionBlock> = {value: block, label: map[block] ?? block, img: imgEmpty};
+      return result;
+    }),
+    defaultValue: ""
+  }
 } as const;
 
 export const cadOptionOptions: ObjectOf<{values: string[]; defaultValue: string}> = {

@@ -14,3 +14,26 @@ export const entityTypesMap: Record<EntityTypeKey, EntityType> = (() => {
 })();
 
 export type CadAxis = "x" | "y";
+
+export const cadDimensionBlocks = [
+  "",
+  "CLOSEDBLANK",
+  "Closed",
+  "Dot",
+  "DotSmall",
+  "DotBlank",
+  "Small",
+  "Oblique",
+  "ARCHTICK",
+  "Open",
+  "Open30",
+  "Open90",
+  "Origin",
+  "Origin2",
+  "BoxFilled",
+  "BoxBlank",
+  "DatumFilled",
+  "DatumBlank",
+  "Integral"
+] as const;
+export type CadDimensionBlock = (typeof cadDimensionBlocks)[number];

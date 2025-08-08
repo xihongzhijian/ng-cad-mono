@@ -141,4 +141,6 @@ export class CadStylizer {
       }
     });
   }
+
+  static getPlainDimArrowBlock = (block: string) => block.replace(/^_/, "");
 }

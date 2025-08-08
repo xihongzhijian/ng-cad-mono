@@ -198,7 +198,16 @@ export class CadViewer extends EventEmitter {
     return this;
   }
 
-  // TODO: get/set cad position
+  get position() {
+    const box = this.draw.viewbox();
+    return [box.x, box.y];
+  }
+  set position(value: [number, number]) {
+    const box = this.draw.viewbox();
+    box.x = value[0];
+    box.y = value[1];
+    this.draw.viewbox(box);
+  }
 
   moveX(dx: number) {
     const box = this.draw.viewbox();
@@ -206,14 +215,12 @@ export class CadViewer extends EventEmitter {
     this.draw.viewbox(box);
     return this;
   }
-
   moveY(dy: number) {
     const box = this.draw.viewbox();
     box.y -= dy;
     this.draw.viewbox(box);
     return this;
   }
-
   move(dx: number, dy: number) {
     const box = this.draw.viewbox();
     box.x -= dx;
@@ -381,8 +388,8 @@ export class CadViewer extends EventEmitter {
       for (const path of paths) {
         const {edges, vertices} = path;
         const edgePoints = edges.map((v) => v.start);
-        drawResult = drawResult.concat(drawShape(el, edgePoints, "fill", 0));
-        drawResult = drawResult.concat(drawShape(el, vertices, "fill", drawResult.length));
+        drawResult = drawResult.concat(drawShape(el, edgePoints, {color: "fill", i: 0}));
+        drawResult = drawResult.concat(drawShape(el, vertices, {color: "fill", i: drawResult.length}));
       }
       if (!drawResult.length) {
         drawResult = [];

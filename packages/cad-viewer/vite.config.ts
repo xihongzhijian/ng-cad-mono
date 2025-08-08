@@ -7,7 +7,7 @@ export default defineConfig(({mode}) => {
   switch (mode) {
     case "development":
       return {
-        plugins: [dts(), cssInjectedByJsPlugin()],
+        plugins: [dts(), cssInjectedByJsPlugin({topExecutionPriority: false})],
         build: {
           outDir: "lib",
           emptyOutDir: false,

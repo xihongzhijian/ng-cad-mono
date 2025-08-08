@@ -56,7 +56,7 @@ export abstract class CadLineLike extends CadEntity {
   get minY() {
     return Math.min(this.start.y, this.end.y);
   }
-  abstract curve: Curve;
+  abstract readonly curve: Curve;
   swapped: boolean;
   mingzi: string;
   mingzi2: string;

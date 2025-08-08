@@ -128,3 +128,20 @@
     color: var(--mat-form-field-error-text-color);
   }
 }
+
+// overlay
+mat-option {
+  ::ng-deep {
+    .mdc-list-item__primary-text {
+      display: flex;
+      align-items: center;
+      > *:not(:last-child) {
+        margin-right: 5px;
+      }
+
+      img {
+        height: 2em;
+      }
+    }
+  }
+}

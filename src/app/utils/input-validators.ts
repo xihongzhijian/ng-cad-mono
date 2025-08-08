@@ -8,8 +8,18 @@ export class CustomValidators {
     if (!value) {
       return null;
     }
-    if (!/^\d+(.\d+)?-\d+(.\d+)?$/.test(value)) {
-      return {取值范围不符合格式: true};
+    if (!/^\d+(.\d+)?[-~]\d+(.\d+)?$/.test(value)) {
+      return {numberRange: "区间应有且仅有两个数字，且以~或-连接。"};
+    }
+    return null;
+  };
+  static stringRangeStr: ValidatorFn = (control) => {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+    if (!/^[^-~]+[-~][^-~]+$/.test(value)) {
+      return {stringRange: "区间应有且仅有一个~或-，且该符号不位于开头或结尾。"};
     }
     return null;
   };
