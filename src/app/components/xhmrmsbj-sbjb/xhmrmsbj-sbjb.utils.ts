@@ -159,7 +159,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
       {type: "string", field: "门铰", width: "80px"},
       {type: "string", field: "门扇厚度", width: "80px"},
       {type: "string", field: "包边方向", width: "80px"},
-      {type: "string", field: "条件", width: "80px"},
+      {type: "string", field: "条件", style: {flex: "1 0 180px"}},
       ...optionalCols2,
       ...optionalCols1,
       {type: "string", field: "双开门扇宽生成方式", hidden: !show双开门扇宽生成方式(fenlei), width: "110px"},
