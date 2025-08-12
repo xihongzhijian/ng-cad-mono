@@ -98,7 +98,7 @@
     "@typescript-eslint/utils": "^8.39.0",
     "angular-animations": "^0.11.0",
     "axios": "^1.11.0",
-    "compressing": "^1.10.3",
+    "compressing": "^2.0.0",
     "cypress": "^14.5.3",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
