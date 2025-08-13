@@ -64,4 +64,5 @@ export interface PrintCadsParams {
   dropDownKeys?: string[];
   projectName?: string;
   errors?: string[];
+  printType?: string;
 }
