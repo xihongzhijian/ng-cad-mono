@@ -55,7 +55,7 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
   wmm: WindowMessageManager | null = null;
 
   table = "p_xinghao";
-  field = signal<"gongshishuru">("gongshishuru");
+  field = signal<"gongshishuru" | "houbangongshishuru">("gongshishuru");
   xinghao = signal<XinghaoData | null>(null);
   xinghaoEff = effect(() => {
     this.initJsonEditor();
@@ -132,7 +132,7 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
       const props: Partial<JSONEditorPropsOptional> = {mode: Mode.tree, onChange: this.jsonEditorOnChange.bind(this)};
       this.jsonEditor = createJSONEditor({target: el, props});
     }
-    const text = this.xinghao()?.gongshishuru ?? "";
+    const text = this.xinghao()?.[this.field()] ?? "";
     const json = tryParseJson<输入[]>(text, [
       {名字: "", 可以修改: true, 下单显示请输入: false, 默认值: "", 取值范围: "0-9000", 生效条件: ""}
     ]);
@@ -147,7 +147,7 @@ export class XinghaoGongshishuruComponent implements OnInit, OnDestroy {
       return;
     }
     if (content.text) {
-      this.xinghao.set({...xinghao, gongshishuru: content.text});
+      this.xinghao.set({...xinghao, [this.field()]: content.text});
     } else if (content.json) {
       this.setShurus(content.json);
     }
