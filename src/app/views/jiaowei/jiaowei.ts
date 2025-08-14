@@ -88,6 +88,16 @@ export class Jiaowei {
           {anchor: "门扇底部", distance: 0}
         ];
         break;
+      case 6:
+        dataItem.items = [
+          {anchor: "门扇顶部", distance: 0},
+          {anchor: "门扇顶部", distance: 0},
+          {anchor: "门扇顶部", distance: 0},
+          {anchor: "门扇底部", distance: 0},
+          {anchor: "门扇底部", distance: 0},
+          {anchor: "门扇底部", distance: 0}
+        ];
+        break;
       default:
         return;
     }

@@ -52,7 +52,7 @@ export class JiaoweiComponent {
     if (!jiaowei) {
       return;
     }
-    for (const num of ["2", "3", "4", "5"]) {
+    for (const num of ["2", "3", "4", "5", "6"]) {
       if (!jiaowei.data[num]) {
         jiaowei.addItem({条件: [`门铰数量==${num}`]});
       }
@@ -108,7 +108,7 @@ export class JiaoweiComponent {
         const distanceInput = getter2.numberWithUnit("distance", "mm", {label: "", style: {width: "100px"}});
         updateDisabled2();
         item.inputInfoGroups.push({
-          name: `铰位${i + 1}中⼼Y距离`,
+          name: `铰位${i + 1}中心Y距离`,
           infos: [anchorInput, distanceInput]
         });
       }
