@@ -317,7 +317,7 @@ export class SuanliaogongshiComponent {
       return;
     }
     const gongshi = data.from;
-    const names = [this.title(), getDateTimeString()];
+    const names = [this.title(), getDateTimeString({fmt: "yyyyMMdd"})];
     const name0 = getValue(this.exportFilename(), this.message);
     if (name0) {
       names.unshift(name0);

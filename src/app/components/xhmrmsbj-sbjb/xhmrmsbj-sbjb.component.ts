@@ -796,7 +796,7 @@ export class XhmrmsbjSbjbComponent {
       const {产品分类, 锁边铰边数据} = item;
       sheets.push({title: 产品分类, dataArray: exportXhmrmsbjSbjbItemSbjbs(产品分类, 锁边铰边数据)});
     }
-    const name = [this.xinghaoName(), "锁边铰边", getDateTimeString()].join("_");
+    const name = [this.xinghaoName(), "锁边铰边", getDateTimeString({fmt: "yyyyMMdd"})].join("_");
     await this.http.exportExcel({data: {name, sheets}});
   }
   async import() {

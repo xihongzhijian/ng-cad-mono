@@ -513,7 +513,7 @@ export class CadListComponent implements AfterViewInit {
       params = {ids, collection};
     }
     const {cads} = await this.http.getCad(params);
-    const title = getDateTimeString();
+    const title = getDateTimeString({fmt: "yyyyMMdd"});
     const cads2 = cads.map((v) => v.export());
     await this.message.exportData(cads2, `cads_${title}`);
   }

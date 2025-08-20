@@ -86,9 +86,29 @@ export const getNameWithSuffix = (names: string[], name: string, suffix: string,
 export const getInsertName = (names: string[], name: string) => getNameWithSuffix(names, name, "", 1);
 export const getCopyName = (names: string[], name: string) => getNameWithSuffix(names, name, "_复制", 0);
 
-export const getDateTimeString = (params?: {dateTime?: DateTime; fmt?: string; opts?: LocaleOptions}) => {
-  const {dateTime = DateTime.now(), fmt = "yyyyMMdd", opts} = params || {};
-  return dateTime.toFormat(fmt, opts);
+export const getDateTime = (params?: {dateTime?: DateTime | Date | string | number; fmt?: string; opts?: LocaleOptions}) => {
+  const {dateTime, fmt = "yyyy-MM-dd HH:mm:ss"} = params || {};
+  let dateTime2: DateTime | undefined;
+  if (typeof dateTime === "number" && !isNaN(dateTime)) {
+    dateTime2 = DateTime.fromMillis(dateTime);
+  } else if (typeof dateTime === "string") {
+    const n = Number(dateTime);
+    if (isNaN(n)) {
+      dateTime2 = DateTime.fromFormat(dateTime, fmt);
+    } else {
+      dateTime2 = DateTime.fromMillis(n);
+    }
+  } else if (dateTime instanceof Date) {
+    dateTime2 = DateTime.fromJSDate(dateTime);
+  } else if (dateTime instanceof DateTime) {
+    dateTime2 = dateTime;
+  }
+  return dateTime2;
+};
+export const getDateTimeString = (params?: {dateTime?: DateTime | string | number; fmt?: string; opts?: LocaleOptions}) => {
+  const {fmt = "yyyy-MM-dd HH:mm:ss", opts} = params || {};
+  const dateTime2 = getDateTime(params) || DateTime.now();
+  return dateTime2.toFormat(fmt, opts);
 };
 
 export const getLinkStr = (url: string, title: string) => {
