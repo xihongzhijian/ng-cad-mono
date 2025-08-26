@@ -230,6 +230,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
       await getOptionInput("zuoshujubanben", "做数据版本"),
       getter.selectSingle("算料单模板", 算料单模板Options.slice(), {validators: Validators.required}),
       getter.boolean("下单显示没有配件的板材分组"),
+      getter.boolean("型材分色"),
       getter.boolean("是否需要激光开料", {validators: Validators.required}),
       getter.number("paixu", {label: "排序"}),
       getter.boolean("tingyong", {label: "停用"}),
@@ -247,6 +248,7 @@ export class LrsjXinghaosComponent extends LrsjPiece {
         订单流程: data.dingdanliucheng,
         做数据版本: data.zuoshujubanben,
         算料单模板: data.算料单模板,
+        型材分色: data.型材分色,
         是否需要激光开料: data.是否需要激光开料,
         下单显示没有配件的板材分组: data.下单显示没有配件的板材分组,
         数据已录入完成: data.数据已录入完成
