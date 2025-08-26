@@ -99,7 +99,7 @@
     "angular-animations": "^0.11.0",
     "axios": "^1.11.0",
     "compressing": "^2.0.0",
-    "cypress": "^14.5.4",
+    "cypress": "^15.0.0",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsdoc": "54.1.1",
