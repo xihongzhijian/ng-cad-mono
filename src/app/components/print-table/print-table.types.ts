@@ -1,13 +1,11 @@
 import {ObjectOf} from "@lucilor/utils";
-import {TableRenderInfo} from "@modules/table/components/table/table.types";
+import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
 
 export interface TableInfoData {
   标题: string;
-  表头: {
-    label: string;
-    value: string;
-    width: string[];
-  }[][];
+  表头?: TableInfoDataSideTable;
+  表尾?: TableInfoDataSideTable;
+  表头标题宽度?: string;
   表数据: TableInfoDataTable[];
   铣孔信息列宽: ObjectOf<number>;
   表换行索引?: ObjectOf<number[]>;
@@ -16,11 +14,21 @@ export interface TableInfoData {
   二维码?: string;
 }
 export type TableInfoDataTable = TableRenderInfo<TableData> & {
-  isHeader?: boolean;
+  columns: TableInfoDataColumnInfo[];
+  type?: "header" | "footer" | "main";
   型材信息?: 型材信息;
   hideTitle?: boolean;
   换行索引?: string;
+  hasSum?: boolean;
 };
+export type TableInfoDataColumnInfo = ColumnInfo<TableData> & {
+  sum?: true;
+};
+export type TableInfoDataSideTable = {
+  label: string;
+  value: string;
+  width?: string[];
+}[][];
 export interface 型材信息 {
   图示: string;
   型材颜色: string;

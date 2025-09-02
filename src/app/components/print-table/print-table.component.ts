@@ -13,7 +13,16 @@ import {TableComponent} from "@modules/table/components/table/table.component";
 import {ColumnInfo, RowButtonEvent, TableRenderInfo} from "@modules/table/components/table/table.types";
 import {Properties} from "csstype";
 import {toDataURL} from "qrcode";
-import {LvxingcaiyouhuaInfo, TableData, TableInfoData, TableInfoDataTable, XikongData, XikongDataRaw, 型材信息} from "./print-table.types";
+import {
+  LvxingcaiyouhuaInfo,
+  TableData,
+  TableInfoData,
+  TableInfoDataSideTable,
+  TableInfoDataTable,
+  XikongData,
+  XikongDataRaw,
+  型材信息
+} from "./print-table.types";
 
 @Component({
   selector: "app-print-table",
@@ -160,38 +169,55 @@ export class PrintTableComponent<T = any> implements OnInit {
       return;
     }
     const tableInfos: TableInfoDataTable[] = [];
-    for (const [i, value] of data.表头.entries()) {
-      const 表头列: ColumnInfo<TableData>[] = [];
-      let 表头列i = 0;
-      const headerStyle: Properties = {};
-      if (i < data.表头.length - 1) {
-        headerStyle.borderBottom = "none";
+    const addSideTable = (type: "header" | "footer", sideTable: TableInfoDataSideTable | undefined, labelWidth?: string) => {
+      if (!Array.isArray(sideTable) || sideTable.length < 1) {
+        return;
       }
-      for (const value2 of value) {
-        if (!value2.value) {
-          value2.value = Array(++表头列i).fill(" ").join("");
+      for (const [i, value] of sideTable.entries()) {
+        const cols: ColumnInfo<TableData>[] = [];
+        let colIdx = 0;
+        const headerStyle: Properties = {};
+        if (i < sideTable.length - 1) {
+          headerStyle.borderBottom = "none";
         }
-        const value3 = getValueString(value2.value);
-        表头列.push({
-          type: "string",
-          field: value2.label,
-          name: value2.label,
-          style: {...headerStyle, flex: `1 1 ${value2.width[1]}`}
-        });
-        表头列.push({
-          type: "string",
-          field: value3,
-          name: value3,
-          style: {...headerStyle, flex: `1 1 calc(${value2.width[0]} - ${value2.width[1]})`}
-        });
+        for (const value2 of value) {
+          if (!value2.value) {
+            value2.value = Array(++colIdx).fill(" ").join("");
+          }
+          const value3 = getValueString(value2.value);
+          let labelFlex = "1 1 0";
+          let valueFlex = "1 1 0";
+          if (Array.isArray(value2.width)) {
+            labelFlex = `0 0 ${value2.width[1]}`;
+            valueFlex = `0 0 calc(${value2.width[0]} - ${value2.width[1]})`;
+          } else {
+            if (labelWidth && value2.width) {
+              labelFlex = `0 0 ${labelWidth}`;
+              valueFlex = `0 0 calc(${value2.width} - ${labelWidth})`;
+            } else if (value2.width) {
+              labelFlex = `0 0 calc(${value2.width} / 2)`;
+              valueFlex = `0 0 calc(${value2.width} / 2)`;
+            } else if (labelWidth) {
+              labelFlex = `0 0 ${labelWidth}`;
+            }
+          }
+          cols.push({
+            type: "string",
+            field: value2.label,
+            name: value2.label,
+            style: {...headerStyle, flex: labelFlex}
+          });
+          cols.push({
+            type: "string",
+            field: value3,
+            name: value3,
+            style: {...headerStyle, flex: valueFlex}
+          });
+        }
+        tableInfos.push({type, noScroll: true, columns: cols, data: []});
       }
-      tableInfos.push({
-        isHeader: true,
-        noScroll: true,
-        columns: 表头列,
-        data: []
-      });
-    }
+    };
+    addSideTable("header", data.表头, data.表头标题宽度);
     for (const info of data.表数据) {
       info.class = info.title;
       info.compactColumnButton = true;
@@ -200,13 +226,34 @@ export class PrintTableComponent<T = any> implements OnInit {
           item.序号 = i + 1;
         }
       }
+      const sumCols: typeof info.columns = [];
       for (const col of info.columns) {
         if (col.type === "image") {
           col.noLazy = true;
         }
+        if (col.sum) {
+          sumCols.push(col);
+        }
       }
-      tableInfos.push({noScroll: true, ...info, titleStyle: {display: "none"}});
+      if (sumCols.length > 0) {
+        const item: TableData = {};
+        for (const col of sumCols) {
+          let sum = 0;
+          for (const item2 of info.data) {
+            const n = Number(item2[col.field]);
+            if (isNaN(n)) {
+              item2[col.field] = 0;
+            } else {
+              sum += n;
+            }
+          }
+          item[col.field] = `${col.name || col.field}汇总：${sum}`;
+        }
+        info.data.push(item);
+      }
+      tableInfos.push({type: "main", noScroll: true, ...info, titleStyle: {display: "none"}, hasSum: sumCols.length > 0});
     }
+    addSideTable("footer", data.表尾);
     this.title.set(data.标题);
     this.data.set(data);
     this.tableInfos.set(tableInfos);

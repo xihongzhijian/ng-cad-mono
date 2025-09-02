@@ -9,32 +9,32 @@
   </div>
   <div class="table-container flex-column flex-110">
     @for (info of tableInfos(); track $index) {
-      @if (info.title && !info.hideTitle) {
+      <div [class.hide-title]="!info.title || info.hideTitle" [class.has-sum]="info.hasSum" [attr.type]="info.type">
         <div class="table-title">{{ info.title }}</div>
-      }
-      @if (info["型材信息"]; as xingcaiInfo) {
-        <div class="xingcai-info">
-          <div class="xingcai-info-item 铝型材">
-            {{ xingcaiInfo["铝型材"] }}
+        @if (info["型材信息"]; as xingcaiInfo) {
+          <div class="xingcai-info">
+            <div class="xingcai-info-item 铝型材">
+              {{ xingcaiInfo["铝型材"] }}
+            </div>
+            <div class="xingcai-info-item 型材颜色">
+              {{ xingcaiInfo["型材颜色"] }}
+            </div>
+            <div class="xingcai-info-item 图示">
+              <app-image [src]="xingcaiInfo['图示']"></app-image>
+            </div>
+            <div class="xingcai-info-item 领料要求">
+              @for (item of xingcaiInfo["领料要求"]; track $index) {
+                <div>{{ getLlyqStr(item) }}</div>
+              }
+            </div>
           </div>
-          <div class="xingcai-info-item 型材颜色">
-            {{ xingcaiInfo["型材颜色"] }}
-          </div>
-          <div class="xingcai-info-item 图示">
-            <app-image [src]="xingcaiInfo['图示']"></app-image>
-          </div>
-          <div class="xingcai-info-item 领料要求">
-            @for (item of xingcaiInfo["领料要求"]; track $index) {
-              <div>{{ getLlyqStr(item) }}</div>
-            }
-          </div>
-        </div>
-      }
-      @if (info.isHeader) {
-        <app-table [info]="info"></app-table>
-      } @else {
-        <app-table #tables [info]="info" (rowButtonClick)="onRowButtonClick(info, $event)"></app-table>
-      }
+        }
+        @if (info.type === "main") {
+          <app-table #tables [info]="info" (rowButtonClick)="onRowButtonClick(info, $event)"></app-table>
+        } @else {
+          <app-table [info]="info"></app-table>
+        }
+      </div>
     }
   </div>
 </div>
