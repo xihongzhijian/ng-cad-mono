@@ -247,7 +247,8 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
       }
     } catch (error) {
       console.error(error);
-      this.message.alert("打印算料单出错");
+      const printType = this.printType();
+      this.message.alert(`打印${printType}出错`);
     } finally {
       this.spinner.hide(this.loaderId);
     }
