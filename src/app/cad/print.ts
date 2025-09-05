@@ -451,6 +451,7 @@ export const configCadDataForPrint = async (
     }
   };
   const configLine = (e: CadLineLike, colorNumber: number) => {
+    e.calcBoundingRect = true;
     if (isZxpj || colorNumber === 0x333333 || e.layer !== "0") {
       e.linewidth = linewidth;
     }
@@ -541,6 +542,7 @@ export const configCadDataForPrint = async (
     es = new CadEntities([data]);
   }
   for (const e of es.toArray()) {
+    e.calcBoundingRect = false;
     const colorNumber = e.getColor().rgbNumber();
     if (e instanceof CadLineLike) {
       configLine(e, colorNumber);
