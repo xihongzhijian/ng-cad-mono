@@ -372,7 +372,7 @@ export const configCadDataForPrint = async (
     }
   };
   const configMText = (e: CadMtext) => {
-    const {text, insert} = e;
+    const {insert} = e;
     const offsetInsert = (x: number, y: number) => {
       const configBefore = getConfigBefore(e);
       const insertOffsetBefore = configBefore.insertOffset;
@@ -401,7 +401,7 @@ export const configCadDataForPrint = async (
       } else if (e.fontStyle.size === 22) {
         offsetInsert(3, -7);
       }
-      e.text = text.replace("     ", "");
+      e.text = e.text.replace("     ", "");
       e.fontStyle.family = "仿宋";
       e.fontStyle.weight = "bolder";
       offsetFontSize(8);
@@ -416,14 +416,15 @@ export const configCadDataForPrint = async (
     if ((e.fontStyle.size || -1) < 24) {
       e.fontStyle.weight = "bolder";
     }
+    e.text = e.text.trim();
     if ([" ×  = 1", "=1"].includes(e.text) || !/\S+/.test(e.text)) {
       e.visible = false;
     }
 
     // * 自动换行
     const wrapedTextReg = /(^花件信息|自动换行)/;
-    if (wrapedTextReg.test(text)) {
-      let wrapedText = text.replace(wrapedTextReg, "");
+    if (wrapedTextReg.test(e.text)) {
+      let wrapedText = e.text.replace(wrapedTextReg, "");
       let lines = es.line;
       lines = lines.filter((ee) => ee.isVertical() && isBetween(insert.y, ee.minY, ee.maxY) && ee.start.x - insert.x > 50);
       let dMin = Infinity;
