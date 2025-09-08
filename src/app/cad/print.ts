@@ -1,5 +1,6 @@
 import {getOrderBarcode, replaceRemoteHost} from "@app/app.common";
 import {getPdfInfo, getPrintInfo} from "@app/utils/print";
+import {ProjectConfig} from "@app/utils/project-config";
 import {
   CadCircle,
   CadData,
@@ -1035,7 +1036,7 @@ export const printCads = async (params: PrintCadsParams) => {
         }
       }
     }
-    await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细);
+    await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细, params.projectConfig);
     img = await cad.toDataURL();
     imageContents1.push({image: img, width: localWidth, height: localHeight});
     if (img2) {
@@ -1095,7 +1096,12 @@ export const printCads = async (params: PrintCadsParams) => {
   return {url, errors, cad, pdfFile, imageContents};
 };
 
-const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物料明细: 型材物料明细List | undefined) => {
+const draw型材物料明细 = async (
+  cad: CadViewer,
+  data: CadData,
+  型材物料明细: 型材物料明细List | undefined,
+  projectConfig: ProjectConfig
+) => {
   if (!型材物料明细 || !型材物料明细.items) {
     return;
   }
@@ -1227,7 +1233,7 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
       addText(widths[2], "竖料", [x + widths[2] / 2, y - lineHeight * 0.75], [0.5, 0.5], {size: fontSizeText});
       x += widths[2];
 
-      const get切角Str = (items2: typeof items) => {
+      const get切角StrRaw = (items2: typeof items) => {
         const 双45Count = items2.filter((v) => v.左切角 === "45" && v.右切角 === "45").length;
         if (双45Count > 0) {
           return "双45";
@@ -1241,6 +1247,29 @@ const draw型材物料明细 = async (cad: CadViewer, data: CadData, 型材物�
           return "双90";
         }
         return "";
+      };
+      const 切角分隔符 = projectConfig.get("算料单型材物料明细切角分隔符");
+      const get切角Str = (items2: typeof items) => {
+        const raw = get切角StrRaw(items2);
+        if (切角分隔符) {
+          let arr: [number, number];
+          switch (raw) {
+            case "双45":
+              arr = [45, 45];
+              break;
+            case "单45":
+              arr = [45, 90];
+              break;
+            case "双90":
+              arr = [90, 90];
+              break;
+            default:
+              return raw;
+          }
+          return arr.join(切角分隔符);
+        } else {
+          return raw;
+        }
       };
 
       const 横料 = items.filter((v) => v.是横料 === "是");
