@@ -31,6 +31,7 @@ import {FetchManager} from "@app/utils/fetch-manager";
 import {getValueString} from "@app/utils/get-value";
 import {canItemMatchTogether, matchMongoData} from "@app/utils/mongo";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
+import {getIsVersion2024} from "@app/utils/table-data/zuoshuju-data";
 import {getTrbl} from "@app/utils/trbl";
 import mokuaidaxiaoData from "@assets/json/mokuaidaxiao.json";
 import {MokuaiItemCloseEvent} from "@components/bujumokuai/mokuai-item/mokuai-item.types";
@@ -55,7 +56,7 @@ import {FormulasComponent} from "@components/formulas/formulas.component";
 import {FormulaInfo} from "@components/formulas/formulas.types";
 import {getFormulaInfos} from "@components/formulas/formulas.utils";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
-import {选项} from "@components/lurushuju/xinghao-data";
+import {Xinghao, 选项} from "@components/lurushuju/xinghao-data";
 import {MenfengpeizhiItem} from "@components/menfeng-peizhi/menfeng-peizhi.types";
 import {MkdxpzEditorComponent} from "@components/mkdxpz-editor/mkdxpz-editor.component";
 import {MkdxpzEditorCloseEvent, MkdxpzEditorData} from "@components/mkdxpz-editor/mkdxpz-editor.types";
@@ -192,6 +193,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   step1Data: Step1Data = {options: {}, typesInfo: {}};
   // mokuais: ZixuanpeijianMokuaiItem[] = [];
   xinghao = signal<MrbcjfzXinghaoInfo | null>(null);
+  xinghao2 = signal<Xinghao | null>(null);
   xinghaoFormulas = computed(() => {
     const formulas = getFromulasFromString(this.xinghao()?.raw.gongshishuru);
     const shurus = this.data()?.xinghaoConfig.输入?.filter((v) => v.可以修改) || [];
@@ -248,6 +250,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.isFromOrder.set(false);
       const result = await this.http.getData<{
         xinghao: MrbcjfzXinghao;
+        xinghao2: Xinghao;
         xhmrmsbj: XhmrmsbjTableData;
         模块通用配置: Formulas;
         xinghaoOptions: OptionsAll;
@@ -258,6 +261,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         return;
       }
       this.xinghao.set(new MrbcjfzXinghaoInfo(table, result.xinghao));
+      this.xinghao2.set(result.xinghao2);
       this.tableData.set(result.xhmrmsbj);
       this.tongyongFormulas.set(result.模块通用配置);
       this.xinghaoOptions.set(result.xinghaoOptions);
@@ -688,7 +692,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
     const mokuaidaxiaoResult = this.activeMokuaidaxiaoResult();
     const keyMap = {总宽: "totalWidth", 总高: "totalHeight"} as const;
-    const isVersion2024 = this.data()?.isVersion2024;
+    const isVersion2024 = this.isVersion2024();
     if (!isVersion2024) {
       const name = node.层名字;
       for (const key in keyMap) {
@@ -1081,7 +1085,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
     const data = this.data();
     const isFromOrder = this.isFromOrder();
-    if (!data || isFromOrder || !data.isVersion2024) {
+    if (!data || isFromOrder || !this.isVersion2024()) {
       this.errors.set([]);
       return true;
     }
@@ -1356,9 +1360,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     }
   }
 
+  isVersion2024 = computed(() => {
+    const data = this.data();
+    const xinghao2 = this.xinghao2();
+    return data?.isVersion2024 || getIsVersion2024(xinghao2?.做数据版本);
+  });
   enableXinghaoConfig = computed(() => !this.isFromOrder());
-  enableSbjb = computed(() => !this.isFromOrder() && this.data()?.isVersion2024);
-  enableMfpz = computed(() => this.data()?.isVersion2024);
+  enableSbjb = computed(() => !this.isFromOrder() && this.isVersion2024());
+  enableMfpz = computed(() => this.isVersion2024());
   tabXinghaoConfig = computed(() => {
     const name = this.activeTabName();
     return isXhmrmsbjXinghaoConfigComponentType(name) ? name : null;
@@ -1512,8 +1521,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   canEditMokuaidaxiao = computed(() => !this.isFromOrder() || !this.activeMsbj()?.isVersion2024);
   async editMokuaidaxiao() {
-    const data = this.data();
-    if (data?.isVersion2024) {
+    if (this.isVersion2024()) {
       await this.editMkdcpz();
       return;
     }
@@ -1736,7 +1744,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
   }
 
   async getVarNames() {
-    if (this.data()?.isVersion2024) {
+    if (this.isVersion2024()) {
       return [];
     }
     this.wmm.postMessage("getVarNamesStart");
@@ -1756,7 +1764,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         xhmrmsbj,
         xinghao,
         data: {lastSuanliao},
-        isVersion2024: !!this.data()?.isVersion2024
+        isVersion2024: this.isVersion2024()
       }
     });
   }
@@ -1786,14 +1794,14 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
 
   getMokuaiTitle(mokuai: ZixuanpeijianMokuaiItem | null, withUrl: boolean) {
     if (withUrl) {
-      const url = getMokuaiTitle(mokuai, {mokuaiNameShort: true, status: this.status, isVersion2024: !!this.data()?.isVersion2024});
+      const url = getMokuaiTitle(mokuai, {mokuaiNameShort: true, status: this.status, isVersion2024: this.isVersion2024()});
       return this.domSanitizer.bypassSecurityTrustHtml(url);
     } else {
       return getMokuaiTitle(mokuai, {mokuaiNameShort: true});
     }
   }
 
-  canOpenMsbj = computed(() => !!this.data()?.isVersion2024);
+  canOpenMsbj = computed(() => this.isVersion2024());
   openedMsbj = signal<MsbjInfo | null>(null);
   openMsbj(id: number) {
     if (!this.canOpenMsbj()) {
