@@ -10,19 +10,19 @@ import {
 } from "@components/lurushuju/services/lrsj-status.utils";
 import {environment} from "@env";
 import {CadData} from "@lucilor/cad-viewer";
-import {keysOf} from "@lucilor/utils";
+import {keysOf, ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoOption, InputInfoSelect, InputInfoString} from "@modules/input/components/input.types";
 import {getInputInfoGroup, InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
-import {ColumnInfo, TableRenderInfo} from "@modules/table/components/table/table.types";
+import {ColumnInfo, TableRenderInfo, TableRenderInfoFilterable} from "@modules/table/components/table/table.types";
 import {cloneDeep, sample, sampleSize} from "lodash";
 import {
-  SbjbItemOptionalKey1,
-  SbjbItemOptionalKey2,
-  SbjbItemOptionalKey3,
-  sbjbItemOptionalKeys1,
-  sbjbItemOptionalKeys2,
-  sbjbItemOptionalKeys3,
+  SbjbItemCadKey1,
+  SbjbItemCadKey2,
+  SbjbItemCadKey3,
+  sbjbItemCadKeys1,
+  sbjbItemCadKeys2,
+  sbjbItemCadKeys3,
   XhmrmsbjSbjbItem,
   XhmrmsbjSbjbItemSbjb,
   XhmrmsbjSbjbItemSbjbCad,
@@ -30,69 +30,51 @@ import {
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
 
-export const getSbjbItemOptionalKeys = (fenlei: string): SbjbItemOptionalKey3[] => {
-  switch (fenlei) {
-    case "单门":
-      return ["锁边", "铰边", "锁框", "铰框", "顶框"];
-    case "子母对开":
-      return ["锁边", "铰边", "插销边", "小扇铰边", "铰框", "顶框"];
-    case "双开":
-      return ["锁边", "铰边", "插销边", "铰框", "顶框"];
-    default:
-      return [];
-  }
+export const sbjbItemCadKeysObj: ObjectOf<SbjbItemCadKey3[]> = {
+  单门: ["锁框", "铰框", "顶框", "锁边", "铰边"],
+  子母对开: ["铰框", "顶框", "插销边", "小扇铰边", "锁边", "铰边"],
+  双开: ["铰框", "顶框", "插销边", "锁边", "铰边"],
+  子母连开: ["铰框", "顶框", "小扇铰边", "插销边", "锁边", "铰边"],
+  四扇平分: ["铰框", "顶框", "铰边", "中锁边", "中铰边", "插销边", "锁边"],
+  四扇子母: ["铰框", "顶框", "铰边", "中锁边", "中铰边", "插销边", "锁边"],
+  六扇平分: ["铰框", "顶框", "铰边", "中锁边", "中铰边", "插销边", "锁边"]
 };
-export const getSbjbItemOptionalKeys1 = (fenlei: string) => {
-  const keys: SbjbItemOptionalKey1[] = [];
-  for (const key of getSbjbItemOptionalKeys(fenlei)) {
-    if (isSbjbItemOptionalKeys1(key)) {
+
+export const getSbjbItemCadKeys = (fenlei: string) => {
+  return sbjbItemCadKeysObj[fenlei] ?? [];
+};
+export const getSbjbItemCadKeys1 = (fenlei: string) => {
+  const keys: SbjbItemCadKey1[] = [];
+  for (const key of getSbjbItemCadKeys(fenlei)) {
+    if (isSbjbItemCadKeys1(key)) {
       keys.push(key);
     }
   }
   return keys;
 };
-export const getSbjbItemOptionalKeys2 = (fenlei: string) => {
-  const keys: SbjbItemOptionalKey2[] = [];
-  for (const key of getSbjbItemOptionalKeys(fenlei)) {
-    if (isSbjbItemOptionalKeys2(key)) {
+export const getSbjbItemCadKeys2 = (fenlei: string) => {
+  const keys: SbjbItemCadKey2[] = [];
+  for (const key of getSbjbItemCadKeys(fenlei)) {
+    if (isSbjbItemCadKeys2(key)) {
       keys.push(key);
     }
   }
   return keys;
 };
 
-export const getSbjbItemCadKeys = (fenlei: string): SbjbItemOptionalKey3[] => {
-  switch (fenlei) {
-    case "单门":
-      return ["铰框", "铰边", "锁边", "锁框", "顶框"];
-    case "子母对开":
-      return ["铰框", "铰框", "顶框", "小扇铰边", "插销边", "锁边", "铰边"];
-    case "双开":
-      return ["铰框", "铰框", "顶框", "铰边", "插销边", "锁边", "铰边"];
-    default:
-      return [];
-  }
+export const isSbjbItemCadKeys1 = (key: string, keys: SbjbItemCadKey1[] = sbjbItemCadKeys1.slice()): key is SbjbItemCadKey1 => {
+  return keys.includes(key as SbjbItemCadKey1);
+};
+export const isSbjbItemCadKeys2 = (key: string, keys: SbjbItemCadKey2[] = sbjbItemCadKeys2.slice()): key is SbjbItemCadKey2 => {
+  return keys.includes(key as SbjbItemCadKey2);
+};
+export const isSbjbItemOptionalKeys3 = (key: string): key is SbjbItemCadKey3 => {
+  return sbjbItemCadKeys3.includes(key as SbjbItemCadKey3);
 };
 
-export const isSbjbItemOptionalKeys1 = (
-  key: string,
-  keys: SbjbItemOptionalKey1[] = sbjbItemOptionalKeys1.slice()
-): key is SbjbItemOptionalKey1 => {
-  return keys.includes(key as SbjbItemOptionalKey1);
-};
-export const isSbjbItemOptionalKeys2 = (
-  key: string,
-  keys: SbjbItemOptionalKey2[] = sbjbItemOptionalKeys2.slice()
-): key is SbjbItemOptionalKey2 => {
-  return keys.includes(key as SbjbItemOptionalKey2);
-};
-export const isSbjbItemOptionalKeys3 = (key: string): key is SbjbItemOptionalKey3 => {
-  return sbjbItemOptionalKeys3.includes(key as SbjbItemOptionalKey3);
-};
+export const getSbjbCadName = (title: SbjbItemCadKey3) => (title === "小扇铰边" ? "铰边" : title);
 
-export const getSbjbCadName = (title: SbjbItemOptionalKey3) => (title === "小扇铰边" ? "铰边" : title);
-
-export const getXhmrmsbjSbjbItemSbjbCad = (title: SbjbItemOptionalKey3, cadId?: string) => {
+export const getXhmrmsbjSbjbItemSbjbCad = (title: SbjbItemCadKey3, cadId?: string) => {
   const result: XhmrmsbjSbjbItemSbjbCad = {name: getSbjbCadName(title), title};
   if (cadId) {
     result.cadId = cadId;
@@ -103,7 +85,7 @@ export const getXhmrmsbjSbjbItemSbjbCad = (title: SbjbItemOptionalKey3, cadId?: 
 export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: XhmrmsbjSbjbItemSbjb) => {
   const result = cloneDeep(item);
   const keysFrom = getSbjbItemCadKeys(formType);
-  const keysTo = getSbjbItemOptionalKeys(toType);
+  const keysTo = getSbjbItemCadKeys(toType);
   for (const key of keysFrom) {
     if (!keysTo.includes(key)) {
       delete result[key];
@@ -111,9 +93,9 @@ export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: 
   }
   for (const key of keysTo) {
     if (!keysFrom.includes(key)) {
-      if (isSbjbItemOptionalKeys1(key)) {
+      if (isSbjbItemCadKeys1(key)) {
         result[key] = "";
-      } else if (isSbjbItemOptionalKeys2(key)) {
+      } else if (isSbjbItemCadKeys2(key)) {
         result[key] = getSbjbItemSbjbItem();
       }
     }
@@ -135,12 +117,13 @@ export const convertXhmrmsbjSbjbItem = (formType: string, toType: string, item: 
 };
 
 export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenlei: string, activeSbjbItemIndex: WritableSignal<number>) => {
-  const optionalCols1 = getSbjbItemOptionalKeys1(fenlei).map((key) => {
-    const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {type: "string", field: key, style: {flex: "1 0 100px"}};
+  type T = XhmrmsbjSbjbItemSbjbSorted;
+  const cadCols1 = getSbjbItemCadKeys1(fenlei).map((key) => {
+    const col: ColumnInfo<T> = {type: "string", field: key, style: {flex: "1 0 100px"}};
     return col;
   });
-  const optionalCols2 = getSbjbItemOptionalKeys2(fenlei).map((key) => {
-    const col: ColumnInfo<XhmrmsbjSbjbItemSbjbSorted> = {
+  const cadCols2 = getSbjbItemCadKeys2(fenlei).map((key) => {
+    const col: ColumnInfo<T> = {
       type: "string",
       field: key,
       getString: (val) => val[key]?.名字 || "",
@@ -148,11 +131,16 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
     };
     return col;
   });
-  const info: TableRenderInfo<XhmrmsbjSbjbItemSbjbSorted> = {
+  const filterableCadKeys: SbjbItemCadKey2[] = ["锁边", "铰边"];
+  const filterableFields: TableRenderInfoFilterable<T>["fields"] = ["开启", "门铰", "门扇厚度"];
+  for (const key of filterableCadKeys) {
+    filterableFields.push({field: key, valueGetter: (item) => item[key]?.名字 || ""});
+  }
+  const info: TableRenderInfo<T> = {
     data: getSortedItems(data, (v) => v.排序 ?? 0),
     rowSelection: {mode: "multiple", noActive: true},
     filterable: {
-      fields: ["开启", "门铰", "门扇厚度", "锁边", "铰边"]
+      fields: filterableFields
     },
     columns: [
       {type: "string", field: "开启", width: "60px"},
@@ -160,8 +148,8 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
       {type: "string", field: "门扇厚度", width: "80px"},
       {type: "string", field: "包边方向", width: "80px"},
       {type: "string", field: "条件", style: {flex: "1 0 180px"}},
-      ...optionalCols2,
-      ...optionalCols1,
+      ...cadCols1,
+      ...cadCols2,
       {type: "string", field: "双开门扇宽生成方式", hidden: !show双开门扇宽生成方式(fenlei), width: "110px"},
       {
         type: "number",
@@ -310,8 +298,8 @@ export const exportXhmrmsbjSbjbItemSbjbs = (fenlei: string, items: XhmrmsbjSbjbI
     使用背面分体: false
   };
   const sbjbItemSbjbItemKeys = keysOf(emptySbjbItemSbjbItem);
-  const sbjbItemOptionalKeys1Local = getSbjbItemOptionalKeys1(fenlei);
-  const sbjbItemOptionalKeys2Local = getSbjbItemOptionalKeys2(fenlei);
+  const sbjbItemOptionalKeys1Local = getSbjbItemCadKeys1(fenlei);
+  const sbjbItemOptionalKeys2Local = getSbjbItemCadKeys2(fenlei);
   const header = [
     "开启",
     "门铰",
@@ -357,18 +345,18 @@ export const importXhmrmsbjSbjbItemSbjbs = (fenlei: string, dataArray: string[][
         continue;
       }
       let key2: keyof XhmrmsbjSbjbItemSbjbItem | null = null;
-      for (const optionalKeys2 of sbjbItemOptionalKeys2) {
+      for (const optionalKeys2 of sbjbItemCadKeys2) {
         if (key.startsWith(optionalKeys2)) {
           key2 = key.slice(optionalKeys2.length) as keyof XhmrmsbjSbjbItemSbjbItem;
           key = optionalKeys2;
           break;
         }
       }
-      const sbjbItemOptionalKeys01 = getSbjbItemOptionalKeys1(fenlei);
-      const sbjbItemOptionalKeys02 = getSbjbItemOptionalKeys2(fenlei);
-      if (isSbjbItemOptionalKeys1(key, sbjbItemOptionalKeys01)) {
+      const sbjbItemOptionalKeys01 = getSbjbItemCadKeys1(fenlei);
+      const sbjbItemOptionalKeys02 = getSbjbItemCadKeys2(fenlei);
+      if (isSbjbItemCadKeys1(key, sbjbItemOptionalKeys01)) {
         item[key] = value;
-      } else if (isSbjbItemOptionalKeys2(key, sbjbItemOptionalKeys02) && key2) {
+      } else if (isSbjbItemCadKeys2(key, sbjbItemOptionalKeys02) && key2) {
         let item2 = item[key];
         if (!item2) {
           item2 = getSbjbItemSbjbItem();

@@ -1,5 +1,5 @@
 import {算料公式, 输入, 选项} from "@components/lurushuju/xinghao-data";
-import {SbjbItemOptionalKey2} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
+import {SbjbItemCadKey2} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {MongodbDataFilterable} from "@modules/http/services/cad-data.service.types";
 import {MenshanKey} from "@views/xhmrmsbj/xhmrmsbj.types";
 
@@ -44,19 +44,19 @@ export interface QiliaoConfig {
 
 export const qiliaoPkwzNames = ["前刨坑", "后刨坑"] as const;
 export type QiliaoPkwzName = (typeof qiliaoPkwzNames)[number];
-export type QiliaoPkwz = SuanliaoConfigItem<QiliaoPkwzName, SbjbItemOptionalKey2, false>;
+export type QiliaoPkwz = SuanliaoConfigItem<QiliaoPkwzName, SbjbItemCadKey2, false>;
 
 export const qiliaoFtwzxsNames = ["分体位置显示"] as const;
 export type QiliaoFtwzxsName = (typeof qiliaoFtwzxsNames)[number];
-export type QiliaoFtwzxs = SuanliaoConfigItem<QiliaoFtwzxsName, SbjbItemOptionalKey2, false>;
+export type QiliaoFtwzxs = SuanliaoConfigItem<QiliaoFtwzxsName, SbjbItemCadKey2, false>;
 
 export const qiliaoQhfkNames = ["前封口", "后封口"] as const;
 export type QiliaoQhfkName = (typeof qiliaoQhfkNames)[number];
-export type QiliaoQhfk = SuanliaoConfigItem<QiliaoQhfkName, SbjbItemOptionalKey2, true>;
+export type QiliaoQhfk = SuanliaoConfigItem<QiliaoQhfkName, SbjbItemCadKey2, true>;
 
 export const qiliaoXnqlflNames = ["虚拟企料"] as const;
 export type QiliaoXnqlflName = (typeof qiliaoXnqlflNames)[number];
-export type QiliaoXnqlfl = SuanliaoConfigItem<QiliaoXnqlflName, SbjbItemOptionalKey2, false>;
+export type QiliaoXnqlfl = SuanliaoConfigItem<QiliaoXnqlflName, SbjbItemCadKey2, false>;
 
 export type SuanliaoConfigItemsGetter<T extends SuanliaoConfigItem> = (xinghaoConfig: XhmrmsbjXinghaoConfig) => T[];
 export type SuanliaoConfigItemsSetter<T extends SuanliaoConfigItem> = (xinghaoConfig: XhmrmsbjXinghaoConfig, items: T[]) => void;

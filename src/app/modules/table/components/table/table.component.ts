@@ -62,6 +62,7 @@ import {
   RowSelectionChange,
   TableButton,
   TableRenderInfo,
+  TableRenderInfoFilterable,
   ToolbarButtonEvent
 } from "./table.types";
 import {getInputInfosFromTableColumns} from "./table.utils";
@@ -142,7 +143,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     if (!filterable) {
       return null;
     }
-    let fields: (keyof T)[] | undefined;
+    let fields: TableRenderInfoFilterable<T>["fields"];
     if (typeof filterable === "object") {
       fields = filterable.fields;
     }
@@ -152,27 +153,38 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     }
     const form = this.filterForm;
     return fields.map((field) => {
-      const column = columns.find((v) => v.field === field);
+      let fieldStr: keyof T;
+      if (field && typeof field === "object") {
+        fieldStr = field.field;
+      } else {
+        fieldStr = field;
+      }
       let label = "搜索";
+      const column = columns.find((v) => v.field === fieldStr);
       if (column) {
-        label += `：${column.name || String(column.field)}`;
+        label += `：${column.name || String(fieldStr)}`;
       }
       const options = new Set<string>();
       for (const item of info.data) {
-        const value = getValueString(item[field]);
+        let value: string;
+        if (field && typeof field === "object" && typeof field.valueGetter === "function") {
+          value = field.valueGetter(item);
+        } else {
+          value = getValueString(item[fieldStr]);
+        }
         if (value) {
           options.add(value);
         }
       }
       const onChange = (val: string) => {
-        form.set(field, val);
+        form.set(fieldStr, val);
         this.filterTable();
       };
       const info2: InputInfo = {
         type: "string",
         label,
         clearable: true,
-        value: form.get(field) || "",
+        value: form.get(fieldStr) || "",
         options: Array.from(options),
         onInput: debounce(onChange, 100),
         onChange,

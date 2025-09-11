@@ -392,13 +392,13 @@
           }
           <mat-selection-list
             #selectionList
-            [disabled]="info.disabled"
+            [disabled]="!editable()"
             [multiple]="info.multiple"
             (selectionChange)="onListSelectionChange($event)"
             (click)="onClick($event)"
           >
             @for (option of options; track $index) {
-              <mat-list-option [value]="option.value" [disabled]="!editable()">
+              <mat-list-option [value]="option.value" [disabled]="option.disabled">
                 {{ option.label || option.value }}
               </mat-list-option>
             }
@@ -417,7 +417,7 @@
               matInput
               [errorStateMatcher]="getErrorStateMatcher()"
               readonly
-              [disabled]="!!info.disabled"
+              [disabled]="!editable()"
               [(ngModel)]="displayValue"
               [name]="name()"
               type="text"
@@ -431,7 +431,7 @@
           } @else {
             @if (info.multiple) {
               <mat-select
-                [disabled]="disabled()"
+                [disabled]="!editable()"
                 [errorStateMatcher]="getErrorStateMatcher()"
                 [(ngModel)]="value"
                 multiple
@@ -444,7 +444,7 @@
                 }
                 <ng-scrollbar matSelectViewport>
                   @for (option of options; track $index) {
-                    <mat-option [value]="option.value" [disabled]="!editable()">
+                    <mat-option [value]="option.value" [disabled]="option.disabled">
                       {{ option.label || option.value }}
                     </mat-option>
                   }
@@ -452,7 +452,7 @@
               </mat-select>
             } @else {
               <mat-select
-                [disabled]="disabled()"
+                [disabled]="!editable()"
                 [errorStateMatcher]="getErrorStateMatcher()"
                 [(ngModel)]="value"
                 (selectionChange)="onChange()"
@@ -464,7 +464,7 @@
                 }
                 <ng-scrollbar matSelectViewport>
                   @for (option of options; track $index) {
-                    <mat-option [value]="option.value" [disabled]="!editable()">
+                    <mat-option [value]="option.value" [disabled]="option.disabled">
                       {{ option.label || option.value }}
                     </mat-option>
                   }

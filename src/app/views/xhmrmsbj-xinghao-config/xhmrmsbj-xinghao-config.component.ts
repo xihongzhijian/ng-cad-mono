@@ -18,7 +18,7 @@ import {
   getXuanxiangTable
 } from "@components/lurushuju/lrsj-pieces/lrsj-zuofa/lrsj-zuofa.utils";
 import {OptionsAll} from "@components/lurushuju/services/lrsj-status.types";
-import {sbjbItemOptionalKeys2} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
+import {sbjbItemCadKeys2} from "@components/xhmrmsbj-sbjb/xhmrmsbj-sbjb.types";
 import {CadData} from "@lucilor/cad-viewer";
 import {keysOf} from "@lucilor/utils";
 import {SuanliaogongshiComponent} from "@modules/cad-editor/components/suanliaogongshi/suanliaogongshi.component";
@@ -427,7 +427,7 @@ export class XhmrmsbjXinghaoConfigComponent {
       (xinghaoConfig) => xinghaoConfig.企料结构配置.企料前后封口 || [],
       (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料前后封口 = items),
       qiliaoQhfkNames.slice(),
-      sbjbItemOptionalKeys2.slice(),
+      sbjbItemCadKeys2.slice(),
       {}
     ),
     this.getSuanliaoConfigDataSet(
@@ -435,7 +435,7 @@ export class XhmrmsbjXinghaoConfigComponent {
       (xinghaoConfig) => xinghaoConfig.企料结构配置.虚拟企料分类 || [],
       (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.虚拟企料分类 = items),
       qiliaoXnqlflNames.slice(),
-      sbjbItemOptionalKeys2.slice(),
+      sbjbItemCadKeys2.slice(),
       null
     ),
     this.getSuanliaoConfigDataSet(
@@ -443,7 +443,7 @@ export class XhmrmsbjXinghaoConfigComponent {
       (xinghaoConfig) => xinghaoConfig.企料结构配置.企料刨坑位置 || [],
       (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料刨坑位置 = items),
       qiliaoPkwzNames.slice(),
-      sbjbItemOptionalKeys2.slice(),
+      sbjbItemCadKeys2.slice(),
       null
     ),
     this.getSuanliaoConfigDataSet(
@@ -451,7 +451,7 @@ export class XhmrmsbjXinghaoConfigComponent {
       (xinghaoConfig) => xinghaoConfig.企料结构配置.企料分体位置显示 || [],
       (xinghaoConfig, items) => (xinghaoConfig.企料结构配置.企料分体位置显示 = items),
       qiliaoFtwzxsNames.slice(),
-      sbjbItemOptionalKeys2.slice(),
+      sbjbItemCadKeys2.slice(),
       null
     )
   ]);

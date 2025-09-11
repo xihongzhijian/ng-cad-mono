@@ -38,7 +38,11 @@ export interface TableRenderInfo<T> {
   compactColumnButton?: boolean;
 }
 export interface TableRenderInfoFilterable<T> {
-  fields?: (keyof T)[];
+  fields?: (keyof T | TableRenderInfoFilterableField<T>)[];
+}
+export interface TableRenderInfoFilterableField<T> {
+  field: keyof T;
+  valueGetter: (item: T) => string;
 }
 
 export interface RowSelection<T> {

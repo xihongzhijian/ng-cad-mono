@@ -6,7 +6,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {Cad数据要求} from "@app/cad/cad-shujuyaoqiu";
 import {CadCollection} from "@app/cad/collections";
-import {alertError, ErrorItem, getNamesStr, ResultWithErrors} from "@app/utils/error-message";
+import {alertError, ErrorItem, getNamesStr, getNameStr, ResultWithErrors} from "@app/utils/error-message";
 import {getCopyName, getDateTimeString, getValueString} from "@app/utils/get-value";
 import {ItemsManager} from "@app/utils/items-manager";
 import {getSortedItems} from "@app/utils/sort-items";
@@ -52,7 +52,7 @@ import {
   convertXhmrmsbjSbjbItem,
   exportXhmrmsbjSbjbItemSbjbs,
   getSbjbItemCadKeys,
-  getSbjbItemOptionalKeys2,
+  getSbjbItemCadKeys2,
   getSbjbItemSbjbItem,
   getXhmrmsbjSbjbItemOptions,
   getXhmrmsbjSbjbItemSbjbCad,
@@ -61,9 +61,10 @@ import {
   getXhmrmsbjSbjbItemSbjbItemForm,
   getXhmrmsbjSbjbItemTableInfo,
   importXhmrmsbjSbjbItemSbjbs,
-  isSbjbItemOptionalKeys1,
-  isSbjbItemOptionalKeys2,
-  isSbjbItemOptionalKeys3
+  isSbjbItemCadKeys1,
+  isSbjbItemCadKeys2,
+  isSbjbItemOptionalKeys3,
+  sbjbItemCadKeysObj
 } from "./xhmrmsbj-sbjb.utils";
 
 @Component({
@@ -135,7 +136,7 @@ export class XhmrmsbjSbjbComponent {
           }
         }
         const title = info.title;
-        if (isSbjbItemOptionalKeys2(title)) {
+        if (isSbjbItemCadKeys2(title)) {
           const extraTexts: CadItemFormExtraText[] = [];
           const keys: (keyof XhmrmsbjSbjbItemSbjbItem)[] = [
             "正面宽",
@@ -170,7 +171,7 @@ export class XhmrmsbjSbjbComponent {
     const group1: XhmrmsbjSbjbCadInfoGrouped[] = [];
     const group2: XhmrmsbjSbjbCadInfoGrouped[] = [];
     for (const [i, info] of this.cadInfos().entries()) {
-      if (isSbjbItemOptionalKeys1(info.name)) {
+      if (isSbjbItemCadKeys1(info.name)) {
         group1.push({...info, originalIndex: i});
       } else {
         group2.push({...info, originalIndex: i});
@@ -217,7 +218,7 @@ export class XhmrmsbjSbjbComponent {
     }
     const info = this.cadInfos().at(index);
     const name = info?.title;
-    if (!name || !isSbjbItemOptionalKeys2(name)) {
+    if (!name || !isSbjbItemCadKeys2(name)) {
       return;
     }
     const item2 = item[name];
@@ -286,8 +287,8 @@ export class XhmrmsbjSbjbComponent {
         return;
       }
       const type = data.分类;
-      const isKeys1 = isSbjbItemOptionalKeys1(type);
-      const isKeys2 = isSbjbItemOptionalKeys2(type);
+      const isKeys1 = isSbjbItemCadKeys1(type);
+      const isKeys2 = isSbjbItemCadKeys2(type);
       if (!isKeys1 && !isKeys2) {
         return;
       }
@@ -308,9 +309,9 @@ export class XhmrmsbjSbjbComponent {
       }
     });
     if (cad2) {
-      if (isSbjbItemOptionalKeys1(title)) {
+      if (isSbjbItemCadKeys1(title)) {
         item[title] = cad2.name;
-      } else if (isSbjbItemOptionalKeys2(title)) {
+      } else if (isSbjbItemCadKeys2(title)) {
         if (!item[title]) {
           item[title] = getSbjbItemSbjbItem();
         }
@@ -336,9 +337,9 @@ export class XhmrmsbjSbjbComponent {
     }
     const cadInfo = this.cadInfos()[index];
     const {title} = cadInfo;
-    if (isSbjbItemOptionalKeys1(title)) {
+    if (isSbjbItemCadKeys1(title)) {
       item[title] = "";
-    } else if (isSbjbItemOptionalKeys2(title)) {
+    } else if (isSbjbItemCadKeys2(title)) {
       if (!item[title]) {
         item[title] = getSbjbItemSbjbItem();
       }
@@ -601,7 +602,7 @@ export class XhmrmsbjSbjbComponent {
     if (data) {
       for (const item of data.锁边铰边) {
         for (const item2 of item.锁边铰边数据) {
-          for (const key of getSbjbItemOptionalKeys2(item.产品分类)) {
+          for (const key of getSbjbItemCadKeys2(item.产品分类)) {
             item2[key] = getSbjbItemSbjbItem(item2[key]);
           }
         }
@@ -844,9 +845,15 @@ export class XhmrmsbjSbjbComponent {
     const options = this.options();
     let sbjbItemSbjbItemToEdit: {i: number; j: number} | undefined;
     for (const [i, item] of items.entries()) {
+      const fenlei = item.产品分类;
+      if (!fenlei) {
+        result.addErrorStr(`第${i + 1}条数据产品分类不能为空`);
+        continue;
+      }
       const items2 = getSortedItems(item.锁边铰边数据, (v) => v.排序 ?? 0);
       for (const [j, item2] of items2.entries()) {
-        const {form} = getXhmrmsbjSbjbItemSbjbForm(options, item.产品分类, item2);
+        const {form} = getXhmrmsbjSbjbItemSbjbForm(options, fenlei, item2);
+        const fenleiStr = getNameStr(`${fenlei}第${j + 1}条`);
         for (const info of form) {
           const key = info.model?.key;
           if (typeof key === "string") {
@@ -857,7 +864,7 @@ export class XhmrmsbjSbjbComponent {
                 sbjbItemSbjbItemToEdit = {i, j};
               }
               for (const msg of getErrorMsgs(errors)) {
-                const names = [`${item.产品分类}第${j + 1}条`, info.label || ""];
+                const names = [fenleiStr, info.label || ""];
                 result.addErrorStr(`${getNamesStr(names)}:${msg}`);
               }
             }
@@ -865,7 +872,7 @@ export class XhmrmsbjSbjbComponent {
         }
         const errKeys: string[] = [];
         for (const key of getSbjbItemCadKeys(item.产品分类)) {
-          if (isSbjbItemOptionalKeys2(key)) {
+          if (isSbjbItemCadKeys2(key)) {
             if (!item2[key]?.名字) {
               errKeys.push(key);
             }
@@ -874,7 +881,7 @@ export class XhmrmsbjSbjbComponent {
           }
         }
         if (errKeys.length > 0) {
-          result.addErrorStr(`缺少选项${getNamesStr(errKeys)}`);
+          result.addErrorStr(`${fenleiStr}缺少选项${getNamesStr(errKeys)}`);
         }
       }
     }
@@ -974,5 +981,42 @@ export class XhmrmsbjSbjbComponent {
     const data: XhmrmsbjSbjbItemSbjbCadsData = {fenlei, item: item3, cads: cads.map((v) => v.export())};
     const title = [this.xinghaoName(), fenlei, this.activeSbjbItemIndex() + 1].join("_");
     await this.message.exportData(data, title);
+  }
+
+  async editFenlei() {
+    const items = this.items();
+    const fenleisCurr = items.map((v) => v.产品分类);
+    const fenleisAll = Object.keys(sbjbItemCadKeysObj);
+    const result = await this.message.prompt<any, string[]>({
+      type: "select",
+      label: "产品分类",
+      value: fenleisCurr,
+      options: fenleisAll,
+      multiple: true
+    });
+    if (!result) {
+      return;
+    }
+    const items2: typeof items = [];
+    for (const fenlei of result) {
+      const itemPrev = items.find((v) => v.产品分类 === fenlei);
+      if (itemPrev) {
+        items2.push(itemPrev);
+      } else {
+        items2.push({产品分类: fenlei, 锁边铰边数据: []});
+      }
+    }
+    const activeItemFenlei = this.activeItem()?.产品分类;
+    this.items.set(items2);
+    if (activeItemFenlei) {
+      const index = items2.findIndex((v) => v.产品分类 === activeItemFenlei);
+      if (index >= 0) {
+        this.activeItemIndex.set(index);
+      } else {
+        this.activeItemIndex.set(0);
+      }
+    } else {
+      this.activeItemIndex.set(0);
+    }
   }
 }
