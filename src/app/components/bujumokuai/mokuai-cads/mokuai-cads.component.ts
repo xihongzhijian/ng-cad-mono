@@ -18,7 +18,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {setGlobal} from "@app/app.common";
 import {setCadData} from "@app/cad/cad-shujuyaoqiu";
-import {getNameWithSuffix} from "@app/utils/get-value";
+import {getDateTimeString, getNameWithSuffix} from "@app/utils/get-value";
 import {CadImageComponent} from "@components/cad-image/cad-image.component";
 import {CadItemComponent} from "@components/lurushuju/cad-item/cad-item.component";
 import {CadItemButton, CadItemIsOnlineInfo, CadItemSelectable} from "@components/lurushuju/cad-item/cad-item.types";
@@ -278,8 +278,8 @@ export class MokuaiCadsComponent {
     await this.http.mongodbUpdateMulti(this.bjmkStatus.collection, datas);
     this.bjmkStatus.cadsManager.refresh({update: cads});
   }
-  refreshCads() {
-    this.bjmkStatus.cadsManager.fetch(true);
+  async refreshCads() {
+    await this.bjmkStatus.cadsManager.fetch(true);
     this.cadsIsOnline = {};
   }
   async afterEditCad(id: string) {
@@ -362,5 +362,41 @@ export class MokuaiCadsComponent {
     const selectedIds = this.selectedCadIndexs().map((v) => cads[v].id);
     const collection = this.bjmkStatus.collection;
     openExportPage(this.status, {collection, ids: selectedIds, search: {_id: {$in: ids}}, lurushuju: true});
+  }
+
+  async importCads() {
+    this.message.importData<ObjectOf<any>[]>(true, async (cads) => {
+      const collection = this.bjmkStatus.collection;
+      const yaoqiu = this.cadYaoqiu();
+      let needsRefresh = false;
+      for (const cad of cads) {
+        const cad2 = new CadData(cad);
+        setCadData(cad2, yaoqiu, "set");
+        const cad3 = await this.http.setCad({collection, cadData: cad2}, false);
+        if (cad3) {
+          needsRefresh = true;
+        }
+      }
+      if (needsRefresh) {
+        await this.refreshCads();
+      }
+    });
+  }
+  async exportCads(all: boolean) {
+    let ids: string[] = [];
+    if (all) {
+      ids = this.cadsAll().map((v) => v.id);
+    } else {
+      const selectedCads = await this._getSelectedCads();
+      if (!selectedCads) {
+        return;
+      }
+      ids = selectedCads.map((v) => v.id);
+    }
+    const collection = this.bjmkStatus.collection;
+    const {cads} = await this.http.getCad({ids, collection});
+    const title = getDateTimeString({fmt: "yyyyMMdd"});
+    const cads2 = cads.map((v) => v.export());
+    await this.message.exportData(cads2, `cads_${title}`);
   }
 }
