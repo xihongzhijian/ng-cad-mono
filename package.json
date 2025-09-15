@@ -102,7 +102,7 @@
     "cypress": "^15.2.0",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jsdoc": "56.0.2",
+    "eslint-plugin-jsdoc": "57.0.8",
     "eslint-plugin-prettier": "^5.5.4",
     "form-data": "^4.0.4",
     "glob": "^11.0.3",
