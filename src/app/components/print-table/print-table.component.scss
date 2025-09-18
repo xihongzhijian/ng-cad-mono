@@ -79,13 +79,16 @@
         mat-table mat-row:last-child {
           mat-cell {
             border: none;
-            white-space: nowrap;
             overflow: visible;
             width: auto;
             transform: translateX(-20px);
             &:hover,
             &.active {
               background-color: transparent;
+            }
+
+            > * {
+              white-space: nowrap;
             }
           }
         }
