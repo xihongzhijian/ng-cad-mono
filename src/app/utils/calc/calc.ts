@@ -164,6 +164,17 @@ export class Calc {
     }
   }
 
+  public static separateFormulas(target: Formulas, ...sources: (Formulas | null | undefined)[]) {
+    for (const source of sources) {
+      if (!isTypeOf(source, "object")) {
+        continue;
+      }
+      for (const key in source) {
+        delete target[key];
+      }
+    }
+  }
+
   public static generateExpressDirect(expression: string, dic: Formulas = {}): string {
     // dic中可能有中文
     if (typeof dic !== "object") {

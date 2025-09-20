@@ -411,6 +411,7 @@ export const calcZxpj = async (
   const duplicateXxsr: ObjectOf<Set<string>> = {};
   const dimensionNamesMap: ObjectOf<{item: ZixuanpeijianCadItem}[]> = {};
   const varsGlobal: Formulas = {};
+  calc.calc.separateFormulas(materialResult, tongyongGongshi);
   const tongyongGongshiCalcResult = await calc.calcFormulas(tongyongGongshi, materialResult);
   calc.calc.mergeFormulas(materialResult, tongyongGongshiCalcResult?.succeedTrim);
   const gongshiCalcResult = await calc.calcFormulas(gongshi, materialResult);
@@ -1041,7 +1042,7 @@ export const calcZxpj = async (
   if (!gongshiCalcResult2?.fulfilled) {
     return {
       fulfilled: false,
-      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult}}
+      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult2}}
     };
   }
   calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);
