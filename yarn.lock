@@ -8887,10 +8887,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jasmine-core@npm:~5.10.0":
-  version: 5.10.0
-  resolution: "jasmine-core@npm:5.10.0"
-  checksum: 10c0/0826b723817aa428516b31e9321c1932e8317764235163e26f536e2033040df13b3b13f2eaa4d840b8b47fb92dab4ff06b2ab37487ed447d62ec7edbb43c1e61
+"jasmine-core@npm:~5.12.0":
+  version: 5.12.0
+  resolution: "jasmine-core@npm:5.12.0"
+  checksum: 10c0/696e91c637d832045f8e9fe716d10c3e08413cecc54750a5847f5ae89a1aa652976aaf2858824345cc99ddbb35b5f583c3f641a7d4f0947aacd8ddf8b4e42537
   languageName: node
   linkType: hard
 
@@ -10203,7 +10203,7 @@ __metadata:
     form-data: "npm:^4.0.4"
     glob: "npm:^11.0.3"
     html-to-image: "npm:^1.11.13"
-    jasmine-core: "npm:~5.10.0"
+    jasmine-core: "npm:~5.12.0"
     jasmine-spec-reporter: "npm:~7.0.0"
     jsbarcode: "npm:^3.12.1"
     karma: "npm:~6.4.4"
