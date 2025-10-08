@@ -91,6 +91,9 @@
       }
     }
     .mat-mdc-cell {
+      .toolbar.compact .mdc-button {
+        margin: 0;
+      }
       :not(.toolbar.compact) .mdc-button {
         min-width: unset;
         padding: 0 5px;
