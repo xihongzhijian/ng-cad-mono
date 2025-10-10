@@ -16,7 +16,7 @@
       }
     }
     @if (mode() !== "edit") {
-      <button mat-flat-button (click)="downloadDxf(true)" [disabled]="!downloadUrl">下载原始dxf</button>
+      <button mat-flat-button (click)="downloadDxf(true)" [disabled]="!downloadUrl()">下载原始dxf</button>
       <button mat-flat-button (click)="print()">打印</button>
       <button mat-flat-button (click)="openCadMuban()">打开cad模板</button>
       <button mat-flat-button (click)="saveAsImage()">保存成图片</button>

@@ -43,7 +43,7 @@
       <button mat-menu-item (click)="scaleComponents()">放大装配CAD</button>
     </mat-menu>
 
-    <button mat-button class="plain" [matMenuTriggerFor]="view" [disabled]="!isStatusNormal">视图</button>
+    <button mat-button class="plain" [matMenuTriggerFor]="view" [disabled]="!isStatusNormal()">视图</button>
     <mat-menu #view="matMenu">
       <button mat-menu-item (click)="setPointSize()">设置选取点大小</button>
     </mat-menu>
@@ -51,20 +51,20 @@
     <button mat-button class="plain"><app-about></app-about></button>
     <mat-divider vertical></mat-divider>
 
-    <button mat-button class="plain" (click)="toggleShowLineLength()" [disabled]="!isStatusNormal">
+    <button mat-button class="plain" (click)="toggleShowLineLength()" [disabled]="!isStatusNormal()">
       {{ getConfig("hideLineLength") ? "隐藏" : "显示" }}线长
     </button>
-    <button mat-button class="plain" (click)="toggleShowLineGongshi()" [disabled]="!isStatusNormal">
+    <button mat-button class="plain" (click)="toggleShowLineGongshi()" [disabled]="!isStatusNormal()">
       {{ getConfig("hideLineGongshi") ? "隐藏" : "显示" }}公式
     </button>
-    <button mat-button class="plain" (click)="toggleShowDimensions()" [disabled]="!isStatusNormal">
+    <button mat-button class="plain" (click)="toggleShowDimensions()" [disabled]="!isStatusNormal()">
       {{ getConfig("hideDimensions") ? "隐藏" : "显示" }}标注
     </button>
-    <button mat-button class="plain" (click)="toggleValidateLines()" [disabled]="!isStatusNormal">
+    <button mat-button class="plain" (click)="toggleValidateLines()" [disabled]="!isStatusNormal()">
       {{ getConfig("validateLines") ? "" : "不" }}验证线段
     </button>
-    <button mat-button class="plain" (click)="resetLineLength()" [disabled]="!isStatusNormal">重置线长</button>
-    <button mat-button class="plain" (click)="setKailiaofangshi()" [disabled]="!isStatusNormal">首尾开料使用线长</button>
+    <button mat-button class="plain" (click)="resetLineLength()" [disabled]="!isStatusNormal()">重置线长</button>
+    <button mat-button class="plain" (click)="setKailiaofangshi()" [disabled]="!isStatusNormal()">首尾开料使用线长</button>
     <button mat-button class="plain" (click)="highlightTjqz()">高亮条件取值的线</button>
     @if (collection() === "kailiaocadmuban") {
       <button mat-button class="plain" (click)="searchCadsUsingMuban()">使用模板的CAD</button>
