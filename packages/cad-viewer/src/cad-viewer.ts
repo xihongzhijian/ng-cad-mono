@@ -510,10 +510,6 @@ export class CadViewer extends EventEmitter {
         }
         const middle = parent.middle;
         if (foundOffset) {
-          if (Math.abs(foundOffset.x) >= 60 || Math.abs(foundOffset.y) >= 60) {
-            foundOffset.set(0, 0);
-            entity.info.offset = foundOffset.toArray();
-          }
           entity.insert.copy(foundOffset.add(middle));
         }
 
