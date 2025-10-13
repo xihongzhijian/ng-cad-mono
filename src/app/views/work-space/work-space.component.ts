@@ -91,13 +91,13 @@ export class WorkSpaceComponent implements OnInit {
           delete type.order;
         }
       }
-      this.manager.favorites.update((v) => [...v]);
+      this.manager.types.update((v) => [...v]);
       await this.submit();
     }
   }
 
   async editFavorite(i: number) {
-    const types = this.manager.types();
+    const types = this.manager.typesSorted();
     const favorites = this.manager.favorites();
     const favoritePrev = favorites[i];
     const favorite = cloneDeep(favoritePrev);
@@ -110,6 +110,25 @@ export class WorkSpaceComponent implements OnInit {
     const result = await this.message.form(form);
     if (result) {
       favorites[i] = favorite;
+      this.manager.favorites.update((v) => [...v]);
+      await this.submit();
+    }
+  }
+
+  async copyFavorite(i: number) {
+    const types = this.manager.typesSorted();
+    const favorites = this.manager.favorites();
+    const favoritePrev = favorites[i];
+    const favorite = cloneDeep(favoritePrev);
+    const typeNames = types.map((v) => v.name);
+    const getter = new InputInfoWithDataGetter(favorite);
+    const form = [
+      getter.string("type", {label: "分类", options: typeNames, fixedOptions: typeNames}),
+      getter.number("order", {label: "排序", autoFocus: true})
+    ];
+    const result = await this.message.form(form);
+    if (result) {
+      favorites.splice(i + 1, 0, favorite);
       this.manager.favorites.update((v) => [...v]);
       await this.submit();
     }

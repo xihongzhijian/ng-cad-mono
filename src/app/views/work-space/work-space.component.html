@@ -51,8 +51,9 @@
                 </div>
                 @if (showMoreButtons()) {
                   <div class="desc text link" (click)="openFavorite(favorite.originalIndex)">{{ favorite.tou }}/{{ favorite.da }}</div>
-                  <div class="toolbar">
+                  <div class="toolbar compact">
                     <button mat-button (click)="editFavorite(favorite.originalIndex)">编辑</button>
+                    <button mat-button (click)="copyFavorite(favorite.originalIndex)">复制</button>
                     <button mat-button (click)="removeFavorite(favorite.originalIndex)">删除</button>
                     <div class="text short">排序：{{ favorite.order || 0 }}</div>
                   </div>
