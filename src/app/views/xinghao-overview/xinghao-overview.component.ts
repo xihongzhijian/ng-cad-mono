@@ -7,12 +7,11 @@ import {
   moveItemInArray,
   transferArrayItem
 } from "@angular/cdk/drag-drop";
-import {Component, OnInit} from "@angular/core";
+import {Component, effect, HostBinding, inject, OnInit, signal, untracked} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatIconModule} from "@angular/material/icon";
-import {setGlobal} from "@app/app.common";
 import {NavsData, NavsDataNode, NavsResultItem} from "@components/dialogs/navs-dialog/navs-dialog.types";
 import {downloadByString, ObjectOf, selectFiles, WindowMessageManager} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
@@ -38,18 +37,16 @@ import {XinghaoOverviewData, XinghaoOverviewTableData} from "./xinghao-overview.
   ]
 })
 export class XinghaoOverviewComponent implements OnInit {
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+
+  @HostBinding("class") class = ["ng-page"];
+
   table = "p_xinghaoshujukuaisupeizhi";
   data = new XinghaoOverviewData(-1);
-  navs: NavsData = [];
+  navs = signal<NavsData>([]);
   xiaodaohangs: ObjectOf<NavsResultItem> = {};
   wmm = new WindowMessageManager("xinghaoOverview", this, window.parent);
-
-  constructor(
-    private http: CadDataService,
-    private message: MessageService
-  ) {
-    setGlobal("xinghaoOverview", this);
-  }
 
   async ngOnInit() {
     let records = await this.http.queryMySql<XinghaoOverviewTableData>({table: this.table, limit: 1});
@@ -58,47 +55,53 @@ export class XinghaoOverviewComponent implements OnInit {
       records = await this.http.queryMySql<XinghaoOverviewTableData>({table: this.table, limit: 1});
     }
     if (records[0]) {
-      this.data.id = records[0].vid;
+      this.data.id.set(records[0].vid);
       this.data.import(records[0].data || "");
     } else {
       this.message.error("数据错误");
     }
-    this.navs = (await this.http.getData<NavsData>("ngcad/getNavs")) || [];
-    const printedNavs = new Set<string>();
-    const printNav = (item: NavsResultItem) => {
-      const {tou, da, xiao} = item;
-      const str = `${tou.name}(${tou.id})->${da.name}(${da.id})->${xiao.name}(${xiao.id})`;
-      if (!printedNavs.has(str)) {
-        console.warn(`小导航重复: ${str}`);
-        printedNavs.add(str);
-      }
-    };
-    const addXiaodaohang = (node: NavsDataNode, tou?: NavsResultItem["tou"], da?: NavsResultItem["da"]) => {
-      if (node.dadaohang) {
-        for (const node2 of node.dadaohang) {
-          addXiaodaohang(node2, {id: node.vid, name: node.mingzi});
-        }
-      }
-      if (node.xiaodaohang) {
-        for (const node2 of node.xiaodaohang) {
-          addXiaodaohang(node2, tou, {id: node.vid, name: node.mingzi});
-        }
-      }
-      if (tou && da) {
-        const name = node.mingzi;
-        const item: NavsResultItem = {tou, da, xiao: {id: node.vid, name, table: node.table || ""}};
-        if (name in this.xiaodaohangs) {
-          printNav(this.xiaodaohangs[name]);
-          printNav(item);
-        }
-        this.xiaodaohangs[name] = item;
-      }
-    };
-    for (const tou of this.navs) {
-      addXiaodaohang(tou);
-    }
-    this.data.justify(this.xiaodaohangs);
+    this.navs.set((await this.http.getData<NavsData>("ngcad/getNavs")) || []);
   }
+
+  navsEffect = effect(() => {
+    const navs = this.navs();
+    untracked(() => {
+      const printedNavs = new Set<string>();
+      const printNav = (item: NavsResultItem) => {
+        const {tou, da, xiao} = item;
+        const str = `${tou.name}(${tou.id})->${da.name}(${da.id})->${xiao.name}(${xiao.id})`;
+        if (!printedNavs.has(str)) {
+          console.warn(`小导航重复: ${str}`);
+          printedNavs.add(str);
+        }
+      };
+      const addXiaodaohang = (node: NavsDataNode, tou?: NavsResultItem["tou"], da?: NavsResultItem["da"]) => {
+        if (node.dadaohang) {
+          for (const node2 of node.dadaohang) {
+            addXiaodaohang(node2, {id: node.vid, name: node.mingzi});
+          }
+        }
+        if (node.xiaodaohang) {
+          for (const node2 of node.xiaodaohang) {
+            addXiaodaohang(node2, tou, {id: node.vid, name: node.mingzi});
+          }
+        }
+        if (tou && da) {
+          const name = node.mingzi;
+          const item: NavsResultItem = {tou, da, xiao: {id: node.vid, name, table: node.table || ""}};
+          if (name in this.xiaodaohangs) {
+            printNav(this.xiaodaohangs[name]);
+            printNav(item);
+          }
+          this.xiaodaohangs[name] = item;
+        }
+      };
+      for (const tou of navs) {
+        addXiaodaohang(tou);
+      }
+      this.data.justify(this.xiaodaohangs);
+    });
+  });
 
   addNavSection() {
     this.data.addSection();
@@ -113,12 +116,12 @@ export class XinghaoOverviewComponent implements OnInit {
 
   async addNavItem(i: number, j?: number) {
     const currNames: string[] = [];
-    for (const section of this.data.sections) {
+    for (const section of this.data.sections()) {
       for (const item of section.items) {
         currNames.push(item.xiao.name);
       }
     }
-    const options = Object.keys(this.xiaodaohangs).filter((xiao) => !currNames.includes(xiao));
+    const options = Object.keys(this.xiaodaohangs);
     const result = await this.message.prompt({
       type: "string",
       label: "小导航",
@@ -139,7 +142,7 @@ export class XinghaoOverviewComponent implements OnInit {
     {
       const item = this.xiaodaohangs[result];
       if (item) {
-        this.data.addItem(this.data.sections[i], j, item);
+        this.data.addItem(i, j, item);
       }
     }
   }
@@ -148,7 +151,7 @@ export class XinghaoOverviewComponent implements OnInit {
     if (!(await this.message.confirm("确定删除？"))) {
       return;
     }
-    this.data.removeItem(this.data.sections[i], j);
+    this.data.removeItem(i, j);
   }
 
   async openNavItem(item: NavsResultItem) {
@@ -169,8 +172,8 @@ export class XinghaoOverviewComponent implements OnInit {
   }
 
   async submit() {
-    const data = this.data.export();
-    this.http.tableUpdate<XinghaoOverviewTableData>({table: this.table, data: {vid: this.data.id, data}});
+    const data = this.data;
+    this.http.tableUpdate<XinghaoOverviewTableData>({table: this.table, data: {vid: data.id(), data: data.export()}});
   }
 
   async import() {

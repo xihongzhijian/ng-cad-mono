@@ -1,5 +1,5 @@
 import {NestedTreeControl} from "@angular/cdk/tree";
-import {Component, Inject} from "@angular/core";
+import {Component, inject, signal} from "@angular/core";
 import {MatButtonModule} from "@angular/material/button";
 import {MatCheckboxChange, MatCheckboxModule} from "@angular/material/checkbox";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
@@ -22,13 +22,18 @@ import {NavsData, NavsDataNode, NavsDialogInput, NavsDialogOutput, NavsResultIte
   imports: [InputComponent, NgScrollbar, MatTreeModule, MatCheckboxModule, MatButtonModule, MatIconModule, MatDialogActions]
 })
 export class NavsDialogComponent {
+  private http = inject(CadDataService);
+  private message = inject(MessageService);
+  dialogRef = inject<MatDialogRef<NavsDialogComponent, NavsDialogOutput>>(MatDialogRef);
+  data: NavsDialogInput = inject<NavsDialogInput>(MAT_DIALOG_DATA, {optional: true}) ?? {};
+
   private _navsKey = "navs";
-  navs = session.load<NavsData>(this._navsKey);
+  navs = signal(session.load<NavsData>(this._navsKey));
   treeControl = new NestedTreeControl<NavsDataNode>((node) => node.dadaohang || node.xiaodaohang || null);
   dataSource = new MatTreeNestedDataSource<NavsDataNode>();
 
   private _searchInputValueKey = "navsSearchInputValue";
-  searchInputValue = session.load<string>(this._searchInputValueKey) || "";
+  searchInputValue = signal(session.load<string>(this._searchInputValueKey) || "");
   searchInputInfo: InputInfo = {
     type: "string",
     label: "搜索",
@@ -39,24 +44,19 @@ export class NavsDialogComponent {
     }, 500)
   };
 
-  constructor(
-    public dialogRef: MatDialogRef<NavsDialogComponent, NavsDialogOutput>,
-    @Inject(MAT_DIALOG_DATA) public data: NavsDialogInput,
-    private http: CadDataService,
-    private message: MessageService
-  ) {
+  constructor() {
     setGlobal("navsDialog", this);
     this.refresh();
   }
 
   async refresh() {
     if (this.data.navs) {
-      this.navs = this.data.navs;
+      this.navs.set(this.data.navs);
     } else {
-      this.navs = await this.http.getData<NavsData>("ngcad/getNavs");
+      this.navs.set(await this.http.getData<NavsData>("ngcad/getNavs"));
       session.save(this._navsKey, this.navs);
     }
-    this.dataSource.data = this.navs || [];
+    this.dataSource.data = this.navs() || [];
     this.treeControl.dataNodes = this.dataSource.data;
     this.treeControl.expandAll();
   }
@@ -73,7 +73,7 @@ export class NavsDialogComponent {
       children = children.filter((v) => this.filterNode(v));
       return children.length > 0;
     }
-    const search = this.searchInputValue;
+    const search = this.searchInputValue();
     if (search) {
       return table?.includes(search) || mingzi.includes(search);
     }
@@ -89,7 +89,7 @@ export class NavsDialogComponent {
           unselect(node2.xiaodaohang);
         }
       };
-      unselect(this.navs);
+      unselect(this.navs());
     }
     node.selected = event.checked;
   }
@@ -116,7 +116,7 @@ export class NavsDialogComponent {
         }
       }
     };
-    getSelectedNodes(this.navs || []);
+    getSelectedNodes(this.navs() || []);
     if (result.length < 1) {
       this.message.alert(`请选择${this.data.multiSelect ? "至少" : ""}一个项目`);
     } else {

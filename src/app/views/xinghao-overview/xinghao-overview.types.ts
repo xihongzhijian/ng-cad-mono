@@ -1,3 +1,5 @@
+import {signal} from "@angular/core";
+import {tryParseJson} from "@app/utils/json-helper";
 import {TableDataBase} from "@app/utils/table-data/table-data-base";
 import {NavsResultItem} from "@components/dialogs/navs-dialog/navs-dialog.types";
 import {ObjectOf} from "@lucilor/utils";
@@ -10,33 +12,34 @@ export interface XinghaoOverviewTableData extends TableDataBase {
 }
 
 export class XinghaoOverviewData extends Utils() {
-  sections: XinghaoOverviewSection[] = [];
+  id = signal(-1);
+  sections = signal<XinghaoOverviewSection[]>([]);
 
-  constructor(public id: number) {
+  constructor(id = -1) {
     super();
+    this.id.set(id);
   }
 
   import(data: string) {
-    this.sections = [];
-    try {
-      const data2 = JSON.parse(data);
+    const sections: XinghaoOverviewSection[] = [];
+    const data2 = tryParseJson(data);
+    if (data2) {
       for (const section of data2?.sections || []) {
-        this.addSection(undefined, section);
+        this.addSection(undefined, section, sections);
       }
-    } catch (error) {
-      console.error(error);
     }
+    this.sections.set(sections);
   }
 
   export() {
-    const sections = cloneDeep(this.sections);
+    const sections = cloneDeep(this.sections());
     for (const section of sections) {
       delete section.nameInputInfo;
     }
     return JSON.stringify({sections});
   }
 
-  addSection(index?: number, data?: XinghaoOverviewSection) {
+  addSection(index?: number, data?: XinghaoOverviewSection, sections?: XinghaoOverviewSection[]) {
     const section: XinghaoOverviewSection = {name: "", items: []};
     section.nameInputInfo = {type: "string", label: "分组", model: {key: "name", data: section}};
     if (data) {
@@ -45,27 +48,52 @@ export class XinghaoOverviewData extends Utils() {
         this.addItem(section, undefined, item);
       }
     }
-    this.arrayAdd(this.sections, section, index);
+    if (sections) {
+      this.arrayAdd(sections, section, index);
+    } else {
+      const sections2 = [...this.sections()];
+      this.arrayAdd(sections2, section, index);
+      this.sections.set(sections2);
+    }
   }
 
-  removeSection(index: number) {
-    this.arrayRemove(this.sections, index);
+  removeSection(index: number, sections?: XinghaoOverviewSection[]) {
+    if (sections) {
+      this.arrayRemove(sections, index);
+    } else {
+      const sections2 = [...this.sections()];
+      this.arrayRemove(sections2, index);
+      this.sections.set(sections2);
+    }
   }
 
-  addItem(section: XinghaoOverviewSection, index?: number, data?: NavsResultItem) {
+  addItem(i: number | XinghaoOverviewSection, j?: number, data?: NavsResultItem) {
     const item: NavsResultItem = {tou: {id: -1, name: ""}, da: {id: -1, name: ""}, xiao: {id: -1, name: "", table: ""}};
     if (data) {
       Object.assign(item, data);
     }
-    this.arrayAdd(section.items, item, index);
+    if (typeof i === "number") {
+      const sections = [...this.sections()];
+      this.arrayAdd(sections[i].items, item, j);
+      this.sections.set(sections);
+    } else {
+      this.arrayAdd(i.items, item, j);
+    }
   }
 
-  removeItem(section: XinghaoOverviewSection, index: number) {
-    this.arrayRemove(section.items, index);
+  removeItem(i: number | XinghaoOverviewSection, index: number) {
+    if (typeof i === "number") {
+      const sections = [...this.sections()];
+      this.arrayRemove(sections[i].items, index);
+      this.sections.set(sections);
+    } else {
+      this.arrayRemove(i.items, index);
+    }
   }
 
   justify(xiaodaohangs: ObjectOf<NavsResultItem>) {
-    for (const section of this.sections) {
+    const sections = [...this.sections()];
+    for (const section of sections) {
       const items = section.items;
       section.items = [];
       for (const item of items) {
@@ -75,6 +103,7 @@ export class XinghaoOverviewData extends Utils() {
         }
       }
     }
+    this.sections.set(sections);
   }
 }
 

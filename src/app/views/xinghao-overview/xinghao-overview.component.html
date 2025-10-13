@@ -5,41 +5,41 @@
   <button mat-flat-button (click)="export()">导出</button>
 </div>
 <div
-  class="sections flex-row flex-110"
+  class="sections items flex-110"
   cdkDropListGroup
   cdkDropList
   cdkDropListOrientation="horizontal"
-  [cdkDropListData]="data.sections"
+  [cdkDropListData]="data.sections()"
   (cdkDropListDropped)="onItemDrop($event)"
 >
-  @for (section of data.sections; track i; let i = $index) {
+  @for (section of data.sections(); track i; let i = $index) {
     @if (i > 0) {
       <mat-divider vertical></mat-divider>
     }
-    <div class="section flex-column" cdkDrag>
-      <div class="section-title flex-row">
+    <div class="section item" cdkDrag>
+      <div class="toolbar">
         <div class="drag-placeholder" cdkDragHandle></div>
         <button mat-icon-button class="accent" (click)="removeNavSection(i)"><mat-icon>close</mat-icon></button>
         @if (section.nameInputInfo) {
           <app-input [info]="section.nameInputInfo"></app-input>
         }
       </div>
-      <div class="items">
-        <div class="item">
-          <button mat-flat-button (click)="addNavItem(i)">添加</button>
-        </div>
+      <div class="toolbar">
+        <button mat-flat-button (click)="addNavItem(i)">添加</button>
       </div>
-      <ng-scrollbar>
-        <div class="items flex-column" cdkDropList [cdkDropListData]="section.items" (cdkDropListDropped)="onItemDrop($event)">
+      <ng-scrollbar class="fullwidth">
+        <div class="items" cdkDropList [cdkDropListData]="section.items" (cdkDropListDropped)="onItemDrop($event)">
           @for (item of section.items; track j; let j = $index) {
             @if (j > 0) {
               <mat-divider></mat-divider>
             }
-            <div class="item flex-row" cdkDrag>
-              <div class="drag-placeholder" cdkDragHandle></div>
-              <button mat-icon-button (click)="addNavItem(i, j)"><mat-icon>add</mat-icon></button>
-              <button mat-icon-button class="accent" (click)="removeNavItem(i, j)"><mat-icon>remove</mat-icon></button>
-              <div class="name flex-row flex-110" (click)="onItemClick(item)">{{ item.xiao.name }}</div>
+            <div class="item" cdkDrag>
+              <div class="toolbar">
+                <div class="drag-placeholder" cdkDragHandle></div>
+                <button mat-icon-button (click)="addNavItem(i, j)"><mat-icon>add</mat-icon></button>
+                <button mat-icon-button class="accent" (click)="removeNavItem(i, j)"><mat-icon>remove</mat-icon></button>
+                <div class="name flex-110" (click)="onItemClick(item)">{{ item.xiao.name }}</div>
+              </div>
             </div>
           }
         </div>
