@@ -396,13 +396,13 @@ export class Calc {
       }
     }
 
-    const replace: ObjectOf<string> = {};
+    let replace: {key: string; value: string}[] = [];
     const extractReplace = (obj: Formulas) => {
       for (const aname of Object.keys(obj)) {
         const expression = obj[aname];
         if (typeof expression === "string" && expression.split("#").length - 1 > 1) {
           // 含一个#的没问题
-          replace[aname] = expression;
+          replace.push({key: aname, value: expression});
           delete obj[aname];
           continue;
         }
@@ -439,10 +439,23 @@ export class Calc {
 
     // 处理需要替换的字符串，含##的表达式
     if (!isEmpty(replace)) {
+      const getItemDepth = ({value}: (typeof replace)[number]) => {
+        const matches = value.match(/#(.*?)#/g);
+        let count = 0;
+        for (const match_v of matches || []) {
+          const expressionK = trim(match_v, "#");
+          if (replace.some((v) => v.key === expressionK)) {
+            count++;
+          }
+        }
+        return count;
+      };
+      replace.sort((a, b) => getItemDepth(a) - getItemDepth(b));
       while (true) {
         const ok2: ObjectOf<string> = {};
-        for (const key in replace) {
-          let value = replace[key];
+        for (const item of replace) {
+          const {key} = item;
+          let {value} = item;
           const matches = value.match(/#(.*?)#/g);
           // (1)没有匹配到##
           if (!matches || matches.length < 1) {
@@ -482,7 +495,7 @@ export class Calc {
 
           // ##, 全部替换完了
           const replaceValue = value.replaceAll(replaceTo, "#");
-          replace[key] = replaceValue;
+          item.value = replaceValue;
           ok2[key] = replaceValue;
           vars[key] = replaceValue;
           for (const k in formulasRaw) {
@@ -495,9 +508,7 @@ export class Calc {
 
         // 有替换掉的
         if (!isEmpty(ok2)) {
-          for (const k in ok2) {
-            delete replace[k];
-          }
+          replace = replace.filter((v) => !(v.key in ok2));
         }
 
         // 替换完了
@@ -507,8 +518,8 @@ export class Calc {
 
         // 替换不下去了，提示替换不出来的表达式
         if (isEmpty(ok2) && !isEmpty(replace)) {
-          for (const name in replace) {
-            error[name] = replace[name];
+          for (const {key, value} of replace) {
+            error[key] = value;
           }
           break;
         }
