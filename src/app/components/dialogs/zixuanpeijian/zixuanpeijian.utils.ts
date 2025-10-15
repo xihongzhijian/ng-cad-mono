@@ -1045,7 +1045,20 @@ export const calcZxpj = async (
       error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult2}}
     };
   }
-  calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);
+  const textFormulas: Formulas = {};
+  for (const [key, value] of Object.entries(materialResult)) {
+    if (typeof value === "string" && value.split("#").length > 2) {
+      textFormulas[key] = value;
+    }
+  }
+  const textCalcResult2 = await calc.calcFormulas(textFormulas, materialResult, {title: "计算算料公式"});
+  if (!textCalcResult2?.fulfilled) {
+    return {
+      fulfilled: false,
+      error: {message: "计算算料公式出错", calc: {formulas: textFormulas, vars: materialResult, result: textCalcResult2}}
+    };
+  }
+  calc.calc.mergeFormulas(materialResult, textCalcResult2.succeedTrim);
   const 模块公式输入: Formulas = {};
   for (const mokuai of mokuais) {
     for (const [k] of getMokuaiInfoSrbl2(mokuai)) {
