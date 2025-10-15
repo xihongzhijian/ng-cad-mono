@@ -92,7 +92,7 @@
     "@types/pdfmake": "^0.2.11",
     "@types/qrcode": "^1.5.5",
     "@types/uuid": "^11.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.0",
     "@typescript-eslint/types": "^8.46.0",
     "@typescript-eslint/utils": "^8.46.0",
