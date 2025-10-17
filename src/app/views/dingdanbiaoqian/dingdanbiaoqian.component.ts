@@ -1,5 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {Component, computed, effect, ElementRef, inject, OnInit, signal, viewChildren} from "@angular/core";
+import {Component, computed, effect, ElementRef, HostBinding, inject, OnInit, signal, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -27,6 +27,7 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CalcService} from "@services/calc.service";
 import {nodeFormulasKeysRaw} from "@views/msbj/msbj.utils";
+import {Properties} from "csstype";
 import {cloneDeep, isEmpty} from "lodash";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
 import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
@@ -56,6 +57,8 @@ export class DingdanbiaoqianComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private spinner = inject(SpinnerService);
   private status = inject(AppStatusService);
+
+  @HostBinding("class") cls = [this.status.project];
 
   type = signal<DdbqType | null>(null);
   cadsRowNum = computed(() => (this.type() === "配件模块" ? 3 : 4));
@@ -160,6 +163,7 @@ export class DingdanbiaoqianComponent implements OnInit {
   orders = signal<Order[]>([]);
   materialResult = signal<Formulas>({});
   forms = signal<Form[]>([]);
+  formsStyle = signal<Properties>({});
   isLvxingcai = signal(false);
   async getOrders() {
     const url = "order/order/dingdanbiaoqian";
@@ -267,6 +271,7 @@ export class DingdanbiaoqianComponent implements OnInit {
         };
       });
       this.orders.set(orders);
+      this.formsStyle.set(ddbqData[0]?.formsStyle || {});
       document.title = `${orders[0].code}_${getDateTimeString()}`;
       await this.splitOrders();
       const barcodeResult = getOrderBarcode(".barcode", {displayValue: false, margin: 0, width: 2, height: 30});

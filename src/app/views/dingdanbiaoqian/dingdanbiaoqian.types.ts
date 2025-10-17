@@ -53,11 +53,19 @@ export type DdbqData = {
   开启锁向示意图?: ObjectOf<any>;
   配合框?: ObjectOf<any>[];
   forms?: Form[];
+  formsStyle?: Properties;
 }[];
 
 export interface Form {
   title?: string;
+  isTitleInner?: boolean;
   barCode?: string;
+  style?: Properties;
+  rowBorder?: boolean;
+  footer?: {
+    content?: string;
+    style?: Properties;
+  };
   rows: FormItem[][];
 }
 

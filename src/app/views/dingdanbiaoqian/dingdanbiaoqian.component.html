@@ -176,13 +176,16 @@
   }
 </div>
 
-<div class="forms">
+<div class="forms" [style]="formsStyle()">
   @for (form of forms(); track $index) {
-    <div class="form" [class]="type()">
-      @if (form.title) {
+    <div class="form flex-column" [class]="type()" [style]="form.style">
+      @if (form.title && !form.isTitleInner) {
         <div class="title">{{ form.title }}</div>
       }
-      <div class="form-inner">
+      <div class="form-inner flex-110">
+        @if (form.title && form.isTitleInner) {
+          <div class="title">{{ form.title }}</div>
+        }
         <ng-template *ngTemplateOutlet="formItem; context: {$implicit: form}"></ng-template>
         @if (form.barCode) {
           <div class="barcode-container">
@@ -190,13 +193,18 @@
           </div>
         }
       </div>
+      @if (form.footer?.content; as content) {
+        <div class="footer" [style]="form.footer?.style">
+          <span>{{ content }}</span>
+        </div>
+      }
     </div>
   }
 </div>
 
 <ng-template #formItem let-form [appTypedTemplate]="{$implicit: forms()[0]}">
   @for (row of form.rows; track $index) {
-    <div class="row">
+    <div class="row" [class.row-border]="!!form.rowBorder">
       @for (item of row; track $index) {
         <div class="item" [style]="item.style">
           <div class="label" [style]="item.labelStyle">{{ item.label }}</div>
@@ -206,7 +214,7 @@
                 <app-image [src]="item.value" [prefix]="remoteFilePath"></app-image>
               }
               @default {
-                {{ item.value }}
+                <span>{{ item.value }}</span>
               }
             }
           </div>

@@ -268,8 +268,9 @@
   background-color: var(--mat-sys-surface);
   box-shadow: var(--mat-sys-level1);
   --label-width: auto;
-  --label-height: 16px;
-  --value-height: 17px;
+  --label-size: 16px;
+  --value-size: 17px;
+  --row-height: 17px;
   &:not(:last-child) {
     margin-bottom: var(--form-space);
     page-break-after: always;
@@ -281,6 +282,10 @@
     align-items: center;
     width: 100%;
     height: 100%;
+
+    .title {
+      padding: 0;
+    }
   }
 
   .title {
@@ -288,11 +293,16 @@
     font-size: 23px;
     font-weight: bold;
     padding: 6px;
+    font-family: inherit;
   }
 
   .row {
     display: flex;
     width: 100%;
+
+    &.row-border:not(:last-child) {
+      border-bottom: var(--border);
+    }
   }
 
   .item {
@@ -308,19 +318,19 @@
       box-sizing: border-box;
       height: 100%;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       overflow: hidden;
     }
 
     .label {
       flex: 0 0 var(--label-width);
-      font-size: var(--label-height);
-      line-height: var(--label-height);
+      font-size: var(--label-size);
+      line-height: var(--row-height);
     }
 
     .value {
-      font-size: var(--value-height);
-      line-height: var(--value-height);
+      font-size: var(--value-size);
+      line-height: var(--row-height);
       width: 0;
       flex: 1 1 0;
     }
@@ -368,8 +378,9 @@
   height: 12.5cm;
   padding: 0.2cm 0 0.2cm 5cm;
   --label-width: 84px;
-  --label-height: 18px;
-  --value-height: 22px;
+  --label-size: 18px;
+  --value-size: 22px;
+  --row-height: 22px;
 
   .form-inner {
     border: var(--border);
@@ -394,6 +405,18 @@
     }
   }
 }
+:host.fm {
+  .合格证 {
+    padding: 0.2cm;
+    width: 8cm;
+    height: 10cm;
+    --label-width: auto;
+
+    .form-inner {
+      border-right: var(--border);
+    }
+  }
+}
 
 .流程指令卡 {
   width: 122mm;
@@ -403,9 +426,10 @@
   font-weight: bold;
   display: flex;
   flex-direction: column;
-  --label-height: 15px;
-  --value-height: 15px;
   --label-width: 70px;
+  --label-size: 15px;
+  --value-size: 15px;
+  --row-height: 15px;
   --border: 1px solid var(--mat-sys-on-surface);
 
   .title {
