@@ -297,7 +297,7 @@
     [class.active]="activeMokuaiNode()?.['选中模块']?.id === mokuai.id"
     [attr.data-id]="mokuai.weiyima"
   >
-    <div class="flex-column">
+    <div class="flex-column" style="width: 100%">
       <div class="toolbar compact">
         @if (!isFromOrder()) {
           <button mat-button [class.accent]="mokuai?.info?.isDefault" (click)="setDefaultMokuai(mokuai)">默认</button>
