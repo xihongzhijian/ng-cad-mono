@@ -621,17 +621,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/router@npm:^20.3.4":
-  version: 20.3.4
-  resolution: "@angular/router@npm:20.3.4"
+"@angular/router@npm:^20.3.6":
+  version: 20.3.6
+  resolution: "@angular/router@npm:20.3.6"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
-    "@angular/common": 20.3.4
-    "@angular/core": 20.3.4
-    "@angular/platform-browser": 20.3.4
+    "@angular/common": 20.3.6
+    "@angular/core": 20.3.6
+    "@angular/platform-browser": 20.3.6
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/17594a16084adc6735499e5d0df9f751542634a8d094f66f0a071165472b2c3e59e5732179cf7a0a794ce7a64c07f8b9aac4475b6ce29d873a95b4b8e99972d4
+  checksum: 10c0/0f20f7b977a7facbd13af32bbf104a61916fc1a93d6b6d6a7832a0b364daa1de6e256cc80d24a39bd413cea3dd741abc6f460727d6066318910a305916fa3986
   languageName: node
   linkType: hard
 
@@ -10149,7 +10149,7 @@ __metadata:
     "@angular/material": "npm:^20.2.8"
     "@angular/platform-browser": "npm:^20.3.4"
     "@angular/platform-browser-dynamic": "npm:^20.3.4"
-    "@angular/router": "npm:^20.3.4"
+    "@angular/router": "npm:^20.3.6"
     "@cypress/schematic": "npm:4.1.4"
     "@eslint/compat": "npm:^1.4.0"
     "@eslint/eslintrc": "npm:^3.3.1"
