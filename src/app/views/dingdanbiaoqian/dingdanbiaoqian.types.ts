@@ -57,7 +57,12 @@ export type DdbqData = {
 }[];
 
 export interface Form {
-  title?: string;
+  title?:
+    | string
+    | {
+        content?: string;
+        style?: Properties;
+      };
   isTitleInner?: boolean;
   barCode?: string;
   style?: Properties;
@@ -66,7 +71,7 @@ export interface Form {
     content?: string;
     style?: Properties;
   };
-  rows: FormItem[][];
+  rows: ({items: FormItem[]; style?: Properties} | FormItem[])[];
 }
 
 export interface FormItem {

@@ -27,6 +27,7 @@ export interface SetCadParams {
   restore?: boolean;
   importConfig?: {pruneLines: boolean};
   sbjbReplace?: boolean;
+  extraData?: ObjectOf<any>;
 }
 
 export type CadSearchData = {

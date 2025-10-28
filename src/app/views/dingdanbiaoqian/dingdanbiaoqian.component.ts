@@ -32,7 +32,7 @@ import {cloneDeep, isEmpty} from "lodash";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
 import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
-import {DdbqConfig, DdbqData, DdbqType, Form, Order, SectionCell, SectionConfig} from "./dingdanbiaoqian.types";
+import {DdbqConfig, DdbqData, DdbqType, Form, FormItem, Order, SectionCell, SectionConfig} from "./dingdanbiaoqian.types";
 
 @Component({
   selector: "app-dingdanbiaoqian",
@@ -164,6 +164,8 @@ export class DingdanbiaoqianComponent implements OnInit {
   materialResult = signal<Formulas>({});
   forms = signal<Form[]>([]);
   formsStyle = signal<Properties>({});
+  formTitleTplType = {$implicit: "" as Form["title"]};
+  formItemTplType = {$implicit: {} as FormItem};
   isLvxingcai = signal(false);
   async getOrders() {
     const url = "order/order/dingdanbiaoqian";
@@ -784,5 +786,9 @@ export class DingdanbiaoqianComponent implements OnInit {
 
   isArray(v: any) {
     return Array.isArray(v);
+  }
+
+  getFormStyle(form: Form) {
+    return {...this.formsStyle(), ...form.style};
   }
 }

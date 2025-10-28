@@ -84,6 +84,7 @@ export class ImportComponent implements OnInit {
     }
     return isSbjbType(yaoqiu.CAD分类);
   });
+  extraData = computed(() => this.importCache()?.extraData);
 
   importConfigTranslation: Record<ImportComponentConfigName, string> = {
     requireLineId: "上传线必须全部带ID",
@@ -342,7 +343,8 @@ export class ImportComponent implements OnInit {
           cadData: cads[i].data,
           force: true,
           importConfig: {pruneLines},
-          sbjbReplace
+          sbjbReplace,
+          extraData: this.extraData()
         },
         true,
         httpOptions
