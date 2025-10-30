@@ -530,3 +530,8 @@ export const openCadForm = async (
   }
   return null;
 };
+
+export interface Intersection2Item {
+  name: string;
+  ids: string[];
+}

@@ -61,6 +61,25 @@
       }
     </div>
   }
+  @for (key of intersectionKeys2; track $index) {
+    <div class="sub-form-field">
+      <div class="label">{{ key }}</div>
+      @if (!(data().info[key]?.length > 0)) {
+        <div>
+          <button mat-icon-button (click)="addIntersectionValue2(key)">
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+      }
+      @for (v of intersectionInputs2()[key]; track $index) {
+        <div class="toolbar">
+          @for (v2 of v; track $index) {
+            <app-input [info]="v2"></app-input>
+          }
+        </div>
+      }
+    </div>
+  }
   <div class="sub-form-field">
     <div class="label">激光开料标记线</div>
     @if (data().info["激光开料标记线"]?.length === 0) {

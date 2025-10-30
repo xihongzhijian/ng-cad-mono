@@ -30,7 +30,7 @@ import {CadPoints} from "@services/app-status.types";
 import {CadStatusIntersection, CadStatusSelectBaseline, CadStatusSelectJointpoint} from "@services/cad-status";
 import {debounce, isEqual} from "lodash";
 import {InputComponent} from "../../../../input/components/input.component";
-import {getCadInfoInputs} from "./cad-info.utils";
+import {getCadInfoInputs, Intersection2Item} from "./cad-info.utils";
 
 @Component({
   selector: "app-cad-info",
@@ -55,7 +55,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   @HostBinding("class") class = "ng-page";
 
   private _cadPointsLock = false;
-  cadStatusIntersectionInfo: CadStatusIntersection["info"] | null = null;
+  cadStatusIntersectionInfo: CadStatusIntersection["info"] = "";
   bjxTypes = 激光开料标记线类型;
   emptyBjxItem: NonNullable<CadData["info"]["激光开料标记线"]>[0] = {type: "短直线", ids: []};
 
@@ -78,7 +78,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     () => {
       this._cadPointsLock = true;
       this.status.setCadPoints();
-      this.cadStatusIntersectionInfo = null;
+      this.cadStatusIntersectionInfo = "";
     },
     () => {
       this._updateCadPoints();
@@ -162,6 +162,27 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
           }
         }
         this.updateIntersectionInputs();
+      } else if (this.intersectionKeys2.includes(key)) {
+        let arr: Intersection2Item[] = data.info[key];
+        if (!arr) {
+          data.info[key] = arr = [];
+        }
+        let item = arr[index];
+        if (!item) {
+          arr[index] = item = {name: "", ids: []};
+        }
+        if (activePoints.length < 1) {
+          item.ids = [];
+        } else {
+          for (const p of activePoints) {
+            const p2 = this._setActiveCadPoint({lines: item.ids}, points);
+            if (!p2 || !isEqual(p.lines, p2.lines)) {
+              item.ids = p.lines.slice();
+              this._updateCadPoints();
+              break;
+            }
+          }
+        }
       } else if (key === "激光开料标记线") {
         if (!data.info.激光开料标记线) {
           data.info.激光开料标记线 = [];
@@ -342,6 +363,8 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       const points = this.status.getCadPoints(data.getAllEntities());
       if (intersectionKeys.includes(key as IntersectionKey)) {
         this._setActiveCadPoint({lines: data[key as IntersectionKey][intersectionStatus.index]}, points);
+      } else if (this.intersectionKeys2.includes(key)) {
+        this._setActiveCadPoint({lines: data.info[key][intersectionStatus.index].ids}, points);
       } else if (key === "激光开料标记线") {
         this._setActiveCadPoint({lines: data.info.激光开料标记线?.[intersectionStatus.index].ids}, points);
       }
@@ -504,6 +527,59 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.intersectionInputs.set(inputs);
   }
 
+  intersectionKeys2 = ["装配信息"];
+  intersectionInputs2 = signal<Partial<Record<string, InputInfo[][]>>>({});
+  updateIntersectionInputs2() {
+    const inputs: ReturnType<typeof this.intersectionInputs2> = {};
+    const data = this.data();
+    for (const key of this.intersectionKeys2) {
+      const arr: Intersection2Item[] = data.info[key] || [];
+      inputs[key] = [];
+      for (const [i, v] of arr.entries()) {
+        const arr2: InputInfo[] = [
+          {
+            type: "string",
+            label: "",
+            value: v.ids.length > 0 ? "已指定" : "未指定",
+            selectOnly: true,
+            suffixIcons: [
+              {
+                name: "linear_scale",
+                isDefault: true,
+                class: this.getPointClass(i, key),
+                onClick: () => {
+                  this.selectPoint(i, key);
+                }
+              },
+              {
+                name: "add_circle",
+                onClick: () => {
+                  this.addIntersectionValue2(key, i + 1);
+                }
+              },
+              {
+                name: "remove_circle",
+                onClick: () => {
+                  this.removeIntersectionValue2(key, i);
+                }
+              }
+            ],
+            style: {width: "130px"}
+          },
+          {
+            type: "string",
+            label: "名字",
+            model: {data: v, key: "name"},
+            autocomplete: "off",
+            style: {flex: "1 1 0", width: 0}
+          }
+        ];
+        inputs[key].push(arr2);
+      }
+    }
+    this.intersectionInputs2.set(inputs);
+  }
+
   offset(value: string) {
     const data = this.data();
     const cad = this.status.cad;
@@ -564,10 +640,11 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.status.emitChangeCadSignal();
   }
 
-  selectPoint(i: number, key: IntersectionKey) {
+  selectPoint(i: number, key: string) {
     this.cadStatusIntersectionInfo = key;
     this.status.toggleCadStatus(new CadStatusIntersection(key, i));
     this.updateIntersectionInputs();
+    this.updateIntersectionInputs2();
   }
 
   selectBjxPoint(i: number) {
@@ -575,7 +652,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.status.toggleCadStatus(new CadStatusIntersection("激光开料标记线", i));
   }
 
-  getPointClass(i: number, key: IntersectionKey) {
+  getPointClass(i: number, key: string) {
     if (this.status.hasCadStatus((v) => v instanceof CadStatusIntersection && v.info === key && i === v.index)) {
       return "accent";
     }
@@ -611,5 +688,25 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.arrayRemove(data.info.刨坑深度, i);
     }
     this.updateIntersectionInputs();
+  }
+
+  addIntersectionValue2(key: string, i?: number) {
+    const data = this.data();
+    let arr: Intersection2Item[] | undefined = data.info[key];
+    if (!Array.isArray(arr)) {
+      arr = [];
+      data.info[key] = arr;
+    }
+    this.arrayAdd(arr, {name: "", ids: []}, i);
+    this.updateIntersectionInputs2();
+  }
+  removeIntersectionValue2(key: string, i: number) {
+    const data = this.data();
+    const arr: Intersection2Item[] | undefined = data.info[key];
+    if (!Array.isArray(arr)) {
+      return;
+    }
+    this.arrayRemove(arr, i);
+    this.updateIntersectionInputs2();
   }
 }

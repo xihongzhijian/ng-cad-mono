@@ -1,4 +1,4 @@
-import {CadDimensionType, IntersectionKey} from "@lucilor/cad-viewer";
+import {CadDimensionType} from "@lucilor/cad-viewer";
 
 export abstract class CadStatus {
   name = "None";
@@ -93,7 +93,7 @@ export class CadStatusIntersection extends CadStatus {
   leaveWithEsc = true;
 
   constructor(
-    public info: IntersectionKey | "addWHDashedLines" | "激光开料标记线",
+    public info: string,
     index?: number
   ) {
     super(index);
