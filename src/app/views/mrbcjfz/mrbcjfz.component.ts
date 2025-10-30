@@ -99,7 +99,7 @@ export class MrbcjfzComponent {
 
   idIn = input(0, {alias: "id"});
   tableIn = input("", {alias: "table"});
-  collection = input<CadCollection>();
+  collectionIn = input<CadCollection | undefined>(undefined, {alias: "collection"});
   closeable = input(false, {transform: booleanAttribute});
   inputData = input<MrbcjfzInputData>();
   forceSubmit = input(false, {transform: booleanAttribute});
@@ -115,6 +115,13 @@ export class MrbcjfzComponent {
   idEff = effect(() => this.id.set(this.idIn()));
   table = signal("");
   tableEff = effect(() => this.table.set(this.tableIn()));
+  collection = signal<CadCollection>("cad");
+  CollectionEff = effect(() => {
+    const collection = this.collectionIn();
+    if (collection) {
+      this.collection.set(collection);
+    }
+  });
 
   cads = signal<ObjectOf<MrbcjfzCadInfo>>({});
   huajians = signal<ObjectOf<MrbcjfzHuajianInfo>>({});
@@ -171,7 +178,7 @@ export class MrbcjfzComponent {
     let resData: MrbcjfzResponseData | undefined;
     let id = this.id();
     let table = this.table();
-    const collection = this.collection();
+    let collection = this.collection();
     const inputData = this.inputData();
     if (inputData) {
       if (inputData.resData) {
@@ -199,6 +206,10 @@ export class MrbcjfzComponent {
         this.isFromOrder.set(!(id && table));
       } else {
         await timeout(0);
+      }
+      if (params.collection) {
+        collection = params.collection;
+        this.collection.set(collection);
       }
     }
     if (this.isFromOrder()) {
