@@ -95,7 +95,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
     "@typescript-eslint/types": "^8.46.0",
-    "@typescript-eslint/utils": "^8.46.0",
+    "@typescript-eslint/utils": "^8.46.2",
     "angular-animations": "^0.11.0",
     "axios": "^1.12.2",
     "compressing": "^2.0.0",
