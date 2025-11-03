@@ -101,6 +101,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   openCadOptionsEff = effect(() => {
     this.status.openCadOptions();
     this.updateIntersectionInputs();
+    this.updateIntersectionInputs2();
   });
 
   componentsSelected = this.status.components.selected;
@@ -183,6 +184,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
             }
           }
         }
+        this.updateIntersectionInputs2();
       } else if (key === "激光开料标记线") {
         if (!data.info.激光开料标记线) {
           data.info.激光开料标记线 = [];
@@ -643,8 +645,11 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   selectPoint(i: number, key: string) {
     this.cadStatusIntersectionInfo = key;
     this.status.toggleCadStatus(new CadStatusIntersection(key, i));
-    this.updateIntersectionInputs();
-    this.updateIntersectionInputs2();
+    if (intersectionKeys.includes(key as IntersectionKey)) {
+      this.updateIntersectionInputs();
+    } else if (this.intersectionKeys2.includes(key)) {
+      this.updateIntersectionInputs2();
+    }
   }
 
   selectBjxPoint(i: number) {

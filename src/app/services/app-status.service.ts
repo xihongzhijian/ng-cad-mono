@@ -92,11 +92,18 @@ export class AppStatusService {
     this._changeCadSignal.set(this._changeCadSignal() + Math.random() < 0.5 ? 1 : -1);
   }
   cadData = signal(this.cad.data);
-  cadDataEff = effect(() => {
+  cadDataEff = effect(async () => {
     this._changeCadSignal();
     this.openCadOptions();
     this.cadData.set(new CadData());
     this.cadData.set(this.cad.data);
+    if (!this.cad.data.info.isLocal) {
+      const {isDataFetched, fetchPromise} = this.inputOptionsManager;
+      if (isDataFetched || fetchPromise) {
+        await fetchPromise;
+        this.inputOptionsManager.fetch(true);
+      }
+    }
   });
   saveCadStart$ = new Subject<void>();
   saveCadEnd$ = new Subject<{data: CadData}>();
@@ -882,7 +889,11 @@ export class AppStatusService {
   }
 
   inputOptionsManager = new FetchManager(null, async () => {
-    const result = await this.http.getData<HoutaiInputOptions>("shuju/api/getInputNames", {}, {spinner: false});
+    const params: ObjectOf<any> = {};
+    if (!this.cad.data.info.isLocal) {
+      params.cadInfo = {collection: this.collection(), id: this.cad.data.id};
+    }
+    const result = await this.http.getData<HoutaiInputOptions>("shuju/api/getInputNames", params, {spinner: false});
     if (!result || !isTypeOf(result, "object")) {
       return null;
     }

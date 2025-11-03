@@ -62,7 +62,7 @@
     </div>
   }
   @for (key of intersectionKeys2; track $index) {
-    <div class="sub-form-field">
+    <div class="sub-form-field" [class]="[key]">
       <div class="label">{{ key }}</div>
       @if (!(data().info[key]?.length > 0)) {
         <div>

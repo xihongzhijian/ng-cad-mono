@@ -936,7 +936,7 @@ export const uploadAndReplaceCad = async (file: File, data: CadData, isMain: boo
         // data.components = resData.components;
         data.zhidingweizhipaokeng = resData.zhidingweizhipaokeng;
         const 唯一码 = data.info.唯一码;
-        data.info = resData.info;
+        data.info = {...data.info, ...resData.info};
         if (唯一码) {
           data.info.唯一码 = 唯一码;
         }

@@ -9,7 +9,7 @@
   <app-cad-points></app-cad-points>
 
   <div class="menu top" [@closeTop]="showTopMenu() ? 'open' : 'closed'">
-    <app-toolbar></app-toolbar>
+    <app-toolbar (focusZhuangpeixinxi)="focusZhuangpeixinxi()"></app-toolbar>
   </div>
   <div class="menus-row">
     <div class="menu left" [style.width.px]="leftMenuWidth()" [@closeLeft]="showLeftMenu() ? 'open' : 'closed'">

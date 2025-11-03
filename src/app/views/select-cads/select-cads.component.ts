@@ -4,6 +4,7 @@ import {session} from "@app/app.common";
 import {openCadListDialog} from "@components/dialogs/cad-list/cad-list.component";
 import {CadListInput} from "@components/dialogs/cad-list/cad-list.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppStatusService} from "@services/app-status.service";
 import {environment} from "src/environments/environment";
 
 @Component({
@@ -14,6 +15,7 @@ import {environment} from "src/environments/environment";
 export class SelectCadsComponent implements OnInit {
   private dialog = inject(MatDialog);
   private message = inject(MessageService);
+  private status = inject(AppStatusService);
 
   private _paramsKey = "selectCadParams";
 
@@ -26,6 +28,12 @@ export class SelectCadsComponent implements OnInit {
       } else {
         data = {selectMode: "single", collection: "cad", checkedItemsLimit: [1, NaN], fixedSearch: {分类: "特定企料"}};
       }
+    }
+    const type = data.fixedSearch?.分类;
+    if (type) {
+      await this.status.cadYaoqiusManager.fetch();
+      data.yaoqiu = this.status.getCadYaoqiu(type);
+      console.log(data.yaoqiu);
     }
     do {
       const result = await openCadListDialog(this.dialog, {data, width: "100vw", height: "100vh"});

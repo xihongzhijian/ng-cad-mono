@@ -584,6 +584,12 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       this.hideMenuSearch();
     }
   }
+
+  async focusZhuangpeixinxi() {
+    this.tabIndex.set(0);
+    await timeout(0);
+    this._scrollbar?.scrollToElement(".装配信息");
+  }
 }
 
 type Dragkey = keyof Pick<AppConfig, "leftMenuWidth" | "rightMenuWidth">;

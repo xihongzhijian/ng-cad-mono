@@ -1,4 +1,4 @@
-import {Component, computed, HostBinding, HostListener, inject} from "@angular/core";
+import {Component, computed, HostBinding, HostListener, inject, output} from "@angular/core";
 import {Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -49,6 +49,8 @@ export class ToolbarComponent {
   private status = inject(AppStatusService);
 
   @HostBinding("class") class = "ng-page";
+
+  focusZhuangpeixinxiOut = output({alias: "focusZhuangpeixinxi"});
 
   keyEventItems: KeyEventItem[] = [
     {
@@ -680,5 +682,9 @@ export class ToolbarComponent {
 
   async searchCadsUsingMuban() {
     return await openCadListDialog(this.dialog, {data: {collection: "cad", selectMode: "none", search: {模板: this.status.cad.data.id}}});
+  }
+
+  focusZhuangpeixinxi() {
+    this.focusZhuangpeixinxiOut.emit();
   }
 }
