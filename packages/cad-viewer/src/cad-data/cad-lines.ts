@@ -15,29 +15,25 @@ export const generatePointsMap = (entities?: CadEntities, tol = DEFAULT_TOLERANC
   if (!entities) {
     return map;
   }
-  const addToMap = (point: Point, line: CadLine | CadArc) => {
-    const linesAtPoint = map.find((v) => v.point.distanceTo(point) <= tol);
-    if (linesAtPoint) {
-      linesAtPoint.lines.push(line);
-    } else {
-      map.push({point, lines: [line], selected: false});
-    }
+  const addToMap = (line: CadLineLike) => {
+    const add = (point: Point) => {
+      const linesAtPoint = map.find((v) => v.point.distanceTo(point) <= tol);
+      if (linesAtPoint) {
+        linesAtPoint.lines.push(line);
+      } else {
+        map.push({point, lines: [line], selected: false});
+      }
+    };
+    add(line.start);
+    add(line.end);
   };
-  entities.line.forEach((entity) => {
+
+  entities.forEach((entity) => {
     if (entity.info.ignorePointsMap) {
       return;
     }
-    const {start, end} = entity;
-    if (start.distanceTo(end) > 0) {
-      addToMap(start, entity);
-      addToMap(end, entity);
-    }
-  });
-  entities.arc.forEach((entity) => {
-    const curve = entity.curve;
-    if (curve.length > 0) {
-      addToMap(curve.getPoint(0), entity);
-      addToMap(curve.getPoint(1), entity);
+    if (entity instanceof CadLineLike) {
+      addToMap(entity);
     }
   });
   return map;

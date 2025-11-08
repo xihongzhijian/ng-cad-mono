@@ -641,6 +641,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         value: lengthInfo.value,
         hint: lengthInfo.isMultiple ? "多个值" : "",
         disabled,
+        readonly: selected.some((v) => !(v instanceof CadLine)),
         onChange: (val) => {
           this.setLineLength(val);
         }

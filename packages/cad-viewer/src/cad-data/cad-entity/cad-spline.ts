@@ -1,9 +1,9 @@
-import {MatrixLike, ObjectOf, Point, Rectangle} from "@lucilor/utils";
+import {MatrixLike, ObjectOf, Point, Rectangle, Spline} from "@lucilor/utils";
+import {CadLineLike} from "../..";
 import {getVectorsFromArray, purgeObject} from "../../cad-utils";
 import {EntityType} from "../cad-types";
-import {CadEntity} from "./cad-entity";
 
-export class CadSpline extends CadEntity {
+export class CadSpline extends CadLineLike {
   type: EntityType = "SPLINE";
   fitPoints: Point[] = [];
   controlPoints: Point[] = [];
@@ -11,6 +11,22 @@ export class CadSpline extends CadEntity {
   calcBoundingRect = false;
   get _boundingRectCalc() {
     return Rectangle.min;
+  }
+
+  get start() {
+    return this.curve.getPoint(0);
+  }
+  get end() {
+    return this.curve.getPoint(1);
+  }
+  get middle() {
+    return this.curve.getPoint(0.5);
+  }
+  get curve() {
+    return new Spline(this.fitPoints, this.controlPoints, this.degree);
+  }
+  get length() {
+    return this.curve.length;
   }
 
   constructor(data: any = {}, resetId = false) {

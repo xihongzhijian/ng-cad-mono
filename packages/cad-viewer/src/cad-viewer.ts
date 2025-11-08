@@ -25,7 +25,7 @@ import {CadStylizer} from "./cad-stylizer";
 import {getVectorFromArray, toFixedTrim} from "./cad-utils";
 import {CadEventCallBack, CadEvents, controls} from "./cad-viewer-controls";
 import {CadViewerConfig, CadViewerFont, getDefalutCadViewerConfig} from "./cad-viewer.types";
-import {drawArc, drawCircle, drawDimensionLinear, drawImage, drawLeader, drawLine, drawShape, drawText} from "./draw";
+import {drawArc, drawCircle, drawDimensionLinear, drawImage, drawLeader, drawLine, drawShape, drawSpline, drawText} from "./draw";
 
 const getConfigProxy = (config: Partial<CadViewerConfig> = {}) => {
   const defalutConfig = getDefalutCadViewerConfig();
@@ -551,7 +551,7 @@ export class CadViewer extends EventEmitter {
       }
       drawResult = drawText(el, entity.text, insert, anchor, fontStyle);
     } else if (entity instanceof CadSpline) {
-      // TODO
+      drawResult = await drawSpline(el, entity, lineStyle);
     } else if (entity instanceof CadLeader) {
       const start = entity.vertices[0];
       const end = entity.vertices[1];

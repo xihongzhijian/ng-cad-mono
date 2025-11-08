@@ -1,6 +1,6 @@
 import {Angle, Arc, getTypeOf, Line, Matrix, Point, timeout} from "@lucilor/utils";
 import {Container, Element, Image, Path, PathArrayAlias, Circle as SvgCircle, Line as SvgLine, Text} from "@svgdotjs/svg.js";
-import {CadAxis, CadImage} from "./cad-data";
+import {CadAxis, CadImage, CadSpline} from "./cad-data";
 import {CadDimension} from "./cad-data/cad-entity/cad-dimension";
 import {CadDimensionStyle, FontStyle, LineStyle} from "./cad-data/cad-styles";
 
@@ -416,4 +416,60 @@ export const drawImage = async (draw: Container, e: CadImage, i = 0) => {
   matrix.transform(transformMatrix);
   imageEl.transform(matrix);
   return [imageContainer];
+};
+
+export const drawSpline = async (draw: Container, e: CadSpline, style?: LineStyle, i = 0) => {
+  const getBezierPathFromPoints = (points: Point[]) => {
+    const [start, ...controlPoints] = points;
+
+    const path = [`M ${ptToStr(start)}`];
+
+    // if only one point, draw a straight line
+    if (controlPoints.length === 1) {
+      path.push(`L ${ptToStr(controlPoints[0])}`);
+    }
+    // if there are groups of 3 points, draw cubic bezier curves
+    else if (controlPoints.length % 3 === 0) {
+      for (let j = 0; j < controlPoints.length; j = j + 3) {
+        const [c1, c2, p] = controlPoints.slice(j, j + 3);
+        path.push(`C ${ptToStr(c1)}, ${ptToStr(c2)}, ${ptToStr(p)}`);
+      }
+    }
+    // if there's an even number of points, draw quadratic curves
+    else if (controlPoints.length % 2 === 0) {
+      for (let j = 0; j < controlPoints.length; j = j + 2) {
+        const [c, p] = controlPoints.slice(j, j + 2);
+        path.push(`Q ${ptToStr(c)}, ${ptToStr(p)}`);
+      }
+    }
+    // else, add missing points and try again
+    // https://stackoverflow.com/a/72577667/1010492
+    else {
+      for (let j = controlPoints.length - 3; j >= 2; j = j - 2) {
+        const missingPoint = midPoint(controlPoints[j - 1], controlPoints[j]);
+        controlPoints.splice(j, 0, missingPoint);
+      }
+      return getBezierPathFromPoints([start, ...controlPoints]);
+    }
+
+    return path.join(" ");
+  };
+
+  const midPoint = (pt1: Point, pt2: Point) => {
+    return pt1.clone().add(pt2).divide(2);
+  };
+
+  const ptToStr = ({x, y}: Point) => {
+    return `${x} ${y}`;
+  };
+
+  const path = getBezierPathFromPoints(e.controlPoints);
+  let el = draw.children()[i] as Path;
+  if (el instanceof Path) {
+    el.plot(path);
+  } else {
+    el = draw.path(path).addClass("stroke").fill("none");
+  }
+  setLineStyle(el, style || {});
+  return [el];
 };
