@@ -5,13 +5,37 @@ import {Calc} from "./calc";
 export class CustomValidators {
   static numberRangeStr: ValidatorFn = (control) => {
     const value = control.value;
-    if (!value) {
+    if (!value || typeof value !== "string") {
       return null;
     }
-    if (!/^\d+(.\d+)?-\d+(.\d+)?$/.test(value)) {
-      return {取值范围不符合格式: true};
+    const separators = ["-", "||"];
+    let isValid = false;
+    for (const sep of separators) {
+      let parts = value.split(sep).map((v) => v.trim());
+      const toRemove: number[] = [];
+      if (sep === "-") {
+        for (let i = 0; i < parts.length; i++) {
+          if (parts[i] === "" && i < parts.length - 1 && parts[i + 1] !== "") {
+            parts[i + 1] = "-" + parts[i + 1];
+            toRemove.push(i);
+          }
+        }
+      }
+      parts = parts.filter((_, i) => !toRemove.includes(i));
+      let limit = 2;
+      if (sep === "||") {
+        limit = Infinity;
+      }
+      if (parts.length < 2 || parts.length > limit) {
+        continue;
+      }
+      const isAllNumbers = parts.every((part) => part === "" || !isNaN(Number(part)));
+      if (isAllNumbers) {
+        isValid = true;
+        break;
+      }
     }
-    return null;
+    return isValid ? null : {取值范围不符合格式: true};
   };
   static rangedNumber = (rangeStr: string): ValidatorFn => {
     let [min, max] = rangeStr.split("-").map(Number);
