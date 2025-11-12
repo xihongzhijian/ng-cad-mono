@@ -62,12 +62,18 @@ export const getFileSize = (raw: number, options: FileSizeOptions = {}) => {
   return stringGetter(size.toFixed(fractionDigits), unit);
 };
 
-export const selectFiles = (opts?: {multiple?: boolean; accept?: string}) => {
+export interface SelectFilesOptions {
+  multiple?: boolean;
+  accept?: string;
+  directory?: boolean;
+}
+export const selectFiles = (opts?: SelectFilesOptions) => {
   return new Promise<FileList | null>((resolve) => {
     const input = document.createElement("input");
     input.type = "file";
     input.multiple = opts?.multiple ?? false;
     input.accept = opts?.accept ?? "";
+    input.webkitdirectory = opts?.directory ?? false;
     input.addEventListener("change", () => {
       resolve(input.files);
     });
