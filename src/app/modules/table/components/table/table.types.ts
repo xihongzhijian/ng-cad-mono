@@ -30,12 +30,14 @@ export interface TableRenderInfo<T> {
   isTree?: boolean;
   onlineMode?: {tableName: string; refresh: () => MaybePromise<void>};
   noScroll?: boolean;
+  noBorder?: boolean;
   class?: string | string[];
   style?: Properties;
   getCellClass?: (event: CellEvent<T>) => string | string[];
   getCellStyle?: (event: CellEvent<T>) => Properties;
   hideHeader?: boolean;
   compactColumnButton?: boolean;
+  cellMergeInfos?: TableCellMergeInfo[];
 }
 export interface TableRenderInfoFilterable<T> {
   fields?: (keyof T | TableRenderInfoFilterableField<T>)[];
@@ -43,6 +45,12 @@ export interface TableRenderInfoFilterable<T> {
 export interface TableRenderInfoFilterableField<T> {
   field: keyof T;
   valueGetter: (item: T) => string;
+}
+
+export interface TableCellMergeInfo {
+  rowIdx: number;
+  fields: string[];
+  n: number;
 }
 
 export interface RowSelection<T> {
@@ -72,7 +80,9 @@ export interface ColumnInfoBase<T> {
   sticky?: boolean;
   stickyEnd?: boolean;
   hidden?: boolean;
+  class?: string | string[];
   style?: Properties;
+  align?: "left" | "center" | "right";
   getString?: (value: T, index: number) => string;
   validators?: AbstractControlOptions["validators"];
   validators2?: TableItemValidator<T> | TableItemValidator<T>[];

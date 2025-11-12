@@ -4,14 +4,13 @@ import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
 import {setGlobal} from "@app/app.common";
 import {getValueString} from "@app/utils/get-value";
-import {environment} from "@env";
 import {ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {ImageComponent} from "@modules/image/components/image/image.component";
 import {MessageService} from "@modules/message/services/message.service";
 import {TableComponent} from "@modules/table/components/table/table.component";
 import {ColumnInfo, RowButtonEvent, TableRenderInfo} from "@modules/table/components/table/table.types";
-import {Properties} from "csstype";
+import {uniqueId} from "lodash";
 import {toDataURL} from "qrcode";
 import {
   LvxingcaiyouhuaInfo,
@@ -80,6 +79,8 @@ export class PrintTableComponent<T = any> implements OnInit {
           buttonColIndexs.add(j);
         }
       }
+      console.log(buttonColIndexs);
+
       const headerRowEls = tableEl.querySelectorAll("mat-header-row");
       const rowEls = tableEl.querySelectorAll("mat-row");
       const updateCells = (rowElList: NodeListOf<Element>, selector: string) => {
@@ -90,12 +91,12 @@ export class PrintTableComponent<T = any> implements OnInit {
               if (buttonColIndexs.has(k)) {
                 toResetDisplay.push(cell);
                 cell.style.display = "none";
-              }
-              if (k === info.columns.length - 1 && k > 0) {
-                const prevCell = cells.item(k - 1);
-                if (prevCell instanceof HTMLElement) {
-                  toResetBorderRight.push(prevCell);
-                  prevCell.style.borderRight = "var(--border)";
+                if (k === info.columns.length - 1 && k > 0) {
+                  const prevCellContent = cells.item(k - 1).querySelector(".cell-content");
+                  if (prevCellContent instanceof HTMLElement) {
+                    toResetBorderRight.push(prevCellContent);
+                    prevCellContent.style.borderRight = "var(--border)";
+                  }
                 }
               }
             }
@@ -169,16 +170,25 @@ export class PrintTableComponent<T = any> implements OnInit {
       return;
     }
     const tableInfos: TableInfoDataTable[] = [];
-    const addSideTable = (type: "header" | "footer", sideTable: TableInfoDataSideTable | undefined, labelWidth?: string) => {
+    const addSideTable = (
+      type: "header" | "footer",
+      sideTable: TableInfoDataSideTable | undefined,
+      labelWidth?: string,
+      noBorder = false
+    ) => {
       if (!Array.isArray(sideTable) || sideTable.length < 1) {
         return;
       }
       for (const [i, value] of sideTable.entries()) {
         const cols: ColumnInfo<TableData>[] = [];
         let colIdx = 0;
-        const headerStyle: Properties = {};
+        const headerCls: string[] = [];
         if (i < sideTable.length - 1) {
-          headerStyle.borderBottom = "none";
+          headerCls.push("no-border-bottom");
+        }
+        const style: TableInfoDataTable["style"] = {};
+        if (type === "footer" && i === 0) {
+          style.marginTop = "10px";
         }
         for (const value2 of value) {
           if (!value2.value) {
@@ -201,43 +211,48 @@ export class PrintTableComponent<T = any> implements OnInit {
               labelFlex = `0 0 ${labelWidth}`;
             }
           }
+          let labelName = value2.label;
+          if (noBorder && labelName) {
+            labelName += "：";
+          }
           cols.push({
             type: "string",
-            field: value2.label,
-            name: value2.label,
-            style: {...headerStyle, flex: labelFlex}
+            field: uniqueId(),
+            name: labelName,
+            class: headerCls,
+            style: {flex: labelFlex},
+            align: noBorder ? "right" : "center"
           });
           cols.push({
             type: "string",
-            field: value3,
+            field: uniqueId(),
             name: value3,
-            style: {...headerStyle, flex: valueFlex}
+            class: headerCls,
+            style: {flex: valueFlex},
+            align: noBorder ? "left" : "center"
           });
         }
-        tableInfos.push({type, noScroll: true, columns: cols, data: []});
+        tableInfos.push({type, noScroll: true, columns: cols, data: [], noBorder, style});
       }
     };
     addSideTable("header", data.表头, data.表头标题宽度);
     for (const info of data.表数据) {
       info.class = info.title;
       info.compactColumnButton = true;
-      if (!environment.production) {
-        for (const [i, item] of info.data.entries()) {
-          item.序号 = i + 1;
-        }
-      }
-      const sumCols: typeof info.columns = [];
-      for (const col of info.columns) {
+      const sumCols: {i: number}[] = [];
+      for (const [i, col] of info.columns.entries()) {
         if (col.type === "image") {
           col.noLazy = true;
         }
         if (col.sum) {
-          sumCols.push(col);
+          sumCols.push({i});
         }
       }
       if (sumCols.length > 0) {
         const item: TableData = {};
-        for (const col of sumCols) {
+        for (const {i} of sumCols) {
+          const col = info.columns[i];
+          const colPrev = info.columns[i - 1];
           let sum = 0;
           for (const item2 of info.data) {
             const n = Number(item2[col.field]);
@@ -247,13 +262,14 @@ export class PrintTableComponent<T = any> implements OnInit {
               sum += n;
             }
           }
-          item[col.field] = `${col.name || col.field}汇总：${sum}`;
+          item[colPrev.field] = `${col.name || col.field}汇总`;
+          item[col.field] = `${sum}`;
         }
         info.data.push(item);
       }
       tableInfos.push({type: "main", noScroll: true, ...info, titleStyle: {display: "none"}, hasSum: sumCols.length > 0});
     }
-    addSideTable("footer", data.表尾);
+    addSideTable("footer", data.表尾, data.表尾标题宽度, data.表尾无边框);
     this.title.set(data.标题);
     this.data.set(data);
     this.tableInfos.set(tableInfos);

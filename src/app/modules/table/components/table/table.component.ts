@@ -65,7 +65,7 @@ import {
   TableRenderInfoFilterable,
   ToolbarButtonEvent
 } from "./table.types";
-import {getInputInfosFromTableColumns} from "./table.utils";
+import {getCellMergeInfo, getInputInfosFromTableColumns} from "./table.utils";
 
 @Component({
   selector: "app-table",
@@ -95,6 +95,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
   private message = inject(MessageService);
 
   @HostBinding("class") class: string | string[] | undefined;
+  @HostBinding("style") style: Properties | undefined;
 
   infoIn = input.required<TableRenderInfo<T>>({alias: "info"});
   rowButtonClick = output<RowButtonEvent<T>>();
@@ -270,8 +271,20 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       }
       this.filterTable();
     }
-    if (intersection<InfoKey>(changedKeys, ["class"]).length > 0) {
-      this.class = info.class;
+    if (intersection<InfoKey>(changedKeys, ["class", "noBorder"]).length > 0) {
+      const classes: string[] = [];
+      if (typeof info.class === "string") {
+        classes.push(info.class);
+      } else if (Array.isArray(info.class)) {
+        classes.push(...info.class);
+      }
+      if (info.noBorder) {
+        classes.push("no-border");
+      }
+      this.class = classes;
+    }
+    if (intersection<InfoKey>(changedKeys, ["style"]).length > 0) {
+      this.style = info.style;
     }
     if (intersection<InfoKey>(changedKeys, ["data", "columns"]).length > 0) {
       this.updateCellInputInfos();
@@ -554,8 +567,8 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     return true;
   }
 
-  toTypeString(str: any) {
-    return str as string;
+  getColId(column: ColumnInfo<T>) {
+    return String(column.field);
   }
 
   getCheckBoxStyle() {
@@ -565,9 +578,17 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     return style;
   }
 
+  getHeaderName(column: ColumnInfo<T>) {
+    const {name, field} = column;
+    if (typeof name === "string") {
+      return name;
+    }
+    return field;
+  }
+
   getCellClass(column: ColumnInfo<T>, item: T | null, rowIdx: number, colIdx: number) {
     const classes = new Set(["column-type-" + column.type]);
-    const {activeRows, rowSelection, getCellClass} = this.info();
+    const {activeRows, rowSelection, getCellClass, cellMergeInfos} = this.info();
     let active = activeRows?.includes(rowIdx);
     if (!active && rowSelection && !rowSelection.noActive && item && this._rowSelection.isSelected(item)) {
       active = true;
@@ -575,23 +596,35 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     if (active) {
       classes.add("active");
     }
-    if (item && getCellClass) {
-      const classes2 = getCellClass({column, item, rowIdx, colIdx});
-      if (classes2 && typeof classes2 === "string") {
-        for (const cls of classes2.split(" ")) {
-          classes.add(cls);
+    const addCls = (cls: string | string[] | undefined) => {
+      if (!cls) {
+        return;
+      }
+      if (typeof cls === "string") {
+        for (const c of cls.split(" ")) {
+          classes.add(c);
         }
-      } else if (Array.isArray(classes2)) {
-        for (const cls of classes2) {
-          classes.add(cls);
+      } else if (Array.isArray(cls)) {
+        for (const c of cls) {
+          classes.add(c);
         }
       }
+    };
+    addCls(column.class);
+    if (item && getCellClass) {
+      addCls(getCellClass({column, item, rowIdx, colIdx}));
     }
+    const mergeInfo = getCellMergeInfo(cellMergeInfos || [], column, rowIdx);
+    if (mergeInfo) {
+      classes.add(`cell-merge-rows-${mergeInfo.position}`);
+    }
+    const align = column.align || "center";
+    classes.add(`align-${align}`);
     return Array.from(classes);
   }
 
   getCellStyle(column: ColumnInfo<T>, item: T | null, rowIdx: number, colIdx: number) {
-    const {getCellStyle} = this.info();
+    const {getCellStyle, cellMergeInfos} = this.info();
     const style = {...column.style};
     if (item && getCellStyle) {
       Object.assign(style, getCellStyle({column, item, rowIdx, colIdx}));
@@ -600,6 +633,10 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       style.flex = `0 0 ${column.width}`;
     } else if (!style.flex) {
       style.flex = "1 1 0";
+    }
+    const mergeInfo = getCellMergeInfo(cellMergeInfos || [], column, rowIdx);
+    if (mergeInfo) {
+      style[`--merge-rows-n`] = `${mergeInfo.n}`;
     }
     return style;
   }

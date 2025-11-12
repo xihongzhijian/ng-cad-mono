@@ -53,7 +53,7 @@
 
       &[type="main"] {
         app-table ::ng-deep {
-          mat-table mat-header-row:first-child mat-header-cell {
+          mat-table mat-header-row:first-child mat-header-cell .cell-content {
             border-top: none;
           }
         }
@@ -67,7 +67,9 @@
     }
 
     &[type="footer"] {
-      margin-top: 10px;
+      &:first-of-type {
+        margin-top: 10px;
+      }
 
       app-table {
         border: none;
@@ -76,19 +78,19 @@
 
     &.has-sum {
       app-table ::ng-deep {
-        mat-table mat-row:last-child {
-          mat-cell {
-            border: none;
+        .table-body mat-row:last-child {
+          .mat-mdc-cell {
             overflow: visible;
             width: auto;
-            transform: translateX(-20px);
-            &:hover,
-            &.active {
-              background-color: transparent;
-            }
 
-            > * {
+            .cell-content {
+              border: none;
               white-space: nowrap;
+              padding: 0;
+              &:hover,
+              &.active {
+                background-color: transparent;
+              }
             }
           }
         }
@@ -101,6 +103,7 @@
     --row-min-height: 36px;
     --row-max-height: 36px;
     --cell-active-color: #b2b2b2;
+    --cell-padding: 2px;
     ::ng-deep {
       .title {
         text-align: left;
@@ -116,7 +119,9 @@
           .mat-mdc-header-cell,
           .mat-mdc-cell,
           .mat-mdc-footer-cell {
-            padding: 2px;
+            &.no-border-bottom .cell-content {
+              border-bottom: none;
+            }
           }
         }
       }

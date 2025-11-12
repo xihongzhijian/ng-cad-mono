@@ -1,6 +1,7 @@
+import {isBetween} from "@lucilor/utils";
 import {TableRenderData, TableRenderDataColumn} from "@modules/http/services/cad-data.service.types";
 import {InputInfo, InputInfoCommon, InputInfoPart} from "@modules/input/components/input.types";
-import {ColumnInfo, TableRenderInfo} from "./table.types";
+import {ColumnInfo, TableCellMergeInfo, TableRenderInfo} from "./table.types";
 
 export const convertTableRenderData = <T>(data: TableRenderData, info: TableRenderInfo<T>) => {
   const columns: ColumnInfo<T>[] = [];
@@ -107,4 +108,30 @@ export const getInputInfosFromTableColumns = <T>(
     }
   }
   return result;
+};
+
+export const getCellMergeInfo = <T>(cellMergeInfos: TableCellMergeInfo[], column: ColumnInfo<T>, rowIdx: number) => {
+  const field = String(column.field);
+  if (!(rowIdx >= 0)) {
+    return null;
+  }
+  for (const info of cellMergeInfos || []) {
+    const {rowIdx: rowIndx2, fields} = info;
+    let {n} = info;
+    n = Math.floor(n);
+    if (!(n > 1) || !isBetween(rowIdx, rowIndx2, rowIndx2 + n - 1, true) || !fields.includes(field)) {
+      continue;
+    }
+    const m = rowIdx - rowIndx2;
+    let position: "head" | "middle" | "tail";
+    if (m === 0) {
+      position = "head";
+    } else if (m < n - 1) {
+      position = "middle";
+    } else {
+      position = "tail";
+    }
+    return {n, position};
+  }
+  return null;
 };
