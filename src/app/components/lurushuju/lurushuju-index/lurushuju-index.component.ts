@@ -68,7 +68,7 @@ export class LurushujuIndexComponent {
 
   xinghaoSizeText = computed(() => {
     const size = this.lrsjStatus.xinghaoSize();
-    const sizeStr = getFileSize(size, {outputUnit: "MB"});
+    const sizeStr = getFileSize(size, {outputUnit: "MB", digits: 2});
     return size >= 0 ? `数据大小: ${sizeStr}` : "";
   });
   toolbarBtns = computed<ToolbarBtn[]>(() => {
