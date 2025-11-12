@@ -80,6 +80,9 @@ export const selectFiles = (opts?: SelectFilesOptions) => {
     input.addEventListener("change", () => {
       resolve(input.files);
     });
+    input.addEventListener("cancel", () => {
+      resolve(null);
+    });
     input.click();
   });
 };
