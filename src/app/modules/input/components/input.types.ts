@@ -49,6 +49,7 @@ export interface InputInfoString<T = any> extends InputInfoBase<T> {
   selectOnly?: boolean;
   optionValueType?: "string" | "array";
   fixedOptions?: string[];
+  noSortOptions?: boolean;
   optionRequired?: boolean;
   optionsDisplayLimit?: number;
   optionMultiple?: boolean;

@@ -72,6 +72,7 @@ export interface BancaiList {
   cailiaoList: string[];
   houduList: string[];
   guigeList: number[][];
+  kailiaoGuiges?: ObjectOf<ObjectOf<number[][]>>;
   zidingyi?: string;
   bancaileixing?: string;
   img?: string;

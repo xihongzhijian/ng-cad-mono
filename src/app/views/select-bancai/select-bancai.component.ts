@@ -14,6 +14,7 @@ import {downloadByString, downloadByUrl, getPinyinCompact, ObjectOf, timeout} fr
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiCad, BancaiList} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
+import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppConfigService} from "@services/app-config.service";
@@ -278,10 +279,51 @@ export class SelectBancaiComponent {
           this.updateSortedCads(info, bancai, i);
         };
         const bancaiList = this.bancaiList[bancai.mingzi];
-        const cailiaos = bancaiList.cailiaoList || [];
-        const houdus = bancaiList.houduList || [];
-        const guiges = (bancaiList.guigeList || []).map((v) => v.join(" × "));
+        const cailiaos = bancaiList?.cailiaoList || [];
+        cailiaos.sort((a, b) => a.localeCompare(b));
+        const houdus = bancaiList?.houduList || [];
+        houdus.sort((a, b) => a.localeCompare(b));
         const gasOptions = this.gasOptions.slice();
+        const guigeInput: InputInfo = {
+          label: "规格",
+          type: "string",
+          noSortOptions: true,
+          onChange: (value) => {
+            onChange("guige", value);
+          },
+          validators: [
+            Validators.required,
+            (control) => {
+              if (!guigePattern.test(control.value)) {
+                return {pattern: "规格必须为两个数字(如: 10,10)"};
+              }
+              return null;
+            }
+          ]
+        };
+        const updateGuigeOptions = () => {
+          const cailiao = bancai.cailiao || "";
+          const houdu = bancai.houdu || "";
+          let guigeList = bancaiList.kailiaoGuiges?.[cailiao]?.[houdu];
+          if (!guigeList || guigeList.length < 1) {
+            guigeList = bancaiList.guigeList;
+          }
+          if (!Array.isArray(guigeList)) {
+            guigeList = [];
+          }
+          guigeList.sort((a, b) => {
+            if (a[0] === b[0]) {
+              return a[1] - b[1];
+            } else {
+              return a[0] - b[0];
+            }
+          });
+          const guiges = guigeList.map((v) => v.join(" × "));
+          guigeInput.value = bancai.guige?.join(" × ") || "";
+          guigeInput.fixedOptions = guiges;
+          guigeInput.options = guiges.slice();
+        };
+        updateGuigeOptions();
         const bancaiInfo: (typeof info.bancaiInfos)[0] = {
           cads: group.map((v) => v.id),
           oversized: group.some((v) => v.oversized),
@@ -293,8 +335,10 @@ export class SelectBancaiComponent {
               value: bancai.cailiao || "",
               options: cailiaos,
               fixedOptions: cailiaos,
+              noSortOptions: true,
               onChange: (value) => {
                 onChange("cailiao", value);
+                updateGuigeOptions();
               },
               validators: Validators.required
             },
@@ -304,8 +348,10 @@ export class SelectBancaiComponent {
               value: bancai.houdu || "",
               options: houdus,
               fixedOptions: houdus,
+              noSortOptions: true,
               onChange: (value) => {
                 onChange("houdu", value);
+                updateGuigeOptions();
               },
               validators: [
                 Validators.required,
@@ -317,25 +363,7 @@ export class SelectBancaiComponent {
                 }
               ]
             },
-            {
-              label: "规格",
-              type: "string",
-              value: bancai.guige?.join(" × ") || "",
-              options: guiges,
-              fixedOptions: guiges,
-              onChange: (value) => {
-                onChange("guige", value);
-              },
-              validators: [
-                Validators.required,
-                (control) => {
-                  if (!guigePattern.test(control.value)) {
-                    return {pattern: "规格必须为两个数字(如: 10,10)"};
-                  }
-                  return null;
-                }
-              ]
-            }
+            guigeInput
           ]
         };
         if (this.showGas()) {

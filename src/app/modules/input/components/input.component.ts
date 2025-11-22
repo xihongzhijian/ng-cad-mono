@@ -361,9 +361,11 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     };
     let fixedOptions: string[] | undefined;
     let optionsDisplayLimit: number | undefined;
+    let noSortOptions: boolean | undefined;
     if (info.type === "string") {
       fixedOptions = info.fixedOptions;
       optionsDisplayLimit = info.optionsDisplayLimit;
+      noSortOptions = info.noSortOptions;
     }
     let result: typeof this.options;
     if (value) {
@@ -387,7 +389,7 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     if (typeof optionsDisplayLimit === "number") {
       result = result.slice(0, optionsDisplayLimit);
     }
-    if (sortOptions) {
+    if (sortOptions && !noSortOptions) {
       const value2 = this.value;
       if (typeof value2 === "string") {
         sortArrayByLevenshtein(result, getFilterValues, value2);
@@ -558,9 +560,9 @@ export class InputComponent extends Utils() implements AfterViewInit, DoCheck {
     if (shouldValidate) {
       this.validateValue();
     }
+    this.info.set({...info});
     this.valueChange$.next(this.value);
     this._filterXuanxiangOptions();
-    this.info.set({...info});
   }
 
   clear() {
