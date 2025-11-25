@@ -79,7 +79,6 @@ export class PrintTableComponent<T = any> implements OnInit {
           buttonColIndexs.add(j);
         }
       }
-      console.log(buttonColIndexs);
 
       const headerRowEls = tableEl.querySelectorAll("mat-header-row");
       const rowEls = tableEl.querySelectorAll("mat-row");
