@@ -30,14 +30,10 @@ import {
   XhmrmsbjSbjbItemSbjbSorted
 } from "./xhmrmsbj-sbjb.types";
 
-export const sbjbItemCadKeysObj: ObjectOf<SbjbItemCadKey3[]> = {
-  单门: ["锁框", "铰框", "顶框", "锁边", "铰边"],
-  子母对开: ["铰框", "顶框", "插销边", "小扇铰边", "锁边", "铰边"],
-  双开: ["铰框", "顶框", "插销边", "锁边", "铰边"],
-  子母连开: ["铰框", "顶框", "小扇铰边", "插销边", "锁边", "铰边"],
-  四扇平分: ["铰框", "顶框", "铰边", "中锁边", "中铰边", "插销边", "锁边"],
-  四扇子母: ["铰框", "顶框", "铰边", "中锁边", "中铰边", "插销边", "锁边"],
-  六扇平分: ["铰框", "顶框", "铰边", "中锁边", "中铰边", "插销边", "锁边"]
+export let sbjbItemCadKeysObj: ObjectOf<SbjbItemCadKey3[]> = {};
+
+export const setSbjbItemCadKeysObj = (obj: ObjectOf<SbjbItemCadKey3[]>) => {
+  sbjbItemCadKeysObj = obj;
 };
 
 export const getSbjbItemCadKeys = (fenlei: string) => {
@@ -68,7 +64,7 @@ export const isSbjbItemCadKeys1 = (key: string, keys: SbjbItemCadKey1[] = sbjbIt
 export const isSbjbItemCadKeys2 = (key: string, keys: SbjbItemCadKey2[] = sbjbItemCadKeys2.slice()): key is SbjbItemCadKey2 => {
   return keys.includes(key as SbjbItemCadKey2);
 };
-export const isSbjbItemOptionalKeys3 = (key: string): key is SbjbItemCadKey3 => {
+export const isSbjbItemCadKeys3 = (key: string): key is SbjbItemCadKey3 => {
   return sbjbItemCadKeys3.includes(key as SbjbItemCadKey3);
 };
 
@@ -164,7 +160,7 @@ export const getXhmrmsbjSbjbItemTableInfo = (data: XhmrmsbjSbjbItemSbjb[], fenle
         type: "button",
         field: "CAD数据",
         name: "操作",
-        width: "160px",
+        width: "140px",
         stickyEnd: true,
         buttons: [
           {event: "edit", title: "编辑"},

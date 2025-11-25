@@ -36,6 +36,7 @@ import {NgScrollbarModule} from "ngx-scrollbar";
 import {
   FentiCadTemplateData,
   fentiCadTemplateTitles,
+  SbjbItemCadKey3,
   SbjbItemSbjbItemForm,
   XhmrmsbjSbjbCadInfo,
   XhmrmsbjSbjbCadInfoGrouped,
@@ -63,8 +64,9 @@ import {
   importXhmrmsbjSbjbItemSbjbs,
   isSbjbItemCadKeys1,
   isSbjbItemCadKeys2,
-  isSbjbItemOptionalKeys3,
-  sbjbItemCadKeysObj
+  isSbjbItemCadKeys3,
+  sbjbItemCadKeysObj,
+  setSbjbItemCadKeysObj
 } from "./xhmrmsbj-sbjb.utils";
 
 @Component({
@@ -126,7 +128,14 @@ export class XhmrmsbjSbjbComponent {
     const cadsFetched = this.cadsFetched();
     if (item) {
       const qiliaos = this.qiliaosManager.items();
+      const keys = getSbjbItemCadKeys(this.activeItem()?.产品分类 || "");
+      const keysAdded = new Set<string>();
       for (const cadItem of item.CAD数据 || []) {
+        const key = cadItem.name;
+        if (!isSbjbItemCadKeys3(key) || !keys.includes(key) || keysAdded.has(key)) {
+          continue;
+        }
+        keysAdded.add(key);
         const info: XhmrmsbjSbjbCadInfo = {...cadItem, cadForm: {noDefaultTexts: !this.showCadFormDefaultTexts()}};
         if (cadItem.cadId) {
           info.isFetched = cadsFetched.has(cadItem.cadId);
@@ -138,7 +147,7 @@ export class XhmrmsbjSbjbComponent {
         const title = info.title;
         if (isSbjbItemCadKeys2(title)) {
           const extraTexts: CadItemFormExtraText[] = [];
-          const keys: (keyof XhmrmsbjSbjbItemSbjbItem)[] = [
+          const sbjbItemKeys: (keyof XhmrmsbjSbjbItemSbjbItem)[] = [
             "正面宽",
             "正面宽可改",
             "正面宽显示",
@@ -150,12 +159,12 @@ export class XhmrmsbjSbjbComponent {
             "使用背面分体"
           ];
           const item2 = item[title];
-          for (const key of keys) {
-            let key2 = key;
-            if (key === "正面宽" || key === "背面宽") {
+          for (const sbjbItemKey of sbjbItemKeys) {
+            let key2 = sbjbItemKey;
+            if (sbjbItemKey === "正面宽" || sbjbItemKey === "背面宽") {
               key2 = (info.cad?.type || "") + key2;
             }
-            extraTexts.push({key: key2, value: getValueString(item2?.[key])});
+            extraTexts.push({key: key2, value: getValueString(item2?.[sbjbItemKey])});
           }
           info.cadForm.extraTexts = extraTexts;
           info.cadForm.onEdit = (c) => this.editSbjbItemSbjbItem(c.customInfo().index);
@@ -598,6 +607,7 @@ export class XhmrmsbjSbjbComponent {
       CAD数据map: ObjectOf<HoutaiCad>;
       选项: OptionsAll2;
       qiliaos: QiliaoTableData[];
+      sbjbItemCadKeysObj: ObjectOf<SbjbItemCadKey3[]>;
     }>("shuju/api/getsuobianjiaobianData", {xinghao, peizhi}, {silent});
     if (data) {
       for (const item of data.锁边铰边) {
@@ -617,6 +627,7 @@ export class XhmrmsbjSbjbComponent {
         this.cadMap.set(key, new CadData(data.CAD数据map[key].json));
       }
       this.options.set(data.选项);
+      setSbjbItemCadKeysObj(data.sbjbItemCadKeysObj);
     }
   }
   clickItem(i: number) {
@@ -974,7 +985,7 @@ export class XhmrmsbjSbjbComponent {
     const cads = (await this.http.getCad({collection: this.cadCollection, ids: Array.from(cadIds)})).cads;
     const item3: Partial<XhmrmsbjSbjbItemSbjb> = {CAD数据: item2.CAD数据};
     for (const key in item2) {
-      if (isSbjbItemOptionalKeys3(key)) {
+      if (isSbjbItemCadKeys3(key)) {
         item3[key] = item2[key] as any;
       }
     }
