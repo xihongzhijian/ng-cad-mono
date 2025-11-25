@@ -32,7 +32,15 @@ export const getMenfengPeizhiTableInfo = (items: MenfengpeizhiItem[]) => {
               break;
             case "子母对开":
             case "双开":
+            case "子母连开":
               n = a + b * 2;
+              break;
+            case "四扇平分":
+            case "四扇子母":
+              n = a + b * 4;
+              break;
+            case "六扇平分":
+              n = a + b * 6;
               break;
             default:
               n = 0;
