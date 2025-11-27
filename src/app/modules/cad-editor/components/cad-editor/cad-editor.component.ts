@@ -251,7 +251,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     }
   });
 
-  cadLength = computed(() => this.status.cadTotalLength().toFixed(2));
+  cadLength = this.status.cadTotalLengthFixed;
 
   menuPaddingBase = [20, 20, 20, 20];
   leftMenuWidth0 = signal(0);

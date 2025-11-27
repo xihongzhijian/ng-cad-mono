@@ -472,7 +472,8 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     if (isZero) {
       value = undefined;
     } else {
-      const values = new Set(lines.map((v) => Number(v.length.toFixed(2))));
+      const ndigits = this.status.cadNumberDigits();
+      const values = new Set(lines.map((v) => Number(v.length.toFixed(ndigits))));
       if (values.size === 1) {
         value = values.values().next().value;
       } else {
@@ -634,12 +635,14 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     const lengthInfo = this.getLineLengthInfo();
     const selected = this.selected();
     const disabled = selected.length < 1;
+    const ndigits = this.status.cadNumberDigits();
     const infos: InputInfo[] = [
       {
         type: "number",
         label: "长度",
         value: lengthInfo.value,
         hint: lengthInfo.isMultiple ? "多个值" : "",
+        step: 10 ** -ndigits,
         disabled,
         readonly: selected.some((v) => !(v instanceof CadLine)),
         onChange: (val) => {

@@ -79,7 +79,9 @@ export class AppStatusService {
 
   project = "";
   collection = signal<CadCollection>("cad");
+  cadNumberDigits = signal(4);
   cadTotalLength = signal(0);
+  cadTotalLengthFixed = computed(() => this.cadTotalLength().toFixed(this.cadNumberDigits()));
   cad = new CadViewer(setCadData(new CadData({name: "新建CAD", info: {isLocal: true}}), this.project, "cad", this.config.getConfig()));
   components = {
     selected: signal<CadData[]>([]),
@@ -92,8 +94,12 @@ export class AppStatusService {
     this._changeCadSignal.set(this._changeCadSignal() + Math.random() < 0.5 ? 1 : -1);
   }
   cadData = signal(this.cad.data);
-  cadDataEff = effect(async () => {
+  cadDataEff1 = effect(async () => {
     this._changeCadSignal();
+    this.cadData.set(new CadData());
+    this.cadData.set(this.cad.data);
+  });
+  cadDataEff2 = effect(async () => {
     this.openCadOptions();
     this.cadData.set(new CadData());
     this.cadData.set(this.cad.data);
