@@ -279,6 +279,10 @@ export class SelectBancaiComponent {
           this.updateSortedCads(info, bancai, i);
         };
         const bancaiList = this.bancaiList[bancai.mingzi];
+        if (!bancaiList) {
+          console.warn("缺少板材数据：", bancai.mingzi);
+          continue;
+        }
         const cailiaos = bancaiList?.cailiaoList || [];
         cailiaos.sort((a, b) => a.localeCompare(b));
         const houdus = bancaiList?.houduList || [];
