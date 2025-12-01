@@ -37,15 +37,6 @@ export class CadDimensionFormComponent {
   }
 
   cadDimensionOptions = cadDimensionOptions;
-  mqValidator(): ValidatorFn {
-    return () => {
-      const dimension = this.dimensionCurr;
-      if (dimension.qujian || dimension.mingzi) {
-        return null;
-      }
-      return {mqNull: "区间和名字不能同时为空"};
-    };
-  }
   qujianValidator(): ValidatorFn {
     return (control: AbstractControl) => {
       const err = {qujian: "区间应有且仅有一个~或-，且该符号不位于开头或结尾。"};
@@ -59,14 +50,13 @@ export class CadDimensionFormComponent {
     const getter3 = new InputInfoWithDataGetter(dimension.entity2, {clearable: true});
     const nameInput = getter.string("mingzi", {
       label: "名字",
-      validators: this.mqValidator(),
       onChange: () => {
         qujianInput.forceValidateNum = (qujianInput.forceValidateNum || 0) + 1;
       }
     });
     const qujianInput = getter.string("qujian", {
       label: "区间",
-      validators: [this.mqValidator(), this.qujianValidator()],
+      validators: this.qujianValidator(),
       onChange: () => {
         nameInput.forceValidateNum = (nameInput.forceValidateNum || 0) + 1;
       }
