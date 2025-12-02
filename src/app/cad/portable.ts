@@ -501,8 +501,9 @@ export class CadPortable {
   static async export(params: CadExportParams, projectConfig: ProjectConfig) {
     const margin = 300;
     const padding = 80;
-    const width = 855;
-    const height = 1700;
+    const minWidth = 855;
+    const minHeight = 1700;
+    const minTextHeight = 600;
     const cols = 10;
     const {type, exportId, exportUniqCode, exportOptions, collection} = params;
     const {sourceCad, importResult, xinghaoInfo, slgses} = params.sourceParams || {};
@@ -588,6 +589,8 @@ export class CadPortable {
     }
     result.info.version = CadVersion.DXF2010;
     const toRemove = new Set(Object.keys(importResult?.sourceCadMap.cads || []));
+    let cadOffsetX = 0;
+    let cadOffsetY = 0;
     for (let i = 0; i < groupedCads.length; i++) {
       const group = groupedCads[i];
       if (group === null) {
@@ -597,19 +600,27 @@ export class CadPortable {
 
       const group2 = [] as CadData[];
       const right = rect.right + padding;
-      const draw = async (cad: CadData, j: number, isGroup2: boolean) => {
+      let maxHeight = 0;
+      const draw = async (cad: CadData, isGroup2: boolean) => {
         showIntersections(cad, projectConfig);
-        const cadRect = cad.getBoundingRect();
-        let offsetX = j * (width + margin);
-        let offsetY = -(i - dividers.length) * (height + margin);
+        cad.entities.forEach((e) => {
+          e.calcBoundingRect = true;
+        });
+        const cadRect = cad.getBoundingRect(true);
+        const width = Math.max(minWidth, cadRect.width + padding * 2);
+        const height = Math.max(minHeight, cadRect.height + minTextHeight + padding * 2);
+        let offsetX = cadOffsetX;
+        let offsetY = cadOffsetY;
         if (isGroup2) {
           offsetX += right + margin + 1000;
           offsetY += rect.top - (offsetY + height);
         }
-        const translate = new Point(offsetX + (width - cadRect.width - padding * 2) / 2, offsetY + height - padding);
+        const translate = new Point(offsetX + (width - cadRect.width) / 2, offsetY + height - padding);
         translate.sub(cadRect.left, cadRect.top);
         cad.transform({translate}, true);
         cadRect.transform({translate});
+        cadOffsetX += width + margin;
+        maxHeight = Math.max(maxHeight, height);
 
         const texts = [];
         if (!isSbjbCad(collection, cad)) {
@@ -734,12 +745,16 @@ export class CadPortable {
           result.entities.merge(cad.getAllEntities());
         }
       };
-      for (let j = 0; j < group.length; j++) {
-        await draw(group[j], j, false);
-      }
-      for (let j = 0; j < group2.length; j++) {
-        await draw(group2[j], j, true);
-      }
+      const drawGroup = async (groupCads: CadData[]) => {
+        for (const cad of groupCads) {
+          await draw(cad, false);
+        }
+        cadOffsetX = 0;
+        cadOffsetY -= maxHeight + margin;
+        maxHeight = 0;
+      };
+      await drawGroup(group);
+      await drawGroup(group2);
     }
     if (importResult) {
       toRemove.forEach((id) => {
