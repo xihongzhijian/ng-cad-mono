@@ -129,22 +129,27 @@ export class XhmrmsbjSbjbComponent {
     if (item) {
       const qiliaos = this.qiliaosManager.items();
       const keys = getSbjbItemCadKeys(this.activeItem()?.产品分类 || "");
-      const keysAdded = new Set<string>();
-      for (const cadItem of item.CAD数据 || []) {
-        const key = cadItem.name;
-        if (!isSbjbItemCadKeys3(key) || !keys.includes(key) || keysAdded.has(key)) {
+      const items = [...(item.CAD数据 || [])];
+      const titles = items.map((v) => v.title);
+      const missingKeys = difference(keys, titles);
+      for (const key of missingKeys) {
+        if (isSbjbItemCadKeys3(key)) {
+          items.push(getXhmrmsbjSbjbItemSbjbCad(key));
+        }
+      }
+      for (const cadItem of items) {
+        const {cadId, name: key, title} = cadItem;
+        if (!isSbjbItemCadKeys3(key) || !keys.includes(key)) {
           continue;
         }
-        keysAdded.add(key);
         const info: XhmrmsbjSbjbCadInfo = {...cadItem, cadForm: {noDefaultTexts: !this.showCadFormDefaultTexts()}};
-        if (cadItem.cadId) {
-          info.isFetched = cadsFetched.has(cadItem.cadId);
-          const cad = this.cadMap.get(cadItem.cadId);
+        if (cadId) {
+          info.isFetched = cadsFetched.has(cadId);
+          const cad = this.cadMap.get(cadId);
           if (cad) {
             info.cad = cad;
           }
         }
-        const title = info.title;
         if (isSbjbItemCadKeys2(title)) {
           const extraTexts: CadItemFormExtraText[] = [];
           const sbjbItemKeys: (keyof XhmrmsbjSbjbItemSbjbItem)[] = [
