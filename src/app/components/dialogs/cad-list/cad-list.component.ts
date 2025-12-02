@@ -275,13 +275,19 @@ export class CadListComponent implements AfterViewInit {
     return result;
   }
 
+  private _searchPromise: ReturnType<typeof this.getData> | null = null;
   async search(matchType: "and" | "or" = "and") {
+    if (this._searchPromise) {
+      return;
+    }
     const paginator = this.paginator();
     if (!paginator) {
       return;
     }
     paginator.pageIndex = 0;
-    await this.getData(paginator.pageIndex + 1, {}, matchType);
+    this._searchPromise = this.getData(paginator.pageIndex + 1, {}, matchType);
+    await this._searchPromise;
+    this._searchPromise = null;
   }
 
   async advancedSearch() {

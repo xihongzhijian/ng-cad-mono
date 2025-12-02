@@ -336,7 +336,7 @@ export const setCadData = (data: CadData, yaoqiu: Cad数据要求 | null | undef
 };
 
 export const getCadQueryFields = (yaoqiu?: Cad数据要求 | null) => {
-  return {"json.entities": false};
+  return {"json.entities": false, "json.layers": false, "json.blocks": false, "json.info.removedDimensions": false};
   const fields = new Set<string>([
     "_id",
     "名字",
