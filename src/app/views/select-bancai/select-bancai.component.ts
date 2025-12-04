@@ -12,7 +12,7 @@ import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong
 import {openSelectBancaiCadsDialog, SelectBancaiCadsInput} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
 import {downloadByString, downloadByUrl, getPinyinCompact, ObjectOf, timeout} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
-import {BancaiCad, BancaiList} from "@modules/http/services/cad-data.service.types";
+import {BancaiCad, BancaiList, ExcelSheet} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
@@ -30,6 +30,7 @@ import {
   guigePattern,
   houduPattern,
   OrderBancaiInfo,
+  PaiBanSummaryItem,
   SelectBancaiDlHistory,
   XikongData,
   XikongOptions
@@ -486,7 +487,7 @@ export class SelectBancaiComponent {
       if (Array.isArray(url)) {
         this.message.alert(url.map((v) => `<div>${v}</div>`).join(""));
       } else {
-        this.downloadDxf(replaceRemoteHost(url));
+        this.downloadFile(replaceRemoteHost(url));
       }
     }
   }
@@ -513,16 +514,13 @@ export class SelectBancaiComponent {
     window.open(url);
   }
 
-  downloadDxf(url: string, isName = false) {
+  downloadFile(url: string, isName = false) {
     const downloadName = this.downloadName || this.codesStr();
     if (isName) {
       url = getFilepathUrl(`tmp/${url}.dxf`);
     }
-    if (url.endsWith(".zip")) {
-      downloadByUrl(url, {filename: downloadName + ".zip"});
-    } else {
-      downloadByUrl(url, {filename: downloadName + ".dxf"});
-    }
+    const suffix = url.slice(url.lastIndexOf("."));
+    downloadByUrl(url, {filename: downloadName + suffix});
   }
 
   returnZero() {
@@ -662,6 +660,48 @@ export class SelectBancaiComponent {
     }
     this.xikongStrings.set(xikongStrings);
     return result;
+  }
+
+  async getPaiBanSummaryItems() {
+    const codes = this.codes();
+    const data = await this.http.getData<ObjectOf<PaiBanSummaryItem[]>>("order/order/getPaibanSummaryItems", {codes});
+    if (!data) {
+      return;
+    }
+    if (Object.keys(data).length < 1) {
+      await this.message.alert("没有排版结果，请先开一次料");
+      return;
+    }
+    const keys = ["板材", "材料", "厚度", "规格", "数量"] as const;
+    const sheets: ExcelSheet[] = [];
+    for (const [code, items] of Object.entries(data)) {
+      const dataArray: string[][] = [];
+      dataArray.push(keys.slice());
+      for (const item of items) {
+        const row: string[] = [];
+        for (const key of keys) {
+          let val = item[key];
+          if (key === "规格") {
+            val = item.规格.join("x");
+          }
+          row.push(String(val));
+        }
+        dataArray.push(row);
+      }
+      sheets.push({
+        title: code,
+        titleCell: "板材材料单",
+        dataArray,
+        colInfos: [
+          {id: "A", width: 12, numberFormat: "@"},
+          {id: "B", width: 12, numberFormat: "@"},
+          {id: "C", width: 5, numberFormat: "@"},
+          {id: "D", width: 10},
+          {id: "E", width: 5}
+        ]
+      });
+    }
+    this.http.exportExcel({data: {name: this.downloadName, sheets}});
   }
 
   setType(type: string) {

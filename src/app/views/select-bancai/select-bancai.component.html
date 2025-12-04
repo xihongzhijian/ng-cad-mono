@@ -22,7 +22,7 @@
     </div>
     <mat-menu #downloadHistoryList="matMenu">
       @for (item of downloadHistory(); track $index) {
-        <button mat-menu-item (click)="downloadDxf(item.name, true)">
+        <button mat-menu-item (click)="downloadFile(item.name, true)">
           {{ item.date }}
         </button>
       }
@@ -98,6 +98,7 @@
     <div class="spinner-container">
       <div class="toolbar">
         <button mat-flat-button (click)="selectCadsToSubmit()">选择cad开料</button>
+        <button mat-flat-button (click)="getPaiBanSummaryItems()">最近一次排版结果</button>
         <button mat-flat-button (click)="submit()">{{ type() }}</button>
       </div>
       <app-spinner [id]="submitLoaderId" [inline]="true"></app-spinner>

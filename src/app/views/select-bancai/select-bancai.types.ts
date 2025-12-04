@@ -84,3 +84,11 @@ export interface XikongOptions {
   codeFormat?: boolean;
   autoWrap?: boolean;
 }
+
+export interface PaiBanSummaryItem {
+  板材: string;
+  材料: string;
+  厚度: string;
+  规格: [number, number];
+  数量: number;
+}

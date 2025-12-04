@@ -247,5 +247,13 @@ export interface ExcelData {
 }
 export interface ExcelSheet {
   title?: string;
+  titleCell?: string;
   dataArray?: string[][];
+  colInfos?: ExcelColInfo[];
+}
+export interface ExcelColInfo {
+  id: string;
+  autoSize?: boolean;
+  width?: number;
+  numberFormat?: string;
 }
