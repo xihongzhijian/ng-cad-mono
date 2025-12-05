@@ -91,4 +91,6 @@ export interface PaiBanSummaryItem {
   厚度: string;
   规格: [number, number];
   数量: number;
+  厂里烤漆: string;
+  排版序号: string;
 }

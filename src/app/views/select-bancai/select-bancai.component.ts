@@ -8,6 +8,7 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {getFilepathUrl, replaceRemoteHost, session, setGlobal} from "@app/app.common";
+import {getValueString} from "@app/utils/get-value";
 import {openDakongSummaryDialog} from "@components/dialogs/dakong-summary/dakong-summary.component";
 import {openSelectBancaiCadsDialog, SelectBancaiCadsInput} from "@components/dialogs/select-bancai-cads/select-bancai-cads.component";
 import {downloadByString, downloadByUrl, getPinyinCompact, ObjectOf, timeout} from "@lucilor/utils";
@@ -672,11 +673,12 @@ export class SelectBancaiComponent {
       await this.message.alert("没有排版结果，请先开一次料");
       return;
     }
-    const keys = ["板材", "材料", "厚度", "规格", "数量"] as const;
+    const keys = ["板材", "材料", "厚度", "规格", "数量", "厂里烤漆", "排版序号"] as const;
     const sheets: ExcelSheet[] = [];
     for (const [code, items] of Object.entries(data)) {
       const dataArray: string[][] = [];
       dataArray.push(keys.slice());
+      let maxBancaiLen = 0;
       for (const item of items) {
         const row: string[] = [];
         for (const key of keys) {
@@ -684,8 +686,9 @@ export class SelectBancaiComponent {
           if (key === "规格") {
             val = item.规格.join("x");
           }
-          row.push(String(val));
+          row.push(getValueString(val));
         }
+        maxBancaiLen = Math.max(maxBancaiLen, item.板材.length);
         dataArray.push(row);
       }
       sheets.push({
@@ -693,11 +696,13 @@ export class SelectBancaiComponent {
         titleCell: "板材材料单",
         dataArray,
         colInfos: [
-          {id: "A", width: 12, numberFormat: "@"},
+          {id: "A", width: maxBancaiLen * 2.5, numberFormat: "@"},
           {id: "B", width: 12, numberFormat: "@"},
           {id: "C", width: 5, numberFormat: "@"},
           {id: "D", width: 10},
-          {id: "E", width: 5}
+          {id: "E", width: 8, numberFormat: "@"},
+          {id: "F", width: 12},
+          {id: "G", width: 15}
         ]
       });
     }
