@@ -13,7 +13,7 @@ import {cloneDeep, uniq} from "lodash";
 import {NgScrollbar} from "ngx-scrollbar";
 import {BehaviorSubject, filter, lastValueFrom} from "rxjs";
 import {InputComponent} from "../../modules/input/components/input.component";
-import {Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
+import {DabiaoKey, dabiaoKeys, isDabiaoKey, Klkwpz, KlkwpzItem, KlkwpzSource} from "./klkwpz";
 
 @Component({
   selector: "app-klkwpz",
@@ -81,8 +81,10 @@ export class KlkwpzComponent {
         return "在算料CAD的打孔面上";
       })(),
       type3: (() => {
-        if (item.订单号打标) {
-          return "订单号打标";
+        for (const dabiaoKey of dabiaoKeys) {
+          if (item[dabiaoKey]) {
+            return dabiaoKey;
+          }
         }
         if (item.自增等距阵列 || item.固定行列阵列) {
           if (item.板材孔位阵列范围) {
@@ -116,7 +118,7 @@ export class KlkwpzComponent {
         }),
         getter2.selectSingle(
           "type3",
-          ["打单个孔", "按展开高打阵列孔", "按展开高打阵列孔（缩短范围）", "按指定宽高打阵列孔", "订单号打标"],
+          ["打单个孔", "按展开高打阵列孔", "按展开高打阵列孔（缩短范围）", "按指定宽高打阵列孔", ...dabiaoKeys],
           {
             label: "打孔类型",
             onChange: () => {
@@ -260,7 +262,7 @@ export class KlkwpzComponent {
     const item = data.item;
     let arr: InputInfo[] = [];
     let hasMatrix = true;
-    let isDabiao = false;
+    let dabiaoKey: DabiaoKey | null = null;
     const type3 = typesData.type3;
     if (type3 === "按展开高打阵列孔") {
       delete item.板材孔位阵列范围;
@@ -291,8 +293,8 @@ export class KlkwpzComponent {
       delete item.板材孔位阵列范围;
       delete item.板材打孔范围缩减;
       hasMatrix = false;
-      if (type3 === "订单号打标") {
-        isDabiao = true;
+      if (isDabiaoKey(type3)) {
+        dabiaoKey = type3;
       }
     }
     if (hasMatrix) {
@@ -305,7 +307,9 @@ export class KlkwpzComponent {
       }
       delete item.固定行列阵列;
       delete item.增加指定偏移;
-      delete item.订单号打标;
+      for (const dabiaoKey2 of dabiaoKeys) {
+        delete item[dabiaoKey2];
+      }
       const getter = new InputInfoWithDataGetter(item.自增等距阵列, {validators: Validators.required});
       arr = [
         getInputInfoGroup([
@@ -320,23 +324,40 @@ export class KlkwpzComponent {
       delete item.自增等距阵列;
       delete item.固定行列阵列;
       delete item.增加指定偏移;
-      if (isDabiao) {
-        if (!item.订单号打标) {
-          item.订单号打标 = {};
+      if (dabiaoKey) {
+        let dabiaoItem = item[dabiaoKey];
+        if (!dabiaoItem) {
+          dabiaoItem = item[dabiaoKey] = {};
         }
-        if (!item.订单号打标.font) {
-          item.订单号打标.font = {};
+        if (!dabiaoItem.font) {
+          dabiaoItem.font = {};
         }
-        if (item.订单号打标.font.family === undefined) {
-          item.订单号打标.font.family = "宋体";
+        if (dabiaoItem.font.family === undefined) {
+          dabiaoItem.font.family = "宋体";
         }
-        if (item.订单号打标.font.size === undefined) {
-          item.订单号打标.font.size = 10;
+        if (dabiaoItem.font.size === undefined) {
+          dabiaoItem.font.size = 10;
         }
-        const getter = new InputInfoWithDataGetter(item.订单号打标.font, {clearable: true});
-        arr = [getInputInfoGroup([getter.string("family", {label: "字体名字"}), getter.number("size", {label: "字体大小"})]), ...arr];
+        if (dabiaoItem.font.vertical === undefined) {
+          if (dabiaoKey === "订单号打标") {
+            dabiaoItem.font.vertical = true;
+          } else {
+            dabiaoItem.font.vertical = false;
+          }
+        }
+        const getter = new InputInfoWithDataGetter(dabiaoItem.font, {clearable: true});
+        arr = [
+          getInputInfoGroup([
+            getter.string("family", {label: "字体名字"}),
+            getter.number("size", {label: "字体大小"}),
+            getter.boolean("vertical", {label: "竖排"})
+          ]),
+          ...arr
+        ];
       } else {
-        delete item.订单号打标;
+        for (const dabiaoKey2 of dabiaoKeys) {
+          delete item[dabiaoKey2];
+        }
         const getter = new InputInfoWithDataGetter(item, {validators: Validators.required});
         arr = [getter.selectBooleanStr("孔依附板材边缘", {label: "剪切相交XY线"}), ...arr];
       }

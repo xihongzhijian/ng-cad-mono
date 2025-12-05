@@ -1,5 +1,5 @@
 import {getObject} from "@lucilor/cad-viewer";
-import {keysOf, ObjectOf} from "@lucilor/utils";
+import {isTypeOf, keysOf, ObjectOf} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
 
 export type Anchor = [number, number];
@@ -31,7 +31,8 @@ export interface KlkwpzItem {
   自增等距阵列?: KlkwpzItemMatrix;
   固定行列阵列?: KlkwpzItemMatrix;
   孔依附板材边缘?: BooleanCN;
-  订单号打标?: {font?: {family?: string; size?: number}};
+  订单号打标?: DabiaoItem;
+  文字打标?: DabiaoItem;
 }
 
 export interface KlkwpzItemMatrix {
@@ -55,7 +56,12 @@ export class Klkwpz {
   }
 
   getKlkwpzItem(name: string, source: Partial<KlkwpzItem> = {}) {
-    const getGongshi = (sourceGongshi: Gongshi | undefined): Gongshi => sourceGongshi || "";
+    const getGongshi = (sourceGongshi: Gongshi | undefined): Gongshi => {
+      if (isTypeOf(sourceGongshi, "number")) {
+        return sourceGongshi as number;
+      }
+      return sourceGongshi || "";
+    };
     const getAnchor = (sourceAnchor: Anchor | undefined, defalutValue: Anchor): Anchor => {
       if (!sourceAnchor) {
         sourceAnchor = defalutValue;
@@ -96,9 +102,13 @@ export class Klkwpz {
       类型: source.类型,
       增加指定偏移: source.增加指定偏移,
       自增等距阵列: source.自增等距阵列,
-      固定行列阵列: source.固定行列阵列,
-      订单号打标: source.订单号打标
+      固定行列阵列: source.固定行列阵列
     };
+    for (const key of dabiaoKeys) {
+      if (key in source) {
+        result[key] = source[key];
+      }
+    }
     return result;
   }
 
@@ -115,7 +125,7 @@ export class Klkwpz {
       if (!(key in obj)) {
         return;
       }
-      obj[key] = this._trimGongshi((obj as any)[key]) as any;
+      obj[key] = this._trimGongshi(obj[key]) as any;
     });
   }
 
@@ -184,7 +194,7 @@ export class Klkwpz {
       "固定行列阵列",
       "自增等距阵列",
       "孔依附板材边缘",
-      "订单号打标"
+      ...dabiaoKeys
     ]);
     delete (result as any).name;
     return result;
@@ -226,4 +236,11 @@ export class Klkwpz {
       (item as any)[type] = base;
     }
   }
+}
+
+export const dabiaoKeys = ["订单号打标", "文字打标"] as const;
+export type DabiaoKey = (typeof dabiaoKeys)[number];
+export const isDabiaoKey = (key: string): key is DabiaoKey => dabiaoKeys.includes(key as DabiaoKey);
+export interface DabiaoItem {
+  font?: {family?: string; size?: number; vertical?: boolean};
 }
