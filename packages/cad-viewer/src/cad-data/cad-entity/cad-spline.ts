@@ -8,9 +8,15 @@ export class CadSpline extends CadLineLike {
   fitPoints: Point[] = [];
   controlPoints: Point[] = [];
   degree = 3;
-  calcBoundingRect = false;
   get _boundingRectCalc() {
-    return Rectangle.min;
+    const rect = Rectangle.min;
+    for (const p of this.controlPoints) {
+      rect.expandByPoint(p);
+    }
+    for (const p of this.fitPoints) {
+      rect.expandByPoint(p);
+    }
+    return rect;
   }
 
   get start() {
