@@ -535,7 +535,23 @@ export class MrbcjfzComponent {
     }
     const result = await validateForm(this.bancaiInputComponents());
     if (result.errorMsgDetails.length > 0) {
-      errorMsg.push(`板材输入有误：${result.errorMsgDetails.join("，")}`);
+      const indentPx = 20;
+      let msg = "板材输入有误：<br>";
+      const map: ObjectOf<string[]> = {};
+      for (const {info, component, errorMsgs} of result.errorMsgDetails) {
+        const key = component.el.dataset["bancaiKey"] || "";
+        if (!map[key]) {
+          map[key] = [];
+        }
+        map[key].push(`${info.label}：${errorMsgs.join("，")}`);
+      }
+      for (const key in map) {
+        msg += `<span style="margin-left: ${indentPx}px;font-weight: bold">${key}：</span><br>`;
+        for (const line of map[key]) {
+          msg += `<span style="margin-left: ${indentPx * 2}px">${line}</span><br>`;
+        }
+      }
+      errorMsg.push(msg);
     }
     return errorMsg;
   }

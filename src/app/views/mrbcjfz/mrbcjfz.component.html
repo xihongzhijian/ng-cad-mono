@@ -77,7 +77,7 @@
         @for (group of xinghao().inputInfos[key]; track $index) {
           <div class="flex-row">
             @for (info of group; track $index) {
-              <app-input #bancaiInput [info]="info" appClickStop></app-input>
+              <app-input #bancaiInput [attr.data-bancai-key]="key" [info]="info" appClickStop></app-input>
             }
           </div>
         }
