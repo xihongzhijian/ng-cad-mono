@@ -683,6 +683,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     return duplicateVars.has(name);
   }
   mokuaiInputInfosInput = computed(() => {
+    this.data();
     const msbjInfo = this.activeMsbjInfo();
     const node = this.activeMokuaiNode();
     const mokuai = node?.选中模块;
@@ -777,7 +778,8 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       }
     };
     for (const v of arr) {
-      let xxgsList = mokuai.xuanxianggongshi.filter((v2) => v[0] in v2.公式);
+      const key = v[0];
+      let xxgsList = mokuai.xuanxianggongshi.filter((v2) => key in v2.公式);
       if (xxgsList.length > 0) {
         if (isFromOrder) {
           const xxsjValues = getMokuaiXxsjValues(msbjInfo, node, mokuai);
@@ -785,8 +787,9 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         }
         for (const item of xxgsList) {
           const shuruzhi = getShuruzhi(msbjInfo, node, mokuai, item._id);
-          const valueInfo = this.getValueInfo(v[0], item.公式, shuruzhi);
-          let label = v[0];
+          const slgs = item.公式;
+          const valueInfo = this.getValueInfo(key, slgs, shuruzhi);
+          let label = key;
           if (!isFromOrder) {
             label += `【${item.名字}】`;
           }
@@ -795,25 +798,26 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
             label,
             value: valueInfo.value,
             clearable: true,
-            validators: getValidators(v[0], item.公式, shuruzhi),
+            validators: getValidators(key, slgs, shuruzhi),
             hint: showHint ? valueInfo.type : "",
             onChange: async (val, info) => {
-              onChange(v, val, item.公式, info, item._id);
+              await onChange(v, val, slgs, info, item._id);
             }
           });
         }
       } else {
         const shuruzhi = getShuruzhi(msbjInfo, node, mokuai);
-        const valueInfo = this.getValueInfo(v[0], mokuai.suanliaogongshi, shuruzhi);
+        const slgs = mokuai.suanliaogongshi;
+        const valueInfo = this.getValueInfo(key, slgs, shuruzhi);
         infos.push({
           type: "string",
-          label: v[0],
+          label: key,
           value: valueInfo.value,
           clearable: true,
-          validators: getValidators(v[0], mokuai.suanliaogongshi, shuruzhi),
+          validators: getValidators(key, slgs, shuruzhi),
           hint: showHint ? valueInfo.type : "",
           onChange: async (val, info) => {
-            onChange(v, val, mokuai.suanliaogongshi, info);
+            await onChange(v, val, slgs, info);
           }
         });
       }
