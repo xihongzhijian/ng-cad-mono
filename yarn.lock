@@ -417,9 +417,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cdk@npm:^21.0.2":
-  version: 21.0.2
-  resolution: "@angular/cdk@npm:21.0.2"
+"@angular/cdk@npm:^21.0.3":
+  version: 21.0.3
+  resolution: "@angular/cdk@npm:21.0.3"
   dependencies:
     parse5: "npm:^8.0.0"
     tslib: "npm:^2.3.0"
@@ -427,7 +427,7 @@ __metadata:
     "@angular/common": ^21.0.0 || ^22.0.0
     "@angular/core": ^21.0.0 || ^22.0.0
     rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/5f03837b2da569c73df7973d221b565105155555a00b9ba8dee91f86cfa291637242aaddf130b002020a7d03e93f471be77aeeb889242f82860aac8b57157262
+  checksum: 10c0/e45ecb43cf38930e88c134e2e710c5206da7f1718aa1553188493dd312c6669d5636a3d60ac1cfa77ffc9b5d4f4cba2ce3c29a4c11f4b886a48b3ecf7a997c5f
   languageName: node
   linkType: hard
 
@@ -9178,18 +9178,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:^4.1.0":
-  version: 4.1.1
-  resolution: "js-yaml@npm:4.1.1"
-  dependencies:
-    argparse: "npm:^2.0.1"
-  bin:
-    js-yaml: bin/js-yaml.js
-  checksum: 10c0/561c7d7088c40a9bb53cc75becbfb1df6ae49b34b5e6e5a81744b14ae8667ec564ad2527709d1a6e7d5e5fa6d483aa0f373a50ad98d42fde368ec4a190d4fae7
-  languageName: node
-  linkType: hard
-
-"js-yaml@npm:^4.1.1":
+"js-yaml@npm:^4.1.0, js-yaml@npm:^4.1.1":
   version: 4.1.1
   resolution: "js-yaml@npm:4.1.1"
   dependencies:
@@ -10400,7 +10389,7 @@ __metadata:
     "@angular-eslint/template-parser": "npm:^21.1.0"
     "@angular/animations": "npm:^21.0.3"
     "@angular/build": "npm:^21.0.2"
-    "@angular/cdk": "npm:^21.0.2"
+    "@angular/cdk": "npm:^21.0.3"
     "@angular/cli": "npm:^21.0.2"
     "@angular/common": "npm:^21.0.3"
     "@angular/compiler": "npm:^21.0.3"
