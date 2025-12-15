@@ -40,7 +40,7 @@ import {MokuaikuCloseEvent} from "@components/bujumokuai/mokuaiku/mokuaiku.types
 import {BjmkStatusService} from "@components/bujumokuai/services/bjmk-status.service";
 import {openCadOptionsDialog} from "@components/dialogs/cad-options/cad-options.component";
 import {openMrbcjfzDialog} from "@components/dialogs/mrbcjfz-dialog/mrbcjfz-dialog.component";
-import {Step1Data, ZixuanpeijianMokuaiItem} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
+import {Step1Data, ZixuanpeijianMokuaiItem, ZixuanpeijianTypesInfo} from "@components/dialogs/zixuanpeijian/zixuanpeijian.types";
 import {
   getFromulasFromString,
   getMokuaiTitle,
@@ -244,6 +244,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
     const {token} = params;
     const id = Number(params.id);
     const xinghaoId = this.xinghaoId();
+    let typesInfo: ZixuanpeijianTypesInfo = {};
     if (table && (id > 0 || xinghaoId > 0)) {
       this.table.set(table);
       this.id.set(id);
@@ -255,6 +256,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         模块通用配置: Formulas;
         xinghaoOptions: OptionsAll;
         msbjs: MsbjData[];
+        typesInfo: ZixuanpeijianTypesInfo;
       }>("shuju/api/getXhmrmsbjData", {id, xinghaoId});
       if (!result) {
         document.body.innerHTML = this.http.lastResponse?.msg || "获取数据失败";
@@ -267,6 +269,7 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
       this.xinghaoOptions.set(result.xinghaoOptions);
       this.msbjs.set(result.msbjs.map((v) => new MsbjInfo(v, this.getNode2rectData())));
       this.bjmkStatus.msbjsManager.setItems(this.msbjs());
+      typesInfo = result.typesInfo;
     } else if (token) {
       this.isFromOrder.set(true);
     }
@@ -291,6 +294,18 @@ export class XhmrmsbjComponent implements OnInit, OnDestroy {
         if (msbjInfo && msbjInfo.name !== 选中布局数据.name) {
           选中布局数据.name = msbjInfo.name;
           isMsbjChanged = true;
+        }
+        for (const node of info?.模块节点 || []) {
+          const mokuais = [...node.可选模块];
+          if (node.选中模块) {
+            mokuais.push(node.选中模块);
+          }
+          for (const mokuai of mokuais) {
+            const mokuai2 = typesInfo[mokuai.type1]?.[mokuai.type2];
+            if (mokuai2) {
+              updateMokuaiItem(mokuai, mokuai2);
+            }
+          }
         }
       }
       if (isMsbjChanged) {
