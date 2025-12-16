@@ -872,6 +872,15 @@ export const calcZxpj = async (
             e.mingzi = e.info.显示公式;
           }
         }
+        const xsgsMatch = e.mingzi.match(/显示公式[ ]*[:：](.*)/);
+        if (xsgsMatch && xsgsMatch[1]) {
+          const 显示公式 = xsgsMatch[1].trim();
+          if (显示公式 in vars2) {
+            e.info.显示公式值 = toFixed(vars2[显示公式], fractionDigits);
+          } else {
+            e.info.显示公式值 = 显示公式;
+          }
+        }
       }
 
       const mokuaiTitle = mokuai ? `（${getCalcMokuaiTitle(mokuai)}）` : "";

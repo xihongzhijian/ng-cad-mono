@@ -83,17 +83,12 @@
     }
 
     .cad-size {
-      font: var(--mat-sys-title-large);
-      font-size: 22px;
+      font-size: 20px;
 
       > .highlight {
         border: var(--border);
         padding: 0 10px;
         background-color: var(--mat-sys-outline-variant);
-      }
-
-      .sign {
-        font-size: 25px;
       }
     }
 

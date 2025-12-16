@@ -204,7 +204,9 @@ export class DingdanbiaoqianComponent implements OnInit {
           const data = new CadData(cad);
           data.entities.line.forEach((e) => {
             e.显示线长格式 = "{0}";
-            if (e.gongshi) {
+            if (typeof e.info.线长 === "number") {
+              e.显示线长 = String(e.info.线长);
+            } else if (e.gongshi) {
               const vars = {...order.materialResult};
               vars.总宽 = cad.calcW;
               vars.总高 = cad.calcH;
@@ -507,6 +509,8 @@ export class DingdanbiaoqianComponent implements OnInit {
                 }
               }
             }
+            i++;
+            j = 0;
           }
           break;
         }

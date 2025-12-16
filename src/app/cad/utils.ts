@@ -647,7 +647,9 @@ export const setDimensionText = (e: CadDimension, materialResult: Formulas) => {
     显示公式 = match[1].trim();
   }
   let 活动标注 = false;
-  if (显示公式 !== null) {
+  if (e.info.显示公式值) {
+    e.mingzi = e.info.显示公式值;
+  } else if (显示公式 !== null) {
     if (isNaN(Number(显示公式)) && 显示公式 in materialResult) {
       显示公式 = String(materialResult[显示公式]);
     }

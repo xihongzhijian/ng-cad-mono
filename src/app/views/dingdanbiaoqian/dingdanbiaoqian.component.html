@@ -132,7 +132,7 @@
           }
           <div #cadsEls class="cads flex-110 flex-row">
             @for (cad of order.cads; track $index) {
-              <div class="cad flex-column" [style]="cad.style">
+              <div class="cad flex-column" [class.large]="cad.isLarge" [style]="cad.style">
                 <div class="cad-tags flex-column">
                   @for (item of cad.data.info["标签信息"]; track $index) {
                     <div [style]="isArray(item) ? item[1] : {}">
