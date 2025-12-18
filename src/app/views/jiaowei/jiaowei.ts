@@ -8,6 +8,16 @@ export class Jiaowei {
     this.import(source);
   }
 
+  private _matchItemTiaojian(tiaojian: string) {
+    const match = tiaojian.match(/门铰数量[ ]*==[ ]*(\d+)/);
+    const nStr = match?.[1];
+    if (nStr) {
+      return Number(nStr);
+    } else {
+      return null;
+    }
+  }
+
   import(source: ObjectOf<any>[]) {
     this.data = {};
     if (!Array.isArray(source)) {
@@ -19,10 +29,27 @@ export class Jiaowei {
   }
 
   export() {
-    return Object.entries(this.data).map(([num, value]) => {
+    return Object.entries(this.data).map(([numStr, value]) => {
       const result: ObjectOf<any> = {};
       const {items, disabled} = value;
-      result.条件 = [`门铰数量==${num}`];
+      const num = Number(numStr);
+      const conditions: string[] = [];
+      let conditionFound = false;
+      for (const str of value.conditions) {
+        const n = this._matchItemTiaojian(str);
+        if (typeof n === "number") {
+          if (n === num && !conditionFound) {
+            conditionFound = true;
+            conditions.push(str);
+          }
+        } else {
+          conditions.push(str);
+        }
+      }
+      if (!conditionFound) {
+        conditions.push(`门铰数量==${numStr}`);
+      }
+      result.条件 = conditions;
       result.不做 = !!disabled;
       if (!disabled) {
         for (const [i, item] of items.entries()) {
@@ -39,7 +66,8 @@ export class Jiaowei {
       return;
     }
     let num = 0;
-    for (const str of sourceItem.条件) {
+    const conditions: string[] = sourceItem.条件;
+    for (const str of conditions) {
       const matchResult = str.match(/门铰数量==(\d+)/);
       if (matchResult) {
         num = parseInt(matchResult[1], 10);
@@ -51,10 +79,10 @@ export class Jiaowei {
     if (!(num > 0)) {
       return;
     }
-    const dataItem: JiaoweiDataItem = {items: [], disabled: false};
+    const dataItem: JiaoweiDataItem = {items: [], disabled: false, conditions};
     if (typeof sourceItem.不做 === "boolean") {
       dataItem.disabled = sourceItem.不做;
-    } else if (num === 5) {
+    } else if (num >= 5) {
       dataItem.disabled = true;
     }
     switch (num) {
@@ -125,6 +153,7 @@ export interface JiaoweiDataItemItem {
 export interface JiaoweiDataItem {
   items: JiaoweiDataItemItem[];
   disabled: boolean;
+  conditions: string[];
 }
 export type JiaoweiData = ObjectOf<JiaoweiDataItem>;
 
