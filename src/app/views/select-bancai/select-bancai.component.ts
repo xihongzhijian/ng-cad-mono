@@ -21,7 +21,7 @@ import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.comp
 import {AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {DdbqType} from "@views/dingdanbiaoqian/dingdanbiaoqian.types";
-import {cloneDeep, intersection} from "lodash";
+import {cloneDeep, difference, intersection} from "lodash";
 import {DateTime} from "luxon";
 import {NgScrollbar} from "ngx-scrollbar";
 import {
@@ -433,12 +433,13 @@ export class SelectBancaiComponent {
         return;
       }
     }
-    const getCadOptions: {namesExclude?: string[]}[] = [];
+    const getCadOptions: {namesInclude?: string[]}[] = [];
     const bancaiCadsArr: BancaiCad[][] = [];
     const codes: string[] = [];
     for (const info of this.orderBancaiInfos()) {
       const arr1: BancaiCad[] = [];
       const namesExclude: string[] = [];
+      const names: string[] = [];
       for (const group of info.sortedCads) {
         for (const cad of group) {
           if (cad.disabled || (selectCad && !cad.checked)) {
@@ -450,13 +451,14 @@ export class SelectBancaiComponent {
             delete clone.disabled;
             arr1.push(clone as BancaiCad);
           }
+          names.push(cad.name);
         }
       }
       codes.push(info.code);
       const getCadOptionsItem: (typeof getCadOptions)[number] = {};
       getCadOptions.push(getCadOptionsItem);
       if (namesExclude.length > 0) {
-        getCadOptionsItem.namesExclude = namesExclude;
+        getCadOptionsItem.namesInclude = difference(names, namesExclude);
       }
       bancaiCadsArr.push(arr1);
     }
