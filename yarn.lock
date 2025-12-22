@@ -225,7 +225,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular-devkit/core@npm:21.0.3, @angular-devkit/core@npm:^21.0.3":
+"@angular-devkit/core@npm:21.0.3":
   version: 21.0.3
   resolution: "@angular-devkit/core@npm:21.0.3"
   dependencies:
@@ -241,6 +241,25 @@ __metadata:
     chokidar:
       optional: true
   checksum: 10c0/9037e731d16a96cf07b3aaf64564bd4e334d1b076df45bc9716e58e41d52b167255ae1a71eaab27f3159772a428b3d1ad5c07e18756582174fccd79a26ed8b69
+  languageName: node
+  linkType: hard
+
+"@angular-devkit/core@npm:^21.0.4":
+  version: 21.0.4
+  resolution: "@angular-devkit/core@npm:21.0.4"
+  dependencies:
+    ajv: "npm:8.17.1"
+    ajv-formats: "npm:3.0.1"
+    jsonc-parser: "npm:3.3.1"
+    picomatch: "npm:4.0.3"
+    rxjs: "npm:7.8.2"
+    source-map: "npm:0.7.6"
+  peerDependencies:
+    chokidar: ^4.0.0
+  peerDependenciesMeta:
+    chokidar:
+      optional: true
+  checksum: 10c0/bce5ff971b6224d9bf0d1dfd5dfe51caecf2a9e4559551209d6c665741ab3392d72aa51d7e4ab3e36f126836f74ee9190ebfe9fbcbd179d05e7918f37400ef4e
   languageName: node
   linkType: hard
 
@@ -10422,7 +10441,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ng-cad-mono@workspace:."
   dependencies:
-    "@angular-devkit/core": "npm:^21.0.3"
+    "@angular-devkit/core": "npm:^21.0.4"
     "@angular-devkit/schematics": "npm:^21.0.3"
     "@angular-eslint/builder": "npm:^21.1.0"
     "@angular-eslint/eslint-plugin": "npm:^21.1.0"
