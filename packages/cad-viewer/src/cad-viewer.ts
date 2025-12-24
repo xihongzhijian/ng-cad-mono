@@ -234,7 +234,11 @@ export class CadViewer extends EventEmitter {
       this.emit("zoom");
       return this;
     } else {
-      return this.draw.zoom();
+      try {
+        return this.draw.zoom();
+      } catch {
+        return 0;
+      }
     }
   }
 

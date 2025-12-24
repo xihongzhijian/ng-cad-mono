@@ -198,7 +198,7 @@ export const importObjProps = <T extends object>(obj: T, data: ObjectOf<any>, pr
 export const exportObjProps = <T extends object>(obj: T, propertyKeys: (keyof T)[]) => {
   const result: ObjectOf<any> = {};
   for (const key of propertyKeys) {
-    (result as any)[key] = obj[key];
+    (result as any)[key] = cloneDeep(obj[key]);
   }
   return result;
 };

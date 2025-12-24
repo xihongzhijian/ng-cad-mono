@@ -124,6 +124,7 @@ export class CadData {
   gudingkailiaobancai = "";
   suanliaochuli = "";
   showKuandubiaozhu = false;
+  unrecognizedProps: ObjectOf<any> = {};
   info: CadDataInfo = {};
   attributes: ObjectOf<string> = {};
   bancaihoudufangxiang = "";
@@ -238,6 +239,11 @@ export class CadData {
     if (resetIds) {
       this.resetIds();
     }
+    for (const key in data) {
+      if (!(key in this)) {
+        this.unrecognizedProps[key] = data[key];
+      }
+    }
     return this;
   }
 
@@ -272,6 +278,9 @@ export class CadData {
       zhankai: this.zhankai.map((v) => v.export()),
       ...exportObjProps(this, propertyKeys)
     };
+    for (const [key, value] of Object.entries(this.unrecognizedProps)) {
+      result[key] ??= value;
+    }
     if (Array.isArray(result.conditions)) {
       result.conditions = result.conditions.filter(Boolean);
     }

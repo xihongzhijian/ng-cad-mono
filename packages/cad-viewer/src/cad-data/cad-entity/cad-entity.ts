@@ -58,7 +58,13 @@ export abstract class CadEntity extends ColoredObject {
 
   get scale() {
     const rootEl = this.rootEl;
-    return rootEl ? rootEl.zoom() : NaN;
+    let scale = 0;
+    if (rootEl) {
+      try {
+        scale = rootEl.zoom();
+      } catch {}
+    }
+    return scale;
   }
 
   protected _selectable?: boolean;
