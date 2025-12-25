@@ -191,7 +191,7 @@ export const getFilepathUrl = (url: string | undefined | null, opts?: {prefix?: 
   return result;
 };
 
-export const getOrderBarcode = (element: string | HTMLElement, options: JsBarcode.Options & {text?: string}) => {
+export const getOrderBarcode = (element: string | HTMLElement, options: JsBarcode.Options & {text?: string} = {}) => {
   const result = {fulfilled: true, error: null as string | null};
   let text: string | undefined;
   if (options.text) {

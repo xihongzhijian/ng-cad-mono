@@ -31,6 +31,7 @@
   margin: 10px;
   border: var(--border);
   background-color: var(--mat-sys-surface);
+  break-after: page;
 
   :not(.out-of-page) {
     font-family: "宋体";
@@ -146,43 +147,61 @@
       &:not(:last-child) {
         border-bottom: var(--border);
       }
+    }
 
-      .cell {
+    .cell {
+      display: flex;
+      flex: 1 1 0;
+      height: 100%;
+      border: none;
+      &.border {
+        &:not(:last-child) {
+          border-right: var(--border);
+        }
+        .label {
+          border-right: var(--border);
+        }
+      }
+
+      .label,
+      .value {
+        word-break: break-word;
+        padding: 2px;
         display: flex;
+        align-items: center;
+        &.center {
+          justify-content: center;
+        }
+      }
+      .value {
         flex: 1 1 0;
-        height: 100%;
-        &.border {
-          &:not(:last-child) {
-            border-right: var(--border);
-          }
-          .label {
-            border-right: var(--border);
-          }
+      }
+
+      &.alt {
+        .value {
+          font-weight: bold;
+          font-size: 18px;
+        }
+      }
+      &.text-left {
+        .value {
+          justify-content: flex-start;
+        }
+      }
+      &.auto-width {
+        flex: 1 1 auto;
+
+        .label {
+          flex: 0 0 auto;
+        }
+        .value {
+          flex: 1 1 auto;
         }
 
-        .label,
-        .value {
-          word-break: break-word;
-          padding: 3px;
-          display: flex;
-          align-items: center;
-          &.center {
-            justify-content: center;
-          }
-        }
-        .value {
-          flex: 1 1 0;
-        }
-
-        &.alt {
+        &.is-boolean {
+          flex: 0 0 auto;
           .value {
-            font-weight: bold;
-            font-size: 18px;
-          }
-        }
-        &.text-left {
-          .value {
-            justify-content: flex-start;
+            flex: 0 0 25px;
           }
         }
       }
@@ -219,19 +238,19 @@
       }
     }
   }
-}
-.info-border-left {
-  border-left: var(--border);
-}
-.info-border-right {
-  border-right: var(--border);
-  flex: 0 0 200px;
-}
-.info-border-top {
-  border-top: var(--border);
-}
-.info-border-bottom {
-  border-bottom: var(--border);
+
+  .order-info {
+    display: flex;
+
+    > *:not(:last-child) {
+      border-right: var(--border);
+    }
+
+    .cell {
+      flex: 0 0 auto;
+      height: auto;
+    }
+  }
 }
 
 .配件模块 {
@@ -268,7 +287,7 @@
   --row-height: 17px;
   &:not(:last-child) {
     margin-bottom: var(--form-space);
-    page-break-after: always;
+    break-after: page;
   }
 
   .form-inner {

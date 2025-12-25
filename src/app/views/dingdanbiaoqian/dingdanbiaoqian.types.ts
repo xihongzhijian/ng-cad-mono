@@ -6,7 +6,7 @@ import {Properties} from "csstype";
 
 export interface Order {
   code: string;
-  开启锁向示意图?: {data: CadData; img: string; style: Properties};
+  开启锁向示意图?: {data?: CadData; img: string; style: Properties};
   配合框?: {data: CadData; img: string; style: Properties}[];
   materialResult?: Formulas;
   cads: {
@@ -36,8 +36,11 @@ export interface SectionCell {
   key: string;
   label?: string;
   isBoolean?: boolean;
+  autoWidth?: boolean;
   class?: string | string[];
   style?: Properties;
+  labelStyle?: Properties;
+  valueStyle?: Properties;
 }
 
 export interface SectionConfig {

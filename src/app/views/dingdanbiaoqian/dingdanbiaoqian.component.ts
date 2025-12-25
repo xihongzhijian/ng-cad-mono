@@ -1,11 +1,11 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {Component, computed, effect, ElementRef, HostBinding, inject, OnInit, signal, viewChildren} from "@angular/core";
+import {ChangeDetectorRef, Component, computed, effect, ElementRef, HostBinding, inject, OnInit, signal, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
 import {MatDividerModule} from "@angular/material/divider";
 import {ActivatedRoute} from "@angular/router";
-import {getOrderBarcode, imgCadEmpty, imgEmpty, imgLoading, remoteFilePath, session, setGlobal} from "@app/app.common";
+import {getOrderBarcode, imgCadEmpty, imgLoading, remoteFilePath, session, setGlobal} from "@app/app.common";
 import {CadPreviewParams, getCadPreview} from "@app/cad/cad-preview";
 import {configCadDataForPrint} from "@app/cad/print";
 import {generateLineTexts2, setDimensionText, setShuangxiangLineRects, shouldShowIntersection, splitShuangxiangCad} from "@app/cad/utils";
@@ -17,7 +17,7 @@ import {CalcZxpjResult, ZixuanpeijianCadItem, ZixuanpeijianMokuaiItem} from "@co
 import {calcZxpj, getMokuaiTitle, getStep1Data, getZixuanpeijianCads} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {environment} from "@env";
 import {CadData, CadLine, CadViewer, CadViewerConfig, Defaults, setLinesLength} from "@lucilor/cad-viewer";
-import {isTypeOf, ObjectOf, timeout} from "@lucilor/utils";
+import {isTypeOf, ObjectOf, timeout, waitFor} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {HttpOptions} from "@modules/http/services/http.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
@@ -51,6 +51,7 @@ import {DdbqConfig, DdbqData, DdbqType, Form, FormItem, Order, SectionCell, Sect
 })
 export class DingdanbiaoqianComponent implements OnInit {
   private calc = inject(CalcService);
+  private cd = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
   private http = inject(CadDataService);
   private message = inject(MessageService);
@@ -76,22 +77,21 @@ export class DingdanbiaoqianComponent implements OnInit {
           {key: "订单编号", label: "编号", class: "alt"}
         ]
       },
-      {cells: [{key: "款式"}, {key: "开启锁向", label: "开式"}]},
+      {cells: [{key: "款式"}, {key: "开启锁向", label: "开式", valueStyle: {fontSize: "calc(100% - 1.5px)"}}]},
       {cells: [{key: "拉手信息", label: "锁型", class: "text-left"}]},
-      {cells: [{key: "底框"}, {key: "门铰信息", label: "铰型"}, {key: "商标"}]},
       {
         cells: [
-          {key: "猫眼", isBoolean: true},
-          {key: "安装孔", isBoolean: true},
-          {key: "拉片", isBoolean: true}
+          {key: "底框高", label: "底框", autoWidth: true, isBoolean: true},
+          {key: "门铰信息", label: "铰型", autoWidth: true},
+          {key: "商标", autoWidth: true}
         ]
       },
-      {cells: [{key: "套门信息", label: "内门类型"}]},
       {
         cells: [
-          {key: "套门拉手信息", label: "锁型"},
-          {key: "套门猫眼", label: "猫眼"},
-          {key: "套门厚度", label: "页厚"}
+          {key: "猫眼", autoWidth: true, isBoolean: true},
+          {key: "安装孔", autoWidth: true, isBoolean: true},
+          {key: "拉片", autoWidth: true, isBoolean: true},
+          {key: "", class: "flex-110"}
         ]
       }
     ]
@@ -167,6 +167,13 @@ export class DingdanbiaoqianComponent implements OnInit {
   formTitleTplType = {$implicit: "" as Form["title"]};
   formItemTplType = {$implicit: {} as FormItem};
   isLvxingcai = signal(false);
+
+  ordersEff = effect(async () => {
+    this.orders();
+    await timeout(0);
+    this.updateBarcodes();
+  });
+
   async getOrders() {
     const url = "order/order/dingdanbiaoqian";
     const params = this.route.snapshot.queryParams;
@@ -258,13 +265,13 @@ export class DingdanbiaoqianComponent implements OnInit {
           code: order.code,
           materialResult: order.materialResult,
           开启锁向示意图: {
-            data: new CadData(order.开启锁向示意图),
-            img: imgEmpty,
+            data: order.开启锁向示意图 && new CadData(order.开启锁向示意图),
+            img: "",
             style: {width: 开启锁向示意图Size[0] + "px", height: 开启锁向示意图Size[1] + "px"}
           },
           配合框: order.配合框?.map((v) => ({
             data: new CadData(v),
-            img: imgEmpty,
+            img: "",
             style: {width: 配合框Size[0] + "px", height: 配合框Size[1] + "px"}
           })),
           cads,
@@ -309,7 +316,6 @@ export class DingdanbiaoqianComponent implements OnInit {
     let tmpCadViewer: CadViewer | undefined;
     const getImg = async (data: CadData, previewParams: Partial<CadPreviewParams>) => {
       const previewParams2: CadPreviewParams = {
-        maxZoom: 1.3,
         showFenti: true,
         ...previewParams,
         config: {...configBase, ...previewParams.config}
@@ -340,7 +346,7 @@ export class DingdanbiaoqianComponent implements OnInit {
       }
     };
     for (const [i, {cads, 开启锁向示意图, 配合框, materialResult}] of this.orders().entries()) {
-      if (开启锁向示意图) {
+      if (开启锁向示意图?.data) {
         开启锁向示意图.data.type = "";
         开启锁向示意图.data.type2 = "";
         setData(开启锁向示意图.data, materialResult);
@@ -374,7 +380,7 @@ export class DingdanbiaoqianComponent implements OnInit {
       }
       const cadsSizes = this.cadsSizes();
       for (const [j, cad] of cads.entries()) {
-        cad.imgSize = cadsSizes.at(i)?.cads.at(j)?.container || [0, 0];
+        cad.imgSize = cadsSizes.at(i)?.cads.at(j)?.img || [0, 0];
         setData(cad.data, materialResult);
       }
       if (showCadSmallImg) {
@@ -534,7 +540,21 @@ export class DingdanbiaoqianComponent implements OnInit {
     cadsToSet.forEach((v) => {
       this.setCad(...v);
     });
-    await timeout(0);
+    const cadEls = this.cadsEls();
+    await waitFor(() => {
+      for (const {nativeElement: cadEl} of cadEls) {
+        const imgEl = cadEl.querySelector(".cad-image");
+        if (!(imgEl instanceof HTMLElement)) {
+          continue;
+        }
+        const rect = imgEl.getBoundingClientRect();
+        if (rect.height > 0) {
+          return true;
+        }
+      }
+      return null;
+    });
+    this.cd.markForCheck();
     this.updateCadsSizes();
     cadsToSet.forEach((v) => {
       this.setCad(...v);
@@ -555,6 +575,13 @@ export class DingdanbiaoqianComponent implements OnInit {
       });
     }
     this.cadsSizes.set(cadsSizes);
+  }
+
+  updateBarcodes() {
+    const barcodeEls = this.barcodeEls();
+    for (const {nativeElement: el} of barcodeEls) {
+      getOrderBarcode(el, {displayValue: false, margin: 0});
+    }
   }
 
   mokuais = signal<ZixuanpeijianMokuaiItem[]>([]);
@@ -686,6 +713,10 @@ export class DingdanbiaoqianComponent implements OnInit {
       width: `${pageSize[0]}px`,
       height: `${pageSize[1]}px`
     };
+  }
+
+  getLabel(cell: SectionCell) {
+    return cell.label || cell.key;
   }
 
   getValue(section: ObjectOf<string | number>, cell: SectionCell) {

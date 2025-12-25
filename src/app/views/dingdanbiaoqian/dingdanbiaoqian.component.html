@@ -8,64 +8,63 @@
               @for (row of sectionConfig().rows; track $index) {
                 <div class="row">
                   @for (cell of row.cells; track $index) {
-                    <div class="cell border" [class]="cell.class || ''">
-                      <div class="label center">{{ cell.label || cell.key }}</div>
-                      <div class="value center">{{ getValue(section, cell) }}</div>
+                    <div class="cell border" [class]="cell.class" [class.is-boolean]="cell.isBoolean" [class.auto-width]="cell.autoWidth">
+                      @if (getLabel(cell); as label) {
+                        <div class="label center" [style]="cell.labelStyle">{{ label }}</div>
+                      }
+                      @if (getValue(section, cell); as value) {
+                        <div class="value center" [style]="cell.valueStyle">{{ value }}</div>
+                      }
                     </div>
                   }
                 </div>
               }
               <div class="row flex-row">
-                <div class="cell" style="height: 40px">
-                  <svg class="barcode value" [attr.jsbarcode-value]="order.code"></svg>
+                <div class="cell">
+                  <svg #barcode class="barcode value" height="40" [attr.jsbarcode-value]="order.code" [attr.jsbarcode-height]="40"></svg>
                 </div>
                 <div class="cell" style="flex: 0 0 auto">
                   <div class="value">{{ section["制单"] }}</div>
                 </div>
               </div>
-              <div class="row flex-column" style="border-bottom: none">
-                <div class="flex-row" style="width: 100%">
-                  <div class="flex-column flex-110 info-border-right">
-                    <div class="cell">
-                      <div class="value center">宽×高×厚</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">外尺&nbsp;</div>
-                      <div class="value info-border-bottom">{{ section["包框规格"] }}</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">外门板</div>
-                      <div class="value info-border-bottom">{{ section["订货单门扇信息"] }}</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">内门板</div>
-                      <div class="value info-border-bottom">{{ section["套门门扇信息"] }}</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">门花&nbsp;</div>
-                      <div class="value info-border-bottom">{{ section["花件尺寸"] }}</div>
-                    </div>
-                    <div class="flex-row cell">
-                      <div class="label">门头花</div>
-                      <div class="value">{{ section["门头花尺寸"] }}</div>
-                    </div>
+              <div class="order-info border-bottom">
+                <div class="flex-column" style="width: 200px">
+                  <div class="cell">
+                    <div class="value center">宽×高×厚</div>
                   </div>
-                  <div class="flex-column flex-110">
-                    <div class="cell">
-                      <div class="value">{{ section["其他备注"] }}</div>
-                    </div>
+                  <div class="cell">
+                    <div class="label">外尺&nbsp;</div>
+                    <div class="value border-bottom">{{ section["包框规格"] }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">外门板</div>
+                    <div class="value border-bottom">{{ section["订货单门扇信息"] }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">内门板</div>
+                    <div class="value border-bottom">{{ section["套门门扇信息"] }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">门花&nbsp;</div>
+                    <div class="value border-bottom">{{ section["花件尺寸"] }}</div>
+                  </div>
+                  <div class="cell">
+                    <div class="label">门头花</div>
+                    <div class="value">{{ section["门头花尺寸"] }}</div>
                   </div>
                 </div>
-              </div>
-              <div class="row" style="height: 60px; border-bottom: none">
-                <div class="cell">
-                  <div class="value center">{{ section["花件备注"] }}</div>
+                <div class="flex-column flex-110">
+                  <div class="cell">
+                    <div class="value">特别要求：<br />{{ section["其他备注"] }}</div>
+                  </div>
                 </div>
               </div>
               <div class="示意图">
                 @if (order["开启锁向示意图"]) {
                   <div class="开启锁向示意图" [style]="order['开启锁向示意图'].style">
-                    <app-image [src]="order['开启锁向示意图'].img" [bigPicSrc]="order['开启锁向示意图'].img"></app-image>
+                    @if (order["开启锁向示意图"].img; as img) {
+                      <app-image [src]="img" [bigPicSrc]="img"></app-image>
+                    }
                   </div>
                 }
                 @if (order["配合框"]) {
@@ -142,7 +141,7 @@
                 </div>
                 @if (config().showBarcode) {
                   <div>
-                    <svg class="barcode" [attr.jsbarcode-value]="cad.data.info.groupId"></svg>
+                    <svg #barcode class="barcode" [attr.jsbarcode-value]="cad.data.info.groupId"></svg>
                   </div>
                 }
                 <div class="cad-image flex-110 flex-column" [style]="cad.imgStyle">
@@ -197,7 +196,7 @@
         <ng-template *ngTemplateOutlet="formTpl; context: {$implicit: form}"></ng-template>
         @if (form.barCode) {
           <div class="barcode-container">
-            <svg class="barcode value" [attr.jsbarcode-value]="form.barCode"></svg>
+            <svg #barcode class="barcode value" [attr.jsbarcode-value]="form.barCode"></svg>
           </div>
         }
       </div>
