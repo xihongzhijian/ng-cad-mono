@@ -5,6 +5,7 @@ import {prepareCadViewer} from "./utils";
 
 export interface CadPreviewRawParams {
   fixedLengthTextSize?: number;
+  clearLengthTextOffset?: boolean;
   fixedDimTextSize?: number;
   fixedMtextSize?: number;
   config?: Partial<CadViewerConfig>;
@@ -56,7 +57,7 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
   }
   cad.center();
 
-  const {fixedLengthTextSize, fixedDimTextSize, fixedMtextSize} = params;
+  const {fixedLengthTextSize, clearLengthTextOffset, fixedDimTextSize, fixedMtextSize} = params;
   if ([fixedLengthTextSize, fixedDimTextSize, fixedMtextSize].some((size) => size !== undefined)) {
     const resize = () => {
       const zoom = cad.zoom();
@@ -64,11 +65,15 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
       const dimTextSize = typeof fixedDimTextSize === "number" ? fixedDimTextSize / zoom : null;
       const mtextSize = typeof fixedMtextSize === "number" ? fixedMtextSize / zoom : null;
       cad.data.entities.forEach((e) => {
-        if (e instanceof CadLineLike && lengthTextSize !== null) {
-          e.lengthTextSize = lengthTextSize;
-          e.children.mtext.forEach((mtext) => {
-            mtext.info.offset = [0, 0];
-          });
+        if (e instanceof CadLineLike) {
+          if (lengthTextSize !== null) {
+            e.lengthTextSize = lengthTextSize;
+          }
+          if (clearLengthTextOffset) {
+            e.children.mtext.forEach((mtext) => {
+              mtext.info.offset = [0, 0];
+            });
+          }
           cad.render(e);
         } else if (e instanceof CadDimension && dimTextSize !== null) {
           e.setStyle({text: {size: dimTextSize}});

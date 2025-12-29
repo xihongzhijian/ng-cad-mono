@@ -477,11 +477,15 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
   const rectCenter = new Point(rect.x, rect.y);
   const drawing = {
     leader: {length: 32, gap: 4, size: 15},
-    circle: {radius: 8, linetype: "DASHEDX2", linewidth: 2},
+    circle: {radius: 12, linewidth: 1, color: 5},
     text: {size: 24, text: "", offset: 0}
   };
   for (const key of intersectionKeys) {
     const arr = data[key];
+    if (arr.length < 1) {
+      continue;
+    }
+    const circles: CadCircle[] = [];
     for (const sortedEntities of sortedEntitiesGroups) {
       for (let i = 0; i < sortedEntities.length; i++) {
         const e1 = sortedEntities[i];
@@ -542,6 +546,7 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
         let drawLeader = false;
         let drawCircle = false;
         let drawText = false;
+        let circleDashed = false;
         let layer = "";
         if (key === "zhidingweizhipaokeng") {
           line.end.sub(d.clone().multiply(drawing.leader.gap));
@@ -552,10 +557,17 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
           } else if (指定位置刨坑表示方法 === "箭头+箭头旁文字") {
             drawLeader = true;
             drawText = true;
+          } else if (指定位置刨坑表示方法 === "实线圆") {
+            drawCircle = true;
+          } else if (指定位置刨坑表示方法 === "实线圆+旁边文字") {
+            drawCircle = true;
+            drawText = true;
           } else if (指定位置刨坑表示方法 === "虚线圆") {
             drawCircle = true;
+            circleDashed = true;
           } else if (指定位置刨坑表示方法 === "虚线圆+旁边文字") {
             drawCircle = true;
+            circleDashed = true;
             drawText = true;
           }
           layer = "指定位置刨坑";
@@ -597,16 +609,18 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
         }
         if (drawCircle) {
           const radius = Math.min(drawing.circle.radius, p1.distanceTo(p2) / 2 - 1, p2.distanceTo(p3) / 2 - 1);
+          const linetype = circleDashed ? "DASHEDX2" : "CONTINUOUS";
           const circle = new CadCircle({
             layer,
             center: p2,
             radius,
-            linetype: drawing.circle.linetype,
+            linetype: linetype,
             linewidth: drawing.circle.linewidth,
-            color: 5,
+            color: drawing.circle.color,
             info: {isIntersectionEntity: true}
           });
           data.entities.add(circle);
+          circles.push(circle);
         }
         if (drawText) {
           let anchor = [0, 0];
@@ -628,6 +642,12 @@ export const showIntersections = (data: CadData, projectConfig: ProjectConfig) =
           });
           data.entities.add(text);
         }
+      }
+    }
+    if (circles.length > 0) {
+      const minRadius = Math.min(...circles.map((e) => e.radius));
+      for (const circle of circles) {
+        circle.radius = minRadius;
       }
     }
   }
@@ -971,4 +991,19 @@ export const autoShuangxiangzhewan = (data: CadData, tolerance?: number) => {
   if (intersectionCount === 1) {
     data.shuangxiangzhewan = true;
   }
+};
+
+export const getIsCadSuanliaoxianshi = (data: CadData, key: string) => {
+  const suanliaodanxianshi = data.suanliaodanxianshi;
+  if (suanliaodanxianshi === "所有") {
+    return true;
+  }
+  if (suanliaodanxianshi === "都不显示") {
+    return false;
+  }
+  const arr = suanliaodanxianshi.split("+").map((v) => v.trim());
+  if (["展开宽", "展开高"].includes(key) && arr.includes("尺寸")) {
+    return true;
+  }
+  return arr.includes(key);
 };

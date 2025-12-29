@@ -1,6 +1,6 @@
 <div class="pages flex-column">
   @for (order of orders(); track i; let i = $index) {
-    <div class="page flex-row" [style]="order.style">
+    <div [class]="['page', 'flex-row', type()]" [style]="order.style">
       @if (order.info) {
         <div class="info">
           @for (section of order.info; track $index) {
@@ -59,23 +59,11 @@
                   </div>
                 </div>
               </div>
-              <div class="示意图">
-                @if (order["开启锁向示意图"]) {
-                  <div class="开启锁向示意图" [style]="order['开启锁向示意图'].style">
-                    @if (order["开启锁向示意图"].img; as img) {
-                      <app-image [src]="img" [bigPicSrc]="img"></app-image>
-                    }
-                  </div>
-                }
-                @if (order["配合框"]) {
-                  <div class="配合框-group">
-                    @for (item of order["配合框"]; track $index) {
-                      <div class="配合框" [style]="item.style">
-                        @if (order["配合框"].length > 1) {
-                          <div class="name">{{ item.data.name }}</div>
-                        }
-                        <app-image [src]="item.img" [bigPicSrc]="item.img"></app-image>
-                      </div>
+              <div class="示意图" #shiyitusContainer>
+                @for (shiyitu of order.shiyitus; track $index) {
+                  <div [class]="shiyitu.name" class="shiyitu-container">
+                    @if (shiyitu.img; as img) {
+                      <app-image [src]="img" [bigPicSrc]="shiyitu.imgLarge" [style]="shiyitu.style"></app-image>
                     }
                   </div>
                 }
@@ -155,12 +143,20 @@
                       @if (isLvxingcai()) {
                         <span>长{{ zhankai.height }}mm</span>
                       } @else {
-                        <span class="highlight">{{ zhankai.width }}</span>
-                        <span class="sign">×</span>
-                        <span>{{ zhankai.height }}</span>
-                        @if (hasZhankaiNum(zhankai)) {
-                          <span class="sign">=</span>
-                          <span>{{ zhankai.num }}</span>
+                        @if (cad.zhankaiDisplayInfos?.[$index]; as info) {
+                          @if (info.kuan) {
+                            <span class="highlight">{{ zhankai.width }}</span>
+                          }
+                          @if (info.sign) {
+                            <span class="sign">×</span>
+                          }
+                          @if (info.gao) {
+                            <span>{{ zhankai.height }}</span>
+                          }
+                          @if (info.num) {
+                            <span class="sign">=</span>
+                            <span>{{ zhankai.num }}</span>
+                          }
                         }
                       }
                     </div>

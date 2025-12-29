@@ -31,7 +31,10 @@
   margin: 10px;
   border: var(--border);
   background-color: var(--mat-sys-surface);
-  break-after: page;
+  &.生产流程单 {
+    width: 297mm;
+    height: 210mm;
+  }
 
   :not(.out-of-page) {
     font-family: "宋体";
@@ -209,30 +212,22 @@
 
     .示意图 {
       display: flex;
+      flex: 1 1 0;
 
-      > * {
+      .shiyitu-container {
         display: flex;
-        flex-direction: column;
-
-        app-image {
-          height: 100%;
+        &.开启锁向示意图 {
+          flex: 1 1 0;
+          justify-content: flex-start;
+          align-items: flex-end;
         }
-      }
-      .开启锁向示意图 {
-        align-items: flex-start;
-        padding-left: 5px;
-      }
-      .配合框-group {
-        justify-content: flex-end;
-        padding-bottom: 10px;
-        .配合框 {
-          display: flex;
+        &.背框示意图 {
+          flex: 1 1 0;
           justify-content: flex-end;
-          padding-right: 5px;
+          align-items: flex-end;
 
-          .name {
-            display: flex;
-            align-items: center;
+          app-image {
+            width: auto !important;
           }
         }
       }
