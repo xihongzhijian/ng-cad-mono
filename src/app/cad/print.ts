@@ -703,7 +703,7 @@ const getUnfoldCadViewers = async (
           if (qrcodeSuccess && qrcodeEl.width <= boxRect.width && qrcodeEl.height <= boxRect.height) {
             const img = new CadImage();
             img.objectFit = "contain";
-            img.anchor.set(0.5, 1);
+            img.anchor.set(0.5, 0);
             img.targetSize = new Point(qrcodeEl.width, qrcodeEl.height);
             img.url = qrcodeEl.toDataURL();
             img.position.set(boxRect.x, y);
