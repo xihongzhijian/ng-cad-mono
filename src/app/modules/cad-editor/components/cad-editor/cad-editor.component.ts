@@ -378,7 +378,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   scrollbarEff = effect(() => {
     setTimeout(() => {
       for (const scrollbar of this._scrollbars()) {
-        scrollbar.viewport.nativeElement.addEventListener("scroll", this.onScrollChange);
+        scrollbar.nativeElement.addEventListener("scroll", this.onScrollChange);
       }
     }, 0);
   });
@@ -390,7 +390,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       return;
     }
     const scroll = this.config.getConfig("scroll");
-    scroll["tab" + this.tabIndex()] = this._scrollbar.viewport.nativeElement.scrollTop;
+    scroll["tab" + this.tabIndex()] = this._scrollbar.nativeElement.scrollTop;
     this.config.setConfig("scroll", scroll);
   }, 1000);
 
@@ -552,7 +552,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
       return;
     }
     this._scrollbars().forEach((scrollbar) => {
-      const inputs = scrollbar.viewport.nativeElement.querySelectorAll("app-input");
+      const inputs = scrollbar.nativeElement.querySelectorAll("app-input");
       const input2 = Array.from(inputs).find((el) => {
         if (el instanceof HTMLElement && queryString(val, el.dataset.label || "")) {
           return true;

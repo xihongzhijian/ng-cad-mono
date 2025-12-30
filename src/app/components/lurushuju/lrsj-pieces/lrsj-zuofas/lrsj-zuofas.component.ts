@@ -217,7 +217,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
     const scrollbar = this.scrollbar();
     let el: Element | null;
     if (typeof j === "number") {
-      el = scrollbar.viewport.nativeElement.querySelector(`[data-ij="${i},${j}"]`);
+      el = scrollbar.nativeElement.querySelector(`[data-ij="${i},${j}"]`);
       const xinghao = this.xinghao();
       if (xinghao) {
         const fenleiName = xinghao.显示产品分类[i];
@@ -225,7 +225,7 @@ export class LrsjZuofasComponent extends LrsjPiece {
         this.openZuofa(fenleiName, zuofa);
       }
     } else {
-      el = scrollbar.viewport.nativeElement.querySelector(`[data-i="${i}"]`);
+      el = scrollbar.nativeElement.querySelector(`[data-i="${i}"]`);
     }
     if (el) {
       scrollbar.scrollToElement(el);
