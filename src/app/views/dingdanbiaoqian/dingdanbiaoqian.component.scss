@@ -216,18 +216,34 @@
 
       .shiyitu-container {
         display: flex;
+
+        .shiyitu-inner {
+          display: flex;
+
+          app-image {
+            width: auto;
+            height: auto;
+          }
+        }
+
         &.开启锁向示意图 {
           flex: 1 1 0;
           justify-content: flex-start;
           align-items: flex-end;
+
+          .shiyitu-inner {
+            justify-content: flex-start;
+            align-items: flex-end;
+          }
         }
         &.背框示意图 {
           flex: 1 1 0;
           justify-content: flex-end;
           align-items: flex-end;
 
-          app-image {
-            width: auto !important;
+          .shiyitu-inner {
+            justify-content: flex-end;
+            align-items: flex-end;
           }
         }
       }

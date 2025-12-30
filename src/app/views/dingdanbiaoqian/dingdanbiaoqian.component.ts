@@ -1,17 +1,5 @@
 import {NgTemplateOutlet} from "@angular/common";
-import {
-  ChangeDetectorRef,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  HostBinding,
-  inject,
-  OnInit,
-  signal,
-  viewChild,
-  viewChildren
-} from "@angular/core";
+import {ChangeDetectorRef, Component, computed, effect, ElementRef, HostBinding, inject, OnInit, signal, viewChildren} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDialog} from "@angular/material/dialog";
@@ -87,8 +75,8 @@ export class DingdanbiaoqianComponent implements OnInit {
   pagePadding = [17, 17, 5, 17] as const;
   cadsSizes = signal<{container: [number, number]; cads: {container: [number, number]; img: [number, number]}[]}[]>([]);
   shiyituSize: ObjectOf<[number, number]> = {
-    开启锁向示意图: [180, 431],
-    背框示意图: [180, 200]
+    开启锁向示意图: [150, 300],
+    背框示意图: [100, 100]
   };
   sectionConfig = signal<SectionConfig>({
     rows: [
@@ -102,8 +90,8 @@ export class DingdanbiaoqianComponent implements OnInit {
       {cells: [{key: "拉手信息", label: "锁型", class: "text-left"}]},
       {
         cells: [
-          {key: "订货单底框信息", label: "底框", autoWidth: true},
-          {key: "门铰信息", label: "铰型", autoWidth: true, valueStyle: {fontSize: "calc(100% - 1.5px)"}},
+          {key: "底框信息", label: "底框", autoWidth: true},
+          {key: "门铰信息", label: "铰型", autoWidth: true},
           {key: "商标", autoWidth: true}
         ]
       },
@@ -329,7 +317,6 @@ export class DingdanbiaoqianComponent implements OnInit {
     }
   }
 
-  shiyitusContainer = viewChild<ElementRef<HTMLDivElement>>("shiyitusContainer");
   async updateImgs(configForPrint: boolean) {
     this.spinner.show(this.spinner.defaultLoaderId, {text: "生成中..."});
     const configBase: Partial<CadViewerConfig> = {
@@ -398,7 +385,9 @@ export class DingdanbiaoqianComponent implements OnInit {
         const [w, h] = this.shiyituSize[shiyitu.name] ?? [0, 0];
         const previewParams: Partial<CadPreviewParams> = {
           config: {width: w, height: h, hideLineLength: true},
-          autoSize: true
+          autoSize: true,
+          fixedMtextSize: undefined,
+          fixedDimTextSize: undefined
         };
         const {small, large} = await getImg(shiyitu.data, previewParams, true);
         shiyitu.img = small;
@@ -752,12 +741,21 @@ export class DingdanbiaoqianComponent implements OnInit {
   }
 
   getValue(section: ObjectOf<any>, cell: SectionCell) {
-    const value = String(section[cell.key] || "");
+    const prefixs = ["订货单", "流程单"];
+    let key = cell.key || "";
+    for (const prefix of prefixs) {
+      const key2 = prefix + key;
+      if (key2 in section) {
+        key = key2;
+        break;
+      }
+    }
+    const value = String(section[key] || "");
     if ((cell.key || cell.label) === "页厚" && value === "0") {
       return "";
     }
     if (cell.isBoolean) {
-      let value2 = section[cell.key];
+      let value2 = section[key];
       if (typeof value2 === "string") {
         if (["无", "否", ""].includes(value2)) {
           value2 = false;

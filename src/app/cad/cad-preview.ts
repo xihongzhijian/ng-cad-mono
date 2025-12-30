@@ -52,7 +52,15 @@ export const getCadPreviewRaw = async (collection: CadCollection, data: CadData,
     cad.render(fentiMtext);
   }
   if (params.autoSize) {
-    const {width, height} = cad.data.getBoundingRect();
+    let {width, height} = cad.getConfig();
+    const {width: width2, height: height2} = cad.data.getBoundingRect();
+    const ratio = width / height;
+    const ratio2 = width2 / height2;
+    if (ratio2 > ratio) {
+      height = width / ratio2;
+    } else {
+      width = height * ratio2;
+    }
     cad.resize(width, height);
   }
   cad.center();

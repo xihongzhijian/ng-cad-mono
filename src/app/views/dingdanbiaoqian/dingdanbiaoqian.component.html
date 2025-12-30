@@ -63,7 +63,9 @@
                 @for (shiyitu of order.shiyitus; track $index) {
                   <div [class]="shiyitu.name" class="shiyitu-container">
                     @if (shiyitu.img; as img) {
-                      <app-image [src]="img" [bigPicSrc]="shiyitu.imgLarge" [style]="shiyitu.style"></app-image>
+                      <div class="shiyitu-inner" [style]="shiyitu.style">
+                        <app-image [src]="img" [bigPicSrc]="shiyitu.imgLarge"></app-image>
+                      </div>
                     }
                   </div>
                 }
