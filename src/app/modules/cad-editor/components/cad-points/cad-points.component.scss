@@ -11,7 +11,8 @@
   &:hover {
     background-color: var(--active-color);
   }
-  &.active {
+  &.active,
+  &.active2 {
     background-color: var(--active-color);
     animation: unset;
   }

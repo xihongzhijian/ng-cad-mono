@@ -525,6 +525,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     this._setTabScroll();
   }
 
+  selectModeLocked = computed(() => this.config.getConfig("cadSelectModeLocked"));
   toggleMultiSelect() {
     let selectMode = this.config.getConfig("selectMode");
     selectMode = selectMode === "multiple" ? "single" : "multiple";

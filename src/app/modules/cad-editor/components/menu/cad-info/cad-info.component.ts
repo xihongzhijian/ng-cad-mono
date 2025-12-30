@@ -25,9 +25,11 @@ import {
 import {Utils} from "@mixins/utils.mixin";
 import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
+import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
 import {CadStatusIntersection, CadStatusSelectBaseline, CadStatusSelectJointpoint} from "@services/cad-status";
+import SelectionArea from "@viselect/vanilla";
 import {debounce, isEqual} from "lodash";
 import {InputComponent} from "../../../../input/components/input.component";
 import {getCadInfoInputs, Intersection2Item} from "./cad-info.utils";
@@ -48,6 +50,7 @@ import {getCadInfoInputs, Intersection2Item} from "./cad-info.utils";
   ]
 })
 export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
+  private config = inject(AppConfigService);
   private dialog = inject(MatDialog);
   private message = inject(MessageService);
   private status = inject(AppStatusService);
@@ -58,6 +61,8 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   cadStatusIntersectionInfo: CadStatusIntersection["info"] = "";
   bjxTypes = 激光开料标记线类型;
   emptyBjxItem: NonNullable<CadData["info"]["激光开料标记线"]>[0] = {type: "短直线", ids: []};
+  prevConfig: Partial<AppConfig> = {};
+  selection: SelectionArea | null = null;
 
   selectJointpointEff = this.status.getCadStatusEffect(
     (v) => v instanceof CadStatusSelectJointpoint,
@@ -70,17 +75,27 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     }
   );
 
+  private _setIntersectionConfig(cadStatus: CadStatusIntersection) {
+    return this.config.setConfig(
+      {selectMode: "none", cadSelectModeLocked: true, cadPointsSelectMode: cadStatus.multi ? "multiple" : "single"},
+      {sync: false}
+    );
+  }
   intersectionEff = this.status.getCadStatusEffect(
     (v) => v instanceof CadStatusIntersection,
-    () => {
+    (cadStatus) => {
+      this.prevConfig = this._setIntersectionConfig(cadStatus);
       this._updateCadPoints();
     },
     () => {
       this._cadPointsLock = true;
       this.status.setCadPoints();
       this.cadStatusIntersectionInfo = "";
+      this.config.setConfig(this.prevConfig, {sync: false});
     },
-    () => {
+    (cadStatus) => {
+      this.config.setConfig(this.prevConfig, {sync: false});
+      this.prevConfig = this._setIntersectionConfig(cadStatus);
       this._updateCadPoints();
     }
   );
@@ -89,13 +104,15 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     const cad = this.status.cad;
     cad.on("entityclick", this._onEntityClick);
     cad.on("moveentities", this._onEntityMove);
-    cad.on("zoom", this._updateCadPoints);
+    cad.on("zoom", this._onZoom);
+    cad.on("move", this._onMove);
   }
   ngOnDestroy() {
     const cad = this.status.cad;
     cad.off("entityclick", this._onEntityClick);
     cad.off("moveentities", this._onEntityMove);
-    cad.off("zoom", this._updateCadPoints);
+    cad.off("zoom", this._onZoom);
+    cad.off("move", this._onMove);
   }
 
   openCadOptionsEff = effect(() => {
@@ -124,7 +141,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     const data = this.data();
     const selectJointpointStatus = this.status.findCadStatus((v) => v instanceof CadStatusSelectJointpoint);
     const intersectionStatus = this.status.findCadStatus(
-      (v) => v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo
+      (v): v is CadStatusIntersection => v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo
     );
     if (selectJointpointStatus) {
       const jointPoint = data.jointPoints[selectJointpointStatus.index];
@@ -146,19 +163,36 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.updateJointPointInfos();
     } else if (intersectionStatus) {
       const key = this.cadStatusIntersectionInfo;
-      const index = intersectionStatus.index;
+      const {index, multi} = intersectionStatus;
       if (intersectionKeys.includes(key as IntersectionKey)) {
         const key2 = key as IntersectionKey;
-        const lines = data[key2][index];
-        if (activePoints.length < 1) {
-          data[key2][index] = [];
-        } else {
+        if (multi) {
+          const toAdd: string[][] = [];
+          const foundIndexs: number[] = [];
           for (const p of activePoints) {
-            const p2 = this._setActiveCadPoint({lines}, points);
-            if (!p2 || !isEqual(p.lines, p2.lines)) {
-              data[key2][index] = p.lines.slice();
-              this._updateCadPoints();
-              break;
+            const linesOldIndex = data[key2].findIndex((lines) => isEqual(lines, p.lines));
+            if (linesOldIndex >= 0) {
+              foundIndexs.push(linesOldIndex);
+            } else {
+              toAdd.push(p.lines.slice());
+            }
+          }
+          data[key2] = data[key2].filter((_, i) => foundIndexs.includes(i)).concat(toAdd);
+          if (Array.isArray(data.info.刨坑深度)) {
+            data.info.刨坑深度 = data.info.刨坑深度.filter((_, i) => foundIndexs.includes(i));
+          }
+        } else {
+          const lines = data[key2][index];
+          if (activePoints.length < 1) {
+            data[key2][index] = [];
+          } else {
+            for (const p of activePoints) {
+              const p2 = this._setActiveCadPoint({lines}, points);
+              if (!p2 || !isEqual(p.lines, p2.lines)) {
+                data[key2][index] = p.lines.slice();
+                this._updateCadPoints();
+                break;
+              }
             }
           }
         }
@@ -350,6 +384,12 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this._checkMtext(entities);
     this._updateCadPoints();
   };
+  private _onZoom: CadEventCallBack<"zoom"> = () => {
+    this._updateCadPoints();
+  };
+  private _onMove: CadEventCallBack<"move"> = () => {
+    this._updateCadPoints();
+  };
   private _updateCadPoints = () => {
     const data = this.data();
     const key = this.cadStatusIntersectionInfo;
@@ -363,12 +403,21 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.status.cadPoints.set(points);
     } else if (intersectionStatus) {
       const points = this.status.getCadPoints(data.getAllEntities());
-      if (intersectionKeys.includes(key as IntersectionKey)) {
-        this._setActiveCadPoint({lines: data[key as IntersectionKey][intersectionStatus.index]}, points);
+      const {index, multi} = intersectionStatus;
+      const key2 = key as IntersectionKey;
+      if (intersectionKeys.includes(key2)) {
+        if (multi) {
+          for (const point of points) {
+            const found = data[key2].some((lines) => isEqual(lines, point.lines));
+            point.active = found;
+          }
+        } else {
+          this._setActiveCadPoint({lines: data[key2][index]}, points);
+        }
       } else if (this.intersectionKeys2.includes(key)) {
-        this._setActiveCadPoint({lines: data.info[key][intersectionStatus.index].ids}, points);
+        this._setActiveCadPoint({lines: data.info[key][index].ids}, points);
       } else if (key === "激光开料标记线") {
-        this._setActiveCadPoint({lines: data.info.激光开料标记线?.[intersectionStatus.index].ids}, points);
+        this._setActiveCadPoint({lines: data.info.激光开料标记线?.[index].ids}, points);
       }
       this._cadPointsLock = true;
       this.status.cadPoints.set(points);
@@ -642,14 +691,20 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     this.status.emitChangeCadSignal();
   }
 
-  selectPoint(i: number, key: string) {
+  selectPoint(i: number, key: string, multi?: boolean) {
     this.cadStatusIntersectionInfo = key;
-    this.status.toggleCadStatus(new CadStatusIntersection(key, i));
+    this.status.toggleCadStatus(new CadStatusIntersection(key, i, multi));
     if (intersectionKeys.includes(key as IntersectionKey)) {
       this.updateIntersectionInputs();
     } else if (this.intersectionKeys2.includes(key)) {
       this.updateIntersectionInputs2();
     }
+  }
+  selectPointMulti(key: string) {
+    this.selectPoint(-1, key, true);
+  }
+  isMultiSelectingIntersection(key: string) {
+    return this.status.hasCadStatus((v) => v instanceof CadStatusIntersection && !!v.multi && v.info === key);
   }
 
   selectBjxPoint(i: number) {

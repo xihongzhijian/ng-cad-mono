@@ -37,6 +37,7 @@ export interface CadEvents {
   render: [CadEntities];
   wheel: [WheelEvent];
   zoom: [];
+  move: [];
 }
 export type CadEventCallBack<T extends keyof CadEvents> = (...params: CadEvents[T]) => void;
 
@@ -59,7 +60,6 @@ function onWheel(this: CadViewer, event: WheelEvent) {
 
 function onPointerDown(this: CadViewer, event: PointerEvent) {
   this.emit("pointerdown", event);
-  event.preventDefault();
   const {clientX, clientY, button: eBtn} = event;
   const point = new Point(clientX, clientY);
   pointer = {from: point, to: point.clone()};
@@ -72,7 +72,6 @@ function onPointerDown(this: CadViewer, event: PointerEvent) {
 
 function onPointerMove(this: CadViewer, event: PointerEvent) {
   this.emit("pointermove", event);
-  event.preventDefault();
   const {clientX, clientY, shiftKey} = event;
   if (this.entitiesCopied && !pointer) {
     const point = new Point(clientX, clientY);
@@ -94,6 +93,7 @@ function onPointerMove(this: CadViewer, event: PointerEvent) {
         translate.y = 0;
       }
       this.move(translate.x, -translate.y);
+      this.emit("move");
     } else if (button === 0) {
       const selectModesWithSelection: CadViewerSelectMode[] = ["single", "multiple"];
       if (entitiesToDrag && entitiesNotToDrag && entityDraggable) {
@@ -223,7 +223,6 @@ function clearPointer(this: CadViewer, event: PointerEvent) {
 
 function onPointerUp(this: CadViewer, event: PointerEvent) {
   this.emit("pointerup", event);
-  event.preventDefault();
   clearPointer.call(this, event);
   this.dom.focus();
 }

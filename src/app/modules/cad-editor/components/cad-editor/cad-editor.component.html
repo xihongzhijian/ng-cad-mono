@@ -51,9 +51,13 @@
             <div class="sub-menu">
               <div style="padding: 10px">CAD总长: {{ cadLength() }}</div>
               <div class="toolbar" style="position: relative">
-                <mat-slide-toggle [checked]="multiSelect" (change)="toggleMultiSelect()">
-                  实体{{ multiSelect ? "多选" : "单选" }}
-                </mat-slide-toggle>
+                @if (selectModeLocked()) {
+                  <span>当前状态不可选择实体</span>
+                } @else {
+                  <mat-slide-toggle [checked]="multiSelect" (change)="toggleMultiSelect()">
+                    实体{{ multiSelect ? "多选" : "单选" }}
+                  </mat-slide-toggle>
+                }
                 <div class="flex-110"></div>
                 <button mat-icon-button (pointerenter)="showMenuSearch()">
                   <mat-icon>search</mat-icon>

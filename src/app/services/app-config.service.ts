@@ -16,6 +16,8 @@ export interface AppConfig extends CadViewerConfig {
   kailiaoAutoGuige: boolean;
   kailiaoVerbose: boolean;
   testMode: boolean;
+  cadSelectModeLocked: boolean;
+  cadPointsSelectMode: "single" | "multiple";
 }
 
 export interface LocalConfigInfo {
@@ -211,5 +213,7 @@ export const defaultConfig: AppConfig = {
   cadPointsAnywhere: false,
   kailiaoAutoGuige: false,
   kailiaoVerbose: false,
-  testMode: false
+  testMode: false,
+  cadSelectModeLocked: false,
+  cadPointsSelectMode: "multiple"
 };

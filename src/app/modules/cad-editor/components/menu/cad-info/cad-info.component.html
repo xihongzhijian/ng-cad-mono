@@ -44,7 +44,10 @@
   }
   @for (key of intersectionKeys; track $index) {
     <div class="sub-form-field">
-      <div class="label">{{ intersectionKeysTranslate[key] }}</div>
+      <div class="label toolbar">
+        <div style="color: blue">{{ intersectionKeysTranslate[key] }}</div>
+        <button mat-button [class.accent]="isMultiSelectingIntersection(key)" (click)="selectPointMulti(key)">批量编辑</button>
+      </div>
       @if (data()[key].length === 0) {
         <div>
           <button mat-icon-button (click)="addIntersectionValue(key)">

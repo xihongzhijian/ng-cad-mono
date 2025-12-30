@@ -4690,6 +4690,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@viselect/vanilla@npm:^3.9.0":
+  version: 3.9.0
+  resolution: "@viselect/vanilla@npm:3.9.0"
+  checksum: 10c0/fccf6c25c086d1c0d8ee0443dd03676fb03d37f585be074382d5b34cb06b84b875ee0de09f0477e0faeb56be5f29a3e0a37c3333deb629b9e5ac254d5f160471
+  languageName: node
+  linkType: hard
+
 "@vitejs/plugin-basic-ssl@npm:2.1.0":
   version: 2.1.0
   resolution: "@vitejs/plugin-basic-ssl@npm:2.1.0"
@@ -10482,6 +10489,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^8.51.0"
     "@typescript-eslint/types": "npm:^8.51.0"
     "@typescript-eslint/utils": "npm:^8.51.0"
+    "@viselect/vanilla": "npm:^3.9.0"
     angular-animations: "npm:^0.11.0"
     axios: "npm:^1.13.2"
     browser-image-compression: "npm:^2.0.2"

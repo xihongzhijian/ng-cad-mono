@@ -94,8 +94,16 @@ export class CadStatusIntersection extends CadStatus {
 
   constructor(
     public info: string,
-    index?: number
+    index?: number,
+    public multi?: boolean
   ) {
     super(index);
+  }
+
+  isEquals(status: CadStatus) {
+    if (!(status instanceof CadStatusIntersection)) {
+      return false;
+    }
+    return super.isEquals(status) && this.info === status.info && this.multi === status.multi;
   }
 }
