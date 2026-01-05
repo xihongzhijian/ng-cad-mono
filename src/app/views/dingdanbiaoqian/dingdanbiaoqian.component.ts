@@ -741,7 +741,7 @@ export class DingdanbiaoqianComponent implements OnInit {
   }
 
   getValue(section: ObjectOf<any>, cell: SectionCell) {
-    const prefixs = ["订货单", "流程单"];
+    const prefixs = ["流程单", "订货单"];
     let key = cell.key || "";
     for (const prefix of prefixs) {
       const key2 = prefix + key;
@@ -756,6 +756,9 @@ export class DingdanbiaoqianComponent implements OnInit {
     }
     if (cell.isBoolean) {
       let value2 = section[key];
+      if (["安装孔", "拉片"].includes(key)) {
+        value2 = section.安装 === key;
+      }
       if (typeof value2 === "string") {
         if (["无", "否", ""].includes(value2)) {
           value2 = false;
