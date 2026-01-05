@@ -81,7 +81,7 @@
     "@eslint/compat": "^2.0.0",
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
-    "@trivago/prettier-plugin-sort-imports": "^6.0.0",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.1",
     "@types/color": "^4.2.0",
     "@types/jasmine": "~5.1.13",
     "@types/jasminewd2": "~2.0.13",
