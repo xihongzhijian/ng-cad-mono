@@ -55,7 +55,7 @@
     "md5": "^2.3.0",
     "ngx-color": "^10.1.0",
     "ngx-infinite-scroll": "^21.0.0",
-    "ngx-scrollbar": "^19.1.0",
+    "ngx-scrollbar": "^19.1.1",
     "ngx-ui-loader": "^19.0.0",
     "pdfmake": "^0.2.21",
     "print-js": "^1.6.0",

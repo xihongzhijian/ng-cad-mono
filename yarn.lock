@@ -10519,7 +10519,7 @@ __metadata:
     minimist: "npm:^1.2.8"
     ngx-color: "npm:^10.1.0"
     ngx-infinite-scroll: "npm:^21.0.0"
-    ngx-scrollbar: "npm:^19.1.0"
+    ngx-scrollbar: "npm:^19.1.1"
     ngx-ui-loader: "npm:^19.0.0"
     pdfmake: "npm:^0.2.21"
     prettier: "npm:^3.7.4"
@@ -10560,9 +10560,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ngx-scrollbar@npm:^19.1.0":
-  version: 19.1.0
-  resolution: "ngx-scrollbar@npm:19.1.0"
+"ngx-scrollbar@npm:^19.1.1":
+  version: 19.1.1
+  resolution: "ngx-scrollbar@npm:19.1.1"
   dependencies:
     tslib: "npm:^2.3.0"
   peerDependencies:
@@ -10570,7 +10570,7 @@ __metadata:
     "@angular/common": ">=20.0.0"
     "@angular/core": ">=20.0.0"
     rxjs: ">=7.0.0"
-  checksum: 10c0/c7bd35c98085af66534b2c9e1235b4eaad2e21517da8319dbb9628d3a723860aea8db66a093cf047d6aa51ccbfbc3fe160fa0e3d2e46934aa6f668f50976da8e
+  checksum: 10c0/0f47eaeb06f2f22c914b10d3e1484066640e7ce1c22a5f175d45cd1e96b51345c7218af62c56af7dcdde1d25172304506746dc201851f11321e706c840287bf9
   languageName: node
   linkType: hard
 
