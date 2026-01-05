@@ -242,7 +242,7 @@ export class CadZhankaiComponent extends Utils() {
   }
 
   async addFlipChai(i: number) {
-    const num = await this.message.prompt({label: "序号", type: "number", validators: Validators.min(0)});
+    const num = await this.message.prompt({label: "序号", type: "number", validators: Validators.min(0), hint: "本体是第1个，后面往下数"});
     if (num === null) {
       return;
     }
