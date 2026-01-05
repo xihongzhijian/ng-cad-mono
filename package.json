@@ -57,7 +57,7 @@
     "ngx-infinite-scroll": "^21.0.0",
     "ngx-scrollbar": "^19.1.0",
     "ngx-ui-loader": "^19.0.0",
-    "pdfmake": "^0.2.21",
+    "pdfmake": "^0.3.0",
     "print-js": "^1.6.0",
     "qrcode": "^1.5.4",
     "rxjs": "~7.8.2",
