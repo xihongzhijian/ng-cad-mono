@@ -1,4 +1,4 @@
-import {Component, computed, effect, inject, signal, untracked, viewChildren} from "@angular/core";
+import {Component, computed, effect, HostBinding, inject, signal, untracked, viewChildren} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -557,6 +557,12 @@ export class SelectBancaiComponent {
     this.verbose.update((v) => !v);
     this.config.setConfig("kailiaoVerbose", this.verbose());
   }
+
+  @HostBinding("class.verbose")
+  verboseClass = false;
+  verboseClassEff = effect(() => {
+    this.verboseClass = this.verbose();
+  });
 
   xikongOptions = signal(session.load<XikongOptions>("xikongOptions") || {});
   onXikongOptionsChange() {
