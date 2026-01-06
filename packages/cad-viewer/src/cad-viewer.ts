@@ -329,17 +329,24 @@ export class CadViewer extends EventEmitter {
       entity.el = el;
       let startX = 0;
       let startY = 0;
+      let lastClickTime = 0;
+      let lastClickTimeoutId = 0;
       el.node.onclick = (event) => {
         if (new Point(startX, startY).distanceTo(new Point(event.clientX, event.clientY)) > 1) {
           return;
         }
-        controls.onEntityClick.call(this, event, entity);
-      };
-      el.node.ondblclick = (event) => {
-        if (new Point(startX, startY).distanceTo(new Point(event.clientX, event.clientY)) > 1) {
-          return;
+        const singleClickDelay = this.getConfig("singleClickDelay");
+        const now = Date.now();
+        const delay = now - lastClickTime;
+        lastClickTime = now;
+        if (delay < singleClickDelay) {
+          window.clearTimeout(lastClickTimeoutId);
+          controls.onEntityDoubleClick.call(this, event, entity);
+        } else {
+          lastClickTimeoutId = window.setTimeout(() => {
+            controls.onEntityClick.call(this, event, entity);
+          }, singleClickDelay);
         }
-        controls.onEntityDoubleClick.call(this, event, entity);
       };
       el.node.onpointerdown = (event) => {
         startX = event.clientX;

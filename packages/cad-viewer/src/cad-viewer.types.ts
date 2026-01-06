@@ -117,6 +117,11 @@ export interface CadViewerConfig {
     deleteEntities: CadViewerHotKey[];
   };
   /**
+   * Delay time for single click event (ms).
+   * @default 200
+   */
+  singleClickDelay: number;
+  /**
    * Whether to validate lines.
    * @default false
    * @ignore
@@ -163,6 +168,7 @@ export const getDefalutCadViewerConfig = (): CadViewerConfig => ({
     pasteEntities: [{key: "v", ctrl: true}, {key: "Enter"}],
     deleteEntities: [{key: "Delete"}, {key: "Backspace"}]
   },
+  singleClickDelay: 200,
   validateLines: false,
   lineGongshi: 0,
   hideLineLength: false,
