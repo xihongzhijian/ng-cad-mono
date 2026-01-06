@@ -119,7 +119,7 @@ export class CadMtextComponent implements OnInit, OnDestroy {
     this.selected.set(this.status.cad.selected().mtext);
   };
   private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (_, entity) => {
-    if (entity instanceof CadMtext) {
+    if (entity instanceof CadMtext && !entity.parent) {
       if (!entity.selected) {
         this.status.cad.select(entity);
         await timeout(0);
