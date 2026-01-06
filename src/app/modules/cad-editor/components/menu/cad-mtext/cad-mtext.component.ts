@@ -2,9 +2,10 @@ import {Component, computed, effect, inject, OnDestroy, OnInit, signal} from "@a
 import {MatButtonModule} from "@angular/material/button";
 import {validColors} from "@app/cad/utils";
 import {environment} from "@env";
-import {CadMtext, CadStylizer} from "@lucilor/cad-viewer";
-import {Point} from "@lucilor/utils";
+import {CadEventCallBack, CadMtext, CadStylizer} from "@lucilor/cad-viewer";
+import {Point, timeout} from "@lucilor/utils";
 import {InputInfo} from "@modules/input/components/input.types";
+import {MessageService} from "@modules/message/services/message.service";
 import {AppStatusService} from "@services/app-status.service";
 import Color, {ColorInstance} from "color";
 import {debounce} from "lodash";
@@ -17,6 +18,7 @@ import {InputComponent} from "../../../../input/components/input.component";
   imports: [InputComponent, MatButtonModule]
 })
 export class CadMtextComponent implements OnInit, OnDestroy {
+  private message = inject(MessageService);
   private status = inject(AppStatusService);
 
   selected = signal<CadMtext[]>([]);
@@ -29,6 +31,7 @@ export class CadMtextComponent implements OnInit, OnDestroy {
     cad.on("entitiesunselect", this._updateSelected);
     cad.on("entitiesadd", this._updateSelected);
     cad.on("entitiesremove", this._updateSelected);
+    cad.on("entitydblclick", this._onEntityDblClick);
   }
   ngOnDestroy() {
     const cad = this.status.cad;
@@ -36,6 +39,7 @@ export class CadMtextComponent implements OnInit, OnDestroy {
     cad.off("entitiesunselect", this._updateSelected);
     cad.off("entitiesadd", this._updateSelected);
     cad.off("entitiesremove", this._updateSelected);
+    cad.off("entitydblclick", this._onEntityDblClick);
   }
 
   openCadOptionsEff = effect(() => {
@@ -113,6 +117,18 @@ export class CadMtextComponent implements OnInit, OnDestroy {
 
   private _updateSelected = () => {
     this.selected.set(this.status.cad.selected().mtext);
+  };
+  private _onEntityDblClick: CadEventCallBack<"entitydblclick"> = async (_, entity) => {
+    if (entity instanceof CadMtext) {
+      if (!entity.selected) {
+        this.status.cad.select(entity);
+        await timeout(0);
+      }
+      const result = await this.message.form(this.inputInfos(), {disableCancel: true});
+      if (result) {
+        this.selected.update((v) => [...v]);
+      }
+    }
   };
 
   getInfo(field: string) {
