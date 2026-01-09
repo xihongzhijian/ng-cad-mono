@@ -19,7 +19,8 @@ export const cadLineFields = {
   双向折弯附加值: "双向折弯附加值",
   线长字体大小: "lengthTextSize",
   企料位置识别: "企料位置识别",
-  圆弧显示: "圆弧显示"
+  圆弧显示: "圆弧显示",
+  展开方式: "zhankaifangshi"
 } as const;
 
 export const getLine = (data: CadLineLike | (() => CadLineLike)) => (typeof data === "function" ? data() : data);
@@ -145,6 +146,9 @@ export const getCadLineInputs = (
         break;
       case "门框分体模板跳过折弯线识别":
         info = getter2.boolean(key);
+        break;
+      case "展开方式":
+        info = getter.selectSingle(cadLineFields[key], cadLineOptions.zhankaifangshi.values.slice(), {label: key});
         break;
       default:
         info = {type: "string", label: key + "（未实现）", disabled: true};

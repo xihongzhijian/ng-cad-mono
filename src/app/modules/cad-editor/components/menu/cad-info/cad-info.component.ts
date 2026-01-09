@@ -82,7 +82,9 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     );
   }
   intersectionEff = this.status.getCadStatusEffect(
-    (v) => v instanceof CadStatusIntersection,
+    (v): v is CadStatusIntersection => {
+      return v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo;
+    },
     (cadStatus) => {
       this.prevConfig = this._setIntersectionConfig(cadStatus);
       this._updateCadPoints();
