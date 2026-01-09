@@ -25,7 +25,7 @@ import {
   intersectionKeysTranslate,
   sortLines
 } from "@lucilor/cad-viewer";
-import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, keysOf, Line, ObjectOf, Point} from "@lucilor/utils";
+import {DEFAULT_TOLERANCE, isBetween, isEqualTo, isGreaterThan, isTypeOf, keysOf, Line, ObjectOf, Point, Rectangle} from "@lucilor/utils";
 import {CadFentiInfo, getCadFentiInfo} from "@modules/cad-editor/components/menu/cad-fenti-config/cad-fenti-config.utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -410,6 +410,14 @@ export const setShuangxiangLineRects = (data: ReturnType<typeof splitShuangxiang
     });
     return intersectionCount === 1;
   };
+  const getRect = (data2: CadData) => {
+    const rect = Rectangle.min;
+    for (const e of data2.entities.line) {
+      rect.expandByPoint(e.start);
+      rect.expandByPoint(e.end);
+    }
+    return rect;
+  };
   const transforms = [
     () => {
       let hLine: CadLine | undefined;
@@ -444,9 +452,14 @@ export const setShuangxiangLineRects = (data: ReturnType<typeof splitShuangxiang
       vData.transform({translate: [x1 - x2, y1 - y2]}, true);
     },
     () => {
-      const {x: x1, y: y1} = hData.getBoundingRect();
-      const {x: x2, y: y2} = vData.getBoundingRect();
-      vData.transform({translate: [x1 - x2, y1 - y2]}, true);
+      const {x: x1} = getRect(hData);
+      const {x: x2} = getRect(vData);
+      vData.transform({translate: [x1 - x2, 0]}, true);
+    },
+    () => {
+      const {y: y1} = getRect(hData);
+      const {y: y2} = getRect(vData);
+      vData.transform({translate: [0, y1 - y2]}, true);
     }
   ];
   for (const transform of transforms) {

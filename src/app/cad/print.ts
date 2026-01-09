@@ -460,7 +460,28 @@ export const configCadDataForPrint = async (
 
   if (isZxpj && data instanceof CadData) {
     const lineLengthMap: ObjectOf<{text: string; mtext: CadMtext; 显示线长?: string}> = {};
-    const shaungxiangCads = splitShuangxiangCad(data);
+    const data2 = data.clone();
+    for (const e of data2.entities.line) {
+      if (e.显示线长) {
+        const length = Number(e.显示线长);
+        if (!isNaN(length)) {
+          setLinesLength(data2, [e], length);
+        }
+      }
+    }
+    const shaungxiangCads0 = splitShuangxiangCad(data2);
+    let shaungxiangCads: typeof shaungxiangCads0 = null;
+    if (shaungxiangCads0) {
+      shaungxiangCads = [new CadData(), new CadData()];
+      for (const [i, shaungxiangCad0] of shaungxiangCads0.entries()) {
+        shaungxiangCad0.entities.forEach((e) => {
+          const e2 = data.findEntity(e.id);
+          if (shaungxiangCads && e2) {
+            shaungxiangCads[i].entities.add(e2);
+          }
+        });
+      }
+    }
     await cad.render(data.getAllEntities());
     let rect2 = data.entities.filter((e) => e instanceof CadLineLike).getBoundingRect(false);
     const 宽度标注文本 = Math.round(rect2.width).toFixed();
@@ -489,7 +510,7 @@ export const configCadDataForPrint = async (
     await cad.render(data.getAllEntities());
     setShuangxiangLineRects(shaungxiangCads);
     await cad.render(data.getAllEntities());
-    data.entities.toArray().forEach((e) => {
+    data.entities.forEach((e) => {
       if (e instanceof CadLineLike && e.id in lineLengthMap) {
         e.hideLength = true;
         const {text, mtext, 显示线长} = lineLengthMap[e.id];
