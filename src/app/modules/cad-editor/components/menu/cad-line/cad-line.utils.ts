@@ -2,7 +2,7 @@ import {CadCollection} from "@app/cad/collections";
 import {CustomValidators} from "@app/utils/input-validators";
 import {算料公式} from "@components/lurushuju/xinghao-data";
 import {CadData, CadLine, CadLineLike, cadLineOptions, CadViewer, setLinesLength} from "@lucilor/cad-viewer";
-import {keysOf} from "@lucilor/utils";
+import {keysOf, ObjectOf} from "@lucilor/utils";
 import {InputInfo, InputInfoArray} from "@modules/input/components/input.types";
 import {InputInfoWithDataGetter} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
@@ -20,8 +20,9 @@ export const cadLineFields = {
   线长字体大小: "lengthTextSize",
   企料位置识别: "企料位置识别",
   圆弧显示: "圆弧显示",
-  展开方式: "zhankaifangshi"
-} as const;
+  展开方式: "zhankaifangshi",
+  指定展开长: "zidingzhankaichang"
+} as const satisfies ObjectOf<keyof CadLineLike>;
 
 export const getLine = (data: CadLineLike | (() => CadLineLike)) => (typeof data === "function" ? data() : data);
 
@@ -57,7 +58,7 @@ export const getCadLineInputs = (
     if (result.some((v) => v.label === key)) {
       continue;
     }
-    let info: InputInfo | undefined;
+    let info: InputInfo | InputInfo[] | undefined;
     const getter = new InputInfoWithDataGetter(line, {clearable: true});
     const getter2 = new InputInfoWithDataGetter(line.info, {clearable: true});
     switch (key) {
@@ -148,13 +149,30 @@ export const getCadLineInputs = (
         info = getter2.boolean(key);
         break;
       case "展开方式":
-        info = getter.selectSingle(cadLineFields[key], cadLineOptions.zhankaifangshi.values.slice(), {label: key});
+        {
+          const 展开方式 = getter.selectSingle(cadLineFields[key], cadLineOptions.zhankaifangshi.values.slice(), {
+            label: key,
+            onChange: () => {
+              update指定展开长();
+            }
+          });
+          const 指定展开长 = getter.string(cadLineFields.指定展开长, {label: "指定展开长"});
+          const update指定展开长 = () => {
+            指定展开长.hidden = line.zhankaifangshi !== "指定长度";
+          };
+          update指定展开长();
+          info = [展开方式, 指定展开长];
+        }
         break;
       default:
         info = {type: "string", label: key + "（未实现）", disabled: true};
     }
     if (info) {
-      result.push(info);
+      if (Array.isArray(info)) {
+        result.push(...info);
+      } else {
+        result.push(info);
+      }
     }
   }
   return result;
