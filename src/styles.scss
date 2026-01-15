@@ -1,6 +1,7 @@
 @use "app/modules/message/styles.scss";
 @use "ng-page.scss";
 @use "sass:color";
+@use "ngx-scrollbar" as scrollbar;
 
 body.ng-page {
   width: 100vw;
@@ -43,16 +44,17 @@ body.ng-page {
 
 // ngx scrollbar
 :root {
-  --scrollbar-border-radius: 7px;
-  --scrollbar-padding: 0px;
-  --scrollbar-viewport-margin: 0;
-  --scrollbar-track-color: transparent;
-  --scrollbar-wrapper-color: transparent;
-  --scrollbar-thumb-color: var(--mat-sys-outline-variant);
-  --scrollbar-thumb-hover-color: var(--mat-sys-outline);
-  --scrollbar-thickness: 6;
-  --scrollbar-hover-thickness: 8;
+  @include scrollbar.ng-scrollbar-overrides(
+    (
+      track-color: transparent,
+      track-shape: 10px,
+      track-thickness: 8px,
+      thumb-color: var(--mat-sys-outline-variant),
+      thumb-hover-color: var(--mat-sys-outline)
+    )
+  );
 }
+
 ng-scrollbar.ng-scrollbar {
   flex: 1 1 0;
   --scrollbar-thumb-transition: height ease-out 150ms, width ease-out 150ms;
@@ -168,18 +170,18 @@ input[type="number"] {
 }
 
 ::-webkit-scrollbar {
-  width: calc(var(--scrollbar-thickness) * 1px);
-  height: calc(var(--scrollbar-thickness) * 1px);
-  background-color: var(--scrollbar-wrapper-color);
+  width: var(--scrollbar-track-thickness);
+  height: var(--scrollbar-track-thickness);
+  background-color: var(--scrollbar-track-color);
   transition: var(--scrollbar-track-transition);
   &:hover {
-    width: calc(var(--scrollbar-hover-thickness) * 1px);
-    height: calc(var(--scrollbar-hover-thickness) * 1px);
+    width: var(--scrollbar-track-hover-thickness);
+    height: var(--scrollbar-track-hover-thickness);
   }
 }
 ::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb-color);
-  border-radius: var(--scrollbar-border-radius);
+  border-radius: var(--scrollbar-track-shape);
   transition: var(--scrollbar-thumb-transition);
   &:hover {
     background-color: var(--scrollbar-thumb-hover-color);
