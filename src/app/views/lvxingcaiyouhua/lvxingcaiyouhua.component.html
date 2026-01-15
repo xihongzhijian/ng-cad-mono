@@ -21,9 +21,9 @@
       }
     </div>
     @if (calcResult(); as calcResult) {
-      <ng-scrollbar class="enable-x">
+      <ng-scrollbar>
         <div class="calc-result item">
-          <div class="text">总利用率【{{ calcResult.result["总利用率"] }}】用时【{{ calcResult.duration }}ms】</div>
+          <div class="text">总利用率【{{ calcResult.result["总利用率"] }}】用时【{{ calcResult.durationStr }}】</div>
           <div class="items">
             @for (item of calcResultItems(); track i; let i = $index) {
               <div class="xingcai item border">

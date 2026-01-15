@@ -6,7 +6,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {session, setGlobal, timer} from "@app/app.common";
 import {PrintTableComponent} from "@components/print-table/print-table.component";
 import {LvxingcaiyouhuaInfo, TableInfoData} from "@components/print-table/print-table.types";
-import {queryString, timeout} from "@lucilor/utils";
+import {queryString, timeout, Timer} from "@lucilor/utils";
 import {CadDataService} from "@modules/http/services/cad-data.service";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
@@ -71,7 +71,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
   code = signal("");
   inputData = signal<InputData | null>(null);
   outputData = signal<OutputData | null>(null);
-  calcResult = signal<{result: OutputData; duration: number} | null>(null);
+  calcResult = signal<{result: OutputData; duration: number; durationStr: string} | null>(null);
   calcResult2 = signal<{result: OutputData; duration: number} | null>(null);
   calc() {
     const input = this.inputData();
@@ -99,7 +99,7 @@ export class LvxingcaiyouhuaComponent implements OnInit {
     const duration = getNum(timer.getDuration(timerKey) || -1);
     console.log({input, output});
     timer.end(timerKey, timerKey);
-    this.calcResult.set({result: output, duration});
+    this.calcResult.set({result: output, duration, durationStr: Timer.getDurationString(duration)});
 
     if (!this.calcResult2()) {
       if ((input.不上设备的型材BOM || []).length < 1) {

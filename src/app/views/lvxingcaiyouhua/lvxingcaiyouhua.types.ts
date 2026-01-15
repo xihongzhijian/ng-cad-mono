@@ -21,6 +21,7 @@ export interface 型材Bom extends 型材BomBase {
 }
 export interface 铝型材Item extends TableDataBase2 {
   biaozhunchangdu: number;
+  kexuanchangdu: number[];
   yuliaorukuzuixiaochangdu: number;
   qieduan90dusunhao: number;
   qieduan45dusuanhao: number;
