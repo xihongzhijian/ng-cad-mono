@@ -49,7 +49,7 @@
         <div [innerHTML]="contentHTML()"></div>
       }
     }
-    @if (jsonDetails) {
+    @if (jsonDetails()) {
       <div class="toolbar">
         <button mat-flat-button [class.accent]="showJsonDetails()" (click)="toggleJsonDetails()">显示详细数据</button>
       </div>

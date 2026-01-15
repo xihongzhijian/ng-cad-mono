@@ -101,21 +101,29 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     const jsonEditorContainer = this.jsonEditorContainer();
     if (jsonEditorContainer && data.type === "json") {
       const props: Partial<JSONEditorPropsOptional> = {mode: Mode.tree, ...data.options};
-      this.jsonEditor = createJSONEditor({target: jsonEditorContainer.nativeElement, props});
-      this.jsonEditor.set({json: data.json});
+      const jsonEditor = createJSONEditor({target: jsonEditorContainer.nativeElement, props});
+      jsonEditor.set({json: data.json});
+      this.jsonEditor.set(jsonEditor);
     }
     const jsonDetailsContainer = this.jsonDetailsContainer();
     const {jsonDetails} = data;
     if (jsonDetailsContainer && typeof jsonDetails === "object" && jsonDetails) {
       const props: Partial<JSONEditorPropsOptional> = {mode: Mode.tree, readOnly: true};
-      this.jsonDetails = createJSONEditor({target: jsonDetailsContainer.nativeElement, props});
-      this.jsonDetails.set({json: data.jsonDetails});
+      const jsonDetailsEditor = createJSONEditor({target: jsonDetailsContainer.nativeElement, props});
+      jsonDetailsEditor.set({json: data.jsonDetails});
+      this.jsonDetails.set(jsonDetailsEditor);
     }
   }
   ngOnDestroy() {
-    if (this.jsonEditor) {
-      this.jsonEditor.destroy();
-      this.jsonEditor = null;
+    const jsonEditor = this.jsonEditor();
+    if (jsonEditor) {
+      jsonEditor.destroy();
+      this.jsonEditor.set(null);
+    }
+    const jsonDetails = this.jsonDetails();
+    if (jsonDetails) {
+      jsonDetails.destroy();
+      this.jsonDetails.set(null);
     }
   }
 
@@ -127,14 +135,14 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   iframeSrc = signal<SafeResourceUrl>("");
   iframe = viewChild<ElementRef<HTMLIFrameElement>>("iframe");
 
-  jsonEditor: ReturnType<typeof createJSONEditor> | null = null;
+  jsonEditor = signal<ReturnType<typeof createJSONEditor> | null>(null);
   jsonEditorContainer = viewChild<ElementRef<HTMLDivElement>>("jsonEditorContainer");
 
   showJsonDetails = signal(false);
   toggleJsonDetails() {
     this.showJsonDetails.update((v) => !v);
   }
-  jsonDetails: ReturnType<typeof createJSONEditor> | null = null;
+  jsonDetails = signal<ReturnType<typeof createJSONEditor> | null>(null);
   jsonDetailsContainer = viewChild<ElementRef<HTMLDivElement>>("jsonDetailsContainer");
 
   buttons = computed(() => {
@@ -243,18 +251,20 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
         this.clickButton(button);
       }
       await this.close(closeType, typeof button === "object" ? button.value : button);
-    } else if (type === "json" && this.jsonEditor) {
-      const editor = this.jsonEditor;
-      const errors = editor.validate();
-      if (errors) {
-        this.message.error("数据格式错误，请改正后再确定");
-      } else {
-        const result = editor.get();
-        const isJSONContent = (v: any): v is JSONContent => v.json;
-        if (isJSONContent(result)) {
-          await this.close(closeType, result.json as any);
+    } else if (type === "json") {
+      const editor = this.jsonEditor();
+      if (editor) {
+        const errors = editor.validate();
+        if (errors) {
+          this.message.error("数据格式错误，请改正后再确定");
         } else {
-          await this.close(closeType, JSON.parse(result.text));
+          const result = editor.get();
+          const isJSONContent = (v: any): v is JSONContent => v.json;
+          if (isJSONContent(result)) {
+            await this.close(closeType, result.json as any);
+          } else {
+            await this.close(closeType, JSON.parse(result.text));
+          }
         }
       }
     } else {

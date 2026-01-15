@@ -2,6 +2,7 @@ import {animate, style, transition, trigger} from "@angular/animations";
 import {
   AfterViewInit,
   booleanAttribute,
+  ChangeDetectorRef,
   Component,
   computed,
   effect,
@@ -35,6 +36,7 @@ const imgLoading = "assets/images/loading.gif";
   imports: [MatButtonModule, MatIconModule]
 })
 export class ImageComponent implements AfterViewInit {
+  private cd = inject(ChangeDetectorRef);
   private el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   @HostBinding("class") class: string[] = [];
@@ -111,16 +113,15 @@ export class ImageComponent implements AfterViewInit {
   }
 
   classEff = effect(() => {
-    setTimeout(() => {
-      const cls = [];
-      if (this.loading()) {
-        cls.push("loading");
-      }
-      if (this.error()) {
-        cls.push("error");
-      }
-      this.class = cls;
-    }, 0);
+    const cls = [];
+    if (this.loading()) {
+      cls.push("loading");
+    }
+    if (this.error()) {
+      cls.push("error");
+    }
+    this.class = cls;
+    this.cd.markForCheck();
   });
 
   onLoad(event: Event) {
