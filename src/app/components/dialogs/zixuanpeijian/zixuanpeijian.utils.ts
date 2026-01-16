@@ -1047,17 +1047,14 @@ export const calcZxpj = async (
       return calcCadItemResult;
     }
   }
-  const gongshi2 = gongshiCalcResult?.error;
-  if (!isEmpty(gongshi2)) {
-    const gongshiCalcResult2 = await calc.calcFormulas(gongshi2, materialResult, {title: "计算算料公式"});
-    if (!gongshiCalcResult2?.fulfilled) {
-      return {
-        fulfilled: false,
-        error: {message: "计算算料公式出错", calc: {formulas: gongshi2, vars: materialResult, result: gongshiCalcResult2}}
-      };
-    }
-    calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);
+  const gongshiCalcResult2 = await calc.calcFormulas(gongshi, materialResult, {title: "计算算料公式"});
+  if (!gongshiCalcResult2?.fulfilled) {
+    return {
+      fulfilled: false,
+      error: {message: "计算算料公式出错", calc: {formulas: gongshi, vars: materialResult, result: gongshiCalcResult2}}
+    };
   }
+  calc.calc.mergeFormulas(materialResult, gongshiCalcResult2.succeedTrim);
   const textFormulas: Formulas = {};
   for (const [key, value] of Object.entries(materialResult)) {
     if (typeof value === "string" && value.split("#").length > 2) {
