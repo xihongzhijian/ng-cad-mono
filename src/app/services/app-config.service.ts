@@ -14,6 +14,7 @@ export interface AppConfig extends CadViewerConfig {
   pointSize: number;
   cadPointsAnywhere: boolean;
   kailiaoAutoGuige: boolean;
+  kailiaoExpandGuige: boolean;
   kailiaoVerbose: boolean;
   testMode: boolean;
   cadSelectModeLocked: boolean;
@@ -212,6 +213,7 @@ export const defaultConfig: AppConfig = {
   pointSize: 20,
   cadPointsAnywhere: false,
   kailiaoAutoGuige: false,
+  kailiaoExpandGuige: false,
   kailiaoVerbose: false,
   testMode: false,
   cadSelectModeLocked: false,

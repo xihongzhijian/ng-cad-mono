@@ -466,6 +466,7 @@ export class SelectBancaiComponent {
     const {table} = this;
     const type = this.type();
     const autoGuige = this.autoGuige();
+    const expandGuige = this.expandGuige();
     const projectConfigOverride: ObjectOf<string> = {};
     if (noPaiban) {
       projectConfigOverride.激光开料结果不用排版 = "是";
@@ -476,6 +477,7 @@ export class SelectBancaiComponent {
       bancaiCadsArr,
       table,
       autoGuige,
+      expandGuige,
       type,
       getCadOptions,
       projectConfigOverride,
@@ -551,6 +553,10 @@ export class SelectBancaiComponent {
   autoGuige = signal(this.config.getConfig("kailiaoAutoGuige"));
   onAutoGuigeChange() {
     this.config.setConfig("kailiaoAutoGuige", this.autoGuige());
+  }
+  expandGuige = signal(this.config.getConfig("kailiaoExpandGuige"));
+  onExpandGuigeChange() {
+    this.config.setConfig("kailiaoExpandGuige", this.expandGuige());
   }
   verbose = signal(this.config.getConfig("kailiaoVerbose"));
   toggleVerbose() {
