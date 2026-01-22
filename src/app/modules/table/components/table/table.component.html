@@ -80,7 +80,9 @@
                   [class]="getCellClass(column, null, -1, -1)"
                   [style]="getCellStyle(column, null, -1, -1)"
                 >
-                  <div class="cell-content">{{ getHeaderName(column) }}</div>
+                  <div class="cell-content" [class]="getCellContentClass(column, null, -1)">
+                    {{ getHeaderName(column) }}
+                  </div>
                 </mat-header-cell>
               } @else {
                 <mat-header-cell
@@ -88,7 +90,9 @@
                   [class]="getCellClass(column, null, -1, -1)"
                   [style]="getCellStyle(column, null, -1, -1)"
                 >
-                  <div class="cell-content">{{ getHeaderName(column) }}</div>
+                  <div class="cell-content" [class]="getCellContentClass(column, null, -1)">
+                    {{ getHeaderName(column) }}
+                  </div>
                 </mat-header-cell>
               }
               <mat-cell
@@ -101,7 +105,7 @@
                 [attr.data-col-idx]="colIdx"
                 (click)="onCellClick({column, item, colIdx, rowIdx})"
               >
-                <div class="cell-content">
+                <div class="cell-content" [class]="getCellContentClass(column, item, rowIdx)">
                   @if (info.isTree && colIdx === 0) {
                     <button
                       mat-icon-button
@@ -144,7 +148,7 @@
                                 mat-button
                                 [class]="button.class"
                                 [style]="button.style"
-                                (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"
+                                (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx, component: this})"
                               >
                                 {{ button.title || button.event }}
                               </button>
@@ -153,7 +157,7 @@
                                 mat-stroked-button
                                 [class]="button.class"
                                 [style]="button.style"
-                                (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx})"
+                                (click)="onRowButtonClick(button, {column, item, colIdx, rowIdx, component: this})"
                               >
                                 {{ button.title || button.event }}
                               </button>

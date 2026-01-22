@@ -3,6 +3,7 @@ import {MatTableDataSource} from "@angular/material/table";
 import {MaybePromise, ObjectOf} from "@lucilor/utils";
 import {InputInfoOptions} from "@modules/input/components/input.types";
 import {Properties} from "csstype";
+import {TableComponent} from "./table.component";
 
 export interface TableRenderInfo<T> {
   data: T[];
@@ -155,13 +156,10 @@ export interface RowButtonEventBase<T> {
   item: T;
   colIdx: number;
   rowIdx: number;
+  component: TableComponent<T>;
 }
-export interface RowButtonEvent<T> {
+export interface RowButtonEvent<T> extends RowButtonEventBase<T> {
   button: TableButton<RowButtonEventBase<T>>;
-  column: ColumnInfo<T>;
-  item: T;
-  colIdx: number;
-  rowIdx: number;
 }
 export interface RowSelectionChange<T> {
   items: T[];

@@ -451,7 +451,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       const errors: ValidationErrors = {};
       const control = new FormControl(valueAfter, column.validators);
       for (const validator of getArray(column.validators2)) {
-        const errors2 = validator({column, item, rowIdx, colIdx});
+        const errors2 = validator({column, item, rowIdx, colIdx, component: this});
         Object.assign(errors, errors2);
       }
       const item2 = item as TableDataBase;
@@ -588,14 +588,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
 
   getCellClass(column: ColumnInfo<T>, item: T | null, rowIdx: number, colIdx: number) {
     const classes = new Set(["column-type-" + column.type]);
-    const {activeRows, rowSelection, getCellClass, cellMergeInfos} = this.info();
-    let active = activeRows?.includes(rowIdx);
-    if (!active && rowSelection && !rowSelection.noActive && item && this._rowSelection.isSelected(item)) {
-      active = true;
-    }
-    if (active) {
-      classes.add("active");
-    }
+    const {getCellClass, cellMergeInfos} = this.info();
     const addCls = (cls: string | string[] | undefined) => {
       if (!cls) {
         return;
@@ -639,6 +632,19 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
       style[`--merge-rows-n`] = `${mergeInfo.n}`;
     }
     return style;
+  }
+
+  getCellContentClass(column: ColumnInfo<T>, item: T | null, rowIdx: number) {
+    const classes = new Set(["column-type-" + column.type]);
+    const {activeRows, rowSelection} = this.info();
+    let active = activeRows?.includes(rowIdx);
+    if (!active && rowSelection && !rowSelection.noActive && item && this._rowSelection.isSelected(item)) {
+      active = true;
+    }
+    if (active) {
+      classes.add("active");
+    }
+    return Array.from(classes);
   }
 
   getItemImgSmall(item: T, column: ColumnInfo<T>) {
@@ -864,7 +870,7 @@ export class TableComponent<T> implements AfterViewInit, DoCheck {
     info.validators = [
       ...getArray(column.validators),
       ...getArray(column.validators2).map((validator) => {
-        return () => validator({column, item, rowIdx, colIdx});
+        return () => validator({column, item, rowIdx, colIdx, component: this});
       })
     ];
     info.style = {width: "0", flex: "1 1 0"};
