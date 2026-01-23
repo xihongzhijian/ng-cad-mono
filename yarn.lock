@@ -3069,12 +3069,13 @@ __metadata:
   dependencies:
     "@lucilor/utils": "workspace:^"
     "@svgdotjs/svg.js": "npm:3.2.5"
-    "@types/color": "npm:^4.2.0"
+    "@types/delta-e": "npm:^0.0.2"
     "@types/events": "npm:^3.0.3"
     "@types/lodash": "npm:^4.17.23"
     "@types/uuid": "npm:^11.0.0"
     color: "npm:^5.0.3"
     csstype: "npm:^3.2.3"
+    delta-e: "npm:^0.0.8"
     events: "npm:^3.3.0"
     lodash: "npm:^4.17.21"
     typescript: "npm:~5.9.3"
@@ -4235,6 +4236,13 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/457364c28c89f3d9ed34800e1de5c6eaaf344d1bb39af122f013322a50bc606eb2aa6f63de4e41a7a08ba7ef454473926c94a830636723da45bf786df032696d
+  languageName: node
+  linkType: hard
+
+"@types/delta-e@npm:^0.0.2":
+  version: 0.0.2
+  resolution: "@types/delta-e@npm:0.0.2"
+  checksum: 10c0/e68a6291aa52d0bc2edc34cc5bb0596a81726261d9edf99bbf6865ff6331ba188a2f129a0460c8e3b0b82da6bca9cb8ee9c48c96d29107e3285a887c674583d0
   languageName: node
   linkType: hard
 
@@ -6293,6 +6301,13 @@ __metadata:
   version: 1.0.0
   resolution: "delegates@npm:1.0.0"
   checksum: 10c0/ba05874b91148e1db4bf254750c042bf2215febd23a6d3cda2e64896aef79745fbd4b9996488bd3cafb39ce19dbce0fd6e3b6665275638befffe1c9b312b91b5
+  languageName: node
+  linkType: hard
+
+"delta-e@npm:^0.0.8":
+  version: 0.0.8
+  resolution: "delta-e@npm:0.0.8"
+  checksum: 10c0/ee853a42adfaf2aef64f852013bb9a010f241129c34ef54bca0adcd80303d35b6401eaf80cbbf0f464c701b78f29116c3cfcf21788b29e96b9f58696006d9731
   languageName: node
   linkType: hard
 

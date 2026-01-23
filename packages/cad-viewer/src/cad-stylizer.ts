@@ -1,5 +1,7 @@
 import {keysOf} from "@lucilor/utils";
 import Color, {ColorInstance} from "color";
+import {Property} from "csstype";
+import {getDeltaE00, LAB} from "delta-e";
 import {cloneDeep} from "lodash";
 import {CadDimension, CadEntity, CadHatch, CadLine, CadLineLike, CadMtext} from "./cad-data/cad-entity";
 import {CadDimensionStyle, CadStyle, FontStyle} from "./cad-data/cad-styles";
@@ -55,27 +57,47 @@ export class CadStylizer {
 
     if (entity instanceof CadMtext) {
       this.mergeFontStyle(result.fontStyle, entity.fontStyle);
-      if (!result.fontStyle.color) {
-        result.fontStyle.color = result.color;
-      }
     }
 
     if (entity instanceof CadDimension) {
       this.mergeDimStyle(result.dimStyle, entity.style);
       // this.mergeFontStyle(result.dimStyle.text, result.fontStyle, false);
-      result.dimStyle.color = result.color;
     }
 
     result.lineStyle.width = linewidth;
-    result.lineStyle.color = result.color;
+    const correctColorObj = (obj: {color?: Property.Color} | undefined) => {
+      if (!obj) {
+        return;
+      }
+      if (obj.color) {
+        obj.color = this.correctColor(obj.color, config).hex();
+      } else {
+        obj.color = result.color;
+      }
+    };
+    correctColorObj(result.lineStyle);
+    correctColorObj(result.fontStyle);
+    correctColorObj(result.dimStyle);
+    correctColorObj(result.dimStyle.arrows);
+    correctColorObj(result.dimStyle.dimensionLine);
+    correctColorObj(result.dimStyle.extensionLines);
+    correctColorObj(result.dimStyle.text);
     return result;
   }
 
-  static correctColor(color: ColorInstance, config: CadViewerConfig, threshold = 5) {
+  static correctColor(color: ColorInstance | string, config: CadViewerConfig) {
+    if (typeof color === "string") {
+      color = new Color(color);
+    }
     const {reverseSimilarColor, backgroundColor} = config;
     if (reverseSimilarColor) {
       const color2 = new Color(backgroundColor);
-      if (Math.abs(color.rgbNumber() - color2.rgbNumber()) <= threshold) {
+      const getLAB = (c: ColorInstance): LAB => {
+        const [L, A, B] = c.lab().array();
+        return {L, A, B};
+      };
+      const delta = getDeltaE00(getLAB(color), getLAB(color2));
+      if (color2.alpha() > 0 && delta <= 10) {
         return color.negate();
       }
     }

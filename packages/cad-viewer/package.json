@@ -1,6 +1,6 @@
 {
   "name": "@lucilor/cad-viewer",
-  "version": "3.29.1",
+  "version": "3.29.2",
   "description": "cad-viewer",
   "type": "module",
   "main": "lib/index.js",
@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/Lucilor/ng-cad-mono#readme",
   "devDependencies": {
-    "@types/color": "^4.2.0",
+    "@types/delta-e": "^0.0.2",
     "@types/events": "^3.0.3",
     "@types/lodash": "^4.17.23",
     "@types/uuid": "^11.0.0",
@@ -43,6 +43,7 @@
     "@lucilor/utils": "workspace:^",
     "@svgdotjs/svg.js": "3.2.5",
     "color": "^5.0.3",
+    "delta-e": "^0.0.8",
     "events": "^3.3.0",
     "lodash": "^4.17.21",
     "uuid": "^13.0.0"
