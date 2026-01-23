@@ -168,6 +168,7 @@
 
       .label,
       .value {
+        white-space: pre-wrap;
         word-break: break-word;
         padding: 2px;
         display: flex;
@@ -204,7 +205,7 @@
         &.is-boolean {
           flex: 0 0 auto;
           .value {
-            flex: 0 0 25px;
+            flex: 0 0 29px;
           }
         }
       }
@@ -216,6 +217,7 @@
 
       .shiyitu-container {
         display: flex;
+        flex-direction: column;
 
         .shiyitu-inner {
           display: flex;
@@ -228,8 +230,8 @@
 
         &.开启锁向示意图 {
           flex: 1 1 0;
-          justify-content: flex-start;
-          align-items: flex-end;
+          justify-content: flex-end;
+          align-items: flex-start;
 
           .shiyitu-inner {
             justify-content: flex-start;

@@ -54,6 +54,9 @@ export interface SectionCell {
 
 export interface ShiyituInfo {
   name: string;
+  cads: ShiyituCadInfo[];
+}
+export interface ShiyituCadInfo {
   data: CadData;
   img: string;
   imgLarge?: string;
@@ -70,7 +73,7 @@ export type DdbqData = {
   code: string;
   materialResult?: Formulas;
   cads?: ObjectOf<any>[];
-  shiyitus?: {name: string; data: CadData}[];
+  shiyitus?: {name: string; cads: CadData[]}[];
   forms?: Form[];
   formsStyle?: Properties;
 }[];

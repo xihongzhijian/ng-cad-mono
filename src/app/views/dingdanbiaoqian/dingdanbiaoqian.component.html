@@ -24,7 +24,7 @@
                   <svg #barcode class="barcode value" height="40" [attr.jsbarcode-value]="order.code" [attr.jsbarcode-height]="40"></svg>
                 </div>
                 <div class="cell" style="flex: 0 0 auto">
-                  <div class="value">{{ section["制单"] }}</div>
+                  <div class="value">{{ section["制单工号"] || section["制单"] }}</div>
                 </div>
               </div>
               <div class="order-info border-bottom">
@@ -62,9 +62,9 @@
               <div class="示意图" #shiyitusContainer>
                 @for (shiyitu of order.shiyitus; track $index) {
                   <div [class]="shiyitu.name" class="shiyitu-container">
-                    @if (shiyitu.img; as img) {
-                      <div class="shiyitu-inner" [style]="shiyitu.style">
-                        <app-image [src]="img" [bigPicSrc]="shiyitu.imgLarge"></app-image>
+                    @for (cadInfo of shiyitu.cads; track $index) {
+                      <div class="shiyitu-inner" [style]="cadInfo.style">
+                        <app-image [src]="cadInfo.img" [bigPicSrc]="cadInfo.imgLarge"></app-image>
                       </div>
                     }
                   </div>

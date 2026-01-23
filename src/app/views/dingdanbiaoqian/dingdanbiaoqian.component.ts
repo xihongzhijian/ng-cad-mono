@@ -39,7 +39,18 @@ import {cloneDeep, isEmpty} from "lodash";
 import {FormulasComponent} from "../../components/formulas/formulas.component";
 import {TypedTemplateDirective} from "../../modules/directives/typed-template.directive";
 import {ImageComponent} from "../../modules/image/components/image/image.component";
-import {DdbqConfig, DdbqData, DdbqType, Form, FormItem, Order, SectionCell, SectionConfig, ShiyituInfo} from "./dingdanbiaoqian.types";
+import {
+  DdbqConfig,
+  DdbqData,
+  DdbqType,
+  Form,
+  FormItem,
+  Order,
+  SectionCell,
+  SectionConfig,
+  ShiyituCadInfo,
+  ShiyituInfo
+} from "./dingdanbiaoqian.types";
 
 @Component({
   selector: "app-dingdanbiaoqian",
@@ -101,6 +112,14 @@ export class DingdanbiaoqianComponent implements OnInit {
           {key: "安装孔", autoWidth: true, isBoolean: true},
           {key: "拉片", autoWidth: true, isBoolean: true},
           {key: "", class: "flex-110"}
+        ]
+      },
+      {cells: [{key: "套门类型", label: "内门类型", class: "text-left"}]},
+      {
+        cells: [
+          {key: "套门拉手信息", label: "锁型"},
+          {key: "套门猫眼", label: "猫眼"},
+          {key: "套门厚度", label: "页厚"}
         ]
       }
     ]
@@ -273,9 +292,7 @@ export class DingdanbiaoqianComponent implements OnInit {
             const [w, h] = shiyituSize[shiyitu.name] ?? [0, 0];
             const info: ShiyituInfo = {
               name: shiyitu.name,
-              data: new CadData(shiyitu.data),
-              img: "",
-              style: {width: w + "px", height: h + "px"}
+              cads: shiyitu.cads.map<ShiyituCadInfo>((v) => ({data: new CadData(v), img: "", style: {width: w + "px", height: h + "px"}}))
             };
             return info;
           }),
@@ -287,20 +304,6 @@ export class DingdanbiaoqianComponent implements OnInit {
         };
       });
       this.orders.set(orders);
-      // const intersectionCircles: CadCircle[] = [];
-      // for (const order of orders) {
-      //   for (const {data} of order.cads) {
-      //     data.entities.forEach((e) => {
-      //       if (e.info.isIntersectionEntity && e instanceof CadCircle) {
-      //         intersectionCircles.push(e);
-      //       }
-      //     });
-      //   }
-      // }
-      // const minCircleRadius = Math.min(...intersectionCircles.map((e) => e.radius));
-      // for (const e of intersectionCircles) {
-      //   e.radius = minCircleRadius;
-      // }
       this.formsStyle.set(ddbqData[0]?.formsStyle || {});
       document.title = `${orders[0].code}_${getDateTimeString()}`;
       await this.splitOrders();
@@ -319,10 +322,18 @@ export class DingdanbiaoqianComponent implements OnInit {
 
   async updateImgs(configForPrint: boolean) {
     this.spinner.show(this.spinner.defaultLoaderId, {text: "生成中..."});
+    const page = await waitFor(() => document.querySelector(".page"));
+    let backgroundColor = "white";
+    if (page) {
+      const style = getComputedStyle(page);
+      if (style.backgroundColor) {
+        backgroundColor = style.backgroundColor;
+      }
+    }
     const configBase: Partial<CadViewerConfig> = {
       hideLineLength: false,
       hideLineGongshi: true,
-      backgroundColor: "white",
+      backgroundColor,
       fontStyle: {family: "宋体"},
       dimStyle: {
         dimensionLine: {color: "#505050", dashArray: Defaults.DASH_ARRAY},
@@ -367,31 +378,35 @@ export class DingdanbiaoqianComponent implements OnInit {
     };
     const {showCadSmallImg, showCadLargeImg} = this.config();
     const setData = (data: CadData, materialResult: Formulas = {}) => {
+      const m = {...materialResult, ...data.info.materialResult};
       for (const e of data.entities.dimension) {
-        setDimensionText(e, materialResult);
+        setDimensionText(e, m);
         e.setStyle({text: {color: "black"}});
       }
       for (const e of data.entities.mtext) {
         const match = e.text.match(/^#(.*)#$/);
-        if (match && match[1] && match[1] in materialResult) {
-          e.text = String(materialResult[match[1]]);
+        if (match && match[1] && match[1] in m) {
+          e.text = String(m[match[1]]);
         }
       }
     };
     await timeout(0);
     for (const [i, {cads, shiyitus, materialResult}] of this.orders().entries()) {
       for (const shiyitu of shiyitus ?? []) {
-        setData(shiyitu.data, materialResult);
-        const [w, h] = this.shiyituSize[shiyitu.name] ?? [0, 0];
-        const previewParams: Partial<CadPreviewParams> = {
-          config: {width: w, height: h, hideLineLength: true},
-          autoSize: true,
-          fixedMtextSize: undefined,
-          fixedDimTextSize: undefined
-        };
-        const {small, large} = await getImg(shiyitu.data, previewParams, true);
-        shiyitu.img = small;
-        shiyitu.imgLarge = large;
+        for (const cadInfo of shiyitu.cads) {
+          console.log(cadInfo.data.entities);
+          setData(cadInfo.data, materialResult);
+          const [w, h] = this.shiyituSize[shiyitu.name] ?? [0, 0];
+          const previewParams: Partial<CadPreviewParams> = {
+            config: {width: w, height: h, hideLineLength: true},
+            autoSize: true,
+            fixedMtextSize: undefined,
+            fixedDimTextSize: undefined
+          };
+          const {small, large} = await getImg(cadInfo.data, previewParams, true);
+          cadInfo.img = small;
+          cadInfo.imgLarge = large;
+        }
       }
       let showCads = true;
       if (this.type() === "生产流程单") {
@@ -757,7 +772,19 @@ export class DingdanbiaoqianComponent implements OnInit {
     if (cell.isBoolean) {
       let value2 = section[key];
       if (["安装孔", "拉片"].includes(key)) {
-        value2 = section.安装 === key;
+        if (typeof section.安装 === "string") {
+          const list = section.安装.split("+");
+          switch (key) {
+            case "安装孔":
+              value2 = list.some((v) => v.includes("孔"));
+              break;
+            case "拉片":
+              value2 = list.some((v) => v.includes("拉片"));
+              break;
+          }
+        } else {
+          value2 = false;
+        }
       }
       if (typeof value2 === "string") {
         if (["无", "否", ""].includes(value2)) {
