@@ -3077,7 +3077,7 @@ __metadata:
     csstype: "npm:^3.2.3"
     delta-e: "npm:^0.0.8"
     events: "npm:^3.3.0"
-    lodash: "npm:^4.17.21"
+    lodash: "npm:^4.17.23"
     typescript: "npm:~5.9.3"
     uuid: "npm:^13.0.0"
     vite: "npm:^7.3.1"
@@ -3097,7 +3097,7 @@ __metadata:
     events: "npm:^3.3.0"
     expr-eval: "npm:^2.0.2"
     jsencrypt: "npm:^3.5.4"
-    lodash: "npm:^4.17.21"
+    lodash: "npm:^4.17.23"
     md5: "npm:^2.3.0"
     pinyin-pro: "npm:^3.27.0"
     typescript: "npm:~5.9.3"
@@ -9257,6 +9257,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash@npm:^4.17.23":
+  version: 4.17.23
+  resolution: "lodash@npm:4.17.23"
+  checksum: 10c0/1264a90469f5bb95d4739c43eb6277d15b6d9e186df4ac68c3620443160fc669e2f14c11e7d8b2ccf078b81d06147c01a8ccced9aab9f9f63d50dcf8cace6bf6
+  languageName: node
+  linkType: hard
+
 "log-symbols@npm:^4.0.0":
   version: 4.1.0
   resolution: "log-symbols@npm:4.1.0"
@@ -10047,7 +10054,7 @@ __metadata:
     karma-coverage: "npm:~2.2.1"
     karma-jasmine: "npm:~5.1.0"
     karma-jasmine-html-reporter: "npm:^2.1.0"
-    lodash: "npm:^4.17.21"
+    lodash: "npm:^4.17.23"
     luxon: "npm:^3.7.2"
     md5: "npm:^2.3.0"
     minimist: "npm:^1.2.8"

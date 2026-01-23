@@ -50,7 +50,7 @@
     "emulate-tab": "^1.2.1",
     "html-to-image": "^1.11.13",
     "jsbarcode": "^3.12.3",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "luxon": "^3.7.2",
     "md5": "^2.3.0",
     "ngx-color": "^10.1.0",
