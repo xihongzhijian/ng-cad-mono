@@ -18,6 +18,7 @@ export const getCadPreviewConfig = (collection: CadCollection, config?: Partial<
   height: 150,
   padding: [5],
   backgroundColor: "transparent",
+  reverseSimilarColor: {backgroundColor: "black"},
   hideLineLength: collection === "CADmuban",
   hideLineGongshi: false,
   lineGongshi: 8,
