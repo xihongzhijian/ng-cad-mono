@@ -10,7 +10,7 @@ import {CadViewerConfig} from "./cad-viewer.types";
 
 export class CadStylizer {
   static get(entity: CadEntity, config: CadViewerConfig, params: CadStyle = {}) {
-    const {dashedLinePadding, minLinewidth, reverseSimilarColor, validateLines} = config;
+    const {dashedLinePadding, minLinewidth, validateLines} = config;
     const defaultStyle: Required<CadStyle> = {
       color: "white",
       fontStyle: {size: Defaults.FONT_SIZE, family: "", weight: "", ...config.fontStyle, ...params.fontStyle},
@@ -46,9 +46,7 @@ export class CadStylizer {
         color = new Color(0xff0000);
       }
     }
-    if (reverseSimilarColor) {
-      color = this.correctColor(color, config);
-    }
+    color = this.correctColor(color, config);
     result.color = color.hex();
     if (!(entity instanceof CadHatch)) {
       // ? make lines easier to select
@@ -70,7 +68,7 @@ export class CadStylizer {
         return;
       }
       if (obj.color) {
-        obj.color = this.correctColor(obj.color, config).hex();
+        obj.color = this.correctColor(new Color(obj.color), config).hex();
       } else {
         obj.color = result.color;
       }
@@ -85,11 +83,18 @@ export class CadStylizer {
     return result;
   }
 
-  static correctColor(color: ColorInstance | string, config: CadViewerConfig) {
+  static correctColor(color: ColorInstance, config: CadViewerConfig) {
+    const {reverseSimilarColor} = config;
+    if (!reverseSimilarColor) {
+      return color;
+    }
+    let {backgroundColor} = config;
+    if (typeof reverseSimilarColor === "object" && reverseSimilarColor.backgroundColor) {
+      backgroundColor = reverseSimilarColor.backgroundColor;
+    }
     if (typeof color === "string") {
       color = new Color(color);
     }
-    const {reverseSimilarColor, backgroundColor} = config;
     if (reverseSimilarColor) {
       const color2 = new Color(backgroundColor);
       const getLAB = (c: ColorInstance): LAB => {

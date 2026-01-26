@@ -41,9 +41,10 @@ export interface CadViewerConfig {
   padding: number[];
   /**
    * Auto change entity color when it's color is similar to background color.
+   * You can also specify a background color (rather than the current background color) to compare.
    * @default true
    */
-  reverseSimilarColor: boolean;
+  reverseSimilarColor: boolean | {backgroundColor: string};
   /**
    * Entity select mode.
    * @default "multiple"
