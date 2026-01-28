@@ -70,7 +70,8 @@ export class CadPointsComponent {
     for (const el of pointEls) {
       el.classList.remove("active2");
     }
-    if (points.length > 0) {
+    const mode = this.selectMode();
+    if (mode !== "none" && points.length > 0) {
       this.createSelection();
     } else {
       this.destroySelection();
@@ -109,10 +110,14 @@ export class CadPointsComponent {
     if (!(size > 0)) {
       size = defaultConfig.pointSize;
     }
+    const mode = this.selectMode();
     return points.map((point) => {
       const classList: string[] = [];
       if (point.active) {
         classList.push("active");
+      }
+      if (mode !== "none") {
+        classList.push("selectable");
       }
       const style: Properties = {
         width: `${size}px`,

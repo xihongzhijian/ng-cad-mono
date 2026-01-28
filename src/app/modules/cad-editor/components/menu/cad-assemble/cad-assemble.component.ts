@@ -282,7 +282,7 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
       pointsMap.push(...generatePointsMap(cad.entities));
     }
     this._cadPointsChangeLock = true;
-    this.status.setCadPoints(pointsMap, {include});
+    this.status.setCadPoints("single", pointsMap, {include});
   }
 
   cadPointsChangeEff = effect(() => {
@@ -359,7 +359,7 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
       }
 
       this.pointsAssembling.set(0);
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
     }
   };
 
@@ -393,7 +393,7 @@ export class CadAssembleComponent implements OnInit, OnDestroy {
       this._setCadPoints();
     } else {
       this._cadPointsChangeLock = true;
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
     }
   }
 }

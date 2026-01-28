@@ -18,7 +18,7 @@ export interface AppConfig extends CadViewerConfig {
   kailiaoVerbose: boolean;
   testMode: boolean;
   cadSelectModeLocked: boolean;
-  cadPointsSelectMode: "single" | "multiple";
+  cadPointsSelectMode: "none" | "single" | "multiple";
 }
 
 export interface LocalConfigInfo {
@@ -93,6 +93,8 @@ export class AppConfigService {
     delete config.dragAxis;
     delete config.entityDraggable;
     delete config.selectMode;
+    delete config.cadSelectModeLocked;
+    delete config.cadPointsSelectMode;
     if (typeof config.lineGongshi !== "number" || config.lineGongshi <= 0) {
       delete config.lineGongshi;
     }
@@ -217,5 +219,5 @@ export const defaultConfig: AppConfig = {
   kailiaoVerbose: false,
   testMode: false,
   cadSelectModeLocked: false,
-  cadPointsSelectMode: "multiple"
+  cadPointsSelectMode: "none"
 };

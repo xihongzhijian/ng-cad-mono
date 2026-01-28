@@ -29,7 +29,6 @@ import {AppConfig, AppConfigService} from "@services/app-config.service";
 import {AppStatusService} from "@services/app-status.service";
 import {CadPoints} from "@services/app-status.types";
 import {CadStatusIntersection, CadStatusSelectBaseline, CadStatusSelectJointpoint} from "@services/cad-status";
-import SelectionArea from "@viselect/vanilla";
 import {debounce, isEqual} from "lodash";
 import {InputComponent} from "../../../../input/components/input.component";
 import {getCadInfoInputs, Intersection2Item} from "./cad-info.utils";
@@ -62,7 +61,6 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
   bjxTypes = 激光开料标记线类型;
   emptyBjxItem: NonNullable<CadData["info"]["激光开料标记线"]>[0] = {type: "短直线", ids: []};
   prevConfig: Partial<AppConfig> = {};
-  selection: SelectionArea | null = null;
 
   selectJointpointEff = this.status.getCadStatusEffect(
     (v) => v instanceof CadStatusSelectJointpoint,
@@ -71,7 +69,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     },
     () => {
       this._cadPointsLock = true;
-      this.status.setCadPoints();
+      this.status.setCadPoints("single");
     }
   );
 
@@ -91,7 +89,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     },
     () => {
       this._cadPointsLock = true;
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
       this.cadStatusIntersectionInfo = "";
       this.config.setConfig(this.prevConfig, {sync: false});
     },

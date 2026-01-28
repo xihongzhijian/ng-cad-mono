@@ -119,7 +119,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         delete e.info.prevSelectable;
       });
       this.lineDrawing = null;
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
     }
   );
 
@@ -132,7 +132,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       this._updateCadPoints();
     },
     () => {
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
       this.linesMoving = null;
     }
   );
@@ -148,7 +148,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
     (cadStatus) => {
       const cad = this.status.cad;
       const {linesCutting} = this;
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
       this.linesCutting = null;
       if (cadStatus.confirmed && linesCutting) {
         const lines = linesCutting.lines;
@@ -398,22 +398,22 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       const info = getCadFentiInfo(cad.data);
       const cadStatus = this.status.findCadStatus((v) => v instanceof CadStatusDrawLine);
       if (cadStatus?.isFenti) {
-        this.status.setCadPoints(info.fentiEntities, {mid: true});
+        this.status.setCadPoints("single", info.fentiEntities, {mid: true});
       } else {
-        this.status.setCadPoints(info.rawEntities, {mid: true});
+        this.status.setCadPoints("single", info.rawEntities, {mid: true});
       }
       this.lineDrawing = {};
     } else if (linesMoving) {
       if (linesMoving.start) {
         const {x, y} = cad.getScreenPoint(linesMoving.start.x, linesMoving.start.y);
-        this.status.setCadPoints(cad.data.getAllEntities(), {exclude: [{x, y}]});
+        this.status.setCadPoints("single", cad.data.getAllEntities(), {exclude: [{x, y}]});
       } else {
         if (selected.length < 1) {
           this.message.alert("没有选中线");
           this.moveLines();
           this.linesMoving = null;
         } else {
-          this.status.setCadPoints(new CadEntities().fromArray(selected));
+          this.status.setCadPoints("single", new CadEntities().fromArray(selected));
         }
       }
     } else if (linesCutting) {
@@ -442,7 +442,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     } else if (WHDashedLines) {
-      this.status.setCadPoints(WHDashedLines.map);
+      this.status.setCadPoints("single", WHDashedLines.map);
     }
   };
 
@@ -976,7 +976,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       map[1].lines = [lines[0], lines[3]];
     }
     this.WHDashedLines = {line, map};
-    this.status.setCadPoints(map);
+    this.status.setCadPoints("single", map);
     const whLinesBefore = line.children.line.filter((l) => l.宽高虚线);
     whLinesBefore.forEach((l) => l.remove());
     line.removeChild(...whLinesBefore);
@@ -990,7 +990,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
         v.lines.forEach((line) => line.remove());
       });
       this.WHDashedLines = null;
-      this.status.setCadPoints();
+      this.status.clearCadPoints();
     }
   }
 }

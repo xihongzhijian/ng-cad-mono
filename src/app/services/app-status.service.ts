@@ -608,10 +608,18 @@ export class AppStatusService {
     });
   }
 
-  setCadPoints(map: PointsMap | CadEntities = [], opts: {include?: CadPoints; exclude?: {x: number; y: number}[]; mid?: boolean} = {}) {
+  setCadPoints(
+    selectMode: AppConfig["cadPointsSelectMode"],
+    map: PointsMap | CadEntities = [],
+    opts: {include?: CadPoints; exclude?: {x: number; y: number}[]; mid?: boolean} = {}
+  ) {
     const {include, exclude, mid} = opts;
     const points = this.getCadPoints(map, mid);
     this.cadPoints.set(differenceWith(points, exclude || [], (a, b) => a.x === b.x && a.y === b.y).concat(include || []));
+    this.config.setConfig({cadPointsSelectMode: selectMode}, {sync: false});
+  }
+  clearCadPoints() {
+    this.setCadPoints("none", []);
   }
 
   addCadPoint(point: CadPoints[0], i?: number) {
@@ -994,7 +1002,10 @@ export class AppStatusService {
         map.delete(id);
       }
     }
-    this.setCadPoints(points.map((v) => ({point: v, lines: [], selected: false})));
+    this.setCadPoints(
+      "none",
+      points.map((v) => ({point: v, lines: [], selected: false}))
+    );
     return highlightedEntities;
   }
 
