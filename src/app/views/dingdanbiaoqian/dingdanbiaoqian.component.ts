@@ -394,7 +394,6 @@ export class DingdanbiaoqianComponent implements OnInit {
     for (const [i, {cads, shiyitus, materialResult}] of this.orders().entries()) {
       for (const shiyitu of shiyitus ?? []) {
         for (const cadInfo of shiyitu.cads) {
-          console.log(cadInfo.data.entities);
           setData(cadInfo.data, materialResult);
           const [w, h] = this.shiyituSize[shiyitu.name] ?? [0, 0];
           const previewParams: Partial<CadPreviewParams> = {

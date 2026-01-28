@@ -84,7 +84,17 @@ export interface BancaiCad {
   width: number;
   height: number;
   num: number;
-  bancai: {mingzi: string; cailiao: string | null; houdu: string | null; guige: number[] | null; gas?: string};
+  bancai: {
+    mingzi: string;
+    cailiao: string | null;
+    houdu: string | null;
+    kailiaohoudu: string | null;
+    guige: number[] | null;
+    gas?: string;
+    激光开料留边?: string;
+    超出规格时激光开料留边?: string;
+    index?: number;
+  };
   hidden?: boolean;
 }
 

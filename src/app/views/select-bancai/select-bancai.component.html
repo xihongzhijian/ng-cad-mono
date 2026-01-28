@@ -81,8 +81,9 @@
           </div>
           @for (bancaiInfo of info.bancaiInfos; track j; let j = $index) {
             <div class="bancai-info-row flex-row">
+              <div>{{ (bancaiInfo.bancai.index ?? 0) + 1 }}、</div>
               @for (inputInfo of bancaiInfo.inputInfos; track $index) {
-                <app-input #bancaiInfoInput class="flex-110" [info]="inputInfo"></app-input>
+                <app-input #bancaiInfoInput [info]="inputInfo"></app-input>
               }
               <div>
                 <button mat-flat-button [class.accent]="bancaiInfo.oversized" (click)="openCadsDialog(i, j)">开料CAD</button>

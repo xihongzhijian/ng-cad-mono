@@ -39,6 +39,7 @@ export interface OrderBancaiInfo {
   kailiaocanshuzhiUrl: string;
   sortedCads: BancaiCadExtend[][];
   bancaiInfos: {
+    bancai: BancaiCad["bancai"];
     cads: string[];
     oversized: boolean;
     inputInfos: InputInfo[];

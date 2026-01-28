@@ -16,6 +16,7 @@ import {CadDataService} from "@modules/http/services/cad-data.service";
 import {BancaiCad, BancaiList, ExcelSheet} from "@modules/http/services/cad-data.service.types";
 import {InputComponent} from "@modules/input/components/input.component";
 import {InputInfo} from "@modules/input/components/input.types";
+import {validateForm} from "@modules/input/components/input.utils";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerComponent} from "@modules/spinner/components/spinner/spinner.component";
 import {AppConfigService} from "@services/app-config.service";
@@ -239,6 +240,12 @@ export class SelectBancaiComponent {
           sortedCads.push([this.getBancaiCadExtend(bancaiCad)]);
         }
       }
+      for (const [j, group] of sortedCads.entries()) {
+        for (const cad of group) {
+          cad.bancai.index = j;
+          cad.bancai.超出规格时激光开料留边 ??= cad.bancai.激光开料留边;
+        }
+      }
       info.sortedCads = sortedCads;
     } else if (typeof i === "number") {
       const sortedCads = info.sortedCads;
@@ -269,7 +276,7 @@ export class SelectBancaiComponent {
       info.bancaiInfos = [];
       for (const [i, group] of info.sortedCads.entries()) {
         const bancai = cloneDeep(group[0].bancai);
-        const onChange = (key: keyof BancaiCad["bancai"], value: string) => {
+        const onChange = (key: Exclude<keyof BancaiCad["bancai"], "index">, value: string) => {
           if (key === "guige") {
             const match = value.match(guigePattern);
             if (match) {
@@ -301,11 +308,12 @@ export class SelectBancaiComponent {
             Validators.required,
             (control) => {
               if (!guigePattern.test(control.value)) {
-                return {pattern: "规格必须为两个数字(如: 10,10)"};
+                return {pattern: "规格必须为两个数字(如: 10 × 10)"};
               }
               return null;
             }
-          ]
+          ],
+          style: {flex: "3"}
         };
         const updateGuigeOptions = () => {
           const cailiao = bancai.cailiao || "";
@@ -330,11 +338,19 @@ export class SelectBancaiComponent {
           guigeInput.options = guiges.slice();
         };
         updateGuigeOptions();
-        const bancaiInfo: (typeof info.bancaiInfos)[0] = {
+        const bancaiInfo: (typeof info.bancaiInfos)[number] = {
+          bancai,
           cads: group.map((v) => v.id),
           oversized: group.some((v) => v.oversized),
           inputInfos: [
-            {label: "板材", type: "string", readonly: true, value: bancai.mingzi, validators: Validators.required},
+            {
+              label: "板材",
+              type: "string",
+              readonly: true,
+              value: bancai.mingzi,
+              validators: Validators.required,
+              style: {flex: "3"}
+            },
             {
               label: "材料",
               type: "string",
@@ -346,7 +362,8 @@ export class SelectBancaiComponent {
                 onChange("cailiao", value);
                 updateGuigeOptions();
               },
-              validators: Validators.required
+              validators: Validators.required,
+              style: {flex: "1.5"}
             },
             {
               label: "厚度",
@@ -367,9 +384,28 @@ export class SelectBancaiComponent {
                   }
                   return null;
                 }
-              ]
+              ],
+              style: {flex: "1"}
             },
-            guigeInput
+            guigeInput,
+            {
+              type: "string",
+              label: "四周留边",
+              value: bancai.激光开料留边 || "",
+              onChange: (value) => {
+                onChange("激光开料留边", value);
+              },
+              style: {flex: "1.5"}
+            },
+            {
+              type: "string",
+              label: "超出规格时四周留边",
+              value: bancai.超出规格时激光开料留边 || "",
+              onChange: (value) => {
+                onChange("超出规格时激光开料留边", value);
+              },
+              style: {flex: "1.5"}
+            }
           ]
         };
         if (this.showGas()) {
@@ -424,14 +460,13 @@ export class SelectBancaiComponent {
     this.updateOrderBancaiInfos();
   }
 
-  bancaiInfoInputs = viewChildren<InputComponent>("bancaiInfoInputs");
+  bancaiInfoInputs = viewChildren<InputComponent>("bancaiInfoInput");
   async submit(selectCad?: boolean, noPaiban?: boolean) {
-    await timeout(0);
-    for (const bancaiInfoInput of this.bancaiInfoInputs()) {
-      if (!bancaiInfoInput.isValid()) {
-        this.message.error("输入有误，请检查");
-        return;
-      }
+    await timeout(100);
+    const inputResult = await validateForm(this.bancaiInfoInputs());
+    if (inputResult.errorMsg) {
+      await this.message.error(inputResult.errorMsg);
+      return;
     }
     const getCadOptions: {namesInclude?: string[]}[] = [];
     const bancaiCadsArr: BancaiCad[][] = [];
@@ -483,11 +518,9 @@ export class SelectBancaiComponent {
       projectConfigOverride,
       verbose: this.verbose()
     };
-    try {
-      url = await this.http.getData<string | string[]>(api, data);
-      await this.refreshDownloadHistory();
-    } catch {}
+    url = await this.http.getData<string | string[]>(api, data);
     if (url) {
+      await this.refreshDownloadHistory();
       this.xikongData.set(null);
       if (Array.isArray(url)) {
         this.message.alert(url.map((v) => `<div>${v}</div>`).join(""));
