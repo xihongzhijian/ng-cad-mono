@@ -4,7 +4,6 @@
   "cli": {
     "analytics": false,
     "packageManager": "yarn"
-    // "schematicCollections": ["@cypress/schematic", "@schematics/angular"]
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -163,55 +162,10 @@
             ]
           }
         },
-        "e2e": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "ng-cad2:serve",
-            "watch": true,
-            "headless": false
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "ng-cad2:serve:production"
-            }
-          }
-        },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": ["src/**/*.ts", "src/**/*.component.html", "packages/*/src/**/*.ts"]
-          }
-        },
-        "cypress-run": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "ng-cad2:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "ng-cad2:serve:production"
-            }
-          }
-        },
-        "cypress-open": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "watch": true,
-            "headless": false
-          }
-        },
-        "ct": {
-          "builder": "@cypress/schematic:cypress",
-          "options": {
-            "devServerTarget": "ng-cad2:serve",
-            "watch": true,
-            "headless": false,
-            "testingType": "component"
-          },
-          "configurations": {
-            "development": {
-              "devServerTarget": "ng-cad2:serve:development"
-            }
           }
         }
       }
