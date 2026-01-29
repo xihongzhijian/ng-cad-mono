@@ -398,9 +398,9 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       const info = getCadFentiInfo(cad.data);
       const cadStatus = this.status.findCadStatus((v) => v instanceof CadStatusDrawLine);
       if (cadStatus?.isFenti) {
-        this.status.setCadPoints("single", info.fentiEntities, {mid: true});
+        this.status.setCadPoints("multiple", info.fentiEntities, {mid: true});
       } else {
-        this.status.setCadPoints("single", info.rawEntities, {mid: true});
+        this.status.setCadPoints("multiple", info.rawEntities, {mid: true});
       }
       this.lineDrawing = {};
     } else if (linesMoving) {
@@ -439,6 +439,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.linesCutting = {lines: [selected0], points: []};
         } else {
           this.message.alert("无法截这条线(相交的线不足)");
+          this.cutLine();
         }
       }
     } else if (WHDashedLines) {
