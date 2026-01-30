@@ -13,6 +13,7 @@ export interface Loader {
 }
 
 export type CadPoints = {x: number; y: number; active: boolean; lines: string[]}[];
+export type CadPointSelectMode = "none" | "single" | "multiple";
 
 export interface CadComponentsStatus {
   selected: CadData[];

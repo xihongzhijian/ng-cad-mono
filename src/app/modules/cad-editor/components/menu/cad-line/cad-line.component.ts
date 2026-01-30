@@ -153,26 +153,21 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
       if (cadStatus.confirmed && linesCutting) {
         const lines = linesCutting.lines;
         linesCutting.points.forEach((point) => {
-          let index = -1;
           let split1: CadLine | undefined;
           let split2: CadLine | undefined;
-          lines.forEach((line, i) => {
+          lines.forEach((line) => {
             if (line.curve.contains(point)) {
-              split1 = new CadLine(line.export(), true);
+              split1 = line.clone(true);
               split2 = new CadLine();
               split2.setColor(line.getColor());
               split2.zhankaixiaoshuchuli = line.zhankaixiaoshuchuli;
               split1.end.copy(point);
               split2.start.copy(point);
               split2.end.copy(line.end);
-              index = i;
               cad.data.entities.add(split1, split2);
               cad.remove(line);
             }
           });
-          if (index > -1 && split1 && split2) {
-            lines.splice(index, 1, split1, split2);
-          }
         });
       }
     }
@@ -435,7 +430,7 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         });
         if (points.length) {
-          this.status.cadPoints.set(points);
+          this.status.setCadPoints("single", points);
           this.linesCutting = {lines: [selected0], points: []};
         } else {
           this.message.alert("无法截这条线(相交的线不足)");
@@ -458,7 +453,8 @@ export class CadLineComponent implements OnInit, AfterViewInit, OnDestroy {
             lineDrawing.oldEntity.opacity = 1;
           }
           this.lineDrawing = null;
-          this.status.cadPoints.update((v) => v.map((v2) => ({...v2, active: false})));
+          const poins = this.status.cadPoints().map((v) => ({...v, active: false}));
+          this.status.setCadPoints(null, poins);
         }
       }
     }

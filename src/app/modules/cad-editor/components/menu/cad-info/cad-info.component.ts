@@ -73,18 +73,15 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
     }
   );
 
-  private _setIntersectionConfig(cadStatus: CadStatusIntersection) {
-    return this.config.setConfig(
-      {selectMode: "none", cadSelectModeLocked: true, cadPointsSelectMode: cadStatus.multi ? "multiple" : "single"},
-      {sync: false}
-    );
+  private _setIntersectionConfig() {
+    return this.config.setConfig({selectMode: "none", cadSelectModeLocked: true}, {sync: false});
   }
   intersectionEff = this.status.getCadStatusEffect(
     (v): v is CadStatusIntersection => {
       return v instanceof CadStatusIntersection && v.info === this.cadStatusIntersectionInfo;
     },
-    (cadStatus) => {
-      this.prevConfig = this._setIntersectionConfig(cadStatus);
+    () => {
+      this.prevConfig = this._setIntersectionConfig();
       this._updateCadPoints();
     },
     () => {
@@ -93,9 +90,9 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       this.cadStatusIntersectionInfo = "";
       this.config.setConfig(this.prevConfig, {sync: false});
     },
-    (cadStatus) => {
+    () => {
       this.config.setConfig(this.prevConfig, {sync: false});
-      this.prevConfig = this._setIntersectionConfig(cadStatus);
+      this.prevConfig = this._setIntersectionConfig();
       this._updateCadPoints();
     }
   );
@@ -400,7 +397,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
       const {valueX, valueY} = data.jointPoints[selectJointpointStatus.index];
       this._setActiveCadPoint({x: valueX, y: valueY}, points);
       this._cadPointsLock = true;
-      this.status.cadPoints.set(points);
+      this.status.setCadPoints("single", points);
     } else if (intersectionStatus) {
       const points = this.status.getCadPoints(data.getAllEntities());
       const {index, multi} = intersectionStatus;
@@ -420,7 +417,7 @@ export class CadInfoComponent extends Utils() implements OnInit, OnDestroy {
         this._setActiveCadPoint({lines: data.info.激光开料标记线?.[index].ids}, points);
       }
       this._cadPointsLock = true;
-      this.status.cadPoints.set(points);
+      this.status.setCadPoints(multi ? "multiple" : "single", points);
     }
   };
   private _setActiveCadPoint(point: Partial<CadPoints[0]>, points: CadPoints) {

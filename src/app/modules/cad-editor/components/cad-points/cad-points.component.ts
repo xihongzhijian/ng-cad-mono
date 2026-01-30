@@ -19,7 +19,7 @@ export class CadPointsComponent {
   selection: SelectionArea | null = null;
 
   pointEls = viewChildren<ElementRef<Element>>("point");
-  selectMode = computed(() => this.config.getConfig("cadPointsSelectMode"));
+  selectMode = computed(() => this.status.cadPointSelectMode());
   selectedPointEls: Element[] = [];
 
   private _onSelectionMove = (e: SelectionEvent) => {

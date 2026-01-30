@@ -53,7 +53,7 @@ import {clamp, cloneDeep, differenceWith, isEmpty, isEqual} from "lodash";
 import {BehaviorSubject, Subject, take} from "rxjs";
 import {local, remoteHost, timer} from "../app.common";
 import {AppConfig, AppConfigService} from "./app-config.service";
-import {AppUser, CadPoints, HoutaiInputOptions, OpenCadOptions} from "./app-status.types";
+import {AppUser, CadPoints, CadPointSelectMode, HoutaiInputOptions, OpenCadOptions} from "./app-status.types";
 import {CadStatus, CadStatusNormal} from "./cad-status";
 
 const 合型板示意图 = new CadData();
@@ -115,6 +115,7 @@ export class AppStatusService {
   saveCadEnd$ = new Subject<{data: CadData}>();
   saveCadLocked$ = new BehaviorSubject<boolean>(false);
   cadPoints = signal<CadPoints>([]);
+  cadPointSelectMode = signal<CadPointSelectMode>("none");
   setProject$ = new Subject<void>();
   user = signal<AppUser | null>(null);
   isAdmin = signal<boolean>(false);
@@ -609,14 +610,25 @@ export class AppStatusService {
   }
 
   setCadPoints(
-    selectMode: AppConfig["cadPointsSelectMode"],
-    map: PointsMap | CadEntities = [],
+    selectMode: CadPointSelectMode | null,
+    map: CadPoints | PointsMap | CadEntities = [],
     opts: {include?: CadPoints; exclude?: {x: number; y: number}[]; mid?: boolean} = {}
   ) {
     const {include, exclude, mid} = opts;
-    const points = this.getCadPoints(map, mid);
+    const isMap = (map2: CadPoints | PointsMap | CadEntities): map2 is PointsMap | CadEntities => {
+      if (map2 instanceof CadEntities) {
+        return true;
+      }
+      if (Array.isArray(map2) && map2.length > 0) {
+        return Object.keys(map2[0]).includes("point");
+      }
+      return false;
+    };
+    const points = isMap(map) ? this.getCadPoints(map, mid) : map;
     this.cadPoints.set(differenceWith(points, exclude || [], (a, b) => a.x === b.x && a.y === b.y).concat(include || []));
-    this.config.setConfig({cadPointsSelectMode: selectMode}, {sync: false});
+    if (selectMode !== null) {
+      this.cadPointSelectMode.set(selectMode);
+    }
   }
   clearCadPoints() {
     this.setCadPoints("none", []);
