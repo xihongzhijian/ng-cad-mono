@@ -33,6 +33,7 @@
   color: var(--mat-sys-on-surface);
   box-shadow: var(--mat-sys-level3);
   box-sizing: border-box;
+  z-index: 1;
 
   &.top,
   &.bottom,
