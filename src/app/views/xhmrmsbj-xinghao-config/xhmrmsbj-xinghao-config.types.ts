@@ -20,8 +20,11 @@ export interface XhmrmsbjXinghaoConfigInput {
   value?: string;
 }
 
-export interface SuanliaoConfigItem<T extends string = string, K extends string = string, R extends boolean = boolean>
-  extends MongodbDataFilterable {
+export interface SuanliaoConfigItem<
+  T extends string = string,
+  K extends string = string,
+  R extends boolean = boolean
+> extends MongodbDataFilterable {
   名字: T;
   位置: K[];
   cad: R extends true ? {id?: string; 唯一码?: string} : null | undefined;

@@ -21,7 +21,7 @@ import {
 } from "@lucilor/cad-viewer";
 import {getImageDataUrl, isBetween, isNearZero, isTypeOf, loadImage, Matrix, ObjectOf, Point, Rectangle, timeout} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
-import {createPdf} from "pdfmake/build/pdfmake";
+import {createPdf} from "pdfmake";
 import {ContentImage} from "pdfmake/interfaces";
 import QRCode from "qrcode";
 import {getCadPreview} from "./cad-preview";
@@ -505,7 +505,6 @@ export const configCadDataForPrint = async (
         }
       }
     });
-    let rect = data.getBoundingRect();
     // data.transform({scale: data.suanliaodanZoom, origin: [rect.x, rect.y]}, true);
     await cad.render(data.getAllEntities());
     setShuangxiangLineRects(shaungxiangCads);
@@ -540,7 +539,7 @@ export const configCadDataForPrint = async (
         data.entities.add(宽度标注2);
         宽度标注2.info.宽度标注 = true;
       }
-      rect = data.getBoundingRect();
+      const rect = data.getBoundingRect();
       rect2 = data.entities.filter((e) => e instanceof CadLineLike).getBoundingRect();
       rect2.top = rect.top;
       const space = 20;
@@ -981,7 +980,6 @@ export const printCads = async (params: PrintCadsParams) => {
     }
 
     const designPics = params.designPics;
-    let img: string | undefined;
     let img2: string | undefined;
     if (designPics) {
       for (const keyword in designPics) {
@@ -1004,10 +1002,7 @@ export const printCads = async (params: PrintCadsParams) => {
               await setImagesUrl(cadImages, currUrls);
               await cad.render(cadImages);
               cad.center();
-              img = await cad.toDataURL();
             }
-          } else {
-            img = await cad.toDataURL();
           }
           if (showLarge && isOwn) {
             const data2 = new CadData();
@@ -1058,7 +1053,7 @@ export const printCads = async (params: PrintCadsParams) => {
       }
     }
     await draw型材物料明细(cad, data, params.orders?.[i]?.型材物料明细, params.projectConfig);
-    img = await cad.toDataURL();
+    const img = await cad.toDataURL();
     imageContents1.push({image: img, width: localWidth, height: localHeight});
     if (img2) {
       imageContents2.push({image: img2, width: localWidth, height: localHeight});
@@ -1106,14 +1101,10 @@ export const printCads = async (params: PrintCadsParams) => {
     },
     {}
   );
-  const {pdfFile, url} = await new Promise<{pdfFile: File; url: string}>((resolve) => {
-    pdf.getBlob((blob) => {
-      const url2 = URL.createObjectURL(blob);
-      const name = params.codes?.join(",") || "print";
-      const file = new File([blob], `${name}.pdf`, {type: "application/pdf"});
-      resolve({pdfFile: file, url: url2});
-    });
-  });
+  const blob = await pdf.getBlob();
+  const url = URL.createObjectURL(blob);
+  const name = params.codes?.join(",") || "print";
+  const pdfFile = new File([blob], `${name}.pdf`, {type: "application/pdf"});
   return {url, errors, cad, pdfFile, imageContents};
 };
 
@@ -1156,7 +1147,7 @@ const draw型材物料明细 = async (
   let widths: number[] = [];
   const getWidth = (i: number) => widths.slice(0, i === -1 ? undefined : i + 1).reduce((a, b) => a + b, 0);
   let fontSizeText = 30;
-  let fontSizeTitle = 40;
+  let fontSizeTitle: number;
   let lineHeight = 0;
   const drawRowTexts = (texts: string[], fontSize = fontSizeText) => {
     for (const [i, text] of texts.entries()) {

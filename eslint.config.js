@@ -17,11 +17,7 @@ const gitignorePath = fileURLToPath(new URL(".gitignore", import.meta.url));
 export default [
   includeIgnoreFile(gitignorePath, "Imported .gitignore patterns"),
   {
-    languageOptions: {
-      globals: {}
-    },
-
-    rules: {}
+    ignores: ["packages/**/lib/**"]
   },
   ...compat
     .extends(
@@ -91,7 +87,8 @@ export default [
         {
           allowEmptyCatch: true
         }
-      ]
+      ],
+      "no-useless-assignment": "off"
     }
   },
   ...compat.extends("plugin:@angular-eslint/template/recommended").map((config) => ({
