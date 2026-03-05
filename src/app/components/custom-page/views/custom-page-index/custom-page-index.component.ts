@@ -30,7 +30,7 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {Properties} from "csstype";
 import {isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {createPdf} from "pdfmake/build/pdfmake";
+import {createPdf} from "pdfmake";
 import {TDocumentDefinitions} from "pdfmake/interfaces";
 import printJS from "print-js";
 import {PageComponentConfig2Component} from "../../menus/page-component-config2/page-component-config2.component";
@@ -201,11 +201,7 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
   async preview() {
     const pdf = await this.getPagePdf();
     this.spinner.show(this.spinner.defaultLoaderId, {text: "正在打印"});
-    const blob = await new Promise<Blob>((resolve) => {
-      pdf.getBlob((b) => {
-        resolve(b);
-      });
-    });
+    const blob = await pdf.getBlob();
     this.spinner.hide(this.spinner.defaultLoaderId);
     const url = URL.createObjectURL(blob);
     printJS({printable: url, type: "pdf"});
