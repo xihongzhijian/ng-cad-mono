@@ -34,6 +34,29 @@
   box-shadow: var(--mat-sys-level3);
   box-sizing: border-box;
 
+  &.top,
+  &.bottom,
+  &.left,
+  &.right {
+    transition: transform 0.3s ease;
+  }
+
+  &.top.closed {
+    transform: translateY(-100%);
+  }
+
+  &.bottom.closed {
+    transform: translateY(100%);
+  }
+
+  &.left.closed {
+    transform: translateX(-100%);
+  }
+
+  &.right.closed {
+    transform: translateX(100%);
+  }
+
   &.top {
     width: 100%;
     border-radius: 0;

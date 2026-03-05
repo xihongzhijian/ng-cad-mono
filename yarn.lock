@@ -369,17 +369,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/animations@npm:^21.2.1":
-  version: 21.2.1
-  resolution: "@angular/animations@npm:21.2.1"
-  dependencies:
-    tslib: "npm:^2.3.0"
-  peerDependencies:
-    "@angular/core": 21.2.1
-  checksum: 10c0/d12c4416b181e22311791bbe7ee3f38b9d44de5d4129fa9cd02608921309066193467c315f385e9098ce62092329453d2b415eba0b53885c64e0686891ee3c60
-  languageName: node
-  linkType: hard
-
 "@angular/build@npm:^21.2.0":
   version: 21.2.0
   resolution: "@angular/build@npm:21.2.0"
@@ -4744,17 +4733,6 @@ __metadata:
   version: 0.4.14
   resolution: "alien-signals@npm:0.4.14"
   checksum: 10c0/5abb3377bcaf6b3819e950084b3ebd022ad90210105afb450c89dc347e80e28da441bf34858a57ea122abe7603e552ddbad80dc597c8f02a0a5206c5fb9c20cb
-  languageName: node
-  linkType: hard
-
-"angular-animations@npm:^0.11.0":
-  version: 0.11.0
-  resolution: "angular-animations@npm:0.11.0"
-  dependencies:
-    tslib: "npm:^2.0.0"
-  peerDependencies:
-    "@angular/animations": ">=6.0.0"
-  checksum: 10c0/4bf052c6f23947d9245fc49f9ecbf41a1927735dae7dfc7a45b45bff789c5ef2964329875feb1bd007e2090ea5e968ab509485e6f157b02e7b93f640619b4d00
   languageName: node
   linkType: hard
 
@@ -9243,7 +9221,6 @@ __metadata:
     "@angular-eslint/eslint-plugin-template": "npm:^21.2.0"
     "@angular-eslint/schematics": "npm:^21.2.0"
     "@angular-eslint/template-parser": "npm:^21.2.0"
-    "@angular/animations": "npm:^21.2.1"
     "@angular/build": "npm:^21.2.0"
     "@angular/cdk": "npm:^21.2.1"
     "@angular/cli": "npm:^21.2.0"
@@ -9278,7 +9255,6 @@ __metadata:
     "@typescript-eslint/types": "npm:^8.56.1"
     "@typescript-eslint/utils": "npm:^8.56.1"
     "@viselect/vanilla": "npm:^3.9.0"
-    angular-animations: "npm:^0.11.0"
     axios: "npm:^1.13.6"
     browser-image-compression: "npm:^2.0.2"
     color: "npm:^5.0.3"
@@ -11483,7 +11459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0":
+"tslib@npm:^2.1.0, tslib@npm:^2.3.0":
   version: 2.6.1
   resolution: "tslib@npm:2.6.1"
   checksum: 10c0/a0382d386f5f1d6e3a39ab22bc56d1e08493da99ab3daf550e63bae6c08fdd6dd4fd20623ef387cad8262ce3fede98439257054fc025f2103cd4603b4509a052

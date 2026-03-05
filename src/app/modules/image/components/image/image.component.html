@@ -43,7 +43,12 @@
 @if (currBigPicSrc(); as currBigPicSrc) {
   <div #bigPicDiv class="big-pic" style="display: none" (click)="hideBigPic()">
     @if (bigPicVisible()) {
-      <img [src]="currBigPicSrc" [style.object-fit]="objectFit()" @toggle />
+      <img
+        [src]="currBigPicSrc"
+        [style.object-fit]="objectFit()"
+        (animate.enter)="onBigPicEnter($event)"
+        (animate.leave)="onBigPicLeave($event)"
+      />
     }
   </div>
 }
