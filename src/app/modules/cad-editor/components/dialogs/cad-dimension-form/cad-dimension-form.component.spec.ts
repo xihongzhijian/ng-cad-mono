@@ -1,6 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {CadDimensionLinear} from "@lucilor/cad-viewer";
 import {CadDimensionData, CadDimensionFormComponent} from "./cad-dimension-form.component";
@@ -13,7 +12,7 @@ describe("CadDimensionFormComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CadDimensionFormComponent],
-      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimationsAsync(), provideRouter([])]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideRouter([])]
     }).compileComponents();
   });
 

@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {AnchorSelectorComponent} from "./anchor-selector.component";
 
@@ -10,7 +9,7 @@ describe("AnchorSelectorComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AnchorSelectorComponent],
-      providers: [provideAnimationsAsync(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 

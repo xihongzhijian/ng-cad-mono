@@ -1,6 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {NavsDialogComponent} from "./navs-dialog.component";
 import {NavsDialogInput} from "./navs-dialog.types";
@@ -16,7 +15,7 @@ describe("NavsDialogComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NavsDialogComponent],
-      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimationsAsync(), provideRouter([])]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavsDialogComponent);

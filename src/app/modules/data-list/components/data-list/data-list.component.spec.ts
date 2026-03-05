@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {DataListComponent} from "./data-list.component";
 
@@ -10,7 +9,7 @@ describe("DataListComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DataListComponent],
-      providers: [provideAnimationsAsync(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(DataListComponent);

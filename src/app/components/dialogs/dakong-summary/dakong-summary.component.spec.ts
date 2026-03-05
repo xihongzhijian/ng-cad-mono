@@ -1,6 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {DakongSummaryComponent} from "./dakong-summary.component";
 import {DakongSummaryInput} from "./dakong-summary.types";
@@ -28,7 +27,7 @@ describe("DakongSummaryComponent", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [DakongSummaryComponent],
-      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimationsAsync(), provideRouter([])]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideRouter([])]
     });
     fixture = TestBed.createComponent(DakongSummaryComponent);
     component = fixture.componentInstance;

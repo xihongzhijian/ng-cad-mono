@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {FormulasEditorComponent} from "./formulas-editor.component";
 
@@ -10,7 +9,7 @@ describe("FormulasEditorComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FormulasEditorComponent],
-      providers: [provideAnimationsAsync(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(FormulasEditorComponent);

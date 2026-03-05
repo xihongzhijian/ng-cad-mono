@@ -1,4 +1,3 @@
-import {animate, state, style, transition, trigger} from "@angular/animations";
 import {CdkDrag, CdkDragEnd, CdkDragMove, CdkDragStart} from "@angular/cdk/drag-drop";
 import {
   AfterViewInit,
@@ -59,32 +58,6 @@ import {CadEditorMenuName} from "./cad-editor.utils";
   selector: "app-cad-editor",
   templateUrl: "./cad-editor.component.html",
   styleUrls: ["./cad-editor.component.scss"],
-  animations: [
-    trigger("closeTop", [
-      state("open", style({transform: "translateY(0)"})),
-      state("closed", style({transform: "translateY(-100%)"})),
-      transition("open <=> closed", [animate("0.3s")])
-    ]),
-    trigger("closeRight", [
-      state("open", style({transform: "translateX(0)"})),
-      state("closed", style({transform: "translateX(100%)"})),
-      transition("open <=> closed", [animate("0.3s")])
-    ]),
-    trigger("closeBottom", [
-      state("open", style({transform: "translateY(0)"})),
-      state("closed", style({transform: "translateY(100%)"})),
-      transition("open <=> closed", [animate("0.3s")])
-    ]),
-    trigger("closeLeft", [
-      state("open", style({transform: "translateX(0)"})),
-      state("closed", style({transform: "translateX(-100%)"})),
-      transition("open <=> closed", [animate("0.3s")])
-    ]),
-    trigger("menuWidth", [
-      transition(":enter", [style({opacity: 0}), animate("0.5s", style({opacity: 1}))]),
-      transition(":leave", [style({opacity: 1}), animate("0.5s", style({opacity: 0}))])
-    ])
-  ],
   imports: [
     CadAssembleComponent,
     CadDimensionComponent,

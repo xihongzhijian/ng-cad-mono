@@ -1,4 +1,3 @@
-import {animate, style, transition, trigger} from "@angular/animations";
 import {
   AfterViewInit,
   booleanAttribute,
@@ -27,12 +26,6 @@ const imgLoading = "assets/images/loading.gif";
   selector: "app-image",
   templateUrl: "./image.component.html",
   styleUrls: ["./image.component.scss"],
-  animations: [
-    trigger("toggle", [
-      transition(":enter", [style({transform: "scale(0)", opacity: 0}), animate("0.3s", style({transform: "scale(1)", opacity: 1}))]),
-      transition(":leave", [style({transform: "scale(1)", opacity: 1}), animate("0.3s", style({transform: "scale(0)", opacity: 0}))])
-    ])
-  ],
   imports: [MatButtonModule, MatIconModule]
 })
 export class ImageComponent implements AfterViewInit {

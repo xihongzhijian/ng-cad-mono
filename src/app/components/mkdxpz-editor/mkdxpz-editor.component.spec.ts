@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {VarNameItem} from "@components/var-names/var-names.types";
 import {getEmpty模块大小配置} from "@views/msbj/msbj.utils";
@@ -12,7 +11,7 @@ describe("MkdxpzEditorComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MkdxpzEditorComponent],
-      providers: [provideAnimationsAsync(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MkdxpzEditorComponent);

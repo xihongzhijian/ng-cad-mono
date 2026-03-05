@@ -12,7 +12,6 @@ import {MAT_ICON_DEFAULT_OPTIONS, MatIconDefaultOptions} from "@angular/material
 import {MatPaginatorIntl} from "@angular/material/paginator";
 import {MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions} from "@angular/material/tooltip";
 import {bootstrapApplication} from "@angular/platform-browser";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {environment} from "@env";
 import {CadEditorModule} from "@modules/cad-editor/cad-editor.module";
 import {HttpModule} from "@modules/http/http.module";
@@ -62,7 +61,6 @@ bootstrapApplication(AppComponent, {
     {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: matFormFieldOptions},
     {provide: MAT_ICON_DEFAULT_OPTIONS, useValue: matIconDefaultOptions},
     {provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipOptions},
-    provideAnimationsAsync(),
     provideBrowserGlobalErrorListeners(),
     provideScrollbarPolyfill("assets/scroll-timeline-polyfill.js"),
     provideZonelessChangeDetection()

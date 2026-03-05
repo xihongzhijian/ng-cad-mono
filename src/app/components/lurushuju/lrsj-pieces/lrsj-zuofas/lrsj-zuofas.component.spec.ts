@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {LrsjZuofasComponent} from "./lrsj-zuofas.component";
 
@@ -10,7 +9,7 @@ describe("LrsjGongyisComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LrsjZuofasComponent],
-      providers: [provideAnimationsAsync(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LrsjZuofasComponent);

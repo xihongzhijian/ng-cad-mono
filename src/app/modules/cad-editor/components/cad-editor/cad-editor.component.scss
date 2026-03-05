@@ -38,12 +38,22 @@
     width: 100%;
     border-radius: 0;
     padding: 0 10px;
+    transition: transform 0.3s;
+
+    &.closed {
+      transform: translateY(-100%);
+    }
   }
 
   &.bottom {
     width: 100%;
     height: 20px;
     line-height: 22px;
+    transition: transform 0.3s;
+
+    &.closed {
+      transform: translateY(100%);
+    }
   }
 
   &.left,
@@ -53,6 +63,19 @@
     padding: 10px;
     height: 100%;
     align-items: center;
+    transition: transform 0.3s;
+  }
+
+  &.left {
+    &.closed {
+      transform: translateX(-100%);
+    }
+  }
+
+  &.right {
+    &.closed {
+      transform: translateX(100%);
+    }
   }
 
   &.suanliaogongshi,
@@ -148,3 +171,30 @@
   padding: 5px;
   box-shadow: var(--mat-sys-level1);
 }
+
+@keyframes menu-width-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes menu-width-leave {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.menu-width-enter {
+  animation: menu-width-enter 0.5s;
+}
+
+.menu-width-leave {
+  animation: menu-width-leave 0.5s;
+}
+

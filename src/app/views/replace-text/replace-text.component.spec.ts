@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {ReplaceTextComponent} from "./replace-text.component";
 
@@ -10,7 +9,7 @@ describe("ReplaceTextComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ReplaceTextComponent],
-      providers: [provideAnimationsAsync(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 

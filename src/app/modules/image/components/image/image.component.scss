@@ -46,3 +46,33 @@ img {
     height: 100%;
   }
 }
+
+@keyframes img-toggle-enter {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes img-toggle-leave {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+.img-toggle-enter {
+  animation: img-toggle-enter 0.3s;
+}
+
+.img-toggle-leave {
+  animation: img-toggle-leave 0.3s;
+}

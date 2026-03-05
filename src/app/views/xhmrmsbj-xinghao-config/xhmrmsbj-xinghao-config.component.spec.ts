@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import xhmrmsbj from "@assets/json/xhmrmsbj.json";
 import step1Data from "@assets/json/zixuanpeijianTypesInfo.json";
@@ -14,7 +13,7 @@ describe("XhmrmsbjXinghaoConfigComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [XhmrmsbjXinghaoConfigComponent],
-      providers: [provideAnimationsAsync(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(XhmrmsbjXinghaoConfigComponent);
