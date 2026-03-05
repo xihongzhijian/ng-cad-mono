@@ -21,8 +21,8 @@ import {
 } from "@lucilor/cad-viewer";
 import {getImageDataUrl, isBetween, isNearZero, isTypeOf, loadImage, Matrix, ObjectOf, Point, Rectangle, timeout} from "@lucilor/utils";
 import {cloneDeep} from "lodash";
-import {createPdf} from "pdfmake";
-import {ContentImage} from "pdfmake/interfaces";
+import pdfmake from "pdfmake";
+import {type ContentImage} from "pdfmake/interfaces";
 import QRCode from "qrcode";
 import {getCadPreview} from "./cad-preview";
 import {
@@ -1086,7 +1086,7 @@ export const printCads = async (params: PrintCadsParams) => {
   }
 
   const imageContents = [...imageContents1, ...imageContents2];
-  const pdf = createPdf(
+  const pdf = pdfmake.createPdf(
     {
       info: {
         ...getPdfInfo(),

@@ -30,7 +30,7 @@ import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {Properties} from "csstype";
 import {isEqual} from "lodash";
 import {NgScrollbarModule} from "ngx-scrollbar";
-import {createPdf} from "pdfmake";
+import pdfmake from "pdfmake";
 import {TDocumentDefinitions} from "pdfmake/interfaces";
 import printJS from "print-js";
 import {PageComponentConfig2Component} from "../../menus/page-component-config2/page-component-config2.component";
@@ -195,7 +195,7 @@ export class CustomPageIndexComponent extends Subscribed() implements OnInit, On
       params.pageSize = page.sizeName;
       params.pageOrientation = page.orientation;
     }
-    const pdf = createPdf(params);
+    const pdf = pdfmake.createPdf(params);
     return pdf;
   }
   async preview() {
