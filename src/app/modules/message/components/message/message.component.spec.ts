@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {timeout} from "@lucilor/utils";
 import {MessageComponent} from "./message.component";
@@ -22,7 +22,7 @@ describe("MessageComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MessageComponent],
-      providers: [{provide: MAT_DIALOG_DATA, useValue: {}}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: {}}, {provide: MatDialogRef, useValue: {}}, provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
   });
 

@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {ExportComponent} from "./export.component";
 
@@ -10,7 +10,7 @@ describe("ExportComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ExportComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
   });
 

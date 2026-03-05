@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {getTestData, importZixuanpeijian} from "@components/dialogs/zixuanpeijian/zixuanpeijian.utils";
 import {PjmkComponent} from "./pjmk.component";
@@ -11,7 +11,7 @@ describe("PjmkComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PjmkComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PjmkComponent);

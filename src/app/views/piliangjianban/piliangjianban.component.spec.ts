@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {imgCadEmpty} from "@app/app.common";
 import {CadData} from "@lucilor/cad-viewer";
@@ -39,7 +39,7 @@ describe("PiliangjianbanComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PiliangjianbanComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
   });
 

@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {IndexComponent} from "./index.component";
 
@@ -10,7 +10,7 @@ describe("IndexComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [IndexComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
   });
 

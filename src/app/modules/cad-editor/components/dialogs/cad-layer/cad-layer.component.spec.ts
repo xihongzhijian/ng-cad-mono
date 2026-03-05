@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {CadLayer} from "@lucilor/cad-viewer";
 import {CadLayerComponent, CadLayerInput} from "./cad-layer.component";
@@ -15,7 +15,7 @@ describe("CadLayerComponent", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [CadLayerComponent],
-      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimationsAsync(), provideRouter([])]
     });
     fixture = TestBed.createComponent(CadLayerComponent);
     component = fixture.componentInstance;

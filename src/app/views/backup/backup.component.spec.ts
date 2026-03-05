@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {CadData} from "@lucilor/cad-viewer";
 import {BackupComponent} from "./backup.component";
@@ -11,7 +11,7 @@ describe("BackupComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [BackupComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
   });
 

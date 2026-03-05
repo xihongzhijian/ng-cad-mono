@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {EditFormulasDialogComponent, EditFormulasInput} from "./edit-formulas-dialog.component";
 
@@ -13,7 +13,7 @@ describe("EditFormulasDialogComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EditFormulasDialogComponent],
-      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(EditFormulasDialogComponent);

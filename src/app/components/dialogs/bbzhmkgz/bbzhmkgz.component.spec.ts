@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {BbzhmkgzComponent, BbzhmkgzComponentData} from "./bbzhmkgz.component";
 
@@ -12,7 +12,7 @@ describe("BbzhmkgzComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [BbzhmkgzComponent],
-      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
   });
 

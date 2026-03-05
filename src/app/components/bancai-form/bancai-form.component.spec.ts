@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {BancaiFormComponent} from "./bancai-form.component";
 
@@ -10,7 +10,7 @@ describe("BancaiFormComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [BancaiFormComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(BancaiFormComponent);

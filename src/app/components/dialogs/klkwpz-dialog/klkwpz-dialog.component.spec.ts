@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import klkwpzData from "@assets/json/klkwpz.json";
 import {KlkwpzDialogComponent, KlkwpzDialogData} from "./klkwpz-dialog.component";
@@ -14,7 +14,7 @@ describe("KlkwpzDialogComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [KlkwpzDialogComponent],
-      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimations(), provideRouter([])]
+      providers: [{provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {}}, provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(KlkwpzDialogComponent);

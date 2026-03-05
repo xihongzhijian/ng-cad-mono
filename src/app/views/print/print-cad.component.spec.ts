@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
+import {provideAnimationsAsync} from "@angular/platform-browser/animations/async";
 import {provideRouter} from "@angular/router";
 import {PrintCadComponent} from "./print-cad.component";
 
@@ -10,7 +10,7 @@ describe("PrintCADComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PrintCadComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideAnimationsAsync(), provideRouter([])]
     }).compileComponents();
   });
 
