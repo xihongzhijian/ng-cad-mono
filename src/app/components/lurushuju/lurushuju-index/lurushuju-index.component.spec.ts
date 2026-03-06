@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {LurushujuIndexComponent} from "./lurushuju-index.component";
 
@@ -10,7 +9,7 @@ describe("LurushujuIndexComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LurushujuIndexComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LurushujuIndexComponent);

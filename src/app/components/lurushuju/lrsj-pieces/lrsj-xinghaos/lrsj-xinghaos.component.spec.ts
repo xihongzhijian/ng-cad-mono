@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {LrsjXinghaosComponent} from "./lrsj-xinghaos.component";
 
@@ -10,7 +9,7 @@ describe("LrsjXinghaosComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LrsjXinghaosComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LrsjXinghaosComponent);
