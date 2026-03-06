@@ -28,7 +28,6 @@
     "./packages/utils"
   ],
   "dependencies": {
-    "@angular/animations": "^21.2.1",
     "@angular/cdk": "^21.2.1",
     "@angular/common": "^21.2.1",
     "@angular/compiler": "^21.2.1",
@@ -93,7 +92,6 @@
     "@typescript-eslint/parser": "^8.56.1",
     "@typescript-eslint/types": "^8.56.1",
     "@typescript-eslint/utils": "^8.56.1",
-    "angular-animations": "^0.11.0",
     "axios": "^1.13.6",
     "compressing": "^2.1.0",
     "eslint": "^9.23.0",

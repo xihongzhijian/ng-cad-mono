@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {SubCadsComponent} from "./sub-cads.component";
 
@@ -10,7 +9,7 @@ describe("SubCadsComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SubCadsComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 
@@ -25,7 +24,7 @@ describe("SubCadsComponent", () => {
   });
 
   it("should show menu", () => {
-    component.contextMenu.openMenu();
-    expect(component.contextMenu.menuOpened).toBeTruthy();
+    component.contextMenu().openMenu();
+    expect(component.contextMenu().menuOpened).toBeTruthy();
   });
 });

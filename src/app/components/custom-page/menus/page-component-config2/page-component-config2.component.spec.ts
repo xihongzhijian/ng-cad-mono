@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {PageComponentConfig2Component} from "./page-component-config2.component";
 
@@ -10,7 +9,7 @@ describe("PageComponentConfig2Component", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PageComponentConfig2Component],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PageComponentConfig2Component);

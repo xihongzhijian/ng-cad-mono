@@ -1,4 +1,15 @@
-import {AfterViewInit, Component, computed, ElementRef, HostListener, inject, OnDestroy, signal, viewChild} from "@angular/core";
+import {
+  AfterViewInit,
+  type AnimationCallbackEvent,
+  Component,
+  computed,
+  ElementRef,
+  HostListener,
+  inject,
+  OnDestroy,
+  signal,
+  viewChild
+} from "@angular/core";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {FormsModule, Validators} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -26,12 +37,6 @@ import {InputInfo} from "@modules/input/components/input.types";
 import {MessageService} from "@modules/message/services/message.service";
 import {SpinnerService} from "@modules/spinner/services/spinner.service";
 import {AppStatusService} from "@services/app-status.service";
-import {
-  slideInDownOnEnterAnimation,
-  slideInRightOnEnterAnimation,
-  slideOutRightOnLeaveAnimation,
-  slideOutUpOnLeaveAnimation
-} from "angular-animations";
 import imageCompression from "browser-image-compression";
 import {intersection} from "lodash";
 import {ContentImage} from "pdfmake/interfaces";
@@ -44,12 +49,6 @@ const duration = 400;
   selector: "app-print-cad",
   templateUrl: "./print-cad.component.html",
   styleUrls: ["./print-cad.component.scss"],
-  animations: [
-    slideInDownOnEnterAnimation({anchor: "toolbarEnter", duration}),
-    slideOutUpOnLeaveAnimation({anchor: "toolbarLeave", duration}),
-    slideInRightOnEnterAnimation({anchor: "toolbarToggleEnter", duration}),
-    slideOutRightOnLeaveAnimation({anchor: "toolbarToggleLeave", duration})
-  ],
   imports: [
     FormsModule,
     ImageComponent,
@@ -355,6 +354,44 @@ export class PrintCadComponent implements AfterViewInit, OnDestroy {
     await this.generateSuanliaodan();
     this.spinner.hide(this.loaderId);
     this._savePrintParams();
+  }
+
+  onToolbarEnter(event: AnimationCallbackEvent) {
+    this.runTranslateYAnimation(event, "-100%", "0%", duration);
+  }
+
+  onToolbarLeave(event: AnimationCallbackEvent) {
+    this.runTranslateYAnimation(event, "0%", "-100%", duration);
+  }
+
+  onToolbarToggleEnter(event: AnimationCallbackEvent) {
+    this.runTranslateXAnimation(event, "100%", "0%", duration);
+  }
+
+  onToolbarToggleLeave(event: AnimationCallbackEvent) {
+    this.runTranslateXAnimation(event, "0%", "100%", duration);
+  }
+
+  private runTranslateYAnimation(event: AnimationCallbackEvent, from: string, to: string, ms: number) {
+    const animation = event.target.animate([{transform: `translateY(${from})`}, {transform: `translateY(${to})`}], {
+      duration: ms,
+      easing: "ease",
+      fill: "both"
+    });
+    const done = () => event.animationComplete();
+    animation.addEventListener("finish", done, {once: true});
+    animation.addEventListener("cancel", done, {once: true});
+  }
+
+  private runTranslateXAnimation(event: AnimationCallbackEvent, from: string, to: string, ms: number) {
+    const animation = event.target.animate([{transform: `translateX(${from})`}, {transform: `translateX(${to})`}], {
+      duration: ms,
+      easing: "ease",
+      fill: "both"
+    });
+    const done = () => event.animationComplete();
+    animation.addEventListener("finish", done, {once: true});
+    animation.addEventListener("cancel", done, {once: true});
   }
 
   toolbarVisible = signal(true);

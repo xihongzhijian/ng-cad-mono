@@ -33,6 +33,30 @@
   color: var(--mat-sys-on-surface);
   box-shadow: var(--mat-sys-level3);
   box-sizing: border-box;
+  z-index: 1;
+
+  &.top,
+  &.bottom,
+  &.left,
+  &.right {
+    transition: transform 0.3s ease;
+  }
+
+  &.top.closed {
+    transform: translateY(-100%);
+  }
+
+  &.bottom.closed {
+    transform: translateY(100%);
+  }
+
+  &.left.closed {
+    transform: translateX(-100%);
+  }
+
+  &.right.closed {
+    transform: translateX(100%);
+  }
 
   &.top {
     width: 100%;

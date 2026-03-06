@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {CadFentiConfigComponent} from "./cad-fenti-config.component";
 
@@ -10,7 +9,7 @@ describe("CadFentiConfigComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CadFentiConfigComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(CadFentiConfigComponent);

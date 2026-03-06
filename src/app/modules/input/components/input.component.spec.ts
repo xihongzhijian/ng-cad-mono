@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {timeout} from "@lucilor/utils";
 import {InputComponent} from "./input.component";
@@ -11,7 +10,7 @@ describe("InputComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [InputComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(InputComponent);

@@ -1,6 +1,6 @@
-import {animate, style, transition, trigger} from "@angular/animations";
 import {
   AfterViewInit,
+  type AnimationCallbackEvent,
   booleanAttribute,
   ChangeDetectorRef,
   Component,
@@ -27,12 +27,6 @@ const imgLoading = "assets/images/loading.gif";
   selector: "app-image",
   templateUrl: "./image.component.html",
   styleUrls: ["./image.component.scss"],
-  animations: [
-    trigger("toggle", [
-      transition(":enter", [style({transform: "scale(0)", opacity: 0}), animate("0.3s", style({transform: "scale(1)", opacity: 1}))]),
-      transition(":leave", [style({transform: "scale(1)", opacity: 1}), animate("0.3s", style({transform: "scale(0)", opacity: 0}))])
-    ])
-  ],
   imports: [MatButtonModule, MatIconModule]
 })
 export class ImageComponent implements AfterViewInit {
@@ -143,6 +137,28 @@ export class ImageComponent implements AfterViewInit {
   });
   bigPicDiv = viewChild<ElementRef<HTMLDivElement>>("bigPicDiv");
   bigPicVisible = signal(false);
+
+  onBigPicEnter(event: AnimationCallbackEvent) {
+    this.runScaleAnimation(event, 0, 1);
+  }
+
+  onBigPicLeave(event: AnimationCallbackEvent) {
+    this.runScaleAnimation(event, 1, 0);
+  }
+
+  private runScaleAnimation(event: AnimationCallbackEvent, from: number, to: number) {
+    const animation = event.target.animate(
+      [
+        {transform: `scale(${from})`, opacity: from === 0 ? 0 : 1},
+        {transform: `scale(${to})`, opacity: to === 0 ? 0 : 1}
+      ],
+      {duration: 300, easing: "ease", fill: "both"}
+    );
+    const done = () => event.animationComplete();
+    animation.addEventListener("finish", done, {once: true});
+    animation.addEventListener("cancel", done, {once: true});
+  }
+
   async showBigPic() {
     const bigPicSrc = this.bigPicSrc();
     const bigPicDiv = this.bigPicDiv();

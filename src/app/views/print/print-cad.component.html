@@ -1,5 +1,5 @@
 @if (toolbarVisible()) {
-  <div class="toolbar toolbar" [@toolbarEnter] [@toolbarLeave]>
+  <div class="toolbar toolbar" (animate.enter)="onToolbarEnter($event)" (animate.leave)="onToolbarLeave($event)">
     @if (showDxfInput()) {
       <button mat-flat-button (click)="uploadDxf('dxf')">上传dxf</button>
       <button mat-flat-button (click)="uploadDxf('json')">上传json</button>
@@ -32,7 +32,7 @@
     <button mat-icon-button class="accent" (click)="toggleToolbarVisible()"><mat-icon>expand_less</mat-icon></button>
   </div>
 } @else {
-  <div class="toolbar-toggle" [@toolbarToggleEnter] [@toolbarToggleLeave]>
+  <div class="toolbar-toggle" (animate.enter)="onToolbarToggleEnter($event)" (animate.leave)="onToolbarToggleLeave($event)">
     <button mat-icon-button class="accent" (click)="toggleToolbarVisible()"><mat-icon>expand_more</mat-icon></button>
   </div>
 }

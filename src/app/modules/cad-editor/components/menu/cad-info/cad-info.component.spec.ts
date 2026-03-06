@@ -1,5 +1,4 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideRouter} from "@angular/router";
 import {CadInfoComponent} from "./cad-info.component";
 
@@ -10,7 +9,7 @@ describe("CadInfoComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CadInfoComponent],
-      providers: [provideAnimations(), provideRouter([])]
+      providers: [provideRouter([])]
     }).compileComponents();
   });
 

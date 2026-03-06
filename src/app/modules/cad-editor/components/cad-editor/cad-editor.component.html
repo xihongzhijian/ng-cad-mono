@@ -8,11 +8,11 @@
   <div class="cad-container" #cadContainer [appContextMenuTrigger]="contextMenu"></div>
   <app-cad-points></app-cad-points>
 
-  <div class="menu top" [@closeTop]="showTopMenu() ? 'open' : 'closed'">
+  <div class="menu top" [class.closed]="!showTopMenu()">
     <app-toolbar (focusZhuangpeixinxi)="focusZhuangpeixinxi()"></app-toolbar>
   </div>
   <div class="menus-row">
-    <div class="menu left" [style.width.px]="leftMenuWidth()" [@closeLeft]="showLeftMenu() ? 'open' : 'closed'">
+    <div class="menu left" [style.width.px]="leftMenuWidth()" [class.closed]="!showLeftMenu()">
       <div class="toolbar" style="width: 100%">
         @if (!openCadOptions().isLocal) {
           <button mat-flat-button class="accent" (click)="save()">保存</button>
@@ -26,7 +26,9 @@
       </div>
       <app-sub-cads></app-sub-cads>
       @if (draggingLeft(); as dragDataLeft) {
-        <div class="width-indicator" @menuWidth>{{ dragDataLeft.width }}px</div>
+        <div class="width-indicator" (animate.enter)="onMenuWidthEnter($event)" (animate.leave)="onMenuWidthLeave($event)">
+          {{ dragDataLeft.width }}px
+        </div>
       }
       <div
         class="resize-handle-right"
@@ -37,7 +39,7 @@
         (cdkDragEnded)="onResizeMenuEnd($event, 'leftMenuWidth')"
       ></div>
     </div>
-    <div class="menu right" [style.width.px]="rightMenuWidth()" [@closeRight]="showRightMenu() ? 'open' : 'closed'">
+    <div class="menu right" [style.width.px]="rightMenuWidth()" [class.closed]="!showRightMenu()">
       <div class="toolbar" style="width: 100%">
         <button mat-icon-button class="menu-icon right" [class.closed]="!showRightMenu()" (click)="toggleRightMenu()">
           <mat-icon>
@@ -118,7 +120,9 @@
         }
       }
       @if (draggingRight(); as dragDataRight) {
-        <div class="width-indicator" @menuWidth>{{ dragDataRight.width }}px</div>
+        <div class="width-indicator" (animate.enter)="onMenuWidthEnter($event)" (animate.leave)="onMenuWidthLeave($event)">
+          {{ dragDataRight.width }}px
+        </div>
       }
       <div
         class="resize-handle-left"
@@ -150,7 +154,7 @@
       </div>
     }
   </div>
-  <div class="menu bottom" [class.accent]="hasCadStatusNotNormal()" [@closeBottom]="showBottomMenu() ? 'open' : 'closed'">
+  <div class="menu bottom" [class.accent]="hasCadStatusNotNormal()" [class.closed]="!showBottomMenu()">
     <div class="cad-status">当前状态：{{ cadStatusesName() }}</div>
   </div>
   <app-spinner [id]="spinnerId"></app-spinner>
