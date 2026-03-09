@@ -70,7 +70,8 @@ export class CadViewer extends EventEmitter {
   data: CadData;
   dom: HTMLDivElement;
   draw: Svg;
-  entitiesCopied?: CadEntities;
+  entitiesToPaste?: CadEntities;
+  pointerPosition?: Point;
   entitiesClickLock = false;
   private _config: CadViewerConfig;
   private _fonts: CadViewerFont[] = [];

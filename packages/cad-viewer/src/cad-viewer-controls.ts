@@ -17,7 +17,8 @@ export interface CadEvents {
   click: [MouseEvent];
   entitiesadd: [CadEntities];
   entitiescopy: [CadEntities];
-  entitiespaste: [CadEntities];
+  entitiespastestart: [];
+  entitiespasteend: [CadEntities];
   entitiesremove: [CadEntities];
   entitiesselect: [CadEntities, boolean, MouseEvent | null];
   entitiesunselect: [CadEntities, boolean, MouseEvent | null];
@@ -73,7 +74,12 @@ function onPointerDown(this: CadViewer, event: PointerEvent) {
 function onPointerMove(this: CadViewer, event: PointerEvent) {
   this.emit("pointermove", event);
   const {clientX, clientY, shiftKey} = event;
-  if (this.entitiesCopied && !pointer) {
+  if (this.pointerPosition) {
+    this.pointerPosition.set(clientX, clientY);
+  } else {
+    this.pointerPosition = new Point(clientX, clientY);
+  }
+  if (this.entitiesToPaste && !pointer) {
     const point = new Point(clientX, clientY);
     pointer = {from: point, to: point.clone()};
   }
@@ -81,8 +87,8 @@ function onPointerMove(this: CadViewer, event: PointerEvent) {
     const {selectMode, entityDraggable, dragAxis} = this.getConfig();
     const {from, to} = pointer;
     const translate = new Point(clientX, clientY).sub(to).divide(this.zoom());
-    if (this.entitiesCopied) {
-      const entities = this.entitiesCopied;
+    if (this.entitiesToPaste) {
+      const entities = this.entitiesToPaste;
       translate.y = -translate.y;
       entities.transform({translate}, false);
     } else if ((button === 0 && shiftKey) || button === 1) {
@@ -177,9 +183,9 @@ function clearPointer(this: CadViewer, event: PointerEvent) {
     const {from, to} = pointer;
     if (from.distanceTo(to) < 1) {
       this.emit("click", event);
-      if (this.entitiesCopied) {
-        this.emit("entitiespaste", this.entitiesCopied);
-        this.entitiesCopied = undefined;
+      if (this.entitiesToPaste) {
+        this.emit("entitiespasteend", this.entitiesToPaste);
+        this.entitiesToPaste = undefined;
       } else {
         this.emit("click", event);
       }
@@ -253,13 +259,9 @@ function onKeyDown(this: CadViewer, event: KeyboardEvent) {
   } else if (checkHotKey("unSelectAll")) {
     this.unselectAll();
   } else if (checkHotKey("copyEntities")) {
-    this.entitiesCopied = this.selected().clone(true);
-    this.emit("entitiescopy", this.entitiesCopied);
+    this.emit("entitiescopy", this.selected().clone(true));
   } else if (checkHotKey("pasteEntities")) {
-    if (this.entitiesCopied) {
-      this.emit("entitiespaste", this.entitiesCopied);
-      this.entitiesCopied = undefined;
-    }
+    this.emit("entitiespastestart");
   } else if (checkHotKey("deleteEntities")) {
     this.remove(this.selected());
   }

@@ -23,6 +23,7 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatTabChangeEvent, MatTabGroup, MatTabsModule} from "@angular/material/tabs";
 import {setGlobal} from "@app/app.common";
 import {openCadDimensionForm} from "@app/cad/utils";
+import {tryParseJson} from "@app/utils/json-helper";
 import {SuanliaoTablesComponent} from "@components/lurushuju/suanliao-tables/suanliao-tables.component";
 import {Debounce} from "@decorators/debounce";
 import {CadDimensionLinear, CadEntities, CadEventCallBack, CadLineLike, CadMtext} from "@lucilor/cad-viewer";
@@ -99,7 +100,8 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     const cad = this.status.cad;
     cad.appendTo(this.cadContainer().nativeElement);
     cad.on("entitiescopy", this._onEntitiesCopy);
-    cad.on("entitiespaste", this._onEntitiesPaste);
+    cad.on("entitiespastestart", this._onEntitiesPasteStart);
+    cad.on("entitiespasteend", this._onEntitiesPasteEnd);
     cad.on("entitiesremove", this._onEntitiesRemove);
     cad.on("entitydblclick", this._onEntityDblClick);
     cad.on("entitiesselect", this._onEntitySelect);
@@ -113,7 +115,7 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
     super.ngOnDestroy();
     const cad = this.status.cad;
     cad.off("entitiescopy", this._onEntitiesCopy);
-    cad.off("entitiespaste", this._onEntitiesPaste);
+    cad.off("entitiespastestart", this._onEntitiesPasteStart);
     cad.off("entitiesremove", this._onEntitiesRemove);
     cad.off("entitydblclick", this._onEntityDblClick);
     cad.off("entitiesselect", this._onEntitySelect);
@@ -388,17 +390,33 @@ export class CadEditorComponent extends Subscribed() implements AfterViewInit, O
   }, 1000);
 
   private _onEntitiesCopy: CadEventCallBack<"entitiescopy"> = async (entities) => {
-    const cad = this.status.cad;
-    entities.forEach((e) => (e.opacity = 0.3));
-    cad.data.entities.merge(entities);
-    cad.unselectAll();
-    await cad.render(entities);
+    const copyInfo = {
+      key: "cad-viewer copy entities",
+      entities: entities.export()
+    };
+    await this.message.copyText(JSON.stringify(copyInfo));
   };
-  private _onEntitiesPaste: CadEventCallBack<"entitiespaste"> = async (entities) => {
+  private _onEntitiesPasteStart: CadEventCallBack<"entitiespastestart"> = async () => {
+    const copyInfoStr = await navigator.clipboard.readText();
+    const copyInfo = tryParseJson(copyInfoStr);
+    if (copyInfo?.key === "cad-viewer copy entities" && copyInfo.entities) {
+      const cad = this.status.cad;
+      const entities = new CadEntities(copyInfo.entities);
+      if (cad.pointerPosition) {
+        const {x: px, y: py} = cad.pointerPosition;
+        const point2 = cad.getWorldPoint(px, py);
+        const rect = entities.getBoundingRect();
+        entities.transform({translate: point2.sub(rect.x, rect.y)}, true);
+      }
+      entities.forEach((e) => (e.opacity = 0.3));
+      cad.entitiesToPaste = entities;
+      await cad.add(entities);
+    }
+  };
+  private _onEntitiesPasteEnd: CadEventCallBack<"entitiespasteend"> = async (entities) => {
     const cad = this.status.cad;
     entities.forEach((e) => (e.opacity = 1));
     await cad.render(entities);
-    await this.status.refreshCadFenti();
   };
   private _onEntitiesRemove: CadEventCallBack<"entitiesremove"> = async () => {
     this._highlightEntities();

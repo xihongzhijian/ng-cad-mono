@@ -128,8 +128,8 @@ export class FloatingDialogComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.manager.dialogs.update((dialogs) => dialogs.filter((dialog) => dialog !== this));
     window.removeEventListener("resize", this.onWindowResize.bind(this));
-    const el = this.el.nativeElement;
-    this._parentEl()?.appendChild(el);
+    // const el = this.el.nativeElement;
+    // this._parentEl()?.appendChild(el);
   }
   private _windowResizeNum = signal(0);
   onWindowResize() {
